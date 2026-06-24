@@ -1,14 +1,39 @@
-"""One-time refresh of Cache-Control metadata on existing S3 objects.
+"""Refresh Cache-Control metadata on existing S3 objects to match the tiered policy.
 
 After the tiered policy (``_cdn_cache``) ships, fresh uploads get the right
 header, but objects already in the bucket keep whatever Cache-Control they
-were originally given. This script walks every object, compares its current
-Cache-Control against the policy, and rewrites the metadata in place via an
-``s3api copy-object --metadata-directive REPLACE`` self-copy where they differ.
+were originally given. This script fetches each target object's metadata,
+compares its current Cache-Control against the policy, and rewrites the
+metadata in place via an ``s3api copy-object --metadata-directive REPLACE``
+self-copy where they differ.
 
 Only metadata changes — object bytes are copied server-side by S3, never
-downloaded. Listing and HEAD always run (even in ``--dry-run``) so the preview
-reflects what would actually change; only the copy is gated by ``--dry-run``.
+downloaded. HEAD always runs (even in ``--dry-run``) so the preview reflects
+what would actually change; only the copy is gated by ``--dry-run``.
+
+Scope
+-----
+Three scopes select which objects to refresh. The default avoids walking the
+bucket's 100k+ truly-static objects (audio, kanji art, ML models), which took
+hours and incurred real S3 LIST/HEAD cost when the original implementation
+listed the whole bucket:
+
+- **default** — download ``manifest.json`` and refresh only the files it lists
+  plus ``manifest.json`` itself (~33 keys). Fast and effectively free.
+- ``--prefix PREFIX`` — walk objects under one S3 prefix. Small content
+  prefixes (``grammar/``, ``dictionary/``) run without a prompt; a prefix into
+  a heavy directory (``kanji_animations/``, ``phrases/audio/``, ...) holds the
+  same 100k+ objects as ``--all`` and gets the same cost-guard.
+- ``--all`` — walk EVERY object in the bucket. Always prompts for explicit
+  confirmation, including under ``--dry-run``: the cost is LIST+HEAD on 100k+
+  objects, which ``--dry-run`` does NOT avoid (it only gates the copy).
+
+The manifest tracks release-updated versioned files plus the immutable
+lindera ``dictionaries/`` binaries; the latter are HEAD'd as no-ops (already
+``immutable``) but cost nothing at ~33 keys. The truly-static bulk that is
+never in the manifest — ``kanji_animations/``, ``kanji_frames/``, ``ndlocr/``,
+``phrases/audio/``, ``whisper/`` — keeps an immutable Cache-Control that does
+not change between releases, so the default scope deliberately skips it.
 
 Recovery: the walk is idempotent — ``needs_update`` decides per object from
 live metadata, so re-running after a partial failure picks up exactly the
@@ -16,47 +41,60 @@ objects still mis-configured. A failure on one object (HEAD error, oversize,
 copy error) is reported and skipped, not fatal; the run exits non-zero only if
 any object failed, so a re-run completes the remainder.
 
+S3 transport (list / HEAD / copy-object, key-safety) lives in ``_cdn_s3``;
+this module is the scope selector + decision layer.
+
 Usage::
 
-    python scripts/refresh_cache_control.py --dry-run   # preview (read-only)
-    python scripts/refresh_cache_control.py              # apply
+    python scripts/refresh_cache_control.py --dry-run                  # manifest only
+    python scripts/refresh_cache_control.py                             # manifest only, apply
+    python scripts/refresh_cache_control.py --dry-run --prefix grammar/
+    python scripts/refresh_cache_control.py --all                      # prompts even with --dry-run
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from collections import Counter
 from typing import NamedTuple
 
 import _cdn_cache
-from _cdn_s3 import S3_BUCKET, S3_ENDPOINT, S3_PROFILE, run_aws_raw
+from _cdn_s3 import (
+    COPY_OBJECT_MAX_BYTES,
+    S3_BUCKET,
+    copy_object_cache_control,
+    download_remote_manifest,
+    filter_safe_keys,
+    head_object,
+    is_safe_key,
+    list_keys,
+)
 
-# copy-object caps at 5 GiB. Only objects whose Cache-Control changes get
-# copied, and those are the small release-updated JSON — but guard anyway so
-# a future large object with wrong metadata fails with a clear message
-# instead of an opaque T3 error mid-walk.
-COPY_OBJECT_MAX_BYTES = 5 * 1024 * 1024 * 1024
-
-# The aws CLI is invoked through ``pwsh -Command`` (see _cdn_s3.run_aws_raw),
-# which re-parses argv as a PowerShell script. A key containing a PowerShell
-# metacharacter could therefore execute as a command/statement rather than a
-# literal argument. This is a DENYLIST, not an ASCII allowlist: CJK and other
-# Unicode letters are not command separators and pass through safely, which
-# matters because kanji_animations/ and kanji_frames/ use the kanji themselves
-# as filenames (一.svg, 丁.svg, ...).
-_UNSAFE_KEY_CHARS = frozenset(" \t\r\n;|&`$\"'<>()@\\")
-
-
-class ObjectMetadata(NamedTuple):
-    cache_control: str | None
-    content_length: int | None
+# Prefixes under these directories hold the 100k+ truly-static objects
+# (kanji art, audio, ML models). A ``--prefix`` into them is as expensive as
+# ``--all``, so it shares the same cost-guard; content prefixes skip it.
+_HEAVY_PREFIXES = frozenset(
+    {
+        "kanji_animations/",
+        "kanji_frames/",
+        "ndlocr/",
+        "phrases/audio/",
+        "whisper/",
+    }
+)
 
 
 class WalkOutcome(NamedTuple):
     category: str
     failed: bool
+
+
+class WalkSummary(NamedTuple):
+    scanned: int
+    counts: Counter[str]
+    retriable: list[str]
+    oversize: list[str]
 
 
 def normalize_cache_control(cc: str | None) -> str:
@@ -73,138 +111,42 @@ def needs_update(current_cc: str | None, target_cc: str) -> bool:
     return normalize_cache_control(current_cc) != normalize_cache_control(target_cc)
 
 
-def is_safe_key(key: str) -> bool:
-    return bool(key) and not any(ch in _UNSAFE_KEY_CHARS for ch in key)
+def is_heavy_prefix(prefix: str) -> bool:
+    """Whether ``--prefix`` points into a 100k+ truly-static directory."""
+    normalized = prefix if prefix.endswith("/") else prefix + "/"
+    return any(normalized.startswith(heavy) for heavy in _HEAVY_PREFIXES)
 
 
-def filter_safe_keys(keys: list[str]) -> tuple[list[str], list[str]]:
-    safe = [k for k in keys if is_safe_key(k)]
-    unsafe = [k for k in keys if not is_safe_key(k)]
-    return safe, unsafe
+def load_manifest_files() -> tuple[list[str], int]:
+    """Default scope: keys listed in remote ``manifest.json`` plus the manifest itself.
 
-
-def _request_key_page(token: str | None) -> tuple[list[str], str | None, bool]:
-    """Fetch one list-objects-v2 page.
-
-    Returns the page's keys, the continuation token for the next page (None if
-    not truncated), and whether more pages remain.
+    The manifest tracks release-updated versioned files (and the immutable
+    ``dictionaries/`` binaries, which HEAD as no-ops). The truly-static bulk —
+    kanji art, audio, ML models — lives in SYNC_DIRS and never appears here, so
+    this refreshes exactly the files whose Cache-Control policy changed with
+    PR #182 at ~33 keys. Downloading the manifest is read-only and runs even
+    under ``--dry-run``.
     """
-    args = [
-        "s3api",
-        "list-objects-v2",
-        "--bucket",
-        S3_BUCKET,
-        "--profile",
-        S3_PROFILE,
-        "--endpoint-url",
-        S3_ENDPOINT,
-    ]
-    if token:
-        args += ["--continuation-token", token]
-    result = run_aws_raw(args)
-    if result.returncode != 0:
-        print("ERROR: list-objects-v2 failed", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
+    print("Downloading remote manifest.json ...")
+    manifest = download_remote_manifest(dry_run=False)
+    if manifest is None:
+        print(
+            "ERROR: remote manifest.json not found. Run deploy_cdn.py first, "
+            "or use --all / --prefix to refresh by listing.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
-    data = json.loads(result.stdout) if result.stdout.strip() else {}
-    keys = [
-        obj["Key"]
-        for obj in data.get("Contents", [])
-        if isinstance(obj.get("Key"), str)
-    ]
-    return keys, data.get("NextContinuationToken"), bool(data.get("IsTruncated"))
+    files = manifest.get("files") if isinstance(manifest, dict) else None
+    if not isinstance(files, dict) or not files:
+        print("ERROR: manifest has no 'files' object to enumerate", file=sys.stderr)
+        sys.exit(1)
 
-
-def list_all_keys() -> tuple[list[str], int]:
-    """List every object key in the bucket, paginating fully.
-
-    Returns the safe keys plus a count of keys dropped as unsafe (shell
-    metacharacters). Aborts if S3 signals truncation without a continuation
-    token — that would silently lose keys.
-    """
-    raw: list[str] = []
-    token: str | None = None
-    while True:
-        keys, next_token, truncated = _request_key_page(token)
-        raw.extend(keys)
-        if not truncated:
-            break
-        if not next_token:
-            print(
-                "ERROR: S3 returned IsTruncated without NextContinuationToken; "
-                "cannot paginate safely",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        token = next_token
-
+    raw = [*files.keys(), "manifest.json"]
     safe, unsafe = filter_safe_keys(raw)
     for key in unsafe:
         print(f"  WARNING: dropping unsafe key: {key!r}", file=sys.stderr)
     return safe, len(unsafe)
-
-
-def head_object(key: str) -> ObjectMetadata | None:
-    result = run_aws_raw(
-        [
-            "s3api",
-            "head-object",
-            "--bucket",
-            S3_BUCKET,
-            "--key",
-            key,
-            "--profile",
-            S3_PROFILE,
-            "--endpoint-url",
-            S3_ENDPOINT,
-        ]
-    )
-    if result.returncode != 0:
-        print(f"  WARNING: head-object failed for {key}", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
-        return None
-    data = json.loads(result.stdout) if result.stdout.strip() else {}
-    length = data.get("ContentLength")
-    return ObjectMetadata(
-        cache_control=data.get("CacheControl"),
-        content_length=int(length) if isinstance(length, int) else None,
-    )
-
-
-def update_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
-    """Rewrite one object's Cache-Control via a server-side self-copy.
-
-    Returns True if applied (or previewed in dry-run), False if the copy
-    failed — the caller continues with the remaining objects rather than
-    aborting the whole walk.
-    """
-    args = [
-        "s3api",
-        "copy-object",
-        "--bucket",
-        S3_BUCKET,
-        "--key",
-        key,
-        "--copy-source",
-        f"{S3_BUCKET}/{key}",
-        "--profile",
-        S3_PROFILE,
-        "--endpoint-url",
-        S3_ENDPOINT,
-        "--metadata-directive",
-        "REPLACE",
-        "--cache-control",
-        target_cc,
-    ]
-    if dry_run:
-        return True
-    result = run_aws_raw(args)
-    if result.returncode != 0:
-        print(f"  ERROR: copy-object failed for {key}", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
-        return False
-    return True
 
 
 def _walk_one(key: str, dry_run: bool) -> WalkOutcome:
@@ -227,68 +169,162 @@ def _walk_one(key: str, dry_run: bool) -> WalkOutcome:
 
     current_display = meta.cache_control or "(none)"
     print(f"  UPDATE {key}  [{current_display} -> {target}]")
-    if update_cache_control(key, target, dry_run):
+    if copy_object_cache_control(key, target, dry_run):
         return WalkOutcome("updated", failed=False)
     return WalkOutcome("copy_failed", failed=True)
 
 
-def main() -> None:
+def _confirm_expensive_walk(scope_desc: str) -> bool:
+    """Gate an expensive LIST+HEAD walk behind explicit confirmation.
+
+    The cost this PR eliminates is LIST+HEAD across 100k+ objects — NOT the
+    copy-object, which ``--dry-run`` gates. So confirmation is required for
+    ``--all`` (and heavy ``--prefix``) regardless of ``--dry-run``. A missing
+    interactive stdin fails closed (abort) rather than crashing.
+    """
+    print(
+        f"WARNING: {scope_desc} will LIST + HEAD every matching S3 object "
+        "(~100k+ audio/kanji/model files). This may take hours and incur "
+        "significant S3 API costs (dry-run does NOT avoid listing cost).",
+        file=sys.stderr,
+    )
+    try:
+        answer = input("Continue? [y/N] ").strip().lower()
+    except EOFError:
+        print("\nAborted (no interactive stdin).", file=sys.stderr)
+        return False
+    if answer != "y":
+        print("Aborted.", file=sys.stderr)
+        return False
+    return True
+
+
+def collect_targets(args: argparse.Namespace) -> tuple[list[str], int]:
+    """Resolve which S3 keys to refresh for the selected scope.
+
+    Precedence: ``--all`` > ``--prefix`` > default (manifest files).
+    ``--all`` and ``--prefix`` are mutually exclusive at the argparse layer;
+    the if-chain here is the dispatch logic and stays defensive. Returns
+    ``(safe_keys, unsafe_count)``.
+    """
+    if args.all:
+        print(f"Listing ALL objects in s3://{S3_BUCKET} ...")
+        if not _confirm_expensive_walk("--all"):
+            sys.exit(0)
+        return list_keys(prefix=None)
+    if args.prefix:
+        print(f"Listing objects under s3://{S3_BUCKET}/{args.prefix} ...")
+        if is_heavy_prefix(args.prefix) and not _confirm_expensive_walk(
+            f"--prefix {args.prefix}"
+        ):
+            sys.exit(0)
+        return list_keys(prefix=args.prefix)
+    return load_manifest_files()
+
+
+def _run_walk(keys: list[str], dry_run: bool) -> WalkSummary:
+    counts: Counter[str] = Counter()
+    retriable: list[str] = []
+    oversize: list[str] = []
+    for key in keys:
+        outcome = _walk_one(key, dry_run)
+        counts[outcome.category] += 1
+        if outcome.category == "oversize":
+            oversize.append(key)
+        elif outcome.failed:
+            retriable.append(key)
+    return WalkSummary(
+        scanned=len(keys),
+        counts=counts,
+        retriable=retriable,
+        oversize=oversize,
+    )
+
+
+def _print_summary(summary: WalkSummary, dropped: int, dry_run: bool) -> None:
+    counts = summary.counts
+    print("\nSummary:")
+    print(f"  scanned:           {summary.scanned}")
+    print(f"  updated:           {counts['updated']}")
+    print(f"  already OK:        {counts['already_ok']}")
+    print(f"  dropped (unsafe):  {dropped}")
+
+    if summary.retriable:
+        print(f"  failed (retriable): {len(summary.retriable)}")
+        for key in summary.retriable:
+            print(f"    - {key}")
+    if summary.oversize:
+        print(f"  oversize (> 5 GiB, manual): {len(summary.oversize)}")
+        for key in summary.oversize:
+            print(f"    - {key}")
+
+    if dry_run:
+        print("\n(dry-run: no metadata rewritten)")
+    elif summary.retriable:
+        print("\nRe-run to retry the failed objects (walk is idempotent).")
+    if summary.oversize:
+        print(
+            "\nOversize objects exceed the 5 GiB copy-object limit and need a "
+            "manual metadata update (re-running will not fix them)."
+        )
+
+
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Refresh Cache-Control on existing S3 objects to match "
-        "the tiered policy (read-only listing/HEAD always runs).",
+        "the tiered policy (HEAD always runs; copy gated by --dry-run).",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would change without rewriting metadata",
     )
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
+        "--prefix",
+        default=None,
+        help="Refresh only objects under this S3 prefix (e.g. 'grammar/' or "
+        "'phrases/data/'). Faster than --all for a single directory; a prefix "
+        "into a heavy dir (kanji_animations/, audio/) prompts like --all.",
+    )
+    scope.add_argument(
+        "--all",
+        action="store_true",
+        help="Walk ALL S3 objects, not just manifest files. WARNING: with "
+        "100k+ audio files this can take hours and incur significant S3 API "
+        "costs. Prompts for confirmation (even with --dry-run). Use only when "
+        "changing Cache-Control for truly-static files (kanji_animations, "
+        "audio, models).",
+    )
+    return parser
+
+
+def _validate_prefix(prefix: str) -> None:
+    if not is_safe_key(prefix):
+        print(
+            f"ERROR: --prefix contains unsafe characters: {prefix!r}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+
+def main() -> None:
+    parser = _build_parser()
     args = parser.parse_args()
+
+    if args.prefix is not None:
+        _validate_prefix(args.prefix)
 
     if args.dry_run:
         print("=== DRY RUN ===\n")
 
-    print(f"Listing objects in s3://{S3_BUCKET} ...")
-    keys, dropped = list_all_keys()
-    print(f"  {len(keys)} safe, {dropped} dropped (unsafe charset)\n")
+    keys, dropped = collect_targets(args)
+    print(f"  {len(keys)} target(s), {dropped} dropped (unsafe charset)\n")
 
-    counts: Counter[str] = Counter()
-    retriable: list[str] = []
-    oversize: list[str] = []
+    summary = _run_walk(keys, args.dry_run)
+    _print_summary(summary, dropped, args.dry_run)
 
-    for key in keys:
-        outcome = _walk_one(key, args.dry_run)
-        counts[outcome.category] += 1
-        if outcome.category == "oversize":
-            oversize.append(key)
-        elif outcome.failed:
-            retriable.append(key)
-
-    print("\nSummary:")
-    print(f"  scanned:           {len(keys)}")
-    print(f"  updated:           {counts['updated']}")
-    print(f"  already OK:        {counts['already_ok']}")
-    print(f"  dropped (unsafe):  {dropped}")
-
-    needs_attention = bool(retriable or oversize)
-    if retriable:
-        print(f"  failed (retriable): {len(retriable)}")
-        for key in retriable:
-            print(f"    - {key}")
-    if oversize:
-        print(f"  oversize (> 5 GiB, manual): {len(oversize)}")
-        for key in oversize:
-            print(f"    - {key}")
-
-    if args.dry_run:
-        print("\n(dry-run: no metadata rewritten)")
-    elif retriable:
-        print("\nRe-run to retry the failed objects (walk is idempotent).")
-    if oversize:
-        print(
-            "\nOversize objects exceed the 5 GiB copy-object limit and need a "
-            "manual metadata update (re-running will not fix them)."
-        )
-    if needs_attention:
+    if summary.retriable or summary.oversize:
         sys.exit(1)
 
 
