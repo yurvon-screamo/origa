@@ -100,6 +100,7 @@ pub struct Content {
     // Homepage
     pub home_meta_title: &'static str,
     pub home_meta_description: &'static str,
+    pub home_schema_feature_list: &'static str,
     pub home_hero_title: &'static str,
     pub home_hero_subtitle: &'static str,
     pub home_cta_primary: &'static str,
@@ -129,6 +130,7 @@ pub struct Content {
     // Features page
     pub features_meta_title: &'static str,
     pub features_meta_description: &'static str,
+    pub features_schema_how_to_name: &'static str,
     pub features_h1: &'static str,
     pub features_vocab_h2: &'static str,
     pub features_vocab_label: &'static str,

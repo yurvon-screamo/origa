@@ -38,7 +38,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href="/landing.processed.css" />
-        <Title text="Origa" />
+        <Title text="Origa — Japanese Learning App" />
         <Router>
             <Routes fallback=NotFound>
                 <ParentRoute path=path!("") view=move || view! { <Layout locale=Locale::En /> }>

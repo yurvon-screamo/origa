@@ -14,6 +14,7 @@ pub static CONTENT: Content = Content {
 
     home_meta_title: "Origa — Японский язык без посредников",
     home_meta_description: "Всё в одном приложении: лексика, кандзи, грамматика, 200 000+ фраз с озвучкой и аналитика JLPT. На вашем языке.",
+    home_schema_feature_list: "Лексика, кандзи, грамматика, аудирование, аналитика JLPT, офлайн-режим",
     home_hero_title: "Японский язык на вашем родном языке",
     home_hero_subtitle: "Лексика, кандзи, грамматика, аудирование и более 200 000 фраз с оригинальной озвучкой — в одном приложении. Без английского посредника.",
     home_cta_primary: "Скачать",
@@ -42,6 +43,7 @@ pub static CONTENT: Content = Content {
 
     features_meta_title: "Лексика, кандзи, грамматика и аудирование | Origa",
     features_meta_description: "Встроенные словари, умные карточки, автоматическая фуригана, грамматика JLPT и 200 000+ фраз с аудио.",
+    features_schema_how_to_name: "Как выучить японскую лексику с Origa",
     features_h1: "Всё для изучения японского",
     features_vocab_h2: "Лексика",
     features_vocab_label: "Как это работает",

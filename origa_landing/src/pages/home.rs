@@ -20,7 +20,7 @@ pub fn HomePage() -> impl IntoView {
 
     view! {
         <PageMeta locale title=c.home_meta_title description=c.home_meta_description/>
-        <SchemaOrg json=software_application_schema()/>
+        <SchemaOrg json=software_application_schema(locale)/>
         <SchemaOrg json=organization_schema()/>
 
         // Section 1: Hero (Split layout)
