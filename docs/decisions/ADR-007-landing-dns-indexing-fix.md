@@ -80,3 +80,30 @@ Report that Railway's authoritative NS return an A record in response to AAAA/MX
 - **No IPv6**: The site has no AAAA record. IPv6-only clients cannot reach it. Acceptable for now — Railway edge is IPv4.
 - **Future migration to Cloudflare recommended**: If the A-record maintenance burden grows or Railway edge IPs change frequently, migrate DNS to Cloudflare for automatic CNAME flattening and anycast resilience.
 - **Monitoring**: Periodically verify that `69.46.46.46` still resolves for `c2qj368z.up.railway.app` and that the site responds 200 OK. If the IP changes, update the A record in the Aeza panel.
+
+## Update (2026-06-24): Cloudflare Proxy Implemented
+
+The "Cloudflare Proxy" alternative listed above as **Deferred** (long-term upgrade)
+has since been **implemented**. The `uwuwu.net` zone was migrated from Aeza
+nameservers to Cloudflare authoritative NS (`ali.ns.cloudflare.com`,
+`clay.ns.cloudflare.com`). `origa.uwuwu.net` now resolves to Cloudflare proxy IPs
+(`104.21.39.177`, `172.67.147.175`) with valid AAAA records, and Cloudflare forwards
+to the Railway origin over IPv4.
+
+This supersedes the plain-A-record workaround as the active solution:
+
+- AAAA queries now return clean NOERROR with real Cloudflare IPv6 — SERVFAIL is no
+  longer reachable for `origa.uwuwu.net` by any resolver.
+- Railway's broken AAAA behaviour is still present (`c2qj368z.up.railway.app` AAAA →
+  SERVFAIL, no IPv6 on Railway origin), but it is **hidden behind the Cloudflare
+  proxy** and no longer affects the public domain.
+
+**⚠️ Operational warning:** Cloudflare is now the **only** layer shielding the domain
+from the Railway DNS protocol bug. If the zone is ever moved back off Cloudflare, or
+`origa.uwuwu.net` is re-pointed directly at Railway via CNAME, the SERVFAIL regression
+returns immediately. Keep the domain behind Cloudflare.
+
+Verified 2026-06-24: A and AAAA queries via Yandex DNS (77.88.8.8), Google (8.8.8.8),
+Cloudflare (1.1.1.1), Quad9 (9.9.9.9), and the authoritative Cloudflare NS all return
+NOERROR with valid records. `robots.txt` is clean (no AI-Audit block), and
+`Google-Extended`/`YandexBot` user-agents receive HTTP 200 with full SSR HTML.
