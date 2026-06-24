@@ -93,6 +93,19 @@ async fn sitemap_still_returns_200() {
     assert_eq!(status, StatusCode::OK);
 }
 
+#[tokio::test]
+async fn unsupported_favicon_format_returns_404() {
+    // `/favicon.webp` is not a published asset. The fallback `ServeDir` and
+    // `ErrorHandler` must produce a real 404 (not a soft-200 shell), and the
+    // `enforce_cache_policy` middleware must override any inner
+    // `Cache-Control` to `no-cache` so a later-added format is served
+    // immediately.
+    let (status, body) = get_status_and_body("/favicon.webp").await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert!(body.contains("404"), "body should mention 404, got: {body}");
+}
+
 #[rstest::rstest]
 #[case::en("/", "en")]
 #[case::ru("/ru", "ru")]
