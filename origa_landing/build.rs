@@ -20,7 +20,10 @@ fn main() {
         });
     println!("cargo:rustc-env=ORIGA_APP_BASE_URL={app_base_url}");
 
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
+
     build_css();
+    generate_sitemap(&manifest_dir);
 }
 
 fn build_css() {
@@ -92,4 +95,68 @@ fn build_css() {
             println!("cargo:warning=npx not available, skipping CSS rebuild: {e}");
         },
     }
+}
+
+/// Render `public/sitemap.xml` from `public/sitemap.xml.tmpl`, substituting
+/// `{{LASTMOD}}` with the most authoritative build date available.
+///
+/// Precedence: `ORIGA_BUILD_DATE` (set by CI, e.g. `docker.yml`) → last commit
+/// date of the template (`git log`) → `1970-01-01` sentinel with a warning.
+/// The sentinel keeps local builds green in environments without git history
+/// (e.g. a fresh tarball checkout); CI always supplies `ORIGA_BUILD_DATE`.
+fn generate_sitemap(manifest_dir: &str) {
+    println!("cargo:rerun-if-changed=public/sitemap.xml.tmpl");
+    println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");
+
+    let base = std::path::Path::new(manifest_dir);
+    let tmpl_path = base.join("public/sitemap.xml.tmpl");
+    let out_path = base.join("public/sitemap.xml");
+
+    let tmpl = match std::fs::read_to_string(&tmpl_path) {
+        Ok(s) => s,
+        Err(e) => panic!("failed to read {}: {e}", tmpl_path.display()),
+    };
+
+    let lastmod = std::env::var("ORIGA_BUILD_DATE")
+        .ok()
+        .filter(|v| !v.is_empty())
+        .or_else(|| git_lastmod(manifest_dir))
+        .unwrap_or_else(|| {
+            println!(
+                "cargo:warning=sitemap lastmod: no ORIGA_BUILD_DATE and no git, using 1970-01-01"
+            );
+            "1970-01-01".to_string()
+        });
+
+    let rendered = tmpl.replace("{{LASTMOD}}", &lastmod);
+
+    std::fs::write(&out_path, rendered)
+        .unwrap_or_else(|e| panic!("failed to write {}: {e}", out_path.display()));
+}
+
+/// Best-effort last-modified date of the sitemap template, as an ISO-8601
+/// `YYYY-MM-DD` string. Returns `None` when git is unavailable (no `.git`,
+/// git not on PATH) so the caller can fall back to the sentinel.
+///
+/// `--follow` spans the `sitemap.xml -> sitemap.xml.tmpl` rename so a fresh
+/// checkout still resolves a date from the template's pre-rename history.
+fn git_lastmod(manifest_dir: &str) -> Option<String> {
+    let output = std::process::Command::new("git")
+        .args([
+            "log",
+            "-1",
+            "--format=%cd",
+            "--date=short",
+            "--follow",
+            "--",
+            "public/sitemap.xml.tmpl",
+        ])
+        .current_dir(manifest_dir)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let date = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if date.is_empty() { None } else { Some(date) }
 }

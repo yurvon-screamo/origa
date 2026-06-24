@@ -106,6 +106,22 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
                 ),
         )
         .route_service(
+            "/favicon.ico",
+            ServeFile::new(format!("{public_dir}/favicon.ico"))
+                .insert_response_header_if_not_present(
+                    CACHE_CONTROL,
+                    HeaderValue::from_static(IMMUTABLE_CACHE),
+                ),
+        )
+        .route_service(
+            "/apple-touch-icon.png",
+            ServeFile::new(format!("{public_dir}/apple-touch-icon.png"))
+                .insert_response_header_if_not_present(
+                    CACHE_CONTROL,
+                    HeaderValue::from_static(IMMUTABLE_CACHE),
+                ),
+        )
+        .route_service(
             "/robots.txt",
             ServeFile::new(format!("{public_dir}/robots.txt"))
                 .insert_response_header_if_not_present(

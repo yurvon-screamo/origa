@@ -14,6 +14,7 @@ pub static CONTENT: Content = Content {
 
     home_meta_title: "Origa — 한국어로 일본어 학습",
     home_meta_description: "올인원 일본어 학습 앱: 어휘, 한자, 문법, 20만 개 이상의 원어민 문장 및 JLPT 분석. 한국어로 학습하세요.",
+    home_schema_feature_list: "어휘, 한자, 문법, 듣기, JLPT 분석, 오프라인 모드",
     home_hero_title: "한국어로 일본어를 배우세요",
     home_hero_subtitle: "어휘, 한자, 문법, 듣기, 20만 개 이상의 원어민 문장 — 모든 것이 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
     home_cta_primary: "다운로드",
@@ -42,6 +43,7 @@ pub static CONTENT: Content = Content {
 
     features_meta_title: "어휘, 한자, 문법 및 듣기 | Origa",
     features_meta_description: "내장 사전, 스마트 플래시카드, 자동 후리가나, JLPT 문법 및 20만 개 이상의 오디오 문장 — 모든 것이 하나의 앱에.",
+    features_schema_how_to_name: "Origa로 일본어 어휘를 기르는 방법",
     features_h1: "일본어 학습에 필요한 모든 것",
     features_vocab_h2: "어휘",
     features_vocab_label: "작동 방식",

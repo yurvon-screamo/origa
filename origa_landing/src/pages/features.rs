@@ -31,7 +31,7 @@ pub fn FeaturesPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/features" title=c.features_meta_title description=c.features_meta_description/>
-        <SchemaOrg json=how_to_schema("How to build Japanese vocabulary with Origa", &vocab_steps)/>
+        <SchemaOrg json=how_to_schema(locale, c.features_schema_how_to_name, &vocab_steps)/>
 
         // Section 0: Hero
         <section class="feat-hero">
@@ -42,6 +42,7 @@ pub fn FeaturesPage() -> impl IntoView {
             <div class="feat-hero__decor">
                 <div
                     class="feat-hero__decor-img"
+                    attr:aria-hidden="true"
                     style=format!("background-image: url({all_in_one_image})")
                 ></div>
             </div>

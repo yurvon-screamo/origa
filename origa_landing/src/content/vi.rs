@@ -14,6 +14,7 @@ pub static CONTENT: Content = Content {
 
     home_meta_title: "Origa — Học tiếng Nhật bằng tiếng Việt",
     home_meta_description: "Ứng dụng học tiếng Nhật toàn diện: từ vựng, kanji, ngữ pháp, hơn 200.000 câu bản ngữ và phân tích JLPT. Học bằng tiếng Việt.",
+    home_schema_feature_list: "Từ vựng, Kanji, Ngữ pháp, Nghe, Phân tích JLPT, Chế độ ngoại tuyến",
     home_hero_title: "Học tiếng Nhật bằng tiếng Việt",
     home_hero_subtitle: "Từ vựng, kanji, ngữ pháp, nghe và hơn 200.000 câu bản ngữ — tất cả trong một ứng dụng. Không cần tiếng Anh.",
     home_cta_primary: "Tải xuống",
@@ -42,6 +43,7 @@ pub static CONTENT: Content = Content {
 
     features_meta_title: "Từ vựng, Kanji, Ngữ pháp & Nghe | Origa",
     features_meta_description: "Từ điển tích hợp, thẻ thông minh, furigana tự động, ngữ pháp JLPT và hơn 200.000 câu có âm thanh — tất cả trong một ứng dụng.",
+    features_schema_how_to_name: "Cách xây dựng từ vựng tiếng Nhật với Origa",
     features_h1: "Tất cả để học tiếng Nhật",
     features_vocab_h2: "Từ vựng",
     features_vocab_label: "Cách hoạt động",

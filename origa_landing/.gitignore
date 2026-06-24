@@ -1,0 +1,4 @@
+# Generated from public/sitemap.xml.tmpl by build.rs at compile time.
+# The template is the source of truth; this file is rebuilt every cargo build
+# so its <lastmod> always reflects the current ORIGA_BUILD_DATE / git mtime.
+public/sitemap.xml

@@ -47,6 +47,16 @@ name = "not_found"
 path = "tests/not_found.rs"
 required-features = ["ssr"]
 
+[[test]]
+name = "seo_meta"
+path = "tests/seo_meta.rs"
+required-features = ["ssr"]
+
+[[test]]
+name = "sitemap"
+path = "tests/sitemap.rs"
+required-features = ["ssr"]
+
 [features]
 ssr = [
     "leptos/ssr",

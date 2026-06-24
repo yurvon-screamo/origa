@@ -65,6 +65,18 @@ async fn favicon_has_immutable_cache() {
 }
 
 #[tokio::test]
+async fn favicon_ico_has_immutable_cache() {
+    let cc = cache_control("/favicon.ico").await;
+    assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
+}
+
+#[tokio::test]
+async fn apple_touch_icon_has_immutable_cache() {
+    let cc = cache_control("/apple-touch-icon.png").await;
+    assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
+}
+
+#[tokio::test]
 async fn static_css_has_immutable_cache() {
     let cc = cache_control("/landing.processed.css").await;
     assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));

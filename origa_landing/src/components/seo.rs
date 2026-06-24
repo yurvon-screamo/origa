@@ -7,21 +7,27 @@ const BASE_URL: &str = env!("ORIGA_LANDING_BASE_URL");
 
 #[component]
 pub fn SchemaOrg(json: String) -> impl IntoView {
+    // serde_json::to_string does not escape `<`, so a string field containing
+    // `</script>` would let an attacker break out of the inline JSON-LD
+    // <script> block. Escaping `<` as \u003c neutralises the only character
+    // that can terminate the tag; the JSON parser still reads it as `<`.
+    let json = json.replace('<', "\\u003c");
     view! {
         <script type="application/ld+json" inner_html=json></script>
     }
 }
 
-pub fn software_application_schema() -> String {
+pub fn software_application_schema(locale: Locale) -> String {
+    let c = locale.content();
     serde_json::json!({
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Origa",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "Windows, Linux, macOS, Android, Web",
-        "description": "All-in-one Japanese learning app with vocabulary, kanji, grammar and native phrases.",
-        "featureList": "Vocabulary, Kanji, Grammar, Listening, JLPT Analytics, Offline Mode",
-        "inLanguage": ["en", "ru", "ko", "vi"]
+        "description": c.home_meta_description,
+        "featureList": c.home_schema_feature_list,
+        "inLanguage": locale.as_str()
     })
     .to_string()
 }
@@ -37,7 +43,7 @@ pub fn organization_schema() -> String {
     .to_string()
 }
 
-pub fn how_to_schema(name: &str, steps: &[&str]) -> String {
+pub fn how_to_schema(locale: Locale, name: &str, steps: &[&str]) -> String {
     let steps_json: Vec<_> = steps
         .iter()
         .enumerate()
@@ -54,6 +60,7 @@ pub fn how_to_schema(name: &str, steps: &[&str]) -> String {
         "@context": "https://schema.org",
         "@type": "HowTo",
         "name": name,
+        "inLanguage": locale.as_str(),
         "step": steps_json
     })
     .to_string()
@@ -79,6 +86,13 @@ pub fn PageMeta(
         <Meta property="og:url" content=canonical.clone()/>
         <Meta property="og:type" content="website"/>
         <Meta property="og:locale" content=locale.og_locale()/>
+        {Locale::ALL
+            .iter()
+            .filter(|loc| **loc != locale)
+            .map(|loc| {
+                view! { <Meta property="og:locale:alternate" content=loc.og_locale()/> }
+            })
+            .collect_view()}
         <Meta name="twitter:card" content="summary_large_image"/>
         <Meta name="twitter:title" content=title/>
         <Meta name="twitter:description" content=description/>

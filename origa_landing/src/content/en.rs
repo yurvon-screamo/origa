@@ -14,6 +14,7 @@ pub static CONTENT: Content = Content {
 
     home_meta_title: "Origa — All-in-One Japanese Learning App",
     home_meta_description: "All-in-one Japanese learning app: vocabulary, kanji, grammar, 200K+ native phrases and JLPT analytics. In your own language.",
+    home_schema_feature_list: "Vocabulary, Kanji, Grammar, Listening, JLPT Analytics, Offline Mode",
     home_hero_title: "Learn Japanese in your own language",
     home_hero_subtitle: "Vocabulary, kanji, grammar, listening and 200,000+ native phrases — all in one app. No English required.",
     home_cta_primary: "Download",
@@ -42,6 +43,7 @@ pub static CONTENT: Content = Content {
 
     features_meta_title: "Vocabulary, Kanji, Grammar & Listening | Origa",
     features_meta_description: "Built-in dictionaries, smart flashcards, automatic furigana, JLPT grammar and 200K+ phrases with audio — all in one app.",
+    features_schema_how_to_name: "How to build Japanese vocabulary with Origa",
     features_h1: "Everything for Japanese learning",
     features_vocab_h2: "Vocabulary",
     features_vocab_label: "How it works",
