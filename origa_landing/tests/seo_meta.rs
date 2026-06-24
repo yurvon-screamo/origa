@@ -237,6 +237,11 @@ async fn features_hero_decor_has_aria_hidden() {
     // tag, so we locate the entire enclosing `<div ...>` opening tag (from the
     // nearest preceding `<` to the next `>`) and check it carries the
     // attribute anywhere within.
+    //
+    // Two complementary checks guard against a regression where the RSX
+    // `attr:aria-hidden` form leaks the `attr:` prefix into SSR HTML: the prefix
+    // would satisfy a naive `contains("aria-hidden")` (false positive) while
+    // browsers ignore the resulting invalid attribute.
     let body = get_body("/features").await;
     let class_idx = body
         .find("feat-hero__decor-img")
@@ -249,6 +254,10 @@ async fn features_hero_decor_has_aria_hidden() {
         .map(|offset| class_idx + offset)
         .expect("decor div opening tag must close");
     let decor_open_tag = &body[tag_start..=tag_end];
+    assert!(
+        !decor_open_tag.contains("attr:aria-hidden"),
+        "attr: prefix must not leak into SSR HTML; got: {decor_open_tag}"
+    );
     assert!(
         decor_open_tag.contains(r#"aria-hidden="true""#),
         "decorative background-image div must carry aria-hidden; got: {decor_open_tag}"
