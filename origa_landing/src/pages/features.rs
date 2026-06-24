@@ -42,7 +42,7 @@ pub fn FeaturesPage() -> impl IntoView {
             <div class="feat-hero__decor">
                 <div
                     class="feat-hero__decor-img"
-                    attr:aria-hidden="true"
+                    aria-hidden="true"
                     style=format!("background-image: url({all_in_one_image})")
                 ></div>
             </div>

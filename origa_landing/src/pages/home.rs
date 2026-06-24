@@ -40,7 +40,7 @@ pub fn HomePage() -> impl IntoView {
             <div class="home-hero__decor">
                 <div
                     class="home-hero__decor-img"
-                    attr:aria-hidden="true"
+                    aria-hidden="true"
                     style=format!("background-image: url(/images/{lang}.hero.png)")
                 ></div>
             </div>
