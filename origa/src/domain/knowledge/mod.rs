@@ -36,6 +36,30 @@ use crate::domain::{
 
 pub(crate) const MAX_COMPANION_WORDS: usize = 3;
 
+/// Collects the surface form of every vocabulary card whose memory state
+/// qualifies as known. `include_in_progress` widens the predicate to also
+/// accept in-progress cards (soft filter used by tail-phrase eligibility and
+/// phrase seeding); pass `false` for the strict known-only view.
+pub(crate) fn collect_known_vocabulary_words<'a, I>(
+    cards: I,
+    include_in_progress: bool,
+) -> HashSet<String>
+where
+    I: IntoIterator<Item = &'a StudyCard>,
+{
+    cards
+        .into_iter()
+        .filter_map(|sc| match sc.card() {
+            Card::Vocabulary(vocab) => {
+                let known = sc.memory().is_known_card()
+                    || (include_in_progress && sc.memory().is_in_progress());
+                known.then(|| vocab.word().text().to_string())
+            },
+            _ => None,
+        })
+        .collect()
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KnowledgeSet {
     #[serde(deserialize_with = "deserialize_study_cards")]
@@ -244,7 +268,7 @@ impl KnowledgeSet {
             with_interleaved,
             self,
             &used_phrase_ids,
-            phrase_new_budget,
+            &mut phrase_new_budget,
         )
     }
 

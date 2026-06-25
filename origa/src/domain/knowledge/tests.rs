@@ -22,7 +22,7 @@ fn create_known_memory_state() -> MemoryState {
 // --- Phrase index fixture ---
 //
 // The phrase index is a process-wide `OnceLock`: only one index can live in a
-// test binary. This loads the same 4-phrase fixture used by `lesson_builder`,
+// test binary. This loads the same 8-phrase fixture used by `lesson_builder`,
 // `journeys/phrase` and `seed_ready_phrases`, so the data is identical no matter
 // which module wins the initialization race. Tests that assert on phrase
 // selection MUST call this so their assertions exercise the real selection path
@@ -35,11 +35,15 @@ fn ensure_test_phrase_index() {
         if crate::dictionary::phrase::is_phrases_loaded() {
             return;
         }
-        let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+        let index_json = r#"{"v":1,"h":"test","total":8,"phrases":[
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
-            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HP","t":["test","は"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HQ","t":["hello","extra1"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HR","t":["hello","extra2"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HS","t":["alpha","beta"],"c":0}
         ]}"#;
         crate::dictionary::phrase::init_phrase_index(index_json)
             .expect("Failed to init test phrase index");
@@ -916,6 +920,14 @@ fn phrase_new_cards_limited() {
     // the four matching NEW phrase cards. Known anchors enter the core without
     // consuming the daily new-card allowance, so every phrase competes only for
     // the shared new-phrase budget.
+    //
+    // The known vocabulary pool built from the knowledge_set is exactly
+    // {hello, bye, morning, thanks} — it does NOT contain "test", which is the
+    // shared first token of every fixture phrase. Therefore `phrase_tail_eligible`
+    // rejects all of them (every phrase leans on the unknown "test" token), the
+    // tail stays empty, and only the interleaved fallback-to-known path yields
+    // phrases — two of them, capped by the budget. That is why both phrases
+    // land in the core and `tail_phrases == 0` here.
     let mut knowledge_set = KnowledgeSet::new();
     for word in ["hello", "bye", "morning", "thanks"] {
         let study = knowledge_set.create_card(create_vocab_card(word)).unwrap();

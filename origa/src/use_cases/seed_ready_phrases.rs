@@ -43,7 +43,7 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
         let (known_words, known_grammar) = {
             let study_cards = user.knowledge_set().study_cards();
             (
-                collect_known_vocabulary_words(study_cards),
+                crate::domain::collect_known_vocabulary_words(study_cards.values(), true),
                 collect_known_grammar_rules(study_cards),
             )
         };
@@ -90,20 +90,6 @@ impl<'a, R: UserRepository> SeedReadyPhrasesUseCase<'a, R> {
 
         Ok(created_count)
     }
-}
-
-fn collect_known_vocabulary_words(study_cards: &HashMap<Ulid, StudyCard>) -> HashSet<String> {
-    study_cards
-        .values()
-        .filter_map(|sc| {
-            if let Card::Vocabulary(vocab) = sc.card() {
-                if sc.memory().is_in_progress() || sc.memory().is_known_card() {
-                    return Some(vocab.word().text().to_string());
-                }
-            }
-            None
-        })
-        .collect()
 }
 
 pub fn collect_known_grammar_rules(study_cards: &HashMap<Ulid, StudyCard>) -> HashSet<Ulid> {
@@ -398,11 +384,15 @@ mod tests {
             if is_phrases_loaded() {
                 return;
             }
-            let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+            let index_json = r#"{"v":1,"h":"test","total":8,"phrases":[
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
-                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HP","t":["test","は"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HQ","t":["hello","extra1"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HR","t":["hello","extra2"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HS","t":["alpha","beta"],"c":0}
             ]}"#;
             init_phrase_index(index_json).expect("Failed to init phrase index");
         });

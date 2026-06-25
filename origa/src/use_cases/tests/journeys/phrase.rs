@@ -23,11 +23,15 @@ fn grammar_rule_id_2() -> Ulid {
 
 fn init_test_phrases() {
     PHRASE_INIT.get_or_init(|| {
-        let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+        let index_json = r#"{"v":1,"h":"test","total":8,"phrases":[
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
-            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HP","t":["test","は"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HQ","t":["hello","extra1"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HR","t":["hello","extra2"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HS","t":["alpha","beta"],"c":0}
         ]}"#;
         init_phrase_index(index_json).expect("Failed to init phrase index");
 
@@ -35,7 +39,11 @@ fn init_test_phrases() {
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"test hello","ru":"Privet mir","en":"Hello world"},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","x":"test bye","ru":"Do svidaniya mir","en":"Goodbye world"},
             {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","x":"test morning","ru":"Dobroe utro","en":"Good morning"},
-            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","x":"test thanks"}
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","x":"test thanks"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HP","x":"test wa"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HQ","x":"hello extra1"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HR","x":"hello extra2"},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HS","x":"alpha beta"}
         ]"#;
         cache_phrase_details(0, chunk_json).expect("Failed to cache phrase details");
     });
