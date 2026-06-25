@@ -1,6 +1,9 @@
 pub(crate) mod forms_adjective;
 pub(crate) mod forms_verb;
+pub(crate) mod particles;
 pub mod quiz_generation;
+
+pub(crate) use particles::is_grammatical_particle;
 
 use crate::dictionary::grammar::{FormatAction, GrammarRule};
 use crate::domain::grammar::forms_adjective::{

@@ -20,7 +20,7 @@ const PHRASE_MAX_PER_LESSON: usize = 5;
 /// Tail phrases only reinforce already-mastered material: no single known word
 /// may appear in more than this many tail phrases, otherwise a frequent word
 /// (e.g. する) would crowd out the entire tail.
-pub(crate) const MAX_PHRASES_PER_WORD_IN_TAIL: usize = 2;
+pub(crate) const MAX_PHRASES_PER_WORD_IN_TAIL: usize = 1;
 
 /// How many phrases may be interleaved next to a single anchor word inside the
 /// core section. Two cards let the learner meet the word in context shortly
@@ -92,6 +92,14 @@ pub(crate) fn build_lesson_core(
     LessonData { cards, core_count }
 }
 
+/// Core-section eligibility predicate shared by the high-difficulty, new and
+/// due-known collectors: a card is a core candidate when it is neither a
+/// user favorite (already pinned) nor a phrase (phrases enter the lesson via
+/// the interleaved/tail pipelines, not the core).
+fn is_core_candidate(id: &Ulid, card: &StudyCard, favorite_ids: &HashSet<Ulid>) -> bool {
+    !favorite_ids.contains(id) && !matches!(card.card(), Card::Phrase(_))
+}
+
 fn collect_core_high_difficulty<'a>(
     all_cards: &[(&'a Ulid, &'a StudyCard)],
     favorite_ids: &HashSet<Ulid>,
@@ -100,8 +108,7 @@ fn collect_core_high_difficulty<'a>(
     all_cards
         .iter()
         .filter(|(id, card)| {
-            !favorite_ids.contains(id)
-                && !matches!(card.card(), Card::Phrase(_))
+            is_core_candidate(id, card, favorite_ids)
                 && card.memory().is_due()
                 && card.memory().is_high_difficulty()
         })
@@ -120,11 +127,7 @@ fn collect_core_new_cards<'a>(
 ) {
     let new_core_cards: Vec<_> = all_cards
         .iter()
-        .filter(|(id, card)| {
-            !favorite_ids.contains(id)
-                && !matches!(card.card(), Card::Phrase(_))
-                && card.memory().is_new()
-        })
+        .filter(|(id, card)| is_core_candidate(id, card, favorite_ids) && card.memory().is_new())
         .copied()
         .collect();
 
@@ -166,8 +169,7 @@ fn fill_core_due_known<'a>(
     let due_known: Vec<_> = all_cards
         .iter()
         .filter(|(id, card)| {
-            !favorite_ids.contains(id)
-                && !matches!(card.card(), Card::Phrase(_))
+            is_core_candidate(id, card, favorite_ids)
                 && card.memory().is_due()
                 && (card.memory().is_in_progress() || card.memory().is_known_card())
         })
@@ -198,110 +200,18 @@ fn collect_padding<'a>(
     candidates.into_iter().take(needed).collect()
 }
 
-fn extract_lesson_content<'a>(
-    cards: impl IntoIterator<Item = (&'a Ulid, &'a StudyCard)>,
-) -> (HashSet<String>, HashSet<Ulid>) {
-    let mut words = HashSet::new();
-    let mut grammar_ids = HashSet::new();
-
-    for (_, study_card) in cards {
-        match study_card.card() {
-            Card::Vocabulary(vocab) => {
-                words.insert(vocab.word().text().to_string());
-            },
-            Card::Grammar(grammar_card) => {
-                grammar_ids.insert(*grammar_card.rule_id());
-            },
-            Card::Kanji(_) | Card::Phrase(_) => {},
-        }
-    }
-
-    (words, grammar_ids)
-}
-
-/// Tail phrases only reinforce already-mastered lesson vocab: a word qualifies
-/// when its study card has reached a stable memory state (`is_known_card`),
-/// i.e. stability above the known threshold and not flagged high-difficulty.
-fn extract_known_lesson_words<'a>(
-    cards: impl IntoIterator<Item = (&'a Ulid, &'a StudyCard)>,
-) -> HashSet<String> {
-    let mut words = HashSet::new();
-
-    for (_, study_card) in cards {
-        if !study_card.memory().is_known_card() {
-            continue;
-        }
-        if let Card::Vocabulary(vocab) = study_card.card() {
-            words.insert(vocab.word().text().to_string());
-        }
-    }
-
-    words
-}
-
-/// A phrase is tail-eligible only when every token it references is a lesson
-/// word the user has already mastered. This excludes phrases that lean on
-/// newly-introduced or unstable vocabulary, which get reinforced via the
-/// interleaved section instead.
-fn phrase_tokens_all_known(phrase_id: &Ulid, known_lesson_words: &HashSet<String>) -> bool {
+/// A phrase is tail-eligible when every non-particle token it references is
+/// part of the known vocabulary pool. Grammatical particles (は, が, を, …)
+/// attach to words rather than carrying standalone meaning, so they never
+/// block eligibility. The pool spans the ENTIRE knowledge_set (built by
+/// `collect_known_vocabulary_words`), not just lesson cards.
+fn phrase_tail_eligible(phrase_id: &Ulid, known_pool: &HashSet<String>) -> bool {
     let Some(entry) = crate::dictionary::phrase::get_index_entry(phrase_id) else {
         return false;
     };
-    entry
-        .tokens()
-        .iter()
-        .all(|token| known_lesson_words.contains(token))
-}
-
-fn phrase_lesson_overlap(
-    phrase_id: &Ulid,
-    lesson_words: &HashSet<String>,
-    lesson_grammar_ids: &HashSet<Ulid>,
-) -> usize {
-    let Some(entry) = crate::dictionary::phrase::get_index_entry(phrase_id) else {
-        return 0;
-    };
-
-    let vocab_overlap = entry
-        .tokens()
-        .iter()
-        .filter(|t| lesson_words.contains(*t))
-        .count();
-
-    let grammar_overlap = entry
-        .grammar_rules()
-        .iter()
-        .filter(|g| lesson_grammar_ids.contains(g))
-        .count();
-
-    vocab_overlap + grammar_overlap
-}
-
-fn phrase_overlap_from_card(
-    study_card: &StudyCard,
-    lesson_words: &HashSet<String>,
-    lesson_grammar_ids: &HashSet<Ulid>,
-) -> usize {
-    let Card::Phrase(phrase_card) = study_card.card() else {
-        return 0;
-    };
-    phrase_lesson_overlap(phrase_card.phrase_id(), lesson_words, lesson_grammar_ids)
-}
-
-fn sort_phrases_by_overlap<'a>(
-    phrases: &mut [(&'a Ulid, &'a StudyCard)],
-    lesson_words: &HashSet<String>,
-    lesson_grammar_ids: &HashSet<Ulid>,
-) {
-    phrases.sort_by(|a, b| {
-        let overlap_a = phrase_overlap_from_card(a.1, lesson_words, lesson_grammar_ids);
-        let overlap_b = phrase_overlap_from_card(b.1, lesson_words, lesson_grammar_ids);
-        overlap_b.cmp(&overlap_a).then_with(|| {
-            a.1.memory()
-                .next_review_date()
-                .cmp(&b.1.memory().next_review_date())
-        })
-    });
+    entry.tokens().iter().all(|token| {
+        crate::domain::grammar::is_grammatical_particle(token) || known_pool.contains(token)
+    })
 }
 
 /// Bundles the immutable inputs driving tail-phrase selection. Grouping them
@@ -311,94 +221,108 @@ struct TailPhraseSelection<'a> {
     all_cards: &'a [(&'a Ulid, &'a StudyCard)],
     excluded_card_ids: &'a HashSet<Ulid>,
     used_phrase_ids: &'a HashSet<Ulid>,
-    known_lesson_words: &'a HashSet<String>,
-    lesson_words: &'a HashSet<String>,
-    lesson_grammar_ids: &'a HashSet<Ulid>,
+    known_pool: &'a HashSet<String>,
     /// Remaining new-phrase allowance (already shared with the interleaved
-    /// section). Due phrases do not consume it.
-    new_phrase_budget: usize,
+    /// section). Due phrases do not consume it; new phrases decrement it
+    /// greedily so a depleted budget halts further new-phrase admission.
+    new_phrase_budget: &'a mut usize,
 }
 
-fn collect_phrase_cards<'a>(selection: &TailPhraseSelection<'a>) -> Vec<(&'a Ulid, &'a StudyCard)> {
-    let phrase_new_remaining = selection.new_phrase_budget;
-
+fn collect_phrase_cards<'a>(
+    selection: &mut TailPhraseSelection<'a>,
+) -> Vec<(&'a Ulid, &'a StudyCard)> {
     let phrase_eligible = |id: &&Ulid, card: &&StudyCard| {
         let Card::Phrase(phrase_card) = card.card() else {
             return false;
         };
         !selection.excluded_card_ids.contains(id)
             && !selection.used_phrase_ids.contains(phrase_card.phrase_id())
-            && phrase_tokens_all_known(phrase_card.phrase_id(), selection.known_lesson_words)
+            && phrase_tail_eligible(phrase_card.phrase_id(), selection.known_pool)
     };
 
-    let mut due_phrases: Vec<_> = selection
-        .all_cards
-        .iter()
-        .copied()
-        .filter(|(id, card)| phrase_eligible(id, card) && card.memory().is_due())
-        .collect();
-    sort_phrases_by_overlap(
-        &mut due_phrases,
-        selection.lesson_words,
-        selection.lesson_grammar_ids,
-    );
+    // `all_cards` is sorted by `next_review_date` asc upstream (see
+    // `add_tail_phrases`), so filtering preserves the scheduling order without
+    // an explicit secondary sort.
+    let mut cap = PerWordCap::new(selection.known_pool);
+    let mut phrase_cards: Vec<(&'a Ulid, &'a StudyCard)> = Vec::new();
 
-    let mut new_phrases: Vec<_> = selection
-        .all_cards
-        .iter()
-        .copied()
-        .filter(|(id, card)| phrase_eligible(id, card) && card.memory().is_new())
-        .collect();
-    sort_phrases_by_overlap(
-        &mut new_phrases,
-        selection.lesson_words,
-        selection.lesson_grammar_ids,
-    );
-    new_phrases.truncate(phrase_new_remaining);
+    // Due phrases first — free of budget cost, but they still occupy per-word
+    // cap slots so a frequent word cannot crowd out the tail through scheduling
+    // pressure alone.
+    for (id, card) in selection.all_cards.iter().copied() {
+        if !phrase_eligible(&id, &card) || !card.memory().is_due() {
+            continue;
+        }
+        if cap.try_admit(card) {
+            phrase_cards.push((id, card));
+        }
+    }
 
-    let mut phrase_cards = due_phrases;
-    phrase_cards.extend(new_phrases);
-    phrase_cards = apply_per_word_cap(phrase_cards, selection.known_lesson_words);
+    // New phrases are admitted only when both the budget AND the per-word cap
+    // permit. The cap check runs before the decrement so the budget is never
+    // spent on a phrase the cap would drop.
+    for (id, card) in selection.all_cards.iter().copied() {
+        if *selection.new_phrase_budget == 0 {
+            break;
+        }
+        if !phrase_eligible(&id, &card) || !card.memory().is_new() {
+            continue;
+        }
+        if !cap.try_admit(card) {
+            continue;
+        }
+        phrase_cards.push((id, card));
+        *selection.new_phrase_budget -= 1;
+    }
+
     phrase_cards.truncate(PHRASE_MAX_PER_LESSON);
     phrase_cards
 }
 
-/// Enforces `MAX_PHRASES_PER_WORD_IN_TAIL`: no single known lesson word may
-/// anchor more than the cap tail phrases. Phrases are consumed in priority
-/// order (due before new, overlap-sorted within each) so the most relevant
-/// phrase wins a word's slot when contention occurs.
-fn apply_per_word_cap<'a>(
-    phrases: Vec<(&'a Ulid, &'a StudyCard)>,
-    known_lesson_words: &HashSet<String>,
-) -> Vec<(&'a Ulid, &'a StudyCard)> {
-    let mut word_count: HashMap<&str, usize> = HashMap::new();
-    let mut kept = Vec::with_capacity(phrases.len());
+/// Streaming enforcer of `MAX_PHRASES_PER_WORD_IN_TAIL`. `try_admit` returns
+/// `true` and reserves the phrase's known-word slots when the phrase still
+/// fits the cap, `false` when at least one anchored word is already saturated.
+/// Phrases are consumed in admission order (due before new) so the most
+/// relevant phrase wins a word's slot when contention occurs.
+struct PerWordCap<'a> {
+    known_pool: &'a HashSet<String>,
+    word_count: HashMap<&'static str, usize>,
+}
 
-    for (id, card) in phrases {
+impl<'a> PerWordCap<'a> {
+    fn new(known_pool: &'a HashSet<String>) -> Self {
+        Self {
+            known_pool,
+            word_count: HashMap::new(),
+        }
+    }
+
+    fn try_admit(&mut self, card: &StudyCard) -> bool {
         let Card::Phrase(phrase_card) = card.card() else {
-            continue;
+            return false;
         };
         let Some(entry) = crate::dictionary::phrase::get_index_entry(phrase_card.phrase_id())
         else {
-            continue;
+            return false;
         };
         let over_cap = entry.tokens().iter().any(|token| {
-            known_lesson_words.contains(token)
-                && word_count.get(token.as_str()).copied().unwrap_or(0)
+            !crate::domain::grammar::is_grammatical_particle(token)
+                && self.known_pool.contains(token)
+                && self.word_count.get(token.as_str()).copied().unwrap_or(0)
                     >= MAX_PHRASES_PER_WORD_IN_TAIL
         });
         if over_cap {
-            continue;
+            return false;
         }
         for token in entry.tokens() {
-            if known_lesson_words.contains(token) {
-                *word_count.entry(token.as_str()).or_insert(0) += 1;
+            if !crate::domain::grammar::is_grammatical_particle(token)
+                && self.known_pool.contains(token)
+            {
+                *self.word_count.entry(token.as_str()).or_insert(0) += 1;
             }
         }
-        kept.push((id, card));
+        true
     }
-
-    kept
 }
 
 /// Interleaves phrase cards into the core stream so each phrase appears after
@@ -601,31 +525,24 @@ pub(crate) fn add_interleaved_phrases(
         })
         .collect();
 
-    let new_in_progress: Vec<(&Ulid, String)> = core_vocab
+    // Interleaving exists to reinforce vocab that is still being learned — so
+    // the target set is everything that is NOT a stable known card. This
+    // intentionally includes high-difficulty cards (the original motivation
+    // for interleaving).
+    let (non_known, known) = core_vocab
         .iter()
-        .filter(|(id, _)| {
-            knowledge_set
-                .get_card(*id)
-                .map(|sc| sc.memory().is_new() || sc.memory().is_in_progress())
-                .unwrap_or(false)
-        })
         .map(|(id, word)| (id, word.clone()))
-        .collect();
-    let known: Vec<(&Ulid, String)> = core_vocab
-        .iter()
-        .filter(|(id, _)| {
+        .partition::<Vec<_>, _>(|(id, _)| {
             knowledge_set
-                .get_card(*id)
-                .map(|sc| sc.memory().is_known_card())
+                .get_card(**id)
+                .map(|sc| !sc.memory().is_known_card())
                 .unwrap_or(false)
-        })
-        .map(|(id, word)| (id, word.clone()))
-        .collect();
+        });
 
     let mut generator = LessonViewGenerator::new(knowledge_set);
 
     let mut assignments = build_phrase_assignments(
-        &new_in_progress,
+        &non_known,
         &phrase_cards_by_id,
         &in_lesson,
         used_phrase_ids,
@@ -655,38 +572,31 @@ pub(crate) fn add_interleaved_phrases(
 }
 
 /// Appends the tail phrases after the core section. Tail phrases only use
-/// already-mastered lesson words and share the remaining new-phrase budget with
+/// vocabulary the learner has already met anywhere in the knowledge_set (not
+/// just the current lesson), and share the remaining new-phrase budget with
 /// the interleaved section (due phrases are free).
 pub(crate) fn add_tail_phrases(
     mut lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
     used_phrase_ids: &HashSet<Ulid>,
-    phrase_new_budget: usize,
+    phrase_new_budget: &mut usize,
 ) -> LessonData {
     let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
     all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
     let excluded: HashSet<Ulid> = lesson_data.cards.iter().map(|(id, _)| *id).collect();
 
-    let lesson_study_refs: Vec<(&Ulid, &StudyCard)> = lesson_data
-        .cards
-        .iter()
-        .filter_map(|(id, _)| knowledge_set.get_card(*id).map(|sc| (id, sc)))
-        .collect();
-    let (lesson_words, lesson_grammar_ids) =
-        extract_lesson_content(lesson_study_refs.iter().copied());
-    let known_lesson_words = extract_known_lesson_words(lesson_study_refs.iter().copied());
+    let known_pool =
+        super::collect_known_vocabulary_words(knowledge_set.study_cards().values(), true);
 
-    let selection = TailPhraseSelection {
+    let mut selection = TailPhraseSelection {
         all_cards: &all_cards,
         excluded_card_ids: &excluded,
         used_phrase_ids,
-        known_lesson_words: &known_lesson_words,
-        lesson_words: &lesson_words,
-        lesson_grammar_ids: &lesson_grammar_ids,
+        known_pool: &known_pool,
         new_phrase_budget: phrase_new_budget,
     };
-    let phrase_cards = collect_phrase_cards(&selection);
+    let phrase_cards = collect_phrase_cards(&mut selection);
 
     if phrase_cards.is_empty() {
         return lesson_data;
@@ -830,7 +740,7 @@ fn distribute_new_cards<'a>(
 mod tests {
     use super::*;
     use crate::domain::knowledge::LessonCardView;
-    use crate::domain::knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard};
+    use crate::domain::knowledge::{PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
     use crate::domain::{RateMode, Rating};
 
@@ -840,126 +750,18 @@ mod tests {
         ))
     }
 
-    fn grammar_card(rule_id: Ulid) -> Card {
-        Card::Grammar(GrammarRuleCard::new_test_with_id(rule_id))
-    }
-
     fn phrase_card(phrase_id: Ulid) -> Card {
         Card::Phrase(PhraseCard::new_test_with_id(phrase_id))
-    }
-
-    fn kanji_card(kanji: &str) -> Card {
-        Card::Kanji(KanjiCard::new_test(kanji.to_string()))
     }
 
     fn make_study_card(card: Card) -> (Ulid, StudyCard) {
         (Ulid::new(), StudyCard::new(card))
     }
 
-    #[test]
-    fn extract_lesson_content_extracts_vocab_and_grammar() {
-        let word = "食べる";
-        let rule_id = Ulid::new();
-        let cards = [
-            make_study_card(vocab_card(word)),
-            make_study_card(grammar_card(rule_id)),
-            make_study_card(phrase_card(Ulid::new())),
-            make_study_card(kanji_card("食")),
-        ];
-        let refs: Vec<(&Ulid, &StudyCard)> = cards.iter().map(|(id, sc)| (id, sc)).collect();
-
-        let (words, grammar_ids) = extract_lesson_content(refs.iter().copied());
-
-        assert_eq!(words.len(), 1);
-        assert!(words.contains(word));
-        assert_eq!(grammar_ids.len(), 1);
-        assert!(grammar_ids.contains(&rule_id));
-    }
-
-    #[test]
-    fn extract_lesson_content_returns_empty_when_no_vocab_or_grammar() {
-        let cards = [
-            make_study_card(phrase_card(Ulid::new())),
-            make_study_card(kanji_card("日")),
-        ];
-        let refs: Vec<(&Ulid, &StudyCard)> = cards.iter().map(|(id, sc)| (id, sc)).collect();
-
-        let (words, grammar_ids) = extract_lesson_content(refs.iter().copied());
-
-        assert!(words.is_empty());
-        assert!(grammar_ids.is_empty());
-    }
-
-    #[test]
-    fn extract_lesson_content_empty_input() {
-        let refs: Vec<(&Ulid, &StudyCard)> = vec![];
-        let (words, grammar_ids) = extract_lesson_content(refs.iter().copied());
-        assert!(words.is_empty());
-        assert!(grammar_ids.is_empty());
-    }
-
-    #[test]
-    fn extract_lesson_content_deduplicates_words() {
-        let cards = [
-            make_study_card(vocab_card("食べる")),
-            make_study_card(vocab_card("食べる")),
-        ];
-        let refs: Vec<(&Ulid, &StudyCard)> = cards.iter().map(|(id, sc)| (id, sc)).collect();
-
-        let (words, _) = extract_lesson_content(refs.iter().copied());
-
-        assert_eq!(words.len(), 1);
-    }
-
-    #[test]
-    fn phrase_lesson_overlap_returns_zero_when_index_not_loaded() {
-        let phrase_id = Ulid::new();
-        let words: HashSet<String> = ["食べる".to_string()].into_iter().collect();
-
-        let overlap = phrase_lesson_overlap(&phrase_id, &words, &HashSet::new());
-        assert_eq!(overlap, 0);
-    }
-
-    #[test]
-    fn phrase_overlap_from_card_returns_zero_for_non_phrase() {
-        let (_, sc) = make_study_card(vocab_card("食べる"));
-        let words: HashSet<String> = ["食べる".to_string()].into_iter().collect();
-
-        let overlap = phrase_overlap_from_card(&sc, &words, &HashSet::new());
-        assert_eq!(overlap, 0);
-    }
-
-    #[test]
-    fn phrase_overlap_from_card_returns_zero_for_phrase_when_index_not_loaded() {
-        let (_, sc) = make_study_card(phrase_card(Ulid::new()));
-        let words: HashSet<String> = ["食べる".to_string()].into_iter().collect();
-
-        let overlap = phrase_overlap_from_card(&sc, &words, &HashSet::new());
-        assert_eq!(overlap, 0);
-    }
-
-    #[test]
-    fn sort_phrases_by_overlap_preserves_length_when_equal_overlap() {
-        let (id1, sc1) = make_study_card(phrase_card(Ulid::new()));
-        let (id2, sc2) = make_study_card(phrase_card(Ulid::new()));
-
-        let mut phrases = vec![(&id1, &sc1), (&id2, &sc2)];
-        sort_phrases_by_overlap(&mut phrases, &HashSet::new(), &HashSet::new());
-
-        assert_eq!(phrases.len(), 2);
-    }
-
-    #[test]
-    fn sort_phrases_by_overlap_does_not_panic_on_empty() {
-        let mut phrases: Vec<(&Ulid, &StudyCard)> = vec![];
-        sort_phrases_by_overlap(&mut phrases, &HashSet::new(), &HashSet::new());
-        assert!(phrases.is_empty());
-    }
-
     // --- Tail phrase selection (Slice-3) ---
     //
     // The phrase index is a process-wide `OnceLock`; only one index can live in
-    // a test binary. These tests reuse the exact 4-phrase fixture also used by
+    // a test binary. These tests reuse the exact 8-phrase fixture also used by
     // `journeys/phrase.rs` and `seed_ready_phrases.rs` so they hold regardless
     // of which module wins the initialization race.
 
@@ -981,16 +783,36 @@ mod tests {
         Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HM").expect("valid ULID")
     }
 
+    fn phrase_id_particle() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HP").expect("valid ULID")
+    }
+
+    fn phrase_id_extra1() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HQ").expect("valid ULID")
+    }
+
+    fn phrase_id_extra2() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HR").expect("valid ULID")
+    }
+
+    fn phrase_id_independent() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HS").expect("valid ULID")
+    }
+
     fn ensure_test_phrase_index() {
         PHRASE_INDEX_INIT.get_or_init(|| {
             if crate::dictionary::phrase::is_phrases_loaded() {
                 return;
             }
-            let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+            let index_json = r#"{"v":1,"h":"test","total":8,"phrases":[
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
                 {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
-                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HP","t":["test","は"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HQ","t":["hello","extra1"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HR","t":["hello","extra2"],"c":0},
+                {"i":"01KPJ5S3N1DRFFD236Z4EZ03HS","t":["alpha","beta"],"c":0}
             ]}"#;
             crate::dictionary::phrase::init_phrase_index(index_json)
                 .expect("Failed to init test phrase index");
@@ -1005,28 +827,334 @@ mod tests {
     }
 
     #[test]
-    fn phrase_tokens_all_known_true_when_all_tokens_known() {
+    fn phrase_tail_eligible_true_when_all_tokens_known() {
         ensure_test_phrase_index();
 
         let known = full_known_set();
-        assert!(phrase_tokens_all_known(&phrase_id_hello(), &known));
-        assert!(phrase_tokens_all_known(&phrase_id_bye(), &known));
+        assert!(phrase_tail_eligible(&phrase_id_hello(), &known));
+        assert!(phrase_tail_eligible(&phrase_id_bye(), &known));
     }
 
     #[test]
-    fn phrase_tokens_all_known_false_when_token_missing() {
+    fn phrase_tail_eligible_false_when_token_missing() {
         ensure_test_phrase_index();
 
         let partial: HashSet<String> = ["test", "hello"].iter().map(|s| s.to_string()).collect();
-        assert!(!phrase_tokens_all_known(&phrase_id_bye(), &partial));
+        assert!(!phrase_tail_eligible(&phrase_id_bye(), &partial));
     }
 
     #[test]
-    fn phrase_tokens_all_known_false_when_index_missing_entry() {
+    fn phrase_tail_eligible_false_missing_index_entry() {
         ensure_test_phrase_index();
 
         let known = full_known_set();
-        assert!(!phrase_tokens_all_known(&Ulid::new(), &known));
+        assert!(!phrase_tail_eligible(&Ulid::new(), &known));
+    }
+
+    // --- Prove-It test suite (Slice-1, RED) ---
+    //
+    // These tests pin the new tail-eligibility and interleaving contracts
+    // introduced to fix the post-PR-#188 regression. They drive the Slice-2
+    // fix and must remain green afterwards. The contract:
+    //   * Tail eligibility ignores grammatical particles and draws the
+    //     known-pool from the ENTIRE knowledge_set (not just lesson cards).
+    //   * Tail per-word cap is 1 (down from 2).
+    //   * Interleaved anchor set is `!is_known_card()` — high-difficulty
+    //     vocab is intentionally included.
+    //   * There is no global interleaved cap (only per-word cap).
+
+    #[test]
+    fn phrase_tail_eligible_ignores_grammatical_particle() {
+        ensure_test_phrase_index();
+
+        let known: HashSet<String> = ["test"].iter().map(|s| s.to_string()).collect();
+        assert!(
+            phrase_tail_eligible(&phrase_id_particle(), &known),
+            "particle token は must be ignored when judging tail eligibility"
+        );
+    }
+
+    #[test]
+    fn phrase_tail_eligible_rejects_unknown_non_particle_token() {
+        ensure_test_phrase_index();
+
+        let known: HashSet<String> = ["hello"].iter().map(|s| s.to_string()).collect();
+        assert!(
+            !phrase_tail_eligible(&phrase_id_extra1(), &known),
+            "unknown non-particle token must disqualify the phrase"
+        );
+    }
+
+    #[test]
+    fn phrase_tail_eligible_all_known_vocab_eligible() {
+        ensure_test_phrase_index();
+
+        let known: HashSet<String> = ["test", "hello"].iter().map(|s| s.to_string()).collect();
+        assert!(
+            phrase_tail_eligible(&phrase_id_hello(), &known),
+            "phrase whose tokens are all known must be eligible"
+        );
+    }
+
+    /// Tail eligibility draws its known-pool from the ENTIRE knowledge_set, not
+    /// just the lesson cards. A phrase anchored to vocab that lives in the
+    /// knowledge_set but is NOT in the current lesson's core must still be
+    /// tail-eligible. This is the core regression fix.
+    #[test]
+    fn phrase_tail_eligible_uses_entire_knowledge_set() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        let test_sc = ks.create_card(vocab_card("test")).expect("create test");
+        ks.mark_card_as_known(*test_sc.card_id())
+            .expect("mark test known");
+        let hello_sc = ks.create_card(vocab_card("hello")).expect("create hello");
+        ks.mark_card_as_known(*hello_sc.card_id())
+            .expect("mark hello known");
+        ks.create_card(Card::Phrase(
+            PhraseCard::new_test_with_id(phrase_id_hello()),
+        ))
+        .expect("create phrase");
+
+        let lesson = LessonData {
+            cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
+            core_count: 1,
+        };
+
+        let used = HashSet::new();
+        let mut budget = 5;
+        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
+        let phrases = lesson_phrase_ids(&result);
+
+        assert!(
+            phrases.contains(&phrase_id_hello()),
+            "phrase anchored to known vocab outside the lesson core must enter the tail"
+        );
+    }
+
+    #[test]
+    fn tail_phrases_cap_one_per_word() {
+        ensure_test_phrase_index();
+
+        let owned = make_phrase_study_cards(&[
+            phrase_id_hello(),
+            phrase_id_bye(),
+            phrase_id_morning(),
+            phrase_id_thanks(),
+        ]);
+        let all_cards: Vec<(&Ulid, &StudyCard)> = owned.iter().map(|(id, sc)| (id, sc)).collect();
+
+        let known = full_known_set();
+        let empty_used = HashSet::new();
+        let mut budget = 20;
+        let mut selection = tail_selection(&all_cards, &known, &empty_used, &mut budget);
+        let result = collect_phrase_cards(&mut selection);
+
+        assert_eq!(
+            result.len(),
+            1,
+            "Tail phrases sharing a word should be capped at 1 (MAX_PHRASES_PER_WORD_IN_TAIL=1), got {}",
+            result.len()
+        );
+    }
+
+    /// The shared new-phrase budget (interleaved + tail) caps the number of
+    /// new phrases added to the lesson. Due phrases are free.
+    #[test]
+    fn tail_phrases_new_fill_respects_shared_budget() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        for word in ["test", "hello", "bye", "morning", "thanks"] {
+            let sc = ks.create_card(vocab_card(word)).expect("create vocab");
+            ks.mark_card_as_known(*sc.card_id()).expect("mark known");
+        }
+        for pid in [
+            phrase_id_hello(),
+            phrase_id_bye(),
+            phrase_id_morning(),
+            phrase_id_thanks(),
+        ] {
+            ks.create_card(Card::Phrase(PhraseCard::new_test_with_id(pid)))
+                .expect("create phrase");
+        }
+
+        let lesson = LessonData {
+            cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
+            core_count: 1,
+        };
+
+        let used = HashSet::new();
+        let mut budget = 2;
+        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
+        let new_phrases_count = lesson_phrase_ids(&result).len();
+
+        assert!(
+            new_phrases_count <= 2,
+            "new tail phrases must respect the shared budget: {new_phrases_count} > 2"
+        );
+
+        let used = HashSet::new();
+        let mut zero_budget = 0;
+        let zero_budget_result = add_tail_phrases(
+            LessonData {
+                cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
+                core_count: 1,
+            },
+            &ks,
+            &used,
+            &mut zero_budget,
+        );
+        assert_eq!(
+            lesson_phrase_ids(&zero_budget_result).len(),
+            0,
+            "with budget=0 no new tail phrases may be added"
+        );
+    }
+
+    /// Due phrases precede new phrases in the tail (they are scheduled for
+    /// review), preserving the natural scheduling order.
+    #[test]
+    fn tail_phrases_preserve_due_then_new_order() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        // All tokens referenced by the eligible phrases are known so neither
+        // phrase gets filtered out; the two phrases deliberately anchor on
+        // disjoint tokens ("alpha"/"beta" vs "test"/"hello") so the per-word
+        // cap (MAX_PHRASES_PER_WORD_IN_TAIL=1) does not silently drop one.
+        for word in ["test", "hello", "alpha", "beta"] {
+            let sc = ks.create_card(vocab_card(word)).expect("create vocab");
+            ks.mark_card_as_known(*sc.card_id()).expect("mark known");
+        }
+
+        let due_sc = ks
+            .create_card(Card::Phrase(PhraseCard::new_test_with_id(
+                phrase_id_independent(),
+            )))
+            .expect("create due phrase");
+        ks.mark_card_as_known(*due_sc.card_id())
+            .expect("mark phrase due");
+
+        ks.create_card(Card::Phrase(
+            PhraseCard::new_test_with_id(phrase_id_hello()),
+        ))
+        .expect("create new phrase");
+
+        let lesson = LessonData {
+            cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
+            core_count: 1,
+        };
+
+        let used = HashSet::new();
+        let core_len = lesson.cards.len();
+        let mut budget = 5;
+        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
+        let phrase_sequence: Vec<Option<Ulid>> = result
+            .cards
+            .iter()
+            .skip(core_len)
+            .map(|(_, lc)| lesson_phrase_id(lc))
+            .collect();
+
+        let due_pos = phrase_sequence
+            .iter()
+            .position(|id| id == &Some(phrase_id_independent()));
+        let new_pos = phrase_sequence
+            .iter()
+            .position(|id| id == &Some(phrase_id_hello()));
+
+        let due_pos = due_pos.expect("due phrase must be present in the tail");
+        let new_pos = new_pos.expect("new phrase must be present in the tail");
+        assert!(
+            due_pos < new_pos,
+            "due phrase must precede new phrase in the tail: due={due_pos}, new={new_pos}"
+        );
+    }
+
+    /// High-difficulty vocab is now a valid interleaving target (the original
+    /// purpose of interleaving): a phrase anchored to an HD word must appear.
+    #[test]
+    fn interleaved_phrases_target_high_difficulty() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        let bye_sc = ks.create_card(vocab_card("bye")).expect("create bye");
+        for word in ["test", "hello"] {
+            ks.create_card(vocab_card(word))
+                .expect("create known vocab");
+        }
+        ks.create_card(phrase_card(phrase_id_bye()))
+            .expect("create phrase");
+
+        for _ in 0..3 {
+            ks.rate_card(*bye_sc.card_id(), Rating::Again, RateMode::ShortTerm)
+                .expect("rate bye");
+        }
+
+        let bye_id = *bye_sc.card_id();
+        assert!(
+            ks.get_card(bye_id).unwrap().memory().is_high_difficulty(),
+            "fixture sanity: bye should be high difficulty"
+        );
+
+        let lesson = LessonData {
+            cards: vec![(bye_id, lesson_card_for(vocab_card("bye")))],
+            core_count: 1,
+        };
+
+        let mut used = HashSet::new();
+        let mut budget = 5;
+        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
+        let phrases = lesson_phrase_ids(&result);
+
+        assert!(
+            phrases.contains(&phrase_id_bye()),
+            "high-difficulty anchor must receive an interleaved phrase"
+        );
+    }
+
+    /// No global interleaved cap exists: two anchor words each yield
+    /// `INTERLEAVED_PHRASES_PER_WORD` phrases, summing to 4 — proving the
+    /// absence of a hidden total ceiling.
+    #[test]
+    fn interleaved_phrases_no_total_cap_multi_anchor() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        let test_sc = ks.create_card(vocab_card("test")).expect("create test");
+        let hello_sc = ks.create_card(vocab_card("hello")).expect("create hello");
+        for pid in [
+            phrase_id_hello(),
+            phrase_id_bye(),
+            phrase_id_extra1(),
+            phrase_id_extra2(),
+        ] {
+            ks.create_card(phrase_card(pid)).expect("create phrase");
+        }
+
+        let test_id = *test_sc.card_id();
+        let hello_id = *hello_sc.card_id();
+        let lesson = LessonData {
+            cards: vec![
+                (test_id, lesson_card_for(vocab_card("test"))),
+                (hello_id, lesson_card_for(vocab_card("hello"))),
+            ],
+            core_count: 2,
+        };
+
+        let mut used = HashSet::new();
+        let mut budget = 10;
+        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
+        let phrases = lesson_phrase_ids(&result);
+
+        assert!(
+            phrases.len() >= INTERLEAVED_PHRASES_PER_WORD * 2,
+            "two anchors × {} phrases each (no total cap) should yield ≥ {}, got {}",
+            INTERLEAVED_PHRASES_PER_WORD,
+            INTERLEAVED_PHRASES_PER_WORD * 2,
+            phrases.len()
+        );
     }
 
     fn make_phrase_study_cards(phrase_ids: &[Ulid]) -> Vec<(Ulid, StudyCard)> {
@@ -1055,15 +1183,14 @@ mod tests {
         all_cards: &'a [(&'a Ulid, &'a StudyCard)],
         known: &'a HashSet<String>,
         used: &'a HashSet<Ulid>,
+        budget: &'a mut usize,
     ) -> TailPhraseSelection<'a> {
         TailPhraseSelection {
             all_cards,
             excluded_card_ids: empty_ulid_set(),
             used_phrase_ids: used,
-            known_lesson_words: known,
-            lesson_words: known,
-            lesson_grammar_ids: empty_ulid_set(),
-            new_phrase_budget: 20,
+            known_pool: known,
+            new_phrase_budget: budget,
         }
     }
 
@@ -1071,17 +1198,22 @@ mod tests {
     fn tail_phrases_contain_only_known_words() {
         ensure_test_phrase_index();
 
-        let owned = make_phrase_study_cards(&[phrase_id_hello(), phrase_id_bye(), Ulid::new()]);
-        let unknown_phrase = match owned[2].1.card() {
+        // One eligible phrase plus one unknown phrase id. The eligible phrase
+        // has all-known tokens; the unknown phrase id is absent from the index,
+        // so `phrase_tail_eligible` rejects it via `get_index_entry` returning
+        // None.
+        let owned = make_phrase_study_cards(&[phrase_id_hello(), Ulid::new()]);
+        let unknown_phrase = match owned[1].1.card() {
             Card::Phrase(p) => *p.phrase_id(),
-            _ => unreachable!("third card is a phrase card"),
+            _ => unreachable!("second card is a phrase card"),
         };
         let all_cards: Vec<(&Ulid, &StudyCard)> = owned.iter().map(|(id, sc)| (id, sc)).collect();
 
         let known = full_known_set();
         let empty_used = HashSet::new();
-        let selection = tail_selection(&all_cards, &known, &empty_used);
-        let result = collect_phrase_cards(&selection);
+        let mut budget = 20;
+        let mut selection = tail_selection(&all_cards, &known, &empty_used, &mut budget);
+        let result = collect_phrase_cards(&mut selection);
 
         let selected = selected_phrase_ids(&result);
         assert!(
@@ -1089,43 +1221,8 @@ mod tests {
             "phrase with all-known tokens should be selected"
         );
         assert!(
-            selected.contains(&phrase_id_bye()),
-            "phrase with all-known tokens should be selected"
-        );
-        assert!(
             !selected.contains(&unknown_phrase),
             "phrase whose phrase_id is absent from the index must be excluded"
-        );
-    }
-
-    #[test]
-    fn tail_phrases_respect_per_word_cap() {
-        ensure_test_phrase_index();
-
-        // All four phrases share the token "test"; with MAX_PHRASES_PER_WORD_IN_TAIL=2
-        // only two of them may enter the tail even though every token is known.
-        let owned = make_phrase_study_cards(&[
-            phrase_id_hello(),
-            phrase_id_bye(),
-            phrase_id_morning(),
-            phrase_id_thanks(),
-        ]);
-        let all_cards: Vec<(&Ulid, &StudyCard)> = owned.iter().map(|(id, sc)| (id, sc)).collect();
-
-        let known = full_known_set();
-        let empty_used = HashSet::new();
-        let selection = tail_selection(&all_cards, &known, &empty_used);
-        let result = collect_phrase_cards(&selection);
-
-        assert!(
-            result.len() <= MAX_PHRASES_PER_WORD_IN_TAIL,
-            "Tail phrases sharing a word should be capped at {MAX_PHRASES_PER_WORD_IN_TAIL}, got {}",
-            result.len()
-        );
-        assert_eq!(
-            result.len(),
-            MAX_PHRASES_PER_WORD_IN_TAIL,
-            "With four all-known phrases sharing one word exactly {MAX_PHRASES_PER_WORD_IN_TAIL} should be kept"
         );
     }
 
@@ -1140,8 +1237,9 @@ mod tests {
         let mut used = HashSet::new();
         used.insert(phrase_id_hello());
 
-        let selection = tail_selection(&all_cards, &known, &used);
-        let result = collect_phrase_cards(&selection);
+        let mut budget = 20;
+        let mut selection = tail_selection(&all_cards, &known, &used, &mut budget);
+        let result = collect_phrase_cards(&mut selection);
 
         let selected = selected_phrase_ids(&result);
         assert!(
@@ -1154,7 +1252,7 @@ mod tests {
     #[test]
     fn init_phrase_index_loads_entries() {
         // The CDN loader (`init_phrase_index_from_cdn`) is process-wide and
-        // mutually exclusive with the 4-phrase fixture used across the lib test
+        // mutually exclusive with the 8-phrase fixture used across the lib test
         // binary, so loading the real 156k-entry index here would win the
         // OnceLock race and break fixture-based tests. We instead verify the
         // helper is exported and callable, and assert the index contract
@@ -1291,106 +1389,37 @@ mod tests {
         );
     }
 
-    /// Interleaving targets new/in-progress vocab and deliberately skips
-    /// high-difficulty vocab: phrases anchored to the high-difficulty word must
-    /// not appear, while the new and in-progress words receive their phrases.
-    #[test]
-    fn interleaved_phrases_target_new_and_in_progress() {
-        ensure_test_phrase_index();
-
-        let mut ks = KnowledgeSet::new();
-        let hello_sc = ks.create_card(vocab_card("hello")).expect("create hello");
-        let morning_sc = ks
-            .create_card(vocab_card("morning"))
-            .expect("create morning");
-        let bye_sc = ks.create_card(vocab_card("bye")).expect("create bye");
-        for pid in [phrase_id_hello(), phrase_id_morning(), phrase_id_bye()] {
-            ks.create_card(phrase_card(pid)).expect("create phrase");
-        }
-
-        // in_progress: rated Good once, stability stays under the known threshold.
-        ks.rate_card(*hello_sc.card_id(), Rating::Good, RateMode::StandardLesson)
-            .expect("rate hello");
-        // High difficulty: repeated Again under ShortTerm drives difficulty up.
-        for _ in 0..3 {
-            ks.rate_card(*bye_sc.card_id(), Rating::Again, RateMode::ShortTerm)
-                .expect("rate bye");
-        }
-        // morning stays new (untouched).
-
-        let hello_id = *hello_sc.card_id();
-        let morning_id = *morning_sc.card_id();
-        let bye_id = *bye_sc.card_id();
-        assert!(
-            ks.get_card(morning_id).unwrap().memory().is_new(),
-            "fixture sanity: morning should be new"
-        );
-        assert!(
-            ks.get_card(bye_id).unwrap().memory().is_high_difficulty(),
-            "fixture sanity: bye should be high difficulty"
-        );
-        assert!(
-            ks.get_card(hello_id).unwrap().memory().is_in_progress(),
-            "fixture sanity: hello should be in progress"
-        );
-
-        let lesson = LessonData {
-            cards: vec![
-                (hello_id, lesson_card_for(vocab_card("hello"))),
-                (morning_id, lesson_card_for(vocab_card("morning"))),
-                (bye_id, lesson_card_for(vocab_card("bye"))),
-            ],
-            core_count: 3,
-        };
-
-        let mut used = HashSet::new();
-        let mut budget = 5;
-        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
-        let phrases = lesson_phrase_ids(&result);
-
-        assert!(
-            phrases.contains(&phrase_id_hello()),
-            "new/in-progress anchor 'hello' should receive its phrase"
-        );
-        assert!(
-            phrases.contains(&phrase_id_morning()),
-            "new anchor 'morning' should receive its phrase"
-        );
-        assert!(
-            !phrases.contains(&phrase_id_bye()),
-            "high-difficulty anchor 'bye' must not receive an interleaved phrase"
-        );
-    }
-
-    /// With no new/in-progress vocab, interleaving falls back to known vocab.
-    /// High-difficulty vocab is never used as an anchor, even in the fallback.
+    /// Interleaving falls back to known vocab ONLY when no non-known (new /
+    /// in-progress / high-difficulty) anchor yields a phrase. The fallback
+    /// exists to keep phrases flowing on a fully-mastered lesson — the target
+    /// filter `!is_known_card()` covers new, in-progress and high-difficulty
+    /// vocab alike (see `interleaved_phrases_target_high_difficulty`), so this
+    /// test exercises the residual branch where every core vocab is known.
     #[test]
     fn interleaved_phrases_fallback_to_known() {
         ensure_test_phrase_index();
 
         let mut ks = KnowledgeSet::new();
         let hello_sc = ks.create_card(vocab_card("hello")).expect("create hello");
-        let bye_sc = ks.create_card(vocab_card("bye")).expect("create bye");
+        let test_sc = ks.create_card(vocab_card("test")).expect("create test");
         for pid in [phrase_id_hello(), phrase_id_bye()] {
             ks.create_card(phrase_card(pid)).expect("create phrase");
         }
 
         ks.mark_card_as_known(*hello_sc.card_id())
             .expect("mark hello known");
-        for _ in 0..3 {
-            ks.rate_card(*bye_sc.card_id(), Rating::Again, RateMode::ShortTerm)
-                .expect("rate bye");
-        }
+        ks.mark_card_as_known(*test_sc.card_id())
+            .expect("mark test known");
 
         let hello_id = *hello_sc.card_id();
-        let bye_id = *bye_sc.card_id();
+        let test_id = *test_sc.card_id();
         assert!(ks.get_card(hello_id).unwrap().memory().is_known_card());
-        assert!(ks.get_card(bye_id).unwrap().memory().is_high_difficulty());
+        assert!(ks.get_card(test_id).unwrap().memory().is_known_card());
 
         let lesson = LessonData {
             cards: vec![
                 (hello_id, lesson_card_for(vocab_card("hello"))),
-                (bye_id, lesson_card_for(vocab_card("bye"))),
+                (test_id, lesson_card_for(vocab_card("test"))),
             ],
             core_count: 2,
         };
@@ -1402,11 +1431,7 @@ mod tests {
 
         assert!(
             phrases.contains(&phrase_id_hello()),
-            "fallback should anchor a phrase to the known word"
-        );
-        assert!(
-            !phrases.contains(&phrase_id_bye()),
-            "high-difficulty word must not anchor a phrase even via fallback"
+            "fallback should anchor a phrase to a known word when no target vocab yields phrases"
         );
     }
 
