@@ -8,18 +8,19 @@ use origa::use_cases::{CreatePhraseCardUseCase, RateCardWithSideEffectsUseCase};
 use tracing::warn;
 use ulid::Ulid;
 
-fn determine_rate_mode(card: &LessonCard, current_index: usize, core_count: usize) -> RateMode {
-    let is_phrase = current_index >= core_count;
-    if is_phrase {
-        RateMode::PhraseReview
-    } else if card.is_short_term() {
-        RateMode::ShortTerm
-    } else {
-        match CardType::from(card.card()) {
-            CardType::Grammar => RateMode::GrammarReview,
-            CardType::Kanji => RateMode::KanjiReview,
-            CardType::Vocabulary | CardType::Phrase => RateMode::StandardLesson,
-        }
+fn determine_rate_mode(card: &LessonCard) -> RateMode {
+    if CardType::from(card.card()) == CardType::Phrase {
+        return RateMode::PhraseReview;
+    }
+    if card.is_short_term() {
+        return RateMode::ShortTerm;
+    }
+    match CardType::from(card.card()) {
+        CardType::Grammar => RateMode::GrammarReview,
+        CardType::Kanji => RateMode::KanjiReview,
+        // Phrase cards are intercepted by the early return above, so the only
+        // remaining type reaching this arm is Vocabulary.
+        _ => RateMode::StandardLesson,
     }
 }
 
@@ -120,7 +121,7 @@ pub fn create_on_rate_callback(
         let rate_mode = state
             .cards
             .get(&card_id)
-            .map(|c| determine_rate_mode(c, state.current_index, state.core_count))
+            .map(determine_rate_mode)
             .unwrap_or(RateMode::StandardLesson);
 
         let grammar_rule_id = state.cards.get(&card_id).and_then(extract_grammar_rule_id);
@@ -145,4 +146,52 @@ pub fn create_on_rate_callback(
             is_rating.set(None);
         });
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use origa::domain::{LessonCardView, PhraseCard};
+
+    fn phrase_lesson_card(is_short_term: bool) -> LessonCard {
+        let card = Card::Phrase(PhraseCard::new(Ulid::new()));
+        LessonCard::new(LessonCardView::Normal(card), is_short_term)
+    }
+
+    // `VocabularyCard::new` is `#[cfg(test)] pub(crate)` in the `origa` crate,
+    // so it cannot be reached from `origa_ui` tests (different crate, even with
+    // `cfg(test)`). We therefore round-trip a vocab card through its public
+    // serde representation. This is intentionally fragile: any change to the
+    // `VocabularyCard` serialization shape will break this helper loudly, which
+    // is preferable to a silent mismatch between the test fixture and prod data.
+    fn vocab_lesson_card(is_short_term: bool) -> LessonCard {
+        let card: Card =
+            serde_json::from_str(r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":null}}"#)
+                .expect("deserialize vocab card");
+        LessonCard::new(LessonCardView::Normal(card), is_short_term)
+    }
+
+    // A phrase card placed inside the core section (index < core_count) must
+    // still be reviewed as a phrase now that the mode is derived from card
+    // type rather than the positional threshold.
+    #[test]
+    fn determine_rate_mode_phrase_at_core_position() {
+        let card = phrase_lesson_card(false);
+        assert_eq!(determine_rate_mode(&card), RateMode::PhraseReview);
+    }
+
+    // A vocab card placed past the core boundary must NOT be treated as a
+    // phrase review; it falls through to the standard / short-term branches.
+    #[test]
+    fn determine_rate_mode_vocab_at_phrase_position() {
+        let card = vocab_lesson_card(false);
+        assert_ne!(determine_rate_mode(&card), RateMode::PhraseReview);
+        assert_eq!(determine_rate_mode(&card), RateMode::StandardLesson);
+    }
+
+    #[test]
+    fn determine_rate_mode_short_term_vocab_uses_short_term() {
+        let card = vocab_lesson_card(true);
+        assert_eq!(determine_rate_mode(&card), RateMode::ShortTerm);
+    }
 }

@@ -1,7 +1,7 @@
 use super::lesson_state::LessonState;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{LessonCardView, Rating};
+use origa::domain::{CardType, LessonCardView, Rating};
 
 pub fn create_on_quiz_select(
     lesson_state: RwSignal<LessonState>,
@@ -12,9 +12,6 @@ pub fn create_on_quiz_select(
     };
 
     Callback::new(move |option_index: usize| {
-        let state = lesson_state.get();
-        let is_phrase = state.current_index >= state.core_count;
-
         lesson_state.update(|state| {
             state.selected_quiz_option = Some(option_index);
             state.showing_answer = true;
@@ -29,6 +26,7 @@ pub fn create_on_quiz_select(
         };
 
         if let Some(lesson_card) = lesson_state.get().cards.get(&card_id) {
+            let is_phrase = CardType::from(lesson_card.card()) == CardType::Phrase;
             let is_correct = match lesson_card.view() {
                 LessonCardView::Quiz(q) | LessonCardView::KanjiReadingQuiz(q) => {
                     Some(q.check_answer(option_index))

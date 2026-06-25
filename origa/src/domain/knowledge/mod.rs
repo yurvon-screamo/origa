@@ -225,8 +225,27 @@ impl KnowledgeSet {
         jlpt_content: &JlptContent,
         user_level: JapaneseLevel,
     ) -> LessonData {
-        let lesson = lesson_builder::build_lesson(self, daily_new_limit, jlpt_content);
-        kanji_companions::add_kanji_companions(lesson, self, user_level)
+        use std::collections::HashSet;
+
+        let core = lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content);
+        let with_companions = kanji_companions::add_kanji_companions(core, self, user_level);
+        let mut phrase_new_budget = lesson_builder::compute_phrase_new_budget(
+            daily_new_limit,
+            self.phrase_cards_studied_today(),
+        );
+        let mut used_phrase_ids: HashSet<Ulid> = HashSet::new();
+        let with_interleaved = lesson_builder::add_interleaved_phrases(
+            with_companions,
+            self,
+            &mut used_phrase_ids,
+            &mut phrase_new_budget,
+        );
+        lesson_builder::add_tail_phrases(
+            with_interleaved,
+            self,
+            &used_phrase_ids,
+            phrase_new_budget,
+        )
     }
 
     pub(crate) fn rate_card(

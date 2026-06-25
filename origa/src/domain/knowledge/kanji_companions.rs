@@ -3,7 +3,6 @@ use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
 use super::lesson::{LessonCard, LessonData, LessonViewGenerator};
-use super::lesson_builder::MAX_LESSON_SIZE;
 use super::{Card, KnowledgeSet, MAX_COMPANION_WORDS};
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::japanese::JapaneseChar;
@@ -82,9 +81,10 @@ fn add_reverse_companions(
         return lesson_data;
     }
 
-    let effective_limit = MAX_REVERSE_COMPANION_CARDS_PER_LESSON
-        .min(MAX_LESSON_SIZE.saturating_sub(lesson_data.cards.len()));
-    let capped: Vec<_> = candidates.into_iter().take(effective_limit).collect();
+    let capped: Vec<_> = candidates
+        .into_iter()
+        .take(MAX_REVERSE_COMPANION_CARDS_PER_LESSON)
+        .collect();
 
     append_companions(lesson_data, knowledge_set, &capped)
 }
@@ -265,7 +265,8 @@ mod tests {
                 (*id, LessonCard::new(view, false))
             })
             .collect();
-        LessonData::reorder_core_first_phrases_last(cards)
+        let core_count = cards.len();
+        LessonData { cards, core_count }
     }
 
     #[test]
@@ -562,6 +563,51 @@ mod tests {
             "Reverse companions should be capped at {MAX_REVERSE_COMPANION_CARDS_PER_LESSON}, got {reverse_count}"
         );
         assert!(reverse_count > 0, "Should have some reverse companions");
+    }
+
+    // Regression: previously the cap was tightened by `MAX_LESSON_SIZE.saturating_sub(cards.len())`,
+    // so once the core section grew large enough the reverse budget shrank below the intended 10.
+    // With a 41-card core (MAX_LESSON_SIZE - 9) the old code would have offered only 9 reverse slots.
+    #[test]
+    fn reverse_companions_uncapped_by_lesson_size() {
+        init_real_dictionaries();
+
+        let reverse_kanji_chars = ["日", "本", "人", "大", "出", "見", "食", "飲", "行", "来"];
+
+        let mut ks = KnowledgeSet::new();
+
+        for ch in &reverse_kanji_chars {
+            ks.create_card(create_kanji_card(ch)).unwrap();
+        }
+
+        let mut lesson_card_ids = Vec::new();
+        for i in 0..41 {
+            let filler_sc = ks
+                .create_card(create_vocab_card(&format!("filler{i}")))
+                .unwrap();
+            lesson_card_ids.push(*filler_sc.card_id());
+        }
+
+        let anchor_vocab: String = reverse_kanji_chars.concat();
+        let anchor_sc = ks.create_card(create_vocab_card(&anchor_vocab)).unwrap();
+        lesson_card_ids.push(*anchor_sc.card_id());
+
+        assert_eq!(
+            lesson_card_ids.len(),
+            42,
+            "Test setup must exceed the historical bug threshold (41), got {}",
+            lesson_card_ids.len()
+        );
+
+        let lesson = build_empty_lesson_with_cards(&ks, &lesson_card_ids);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N1);
+
+        let reverse_count = result.cards.len() - lesson_card_ids.len();
+        assert_eq!(
+            reverse_count, MAX_REVERSE_COMPANION_CARDS_PER_LESSON,
+            "Reverse companions should reach the full {} even with a large core section, got {}",
+            MAX_REVERSE_COMPANION_CARDS_PER_LESSON, reverse_count
+        );
     }
 
     #[test]
