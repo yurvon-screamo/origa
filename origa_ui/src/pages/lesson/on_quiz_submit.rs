@@ -1,6 +1,6 @@
 use super::lesson_state::LessonState;
 use leptos::prelude::*;
-use origa::domain::{LessonCardView, QuizMode, Rating};
+use origa::domain::{CardType, LessonCardView, QuizMode, Rating};
 
 pub fn create_on_quiz_submit(
     lesson_state: RwSignal<LessonState>,
@@ -14,7 +14,6 @@ pub fn create_on_quiz_submit(
             return;
         }
 
-        let is_phrase = state.current_index >= state.core_count;
         let card_id = state.card_ids.get(state.current_index).copied();
 
         let Some(card_id) = card_id else {
@@ -24,6 +23,8 @@ pub fn create_on_quiz_submit(
         let Some(lesson_card) = state.cards.get(&card_id) else {
             return;
         };
+
+        let is_phrase = CardType::from(lesson_card.card()) == CardType::Phrase;
 
         let quiz = match lesson_card.view() {
             LessonCardView::KanjiReadingQuiz(q) => q,

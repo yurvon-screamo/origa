@@ -6,6 +6,7 @@ use flate2::read::DeflateDecoder;
 use super::get_cdn_dir;
 use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use crate::dictionary::phrase::{init_phrase_index, is_phrases_loaded};
 use crate::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
 use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
@@ -15,6 +16,7 @@ static VOCABULARY_INIT: Once = Once::new();
 static KANJI_INIT: Once = Once::new();
 static RADICALS_INIT: Once = Once::new();
 static GRAMMAR_INIT: Once = Once::new();
+static PHRASE_INDEX_INIT: Once = Once::new();
 
 fn decompress(data: Vec<u8>) -> Vec<u8> {
     let mut decoder = DeflateDecoder::new(&data[..]);
@@ -29,6 +31,35 @@ pub fn init_real_dictionaries() {
     init_kanji_dictionary();
     init_radicals_dictionary();
     init_grammar_rules();
+}
+
+/// Loads `cdn/phrases/phrase_index.json` into the process-wide `PHRASE_INDEX`.
+/// Required by lesson-builder tests because `init_real_dictionaries` intentionally
+/// does not pull the phrase index (production loads it lazily from the CDN).
+pub fn init_phrase_index_from_cdn() {
+    PHRASE_INDEX_INIT.call_once(|| {
+        if is_phrases_loaded() {
+            return;
+        }
+
+        let cdn_dir = get_cdn_dir();
+        let index_path = cdn_dir.join("phrases").join("phrase_index.json");
+
+        let index_json = match std::fs::read_to_string(&index_path) {
+            Ok(content) => content,
+            Err(e) => {
+                tracing::warn!(
+                    "Phrase index not found, skipping phrase index initialization: {}",
+                    e
+                );
+                return;
+            },
+        };
+
+        if let Err(e) = init_phrase_index(&index_json) {
+            tracing::warn!("Failed to init phrase index: {:?}", e);
+        }
+    });
 }
 
 fn init_tokenizer_dictionary() {

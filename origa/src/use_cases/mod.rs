@@ -21,7 +21,7 @@ mod update_user_profile;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
-pub use tests::fixtures::init_real_dictionaries;
+pub use tests::fixtures::{init_phrase_index_from_cdn, init_real_dictionaries};
 
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
 pub use create_cards_from_analysis::{

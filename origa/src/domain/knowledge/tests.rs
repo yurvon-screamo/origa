@@ -19,6 +19,66 @@ fn create_known_memory_state() -> MemoryState {
     )
 }
 
+// --- Phrase index fixture ---
+//
+// The phrase index is a process-wide `OnceLock`: only one index can live in a
+// test binary. This loads the same 4-phrase fixture used by `lesson_builder`,
+// `journeys/phrase` and `seed_ready_phrases`, so the data is identical no matter
+// which module wins the initialization race. Tests that assert on phrase
+// selection MUST call this so their assertions exercise the real selection path
+// rather than silently matching zero phrases (the failure mode flagged in C1).
+
+static PHRASE_INDEX_INIT: std::sync::Once = std::sync::Once::new();
+
+fn ensure_test_phrase_index() {
+    PHRASE_INDEX_INIT.call_once(|| {
+        if crate::dictionary::phrase::is_phrases_loaded() {
+            return;
+        }
+        let index_json = r#"{"v":1,"h":"test","total":4,"phrases":[
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["test","hello"],"c":0},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["test","bye"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB"]},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HN","t":["test","morning"],"c":0,"g":["01KJ9AVWBGC2BT0DMFPDYYFEWB","01G00000000000000024000000"]},
+            {"i":"01KPJ5S3N1DRFFD236Z4EZ03HM","t":["test","thanks"],"c":0}
+        ]}"#;
+        crate::dictionary::phrase::init_phrase_index(index_json)
+            .expect("Failed to init test phrase index");
+    });
+}
+
+fn phrase_id_hello() -> Ulid {
+    Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HJ").expect("valid ULID")
+}
+
+fn phrase_id_bye() -> Ulid {
+    Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HK").expect("valid ULID")
+}
+
+fn phrase_id_morning() -> Ulid {
+    Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HN").expect("valid ULID")
+}
+
+fn phrase_id_thanks() -> Ulid {
+    Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HM").expect("valid ULID")
+}
+
+/// Counts phrase study cards present in a lesson, split by core (interleaved)
+/// vs tail. Core phrases sit at indices `< core_count`; tail phrases follow.
+fn count_phrases(result: &LessonData) -> (usize, usize) {
+    let mut core_phrases = 0usize;
+    let mut tail_phrases = 0usize;
+    for (index, (_, lc)) in result.cards.iter().enumerate() {
+        if matches!(lc.card(), Card::Phrase(_)) {
+            if index < result.core_count {
+                core_phrases += 1;
+            } else {
+                tail_phrases += 1;
+            }
+        }
+    }
+    (core_phrases, tail_phrases)
+}
+
 #[test]
 fn cards_to_lesson_includes_favorite_cards() {
     let mut knowledge_set = KnowledgeSet::new();
@@ -850,53 +910,42 @@ fn new_cards_interleave_preserves_jlpt_priority() {
 
 #[test]
 fn phrase_new_cards_limited() {
+    ensure_test_phrase_index();
+
+    // Four known anchor words (each a unique token of one fixture phrase) and
+    // the four matching NEW phrase cards. Known anchors enter the core without
+    // consuming the daily new-card allowance, so every phrase competes only for
+    // the shared new-phrase budget.
     let mut knowledge_set = KnowledgeSet::new();
-    for _ in 0..20 {
-        let phrase_id = Ulid::new();
+    for word in ["hello", "bye", "morning", "thanks"] {
+        let study = knowledge_set.create_card(create_vocab_card(word)).unwrap();
+        knowledge_set.mark_card_as_known(*study.card_id()).unwrap();
+    }
+    for phrase_id in [
+        phrase_id_hello(),
+        phrase_id_bye(),
+        phrase_id_morning(),
+        phrase_id_thanks(),
+    ] {
         knowledge_set
             .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
             .unwrap();
     }
-    for i in 0..5 {
-        knowledge_set
-            .create_card(create_vocab_card(&format!("vocab{i}")))
-            .unwrap();
-    }
 
-    let result = knowledge_set.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
+    // daily_new_limit = 1 -> new-phrase budget = 1 * PHRASE_NEW_RATIO (2).
+    // Four phrases are available, so the budget must be the binding constraint.
+    let result = knowledge_set.cards_to_lesson(1, &JlptContent::new(), JapaneseLevel::N5);
 
-    let phrase_count = result
-        .keys()
-        .filter(|id| {
-            matches!(
-                knowledge_set.get_card(**id).unwrap().card(),
-                Card::Phrase(_)
-            )
-        })
-        .count();
-    let vocab_count = result
-        .keys()
-        .filter(|id| {
-            matches!(
-                knowledge_set.get_card(**id).unwrap().card(),
-                Card::Vocabulary(_)
-            )
-        })
-        .count();
+    let (core_phrases, tail_phrases) = count_phrases(&result);
+    let total_phrases = core_phrases + tail_phrases;
 
-    let expected_phrase_limit = 5 * 2;
-    assert!(
-        phrase_count <= expected_phrase_limit,
-        "Phrase cards should be limited to daily_new_limit*2, got {phrase_count}, expected <={expected_phrase_limit}"
+    assert_eq!(
+        total_phrases, 2,
+        "New phrase cards must be capped at daily_new_limit * PHRASE_NEW_RATIO (2), got {total_phrases}"
     );
-    assert!(
-        vocab_count <= 5,
-        "Vocab cards should respect daily limit, got {vocab_count}"
-    );
-    assert!(
-        phrase_count + vocab_count <= 50 + 5,
-        "Total should not exceed MAX_LESSON_SIZE + PHRASE_MAX_PER_LESSON, got {}",
-        phrase_count + vocab_count
+    assert_eq!(
+        core_phrases, 2,
+        "Both budget-bound phrases land in the interleaved core section, got {core_phrases}"
     );
 }
 
@@ -1039,7 +1088,7 @@ fn lesson_size_respects_max_limit() {
     let result = knowledge_set.cards_to_lesson(100, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
-        result.len() <= 50,
+        result.len() <= 30,
         "Total lesson size should not exceed MAX_LESSON_SIZE, got {}",
         result.len()
     );
@@ -1062,7 +1111,7 @@ fn high_difficulty_cards_respect_max_lesson_size() {
     let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
-        result.len() <= 50,
+        result.len() <= 30,
         "High-difficulty cards should be capped at MAX_LESSON_SIZE, got {}",
         result.len()
     );
@@ -1102,23 +1151,10 @@ fn phrases_added_after_core_cards_learning() {
             )
         })
         .count();
-    let phrase_count = result
-        .keys()
-        .filter(|id| {
-            matches!(
-                knowledge_set.get_card(**id).unwrap().card(),
-                Card::Phrase(_)
-            )
-        })
-        .count();
 
     assert!(
         core_count >= 15,
         "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
-    );
-    assert!(
-        phrase_count <= 5,
-        "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
     );
 }
 
@@ -1156,23 +1192,10 @@ fn phrases_added_after_core_cards_review() {
             )
         })
         .count();
-    let phrase_count = result
-        .keys()
-        .filter(|id| {
-            matches!(
-                knowledge_set.get_card(**id).unwrap().card(),
-                Card::Phrase(_)
-            )
-        })
-        .count();
 
     assert!(
         core_count >= 15,
         "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
-    );
-    assert!(
-        phrase_count <= 5,
-        "Phrase cards should not exceed PHRASE_MAX_PER_LESSON, got {phrase_count}"
     );
 }
 

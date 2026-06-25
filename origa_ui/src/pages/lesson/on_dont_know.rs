@@ -1,6 +1,6 @@
 use super::lesson_state::LessonState;
 use leptos::prelude::*;
-use origa::domain::{LessonCardView, QuizMode, Rating};
+use origa::domain::{CardType, LessonCardView, QuizMode, Rating};
 
 pub fn create_on_dont_know(
     lesson_state: RwSignal<LessonState>,
@@ -8,12 +8,17 @@ pub fn create_on_dont_know(
 ) -> Callback<()> {
     Callback::new(move |_: ()| {
         let state = lesson_state.get();
-        let is_phrase = state.current_index >= state.core_count;
 
-        let is_multi_quiz = state
+        let current_card = state
             .card_ids
             .get(state.current_index)
-            .and_then(|id| state.cards.get(id))
+            .and_then(|id| state.cards.get(id));
+
+        let is_phrase = current_card
+            .map(|c| CardType::from(c.card()) == CardType::Phrase)
+            .unwrap_or(false);
+
+        let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)
             })

@@ -3,7 +3,7 @@ mod in_memory_repository;
 mod real_dictionaries;
 
 pub use in_memory_repository::InMemoryUserRepository;
-pub use real_dictionaries::init_real_dictionaries;
+pub use real_dictionaries::{init_phrase_index_from_cdn, init_real_dictionaries};
 
 use std::path::PathBuf;
 
