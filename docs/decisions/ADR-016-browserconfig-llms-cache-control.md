@@ -44,7 +44,7 @@ Serve the two files with **different** `Cache-Control` policies, matching
 their change cadence:
 
 | File | `Cache-Control` | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | `/browserconfig.xml` | `public, max-age=31536000, immutable` | Changes only with the logo; same cadence as favicons (ADR-013). Reuses the existing 180×180 apple-touch-icon, so no separate msstile artefact set is generated — a single-tile scope. |
 | `/llms.txt` | `no-cache` | Release-updated copy. `no-cache` keeps it always-fresh at the edge while still allowing conditional (`304`) revalidation. |
 

@@ -45,7 +45,7 @@ RC-2 and provides a dashboard runbook to disable it.
 `public/robots.txt` keeps the existing `User-agent: * / Allow: /` (which is
 already an allow-all) and gains a comment block documenting the stance:
 
-```
+```text
 # AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot,
 # anthropic-ai) are explicitly ALLOWED for Generative Engine Optimization.
 # See ADR-017.
