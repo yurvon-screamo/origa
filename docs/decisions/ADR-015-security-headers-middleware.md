@@ -43,7 +43,7 @@ Add an outermost axum middleware `security_headers` that stamps four headers
 on **every** response via `headers.insert`:
 
 | Header | Value |
-|---|---|
+| --- | --- |
 | `X-Content-Type-Options` | `nosniff` |
 | `X-Frame-Options` | `SAMEORIGIN` |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
@@ -73,6 +73,22 @@ Being outermost means the headers reach HTML, static assets, 308 redirects and
 `camera=(), microphone=(), geolocation=()` denies all three for every origin.
 Any future feature needing one of these capabilities must narrow the policy
 explicitly (e.g. `camera=(self)`) rather than blindly widening the denylist.
+
+### Why `Strict-Transport-Security` (HSTS) is NOT one of the four headers
+
+HSTS is intentionally **omitted** from the origin middleware. It is owned by
+the Cloudflare edge layer: Cloudflare injects `Strict-Transport-Security` for
+zones with Full/Full(Strict) SSL, or explicitly via **SSL/TLS → Edge
+Certificates → Always Use HTTPS + HSTS**. Duplicating it at the origin would be
+redundant and risks a header conflict if the two policies ever disagree on
+`max-age`/`preload`/`includeSubDomains` — a browser receiving conflicting HSTS
+values treats the response as malformed and may drop the header entirely,
+losing the protection the edge provides.
+
+This mirrors how CSP is handled (deferred, see A1): the header lives at exactly
+one layer to keep a single source of truth. If Cloudflare ever stops fronting
+the origin (e.g. a direct-origin deploy), HSTS must move into this middleware
+at that point.
 
 ## Alternatives Considered
 
