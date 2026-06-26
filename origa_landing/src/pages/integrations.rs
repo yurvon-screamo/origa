@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 
 use crate::components::cta::CtaSection;
-use crate::components::seo::PageMeta;
+use crate::components::seo::{PageMeta, SchemaOrg, breadcrumb_schema};
 use crate::content::Locale;
 
 #[component]
@@ -13,6 +13,7 @@ pub fn IntegrationsPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/content" title=c.integrations_meta_title description=c.integrations_meta_description/>
+        <SchemaOrg json=breadcrumb_schema(locale, "/content", c.header_integrations)/>
 
         // ── Section 0: Hero ──
         <section class="intg-hero">

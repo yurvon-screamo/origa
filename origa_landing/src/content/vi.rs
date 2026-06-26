@@ -2,6 +2,12 @@ use super::Content;
 
 pub static CONTENT: Content = Content {
     site_name: "Origa",
+    keywords: "học tiếng nhật, app học tiếng nhật, hán tự, từ vựng tiếng nhật, ngữ pháp tiếng nhật, học tiếng nhật miễn phí, học kanji, jlpt tiếng nhật, học tiếng nhật offline, học tiếng nhật cho người mới bắt đầu",
+    breadcrumb_home: "Trang chủ",
+    learning_resource_teaches_vocab: "Từ vựng tiếng Nhật",
+    learning_resource_teaches_kanji: "Hán tự",
+    learning_resource_teaches_grammar: "Ngữ pháp tiếng Nhật",
+    learning_resource_teaches_listening: "Nghe tiếng Nhật",
 
     header_features: "Tính năng",
     header_compare: "So sánh",
@@ -90,6 +96,17 @@ pub static CONTENT: Content = Content {
     features_listening_everyday_desc: "Học câu được người bản ngữ sử dụng trong cuộc sống hàng ngày.",
     features_listening_insight: "Những câu này đến từ nội dung do người Nhật tạo ra cho người Nhật.",
     features_cta: "Bắt đầu học",
+    features_faq_h2: "Câu hỏi thường gặp",
+    faq_q1: "Làm thế nào để bắt đầu học tiếng Nhật với Origa?",
+    faq_a1: "Hãy bắt đầu với các từ điển song ngữ có sẵn bằng tiếng mẹ đẻ của bạn. Tạo thẻ từ một từ, một câu, một ảnh hoặc đoạn ghi âm — Origa sẽ thêm furigana và lên lịch ôn tập bằng thuật toán FSRS. Nếu bạn là người mới bắt đầu, hãy bắt đầu ở mức JLPT N5.",
+    faq_q2: "Origa có phải là lựa chọn thay thế cho Anki không?",
+    faq_a2: "Anki là công cụ mạnh mẽ để tạo bộ thẻ riêng. Origa bổ sung furigana tự động, tạo thẻ qua OCR, từ điển tích hợp, cùng ngữ pháp và luyện nghe trong một ứng dụng. Bạn cũng có thể nhập các bộ thẻ Anki hiện có.",
+    faq_q3: "Có thể học tiếng Nhật ngoại tuyến không?",
+    faq_a3: "Có. Mọi tính năng đều hoạt động ngoại tuyến: các mô hình OCR và nhận dạng giọng nói chạy cục bộ trên thiết bị của bạn, nên bạn có thể tạo và ôn tập thẻ mà không cần internet.",
+    faq_q4: "Origa có hỗ trợ luyện JLPT không?",
+    faq_a4: "Có. Origa theo dõi trình độ JLPT của bạn, sắp xếp tham khảo ngữ pháp từ N5 đến N1, ánh xạ từ điển hán tự theo các mức JLPT và hiển thị phân tích ôn tập để bạn thấy tiến độ.",
+    faq_q5: "Origa có sẵn bằng ngôn ngữ của tôi không?",
+    faq_a5: "Giao diện có sẵn bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt, kèm từ điển song ngữ tích hợp. Bạn không cần biết tiếng Anh để bắt đầu.",
 
     compare_meta_title: "Origa vs Anki, WaniKani, Bunpro và Duolingo",
     compare_meta_description: "So sánh Origa với Anki, WaniKani, Bunpro và Duolingo. Xem công cụ học tiếng Nhật nào hoạt động tốt nhất cùng nhau.",

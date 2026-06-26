@@ -38,7 +38,92 @@ pub fn organization_schema() -> String {
         "@type": "Organization",
         "name": "Origa",
         "url": BASE_URL,
-        "logo": format!("{BASE_URL}/favicon.png")
+        "logo": format!("{BASE_URL}/favicon.png"),
+        "sameAs": ["https://github.com/yurvon-screamo/origa"]
+    })
+    .to_string()
+}
+
+pub fn breadcrumb_schema(locale: Locale, path: &'static str, current_name: &'static str) -> String {
+    let c = locale.content();
+    let prefix = locale.path_prefix();
+    // The site root carries a trailing slash by convention (ADR-011); locale
+    // roots do not. Breadcrumb `item` URLs must match the canonical form so
+    // Google's BreadcrumbList validator does not flag a slash mismatch.
+    let home_url = if prefix.is_empty() {
+        format!("{BASE_URL}/")
+    } else {
+        format!("{BASE_URL}{prefix}")
+    };
+    let home = serde_json::json!({
+        "@type": "ListItem",
+        "position": 1,
+        "name": c.breadcrumb_home,
+        "item": home_url
+    });
+    let current = serde_json::json!({
+        "@type": "ListItem",
+        "position": 2,
+        "name": current_name,
+        "item": format!("{BASE_URL}{prefix}{path}")
+    });
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [home, current]
+    })
+    .to_string()
+}
+
+pub fn learning_resource_schema(locale: Locale) -> String {
+    let c = locale.content();
+    // `teaches` is localised per locale (schema.org treats it as free text, so
+    // a localised value improves per-locale SEO). `educationalLevel` (JLPT
+    // N5–N1) stays canonical English: those are the international level names,
+    // and `learningResourceType` is an enum-like value consumers match on.
+    let teaches = [
+        c.learning_resource_teaches_vocab,
+        c.learning_resource_teaches_kanji,
+        c.learning_resource_teaches_grammar,
+        c.learning_resource_teaches_listening,
+    ];
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "LearningResource",
+        "name": "Origa",
+        "description": c.home_meta_description,
+        "inLanguage": locale.as_str(),
+        "learningResourceType": "Interactive Application",
+        "educationalLevel": ["JLPT N5", "JLPT N4", "JLPT N3", "JLPT N2", "JLPT N1"],
+        "audience": {
+            "@type": "EducationalAudience",
+            "EducationalRole": "student"
+        },
+        "isAccessibleForFree": true,
+        "teaches": teaches
+    })
+    .to_string()
+}
+
+pub fn faq_schema(locale: Locale, qas: &[(&'static str, &'static str)]) -> String {
+    let entities: Vec<_> = qas
+        .iter()
+        .map(|(question, answer)| {
+            serde_json::json!({
+                "@type": "Question",
+                "name": question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": answer
+                }
+            })
+        })
+        .collect();
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": locale.as_str(),
+        "mainEntity": entities
     })
     .to_string()
 }
@@ -76,10 +161,12 @@ pub fn PageMeta(
     let img_prefix = locale.image_prefix();
     let og_image = format!("{BASE_URL}/images/{img_prefix}.hero.png");
     let canonical = format!("{BASE_URL}{}{path}", locale.path_prefix());
+    let c = locale.content();
 
     view! {
         <Title text=title/>
         <Meta name="description" content=description/>
+        <Meta name="keywords" content=c.keywords/>
         <Meta property="og:title" content=title/>
         <Meta property="og:description" content=description/>
         <Meta property="og:image" content=og_image.clone()/>

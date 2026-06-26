@@ -1,6 +1,9 @@
 # Origa — Keyword Research Report (Pre-Launch, Free Tools Only)
 
-**Date:** 2026-06-26  
+<!-- markdownlint-disable-file MD024 -->
+<!-- Intentional duplicate headings: per-market repeated report sections (EN/RU/VI/KO). -->
+
+**Date:** 2026-06-26
 **Product:** Origa — all-in-one Japanese learning app (vocabulary, kanji, grammar, listening, 200K+ native phrases, JLPT prep)  
 **Status:** Pre-launch, zero domain authority  
 **Methodology:** Google Suggest autocomplete (per-language), DuckDuckGo SERP analysis, competitor title/H1 extraction, Google Trends signals.  
@@ -89,19 +92,19 @@
 
 ### Recommended Title-Tag Pattern (English)
 
-```
+```text
 Origa — Learn Japanese Offline: Kanji, Grammar, JLPT (59 chars)
 ```
 
 Alternatives:
 
-```
+```text
 Origa: Free Japanese Learning App — Kanji, JLPT, Offline (54 chars)
 ```
 
 ### Recommended Meta-Description Pattern (English)
 
-```
+```text
 All-in-one Japanese learning app with FSRS flashcards, kanji, grammar, 200K+ native phrases, and JLPT prep. Works fully offline with local AI — no subscription required. (154 chars)
 ```
 
@@ -174,19 +177,19 @@ Russian market has fewer dedicated competitors with strong SEO. Key players:
 
 ### Recommended Title-Tag Pattern (Russian)
 
-```
+```text
 Origa — Японский язык: кандзи, грамматика, JLPT (44 chars)
 ```
 
 Alternatives:
 
-```
+```text
 Origa: Изучение японского — кандзи, словарь, JLPT (46 chars)
 ```
 
 ### Recommended Meta-Description Pattern (Russian)
 
-```
+```text
 Приложение для изучения японского языка с интервальным повторением, кандзи, грамматикой, 200К+ фраз и подготовкой к JLPT. Работает офлайн. Интерфейс на русском. (152 chars)
 ```
 
@@ -269,19 +272,19 @@ Origa: Изучение японского — кандзи, словарь, JLP
 
 ### Recommended Title-Tag Pattern (Vietnamese)
 
-```
+```text
 Origa — Học tiếng Nhật: Kanji, Ngữ pháp, JLPT (42 chars)
 ```
 
 Alternatives:
 
-```
+```text
 Origa: Ứng dụng học tiếng Nhật — Kanji, JLPT, Offline (47 chars)
 ```
 
 ### Recommended Meta-Description Pattern (Vietnamese)
 
-```
+```text
 Ứng dụng học tiếng Nhật toàn diện: ôn tập kanji, ngữ pháp, từ vựng, 200K+ câu native, luyện thi JLPT. Hoạt động offline hoàn toàn, miễn phí, không cần đăng ký. (154 chars)
 ```
 
@@ -364,19 +367,19 @@ Korean market competitors:
 
 ### Recommended Title-Tag Pattern (Korean)
 
-```
+```text
 Origa — 일본어 공부: 한자, 문법, JLPT, 오프라인 (38 chars)
 ```
 
 Alternatives:
 
-```
+```text
 Origa: 일본어 학습 앱 — 한자, 회화, JLPT (29 chars)
 ```
 
 ### Recommended Meta-Description Pattern (Korean)
 
-```
+```text
 일본어 학습 앱: FSRS 플래시카드, 한자, 문법, 20만 개 이상의 네이티브 문장, JLPT 대비. 완전 오프라인 작동, 구독 없이 무료. (89 chars — room for more)
 
 일본어 학습 앱: FSRS 반복 학습, 한자·문법·회화, 20만+ 네이티브 문장, JLPT 대비. 완전 오프라인, 구독 불필요. 한국어 인터페이스. (88 chars)

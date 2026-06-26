@@ -2,6 +2,12 @@ use super::Content;
 
 pub static CONTENT: Content = Content {
     site_name: "Origa",
+    keywords: "일본어 공부, 일본어 공부 앱, 일본어 한자, 일본어 단어, 일본어 문법, 일본어 입문, 무료 일본어 공부 앱, jlpt, 일본어 회화, 일본어 공부 순서",
+    breadcrumb_home: "홈",
+    learning_resource_teaches_vocab: "일본어 어휘",
+    learning_resource_teaches_kanji: "한자",
+    learning_resource_teaches_grammar: "일본어 문법",
+    learning_resource_teaches_listening: "일본어 듣기",
 
     header_features: "기능",
     header_compare: "비교",
@@ -90,6 +96,17 @@ pub static CONTENT: Content = Content {
     features_listening_everyday_desc: "원어민이 일상에서 사용하는 문장을 배우세요.",
     features_listening_insight: "이 문장들은 일본인이 일본인을 위해 만든 콘텐츠에서 가져왔습니다.",
     features_cta: "학습 시작",
+    features_faq_h2: "질문과 답변",
+    faq_q1: "Origa로 일본어 공부는 어떻게 시작하나요?",
+    faq_a1: "사용자 언어의 내장 다국어 사전으로 시작하세요. 단어, 문장, 사진, 음성에서 카드를 만들면 Origa가 후리가나를 추가하고 FSRS 알고리즘으로 복습 일정을 잡아줍니다. 처음이라면 JLPT N5부터 시작하세요.",
+    faq_q2: "Origa는 Anki의 대안인가요?",
+    faq_a2: "Anki는 사용자 정의 덱을 만드는 데 강력한 도구입니다. Origa는 자동 후리가나, OCR 카드 생성, 내장 사전과 함께 문법과 듣기를 하나의 앱에서 제공합니다. 기존 Anki 덱도 가져올 수 있습니다.",
+    faq_q3: "오프라인으로 일본어를 공부할 수 있나요?",
+    faq_a3: "네. 모든 기능이 오프라인에서 작동합니다. OCR과 음성 인식 모델이 기기에서 로컬로 실행되므로 인터넷 없이도 카드를 만들고 복습할 수 있습니다.",
+    faq_q4: "Origa가 JLPT 대비에 도움이 되나요?",
+    faq_a4: "네. Origa는 JLPT 레벨을 추적하고, 문법 참조를 N5부터 N1까지 정리하며, 한자 사전을 JLPT 레벨에 매핑하고, 복습 분석을 보여줍니다.",
+    faq_q5: "Origa는 제 언어로도 사용할 수 있나요?",
+    faq_a5: "인터페이스는 영어, 러시아어, 한국어, 베트남어로 제공되며 내장 다국어 사전이 있습니다. 시작하는 데 영어는 필요하지 않습니다.",
 
     compare_meta_title: "Origa vs Anki, WaniKani, Bunpro 및 Duolingo",
     compare_meta_description: "Origa를 Anki, WaniKani, Bunpro, Duolingo와 비교하세요. 어떤 일본어 학습 도구가 함께 사용하기 좋은지 확인하세요.",

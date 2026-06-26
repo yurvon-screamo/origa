@@ -6,7 +6,7 @@
 use axum::Router;
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Redirect, Response};
-use http::header::{CACHE_CONTROL, HeaderValue};
+use http::header::{CACHE_CONTROL, HeaderName, HeaderValue};
 use http::{Method, Request, Uri};
 use leptos::config::LeptosOptions;
 use leptos_axum::{ErrorHandler, LeptosRoutes};
@@ -41,12 +41,17 @@ const REDIRECT_CACHE: &str = "public, max-age=86400";
 /// Layering summary (request flows top → bottom; the LAST `.layer()` call is
 /// the outermost, i.e. closest to the client):
 ///
-/// 1. `strip_trailing_slash` — outermost. Runs before routing so that `/ru/`,
-///    `/images/`, `/favicon.png/` are normalised to their canonical slash-less
-///    form. Otherwise the router would 404 slash-suffixed locale paths (the
-///    `leptos_router` `ParentRoute path!("ru")` matcher does not accept `/ru/`).
-///    308 responses produced here carry `REDIRECT_CACHE` directly (see below).
-/// 2. `enforce_cache_policy` — applies the cache-control contract to every
+/// 1. `security_headers` — outermost. Stamps `X-Content-Type-Options`,
+///    `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy` on EVERY
+///    response, including the 308 short-circuit from `strip_trailing_slash`
+///    and the 404 from the fallback chain. Being outermost is what makes the
+///    headers reach redirect/error responses — the inner middlewares
+///    short-circuit without calling `next`, so a layer below them would never
+///    see the response. See ADR-015.
+/// 2. `strip_trailing_slash` — normalises `/ru/`, `/images/`, `/favicon.png/`
+///    to their canonical slash-less form. 308 responses produced here carry
+///    `REDIRECT_CACHE` directly and short-circuit the inner stack.
+/// 3. `enforce_cache_policy` — applies the cache-control contract to every
 ///    non-redirect response produced by the inner stack:
 ///    - 2xx without an explicit `Cache-Control` → stamped with `HTML_CACHE`
 ///      (the default for leptos HTML routes, which set no header themselves).
@@ -61,7 +66,8 @@ const REDIRECT_CACHE: &str = "public, max-age=86400";
 ///    - 3xx → passed through unchanged. The only 3xx from inner services is
 ///      `304 Not Modified` on conditional requests, which must keep the same
 ///      `Cache-Control` the corresponding 200 would have. `308`s from
-///      `strip_trailing_slash` never reach this middleware (outer layer).
+///      `strip_trailing_slash` never reach this middleware (it is one layer
+///      further out and short-circuits the inner stack).
 ///
 /// Fallback chain: when neither explicit static routes nor leptos' registered
 /// routes match a path, the request hits `ServeDir(public/)`; if no file is
@@ -122,6 +128,14 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
                 ),
         )
         .route_service(
+            "/browserconfig.xml",
+            ServeFile::new(format!("{public_dir}/browserconfig.xml"))
+                .insert_response_header_if_not_present(
+                    CACHE_CONTROL,
+                    HeaderValue::from_static(IMMUTABLE_CACHE),
+                ),
+        )
+        .route_service(
             "/robots.txt",
             ServeFile::new(format!("{public_dir}/robots.txt"))
                 .insert_response_header_if_not_present(
@@ -136,6 +150,13 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
                     CACHE_CONTROL,
                     HeaderValue::from_static(NO_CACHE),
                 ),
+        )
+        .route_service(
+            "/llms.txt",
+            ServeFile::new(format!("{public_dir}/llms.txt")).insert_response_header_if_not_present(
+                CACHE_CONTROL,
+                HeaderValue::from_static(NO_CACHE),
+            ),
         )
         .leptos_routes(&leptos_options, routes, {
             let leptos_options = leptos_options.clone();
@@ -152,6 +173,7 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
         // See `enforce_cache_policy` below for the full rationale.
         .layer(middleware::from_fn(enforce_cache_policy))
         .layer(middleware::from_fn(strip_trailing_slash))
+        .layer(middleware::from_fn(security_headers))
         .with_state(leptos_options)
 }
 
@@ -235,5 +257,39 @@ async fn strip_trailing_slash(
     response
         .headers_mut()
         .insert(CACHE_CONTROL, HeaderValue::from_static(REDIRECT_CACHE));
+    response
+}
+
+/// Outermost security-headers middleware. Stamps four defensive headers on
+/// every response the server emits — HTML pages, static assets, the 308
+/// redirect from `strip_trailing_slash`, and the 404 from the fallback chain.
+///
+/// Being outermost is load-bearing: `strip_trailing_slash` short-circuits 308
+/// responses without calling `next`, so a layer further in would never see
+/// them and the redirect would ship without the headers. See ADR-015 for the
+/// header-by-header rationale and the CSP trade-off.
+///
+/// `Permissions-Policy` locks down the three device capabilities Origa never
+/// uses (camera, microphone, geolocation); any future feature needing one
+/// must narrow this allowlist explicitly rather than widening it blindly.
+async fn security_headers(request: Request<axum::body::Body>, next: Next) -> Response {
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(
+        HeaderName::from_static("x-content-type-options"),
+        HeaderValue::from_static("nosniff"),
+    );
+    headers.insert(
+        HeaderName::from_static("x-frame-options"),
+        HeaderValue::from_static("SAMEORIGIN"),
+    );
+    headers.insert(
+        HeaderName::from_static("referrer-policy"),
+        HeaderValue::from_static("strict-origin-when-cross-origin"),
+    );
+    headers.insert(
+        HeaderName::from_static("permissions-policy"),
+        HeaderValue::from_static("camera=(), microphone=(), geolocation=()"),
+    );
     response
 }

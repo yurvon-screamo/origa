@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 
 use crate::components::cta::CtaSection;
-use crate::components::seo::PageMeta;
+use crate::components::seo::{PageMeta, SchemaOrg, breadcrumb_schema};
 use crate::content::{Content, Locale};
 
 #[component]
@@ -13,6 +13,7 @@ pub fn ComparePage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/compare" title=c.compare_meta_title description=c.compare_meta_description/>
+        <SchemaOrg json=breadcrumb_schema(locale, "/compare", c.header_compare)/>
 
         // Section 1: Hero
         <section class="cmp-hero">

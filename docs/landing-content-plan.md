@@ -13,7 +13,7 @@
 EN is default language at root. RU is prefixed with `/ru/`.
 
 | Page | EN URL | RU URL |
-|------|--------|--------|
+| --- | --- | --- |
 | Homepage | `/` | `/ru/` |
 | Features | `/features` | `/ru/features` |
 | Compare | `/compare` | `/ru/compare` |
@@ -46,9 +46,9 @@ Header: `[Logo] Origa    Features    Compare    Download`
 
 Footer:
 
-```
+```text
 Product           Legal              Resources
-─────────         ──────────         ──────────
+───────────         ──────────         ──────────
 Features          Privacy Policy     GitHub
 Compare           Terms of Service
 Download
@@ -63,9 +63,9 @@ Language switch: EN | RU (in header or footer)
 ### EN
 
 | Page | Title | Description |
-|------|-------|-------------|
+| --- | --- | --- |
 | / | `Origa — All-in-One Japanese Learning App` | `All-in-one Japanese learning app: vocabulary, kanji, grammar, 200K+ native phrases and JLPT analytics. In your own language.` |
-| /features | `Vocabulary, Kanji, Grammar & Listening | Origa` | `Built-in dictionaries, smart flashcards, automatic furigana, JLPT grammar and 200K+ phrases with audio — all in one app.` |
+| /features | `Vocabulary, Kanji, Grammar & Listening \| Origa` | `Built-in dictionaries, smart flashcards, automatic furigana, JLPT grammar and 200K+ phrases with audio — all in one app.` |
 | /compare | `Origa vs Anki, WaniKani, Bunpro & Duolingo` | `Compare Origa with Anki, WaniKani, Bunpro and Duolingo. See which Japanese learning tools work best together.` |
 | /download | `Download Origa — Japanese Learning App` | `Download Origa for Windows, Linux, macOS or Android. All platforms support offline mode.` |
 | /privacy | `Privacy Policy — Origa` | `Privacy policy for Origa Japanese learning application.` |
@@ -74,9 +74,9 @@ Language switch: EN | RU (in header or footer)
 ### RU
 
 | Page | Title | Description |
-|------|-------|-------------|
+| --- | --- | --- |
 | / | `Origa — Японский язык без посредников` | `Всё в одном приложении: лексика, кандзи, грамматика, 200 000+ фраз с озвучкой и аналитика JLPT. На вашем языке.` |
-| /features | `Лексика, кандзи, грамматика и аудирование | Origa` | `Встроенные словари, умные карточки, автоматическая фуригана, грамматика JLPT и 200 000+ фраз с аудио.` |
+| /features | `Лексика, кандзи, грамматика и аудирование \| Origa` | `Встроенные словари, умные карточки, автоматическая фуригана, грамматика JLPT и 200 000+ фраз с аудио.` |
 | /compare | `Origa vs Anki, WaniKani, Bunpro и Duolingo` | `Сравните Origa с Anki, WaniKani, Bunpro и Duolingo. Узнайте, какие инструменты лучше работают вместе.` |
 | /download | `Скачать Origa — приложение для японского` | `Скачайте Origa для Windows, Linux, macOS или Android. Все платформы поддерживают офлайн-режим.` |
 | /privacy | `Политика конфиденциальности — Origa` | `Политика конфиденциальности приложения Origa для изучения японского языка.` |
@@ -84,7 +84,7 @@ Language switch: EN | RU (in header or footer)
 
 ### OG & Twitter Card (every page)
 
-```
+```text
 og:title → from page title
 og:description → from page description
 og:image → 1200×630px, unique per page (or shared default)
@@ -237,7 +237,7 @@ CTA → /download
 ### Comparison Table
 
 | Feature | Origa | Anki | WaniKani | Bunpro | Duolingo |
-|---------|-------|------|----------|--------|----------|
+| --- | --- | --- | --- | --- | --- |
 | Vocabulary | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Kanji | ✅ | Partial | ✅ | ❌ | Basic |
 | Grammar | ✅ | ❌ | ❌ | ✅ | ✅ |
@@ -293,7 +293,7 @@ Legal text pages. Minimal styling. No complex layout.
 ## 9. Schema.org
 
 | Page | Schema Types |
-|------|-------------|
+| --- | --- |
 | / | `SoftwareApplication` + `Organization` |
 | /features | `SoftwareApplication` + `HowTo` (per feature section) |
 | /compare | `SoftwareApplication` + `ItemList` |
@@ -363,7 +363,7 @@ Legal text pages. Minimal styling. No complex layout.
 ### EN Keywords
 
 | Keyword | Intent | Target Page |
-|---------|--------|-------------|
+| --- | --- | --- |
 | learn Japanese app | Transactional | / |
 | Japanese learning app | Transactional | / |
 | JLPT preparation app | Transactional | /, /features |
@@ -378,7 +378,7 @@ Legal text pages. Minimal styling. No complex layout.
 ### RU Keywords
 
 | Keyword | Intent | Target Page |
-|---------|--------|-------------|
+| --- | --- | --- |
 | приложение для изучения японского | Transactional | / |
 | учить японский язык | Transactional | / |
 | подготовка к JLPT | Transactional | /, /features |
@@ -395,7 +395,7 @@ All assets located in `.media/` directory.
 ### Existing (app screenshots + marketing collages)
 
 | File | Usage | Page |
-|------|-------|------|
+| --- | --- | --- |
 | `en.hero.png` | Homepage hero image | / (EN) |
 | `ru.hero.png` | Homepage hero image | /ru/ |
 | `en.all_in_one.png` | Dashboard/overview showcase | /features (EN) |
@@ -406,7 +406,7 @@ All assets located in `.media/` directory.
 ### New (generated for landing)
 
 | File | Usage | Page | Size |
-|------|-------|------|------|
+| --- | --- | --- | --- |
 | `en.og.png` | Social sharing preview (og:image) | All EN pages (meta) | 1200×630 |
 | `ru.og.png` | Social sharing preview (og:image) | All RU pages (meta) | 1200×630 |
 | `en.kanji.png` | Kanji feature screenshot | /features, Kanji section (EN) | ~800×600 |
@@ -416,7 +416,7 @@ All assets located in `.media/` directory.
 
 ### Asset → Page Mapping
 
-```
+```text
 /                → en.hero.png / ru.hero.png (hero), en.og.png / ru.og.png (meta)
 /features        → en.all_in_one.png (overview), en.kanji.png (kanji section),
                    en.grammar.png (grammar section), en.learn.png (listening section)

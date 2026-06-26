@@ -77,6 +77,15 @@ async fn apple_touch_icon_has_immutable_cache() {
 }
 
 #[tokio::test]
+async fn browserconfig_xml_has_immutable_cache() {
+    // Windows Edge/IE tile config reuses the 180x180 apple-touch-icon; the
+    // file only changes when the logo does, so immutable caching matches the
+    // favicon policy. See ADR-016.
+    let cc = cache_control("/browserconfig.xml").await;
+    assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
+}
+
+#[tokio::test]
 async fn static_css_has_immutable_cache() {
     let cc = cache_control("/landing.processed.css").await;
     assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
@@ -98,6 +107,16 @@ async fn robots_txt_has_no_cache() {
 #[tokio::test]
 async fn sitemap_xml_has_no_cache() {
     let cc = cache_control("/sitemap.xml").await;
+    assert_eq!(cc.as_deref(), Some("no-cache"));
+}
+
+#[tokio::test]
+async fn llms_txt_has_no_cache() {
+    // llms.txt summarises the product for AI assistants/crawlers. Unlike a
+    // hashed asset, its copy is updated per release, so immutable caching would
+    // pin stale text at the CDN edge (the same edge-poisoning class of bug as
+    // PR #182). no-cache keeps it always-fresh. See ADR-016.
+    let cc = cache_control("/llms.txt").await;
     assert_eq!(cc.as_deref(), Some("no-cache"));
 }
 

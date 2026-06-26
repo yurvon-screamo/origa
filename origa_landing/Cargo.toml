@@ -53,6 +53,11 @@ path = "tests/seo_meta.rs"
 required-features = ["ssr"]
 
 [[test]]
+name = "security_headers"
+path = "tests/security_headers.rs"
+required-features = ["ssr"]
+
+[[test]]
 name = "sitemap"
 path = "tests/sitemap.rs"
 required-features = ["ssr"]

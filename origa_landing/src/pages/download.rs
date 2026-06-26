@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::components::seo::PageMeta;
+use crate::components::seo::{PageMeta, SchemaOrg, breadcrumb_schema};
 use crate::content::Locale;
 
 const GITHUB_RELEASES_URL: &str = "https://github.com/yurvon-screamo/origa/releases/latest";
@@ -13,6 +13,7 @@ pub fn DownloadPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/download" title=c.download_meta_title description=c.download_meta_description/>
+        <SchemaOrg json=breadcrumb_schema(locale, "/download", c.header_download)/>
 
         // Hero
         <section class="download-hero">

@@ -1,3 +1,6 @@
+# AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, anthropic-ai)
+# are explicitly ALLOWED for Generative Engine Optimization. See ADR-017.
+# Cloudflare "AI Audit" / "Pay Per Crawl" must remain disabled — see ADR-011 runbook.
 User-agent: *
 Allow: /
 

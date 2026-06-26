@@ -1,7 +1,9 @@
 use leptos::prelude::*;
 
 use crate::components::cta::CtaSection;
-use crate::components::seo::{PageMeta, SchemaOrg, how_to_schema};
+use crate::components::seo::{
+    PageMeta, SchemaOrg, breadcrumb_schema, faq_schema, how_to_schema, learning_resource_schema,
+};
 use crate::content::Locale;
 
 #[component]
@@ -32,6 +34,15 @@ pub fn FeaturesPage() -> impl IntoView {
     view! {
         <PageMeta locale path="/features" title=c.features_meta_title description=c.features_meta_description/>
         <SchemaOrg json=how_to_schema(locale, c.features_schema_how_to_name, &vocab_steps)/>
+        <SchemaOrg json=breadcrumb_schema(locale, "/features", c.header_features)/>
+        <SchemaOrg json=learning_resource_schema(locale)/>
+        <SchemaOrg json=faq_schema(locale, &[
+            (c.faq_q1, c.faq_a1),
+            (c.faq_q2, c.faq_a2),
+            (c.faq_q3, c.faq_a3),
+            (c.faq_q4, c.faq_a4),
+            (c.faq_q5, c.faq_a5),
+        ])/>
 
         // Section 0: Hero
         <section class="feat-hero">
@@ -135,7 +146,21 @@ pub fn FeaturesPage() -> impl IntoView {
             </div>
         </section>
 
-        // Section 5: CTA (reuses home-cta dark olive)
+        // Section 5: FAQ (visible Q&A mirrors the FAQPage JSON-LD 1:1)
+        <section class="feat-faq">
+            <div class="feat-faq__inner">
+                <h2>{c.features_faq_h2}</h2>
+                <div class="feat-faq__list">
+                    <FaqItem question=c.faq_q1 answer=c.faq_a1 />
+                    <FaqItem question=c.faq_q2 answer=c.faq_a2 />
+                    <FaqItem question=c.faq_q3 answer=c.faq_a3 />
+                    <FaqItem question=c.faq_q4 answer=c.faq_a4 />
+                    <FaqItem question=c.faq_q5 answer=c.faq_a5 />
+                </div>
+            </div>
+        </section>
+
+        // Section 6: CTA (reuses home-cta dark olive)
         <CtaSection title=c.home_cta_title button_text=c.features_cta download_href=download_href />
     }
 }
@@ -165,6 +190,16 @@ fn FeatEditorialNote(text: &'static str) -> impl IntoView {
     view! {
         <div class="feat-editorial-note">
             <p class="feat-editorial-note__text">{text}</p>
+        </div>
+    }
+}
+
+#[component]
+fn FaqItem(question: &'static str, answer: &'static str) -> impl IntoView {
+    view! {
+        <div class="feat-faq__item">
+            <h3 class="feat-faq__question">{question}</h3>
+            <p class="feat-faq__answer">{answer}</p>
         </div>
     }
 }

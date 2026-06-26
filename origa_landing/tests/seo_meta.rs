@@ -55,15 +55,46 @@ async fn get_body_any(uri: &str) -> (StatusCode, String) {
 fn first_jsonld_block(html: &str) -> String {
     let open = r#"<script type="application/ld+json">"#;
     let close = "</script>";
-    let start = html
-        .find(open)
-        .unwrap_or_else(|| panic!("no JSON-LD block in body: {}", &html[..html.len().min(400)]))
-        + open.len();
-    let end = html[start..]
-        .find(close)
-        .unwrap_or_else(|| panic!("JSON-LD block not closed: {}", &html[start..start + 400]))
-        + start;
+    let start = html.find(open).unwrap_or_else(|| {
+        panic!(
+            "no JSON-LD block in body: {}",
+            html.chars().take(400).collect::<String>()
+        )
+    }) + open.len();
+    let end = html[start..].find(close).unwrap_or_else(|| {
+        panic!(
+            "JSON-LD block not closed: {}",
+            html[start..].chars().take(400).collect::<String>()
+        )
+    }) + start;
     html[start..end].to_owned()
+}
+
+/// Find the first JSON-LD block whose `@type` matches `type_name`. Pages emit
+/// several schemas (SoftwareApplication + Organization on the home page;
+/// HowTo + BreadcrumbList + LearningResource on /features); this locates the
+/// specific one under test so the assertion targets the right entity.
+fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let body_end = rest[body_start..]
+            .find(close)
+            .unwrap_or_else(|| panic!("JSON-LD block not closed"))
+            + body_start;
+        let block = &rest[body_start..body_end];
+        if block.contains(&needle) {
+            return block.to_owned();
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    panic!(
+        "no JSON-LD block with @type={type_name}; body was: {}",
+        html.chars().take(500).collect::<String>()
+    )
 }
 
 #[tokio::test]
@@ -180,7 +211,7 @@ async fn og_locale_alternates_present_for_other_locales() {
     assert!(
         body.contains(r#"property="og:locale" content="ru_RU""#),
         "current og:locale missing; got first 600 chars: {}",
-        &body[..body.len().min(600)]
+        body.chars().take(600).collect::<String>()
     );
     for alt in ["en_US", "ko_KR", "vi_VN"] {
         assert!(
@@ -223,7 +254,7 @@ async fn default_title_is_descriptive() {
     assert!(
         body.contains("<title>Origa — Japanese Learning App</title>"),
         "default title not found; got first 800 chars: {}",
-        &body[..body.len().min(800)]
+        body.chars().take(800).collect::<String>()
     );
 }
 
@@ -261,5 +292,192 @@ async fn features_hero_decor_has_aria_hidden() {
     assert!(
         decor_open_tag.contains(r#"aria-hidden="true""#),
         "decorative background-image div must carry aria-hidden; got: {decor_open_tag}"
+    );
+}
+
+#[tokio::test]
+async fn en_home_has_keywords_meta() {
+    let body = get_body("/").await;
+    assert!(
+        body.contains(r#"<meta name="keywords" content="japanese"#),
+        "EN keywords meta missing or not starting with a japanese keyword; got first 800 chars: {}",
+        body.chars().take(800).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn ru_keywords_are_russian() {
+    let body = get_body("/ru").await;
+    let kw = body
+        .find(r#"<meta name="keywords" content=""#)
+        .and_then(|i| {
+            let start = i + r#"<meta name="keywords" content=""#.len();
+            body[start..].find('"').map(|end| &body[start..start + end])
+        })
+        .expect("RU keywords meta must be present");
+    assert!(
+        kw.contains("кандзи"),
+        "RU keywords must contain 'кандзи'; got: {kw}"
+    );
+    assert!(
+        !kw.contains("japanese"),
+        "RU keywords must not leak the English word 'japanese'; got: {kw}"
+    );
+}
+
+#[tokio::test]
+async fn vi_keywords_contain_han_tu() {
+    let body = get_body("/vi").await;
+    assert!(
+        body.contains(
+            r#"<meta name="keywords" content="học tiếng nhật, app học tiếng nhật, hán tự"#
+        ),
+        "VI keywords meta must contain 'hán tự'; got first 800 chars: {}",
+        body.chars().take(800).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn ko_keywords_are_korean() {
+    let body = get_body("/ko").await;
+    let has_korean =
+        body.contains(r#"<meta name="keywords" content="일본어"#) || body.contains("한자");
+    assert!(
+        has_korean,
+        "KO keywords meta must contain Korean text; got first 800 chars: {}",
+        body.chars().take(800).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn features_has_breadcrumb_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "BreadcrumbList");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("BreadcrumbList block must parse");
+    let items = value
+        .get("itemListElement")
+        .and_then(|v| v.as_array())
+        .expect("BreadcrumbList must have itemListElement array");
+    assert_eq!(items.len(), 2, "breadcrumb must have home + current");
+    let home_name = items[0]
+        .get("name")
+        .and_then(|v| v.as_str())
+        .expect("home item must have a name");
+    assert_eq!(home_name, "Home");
+}
+
+#[tokio::test]
+async fn features_has_learning_resource_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "LearningResource");
+    assert!(
+        block.contains("\"isAccessibleForFree\":true"),
+        "LearningResource must declare isAccessibleForFree:true; got: {block}"
+    );
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("LearningResource block must parse");
+    let levels = value
+        .get("educationalLevel")
+        .and_then(|v| v.as_array())
+        .expect("LearningResource must list educationalLevel");
+    assert!(
+        levels.iter().any(|l| l.as_str() == Some("JLPT N5")),
+        "educationalLevel must cover JLPT N5–N1; got: {levels:?}"
+    );
+}
+
+#[tokio::test]
+async fn ru_features_learning_resource_teaches_is_russian() {
+    // `teaches` is free-text per ADR-018, so it must follow the page locale:
+    // the RU LearningResource teaches «Кандзи», not the English "Kanji".
+    let body = get_body("/ru/features").await;
+    let block = find_jsonld_block_by_type(&body, "LearningResource");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("LearningResource block must parse");
+    let teaches = value
+        .get("teaches")
+        .and_then(|v| v.as_array())
+        .expect("LearningResource must list teaches");
+    let joined = teaches
+        .iter()
+        .filter_map(|v| v.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    assert!(
+        joined.contains("Кандзи"),
+        "RU teaches must be localised ('Кандзи'); got: {joined}"
+    );
+    assert!(
+        !joined.contains("Kanji"),
+        "RU teaches must not leak the English 'Kanji'; got: {joined}"
+    );
+}
+
+#[tokio::test]
+async fn home_org_has_sameas() {
+    // The Organization block (second JSON-LD on the home page) must link to
+    // the GitHub repo via sameAs so knowledge panels can connect the entity.
+    let body = get_body("/").await;
+    let block = find_jsonld_block_by_type(&body, "Organization");
+    assert!(
+        block.contains("\"sameAs\""),
+        "Organization schema must carry sameAs; got: {block}"
+    );
+    assert!(
+        block.contains("github.com/yurvon-screamo/origa"),
+        "Organization sameAs must point at the GitHub repo; got: {block}"
+    );
+}
+
+#[tokio::test]
+async fn home_has_no_breadcrumb() {
+    // The home page IS the breadcrumb root; emitting a BreadcrumbList there
+    // (position 1 → position 1) is a schema error. Guard against an accidental
+    // wiring of breadcrumb_schema on HomePage.
+    let body = get_body("/").await;
+    assert!(
+        !body.contains("BreadcrumbList"),
+        "home page must not emit a BreadcrumbList schema; got: {}",
+        body.chars().take(500).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn features_has_faq_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "FAQPage");
+    let value: serde_json::Value = serde_json::from_str(&block).expect("FAQPage block must parse");
+    let entities = value
+        .get("mainEntity")
+        .and_then(|v| v.as_array())
+        .expect("FAQPage must have a mainEntity array");
+    assert!(
+        !entities.is_empty(),
+        "FAQPage mainEntity must be non-empty; got: {entities:?}"
+    );
+    // Google requires every Question to carry an acceptedAnswer.
+    for entity in entities {
+        assert!(
+            entity.get("acceptedAnswer").is_some(),
+            "every FAQ Question must have an acceptedAnswer; got: {entity}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn features_has_visible_faq_block() {
+    // Google's FAQPage policy requires the Q&A to be visible on the page, not
+    // only in JSON-LD. Assert the first question renders inside the visible
+    // <section class="feat-faq"> (i.e. after the section marker, not just
+    // inside the <script> block).
+    let body = get_body("/features").await;
+    let section_idx = body
+        .find(r#"<section class="feat-faq">"#)
+        .expect("features page must render a visible .feat-faq section");
+    let after_section = &body[section_idx..];
+    assert!(
+        after_section.contains("How do I start learning Japanese with Origa?"),
+        "FAQ Q1 must appear in the visible .feat-faq section, not only in JSON-LD"
     );
 }
