@@ -77,6 +77,11 @@ pub fn breadcrumb_schema(locale: Locale, path: &'static str, current_name: &'sta
 
 pub fn learning_resource_schema(locale: Locale) -> String {
     let c = locale.content();
+    // `teaches`, `learningResourceType` and `educationalLevel` stay in English
+    // across all locales: schema.org consumers match on these as enum-like
+    // values (not free text), and JLPT N5–N1 are the international level names.
+    // Only `name`/`description`/`inLanguage` carry the locale, matching how the
+    // home page localises display copy but keeps the JLPT taxonomy canonical.
     serde_json::json!({
         "@context": "https://schema.org",
         "@type": "LearningResource",
