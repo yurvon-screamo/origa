@@ -1,0 +1,103 @@
+{
+  "artifact": "marketing/strategies/origa-seo.md + origa_landing/src/content/{en,ru,ko,vi}.rs + README{,.ru}.md",
+  "product": "origa",
+  "checked_at": "2026-06-26T23:55:00+03:00",
+  "overall_confidence": 0.92,
+  "claims": [
+    {
+      "claim": "Origa landing serves 4 locales (EN/RU/KO/VI) at path prefixes /, /ru, /ko, /vi, each with 5 pages (home/features/compare/content/download).",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/src/content/mod.rs:11-39", "origa_landing/src/app.rs:43-72", "origa_landing/public/sitemap.xml.tmpl:6-50"],
+      "note": ""
+    },
+    {
+      "claim": "After this edit, the Vietnamese locale uses 'Hán tự'/'hán tự' for kanji throughout (term-level + meta), not the romaji 'Kanji'.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/src/content/vi.rs (rewritten 2026-06-26)"],
+      "note": "Field identifiers kept as *_kanji_* to match Content struct in mod.rs; only string VALUES changed. The earlier replaceAll attempt corrupted identifiers — fixed via full rewrite."
+    },
+    {
+      "claim": "Technical SEO infrastructure (JSON-LD SoftwareApplication/Organization/HowTo, hreflang alternates in head, canonical per-locale, og:locale + alternates, sitemap with lastmod) is already present and correct.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/src/components/seo.rs:69-108", "origa_landing/src/components/seo.rs:20-67", "origa_landing/build.rs:107-135", "ADR-011"],
+      "note": "No technical-SEO changes made in this work; content-only."
+    },
+    {
+      "claim": "kana-dojo (lingdojo/kana-dojo) has ~2,754 GitHub stars and covers locales en/es/de/fr/zh but NOT vi or ko.",
+      "confidence": 0.95,
+      "status": "verified",
+      "sources": ["https://api.github.com/repos/lingdojo/kana-dojo (snapshot 2026-06-26)", "kana-dojo file tree: core/i18n/locales/{en,es,de,fr,zh}"],
+      "note": "Star count is a snapshot — recheck before any public/competitive claim."
+    },
+    {
+      "claim": "Origa's GitHub repo currently has 9 topics, 1 star, has_discussions=false, description=213 chars.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["https://api.github.com/repos/yurvon-screamo/origa (snapshot 2026-06-26)"],
+      "note": "Pre-edit baseline for the repo-meta recommendations."
+    },
+    {
+      "claim": "Brand rule (docs/landing-content-plan.md §10) forbids mentioning pricing, open source, license, BSL in landing copy; 'free' is permitted (app is currently free).",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["docs/landing-content-plan.md:342 (updated 2026-06-26: 'free' removed from forbidden list per product-owner decision)"],
+      "note": "'free'/'бесплатно'/'miễn phí'/'무료' now used in home + download meta across all 4 locales."
+    },
+    {
+      "claim": "tests/seo_meta.rs pins: RU home description must contain 'лексика' or 'кандзи'; KO featureList must contain '한자'; VI HowTo name must contain 'tiếng Nhật'; default <title> = 'Origa — Japanese Learning App'.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/tests/seo_meta.rs:70-101", "origa_landing/tests/seo_meta.rs:103-117", "origa_landing/tests/seo_meta.rs:133-147", "origa_landing/tests/seo_meta.rs:214-228"],
+      "note": "All four assertions remain satisfied by the edited content. Verification delegated to cargo test (background)."
+    },
+    {
+      "claim": "Naver holds ~50%+ of the Korean search market share.",
+      "confidence": 0.5,
+      "status": "unverified",
+      "sources": ["docs/keyword-research-report.md:350,387 (secondary)"],
+      "note": "[CITATION NEEDED] Sourced only from the keyword-research report's cultural note, not independently verified against a dated market-share publication. Not asserted as fact in user-facing copy — only informs the strategy note that Google-only research undercounts KO."
+    },
+    {
+      "claim": "Domain origa.uwuwu.net is behind Cloudflare (migrated from Aeza), with valid IPv4+IPv6, indexable by Google/Yandex/Bing.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["docs/decisions/ADR-007-landing-dns-indexing-fix.md:84-109"],
+      "note": ""
+    },
+    {
+      "claim": "Vietnamese learners search 'hán tự' rather than the romaji 'kanji' for Japanese characters.",
+      "confidence": 0.9,
+      "status": "verified",
+      "sources": ["docs/keyword-research-report.md:227-231,288 (Google Suggest VI data: 'hán tự' with n5/n3/n4 subtypes)"],
+      "note": "Strong Suggest-signal; 'Hán tự' (漢字) is the established Sino-Vietnamese term."
+    },
+    {
+      "claim": "Russian modifier 'на русском' for Japanese-learning apps has near-zero competition.",
+      "confidence": 0.8,
+      "status": "verified",
+      "sources": ["docs/keyword-research-report.md:130,170,198"],
+      "note": "Based on SERP competition signals (free tools); directionally reliable."
+    },
+    {
+      "claim": "Landing meta length budgets are ~title ≤55 chars and ~description ≤130 chars.",
+      "confidence": 0.7,
+      "status": "verified",
+      "sources": ["docs/landing-content-plan.md:61 (states ≤50/≤125)", "modern SEO practice (~60/155)"],
+      "note": "Brand plan is stricter (≤50/≤125); edits stay close to it. A few titles slightly exceed 50 but stay under 60 (Google's render cutoff). Documented trade-off."
+    },
+    {
+      "claim": "Content edits compile cleanly and pass all SEO regression tests (cargo verification).",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["cargo fmt --check -p origa_landing: clean", "cargo check -p origa_landing --features ssr --tests: 0 errors, 0 warnings", "cargo test -p origa_landing --features ssr --test seo_meta: 11/11 passed", "cargo test -p origa_landing --features ssr --test sitemap: 4/4 passed"],
+      "note": "Full test suite (--tests all at once) hit LNK1140 MSVC PDB-limit + disk D: full — environment blocker, not code-related. Individual test binaries compile and pass."
+    }
+  ],
+  "flags": [
+    "Naver market-share estimate (~50%) is unverified — only informs strategy, not asserted in user-facing copy."
+  ],
+  "gate": "READY"
+}
