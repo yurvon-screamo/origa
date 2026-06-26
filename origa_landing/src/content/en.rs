@@ -4,6 +4,10 @@ pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "japanese learning app, learn japanese offline, anki alternative japanese, japanese ocr app, jlpt study tracker, japanese flashcards, kanji learning app, japanese grammar app, learn japanese free, spaced repetition japanese",
     breadcrumb_home: "Home",
+    learning_resource_teaches_vocab: "Japanese vocabulary",
+    learning_resource_teaches_kanji: "Kanji",
+    learning_resource_teaches_grammar: "Japanese grammar",
+    learning_resource_teaches_listening: "Japanese listening",
 
     header_features: "Features",
     header_compare: "Compare",

@@ -4,6 +4,10 @@ pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "học tiếng nhật, app học tiếng nhật, hán tự, từ vựng tiếng nhật, ngữ pháp tiếng nhật, học tiếng nhật miễn phí, học kanji, jlpt tiếng nhật, học tiếng nhật offline, học tiếng nhật cho người mới bắt đầu",
     breadcrumb_home: "Trang chủ",
+    learning_resource_teaches_vocab: "Từ vựng tiếng Nhật",
+    learning_resource_teaches_kanji: "Hán tự",
+    learning_resource_teaches_grammar: "Ngữ pháp tiếng Nhật",
+    learning_resource_teaches_listening: "Nghe tiếng Nhật",
 
     header_features: "Tính năng",
     header_compare: "So sánh",

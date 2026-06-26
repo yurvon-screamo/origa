@@ -4,6 +4,10 @@ pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "приложение для изучения японского, японский язык с нуля, кандзи, японская грамматика, хирагана катакана, карточки японский язык, jlpt, изучение японского языка, приложение для изучения японского на русском, kanji",
     breadcrumb_home: "Главная",
+    learning_resource_teaches_vocab: "Японская лексика",
+    learning_resource_teaches_kanji: "Кандзи",
+    learning_resource_teaches_grammar: "Японская грамматика",
+    learning_resource_teaches_listening: "Аудирование",
 
     header_features: "Функции",
     header_compare: "Сравнение",

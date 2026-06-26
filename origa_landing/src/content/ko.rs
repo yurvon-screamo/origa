@@ -4,6 +4,10 @@ pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "일본어 공부, 일본어 공부 앱, 일본어 한자, 일본어 단어, 일본어 문법, 일본어 입문, 무료 일본어 공부 앱, jlpt, 일본어 회화, 일본어 공부 순서",
     breadcrumb_home: "홈",
+    learning_resource_teaches_vocab: "일본어 어휘",
+    learning_resource_teaches_kanji: "한자",
+    learning_resource_teaches_grammar: "일본어 문법",
+    learning_resource_teaches_listening: "일본어 듣기",
 
     header_features: "기능",
     header_compare: "비교",

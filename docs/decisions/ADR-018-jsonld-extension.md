@@ -62,10 +62,18 @@ referential one-item `BreadcrumbList` is a schema error.
 `learning_resource_schema(locale)` emits a `LearningResource` with:
 
 - `educationalLevel`: `["JLPT N5", "JLPT N4", "JLPT N3", "JLPT N2", "JLPT N1"]`
+  (canonical English — these are the international level names)
 - `learningResourceType`: `"Interactive Application"`
 - `audience`: `EducationalAudience` with `EducationalRole: student`
 - `isAccessibleForFree: true`
-- `teaches`: vocabulary, kanji, grammar, listening
+- `teaches`: vocabulary, kanji, grammar, listening — **localised per locale**
+  (EN/RU/KO/VI). schema.org treats `teaches` as free text, not an enum, so a
+  localised value improves per-locale SEO; it lives in the `Content` struct
+  alongside the other locale copy.
+
+`educationalLevel` and `learningResourceType` stay English across all locales
+(enum-like / international standard), while `name`/`description`/`teaches`
+carry the locale.
 
 It joins (does not replace) the existing `HowTo` on `/features`.
 

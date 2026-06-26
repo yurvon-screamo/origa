@@ -87,6 +87,11 @@ pub struct Content {
     pub site_name: &'static str,
     pub keywords: &'static str,
     pub breadcrumb_home: &'static str,
+    // LearningResource `teaches` (free-text, localised per ADR-018)
+    pub learning_resource_teaches_vocab: &'static str,
+    pub learning_resource_teaches_kanji: &'static str,
+    pub learning_resource_teaches_grammar: &'static str,
+    pub learning_resource_teaches_listening: &'static str,
 
     // Header
     pub header_features: &'static str,

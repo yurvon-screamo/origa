@@ -388,6 +388,33 @@ async fn features_has_learning_resource_schema() {
 }
 
 #[tokio::test]
+async fn ru_features_learning_resource_teaches_is_russian() {
+    // `teaches` is free-text per ADR-018, so it must follow the page locale:
+    // the RU LearningResource teaches «Кандзи», not the English "Kanji".
+    let body = get_body("/ru/features").await;
+    let block = find_jsonld_block_by_type(&body, "LearningResource");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("LearningResource block must parse");
+    let teaches = value
+        .get("teaches")
+        .and_then(|v| v.as_array())
+        .expect("LearningResource must list teaches");
+    let joined = teaches
+        .iter()
+        .filter_map(|v| v.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    assert!(
+        joined.contains("Кандзи"),
+        "RU teaches must be localised ('Кандзи'); got: {joined}"
+    );
+    assert!(
+        !joined.contains("Kanji"),
+        "RU teaches must not leak the English 'Kanji'; got: {joined}"
+    );
+}
+
+#[tokio::test]
 async fn home_org_has_sameas() {
     // The Organization block (second JSON-LD on the home page) must link to
     // the GitHub repo via sameAs so knowledge panels can connect the entity.
