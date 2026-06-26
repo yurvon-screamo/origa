@@ -308,9 +308,7 @@ async fn ru_keywords_are_russian() {
         .find(r#"<meta name="keywords" content=""#)
         .and_then(|i| {
             let start = i + r#"<meta name="keywords" content=""#.len();
-            body[start..]
-                .find('"')
-                .map(|end| &body[start..start + end])
+            body[start..].find('"').map(|end| &body[start..start + end])
         })
         .expect("RU keywords meta must be present");
     assert!(
@@ -327,7 +325,9 @@ async fn ru_keywords_are_russian() {
 async fn vi_keywords_contain_han_tu() {
     let body = get_body("/vi").await;
     assert!(
-        body.contains(r#"<meta name="keywords" content="học tiếng nhật, app học tiếng nhật, hán tự"#),
+        body.contains(
+            r#"<meta name="keywords" content="học tiếng nhật, app học tiếng nhật, hán tự"#
+        ),
         "VI keywords meta must contain 'hán tự'; got first 800 chars: {}",
         &body[..body.len().min(800)]
     );
@@ -336,8 +336,8 @@ async fn vi_keywords_contain_han_tu() {
 #[tokio::test]
 async fn ko_keywords_are_korean() {
     let body = get_body("/ko").await;
-    let has_korean = body.contains(r#"<meta name="keywords" content="일본어"#)
-        || body.contains("한자");
+    let has_korean =
+        body.contains(r#"<meta name="keywords" content="일본어"#) || body.contains("한자");
     assert!(
         has_korean,
         "KO keywords meta must contain Korean text; got first 800 chars: {}",

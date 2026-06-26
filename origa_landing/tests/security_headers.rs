@@ -58,7 +58,10 @@ fn assert_all_present(values: &[Option<String>; 4], context: &str) {
         ("X-Content-Type-Options", "nosniff"),
         ("X-Frame-Options", "SAMEORIGIN"),
         ("Referrer-Policy", "strict-origin-when-cross-origin"),
-        ("Permissions-Policy", "camera=(), microphone=(), geolocation=()"),
+        (
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=()",
+        ),
     ];
     for (got, (name, want)) in values.iter().zip(expected) {
         assert_eq!(

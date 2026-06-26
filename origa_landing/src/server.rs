@@ -153,11 +153,10 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
         )
         .route_service(
             "/llms.txt",
-            ServeFile::new(format!("{public_dir}/llms.txt"))
-                .insert_response_header_if_not_present(
-                    CACHE_CONTROL,
-                    HeaderValue::from_static(NO_CACHE),
-                ),
+            ServeFile::new(format!("{public_dir}/llms.txt")).insert_response_header_if_not_present(
+                CACHE_CONTROL,
+                HeaderValue::from_static(NO_CACHE),
+            ),
         )
         .leptos_routes(&leptos_options, routes, {
             let leptos_options = leptos_options.clone();
