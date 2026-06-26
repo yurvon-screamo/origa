@@ -66,6 +66,33 @@ fn first_jsonld_block(html: &str) -> String {
     html[start..end].to_owned()
 }
 
+/// Find the first JSON-LD block whose `@type` matches `type_name`. Pages emit
+/// several schemas (SoftwareApplication + Organization on the home page;
+/// HowTo + BreadcrumbList + LearningResource on /features); this locates the
+/// specific one under test so the assertion targets the right entity.
+fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let body_end = rest[body_start..]
+            .find(close)
+            .unwrap_or_else(|| panic!("JSON-LD block not closed"))
+            + body_start;
+        let block = &rest[body_start..body_end];
+        if block.contains(&needle) {
+            return block.to_owned();
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    panic!(
+        "no JSON-LD block with @type={type_name}; body was: {}",
+        &html[..html.len().min(500)]
+    )
+}
+
 #[tokio::test]
 async fn ru_home_schema_description_is_russian_not_english() {
     let body = get_body("/ru").await;
@@ -315,5 +342,72 @@ async fn ko_keywords_are_korean() {
         has_korean,
         "KO keywords meta must contain Korean text; got first 800 chars: {}",
         &body[..body.len().min(800)]
+    );
+}
+
+#[tokio::test]
+async fn features_has_breadcrumb_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "BreadcrumbList");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("BreadcrumbList block must parse");
+    let items = value
+        .get("itemListElement")
+        .and_then(|v| v.as_array())
+        .expect("BreadcrumbList must have itemListElement array");
+    assert_eq!(items.len(), 2, "breadcrumb must have home + current");
+    let home_name = items[0]
+        .get("name")
+        .and_then(|v| v.as_str())
+        .expect("home item must have a name");
+    assert_eq!(home_name, "Home");
+}
+
+#[tokio::test]
+async fn features_has_learning_resource_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "LearningResource");
+    assert!(
+        block.contains("\"isAccessibleForFree\":true"),
+        "LearningResource must declare isAccessibleForFree:true; got: {block}"
+    );
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("LearningResource block must parse");
+    let levels = value
+        .get("educationalLevel")
+        .and_then(|v| v.as_array())
+        .expect("LearningResource must list educationalLevel");
+    assert!(
+        levels.iter().any(|l| l.as_str() == Some("JLPT N5")),
+        "educationalLevel must cover JLPT N5–N1; got: {levels:?}"
+    );
+}
+
+#[tokio::test]
+async fn home_org_has_sameas() {
+    // The Organization block (second JSON-LD on the home page) must link to
+    // the GitHub repo via sameAs so knowledge panels can connect the entity.
+    let body = get_body("/").await;
+    let block = find_jsonld_block_by_type(&body, "Organization");
+    assert!(
+        block.contains("\"sameAs\""),
+        "Organization schema must carry sameAs; got: {block}"
+    );
+    assert!(
+        block.contains("github.com/yurvon-screamo/origa"),
+        "Organization sameAs must point at the GitHub repo; got: {block}"
+    );
+}
+
+#[tokio::test]
+async fn home_has_no_breadcrumb() {
+    // The home page IS the breadcrumb root; emitting a BreadcrumbList there
+    // (position 1 → position 1) is a schema error. Guard against an accidental
+    // wiring of breadcrumb_schema on HomePage.
+    let body = get_body("/").await;
+    assert!(
+        !body.contains("BreadcrumbList"),
+        "home page must not emit a BreadcrumbList schema; got: {}",
+        &body[..body.len().min(500)]
     );
 }

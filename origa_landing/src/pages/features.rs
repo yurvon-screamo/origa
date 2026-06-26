@@ -1,7 +1,9 @@
 use leptos::prelude::*;
 
 use crate::components::cta::CtaSection;
-use crate::components::seo::{PageMeta, SchemaOrg, how_to_schema};
+use crate::components::seo::{
+    PageMeta, SchemaOrg, breadcrumb_schema, how_to_schema, learning_resource_schema,
+};
 use crate::content::Locale;
 
 #[component]
@@ -32,6 +34,8 @@ pub fn FeaturesPage() -> impl IntoView {
     view! {
         <PageMeta locale path="/features" title=c.features_meta_title description=c.features_meta_description/>
         <SchemaOrg json=how_to_schema(locale, c.features_schema_how_to_name, &vocab_steps)/>
+        <SchemaOrg json=breadcrumb_schema(locale, "/features", c.header_features)/>
+        <SchemaOrg json=learning_resource_schema(locale)/>
 
         // Section 0: Hero
         <section class="feat-hero">

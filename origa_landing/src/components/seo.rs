@@ -38,7 +38,59 @@ pub fn organization_schema() -> String {
         "@type": "Organization",
         "name": "Origa",
         "url": BASE_URL,
-        "logo": format!("{BASE_URL}/favicon.png")
+        "logo": format!("{BASE_URL}/favicon.png"),
+        "sameAs": ["https://github.com/yurvon-screamo/origa"]
+    })
+    .to_string()
+}
+
+pub fn breadcrumb_schema(locale: Locale, path: &'static str, current_name: &'static str) -> String {
+    let c = locale.content();
+    let prefix = locale.path_prefix();
+    // The site root carries a trailing slash by convention (ADR-011); locale
+    // roots do not. Breadcrumb `item` URLs must match the canonical form so
+    // Google's BreadcrumbList validator does not flag a slash mismatch.
+    let home_url = if prefix.is_empty() {
+        format!("{BASE_URL}/")
+    } else {
+        format!("{BASE_URL}{prefix}")
+    };
+    let home = serde_json::json!({
+        "@type": "ListItem",
+        "position": 1,
+        "name": c.breadcrumb_home,
+        "item": home_url
+    });
+    let current = serde_json::json!({
+        "@type": "ListItem",
+        "position": 2,
+        "name": current_name,
+        "item": format!("{BASE_URL}{prefix}{path}")
+    });
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [home, current]
+    })
+    .to_string()
+}
+
+pub fn learning_resource_schema(locale: Locale) -> String {
+    let c = locale.content();
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "LearningResource",
+        "name": "Origa",
+        "description": c.home_meta_description,
+        "inLanguage": locale.as_str(),
+        "learningResourceType": "Interactive Application",
+        "educationalLevel": ["JLPT N5", "JLPT N4", "JLPT N3", "JLPT N2", "JLPT N1"],
+        "audience": {
+            "@type": "EducationalAudience",
+            "EducationalRole": "student"
+        },
+        "isAccessibleForFree": true,
+        "teaches": ["Japanese vocabulary", "Kanji", "Japanese grammar", "Japanese listening"]
     })
     .to_string()
 }

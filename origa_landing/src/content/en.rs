@@ -3,6 +3,7 @@ use super::Content;
 pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "japanese learning app, learn japanese offline, anki alternative japanese, japanese ocr app, jlpt study tracker, japanese flashcards, kanji learning app, japanese grammar app, learn japanese free, spaced repetition japanese",
+    breadcrumb_home: "Home",
 
     header_features: "Features",
     header_compare: "Compare",

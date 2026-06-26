@@ -86,6 +86,7 @@ pub struct Content {
     // Meta
     pub site_name: &'static str,
     pub keywords: &'static str,
+    pub breadcrumb_home: &'static str,
 
     // Header
     pub header_features: &'static str,

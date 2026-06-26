@@ -3,6 +3,7 @@ use super::Content;
 pub static CONTENT: Content = Content {
     site_name: "Origa",
     keywords: "học tiếng nhật, app học tiếng nhật, hán tự, từ vựng tiếng nhật, ngữ pháp tiếng nhật, học tiếng nhật miễn phí, học kanji, jlpt tiếng nhật, học tiếng nhật offline, học tiếng nhật cho người mới bắt đầu",
+    breadcrumb_home: "Trang chủ",
 
     header_features: "Tính năng",
     header_compare: "So sánh",
