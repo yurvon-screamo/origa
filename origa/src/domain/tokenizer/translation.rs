@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::{PartOfSpeech, TokenInfo};
-use crate::dictionary::grammar::GRAMMAR_RULES;
+use crate::dictionary::grammar::{GRAMMAR_RULES, GrammarRule};
 use crate::dictionary::vocabulary::get_translation;
 use crate::domain::JapaneseChar;
 use crate::domain::NativeLanguage;
@@ -18,6 +18,18 @@ pub struct TokenTranslation {
     pub grammar_label: Option<String>,
 }
 
+// Particle homonyms whose surface form (て/し) collides with a dictionary lemma
+// (手 "hand", 為る "to do"). Lindera surfaces base_form == surface_form for these
+// particles, so the translation pipeline would otherwise resolve the unrelated
+// content-word meaning instead of leaving the particle untranslated.
+const PARTICLE_HOMONYM_SURFACES: &[&str] = &["て", "し"];
+
+fn is_particle_homonym_blacklisted(token: &TokenInfo) -> bool {
+    token.part_of_speech() == &PartOfSpeech::Particle
+        && token.orthographic_base_form() == token.orthographic_surface_form()
+        && PARTICLE_HOMONYM_SURFACES.contains(&token.orthographic_surface_form())
+}
+
 pub fn lookup_tokens_translations(
     tokens: &[TokenInfo],
     native_language: &NativeLanguage,
@@ -27,7 +39,11 @@ pub fn lookup_tokens_translations(
         .iter()
         .map(|token| {
             let base_form = token.orthographic_base_form().to_string();
-            let translation = get_translation(&base_form, native_language);
+            let translation = if is_particle_homonym_blacklisted(token) {
+                None
+            } else {
+                get_translation(&base_form, native_language)
+            };
             let grammar_label = resolve_grammar_label(token, native_language, original_text);
 
             TokenTranslation {
@@ -40,6 +56,39 @@ pub fn lookup_tokens_translations(
             }
         })
         .collect()
+}
+
+fn match_grammar_keyword(
+    rules: &[GrammarRule],
+    surface: &str,
+    original_text: &str,
+    native_language: &NativeLanguage,
+) -> Option<String> {
+    for rule in rules.iter() {
+        let keyword_groups = rule.keywords();
+        if keyword_groups.is_empty() {
+            continue;
+        }
+
+        let token_matches_some_group = keyword_groups
+            .iter()
+            .any(|group| group.iter().any(|kw| surface == kw));
+        if !token_matches_some_group {
+            continue;
+        }
+
+        // Every group must contribute at least one keyword present in the original
+        // text. This converges with detect_keyword_rules AND-semantics and prevents
+        // bare-single-keyword false positives (e.g. topic は falsely matching the
+        // ～は～ほど～ない rule when ほど is absent from the sentence).
+        let text_covers_all_groups = keyword_groups
+            .iter()
+            .all(|group| !group.is_empty() && group.iter().any(|kw| original_text.contains(kw)));
+        if text_covers_all_groups {
+            return Some(rule.content(native_language).title().to_string());
+        }
+    }
+    None
 }
 
 fn resolve_grammar_label(
@@ -62,18 +111,20 @@ fn resolve_grammar_label(
     // See issue #178 P-6 for context.
     let eligible_for_keyword_match = !is_vocab || surface == base;
     if eligible_for_keyword_match {
-        for rule in rules.iter() {
-            for group in rule.keywords().iter() {
-                if group.iter().any(|kw| surface == kw) {
-                    return Some(rule.content(native_language).title().to_string());
-                }
-            }
+        if let Some(label) = match_grammar_keyword(rules, surface, original_text, native_language) {
+            return Some(label);
         }
     }
 
-    // FormatAction detection for vocabulary tokens where surface != base (conjugated forms).
-    // When multiple rules match, the most specific (longest formatted form) is preferred.
     if is_vocab && surface != base {
+        // Conjugated auxiliaries attached to a content stem (e.g. すぎ inside 強すぎて,
+        // base すぎる, classified by Lindera as Verb) must still resolve to their
+        // grammar keyword before format_map matching — otherwise a more generic
+        // rule (～て) wins on the te-form surface.
+        if let Some(label) = match_grammar_keyword(rules, surface, original_text, native_language) {
+            return Some(label);
+        }
+
         let mut matches = find_format_map_matches(base, pos, original_text, rules);
 
         // Lindera prefers the kanji lemma as ``base`` even when the user's
@@ -192,6 +243,56 @@ mod tests {
         let result = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "");
 
         assert!(result.is_empty());
+    }
+
+    #[test]
+    fn should_apply_homonym_blacklist_for_particle_te_and_shi() {
+        assert!(is_particle_homonym_blacklisted(&make_token(
+            "て",
+            "て",
+            "テ",
+            PartOfSpeech::Particle
+        )));
+        assert!(is_particle_homonym_blacklisted(&make_token(
+            "し",
+            "し",
+            "シ",
+            PartOfSpeech::Particle
+        )));
+
+        // Topic は particle is unaffected (no dictionary homonym in this list).
+        assert!(!is_particle_homonym_blacklisted(&make_token(
+            "は",
+            "は",
+            "ハ",
+            PartOfSpeech::Particle
+        )));
+        // Same surface form but non-Particle POS must not match.
+        assert!(!is_particle_homonym_blacklisted(&make_token(
+            "て",
+            "て",
+            "テ",
+            PartOfSpeech::Noun
+        )));
+        assert!(!is_particle_homonym_blacklisted(&make_token(
+            "し",
+            "し",
+            "シ",
+            PartOfSpeech::Verb
+        )));
+        assert!(!is_particle_homonym_blacklisted(&make_token(
+            "し",
+            "し",
+            "シ",
+            PartOfSpeech::AuxiliaryVerb
+        )));
+        // Particle て surface != base (conjugated verb てる) must not match.
+        assert!(!is_particle_homonym_blacklisted(&make_token(
+            "て",
+            "てる",
+            "テ",
+            PartOfSpeech::Particle
+        )));
     }
 }
 
@@ -574,6 +675,348 @@ mod integration_tests {
         );
     }
 
+    // --- Reproduction / regression tests for translation bugs ---
+    // These tests were originally written as failing repro-tests to document
+    // concrete root causes across 10 user-reported phrases. After the 6-slice
+    // fix they now pass and serve as regression locks. One test
+    // (should_document_mizunashi_overmerge_limitation) is a characterization
+    // test documenting a known Lindera limitation that is out of scope.
+
+    // --- Phrase 1: 人はパンのみで生きるにあらずですわよ ---
+    // Before the fix, Lindera split the classical negative あらず into あら
+    // (Verb, base 有る) + ず (AuxiliaryVerb), and the ず token surfaced base_form
+    // 'ぬ' (Lindera's lemma), which was absent from the vocabulary dictionary —
+    // so translation was None and no grammar rule labeled the ず classical-negative
+    // auxiliary. This test locks in the vocabulary entry for ぬ that resolves it.
+    #[test]
+    fn should_label_or_translate_classical_negative_zu_auxiliary() {
+        ensure_dictionaries();
+        let text = "人はパンのみで生きるにあらずですわよ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let zu = results
+            .iter()
+            .find(|t| t.surface_form == "ず")
+            .expect("「ず」auxiliary token should exist");
+        assert!(
+            zu.translation.is_some() || zu.grammar_label.is_some(),
+            "classical negative 「ず」should carry a translation or grammar_label, got: {:?}",
+            zu
+        );
+    }
+
+    // --- Phrase 1: わ (sentence-final particle, feminine/emphatic) ---
+    // Before the fix, the standalone 「わ」 particle had no vocabulary entry, so
+    // translation was None. This test locks in the added translation.
+    #[test]
+    fn should_translate_wa_sentence_final_particle() {
+        ensure_dictionaries();
+        let text = "生きるにあらずですわよ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let wa = results
+            .iter()
+            .find(|t| t.surface_form == "わ" && t.pos == PartOfSpeech::Particle)
+            .expect("「わ」particle token should exist");
+        assert!(
+            wa.translation.is_some(),
+            "sentence-final 「わ」particle should have a translation, got: {:?}",
+            wa
+        );
+    }
+
+    // --- Phrase 2: 水なしでは生きていけない ---
+    // Characterization test: Lindera over-merges 水なし ("without water") into a
+    // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
+    // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
+    // but fixing this requires post-processing over-merge reversal — high risk and
+    // out of scope. This test documents the current limitation so it is visible
+    // and trackable. When the over-merge is addressed, flip the assertions.
+    #[test]
+    fn should_document_mizunashi_overmerge_limitation() {
+        ensure_dictionaries();
+        let text = "水なしでは生きていけない";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let merged = results.iter().find(|t| t.surface_form == "水なし");
+        assert!(
+            merged.is_some(),
+            "Known limitation: Lindera should over-merge 「水なし」into a single token. \
+             If this assertion fails, the over-merge was resolved — flip the test to \
+             assert separate 水 + なし tokens. Tokens: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+        let merged_token = merged.unwrap();
+        assert!(
+            merged_token.translation.is_none(),
+            "Over-merged 「水なし」should have no translation (ProperNoun not in vocab). \
+             got: {:?}",
+            merged_token.translation
+        );
+    }
+
+    // --- Phrase 3: 大丈夫でやがる ---
+    // Before the fix, やがる (derogatory auxiliary "to do, damn it") had a
+    // vocabulary entry but the 〜てやがる / 〜でやがる construction was never flagged
+    // with a grammar_label. This test locks in the grammar rule that labels it.
+    #[test]
+    fn should_label_yagaru_derogatory_auxiliary_grammar() {
+        ensure_dictionaries();
+        let text = "大丈夫でやがる";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let yagaru = results
+            .iter()
+            .find(|t| t.surface_form == "やがる")
+            .expect("「やがる」auxiliary token should exist");
+        assert!(
+            yagaru.grammar_label.is_some(),
+            "〜やがる derogatory construction should carry a grammar_label, got: {:?}",
+            yagaru
+        );
+    }
+
+    // --- Phrase 4: 二度も言わんでええの！ ---
+    // Before the fix, the colloquial negative 「ん」 (contraction of ぬ) was
+    // tokenized with base_form 'ぬ'. Translation lookup went through base_form,
+    // and 'ぬ' was absent from the vocabulary dictionary, so translation was None
+    // even though 「ん」 itself was present. No grammar rule labeled the ん negative
+    // either. The same ん/ぬ root cause recurred in phrase 7 (くれませんか). This
+    // test locks in the ぬ vocabulary entry that resolves it.
+    #[test]
+    fn should_label_or_translate_n_negative_auxiliary() {
+        ensure_dictionaries();
+        let text = "二度も言わんでええの！";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let n = results
+            .iter()
+            .find(|t| t.surface_form == "ん" && t.pos == PartOfSpeech::AuxiliaryVerb)
+            .expect("「ん」auxiliary token should exist");
+        assert!(
+            n.translation.is_some() || n.grammar_label.is_some(),
+            "negative 「ん」auxiliary should carry a translation or grammar_label, got base={:?} translation={:?} grammar={:?}",
+            n.base_form,
+            n.translation,
+            n.grammar_label
+        );
+    }
+
+    // --- Phrase 5: 雨の音強すぎて、テレビの音聞こえない ---
+    // Before the fix, the 〜すぎる ("too much") grammar rule only matched via
+    // format_map (強い → 強すぎる), but the text contained the te-form 強すぎて,
+    // which format_map never produces — so the "too much" meaning was never
+    // detected on either the 強 stem or the すぎ token. This test locks in the
+    // keyword-based すぎる detection that resolves conjugated auxiliaries.
+    #[test]
+    fn should_detect_sugiru_too_much_for_tsuyosugite() {
+        ensure_dictionaries();
+        let text = "雨の音強すぎて、テレビの音聞こえない";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let has_sugiru_label = results.iter().any(|t| {
+            t.grammar_label
+                .as_deref()
+                .is_some_and(|label| label.contains("すぎる"))
+        });
+        assert!(
+            has_sugiru_label,
+            "〜すぎる (too much) should be detected for 強すぎて, labels: {:?}",
+            results
+                .iter()
+                .filter(|t| t.grammar_label.is_some())
+                .map(|t| (&t.surface_form, &t.grammar_label))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 6: カッコイイの！ ---
+    // Before the fix, the katakana adjective カッコイイ ("cool") was split into
+    // カッコ (格好) + イイ (良い), so the single-word meaning "cool/stylish" was
+    // lost. This test locks in the user-dictionary entry that keeps it one token.
+    #[test]
+    fn should_tokenize_kakkoii_katakana_as_single_token() {
+        ensure_dictionaries();
+        let text = "カッコイイの！";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let kakkoii = results.iter().find(|t| t.surface_form == "カッコイイ");
+        assert!(
+            kakkoii.is_some(),
+            "「カッコイイ」should be a single token, got surfaces: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 7: かっこいいですね ---
+    // Before the fix, the hiragana adjective かっこいい WAS present in the
+    // vocabulary dictionary (chunk_11), but Lindera split it into かっこ (base 格好)
+    // + いい (base 良い). Translation lookup used base_form, so the existing
+    // かっこいい entry was never consulted and the "cool/stylish" meaning was lost.
+    // This test locks in the user-dictionary entry that keeps it one token.
+    #[test]
+    fn should_use_kakkoii_dictionary_entry_for_hiragana_compound() {
+        ensure_dictionaries();
+        let text = "かっこいいですね";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let uses_entry = results
+            .iter()
+            .any(|t| t.surface_form == "かっこいい" || t.base_form == "かっこいい");
+        assert!(
+            uses_entry,
+            "「かっこいい」should resolve to its dictionary entry, got (surface, base): {:?}",
+            results
+                .iter()
+                .map(|t| (&t.surface_form, &t.base_form))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 8: 心をひとつに ---
+    // Before the fix, ひとつ ("one") had a vocabulary entry but was split into
+    // ひと (base 一) + つ (suffix), so the single-word entry was never used.
+    // This test locks in the user-dictionary entry that keeps it one token.
+    #[test]
+    fn should_tokenize_hitotsu_as_single_token() {
+        ensure_dictionaries();
+        let text = "心をひとつに";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let hitotsu = results
+            .iter()
+            .any(|t| t.surface_form == "ひとつ" || t.surface_form == "一つ");
+        assert!(
+            hitotsu,
+            "「ひとつ」should be a single token, got surfaces: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 9: やれやれ、無駄なことだよ ---
+    // Before the fix, やれやれ ("good grief") had a vocabulary entry but was split
+    // into two やれ tokens, so the interjection entry was never used and each half
+    // was translated with the imperative meaning instead. This test locks in the
+    // user-dictionary entry that keeps it one token.
+    #[test]
+    fn should_tokenize_yareyare_as_single_token() {
+        ensure_dictionaries();
+        let text = "やれやれ、無駄なことだよ。";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let yareyare = results.iter().any(|t| t.surface_form == "やれやれ");
+        assert!(
+            yareyare,
+            "「やれやれ」should be a single token, got surfaces: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 9: 起きるものか ---
+    // Before the fix, 〜ものか ("no way / absolutely not", rhetorical exclamation)
+    // was present in the vocabulary dictionary (ru: "ни в коем случае!"), but
+    // Lindera split ものか into もの (base 物) + か, so the rhetorical-meaning entry
+    // was never consulted and もの resolved to the unrelated "thing" translation
+    // instead. This test locks in the user-dictionary entry that keeps it one token.
+    #[test]
+    fn should_tokenize_monoka_as_single_token() {
+        ensure_dictionaries();
+        let text = "起きるものか";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let monoka = results.iter().any(|t| t.surface_form == "ものか");
+        assert!(
+            monoka,
+            "「ものか」should be a single token so its dictionary entry is used, got surfaces: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+        );
+    }
+
+    // --- Phrase 10: ふふ、ストーブついてますし ---
+    // Before the fix, the interjection ふふ ("hehe") had no vocabulary entry, so
+    // translation was None. This test locks in the added translation.
+    #[test]
+    fn should_translate_fufu_interjection() {
+        ensure_dictionaries();
+        let text = "ふふ、ストーブついてますし";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let fufu = results
+            .iter()
+            .find(|t| t.surface_form == "ふふ")
+            .expect("「ふふ」interjection token should exist");
+        assert!(
+            fufu.translation.is_some(),
+            "「ふふ」interjection should have a translation, got: {:?}",
+            fufu
+        );
+    }
+
+    // --- Phrase 10: ついてますし (the し reason particle) ---
+    // Before the fix, 〜し (reason/listing particle "besides / and what's more")
+    // existed as a grammar rule, but that rule had neither keywords nor a
+    // format_map, so it could never be matched by resolve_grammar_label.
+    // Additionally 「し」 base_form resolved to the する-stem homonym, yielding the
+    // verb meaning "to do" instead of the particle. This test locks in the
+    // keyword activation + homonym blacklist that resolve it.
+    #[test]
+    fn should_label_shi_reason_particle_grammar() {
+        ensure_dictionaries();
+        let text = "ストーブついてますし、大丈夫ですよ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let shi = results
+            .iter()
+            .find(|t| t.surface_form == "し" && t.pos == PartOfSpeech::Particle)
+            .expect("「し」particle token should exist");
+        assert!(
+            shi.grammar_label.is_some(),
+            "〜し reason particle should carry a grammar_label, got translation={:?} grammar={:?}",
+            shi.translation,
+            shi.grammar_label
+        );
+    }
+
+    // --- Cross-cutting false positive: plain topic は (phrases 1 & 2) ---
+    // Before the fix, the grammar rule ～は～ほど～ない listed 「は」 itself as a
+    // keyword, so EVERY topic particle は was mislabeled with that pattern even in
+    // a plain ～は～です sentence. This test locks in the AND-semantics fix that
+    // prevents the bare-keyword false positive.
+    #[test]
+    fn should_not_mislabel_plain_ha_particle_as_hahodo_nai() {
+        ensure_dictionaries();
+        let text = "私は学生です";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let ha = results
+            .iter()
+            .find(|t| t.surface_form == "は" && t.pos == PartOfSpeech::Particle)
+            .expect("「は」particle token should exist");
+        let mislabeled = ha
+            .grammar_label
+            .as_deref()
+            .is_some_and(|label| label.contains("ほど"));
+        assert!(
+            !mislabeled,
+            "plain topic 「は」must not get the ～は～ほど～ない label, got: {:?}",
+            ha.grammar_label
+        );
+    }
+
     // Characterization test: the input `言っイッてみただけ` contains an OCR/furigana
     // artifact (the katakana イッ inside a hiragana verb form). Lindera cannot
     // reconstruct the canonical te-form 言って here, but it must still recognize
@@ -595,6 +1038,54 @@ mod integration_tests {
             results
                 .iter()
                 .map(|t| (&t.surface_form, &t.base_form))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    // Particle 「し」 lists reason particle. Its base_form resolves to a homonym
+    // (為る "to do" / する-stem), so without the homonym blacklist the particle
+    // would be translated as the verb instead of being left untranslated.
+    #[test]
+    fn should_suppress_homonym_translation_for_particle_shi() {
+        ensure_dictionaries();
+        let text = "ストーブついてますし、大丈夫ですよ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let shi = results
+            .iter()
+            .find(|t| t.surface_form == "し" && t.pos == PartOfSpeech::Particle)
+            .expect("Particle 「し」 token should exist (tokenization confirmed by repro test)");
+        assert!(
+            shi.translation.is_none(),
+            "Particle 「し」must not be translated via homonym (為る=делать), got: {:?}",
+            shi.translation
+        );
+    }
+
+    // ～すぎる keyword rule must also resolve for adjective-stem compounds:
+    // 複雑すぎる is tokenized by Lindera as 複雑 (NaAdjective) + すぎる, and the
+    // auxiliary must surface the ～すぎる grammar_label even though format_map
+    // would otherwise match the longer phrase.
+    #[test]
+    fn should_detect_sugiru_label_for_compound_word() {
+        ensure_dictionaries();
+        let text = "この問題は複雑すぎる";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let has_sugiru_label = results.iter().any(|t| {
+            t.grammar_label
+                .as_deref()
+                .is_some_and(|label| label.contains("すぎる"))
+        });
+        assert!(
+            has_sugiru_label,
+            "～すぎる should be detected for 複雑すぎる, labels: {:?}",
+            results
+                .iter()
+                .filter(|t| t.grammar_label.is_some())
+                .map(|t| (&t.surface_form, &t.grammar_label))
                 .collect::<Vec<_>>()
         );
     }
