@@ -77,6 +77,15 @@ async fn apple_touch_icon_has_immutable_cache() {
 }
 
 #[tokio::test]
+async fn browserconfig_xml_has_immutable_cache() {
+    // Windows Edge/IE tile config reuses the 180x180 apple-touch-icon; the
+    // file only changes when the logo does, so immutable caching matches the
+    // favicon policy. See ADR-016.
+    let cc = cache_control("/browserconfig.xml").await;
+    assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
+}
+
+#[tokio::test]
 async fn static_css_has_immutable_cache() {
     let cc = cache_control("/landing.processed.css").await;
     assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
