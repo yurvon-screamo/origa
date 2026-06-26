@@ -85,6 +85,7 @@ impl FromStr for Locale {
 pub struct Content {
     // Meta
     pub site_name: &'static str,
+    pub keywords: &'static str,
 
     // Header
     pub header_features: &'static str,

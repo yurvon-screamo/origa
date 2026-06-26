@@ -76,10 +76,12 @@ pub fn PageMeta(
     let img_prefix = locale.image_prefix();
     let og_image = format!("{BASE_URL}/images/{img_prefix}.hero.png");
     let canonical = format!("{BASE_URL}{}{path}", locale.path_prefix());
+    let c = locale.content();
 
     view! {
         <Title text=title/>
         <Meta name="description" content=description/>
+        <Meta name="keywords" content=c.keywords/>
         <Meta property="og:title" content=title/>
         <Meta property="og:description" content=description/>
         <Meta property="og:image" content=og_image.clone()/>

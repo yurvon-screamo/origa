@@ -263,3 +263,57 @@ async fn features_hero_decor_has_aria_hidden() {
         "decorative background-image div must carry aria-hidden; got: {decor_open_tag}"
     );
 }
+
+#[tokio::test]
+async fn en_home_has_keywords_meta() {
+    let body = get_body("/").await;
+    assert!(
+        body.contains(r#"<meta name="keywords" content="japanese"#),
+        "EN keywords meta missing or not starting with a japanese keyword; got first 800 chars: {}",
+        &body[..body.len().min(800)]
+    );
+}
+
+#[tokio::test]
+async fn ru_keywords_are_russian() {
+    let body = get_body("/ru").await;
+    let kw = body
+        .find(r#"<meta name="keywords" content=""#)
+        .and_then(|i| {
+            let start = i + r#"<meta name="keywords" content=""#.len();
+            body[start..]
+                .find('"')
+                .map(|end| &body[start..start + end])
+        })
+        .expect("RU keywords meta must be present");
+    assert!(
+        kw.contains("кандзи"),
+        "RU keywords must contain 'кандзи'; got: {kw}"
+    );
+    assert!(
+        !kw.contains("japanese"),
+        "RU keywords must not leak the English word 'japanese'; got: {kw}"
+    );
+}
+
+#[tokio::test]
+async fn vi_keywords_contain_han_tu() {
+    let body = get_body("/vi").await;
+    assert!(
+        body.contains(r#"<meta name="keywords" content="học tiếng nhật, app học tiếng nhật, hán tự"#),
+        "VI keywords meta must contain 'hán tự'; got first 800 chars: {}",
+        &body[..body.len().min(800)]
+    );
+}
+
+#[tokio::test]
+async fn ko_keywords_are_korean() {
+    let body = get_body("/ko").await;
+    let has_korean = body.contains(r#"<meta name="keywords" content="일본어"#)
+        || body.contains("한자");
+    assert!(
+        has_korean,
+        "KO keywords meta must contain Korean text; got first 800 chars: {}",
+        &body[..body.len().min(800)]
+    );
+}

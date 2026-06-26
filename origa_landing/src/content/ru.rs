@@ -2,6 +2,7 @@ use super::Content;
 
 pub static CONTENT: Content = Content {
     site_name: "Origa",
+    keywords: "приложение для изучения японского, японский язык с нуля, кандзи, японская грамматика, хирагана катакана, карточки японский язык, jlpt, изучение японского языка, приложение для изучения японского на русском, kanji",
 
     header_features: "Функции",
     header_compare: "Сравнение",
