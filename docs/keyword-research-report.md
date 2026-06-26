@@ -22,7 +22,7 @@
 ### Primary Keywords (High Intent / Commercial-App)
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | learn japanese | 100K+ | info/commercial | HIGH | Head term, dominated by Duolingo, Tofugu, YouTube. Not rankable pre-launch. |
 | learn japanese online | 10K-100K | commercial | HIGH | Strong competition from language schools and platforms. |
 | japanese learning app | 1K-10K | commercial | MED | "reddit" and "free" subtypes indicate strong bottom-funnel intent. Less competitive than "learn japanese". |
@@ -54,7 +54,7 @@
 ### Long-Tail / Question Keywords
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | best app to learn japanese offline | <1K | transactional | LOW | High-intent, matches Origa. |
 | japanese learning app with anime | <1K | info/commercial | LOW | Content-driven learning. |
 | japanese learning app for windows | <1K | transactional | LOW | Origa desktop (Tauri) targets this. |
@@ -74,7 +74,7 @@
 ### Competitor Keyword Targeting
 
 | Competitor | URL | Title Tag / H1 (observed) | Keywords Targeted |
-|-------------|-----|--------------------------|-------------------|
+| ------------- | ----- | -------------------------- | ------------------- |
 | **Duolingo** | duolingo.com/course/ja/en/Learn-Japanese | H1: "Learn Japanese" | "learn japanese", brand dominance |
 | **Tofugu** | tofugu.com/learn-japanese | Title: "Learn Japanese: A Ridiculously Detailed Guide" / H1: "Learn Japanese" | "learn japanese", comprehensive guide, beginner journey |
 | **WaniKani** | wanikani.com | Title: (403 — blocked), but known: kanji learning via SRS, levels 1-60 | "kanji learning", "learn kanji", "wanikani" brand, "jlpt kanji" |
@@ -121,7 +121,7 @@ All-in-one Japanese learning app with FSRS flashcards, kanji, grammar, 200K+ nat
 ### Primary Keywords (High Intent / Commercial-App)
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | японский язык | 10K-100K | info | HIGH | Broad head term. Dominated by dictionaries, courses, YouTube. Not rankable pre-launch. |
 | изучение японского языка | 10K-100K | info | HIGH | Head term with strong "с нуля" and "самостоятельно" subtypes. |
 | изучение японского языка с нуля | 1K-10K | info/commercial | MED | Very popular — beginner intent. Content marketing opportunity. |
@@ -147,7 +147,7 @@ All-in-one Japanese learning app with FSRS flashcards, kanji, grammar, 200K+ nat
 ### Long-Tail / Question Keywords
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | приложение для изучения японского алфавита | <1K | transactional | LOW | Very specific — kana learning. |
 | приложение для изучения японского с нуля | <1K | transactional | LOW | Direct app-finding intent for beginners. |
 | какое приложение выбрать для изучения японского | <1K | commercial | LOW | Evaluation/choice intent — blog content. |
@@ -208,7 +208,7 @@ Origa: Изучение японского — кандзи, словарь, JLP
 ### Primary Keywords (High Intent / Commercial-App)
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | học tiếng nhật | 10K-100K | info/commercial | HIGH | Massive head term. Dominated by Duolingo, Mazii, HeyJapan, local academies. |
 | học tiếng nhật online | 1K-10K | commercial | MED | Strong intent — "online" learning. |
 | học tiếng nhật cơ bản | 1K-10K | info | MED | "Basic" Japanese — beginner intent. |
@@ -239,7 +239,7 @@ Origa: Изучение японского — кандзи, словарь, JLP
 ### Long-Tail / Question Keywords
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | học tiếng nhật cho người mới bắt đầu miễn phí | <1K | transactional | LOW | Free beginner course — direct match. |
 | học tiếng nhật cho người mới bắt đầu bài 1 | <1K | info | LOW | "Lesson 1" — structured content intent. |
 | cách học tiếng nhật cho người mới bắt đầu | <1K | info | LOW | "How to study" — guide content. |
@@ -258,7 +258,7 @@ Origa: Изучение японского — кандзи, словарь, JLP
 ### Competitor Keyword Targeting (Vietnamese Market)
 
 | Competitor | URL | Title Tag / H1 (observed) | Keywords Targeted |
-|-------------|-----|--------------------------|-------------------|
+| ------------- | ----- | -------------------------- | ------------------- |
 | **Duolingo VI** | vi.duolingo.com/course/ja/el/Học-Tiếng-Nhật | H1: "Học tiếng Nhật" + description: "Khóa học miễn phí, giải trí và hiệu quả..." | "học tiếng nhật", "học miễn phí" |
 | **Mazii** | mazii.vn | Known: "Từ điển tiếng Nhật số 1 Việt Nam" | "từ điển tiếng nhật", "từ vựng tiếng nhật", brand |
 | **HeyJapan** | japanese.heylearning.net | H1: "HeyJapan - Học tiếng Nhật miễn phí cho người mới bắt đầu" | "học tiếng nhật miễn phí", "người mới bắt đầu", brand |
@@ -303,7 +303,7 @@ Origa: Ứng dụng học tiếng Nhật — Kanji, JLPT, Offline (47 chars)
 ### Primary Keywords (High Intent / Commercial-App)
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | 일본어 | 100K+ | info | HIGH | Ultra-broad. "번역기" (translator), "공부" (study), "한자" subtypes. |
 | 일본어 공부 | 10K-100K | info/commercial | HIGH | Major head term. "법" (method), "디시" (DC Inside forum), "순서" (order), "앱" (app) subtypes. |
 | 일본어 공부법 | 1K-10K | info | MED | "Study method" — how-to intent. |
@@ -332,7 +332,7 @@ Origa: Ứng dụng học tiếng Nhật — Kanji, JLPT, Offline (47 chars)
 ### Long-Tail / Question Keywords
 
 | Keyword | Est. Monthly Volume | Intent | Difficulty | Notes |
-|---------|---------------------|--------|------------|-------|
+| --------- | --------------------- | -------- | ------------ | ------- |
 | 일본어 공부 앱 추천 디시 | <1K | commercial | LOW | DC Inside forum discussion — Korean Reddit equivalent. |
 | 일본어 공부 순서 디시 | <1K | info | LOW | "Study order" discussed on DC Inside. |
 | 일본어 한자 공부법 디시 | <1K | info | LOW | Kanji study methods on DC Inside. |
@@ -404,7 +404,7 @@ Origa: 일본어 학습 앱 — 한자, 회화, JLPT (29 chars)
 These are keywords with commercial intent, low-to-medium difficulty, and direct product fit:
 
 | Rank | Market | Keyword | Why |
-|------|--------|---------|-----|
+| ------ | -------- | --------- | ----- |
 | 1 | EN | japanese learning app free | Commercial, "reddit" subtype, Origa is free |
 | 2 | EN | learn japanese offline | Offline-first differentiator, low competition |
 | 3 | EN | anki alternative japanese | Direct positioning as Anki alternative |

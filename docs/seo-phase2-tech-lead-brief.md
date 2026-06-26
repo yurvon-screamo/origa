@@ -12,7 +12,7 @@
 ## Background — what's already done (don't redo)
 
 | Area | Status | Where |
-|---|---|---|
+| --- | --- | --- |
 | DNS / Cloudflare proxy / IPv4+IPv6 | ✅ | ADR-007 |
 | URL canonicalization (no trailing slash, 308) / cache-control / soft-404 | ✅ | ADR-011 |
 | `<html lang>` per-locale (leptos_meta) | ✅ | `layout.rs` |

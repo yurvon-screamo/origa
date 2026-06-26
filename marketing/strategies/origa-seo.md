@@ -29,7 +29,7 @@ This strategy defines: (a) per-market keyword targets, (b) concrete content rewr
 ### Why these 4 markets (and not others)
 
 | Market | Why it matters for Japanese learning | Origa's localization |
-|---|---|---|
+| --- | --- | --- |
 | **EN (global/US/EU)** | Largest learner base; saturated; Reddit-driven discovery | `Locale::En` (root `/`) |
 | **RU (CIS)** | High demand, few quality RU-UI apps; "на русском" = zero competition | `Locale::Ru` (`/ru`) |
 | **VI (Vietnam)** | **Huge** — many Vietnamese work/study in Japan (tokutei ginou); JLPT = visa requirement | `Locale::Vi` (`/vi`) |
@@ -44,7 +44,7 @@ Markets NOT covered (ID, ES) — explicit per user scope. Existing `README` ment
 ### Technical — elite level (NO changes needed)
 
 | Area | Status | Evidence |
-|---|---|---|
+| --- | --- | --- |
 | DNS / indexing | ✅ Fixed | ADR-007: Cloudflare proxy, IPv4+IPv6, Yandex/Bing crawl 200 |
 | URL canonicalization | ✅ Done | ADR-011: no trailing slash, 308 redirect, soft-404 with body |
 | Cache-Control | ✅ Done | ADR-011: HTML 5min, static immutable, robots/sitemap no-cache |
@@ -70,7 +70,7 @@ Markets NOT covered (ID, ES) — explicit per user scope. Existing `README` ment
 ### Origa vs competitor landscape
 
 | Competitor | Stack / type | Locale coverage | Origa's wedge |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **kana-dojo** (2.7k★) | Next.js, Vercel, web-only PWA | en/es/de/fr/zh — **NO vi/ko** | Origa covers VI+KO (top JP-learner markets); native desktop/mobile; content-driven |
 | **Anki** | Desktop+mobile, SRS | English UI (RU community decks) | All-in-one (vocab+kanji+grammar+listening), native RU/VI/KO UI, zero-config |
 | **WaniKani** | Web, radical-based kanji | English only | Learn kanji you encounter in your content; not a fixed radical order |
@@ -93,7 +93,7 @@ Markets NOT covered (ID, ES) — explicit per user scope. Existing `README` ment
 **What they do that Origa does NOT** (tracked for future phases, out of scope here):
 
 | Feature | kana-dojo | Origa | Priority |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | IndexNow API (Bing instant index) | ✅ | ❌ | Phase 2 |
 | `browserconfig.xml` (Edge tiles) | ✅ | ❌ | Phase 2 |
 | Meta keywords (Bing values) | ✅ 40+/page | ❌ | Phase 2 (Bing only) |
