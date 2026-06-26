@@ -80,13 +80,11 @@ A web version is also available.
 
 ## 🌍 Interface Languages
 
-| Wave | Languages | Status |
-| :--- | :--- | :--- |
-| **1st** | Russian, English | ✅ In progress |
-| **2nd** | Vietnamese | 📋 Planned |
-| **3rd** | Korean | 📋 Planned |
-| **4th** | Indonesian | 📋 Planned |
-| **5th** | Spanish | 📋 Planned |
+| Languages | Status |
+| :--- | :--- |
+| **Russian, English** | ✅ Available |
+| **Vietnamese, Korean** | 🚧 In development |
+| **Indonesian, Spanish** | 📋 Planned |
 
 ---
 
@@ -106,7 +104,7 @@ The project is built on a modern stack that delivers native app performance with
 * Mobile platforms: iOS release.
 * Social features: competitions between users.
 * New exercise types: reading texts, manga, contextual sentences, audio, video.
-* Localization expansion to new languages (Vietnamese, Korean, Indonesian, Spanish).
+* Localization: finalize Vietnamese & Korean, then expand to Indonesian and Spanish.
 
 ---
 

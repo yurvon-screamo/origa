@@ -339,7 +339,7 @@ Legal text pages. Minimal styling. No complex layout.
 - Respect competitors — never disparage
 - No exaggerations or superlatives
 - No humor
-- **No mentions of: pricing, free, open source, license, BSL**
+- **No mentions of: pricing, open source, license, BSL** (`free` / `бесплатно` / `miễn phí` / `무료` is permitted — the app is currently free to use)
 - RU: address on "вы", slightly more detailed explanations, keep technical terms (JLPT, FSRS, N+1)
 
 ---

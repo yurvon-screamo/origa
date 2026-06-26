@@ -12,8 +12,8 @@ pub static CONTENT: Content = Content {
     footer_resources: "Resources",
     footer_license: "License",
 
-    home_meta_title: "Origa — All-in-One Japanese Learning App",
-    home_meta_description: "All-in-one Japanese learning app: vocabulary, kanji, grammar, 200K+ native phrases and JLPT analytics. In your own language.",
+    home_meta_title: "Origa — Learn Japanese: Kanji, Grammar, JLPT, Offline",
+    home_meta_description: "Learn Japanese free — vocabulary, kanji, grammar, 200K+ native phrases and JLPT analytics. Offline, in your own language.",
     home_schema_feature_list: "Vocabulary, Kanji, Grammar, Listening, JLPT Analytics, Offline Mode",
     home_hero_title: "Learn Japanese in your own language",
     home_hero_subtitle: "Vocabulary, kanji, grammar, listening and 200,000+ native phrases — all in one app. No English required.",
@@ -42,7 +42,7 @@ pub static CONTENT: Content = Content {
     home_cta_title: "Start learning Japanese your way",
 
     features_meta_title: "Vocabulary, Kanji, Grammar & Listening | Origa",
-    features_meta_description: "Built-in dictionaries, smart flashcards, automatic furigana, JLPT grammar and 200K+ phrases with audio — all in one app.",
+    features_meta_description: "Built-in dictionaries, smart flashcards, automatic furigana, JLPT grammar and 200K+ phrases with audio — offline, all in one app.",
     features_schema_how_to_name: "How to build Japanese vocabulary with Origa",
     features_h1: "Everything for Japanese learning",
     features_vocab_h2: "Vocabulary",
@@ -145,8 +145,8 @@ pub static CONTENT: Content = Content {
     compare_bridge_label: "Detailed comparison",
     compare_score: "Coverage",
 
-    download_meta_title: "Download Origa — Japanese Learning App",
-    download_meta_description: "Download Origa for Windows, Linux, macOS or Android. All platforms support offline mode.",
+    download_meta_title: "Download Origa — Offline Japanese Learning App",
+    download_meta_description: "Download Origa free for Windows, Linux, macOS or Android. All platforms work offline.",
     download_h1: "Get Origa",
     download_windows: "Windows",
     download_windows_formats: ".exe, .msi",
@@ -164,7 +164,7 @@ pub static CONTENT: Content = Content {
     download_subtitle: "Download Origa to any device — everything works offline.",
     download_try_web: "Open →",
 
-    integrations_meta_title: "Word Sets & Content | Origa",
+    integrations_meta_title: "Vocabulary Sets & Word Lists | Origa",
     integrations_meta_description: "Import vocabulary from Duolingo, Anki, Minna no Nihongo, Irodori, JLPT and more. Pre-built word sets ready to study.",
     integrations_h1: "Learn from what you already use",
     integrations_subtitle: "Pre-built vocabulary sets from popular Japanese learning sources. Import and start reviewing instantly.",
