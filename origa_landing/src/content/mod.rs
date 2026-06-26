@@ -179,6 +179,17 @@ pub struct Content {
     pub features_listening_everyday_desc: &'static str,
     pub features_listening_insight: &'static str,
     pub features_cta: &'static str,
+    pub features_faq_h2: &'static str,
+    pub faq_q1: &'static str,
+    pub faq_a1: &'static str,
+    pub faq_q2: &'static str,
+    pub faq_a2: &'static str,
+    pub faq_q3: &'static str,
+    pub faq_a3: &'static str,
+    pub faq_q4: &'static str,
+    pub faq_a4: &'static str,
+    pub faq_q5: &'static str,
+    pub faq_a5: &'static str,
 
     // Compare page
     pub compare_meta_title: &'static str,

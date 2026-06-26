@@ -1115,6 +1115,51 @@
     z-index: 1;
 }
 
+/* FAQ — visible Q&A mirrors the FAQPage JSON-LD. Reuses the section tokens
+   of the neighbouring feat-* blocks (paper background, serif heading, mono
+   body) so no new design tokens are introduced. */
+
+.feat-faq {
+    background: var(--bg-cream);
+    padding: var(--space-xxl) var(--space-lg);
+}
+
+.feat-faq__inner {
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+.feat-faq__inner h2 {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 400;
+    margin-bottom: var(--space-xl);
+}
+
+.feat-faq__list {
+    display: grid;
+    gap: var(--space-lg);
+}
+
+.feat-faq__item {
+    border-top: 1px solid var(--border-dark);
+    padding-top: var(--space-md);
+}
+
+.feat-faq__question {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin-bottom: var(--space-sm);
+}
+
+.feat-faq__answer {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--fg-muted);
+}
+
 /* CTA (old feat-cta removed, uses home-cta) */
 
 /* ========================================

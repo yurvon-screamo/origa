@@ -411,3 +411,42 @@ async fn home_has_no_breadcrumb() {
         &body[..body.len().min(500)]
     );
 }
+
+#[tokio::test]
+async fn features_has_faq_schema() {
+    let body = get_body("/features").await;
+    let block = find_jsonld_block_by_type(&body, "FAQPage");
+    let value: serde_json::Value = serde_json::from_str(&block).expect("FAQPage block must parse");
+    let entities = value
+        .get("mainEntity")
+        .and_then(|v| v.as_array())
+        .expect("FAQPage must have a mainEntity array");
+    assert!(
+        !entities.is_empty(),
+        "FAQPage mainEntity must be non-empty; got: {entities:?}"
+    );
+    // Google requires every Question to carry an acceptedAnswer.
+    for entity in entities {
+        assert!(
+            entity.get("acceptedAnswer").is_some(),
+            "every FAQ Question must have an acceptedAnswer; got: {entity}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn features_has_visible_faq_block() {
+    // Google's FAQPage policy requires the Q&A to be visible on the page, not
+    // only in JSON-LD. Assert the first question renders inside the visible
+    // <section class="feat-faq"> (i.e. after the section marker, not just
+    // inside the <script> block).
+    let body = get_body("/features").await;
+    let section_idx = body
+        .find(r#"<section class="feat-faq">"#)
+        .expect("features page must render a visible .feat-faq section");
+    let after_section = &body[section_idx..];
+    assert!(
+        after_section.contains("How do I start learning Japanese with Origa?"),
+        "FAQ Q1 must appear in the visible .feat-faq section, not only in JSON-LD"
+    );
+}

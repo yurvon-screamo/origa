@@ -95,6 +95,29 @@ pub fn learning_resource_schema(locale: Locale) -> String {
     .to_string()
 }
 
+pub fn faq_schema(locale: Locale, qas: &[(&'static str, &'static str)]) -> String {
+    let entities: Vec<_> = qas
+        .iter()
+        .map(|(question, answer)| {
+            serde_json::json!({
+                "@type": "Question",
+                "name": question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": answer
+                }
+            })
+        })
+        .collect();
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": locale.as_str(),
+        "mainEntity": entities
+    })
+    .to_string()
+}
+
 pub fn how_to_schema(locale: Locale, name: &str, steps: &[&str]) -> String {
     let steps_json: Vec<_> = steps
         .iter()
