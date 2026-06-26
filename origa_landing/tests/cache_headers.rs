@@ -111,6 +111,16 @@ async fn sitemap_xml_has_no_cache() {
 }
 
 #[tokio::test]
+async fn llms_txt_has_no_cache() {
+    // llms.txt summarises the product for AI assistants/crawlers. Unlike a
+    // hashed asset, its copy is updated per release, so immutable caching would
+    // pin stale text at the CDN edge (the same edge-poisoning class of bug as
+    // PR #182). no-cache keeps it always-fresh. See ADR-016.
+    let cc = cache_control("/llms.txt").await;
+    assert_eq!(cc.as_deref(), Some("no-cache"));
+}
+
+#[tokio::test]
 async fn missing_image_404_is_not_cached_as_immutable() {
     // Regression for the SEO "Common-1" issue: `ServeDir` stamps
     // `IMMUTABLE_CACHE` on its 404 via `insert_response_header_if_not_present`
