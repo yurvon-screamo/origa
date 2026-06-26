@@ -55,14 +55,18 @@ async fn get_body_any(uri: &str) -> (StatusCode, String) {
 fn first_jsonld_block(html: &str) -> String {
     let open = r#"<script type="application/ld+json">"#;
     let close = "</script>";
-    let start = html
-        .find(open)
-        .unwrap_or_else(|| panic!("no JSON-LD block in body: {}", &html[..html.len().min(400)]))
-        + open.len();
-    let end = html[start..]
-        .find(close)
-        .unwrap_or_else(|| panic!("JSON-LD block not closed: {}", &html[start..start + 400]))
-        + start;
+    let start = html.find(open).unwrap_or_else(|| {
+        panic!(
+            "no JSON-LD block in body: {}",
+            html.chars().take(400).collect::<String>()
+        )
+    }) + open.len();
+    let end = html[start..].find(close).unwrap_or_else(|| {
+        panic!(
+            "JSON-LD block not closed: {}",
+            html[start..].chars().take(400).collect::<String>()
+        )
+    }) + start;
     html[start..end].to_owned()
 }
 
@@ -89,7 +93,7 @@ fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
     }
     panic!(
         "no JSON-LD block with @type={type_name}; body was: {}",
-        &html[..html.len().min(500)]
+        html.chars().take(500).collect::<String>()
     )
 }
 
@@ -207,7 +211,7 @@ async fn og_locale_alternates_present_for_other_locales() {
     assert!(
         body.contains(r#"property="og:locale" content="ru_RU""#),
         "current og:locale missing; got first 600 chars: {}",
-        &body[..body.len().min(600)]
+        body.chars().take(600).collect::<String>()
     );
     for alt in ["en_US", "ko_KR", "vi_VN"] {
         assert!(
@@ -250,7 +254,7 @@ async fn default_title_is_descriptive() {
     assert!(
         body.contains("<title>Origa — Japanese Learning App</title>"),
         "default title not found; got first 800 chars: {}",
-        &body[..body.len().min(800)]
+        body.chars().take(800).collect::<String>()
     );
 }
 
@@ -297,7 +301,7 @@ async fn en_home_has_keywords_meta() {
     assert!(
         body.contains(r#"<meta name="keywords" content="japanese"#),
         "EN keywords meta missing or not starting with a japanese keyword; got first 800 chars: {}",
-        &body[..body.len().min(800)]
+        body.chars().take(800).collect::<String>()
     );
 }
 
@@ -329,7 +333,7 @@ async fn vi_keywords_contain_han_tu() {
             r#"<meta name="keywords" content="học tiếng nhật, app học tiếng nhật, hán tự"#
         ),
         "VI keywords meta must contain 'hán tự'; got first 800 chars: {}",
-        &body[..body.len().min(800)]
+        body.chars().take(800).collect::<String>()
     );
 }
 
@@ -341,7 +345,7 @@ async fn ko_keywords_are_korean() {
     assert!(
         has_korean,
         "KO keywords meta must contain Korean text; got first 800 chars: {}",
-        &body[..body.len().min(800)]
+        body.chars().take(800).collect::<String>()
     );
 }
 
@@ -408,7 +412,7 @@ async fn home_has_no_breadcrumb() {
     assert!(
         !body.contains("BreadcrumbList"),
         "home page must not emit a BreadcrumbList schema; got: {}",
-        &body[..body.len().min(500)]
+        body.chars().take(500).collect::<String>()
     );
 }
 
