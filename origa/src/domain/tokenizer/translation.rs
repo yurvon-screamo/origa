@@ -728,68 +728,34 @@ mod integration_tests {
     }
 
     // --- Phrase 2: 水なしでは生きていけない ---
-    // Lindera used to over-merge 水なし ("without water") into a single ProperNoun
-    // token (reading ミズナシ) with no vocabulary translation. Adding なし to the
-    // user_dictionary forces Lindera to recognize it as a known noun and split the
-    // compound into 水 (water) + なし (without), so both halves become translatable.
+    // Characterization test: Lindera over-merges 水なし ("without water") into a
+    // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
+    // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
+    // but fixing this via user_dictionary breaks E2E (MarkdownText rendering).
+    // Post-processing splitter approach is planned as a follow-up.
+    // This test documents the current limitation so it is visible and trackable.
     #[test]
-    fn should_split_mizunashi_compound() {
+    fn should_document_mizunashi_overmerge_limitation() {
         ensure_dictionaries();
         let text = "水なしでは生きていけない";
         let tokens = super::super::tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
-        let surfaces: Vec<&str> = results.iter().map(|t| t.surface_form.as_str()).collect();
-        assert!(
-            surfaces.contains(&"水") && surfaces.contains(&"なし"),
-            "水なし should be split into 水 + なし, got: {:?}",
-            surfaces
-        );
         let merged = results.iter().find(|t| t.surface_form == "水なし");
         assert!(
-            merged.is_none(),
-            "Over-merged 「水なし」ProperNoun should no longer appear, got: {:?}",
-            surfaces
+            merged.is_some(),
+            "Known limitation: Lindera should over-merge 「水なし」into a single token. \
+             If this assertion fails, the over-merge was resolved — flip the test to \
+             assert separate 水 + なし tokens. Tokens: {:?}",
+            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
         );
-        let mizu = results
-            .iter()
-            .find(|t| t.surface_form == "水")
-            .expect("「水」token should exist after split");
+        let merged_token = merged.unwrap();
         assert!(
-            mizu.translation.is_some(),
-            "「水」should resolve to its vocabulary translation, got: {:?}",
-            mizu
+            merged_token.translation.is_none(),
+            "Over-merged 「水なし」should have no translation (ProperNoun not in vocab). \
+             got: {:?}",
+            merged_token.translation
         );
-    }
-
-    // Regression for the global user_dictionary entry なし — adding it as a
-    // standalone noun affects tokenization everywhere, not just 水なし. This test
-    // confirms common 「Xなし」 compounds (problem-free, worry-free) tokenize such
-    // that なし is a separate token rather than being over-merged into a single
-    // ProperNoun token. If a future なし addition regresses tokenization of
-    // unrelated text, this test surfaces it.
-    #[test]
-    fn nashi_user_dict_splits_common_compounds_without_regression() {
-        ensure_dictionaries();
-        for text in ["問題なし", "心配なし", "異常なし"] {
-            let tokens = super::super::tokenize_text(text).unwrap();
-            let surfaces: Vec<&str> = tokens
-                .iter()
-                .map(|t| t.orthographic_surface_form())
-                .collect();
-            assert!(
-                surfaces.contains(&"なし"),
-                "「{}」should contain a なし token, got: {:?}",
-                text,
-                surfaces
-            );
-            assert!(
-                !surfaces.contains(&text),
-                "「{}」should NOT be over-merged into a single token, got: {:?}",
-                text,
-                surfaces
-            );
-        }
     }
 
     // --- Phrase 3: 大丈夫でやがる ---
