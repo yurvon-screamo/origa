@@ -97,9 +97,9 @@ async fn full_short_term_cycle_processes_all_cards() {
     let rate_use_case = RateCardUseCase::new(&repo);
 
     let cards = select_use_case.execute(&JlptContent::new()).await.unwrap();
-    for (card_id, _) in cards {
+    for (_, lc) in cards {
         rate_use_case
-            .execute(card_id, RateMode::ShortTerm, Rating::Good)
+            .execute(lc.card_id(), RateMode::ShortTerm, Rating::Good)
             .await
             .unwrap();
     }

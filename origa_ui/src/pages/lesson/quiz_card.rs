@@ -119,6 +119,7 @@ pub fn QuizCardView(
     let card_type = CardType::from(&card);
     let lang = native_language;
     let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+    let part_of_speech = card.vocabulary_part_of_speech();
 
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
@@ -208,6 +209,7 @@ pub fn QuizCardView(
                 card_type=card_type
                 question_text=display_question.get_value()
                 quiz_variant=quiz_variant
+                part_of_speech=part_of_speech
             />
 
             <div class="flex-1 flex flex-col justify-center">

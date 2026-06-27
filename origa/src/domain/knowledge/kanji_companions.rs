@@ -222,7 +222,7 @@ fn append_companions(
         .iter()
         .map(|(card_id, study_card)| {
             let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
-            (*card_id, LessonCard::new(view, false))
+            (*card_id, LessonCard::new(*card_id, view, false))
         })
         .collect();
 
@@ -262,7 +262,7 @@ mod tests {
             .map(|id| {
                 let sc = knowledge_set.get_card(*id).unwrap();
                 let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
-                (*id, LessonCard::new(view, false))
+                (*id, LessonCard::new(*id, view, false))
             })
             .collect();
         let core_count = cards.len();

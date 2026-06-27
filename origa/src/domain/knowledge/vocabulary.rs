@@ -18,6 +18,8 @@ pub struct CreateFromTextResult {
 pub struct VocabularyCard {
     word: Question,
     reverse_side: Option<Question>,
+    #[serde(default)]
+    pos: Option<PartOfSpeech>,
 }
 
 impl VocabularyCard {
@@ -27,16 +29,23 @@ impl VocabularyCard {
         Self {
             word,
             reverse_side: None,
+            pos: None,
         }
     }
 
     /// Creates a card from a single known word after validating that a translation exists.
+    /// The part of speech is resolved with a single tokenization pass at construction time
+    /// so subsequent reads do not re-tokenize.
     pub fn from_known_word(word: &str, lang: &NativeLanguage) -> Result<Self, OrigaError> {
         Self::validate_translation(word, lang)?;
         let question = Question::new(word.to_string())?;
+        let pos = tokenize_text(word)
+            .ok()
+            .and_then(|tokens| tokens.first().map(|t| t.part_of_speech().clone()));
         Ok(Self {
             word: question,
             reverse_side: None,
+            pos,
         })
     }
 
@@ -62,9 +71,13 @@ impl VocabularyCard {
             }
 
             let word_text = token.orthographic_base_form();
+            let token_pos = token.part_of_speech().clone();
 
             match Self::from_known_word(word_text, lang) {
-                Ok(card) => cards.push(card),
+                Ok(mut card) => {
+                    card.pos = Some(token_pos);
+                    cards.push(card);
+                },
                 Err(_) => skipped.push(word_text.to_string()),
             }
         }
@@ -126,11 +139,23 @@ impl VocabularyCard {
     }
 
     pub fn part_of_speech(&self) -> Result<PartOfSpeech, OrigaError> {
+        if let Some(pos) = self.pos.clone() {
+            return Ok(pos);
+        }
         let tokens = tokenize_text(self.word.text())?;
         let token = tokens.first().ok_or(OrigaError::TokenizerError {
             reason: "Not found token".to_string(),
         })?;
         Ok(token.part_of_speech().clone())
+    }
+
+    pub fn pos(&self) -> Option<PartOfSpeech> {
+        self.pos.clone()
+    }
+
+    pub fn with_pos(mut self, pos: PartOfSpeech) -> Self {
+        self.pos = Some(pos);
+        self
     }
 
     pub fn with_grammar_rule(
@@ -150,6 +175,7 @@ impl VocabularyCard {
         let card = Self {
             word: Question::new(formatted_word)?,
             reverse_side: Some(answer_text),
+            pos: self.pos.clone(),
         };
 
         Ok((card, grammar_description))
@@ -163,6 +189,7 @@ impl VocabularyCard {
         Ok(Self {
             word: Question::new(meaning_text)?,
             reverse_side: Some(self.word.clone()),
+            pos: self.pos.clone(),
         })
     }
 }
@@ -177,6 +204,7 @@ mod tests {
         VocabularyCard {
             word: Question::new(word.to_string()).unwrap(),
             reverse_side: None,
+            pos: None,
         }
     }
 
@@ -254,6 +282,7 @@ mod tests {
         let card = VocabularyCard {
             word: question,
             reverse_side: Some(reverse_side),
+            pos: None,
         };
 
         let answer = card.answer(&NativeLanguage::Russian);
@@ -484,6 +513,7 @@ mod tests {
         let card = VocabularyCard {
             word: question,
             reverse_side: Some(reverse_side),
+            pos: None,
         };
 
         let json = serde_json::to_string(&card).unwrap();

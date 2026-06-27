@@ -239,6 +239,7 @@ pub fn LessonCard(
                 question_text=if is_reversed { answer.get_value() } else { display_question.get_value() }
                 grammar_info=grammar_info.clone()
                 show_answer=show_answer
+                card=card.clone()
                 audio_path=audio_path
             />
 

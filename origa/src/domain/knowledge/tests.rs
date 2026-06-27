@@ -741,18 +741,23 @@ fn new_cards_interleaved_by_type_within_jlpt_level() {
 
     let result = knowledge_set.cards_to_lesson(15, &jlpt_content, JapaneseLevel::N5);
 
+    let distinct_card_ids: HashSet<Ulid> = result.values().map(|lc| lc.card_id()).collect();
     assert_eq!(
-        result.len(),
+        distinct_card_ids.len(),
         10,
-        "Should return all 10 cards (6 vocab + 2 kanji + 2 grammar)"
+        "Should return all 10 underlying cards (6 vocab + 2 kanji + 2 grammar); \
+         expansion may add extra showings but not new card ids"
     );
 
-    let has_kanji = result
-        .keys()
-        .any(|id| matches!(knowledge_set.get_card(*id).unwrap().card(), Card::Kanji(_)));
-    let has_grammar = result.keys().any(|id| {
+    let has_kanji = result.values().any(|lc| {
         matches!(
-            knowledge_set.get_card(*id).unwrap().card(),
+            knowledge_set.get_card(lc.card_id()).unwrap().card(),
+            Card::Kanji(_)
+        )
+    });
+    let has_grammar = result.values().any(|lc| {
+        matches!(
+            knowledge_set.get_card(lc.card_id()).unwrap().card(),
             Card::Grammar(_)
         )
     });
@@ -834,15 +839,21 @@ fn new_cards_interleave_across_jlpt_levels() {
 
     let result = knowledge_set.cards_to_lesson(4, &jlpt_content, JapaneseLevel::N5);
 
-    assert_eq!(result.len(), 4, "Should return exactly 4 cards (limit=4)");
+    let distinct_card_ids: HashSet<Ulid> = result.values().map(|lc| lc.card_id()).collect();
+    assert_eq!(
+        distinct_card_ids.len(),
+        4,
+        "Should select exactly 4 underlying cards (limit=4); \
+         multi-show expansion may add extra showings of those 4 card ids"
+    );
 
     let n5_words: HashSet<&str> = ["n5w1", "n5w2", "n5w3"].into_iter().collect();
     let n5_kanji: &str = "n5k1";
     let n4_words: HashSet<&str> = ["n4w1", "n4w2", "n4w3"].into_iter().collect();
     let n4_kanji: &str = "n4k1";
 
-    for id in result.keys() {
-        let card = knowledge_set.get_card(*id).unwrap().card();
+    for lc in result.values() {
+        let card = knowledge_set.get_card(lc.card_id()).unwrap().card();
         match card {
             Card::Vocabulary(v) => {
                 let word = v.word().text();

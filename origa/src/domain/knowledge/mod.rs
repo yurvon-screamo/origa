@@ -187,6 +187,15 @@ impl KnowledgeSet {
         &self.deleted_cards
     }
 
+    pub fn update_card_content(&mut self, card_id: Ulid, new_card: Card) -> Result<(), OrigaError> {
+        let study_card = self
+            .study_cards
+            .get_mut(&card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+        study_card.replace_card(new_card);
+        Ok(())
+    }
+
     pub fn create_card(&mut self, card: Card) -> Result<StudyCard, OrigaError> {
         let study_card = StudyCard::new(card);
         let card_id = *study_card.card_id();
@@ -251,7 +260,8 @@ impl KnowledgeSet {
     ) -> LessonData {
         use std::collections::HashSet;
 
-        let core = lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content);
+        let (core, primary_card_ids) =
+            lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content);
         let with_companions = kanji_companions::add_kanji_companions(core, self, user_level);
         let mut phrase_new_budget = lesson_builder::compute_phrase_new_budget(
             daily_new_limit,
@@ -264,12 +274,13 @@ impl KnowledgeSet {
             &mut used_phrase_ids,
             &mut phrase_new_budget,
         );
-        lesson_builder::add_tail_phrases(
+        let with_tail = lesson_builder::add_tail_phrases(
             with_interleaved,
             self,
             &used_phrase_ids,
             &mut phrase_new_budget,
-        )
+        );
+        lesson_builder::expand_repeated_views(with_tail, self, &primary_card_ids)
     }
 
     pub(crate) fn rate_card(
@@ -380,5 +391,10 @@ impl KnowledgeSet {
         } else {
             Err(OrigaError::CardNotFound { card_id })
         }
+    }
+
+    #[cfg(test)]
+    pub fn study_cards_mut_for_test(&mut self) -> &mut HashMap<Ulid, StudyCard> {
+        &mut self.study_cards
     }
 }

@@ -63,9 +63,9 @@ async fn full_lesson_cycle_updates_history() {
     let rate_use_case = RateCardUseCase::new(&repo);
 
     let cards = select_use_case.execute(&JlptContent::new()).await.unwrap();
-    for (card_id, _) in cards {
+    for (_, lc) in cards {
         rate_use_case
-            .execute(card_id, RateMode::StandardLesson, Rating::Good)
+            .execute(lc.card_id(), RateMode::StandardLesson, Rating::Good)
             .await
             .unwrap();
     }

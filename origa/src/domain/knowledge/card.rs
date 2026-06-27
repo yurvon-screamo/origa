@@ -1,5 +1,5 @@
 use crate::domain::{
-    OrigaError, Rating, ReviewLog,
+    OrigaError, PartOfSpeech, Rating, ReviewLog,
     knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{CardAnswer, NativeLanguage, Question},
@@ -39,6 +39,10 @@ impl StudyCard {
 
     pub fn card(&self) -> &Card {
         &self.card
+    }
+
+    pub(crate) fn replace_card(&mut self, new_card: Card) {
+        self.card = new_card;
     }
 
     pub fn memory(&self) -> &MemoryHistory {
@@ -177,6 +181,13 @@ impl Card {
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
             Card::Phrase(card) => card.phrase_id().to_string(),
+        }
+    }
+
+    pub fn vocabulary_part_of_speech(&self) -> Option<PartOfSpeech> {
+        match self {
+            Card::Vocabulary(v) => v.pos(),
+            _ => None,
         }
     }
 }

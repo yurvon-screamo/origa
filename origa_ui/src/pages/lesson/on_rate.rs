@@ -106,37 +106,40 @@ pub fn create_on_rate_callback(
     Callback::new(move |rating: Rating| {
         let state = lesson_state.get_untracked();
 
-        let Some(card_id) = state.card_ids.get(state.current_index) else {
+        let Some(slot_id) = state.card_ids.get(state.current_index) else {
             return;
         };
 
-        let card_id = *card_id;
-        is_rating.set(Some(card_id));
+        let slot_id = *slot_id;
+        is_rating.set(Some(slot_id));
+
+        let lesson_card = state.cards.get(&slot_id);
+        let real_card_id = lesson_card.map(|lc| lc.card_id());
+        let rate_mode = lesson_card
+            .map(determine_rate_mode)
+            .unwrap_or(RateMode::StandardLesson);
+        let grammar_rule_id = lesson_card.and_then(extract_grammar_rule_id);
+
+        let Some(real_card_id) = real_card_id else {
+            return;
+        };
 
         let repo = lesson_ctx.repository.clone();
         let lesson_state = lesson_state;
         let is_completed = lesson_ctx.is_completed;
         let is_rating = is_rating;
 
-        let rate_mode = state
-            .cards
-            .get(&card_id)
-            .map(determine_rate_mode)
-            .unwrap_or(RateMode::StandardLesson);
-
-        let grammar_rule_id = state.cards.get(&card_id).and_then(extract_grammar_rule_id);
-
         spawn_local(async move {
             let use_case = RateCardWithSideEffectsUseCase::new(&repo);
 
             if let Err(e) = use_case
-                .execute(card_id, rate_mode, rating, grammar_rule_id)
+                .execute(real_card_id, rate_mode, rating, grammar_rule_id)
                 .await
             {
                 warn!(error = ?e, "Failed to rate card");
             }
 
-            check_and_create_ready_phrases(card_id, &repo, rating).await;
+            check_and_create_ready_phrases(real_card_id, &repo, rating).await;
 
             if is_disposed.is_disposed() {
                 return;
@@ -155,7 +158,7 @@ mod tests {
 
     fn phrase_lesson_card(is_short_term: bool) -> LessonCard {
         let card = Card::Phrase(PhraseCard::new(Ulid::new()));
-        LessonCard::new(LessonCardView::Normal(card), is_short_term)
+        LessonCard::new(Ulid::new(), LessonCardView::Normal(card), is_short_term)
     }
 
     // `VocabularyCard::new` is `#[cfg(test)] pub(crate)` in the `origa` crate,
@@ -165,10 +168,11 @@ mod tests {
     // `VocabularyCard` serialization shape will break this helper loudly, which
     // is preferable to a silent mismatch between the test fixture and prod data.
     fn vocab_lesson_card(is_short_term: bool) -> LessonCard {
-        let card: Card =
-            serde_json::from_str(r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":null}}"#)
-                .expect("deserialize vocab card");
-        LessonCard::new(LessonCardView::Normal(card), is_short_term)
+        let card: Card = serde_json::from_str(
+            r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":null,"pos":null}}"#,
+        )
+        .expect("deserialize vocab card");
+        LessonCard::new(Ulid::new(), LessonCardView::Normal(card), is_short_term)
     }
 
     // A phrase card placed inside the core section (index < core_count) must

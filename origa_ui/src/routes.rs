@@ -22,7 +22,9 @@ use leptos_router::hooks::use_location;
 use leptos_router::path;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
-use origa::use_cases::{MigrateKanjiCompanionsUseCase, SeedReadyPhrasesUseCase};
+use origa::use_cases::{
+    MigrateKanjiCompanionsUseCase, MigrateVocabularyPartOfSpeechUseCase, SeedReadyPhrasesUseCase,
+};
 
 use crate::repository::HybridUserRepository;
 
@@ -133,6 +135,11 @@ pub fn start_dictionary_loading(
         let migrate_kanji = MigrateKanjiCompanionsUseCase::new(&repository);
         if let Err(e) = migrate_kanji.execute().await {
             tracing::warn!("Failed to migrate kanji companions: {e}");
+        }
+
+        let migrate_vocab_pos = MigrateVocabularyPartOfSpeechUseCase::new(&repository);
+        if let Err(e) = migrate_vocab_pos.execute().await {
+            tracing::warn!("Failed to migrate vocabulary part of speech: {e}");
         }
 
         // Phase E: auto per-card pre-cache (background, only when online)
