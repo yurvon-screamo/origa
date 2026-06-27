@@ -182,11 +182,74 @@ pub(crate) fn find_format_map_matches<'a>(
     rules
         .iter()
         .filter(|rule| rule.has_format_map())
-        .filter(|rule| {
-            rule.format(base, pos)
-                .is_ok_and(|formatted| formatted != base && text.contains(&formatted))
-        })
+        .filter(|rule| formatted_rule_matches_text(rule, base, pos, text))
         .collect()
+}
+
+fn formatted_rule_matches_text(
+    rule: &GrammarRule,
+    base: &str,
+    pos: &PartOfSpeech,
+    text: &str,
+) -> bool {
+    let Ok(formatted) = rule.format(base, pos) else {
+        return false;
+    };
+    if formatted == base {
+        return false;
+    }
+    if text.contains(&formatted) {
+        return true;
+    }
+    formatted_conjugation_variants(&formatted)
+        .iter()
+        .any(|variant| text.contains(variant))
+}
+
+fn formatted_conjugation_variants(formatted: &str) -> Vec<String> {
+    let mut variants = Vec::new();
+    if formatted.ends_with('る') {
+        collect_verb_variants(formatted, &mut variants);
+    } else if matches_i_adjective_aux_suffix(formatted) {
+        collect_i_adjective_variants(formatted, &mut variants);
+    }
+    variants
+}
+
+fn matches_i_adjective_aux_suffix(formatted: &str) -> bool {
+    const I_ADJECTIVE_AUX_SUFFIXES: &[&str] = &["たい", "やすい", "にくい"];
+    I_ADJECTIVE_AUX_SUFFIXES
+        .iter()
+        .any(|suffix| formatted.ends_with(suffix))
+}
+
+fn collect_verb_variants(formatted: &str, variants: &mut Vec<String>) {
+    variants.push(to_te_form(formatted));
+    variants.push(to_ta_form(formatted));
+    variants.push(to_nai_form(formatted));
+    variants.push(to_masu_form(formatted));
+    if let Some(stem) = formatted.strip_suffix('る') {
+        // Min length guards against false-positive substring matches on
+        // single-char stems (e.g. 見る → 見 matches almost any text).
+        if stem.chars().count() >= 2 {
+            variants.push(stem.to_string());
+        }
+    }
+}
+
+fn collect_i_adjective_variants(formatted: &str, variants: &mut Vec<String>) {
+    if let Ok(form) = to_kute_form(formatted, &PartOfSpeech::IAdjective) {
+        variants.push(form);
+    }
+    if let Ok(form) = to_katta_form(formatted, &PartOfSpeech::IAdjective) {
+        variants.push(form);
+    }
+    if let Ok(form) = to_kunai_form(formatted, &PartOfSpeech::IAdjective) {
+        variants.push(form);
+    }
+    if let Ok(form) = to_ku_form(formatted, &PartOfSpeech::IAdjective) {
+        variants.push(form);
+    }
 }
 
 #[cfg(test)]
@@ -1633,6 +1696,185 @@ mod tests {
             assert!(
                 result.len() >= 2,
                 "Should match both bare te-form and te+kudasai"
+            );
+        }
+
+        fn create_sugiru_rule() -> GrammarRule {
+            create_rule_with_format_map(HashMap::from([
+                (
+                    PartOfSpeech::IAdjective,
+                    vec![FormatAction::AdjectiveToSugiru {}],
+                ),
+                (PartOfSpeech::Verb, vec![FormatAction::VerbToSugiru {}]),
+            ]))
+        }
+
+        fn create_tai_rule() -> GrammarRule {
+            create_rule_with_format_map(HashMap::from([(
+                PartOfSpeech::Verb,
+                vec![FormatAction::VerbToTai {}],
+            )]))
+        }
+
+        #[test]
+        fn detects_sugiru_te_form_via_conjugation_chain() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "強すぎて寒い",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect すぎる via te-form conjugation (強すぎて)"
+            );
+        }
+
+        #[test]
+        fn detects_sugiru_ta_form_via_conjugation_chain() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "強すぎた",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect すぎる via ta-form conjugation (強すぎた)"
+            );
+        }
+
+        #[test]
+        fn detects_sugiru_stem_form_via_conjugation_chain() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "強すぎ見える",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect すぎる via stem form (強すぎ)"
+            );
+        }
+
+        #[test]
+        fn detects_sugiru_masu_form_via_conjugation_chain() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "強すぎますね",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect すぎる via masu-form (強すぎます)"
+            );
+        }
+
+        #[test]
+        fn detects_tai_te_form_via_conjugation_chain() {
+            let rules = vec![create_tai_rule()];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べたくて",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect たい via te-form conjugation (食べたくて)"
+            );
+        }
+
+        #[test]
+        fn detects_tai_katta_form_via_conjugation_chain() {
+            let rules = vec![create_tai_rule()];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べたかった",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect たい via katta-form (食べたかった)"
+            );
+        }
+
+        #[test]
+        fn detects_tai_kunai_form_via_conjugation_chain() {
+            let rules = vec![create_tai_rule()];
+            let result = super::super::find_format_map_matches(
+                "食べる",
+                &PartOfSpeech::Verb,
+                "食べたくない",
+                &rules,
+            );
+            assert!(
+                !result.is_empty(),
+                "Should detect たい via kunai-form (食べたくない)"
+            );
+        }
+
+        #[test]
+        fn does_not_match_unrelated_text_via_conjugation_chain() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "猫は魚を食べる",
+                &rules,
+            );
+            assert!(
+                result.is_empty(),
+                "No conjugated form of 強すぎる should appear in unrelated text"
+            );
+        }
+
+        #[test]
+        fn still_detects_direct_match_for_sugiru_base() {
+            let rules = vec![create_sugiru_rule()];
+            let result = super::super::find_format_map_matches(
+                "強い",
+                &PartOfSpeech::IAdjective,
+                "強すぎる問題",
+                &rules,
+            );
+            assert!(!result.is_empty(), "Direct 強すぎる match must still work");
+        }
+    }
+
+    mod conjugation_variants {
+        #[test]
+        fn generates_verb_variants_for_sugiru_form() {
+            let variants = super::formatted_conjugation_variants("強すぎる");
+            assert!(variants.contains(&"強すぎて".to_string()));
+            assert!(variants.contains(&"強すぎた".to_string()));
+            assert!(variants.contains(&"強すぎない".to_string()));
+            assert!(variants.contains(&"強すぎます".to_string()));
+            assert!(variants.contains(&"強すぎ".to_string()));
+        }
+
+        #[test]
+        fn generates_i_adjective_variants_for_tai_form() {
+            let variants = super::formatted_conjugation_variants("食べたい");
+            assert!(variants.contains(&"食べたくて".to_string()));
+            assert!(variants.contains(&"食べたかった".to_string()));
+            assert!(variants.contains(&"食べたくない".to_string()));
+            assert!(variants.contains(&"食べたく".to_string()));
+        }
+
+        #[test]
+        fn returns_empty_for_non_conjugatable_form() {
+            let variants = super::formatted_conjugation_variants("食べてください");
+            assert!(
+                variants.is_empty(),
+                "Forms ending in neither る nor い should produce no variants"
             );
         }
     }

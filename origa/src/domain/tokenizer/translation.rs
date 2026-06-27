@@ -731,9 +731,9 @@ mod integration_tests {
     // Characterization test: Lindera over-merges 水なし ("without water") into a
     // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
     // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
-    // but fixing this requires post-processing over-merge reversal — high risk and
-    // out of scope. This test documents the current limitation so it is visible
-    // and trackable. When the over-merge is addressed, flip the assertions.
+    // but fixing this via user_dictionary breaks E2E (MarkdownText rendering).
+    // Post-processing splitter approach is planned as a follow-up.
+    // This test documents the current limitation so it is visible and trackable.
     #[test]
     fn should_document_mizunashi_overmerge_limitation() {
         ensure_dictionaries();
@@ -1087,6 +1087,87 @@ mod integration_tests {
                 .filter(|t| t.grammar_label.is_some())
                 .map(|t| (&t.surface_form, &t.grammar_label))
                 .collect::<Vec<_>>()
+        );
+    }
+
+    // ～すぎる detection for noun-stem compounds in te-form: 複雑すぎて is split
+    // by Lindera into 複雑 (Noun) + すぎ (Verb, base 過ぎる) + て. The sugiru
+    // rule's format_map covers only Verb and IAdjective (no Noun entry), so
+    // format("複雑", Noun) errors before any matching can happen. The keyword
+    // whitelist on the rule catches the auxiliary token すぎ. This test locks
+    // in that noun-stem compounds in te-form are still labeled correctly via
+    // the keyword fallback.
+    #[test]
+    fn should_detect_sugiru_te_form_for_noun_stem_compound() {
+        ensure_dictionaries();
+        let text = "この問題は複雑すぎて困っている";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let has_sugiru = results.iter().any(|t| {
+            t.grammar_label
+                .as_deref()
+                .is_some_and(|label| label.contains("すぎる"))
+        });
+        assert!(
+            has_sugiru,
+            "すぎる should be detected for 複雑すぎて, labels: {:?}",
+            results
+                .iter()
+                .filter(|t| t.grammar_label.is_some())
+                .map(|t| (&t.surface_form, &t.grammar_label))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    // Standalone grammar markers (particle / noun / auxiliary) that previously
+    // carried no grammar_label because their rule had only a format_map and no
+    // keywords. Keyword matching fires on the token surface, so once a keyword
+    // is added the marker token itself is labeled instead of staying bare.
+    fn assert_marker_has_grammar_label(text: &str, marker_surface: &str, expected_label: &str) {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let marker = results
+            .iter()
+            .find(|t| t.surface_form == marker_surface)
+            .unwrap_or_else(|| panic!(
+                "「{marker_surface}」 token should exist in '{text}', got surfaces: {surfaces:?}",
+                surfaces = results.iter().map(|t| t.surface_form.as_str()).collect::<Vec<_>>()
+            ));
+        assert_eq!(
+            marker.grammar_label.as_deref(),
+            Some(expected_label),
+            "「{marker_surface}」 in '{text}' grammar_label mismatch, token: {marker:?}",
+        );
+    }
+
+    #[test]
+    fn should_label_te_particle_via_keyword() {
+        assert_marker_has_grammar_label("食べて飲んで", "て", "～て");
+    }
+
+    #[test]
+    fn should_label_tara_conditional_via_keyword() {
+        assert_marker_has_grammar_label("食べたら", "たら", "～たら");
+    }
+
+    #[test]
+    fn should_label_okage_thanks_to_via_keyword() {
+        assert_marker_has_grammar_label("彼のおかげで成功した", "おかげ", "～おかげで");
+    }
+
+    #[test]
+    fn should_label_sei_because_of_via_keyword() {
+        assert_marker_has_grammar_label("失敗は彼のせいだ", "せい", "～せいで");
+    }
+
+    #[test]
+    fn should_label_totan_the_moment_via_keyword() {
+        assert_marker_has_grammar_label(
+            "ドアを開けたとたん猫が逃げた",
+            "とたん",
+            "～たとたん（に）",
         );
     }
 }
