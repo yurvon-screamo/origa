@@ -728,34 +728,68 @@ mod integration_tests {
     }
 
     // --- Phrase 2: 水なしでは生きていけない ---
-    // Characterization test: Lindera over-merges 水なし ("without water") into a
-    // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
-    // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
-    // but fixing this requires post-processing over-merge reversal — high risk and
-    // out of scope. This test documents the current limitation so it is visible
-    // and trackable. When the over-merge is addressed, flip the assertions.
+    // Lindera used to over-merge 水なし ("without water") into a single ProperNoun
+    // token (reading ミズナシ) with no vocabulary translation. Adding なし to the
+    // user_dictionary forces Lindera to recognize it as a known noun and split the
+    // compound into 水 (water) + なし (without), so both halves become translatable.
     #[test]
-    fn should_document_mizunashi_overmerge_limitation() {
+    fn should_split_mizunashi_compound() {
         ensure_dictionaries();
         let text = "水なしでは生きていけない";
         let tokens = super::super::tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
+        let surfaces: Vec<&str> = results.iter().map(|t| t.surface_form.as_str()).collect();
+        assert!(
+            surfaces.contains(&"水") && surfaces.contains(&"なし"),
+            "水なし should be split into 水 + なし, got: {:?}",
+            surfaces
+        );
         let merged = results.iter().find(|t| t.surface_form == "水なし");
         assert!(
-            merged.is_some(),
-            "Known limitation: Lindera should over-merge 「水なし」into a single token. \
-             If this assertion fails, the over-merge was resolved — flip the test to \
-             assert separate 水 + なし tokens. Tokens: {:?}",
-            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+            merged.is_none(),
+            "Over-merged 「水なし」ProperNoun should no longer appear, got: {:?}",
+            surfaces
         );
-        let merged_token = merged.unwrap();
+        let mizu = results
+            .iter()
+            .find(|t| t.surface_form == "水")
+            .expect("「水」token should exist after split");
         assert!(
-            merged_token.translation.is_none(),
-            "Over-merged 「水なし」should have no translation (ProperNoun not in vocab). \
-             got: {:?}",
-            merged_token.translation
+            mizu.translation.is_some(),
+            "「水」should resolve to its vocabulary translation, got: {:?}",
+            mizu
         );
+    }
+
+    // Regression for the global user_dictionary entry なし — adding it as a
+    // standalone noun affects tokenization everywhere, not just 水なし. This test
+    // confirms common 「Xなし」 compounds (problem-free, worry-free) tokenize such
+    // that なし is a separate token rather than being over-merged into a single
+    // ProperNoun token. If a future なし addition regresses tokenization of
+    // unrelated text, this test surfaces it.
+    #[test]
+    fn nashi_user_dict_splits_common_compounds_without_regression() {
+        ensure_dictionaries();
+        for text in ["問題なし", "心配なし", "異常なし"] {
+            let tokens = super::super::tokenize_text(text).unwrap();
+            let surfaces: Vec<&str> = tokens
+                .iter()
+                .map(|t| t.orthographic_surface_form())
+                .collect();
+            assert!(
+                surfaces.contains(&"なし"),
+                "「{}」should contain a なし token, got: {:?}",
+                text,
+                surfaces
+            );
+            assert!(
+                !surfaces.contains(&text),
+                "「{}」should NOT be over-merged into a single token, got: {:?}",
+                text,
+                surfaces
+            );
+        }
     }
 
     // --- Phrase 3: 大丈夫でやがる ---
@@ -1082,6 +1116,36 @@ mod integration_tests {
         assert!(
             has_sugiru_label,
             "～すぎる should be detected for 複雑すぎる, labels: {:?}",
+            results
+                .iter()
+                .filter(|t| t.grammar_label.is_some())
+                .map(|t| (&t.surface_form, &t.grammar_label))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    // ～すぎる detection for noun-stem compounds in te-form: 複雑すぎて is split
+    // by Lindera into 複雑 (Noun) + すぎ (Verb, base 過ぎる) + て. The sugiru
+    // rule's format_map covers only Verb and IAdjective (no Noun entry), so
+    // format("複雑", Noun) errors before any matching can happen. The keyword
+    // whitelist on the rule catches the auxiliary token すぎ. This test locks
+    // in that noun-stem compounds in te-form are still labeled correctly via
+    // the keyword fallback.
+    #[test]
+    fn should_detect_sugiru_te_form_for_noun_stem_compound() {
+        ensure_dictionaries();
+        let text = "この問題は複雑すぎて困っている";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let has_sugiru = results.iter().any(|t| {
+            t.grammar_label
+                .as_deref()
+                .is_some_and(|label| label.contains("すぎる"))
+        });
+        assert!(
+            has_sugiru,
+            "すぎる should be detected for 複雑すぎて, labels: {:?}",
             results
                 .iter()
                 .filter(|t| t.grammar_label.is_some())
