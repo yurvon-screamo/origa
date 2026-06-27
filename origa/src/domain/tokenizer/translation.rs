@@ -1153,4 +1153,55 @@ mod integration_tests {
                 .collect::<Vec<_>>()
         );
     }
+
+    // Standalone grammar markers (particle / noun / auxiliary) that previously
+    // carried no grammar_label because their rule had only a format_map and no
+    // keywords. Keyword matching fires on the token surface, so once a keyword
+    // is added the marker token itself is labeled instead of staying bare.
+    fn assert_marker_has_grammar_label(text: &str, marker_surface: &str, expected_label: &str) {
+        ensure_dictionaries();
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let marker = results
+            .iter()
+            .find(|t| t.surface_form == marker_surface)
+            .unwrap_or_else(|| panic!(
+                "「{marker_surface}」 token should exist in '{text}', got surfaces: {surfaces:?}",
+                surfaces = results.iter().map(|t| t.surface_form.as_str()).collect::<Vec<_>>()
+            ));
+        assert_eq!(
+            marker.grammar_label.as_deref(),
+            Some(expected_label),
+            "「{marker_surface}」 in '{text}' grammar_label mismatch, token: {marker:?}",
+        );
+    }
+
+    #[test]
+    fn should_label_te_particle_via_keyword() {
+        assert_marker_has_grammar_label("食べて飲んで", "て", "～て");
+    }
+
+    #[test]
+    fn should_label_tara_conditional_via_keyword() {
+        assert_marker_has_grammar_label("食べたら", "たら", "～たら");
+    }
+
+    #[test]
+    fn should_label_okage_thanks_to_via_keyword() {
+        assert_marker_has_grammar_label("彼のおかげで成功した", "おかげ", "～おかげで");
+    }
+
+    #[test]
+    fn should_label_sei_because_of_via_keyword() {
+        assert_marker_has_grammar_label("失敗は彼のせいだ", "せい", "～せいで");
+    }
+
+    #[test]
+    fn should_label_totan_the_moment_via_keyword() {
+        assert_marker_has_grammar_label(
+            "ドアを開けたとたん猫が逃げた",
+            "とたん",
+            "～たとたん（に）",
+        );
+    }
 }
