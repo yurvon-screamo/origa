@@ -1538,4 +1538,61 @@ mod integration_tests {
             sou.grammar_label
         );
     }
+
+    #[test]
+    fn should_label_kore_sore_are_demonstratives_via_keyword() {
+        ensure_dictionaries();
+        let text = "これは本です";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let kore = results
+            .iter()
+            .find(|t| t.surface_form == "これ")
+            .expect("「これ」token should exist");
+        assert!(
+            kore.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("これ")),
+            "「これ」should carry the これ・それ・あれ grammar_label via keyword, got: {:?}",
+            kore
+        );
+    }
+
+    #[test]
+    fn should_label_san_honorific_suffix_via_keyword() {
+        ensure_dictionaries();
+        let text = "田中さん";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let san = results
+            .iter()
+            .find(|t| t.surface_form == "さん")
+            .expect("「さん」suffix token should exist");
+        assert!(
+            san.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("さん")),
+            "「さん」should carry the ～さん honorific grammar_label via keyword, got: {:?}",
+            san
+        );
+    }
+
+    #[test]
+    fn should_label_itsu_question_word_via_keyword() {
+        ensure_dictionaries();
+        let text = "いつ行きますか";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let itsu = results
+            .iter()
+            .find(|t| t.surface_form == "いつ")
+            .expect("「いつ」token should exist");
+        assert!(
+            itsu.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("いつ")),
+            "「いつ」should carry the いつ question-word grammar_label via keyword, got: {:?}",
+            itsu
+        );
+    }
 }
