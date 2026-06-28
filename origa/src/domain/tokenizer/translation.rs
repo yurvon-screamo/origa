@@ -678,9 +678,9 @@ mod integration_tests {
     // --- Reproduction / regression tests for translation bugs ---
     // These tests were originally written as failing repro-tests to document
     // concrete root causes across 10 user-reported phrases. After the 6-slice
-    // fix they now pass and serve as regression locks. One test
-    // (should_document_mizunashi_overmerge_limitation) is a characterization
-    // test documenting a known Lindera limitation that is out of scope.
+    // fix they now pass and serve as regression locks. The
+    // `should_split_mizunashi_compound` test locks the post-processing
+    // splitter that resolves the 水なし over-merge limitation.
 
     // --- Phrase 1: 人はパンのみで生きるにあらずですわよ ---
     // Before the fix, Lindera split the classical negative あらず into あら
@@ -728,14 +728,15 @@ mod integration_tests {
     }
 
     // --- Phrase 2: 水なしでは生きていけない ---
-    // Characterization test: Lindera over-merges 水なし ("without water") into a
-    // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
-    // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
-    // but fixing this via user_dictionary breaks E2E (MarkdownText rendering).
-    // Post-processing splitter approach is planned as a follow-up.
-    // This test documents the current limitation so it is visible and trackable.
+    // Regression test for the post-processing splitter. Lindera over-merges
+    // 水なし ("without water") into a single ProperNoun token (reading ミズナシ)
+    // with no vocabulary translation. The splitter in `tokenize_text` detects
+    // ProperNoun tokens ending in a known productive suffix (currently なし)
+    // and splits them into separate Noun tokens so each gets translated.
+    // Previous approach (user_dictionary.csv + なし) broke E2E via furigana
+    // rendering; this code-only fix avoids touching the build binary.
     #[test]
-    fn should_document_mizunashi_overmerge_limitation() {
+    fn should_split_mizunashi_compound() {
         ensure_dictionaries();
         let text = "水なしでは生きていけない";
         let tokens = super::super::tokenize_text(text).unwrap();
@@ -743,18 +744,39 @@ mod integration_tests {
 
         let merged = results.iter().find(|t| t.surface_form == "水なし");
         assert!(
-            merged.is_some(),
-            "Known limitation: Lindera should over-merge 「水なし」into a single token. \
-             If this assertion fails, the over-merge was resolved — flip the test to \
-             assert separate 水 + なし tokens. Tokens: {:?}",
-            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+            merged.is_none(),
+            "「水なし」should be split into separate tokens, got merged token: {:?}",
+            merged
         );
-        let merged_token = merged.unwrap();
+
+        let mizu = results
+            .iter()
+            .find(|t| t.surface_form == "水" && t.pos == PartOfSpeech::Noun)
+            .expect("「水」noun should exist after split");
+        // Split must expose 水's dictionary entry — the whole point of the fix.
         assert!(
-            merged_token.translation.is_none(),
-            "Over-merged 「水なし」should have no translation (ProperNoun not in vocab). \
-             got: {:?}",
-            merged_token.translation
+            mizu.translation.is_some(),
+            "「水」should carry a translation after split, got: {:?}",
+            mizu
+        );
+        // Reading is derived from the merged token's phonological form
+        // (ミズナシ → strip suffix-length chars → ミズ), not the surface kanji.
+        assert_ne!(
+            mizu.reading, "水",
+            "「水」reading must be katakana ミズ, not surface kanji"
+        );
+
+        // なし has no standalone dictionary entry in the current vocabulary —
+        // the split still produces the token (needed for furigana/glossary
+        // alignment), but translation absence is a dictionary-data concern,
+        // not a splitter concern.
+        let nashi = results
+            .iter()
+            .find(|t| t.surface_form == "なし")
+            .expect("「なし」token should exist after split");
+        assert_ne!(
+            nashi.reading, "なし",
+            "「なし」reading must be katakana ナシ derived from merged token"
         );
     }
 
