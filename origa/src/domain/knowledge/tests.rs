@@ -1,3 +1,4 @@
+use super::lesson_builder::MAX_LESSON_SIZE;
 use super::*;
 use crate::domain::JapaneseLevel;
 use crate::domain::JlptContent;
@@ -1111,7 +1112,7 @@ fn lesson_size_respects_max_limit() {
     let result = knowledge_set.cards_to_lesson(100, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
-        result.len() <= 30,
+        result.len() <= MAX_LESSON_SIZE,
         "Total lesson size should not exceed MAX_LESSON_SIZE, got {}",
         result.len()
     );
@@ -1134,7 +1135,7 @@ fn high_difficulty_cards_respect_max_lesson_size() {
     let result = knowledge_set.cards_to_lesson(10, &JlptContent::new(), JapaneseLevel::N5);
 
     assert!(
-        result.len() <= 30,
+        result.len() <= MAX_LESSON_SIZE,
         "High-difficulty cards should be capped at MAX_LESSON_SIZE, got {}",
         result.len()
     );
