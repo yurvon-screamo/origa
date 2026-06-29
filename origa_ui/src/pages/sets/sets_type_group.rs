@@ -51,7 +51,7 @@ pub fn SetsTypeGroup(
                 >
                     {move || set_type_label.get_value()}
                 </Text>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <For
                         each=move || sets_for_type.get()
                         key=|s| s.set_id.clone()

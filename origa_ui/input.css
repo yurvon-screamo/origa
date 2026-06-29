@@ -892,6 +892,23 @@ input[type="submit"],
     transition: width 0.5s ease;
 }
 
+/* Indeterminate fallback: CDN serves model GETs chunked without Content-Length,
+   so the total is unknown — animate a segment instead of a fake percentage. */
+.progress-fill--indeterminate {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    background: var(--fg-black);
+    transform: translateX(0);
+    animation: anima-progress-indeterminate 1.4s var(--anima-ease-paper) infinite;
+}
+
+@keyframes anima-progress-indeterminate {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+}
+
 .progress-container {
     position: relative;
 }
@@ -5495,7 +5512,11 @@ rt {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     flex-shrink: 0;
-    width: 28px;
+}
+
+/* Compact label column — min-width keeps bars aligned without clipping long labels */
+.fsrs-metric .fsrs-label {
+    min-width: 40px;
     text-align: right;
 }
 
