@@ -50,6 +50,53 @@ impl ProgressInfo {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+struct ProgressDisplay {
+    details: String,
+    bar_class: &'static str,
+    bar_style: String,
+}
+
+fn format_progress(p: ProgressInfo, eta_text: Option<String>) -> ProgressDisplay {
+    const BYTES_PER_MB: f64 = 1_048_576.0;
+    let loaded_mb = p.loaded_bytes as f64 / BYTES_PER_MB;
+
+    if p.total_bytes == 0 {
+        let details = if p.speed_bps > 0 {
+            let speed_mbps = p.speed_bps as f64 / BYTES_PER_MB;
+            format!("{loaded_mb:.0} MB \u{2022} {speed_mbps:.1} MB/s")
+        } else {
+            format!("{loaded_mb:.0} MB")
+        };
+        return ProgressDisplay {
+            details,
+            bar_class: "progress-fill progress-fill--indeterminate",
+            bar_style: String::new(),
+        };
+    }
+
+    let total_mb = p.total_bytes as f64 / BYTES_PER_MB;
+    let percent = p.percent.min(100);
+
+    let details = if p.speed_bps > 0 {
+        let speed_mbps = p.speed_bps as f64 / BYTES_PER_MB;
+        match eta_text {
+            Some(eta) if p.eta_seconds > 0 => format!(
+                "{loaded_mb:.0} MB / {total_mb:.0} MB \u{2022} {speed_mbps:.1} MB/s \u{2022} {eta}"
+            ),
+            _ => format!("{loaded_mb:.0} MB / {total_mb:.0} MB \u{2022} {speed_mbps:.1} MB/s"),
+        }
+    } else {
+        format!("{loaded_mb:.0} MB / {total_mb:.0} MB \u{2022} {percent}%")
+    };
+
+    ProgressDisplay {
+        details,
+        bar_class: "progress-fill",
+        bar_style: format!("--progress-width: {percent}%"),
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub enum OcrLoadingStage {
     #[default]
@@ -185,52 +232,34 @@ pub fn LoadingStageItem(
 
     let progress_view = move || {
         progress.and_then(|p| {
-            if status == StageStatus::Active {
-                let percent = p.percent.min(100);
-                let loaded_mb = p.loaded_bytes as f64 / 1_048_576.0;
-                let total_mb = p.total_bytes as f64 / 1_048_576.0;
-
-                let details = if p.speed_bps > 0 {
-                    let speed_mbps = p.speed_bps as f64 / 1_048_576.0;
-                    if p.eta_seconds > 0 {
-                        let eta_str = i18n
-                            .get_keys()
-                            .ui()
-                            .seconds_short()
-                            .inner()
-                            .to_string()
-                            .replacen("{}", &p.eta_seconds.to_string(), 1);
-                        format!(
-                            "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s \u{2022} {}",
-                            loaded_mb, total_mb, speed_mbps, eta_str
-                        )
-                    } else {
-                        format!(
-                            "{:.0} MB / {:.0} MB \u{2022} {:.1} MB/s",
-                            loaded_mb, total_mb, speed_mbps
-                        )
-                    }
-                } else {
-                    format!(
-                        "{:.0} MB / {:.0} MB \u{2022} {}%",
-                        loaded_mb, total_mb, percent
-                    )
-                };
-
-                Some(view! {
-                    <div class="mt-2 space-y-1">
-                        <div class="progress-track">
-                            <div
-                                class="progress-fill"
-                                style=format!("--progress-width: {}%", percent)
-                            ></div>
-                        </div>
-                        <div class="text-xs ocr-stage-text-pending">{details}</div>
-                    </div>
-                })
+            if status != StageStatus::Active {
+                return None;
+            }
+            let eta_text = if p.eta_seconds > 0 && p.speed_bps > 0 {
+                Some(
+                    i18n.get_keys()
+                        .ui()
+                        .seconds_short()
+                        .inner()
+                        .to_string()
+                        .replacen("{}", &p.eta_seconds.to_string(), 1),
+                )
             } else {
                 None
-            }
+            };
+            let ProgressDisplay {
+                details,
+                bar_class,
+                bar_style,
+            } = format_progress(p, eta_text);
+            Some(view! {
+                <div class="mt-2 space-y-1">
+                    <div class="progress-track">
+                        <div class=bar_class style=bar_style></div>
+                    </div>
+                    <div class="text-xs ocr-stage-text-pending">{details}</div>
+                </div>
+            })
         })
     };
 
@@ -529,5 +558,74 @@ mod tests {
             }),
             OcrPhase::Failed,
         );
+    }
+
+    #[test]
+    fn format_progress_indeterminate_when_total_unknown() {
+        let p = ProgressInfo {
+            loaded_bytes: 5_242_880,
+            total_bytes: 0,
+            ..Default::default()
+        };
+        let display = format_progress(p, None);
+        assert!(display.bar_style.is_empty());
+        assert!(display.bar_class.contains("progress-fill--indeterminate"));
+        assert!(
+            !display.details.contains(" / "),
+            "must not render a total denominator, got: {}",
+            display.details
+        );
+        assert!(display.details.contains("5 MB"));
+    }
+
+    #[test]
+    fn format_progress_indeterminate_keeps_speed() {
+        let p = ProgressInfo {
+            loaded_bytes: 5_242_880,
+            total_bytes: 0,
+            speed_bps: 1_048_576,
+            ..Default::default()
+        };
+        let display = format_progress(p, None);
+        assert!(
+            display.details.contains("MB/s"),
+            "indeterminate must keep speed, got: {}",
+            display.details
+        );
+        assert!(
+            !display.details.contains(" / "),
+            "must not render a total denominator, got: {}",
+            display.details
+        );
+    }
+
+    #[test]
+    fn format_progress_determinate_shows_total_and_percent() {
+        let p = ProgressInfo {
+            percent: 50,
+            loaded_bytes: 5_242_880,
+            total_bytes: 10_485_760,
+            ..Default::default()
+        };
+        let display = format_progress(p, None);
+        assert!(display.details.contains("/ 10 MB"));
+        assert!(display.details.contains("50%"));
+        assert!(display.bar_style.contains("--progress-width: 50%"));
+        assert!(!display.bar_class.contains("indeterminate"));
+    }
+
+    #[test]
+    fn format_progress_determinate_with_speed_and_eta() {
+        let p = ProgressInfo {
+            percent: 50,
+            loaded_bytes: 5_242_880,
+            total_bytes: 10_485_760,
+            speed_bps: 1_048_576,
+            eta_seconds: 5,
+        };
+        let display = format_progress(p, Some("~5s".to_string()));
+        assert!(display.details.contains("MB/s"));
+        assert!(display.details.contains("~5s"));
+        assert!(display.details.contains("/ 10 MB"));
     }
 }
