@@ -16,6 +16,44 @@ pub struct TokenTranslation {
     pub pos: PartOfSpeech,
     pub translation: Option<String>,
     pub grammar_label: Option<String>,
+    pub grammar_description: Option<String>,
+}
+
+/// A grammar rule match carried through the resolution pipeline: the rule
+/// title (surfaced as `grammar_label`) plus the rule's `short_description`
+/// (surfaced as `grammar_description`). Keeping both together avoids a second
+/// rule lookup and ensures the description always corresponds to the matched
+/// rule rather than a re-resolved one.
+struct GrammarMatch {
+    title: String,
+    short_description: String,
+}
+
+impl GrammarMatch {
+    fn from_rule(rule: &GrammarRule, native_language: &NativeLanguage) -> Self {
+        let content = rule.content(native_language);
+        Self {
+            title: content.title().to_string(),
+            short_description: content.short_description().to_string(),
+        }
+    }
+}
+
+/// Splits a `GrammarMatch` into the two `TokenTranslation` fields. The
+/// description is `None` when the matched rule has an empty `short_description`
+/// so the popup does not render an empty line.
+fn split_grammar_fields(grammar: Option<GrammarMatch>) -> (Option<String>, Option<String>) {
+    match grammar {
+        Some(m) => {
+            let description = if m.short_description.is_empty() {
+                None
+            } else {
+                Some(m.short_description)
+            };
+            (Some(m.title), description)
+        },
+        None => (None, None),
+    }
 }
 
 // Particle homonyms whose surface form (て/し) collides with a dictionary lemma
@@ -35,6 +73,12 @@ pub fn lookup_tokens_translations(
     native_language: &NativeLanguage,
     original_text: &str,
 ) -> Vec<TokenTranslation> {
+    // Computed once for the whole phrase: the katakana→hiragana equivalent of
+    // the input lets `match_grammar_keyword` match katakana-written tokens
+    // (e.g. ベキ) against hiragana grammar keywords (e.g. べき) without
+    // re-normalizing the same text for every token and rule.
+    let original_hiragana = katakana_to_hiragana(original_text);
+
     tokens
         .iter()
         .enumerate()
@@ -46,8 +90,11 @@ pub fn lookup_tokens_translations(
                 get_translation(&base_form, native_language)
             };
 
-            let grammar_label = resolve_sou_da_label(token, index, tokens, native_language)
-                .or_else(|| resolve_grammar_label(token, native_language, original_text));
+            let grammar =
+                resolve_sou_da_match(token, index, tokens, native_language).or_else(|| {
+                    resolve_grammar_match(token, native_language, original_text, &original_hiragana)
+                });
+            let (grammar_label, grammar_description) = split_grammar_fields(grammar);
 
             TokenTranslation {
                 surface_form: token.orthographic_surface_form().to_string(),
@@ -56,26 +103,35 @@ pub fn lookup_tokens_translations(
                 pos: token.part_of_speech().clone(),
                 translation,
                 grammar_label,
+                grammar_description,
             }
         })
         .collect()
 }
 
 fn match_grammar_keyword(
-    rules: &[GrammarRule],
+    rules: &'static [GrammarRule],
     surface: &str,
+    surface_hiragana: &str,
     original_text: &str,
-    native_language: &NativeLanguage,
-) -> Option<String> {
+    original_hiragana: &str,
+) -> Option<&'static GrammarRule> {
     for rule in rules.iter() {
         let keyword_groups = rule.keywords();
         if keyword_groups.is_empty() {
             continue;
         }
 
-        let token_matches_some_group = keyword_groups
-            .iter()
-            .any(|group| group.iter().any(|kw| surface == kw));
+        // Match the token surface against a keyword, accepting either the
+        // raw surface (hiragana input) or its katakana→hiragana equivalent
+        // (katakana input like ベキ → べき). This is a monotonic OR extension:
+        // it can only add matches for katakana forms that normalize to an
+        // existing keyword, never drop a hiragana match.
+        let token_matches_some_group = keyword_groups.iter().any(|group| {
+            group
+                .iter()
+                .any(|kw| surface == kw || surface_hiragana == kw)
+        });
         if !token_matches_some_group {
             continue;
         }
@@ -83,24 +139,31 @@ fn match_grammar_keyword(
         // Every group must contribute at least one keyword present in the original
         // text. This converges with detect_keyword_rules AND-semantics and prevents
         // bare-single-keyword false positives (e.g. topic は falsely matching the
-        // ～は～ほど～ない rule when ほど is absent from the sentence).
-        let text_covers_all_groups = keyword_groups
-            .iter()
-            .all(|group| !group.is_empty() && group.iter().any(|kw| original_text.contains(kw)));
+        // ～は～ほど～ない rule when ほど is absent from the sentence). The katakana
+        // equivalent of the text is also accepted so a katakana-written phrase
+        // (ベキ) still covers its hiragana keyword (べき).
+        let text_covers_all_groups = keyword_groups.iter().all(|group| {
+            !group.is_empty()
+                && group
+                    .iter()
+                    .any(|kw| original_text.contains(kw) || original_hiragana.contains(kw))
+        });
         if text_covers_all_groups {
-            return Some(rule.content(native_language).title().to_string());
+            return Some(rule);
         }
     }
     None
 }
 
-fn resolve_grammar_label(
+fn resolve_grammar_match(
     token: &TokenInfo,
     native_language: &NativeLanguage,
     original_text: &str,
-) -> Option<String> {
+    original_hiragana: &str,
+) -> Option<GrammarMatch> {
     let rules = GRAMMAR_RULES.get()?;
     let surface = token.orthographic_surface_form();
+    let surface_hiragana = katakana_to_hiragana(surface);
     let base = token.orthographic_base_form();
     let pos = token.part_of_speech();
     let is_vocab = pos.is_vocabulary_word();
@@ -114,8 +177,14 @@ fn resolve_grammar_label(
     // See issue #178 P-6 for context.
     let eligible_for_keyword_match = !is_vocab || surface == base;
     if eligible_for_keyword_match {
-        if let Some(label) = match_grammar_keyword(rules, surface, original_text, native_language) {
-            return Some(label);
+        if let Some(rule) = match_grammar_keyword(
+            rules,
+            surface,
+            &surface_hiragana,
+            original_text,
+            original_hiragana,
+        ) {
+            return Some(GrammarMatch::from_rule(rule, native_language));
         }
     }
 
@@ -124,8 +193,14 @@ fn resolve_grammar_label(
         // base すぎる, classified by Lindera as Verb) must still resolve to their
         // grammar keyword before format_map matching — otherwise a more generic
         // rule (～て) wins on the te-form surface.
-        if let Some(label) = match_grammar_keyword(rules, surface, original_text, native_language) {
-            return Some(label);
+        if let Some(rule) = match_grammar_keyword(
+            rules,
+            surface,
+            &surface_hiragana,
+            original_text,
+            original_hiragana,
+        ) {
+            return Some(GrammarMatch::from_rule(rule, native_language));
         }
 
         let mut matches = find_format_map_matches(base, pos, original_text, rules);
@@ -160,7 +235,7 @@ fn resolve_grammar_label(
                 .unwrap_or(0);
             kanji_len.max(hira_len)
         }) {
-            return Some(best.content(native_language).title().to_string());
+            return Some(GrammarMatch::from_rule(best, native_language));
         }
     }
 
@@ -183,17 +258,17 @@ enum SouDaVariant {
 ///   past/copula auxiliary (降った→降ったそうだ, 元気だ→元気だそうだ).
 ///
 /// A standalone そう that is NOT part of a そうだ construction (the demonstrative
-/// manner adverb そう in そう思う, そうですね) must be left to `resolve_grammar_label`
+/// manner adverb そう in そう思う, そうですね) must be left to `resolve_grammar_match`
 /// so the manner rule `こう・そう・ああ・どう` can match — this function returns
 /// `None` whenever the preceding token is not a predicate the pattern could
 /// attach to (particle, adverb, pronoun, ...) or when a sentence boundary
 /// separates そう from any predecessor.
-fn resolve_sou_da_label(
+fn resolve_sou_da_match(
     token: &TokenInfo,
     index: usize,
     tokens: &[TokenInfo],
     native_language: &NativeLanguage,
-) -> Option<String> {
+) -> Option<GrammarMatch> {
     let surface = token.orthographic_surface_form();
 
     // Lindera splits the grammar pattern into a standalone そう token followed
@@ -244,7 +319,7 @@ fn resolve_sou_da_label(
 
     let rules = GRAMMAR_RULES.get()?;
 
-    if is_stem_form {
+    let rule = if is_stem_form {
         find_sou_rule(rules, native_language, SouDaVariant::Appearance)
     } else if is_plain_form || is_ta_or_da_aux {
         find_sou_rule(rules, native_language, SouDaVariant::Hearsay)
@@ -252,7 +327,9 @@ fn resolve_sou_da_label(
         find_sou_rule(rules, native_language, SouDaVariant::Combined)
     } else {
         None
-    }
+    };
+
+    rule.map(|r| GrammarMatch::from_rule(r, native_language))
 }
 
 /// Locates the nearest content token preceding `index`, stopping at a sentence
@@ -291,10 +368,10 @@ fn is_sentence_boundary(token: &TokenInfo) -> bool {
 /// ～とか（伝聞）). Falls back to any `そうだ` rule when the dictionary lacks a
 /// variant-specific entry.
 fn find_sou_rule(
-    rules: &[GrammarRule],
+    rules: &'static [GrammarRule],
     native_language: &NativeLanguage,
     variant: SouDaVariant,
-) -> Option<String> {
+) -> Option<&'static GrammarRule> {
     let term_groups: &[&[&str]] = match variant {
         SouDaVariant::Appearance => &[&["そうだ（様態）"], &["そうだ"]],
         SouDaVariant::Hearsay => &[&["そうだ（伝聞）"], &["そうだ"]],
@@ -305,7 +382,7 @@ fn find_sou_rule(
         for rule in rules.iter() {
             let title = rule.content(native_language).title();
             if terms.iter().any(|term| title.contains(term)) {
-                return Some(title.to_string());
+                return Some(rule);
             }
         }
     }
@@ -441,6 +518,38 @@ mod tests {
             "テ",
             PartOfSpeech::Particle
         )));
+    }
+
+    #[test]
+    fn split_grammar_fields_returns_both_when_description_present() {
+        let m = GrammarMatch {
+            title: "～test".to_string(),
+            short_description: "desc".to_string(),
+        };
+        let (label, description) = split_grammar_fields(Some(m));
+        assert_eq!(label.as_deref(), Some("～test"));
+        assert_eq!(description.as_deref(), Some("desc"));
+    }
+
+    #[test]
+    fn split_grammar_fields_drops_description_when_empty() {
+        let m = GrammarMatch {
+            title: "～test".to_string(),
+            short_description: String::new(),
+        };
+        let (label, description) = split_grammar_fields(Some(m));
+        assert_eq!(label.as_deref(), Some("～test"));
+        assert!(
+            description.is_none(),
+            "empty short_description must surface as None so the popup renders no line"
+        );
+    }
+
+    #[test]
+    fn split_grammar_fields_returns_none_none_when_no_match() {
+        let (label, description) = split_grammar_fields(None);
+        assert!(label.is_none());
+        assert!(description.is_none());
     }
 }
 
@@ -760,6 +869,84 @@ mod integration_tests {
         );
     }
 
+    // べき carries the べきだ grammar rule, whose short_description is non-empty
+    // (RU «Следует…; должен…», EN «Should…»). The popup must surface that
+    // description as grammar_description so べき is no longer shown title-only.
+    // Asserting the description content (not just non-empty) guards against a
+    // wiring error that attached the wrong field.
+    #[test]
+    fn tokenize_standalone_beki_returns_grammar_description() {
+        ensure_dictionaries();
+        let text = "べき";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let beki = results
+            .iter()
+            .find(|t| t.surface_form == "べき")
+            .expect("「べき」standalone token should exist");
+        assert!(
+            beki.grammar_label
+                .as_ref()
+                .is_some_and(|label| label.contains("べき")),
+            "standalone「べき」should carry the べきだ grammar_label, got: {:?}",
+            beki
+        );
+        assert!(
+            beki.grammar_description
+                .as_ref()
+                .is_some_and(|d| d.contains("Should")),
+            "standalone「べき」should carry the べきだ grammar_description, got: {:?}",
+            beki.grammar_description
+        );
+    }
+
+    // Katakana ベキ (e.g. emphasis or stylised writing) must still match the
+    // べきだ rule: match_grammar_keyword normalises the katakana surface to
+    // hiragana (ベキ → べき) and the katakana input text to cover the keyword.
+    // Robust to whether Lindera keeps ベキ as katakana or normalises to べき.
+    #[test]
+    fn should_match_katakana_beki_via_normalization() {
+        ensure_dictionaries();
+        let text = "ベキ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let beki = results
+            .iter()
+            .find(|t| t.surface_form == "ベキ" || t.surface_form == "べき")
+            .expect("「ベキ/べき」token should exist");
+        assert!(
+            beki.grammar_label
+                .as_ref()
+                .is_some_and(|label| label.contains("べき")),
+            "katakana「ベキ」should match the べき grammar rule via hiragana normalization, got: {:?}",
+            beki
+        );
+    }
+
+    // The katakana→hiragana normalization is a monotonic OR extension: it can
+    // only add matches for katakana forms that normalise to an existing keyword.
+    // A katakana content word (テスト, "test") whose hiragana equivalent (てすと)
+    // is not a grammar keyword must NOT receive a spurious grammar_label.
+    #[test]
+    fn should_not_overmatch_katakana_content_word() {
+        ensure_dictionaries();
+        let text = "テスト";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
+
+        let tesuto = results
+            .iter()
+            .find(|t| t.surface_form == "テスト")
+            .expect("「テスト」token should exist");
+        assert!(
+            tesuto.grammar_label.is_none(),
+            "katakana content word「テスト」must not receive a spurious grammar_label via normalization, got: {:?}",
+            tesuto.grammar_label
+        );
+    }
+
     // Negative test for the relaxed grammar_label gate: a common content
     // noun in dictionary form (猫, "cat") must NOT pick up a spurious
     // grammar_label just because surface == base. Guards against the
@@ -925,6 +1112,42 @@ mod integration_tests {
         assert_ne!(
             nashi.reading, "なし",
             "「なし」reading must be katakana ナシ derived from merged token"
+        );
+    }
+
+    // --- 努力くらいはしてみるよ ---
+    // Lindera over-merges 努力くらい into a single ProperNoun (ドリョクライ),
+    // leaving くらい with no token at all. The splitter must split it into
+    // 努力 (Noun) + くらい (Particle). The くらい grammar rule has AND-semantics
+    // keyword groups ([["くらい"],["ぐらい"]]) that require BOTH forms in the
+    // text, so くらい does NOT receive a grammar_label here — the split itself
+    // is the fix; the grammar_label data gap is a separate cdn/ concern.
+    #[test]
+    fn should_split_doryokukurai_compound() {
+        ensure_dictionaries();
+        let text = "努力くらいはしてみるよ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let merged = results.iter().find(|t| t.surface_form == "努力くらい");
+        assert!(
+            merged.is_none(),
+            "「努力くらい」should be split into separate tokens, got merged token: {:?}",
+            merged
+        );
+
+        let _doryoku = results
+            .iter()
+            .find(|t| t.surface_form == "努力" && t.pos == PartOfSpeech::Noun)
+            .expect("「努力」noun should exist after split");
+
+        let kurai = results
+            .iter()
+            .find(|t| t.surface_form == "くらい" && t.pos == PartOfSpeech::Particle)
+            .expect("「くらい」particle token should exist after split");
+        assert_ne!(
+            kurai.reading, "くらい",
+            "「くらい」reading must be a katakana reading derived from the merged token, not the hiragana surface"
         );
     }
 

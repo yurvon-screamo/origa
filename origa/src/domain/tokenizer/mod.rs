@@ -356,8 +356,28 @@ fn non_japanese_token(segment: &str, is_whitespace: bool) -> TokenInfo {
 
 /// Suffixes that Lindera sometimes over-merges with preceding nouns into a
 /// single ProperNoun token. When found at the end of a ProperNoun, the token
-/// is split so the suffix gets its own token (with correct POS + translation).
-const SPLITTABLE_SUFFIXES: &[&str] = &["なし"];
+/// is split so the suffix gets its own token. Each entry pairs the suffix
+/// surface with the POS the split suffix token should carry: なし is a noun
+/// suffix (absence), while くらい/ぐらい are particles (degree/extent).
+struct SplittableSuffix {
+    surface: &'static str,
+    pos: PartOfSpeech,
+}
+
+const SPLITTABLE_SUFFIXES: &[SplittableSuffix] = &[
+    SplittableSuffix {
+        surface: "なし",
+        pos: PartOfSpeech::Noun,
+    },
+    SplittableSuffix {
+        surface: "くらい",
+        pos: PartOfSpeech::Particle,
+    },
+    SplittableSuffix {
+        surface: "ぐらい",
+        pos: PartOfSpeech::Particle,
+    },
+];
 
 /// Post-processing step: split ProperNoun tokens ending in known productive
 /// suffixes (e.g. 水なし → 水 + なし). Lindera sometimes merges noun + suffix
@@ -376,8 +396,8 @@ fn split_compound_proper_nouns(tokens: &mut Vec<TokenInfo>) {
 
         let surface = tokens[i].orthographic_surface_form();
         match find_splittable_suffix(surface) {
-            Some((prefix, suffix)) => {
-                let split = split_at_suffix(&tokens[i], &prefix, &suffix);
+            Some((prefix, suffix, suffix_pos)) => {
+                let split = split_at_suffix(&tokens[i], &prefix, suffix, suffix_pos);
                 tokens.splice(i..=i, split);
                 i += 2;
             },
@@ -394,7 +414,12 @@ fn split_compound_proper_nouns(tokens: &mut Vec<TokenInfo>) {
 /// surface/reading lengths automatically. If the merged reading does not end
 /// in the suffix's katakana form (unexpected), falls back to using surface
 /// forms as readings.
-fn split_at_suffix(token: &TokenInfo, prefix: &str, suffix: &str) -> [TokenInfo; 2] {
+fn split_at_suffix(
+    token: &TokenInfo,
+    prefix: &str,
+    suffix: &str,
+    suffix_pos: PartOfSpeech,
+) -> [TokenInfo; 2] {
     let merged_reading = token.phonological_surface_form();
     let (prefix_reading, suffix_reading) = split_reading(merged_reading, suffix);
 
@@ -411,7 +436,7 @@ fn split_at_suffix(token: &TokenInfo, prefix: &str, suffix: &str) -> [TokenInfo;
             phonological_base_form: suffix_reading.clone(),
             orthographic_surface_form: suffix.to_string(),
             phonological_surface_form: suffix_reading,
-            part_of_speech: PartOfSpeech::Noun,
+            part_of_speech: suffix_pos,
         },
     ]
 }
@@ -427,13 +452,13 @@ fn split_reading(merged_reading: &str, suffix: &str) -> (String, String) {
     (merged_reading.to_string(), suffix.to_string())
 }
 
-fn find_splittable_suffix(surface: &str) -> Option<(String, String)> {
+fn find_splittable_suffix(surface: &str) -> Option<(String, &'static str, PartOfSpeech)> {
     for suffix in SPLITTABLE_SUFFIXES {
-        if let Some(prefix_str) = surface.strip_suffix(*suffix) {
+        if let Some(prefix_str) = surface.strip_suffix(suffix.surface) {
             // Prefix must be non-empty AND contain at least one kanji,
             // otherwise we'd split katakana names or hiragana fragments.
             if !prefix_str.is_empty() && prefix_str.chars().any(|c| c.is_kanji()) {
-                return Some((prefix_str.to_string(), suffix.to_string()));
+                return Some((prefix_str.to_string(), suffix.surface, suffix.pos.clone()));
             }
         }
     }
@@ -774,6 +799,34 @@ mod tests {
         assert_eq!(tokens[1].part_of_speech(), &PartOfSpeech::Noun);
         // Trailing token must survive the splice unchanged.
         assert_eq!(tokens[2].orthographic_surface_form(), "で");
+        assert_eq!(tokens[2].part_of_speech(), &PartOfSpeech::Particle);
+    }
+
+    // 努力くらい is over-merged by Lindera into a single ProperNoun (ドリョクライ),
+    // swallowing the くらい particle. The splitter must split it into 努力
+    // (Noun) + くらい (Particle) so the particle carries its own token. Unlike
+    // なし, the くらい suffix is a particle, so its split token's POS is derived
+    // from the SplittableSuffix mapping rather than hardcoded Noun.
+    #[test]
+    fn should_split_doryokukurai_proper_noun() {
+        let mut tokens = vec![
+            TokenInfo::new_test_with_reading(
+                "努力くらい",
+                "ドリョククライ",
+                PartOfSpeech::ProperNoun,
+            ),
+            TokenInfo::new_test("は", PartOfSpeech::Particle),
+        ];
+        split_compound_proper_nouns(&mut tokens);
+        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens[0].orthographic_surface_form(), "努力");
+        assert_eq!(tokens[0].phonological_surface_form(), "ドリョク");
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Noun);
+        assert_eq!(tokens[1].orthographic_surface_form(), "くらい");
+        assert_eq!(tokens[1].phonological_surface_form(), "クライ");
+        assert_eq!(tokens[1].part_of_speech(), &PartOfSpeech::Particle);
+        // Trailing token must survive the splice unchanged.
+        assert_eq!(tokens[2].orthographic_surface_form(), "は");
         assert_eq!(tokens[2].part_of_speech(), &PartOfSpeech::Particle);
     }
 

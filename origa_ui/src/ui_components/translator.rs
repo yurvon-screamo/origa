@@ -105,6 +105,7 @@ pub fn TranslatorText(
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
                         let grammar_label = token.grammar_label.clone();
+                        let grammar_description = token.grammar_description.clone();
                         let clickable = token.pos.is_vocabulary_word() || grammar_label.is_some();
                         let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
@@ -167,6 +168,15 @@ pub fn TranslatorText(
                                                     {if let Some(label) = &grammar_label {
                                                         view! {
                                                             <div class="token-popup-grammar">{label.clone()}</div>
+                                                        }.into_any()
+                                                    } else {
+                                                        ().into_any()
+                                                    }}
+                                                    {if let Some(description) = &grammar_description {
+                                                        view! {
+                                                            <div class="token-popup-grammar-description">
+                                                                {description.clone()}
+                                                            </div>
                                                         }.into_any()
                                                     } else {
                                                         ().into_any()
