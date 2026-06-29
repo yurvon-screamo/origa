@@ -8,7 +8,6 @@ use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCar
 use std::collections::HashSet;
 use tracing::warn;
 
-use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
 use super::quiz_options::QuizOptions;
@@ -142,11 +141,6 @@ pub fn QuizCardView(
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
-
-    let answer_data = extract_card_answer(&card, &native_language, &card_type);
-    let answer_vocab_translations_stored = StoredValue::new(answer_data.translations);
-    let answer_vocab_description_stored = StoredValue::new(answer_data.description);
-    let answer_text_display_stored = StoredValue::new(answer_data.text);
 
     let quiz_result = move || {
         if dont_know_selected && show_result {
@@ -303,15 +297,6 @@ pub fn QuizCardView(
                     <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
                         <QuizResultDisplay quiz_result=quiz_result() />
                     </Show>
-                </Show>
-
-                <Show when=move || show_result && should_show_answer_display(quiz_result(), card_type)>
-                    <CardAnswerDisplay
-                        translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
-                        description=Signal::derive(move || answer_vocab_description_stored.get_value())
-                        text=Signal::derive(move || answer_text_display_stored.get_value())
-                        known_kanji=known_kanji
-                    />
                 </Show>
             </div>
         </Card>

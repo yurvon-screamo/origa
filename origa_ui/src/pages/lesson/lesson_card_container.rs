@@ -1,4 +1,4 @@
-use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
+use super::keyboard_handler::{KeyboardActions, create_keyboard_handler, is_typing_target};
 use super::lesson_card_renderer::render_lesson_card;
 use super::lesson_state::LessonContext;
 use super::on_dont_know::create_on_dont_know;
@@ -15,6 +15,7 @@ use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use crate::ui_components::stop_current_audio;
 use leptos::prelude::*;
+use leptos_use::use_event_listener;
 use origa::domain::{CardAnswer, LessonCardView, Rating};
 use ulid::Ulid;
 
@@ -117,20 +118,19 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
-    let container_ref = NodeRef::<leptos::html::Div>::new();
-
     on_cleanup(move || {
         stop_current_audio();
     });
 
-    Effect::new(move |_| {
-        if let Some(el) = container_ref.get() {
-            let _ = el.focus();
+    let _ = use_event_listener(document(), leptos::ev::keydown, move |ev| {
+        if is_typing_target(ev.target().as_ref()) {
+            return;
         }
+        handle_keydown(ev);
     });
 
     view! {
-        <div class="outline-none" tabindex="0" node_ref=container_ref on:keydown=handle_keydown>
+        <div>
             <Show when=move || current_lesson_card.get().is_some()>
                 <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get()>
                     {move || {

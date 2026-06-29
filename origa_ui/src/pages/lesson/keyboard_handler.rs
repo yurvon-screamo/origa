@@ -2,6 +2,7 @@ use super::lesson_state::LessonContext;
 use super::lesson_state::LessonState;
 use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
+use leptos::wasm_bindgen::JsCast;
 use origa::domain::{LessonCardView, QuizMode, Rating};
 use ulid::Ulid;
 
@@ -189,5 +190,50 @@ fn handle_rating_key(key: &str, on_rate: &Callback<Rating>) {
             on_rate.run(Rating::Good);
         },
         _ => {},
+    }
+}
+
+fn is_typing_target_kind(tag_name: &str, is_content_editable: bool) -> bool {
+    tag_name.eq_ignore_ascii_case("INPUT")
+        || tag_name.eq_ignore_ascii_case("TEXTAREA")
+        || is_content_editable
+}
+
+pub(crate) fn is_typing_target(target: Option<&web_sys::EventTarget>) -> bool {
+    let Some(el) = target.and_then(|t| t.dyn_ref::<web_sys::HtmlElement>()) else {
+        return false;
+    };
+    is_typing_target_kind(&el.tag_name(), el.is_content_editable())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn input_and_textarea_are_typing_targets_case_insensitive() {
+        assert!(is_typing_target_kind("INPUT", false));
+        assert!(is_typing_target_kind("input", false));
+        assert!(is_typing_target_kind("TEXTAREA", false));
+        assert!(is_typing_target_kind("textarea", false));
+    }
+
+    #[test]
+    fn contenteditable_is_typing_target_regardless_of_tag() {
+        assert!(is_typing_target_kind("DIV", true));
+        assert!(is_typing_target_kind("P", true));
+        assert!(is_typing_target_kind("SPAN", true));
+    }
+
+    #[test]
+    fn non_editable_buttons_and_divs_are_not_typing_targets() {
+        assert!(!is_typing_target_kind("BUTTON", false));
+        assert!(!is_typing_target_kind("DIV", false));
+        assert!(!is_typing_target_kind("SPAN", false));
+    }
+
+    #[test]
+    fn select_is_not_guarded() {
+        assert!(!is_typing_target_kind("SELECT", false));
     }
 }
