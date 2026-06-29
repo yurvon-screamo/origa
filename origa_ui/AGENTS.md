@@ -86,7 +86,7 @@ let auth = use_context::<AuthStore>().expect("AuthStore not provided");
 
 ```rust
 let i18n = crate::i18n::use_i18n();
-let text = i18n.get_keys().ui().loading_data().inner().to_string();
+let text = i18n.get_keys().ui().loading_animation().inner().to_string();
 ```
 
 Translations compiled at build time by `leptos_i18n_build`.

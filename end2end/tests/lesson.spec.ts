@@ -31,8 +31,14 @@ async function setupLessonWithCards(page: Page): Promise<LessonPage> {
     return lessonPage;
 }
 
-async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "good", maxCards = 5): Promise<void> {
-    for (let i = 0; i < maxCards; i++) {
+const MAX_LESSON_ITERATIONS = 50;
+
+async function rateCardUntilDone(
+    lessonPage: LessonPage,
+    rating: "again" | "good",
+    maxIterations = MAX_LESSON_ITERATIONS
+): Promise<void> {
+    for (let i = 0; i < maxIterations; i++) {
         const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
         if (isComplete) break;
         try {
@@ -50,16 +56,19 @@ async function rateCardUntilDone(lessonPage: LessonPage, rating: "again" | "good
 async function completeLessonFlexible(
     lessonPage: LessonPage,
     page: Page,
-    maxCards = 10
+    maxIterations = MAX_LESSON_ITERATIONS
 ): Promise<void> {
-    for (let i = 0; i < maxCards; i++) {
+    for (let i = 0; i < maxIterations; i++) {
         const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
         if (isComplete) break;
 
         const anyInteractive = lessonPage.showAnswerBtn
             .or(lessonPage.quizOptions[0])
-            .or(lessonPage.yesnoYesBtn);
+            .or(lessonPage.yesnoYesBtn)
+            .or(lessonPage.completeScreen);
         await expect(anyInteractive).toBeVisible({ timeout: 15_000 });
+
+        if (await lessonPage.completeScreen.isVisible().catch(() => false)) break;
 
         if (await lessonPage.showAnswerBtn.isVisible().catch(() => false)) {
             await lessonPage.showAnswer();

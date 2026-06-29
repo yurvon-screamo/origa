@@ -8,7 +8,6 @@ use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCar
 use std::collections::HashSet;
 use tracing::warn;
 
-use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
 use super::quiz_card_header::QuizCardHeader;
 use super::quiz_options::QuizOptions;
@@ -119,6 +118,7 @@ pub fn QuizCardView(
     let card_type = CardType::from(&card);
     let lang = native_language;
     let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
+    let part_of_speech = card.vocabulary_part_of_speech();
 
     let question_text = match card.question(&lang) {
         Ok(q) => q.text().to_string(),
@@ -141,11 +141,6 @@ pub fn QuizCardView(
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
-
-    let answer_data = extract_card_answer(&card, &native_language, &card_type);
-    let answer_vocab_translations_stored = StoredValue::new(answer_data.translations);
-    let answer_vocab_description_stored = StoredValue::new(answer_data.description);
-    let answer_text_display_stored = StoredValue::new(answer_data.text);
 
     let quiz_result = move || {
         if dont_know_selected && show_result {
@@ -208,6 +203,7 @@ pub fn QuizCardView(
                 card_type=card_type
                 question_text=display_question.get_value()
                 quiz_variant=quiz_variant
+                part_of_speech=part_of_speech
             />
 
             <div class="flex-1 flex flex-col justify-center">
@@ -301,15 +297,6 @@ pub fn QuizCardView(
                     <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
                         <QuizResultDisplay quiz_result=quiz_result() />
                     </Show>
-                </Show>
-
-                <Show when=move || show_result && should_show_answer_display(quiz_result(), card_type)>
-                    <CardAnswerDisplay
-                        translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
-                        description=Signal::derive(move || answer_vocab_description_stored.get_value())
-                        text=Signal::derive(move || answer_text_display_stored.get_value())
-                        known_kanji=known_kanji
-                    />
                 </Show>
             </div>
         </Card>

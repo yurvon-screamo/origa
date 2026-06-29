@@ -1,8 +1,10 @@
 use crate::i18n::*;
 use crate::ui_components::{AudioButtons, Tag, TagVariant};
 use leptos::prelude::*;
+use origa::domain::PartOfSpeech;
 
 use super::card_type::CardType;
+use super::pos_label::part_of_speech_label;
 use super::quiz_card::QuizVariant;
 
 fn quiz_variant_matches_card_type(quiz_variant: QuizVariant, card_type: CardType) -> bool {
@@ -70,8 +72,10 @@ pub fn QuizCardHeader(
     card_type: CardType,
     question_text: String,
     #[prop(optional)] quiz_variant: QuizVariant,
+    #[prop(default = None)] part_of_speech: Option<PartOfSpeech>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    let pos_label = StoredValue::new(part_of_speech.map(|p| part_of_speech_label(p, &i18n)));
 
     view! {
         <div class="flex items-center justify-between mb-4">
@@ -79,6 +83,25 @@ pub fn QuizCardHeader(
                 <Tag variant=Signal::derive(move || card_type.tag_variant())>
                     {card_type.label(&i18n)}
                 </Tag>
+                <Show when=move || pos_label.get_value().is_some()>
+                    {move || {
+                        pos_label
+                            .get_value()
+                            .map(|label| {
+                                view! {
+                                    // POS is secondary metadata, not a primary
+                                    // category. DESIGN.md reserves coloured Tag
+                                    // variants for distinguishing card TYPES and
+                                    // assigns the muted Tertiary tier to secondary
+                                    // metadata — keep Default here. Mirrors
+                                    // `lesson_card_header.rs`.
+                                    <Tag>
+                                        {label}
+                                    </Tag>
+                                }
+                            })
+                    }}
+                </Show>
                 <Show when=move || !quiz_variant_matches_card_type(quiz_variant, card_type)>
                     {match quiz_variant {
                         QuizVariant::Meaning => view! {

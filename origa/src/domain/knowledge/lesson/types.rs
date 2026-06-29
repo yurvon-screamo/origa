@@ -6,7 +6,6 @@ use ulid::Ulid;
 use crate::domain::Card;
 use crate::domain::knowledge::card::CardType;
 use crate::domain::memory::Rating;
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuizOption {
     text: String,
@@ -311,16 +310,24 @@ impl LessonCardView {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LessonCard {
+    #[serde(default = "Ulid::nil")]
+    card_id: Ulid,
     view: LessonCardView,
+    #[serde(default)]
     is_short_term: bool,
 }
 
 impl LessonCard {
-    pub fn new(view: LessonCardView, is_short_term: bool) -> Self {
+    pub fn new(card_id: Ulid, view: LessonCardView, is_short_term: bool) -> Self {
         Self {
+            card_id,
             view,
             is_short_term,
         }
+    }
+
+    pub fn card_id(&self) -> Ulid {
+        self.card_id
     }
 
     pub fn view(&self) -> &LessonCardView {
@@ -348,7 +355,7 @@ impl LessonCard {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LessonData {
     pub cards: Vec<(Ulid, LessonCard)>,
     pub core_count: usize,
@@ -413,12 +420,62 @@ impl LessonData {
     }
 }
 
+impl<'de> Deserialize<'de> for LessonData {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Wire mirror of `LessonData` used for the `card_id` backfill
+        // (legacy lessons serialised before multi-show expansion stored
+        // the card id only in the slot key). When a field is added to
+        // `LessonData`, it MUST be mirrored here, otherwise it will be
+        // silently dropped on deserialisation. The
+        // `lesson_data_roundtrip_preserves_all_fields` test guards this
+        // contract automatically — keep it in sync with new fields.
+        #[derive(Deserialize)]
+        struct Wire {
+            #[serde(default)]
+            cards: Vec<(Ulid, LessonCard)>,
+            #[serde(default)]
+            core_count: usize,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        for (slot_id, lc) in &mut wire.cards {
+            if lc.card_id.is_nil() {
+                lc.card_id = *slot_id;
+            }
+        }
+        Ok(LessonData {
+            cards: wire.cards,
+            core_count: wire.core_count,
+        })
+    }
+}
+
 impl IntoIterator for LessonData {
     type Item = (Ulid, LessonCard);
     type IntoIter = std::vec::IntoIter<(Ulid, LessonCard)>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.cards.into_iter()
+    }
+}
+
+#[cfg(test)]
+impl LessonData {
+    /// Returns every lesson card whose underlying `card_id` (the
+    /// multi-show identity) matches. Only used in tests to count how
+    /// many showings one logical card produced. Declared `pub(crate)`
+    /// and gated behind `#[cfg(test)]` so it never ships as part of the
+    /// public API: production code addresses cards by slot id (`get`)
+    /// and never by the multi-show `card_id`.
+    pub(crate) fn find_by_card_id(&self, card_id: Ulid) -> Vec<&LessonCard> {
+        self.cards
+            .iter()
+            .filter(|(_, lc)| lc.card_id() == card_id)
+            .map(|(_, lc)| lc)
+            .collect()
     }
 }
 
@@ -433,12 +490,12 @@ mod tests {
         let card = Card::Vocabulary(VocabularyCard::new(
             Question::new("test".to_string()).unwrap(),
         ));
-        (id, LessonCard::new(LessonCardView::Normal(card), false))
+        (id, LessonCard::new(id, LessonCardView::Normal(card), false))
     }
 
     fn make_phrase_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
         let card = Card::Phrase(PhraseCard::new_test_with_id(id));
-        (id, LessonCard::new(LessonCardView::Normal(card), false))
+        (id, LessonCard::new(id, LessonCardView::Normal(card), false))
     }
 
     #[test]
@@ -506,6 +563,82 @@ mod tests {
                 .iter()
                 .filter(|(_, lc)| lc.card_type() == CardType::Phrase)
                 .count()
+        );
+    }
+
+    /// Roundtrip guard for the manual `Deserialize` impl: every field of
+    /// `LessonData` must survive a serialise → deserialise cycle. The
+    /// impl uses a local `Wire` mirror struct (see `impl Deserialize for
+    /// LessonData`); forgetting to mirror a new field there would let
+    /// the field vanish silently on load. This test fails the moment
+    /// such a regression is introduced.
+    #[test]
+    fn lesson_data_roundtrip_preserves_all_fields() {
+        let card_id = Ulid::new();
+        let slot_id = Ulid::new();
+        let view = LessonCardView::Normal(Card::Vocabulary(VocabularyCard::new(
+            Question::new("猫".to_string()).expect("valid question"),
+        )));
+        let original = LessonData {
+            cards: vec![(slot_id, LessonCard::new(card_id, view.clone(), true))],
+            core_count: 1,
+        };
+
+        let json = serde_json::to_string(&original).expect("serialize LessonData");
+        let restored: LessonData = serde_json::from_str(&json).expect("deserialize LessonData");
+
+        assert_eq!(restored.core_count, original.core_count);
+        assert_eq!(restored.cards.len(), original.cards.len());
+        let (restored_slot, restored_lc) = &restored.cards[0];
+        assert_eq!(
+            *restored_slot, slot_id,
+            "slot id (tuple key) must roundtrip"
+        );
+        assert_eq!(
+            restored_lc.card_id(),
+            card_id,
+            "explicit card_id must roundtrip (not be overwritten by the slot-id backfill)"
+        );
+        assert!(
+            restored_lc.is_short_term(),
+            "is_short_term flag must roundtrip"
+        );
+        assert_eq!(
+            restored_lc.view(),
+            &view,
+            "LessonCardView payload must roundtrip"
+        );
+    }
+
+    /// Guards the legacy backfill branch of the manual `Deserialize`
+    /// impl: when a `LessonCard` was serialised without an explicit
+    /// `card_id` (nil ULID), the deserialiser must repopulate it from
+    /// the slot id (the tuple key). This is the only non-trivial
+    /// transformation in the impl and the roundtrip test above does
+    /// not exercise it (it uses an explicit non-nil card_id).
+    #[test]
+    fn lesson_data_deserialize_backfills_nil_card_id_from_slot() {
+        let slot_id = Ulid::new();
+        let view = LessonCardView::Normal(Card::Vocabulary(VocabularyCard::new(
+            Question::new("猫".to_string()).expect("valid question"),
+        )));
+        let view_json = serde_json::to_string(&view).expect("serialize view");
+        // Simulates a legacy payload: the inner card object omits
+        // `card_id`, so `#[serde(default = "Ulid::nil")]` yields the
+        // nil ULID and triggers the backfill branch.
+        let legacy_json = format!(
+            r#"{{"cards":[["{slot_id}",{{"view":{view_json},"is_short_term":false}}]],"core_count":1}}"#,
+        );
+
+        let restored: LessonData =
+            serde_json::from_str(&legacy_json).expect("deserialize legacy LessonData");
+
+        let (restored_slot, restored_lc) = &restored.cards[0];
+        assert_eq!(*restored_slot, slot_id, "slot id must roundtrip");
+        assert_eq!(
+            restored_lc.card_id(),
+            slot_id,
+            "nil card_id must be backfilled from the slot id"
         );
     }
 }

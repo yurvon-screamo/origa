@@ -3,6 +3,7 @@ use crate::loaders::{
     dictionary::load_dictionary,
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
+    loading_message::{LoadingFlags, format_loading_message, loading_message_state},
     phrase_loader::load_phrases,
     pitch_audio_loader::load_pitch_audio,
 };
@@ -22,7 +23,9 @@ use leptos_router::hooks::use_location;
 use leptos_router::path;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
-use origa::use_cases::{MigrateKanjiCompanionsUseCase, SeedReadyPhrasesUseCase};
+use origa::use_cases::{
+    MigrateKanjiCompanionsUseCase, MigrateVocabularyPartOfSpeechUseCase, SeedReadyPhrasesUseCase,
+};
 
 use crate::repository::HybridUserRepository;
 
@@ -135,6 +138,11 @@ pub fn start_dictionary_loading(
             tracing::warn!("Failed to migrate kanji companions: {e}");
         }
 
+        let migrate_vocab_pos = MigrateVocabularyPartOfSpeechUseCase::new(&repository);
+        if let Err(e) = migrate_vocab_pos.execute().await {
+            tracing::warn!("Failed to migrate vocabulary part of speech: {e}");
+        }
+
         // Phase E: auto per-card pre-cache (background, only when online)
         if connectivity.is_online.get() {
             if let Some(user) = auth_store.user.get() {
@@ -198,13 +206,34 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
             }
             .into_any()
         } else if is_authenticated.get() && !is_all_data_loaded.get() {
+            let store = auth_store.clone();
             let loading_msg: Signal<String> = Signal::derive(move || {
-                crate::i18n::use_i18n()
+                let i18n = crate::i18n::use_i18n();
+                let flags = LoadingFlags {
+                    vocabulary: store.is_vocabulary_loaded.get(),
+                    kanji: store.is_kanji_loaded.get(),
+                    grammar: store.is_grammar_loaded.get(),
+                    radicals: store.is_radicals_loaded.get(),
+                    phrases: store.is_phrases_loaded.get(),
+                    pitch_audio: store.is_pitch_audio_loaded.get(),
+                    dictionary: store.is_dictionary_loaded.get(),
+                    furigana: store.is_furigana_loaded.get(),
+                    jlpt_content: store.is_jlpt_content_loaded.get(),
+                };
+                let state = loading_message_state(&flags);
+                let fetching_template = i18n
                     .get_keys()
                     .ui()
-                    .loading_data()
+                    .loading_fetching_progress()
                     .inner()
-                    .to_string()
+                    .to_string();
+                let finalizing_template = i18n
+                    .get_keys()
+                    .ui()
+                    .loading_finalizing_progress()
+                    .inner()
+                    .to_string();
+                format_loading_message(state, &fetching_template, &finalizing_template)
             });
             view! {
                 <LoadingOverlay message=loading_msg />

@@ -260,6 +260,10 @@ impl User {
         self.knowledge_set.create_card(card)
     }
 
+    pub fn update_card_content(&mut self, card_id: Ulid, new_card: Card) -> Result<(), OrigaError> {
+        self.knowledge_set.update_card_content(card_id, new_card)
+    }
+
     pub fn create_companion_vocab_cards(&mut self, kanji_char: &str) -> Vec<StudyCard> {
         self.knowledge_set
             .create_companion_vocab_cards(kanji_char, &self.native_language)

@@ -24,6 +24,7 @@ mod on_rate;
 mod on_yesno_select;
 mod phrase_card;
 mod phrase_rating_buttons;
+mod pos_label;
 mod quiz_card;
 mod quiz_card_header;
 mod quiz_options;

@@ -4,12 +4,12 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use rand::seq::SliceRandom;
 use ulid::Ulid;
 
-use super::lesson::{LessonCard, LessonData, LessonViewGenerator};
+use super::lesson::{LessonCard, LessonCardView, LessonData, LessonViewGenerator};
 use super::{Card, CardType, KnowledgeSet, StudyCard};
 use crate::domain::{JapaneseLevel, JlptContent};
 
 const MIN_LESSON_SIZE: usize = 15;
-pub(crate) const MAX_LESSON_SIZE: usize = 30;
+pub(crate) const MAX_LESSON_SIZE: usize = 22;
 const PHRASE_NEW_RATIO: usize = 2;
 
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
@@ -26,6 +26,11 @@ pub(crate) const MAX_PHRASES_PER_WORD_IN_TAIL: usize = 1;
 /// core section. Two cards let the learner meet the word in context shortly
 /// after the standalone review without saturating the lesson.
 const INTERLEAVED_PHRASES_PER_WORD: usize = 2;
+
+/// Minimum number of cards that must sit between two consecutive showings
+/// of the same primary card after multi-show expansion. Prevents
+/// back-to-back ratings of the same underlying StudyCard.
+const MIN_REPEAT_SPACING: usize = 3;
 
 /// Minimum number of other cards that must sit between an anchor word and its
 /// first interleaved phrase, so the phrase does not leak the answer back into
@@ -50,11 +55,15 @@ pub(crate) fn compute_phrase_new_budget(daily_new_limit: usize, studied: usize) 
 /// any phrases. The core is shuffled here so downstream interleaving sees a
 /// stable order. Phrases are attached later by `add_interleaved_phrases` and
 /// `add_tail_phrases`.
+///
+/// Returns the lesson data and the set of "primary" card ids (favorites,
+/// selected core cards, padding). Companion cards added later are deliberately
+/// excluded so the multi-show expansion treats them as exempt.
 pub(crate) fn build_lesson_core(
     knowledge_set: &KnowledgeSet,
     daily_new_limit: usize,
     jlpt_content: &JlptContent,
-) -> LessonData {
+) -> (LessonData, HashSet<Ulid>) {
     let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
     all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
 
@@ -80,6 +89,13 @@ pub(crate) fn build_lesson_core(
     let all_selected_ids = build_selected_ids(&selected_cards, &favorite_cards);
     let padding_cards = collect_padding(&all_cards, &all_selected_ids);
 
+    let primary_card_ids: HashSet<Ulid> = favorite_ids
+        .iter()
+        .copied()
+        .chain(selected_cards.iter().map(|(id, _)| **id))
+        .chain(padding_cards.iter().map(|(id, _)| **id))
+        .collect();
+
     let mut cards = build_core_lesson_cards(
         &favorite_cards,
         &selected_cards,
@@ -89,7 +105,7 @@ pub(crate) fn build_lesson_core(
     cards.shuffle(&mut rand::rng());
     let core_count = cards.len();
 
-    LessonData { cards, core_count }
+    (LessonData { cards, core_count }, primary_card_ids)
 }
 
 /// Core-section eligibility predicate shared by the high-difficulty, new and
@@ -482,7 +498,7 @@ fn build_phrase_assignments(
             .into_iter()
             .map(|(card_id, sc)| {
                 let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
-                (card_id, LessonCard::new(view, false))
+                (card_id, LessonCard::new(card_id, view, false))
             })
             .collect();
         assignments.insert(**word_card_id, lesson_cards);
@@ -607,12 +623,215 @@ pub(crate) fn add_tail_phrases(
         .iter()
         .map(|(card_id, sc)| {
             let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
-            (**card_id, LessonCard::new(view, false))
+            (**card_id, LessonCard::new(**card_id, view, false))
         })
         .collect();
 
     lesson_data.cards.extend(phrase_lessons);
     lesson_data
+}
+
+/// Per-card target number of showings, derived from the FSRS memory state.
+/// Hard cards are repeated most, in-progress/new cards get a lighter drill,
+/// known cards keep their original single showing.
+fn target_showings(study_card: &StudyCard) -> usize {
+    let memory = study_card.memory();
+    if memory.is_high_difficulty() {
+        3
+    } else if memory.is_new() || memory.is_in_progress() {
+        2
+    } else {
+        1
+    }
+}
+
+/// Decides whether a primary card slot should be expanded into multiple
+/// showings, and if so returns the candidate views to use. Returns an empty
+/// vector when the card is exempt (not primary, not a multi-show type, target
+/// is 1, or guards clamp available distinct views below 2).
+fn compute_expansion_views(
+    generator: &mut LessonViewGenerator,
+    knowledge_set: &KnowledgeSet,
+    primary_card_ids: &HashSet<Ulid>,
+    card_id: Ulid,
+    card_type: CardType,
+) -> Vec<LessonCardView> {
+    if !primary_card_ids.contains(&card_id) {
+        return Vec::new();
+    }
+    if !matches!(
+        card_type,
+        CardType::Vocabulary | CardType::Kanji | CardType::Grammar
+    ) {
+        return Vec::new();
+    }
+
+    let Some(study_card) = knowledge_set.get_card(card_id) else {
+        return Vec::new();
+    };
+
+    let target = target_showings(study_card);
+    if target <= 1 {
+        return Vec::new();
+    }
+
+    let mut candidates =
+        generator.candidate_views_for_repeat(study_card, study_card.is_new(), &mut rand::rng());
+    candidates.truncate(target);
+    if candidates.len() < 2 {
+        return Vec::new();
+    }
+
+    candidates
+}
+
+/// Multiplies primary (non-phrase) cards across multiple distinct views when
+/// their FSRS state demands it. Each copy occupies its own slot (unique slot
+/// id) but shares the underlying StudyCard id (`card_id`), so every showing is
+/// rated independently. Companion cards, phrases, and primary cards with a
+/// single-show target (or whose guards clamp to a single distinct view) keep
+/// their original slot unchanged.
+///
+/// Runs last in the pipeline so every upstream step still operates by slot id.
+/// `core_count` grows by the number of copies added so the tail-vs-core
+/// boundary stays contiguous.
+pub(crate) fn expand_repeated_views(
+    lesson_data: LessonData,
+    knowledge_set: &KnowledgeSet,
+    primary_card_ids: &HashSet<Ulid>,
+) -> LessonData {
+    let original_cards = lesson_data.cards;
+    let core_count_before = lesson_data.core_count;
+
+    let (core_cards, tail_cards) = original_cards.split_at(core_count_before);
+
+    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let mut new_core: Vec<(Ulid, LessonCard)> = Vec::with_capacity(core_cards.len() * 2);
+    let mut pending: Vec<(usize, Ulid, LessonCardView, bool)> = Vec::new();
+
+    for (slot_id, lc) in core_cards.iter() {
+        let card_id = lc.card_id();
+        let card_type = CardType::from(lc.card());
+        let is_short_term = lc.is_short_term();
+
+        let views = compute_expansion_views(
+            &mut generator,
+            knowledge_set,
+            primary_card_ids,
+            card_id,
+            card_type,
+        );
+
+        if views.is_empty() {
+            new_core.push((*slot_id, lc.clone()));
+            drain_pending(&mut new_core, &mut pending);
+            continue;
+        }
+
+        // Replace the probabilistic view assigned by `apply_view` in
+        // `build_lesson_core` with the first item of the freshly generated,
+        // distinct-view candidate set. Every showing of this card_id now
+        // comes from one coordinated drill sequence (each copy uses a
+        // different LessonCardView variant), instead of an independently
+        // sampled view that could collide with a later copy. The original
+        // `apply_view` result is intentionally discarded for expandable
+        // cards; non-expandable slots keep their original view via the
+        // `views.is_empty()` branch above.
+        let primary_view = views.first().cloned().unwrap_or_else(|| lc.view().clone());
+        new_core.push((
+            *slot_id,
+            LessonCard::new(card_id, primary_view, is_short_term),
+        ));
+
+        // Each extra showing of the same card_id must land MIN_REPEAT_SPACING
+        // cards after the PREVIOUS showing of that card_id. Translating
+        // "N cards between" into index deltas: positions differ by N+1. The
+        // anchor sits at index `new_core.len() - 1`, so the first extra view
+        // targets `new_core.len() + MIN_REPEAT_SPACING` (== anchor_idx +
+        // MIN_REPEAT_SPACING + 1). Subsequent views step by the same delta so
+        // every gap honours the same invariant.
+        let mut next_min_pos = new_core.len() + MIN_REPEAT_SPACING;
+        for view in views.iter().skip(1) {
+            pending.push((next_min_pos, card_id, view.clone(), is_short_term));
+            next_min_pos += MIN_REPEAT_SPACING + 1;
+        }
+
+        drain_pending(&mut new_core, &mut pending);
+    }
+
+    new_core = distribute_pending_with_spacing(new_core, pending);
+    let added = new_core.len() - core_cards.len();
+
+    let mut final_cards = new_core;
+    final_cards.extend(tail_cards.iter().cloned());
+
+    LessonData {
+        cards: final_cards,
+        core_count: core_count_before + added,
+    }
+}
+
+/// Flushes any pending expansion copies whose minimum position has been
+/// reached. Remaining copies stay in `pending` for a future iteration.
+fn drain_pending(
+    new_core: &mut Vec<(Ulid, LessonCard)>,
+    pending: &mut Vec<(usize, Ulid, LessonCardView, bool)>,
+) {
+    let mut deferred = Vec::new();
+    for (min_pos, p_card_id, p_view, p_short) in pending.drain(..) {
+        if new_core.len() >= min_pos {
+            new_core.push((Ulid::new(), LessonCard::new(p_card_id, p_view, p_short)));
+        } else {
+            deferred.push((min_pos, p_card_id, p_view, p_short));
+        }
+    }
+    *pending = deferred;
+}
+
+/// Distributes expansion copies that did not fit during the main loop.
+/// Each copy is inserted at the earliest position that keeps at least
+/// `MIN_REPEAT_SPACING` cards between it and the previous showing of the
+/// same `card_id`, instead of blindly appending the leftovers back-to-back
+/// (which would make consecutive showings of one card land adjacent and
+/// defeat the purpose of the spacing rule).
+///
+/// Contract: spacing is guaranteed only when the assembled core is large
+/// enough to absorb every pending copy at its required gap. On a
+/// too-short lesson — anchor near the end of the core, or a single-card
+/// core whose target forces more copies than the buffer can hold — the
+/// target index is clamped to `core.len()` and copies cluster at the end
+/// of the core section. This is the only mathematically unreachable case
+/// (the main loop already spaces copies whenever the core has room, see
+/// `expand_enforces_min_spacing_between_consecutive_showings`). The
+/// "past `core_count` is phrase-only" invariant is preserved because
+/// copies are inserted strictly inside the core section; tail phrases
+/// remain at the very end of the lesson.
+fn distribute_pending_with_spacing(
+    mut core: Vec<(Ulid, LessonCard)>,
+    mut pending: Vec<(usize, Ulid, LessonCardView, bool)>,
+) -> Vec<(Ulid, LessonCard)> {
+    if pending.is_empty() {
+        return core;
+    }
+    pending.sort_by_key(|(min_pos, _, _, _)| *min_pos);
+
+    for (min_pos, card_id, view, is_short_term) in pending {
+        let last_pos = core
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, (_, lc))| lc.card_id() == card_id)
+            .map(|(idx, _)| idx);
+        let spacing_target = last_pos
+            .map(|prev| prev + MIN_REPEAT_SPACING + 1)
+            .unwrap_or(min_pos);
+        let target = spacing_target.max(min_pos).min(core.len());
+        core.insert(
+            target,
+            (Ulid::new(), LessonCard::new(card_id, view, is_short_term)),
+        );
+    }
+    core
 }
 
 fn build_selected_ids(
@@ -638,7 +857,7 @@ fn build_core_lesson_cards(
         .map(|(card_id, study_card)| {
             let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
             let is_short_term = padding_ids.contains(card_id);
-            (**card_id, LessonCard::new(view, is_short_term))
+            (**card_id, LessonCard::new(**card_id, view, is_short_term))
         })
         .collect();
 
@@ -647,7 +866,7 @@ fn build_core_lesson_cards(
         .map(|(card_id, study_card)| {
             let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
             let is_short_term = padding_ids.contains(card_id);
-            (**card_id, LessonCard::new(view, is_short_term))
+            (**card_id, LessonCard::new(**card_id, view, is_short_term))
         })
         .collect();
 
@@ -655,7 +874,7 @@ fn build_core_lesson_cards(
         .iter()
         .map(|(card_id, study_card)| {
             let view = generator.apply_view(study_card, study_card.is_new(), &mut rand::rng());
-            (**card_id, LessonCard::new(view, true))
+            (**card_id, LessonCard::new(**card_id, view, true))
         })
         .collect();
 
@@ -743,6 +962,7 @@ mod tests {
     use crate::domain::knowledge::{PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
     use crate::domain::{RateMode, Rating};
+    use rstest::rstest;
 
     fn vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -1287,7 +1507,7 @@ mod tests {
     // guard the integration of the shared budget and `used_phrase_ids` set.
 
     fn lesson_card_for(card: Card) -> LessonCard {
-        LessonCard::new(LessonCardView::Normal(card), false)
+        LessonCard::new(Ulid::new(), LessonCardView::Normal(card), false)
     }
 
     fn lesson_phrase_id(lc: &LessonCard) -> Option<Ulid> {
@@ -1655,5 +1875,536 @@ mod tests {
             initial_budget - new_picked,
             "only new phrases consume budget; the due phrase must be free"
         );
+    }
+
+    // --- Multi-show expansion ---
+    //
+    // These tests pin the contract that a primary card is shown multiple
+    // times (in distinct views) when its FSRS state demands it, while
+    // companions, phrases and known cards keep a single showing.
+
+    use crate::domain::memory::{Difficulty, MemoryState, ReviewLog, Stability};
+    use chrono::{Duration, Utc};
+
+    fn init_test_dict() {
+        crate::use_cases::init_real_dictionaries();
+    }
+
+    fn rate_into_state(
+        ks: &mut KnowledgeSet,
+        card_id: Ulid,
+        stability: f64,
+        difficulty: f64,
+        interval_days: i64,
+        rating: Rating,
+    ) {
+        let memory = MemoryState::new(
+            Stability::new(stability).unwrap(),
+            Difficulty::new(difficulty).unwrap(),
+            Utc::now() - Duration::days(interval_days),
+        );
+        let study_card = ks.study_cards_mut_for_test().get_mut(&card_id).unwrap();
+        study_card.add_review(memory, ReviewLog::new(rating, Duration::days(1)));
+    }
+
+    fn seed_distractor_vocab(ks: &mut KnowledgeSet, words: &[&str]) {
+        for word in words {
+            let _ = ks.create_card(vocab_card(word));
+        }
+    }
+
+    fn build_lesson_with_one_primary_vocab(ks: &KnowledgeSet, primary_id: Ulid) -> LessonData {
+        let lesson_card = lesson_card_for(vocab_card("anchor"));
+        let lesson = LessonData {
+            cards: vec![(
+                primary_id,
+                LessonCard::new(primary_id, lesson_card.into_view(), false),
+            )],
+            core_count: 1,
+        };
+        let primary_set: HashSet<Ulid> = [primary_id].into_iter().collect();
+        expand_repeated_views(lesson, ks, &primary_set)
+    }
+
+    #[test]
+    fn expand_hard_primary_vocab_yields_multiple_showings() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).unwrap();
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 3.0, 8.0, 1, Rating::Hard);
+        assert!(ks.get_card(card_id).unwrap().memory().is_high_difficulty());
+
+        let result = build_lesson_with_one_primary_vocab(&ks, card_id);
+        let showings = result.find_by_card_id(card_id);
+        assert!(
+            showings.len() >= 2,
+            "HD primary vocab should produce at least 2 showings, got {}",
+            showings.len()
+        );
+    }
+
+    #[test]
+    fn expand_in_progress_primary_vocab_yields_multiple_showings() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).unwrap();
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 10.0, 4.0, 1, Rating::Good);
+        assert!(ks.get_card(card_id).unwrap().memory().is_in_progress());
+
+        let result = build_lesson_with_one_primary_vocab(&ks, card_id);
+        let showings = result.find_by_card_id(card_id);
+        assert!(
+            showings.len() >= 2,
+            "in-progress primary vocab should produce at least 2 showings, got {}",
+            showings.len()
+        );
+    }
+
+    #[test]
+    fn expand_known_primary_vocab_preserves_single_showing() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).unwrap();
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 30.0, 3.0, 1, Rating::Easy);
+        assert!(ks.get_card(card_id).unwrap().memory().is_known_card());
+
+        let result = build_lesson_with_one_primary_vocab(&ks, card_id);
+        let showings = result.find_by_card_id(card_id);
+        assert_eq!(
+            showings.len(),
+            1,
+            "known primary vocab should keep a single showing"
+        );
+    }
+
+    #[test]
+    fn expand_companion_vocab_keeps_single_showing() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let primary_sc = ks.create_card(vocab_card("猫")).unwrap();
+        let primary_id = *primary_sc.card_id();
+        rate_into_state(&mut ks, primary_id, 3.0, 8.0, 1, Rating::Hard);
+
+        let companion_sc = ks.create_card(vocab_card("虎")).unwrap();
+        let companion_id = *companion_sc.card_id();
+        rate_into_state(&mut ks, companion_id, 3.0, 8.0, 1, Rating::Hard);
+        assert!(
+            ks.get_card(companion_id)
+                .unwrap()
+                .memory()
+                .is_high_difficulty()
+        );
+
+        let primary_view = LessonCardView::Normal(vocab_card("猫"));
+        let companion_view = LessonCardView::Normal(vocab_card("虎"));
+        let lesson = LessonData {
+            cards: vec![
+                (primary_id, LessonCard::new(primary_id, primary_view, false)),
+                (
+                    companion_id,
+                    LessonCard::new(companion_id, companion_view, false),
+                ),
+            ],
+            core_count: 2,
+        };
+        let primary_set: HashSet<Ulid> = [primary_id].into_iter().collect();
+        let result = expand_repeated_views(lesson, &ks, &primary_set);
+
+        let companion_showings = result.find_by_card_id(companion_id);
+        assert_eq!(
+            companion_showings.len(),
+            1,
+            "companion card (not in primary set) must not be expanded even when HD"
+        );
+    }
+
+    #[test]
+    fn expand_phrase_slot_keeps_single_showing() {
+        ensure_test_phrase_index();
+        let mut ks = KnowledgeSet::new();
+        let phrase_sc = ks.create_card(phrase_card(phrase_id_hello())).unwrap();
+        let phrase_id = *phrase_sc.card_id();
+
+        let phrase_view = LessonCardView::Normal(phrase_card(phrase_id_hello()));
+        let lesson = LessonData {
+            cards: vec![(phrase_id, LessonCard::new(phrase_id, phrase_view, false))],
+            core_count: 1,
+        };
+        let primary_set: HashSet<Ulid> = [phrase_id].into_iter().collect();
+        let result = expand_repeated_views(lesson, &ks, &primary_set);
+
+        let showings = result.find_by_card_id(phrase_id);
+        assert_eq!(
+            showings.len(),
+            1,
+            "phrase slot must never be expanded even if listed in primary_card_ids"
+        );
+    }
+
+    #[test]
+    fn expand_each_showing_uses_distinct_view_type() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).unwrap();
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 3.0, 8.0, 1, Rating::Hard);
+
+        let result = build_lesson_with_one_primary_vocab(&ks, card_id);
+        let showings = result.find_by_card_id(card_id);
+        let discriminants: HashSet<std::mem::Discriminant<LessonCardView>> = showings
+            .iter()
+            .map(|lc| std::mem::discriminant(lc.view()))
+            .collect();
+        assert_eq!(
+            discriminants.len(),
+            showings.len(),
+            "every showing of a multi-show card must use a distinct LessonCardView variant"
+        );
+    }
+
+    #[test]
+    fn expand_increments_core_count_by_added_copies() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).unwrap();
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 3.0, 8.0, 1, Rating::Hard);
+
+        let original_view = LessonCardView::Normal(vocab_card("猫"));
+        let lesson = LessonData {
+            cards: vec![(card_id, LessonCard::new(card_id, original_view, false))],
+            core_count: 1,
+        };
+        let primary_set: HashSet<Ulid> = [card_id].into_iter().collect();
+        let result = expand_repeated_views(lesson, &ks, &primary_set);
+
+        let added = result.find_by_card_id(card_id).len() - 1;
+        assert_eq!(
+            result.core_count,
+            1 + added,
+            "core_count must equal original core_count + added copies: {} vs 1 + {}",
+            result.core_count,
+            added
+        );
+    }
+
+    #[test]
+    fn expand_preserves_tail_phrases_at_end() {
+        ensure_test_phrase_index();
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let hd_sc = ks.create_card(vocab_card("猫")).unwrap();
+        let hd_id = *hd_sc.card_id();
+        rate_into_state(&mut ks, hd_id, 3.0, 8.0, 1, Rating::Hard);
+
+        let phrase_sc = ks.create_card(phrase_card(phrase_id_hello())).unwrap();
+        let phrase_slot = *phrase_sc.card_id();
+
+        let original = LessonData {
+            cards: vec![
+                (
+                    hd_id,
+                    LessonCard::new(hd_id, LessonCardView::Normal(vocab_card("猫")), false),
+                ),
+                (
+                    phrase_slot,
+                    LessonCard::new(
+                        phrase_slot,
+                        LessonCardView::Normal(phrase_card(phrase_id_hello())),
+                        false,
+                    ),
+                ),
+            ],
+            core_count: 1,
+        };
+        let primary_set: HashSet<Ulid> = [hd_id].into_iter().collect();
+        let result = expand_repeated_views(original, &ks, &primary_set);
+
+        for (_, lc) in result.cards[result.core_count..].iter() {
+            assert!(
+                matches!(lc.card(), Card::Phrase(_)),
+                "everything past core_count must be a (tail) phrase card"
+            );
+        }
+        let hd_showings_in_core = result.cards[..result.core_count]
+            .iter()
+            .filter(|(_, lc)| lc.card_id() == hd_id)
+            .count();
+        assert!(
+            hd_showings_in_core >= 2,
+            "HD primary must be expanded inside the core section"
+        );
+    }
+
+    #[test]
+    fn expand_enforces_min_spacing_between_consecutive_showings() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛", "虎", "狼", "鹿"]);
+        let hd_sc = ks.create_card(vocab_card("猫")).unwrap();
+        let hd_id = *hd_sc.card_id();
+        rate_into_state(&mut ks, hd_id, 3.0, 8.0, 1, Rating::Hard);
+
+        let distractor_ids: Vec<Ulid> = ks
+            .study_cards()
+            .iter()
+            .filter(|(id, _)| **id != hd_id)
+            .map(|(id, _)| *id)
+            .collect();
+        let mut cards: Vec<(Ulid, LessonCard)> = vec![(
+            hd_id,
+            LessonCard::new(hd_id, LessonCardView::Normal(vocab_card("猫")), false),
+        )];
+        for id in &distractor_ids {
+            cards.push((
+                *id,
+                LessonCard::new(*id, LessonCardView::Normal(vocab_card("filler")), false),
+            ));
+        }
+        let core_count = cards.len();
+        let original = LessonData { cards, core_count };
+        let primary_set: HashSet<Ulid> = [hd_id].into_iter().collect();
+        let result = expand_repeated_views(original, &ks, &primary_set);
+
+        let positions: Vec<usize> = result
+            .cards
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, lc))| lc.card_id() == hd_id)
+            .map(|(pos, _)| pos)
+            .collect();
+        assert!(
+            positions.len() >= 2,
+            "expected at least 2 showings of HD card, got {}",
+            positions.len()
+        );
+
+        for adjacent in positions.windows(2) {
+            let positions_apart = adjacent[1] - adjacent[0];
+            let cards_between = positions_apart - 1;
+            assert!(
+                cards_between >= MIN_REPEAT_SPACING,
+                "consecutive showings of the same card_id must have at least {} cards between them, got {} (positions apart = {})",
+                MIN_REPEAT_SPACING,
+                cards_between,
+                positions_apart
+            );
+        }
+    }
+
+    // --- Flush-path spacing (Common-1) ---
+    //
+    // The main-loop drain already honours MIN_REPEAT_SPACING whenever the
+    // core has enough buffer cards after the anchor (covered by
+    // `expand_enforces_min_spacing_between_consecutive_showings`). The
+    // flush path distributes the leftover copies; these tests pin its
+    // contract: spacing is guaranteed when the lesson can absorb the
+    // copies, and degrades to best-effort on a structurally too-short
+    // lesson (anchor at the very end of a small core, or copies
+    // outnumbering buffer cards).
+
+    /// Builds a lesson whose anchor sits at the LAST core slot, so every
+    /// extra view falls through to the flush path. Combined with a deep
+    /// distractor block placed BEFORE the anchor, the flush path still
+    /// has zero cards after the anchor to use as buffer — the only
+    /// layout it cannot space. Used to assert the best-effort fallback.
+    fn build_lesson_with_anchor_last(ks: &KnowledgeSet, anchor_id: Ulid) -> LessonData {
+        let distractor_ids: Vec<Ulid> = ks
+            .study_cards()
+            .iter()
+            .filter(|(id, _)| **id != anchor_id)
+            .map(|(id, _)| *id)
+            .collect();
+        let mut cards: Vec<(Ulid, LessonCard)> = Vec::new();
+        for id in &distractor_ids {
+            cards.push((
+                *id,
+                LessonCard::new(*id, LessonCardView::Normal(vocab_card("filler")), false),
+            ));
+        }
+        cards.push((
+            anchor_id,
+            LessonCard::new(anchor_id, LessonCardView::Normal(vocab_card("猫")), false),
+        ));
+        let core_count = cards.len();
+        let original = LessonData { cards, core_count };
+        let primary_set: HashSet<Ulid> = [anchor_id].into_iter().collect();
+        expand_repeated_views(original, ks, &primary_set)
+    }
+
+    fn showing_positions(result: &LessonData, card_id: Ulid) -> Vec<usize> {
+        result
+            .cards
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, lc))| lc.card_id() == card_id)
+            .map(|(pos, _)| pos)
+            .collect()
+    }
+
+    /// Best-effort fallback: a single-card core whose HD target forces 3
+    /// showings cannot honour MIN_REPEAT_SPACING by construction (need
+    /// 1 + 3 + 1 + 3 + 1 = 9 slots, have 3). The contract degrades
+    /// gracefully: copies are still emitted so the learner drills the
+    /// card, every copy follows the anchor, and the anchor keeps the
+    /// first slot.
+    #[rstest]
+    fn expand_short_lesson_best_effort_when_lesson_too_small() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        // Distractors live in the knowledge_set so the view generator
+        // can produce the distinct candidate views needed for multi-show
+        // expansion, but they are deliberately NOT part of the lesson
+        // core — this exercises the degenerate single-slot-core path.
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let sc = ks.create_card(vocab_card("猫")).expect("create anchor");
+        let card_id = *sc.card_id();
+        rate_into_state(&mut ks, card_id, 3.0, 8.0, 1, Rating::Hard);
+        assert!(
+            ks.get_card(card_id)
+                .is_some_and(|sc| sc.memory().is_high_difficulty()),
+            "fixture sanity: anchor must be HD"
+        );
+
+        let result = build_lesson_with_one_primary_vocab(&ks, card_id);
+        let positions = showing_positions(&result, card_id);
+
+        assert!(
+            positions.len() >= 2,
+            "expected ≥2 showings of HD anchor, got {}",
+            positions.len()
+        );
+        assert_eq!(positions[0], 0, "primary anchor must occupy the first slot");
+        for &pos in &positions[1..] {
+            assert!(
+                pos > positions[0],
+                "every copy must follow the anchor: copy at {pos} <= {}",
+                positions[0]
+            );
+        }
+    }
+
+    /// Anchor placed at the LAST core slot of a deep distractor block:
+    /// there are no cards after the anchor, so spacing is structurally
+    /// unreachable. This pins the best-effort fallback on a realistic
+    /// multi-distractor lesson (mirrors the Common-1 edge case in the
+    /// review: anchor at end of core).
+    #[rstest]
+    fn expand_anchor_at_core_end_falls_back_to_best_effort() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛", "虎", "狼", "鹿"]);
+        let sc = ks.create_card(vocab_card("猫")).expect("create anchor");
+        let anchor_id = *sc.card_id();
+        rate_into_state(&mut ks, anchor_id, 3.0, 8.0, 1, Rating::Hard);
+        assert!(
+            ks.get_card(anchor_id)
+                .is_some_and(|sc| sc.memory().is_high_difficulty()),
+            "fixture sanity: anchor must be HD"
+        );
+
+        let result = build_lesson_with_anchor_last(&ks, anchor_id);
+        let positions = showing_positions(&result, anchor_id);
+
+        assert!(
+            positions.len() >= 2,
+            "expected ≥2 showings of HD anchor, got {}",
+            positions.len()
+        );
+        let last_core_idx = result.cards.len() - 1;
+        assert!(
+            positions[0] >= last_core_idx.saturating_sub(positions.len()),
+            "anchor must sit at the end of the core section (positions = {positions:?}, lesson len = {})",
+            result.cards.len(),
+        );
+        for adjacent in positions.windows(2) {
+            let positions_apart = adjacent[1] - adjacent[0];
+            assert!(
+                positions_apart >= 1,
+                "every copy must strictly follow the previous showing (got adjacent delta {positions_apart})"
+            );
+        }
+    }
+
+    /// Positive spacing contract on the flush path: when several cards
+    /// leave copies to the flush path, the distributor interleaves them
+    /// (instead of blindly appending all copies of one card before the
+    /// next). Two HD anchors placed at the end of the core leave no
+    /// buffer after them, so full MIN_REPEAT_SPACING is mathematically
+    /// unreachable — but consecutive copies of the SAME card_id still
+    /// never land back-to-back, because copies of the other anchor
+    /// sit between them. This is the structural improvement over the
+    /// naive append loop: same-card showings are separated by other
+    /// cards whenever the flush path holds more than one card_id.
+    #[rstest]
+    fn expand_flush_path_interleaves_copies_of_distinct_cards() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛"]);
+        let a_sc = ks.create_card(vocab_card("猫")).expect("create anchor A");
+        let b_sc = ks.create_card(vocab_card("虎")).expect("create anchor B");
+        let a_id = *a_sc.card_id();
+        let b_id = *b_sc.card_id();
+        rate_into_state(&mut ks, a_id, 3.0, 8.0, 1, Rating::Hard);
+        rate_into_state(&mut ks, b_id, 3.0, 8.0, 1, Rating::Hard);
+        assert!(
+            ks.get_card(a_id)
+                .is_some_and(|sc| sc.memory().is_high_difficulty())
+                && ks
+                    .get_card(b_id)
+                    .is_some_and(|sc| sc.memory().is_high_difficulty()),
+            "fixture sanity: both anchors must be HD"
+        );
+
+        let distractor_ids: Vec<Ulid> = ks
+            .study_cards()
+            .iter()
+            .filter(|(id, _)| **id != a_id && **id != b_id)
+            .map(|(id, _)| *id)
+            .collect();
+        let mut cards: Vec<(Ulid, LessonCard)> = Vec::new();
+        for id in &distractor_ids {
+            cards.push((
+                *id,
+                LessonCard::new(*id, LessonCardView::Normal(vocab_card("filler")), false),
+            ));
+        }
+        cards.push((
+            a_id,
+            LessonCard::new(a_id, LessonCardView::Normal(vocab_card("猫")), false),
+        ));
+        cards.push((
+            b_id,
+            LessonCard::new(b_id, LessonCardView::Normal(vocab_card("虎")), false),
+        ));
+        let core_count = cards.len();
+        let original = LessonData { cards, core_count };
+        let primary_set: HashSet<Ulid> = [a_id, b_id].into_iter().collect();
+        let result = expand_repeated_views(original, &ks, &primary_set);
+
+        for card_id in [a_id, b_id] {
+            let positions = showing_positions(&result, card_id);
+            assert!(
+                positions.len() >= 2,
+                "expected ≥2 showings of HD anchor {card_id}, got {}",
+                positions.len()
+            );
+            for adjacent in positions.windows(2) {
+                assert!(
+                    adjacent[1] - adjacent[0] > 1,
+                    "flush path must interleave copies of distinct cards: same-card showings of {card_id} must not be back-to-back (positions = {positions:?})"
+                );
+            }
+        }
     }
 }

@@ -225,4 +225,141 @@ impl<'a> LessonViewGenerator<'a> {
         generation::generate_phrase_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
             .unwrap_or_else(|| LessonCardView::Normal(card.clone()))
     }
+
+    pub(crate) fn candidate_views_for_repeat<R: Rng>(
+        &mut self,
+        study_card: &crate::domain::StudyCard,
+        is_new: bool,
+        rng: &mut R,
+    ) -> Vec<LessonCardView> {
+        let card = study_card.card();
+        match CardType::from(card) {
+            CardType::Vocabulary => self.candidate_views_for_vocab_repeat(study_card, is_new, rng),
+            CardType::Kanji => self.candidate_views_for_kanji_repeat(study_card, is_new, rng),
+            CardType::Grammar => self.candidate_views_for_grammar_repeat(study_card, is_new, rng),
+            CardType::Phrase => Vec::new(),
+        }
+    }
+
+    fn candidate_views_for_vocab_repeat<R: Rng>(
+        &self,
+        study_card: &crate::domain::StudyCard,
+        is_new: bool,
+        rng: &mut R,
+    ) -> Vec<LessonCardView> {
+        let card = study_card.card();
+        let same_type_cards: &[Card] = self
+            .cards_by_type
+            .get(&CardType::Vocabulary)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[]);
+
+        if is_new {
+            build_distinct_views(vec![
+                LessonCardView::Normal(card.clone()),
+                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+            ])
+        } else {
+            let memory = study_card.memory();
+            let is_high_difficulty = memory.is_high_difficulty();
+            let eligible_for_advanced = memory.is_known_card() || memory.is_in_progress();
+            let eligible_for_reversed = eligible_for_advanced
+                || memory.easy_review_count() > EASY_REVIEWS_FOR_REVERSED
+                || memory.good_review_count() >= GOOD_REVIEWS_FOR_REVERSED;
+
+            let mut candidates = vec![
+                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+            ];
+            if !is_high_difficulty {
+                candidates.push(
+                    generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
+                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                );
+            }
+            if eligible_for_reversed {
+                candidates.push(transforms::apply_reversed(card));
+            }
+            if eligible_for_advanced {
+                candidates.push(transforms::apply_grammar_mutated(
+                    card,
+                    &self.known_grammars,
+                    rng,
+                ));
+            }
+            candidates.push(LessonCardView::Normal(card.clone()));
+
+            build_distinct_views(candidates)
+        }
+    }
+
+    fn candidate_views_for_kanji_repeat<R: Rng>(
+        &mut self,
+        study_card: &crate::domain::StudyCard,
+        is_new: bool,
+        rng: &mut R,
+    ) -> Vec<LessonCardView> {
+        let card = study_card.card();
+        let same_type_cards: &[Card] = self
+            .cards_by_type
+            .get(&CardType::Kanji)
+            .map(|v| v.as_slice())
+            .unwrap_or(&[]);
+
+        if is_new {
+            build_distinct_views(vec![
+                LessonCardView::Normal(card.clone()),
+                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                LessonCardView::Writing(card.clone()),
+            ])
+        } else {
+            build_distinct_views(vec![
+                generation::generate_kanji_reading_quiz(
+                    card.clone(),
+                    same_type_cards,
+                    &mut self.kanji_cache,
+                )
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                LessonCardView::Writing(card.clone()),
+                LessonCardView::Normal(card.clone()),
+            ])
+        }
+    }
+
+    fn candidate_views_for_grammar_repeat<R: Rng>(
+        &self,
+        study_card: &crate::domain::StudyCard,
+        is_new: bool,
+        _rng: &mut R,
+    ) -> Vec<LessonCardView> {
+        let card = study_card.card();
+        if is_new {
+            vec![LessonCardView::Normal(card.clone())]
+        } else {
+            build_distinct_views(vec![
+                generation::generate_grammar_quiz(card.clone(), self.knowledge_set)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                LessonCardView::Normal(card.clone()),
+            ])
+        }
+    }
+}
+
+fn build_distinct_views(candidates: Vec<LessonCardView>) -> Vec<LessonCardView> {
+    use std::collections::HashSet;
+    let mut seen: HashSet<std::mem::Discriminant<LessonCardView>> = HashSet::new();
+    let mut result = Vec::with_capacity(candidates.len());
+    for view in candidates {
+        let disc = std::mem::discriminant(&view);
+        if seen.insert(disc) {
+            result.push(view);
+        }
+    }
+    result
 }

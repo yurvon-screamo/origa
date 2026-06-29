@@ -5,7 +5,6 @@ use crate::domain::{Card, OrigaError};
 use crate::traits::UserRepository;
 
 use crate::dictionary::removed_popular_words::REMOVED_POPULAR_WORDS;
-
 pub struct MigrationResult {
     pub kanji_count: usize,
     pub companions_deleted: usize,
@@ -52,6 +51,25 @@ impl<'a, R: UserRepository> MigrateKanjiCompanionsUseCase<'a, R> {
 
         let total_deleted = Self::delete_removed_companions(&mut user, &removed_set);
         let total_created = Self::create_missing_companions(&mut user, &kanji_chars);
+
+        // Skip persistence in steady state: after the first run every
+        // subsequent cold start finds nothing to delete or create and
+        // `total_deleted + total_created` stays 0. Calling `save_sync`
+        // here would force a pointless blocking write on every cold
+        // start. Mirrors `migrate_vocabulary_part_of_speech.rs`.
+        if total_deleted == 0 && total_created == 0 {
+            debug!(
+                kanji_count = kanji_chars.len(),
+                companions_deleted = 0,
+                companions_created = 0,
+                "Kanji companion migration skipped persistence (no changes)"
+            );
+            return Ok(MigrationResult {
+                kanji_count: kanji_chars.len(),
+                companions_deleted: 0,
+                companions_created: 0,
+            });
+        }
 
         self.repository.save_sync(&user).await?;
 
