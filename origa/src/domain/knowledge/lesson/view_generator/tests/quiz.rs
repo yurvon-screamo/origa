@@ -422,9 +422,7 @@ mod generate_quiz_pos_filter_tests {
 
             if let Ok(LessonCardView::YesNo(yn)) = result {
                 if !yn.is_correct() {
-                    let uses_noun = noun_answers
-                        .iter()
-                        .any(|na| yn.statement_text().contains(na));
+                    let uses_noun = noun_answers.iter().any(|na| yn.statement().contains(na));
                     if uses_noun {
                         noun_used_count += 1;
                     }
@@ -455,7 +453,7 @@ mod generate_quiz_pos_filter_tests {
 
         match result.expect("should succeed") {
             LessonCardView::YesNo(yn) => {
-                assert!(!yn.statement_text().is_empty());
+                assert!(!yn.statement().is_empty());
             },
             other => panic!("Expected YesNo with fallback, got {:?}", other),
         }

@@ -161,18 +161,20 @@ impl MultiQuizResult {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct YesNoCard {
     card: Card,
-    statement_text: String,
+    word: String,
+    statement: String,
     is_correct: bool,
 }
 
 impl YesNoCard {
-    pub fn new(card: Card, statement_text: String, is_correct: bool) -> Self {
+    pub fn new(card: Card, word: String, statement: String, is_correct: bool) -> Self {
         Self {
             card,
-            statement_text,
+            word,
+            statement,
             is_correct,
         }
     }
@@ -181,8 +183,12 @@ impl YesNoCard {
         &self.card
     }
 
-    pub fn statement_text(&self) -> &str {
-        &self.statement_text
+    pub fn word(&self) -> &str {
+        &self.word
+    }
+
+    pub fn statement(&self) -> &str {
+        &self.statement
     }
 
     pub fn is_correct(&self) -> bool {
@@ -191,6 +197,58 @@ impl YesNoCard {
 
     pub fn check_answer(&self, user_said_yes: bool) -> bool {
         (self.is_correct && user_said_yes) || (!self.is_correct && !user_said_yes)
+    }
+}
+
+impl<'de> Deserialize<'de> for YesNoCard {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Manual impl (rather than derive) to backfill the legacy
+        // single-field `statement_text` shape; see `split_legacy_statement_text`.
+        #[derive(Deserialize)]
+        struct Wire {
+            card: Card,
+            is_correct: bool,
+            #[serde(default)]
+            word: Option<String>,
+            #[serde(default)]
+            statement: Option<String>,
+            #[serde(default)]
+            statement_text: Option<String>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+
+        let (word, statement) = match (wire.word, wire.statement) {
+            (Some(word), Some(statement)) => (word, statement),
+            (Some(word), None) => (word, String::new()),
+            (None, Some(statement)) => (String::new(), statement),
+            (None, None) => wire
+                .statement_text
+                .as_deref()
+                .map(split_legacy_statement_text)
+                .unwrap_or_default(),
+        };
+
+        Ok(YesNoCard {
+            card: wire.card,
+            word,
+            statement,
+            is_correct: wire.is_correct,
+        })
+    }
+}
+
+/// Recovers `word` and `statement` from a legacy `statement_text` joined
+/// by `" \n "` (the format emitted by `generate_yesno`). When the
+/// separator is absent the whole string becomes `statement`.
+fn split_legacy_statement_text(joined: &str) -> (String, String) {
+    const SEP: &str = " \n ";
+    match joined.split_once(SEP) {
+        Some((word, statement)) => (word.trim().to_string(), statement.trim().to_string()),
+        None => (String::new(), joined.to_string()),
     }
 }
 
@@ -640,5 +698,185 @@ mod tests {
             slot_id,
             "nil card_id must be backfilled from the slot id"
         );
+    }
+
+    mod yesno_card_deserialize_tests {
+        use super::*;
+
+        fn sample_card() -> Card {
+            Card::Vocabulary(VocabularyCard::new(
+                Question::new("温度".to_string()).expect("valid question"),
+            ))
+        }
+
+        fn sample_card_json() -> String {
+            serde_json::to_string(&sample_card()).expect("serialize card")
+        }
+
+        #[test]
+        fn yesno_card_roundtrip_preserves_fields() {
+            let original = YesNoCard::new(
+                sample_card(),
+                "温度".to_string(),
+                "спортивное состязание, матч, игра".to_string(),
+                true,
+            );
+
+            let json = serde_json::to_string(&original).expect("serialize YesNoCard");
+            let restored: YesNoCard = serde_json::from_str(&json).expect("deserialize YesNoCard");
+
+            assert_eq!(restored.card(), original.card());
+            assert_eq!(restored.word(), "温度");
+            assert_eq!(restored.statement(), "спортивное состязание, матч, игра");
+            assert!(restored.is_correct());
+        }
+
+        #[test]
+        fn yesno_card_serialized_new_shape_omits_statement_text() {
+            let card = YesNoCard::new(
+                sample_card(),
+                "温度".to_string(),
+                "перевод".to_string(),
+                false,
+            );
+
+            let json = serde_json::to_string(&card).expect("serialize YesNoCard");
+            assert!(
+                !json.contains("statement_text"),
+                "new shape must not emit legacy `statement_text`: {json}"
+            );
+            assert!(json.contains("\"word\""));
+            assert!(json.contains("\"statement\""));
+        }
+
+        #[test]
+        fn yesno_card_deserialize_backfills_from_legacy_statement_text() {
+            let json = format!(
+                r#"{{"card":{},"statement_text":"温度 \n спортивное состязание","is_correct":true}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize legacy shape");
+
+            assert_eq!(restored.word(), "温度");
+            assert_eq!(restored.statement(), "спортивное состязание");
+            assert!(restored.is_correct());
+        }
+
+        #[test]
+        fn yesno_card_deserialize_legacy_without_separator() {
+            let json = format!(
+                r#"{{"card":{},"statement_text":"no separator here","is_correct":false}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize legacy shape");
+
+            assert_eq!(restored.word(), "");
+            assert_eq!(restored.statement(), "no separator here");
+            assert!(!restored.is_correct());
+        }
+
+        #[test]
+        fn yesno_card_deserialize_partial_new_shape_word_only() {
+            let json = format!(
+                r#"{{"card":{},"word":"温度","is_correct":true}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize partial new shape");
+
+            assert_eq!(restored.word(), "温度");
+            assert_eq!(restored.statement(), "");
+            assert!(restored.is_correct());
+        }
+
+        #[test]
+        fn yesno_card_deserialize_partial_new_shape_statement_only() {
+            let json = format!(
+                r#"{{"card":{},"statement":"only statement","is_correct":true}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize partial new shape");
+
+            assert_eq!(restored.word(), "");
+            assert_eq!(restored.statement(), "only statement");
+            assert!(restored.is_correct());
+        }
+
+        #[test]
+        fn yesno_card_deserialize_missing_card_errors() {
+            let json = r#"{"word":"温度","statement":"x","is_correct":true}"#;
+
+            let result: Result<YesNoCard, _> = serde_json::from_str(json);
+            assert!(
+                result.is_err(),
+                "missing `card` must be a hard error, not a silent default"
+            );
+        }
+
+        #[test]
+        fn yesno_card_deserialize_missing_is_correct_errors() {
+            let json = format!(
+                r#"{{"card":{},"word":"温度","statement":"x"}}"#,
+                sample_card_json()
+            );
+
+            let result: Result<YesNoCard, _> = serde_json::from_str(&json);
+            assert!(
+                result.is_err(),
+                "missing `is_correct` must be a hard error: the answer-key must not silently default"
+            );
+        }
+
+        #[test]
+        fn yesno_card_deserialize_prefers_new_fields_over_legacy_statement_text() {
+            let json = format!(
+                r#"{{"card":{},"word":"新","statement":"new-stmt","statement_text":"legacy \n old","is_correct":true}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard = serde_json::from_str(&json).expect("deserialize mixed shape");
+
+            assert_eq!(restored.word(), "新");
+            assert_eq!(restored.statement(), "new-stmt");
+        }
+
+        /// Legacy statement_text without the `" \n "` separator (na-adjective
+        /// edge): the whole string lands in `statement`, `word` stays empty.
+        /// Pins the data-shape contract for the degraded legacy case.
+        #[test]
+        fn yesno_card_deserialize_legacy_na_adjective_edge() {
+            let json = format!(
+                r#"{{"card":{},"statement_text":"静か","is_correct":true}}"#,
+                sample_card_json()
+            );
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize legacy shape");
+
+            assert_eq!(restored.word(), "");
+            assert_eq!(restored.statement(), "静か");
+        }
+
+        /// Minimal shape with only `card` + `is_correct` (no word/statement/
+        /// statement_text): both text fields default to empty rather than
+        /// erroring, since they are recoverable display-only data.
+        #[test]
+        fn yesno_card_deserialize_only_card_and_is_correct_yields_empty_strings() {
+            let json = format!(r#"{{"card":{},"is_correct":true}}"#, sample_card_json());
+
+            let restored: YesNoCard =
+                serde_json::from_str(&json).expect("deserialize minimal shape");
+
+            assert_eq!(restored.word(), "");
+            assert_eq!(restored.statement(), "");
+            assert!(restored.is_correct());
+        }
     }
 }

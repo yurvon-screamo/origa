@@ -130,7 +130,7 @@ mod lesson_card_view_accessors {
     #[test]
     fn card_accessor_for_yesno_variant() {
         let vocab = create_vocab_card("猫");
-        let yesno = YesNoCard::new(vocab.clone(), "stmt".to_string(), true);
+        let yesno = YesNoCard::new(vocab.clone(), "word".to_string(), "stmt".to_string(), true);
         assert_eq!(LessonCardView::YesNo(yesno).card(), &vocab);
     }
 
@@ -183,7 +183,7 @@ mod lesson_card_view_accessors {
                 .grammar_info()
                 .is_none()
         );
-        let yesno = YesNoCard::new(vocab, "s".into(), true);
+        let yesno = YesNoCard::new(vocab, "w".into(), "s".into(), true);
         assert!(LessonCardView::YesNo(yesno).grammar_info().is_none());
     }
 }
