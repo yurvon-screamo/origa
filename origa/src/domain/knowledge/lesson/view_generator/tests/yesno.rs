@@ -13,7 +13,7 @@ fn create_vocab_card_with_word(word: &str) -> Card {
 
 fn create_yesno_card(is_correct: bool) -> YesNoCard {
     let card = create_vocab_card_with_word("テスト");
-    YesNoCard::new(card, "テスト – тест".to_string(), is_correct)
+    YesNoCard::new(card, "テスト".to_string(), "тест".to_string(), is_correct)
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn test_generate_yesno_correct_statement() {
     assert!(result.is_ok());
     match result.unwrap() {
         LessonCardView::YesNo(yesno) => {
-            assert!(!yesno.statement_text().is_empty());
+            assert!(!yesno.statement().is_empty());
         },
         _ => panic!("Expected YesNo view"),
     }
@@ -88,7 +88,7 @@ fn test_generate_yesno_false_statement() {
     assert!(result.is_ok());
     match result.unwrap() {
         LessonCardView::YesNo(yesno) => {
-            assert!(!yesno.statement_text().is_empty());
+            assert!(!yesno.statement().is_empty());
         },
         _ => panic!("Expected YesNo view"),
     }
@@ -212,7 +212,7 @@ fn generate_yesno_kanji_with_distractors() {
 
     match result.expect("should succeed") {
         LessonCardView::YesNo(yn) => {
-            assert!(!yn.statement_text().is_empty());
+            assert!(!yn.statement().is_empty());
         },
         other => panic!("Expected YesNo for kanji, got {:?}", other),
     }
@@ -228,4 +228,44 @@ fn generate_yesno_kanji_fallback_no_distractors() {
         LessonCardView::Normal(c) => assert_eq!(c, card),
         other => panic!("Expected Normal fallback, got {:?}", other),
     }
+}
+
+#[test]
+fn generate_yesno_stores_word_and_statement_separately() {
+    init_real_dictionaries();
+
+    let vocab_words = ["猫", "犬", "鳥", "魚"];
+    let cards: Vec<Card> = vocab_words
+        .iter()
+        .map(|w| create_vocab_card_with_word(w))
+        .collect();
+
+    let mut rng = StdRng::seed_from_u64(42);
+    let result = generation::generate_yesno(
+        cards[0].clone(),
+        &cards[1..],
+        &NativeLanguage::Russian,
+        &mut rng,
+    );
+
+    let yesno = match result.expect("should succeed") {
+        LessonCardView::YesNo(yn) => yn,
+        other => panic!("Expected YesNo, got {other:?}"),
+    };
+
+    let expected_word = cards[0]
+        .question(&NativeLanguage::Russian)
+        .expect("question")
+        .text()
+        .to_string();
+    assert_eq!(yesno.word(), expected_word);
+    assert!(
+        !yesno.word().contains(" \n "),
+        "word must not embed the legacy separator: {}",
+        yesno.word()
+    );
+    assert!(
+        !yesno.statement().is_empty(),
+        "statement must carry the answer/distractor"
+    );
 }

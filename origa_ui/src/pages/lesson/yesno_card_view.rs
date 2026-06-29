@@ -54,12 +54,13 @@ pub fn YesNoCardView(
     let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
     let part_of_speech = card.vocabulary_part_of_speech();
 
-    let statement_text_raw = yesno_card.statement_text().to_string();
-    let statement = StoredValue::new(if is_na_adj {
-        super::na_adjective_helper::append_na_suffix(&statement_text_raw)
+    let word_raw = yesno_card.word().to_string();
+    let display_word = StoredValue::new(if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&word_raw)
     } else {
-        statement_text_raw.clone()
+        word_raw
     });
+    let statement_value = StoredValue::new(yesno_card.statement().to_string());
     let is_statement_correct = yesno_card.is_correct();
 
     let question_text_raw = match card.question(&lang) {
@@ -189,9 +190,9 @@ pub fn YesNoCardView(
             <div class="flex-1 flex flex-col justify-center">
                 <div class="text-center mb-3 sm:mb-6">
                     <Show when=move || kanji_for_animation.get_value().is_none()>
-                        <div class="mb-4">
+                        <div class="mb-2 sm:mb-3">
                             <MarkdownText
-                                content=Signal::derive(move || statement.get_value())
+                                content=Signal::derive(move || display_word.get_value())
                                 known_kanji=known_kanji.get()
                                 variant=Signal::derive(|| MarkdownVariant::Large)
                             />
@@ -200,21 +201,21 @@ pub fn YesNoCardView(
 
                     <Show when=move || kanji_for_animation.get_value().is_some()>
                         {move || {
-                            let stmt = statement.get_value();
                             kanji_for_animation.get_value().map(|kanji: String| {
                                 view! {
-                                    <div class="mb-3 sm:mb-6">
+                                    <div class="mb-2 sm:mb-3">
                                         <DisplayText>
                                             {kanji}
                                         </DisplayText>
                                     </div>
-                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                        {stmt}
-                                    </Text>
                                 }
                             })
                         }}
                     </Show>
+
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                        {move || statement_value.get_value()}
+                    </Text>
 
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
                         {t!(i18n, lesson.is_this_correct)}

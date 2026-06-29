@@ -33,8 +33,13 @@ fn create_user_with_real_vocab_cards(words: &[&str]) -> User {
     user
 }
 
-fn create_yesno_card_with_words(card: Card, statement_text: String, is_correct: bool) -> YesNoCard {
-    YesNoCard::new(card, statement_text, is_correct)
+fn create_yesno_card_with_words(
+    card: Card,
+    word: String,
+    statement: String,
+    is_correct: bool,
+) -> YesNoCard {
+    YesNoCard::new(card, word, statement, is_correct)
 }
 
 #[tokio::test]
@@ -57,8 +62,9 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
     // Создаём YesNo с верным утверждением (is_correct = true)
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
-    let yesno = create_yesno_card_with_words(card.clone(), statement_text, true);
+    let word = question.text().to_string();
+    let statement = answer_display_text(&answer);
+    let yesno = create_yesno_card_with_words(card.clone(), word, statement, true);
 
     // Act: пользователь отвечает "Да" на верное утверждение
     let user_said_yes = true;
@@ -108,8 +114,9 @@ async fn yesno_journey_wrong_answer_results_in_again_rating() {
     // Создаём YesNo с верным утверждением (is_correct = true)
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
-    let yesno = create_yesno_card_with_words(card.clone(), statement_text, true);
+    let word = question.text().to_string();
+    let statement = answer_display_text(&answer);
+    let yesno = create_yesno_card_with_words(card.clone(), word, statement, true);
 
     // Act: пользователь отвечает "Нет" на верное утверждение (неправильно)
     let user_said_yes = false;
@@ -153,10 +160,11 @@ async fn yesno_journey_false_statement_correct_no_answer() {
         .question(&NativeLanguage::Russian)
         .unwrap();
     let distractor_answer = "собака"; // Неверный ответ (дистрактор)
-    let statement_text = format!("{} – {}", question.text(), distractor_answer);
+    let word = question.text().to_string();
     let yesno = create_yesno_card_with_words(
         Card::Vocabulary(card),
-        statement_text,
+        word,
+        distractor_answer.to_string(),
         false, // is_correct = false
     );
 
@@ -181,10 +189,11 @@ async fn yesno_journey_false_statement_wrong_yes_answer() {
         .question(&NativeLanguage::Russian)
         .unwrap();
     let distractor_answer = "собака"; // Неверный ответ
-    let statement_text = format!("{} – {}", question.text(), distractor_answer);
+    let word = question.text().to_string();
     let yesno = create_yesno_card_with_words(
         Card::Vocabulary(card),
-        statement_text,
+        word,
+        distractor_answer.to_string(),
         false, // is_correct = false
     );
 
@@ -258,8 +267,9 @@ async fn yesno_journey_all_rating_cases(
     // Создаём YesNo карточку с нужным значением is_correct
     let question = card.question(&NativeLanguage::Russian).unwrap();
     let answer = card.answer(&NativeLanguage::Russian).unwrap();
-    let statement_text = format!("{} – {}", question.text(), answer_display_text(&answer));
-    let yesno = create_yesno_card_with_words(card, statement_text, statement_is_correct);
+    let word = question.text().to_string();
+    let statement = answer_display_text(&answer);
+    let yesno = create_yesno_card_with_words(card, word, statement, statement_is_correct);
 
     // Act: Проверяем ответ и определяем рейтинг
     let is_answer_correct = yesno.check_answer(user_said_yes);

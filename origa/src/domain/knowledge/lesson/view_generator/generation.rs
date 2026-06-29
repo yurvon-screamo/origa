@@ -141,11 +141,12 @@ pub(crate) fn generate_yesno(
         statement_answer
     };
 
-    let statement_text = format!("{} \n {}", question.text(), statement_answer);
+    let word = question.text().to_string();
 
     Ok(LessonCardView::YesNo(YesNoCard::new(
         original_card,
-        statement_text,
+        word,
+        statement_answer,
         is_correct,
     )))
 }
