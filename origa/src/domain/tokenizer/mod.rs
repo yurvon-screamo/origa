@@ -6,7 +6,7 @@ use std::sync::OnceLock;
 pub use part_of_speech::PartOfSpeech;
 pub use translation::{TokenTranslation, lookup_tokens_translations};
 
-use crate::domain::{JapaneseChar, OrigaError};
+use crate::domain::{JapaneseChar, OrigaError, hiragana_to_katakana};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenInfo {
@@ -42,11 +42,15 @@ impl TokenInfo {
 #[cfg(test)]
 impl TokenInfo {
     pub fn new_test(base: &str, pos: PartOfSpeech) -> Self {
+        Self::new_test_with_reading(base, base, pos)
+    }
+
+    pub fn new_test_with_reading(base: &str, reading: &str, pos: PartOfSpeech) -> Self {
         Self {
             orthographic_base_form: base.to_string(),
-            phonological_base_form: base.to_string(),
+            phonological_base_form: reading.to_string(),
             orthographic_surface_form: base.to_string(),
-            phonological_surface_form: base.to_string(),
+            phonological_surface_form: reading.to_string(),
             part_of_speech: pos,
         }
     }
@@ -206,6 +210,11 @@ pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
         flush_segment(&current_segment, is_current_japanese, &mut result)?;
     }
 
+    // Post-processing: split ProperNoun tokens that end in productive suffixes
+    // (Lindera over-merges noun + suffix into single ProperNoun, losing
+    // individual word meanings and translations).
+    split_compound_proper_nouns(&mut result);
+
     Ok(result)
 }
 
@@ -343,6 +352,92 @@ fn non_japanese_token(segment: &str, is_whitespace: bool) -> TokenInfo {
         phonological_surface_form: segment.to_string(),
         part_of_speech: pos,
     }
+}
+
+/// Suffixes that Lindera sometimes over-merges with preceding nouns into a
+/// single ProperNoun token. When found at the end of a ProperNoun, the token
+/// is split so the suffix gets its own token (with correct POS + translation).
+const SPLITTABLE_SUFFIXES: &[&str] = &["なし"];
+
+/// Post-processing step: split ProperNoun tokens ending in known productive
+/// suffixes (e.g. 水なし → 水 + なし). Lindera sometimes merges noun + suffix
+/// into a single ProperNoun, losing the individual word meanings.
+///
+/// Only splits ProperNoun tokens (not regular Nouns) to minimise false
+/// positives. The prefix must contain at least one kanji to avoid splitting
+/// katakana names or hiragana fragments.
+fn split_compound_proper_nouns(tokens: &mut Vec<TokenInfo>) {
+    let mut i = 0;
+    while i < tokens.len() {
+        if tokens[i].part_of_speech() != &PartOfSpeech::ProperNoun {
+            i += 1;
+            continue;
+        }
+
+        let surface = tokens[i].orthographic_surface_form();
+        match find_splittable_suffix(surface) {
+            Some((prefix, suffix)) => {
+                let split = split_at_suffix(&tokens[i], &prefix, &suffix);
+                tokens.splice(i..=i, split);
+                i += 2;
+            },
+            None => i += 1,
+        }
+    }
+}
+
+/// Splits a merged ProperNoun token into prefix + suffix Noun tokens, deriving
+/// each token's reading from the merged token's phonological form. Lindera
+/// emits the merged token's reading as katakana; the suffix's hiragana surface
+/// (e.g. なし) is converted to katakana (ナシ) and stripped from the merged
+/// reading to obtain the prefix reading. This handles rendaku and differing
+/// surface/reading lengths automatically. If the merged reading does not end
+/// in the suffix's katakana form (unexpected), falls back to using surface
+/// forms as readings.
+fn split_at_suffix(token: &TokenInfo, prefix: &str, suffix: &str) -> [TokenInfo; 2] {
+    let merged_reading = token.phonological_surface_form();
+    let (prefix_reading, suffix_reading) = split_reading(merged_reading, suffix);
+
+    [
+        TokenInfo {
+            orthographic_base_form: prefix.to_string(),
+            phonological_base_form: prefix_reading.clone(),
+            orthographic_surface_form: prefix.to_string(),
+            phonological_surface_form: prefix_reading,
+            part_of_speech: PartOfSpeech::Noun,
+        },
+        TokenInfo {
+            orthographic_base_form: suffix.to_string(),
+            phonological_base_form: suffix_reading.clone(),
+            orthographic_surface_form: suffix.to_string(),
+            phonological_surface_form: suffix_reading,
+            part_of_speech: PartOfSpeech::Noun,
+        },
+    ]
+}
+
+fn split_reading(merged_reading: &str, suffix: &str) -> (String, String) {
+    let kata_suffix = hiragana_to_katakana(suffix);
+    if let Some(prefix_reading) = merged_reading.strip_suffix(&kata_suffix) {
+        return (prefix_reading.to_string(), kata_suffix);
+    }
+    // Fallback: merged reading does not end in the suffix's katakana form
+    // (unexpected — Lindera typically emits katakana readings). Surface suffix
+    // is the safest guess for the suffix reading.
+    (merged_reading.to_string(), suffix.to_string())
+}
+
+fn find_splittable_suffix(surface: &str) -> Option<(String, String)> {
+    for suffix in SPLITTABLE_SUFFIXES {
+        if let Some(prefix_str) = surface.strip_suffix(*suffix) {
+            // Prefix must be non-empty AND contain at least one kanji,
+            // otherwise we'd split katakana names or hiragana fragments.
+            if !prefix_str.is_empty() && prefix_str.chars().any(|c| c.is_kanji()) {
+                return Some((prefix_str.to_string(), suffix.to_string()));
+            }
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -661,5 +756,45 @@ mod tests {
                 .map(|t| t.orthographic_surface_form())
                 .collect::<Vec<_>>()
         );
+    }
+
+    #[test]
+    fn should_split_mizunashi_proper_noun() {
+        let mut tokens = vec![
+            TokenInfo::new_test_with_reading("水なし", "ミズナシ", PartOfSpeech::ProperNoun),
+            TokenInfo::new_test("で", PartOfSpeech::Particle),
+        ];
+        split_compound_proper_nouns(&mut tokens);
+        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens[0].orthographic_surface_form(), "水");
+        assert_eq!(tokens[0].phonological_surface_form(), "ミズ");
+        assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Noun);
+        assert_eq!(tokens[1].orthographic_surface_form(), "なし");
+        assert_eq!(tokens[1].phonological_surface_form(), "ナシ");
+        assert_eq!(tokens[1].part_of_speech(), &PartOfSpeech::Noun);
+        // Trailing token must survive the splice unchanged.
+        assert_eq!(tokens[2].orthographic_surface_form(), "で");
+        assert_eq!(tokens[2].part_of_speech(), &PartOfSpeech::Particle);
+    }
+
+    #[test]
+    fn should_not_split_regular_noun_ending_in_nashi() {
+        let mut tokens = vec![TokenInfo::new_test("某なし", PartOfSpeech::Noun)];
+        split_compound_proper_nouns(&mut tokens);
+        assert_eq!(tokens.len(), 1);
+    }
+
+    #[test]
+    fn should_not_split_proper_noun_without_kanji_prefix() {
+        let mut tokens = vec![TokenInfo::new_test("アなし", PartOfSpeech::ProperNoun)];
+        split_compound_proper_nouns(&mut tokens);
+        assert_eq!(tokens.len(), 1);
+    }
+
+    #[test]
+    fn should_not_split_proper_noun_without_known_suffix() {
+        let mut tokens = vec![TokenInfo::new_test("田中", PartOfSpeech::ProperNoun)];
+        split_compound_proper_nouns(&mut tokens);
+        assert_eq!(tokens.len(), 1);
     }
 }

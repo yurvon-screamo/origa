@@ -37,14 +37,17 @@ pub fn lookup_tokens_translations(
 ) -> Vec<TokenTranslation> {
     tokens
         .iter()
-        .map(|token| {
+        .enumerate()
+        .map(|(index, token)| {
             let base_form = token.orthographic_base_form().to_string();
             let translation = if is_particle_homonym_blacklisted(token) {
                 None
             } else {
                 get_translation(&base_form, native_language)
             };
-            let grammar_label = resolve_grammar_label(token, native_language, original_text);
+
+            let grammar_label = resolve_sou_da_label(token, index, tokens, native_language)
+                .or_else(|| resolve_grammar_label(token, native_language, original_text));
 
             TokenTranslation {
                 surface_form: token.orthographic_surface_form().to_string(),
@@ -161,6 +164,151 @@ fn resolve_grammar_label(
         }
     }
 
+    None
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SouDaVariant {
+    Appearance,
+    Hearsay,
+    Combined,
+}
+
+/// Context-aware detection for the そうだ grammar pattern.
+///
+/// そう has two distinct meanings depending on what precedes it:
+/// - 様態 (appearance/conjecture): follows a verb/adjective STEM form
+///   (美味し→美味しそう, 降り→降りそう). Previous token: conjugated (surface != base).
+/// - 伝聞 (hearsay): follows a PLAIN/dictionary form (食べる→食べるそうだ) or a
+///   past/copula auxiliary (降った→降ったそうだ, 元気だ→元気だそうだ).
+///
+/// A standalone そう that is NOT part of a そうだ construction (the demonstrative
+/// manner adverb そう in そう思う, そうですね) must be left to `resolve_grammar_label`
+/// so the manner rule `こう・そう・ああ・どう` can match — this function returns
+/// `None` whenever the preceding token is not a predicate the pattern could
+/// attach to (particle, adverb, pronoun, ...) or when a sentence boundary
+/// separates そう from any predecessor.
+fn resolve_sou_da_label(
+    token: &TokenInfo,
+    index: usize,
+    tokens: &[TokenInfo],
+    native_language: &NativeLanguage,
+) -> Option<String> {
+    let surface = token.orthographic_surface_form();
+
+    // Lindera splits the grammar pattern into a standalone そう token followed
+    // by a copula (だ/です). Compound words like そういう / そうした are distinct
+    // lemmas and must not trigger this path.
+    if surface != "そう" {
+        return None;
+    }
+
+    // Exclude content lemmas whose base form carries kanji (e.g. 添う "to comply",
+    // surfaced as そう) — those are dictionary verbs, not the grammar pattern.
+    // The grammar-pattern そう surfaces base そう with no kanji.
+    let pos = token.part_of_speech();
+    if pos.is_vocabulary_word() && token.orthographic_base_form().chars().any(|c| c.is_kanji()) {
+        return None;
+    }
+
+    if index == 0 {
+        return None;
+    }
+
+    let prev = previous_predicate(tokens, index)?;
+
+    let prev_surface = prev.orthographic_surface_form();
+    let prev_base = prev.orthographic_base_form();
+    let prev_pos = prev.part_of_speech();
+
+    let is_stem_form = prev_surface != prev_base
+        && matches!(prev_pos, PartOfSpeech::Verb | PartOfSpeech::IAdjective);
+
+    let is_plain_form = prev_surface == prev_base
+        && matches!(prev_pos, PartOfSpeech::Verb | PartOfSpeech::IAdjective);
+
+    // た (past) and だ (copula) auxiliaries both attach そう as hearsay:
+    // 降ったそうだ (past), 元気だそうだ / 学生だそうだ (copula plain form).
+    let is_ta_or_da_aux = matches!(prev_pos, PartOfSpeech::AuxiliaryVerb)
+        && (prev_surface == "た" || prev_surface == "だ");
+
+    // A na-adjective/noun directly before そう (元気そう, 静かそう) is token-ambiguous:
+    // the 様態 stem and the dictionary form are visually identical. Noun/na-adj
+    // hearsay always carries an intervening copula だ (caught by is_ta_or_da_aux),
+    // so a bare noun/na-adj predecessor leans appearance — the combined rule
+    // covers both readings without forcing a wrong specific label.
+    let is_ambiguous_stem = matches!(
+        prev_pos,
+        PartOfSpeech::NaAdjective | PartOfSpeech::Noun | PartOfSpeech::ProperNoun
+    );
+
+    let rules = GRAMMAR_RULES.get()?;
+
+    if is_stem_form {
+        find_sou_rule(rules, native_language, SouDaVariant::Appearance)
+    } else if is_plain_form || is_ta_or_da_aux {
+        find_sou_rule(rules, native_language, SouDaVariant::Hearsay)
+    } else if is_ambiguous_stem {
+        find_sou_rule(rules, native_language, SouDaVariant::Combined)
+    } else {
+        None
+    }
+}
+
+/// Locates the nearest content token preceding `index`, stopping at a sentence
+/// boundary. Returns `None` when a sentence-ending punctuation (。！？) is hit
+/// before any content token, so そう starting a new clause (食べた。そうだ。) is
+/// not misread as hearsay about the previous sentence.
+fn previous_predicate(tokens: &[TokenInfo], index: usize) -> Option<&TokenInfo> {
+    for t in tokens[..index].iter().rev() {
+        if is_sentence_boundary(t) {
+            return None;
+        }
+        if matches!(
+            t.part_of_speech(),
+            PartOfSpeech::Whitespace | PartOfSpeech::Symbol | PartOfSpeech::AuxiliarySymbol
+        ) {
+            continue;
+        }
+        return Some(t);
+    }
+    None
+}
+
+fn is_sentence_boundary(token: &TokenInfo) -> bool {
+    matches!(
+        token.part_of_speech(),
+        PartOfSpeech::Symbol | PartOfSpeech::AuxiliarySymbol
+    ) && token
+        .orthographic_surface_form()
+        .chars()
+        .any(|c| matches!(c, '。' | '！' | '？'))
+}
+
+/// Resolves a そうだ grammar rule title for the requested variant. Terms are
+/// anchored to `そうだ（…）` so the hearsay search does not collide with
+/// unrelated hearsay rules whose titles also contain `（伝聞）` (～という（伝聞）,
+/// ～とか（伝聞）). Falls back to any `そうだ` rule when the dictionary lacks a
+/// variant-specific entry.
+fn find_sou_rule(
+    rules: &[GrammarRule],
+    native_language: &NativeLanguage,
+    variant: SouDaVariant,
+) -> Option<String> {
+    let term_groups: &[&[&str]] = match variant {
+        SouDaVariant::Appearance => &[&["そうだ（様態）"], &["そうだ"]],
+        SouDaVariant::Hearsay => &[&["そうだ（伝聞）"], &["そうだ"]],
+        SouDaVariant::Combined => &[&["そうだ（様態・伝聞）"], &["そうだ"]],
+    };
+
+    for terms in term_groups {
+        for rule in rules.iter() {
+            let title = rule.content(native_language).title();
+            if terms.iter().any(|term| title.contains(term)) {
+                return Some(title.to_string());
+            }
+        }
+    }
     None
 }
 
@@ -678,9 +826,9 @@ mod integration_tests {
     // --- Reproduction / regression tests for translation bugs ---
     // These tests were originally written as failing repro-tests to document
     // concrete root causes across 10 user-reported phrases. After the 6-slice
-    // fix they now pass and serve as regression locks. One test
-    // (should_document_mizunashi_overmerge_limitation) is a characterization
-    // test documenting a known Lindera limitation that is out of scope.
+    // fix they now pass and serve as regression locks. The
+    // `should_split_mizunashi_compound` test locks the post-processing
+    // splitter that resolves the 水なし over-merge limitation.
 
     // --- Phrase 1: 人はパンのみで生きるにあらずですわよ ---
     // Before the fix, Lindera split the classical negative あらず into あら
@@ -728,14 +876,15 @@ mod integration_tests {
     }
 
     // --- Phrase 2: 水なしでは生きていけない ---
-    // Characterization test: Lindera over-merges 水なし ("without water") into a
-    // single ProperNoun token (reading ミズナシ) with no vocabulary translation.
-    // The correct segmentation would be 水 (water, Noun) + なし (without, suffix),
-    // but fixing this via user_dictionary breaks E2E (MarkdownText rendering).
-    // Post-processing splitter approach is planned as a follow-up.
-    // This test documents the current limitation so it is visible and trackable.
+    // Regression test for the post-processing splitter. Lindera over-merges
+    // 水なし ("without water") into a single ProperNoun token (reading ミズナシ)
+    // with no vocabulary translation. The splitter in `tokenize_text` detects
+    // ProperNoun tokens ending in a known productive suffix (currently なし)
+    // and splits them into separate Noun tokens so each gets translated.
+    // Previous approach (user_dictionary.csv + なし) broke E2E via furigana
+    // rendering; this code-only fix avoids touching the build binary.
     #[test]
-    fn should_document_mizunashi_overmerge_limitation() {
+    fn should_split_mizunashi_compound() {
         ensure_dictionaries();
         let text = "水なしでは生きていけない";
         let tokens = super::super::tokenize_text(text).unwrap();
@@ -743,18 +892,39 @@ mod integration_tests {
 
         let merged = results.iter().find(|t| t.surface_form == "水なし");
         assert!(
-            merged.is_some(),
-            "Known limitation: Lindera should over-merge 「水なし」into a single token. \
-             If this assertion fails, the over-merge was resolved — flip the test to \
-             assert separate 水 + なし tokens. Tokens: {:?}",
-            results.iter().map(|t| &t.surface_form).collect::<Vec<_>>()
+            merged.is_none(),
+            "「水なし」should be split into separate tokens, got merged token: {:?}",
+            merged
         );
-        let merged_token = merged.unwrap();
+
+        let mizu = results
+            .iter()
+            .find(|t| t.surface_form == "水" && t.pos == PartOfSpeech::Noun)
+            .expect("「水」noun should exist after split");
+        // Split must expose 水's dictionary entry — the whole point of the fix.
         assert!(
-            merged_token.translation.is_none(),
-            "Over-merged 「水なし」should have no translation (ProperNoun not in vocab). \
-             got: {:?}",
-            merged_token.translation
+            mizu.translation.is_some(),
+            "「水」should carry a translation after split, got: {:?}",
+            mizu
+        );
+        // Reading is derived from the merged token's phonological form
+        // (ミズナシ → strip suffix-length chars → ミズ), not the surface kanji.
+        assert_ne!(
+            mizu.reading, "水",
+            "「水」reading must be katakana ミズ, not surface kanji"
+        );
+
+        // なし has no standalone dictionary entry in the current vocabulary —
+        // the split still produces the token (needed for furigana/glossary
+        // alignment), but translation absence is a dictionary-data concern,
+        // not a splitter concern.
+        let nashi = results
+            .iter()
+            .find(|t| t.surface_form == "なし")
+            .expect("「なし」token should exist after split");
+        assert_ne!(
+            nashi.reading, "なし",
+            "「なし」reading must be katakana ナシ derived from merged token"
         );
     }
 
@@ -1168,6 +1338,261 @@ mod integration_tests {
             "ドアを開けたとたん猫が逃げた",
             "とたん",
             "～たとたん（に）",
+        );
+    }
+
+    // そうだ after an i-adjective stem (美味し, base 美味しい) is 様態
+    // (appearance): "looks delicious". Lindera surfaces the stem with
+    // surface != base, which resolve_sou_da_label detects.
+    #[test]
+    fn should_label_sou_as_appearance_after_adjective_stem() {
+        ensure_dictionaries();
+        let text = "この料理は美味しそうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（様態）"),
+            "そう after adjective stem should be 様態 (appearance), got: {:?}",
+            sou
+        );
+    }
+
+    // そうだ after a verb dictionary form (来る, surface == base) is 伝聞
+    // (hearsay): "I heard he will come".
+    #[test]
+    fn should_label_sou_as_hearsay_after_dictionary_form() {
+        ensure_dictionaries();
+        let text = "田中さんは来るそうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（伝聞）"),
+            "そう after dictionary form should be 伝聞 (hearsay), got: {:?}",
+            sou
+        );
+    }
+
+    // そうだ after a past auxiliary (降った → 降っ + た) is 伝聞 (hearsay):
+    // "I heard it rained". The token directly before そう is the た auxiliary.
+    #[test]
+    fn should_label_sou_as_hearsay_after_past_form() {
+        ensure_dictionaries();
+        let text = "雨が降ったそうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（伝聞）"),
+            "そう after past auxiliary should be 伝聞 (hearsay), got: {:?}",
+            sou
+        );
+    }
+
+    // Compound lemma そういう ("such") shares the そう prefix but is a distinct
+    // word. The context-aware path must not attach a そうだ grammar_label to it.
+    #[test]
+    fn should_not_label_souiu_compound_as_sou_da_grammar() {
+        ensure_dictionaries();
+        let text = "そういうこと";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let souiu = results
+            .iter()
+            .find(|t| t.surface_form == "そういう")
+            .expect("「そういう」token should exist");
+        let mislabeled = souiu
+            .grammar_label
+            .as_deref()
+            .is_some_and(|label| label.contains("そうだ"));
+        assert!(
+            !mislabeled,
+            "「そういう」must not carry a そうだ grammar_label, got: {:?}",
+            souiu.grammar_label
+        );
+    }
+
+    // そうだ after a copula だ following a noun/na-adj (元気だそうだ) is 伝聞:
+    // the token directly before そう is the だ copula. Locks in the central
+    // adaptation — noun/na-adj hearsay is detected via the intervening copula.
+    #[test]
+    fn should_label_sou_as_hearsay_after_copula_da() {
+        ensure_dictionaries();
+        let text = "元気だそうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（伝聞）"),
+            "そう after copula だ should be 伝聞 (hearsay), got: {:?}",
+            sou
+        );
+    }
+
+    // そうだ after an i-adjective past (美味しかった → 美味しかっ + た) is 伝聞.
+    #[test]
+    fn should_label_sou_as_hearsay_after_iadjective_past() {
+        ensure_dictionaries();
+        let text = "美味しかったそうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（伝聞）"),
+            "そう after i-adjective past should be 伝聞 (hearsay), got: {:?}",
+            sou
+        );
+    }
+
+    // A noun directly before そう (元気そうだ) is token-ambiguous (the 様態 stem
+    // looks identical to the dictionary form), so it resolves to the combined
+    // rule rather than forcing hearsay.
+    #[test]
+    fn should_label_sou_as_combined_after_bare_noun() {
+        ensure_dictionaries();
+        let text = "元気そうだ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert_eq!(
+            sou.grammar_label.as_deref(),
+            Some("～そうだ（様態・伝聞）"),
+            "そう after a bare noun should fall back to the combined rule, got: {:?}",
+            sou
+        );
+    }
+
+    // Demonstrative/manner そう after a particle (私はそう思う) is NOT a そうだ
+    // construction — it must defer to resolve_grammar_label so the manner rule
+    // こう・そう・ああ・どう matches. Guards against the Combined-fallback false
+    // positive where そう follows a non-predicate token.
+    #[test]
+    fn should_label_demonstrative_sou_as_manner_not_sou_da() {
+        ensure_dictionaries();
+        let text = "私はそう思う";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert!(
+            sou.grammar_label
+                .as_deref()
+                .is_some_and(|label| label.contains("そう") && !label.contains("そうだ")),
+            "demonstrative そう should match the manner rule, not a そうだ rule, got: {:?}",
+            sou.grammar_label
+        );
+    }
+
+    // A new sentence after 。 breaks the predecessor chain — そう in the second
+    // clause (食べた。そうだ。) is agreement, not hearsay about the first clause.
+    #[test]
+    fn should_not_attach_sou_da_label_across_sentence_boundary() {
+        ensure_dictionaries();
+        let text = "食べた。そうだ。";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+
+        let sou = results
+            .iter()
+            .find(|t| t.surface_form == "そう")
+            .expect("「そう」token should exist");
+        assert!(
+            sou.grammar_label
+                .as_deref()
+                .is_none_or(|label| !label.contains("そうだ（伝聞）")),
+            "そう after a sentence boundary must not be labeled hearsay, got: {:?}",
+            sou.grammar_label
+        );
+    }
+
+    #[test]
+    fn should_label_kore_sore_are_demonstratives_via_keyword() {
+        ensure_dictionaries();
+        let text = "これは本です";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let kore = results
+            .iter()
+            .find(|t| t.surface_form == "これ")
+            .expect("「これ」token should exist");
+        assert!(
+            kore.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("これ")),
+            "「これ」should carry the これ・それ・あれ grammar_label via keyword, got: {:?}",
+            kore
+        );
+    }
+
+    #[test]
+    fn should_label_san_honorific_suffix_via_keyword() {
+        ensure_dictionaries();
+        let text = "田中さん";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let san = results
+            .iter()
+            .find(|t| t.surface_form == "さん")
+            .expect("「さん」suffix token should exist");
+        assert!(
+            san.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("さん")),
+            "「さん」should carry the ～さん honorific grammar_label via keyword, got: {:?}",
+            san
+        );
+    }
+
+    #[test]
+    fn should_label_itsu_question_word_via_keyword() {
+        ensure_dictionaries();
+        let text = "いつ行きますか";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let itsu = results
+            .iter()
+            .find(|t| t.surface_form == "いつ")
+            .expect("「いつ」token should exist");
+        assert!(
+            itsu.grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("いつ")),
+            "「いつ」should carry the いつ question-word grammar_label via keyword, got: {:?}",
+            itsu
         );
     }
 }
