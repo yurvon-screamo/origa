@@ -53,8 +53,7 @@ pub(crate) fn compute_phrase_new_budget(daily_new_limit: usize, studied: usize) 
 
 /// Collects the lesson core (favorites, due/new/known cards, padding) WITHOUT
 /// any phrases. The core is shuffled here so downstream interleaving sees a
-/// stable order. Phrases are attached later by `add_interleaved_phrases` and
-/// `add_tail_phrases`.
+/// stable order. Phrases are attached later by `add_phrases`.
 ///
 /// Returns the lesson data and the set of "primary" card ids (favorites,
 /// selected core cards, padding). Companion cards added later are deliberately
@@ -106,6 +105,62 @@ pub(crate) fn build_lesson_core(
     let core_count = cards.len();
 
     (LessonData { cards, core_count }, primary_card_ids)
+}
+
+/// Reorders the core section (`cards[..core_count]`) so kanji and grammar are
+/// spread across the lesson instead of clustering at the end. Vocab acts as the
+/// separator spine: kanji and grammar are dealt round-robin into the `V+1` gaps
+/// between vocab cards, bounding the longest same-type run to
+/// `⌈count/(V+1)⌉`. The bound depends only on card counts, not on the shuffled
+/// within-type order, so it is deterministic. When the core has no vocab there
+/// is no separator to spread with, so the layout is left untouched.
+pub(crate) fn interleave_core_by_type(mut lesson_data: LessonData) -> LessonData {
+    let core_count = lesson_data.core_count;
+    if core_count <= 1 {
+        return lesson_data;
+    }
+
+    let vocab_count = lesson_data.cards[..core_count]
+        .iter()
+        .filter(|(_, lc)| CardType::from(lc.card()) == CardType::Vocabulary)
+        .count();
+    if vocab_count == 0 {
+        return lesson_data;
+    }
+
+    let (mut vocab, mut kanji, mut grammar, mut other) =
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    for card in lesson_data.cards.drain(..core_count) {
+        match CardType::from(card.1.card()) {
+            CardType::Vocabulary => vocab.push(card),
+            CardType::Kanji => kanji.push(card),
+            CardType::Grammar => grammar.push(card),
+            CardType::Phrase => other.push(card),
+        }
+    }
+
+    let num_gaps = vocab_count + 1;
+    let mut gap_kanji: Vec<Vec<(Ulid, LessonCard)>> = (0..num_gaps).map(|_| Vec::new()).collect();
+    for (i, card) in kanji.into_iter().enumerate() {
+        gap_kanji[i % num_gaps].push(card);
+    }
+    let mut gap_grammar: Vec<Vec<(Ulid, LessonCard)>> = (0..num_gaps).map(|_| Vec::new()).collect();
+    for (i, card) in grammar.into_iter().enumerate() {
+        gap_grammar[i % num_gaps].push(card);
+    }
+
+    let mut new_core: Vec<(Ulid, LessonCard)> = Vec::with_capacity(core_count);
+    new_core.append(&mut gap_kanji[0]);
+    new_core.append(&mut gap_grammar[0]);
+    for (i, vcard) in vocab.into_iter().enumerate() {
+        new_core.push(vcard);
+        new_core.append(&mut gap_kanji[i + 1]);
+        new_core.append(&mut gap_grammar[i + 1]);
+    }
+    new_core.append(&mut other);
+
+    lesson_data.cards.splice(..0, new_core);
+    lesson_data
 }
 
 /// Core-section eligibility predicate shared by the high-difficulty, new and
@@ -257,7 +312,7 @@ fn collect_phrase_cards<'a>(
     };
 
     // `all_cards` is sorted by `next_review_date` asc upstream (see
-    // `add_tail_phrases`), so filtering preserves the scheduling order without
+    // `add_phrases`), so filtering preserves the scheduling order without
     // an explicit secondary sort.
     let mut cap = PerWordCap::new(selection.known_pool);
     let mut phrase_cards: Vec<(&'a Ulid, &'a StudyCard)> = Vec::new();
@@ -470,18 +525,22 @@ impl<'a> InterleavePicker<'a> {
     }
 }
 
-fn build_phrase_assignments(
-    targets: &[(&Ulid, String)],
+/// Collects up to `INTERLEAVED_PHRASES_PER_WORD` phrase card ids per anchor
+/// word. Due phrases win slots for free; new phrases consume the shared budget.
+/// Dedupes by word text so the same word is never processed twice. Returns
+/// owned card ids (not references) so the shared `&mut` borrow of the budget
+/// set is released between iterations.
+fn collect_anchored_phrase_card_ids(
+    targets: &[(Ulid, String)],
     phrase_cards_by_id: &HashMap<Ulid, (&Ulid, &StudyCard)>,
     in_lesson: &HashSet<Ulid>,
     used_phrase_ids: &mut HashSet<Ulid>,
     phrase_new_budget: &mut usize,
-    generator: &mut LessonViewGenerator,
-) -> HashMap<Ulid, Vec<(Ulid, LessonCard)>> {
-    let mut assignments: HashMap<Ulid, Vec<(Ulid, LessonCard)>> = HashMap::new();
-
-    for (word_card_id, word_text) in targets {
-        if assignments.contains_key(word_card_id) {
+) -> Vec<Ulid> {
+    let mut seen_words: HashSet<&str> = HashSet::new();
+    let mut out = Vec::new();
+    for (_, word_text) in targets {
+        if !seen_words.insert(word_text.as_str()) {
             continue;
         }
         let picked = collect_interleaved_phrases_for_word(
@@ -491,30 +550,22 @@ fn build_phrase_assignments(
             used_phrase_ids,
             phrase_new_budget,
         );
-        if picked.is_empty() {
-            continue;
+        for (card_id, _) in picked {
+            out.push(card_id);
         }
-        let lesson_cards = picked
-            .into_iter()
-            .map(|(card_id, sc)| {
-                let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
-                (card_id, LessonCard::new(card_id, view, false))
-            })
-            .collect();
-        assignments.insert(**word_card_id, lesson_cards);
     }
-
-    assignments
+    out
 }
 
-/// Inserts up to `INTERLEAVED_PHRASES_PER_WORD` phrases per anchor word into the
-/// core section. Anchor words are new/in-progress vocab; if none yield phrases,
-/// known vocab is used as a fallback. Interleaved phrases become part of
-/// `core_count` and are excluded from the tail via `used_phrase_ids`.
-pub(crate) fn add_interleaved_phrases(
+/// Inserts phrases (interleaved + tail-eligible) into the core so each phrase
+/// lands after the first showing of every lesson-vocab word it references,
+/// distributing the rest instead of dumping them at the end. All phrases become
+/// part of the core (`core_count` grows to the whole lesson), removing the
+/// dedicated tail zone. The shared new-phrase budget, the per-word caps and the
+/// `known`-fallback are preserved from the former interleaved/tail split.
+pub(crate) fn add_phrases(
     mut lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
-    used_phrase_ids: &mut HashSet<Ulid>,
     phrase_new_budget: &mut usize,
 ) -> LessonData {
     let core_count = lesson_data.core_count;
@@ -532,6 +583,7 @@ pub(crate) fn add_interleaved_phrases(
         .collect();
 
     let in_lesson: HashSet<Ulid> = lesson_data.cards.iter().map(|(id, _)| *id).collect();
+    let mut used_phrase_ids: HashSet<Ulid> = HashSet::new();
 
     let core_vocab: Vec<(Ulid, String)> = lesson_data.cards[..core_count]
         .iter()
@@ -541,94 +593,141 @@ pub(crate) fn add_interleaved_phrases(
         })
         .collect();
 
-    // Interleaving exists to reinforce vocab that is still being learned — so
-    // the target set is everything that is NOT a stable known card. This
-    // intentionally includes high-difficulty cards (the original motivation
-    // for interleaving).
+    // Anchored interleaving reinforces vocab still being learned; fall back to
+    // known vocab only when no non-known anchor yields any phrase.
     let (non_known, known) = core_vocab
         .iter()
-        .map(|(id, word)| (id, word.clone()))
+        .cloned()
         .partition::<Vec<_>, _>(|(id, _)| {
             knowledge_set
-                .get_card(**id)
+                .get_card(*id)
                 .map(|sc| !sc.memory().is_known_card())
                 .unwrap_or(false)
         });
 
-    let mut generator = LessonViewGenerator::new(knowledge_set);
-
-    let mut assignments = build_phrase_assignments(
+    let mut selected_ids: Vec<Ulid> = collect_anchored_phrase_card_ids(
         &non_known,
         &phrase_cards_by_id,
         &in_lesson,
-        used_phrase_ids,
+        &mut used_phrase_ids,
         phrase_new_budget,
-        &mut generator,
     );
-
-    if assignments.is_empty() && !known.is_empty() {
-        assignments = build_phrase_assignments(
+    if selected_ids.is_empty() && !known.is_empty() {
+        selected_ids = collect_anchored_phrase_card_ids(
             &known,
             &phrase_cards_by_id,
             &in_lesson,
-            used_phrase_ids,
+            &mut used_phrase_ids,
             phrase_new_budget,
-            &mut generator,
         );
     }
 
-    if assignments.is_empty() {
+    // Tail-eligible phrases: whole known-pool, per-word cap, shared budget.
+    let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
+    all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
+    let known_pool =
+        super::collect_known_vocabulary_words(knowledge_set.study_cards().values(), true);
+    let mut tail_selection = TailPhraseSelection {
+        all_cards: &all_cards,
+        excluded_card_ids: &in_lesson,
+        used_phrase_ids: &used_phrase_ids,
+        known_pool: &known_pool,
+        new_phrase_budget: phrase_new_budget,
+    };
+    let tail_cards = collect_phrase_cards(&mut tail_selection);
+    selected_ids.extend(tail_cards.iter().map(|(id, _)| **id));
+
+    if selected_ids.is_empty() {
         return lesson_data;
     }
 
+    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let phrase_lessons: Vec<(Ulid, LessonCard)> = selected_ids
+        .iter()
+        .filter_map(|card_id| {
+            let sc = knowledge_set.get_card(*card_id)?;
+            let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
+            Some((*card_id, LessonCard::new(*card_id, view, false)))
+        })
+        .collect();
+
     let core_cards = std::mem::take(&mut lesson_data.cards);
-    lesson_data.cards = interleave_with_gap(core_cards, assignments, INTERLEAVING_GAP);
+    lesson_data.cards =
+        place_phrases_constraint_aware(core_cards, phrase_lessons, &core_vocab, INTERLEAVING_GAP);
     lesson_data.core_count = lesson_data.cards.len();
     lesson_data
 }
 
-/// Appends the tail phrases after the core section. Tail phrases only use
-/// vocabulary the learner has already met anywhere in the knowledge_set (not
-/// just the current lesson), and share the remaining new-phrase budget with
-/// the interleaved section (due phrases are free).
-pub(crate) fn add_tail_phrases(
-    mut lesson_data: LessonData,
-    knowledge_set: &KnowledgeSet,
-    used_phrase_ids: &HashSet<Ulid>,
-    phrase_new_budget: &mut usize,
-) -> LessonData {
-    let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
-    all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
+/// Places `phrases` among `core_cards` honouring the contamination constraint:
+/// a phrase that references a lesson-vocab word must appear AFTER the first
+/// showing of every such word. Each phrase is released at the latest
+/// first-occurrence among its anchor words (so it follows all of them), then
+/// handed to `interleave_with_gap` which keeps it `INTERLEAVING_GAP` cards past
+/// the release point. Phrases with no anchor in the lesson are distributed at
+/// even intervals so they no longer pile up at the end.
+fn place_phrases_constraint_aware(
+    core_cards: Vec<(Ulid, LessonCard)>,
+    phrases: Vec<(Ulid, LessonCard)>,
+    core_vocab: &[(Ulid, String)],
+    gap: usize,
+) -> Vec<(Ulid, LessonCard)> {
+    let n = core_cards.len();
 
-    let excluded: HashSet<Ulid> = lesson_data.cards.iter().map(|(id, _)| *id).collect();
-
-    let known_pool =
-        super::collect_known_vocabulary_words(knowledge_set.study_cards().values(), true);
-
-    let mut selection = TailPhraseSelection {
-        all_cards: &all_cards,
-        excluded_card_ids: &excluded,
-        used_phrase_ids,
-        known_pool: &known_pool,
-        new_phrase_budget: phrase_new_budget,
-    };
-    let phrase_cards = collect_phrase_cards(&mut selection);
-
-    if phrase_cards.is_empty() {
-        return lesson_data;
+    let mut first_pos: HashMap<Ulid, usize> = HashMap::with_capacity(n);
+    for (i, (id, _)) in core_cards.iter().enumerate() {
+        first_pos.entry(*id).or_insert(i);
     }
 
-    let mut generator = LessonViewGenerator::new(knowledge_set);
-    let phrase_lessons: Vec<(Ulid, LessonCard)> = phrase_cards
+    let word_to_card: HashMap<String, Ulid> = core_vocab
         .iter()
-        .map(|(card_id, sc)| {
-            let view = generator.apply_view(sc, sc.is_new(), &mut rand::rng());
-            (**card_id, LessonCard::new(**card_id, view, false))
-        })
+        .map(|(id, word)| (word.clone(), *id))
         .collect();
 
-    lesson_data.cards.extend(phrase_lessons);
-    lesson_data
+    let mut releases: Vec<(usize, (Ulid, LessonCard))> = Vec::with_capacity(phrases.len());
+    let mut no_anchor: Vec<(Ulid, LessonCard)> = Vec::new();
+
+    for phrase in phrases {
+        let phrase_id = match phrase.1.card() {
+            Card::Phrase(p) => *p.phrase_id(),
+            _ => {
+                no_anchor.push(phrase);
+                continue;
+            },
+        };
+        let tokens: &[String] = crate::dictionary::phrase::get_index_entry(&phrase_id)
+            .map(|e| e.tokens())
+            .unwrap_or(&[]);
+        let anchors: Vec<usize> = tokens
+            .iter()
+            .filter_map(|t| word_to_card.get(t.as_str()).copied())
+            .filter_map(|card_id| first_pos.get(&card_id).copied())
+            .collect();
+        if anchors.is_empty() {
+            no_anchor.push(phrase);
+        } else {
+            let max_pos = *anchors.iter().max().expect("anchors non-empty");
+            releases.push((max_pos, phrase));
+        }
+    }
+
+    let no_anchor_count = no_anchor.len();
+    for (i, phrase) in no_anchor.into_iter().enumerate() {
+        let target_idx = if n == 0 {
+            0
+        } else {
+            (((i + 1) * n) / (no_anchor_count + 1)).min(n - 1)
+        };
+        releases.push((target_idx, phrase));
+    }
+
+    let mut assignments: HashMap<Ulid, Vec<(Ulid, LessonCard)>> = HashMap::new();
+    for (idx, phrase) in releases {
+        if let Some((release_id, _)) = core_cards.get(idx) {
+            assignments.entry(*release_id).or_default().push(phrase);
+        }
+    }
+
+    interleave_with_gap(core_cards, assignments, gap)
 }
 
 /// Per-card target number of showings, derived from the FSRS memory state.
@@ -959,7 +1058,7 @@ fn distribute_new_cards<'a>(
 mod tests {
     use super::*;
     use crate::domain::knowledge::LessonCardView;
-    use crate::domain::knowledge::{PhraseCard, VocabularyCard};
+    use crate::domain::knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
     use crate::domain::{RateMode, Rating};
     use rstest::rstest;
@@ -1013,10 +1112,6 @@ mod tests {
 
     fn phrase_id_extra2() -> Ulid {
         Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HR").expect("valid ULID")
-    }
-
-    fn phrase_id_independent() -> Ulid {
-        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HS").expect("valid ULID")
     }
 
     fn ensure_test_phrase_index() {
@@ -1141,14 +1236,13 @@ mod tests {
             core_count: 1,
         };
 
-        let used = HashSet::new();
         let mut budget = 5;
-        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
+        let result = add_phrases(lesson, &ks, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
             phrases.contains(&phrase_id_hello()),
-            "phrase anchored to known vocab outside the lesson core must enter the tail"
+            "phrase anchored to known vocab outside the lesson core must still enter the lesson"
         );
     }
 
@@ -1204,93 +1298,37 @@ mod tests {
             core_count: 1,
         };
 
-        let used = HashSet::new();
         let mut budget = 2;
-        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
+        let result = add_phrases(lesson, &ks, &mut budget);
         let new_phrases_count = lesson_phrase_ids(&result).len();
 
         assert!(
             new_phrases_count <= 2,
-            "new tail phrases must respect the shared budget: {new_phrases_count} > 2"
+            "new phrases must respect the shared budget: {new_phrases_count} > 2"
         );
 
-        let used = HashSet::new();
         let mut zero_budget = 0;
-        let zero_budget_result = add_tail_phrases(
+        let zero_budget_result = add_phrases(
             LessonData {
                 cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
                 core_count: 1,
             },
             &ks,
-            &used,
             &mut zero_budget,
         );
         assert_eq!(
             lesson_phrase_ids(&zero_budget_result).len(),
             0,
-            "with budget=0 no new tail phrases may be added"
+            "with budget=0 no new phrases may be added"
         );
     }
 
-    /// Due phrases precede new phrases in the tail (they are scheduled for
-    /// review), preserving the natural scheduling order.
-    #[test]
-    fn tail_phrases_preserve_due_then_new_order() {
-        ensure_test_phrase_index();
-
-        let mut ks = KnowledgeSet::new();
-        // All tokens referenced by the eligible phrases are known so neither
-        // phrase gets filtered out; the two phrases deliberately anchor on
-        // disjoint tokens ("alpha"/"beta" vs "test"/"hello") so the per-word
-        // cap (MAX_PHRASES_PER_WORD_IN_TAIL=1) does not silently drop one.
-        for word in ["test", "hello", "alpha", "beta"] {
-            let sc = ks.create_card(vocab_card(word)).expect("create vocab");
-            ks.mark_card_as_known(*sc.card_id()).expect("mark known");
-        }
-
-        let due_sc = ks
-            .create_card(Card::Phrase(PhraseCard::new_test_with_id(
-                phrase_id_independent(),
-            )))
-            .expect("create due phrase");
-        ks.mark_card_as_known(*due_sc.card_id())
-            .expect("mark phrase due");
-
-        ks.create_card(Card::Phrase(
-            PhraseCard::new_test_with_id(phrase_id_hello()),
-        ))
-        .expect("create new phrase");
-
-        let lesson = LessonData {
-            cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
-            core_count: 1,
-        };
-
-        let used = HashSet::new();
-        let core_len = lesson.cards.len();
-        let mut budget = 5;
-        let result = add_tail_phrases(lesson, &ks, &used, &mut budget);
-        let phrase_sequence: Vec<Option<Ulid>> = result
-            .cards
-            .iter()
-            .skip(core_len)
-            .map(|(_, lc)| lesson_phrase_id(lc))
-            .collect();
-
-        let due_pos = phrase_sequence
-            .iter()
-            .position(|id| id == &Some(phrase_id_independent()));
-        let new_pos = phrase_sequence
-            .iter()
-            .position(|id| id == &Some(phrase_id_hello()));
-
-        let due_pos = due_pos.expect("due phrase must be present in the tail");
-        let new_pos = new_pos.expect("new phrase must be present in the tail");
-        assert!(
-            due_pos < new_pos,
-            "due phrase must precede new phrase in the tail: due={due_pos}, new={new_pos}"
-        );
-    }
+    // Note: `tail_phrases_preserve_due_then_new_order` previously pinned that
+    // due phrases preceded new phrases inside the dedicated tail zone. That zone
+    // is gone (Slice 3 merges all phrases into constraint-aware placement), so
+    // the due/new ordering no longer exists as a separate contract — phrase
+    // order is now driven by the anchor-first-showing constraint, not by due/new
+    // scheduling. The test was removed together with the tail zone.
 
     /// High-difficulty vocab is now a valid interleaving target (the original
     /// purpose of interleaving): a phrase anchored to an HD word must appear.
@@ -1323,9 +1361,8 @@ mod tests {
             core_count: 1,
         };
 
-        let mut used = HashSet::new();
         let mut budget = 5;
-        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
+        let result = add_phrases(lesson, &ks, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1363,9 +1400,8 @@ mod tests {
             core_count: 2,
         };
 
-        let mut used = HashSet::new();
         let mut budget = 10;
-        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
+        let result = add_phrases(lesson, &ks, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1501,13 +1537,137 @@ mod tests {
     //
     // These tests pin the invariants of the phrase-interleaving pipeline. They
     // intentionally span three levels: the pure layout primitive
-    // `interleave_with_gap`, the mid-level orchestrator `add_interleaved_phrases`
+    // `interleave_with_gap`, the mid-level orchestrator `add_phrases`
     // / `collect_interleaved_phrases_for_word`, and the full `cards_to_lesson`
     // pipeline. Lower levels isolate a single invariant; the pipeline tests
-    // guard the integration of the shared budget and `used_phrase_ids` set.
+    // guard the integration of the shared budget.
 
     fn lesson_card_for(card: Card) -> LessonCard {
         LessonCard::new(Ulid::new(), LessonCardView::Normal(card), false)
+    }
+
+    // --- interleave_core_by_type (Slice 2) ---
+    //
+    // Vocab acts as the separator spine; kanji/grammar are dealt round-robin
+    // into the V+1 gaps between vocab cards. The longest kanji-only run is
+    // therefore bounded by ⌈K/(V+1)⌉ deterministically (counts only).
+
+    fn slot(card: Card) -> (Ulid, LessonCard) {
+        let id = Ulid::new();
+        (id, LessonCard::new(id, LessonCardView::Normal(card), false))
+    }
+
+    fn build_core_with(vocab_n: usize, kanji_n: usize, grammar_n: usize) -> LessonData {
+        let mut cards: Vec<(Ulid, LessonCard)> = Vec::new();
+        for i in 0..vocab_n {
+            cards.push(slot(vocab_card(&format!("v{i}"))));
+        }
+        for i in 0..kanji_n {
+            cards.push(slot(Card::Kanji(KanjiCard::new_test(format!("k{i}")))));
+        }
+        for _ in 0..grammar_n {
+            cards.push(slot(Card::Grammar(GrammarRuleCard::new_test())));
+        }
+        let core_count = cards.len();
+        LessonData { cards, core_count }
+    }
+
+    fn longest_type_run(cards: &[(Ulid, LessonCard)], target: CardType) -> usize {
+        let mut best = 0usize;
+        let mut current = 0usize;
+        for (_, lc) in cards {
+            if CardType::from(lc.card()) == target {
+                current += 1;
+                best = best.max(current);
+            } else {
+                current = 0;
+            }
+        }
+        best
+    }
+
+    #[rstest]
+    #[case::vocab_dominant(8, 5, 0)]
+    #[case::kanji_heavy(5, 10, 0)]
+    #[case::with_grammar(6, 7, 3)]
+    #[case::single_kanji(10, 1, 0)]
+    #[case::kanji_slightly_more_than_vocab(4, 6, 0)]
+    fn interleave_core_bounds_kanji_run_within_ceiling(
+        #[case] vocab_n: usize,
+        #[case] kanji_n: usize,
+        #[case] grammar_n: usize,
+    ) {
+        let lesson = build_core_with(vocab_n, kanji_n, grammar_n);
+        let result = interleave_core_by_type(lesson);
+
+        let ceiling = (kanji_n + vocab_n) / (vocab_n + 1);
+        let run = longest_type_run(&result.cards, CardType::Kanji);
+        assert!(
+            run <= ceiling,
+            "V={vocab_n},K={kanji_n},G={grammar_n}: max kanji run {run} exceeds ceiling ⌈K/(V+1)⌉={ceiling}"
+        );
+    }
+
+    #[test]
+    fn interleave_core_grammar_run_also_bounded() {
+        let lesson = build_core_with(6, 2, 9);
+        let result = interleave_core_by_type(lesson);
+
+        let ceiling = (9 + 6) / (6 + 1);
+        let run = longest_type_run(&result.cards, CardType::Grammar);
+        assert!(
+            run <= ceiling,
+            "grammar run {run} exceeds ceiling ⌈G/(V+1)⌉={ceiling}"
+        );
+    }
+
+    #[test]
+    fn interleave_core_preserves_card_set() {
+        let lesson = build_core_with(5, 4, 2);
+        let before: HashSet<Ulid> = lesson.cards.iter().map(|(id, _)| *id).collect();
+        let result = interleave_core_by_type(lesson);
+        let after: HashSet<Ulid> = result.cards.iter().map(|(id, _)| *id).collect();
+
+        assert_eq!(
+            before, after,
+            "interleaving must not add, drop or duplicate cards"
+        );
+        assert_eq!(result.core_count, before.len());
+    }
+
+    #[test]
+    fn interleave_core_empty_is_noop() {
+        let lesson = LessonData {
+            cards: vec![],
+            core_count: 0,
+        };
+        let result = interleave_core_by_type(lesson);
+        assert!(result.cards.is_empty());
+        assert_eq!(result.core_count, 0);
+    }
+
+    #[test]
+    fn interleave_core_single_card_is_noop() {
+        let lesson = build_core_with(1, 0, 0);
+        let only_id = lesson.cards[0].0;
+        let result = interleave_core_by_type(lesson);
+        assert_eq!(result.cards.len(), 1);
+        assert_eq!(result.cards[0].0, only_id);
+    }
+
+    #[test]
+    fn interleave_core_no_vocab_leaves_layout_untouched() {
+        // With no separator spine the core cannot be spread; the original
+        // order must be preserved byte-for-byte.
+        let lesson = build_core_with(0, 6, 0);
+        let original_order: Vec<Ulid> = lesson.cards.iter().map(|(id, _)| *id).collect();
+        let result = interleave_core_by_type(lesson);
+        let result_order: Vec<Ulid> = result.cards.iter().map(|(id, _)| *id).collect();
+
+        assert_eq!(
+            original_order, result_order,
+            "an all-kanji core must be left untouched (no separator available)"
+        );
     }
 
     fn lesson_phrase_id(lc: &LessonCard) -> Option<Ulid> {
@@ -1644,9 +1804,8 @@ mod tests {
             core_count: 2,
         };
 
-        let mut used = HashSet::new();
         let mut budget = 5;
-        let result = add_interleaved_phrases(lesson, &ks, &mut used, &mut budget);
+        let result = add_phrases(lesson, &ks, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1655,10 +1814,11 @@ mod tests {
         );
     }
 
-    /// A phrase consumed by the interleaved section (tracked via
-    /// `used_phrase_ids`) must never reappear in the tail, and vice versa.
+    /// A phrase selected for the lesson must never appear more than once: the
+    /// shared `used_phrase_ids` set dedupes the former interleaved/tail pools,
+    /// which are now merged into a single placement pass.
     #[test]
-    fn interleaved_phrases_no_overlap_with_tail() {
+    fn phrases_never_duplicated_in_lesson() {
         ensure_test_phrase_index();
 
         let mut ks = KnowledgeSet::new();
@@ -1680,31 +1840,29 @@ mod tests {
 
         let lesson = ks.cards_to_lesson(1, &JlptContent::new(), JapaneseLevel::N5);
 
-        let core_count = lesson.core_count;
-        let interleaved_ids: HashSet<Ulid> = lesson.cards[..core_count]
+        let mut all_phrase_ids: Vec<Ulid> = lesson
+            .cards
             .iter()
             .filter_map(|(_, lc)| lesson_phrase_id(lc))
             .collect();
-        let tail_ids: HashSet<Ulid> = lesson.cards[core_count..]
-            .iter()
-            .filter_map(|(_, lc)| lesson_phrase_id(lc))
-            .collect();
-
+        let total = all_phrase_ids.len();
+        all_phrase_ids.sort();
+        all_phrase_ids.dedup();
         assert!(
-            !interleaved_ids.is_empty(),
-            "scenario should produce at least one interleaved phrase"
+            !all_phrase_ids.is_empty(),
+            "scenario should place at least one phrase"
         );
-        let overlap: Vec<_> = interleaved_ids.intersection(&tail_ids).copied().collect();
-        assert!(
-            overlap.is_empty(),
-            "interleaved and tail must not share phrase ids: {overlap:?}"
+        assert_eq!(
+            all_phrase_ids.len(),
+            total,
+            "no phrase id may appear more than once in the lesson"
         );
     }
 
-    /// `core_count` is recomputed after interleaving, so every phrase placed in
-    /// the core section counts as core; the tail only starts after it.
+    /// After merging, every phrase sits inside the core section and there is no
+    /// dedicated tail zone: `core_count` equals the lesson length.
     #[test]
-    fn interleaved_phrases_core_count_includes_them() {
+    fn phrases_merged_into_core_no_tail_zone() {
         ensure_test_phrase_index();
 
         let mut ks = KnowledgeSet::new();
@@ -1725,24 +1883,21 @@ mod tests {
         }
 
         let lesson = ks.cards_to_lesson(1, &JlptContent::new(), JapaneseLevel::N5);
-        let core_count = lesson.core_count;
 
-        let interleaved_in_core = lesson.cards[..core_count]
+        let phrases_in_lesson: usize = lesson
+            .cards
             .iter()
             .filter(|(_, lc)| lesson_phrase_id(lc).is_some())
             .count();
-
         assert!(
-            interleaved_in_core >= 1,
-            "at least one interleaved phrase should sit inside the core section"
+            phrases_in_lesson >= 1,
+            "scenario should place at least one phrase"
         );
-        assert!(core_count >= interleaved_in_core);
-        for (_, lc) in &lesson.cards[core_count..] {
-            assert!(
-                lesson_phrase_id(lc).is_some(),
-                "everything past core_count must be a (tail) phrase card"
-            );
-        }
+        assert_eq!(
+            lesson.core_count,
+            lesson.cards.len(),
+            "all cards (phrases included) must be part of the core — no dedicated tail zone"
+        );
     }
 
     /// On a lesson too short to honour the gap, the phrase is flushed at the
@@ -1875,6 +2030,234 @@ mod tests {
             initial_budget - new_picked,
             "only new phrases consume budget; the due phrase must be free"
         );
+    }
+
+    // --- Constraint-aware placement (Slice 3) ---
+    //
+    // A phrase that references a lesson-vocab word must appear AFTER the first
+    // showing of every such word, otherwise it leaks the answer into the word's
+    // standalone FSRS rating. These tests pin that invariant end-to-end.
+
+    fn first_showing_positions(lesson: &LessonData) -> HashMap<Ulid, usize> {
+        let mut positions: HashMap<Ulid, usize> = HashMap::new();
+        for (i, (slot_id, _)) in lesson.cards.iter().enumerate() {
+            positions.entry(*slot_id).or_insert(i);
+        }
+        positions
+    }
+
+    /// Asserts every phrase in `lesson` follows the first showing of each of its
+    /// anchor words that are present in `anchor_vocab` (word -> slot id).
+    fn assert_phrases_follow_anchors(
+        lesson: &LessonData,
+        anchor_vocab: &[(&Ulid, &str)],
+        positions: &HashMap<Ulid, usize>,
+    ) {
+        let word_to_slot: HashMap<&str, Ulid> =
+            anchor_vocab.iter().map(|(id, w)| (*w, **id)).collect();
+        for (phrase_idx, (_, lc)) in lesson.cards.iter().enumerate() {
+            let Some(phrase_id) = lesson_phrase_id(lc) else {
+                continue;
+            };
+            let tokens: &[String] = crate::dictionary::phrase::get_index_entry(&phrase_id)
+                .map(|e| e.tokens())
+                .unwrap_or(&[]);
+            for token in tokens {
+                if let Some(anchor_slot) = word_to_slot.get(token.as_str()) {
+                    let anchor_pos = positions.get(anchor_slot).copied().unwrap_or(usize::MAX);
+                    assert!(
+                        phrase_idx > anchor_pos,
+                        "phrase {phrase_id} at index {phrase_idx} must follow anchor '{token}' \
+                         (slot {anchor_slot}) first shown at {anchor_pos}"
+                    );
+                }
+            }
+        }
+    }
+
+    fn build_vocab_core(words: &[&str]) -> Vec<(Ulid, LessonCard)> {
+        words
+            .iter()
+            .map(|w| {
+                let slot_id = Ulid::new();
+                (slot_id, lesson_card_for(vocab_card(w)))
+            })
+            .collect()
+    }
+
+    fn vocab_slots_of(cards: &[(Ulid, LessonCard)]) -> Vec<(Ulid, String)> {
+        cards
+            .iter()
+            .filter_map(|(id, lc)| match lc.card() {
+                Card::Vocabulary(v) => Some((*id, v.word().text().to_string())),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn phrase_appears_after_its_anchor_word_first_showing() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        ks.create_card(phrase_card(phrase_id_hello()))
+            .expect("create phrase hello"); // tokens [test, hello]
+        ks.create_card(phrase_card(phrase_id_bye()))
+            .expect("create phrase bye"); // tokens [test, bye]
+
+        let core_cards = build_vocab_core(&["test", "fill1", "hello", "fill2"]);
+        let core_vocab = vocab_slots_of(&core_cards);
+        let lesson = LessonData {
+            cards: core_cards,
+            core_count: 4,
+        };
+
+        let mut budget = 10;
+        let result = add_phrases(lesson, &ks, &mut budget);
+
+        let phrase_ids = lesson_phrase_ids(&result);
+        assert!(
+            phrase_ids.contains(&phrase_id_hello()),
+            "fixture sanity: phrase hello should be selected"
+        );
+
+        let positions = first_showing_positions(&result);
+        let anchor_vocab: Vec<(&Ulid, &str)> =
+            core_vocab.iter().map(|(id, w)| (id, w.as_str())).collect();
+        assert_phrases_follow_anchors(&result, &anchor_vocab, &positions);
+    }
+
+    #[test]
+    fn constraint_holds_across_many_anchors_and_phrases() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        for pid in [
+            phrase_id_hello(),
+            phrase_id_bye(),
+            phrase_id_morning(),
+            phrase_id_thanks(),
+            phrase_id_extra1(),
+            phrase_id_extra2(),
+        ] {
+            ks.create_card(phrase_card(pid)).expect("create phrase");
+        }
+
+        let core_cards = build_vocab_core(&[
+            "test", "hello", "bye", "morning", "thanks", "fill1", "fill2",
+        ]);
+        let core_vocab = vocab_slots_of(&core_cards);
+        let lesson = LessonData {
+            cards: core_cards,
+            core_count: 7,
+        };
+
+        let mut budget = 20;
+        let result = add_phrases(lesson, &ks, &mut budget);
+
+        let positions = first_showing_positions(&result);
+        let anchor_vocab: Vec<(&Ulid, &str)> =
+            core_vocab.iter().map(|(id, w)| (id, w.as_str())).collect();
+        assert_phrases_follow_anchors(&result, &anchor_vocab, &positions);
+    }
+
+    #[test]
+    fn anchorless_phrases_are_distributed_not_clustered_at_end() {
+        ensure_test_phrase_index();
+
+        // ULID of the fixture phrase whose tokens are ["alpha", "beta"] — both
+        // deliberately absent from the lesson core, making the phrase anchorless.
+        let phrase_independent =
+            Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HS").expect("valid ULID");
+
+        let mut ks = KnowledgeSet::new();
+        // "alpha"/"beta" are NOT in the lesson core → this phrase has no anchor
+        // and must be distributed rather than dumped at the end.
+        ks.create_card(phrase_card(phrase_independent))
+            .expect("create independent phrase");
+        // a second anchorless phrase for a stronger distribution check
+        ks.create_card(phrase_card(phrase_id_extra1()))
+            .expect("create extra1 phrase");
+
+        // Mark all tokens known so tail eligibility admits them.
+        for word in ["alpha", "beta", "hello", "extra1"] {
+            let sc = ks.create_card(vocab_card(word)).expect("create vocab");
+            ks.mark_card_as_known(*sc.card_id()).expect("mark known");
+        }
+
+        // Lesson core deliberately contains none of the phrase tokens.
+        let core_cards = build_vocab_core(&["v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]);
+        let core_len = core_cards.len();
+        let lesson = LessonData {
+            cards: core_cards,
+            core_count: core_len,
+        };
+
+        let mut budget = 10;
+        let result = add_phrases(lesson, &ks, &mut budget);
+
+        let phrase_indices: Vec<usize> = result
+            .cards
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, lc))| lesson_phrase_id(lc).is_some())
+            .map(|(i, _)| i)
+            .collect();
+        assert!(!phrase_indices.is_empty(), "at least one phrase expected");
+
+        // The last third of the lesson must not contain ALL phrases — that would
+        // reproduce the dedicated end zone the merge set out to remove.
+        let tail_start = result.cards.len() * 2 / 3;
+        let phrases_before_tail = phrase_indices.iter().filter(|&&i| i < tail_start).count();
+        assert!(
+            phrases_before_tail > 0,
+            "anchorless phrases must be distributed: found {phrases_before_tail} before the last third, indices {phrase_indices:?}"
+        );
+    }
+
+    #[test]
+    fn constraint_survives_multi_show_expansion() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        // Anchor word rated hard → multi-show expansion will repeat it. The
+        // phrase anchored to it must still land after the FIRST showing.
+        let anchor_sc = ks.create_card(vocab_card("test")).expect("create anchor");
+        for _ in 0..3 {
+            ks.rate_card(*anchor_sc.card_id(), Rating::Again, RateMode::ShortTerm)
+                .expect("rate anchor hard");
+        }
+        for w in ["hello", "bye", "fill1", "fill2", "fill3"] {
+            ks.create_card(vocab_card(w)).expect("create vocab");
+        }
+        ks.create_card(phrase_card(phrase_id_hello()))
+            .expect("create phrase"); // tokens [test, hello]
+
+        let lesson = ks.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
+
+        let anchor_id = *anchor_sc.card_id();
+        let anchor_showings: Vec<usize> = lesson
+            .cards
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, lc))| lc.card_id() == anchor_id)
+            .map(|(i, _)| i)
+            .collect();
+        let first_anchor = anchor_showings.first().copied();
+        let phrase_pos = lesson
+            .cards
+            .iter()
+            .enumerate()
+            .find(|(_, (_, lc))| lesson_phrase_id(lc) == Some(phrase_id_hello()))
+            .map(|(i, _)| i);
+
+        if let (Some(first), Some(php)) = (first_anchor, phrase_pos) {
+            assert!(
+                php > first,
+                "phrase must follow the first showing of its anchor even after expansion: \
+                 first={first}, phrase={php}"
+            );
+        }
     }
 
     // --- Multi-show expansion ---

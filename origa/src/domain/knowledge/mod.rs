@@ -66,6 +66,13 @@ pub struct KnowledgeSet {
     study_cards: HashMap<Ulid, StudyCard>,
     #[serde(default)]
     deleted_cards: HashSet<Ulid>,
+    // Words of deleted Vocabulary cards. Consulted ONLY by
+    // `create_companion_vocab_cards` so a word the user dismissed is never
+    // auto-(re)introduced as a kanji companion on the next migration run.
+    // Manual `create_card` always succeeds (it does not consult this set) and
+    // evicts the word, so a dismissed word can still be re-added by hand.
+    #[serde(default)]
+    deleted_companion_words: HashSet<String>,
     #[serde(flatten)]
     stats: StatsTracker,
 }
@@ -116,6 +123,7 @@ impl KnowledgeSet {
         Self {
             study_cards: HashMap::new(),
             deleted_cards: HashSet::new(),
+            deleted_companion_words: HashSet::new(),
             stats: StatsTracker::new(),
         }
     }
@@ -125,6 +133,13 @@ impl KnowledgeSet {
             self.study_cards.remove(deleted_id);
             self.deleted_cards.insert(*deleted_id);
         }
+
+        // Union the dismissed-companion blocklist so post-sync auto-creation is
+        // suppressed consistently across devices. Existing study cards are NOT
+        // evicted: a legitimately user-created card for a blocklisted word on
+        // the remote must survive the merge.
+        self.deleted_companion_words
+            .extend(new_values.deleted_companion_words.iter().cloned());
 
         for (id, study_card) in &new_values.study_cards {
             if self.deleted_cards.contains(id) {
@@ -175,8 +190,13 @@ impl KnowledgeSet {
     }
 
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
-        if self.study_cards.remove(&card_id).is_none() {
-            return Err(OrigaError::CardNotFound { card_id });
+        let removed = self
+            .study_cards
+            .remove(&card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+        if let Card::Vocabulary(vocab) = removed.card() {
+            self.deleted_companion_words
+                .insert(vocab.word().text().to_string());
         }
         self.deleted_cards.insert(card_id);
         self.recalculate_daily_stats();
@@ -185,6 +205,11 @@ impl KnowledgeSet {
 
     pub fn deleted_cards(&self) -> &HashSet<Ulid> {
         &self.deleted_cards
+    }
+
+    #[cfg(test)]
+    pub fn deleted_companion_words_for_test(&self) -> &HashSet<String> {
+        &self.deleted_companion_words
     }
 
     pub fn update_card_content(&mut self, card_id: Ulid, new_card: Card) -> Result<(), OrigaError> {
@@ -210,6 +235,15 @@ impl KnowledgeSet {
             return Err(OrigaError::DuplicateCard {
                 question: study_card.card().content_key(),
             });
+        }
+
+        // A manually (re)created Vocabulary card clears the word from the
+        // dismissed-companion blocklist: the user explicitly reintroduced it,
+        // so future companion auto-creation should not be suppressed by a stale
+        // dismissal. The companion path skips blocklisted words BEFORE reaching
+        // `create_card`, so this eviction never fires for companion cards.
+        if let Card::Vocabulary(vocab) = study_card.card() {
+            self.deleted_companion_words.remove(vocab.word().text());
         }
 
         self.recalculate_daily_stats();
@@ -258,29 +292,16 @@ impl KnowledgeSet {
         jlpt_content: &JlptContent,
         user_level: JapaneseLevel,
     ) -> LessonData {
-        use std::collections::HashSet;
-
         let (core, primary_card_ids) =
             lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content);
         let with_companions = kanji_companions::add_kanji_companions(core, self, user_level);
+        let interleaved = lesson_builder::interleave_core_by_type(with_companions);
         let mut phrase_new_budget = lesson_builder::compute_phrase_new_budget(
             daily_new_limit,
             self.phrase_cards_studied_today(),
         );
-        let mut used_phrase_ids: HashSet<Ulid> = HashSet::new();
-        let with_interleaved = lesson_builder::add_interleaved_phrases(
-            with_companions,
-            self,
-            &mut used_phrase_ids,
-            &mut phrase_new_budget,
-        );
-        let with_tail = lesson_builder::add_tail_phrases(
-            with_interleaved,
-            self,
-            &used_phrase_ids,
-            &mut phrase_new_budget,
-        );
-        lesson_builder::expand_repeated_views(with_tail, self, &primary_card_ids)
+        let with_phrases = lesson_builder::add_phrases(interleaved, self, &mut phrase_new_budget);
+        lesson_builder::expand_repeated_views(with_phrases, self, &primary_card_ids)
     }
 
     pub(crate) fn rate_card(
@@ -344,6 +365,14 @@ impl KnowledgeSet {
 
         let mut created = Vec::new();
         for word in kanji_info.popular_words().iter().take(MAX_COMPANION_WORDS) {
+            if self.deleted_companion_words.contains(word.as_str()) {
+                tracing::debug!(
+                    kanji = %kanji_char,
+                    word = %word,
+                    "Companion word previously dismissed by user, skipping"
+                );
+                continue;
+            }
             match VocabularyCard::from_known_word(word, native_language) {
                 Ok(vocab_card) => match self.create_card(Card::Vocabulary(vocab_card)) {
                     Ok(study_card) => {
