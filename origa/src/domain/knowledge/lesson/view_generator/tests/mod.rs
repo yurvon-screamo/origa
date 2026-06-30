@@ -1,7 +1,7 @@
 use crate::domain::knowledge::KnowledgeSet;
 use crate::domain::knowledge::VocabularyCard;
 use crate::domain::memory::{Difficulty, MemoryState, Rating, ReviewLog, Stability};
-use crate::domain::value_objects::Question;
+use crate::domain::value_objects::{NativeLanguage, Question};
 use crate::domain::{Card, GrammarRuleCard, StudyCard};
 use chrono::{Duration, Utc};
 use ulid::Ulid;
@@ -10,6 +10,7 @@ mod card_views;
 mod filtering;
 mod kanji_reading_quiz;
 mod quiz;
+mod transforms;
 mod types;
 mod yesno;
 
@@ -57,4 +58,15 @@ pub(crate) fn create_knowledge_set_with_vocab(words: &[&str]) -> KnowledgeSet {
         .unwrap();
     }
     ks
+}
+
+pub(super) fn answer_text(card: &Card, lang: NativeLanguage) -> String {
+    use crate::domain::CardAnswer;
+    match card
+        .answer(&lang)
+        .expect("translation must exist for fixture")
+    {
+        CardAnswer::Vocabulary { translations, .. } => translations.join(", "),
+        CardAnswer::Text(s) => s,
+    }
 }

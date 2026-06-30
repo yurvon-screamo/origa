@@ -23,9 +23,13 @@ impl<'a, R: UserRepository> SelectCardsToLessonUseCase<'a, R> {
 
         let daily_new_limit = user.daily_load().new_cards_per_day();
         let user_level = user.current_japanese_level();
-        let lesson_data =
-            user.knowledge_set()
-                .cards_to_lesson(daily_new_limit, jlpt_content, user_level);
+        let native_language = *user.native_language();
+        let lesson_data = user.knowledge_set().cards_to_lesson(
+            daily_new_limit,
+            jlpt_content,
+            user_level,
+            native_language,
+        );
 
         info!(user_id = %user.id(), count = lesson_data.total_count(), "Cards selected for lesson");
 

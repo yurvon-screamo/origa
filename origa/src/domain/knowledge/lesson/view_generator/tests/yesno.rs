@@ -269,3 +269,47 @@ fn generate_yesno_stores_word_and_statement_separately() {
         "statement must carry the answer/distractor"
     );
 }
+
+#[test]
+fn generate_yesno_uses_english_statement_for_english_locale() {
+    init_real_dictionaries();
+
+    let vocab_words = ["猫", "犬", "鳥", "魚"];
+    let cards: Vec<Card> = vocab_words
+        .iter()
+        .map(|w| create_vocab_card_with_word(w))
+        .collect();
+
+    let english_texts: Vec<String> = cards
+        .iter()
+        .map(|c| answer_text(c, NativeLanguage::English))
+        .collect();
+    let russian_texts: Vec<String> = cards
+        .iter()
+        .map(|c| answer_text(c, NativeLanguage::Russian))
+        .collect();
+
+    let mut rng = StdRng::seed_from_u64(7);
+    let result = generation::generate_yesno(
+        cards[0].clone(),
+        &cards[1..],
+        &NativeLanguage::English,
+        &mut rng,
+    );
+
+    let yesno = match result.expect("English-locale yesno must be generated") {
+        LessonCardView::YesNo(yn) => yn,
+        other => panic!("Expected YesNo, got {other:?}"),
+    };
+
+    assert!(
+        english_texts.iter().any(|t| t == yesno.statement()),
+        "statement must be an ENGLISH translation, got '{}'",
+        yesno.statement()
+    );
+    assert!(
+        !russian_texts.iter().any(|t| t == yesno.statement()),
+        "regression guard: statement must not be a Russian translation, got '{}'",
+        yesno.statement()
+    );
+}
