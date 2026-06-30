@@ -127,7 +127,18 @@ pub fn rate_memory(
     memory_history: &MemoryHistory,
 ) -> Result<NextReview, OrigaError> {
     let srs_service = FSRS_SERVICE.get_or_init(FsrsSrsService::new);
+    let engine = srs_service
+        .engines
+        .get(&mode)
+        .expect("all RateMode variants are pre-initialized in FsrsSrsService");
+    schedule_next_review(engine, rating, memory_history)
+}
 
+fn schedule_next_review(
+    engine: &FSRS,
+    rating: Rating,
+    memory_history: &MemoryHistory,
+) -> Result<NextReview, OrigaError> {
     let now = Utc::now();
     let card = if let Some(memory_state) = memory_history.memory_state() {
         let last_review_date = memory_history
@@ -176,10 +187,6 @@ pub fn rate_memory(
         Rating::Easy => FsrsRating::Easy,
     };
 
-    let engine = srs_service
-        .engines
-        .get(&mode)
-        .expect("all RateMode variants are pre-initialized in FsrsSrsService");
     let scheduling_info = engine.next(card, now, fsrs_rating);
 
     let next_review_date = scheduling_info.card.due;
@@ -206,6 +213,12 @@ pub fn rate_memory(
 mod tests {
     use super::*;
     use chrono::Utc;
+
+    fn engine_for(mode: RateMode, enable_fuzz: bool) -> FSRS {
+        let mut parameters = SrsConfig::for_mode(mode).to_parameters();
+        parameters.enable_fuzz = enable_fuzz;
+        FSRS::new(parameters)
+    }
 
     #[test]
     fn rate_memory_again_on_new_card_returns_short_interval_and_learning_state() {
@@ -364,9 +377,18 @@ mod tests {
     fn kanji_review_easy_gives_shorter_or_equal_interval_than_standard() {
         let memory_history = MemoryHistory::new();
 
-        let standard =
-            rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
-        let kanji = rate_memory(RateMode::KanjiReview, Rating::Easy, &memory_history).unwrap();
+        let standard = schedule_next_review(
+            &engine_for(RateMode::StandardLesson, false),
+            Rating::Easy,
+            &memory_history,
+        )
+        .unwrap();
+        let kanji = schedule_next_review(
+            &engine_for(RateMode::KanjiReview, false),
+            Rating::Easy,
+            &memory_history,
+        )
+        .unwrap();
 
         assert!(kanji.interval <= standard.interval);
     }
