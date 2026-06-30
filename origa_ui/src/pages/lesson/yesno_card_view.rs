@@ -39,11 +39,11 @@ impl YesNoResult {
 #[component]
 pub fn YesNoCardView(
     yesno_card: YesNoCard,
-    show_result: bool,
+    show_result: Signal<bool>,
     selected_answer: Option<bool>,
     on_answer: Callback<bool>,
     on_dont_know: Callback<()>,
-    dont_know_selected: bool,
+    dont_know_selected: Signal<bool>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
@@ -112,7 +112,8 @@ pub fn YesNoCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if !show_result.get() && card_type != CardType::Kanji && is_speech_supported() && !is_muted
+        {
             speak_word(&question_text.get_value(), 1.0);
         }
     });
@@ -122,13 +123,13 @@ pub fn YesNoCardView(
     });
 
     let yesno_result = move || {
-        if dont_know_selected && show_result {
+        if dont_know_selected.get() && show_result.get() {
             return YesNoResult::DontKnow;
         }
         YesNoResult::from_answer(
             is_statement_correct,
             selected_answer.unwrap_or(false),
-            show_result,
+            show_result.get(),
         )
     };
 
@@ -136,7 +137,7 @@ pub fn YesNoCardView(
     let no_selected = selected_answer == Some(false);
 
     let no_btn_class = Signal::derive(move || {
-        if show_result {
+        if show_result.get() {
             if !is_statement_correct {
                 "quiz-option-correct".to_string()
             } else if no_selected {
@@ -150,7 +151,7 @@ pub fn YesNoCardView(
     });
 
     let yes_btn_class = Signal::derive(move || {
-        if show_result {
+        if show_result.get() {
             if is_statement_correct {
                 "quiz-option-correct".to_string()
             } else if yes_selected {
@@ -164,7 +165,7 @@ pub fn YesNoCardView(
     });
 
     let yes_variant = Signal::derive(move || {
-        if show_result {
+        if show_result.get() {
             ButtonVariant::Default
         } else {
             ButtonVariant::Olive
@@ -227,7 +228,7 @@ pub fn YesNoCardView(
                         test_id=Signal::derive(|| "yesno-no-btn".to_string())
                         variant=Signal::derive(|| ButtonVariant::Default)
                         class=no_btn_class
-                        disabled=Signal::derive(move || show_result)
+                        disabled=Signal::derive(move || show_result.get())
                         on_click=Callback::new(move |_| on_answer.run(false))
                     >
                         {t!(i18n, lesson.no)} <span class="hidden sm:inline">"[1]"</span>
@@ -237,7 +238,7 @@ pub fn YesNoCardView(
                         test_id=Signal::derive(|| "yesno-yes-btn".to_string())
                         variant=yes_variant
                         class=yes_btn_class
-                        disabled=Signal::derive(move || show_result)
+                        disabled=Signal::derive(move || show_result.get())
                         on_click=Callback::new(move |_| on_answer.run(true))
                     >
                         {t!(i18n, lesson.yes)} <span class="hidden sm:inline">"[2]"</span>
@@ -247,16 +248,16 @@ pub fn YesNoCardView(
                     data-testid="yesno-dont-know-btn"
                     class=move || {
                         let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                        if dont_know_selected {
+                        if dont_know_selected.get() {
                             format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                        } else if show_result {
+                        } else if show_result.get() {
                             format!("{} quiz-option-dimmed pointer-events-none", base)
                         } else {
                             format!("{} quiz-option-neutral", base)
                         }
                     }
                     on:click=move |_| {
-                        if !show_result {
+                        if !show_result.get() {
                             on_dont_know.run(());
                         }
                     }
@@ -265,7 +266,7 @@ pub fn YesNoCardView(
                     <span class="hidden sm:inline text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
                 </button>
 
-                <Show when=move || show_result>
+                <Show when=move || show_result.get()>
                     <Show when=move || yesno_result() == YesNoResult::Correct>
                         <div class="mt-6 text-center">
                             <Text size=TextSize::Default class="text-[var(--success)] font-bold">
@@ -295,7 +296,7 @@ pub fn YesNoCardView(
                 </Show>
 
                 <Show when=move || {
-                    show_result
+                    show_result.get()
                         && super::quiz_card::should_show_answer_display(
                             QuizResult::from(yesno_result()),
                             card_type,

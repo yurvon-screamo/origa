@@ -14,7 +14,7 @@ struct LessonCardParams {
 
 pub(in crate::pages::lesson) fn render_lesson_card(
     lesson_card: LessonCard,
-    show_answer: bool,
+    show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
     is_rating: RwSignal<Option<Ulid>>,
@@ -81,7 +81,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 audio_path=phrase_audio_path
             />
 
-            <Show when=move || show_answer>
+            <Show when=move || show_answer.get()>
                 <PhraseRatingButtons
                     on_rate=on_rate_callback
                     disabled=Signal::derive(move || is_rating.get().is_some())
@@ -103,7 +103,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 audio_path=None
             />
 
-            <Show when=move || show_answer>
+            <Show when=move || show_answer.get()>
                 <RatingButtonsView
                     on_rate=on_rate_callback
                     disabled=Signal::derive(move || is_rating.get().is_some())

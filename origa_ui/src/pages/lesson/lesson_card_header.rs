@@ -12,7 +12,7 @@ pub fn LessonCardHeader(
     card_type: CardType,
     question_text: String,
     grammar_info: Option<GrammarInfo>,
-    show_answer: bool,
+    show_answer: Signal<bool>,
     card: Card,
     #[prop(into)] audio_path: Option<String>,
 ) -> impl IntoView {
@@ -46,7 +46,7 @@ pub fn LessonCardHeader(
                             })
                     }}
                 </Show>
-                <Show when=move || show_answer && grammar_info.get_value().is_some()>
+                <Show when=move || show_answer.get() && grammar_info.get_value().is_some()>
                     {move || {
                         grammar_info
                             .get_value()

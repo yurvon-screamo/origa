@@ -10,15 +10,15 @@ use super::quiz_result::OptionDisplay;
 pub fn QuizOptionsMulti(
     options: Vec<QuizOption>,
     selected_options: HashSet<usize>,
-    show_result: bool,
-    multi_submitted: bool,
+    show_result: Signal<bool>,
+    multi_submitted: Signal<bool>,
     multi_result: Option<MultiQuizResult>,
     on_toggle: Callback<usize>,
     on_submit: Callback<()>,
     on_dont_know: Callback<()>,
-    dont_know_selected: bool,
+    dont_know_selected: Signal<bool>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
-    #[prop(default = false)] waiting_for_next: bool,
+    #[prop(default = Signal::derive(|| false))] waiting_for_next: Signal<bool>,
     #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -60,7 +60,7 @@ pub fn QuizOptionsMulti(
             }
         </div>
 
-        <Show when=move || !multi_submitted && !dont_know_selected>
+        <Show when=move || !multi_submitted.get() && !dont_know_selected.get()>
             <button
                 data-testid="quiz-submit-btn"
                 class=move || {
@@ -86,7 +86,7 @@ pub fn QuizOptionsMulti(
             </button>
         </Show>
 
-        <Show when=move || waiting_for_next && multi_submitted>
+        <Show when=move || waiting_for_next.get() && multi_submitted.get()>
             <div class="mt-4 flex justify-center">
                 <Button
                     variant=Signal::derive(|| ButtonVariant::Filled)
@@ -109,10 +109,10 @@ fn MultiOptionButton(
     is_correct: bool,
     tag: Option<String>,
     selected_options: StoredValue<HashSet<usize>>,
-    multi_submitted: bool,
+    multi_submitted: Signal<bool>,
     multi_result_stored: StoredValue<Option<MultiQuizResult>>,
     on_toggle: Callback<usize>,
-    show_result: bool,
+    show_result: Signal<bool>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let tag_stored = StoredValue::new(tag);
@@ -120,7 +120,7 @@ fn MultiOptionButton(
     view! {
         <button
             class=move || {
-                if multi_submitted {
+                if multi_submitted.get() {
                     if let Some(result) = multi_result_stored.get_value() {
                         let is_selected = selected_options.get_value().contains(&index);
                         let display = super::quiz_result::QuizResult::multi_option_display(
@@ -142,7 +142,7 @@ fn MultiOptionButton(
             }
             data-testid=format!("quiz-option-{}", index)
             on:click=move |_| {
-                if !show_result {
+                if !show_result.get() {
                     on_toggle.run(index);
                 }
             }
@@ -156,7 +156,7 @@ fn MultiOptionButton(
                         known_kanji=known_kanji.get()
                     />
                 </Text>
-                <Show when=move || multi_submitted && tag_stored.get_value().is_some()>
+                <Show when=move || multi_submitted.get() && tag_stored.get_value().is_some()>
                     {move || {
                         tag_stored.get_value().map(|t| {
                     let tag_class = tag_class(t.as_str());
@@ -167,12 +167,12 @@ fn MultiOptionButton(
                     }}
                 </Show>
             </div>
-            <Show when=move || !multi_submitted>
+            <Show when=move || !multi_submitted.get()>
                 <span class="absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
                     {key_hint.clone()}
                 </span>
             </Show>
-            <Show when=move || selected_options.get_value().contains(&index) && !multi_submitted>
+            <Show when=move || selected_options.get_value().contains(&index) && !multi_submitted.get()>
                 <span class="absolute top-1 left-1 w-3 h-3 bg-[var(--accent-olive)]"></span>
             </Show>
         </button>

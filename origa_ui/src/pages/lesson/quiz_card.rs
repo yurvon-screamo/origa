@@ -94,22 +94,22 @@ pub enum QuizVariant {
 #[component]
 pub fn QuizCardView(
     quiz_card: QuizCard,
-    show_result: bool,
+    show_result: Signal<bool>,
     selected_option: Option<usize>,
     on_select_option: Callback<usize>,
     on_dont_know: Callback<()>,
-    dont_know_selected: bool,
+    dont_know_selected: Signal<bool>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
     #[prop(optional)] quiz_variant: QuizVariant,
     #[prop(into, default = Signal::derive(|| HashSet::new()))] selected_options: Signal<
         HashSet<usize>,
     >,
-    #[prop(default = false)] multi_submitted: bool,
+    #[prop(default = Signal::derive(|| false))] multi_submitted: Signal<bool>,
     #[prop(default = None)] multi_result: Option<MultiQuizResult>,
     #[prop(default = Callback::new(|_: usize| {}))] on_toggle: Callback<usize>,
     #[prop(default = Callback::new(|_: ()| {}))] on_submit: Callback<()>,
-    #[prop(default = false)] waiting_for_next: bool,
+    #[prop(default = Signal::derive(|| false))] waiting_for_next: Signal<bool>,
     #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
     #[prop(default = false)] lenient_grading: bool,
 ) -> impl IntoView {
@@ -143,7 +143,7 @@ pub fn QuizCardView(
     let multi_result_stored = StoredValue::new(multi_result);
 
     let quiz_result = move || {
-        if dont_know_selected && show_result {
+        if dont_know_selected.get() && show_result.get() {
             return QuizResult::DontKnow;
         }
         if let Some(selected) = selected_option {
@@ -186,7 +186,8 @@ pub fn QuizCardView(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !show_result && card_type != CardType::Kanji && is_speech_supported() && !is_muted {
+        if !show_result.get() && card_type != CardType::Kanji && is_speech_supported() && !is_muted
+        {
             speak_word(&question_text, 1.0);
         }
     });
@@ -260,7 +261,7 @@ pub fn QuizCardView(
                         waiting_for_next=waiting_for_next
                         on_next_card=on_next_card
                     />
-                    <Show when=move || multi_submitted>
+                    <Show when=move || multi_submitted.get()>
                         {move || {
                             multi_result_stored
                                 .get_value()
@@ -294,7 +295,7 @@ pub fn QuizCardView(
                         known_kanji=known_kanji
                     />
 
-                    <Show when=move || show_result && quiz_result() != QuizResult::DontKnow>
+                    <Show when=move || show_result.get() && quiz_result() != QuizResult::DontKnow>
                         <QuizResultDisplay quiz_result=quiz_result() />
                     </Show>
                 </Show>
