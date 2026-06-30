@@ -25,7 +25,7 @@ use crate::repository::cdn_provider::prefetch_blob_url;
 #[component]
 pub fn LessonCard(
     card: DomainCard,
-    show_answer: bool,
+    show_answer: Signal<bool>,
     is_reversed: bool,
     on_show_answer: Callback<()>,
     grammar_info: Option<GrammarInfo>,
@@ -167,7 +167,7 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !show_answer
+        if !show_answer.get()
             && !is_reversed
             && card_type != CardType::Kanji
             && card_type != CardType::Phrase
@@ -186,7 +186,7 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !show_answer && is_phrase && !is_muted {
+        if !show_answer.get() && is_phrase && !is_muted {
             if let Some(path) = phrase_audio_path.as_ref() {
                 stop_current_audio();
                 let path_owned = path.clone();
@@ -196,7 +196,7 @@ pub fn LessonCard(
                     play_phrase_in_lesson(&path_owned, &question_val).await;
                 });
             }
-        } else if is_phrase || show_answer {
+        } else if is_phrase || show_answer.get() {
             stop_current_audio();
         }
     });
@@ -207,7 +207,7 @@ pub fn LessonCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if show_answer
+        if show_answer.get()
             && is_reversed
             && card_type != CardType::Kanji
             && is_speech_supported()
@@ -218,7 +218,9 @@ pub fn LessonCard(
     });
 
     Effect::new(move |_| {
-        if show_answer && let Some(el) = content_ref.get() {
+        if show_answer.get()
+            && let Some(el) = content_ref.get()
+        {
             let is_overflow = el.scroll_height() > el.client_height();
             needs_collapse.set(is_overflow);
         }
@@ -244,7 +246,7 @@ pub fn LessonCard(
             />
 
             <div class="flex-1 flex flex-col justify-center">
-                <Show when=move || !show_answer>
+                <Show when=move || !show_answer.get()>
                     <LessonCardQuestion
                         question_text=display_question.get_value()
                         kanji=kanji_stored.get_value()
@@ -255,7 +257,7 @@ pub fn LessonCard(
                     />
                 </Show>
 
-                <Show when=move || show_answer>
+                <Show when=move || show_answer.get()>
                     <LessonCardAnswer
                         question_text=display_question.get_value()
                         answer_text=answer.get_value()

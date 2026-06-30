@@ -137,7 +137,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                         current_lesson_card.get().map(|lesson_card| {
                             render_lesson_card(
                                 lesson_card,
-                                lesson_state.get().showing_answer,
+                                Signal::derive(move || lesson_state.get().showing_answer),
                                 Callback::new(move |_| show_answer()),
                                 on_rate_callback,
                                 is_rating,
@@ -154,16 +154,15 @@ pub fn LessonCardContainer() -> impl IntoView {
                             if let LessonCardView::Quiz(quiz) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
-                                let show_result = state.showing_answer;
 
                                 Some(view! {
                                     <QuizCardView
                                         quiz_card=quiz
-                                        show_result=show_result
+                                        show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
                                         on_dont_know=on_quiz_dont_know
-                                        dont_know_selected=state.dont_know_selected
+                                        dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                     />
@@ -202,16 +201,15 @@ pub fn LessonCardContainer() -> impl IntoView {
                             if let LessonCardView::YesNo(yesno) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_answer = state.selected_yesno_answer;
-                                let show_result = state.showing_answer;
 
                                 Some(view! {
                                     <YesNoCardView
                                         yesno_card=yesno
-                                        show_result=show_result
+                                        show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                         selected_answer=selected_answer
                                         on_answer=on_yesno_select
                                         on_dont_know=on_yesno_dont_know
-                                        dont_know_selected=state.dont_know_selected
+                                        dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                     />
@@ -278,28 +276,26 @@ pub fn LessonCardContainer() -> impl IntoView {
                             if let LessonCardView::KanjiReadingQuiz(quiz) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
-                                let show_result = state.showing_answer;
                                 let selected_options = state.selected_quiz_options.clone();
-                                let multi_submitted = state.multi_quiz_submitted;
                                 let multi_result = state.multi_result;
 
                                 Some(view! {
                                     <QuizCardView
                                         quiz_card=quiz
-                                        show_result=show_result
+                                        show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
                                         on_dont_know=on_quiz_dont_know
-                                        dont_know_selected=state.dont_know_selected
+                                        dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                         quiz_variant=QuizVariant::Reading
                                         selected_options=Signal::derive(move || selected_options.clone())
-                                        multi_submitted=multi_submitted
+                                        multi_submitted=Signal::derive(move || lesson_state.get().multi_quiz_submitted)
                                         multi_result=multi_result
                                         on_toggle=on_quiz_toggle
                                         on_submit=on_quiz_submit
-                                        waiting_for_next=state.waiting_for_next
+                                        waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
                                         on_next_card=on_next_card
                                         lenient_grading=true
                                     />
@@ -317,16 +313,15 @@ pub fn LessonCardContainer() -> impl IntoView {
                             if let LessonCardView::GrammarQuiz(gq) = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
-                                let show_result = state.showing_answer;
 
                                 Some(view! {
                                     <QuizCardView
                                         quiz_card=gq.quiz().clone()
-                                        show_result=show_result
+                                        show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
                                         on_dont_know=on_quiz_dont_know
-                                        dont_know_selected=state.dont_know_selected
+                                        dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                         native_language=native_language.get()
                                         known_kanji=Signal::from(known_kanji)
                                         quiz_variant=QuizVariant::Grammar
