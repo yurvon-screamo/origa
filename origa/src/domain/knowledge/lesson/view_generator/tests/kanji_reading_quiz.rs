@@ -312,7 +312,7 @@ fn review_kanji_produces_reading_quiz() {
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
     assert!(!sc.memory().is_high_difficulty());
-    let mut generator = LessonViewGenerator::new(&ks);
+    let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
     let mut count = 0;
     for seed in 0..300 {
@@ -333,7 +333,7 @@ fn new_kanji_never_reading_quiz() {
 
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = StudyCard::new(Card::Kanji(KanjiCard::new_test("日".to_string())));
-    let mut generator = LessonViewGenerator::new(&ks);
+    let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
     for seed in 0..300 {
         let mut rng = StdRng::seed_from_u64(seed);

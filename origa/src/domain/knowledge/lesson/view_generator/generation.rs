@@ -307,6 +307,7 @@ pub(crate) fn cached_kanji_info<'a>(
 pub(crate) fn generate_grammar_quiz(
     original_card: Card,
     knowledge_set: &KnowledgeSet,
+    lang: &NativeLanguage,
 ) -> Result<LessonCardView, OrigaError> {
     let grammar_rule_card = match &original_card {
         Card::Grammar(grc) => grc,
@@ -376,11 +377,11 @@ pub(crate) fn generate_grammar_quiz(
     let quiz = QuizCard::new(original_card.clone(), options, QuizMode::Single);
 
     let grammar_title = grammar_rule_card
-        .title(&DEFAULT_LANG)
+        .title(lang)
         .map(|q| q.text().to_string())
         .unwrap_or_else(|_| grammar_rule_card.rule_id().to_string());
     let grammar_desc = grammar_rule_card
-        .description(&DEFAULT_LANG)
+        .description(lang)
         .map(|a| answer_display_text(&a))
         .unwrap_or_default();
 
@@ -394,5 +395,3 @@ pub(crate) fn generate_grammar_quiz(
 
     Ok(LessonCardView::GrammarQuiz(grammar_quiz))
 }
-
-const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;

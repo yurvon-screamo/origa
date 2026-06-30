@@ -144,7 +144,8 @@ mod generate_grammar_quiz_tests {
         let grammar_card = create_grammar_card(rule_id);
 
         let ks = crate::domain::knowledge::KnowledgeSet::new();
-        let result = generation::generate_grammar_quiz(grammar_card.clone(), &ks);
+        let result =
+            generation::generate_grammar_quiz(grammar_card.clone(), &ks, &NativeLanguage::Russian);
 
         match result.unwrap() {
             LessonCardView::Normal(card) => assert_eq!(card, grammar_card),
@@ -161,7 +162,7 @@ mod generate_grammar_quiz_tests {
 
         let ks = create_known_vocab_set("食べる");
 
-        let result = generation::generate_grammar_quiz(grammar_card, &ks);
+        let result = generation::generate_grammar_quiz(grammar_card, &ks, &NativeLanguage::Russian);
         let view = result.expect("should succeed");
 
         match &view {
@@ -190,7 +191,8 @@ mod generate_grammar_quiz_tests {
         let grammar_card = create_grammar_card(rule_id);
 
         let ks = crate::domain::knowledge::KnowledgeSet::new();
-        let result = generation::generate_grammar_quiz(grammar_card.clone(), &ks);
+        let result =
+            generation::generate_grammar_quiz(grammar_card.clone(), &ks, &NativeLanguage::Russian);
 
         match result.unwrap() {
             LessonCardView::Normal(card) => assert_eq!(card, grammar_card),
@@ -263,6 +265,45 @@ mod generate_quiz_vocab_kanji_tests {
                 assert_eq!(quiz.options().iter().filter(|o| o.is_correct()).count(), 1);
             },
             other => panic!("Expected Quiz for kanji, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn generate_quiz_uses_english_translations_for_english_locale() {
+        init_real_dictionaries();
+        let words = ["猫", "犬", "鳥", "魚"];
+        let cards: Vec<Card> = words.iter().map(|w| create_vocab_card(w)).collect();
+
+        let english_text = answer_text(&cards[0], NativeLanguage::English);
+        let russian_text = answer_text(&cards[0], NativeLanguage::Russian);
+        assert_ne!(
+            english_text, russian_text,
+            "test fixture: EN and RU translations must differ for {:?}",
+            words[0]
+        );
+
+        let result =
+            generation::generate_quiz(cards[0].clone(), &cards[1..], &NativeLanguage::English);
+
+        match result.expect("English-locale quiz must be generated") {
+            LessonCardView::Quiz(quiz) => {
+                let correct = quiz
+                    .options()
+                    .iter()
+                    .find(|o| o.is_correct())
+                    .expect("quiz must have a correct option");
+                assert_eq!(
+                    correct.text(),
+                    english_text,
+                    "correct option must be the ENGLISH translation"
+                );
+                assert_ne!(
+                    correct.text(),
+                    russian_text,
+                    "regression guard: option must not be the Russian translation"
+                );
+            },
+            other => panic!("Expected Quiz, got {:?}", other),
         }
     }
 }

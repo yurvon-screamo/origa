@@ -29,7 +29,7 @@ mod yesno_view_filtering {
     const ITERATIONS: u64 = 500;
 
     fn count_yesno_views(study_card: &StudyCard, ks: &KnowledgeSet) -> (usize, usize) {
-        let mut generator = LessonViewGenerator::new(ks);
+        let mut generator = LessonViewGenerator::new(ks, NativeLanguage::Russian);
         let mut yesno_count = 0;
         let mut other_count = 0;
 
@@ -108,7 +108,7 @@ mod reversed_view_filtering {
     const ITERATIONS: u64 = 500;
 
     fn count_view_types(study_card: &StudyCard, ks: &KnowledgeSet) -> (usize, usize, usize) {
-        let mut generator = LessonViewGenerator::new(ks);
+        let mut generator = LessonViewGenerator::new(ks, NativeLanguage::Russian);
         let mut reversed_count = 0;
         let mut grammar_mutated_count = 0;
         let mut normal_count = 0;
@@ -239,7 +239,7 @@ mod reversed_view_easy_reviews {
 
         assert_eq!(study_card.memory().easy_review_count(), 3);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
         let mut reversed_count = 0;
 
         for seed in 0..ITERATIONS {
@@ -267,7 +267,7 @@ mod reversed_view_easy_reviews {
 
         assert_eq!(study_card.memory().easy_review_count(), 2);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
         for seed in 0..ITERATIONS {
             let mut rng = StdRng::seed_from_u64(seed);
@@ -286,7 +286,7 @@ mod reversed_view_easy_reviews {
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_easy_reviews("猫", 3);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
         for seed in 0..ITERATIONS {
             let mut rng = StdRng::seed_from_u64(seed);
@@ -307,7 +307,7 @@ mod reversed_view_easy_reviews {
 
         assert_eq!(study_card.memory().good_review_count(), 4);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
         let mut reversed_count = 0;
 
         for seed in 0..ITERATIONS {
@@ -335,7 +335,7 @@ mod reversed_view_easy_reviews {
 
         assert_eq!(study_card.memory().good_review_count(), 3);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
         for seed in 0..ITERATIONS {
             let mut rng = StdRng::seed_from_u64(seed);
@@ -354,7 +354,7 @@ mod reversed_view_easy_reviews {
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_good_reviews("猫", 4);
 
-        let mut generator = LessonViewGenerator::new(&ks);
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
 
         for seed in 0..ITERATIONS {
             let mut rng = StdRng::seed_from_u64(seed);

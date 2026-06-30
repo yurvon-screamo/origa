@@ -6,7 +6,7 @@ use ulid::Ulid;
 
 use super::lesson::{LessonCard, LessonCardView, LessonData, LessonViewGenerator};
 use super::{Card, CardType, KnowledgeSet, StudyCard};
-use crate::domain::{JapaneseLevel, JlptContent};
+use crate::domain::{JapaneseLevel, JlptContent, NativeLanguage};
 
 const MIN_LESSON_SIZE: usize = 15;
 pub(crate) const MAX_LESSON_SIZE: usize = 22;
@@ -62,6 +62,7 @@ pub(crate) fn build_lesson_core(
     knowledge_set: &KnowledgeSet,
     daily_new_limit: usize,
     jlpt_content: &JlptContent,
+    native_language: NativeLanguage,
 ) -> (LessonData, HashSet<Ulid>) {
     let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
     all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
@@ -100,6 +101,7 @@ pub(crate) fn build_lesson_core(
         &selected_cards,
         &padding_cards,
         knowledge_set,
+        native_language,
     );
     cards.shuffle(&mut rand::rng());
     let core_count = cards.len();
@@ -566,6 +568,7 @@ fn collect_anchored_phrase_card_ids(
 pub(crate) fn add_phrases(
     mut lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
+    native_language: NativeLanguage,
     phrase_new_budget: &mut usize,
 ) -> LessonData {
     let core_count = lesson_data.core_count;
@@ -641,7 +644,7 @@ pub(crate) fn add_phrases(
         return lesson_data;
     }
 
-    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let mut generator = LessonViewGenerator::new(knowledge_set, native_language);
     let phrase_lessons: Vec<(Ulid, LessonCard)> = selected_ids
         .iter()
         .filter_map(|card_id| {
@@ -797,6 +800,7 @@ fn compute_expansion_views(
 pub(crate) fn expand_repeated_views(
     lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
+    native_language: NativeLanguage,
     primary_card_ids: &HashSet<Ulid>,
 ) -> LessonData {
     let original_cards = lesson_data.cards;
@@ -804,7 +808,7 @@ pub(crate) fn expand_repeated_views(
 
     let (core_cards, tail_cards) = original_cards.split_at(core_count_before);
 
-    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let mut generator = LessonViewGenerator::new(knowledge_set, native_language);
     let mut new_core: Vec<(Ulid, LessonCard)> = Vec::with_capacity(core_cards.len() * 2);
     let mut pending: Vec<(usize, Ulid, LessonCardView, bool)> = Vec::new();
 
@@ -947,9 +951,10 @@ fn build_core_lesson_cards(
     selected_cards: &[(&Ulid, &StudyCard)],
     padding_cards: &[(&Ulid, &StudyCard)],
     knowledge_set: &KnowledgeSet,
+    native_language: NativeLanguage,
 ) -> Vec<(Ulid, LessonCard)> {
     let padding_ids: HashSet<_> = padding_cards.iter().map(|(id, _)| **id).collect();
-    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let mut generator = LessonViewGenerator::new(knowledge_set, native_language);
 
     let favorite_lessons: Vec<_> = favorite_cards
         .iter()
@@ -1237,7 +1242,7 @@ mod tests {
         };
 
         let mut budget = 5;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1299,7 +1304,7 @@ mod tests {
         };
 
         let mut budget = 2;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
         let new_phrases_count = lesson_phrase_ids(&result).len();
 
         assert!(
@@ -1314,6 +1319,7 @@ mod tests {
                 core_count: 1,
             },
             &ks,
+            NativeLanguage::Russian,
             &mut zero_budget,
         );
         assert_eq!(
@@ -1362,7 +1368,7 @@ mod tests {
         };
 
         let mut budget = 5;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1401,7 +1407,7 @@ mod tests {
         };
 
         let mut budget = 10;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1805,7 +1811,7 @@ mod tests {
         };
 
         let mut budget = 5;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
         let phrases = lesson_phrase_ids(&result);
 
         assert!(
@@ -1838,7 +1844,12 @@ mod tests {
             ks.create_card(phrase_card(pid)).expect("create phrase");
         }
 
-        let lesson = ks.cards_to_lesson(1, &JlptContent::new(), JapaneseLevel::N5);
+        let lesson = ks.cards_to_lesson(
+            1,
+            &JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         let mut all_phrase_ids: Vec<Ulid> = lesson
             .cards
@@ -1882,7 +1893,12 @@ mod tests {
             ks.create_card(phrase_card(pid)).expect("create phrase");
         }
 
-        let lesson = ks.cards_to_lesson(1, &JlptContent::new(), JapaneseLevel::N5);
+        let lesson = ks.cards_to_lesson(
+            1,
+            &JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         let phrases_in_lesson: usize = lesson
             .cards
@@ -1962,7 +1978,12 @@ mod tests {
         let budget = compute_phrase_new_budget(daily_new_limit, 0);
         assert_eq!(budget, 2, "fixture sanity: PHRASE_NEW_RATIO=2");
 
-        let lesson = ks.cards_to_lesson(daily_new_limit, &JlptContent::new(), JapaneseLevel::N5);
+        let lesson = ks.cards_to_lesson(
+            daily_new_limit,
+            &JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         let new_phrases_in_lesson = lesson
             .cards
@@ -2113,7 +2134,7 @@ mod tests {
         };
 
         let mut budget = 10;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
 
         let phrase_ids = lesson_phrase_ids(&result);
         assert!(
@@ -2153,7 +2174,7 @@ mod tests {
         };
 
         let mut budget = 20;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
 
         let positions = first_showing_positions(&result);
         let anchor_vocab: Vec<(&Ulid, &str)> =
@@ -2194,7 +2215,7 @@ mod tests {
         };
 
         let mut budget = 10;
-        let result = add_phrases(lesson, &ks, &mut budget);
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
 
         let phrase_indices: Vec<usize> = result
             .cards
@@ -2233,7 +2254,12 @@ mod tests {
         ks.create_card(phrase_card(phrase_id_hello()))
             .expect("create phrase"); // tokens [test, hello]
 
-        let lesson = ks.cards_to_lesson(5, &JlptContent::new(), JapaneseLevel::N5);
+        let lesson = ks.cards_to_lesson(
+            5,
+            &JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         let anchor_id = *anchor_sc.card_id();
         let anchor_showings: Vec<usize> = lesson
@@ -2306,7 +2332,7 @@ mod tests {
             core_count: 1,
         };
         let primary_set: HashSet<Ulid> = [primary_id].into_iter().collect();
-        expand_repeated_views(lesson, ks, &primary_set)
+        expand_repeated_views(lesson, ks, NativeLanguage::Russian, &primary_set)
     }
 
     #[test]
@@ -2398,7 +2424,7 @@ mod tests {
             core_count: 2,
         };
         let primary_set: HashSet<Ulid> = [primary_id].into_iter().collect();
-        let result = expand_repeated_views(lesson, &ks, &primary_set);
+        let result = expand_repeated_views(lesson, &ks, NativeLanguage::Russian, &primary_set);
 
         let companion_showings = result.find_by_card_id(companion_id);
         assert_eq!(
@@ -2421,7 +2447,7 @@ mod tests {
             core_count: 1,
         };
         let primary_set: HashSet<Ulid> = [phrase_id].into_iter().collect();
-        let result = expand_repeated_views(lesson, &ks, &primary_set);
+        let result = expand_repeated_views(lesson, &ks, NativeLanguage::Russian, &primary_set);
 
         let showings = result.find_by_card_id(phrase_id);
         assert_eq!(
@@ -2468,7 +2494,7 @@ mod tests {
             core_count: 1,
         };
         let primary_set: HashSet<Ulid> = [card_id].into_iter().collect();
-        let result = expand_repeated_views(lesson, &ks, &primary_set);
+        let result = expand_repeated_views(lesson, &ks, NativeLanguage::Russian, &primary_set);
 
         let added = result.find_by_card_id(card_id).len() - 1;
         assert_eq!(
@@ -2511,7 +2537,7 @@ mod tests {
             core_count: 1,
         };
         let primary_set: HashSet<Ulid> = [hd_id].into_iter().collect();
-        let result = expand_repeated_views(original, &ks, &primary_set);
+        let result = expand_repeated_views(original, &ks, NativeLanguage::Russian, &primary_set);
 
         for (_, lc) in result.cards[result.core_count..].iter() {
             assert!(
@@ -2557,7 +2583,7 @@ mod tests {
         let core_count = cards.len();
         let original = LessonData { cards, core_count };
         let primary_set: HashSet<Ulid> = [hd_id].into_iter().collect();
-        let result = expand_repeated_views(original, &ks, &primary_set);
+        let result = expand_repeated_views(original, &ks, NativeLanguage::Russian, &primary_set);
 
         let positions: Vec<usize> = result
             .cards
@@ -2622,7 +2648,7 @@ mod tests {
         let core_count = cards.len();
         let original = LessonData { cards, core_count };
         let primary_set: HashSet<Ulid> = [anchor_id].into_iter().collect();
-        expand_repeated_views(original, ks, &primary_set)
+        expand_repeated_views(original, ks, NativeLanguage::Russian, &primary_set)
     }
 
     fn showing_positions(result: &LessonData, card_id: Ulid) -> Vec<usize> {
@@ -2773,7 +2799,7 @@ mod tests {
         let core_count = cards.len();
         let original = LessonData { cards, core_count };
         let primary_set: HashSet<Ulid> = [a_id, b_id].into_iter().collect();
-        let result = expand_repeated_views(original, &ks, &primary_set);
+        let result = expand_repeated_views(original, &ks, NativeLanguage::Russian, &primary_set);
 
         for card_id in [a_id, b_id] {
             let positions = showing_positions(&result, card_id);

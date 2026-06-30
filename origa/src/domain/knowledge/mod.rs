@@ -291,17 +291,25 @@ impl KnowledgeSet {
         daily_new_limit: usize,
         jlpt_content: &JlptContent,
         user_level: JapaneseLevel,
+        native_language: NativeLanguage,
     ) -> LessonData {
         let (core, primary_card_ids) =
-            lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content);
-        let with_companions = kanji_companions::add_kanji_companions(core, self, user_level);
+            lesson_builder::build_lesson_core(self, daily_new_limit, jlpt_content, native_language);
+        let with_companions =
+            kanji_companions::add_kanji_companions(core, self, user_level, native_language);
         let interleaved = lesson_builder::interleave_core_by_type(with_companions);
         let mut phrase_new_budget = lesson_builder::compute_phrase_new_budget(
             daily_new_limit,
             self.phrase_cards_studied_today(),
         );
-        let with_phrases = lesson_builder::add_phrases(interleaved, self, &mut phrase_new_budget);
-        lesson_builder::expand_repeated_views(with_phrases, self, &primary_card_ids)
+        let with_phrases =
+            lesson_builder::add_phrases(interleaved, self, native_language, &mut phrase_new_budget);
+        lesson_builder::expand_repeated_views(
+            with_phrases,
+            self,
+            native_language,
+            &primary_card_ids,
+        )
     }
 
     pub(crate) fn rate_card(

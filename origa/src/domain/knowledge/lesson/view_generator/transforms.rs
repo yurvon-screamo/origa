@@ -1,13 +1,13 @@
 use crate::dictionary::grammar::get_rule_by_id;
+use crate::domain::value_objects::NativeLanguage;
 use crate::domain::{Card, GrammarRuleCard, VocabularyCard};
 use rand::{Rng, seq::SliceRandom};
 
 use super::super::types::{GrammarInfo, LessonCardView};
-use super::DEFAULT_LANG;
 
-pub(crate) fn apply_reversed(card: &Card) -> LessonCardView {
+pub(crate) fn apply_reversed(card: &Card, lang: &NativeLanguage) -> LessonCardView {
     match card {
-        Card::Vocabulary(vocab) => match vocab.revert(&DEFAULT_LANG) {
+        Card::Vocabulary(vocab) => match vocab.revert(lang) {
             Ok(reverted) => LessonCardView::Reversed(Card::Vocabulary(reverted)),
             Err(_) => LessonCardView::Normal(card.clone()),
         },
@@ -19,16 +19,17 @@ pub(crate) fn apply_grammar_mutated<R: Rng>(
     card: &Card,
     known_grammars: &[GrammarRuleCard],
     rng: &mut R,
+    lang: &NativeLanguage,
 ) -> LessonCardView {
     match card {
         Card::Vocabulary(vocab) => match select_applicable_grammar(vocab, known_grammars, rng) {
             Some(grammar_card) => {
                 let rule = get_rule_by_id(grammar_card.rule_id());
                 match rule {
-                    Some(r) => match vocab.with_grammar_rule(r, &DEFAULT_LANG) {
+                    Some(r) => match vocab.with_grammar_rule(r, lang) {
                         Ok((mutated, grammar_description)) => {
                             let grammar_title = grammar_card
-                                .title(&DEFAULT_LANG)
+                                .title(lang)
                                 .map(|q| q.text().to_string())
                                 .unwrap_or_else(|_| grammar_card.rule_id().to_string());
                             let grammar_info = GrammarInfo::new(

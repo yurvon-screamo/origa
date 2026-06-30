@@ -6,7 +6,7 @@ use super::lesson::{LessonCard, LessonData, LessonViewGenerator};
 use super::{Card, KnowledgeSet, MAX_COMPANION_WORDS};
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::japanese::JapaneseChar;
-use crate::domain::value_objects::JapaneseLevel;
+use crate::domain::value_objects::{JapaneseLevel, NativeLanguage};
 
 const MAX_COMPANION_CARDS_PER_LESSON: usize = 15;
 const MAX_REVERSE_COMPANION_CARDS_PER_LESSON: usize = 10;
@@ -15,19 +15,31 @@ pub(crate) fn add_kanji_companions(
     lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
     user_level: JapaneseLevel,
+    native_language: NativeLanguage,
 ) -> LessonData {
     let already_in_lesson: HashSet<Ulid> = lesson_data.cards.iter().map(|(id, _)| *id).collect();
 
-    let (lesson_data, already_in_lesson) =
-        add_forward_companions(lesson_data, knowledge_set, already_in_lesson);
+    let (lesson_data, already_in_lesson) = add_forward_companions(
+        lesson_data,
+        knowledge_set,
+        already_in_lesson,
+        native_language,
+    );
 
-    add_reverse_companions(lesson_data, knowledge_set, user_level, &already_in_lesson)
+    add_reverse_companions(
+        lesson_data,
+        knowledge_set,
+        user_level,
+        &already_in_lesson,
+        native_language,
+    )
 }
 
 fn add_forward_companions(
     lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
     mut already_in_lesson: HashSet<Ulid>,
+    native_language: NativeLanguage,
 ) -> (LessonData, HashSet<Ulid>) {
     let kanji_ids = collect_kanji_ids(&lesson_data, knowledge_set);
     if kanji_ids.is_empty() {
@@ -44,7 +56,7 @@ fn add_forward_companions(
     }
 
     (
-        append_companions(lesson_data, knowledge_set, &companions),
+        append_companions(lesson_data, knowledge_set, &companions, native_language),
         already_in_lesson,
     )
 }
@@ -54,6 +66,7 @@ fn add_reverse_companions(
     knowledge_set: &KnowledgeSet,
     user_level: JapaneseLevel,
     already_in_lesson: &HashSet<Ulid>,
+    native_language: NativeLanguage,
 ) -> LessonData {
     let kanji_index: HashMap<char, (&Ulid, &super::StudyCard)> = knowledge_set
         .study_cards()
@@ -86,7 +99,7 @@ fn add_reverse_companions(
         .take(MAX_REVERSE_COMPANION_CARDS_PER_LESSON)
         .collect();
 
-    append_companions(lesson_data, knowledge_set, &capped)
+    append_companions(lesson_data, knowledge_set, &capped, native_language)
 }
 
 fn collect_kanji_from_vocab(
@@ -215,8 +228,9 @@ fn append_companions(
     mut lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
     companions: &[(Ulid, &super::StudyCard)],
+    native_language: NativeLanguage,
 ) -> LessonData {
-    let mut generator = LessonViewGenerator::new(knowledge_set);
+    let mut generator = LessonViewGenerator::new(knowledge_set, native_language);
 
     let companion_lessons: Vec<(Ulid, LessonCard)> = companions
         .iter()
@@ -256,7 +270,7 @@ mod tests {
         knowledge_set: &KnowledgeSet,
         card_ids: &[Ulid],
     ) -> LessonData {
-        let mut generator = LessonViewGenerator::new(knowledge_set);
+        let mut generator = LessonViewGenerator::new(knowledge_set, NativeLanguage::Russian);
         let cards: Vec<(Ulid, LessonCard)> = card_ids
             .iter()
             .map(|id| {
@@ -281,7 +295,7 @@ mod tests {
         let vocab_sc = ks.create_card(create_vocab_card(&first_popular)).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*kanji_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         assert!(
             result.contains_key(vocab_sc.card_id()),
@@ -331,7 +345,7 @@ mod tests {
         );
 
         let lesson = build_empty_lesson_with_cards(&ks, &lesson_card_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         let companion_count = result.len() - lesson_card_ids.len();
         assert!(
@@ -357,7 +371,12 @@ mod tests {
 
         let lesson =
             build_empty_lesson_with_cards(&ks, &[*kanji_sc.card_id(), *vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson.clone(), &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(
+            lesson.clone(),
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         let count = result
             .cards
@@ -378,7 +397,12 @@ mod tests {
         let vocab_sc = ks.create_card(create_vocab_card("猫")).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson.clone(), &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(
+            lesson.clone(),
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
 
         assert_eq!(
             result.len(),
@@ -403,7 +427,7 @@ mod tests {
         let kanji_hon_sc = ks.create_card(create_kanji_card("本")).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -447,7 +471,7 @@ mod tests {
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
 
         let user_level = nichi_level;
-        let result = add_kanji_companions(lesson, &ks, user_level);
+        let result = add_kanji_companions(lesson, &ks, user_level, NativeLanguage::Russian);
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -469,7 +493,7 @@ mod tests {
 
         let lesson =
             build_empty_lesson_with_cards(&ks, &[*kanji_nichi_sc.card_id(), *vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         let count = result
             .cards
@@ -491,7 +515,7 @@ mod tests {
         let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -522,7 +546,7 @@ mod tests {
             &ks,
             &[*vocab_nihon_sc.card_id(), *vocab_nichiyoubi_sc.card_id()],
         );
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         let count = result
             .cards
@@ -555,7 +579,7 @@ mod tests {
         vocab_ids.push(*vocab_sc.card_id());
 
         let lesson = build_empty_lesson_with_cards(&ks, &vocab_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         let reverse_count = result.cards.len() - vocab_ids.len();
         assert!(
@@ -600,7 +624,7 @@ mod tests {
         );
 
         let lesson = build_empty_lesson_with_cards(&ks, &lesson_card_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N1);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N1, NativeLanguage::Russian);
 
         let reverse_count = result.cards.len() - lesson_card_ids.len();
         assert_eq!(
@@ -637,7 +661,7 @@ mod tests {
         let _vocab_sc = ks.create_card(create_vocab_card(&popular_word)).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*kanji_nichi_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5);
+        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
 
         assert!(
             result.contains_key(extra_kanji_sc.card_id()),

@@ -36,17 +36,17 @@ const PROB_GRAMMAR_QUIZ: f32 = 0.50;
 
 const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const GOOD_REVIEWS_FOR_REVERSED: usize = 4;
-const DEFAULT_LANG: NativeLanguage = NativeLanguage::Russian;
 
 pub struct LessonViewGenerator<'a> {
     knowledge_set: &'a KnowledgeSet,
     cards_by_type: HashMap<CardType, Vec<Card>>,
     known_grammars: Vec<GrammarRuleCard>,
     kanji_cache: HashMap<String, &'static KanjiInfo>,
+    native_language: NativeLanguage,
 }
 
 impl<'a> LessonViewGenerator<'a> {
-    pub fn new(knowledge_set: &'a KnowledgeSet) -> Self {
+    pub fn new(knowledge_set: &'a KnowledgeSet, native_language: NativeLanguage) -> Self {
         let cards_by_type = knowledge_set.build_cards_by_type();
         let known_grammars: Vec<_> = knowledge_set
             .study_cards()
@@ -62,6 +62,7 @@ impl<'a> LessonViewGenerator<'a> {
             cards_by_type,
             known_grammars,
             kanji_cache: HashMap::new(),
+            native_language,
         }
     }
 
@@ -85,8 +86,12 @@ impl<'a> LessonViewGenerator<'a> {
             CardType::Grammar if !is_new => {
                 let rand_val = rng.random::<f32>();
                 if rand_val < PROB_GRAMMAR_QUIZ {
-                    generation::generate_grammar_quiz(card.clone(), self.knowledge_set)
-                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+                    generation::generate_grammar_quiz(
+                        card.clone(),
+                        self.knowledge_set,
+                        &self.native_language,
+                    )
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
                 } else {
                     LessonCardView::Normal(card.clone())
                 }
@@ -102,7 +107,13 @@ impl<'a> LessonViewGenerator<'a> {
                     .get(&card_type)
                     .map(|v| v.as_slice())
                     .unwrap_or(&[]);
-                Self::select_review_kanji_view(card, same_type_cards, &mut self.kanji_cache, rng)
+                Self::select_review_kanji_view(
+                    card,
+                    same_type_cards,
+                    &mut self.kanji_cache,
+                    rng,
+                    self.native_language,
+                )
             },
             CardType::Vocabulary if is_new => {
                 let same_type_cards = self.same_type_cards(&card_type);
@@ -129,7 +140,7 @@ impl<'a> LessonViewGenerator<'a> {
         if rand_val < PROB_NEW_KANJI_NORMAL {
             LessonCardView::Normal(card.clone())
         } else if rand_val < PROB_NEW_KANJI_QUIZ {
-            generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else {
             LessonCardView::Writing(card.clone())
@@ -141,6 +152,7 @@ impl<'a> LessonViewGenerator<'a> {
         same_type_cards: &[Card],
         kanji_cache: &mut HashMap<String, &'static KanjiInfo>,
         rng: &mut R,
+        native_language: NativeLanguage,
     ) -> LessonCardView {
         let rand_val = rng.random::<f32>();
         if rand_val < PROB_KANJI_NORMAL {
@@ -149,10 +161,10 @@ impl<'a> LessonViewGenerator<'a> {
             generation::generate_kanji_reading_quiz(card.clone(), same_type_cards, kanji_cache)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_QUIZ {
-            generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+            generation::generate_quiz(card.clone(), same_type_cards, &native_language)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if rand_val < PROB_KANJI_YESNO {
-            generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
+            generation::generate_yesno(card.clone(), same_type_cards, &native_language, rng)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else {
             LessonCardView::Writing(card.clone())
@@ -169,7 +181,7 @@ impl<'a> LessonViewGenerator<'a> {
         if rand_val < PROB_NEW_VOCAB_NORMAL {
             LessonCardView::Normal(card.clone())
         } else {
-            generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         }
     }
@@ -190,15 +202,20 @@ impl<'a> LessonViewGenerator<'a> {
         if rand_val < PROB_NORMAL_VIEW {
             LessonCardView::Normal(card.clone())
         } else if rand_val < PROB_QUIZ_VIEW {
-            generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if !is_high_difficulty && rand_val < PROB_YESNO_VIEW {
-            generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
+            generation::generate_yesno(card.clone(), same_type_cards, &self.native_language, rng)
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
         } else if eligible_for_reversed && rand_val < PROB_REVERSED_VIEW {
-            transforms::apply_reversed(card)
+            transforms::apply_reversed(card, &self.native_language)
         } else if eligible_for_advanced {
-            transforms::apply_grammar_mutated(card, &self.known_grammars, rng)
+            transforms::apply_grammar_mutated(
+                card,
+                &self.known_grammars,
+                rng,
+                &self.native_language,
+            )
         } else {
             LessonCardView::Normal(card.clone())
         }
@@ -222,7 +239,7 @@ impl<'a> LessonViewGenerator<'a> {
             return LessonCardView::Normal(card.clone());
         }
 
-        generation::generate_phrase_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+        generation::generate_phrase_quiz(card.clone(), same_type_cards, &self.native_language)
             .unwrap_or_else(|| LessonCardView::Normal(card.clone()))
     }
 
@@ -257,7 +274,7 @@ impl<'a> LessonViewGenerator<'a> {
         if is_new {
             build_distinct_views(vec![
                 LessonCardView::Normal(card.clone()),
-                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
             ])
         } else {
@@ -269,23 +286,29 @@ impl<'a> LessonViewGenerator<'a> {
                 || memory.good_review_count() >= GOOD_REVIEWS_FOR_REVERSED;
 
             let mut candidates = vec![
-                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
             ];
             if !is_high_difficulty {
                 candidates.push(
-                    generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
-                        .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                    generation::generate_yesno(
+                        card.clone(),
+                        same_type_cards,
+                        &self.native_language,
+                        rng,
+                    )
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
                 );
             }
             if eligible_for_reversed {
-                candidates.push(transforms::apply_reversed(card));
+                candidates.push(transforms::apply_reversed(card, &self.native_language));
             }
             if eligible_for_advanced {
                 candidates.push(transforms::apply_grammar_mutated(
                     card,
                     &self.known_grammars,
                     rng,
+                    &self.native_language,
                 ));
             }
             candidates.push(LessonCardView::Normal(card.clone()));
@@ -310,7 +333,7 @@ impl<'a> LessonViewGenerator<'a> {
         if is_new {
             build_distinct_views(vec![
                 LessonCardView::Normal(card.clone()),
-                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
                 LessonCardView::Writing(card.clone()),
             ])
@@ -322,10 +345,15 @@ impl<'a> LessonViewGenerator<'a> {
                     &mut self.kanji_cache,
                 )
                 .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-                generation::generate_quiz(card.clone(), same_type_cards, &DEFAULT_LANG)
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
                     .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-                generation::generate_yesno(card.clone(), same_type_cards, &DEFAULT_LANG, rng)
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                generation::generate_yesno(
+                    card.clone(),
+                    same_type_cards,
+                    &self.native_language,
+                    rng,
+                )
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
                 LessonCardView::Writing(card.clone()),
                 LessonCardView::Normal(card.clone()),
             ])
@@ -343,8 +371,12 @@ impl<'a> LessonViewGenerator<'a> {
             vec![LessonCardView::Normal(card.clone())]
         } else {
             build_distinct_views(vec![
-                generation::generate_grammar_quiz(card.clone(), self.knowledge_set)
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+                generation::generate_grammar_quiz(
+                    card.clone(),
+                    self.knowledge_set,
+                    &self.native_language,
+                )
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
                 LessonCardView::Normal(card.clone()),
             ])
         }
