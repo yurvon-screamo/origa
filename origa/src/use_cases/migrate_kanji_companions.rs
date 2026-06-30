@@ -215,4 +215,69 @@ mod tests {
         assert_eq!(result.companions_created, 0);
         assert_eq!(result.companions_deleted, 0);
     }
+
+    // C-5 contract resolution. The original sanity test asserted
+    // `popular_words() ∩ REMOVED_POPULAR_WORDS == ∅`; it failed, proving the
+    // blocklist IS load-bearing: `delete_removed_companions` deletes a removed
+    // word via `delete_card` (recording it into the dismissed-companion
+    // blocklist), and since `popular_words()` still lists that word,
+    // `create_missing_companions` would re-create it without the blocklist.
+    // The blocklist suppresses re-creation, so removed words actually stay
+    // removed — a beneficial fix to the prior delete-then-recreate no-op (which
+    // also reset SRS progress every cold start). This test pins that contract.
+    #[tokio::test]
+    async fn migration_purges_removed_popular_words_and_keeps_them_out() {
+        use crate::dictionary::removed_popular_words::REMOVED_POPULAR_WORDS;
+        use crate::domain::{Question, VocabularyCard};
+
+        init_real_dictionaries();
+
+        // 拷問 is a popular word of 拷 AND is listed in REMOVED_POPULAR_WORDS.
+        let kanji_char = "拷";
+        let removed_word = "拷問";
+        assert!(
+            REMOVED_POPULAR_WORDS.contains(&removed_word),
+            "fixture sanity: {removed_word} must be in REMOVED_POPULAR_WORDS"
+        );
+
+        let mut user = User::new(
+            "test@example.com".to_string(),
+            NativeLanguage::Russian,
+            None,
+        );
+        user.create_card(Card::Kanji(KanjiCard::new_test(kanji_char.to_string())))
+            .unwrap();
+        user.create_card(Card::Vocabulary(VocabularyCard::new(
+            Question::new(removed_word.to_string()).unwrap(),
+        )))
+        .unwrap();
+
+        let repo = InMemoryUserRepository::with_user(user);
+        let use_case = MigrateKanjiCompanionsUseCase::new(&repo);
+
+        use_case.execute().await.unwrap();
+        let after_first = repo.get_current_user().await.unwrap().unwrap();
+        assert!(
+            !vocab_word_present(&after_first, removed_word),
+            "removed popular word must be purged after migration"
+        );
+
+        use_case.execute().await.unwrap();
+        let after_second = repo.get_current_user().await.unwrap().unwrap();
+        assert!(
+            !vocab_word_present(&after_second, removed_word),
+            "removed popular word must not reappear on the next cold start \
+             (blocklist suppresses re-creation)"
+        );
+    }
+
+    fn vocab_word_present(user: &User, word: &str) -> bool {
+        user.knowledge_set()
+            .study_cards()
+            .values()
+            .any(|sc| match sc.card() {
+                Card::Vocabulary(v) => v.word().text() == word,
+                _ => false,
+            })
+    }
 }

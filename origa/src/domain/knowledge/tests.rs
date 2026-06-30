@@ -1418,3 +1418,155 @@ mod companion_vocab_cards {
         );
     }
 }
+
+mod deleted_companion_words {
+    use super::*;
+    use crate::domain::{NativeLanguage, RateMode, Rating};
+    use crate::use_cases::init_real_dictionaries;
+
+    fn first_companion_word(created: &[StudyCard]) -> String {
+        let sc = created.first().expect("at least one companion created");
+        match sc.card() {
+            Card::Vocabulary(v) => v.word().text().to_string(),
+            _ => panic!("companion card must be Vocabulary"),
+        }
+    }
+
+    fn vocab_word_of(sc: &StudyCard) -> String {
+        match sc.card() {
+            Card::Vocabulary(v) => v.word().text().to_string(),
+            _ => panic!("card must be Vocabulary"),
+        }
+    }
+
+    #[test]
+    fn delete_vocab_card_records_word_in_blocklist() {
+        let mut ks = KnowledgeSet::new();
+        let sc = ks.create_card(create_vocab_card("猫")).unwrap();
+
+        ks.delete_card(*sc.card_id()).unwrap();
+
+        assert!(
+            ks.deleted_companion_words_for_test().contains("猫"),
+            "deleted vocab word must be recorded in the dismissed-companion blocklist"
+        );
+    }
+
+    #[test]
+    fn delete_non_vocab_card_does_not_record() {
+        let mut ks = KnowledgeSet::new();
+        let sc = ks
+            .create_card(Card::Kanji(crate::domain::knowledge::KanjiCard::new_test(
+                "日".to_string(),
+            )))
+            .unwrap();
+
+        ks.delete_card(*sc.card_id()).unwrap();
+
+        assert!(
+            ks.deleted_companion_words_for_test().is_empty(),
+            "deleting a non-Vocabulary card must not populate the blocklist"
+        );
+    }
+
+    #[test]
+    fn dismissed_companion_word_is_not_recreated() {
+        init_real_dictionaries();
+
+        let mut ks = KnowledgeSet::new();
+        let created = ks.create_companion_vocab_cards("日", &NativeLanguage::Russian);
+        assert!(!created.is_empty(), "fixture: 日 should yield companions");
+
+        let dismissed = first_companion_word(&created);
+        let dismissed_id = *created.first().unwrap().card_id();
+        ks.delete_card(dismissed_id).unwrap();
+        assert!(ks.deleted_companion_words_for_test().contains(&dismissed));
+
+        let recreated = ks.create_companion_vocab_cards("日", &NativeLanguage::Russian);
+        let dismissed_recreated = recreated.iter().any(|sc| vocab_word_of(sc) == dismissed);
+        assert!(
+            !dismissed_recreated,
+            "a companion word the user dismissed must not be re-created on the next run"
+        );
+    }
+
+    #[test]
+    fn manual_create_card_evicts_blocklist_entry() {
+        let mut ks = KnowledgeSet::new();
+        let sc = ks.create_card(create_vocab_card("猫")).unwrap();
+        ks.delete_card(*sc.card_id()).unwrap();
+        assert!(ks.deleted_companion_words_for_test().contains("猫"));
+
+        let recreated = ks.create_card(create_vocab_card("猫"));
+        assert!(
+            recreated.is_ok(),
+            "manual create_card of a blocklisted word must succeed (blocklist only blocks companion auto-creation)"
+        );
+        assert!(
+            !ks.deleted_companion_words_for_test().contains("猫"),
+            "manual re-creation must evict the word from the blocklist"
+        );
+    }
+
+    #[test]
+    fn old_user_json_without_field_deserializes_empty() {
+        let json = r#"{"study_cards":{},"deleted_cards":[],"lesson_history":[]}"#;
+
+        let ks: KnowledgeSet = serde_json::from_str(json).expect("old JSON must deserialize");
+
+        assert!(
+            ks.deleted_companion_words_for_test().is_empty(),
+            "Users persisted before the blocklist field must deserialize with an empty set"
+        );
+        assert!(ks.study_cards().is_empty());
+    }
+
+    #[test]
+    fn serde_roundtrip_preserves_blocklist_and_stats() {
+        let mut ks = KnowledgeSet::new();
+        let foo = ks.create_card(create_vocab_card("foo")).unwrap();
+        ks.rate_card(*foo.card_id(), Rating::Good, RateMode::StandardLesson)
+            .unwrap();
+        let bar = ks.create_card(create_vocab_card("bar")).unwrap();
+        ks.delete_card(*bar.card_id()).unwrap();
+
+        let json = serde_json::to_string(&ks).unwrap();
+        let restored: KnowledgeSet = serde_json::from_str(&json).unwrap();
+
+        assert!(
+            restored.deleted_companion_words_for_test().contains("bar"),
+            "blocklist must survive the serde round-trip"
+        );
+        assert!(
+            !restored.lesson_history().is_empty(),
+            "flattened stats (lesson_history) must survive alongside the blocklist"
+        );
+        assert_eq!(restored.study_cards().len(), 1);
+    }
+
+    #[test]
+    fn merge_unions_blocklist_without_evicting_cards() {
+        // Device A dismissed word W: blocklist={W}, no W card.
+        let mut device_a = KnowledgeSet::new();
+        let w_a = device_a.create_card(create_vocab_card("W")).unwrap();
+        device_a.delete_card(*w_a.card_id()).unwrap();
+        assert!(device_a.deleted_companion_words_for_test().contains("W"));
+        assert!(device_a.study_cards().is_empty());
+
+        // Device B legitimately (re)created W under a different ULID: has W card, empty blocklist.
+        let mut device_b = KnowledgeSet::new();
+        let w_b = device_b.create_card(create_vocab_card("W")).unwrap();
+        assert_eq!(vocab_word_of(&w_b), "W");
+
+        device_a.merge(&device_b);
+
+        assert!(
+            device_a.deleted_companion_words_for_test().contains("W"),
+            "merge must union the blocklist so post-sync auto-creation stays suppressed"
+        );
+        assert!(
+            device_a.study_cards().contains_key(w_b.card_id()),
+            "merge must NOT evict a legitimately created card for a blocklisted word"
+        );
+    }
+}
