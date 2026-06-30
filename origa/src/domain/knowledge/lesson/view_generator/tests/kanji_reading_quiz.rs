@@ -419,12 +419,26 @@ fn rating_lenient_returns_again_for_minority() {
 
     let result = MultiQuizResult {
         correct_selections: vec![0],
-        missed: vec![1],
+        missed: vec![1, 2],
         wrong_selections: vec![],
         is_perfect: false,
     };
 
     assert_eq!(result.rating_lenient(), Rating::Again);
+}
+
+#[test]
+fn rating_lenient_returns_good_for_half() {
+    use crate::domain::knowledge::lesson::types::MultiQuizResult;
+
+    let result = MultiQuizResult {
+        correct_selections: vec![0],
+        missed: vec![1],
+        wrong_selections: vec![],
+        is_perfect: false,
+    };
+
+    assert_eq!(result.rating_lenient(), Rating::Good);
 }
 
 #[test]

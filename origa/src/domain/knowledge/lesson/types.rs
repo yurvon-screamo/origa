@@ -149,7 +149,7 @@ impl MultiQuizResult {
     pub fn is_lenient_pass(&self) -> bool {
         self.wrong_selections.is_empty()
             && self.correct_selections.len() * 2
-                > (self.correct_selections.len() + self.missed.len())
+                >= (self.correct_selections.len() + self.missed.len())
     }
 
     pub fn rating_lenient(&self) -> Rating {

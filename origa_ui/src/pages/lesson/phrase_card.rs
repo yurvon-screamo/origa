@@ -16,7 +16,7 @@ pub fn PhraseCardView(
     card_type: CardType,
     audio_file: String,
     options: Vec<QuizOption>,
-    show_result: bool,
+    show_result: Signal<bool>,
     selected_option: Option<usize>,
     on_select_option: Callback<usize>,
     on_dont_know: Callback<()>,
@@ -24,7 +24,7 @@ pub fn PhraseCardView(
     phrase_text: Option<String>,
     phrase_translation: Option<String>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
-    waiting_for_next: bool,
+    waiting_for_next: Signal<bool>,
     on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -36,7 +36,7 @@ pub fn PhraseCardView(
     let phrase_translation_stored = StoredValue::new(phrase_translation);
 
     let quiz_result = move || {
-        if dont_know_selected && show_result {
+        if dont_know_selected && show_result.get() {
             return QuizResult::DontKnow;
         }
         if let Some(selected) = selected_option {
@@ -87,9 +87,9 @@ pub fn PhraseCardView(
                                 let is_correct = option.is_correct();
                                 let is_selected = selected_option == Some(index);
                                 let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem]";
-                                let disabled_class = if show_result { "pointer-events-none" } else { "" };
+                                let disabled_class = if show_result.get() { "pointer-events-none" } else { "" };
                                 let result_class = quiz_result().option_class(is_correct, is_selected);
-                                let selected_ring = if is_selected && !show_result {
+                                let selected_ring = if is_selected && !show_result.get() {
                                     "ring-2 ring-[var(--accent-olive)]"
                                 } else {
                                     ""
@@ -109,7 +109,7 @@ pub fn PhraseCardView(
                                         class=class
                                         data-testid=format!("quiz-option-{}", index)
                                         on:click=move |_| {
-                                            if !show_result {
+                                            if !show_result.get() {
                                                 on_select_option.run(index);
                                             }
                                         }
@@ -122,7 +122,7 @@ pub fn PhraseCardView(
                                                     known_kanji=known_kanji.get()
                                                 />
                                             </Text>
-                                            <Show when=move || !show_result>
+                                            <Show when=move || !show_result.get()>
                                                 <span class="text-[var(--fg-muted)] text-xs font-mono shrink-0">
                                                     {key_hint.clone()}
                                                 </span>
@@ -134,7 +134,7 @@ pub fn PhraseCardView(
                             .collect::<Vec<_>>()
                     }}
                 </div>
-                <Show when=move || !show_result>
+                <Show when=move || !show_result.get()>
                     <button
                         data-testid="quiz-dont-know-btn"
                         class=move || {
@@ -146,7 +146,7 @@ pub fn PhraseCardView(
                             }
                         }
                         on:click=move |_| {
-                            if !show_result {
+                            if !show_result.get() {
                                 on_dont_know.run(());
                             }
                         }
@@ -158,11 +158,11 @@ pub fn PhraseCardView(
                     </button>
                 </Show>
 
-                <Show when=move || show_result>
+                <Show when=move || show_result.get()>
                     <QuizResultDisplay quiz_result=quiz_result() />
                 </Show>
 
-                <Show when=move || show_result>
+                <Show when=move || show_result.get()>
                     {move || match phrase_text_stored.get_value() {
                         Some(text) => {
                             let sentences = crate::utils::text_format::split_japanese_sentences(&text);
@@ -178,7 +178,7 @@ pub fn PhraseCardView(
                     }}
                 </Show>
 
-                <Show when=move || show_result>
+                <Show when=move || show_result.get()>
                     {move || match phrase_translation_stored.get_value() {
                         Some(translation) => view! {
                             <div class="mt-2 p-3 bg-[var(--bg-secondary)] text-center">
@@ -194,7 +194,7 @@ pub fn PhraseCardView(
                     }}
                 </Show>
 
-                <Show when=move || waiting_for_next && show_result>
+                <Show when=move || waiting_for_next.get() && show_result.get()>
                     <div class="mt-4 flex justify-center">
                         <Button
                             variant=Signal::derive(|| ButtonVariant::Filled)

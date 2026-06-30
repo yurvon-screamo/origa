@@ -229,7 +229,6 @@ pub fn LessonCardContainer() -> impl IntoView {
                             if let LessonCardView::PhraseListen { card, audio_file, options } = lesson_card.into_view() {
                                 let state = lesson_state.get();
                                 let selected_option = state.selected_quiz_option;
-                                let show_result = state.showing_answer;
                                 let card_type = CardType::from(&card);
                                 let phrase_text = card.question(&native_language.get()).ok().map(|q| q.text().to_string());
                                 let phrase_translation = {
@@ -254,7 +253,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         card_type=card_type
                                         audio_file=audio_file
                                         options=options
-                                        show_result=show_result
+                                        show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                         selected_option=selected_option
                                         on_select_option=on_quiz_select
                                         on_dont_know=on_quiz_dont_know
@@ -262,7 +261,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                         phrase_text=phrase_text
                                         phrase_translation=phrase_translation
                                         known_kanji=Signal::from(known_kanji)
-                                        waiting_for_next=state.waiting_for_next
+                                        waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
                                         on_next_card=on_next_card
                                     />
                                 })
