@@ -101,6 +101,13 @@ body {
     margin: 0;
 }
 
+html,
+body {
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Touch оптимизация */
 button,
 [role="button"],
