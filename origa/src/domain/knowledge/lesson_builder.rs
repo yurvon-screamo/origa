@@ -1,5 +1,5 @@
 use std::cmp::Reverse;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 use rand::seq::SliceRandom;
 use ulid::Ulid;
@@ -15,7 +15,13 @@ const PHRASE_NEW_RATIO: usize = 2;
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
-const PHRASE_MAX_PER_LESSON: usize = 5;
+/// Per-lesson cap on no-anchor (formerly "tail") phrases — phrases whose
+/// tokens are all known but none of which anchor to a lesson vocab word. They
+/// are MIXED INTO the lesson (no dedicated end zone, see PR #203). Under
+/// Option alpha this slot is independent of `phrase_new_budget`: a depleted
+/// budget no longer starves the no-anchor section, so up to this many no-anchor
+/// phrases (due + new) appear every lesson.
+const TAIL_PHRASE_PER_LESSON: usize = 5;
 
 /// Tail phrases only reinforce already-mastered material: no single known word
 /// may appear in more than this many tail phrases, otherwise a frequent word
@@ -45,8 +51,10 @@ const CARD_TYPE_WEIGHTS: [(CardType, usize); 3] = [
     (CardType::Grammar, 1),
 ];
 
-/// Remaining new-phrase allowance shared between the interleaved and tail
-/// sections. Encapsulates `PHRASE_NEW_RATIO` so callers cannot reach past it.
+/// Remaining new-ANCHORED-phrase allowance for the day. Encapsulates
+/// `PHRASE_NEW_RATIO` so callers cannot reach past it. Under Option alpha this
+/// budget governs only ANCHORED (interleaved) new phrases; no-anchor phrases
+/// are capped per lesson by `TAIL_PHRASE_PER_LESSON` and do not decrement it.
 pub(crate) fn compute_phrase_new_budget(daily_new_limit: usize, studied: usize) -> usize {
     (daily_new_limit * PHRASE_NEW_RATIO).saturating_sub(studied)
 }
@@ -287,18 +295,17 @@ fn phrase_tail_eligible(phrase_id: &Ulid, known_pool: &HashSet<String>) -> bool 
     })
 }
 
-/// Bundles the immutable inputs driving tail-phrase selection. Grouping them
-/// keeps `collect_phrase_cards` below the argument-count threshold and makes
-/// the selection context explicit at the call site.
+/// Bundles the immutable inputs driving no-anchor ("tail") phrase selection.
+/// Grouping them keeps `collect_phrase_cards` below the argument-count
+/// threshold and makes the selection context explicit at the call site. Under
+/// Option alpha the no-anchor section does NOT draw from `phrase_new_budget`
+/// (that budget governs only anchored phrases), so it is intentionally absent
+/// here — see `TAIL_PHRASE_PER_LESSON` for the per-lesson cap.
 struct TailPhraseSelection<'a> {
     all_cards: &'a [(&'a Ulid, &'a StudyCard)],
     excluded_card_ids: &'a HashSet<Ulid>,
     used_phrase_ids: &'a HashSet<Ulid>,
     known_pool: &'a HashSet<String>,
-    /// Remaining new-phrase allowance (already shared with the interleaved
-    /// section). Due phrases do not consume it; new phrases decrement it
-    /// greedily so a depleted budget halts further new-phrase admission.
-    new_phrase_budget: &'a mut usize,
 }
 
 fn collect_phrase_cards<'a>(
@@ -319,9 +326,9 @@ fn collect_phrase_cards<'a>(
     let mut cap = PerWordCap::new(selection.known_pool);
     let mut phrase_cards: Vec<(&'a Ulid, &'a StudyCard)> = Vec::new();
 
-    // Due phrases first — free of budget cost, but they still occupy per-word
-    // cap slots so a frequent word cannot crowd out the tail through scheduling
-    // pressure alone.
+    // Due no-anchor phrases first — free of any budget cost, but they still
+    // occupy per-word cap slots so a frequent word cannot crowd out the
+    // section through scheduling pressure alone.
     for (id, card) in selection.all_cards.iter().copied() {
         if !phrase_eligible(&id, &card) || !card.memory().is_due() {
             continue;
@@ -331,24 +338,21 @@ fn collect_phrase_cards<'a>(
         }
     }
 
-    // New phrases are admitted only when both the budget AND the per-word cap
-    // permit. The cap check runs before the decrement so the budget is never
-    // spent on a phrase the cap would drop.
+    // New no-anchor phrases are admitted on the per-word cap alone: under
+    // Option alpha they do NOT decrement `phrase_new_budget` (reserved for
+    // anchored phrases), so a depleted budget can no longer starve the
+    // no-anchor section. The total is bounded per lesson by
+    // `TAIL_PHRASE_PER_LESSON` via the truncate below.
     for (id, card) in selection.all_cards.iter().copied() {
-        if *selection.new_phrase_budget == 0 {
-            break;
-        }
         if !phrase_eligible(&id, &card) || !card.memory().is_new() {
             continue;
         }
-        if !cap.try_admit(card) {
-            continue;
+        if cap.try_admit(card) {
+            phrase_cards.push((id, card));
         }
-        phrase_cards.push((id, card));
-        *selection.new_phrase_budget -= 1;
     }
 
-    phrase_cards.truncate(PHRASE_MAX_PER_LESSON);
+    phrase_cards.truncate(TAIL_PHRASE_PER_LESSON);
     phrase_cards
 }
 
@@ -559,12 +563,16 @@ fn collect_anchored_phrase_card_ids(
     out
 }
 
-/// Inserts phrases (interleaved + tail-eligible) into the core so each phrase
-/// lands after the first showing of every lesson-vocab word it references,
+/// Inserts phrases (anchored + no-anchor) into the core so each phrase lands
+/// after the first showing of every lesson-vocab word it references,
 /// distributing the rest instead of dumping them at the end. All phrases become
 /// part of the core (`core_count` grows to the whole lesson), removing the
-/// dedicated tail zone. The shared new-phrase budget, the per-word caps and the
-/// `known`-fallback are preserved from the former interleaved/tail split.
+/// dedicated tail zone. Under Option alpha: `phrase_new_budget` bounds NEW
+/// ANCHORED phrases (per-word cap `INTERLEAVED_PHRASES_PER_WORD`, plus the
+/// daily budget — there is deliberately no per-lesson TOTAL cap on anchored
+/// phrases); NEW no-anchor phrases are admitted independently, capped per
+/// lesson by `TAIL_PHRASE_PER_LESSON`, so a depleted budget can no longer
+/// starve the no-anchor section.
 pub(crate) fn add_phrases(
     mut lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
@@ -625,7 +633,10 @@ pub(crate) fn add_phrases(
         );
     }
 
-    // Tail-eligible phrases: whole known-pool, per-word cap, shared budget.
+    // No-anchor phrases: whole known-pool eligibility, per-word cap, and a
+    // per-lesson count bounded by `TAIL_PHRASE_PER_LESSON`. Under Option alpha
+    // they do NOT draw from `phrase_new_budget` (which stays reserved for the
+    // anchored pass above), so they survive even a depleted budget.
     let mut all_cards = knowledge_set.study_cards().iter().collect::<Vec<_>>();
     all_cards.sort_by_key(|(_, card)| card.memory().next_review_date());
     let known_pool =
@@ -635,7 +646,6 @@ pub(crate) fn add_phrases(
         excluded_card_ids: &in_lesson,
         used_phrase_ids: &used_phrase_ids,
         known_pool: &known_pool,
-        new_phrase_budget: phrase_new_budget,
     };
     let tail_cards = collect_phrase_cards(&mut tail_selection);
     selected_ids.extend(tail_cards.iter().map(|(id, _)| **id));
@@ -935,6 +945,143 @@ fn distribute_pending_with_spacing(
         );
     }
     core
+}
+
+/// Reorders `content` so consecutive showings of the same `card_id` stay at
+/// least `MIN_REPEAT_SPACING` apart whenever the slot count allows it, using
+/// the Task-Scheduler greedy: at each output position the slot of the
+/// available group with the highest remaining count is emitted ("available" =
+/// the group's previous showing is more than `MIN_REPEAT_SPACING` positions
+/// back). This is the canonical min-distance construction — it spreads a LONE
+/// multi-show card across the whole core (its copies land exactly
+/// `MIN_REPEAT_SPACING + 1` apart when it is the bottleneck) while still
+/// interleaving many multi-show cards. When the core is structurally too small
+/// to honour every gap (the counts cannot fit), the greedy degrades to
+/// best-effort by emitting the most-loaded group anyway — the only case where
+/// `MIN_REPEAT_SPACING` may be violated, matching the upstream best-effort
+/// contract. Within-group view order (`[primary, copy1, copy2]`) and the
+/// "primary is the first showing" invariant are preserved: a group's queue is
+/// always drained front-to-back.
+fn deal_by_card_id(content: Vec<(Ulid, LessonCard)>) -> Vec<(Ulid, LessonCard)> {
+    let n = content.len();
+    if n <= 1 {
+        return content;
+    }
+
+    // (queue of slots in original view order, first_original_index)
+    let mut queues: Vec<(VecDeque<(Ulid, LessonCard)>, usize)> = Vec::new();
+    let mut index_by_card: HashMap<Ulid, usize> = HashMap::new();
+    for (i, slot) in content.into_iter().enumerate() {
+        let card_id = slot.1.card_id();
+        match index_by_card.get(&card_id) {
+            Some(&qi) => queues[qi].0.push_back(slot),
+            None => {
+                index_by_card.insert(card_id, queues.len());
+                queues.push((VecDeque::from([slot]), i));
+            },
+        }
+    }
+
+    let m = queues.len();
+    let mut last_pos: Vec<Option<usize>> = vec![None; m];
+    let mut result: Vec<(Ulid, LessonCard)> = Vec::with_capacity(n);
+
+    for p in 0..n {
+        // Spacing-respecting pass first; fall back to the most-loaded group
+        // (ignoring cooldown) only when nothing is available — the sole path
+        // that can violate MIN_REPEAT_SPACING, reachable on a structurally
+        // overloaded core.
+        let chosen = pick_group(&queues, &last_pos, p, false)
+            .or_else(|| pick_group(&queues, &last_pos, p, true));
+        let Some(qi) = chosen else {
+            break;
+        };
+        if let Some(slot) = queues[qi].0.pop_front() {
+            last_pos[qi] = Some(p);
+            result.push(slot);
+        }
+    }
+    result
+}
+
+/// Selects the next group to emit at output position `p`. With `force` false
+/// only groups whose previous showing is more than `MIN_REPEAT_SPACING`
+/// positions back qualify (the spacing-respecting pass); with `force` true the
+/// cooldown is ignored (the best-effort fallback). The highest remaining count
+/// wins; ties are broken by earliest first-occurrence so the pick is
+/// deterministic regardless of the random slot/card ULIDs.
+fn pick_group(
+    queues: &[(VecDeque<(Ulid, LessonCard)>, usize)],
+    last_pos: &[Option<usize>],
+    p: usize,
+    force: bool,
+) -> Option<usize> {
+    let mut best: Option<(usize, usize, usize)> = None;
+    for (qi, (queue, first_idx)) in queues.iter().enumerate() {
+        let rem = queue.len();
+        if rem == 0 {
+            continue;
+        }
+        let cooled = last_pos[qi].map_or(true, |lp| p - lp > MIN_REPEAT_SPACING);
+        if !force && !cooled {
+            continue;
+        }
+        match best {
+            None => best = Some((qi, rem, *first_idx)),
+            Some((_, b_rem, b_first)) => {
+                if rem > b_rem || (rem == b_rem && *first_idx < b_first) {
+                    best = Some((qi, rem, *first_idx));
+                }
+            },
+        }
+    }
+    best.map(|(qi, _, _)| qi)
+}
+
+/// Final layout pass: reorders the core section so consecutive showings of the
+/// same `card_id` are maximally separated, removing the back-to-back
+/// clustering that `expand_repeated_views` leaves when a multi-show anchor
+/// sits near the end of a short core. Content (vocab/kanji/grammar, including
+/// multi-show copies) is re-dealt via `deal_by_card_id`; phrases are then
+/// re-placed through the existing constraint-aware placer so the
+/// phrase-after-word invariant (PR #203) is re-derived from the new content
+/// order. `core_count` and the tail section are preserved: the dealt core has
+/// the same length, and inserting phrases between content cards only widens
+/// the gaps between them.
+pub(crate) fn redistribute_core_for_spacing(mut lesson_data: LessonData) -> LessonData {
+    let core_count = lesson_data.core_count;
+    if core_count <= 1 {
+        return lesson_data;
+    }
+
+    let core: Vec<(Ulid, LessonCard)> = lesson_data.cards.drain(..core_count).collect();
+    let (content, phrases): (Vec<_>, Vec<_>) = core
+        .into_iter()
+        .partition(|(_, lc)| !matches!(lc.card(), Card::Phrase(_)));
+
+    let core_vocab: Vec<(Ulid, String)> = content
+        .iter()
+        .filter_map(|(id, lc)| match lc.card() {
+            Card::Vocabulary(v) => Some((*id, v.word().text().to_string())),
+            _ => None,
+        })
+        .collect();
+
+    let dealt = deal_by_card_id(content);
+    let reordered = if phrases.is_empty() {
+        dealt
+    } else if dealt.is_empty() {
+        // Defensive: a core made only of phrases has no content to anchor or
+        // reorder against — keep the phrases in place rather than dropping them
+        // (unreachable in the real pipeline, where the core always holds at
+        // least one non-phrase card).
+        phrases
+    } else {
+        place_phrases_constraint_aware(dealt, phrases, &core_vocab, INTERLEAVING_GAP)
+    };
+
+    lesson_data.cards.splice(..0, reordered);
+    lesson_data
 }
 
 fn build_selected_ids(
@@ -1265,8 +1412,7 @@ mod tests {
 
         let known = full_known_set();
         let empty_used = HashSet::new();
-        let mut budget = 20;
-        let mut selection = tail_selection(&all_cards, &known, &empty_used, &mut budget);
+        let mut selection = tail_selection(&all_cards, &known, &empty_used);
         let result = collect_phrase_cards(&mut selection);
 
         assert_eq!(
@@ -1277,10 +1423,12 @@ mod tests {
         );
     }
 
-    /// The shared new-phrase budget (interleaved + tail) caps the number of
-    /// new phrases added to the lesson. Due phrases are free.
+    /// Under Option alpha the no-anchor section ignores `phrase_new_budget`:
+    /// a depleted budget must NOT starve no-anchor phrases, whose count is
+    /// bounded per lesson by `TAIL_PHRASE_PER_LESSON` (plus the per-word cap)
+    /// instead. With `budget = 0` the no-anchor phrases still appear.
     #[test]
-    fn tail_phrases_new_fill_respects_shared_budget() {
+    fn no_anchor_phrases_ignore_new_phrase_budget() {
         ensure_test_phrase_index();
 
         let mut ks = KnowledgeSet::new();
@@ -1298,34 +1446,29 @@ mod tests {
                 .expect("create phrase");
         }
 
+        // Lesson core holds a word no phrase anchors to, so every selected
+        // phrase is no-anchor. Per-word cap (`MAX_PHRASES_PER_WORD_IN_TAIL=1`)
+        // admits exactly one (all four share the "test" token).
         let lesson = LessonData {
             cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
             core_count: 1,
         };
 
-        let mut budget = 2;
-        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
-        let new_phrases_count = lesson_phrase_ids(&result).len();
-
-        assert!(
-            new_phrases_count <= 2,
-            "new phrases must respect the shared budget: {new_phrases_count} > 2"
-        );
-
         let mut zero_budget = 0;
-        let zero_budget_result = add_phrases(
-            LessonData {
-                cards: vec![(Ulid::new(), lesson_card_for(vocab_card("猫")))],
-                core_count: 1,
-            },
-            &ks,
-            NativeLanguage::Russian,
-            &mut zero_budget,
-        );
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut zero_budget);
+        let count = lesson_phrase_ids(&result).len();
+
         assert_eq!(
-            lesson_phrase_ids(&zero_budget_result).len(),
-            0,
-            "with budget=0 no new phrases may be added"
+            zero_budget, 0,
+            "Option alpha: no-anchor phrases must not decrement phrase_new_budget"
+        );
+        assert!(
+            count >= 1,
+            "no-anchor phrases must appear even with budget=0, got {count}"
+        );
+        assert!(
+            count <= TAIL_PHRASE_PER_LESSON,
+            "no-anchor phrases must respect TAIL_PHRASE_PER_LESSON={TAIL_PHRASE_PER_LESSON}, got {count}"
         );
     }
 
@@ -1445,14 +1588,12 @@ mod tests {
         all_cards: &'a [(&'a Ulid, &'a StudyCard)],
         known: &'a HashSet<String>,
         used: &'a HashSet<Ulid>,
-        budget: &'a mut usize,
     ) -> TailPhraseSelection<'a> {
         TailPhraseSelection {
             all_cards,
             excluded_card_ids: empty_ulid_set(),
             used_phrase_ids: used,
             known_pool: known,
-            new_phrase_budget: budget,
         }
     }
 
@@ -1473,8 +1614,7 @@ mod tests {
 
         let known = full_known_set();
         let empty_used = HashSet::new();
-        let mut budget = 20;
-        let mut selection = tail_selection(&all_cards, &known, &empty_used, &mut budget);
+        let mut selection = tail_selection(&all_cards, &known, &empty_used);
         let result = collect_phrase_cards(&mut selection);
 
         let selected = selected_phrase_ids(&result);
@@ -1499,8 +1639,7 @@ mod tests {
         let mut used = HashSet::new();
         used.insert(phrase_id_hello());
 
-        let mut budget = 20;
-        let mut selection = tail_selection(&all_cards, &known, &used, &mut budget);
+        let mut selection = tail_selection(&all_cards, &known, &used);
         let result = collect_phrase_cards(&mut selection);
 
         let selected = selected_phrase_ids(&result);
@@ -1951,10 +2090,13 @@ mod tests {
         );
     }
 
-    /// The new-phrase budget is shared between the interleaved and tail
-    /// sections: together they may not exceed it. Due phrases are free.
+    /// Under Option alpha the new-phrase budget bounds only NEW ANCHORED
+    /// phrases; NEW no-anchor phrases are additive (capped per lesson by
+    /// `TAIL_PHRASE_PER_LESSON`). The combined new-phrase count therefore may
+    /// reach `budget + TAIL_PHRASE_PER_LESSON` but must not exceed it. Due
+    /// phrases are free on both sides.
     #[test]
-    fn interleaved_and_tail_respect_shared_phrase_new_budget() {
+    fn new_phrases_respect_option_alpha_combined_ceiling() {
         ensure_test_phrase_index();
 
         let mut ks = KnowledgeSet::new();
@@ -1992,9 +2134,11 @@ mod tests {
             .filter(|(id, _)| ks.get_card(*id).is_some_and(|sc| sc.memory().is_new()))
             .count();
 
+        let combined_ceiling = budget + TAIL_PHRASE_PER_LESSON;
         assert!(
-            new_phrases_in_lesson <= budget,
-            "new phrases (interleaved + tail) must respect the shared budget: {new_phrases_in_lesson} > {budget}"
+            new_phrases_in_lesson <= combined_ceiling,
+            "new phrases (anchored ≤ budget + no-anchor ≤ TAIL_PHRASE_PER_LESSON) must respect \
+             the Option-alpha combined ceiling: {new_phrases_in_lesson} > {combined_ceiling}"
         );
         assert!(
             new_phrases_in_lesson >= 1,
@@ -2815,5 +2959,284 @@ mod tests {
                 );
             }
         }
+    }
+
+    // --- deal_by_card_id unit contract (Symptom 1, layout primitive) ---
+    //
+    // Pins the spacing invariant of the layout primitive directly, at the
+    // content level (no phrases masking it), including the lone-multi-show-card
+    // review-lesson shape that defeated the earlier round-robin deal.
+
+    /// Builds content slots from a `(card_id, showing_count)` spec, in view
+    /// order (primary first). Each showing uses a distinct `LessonCardView`
+    /// variant so view-order preservation is observable.
+    fn build_content_spec(spec: &[(Ulid, usize)]) -> Vec<(Ulid, LessonCard)> {
+        let mut out = Vec::new();
+        for (card_id, count) in spec {
+            for j in 0..*count {
+                let card = vocab_card(&format!("c{card_id}{j}"));
+                let view = if j == 0 {
+                    LessonCardView::Normal(card)
+                } else {
+                    LessonCardView::Reversed(card)
+                };
+                out.push((Ulid::new(), LessonCard::new(*card_id, view, false)));
+            }
+        }
+        out
+    }
+
+    fn content_min_gap(content: &[(Ulid, LessonCard)], card_id: Ulid) -> Option<usize> {
+        let positions: Vec<usize> = content
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, lc))| lc.card_id() == card_id)
+            .map(|(i, _)| i)
+            .collect();
+        if positions.len() < 2 {
+            return None;
+        }
+        positions.windows(2).map(|w| w[1] - w[0] - 1).min()
+    }
+
+    /// The case that beat round-robin: a single multi-show card (3 showings)
+    /// surrounded by single-show fillers — a normal review lesson with one
+    /// hard card. Its copies must still stay `MIN_REPEAT_SPACING` apart.
+    #[test]
+    fn deal_spreads_lone_multishow_card() {
+        let hard = Ulid::new();
+        let mut spec: Vec<(Ulid, usize)> = vec![(hard, 3)];
+        for _ in 0..14 {
+            spec.push((Ulid::new(), 1));
+        }
+        let content = build_content_spec(&spec);
+
+        let dealt = deal_by_card_id(content);
+
+        let gap = content_min_gap(&dealt, hard).expect("hard has 3 showings");
+        assert!(
+            gap >= MIN_REPEAT_SPACING,
+            "lone multi-show card must stay >= {MIN_REPEAT_SPACING} apart, got gap={gap}"
+        );
+    }
+
+    /// Many multi-show cards (kanji-heavy mix): every card_id with >= 2
+    /// showings keeps `MIN_REPEAT_SPACING` between consecutive showings.
+    #[test]
+    fn deal_keeps_min_spacing_across_many_multishow() {
+        let mut spec: Vec<(Ulid, usize)> = Vec::new();
+        let mut tracked: Vec<Ulid> = Vec::new();
+        for _ in 0..5 {
+            let id = Ulid::new();
+            tracked.push(id);
+            spec.push((id, 3));
+        }
+        for _ in 0..8 {
+            let id = Ulid::new();
+            tracked.push(id);
+            spec.push((id, 2));
+        }
+        for _ in 0..4 {
+            spec.push((Ulid::new(), 1));
+        }
+        let content = build_content_spec(&spec);
+        let dealt = deal_by_card_id(content);
+
+        assert_eq!(dealt.len(), 5 * 3 + 8 * 2 + 4, "deal must place every slot");
+        for id in &tracked {
+            let gap = content_min_gap(&dealt, *id).expect("tracked card is multi-show");
+            assert!(
+                gap >= MIN_REPEAT_SPACING,
+                "card {id} has gap={gap} < {MIN_REPEAT_SPACING}"
+            );
+        }
+    }
+
+    /// Within a card the showings keep their original view order: the primary
+    /// (Normal) variant precedes every copy (Reversed) in the dealt output.
+    #[test]
+    fn deal_preserves_within_card_view_order() {
+        let a = Ulid::new();
+        let b = Ulid::new();
+        let content = build_content_spec(&[(a, 3), (b, 2), (Ulid::new(), 1)]);
+        let dealt = deal_by_card_id(content);
+
+        for id in [a, b] {
+            let views: Vec<&LessonCardView> = dealt
+                .iter()
+                .filter(|(_, lc)| lc.card_id() == id)
+                .map(|(_, lc)| lc.view())
+                .collect();
+            assert!(views.len() >= 2, "card {id} should have >= 2 showings");
+            assert!(
+                matches!(views[0], LessonCardView::Normal(_)),
+                "primary (Normal) must be the first showing of card {id}"
+            );
+            assert!(
+                views[1..]
+                    .iter()
+                    .all(|v| matches!(v, LessonCardView::Reversed(_))),
+                "copies must follow the primary in view order for card {id}"
+            );
+        }
+    }
+
+    /// On a structurally infeasible core (one card with 3 showings and only 2
+    /// filler slots — needs 1+3+1+3+1=9 slots, has 5), the deal degrades to
+    /// best-effort without panicking and still emits every slot.
+    #[test]
+    fn deal_best_effort_on_infeasible_core() {
+        let hard = Ulid::new();
+        let content = build_content_spec(&[(hard, 3), (Ulid::new(), 1), (Ulid::new(), 1)]);
+        let dealt = deal_by_card_id(content);
+        assert_eq!(
+            dealt.len(),
+            5,
+            "best-effort deal must still emit every slot"
+        );
+    }
+
+    // --- Multi-show density regression (Symptom 1) ---
+    //
+    // Reproduces the user-reported "high density" symptom: repetitions of the
+    // same word/kanji land nearly consecutively. Runs the FULL cards_to_lesson
+    // pipeline and asserts every multi-show card_id keeps at least
+    // MIN_REPEAT_SPACING other cards between consecutive showings, across a
+    // matrix of realistic lesson shapes (vocab-heavy, kanji-heavy, mixed).
+
+    fn build_multishow_scenario(vocab_n: usize, kanji_n: usize) -> KnowledgeSet {
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛", "虎", "狼", "鹿"]);
+        for i in 0..vocab_n {
+            ks.create_card(vocab_card(&format!("vv{i}")))
+                .expect("create new vocab");
+        }
+        for i in 0..kanji_n {
+            let sc = ks
+                .create_card(Card::Kanji(KanjiCard::new_test(format!("kk{i}"))))
+                .expect("create kanji");
+            rate_into_state(&mut ks, *sc.card_id(), 3.0, 8.0, 1, Rating::Hard);
+        }
+        ks
+    }
+
+    fn min_gap_for_multishow_cards(lesson: &LessonData) -> Vec<(Ulid, usize, Vec<usize>)> {
+        let mut by_card: HashMap<Ulid, Vec<usize>> = HashMap::new();
+        for (i, (_, lc)) in lesson.cards.iter().enumerate() {
+            by_card.entry(lc.card_id()).or_default().push(i);
+        }
+        let mut out = Vec::new();
+        for (card_id, positions) in by_card {
+            if positions.len() < 2 {
+                continue;
+            }
+            let min_gap = positions
+                .windows(2)
+                .map(|w| w[1] - w[0] - 1)
+                .min()
+                .unwrap_or(usize::MAX);
+            out.push((card_id, min_gap, positions));
+        }
+        out.sort_by_key(|(_, g, _)| *g);
+        out
+    }
+
+    #[rstest]
+    #[case::vocab5_kanji3(5, 3)]
+    #[case::vocab4_kanji4(4, 4)]
+    #[case::vocab2_kanji5(2, 5)]
+    #[case::vocab6_kanji2(6, 2)]
+    #[case::vocab3_kanji5(3, 5)]
+    fn multishow_density_honours_min_spacing(#[case] vocab_n: usize, #[case] kanji_n: usize) {
+        init_test_dict();
+        ensure_test_phrase_index();
+        let ks = build_multishow_scenario(vocab_n, kanji_n);
+
+        let lesson = ks.cards_to_lesson(
+            30,
+            &JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+        );
+
+        let gaps = min_gap_for_multishow_cards(&lesson);
+        assert!(
+            !gaps.is_empty(),
+            "scenario vocab={vocab_n} kanji={kanji_n} should produce at least one multi-show card"
+        );
+        for (card_id, min_gap, positions) in &gaps {
+            assert!(
+                *min_gap >= MIN_REPEAT_SPACING,
+                "vocab={vocab_n} kanji={kanji_n}: card {card_id} has min_gap={min_gap} \
+                 (< {MIN_REPEAT_SPACING}) at positions={positions:?}"
+            );
+        }
+    }
+
+    // --- Phrase no-starvation regression (Symptom 2, Option alpha) ---
+    //
+    // NEW no-anchor phrases must still appear when anchored phrases exhaust the
+    // shared new-phrase budget. Under Option alpha the no-anchor slot
+    // (TAIL_PHRASE_PER_LESSON) is independent of phrase_new_budget, so a
+    // tail-eligible NEW phrase anchored to no lesson word is admitted even with
+    // a depleted budget.
+
+    fn phrase_id_independent() -> Ulid {
+        Ulid::from_string("01KPJ5S3N1DRFFD236Z4EZ03HS").expect("valid ULID")
+    }
+
+    #[test]
+    fn new_no_anchor_phrase_appears_when_anchored_exhausts_budget() {
+        ensure_test_phrase_index();
+
+        let mut ks = KnowledgeSet::new();
+        // Lesson-core anchors: "test" and "hello" are NEW (not known) so they
+        // drive anchored phrase selection and consume the new-phrase budget.
+        let test_sc = ks.create_card(vocab_card("test")).expect("create test");
+        let hello_sc = ks.create_card(vocab_card("hello")).expect("create hello");
+
+        // Known words that are NOT in the lesson core: they make the
+        // [alpha, beta] phrase tail-eligible without turning it into an
+        // anchored phrase.
+        for word in ["alpha", "beta"] {
+            let sc = ks
+                .create_card(vocab_card(word))
+                .expect("create known vocab");
+            ks.mark_card_as_known(*sc.card_id()).expect("mark known");
+        }
+
+        // Anchored phrases (token "test"/"hello") + the independent phrase.
+        for pid in [
+            phrase_id_hello(),
+            phrase_id_bye(),
+            phrase_id_morning(),
+            phrase_id_thanks(),
+            phrase_id_extra1(),
+            phrase_id_extra2(),
+            phrase_id_independent(),
+        ] {
+            ks.create_card(phrase_card(pid)).expect("create phrase");
+        }
+
+        let lesson = LessonData {
+            cards: vec![
+                (*test_sc.card_id(), lesson_card_for(vocab_card("test"))),
+                (*hello_sc.card_id(), lesson_card_for(vocab_card("hello"))),
+            ],
+            core_count: 2,
+        };
+
+        // Budget is deliberately tiny: two anchored NEW phrases (one per anchor
+        // word, INTERLEAVED_PHRASES_PER_WORD=2) drain it to zero before the
+        // no-anchor pass runs.
+        let mut budget = 2;
+        let result = add_phrases(lesson, &ks, NativeLanguage::Russian, &mut budget);
+        let phrases = lesson_phrase_ids(&result);
+
+        assert!(
+            phrases.contains(&phrase_id_independent()),
+            "NEW no-anchor phrase must appear even when anchored phrases exhaust the budget: \
+             got {phrases:?}"
+        );
     }
 }

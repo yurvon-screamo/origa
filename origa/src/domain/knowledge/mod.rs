@@ -304,12 +304,13 @@ impl KnowledgeSet {
         );
         let with_phrases =
             lesson_builder::add_phrases(interleaved, self, native_language, &mut phrase_new_budget);
-        lesson_builder::expand_repeated_views(
+        let expanded = lesson_builder::expand_repeated_views(
             with_phrases,
             self,
             native_language,
             &primary_card_ids,
-        )
+        );
+        lesson_builder::redistribute_core_for_spacing(expanded)
     }
 
     pub(crate) fn rate_card(
