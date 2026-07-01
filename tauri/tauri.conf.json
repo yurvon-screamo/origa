@@ -43,7 +43,13 @@
         "deep-link": {
             "desktop": {
                 "schemes": ["origa"]
-            }
+            },
+            "mobile": [
+                {
+                    "scheme": ["origa"],
+                    "appLink": false
+                }
+            ]
         },
         "updater": {
             "endpoints": [

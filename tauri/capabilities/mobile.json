@@ -1,0 +1,20 @@
+{
+	"$schema": "../gen/schemas/mobile-schema.json",
+	"identifier": "mobile",
+	"description": "Capability for the mobile platforms (Android/iOS) — deep-link + opener for OAuth",
+	"platforms": ["iOS", "android"],
+	"permissions": [
+		"core:default",
+		"core:event:default",
+		"tts:default",
+		"deep-link:default",
+		"updater:default",
+		{
+			"identifier": "opener:default",
+			"allow": [
+				{ "url": "https://origa.uwuwu.net/*" },
+				{ "url": "https://app.origa.uwuwu.net/*" }
+			]
+		}
+	]
+}
