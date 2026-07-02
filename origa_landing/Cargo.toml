@@ -62,6 +62,12 @@ name = "sitemap"
 path = "tests/sitemap.rs"
 required-features = ["ssr"]
 
+# Pure module (no leptos/ssr deps) — builds with empty default features,
+# unlike the ssr-required integration tests above.
+[[test]]
+name = "build_config"
+path = "tests/build_config.rs"
+
 [features]
 ssr = [
     "leptos/ssr",

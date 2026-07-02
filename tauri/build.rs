@@ -25,12 +25,18 @@ use std::env;
 use serde_json::json;
 
 fn main() {
-    let cdn =
-        env::var("ORIGA_CDN_BASE_URL").unwrap_or_else(|_| build_config::DEFAULT_CDN.to_string());
-    let trailbase =
-        env::var("TRAILBASE_URL").unwrap_or_else(|_| build_config::DEFAULT_TRAILBASE.to_string());
-    let landing = env::var("ORIGA_LANDING_BASE_URL")
-        .unwrap_or_else(|_| build_config::DEFAULT_LANDING.to_string());
+    let cdn = build_config::resolve_env(
+        env::var("ORIGA_CDN_BASE_URL").ok().as_deref(),
+        build_config::DEFAULT_CDN,
+    );
+    let trailbase = build_config::resolve_env(
+        env::var("TRAILBASE_URL").ok().as_deref(),
+        build_config::DEFAULT_TRAILBASE,
+    );
+    let landing = build_config::resolve_env(
+        env::var("ORIGA_LANDING_BASE_URL").ok().as_deref(),
+        build_config::DEFAULT_LANDING,
+    );
 
     inject_csp_via_tauri_config(&cdn, &landing, &trailbase);
 
@@ -108,6 +114,8 @@ fn inject_csp_via_tauri_config(cdn: &str, landing: &str, trailbase: &str) {
     println!("cargo:rerun-if-env-changed=ORIGA_CDN_BASE_URL");
     println!("cargo:rerun-if-env-changed=TRAILBASE_URL");
     println!("cargo:rerun-if-env-changed=ORIGA_LANDING_BASE_URL");
+    println!("cargo:rerun-if-changed=build_config.rs");
+    println!("cargo:rerun-if-changed=../build_defaults.rs");
     // `TAURI_CONFIG` may be set externally by `cargo tauri build/dev --config
     // <merge>` (Tauri CLI); changes to it must re-run this build script so the
     // CSP patch is re-merged into the latest external value.

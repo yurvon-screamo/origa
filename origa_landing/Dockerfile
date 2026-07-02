@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG RUST_VERSION
 
-ARG ORIGA_LANDING_BASE_URL=https://origa.app
+ARG ORIGA_LANDING_BASE_URL=https://origa.uwuwu.net
 ENV ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL}
 
 ARG ORIGA_APP_BASE_URL
