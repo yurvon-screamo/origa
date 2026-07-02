@@ -3,6 +3,9 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[path = "build_config.rs"]
+mod build_config;
+
 fn main() {
     handle_i18n();
     handle_lindera_dictionary();
@@ -19,6 +22,7 @@ fn main() {
         "ORIGA_CDN_BASE_URL environment variable is required. Set it to your CDN base URL (e.g. https://s3.origa.uwuwu.net)"
     );
     let cdn_region = option_env!("ORIGA_CDN_REGION").unwrap_or("auto");
+    let trailbase = build_config::resolve_trailbase(env::var("TRAILBASE_URL").ok().as_deref());
 
     println!("cargo:rustc-env=ORIGA_VERSION={}", version);
     println!("cargo:rustc-env=ORIGA_COMMIT={}", commit);
@@ -26,6 +30,7 @@ fn main() {
     println!("cargo:rustc-env=ORIGA_PUBLIC_BASE_URL={}", public_base_url);
     println!("cargo:rustc-env=ORIGA_CDN_BASE_URL={}", cdn_base_url);
     println!("cargo:rustc-env=ORIGA_CDN_REGION={}", cdn_region);
+    println!("cargo:rustc-env=TRAILBASE_URL={}", trailbase);
 
     println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
@@ -33,6 +38,9 @@ fn main() {
     println!("cargo:rerun-if-env-changed=ORIGA_PUBLIC_BASE_URL");
     println!("cargo:rerun-if-env-changed=ORIGA_CDN_BASE_URL");
     println!("cargo:rerun-if-env-changed=ORIGA_CDN_REGION");
+    println!("cargo:rerun-if-env-changed=TRAILBASE_URL");
+    println!("cargo:rerun-if-changed=build_config.rs");
+    println!("cargo:rerun-if-changed=../build_defaults.rs");
 }
 
 fn handle_i18n() {

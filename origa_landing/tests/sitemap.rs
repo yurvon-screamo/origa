@@ -4,7 +4,7 @@
 //! substituting `{{LASTMOD}}` with the build date. These tests read the
 //! generated file (produced at compile time, before tests run) and assert the
 //! sitemaps.org 0.9 contract holds:
-//!   - one `<lastmod>` per `<url>` (5 canonical URLs),
+//!   - one `<lastmod>` per `<url>` (20 URLs: 5 pages × 4 locales),
 //!   - each `<lastmod>` is an ISO-8601 date,
 //!   - `<lastmod>` follows `<loc>` (the schema-required element order),
 //!   - no unresolved `{{...}}` placeholder leaks into the output.
@@ -53,9 +53,12 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // 5 canonical URLs: /, /features, /compare, /content, /download.
+    // 20 <url> elements: 5 pages (/, /features, /compare, /content, /download)
+    // × 4 locales (en/ru/ko/vi). Google Search Central requires a separate
+    // <url> per locale variant, each with the full hreflang alternate set
+    // (see developers.google.com/search/docs/specialty/international/localized-versions).
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 5, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 20, "expected one <lastmod> per <url>");
 }
 
 #[test]

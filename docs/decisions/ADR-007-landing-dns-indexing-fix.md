@@ -107,3 +107,21 @@ Verified 2026-06-24: A and AAAA queries via Yandex DNS (77.88.8.8), Google (8.8.
 Cloudflare (1.1.1.1), Quad9 (9.9.9.9), and the authoritative Cloudflare NS all return
 NOERROR with valid records. `robots.txt` is clean (no AI-Audit block), and
 `Google-Extended`/`YandexBot` user-agents receive HTTP 200 with full SSR HTML.
+
+## Update (2026-06-28): Cloudflare Proxy Reverted — see ADR-021
+
+The 2026-06-24 Cloudflare Proxy implementation documented above was reverted on
+2026-06-28. After ~1.5 months with Cloudflare in front of the domain, Yandex
+Webmaster continued to report *"Не удалось подключиться к серверу из-за ошибки DNS"*
+and Google Search Console showed `Discovered — currently not indexed` — neither
+was resolved by the Cloudflare migration.
+
+The original 2026-06-13 workaround (Aeza authoritative NS + plain A-record →
+`69.46.46.46`) is reinstated. Authoritative NS is again `ns1–ns4.aeza-dns.net`.
+The 2026-06-24 "Operational warning" above no longer applies — Cloudflare is no
+longer in the path, and the A-record approach independently eliminates SERVFAIL
+for `origa.uwuwu.net` (verified via Aeza NS direct queries on 2026-06-28).
+
+See **ADR-021** for the full rationale, alternatives considered (including Vercel,
+rejected as architecturally mismatched for the long-running Rust Axum SSR server),
+and verification details.

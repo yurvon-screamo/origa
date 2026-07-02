@@ -1,10 +1,17 @@
 //! Build-time configuration parameterization.
 //!
-//! Single Rust-side source for the production hosts used by `tauri/build.rs`
-//! to construct the CSP that is injected into Tauri's config via the
-//! `TAURI_CONFIG` env var (RFC 7396 JSON Merge Patch). See ADR-009 for the
-//! full rationale, including the residual sync points that make this a
-//! "reduced duplication" rather than a true single source of truth.
+//! Rust-side source for the CSP injected into Tauri's config via the
+//! `TAURI_CONFIG` env var (RFC 7396 JSON Merge Patch). See ADR-009 for the full
+//! rationale, including the residual sync points that make this a "reduced
+//! duplication" rather than a true single source of truth.
+//!
+//! `DEFAULT_TRAILBASE` is shared with `origa_ui` (the only production host
+//! needed by BOTH crates) via the root `build_defaults.rs` `#[path]`-include.
+//! `DEFAULT_CDN` and `DEFAULT_LANDING` stay local — `origa_ui` does not need
+//! them (it uses a strict `env!()` for the CDN with no fallback and never
+//! references the landing host), and moving them to the shared file would
+//! create unused constants there (the project forbids `#[allow(dead_code)]`).
+//! See ADR-020 for the full rationale.
 //!
 //! This module is pure (no I/O, no env access) so that it can be unit-tested
 //! via `#[path]` from `tauri/tests/build_config.rs`. All env var resolution
@@ -14,12 +21,14 @@
 //! must not mutate committed source files. Its opener allow-list is validated
 //! against a separate template living in `tauri/tests/build_config.rs`.
 
+#[path = "../build_defaults.rs"]
+mod defaults;
+
+pub(crate) use defaults::DEFAULT_TRAILBASE;
+
 /// Production CDN base URL. Used when `ORIGA_CDN_BASE_URL` env var is unset
 /// (e.g., CI builds without env propagation — see ADR-009 "CI constraint").
 pub(crate) const DEFAULT_CDN: &str = "https://s3.origa.uwuwu.net";
-
-/// Production TrailBase URL. Used when `TRAILBASE_URL` env var is unset.
-pub(crate) const DEFAULT_TRAILBASE: &str = "https://app.origa.uwuwu.net";
 
 /// Production landing URL. Used when `ORIGA_LANDING_BASE_URL` env var is unset.
 pub(crate) const DEFAULT_LANDING: &str = "https://origa.uwuwu.net";

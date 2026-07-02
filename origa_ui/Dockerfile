@@ -87,6 +87,7 @@ RUN --mount=type=cache,target=/sccache,sharing=locked \
 # Real source
 COPY origa ./origa
 COPY origa_ui ./origa_ui
+COPY build_defaults.rs ./
 
 # Real build - origa + origa_ui (wasm)
 RUN --mount=type=cache,target=/sccache,sharing=locked \
