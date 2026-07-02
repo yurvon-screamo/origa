@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Canonical production URLs are intentionally hardcoded (not env-derived): the sitemap
-     must advertise stable public URLs for crawlers, independent of the build environment. -->
+     must advertise stable public URLs for crawlers, independent of the build environment.
+
+     Multilingual pattern per Google Search Central
+     (https://developers.google.com/search/docs/specialty/international/localized-versions):
+     one url element per locale variant of each page, each containing the full set of
+     xhtml:link rel="alternate" hreflang annotations for all variants (including self).
+     5 pages (/, /features, /compare, /content, /download) × 4 locales (en/ru/ko/vi) = 20 url entries. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ==================== Homepage (/) ==================== -->
   <url>
     <loc>https://origa.uwuwu.net/</loc>
     <lastmod>{{LASTMOD}}</lastmod>
@@ -13,6 +21,35 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/"/>
   </url>
   <url>
+    <loc>https://origa.uwuwu.net/ru</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/"/>
+  </url>
+
+  <!-- ==================== /features ==================== -->
+  <url>
     <loc>https://origa.uwuwu.net/features</loc>
     <lastmod>{{LASTMOD}}</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/features"/>
@@ -21,6 +58,35 @@
     <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/features"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/features"/>
   </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/features</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/features"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/features"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/features"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/features"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/features"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/features</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/features"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/features"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/features"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/features"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/features"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/features</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/features"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/features"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/features"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/features"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/features"/>
+  </url>
+
+  <!-- ==================== /compare ==================== -->
   <url>
     <loc>https://origa.uwuwu.net/compare</loc>
     <lastmod>{{LASTMOD}}</lastmod>
@@ -31,6 +97,35 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/compare"/>
   </url>
   <url>
+    <loc>https://origa.uwuwu.net/ru/compare</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/compare"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/compare"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/compare"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/compare"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/compare"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/compare</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/compare"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/compare"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/compare"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/compare"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/compare"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/compare</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/compare"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/compare"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/compare"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/compare"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/compare"/>
+  </url>
+
+  <!-- ==================== /content ==================== -->
+  <url>
     <loc>https://origa.uwuwu.net/content</loc>
     <lastmod>{{LASTMOD}}</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/content"/>
@@ -40,6 +135,35 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/content"/>
   </url>
   <url>
+    <loc>https://origa.uwuwu.net/ru/content</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/content"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/content"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/content"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/content"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/content"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/content</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/content"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/content"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/content"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/content"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/content"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/content</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/content"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/content"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/content"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/content"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/content"/>
+  </url>
+
+  <!-- ==================== /download ==================== -->
+  <url>
     <loc>https://origa.uwuwu.net/download</loc>
     <lastmod>{{LASTMOD}}</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/download"/>
@@ -48,4 +172,32 @@
     <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
   </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/download</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/download"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/download"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/download"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/download</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/download"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/download"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/download"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/download</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/download"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/download"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/download"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
+  </url>
+
 </urlset>
