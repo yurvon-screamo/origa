@@ -15,7 +15,9 @@
 #[path = "../build_config.rs"]
 mod build_config;
 
-use build_config::{DEFAULT_CDN, DEFAULT_LANDING, DEFAULT_TRAILBASE, apply_merge_patch, build_csp};
+use build_config::{
+    DEFAULT_CDN, DEFAULT_LANDING, DEFAULT_TRAILBASE, apply_merge_patch, build_csp, resolve_env,
+};
 
 /// Reference template for `tauri/capabilities/default.json`. Byte-identical to
 /// the committed file when called with production defaults. Lives in this test
@@ -226,4 +228,52 @@ fn apply_merge_patch_csp_into_tauri_cli_config_preserves_overrides() {
     assert_eq!(target["build"]["devUrl"], "http://localhost:1420");
     // CSP must be present (the whole point of the patch).
     assert_eq!(target["app"]["security"]["csp"], "default-src 'self'");
+}
+
+/// `resolve_env` falls back to the default when the env var is unset (`None`).
+/// Asserting against the literal CDN host (not the `DEFAULT_CDN` constant)
+/// makes this a real drift guard: changing the constant breaks the assertion.
+#[test]
+fn resolve_env_uses_default_when_unset() {
+    assert_eq!(resolve_env(None, DEFAULT_CDN), "https://s3.origa.uwuwu.net");
+}
+
+/// `resolve_env` falls back to the default when the env var is SET to an empty
+/// string — the empty-shell-var bug case. A naive `unwrap_or_else` returns `""`
+/// here (it only catches the `Err` of an unset var); `resolve_env` treats empty
+/// as "use default", so the host is never dropped from the CSP.
+#[test]
+fn resolve_env_uses_default_when_empty() {
+    assert_eq!(
+        resolve_env(Some(""), DEFAULT_CDN),
+        "https://s3.origa.uwuwu.net"
+    );
+}
+
+/// `resolve_env` passes a non-empty env value through unchanged.
+#[test]
+fn resolve_env_uses_explicit_value_when_set() {
+    assert_eq!(
+        resolve_env(Some("https://cdn.staging.example.com"), DEFAULT_CDN),
+        "https://cdn.staging.example.com"
+    );
+}
+
+/// Drift guard for `DEFAULT_LANDING`: the `None` case asserts the literal
+/// canonical landing host. A revert to the stale `origa.app` breaks this.
+#[test]
+fn default_landing_drift_guard() {
+    assert_eq!(
+        resolve_env(None, DEFAULT_LANDING),
+        "https://origa.uwuwu.net"
+    );
+}
+
+/// Drift guard for `DEFAULT_TRAILBASE`.
+#[test]
+fn default_trailbase_drift_guard() {
+    assert_eq!(
+        resolve_env(None, DEFAULT_TRAILBASE),
+        "https://app.origa.uwuwu.net"
+    );
 }

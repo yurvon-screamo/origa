@@ -50,7 +50,7 @@ cd tauri && cargo tauri dev
 - Landing = base domain (no prefix)
 
 **Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; cache policy is tiered, see CDN / S3 below)
-**Landing dev:** `$env:ORIGA_LANDING_BASE_URL = "https://origa.app"`
+**Landing dev:** `$env:ORIGA_LANDING_BASE_URL = "https://origa.uwuwu.net"`
 
 ## Команды
 

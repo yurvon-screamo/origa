@@ -97,3 +97,20 @@ pub(crate) fn apply_merge_patch(target: &mut serde_json::Value, patch: serde_jso
         }
     }
 }
+
+/// Resolve a build-script env var to a non-empty value, falling back to
+/// `default` when the var is unset OR set to an empty string.
+///
+/// `env::var(...).unwrap_or_else(|_| default)` catches only the UNSET case
+/// (the `Err`); for a var SET to `""` it returns `Ok("")` and the fallback is
+/// skipped, yielding an empty value downstream. An empty host dropped it from
+/// the CSP (WebView then blocked requests to that host). Treating empty as
+/// "use default" closes the hole. This is the canonical primitive of the
+/// build-script env-var pattern — see ADR-024 for the generalized principle
+/// and ADR-020 for the per-var precedent (TRAILBASE in `origa_ui`).
+pub(crate) fn resolve_env(env_value: Option<&str>, default: &str) -> String {
+    match env_value {
+        Some(v) if !v.is_empty() => v.to_string(),
+        _ => default.to_string(),
+    }
+}

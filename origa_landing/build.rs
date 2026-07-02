@@ -1,9 +1,15 @@
+#[path = "build_config.rs"]
+mod build_config;
+
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    println!(
-        "cargo:rustc-env=ORIGA_LANDING_BASE_URL={}",
-        std::env::var("ORIGA_LANDING_BASE_URL").unwrap_or_else(|_| "https://origa.app".to_string())
+    let landing_base_url = build_config::resolve_env(
+        std::env::var("ORIGA_LANDING_BASE_URL").ok().as_deref(),
+        build_config::DEFAULT_LANDING,
     );
+    println!("cargo:rustc-env=ORIGA_LANDING_BASE_URL={landing_base_url}");
+    println!("cargo:rerun-if-env-changed=ORIGA_LANDING_BASE_URL");
+    println!("cargo:rerun-if-changed=build_config.rs");
 
     let app_base_url = std::env::var("ORIGA_APP_BASE_URL")
         .ok()
