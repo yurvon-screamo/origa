@@ -254,7 +254,7 @@ test.
 ## Verification
 
 | Check | Command | Result |
-|---|---|---|
+| --- | --- | --- |
 | Format | `cargo fmt --check` | PASS |
 | Lint | `cargo clippy --workspace --all-targets -- -D warnings` | 0 warnings (no dead code) |
 | Tests (new) | `cargo test -p origa_ui --test build_config` | 3 passed |
