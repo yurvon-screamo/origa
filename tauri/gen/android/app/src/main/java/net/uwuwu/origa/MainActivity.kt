@@ -1,9 +1,16 @@
 package net.uwuwu.origa
 
+import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
+import androidx.activity.enableEdgeToEdge
 
 class MainActivity : TauriActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+    }
+
     override fun onStart() {
         super.onStart()
         configureWebView()
