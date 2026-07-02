@@ -18,9 +18,11 @@ fn main() {
     let build_date = option_env!("ORIGA_BUILD_DATE").unwrap_or("unknown");
     let public_base_url = option_env!("ORIGA_PUBLIC_BASE_URL").unwrap_or("");
     let cdn_base_url = build_config::resolve_cdn(env::var("ORIGA_CDN_BASE_URL").ok().as_deref());
+    // http:// is allowed for local backends; resolve_cdn() returns DEFAULT_CDN
+    // (https) for empty/unset, so http:// only arrives via explicit override.
+    // See ADR-023 §3.
     assert!(
-        cdn_base_url.starts_with("https://")
-            || cfg!(debug_assertions) && cdn_base_url.starts_with("http://"),
+        cdn_base_url.starts_with("https://") || cdn_base_url.starts_with("http://"),
         "ORIGA_CDN_BASE_URL must be an http(s) URL, got: {cdn_base_url}"
     );
     let cdn_region = option_env!("ORIGA_CDN_REGION").unwrap_or("auto");

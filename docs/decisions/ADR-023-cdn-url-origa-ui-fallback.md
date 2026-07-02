@@ -118,22 +118,41 @@ tauri-local const to the root `build_defaults.rs`, re-exported via the existing
 `DEFAULT_LANDING` remains tauri-local (only `tauri/build.rs` references it for
 CSP injection; `origa_ui` never uses the landing host).
 
-### 3. Build-time `https://` assertion
+### 3. Build-time scheme assertion
 
 Defense-in-depth against typoed env values (e.g.
 `ORIGA_CDN_BASE_URL="s3.origa.uwuwu.net"` missing the scheme):
 
 ```rust
 assert!(
-    cdn_base_url.starts_with("https://")
-        || cfg!(debug_assertions) && cdn_base_url.starts_with("http://"),
+    cdn_base_url.starts_with("https://") || cdn_base_url.starts_with("http://"),
     "ORIGA_CDN_BASE_URL must be an http(s) URL, got: {cdn_base_url}"
 );
 ```
 
-`https://` is always required; `http://` is allowed only in debug builds (for
-local CDN backends). This catches configuration errors at build time rather
-than at runtime (where a schemeless URL would produce another relative-URL bug).
+Both `https://` and `http://` are accepted unconditionally. `http://` is a
+legitimate scheme for local test/dev backends — e.g. E2E CI runs
+`trunk build --release` with `ORIGA_CDN_BASE_URL=http://localhost:8080` pointing
+at a local mock backend. This is safe because `resolve_cdn()` (§1) returns
+`DEFAULT_CDN` (`https://s3.origa.uwuwu.net`) whenever the env var is unset OR
+empty, so `http://` can only reach the assertion through an **explicit**
+non-empty override — which is exactly the intent. The assertion still catches
+the failure mode it was added for: a schemeless value that would reintroduce
+the relative-URL bug this ADR fixes.
+
+An earlier revision gated `http://` behind `cfg!(debug_assertions)`:
+
+```rust
+// ... || cfg!(debug_assertions) && cdn_base_url.starts_with("http://")
+```
+
+This was **rejected**: `cfg!(debug_assertions)` reflects the build *profile*
+(dev vs release), not the runtime *environment*. E2E CI legitimately combines
+`--release` with a `http://localhost` backend, which the debug-only gate
+blocked — panicking in the "E2E Build" CI job. HTTPS enforcement in production
+is the deploy environment's responsibility (Dockerfile `build_args`, CI GitHub
+vars), not the build script's; the build script only guards against
+*schemeless* values.
 
 ### 4. Prove-It regression tests
 
@@ -182,8 +201,8 @@ let cdn_base_url = env::var("ORIGA_CDN_BASE_URL")
 - **Behavior change: compile error → silent production default.** Before this
   ADR, building `origa_ui` with `ORIGA_CDN_BASE_URL` **unset** failed loudly.
   After it, such a build silently defaults to the production CDN. Same trade-off
-  as ADR-020 (TRAILBASE) and ADR-009 (CSP). **Mitigation:** the `https://`
-  assertion catches malformed values; local developers targeting a local CDN
+  as ADR-020 (TRAILBASE) and ADR-009 (CSP). **Mitigation:** the scheme assertion
+  catches malformed (schemeless) values; local developers targeting a local CDN
   must explicitly `export ORIGA_CDN_BASE_URL=http://localhost:8080`.
 
 ## Verification
