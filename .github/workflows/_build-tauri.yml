@@ -6,6 +6,13 @@ on:
             version:
                 type: string
                 required: true
+            # version_base and version_type are retained for caller
+            # compatibility (ci.yml and tauri.yml pass them) but are no longer
+            # consumed inside this workflow after ADR-025: artifact naming is
+            # unconditional (always versioned + fixed alias), and update-version
+            # receives the full `version` so prerelease binaries report their
+            # rc suffix. Kept as required to avoid a contract-breaking change
+            # to the workflow_call signature in the same PR.
             version_base:
                 type: string
                 required: true
@@ -102,7 +109,7 @@ jobs:
             - name: Update version in config files
               uses: ./.github/actions/update-version
               with:
-                  version: ${{ inputs.version_base }}
+                  version: ${{ inputs.version }}
 
             - name: Install build dependencies
               run: apt-get update && apt-get install -y nsis clang lld llvm protobuf-compiler
@@ -132,13 +139,18 @@ jobs:
               env:
                   TAURI_BUNDLE_NSIS: "true"
 
-            - name: Rename artifacts for latest release
-              if: inputs.version_type != 'stable'
-              working-directory: target/x86_64-pc-windows-msvc/release/bundle
+            - name: Create fixed-name alias
+              working-directory: target/x86_64-pc-windows-msvc/release/bundle/nsis
+              env:
+                  VERSION: ${{ inputs.version }}
               run: |
-                  # Rename NSIS
-                  for f in nsis/*.exe; do mv "$f" "nsis/origa_latest_x64-setup.exe"; done
-                  for f in nsis/*.sig; do mv "$f" "nsis/origa_latest_x64-setup.exe.sig"; done
+                  # Tauri emits Origa_<version>_x64-setup.exe (+ .exe.sig updater
+                  # signature). Mirror to a fixed-name alias so the landing
+                  # page's /releases/latest/download/Origa_x64-setup.exe link
+                  # resolves on every release — GitHub's "latest" download URL
+                  # requires a filename that does not change between releases.
+                  cp "Origa_${VERSION}_x64-setup.exe" "Origa_x64-setup.exe"
+                  [ -f "Origa_${VERSION}_x64-setup.exe.sig" ] && cp "Origa_${VERSION}_x64-setup.exe.sig" "Origa_x64-setup.exe.sig" || true
 
             - name: Extract signature
               id: signature
@@ -191,7 +203,7 @@ jobs:
             - name: Update version in config files
               uses: ./.github/actions/update-version
               with:
-                  version: ${{ inputs.version_base }}
+                  version: ${{ inputs.version }}
 
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.1
@@ -223,15 +235,17 @@ jobs:
               working-directory: tauri
               run: cargo tauri build --target x86_64-unknown-linux-gnu
 
-            - name: Rename artifacts for latest release
-              if: inputs.version_type != 'stable'
+            - name: Create fixed-name aliases
               working-directory: target/x86_64-unknown-linux-gnu/release/bundle
+              env:
+                  VERSION: ${{ inputs.version }}
               run: |
-                  # Rename AppImage
-                  for f in appimage/*.AppImage; do mv "$f" "appimage/origa_latest_amd64.AppImage"; done
-                  for f in appimage/*.sig; do mv "$f" "appimage/origa_latest_amd64.AppImage.sig"; done
-                  # Rename DEB
-                  for f in deb/*.deb; do mv "$f" "deb/origa_latest_amd64.deb"; done
+                  # Tauri emits Origa_<version>_amd64.AppImage/.deb (+ .AppImage.sig
+                  # updater signature). Mirror each to a fixed-name alias for the
+                  # landing page's /releases/latest/download/<fixed> links.
+                  cp "appimage/Origa_${VERSION}_amd64.AppImage" "appimage/Origa_amd64.AppImage"
+                  [ -f "appimage/Origa_${VERSION}_amd64.AppImage.sig" ] && cp "appimage/Origa_${VERSION}_amd64.AppImage.sig" "appimage/Origa_amd64.AppImage.sig" || true
+                  cp "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
 
             - name: Extract signature
               id: signature
@@ -295,7 +309,7 @@ jobs:
             - name: Update version in config files
               uses: ./.github/actions/update-version
               with:
-                  version: ${{ inputs.version_base }}
+                  version: ${{ inputs.version }}
 
             - name: Install build dependencies
               run: apt-get update && apt-get install -y zip protobuf-compiler
@@ -323,6 +337,8 @@ jobs:
               run: echo "signature=" >> $GITHUB_OUTPUT
 
             - name: Create macOS app bundle
+              env:
+                  VERSION: ${{ inputs.version }}
               run: |
                   mkdir -p Origa.app/Contents/MacOS
                   mkdir -p Origa.app/Contents/Resources
@@ -350,13 +366,18 @@ jobs:
                   </plist>
                   EOF
                   chmod +x Origa.app/Contents/MacOS/origa
-                  zip -r Origa-macos-arm64.zip Origa.app
+                  # Versioned archive for release history, plus a fixed-name alias
+                  # for the landing page's /releases/latest/download/Origa_macos-arm64.zip.
+                  zip -r "Origa_${VERSION}_macos-arm64.zip" Origa.app
+                  cp "Origa_${VERSION}_macos-arm64.zip" "Origa_macos-arm64.zip"
 
             - name: Upload macOS artifacts
               uses: actions/upload-artifact@v4
               with:
                   name: macos-build
-                  path: Origa-macos-arm64.zip
+                  path: |
+                      Origa_${{ inputs.version }}_macos-arm64.zip
+                      Origa_macos-arm64.zip
                   retention-days: 7
 
     build-android:
@@ -391,7 +412,7 @@ jobs:
             - name: Update version in config files
               uses: ./.github/actions/update-version
               with:
-                  version: ${{ inputs.version_base }}
+                  version: ${{ inputs.version }}
 
             - name: Install system dependencies
               run: |
@@ -485,16 +506,22 @@ jobs:
                   echo "=== Start build ==="
                   cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
 
-            - name: Rename APK for latest release
-              if: inputs.version_type != 'stable'
+            - name: Rename APK to versioned and alias names
               working-directory: tauri/gen/android/app/build/outputs/apk
+              env:
+                  VERSION: ${{ inputs.version }}
               run: |
-                  for f in release/*.apk; do
-                    if [ -f "$f" ]; then
-                      mv "$f" "release/origa-latest.apk"
-                      echo "Renamed to origa-latest.apk"
-                    fi
-                  done
+                  # Gradle emits app-universal-release.apk. mv (not cp) the
+                  # source to the versioned name so the uninformative default
+                  # name does not leak into release assets, then cp to a fixed
+                  # alias for the landing page's /releases/latest/download/origa.apk.
+                  src=$(ls release/*.apk 2>/dev/null | head -1 || true)
+                  if [ -z "$src" ] || [ ! -f "$src" ]; then
+                    echo "::error::No APK produced by Gradle in release/"
+                    exit 1
+                  fi
+                  mv "$src" "release/origa_${VERSION}.apk"
+                  cp "release/origa_${VERSION}.apk" "release/origa.apk"
 
             - name: Upload Android APK
               uses: actions/upload-artifact@v4
