@@ -102,7 +102,7 @@ jobs:
                   cdn-base-url: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
 
             - name: Upload CDN artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: cdn-data
                   path: cdn/
@@ -213,7 +213,7 @@ jobs:
                   TRAILBASE_URL: http://localhost:4000
 
             - name: Upload WASM artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: wasm-dist
                   path: origa_ui/dist/
@@ -318,7 +318,7 @@ jobs:
 
             - name: Upload blob report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: blob-report-${{ matrix.spec }}
                   path: end2end/blob-report/
@@ -376,7 +376,7 @@ jobs:
 
             - name: Upload merged Playwright report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: playwright-report-merged
                   path: end2end/playwright-report/
