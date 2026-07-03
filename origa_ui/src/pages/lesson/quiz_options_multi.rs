@@ -82,7 +82,7 @@ pub fn QuizOptionsMulti(
                 <Show when=move || !selected_options_stored.get_value().is_empty()>
                     <span>{t!(i18n, lesson.check)}</span>
                 </Show>
-                <span class="text-xs font-mono opacity-50">{t!(i18n, lesson.space_key)}</span>
+                <span class="kbd-hint text-xs font-mono opacity-50">{t!(i18n, lesson.space_key)}</span>
             </button>
         </Show>
 
@@ -94,7 +94,7 @@ pub fn QuizOptionsMulti(
                     test_id=Signal::derive(|| "quiz-next-btn".to_string())
                 >
                     <span>{t!(i18n, lesson.next)}</span>
-                    <span class="text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
+                    <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
                 </Button>
             </div>
         </Show>
@@ -168,7 +168,7 @@ fn MultiOptionButton(
                 </Show>
             </div>
             <Show when=move || !multi_submitted.get()>
-                <span class="absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
+                <span class="kbd-hint absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
                     {key_hint.clone()}
                 </span>
             </Show>

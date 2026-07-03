@@ -19,7 +19,7 @@ pub fn RatingButtons(
                 test_id=Signal::derive(|| "lesson-rating-btn-again".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Again))
             >
-                {t!(i18n, lesson.dont_know_rating)} <span class="hidden sm:inline">"[1]"</span>
+                {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
             </Button>
 
             <Button
@@ -29,7 +29,7 @@ pub fn RatingButtons(
                 test_id=Signal::derive(|| "lesson-rating-btn-good".to_string())
                 on_click=Callback::new(move |_| on_rate.run(Rating::Good))
             >
-                {t!(i18n, lesson.know)} <span class="hidden sm:inline">"[2]"</span>
+                {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
             </Button>
         </div>
     }

@@ -69,7 +69,7 @@ pub fn LessonCardQuestion(
                 test_id=Signal::derive(|| "lesson-show-answer-btn".to_string())
                 on_click=Callback::new(move |_| on_show_answer.run(()))
             >
-                {t!(i18n, lesson.show_answer)} <span class="hidden sm:inline">{t!(i18n, lesson.space_key)}</span>
+                {t!(i18n, lesson.show_answer)} <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
             </Button>
         </div>
     }

@@ -78,7 +78,7 @@ pub fn Home() -> impl IntoView {
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="home-page">
             <Show when=move || is_checking_onboarding.get()>
-                <div class="flex flex-col items-center justify-center min-h-screen gap-4" data-testid="home-loading">
+                <div class="py-20 flex flex-col items-center justify-center gap-4" data-testid="home-loading">
                     <Spinner test_id="home-spinner" />
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         {t!(i18n, home.loading)}

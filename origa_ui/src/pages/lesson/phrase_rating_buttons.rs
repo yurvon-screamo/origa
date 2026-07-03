@@ -21,7 +21,7 @@ pub fn PhraseRatingButtons(
                 test_id=Signal::derive(move || format!("{}-did-not-understand", base_test_id()))
                 on_click=Callback::new(move |_| on_rate.run(Rating::Again))
             >
-                {t!(i18n, lesson.did_not_understand)} <span class="hidden sm:inline" style="color: var(--fg-light)">"[1]"</span>
+                {t!(i18n, lesson.did_not_understand)} <span class="kbd-hint" style="color: var(--fg-light)">"[1]"</span>
             </Button>
 
             <Button
@@ -31,7 +31,7 @@ pub fn PhraseRatingButtons(
                 test_id=Signal::derive(move || format!("{}-understood", base_test_id()))
                 on_click=Callback::new(move |_| on_rate.run(Rating::Good))
             >
-                {t!(i18n, lesson.understood)} <span class="hidden sm:inline" style="color: var(--fg-light)">"[2]"</span>
+                {t!(i18n, lesson.understood)} <span class="kbd-hint" style="color: var(--fg-light)">"[2]"</span>
             </Button>
         </div>
     }

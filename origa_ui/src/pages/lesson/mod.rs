@@ -44,7 +44,7 @@ use leptos::prelude::*;
 #[component]
 pub fn Lesson() -> impl IntoView {
     view! {
-        <div class="min-h-screen py-4" data-testid="lesson-page">
+        <div class="py-4" data-testid="lesson-page">
             <div class="max-w-6xl mx-auto px-2 sm:px-4" data-testid="lesson-card">
                 <LessonContent />
             </div>

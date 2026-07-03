@@ -291,7 +291,7 @@ pub fn ScoringStep(
                                         test_id=Signal::derive(|| "scoring-step-dont-know".to_string())
                                     >
                                         {t!(i18n, onboarding.scoring.dont_know)}
-                                        <span class="hidden sm:inline text-xs ml-1">"[1]"</span>
+                                        <span class="kbd-hint text-xs ml-1">"[1]"</span>
                                     </Button>
 
                                     <Button
@@ -301,7 +301,7 @@ pub fn ScoringStep(
                                         test_id=Signal::derive(|| "scoring-step-know".to_string())
                                     >
                                         {t!(i18n, onboarding.scoring.know)}
-                                        <span class="hidden sm:inline text-xs ml-1">"[2]"</span>
+                                        <span class="kbd-hint text-xs ml-1">"[2]"</span>
                                     </Button>
                                 </div>
                             </Card>
