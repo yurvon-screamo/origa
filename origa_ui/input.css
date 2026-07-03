@@ -4598,6 +4598,14 @@ rt {
     .grammar-detail-top-bar .card-action-bar {
         display: none;
     }
+
+    .grammar-detail-top-bar .fsrs-metrics {
+        display: none;
+    }
+
+    .grammar-detail-top-bar .btn-olive {
+        display: none;
+    }
 }
 
 /* === Kanji Detail — Redesigned === */
@@ -4880,6 +4888,10 @@ rt {
     }
 
     .kanji-detail-top-bar .card-action-bar {
+        display: none;
+    }
+
+    .kanji-detail-top-bar .fsrs-metrics {
         display: none;
     }
 }
