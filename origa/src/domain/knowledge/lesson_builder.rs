@@ -758,15 +758,20 @@ fn target_showings(study_card: &StudyCard) -> usize {
 }
 
 /// Decides whether a primary card slot should be expanded into multiple
-/// showings, and if so returns the candidate views to use. Returns an empty
-/// vector when the card is exempt (not primary, not a multi-show type, target
-/// is 1, or guards clamp available distinct views below 2).
+/// showings, and if so returns the COPY views (the extra showings beyond the
+/// primary). The primary itself is the probabilistic view `apply_view` already
+/// assigned upstream (`primary_view`); copies are drawn from
+/// `candidate_views_for_repeat` with the primary's variant removed, so every
+/// showing of the card uses a distinct `LessonCardView` variant. Returns an
+/// empty vector when the card is exempt (not primary, not a multi-show type,
+/// target is 1, or no distinct copy variant is available).
 fn compute_expansion_views(
     generator: &mut LessonViewGenerator,
     knowledge_set: &KnowledgeSet,
     primary_card_ids: &HashSet<Ulid>,
     card_id: Ulid,
     card_type: CardType,
+    primary_view: &LessonCardView,
 ) -> Vec<LessonCardView> {
     if !primary_card_ids.contains(&card_id) {
         return Vec::new();
@@ -787,12 +792,11 @@ fn compute_expansion_views(
         return Vec::new();
     }
 
+    let primary_disc = std::mem::discriminant(primary_view);
     let mut candidates =
         generator.candidate_views_for_repeat(study_card, study_card.is_new(), &mut rand::rng());
-    candidates.truncate(target);
-    if candidates.len() < 2 {
-        return Vec::new();
-    }
+    candidates.retain(|view| std::mem::discriminant(view) != primary_disc);
+    candidates.truncate(target.saturating_sub(1));
 
     candidates
 }
@@ -826,31 +830,23 @@ pub(crate) fn expand_repeated_views(
         let card_id = lc.card_id();
         let card_type = CardType::from(lc.card());
         let is_short_term = lc.is_short_term();
+        let primary_view = lc.view().clone();
 
-        let views = compute_expansion_views(
+        let copy_views = compute_expansion_views(
             &mut generator,
             knowledge_set,
             primary_card_ids,
             card_id,
             card_type,
+            &primary_view,
         );
 
-        if views.is_empty() {
+        if copy_views.is_empty() {
             new_core.push((*slot_id, lc.clone()));
             drain_pending(&mut new_core, &mut pending);
             continue;
         }
 
-        // Replace the probabilistic view assigned by `apply_view` in
-        // `build_lesson_core` with the first item of the freshly generated,
-        // distinct-view candidate set. Every showing of this card_id now
-        // comes from one coordinated drill sequence (each copy uses a
-        // different LessonCardView variant), instead of an independently
-        // sampled view that could collide with a later copy. The original
-        // `apply_view` result is intentionally discarded for expandable
-        // cards; non-expandable slots keep their original view via the
-        // `views.is_empty()` branch above.
-        let primary_view = views.first().cloned().unwrap_or_else(|| lc.view().clone());
         new_core.push((
             *slot_id,
             LessonCard::new(card_id, primary_view, is_short_term),
@@ -864,8 +860,8 @@ pub(crate) fn expand_repeated_views(
         // MIN_REPEAT_SPACING + 1). Subsequent views step by the same delta so
         // every gap honours the same invariant.
         let mut next_min_pos = new_core.len() + MIN_REPEAT_SPACING;
-        for view in views.iter().skip(1) {
-            pending.push((next_min_pos, card_id, view.clone(), is_short_term));
+        for view in copy_views {
+            pending.push((next_min_pos, card_id, view, is_short_term));
             next_min_pos += MIN_REPEAT_SPACING + 1;
         }
 
@@ -2620,6 +2616,58 @@ mod tests {
             discriminants.len(),
             showings.len(),
             "every showing of a multi-show card must use a distinct LessonCardView variant"
+        );
+    }
+
+    #[test]
+    fn expand_preserves_review_card_view_variety() {
+        init_test_dict();
+        let mut ks = KnowledgeSet::new();
+        seed_distractor_vocab(&mut ks, &["犬", "鳥", "魚", "馬", "牛", "虎", "狼", "鹿"]);
+
+        let words = ["猫", "狗", "猪", "豚"];
+        let mut cards: Vec<(Ulid, LessonCard)> = Vec::new();
+        let mut primary_set: HashSet<Ulid> = HashSet::new();
+        for word in words {
+            let sc = ks.create_card(vocab_card(word)).expect("seed primary card");
+            let card_id = *sc.card_id();
+            rate_into_state(&mut ks, card_id, 10.0, 4.0, 1, Rating::Good);
+            assert!(
+                ks.get_card(card_id)
+                    .expect("card exists")
+                    .memory()
+                    .is_in_progress(),
+                "fixture card must be expandable review vocab"
+            );
+            cards.push((
+                card_id,
+                LessonCard::new(card_id, LessonCardView::Normal(vocab_card(word)), false),
+            ));
+            primary_set.insert(card_id);
+        }
+        let lesson = LessonData {
+            cards,
+            core_count: words.len(),
+        };
+
+        let result = expand_repeated_views(lesson, &ks, NativeLanguage::Russian, &primary_set);
+
+        let has_normal = result
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.view(), LessonCardView::Normal(_)));
+        let has_non_normal = result
+            .cards
+            .iter()
+            .any(|(_, lc)| !matches!(lc.view(), LessonCardView::Normal(_)));
+        assert!(
+            has_normal,
+            "lesson must keep the Normal primary (apply_view result) for review vocab, \
+             not force-convert every card to the same quiz variant"
+        );
+        assert!(
+            has_non_normal,
+            "lesson must keep at least one non-Normal multi-show variant"
         );
     }
 
