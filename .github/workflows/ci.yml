@@ -22,7 +22,6 @@ permissions:
 jobs:
     version:
         name: Version
-        if: github.event_name == 'pull_request'
         permissions:
             contents: read
         runs-on: ubuntu-latest
@@ -386,7 +385,6 @@ jobs:
     build-tauri:
         name: Build Tauri
         needs: [version, e2e-build]
-        if: github.event_name == 'pull_request'
         uses: ./.github/workflows/_build-tauri.yml
         with:
             version: ${{ needs.version.outputs.version }}
@@ -409,7 +407,6 @@ jobs:
         name: Docker Build (landing)
         permissions:
             contents: read
-        if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -433,7 +430,6 @@ jobs:
         name: Docker Build (ui)
         permissions:
             contents: read
-        if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -477,8 +473,8 @@ jobs:
                   check "lint" "${{ needs.lint.result }}" "success"
                   check "test" "${{ needs.test.result }}" "success"
                   check "e2e" "${{ needs.e2e.result }}" "success"
-                  check "docker-build-landing" "${{ needs.docker-build-landing.result }}" "success" "skipped"
-                  check "docker-build-ui" "${{ needs.docker-build-ui.result }}" "success" "skipped"
-                  check "build-tauri" "${{ needs.build-tauri.result }}" "success" "skipped"
+                  check "docker-build-landing" "${{ needs.docker-build-landing.result }}" "success"
+                  check "docker-build-ui" "${{ needs.docker-build-ui.result }}" "success"
+                  check "build-tauri" "${{ needs.build-tauri.result }}" "success"
 
             - run: echo "All checks passed"
