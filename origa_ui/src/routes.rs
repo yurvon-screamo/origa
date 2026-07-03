@@ -278,9 +278,9 @@ pub fn AppRoutes() -> impl IntoView {
 
     let main_class = move || {
         if sidebar_visible.get() {
-            "paper-texture main-with-sidebar pb-20 lg:pb-0".to_string()
+            "paper-texture main-with-sidebar pt-safe-t pb-20 lg:pb-0".to_string()
         } else {
-            "paper-texture pb-20 lg:pb-0".to_string()
+            "paper-texture pt-safe-t min-h-[100dvh]".to_string()
         }
     };
 

@@ -99,6 +99,32 @@ body {
     color: var(--fg-black);
     line-height: 1.6;
     margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Re-enable selection for content the user SHOULD be able to select/copy.
+   Whitelist approach: every future selectable container must opt in here
+   (see ADR-026). user-select is inherited, so listing the top-level content
+   container is enough for its descendants. */
+input,
+textarea,
+[contenteditable="true"],
+.markdown-text,
+.translator-text,
+.furigana-text,
+.furigana-plain,
+.word-translations,
+.kanji-detail-hero-meaning,
+.kanji-detail-hero-reading,
+.kanji-card-answer,
+.grammar-detail-hero-meaning {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
 }
 
 html,
@@ -117,6 +143,20 @@ input[type="submit"],
 .cursor-pointer {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+}
+
+/* Keyboard shortcut hints: visible only when the primary pointer is fine
+   (mouse/keyboard). Hidden on touch-primary devices (pointer: coarse) where
+   a physical keyboard is absent. Prefer this over width breakpoints — a
+   tablet is wide yet touch-driven. */
+.kbd-hint {
+    display: inline;
+}
+
+@media (pointer: coarse) {
+    .kbd-hint {
+        display: none;
+    }
 }
 
 .font-serif {
@@ -1416,7 +1456,7 @@ input[type="submit"],
     left: 0;
     right: 0;
     height: 72px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
     background: var(--bg-cream);
     border-top: 1px solid var(--border-dark);
     display: flex;
@@ -1590,6 +1630,7 @@ input[type="submit"],
 .main-with-sidebar {
     margin-left: 220px;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 @media (max-width: 1023px) {
@@ -2089,6 +2130,14 @@ rt {
     gap: 12px;
     z-index: 10000;
     max-width: 360px;
+}
+
+/* Raise toasts above the bottom tab bar on viewports where it is visible
+   (<lg). On lg+ the bar is hidden (lg:hidden) so the base offset applies. */
+@media (max-width: 1023px) {
+    .toast-container {
+        bottom: calc(72px + 16px + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 .toast {
@@ -3127,7 +3176,6 @@ rt {
 
 /* Layout */
 .page-layout-centered {
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3141,7 +3189,6 @@ rt {
 }
 
 .page-layout-full {
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 8px;
@@ -3154,7 +3201,6 @@ rt {
 }
 
 .page-layout-compact {
-    min-height: calc(100vh - 4rem);
     padding: 16px;
 }
 

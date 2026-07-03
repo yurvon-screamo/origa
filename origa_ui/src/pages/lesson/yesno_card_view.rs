@@ -231,7 +231,7 @@ pub fn YesNoCardView(
                         disabled=Signal::derive(move || show_result.get())
                         on_click=Callback::new(move |_| on_answer.run(false))
                     >
-                        {t!(i18n, lesson.no)} <span class="hidden sm:inline">"[1]"</span>
+                        {t!(i18n, lesson.no)} <span class="kbd-hint">"[1]"</span>
                     </Button>
 
                     <Button
@@ -241,7 +241,7 @@ pub fn YesNoCardView(
                         disabled=Signal::derive(move || show_result.get())
                         on_click=Callback::new(move |_| on_answer.run(true))
                     >
-                        {t!(i18n, lesson.yes)} <span class="hidden sm:inline">"[2]"</span>
+                        {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
                     </Button>
                 </div>
                 <button
@@ -263,7 +263,7 @@ pub fn YesNoCardView(
                     }
                 >
                     <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                    <span class="hidden sm:inline text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
+                    <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
                 </button>
 
                 <Show when=move || show_result.get()>

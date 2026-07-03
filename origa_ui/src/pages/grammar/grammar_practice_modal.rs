@@ -301,7 +301,7 @@ pub fn GrammarPracticeModal(
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
+                                {close_text} <span class="kbd-hint">"[Esc]"</span>
                             </button>
                         </div>
                     </div>
@@ -381,7 +381,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
-                            <span class="hidden sm:inline ml-1">"[1]"</span>
+                            <span class="kbd-hint ml-1">"[1]"</span>
                         </button>
                         <button
                             class=move || option_class(1)
@@ -394,7 +394,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
-                            <span class="hidden sm:inline ml-1">"[2]"</span>
+                            <span class="kbd-hint ml-1">"[2]"</span>
                         </button>
                         <button
                             class=move || option_class(2)
@@ -407,7 +407,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
-                            <span class="hidden sm:inline ml-1">"[3]"</span>
+                            <span class="kbd-hint ml-1">"[3]"</span>
                         </button>
                         <button
                             class=move || option_class(3)
@@ -420,7 +420,7 @@ pub fn GrammarPracticeModal(
                                     known_kanji=known_kanji.get_value()
                                 />
                             }}
-                            <span class="hidden sm:inline ml-1">"[4]"</span>
+                            <span class="kbd-hint ml-1">"[4]"</span>
                         </button>
                     </div>
 
@@ -441,7 +441,7 @@ pub fn GrammarPracticeModal(
                                     data-testid="grammar-practice-next-btn"
                                     on:click=move |_| on_next()
                                 >
-                                    {next_text} <span class="hidden sm:inline">"[Space]"</span>
+                                    {next_text} <span class="kbd-hint">"[Space]"</span>
                                 </button>
                             </Show>
                             <button
@@ -449,7 +449,7 @@ pub fn GrammarPracticeModal(
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
+                                {close_text} <span class="kbd-hint">"[Esc]"</span>
                             </button>
                         </div>
                     </Show>
@@ -484,14 +484,14 @@ pub fn GrammarPracticeModal(
                             >
                                 {move || {
                                     i18n.get_keys().grammar_page().practice_again().inner().to_string()
-                                }} <span class="hidden sm:inline">"[Space]"</span>
+                                }} <span class="kbd-hint">"[Space]"</span>
                             </button>
                             <button
                                 class="px-4 py-2 border border-[var(--border-dark)] bg-[var(--bg-paper)] text-[var(--fg-black)] hover:bg-[var(--fg-black)] hover:text-[var(--bg-paper)] transition-colors cursor-pointer"
                                 data-testid="grammar-practice-close-btn"
                                 on:click=move |_| on_close.run(())
                             >
-                                {close_text} <span class="hidden sm:inline">"[Esc]"</span>
+                                {close_text} <span class="kbd-hint">"[Esc]"</span>
                             </button>
                         </div>
                     </div>

@@ -190,7 +190,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_next_lesson.run(());
                     })
                 >
-                    {t!(i18n, lesson.next_lesson)} <span class="hidden sm:inline">{t!(i18n, lesson.space_key)}</span>
+                    {t!(i18n, lesson.next_lesson)} <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                 </Button>
 
                 <Button
@@ -200,7 +200,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                         go_home.run(());
                     })
                 >
-                    {t!(i18n, lesson.go_home)} <span class="hidden sm:inline">"[Esc]"</span>
+                    {t!(i18n, lesson.go_home)} <span class="kbd-hint">"[Esc]"</span>
                 </Button>
             </div>
         </div>

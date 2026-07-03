@@ -123,7 +123,7 @@ pub fn PhraseCardView(
                                                 />
                                             </Text>
                                             <Show when=move || !show_result.get()>
-                                                <span class="text-[var(--fg-muted)] text-xs font-mono shrink-0">
+                                                <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono shrink-0">
                                                     {key_hint.clone()}
                                                 </span>
                                             </Show>
@@ -152,7 +152,7 @@ pub fn PhraseCardView(
                         }
                     >
                         <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                        <span class="text-[var(--fg-muted)] text-xs font-mono">
+                        <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">
                             {t!(i18n, lesson.space_key)}
                         </span>
                     </button>
@@ -202,7 +202,7 @@ pub fn PhraseCardView(
                             test_id=Signal::derive(|| "phrase-next-btn".to_string())
                         >
                             <span>{t!(i18n, lesson.next)}</span>
-                            <span class="text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
+                            <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
                         </Button>
                     </div>
                 </Show>

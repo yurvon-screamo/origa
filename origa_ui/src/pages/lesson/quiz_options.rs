@@ -65,7 +65,7 @@ pub fn QuizOptions(
                                     />
                                 </Text>
                                 <Show when=move || !show_result.get()>
-                                    <span class="absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
+                                    <span class="kbd-hint absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
                                         {key_hint.clone()}
                                     </span>
                                 </Show>
@@ -95,7 +95,7 @@ pub fn QuizOptions(
         >
             <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
             <Show when=move || !show_result.get()>
-                <span class="text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
+                <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
             </Show>
         </button>
     }
