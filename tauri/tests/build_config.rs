@@ -75,7 +75,8 @@ fn build_csp_with_production_defaults_matches_committed_tauri_conf() {
 }
 
 /// Verifies that env-controlled hosts are substituted into CSP while
-/// third-party hosts (huggingface, Google Fonts, OAuth providers) are preserved.
+/// third-party hosts (huggingface, OAuth providers) are preserved. Fonts are
+/// self-hosted on the CDN (ADR-028), so font-src carries the env CDN host.
 #[test]
 fn build_csp_substitutes_staging_hosts() {
     let csp = build_csp(
@@ -88,12 +89,16 @@ fn build_csp_substitutes_staging_hosts() {
     assert!(csp.contains("https://landing.staging.example.com"));
     assert!(csp.contains("https://api.staging.example.com"));
 
-    // Third-party hosts must survive any host substitution.
+    // Fonts are now self-hosted on the CDN (ADR-028), so font-src carries the
+    // CDN host. Google Fonts CDN hosts are no longer referenced anywhere.
+    assert!(csp.contains("font-src 'self' https://cdn.staging.example.com"));
+    assert!(!csp.contains("fonts.googleapis.com"));
+    assert!(!csp.contains("fonts.gstatic.com"));
+
+    // Other third-party hosts must survive any host substitution.
     assert!(csp.contains("https://huggingface.co"));
     assert!(csp.contains("https://accounts.google.com"));
     assert!(csp.contains("https://oauth.yandex.ru"));
-    assert!(csp.contains("https://fonts.googleapis.com"));
-    assert!(csp.contains("https://fonts.gstatic.com"));
 
     // Production hosts must NOT leak into the staging build.
     assert!(!csp.contains(DEFAULT_CDN));

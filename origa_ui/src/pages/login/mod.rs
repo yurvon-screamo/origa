@@ -120,7 +120,7 @@ fn debug_overlay(oauth_debug: oauth_buttons::OAuthDebugSink) -> Option<impl Into
             <div
                 data-testid=Signal::derive(|| "oauth-debug-overlay".to_string())
                 style="margin-top: 12px; padding: 8px; background: rgba(0,0,0,0.06); \
-                       font-family: 'DM Mono', monospace; font-size: 11px; line-height: 1.4; \
+                       font-family: var(--font-mono); font-size: 11px; line-height: 1.4; \
                        color: var(--fg-black); word-break: break-all; white-space: pre-wrap;"
             >
                 {move || oauth_debug.get().unwrap_or_default()}

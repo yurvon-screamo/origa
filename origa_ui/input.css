@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,8 +61,8 @@
     --space-xxl: 48px;
     --space-xxxl: 64px;
 
-    --font-serif: "Cormorant Garamond", serif;
-    --font-mono: "DM Mono", monospace;
+    --font-serif: "Cormorant Garamond", "Noto Serif JP", serif;
+    --font-mono: "DM Mono", "Noto Sans JP", monospace;
 
     /* Rounded */
     --rounded-none: 0px;
@@ -1865,7 +1863,7 @@ rt {
     width: 109px;
     height: 109px;
     font-size: 64px;
-    font-family: serif;
+    font-family: var(--font-serif);
 }
 
 .kanji-frames-svg svg {

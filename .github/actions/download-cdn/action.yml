@@ -5,7 +5,7 @@ inputs:
   cache-key:
     description: "Cache key prefix"
     required: false
-    default: "cdn-data-v11"
+    default: "cdn-data-v12"
   cdn-base-url:
     description: "CDN base URL for downloading files"
     required: true
@@ -160,6 +160,28 @@ runs:
             ERRORS=$((ERRORS + 1))
           else
             echo "  OK: cdn/$f ($actual_size bytes)"
+          fi
+        done
+
+        # Self-hosted fonts (ADR-028): the cdn-manifest FONTS block lists them,
+        # but the download loop only logs failures without aborting. Assert the
+        # subset landed, otherwise CI would go green while E2E renders Chinese
+        # fallback glyphs (woff2 404). Hashed names are globbed, so a missing
+        # deploy or a stale cdn-data cache is caught here.
+        FONT_COUNT=$(find cdn/fonts -name '*.woff2' 2>/dev/null | wc -l)
+        if [ "$FONT_COUNT" -lt 8 ]; then
+          echo "ERROR: expected >=8 woff2 in cdn/fonts/, found $FONT_COUNT"
+          ERRORS=$((ERRORS + 1))
+        fi
+        for f in cdn/fonts/noto-*-jp-400-*.woff2; do
+          if [ ! -s "$f" ]; then
+            echo "ERROR: missing or empty Noto JP font: $f"
+            ERRORS=$((ERRORS + 1))
+          elif [ "$(wc -c < "$f")" -lt 100000 ]; then
+            echo "ERROR: $f too small — corrupted subset!"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  OK: $f ($(wc -c < "$f") bytes)"
           fi
         done
 
