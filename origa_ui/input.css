@@ -3175,6 +3175,16 @@ rt {
 }
 
 /* Layout */
+
+/* Tailwind v3 does not generate justify-[safe_center] (the `safe` overflow
+   keyword is dropped by arbitrary-value validation), so this is a literal
+   rule. `safe center` centers when the flex child fits and falls back to
+   flex-start when it overflows — no top-clipping. Used by lesson-content for
+   vertical card centering (ADR-027). */
+.justify-safe-center {
+    justify-content: safe center;
+}
+
 .page-layout-centered {
     display: flex;
     align-items: center;

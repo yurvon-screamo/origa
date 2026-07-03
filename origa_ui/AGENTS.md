@@ -114,6 +114,25 @@ Routes defined in `routes.rs`: `/` (home), `/login`, `/onboarding`, `/profile`,
 well-known set metadata, and env vars (`ORIGA_CDN_BASE_URL` required, plus optional
 `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`).
 
+### `recursion_limit` landmine (bin crate)
+
+`lib.rs` has `#![recursion_limit = "512"]` but `main.rs` (the `origa_ui_bin`
+crate) does NOT — it inherits the default 128. The bin mounts the entire `<App/>`
+view tree, and tachys encodes every element's attributes/classes as deeply
+nested generic type tuples, so the bin is near the 128 query-depth ceiling. Adding
+**new attributes** (`class`, `data-testid`, a second class) to a deep component
+tips it over → `error: queries overflow the depth limit!` during
+layout/monomorphization (platform-independent; fails `cargo test --workspace`).
+Raising the bin's limit to 512 lets it compile but produces mass linker errors
+from over-monomorphization — so raising the limit is NOT a fix.
+
+**Guidance:** prefer changing an existing element's class **string** (type-neutral:
+`Class<&str>` stays `Class<&str>`) over adding new attributes. The structural fix
+is to split deep views into sub-components (delegating rendering to the lib crate,
+which has the higher limit) or to add the attribute to a shallower element. See
+ADR-027 §B3 for the concrete case that forced `justify-[safe_center]` over
+`my-auto` + a new `data-testid`.
+
 ## Development
 
 ```powershell
