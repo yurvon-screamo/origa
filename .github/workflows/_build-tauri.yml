@@ -511,21 +511,28 @@ jobs:
               env:
                   VERSION: ${{ inputs.version }}
               run: |
-                  # Gradle emits app-universal-release.apk. mv (not cp) the
-                  # source to the versioned name so the uninformative default
-                  # name does not leak into release assets, then cp to a fixed
-                  # alias for the landing page's /releases/latest/download/origa.apk.
-                  src=$(ls release/*.apk 2>/dev/null | head -1 || true)
+                  # Gradle emits app-universal-release.apk under a per-ABI subdir
+                  # (e.g. universal/release/), whose depth varies across AGP/
+                  # Tauri versions — locate it with `find` instead of a fixed
+                  # `release/*.apk` glob, then cp to a versioned name and a fixed
+                  # alias for /releases/latest/download/origa.apk. The default
+                  # Gradle name is excluded from the release by the explicit
+                  # Upload paths below (the publish job copies every *.apk).
+                  src=$(find . -name "*.apk" -type f | head -1)
                   if [ -z "$src" ] || [ ! -f "$src" ]; then
-                    echo "::error::No APK produced by Gradle in release/"
+                    echo "::error::No APK produced by Gradle under $(pwd)"
+                    echo "--- Files under $(pwd) ---"
+                    find . -type f | head -30 || true
                     exit 1
                   fi
-                  mv "$src" "release/origa_${VERSION}.apk"
-                  cp "release/origa_${VERSION}.apk" "release/origa.apk"
+                  cp "$src" "origa_${VERSION}.apk"
+                  cp "$src" "origa.apk"
 
             - name: Upload Android APK
               uses: actions/upload-artifact@v4
               with:
                   name: android-apk
-                  path: tauri/gen/android/app/build/outputs/apk/**/*.apk
+                  path: |
+                      tauri/gen/android/app/build/outputs/apk/origa_${{ inputs.version }}.apk
+                      tauri/gen/android/app/build/outputs/apk/origa.apk
                   retention-days: 7
