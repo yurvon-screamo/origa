@@ -524,3 +524,29 @@ testWithFreshUser.describe("Grammar Page - Detail Page", () => {
         await expect(page).toHaveURL(/\/grammar$/);
     });
 });
+
+testWithFreshUser.describe("Grammar Page - Mobile Detail Layout", () => {
+    testWithFreshUser("should hide leaked top-bar FsrsMetrics and Practice on mobile viewport", async ({ page }) => {
+        test.setTimeout(60_000);
+        const grammarPage = await setupGrammarPage(page);
+
+        await grammarPage.openAddModal();
+        await grammarPage.selectRule("～ます");
+        await grammarPage.addSelectedRules();
+        await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
+
+        await grammarPage.navigateToDetail(0);
+        await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
+
+        await page.setViewportSize({ width: 375, height: 667 });
+
+        // Regression guard: top-bar FsrsMetrics must not leak on mobile (dual-render CSS fix)
+        await expect(page.getByTestId("grammar-detail-fsrs")).not.toBeVisible();
+        await expect(page.getByTestId("grammar-detail-fsrs-mobile")).toBeVisible();
+        // Top-bar Practice button must not leak on mobile
+        await expect(page.getByTestId("grammar-detail-practice-btn")).not.toBeVisible();
+        await expect(
+            page.locator(".fsrs-metrics").filter({ visible: true }),
+        ).toHaveCount(1);
+    });
+});

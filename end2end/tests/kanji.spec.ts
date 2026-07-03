@@ -401,3 +401,27 @@ testWithFreshUser.describe("Kanji Page - Favorite Sync Persistence", () => {
         await expect.poll(async () => await kanjiPage.isFavorited(0), { timeout: 5000 }).toBe(false);
     });
 });
+
+testWithFreshUser.describe("Kanji Page - Mobile Detail Layout", () => {
+    testWithFreshUser("should hide leaked top-bar FsrsMetrics on mobile viewport", async ({ page }) => {
+        test.setTimeout(60_000);
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        const kanjiLink = page.locator('a[href*="/kanji/"]').first();
+        await kanjiLink.click();
+        await page.waitForURL(/\/kanji\//, { timeout: 5_000 });
+        const heroCard = page.locator(".kanji-detail-hero-card").first();
+        await expect(heroCard).toBeVisible({ timeout: 10_000 });
+
+        await page.setViewportSize({ width: 375, height: 667 });
+
+        // Regression guard: top-bar FsrsMetrics must not leak on mobile (dual-render CSS fix)
+        await expect(page.getByTestId("kanji-detail-fsrs")).not.toBeVisible();
+        await expect(page.getByTestId("kanji-detail-fsrs-mobile")).toBeVisible();
+        await expect(
+            page.locator(".fsrs-metrics").filter({ visible: true }),
+        ).toHaveCount(1);
+    });
+});
