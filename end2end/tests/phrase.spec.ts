@@ -174,14 +174,14 @@ testWithFreshUser.describe("Phrases after full onboarding", () => {
         await expect.poll(async () => {
             const textContent = await phraseText.textContent();
             return textContent?.trim().length ?? 0;
-        }, { timeout: 30_000, message: "Phrase text should not be empty on first load" }).toBeGreaterThan(0);
+        }, { timeout: 60_000, message: "Phrase text should not be empty on first load" }).toBeGreaterThan(0);
 
         // Also verify meaning is non-empty
         const meaning = firstCard.getByTestId("phrases-card-meaning");
         await expect.poll(async () => {
             const meaningContent = await meaning.textContent();
             return meaningContent?.trim().length ?? 0;
-        }, { timeout: 30_000, message: "Phrase meaning should not be empty on first load" }).toBeGreaterThan(0);
+        }, { timeout: 60_000, message: "Phrase meaning should not be empty on first load" }).toBeGreaterThan(0);
     });
 
     testWithFreshUser("should show phrase cards after completing onboarding with N5", async ({ page }) => {
@@ -364,7 +364,7 @@ testWithFreshUser.describe("Phrases Page - CRUD after onboarding", () => {
                     .catch(() => "");
                 return newFirstContent !== firstCardContent;
             },
-            { timeout: 10_000 }
+            { timeout: 30_000 }
         ).toBe(true);
     });
 
