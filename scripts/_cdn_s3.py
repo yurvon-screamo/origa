@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
+    from boto3.s3.transfer import TransferConfig
     from botocore.client import BaseClient
 
 S3_BUCKET = "adaptable-foodbox-ucep7wx"
@@ -282,7 +283,7 @@ class RemoteObject(NamedTuple):
 
 
 _s3_client: BaseClient | None = None
-_transfer_config_obj: object | None = None
+_transfer_config_obj: TransferConfig | None = None
 
 
 def _s3_upload_client() -> BaseClient:
@@ -291,14 +292,20 @@ def _s3_upload_client() -> BaseClient:
     # be installed just to import _cdn_s3.
     global _s3_client
     if _s3_client is None:
-        import boto3
-
+        try:
+            import boto3
+        except ModuleNotFoundError:
+            print(
+                "ERROR: boto3 is not installed; run `uv sync` in scripts/.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         session = boto3.Session(profile_name=S3_PROFILE)
         _s3_client = session.client("s3", endpoint_url=S3_ENDPOINT)
     return _s3_client
 
 
-def _transfer_config() -> object:
+def _transfer_config() -> TransferConfig:
     global _transfer_config_obj
     if _transfer_config_obj is None:
         from boto3.s3.transfer import TransferConfig
@@ -338,6 +345,7 @@ def upload_file(local_path: Path, key: str, cache_control: str, dry_run: bool) -
         )
         return
     from botocore.exceptions import BotoCoreError, ClientError
+    from s3transfer.exceptions import RetriesExceededError, S3UploadFailedError
 
     try:
         _s3_upload_client().upload_file(
@@ -347,7 +355,12 @@ def upload_file(local_path: Path, key: str, cache_control: str, dry_run: bool) -
             ExtraArgs={"CacheControl": cache_control, "ContentType": content_type},
             Config=_transfer_config(),
         )
-    except (BotoCoreError, ClientError) as exc:
+    except (
+        BotoCoreError,
+        ClientError,
+        RetriesExceededError,
+        S3UploadFailedError,
+    ) as exc:
         print(f"ERROR: boto3 upload failed for {key}: {exc}", file=sys.stderr)
         sys.exit(1)
 

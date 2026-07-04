@@ -99,8 +99,8 @@ def test_multipart_threshold_forces_multipart_under_cli_default():
     # failing case) is now well above the threshold -> multipart.
     assert MULTIPART_THRESHOLD_BYTES == 16 * 1024
     cfg = _transfer_config()
-    assert cfg.multipart_threshold == 16 * 1024  # type: ignore[attr-defined]
-    assert cfg.multipart_chunksize == 16 * 1024  # type: ignore[attr-defined]
+    assert cfg.multipart_threshold == 16 * 1024
+    assert cfg.multipart_chunksize == 16 * 1024
     assert 2 * 1024 * 1024 > MULTIPART_THRESHOLD_BYTES
 
 
@@ -188,6 +188,23 @@ def test_upload_file_aborts_with_key_on_boto3_error(tmp_path, monkeypatch):
 
     with pytest.raises(SystemExit) as exc:
         upload_file(local, "fonts/broken.woff2", "immutable", dry_run=False)
+
+    assert exc.value.code == 1
+
+
+def test_upload_file_aborts_on_s3transfer_retry_error(tmp_path, monkeypatch):
+    # s3transfer raises its own exceptions (not BotoCoreError) on retry
+    # exhaustion / part failure -- realistic on a flaky T3 endpoint -- and
+    # they must surface the offending key, not a raw traceback.
+    from s3transfer.exceptions import RetriesExceededError
+
+    local = tmp_path / "flaky.woff2"
+    local.write_bytes(b"x" * 10)
+    err = RetriesExceededError(last_exception=RuntimeError("timeout"))
+    monkeypatch.setattr(_cdn_s3, "_s3_upload_client", lambda: _FakeUploadClient(err))
+
+    with pytest.raises(SystemExit) as exc:
+        upload_file(local, "fonts/flaky.woff2", "immutable", dry_run=False)
 
     assert exc.value.code == 1
 
