@@ -1,10 +1,6 @@
 name: Build Tauri App
 
 on:
-    workflow_run:
-        workflows: ["CI"]
-        types: [completed]
-        branches: [master]
     push:
         tags:
             - "v*.*.*"
@@ -21,9 +17,46 @@ permissions:
     contents: read
 
 jobs:
+    require-ci-green:
+        name: Require CI green
+        runs-on: ubuntu-latest
+        permissions:
+            actions: read
+        steps:
+            - name: Verify CI passed for this commit
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  EVENT: ${{ github.event_name }}
+              run: |
+                  # workflow_dispatch is an operator escape-hatch: trust the
+                  # operator, skip the CI gate. Automatic tag-push CD requires
+                  # the commit's full CI (lint+test+e2e+build-tauri+docker-build)
+                  # to be green first, restoring the invariant the previous
+                  # workflow_run trigger implicitly enforced.
+                  if [ "$EVENT" != "push" ]; then
+                    echo "Manual dispatch ($EVENT) — bypassing CI gate"
+                    exit 0
+                  fi
+
+                  RUN_ID=$(gh run list \
+                    --repo ${{ github.repository }} \
+                    --workflow ci.yml \
+                    --commit "${{ github.sha }}" \
+                    --status success \
+                    --limit 1 \
+                    --json databaseId \
+                    --jq '.[0].databaseId' 2>/dev/null || echo "")
+
+                  if [ -z "$RUN_ID" ]; then
+                    echo "::error::No successful CI run found for commit ${{ github.sha }}. Tag-triggered CD requires a green CI run first."
+                    exit 1
+                  fi
+                  echo "CI run $RUN_ID is green for ${{ github.sha }}"
+
     version:
         permissions:
             contents: read
+        needs: [require-ci-green]
         runs-on: ubuntu-latest
         outputs:
             version: ${{ steps.version.outputs.version }}
@@ -46,11 +79,7 @@ jobs:
         name: Build Frontend
         permissions:
             contents: read
-        needs: [version]
-        if: >
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+        needs: [require-ci-green, version]
         runs-on: ubuntu-24.04
         env:
             ORIGA_VERSION: ${{ needs.version.outputs.version }}
@@ -63,7 +92,7 @@ jobs:
             - name: Update version in config files
               uses: ./.github/actions/update-version
               with:
-                  version: ${{ needs.version.outputs.version_base }}
+                  version: ${{ needs.version.outputs.version }}
 
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.1
@@ -104,11 +133,7 @@ jobs:
 
     build-tauri:
         name: Build Tauri
-        needs: [version, build-frontend]
-        if: >
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+        needs: [require-ci-green, version, build-frontend]
         uses: ./.github/workflows/_build-tauri.yml
         with:
             version: ${{ needs.version.outputs.version }}
@@ -129,11 +154,8 @@ jobs:
 
     generate-latest-json:
         name: Generate latest.json
-        if: >
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-        needs: [version, build-tauri]
+        if: startsWith(github.ref, 'refs/tags/v') && needs.version.outputs.version_type == 'stable'
+        needs: [require-ci-green, version, build-tauri]
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -141,23 +163,27 @@ jobs:
             - name: Generate latest.json
               env:
                   VERSION: ${{ needs.version.outputs.version }}
-                  VERSION_TYPE: ${{ needs.version.outputs.version_type }}
+                  GIT_TAG: ${{ github.ref_name }}
                   WIN_SIG: ${{ needs.build-tauri.outputs.windows-signature }}
                   LINUX_SIG: ${{ needs.build-tauri.outputs.linux-signature }}
               run: |
-                  if [ "$VERSION_TYPE" != "stable" ]; then
-                    FILE_VERSION="latest"
-                  else
-                    FILE_VERSION="${VERSION}"
-                  fi
+                  # Stable-only: prereleases deliberately do NOT refresh the
+                  # updater manifest, so users on the stable channel never get
+                  # auto-updated to an rc build. The URL tag segment is the git
+                  # tag (v-prefixed, e.g. v1.0.0) — it MUST match the release's
+                  # tag_name (github.ref_name), not the stripped version. The
+                  # asset filename segment keeps the stripped version because
+                  # Tauri stamps bundle names from tauri.conf.json:version (no v).
+                  # The manifest's `version` field is the bare version (1.0.0)
+                  # the updater compares against.
                   jq -n \
                     --arg version "$VERSION" \
                     --arg notes "Release $VERSION" \
                     --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     --arg win_sig "$WIN_SIG" \
                     --arg linux_sig "$LINUX_SIG" \
-                    --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_x64-setup.exe" \
-                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${FILE_VERSION}/origa_${FILE_VERSION}_amd64.AppImage" \
+                    --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_${VERSION}_x64-setup.exe" \
+                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_${VERSION}_amd64.AppImage" \
                     '{
                       version: $version,
                       notes: $notes,
@@ -183,13 +209,19 @@ jobs:
                   retention-days: 7
 
     release:
-        name: Update Latest Release
+        name: Publish Release
         if: >
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+            always() &&
+            needs.require-ci-green.result == 'success' &&
+            needs.build-tauri.result == 'success' &&
+            startsWith(github.ref, 'refs/tags/v') &&
+            (needs.version.outputs.version_type == 'stable' ||
+             needs.version.outputs.version_type == 'prerelease') &&
+            (needs.version.outputs.version_type != 'stable' ||
+             needs.generate-latest-json.result == 'success')
         needs:
             [
+                require-ci-green,
                 version,
                 build-tauri,
                 generate-latest-json,
@@ -207,49 +239,58 @@ jobs:
               run: |
                   mkdir -p release_assets
                   # Keep only installable bundles + the updater manifest.
-                  # Intermediate artifacts (frontend-dist WASM, *.sig updater
-                  # signatures already embedded into latest.json by the
-                  # generate-latest-json job) are intentionally excluded so the
-                  # release stays small and uncluttered.
+                  # Each platform ships BOTH a versioned name (release history
+                  # + the exact asset latest.json points at) and a fixed-name
+                  # alias (so /releases/latest/download/<alias> resolves for the
+                  # landing page). Intermediate artifacts (frontend-dist WASM,
+                  # *.sig signatures already embedded into latest.json) are
+                  # excluded so the release stays small. cp -f (not -n): every
+                  # tag is a fresh release, no accumulation across runs.
                   find artifacts -type f \( \
                       -name '*-setup.exe' -o \
                       -name '*.msi' -o \
                       -name '*.AppImage' -o \
                       -name '*.deb' -o \
                       -name '*.dmg' -o \
-                      -name 'Origa-macos-arm64.zip' -o \
+                      -name 'Origa_*macos-arm64.zip' -o \
                       -name '*.apk' -o \
                       -name 'latest.json' \
-                  \) -exec cp -n {} release_assets/ \;
+                  \) -exec cp -f {} release_assets/ \;
                   echo "Release assets content:"
                   ls -la release_assets/
 
-            - name: Update latest release
+            - name: Publish release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name:
-                      ${{ needs.version.outputs.version_type == 'stable' &&
-                      needs.version.outputs.version || 'latest' }}
-                  name: ${{ needs.version.outputs.version_type == 'stable' &&
-                      format('Release {0}', needs.version.outputs.version) || format('Latest
-                      Build ({0})', needs.version.outputs.version) }}
+                  tag_name: ${{ github.ref_name }}
+                  name: ${{ needs.version.outputs.version_type == 'prerelease' && format('Pre-release {0}', needs.version.outputs.version) || format('Release {0}', needs.version.outputs.version) }}
                   body: |
-                      Автоматическая сборка от ${{ github.sha }}
+                      ${{ needs.version.outputs.version_type == 'prerelease' && 'Pre-release build — not for the stable update channel.' || format('Release {0}', needs.version.outputs.version) }}
+
+                      Commit: ${{ github.sha }}
 
                       ## Windows
-                      - `origa_*_x64-setup.exe` - NSIS инсталлятор
+                      - `Origa_${{ needs.version.outputs.version }}_x64-setup.exe` — NSIS installer
+                      - `Origa_x64-setup.exe` — fixed-name alias (latest direct download)
 
                       ## Linux
-                      - `*.AppImage` - Portable версия
-                      - `*.deb` - Debian/Ubuntu пакет
+                      - `Origa_${{ needs.version.outputs.version }}_amd64.AppImage` — portable
+                      - `Origa_amd64.AppImage` — fixed-name alias
+                      - `Origa_${{ needs.version.outputs.version }}_amd64.deb` — Debian/Ubuntu
+                      - `Origa_amd64.deb` — fixed-name alias
 
                       ## macOS
-                      - `Origa-macos-arm64.zip` - Apple Silicon
+                      - `Origa_${{ needs.version.outputs.version }}_macos-arm64.zip` — Apple Silicon
+                      - `Origa_macos-arm64.zip` — fixed-name alias
 
                       ## Android
-                      - `origa-latest.apk` - Android APK
+                      - `origa_${{ needs.version.outputs.version }}.apk`
+                      - `origa.apk` — fixed-name alias
+
+                      ## Updater
+                      - `latest.json` — Tauri updater manifest (stable releases only)
                   generate_release_notes: true
                   files: release_assets/*
-                  prerelease: ${{ needs.version.outputs.version_type != 'stable' }}
+                  prerelease: ${{ needs.version.outputs.version_type == 'prerelease' }}
                   draft: false
-                  make_latest: true
+                  make_latest: ${{ needs.version.outputs.version_type == 'stable' }}

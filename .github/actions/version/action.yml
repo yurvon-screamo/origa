@@ -9,7 +9,7 @@ outputs:
         description: "Base version without suffix (0.3.0 or 0.2.1)"
         value: ${{ steps.calc.outputs.version_base }}
     version_type:
-        description: "Version type (stable or alpha)"
+        description: "Version type (stable, prerelease, or alpha)"
         value: ${{ steps.calc.outputs.version_type }}
     commit_sha:
         description: "Full commit SHA"
@@ -44,14 +44,21 @@ runs:
               echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
               echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
 
-              if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                VERSION="${{ github.ref_name }}"
-                VERSION="${VERSION#v}"
-                VERSION_TYPE="stable"
+              REF_TYPE="${{ github.ref_type }}"
+              REF_NAME="${{ github.ref_name }}"
 
-                echo "version=${VERSION}" >> $GITHUB_OUTPUT
-                echo "version_base=${VERSION}" >> $GITHUB_OUTPUT
-                echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+              # Stable: vX.Y.Z — numeric only, no pre-release suffix.
+              if [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                VERSION="${REF_NAME#v}"
+                VERSION_BASE="${VERSION}"
+                VERSION_TYPE="stable"
+              # Prerelease: vX.Y.Z-rcN — trailing digit required, so a bare
+              # "rc" falls through to alpha. The rc-segment regex accepts both
+              # "rc1" and the dotted "rc.1" / "rc1.2" forms.
+              elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9.]*[0-9]+$ ]]; then
+                VERSION="${REF_NAME#v}"
+                VERSION_BASE="${VERSION%%-rc*}"
+                VERSION_TYPE="prerelease"
               else
                 VERSION_TYPE="alpha"
 
@@ -78,8 +85,8 @@ runs:
 
                 VERSION_BASE="${MAJOR}.${MINOR}.${PATCH}"
                 VERSION="${VERSION_BASE}-alpha.${COMMIT_COUNT}"
-
-                echo "version=${VERSION}" >> $GITHUB_OUTPUT
-                echo "version_base=${VERSION_BASE}" >> $GITHUB_OUTPUT
-                echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
               fi
+
+              echo "version=${VERSION}" >> $GITHUB_OUTPUT
+              echo "version_base=${VERSION_BASE}" >> $GITHUB_OUTPUT
+              echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT

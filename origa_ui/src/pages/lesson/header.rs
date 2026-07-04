@@ -25,7 +25,7 @@ pub fn LessonHeader() -> impl IntoView {
     let back_label = Signal::derive(move || i18n.get_keys().common().back().inner().to_string());
 
     view! {
-        <div class="flex items-center gap-2 mb-2" data-testid="lesson-header">
+        <div class="flex items-center gap-2 mb-2 shrink-0" data-testid="lesson-header">
             <button
                 data-testid="lesson-back-btn"
                 class="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"

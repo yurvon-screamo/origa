@@ -1,10 +1,6 @@
 name: Build and Push Docker Images
 
 on:
-    workflow_run:
-        workflows: ["CI"]
-        types: [completed]
-        branches: [master]
     push:
         tags:
             - "v*.*.*"
@@ -19,9 +15,46 @@ env:
     IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+    require-ci-green:
+        name: Require CI green
+        runs-on: ubuntu-latest
+        permissions:
+            actions: read
+        steps:
+            - name: Verify CI passed for this commit
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  EVENT: ${{ github.event_name }}
+              run: |
+                  # workflow_dispatch is an operator escape-hatch: trust the
+                  # operator, skip the CI gate. Automatic tag-push CD requires
+                  # the commit's full CI (lint+test+e2e+build-tauri+docker-build)
+                  # to be green first, restoring the invariant the previous
+                  # workflow_run trigger implicitly enforced.
+                  if [ "$EVENT" != "push" ]; then
+                    echo "Manual dispatch ($EVENT) — bypassing CI gate"
+                    exit 0
+                  fi
+
+                  RUN_ID=$(gh run list \
+                    --repo ${{ github.repository }} \
+                    --workflow ci.yml \
+                    --commit "${{ github.sha }}" \
+                    --status success \
+                    --limit 1 \
+                    --json databaseId \
+                    --jq '.[0].databaseId' 2>/dev/null || echo "")
+
+                  if [ -z "$RUN_ID" ]; then
+                    echo "::error::No successful CI run found for commit ${{ github.sha }}. Tag-triggered CD requires a green CI run first."
+                    exit 1
+                  fi
+                  echo "CI run $RUN_ID is green for ${{ github.sha }}"
+
     version:
         permissions:
             contents: read
+        needs: [require-ci-green]
         runs-on: ubuntu-latest
         outputs:
             version: ${{ steps.version.outputs.version }}
@@ -42,11 +75,7 @@ jobs:
 
     build-and-push:
         name: Build and Push (${{ matrix.image }})
-        needs: [version]
-        if: >
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+        needs: [require-ci-green, version]
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -91,8 +120,7 @@ jobs:
               with:
                   images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.image }}
                   tags: |
-                      type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
-                      type=raw,value=edge,enable=${{ github.ref == 'refs/heads/master' }}
+                      type=raw,value=latest,enable=${{ needs.version.outputs.version_type == 'stable' }}
                       type=raw,value=${{ needs.version.outputs.version }}
                       type=sha,prefix=
 
@@ -114,8 +142,8 @@ jobs:
         name: Deploy to Railway
         permissions:
             contents: read
-        needs: [version, build-and-push]
-        if: success()
+        needs: [require-ci-green, version, build-and-push]
+        if: success() && startsWith(github.ref, 'refs/tags/v') && needs.version.outputs.version_type == 'stable'
         runs-on: ubuntu-latest
         container: ghcr.io/railwayapp/cli:latest
         steps:

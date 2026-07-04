@@ -3,7 +3,20 @@ use leptos::prelude::*;
 use crate::components::seo::{PageMeta, SchemaOrg, breadcrumb_schema};
 use crate::content::Locale;
 
-const GITHUB_RELEASES_URL: &str = "https://github.com/yurvon-screamo/origa/releases/latest";
+// Fixed-name aliases published alongside the versioned assets on every
+// stable release (see ADR-025 and .github/workflows/_build-tauri.yml). GitHub's
+// /releases/latest/download/<name> URL requires a filename that does not change
+// between releases, so each platform links to its alias rather than the
+// versioned asset. Clicking starts the file download directly (GitHub serves
+// these with Content-Disposition: attachment), skipping the release UI.
+const DOWNLOAD_WINDOWS: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
+const DOWNLOAD_LINUX_APPIMAGE: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage";
+const DOWNLOAD_MACOS: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_macos-arm64.zip";
+const DOWNLOAD_ANDROID: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
 
 #[component]
@@ -35,7 +48,7 @@ pub fn DownloadPage() -> impl IntoView {
                             <p class="download-platform__formats">{c.download_windows_formats}</p>
                         </div>
                     </div>
-                    <a href=GITHUB_RELEASES_URL class="btn btn-filled btn-lg download-primary__btn">
+                    <a href=DOWNLOAD_WINDOWS class="btn btn-filled btn-lg download-primary__btn">
                         {c.download_button}
                         " →"
                     </a>
@@ -64,21 +77,21 @@ pub fn DownloadPage() -> impl IntoView {
                     icon=view! { <IconApple /> }.into_any()
                     name=c.download_macos
                     formats=c.download_macos_formats
-                    href=GITHUB_RELEASES_URL
+                    href=DOWNLOAD_MACOS
                     button_text=c.download_button
                 />
                 <DownloadCard
                     icon=view! { <IconLinux /> }.into_any()
                     name=c.download_linux
                     formats=c.download_linux_formats
-                    href=GITHUB_RELEASES_URL
+                    href=DOWNLOAD_LINUX_APPIMAGE
                     button_text=c.download_button
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
                     name=c.download_android
                     formats=c.download_android_formats
-                    href=GITHUB_RELEASES_URL
+                    href=DOWNLOAD_ANDROID
                     button_text=c.download_button
                 />
                 // iOS — coming soon (no download button)

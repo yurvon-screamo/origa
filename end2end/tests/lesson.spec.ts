@@ -225,3 +225,45 @@ testWithFreshUser.describe("Lesson Page", () => {
     });
 
 });
+
+testWithFreshUser.describe("Lesson Card Vertical Layout", () => {
+    testWithFreshUser(
+        "content area fills the shell vertically (height-chain guard)",
+        async ({ page }) => {
+            test.setTimeout(90_000);
+
+            // Tablet portrait: where the top-aligned bug (Bug #6) was reported.
+            await page.setViewportSize({ width: 820, height: 1180 });
+
+            const lessonPage = await setupLessonWithCards(page);
+
+            // lesson-content is flex-1 of the shell's flex column (ADR-027). On a
+            // tall viewport the card fits, so the container must have free vertical
+            // space (scrollHeight <= clientHeight) and a near-viewport clientHeight.
+            // If the height chain breaks (e.g. a leptos_router upgrade wraps the
+            // matched view, so the page is no longer a direct flex child of <main>),
+            // lesson-content collapses to content height → scrollHeight ~= clientHeight
+            // and clientHeight is tiny → this fails.
+            //
+            // Exact card centering position is NOT asserted: that would require a
+            // testid on the card wrapper, adding a type param to the bin crate's
+            // view tree and re-triggering its recursion_limit fragility (ADR-027 §B3).
+            const dims = await lessonPage.lessonContent.evaluate((el) => {
+                const node = el as HTMLElement;
+                return {
+                    scrollHeight: node.scrollHeight,
+                    clientHeight: node.clientHeight,
+                    justifyContent: getComputedStyle(node).justifyContent,
+                };
+            });
+
+            expect(dims.scrollHeight).toBeLessThanOrEqual(dims.clientHeight);
+            expect(dims.clientHeight).toBeGreaterThan(700);
+            // Guards the centering rule itself (catches removal of the
+            // .justify-safe-center class/CSS). Chromium normalizes the resolved
+            // value of `safe center` to `center`, so this verifies the `center`
+            // half — the `safe` overflow fallback stays on manual smoke.
+            expect(dims.justifyContent).toContain("center");
+        },
+    );
+});
