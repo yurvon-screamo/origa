@@ -3,9 +3,11 @@
 Files are split into three categories by how often they change:
 
 - TRULY-STATIC (immutable, 1 year): ML models (ndlocr/whisper), kanji stroke
-  art, recorded audio, and the compiled lindera system dictionary. These move
-  only on rare deliberate events — a model retrain or a lindera version bump —
-  never on a content release.
+  art, recorded audio, the compiled lindera system dictionary, and self-hosted
+  web fonts. These move only on rare deliberate events — a model retrain, a
+  lindera version bump, a font swap — never on a content release. Fonts are
+  content-addressed (the file hash is in the name), so a changed glyph ships
+  under a new URL and the immutable copy cannot poison the edge cache.
 - RELEASE-UPDATED (5 min, must-revalidate): content JSON shipped or corrected
   every release (grammar, phrases, dictionary chunks, JLPT sets, pitch). This
   is the fix for the PR #182 edge-cache poisoning: S3 updated grammar.json but
@@ -33,6 +35,7 @@ NO_CACHE: Final[str] = "no-cache"
 _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
     {
         "dictionaries/",
+        "fonts/",
         "kanji_animations/",
         "kanji_frames/",
         "ndlocr/",

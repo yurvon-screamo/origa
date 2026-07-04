@@ -24,6 +24,7 @@ EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
     "ndlocr": IMMUTABLE,
     "phrases/audio": IMMUTABLE,
     "whisper": IMMUTABLE,
+    "fonts": IMMUTABLE,
     "phrases/data": RELEASE_UPDATED,
     "well_known_set/irodori_nyuumon": RELEASE_UPDATED,
     "well_known_set/irodori_shokyuu1": RELEASE_UPDATED,
@@ -91,6 +92,9 @@ def test_grammar_is_not_immutable():
         "dictionaries/dict.words",
         "dictionaries/JmdictFurigana.txt",
         "dictionaries/metadata.json",
+        "fonts/noto-sans-jp-400-a1fd00ef.woff2",
+        "fonts/cormorant-garamond-87e70f35.woff2",
+        "fonts/dm-mono-400-9509bd30.woff2",
     ],
 )
 def test_immutable_assets(path: str):

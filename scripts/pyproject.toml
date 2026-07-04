@@ -3,7 +3,7 @@ name = "origa-scripts"
 version = "0.1.0"
 description = "Grammar authoring and CDN tooling for Origa"
 requires-python = ">=3.10"
-dependencies = ["pytest>=8.0"]
+dependencies = ["boto3>=1.35", "pytest>=8.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
