@@ -954,3 +954,14 @@ well_known_set/well_known_types_meta.json
 whisper/onnx/decoder_model.onnx
 whisper/onnx/encoder_model.onnx
 whisper/tokenizer.json
+
+# FONTS-START
+fonts/cormorant-garamond-87e70f35.woff2
+fonts/cormorant-garamond-italic-2c52c606.woff2
+fonts/dm-mono-300-0ccafd3d.woff2
+fonts/dm-mono-400-9509bd30.woff2
+fonts/dm-mono-400-italic-d93bb591.woff2
+fonts/dm-mono-500-76e94272.woff2
+fonts/noto-sans-jp-400-a1fd00ef.woff2
+fonts/noto-serif-jp-400-6c031ceb.woff2
+# FONTS-END

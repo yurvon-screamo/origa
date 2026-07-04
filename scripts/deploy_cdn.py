@@ -62,6 +62,7 @@ SYNC_DIRS = [
     "phrases/audio",
     "phrases/data",
     "whisper",
+    "fonts",
     "well_known_set/irodori_nyuumon",
     "well_known_set/irodori_shokyuu1",
     "well_known_set/irodori_shokyuu2",

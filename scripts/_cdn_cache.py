@@ -38,6 +38,7 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
         "ndlocr/",
         "phrases/audio/",
         "whisper/",
+        "fonts/",
     }
 )
 

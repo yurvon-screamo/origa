@@ -35,6 +35,38 @@ testWithFreshUser.describe("Kanji Page - CRUD", () => {
         await expect(kanjiPage.emptyState).not.toBeVisible();
     });
 
+    testWithFreshUser("should load self-hosted CJK fonts from CDN", async ({ page }) => {
+        test.setTimeout(60_000);
+        const fontStatuses: number[] = [];
+        page.on("response", (response) => {
+            const url = response.url();
+            if (url.includes("/fonts/") && url.endsWith(".woff2")) {
+                fontStatuses.push(response.status());
+            }
+        });
+
+        const kanjiPage = await setupKanjiPage(page);
+        await addFirstKanji(kanjiPage);
+        await expect(kanjiPage.kanjiGrid).toBeVisible({ timeout: 10_000 });
+
+        // A rendered kanji card contains CJK, so the Noto JP subset must be
+        // fetched from the CDN (not a dangling @font-face URL).
+        await expect
+            .poll(() => fontStatuses.length, { timeout: 15_000 })
+            .toBeGreaterThan(0);
+        expect(fontStatuses.some((status) => status === 200)).toBe(true);
+
+        // The declared font stack on a CJK element must carry the Japanese
+        // fallback (ADR-028). getComputedStyle returns the CSS stack, not the
+        // per-glyph rendered font — this guards against a regression to a
+        // Latin-only stack, not against glyph-level substitution.
+        const card = page.getByTestId("kanji-card-item").first();
+        const fontFamily = await card.evaluate(
+            (el) => getComputedStyle(el).fontFamily,
+        );
+        expect(fontFamily).toMatch(/Noto (Sans|Serif) JP/);
+    });
+
     testWithFreshUser("should add kanji from multiple levels", async ({ page }) => {
         test.setTimeout(60_000);
         const kanjiPage = await setupKanjiPage(page);

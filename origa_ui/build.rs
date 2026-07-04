@@ -10,6 +10,7 @@ fn main() {
     handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
+    generate_font_registry();
     println!("cargo:rerun-if-changed=build.rs");
 
     // Version info from CI environment
@@ -654,4 +655,67 @@ fn generate_well_known_meta() {
         meta_list.len(),
         output_file.display()
     );
+}
+
+/// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files in `cdn/fonts/`.
+///
+/// Each file is named `<logical>-<sha8>.woff2` (content hash, see
+/// `scripts/subset_fonts.py`). The hash suffix is the CDN cache-bust key: a
+/// regenerated subset yields a new hash → new URL, so immutable edge caches
+/// can never serve a stale font (PR #182 class).
+///
+/// The generated module exposes `FONT_FILES: &[(&str, &str)]` mapping the
+/// logical name (used by `font_face_css`) to the on-CDN filename. When
+/// `cdn/fonts/` is absent the array is empty, so the app degrades gracefully
+/// (no @font-face injected, system fallback) instead of failing to build.
+fn generate_font_registry() {
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let fonts_dir = Path::new(&manifest_dir)
+        .join("..")
+        .join("cdn")
+        .join("fonts");
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_file = Path::new(&out_dir).join("fonts.rs");
+
+    println!("cargo:rerun-if-changed={}", fonts_dir.display());
+
+    let mut entries: Vec<(String, String)> = Vec::new();
+    if fonts_dir.is_dir() {
+        let mut names: Vec<_> = fs::read_dir(&fonts_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter_map(|e| e.file_name().to_str().map(str::to_owned))
+            .filter(|n| n.ends_with(".woff2"))
+            .collect();
+        names.sort();
+        for filename in names {
+            let logical = strip_hash_suffix(&filename);
+            entries.push((logical, filename));
+        }
+    }
+
+    let mut src = String::from("pub static FONT_FILES: &[(&str, &str)] = &[\n");
+    for (logical, filename) in &entries {
+        src.push_str(&format!("    (\"{logical}\", \"{filename}\"),\n"));
+    }
+    src.push_str("];\n");
+    fs::write(&out_file, src).expect("Failed to write fonts.rs");
+    println!(
+        "cargo:warning=Registered {} font file(s) to {}",
+        entries.len(),
+        out_file.display()
+    );
+}
+
+/// Reduce `<logical>-<sha8>.woff2` to `<logical>` by stripping the trailing
+/// 8-hex-char content hash. Falls back to the full stem if the suffix does not
+/// match the expected hash shape (defensive: malformed filenames stay visible).
+fn strip_hash_suffix(filename: &str) -> String {
+    let stem = filename.trim_end_matches(".woff2");
+    match stem.rsplit_once('-') {
+        Some((head, tail)) if tail.len() == 8 && tail.chars().all(|c| c.is_ascii_hexdigit()) => {
+            head.to_owned()
+        },
+        _ => stem.to_owned(),
+    }
 }

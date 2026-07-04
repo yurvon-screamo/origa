@@ -81,3 +81,6 @@ models/whisper-tiny-onnx/
 
 # cdn
 cdn
+
+# Font source cache (downloaded by scripts/subset_fonts.py)
+scripts/.font_cache/

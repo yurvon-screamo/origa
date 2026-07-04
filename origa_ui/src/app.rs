@@ -12,11 +12,12 @@ use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
 use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{
-    ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer,
+    ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer, inject_font_faces,
 };
 
 #[component]
 pub fn App() -> impl IntoView {
+    inject_font_faces();
     let auth_store = AuthStore::new();
     let connectivity = ConnectivityStore::new();
     let offline_bundle_store = OfflineBundleStore::new();
