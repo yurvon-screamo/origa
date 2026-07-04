@@ -60,6 +60,80 @@ pub fn opener_open_url_fn() -> Option<Function> {
         .and_then(|v| v.dyn_into::<Function>().ok())
 }
 
+/// Reload the current Tauri WebView.
+///
+/// Primary path: `window.__TAURI__.webview.getCurrentWebview().reload()`
+/// (Tauri v2.4.0+, added in tauri-apps/tauri#12818). This is the native WebView
+/// reload and, by design, does not perform a top-level navigation to the origin,
+/// so it does not reach the URL-navigation policy that can leak
+/// `tauri.localhost` to the system browser on Android.
+///
+/// Fallback: `window.location.reload()`, used when the native `reload` method is
+/// unavailable on the running Tauri version. Combined with `preventDefault()` on
+/// the keydown accelerator (see `hooks::keyboard_shortcuts`), this keeps the
+/// reload inside the WebView instead of letting the accelerator's default
+/// handling run.
+///
+/// Returns `Err` only if `window` itself is unavailable (effectively never in a
+/// browser/WASM context).
+pub fn reload_current_webview() -> Result<(), String> {
+    let window = window().ok_or("window not available")?;
+
+    if try_native_webview_reload() {
+        return Ok(());
+    }
+
+    tracing::warn!(
+        "Native Tauri WebView reload unavailable; falling back to window.location.reload()"
+    );
+    window
+        .location()
+        .reload()
+        .map_err(|e| format!("window.location.reload() failed: {e:?}"))
+}
+
+/// Attempt `window.__TAURI__.webview.getCurrentWebview().reload()`.
+///
+/// Returns `false` if any step of the JS property/call chain is unavailable so
+/// the caller can fall back. Resilient to Tauri versions that do not expose the
+/// `reload` method on the `Webview` instance.
+fn try_native_webview_reload() -> bool {
+    let obj = match tauri_object() {
+        Some(o) => o,
+        None => return false,
+    };
+
+    let webview_mod = match Reflect::get(&obj, &JsValue::from_str("webview")) {
+        Ok(v) if !v.is_undefined() && !v.is_null() => v,
+        _ => return false,
+    };
+
+    let get_current = match Reflect::get(&webview_mod, &JsValue::from_str("getCurrentWebview")) {
+        Ok(v) => match v.dyn_into::<Function>() {
+            Ok(f) => f,
+            Err(_) => return false,
+        },
+        Err(_) => return false,
+    };
+
+    let webview = match get_current.call0(&JsValue::UNDEFINED) {
+        Ok(v) if !v.is_undefined() && !v.is_null() => v,
+        _ => return false,
+    };
+
+    let reload_fn = match Reflect::get(&webview, &JsValue::from_str("reload")) {
+        Ok(v) => match v.dyn_into::<Function>() {
+            Ok(f) => f,
+            // reload() method absent on this Tauri version → fall back.
+            Err(_) => return false,
+        },
+        Err(_) => return false,
+    };
+
+    // reload() is an instance method — call with the webview as `this`.
+    reload_fn.call0(&webview).is_ok()
+}
+
 /// Calls a Tauri command with the given arguments object and awaits the result.
 ///
 /// `args` must be a JS object whose keys match the command's parameter names

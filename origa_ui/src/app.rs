@@ -48,6 +48,11 @@ pub fn App() -> impl IntoView {
     check_url_oauth_callback(&auth_store, &i18n);
     setup_oauth_listener(auth_store.clone(), i18n);
 
+    // Intercept reload accelerators (Ctrl+R / Cmd+R / F5) so that on Android
+    // (physical keyboard) they reload the WebView instead of leaking the
+    // tauri.localhost origin to the system browser. No-op in the browser.
+    crate::hooks::keyboard_shortcuts::install_reload_guard();
+
     let update_info = RwSignal::new(None::<updater::UpdateInfo>);
     let download_progress = RwSignal::new(None::<f32>);
 
