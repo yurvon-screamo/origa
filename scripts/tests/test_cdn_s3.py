@@ -1,19 +1,20 @@
 """Unit tests for the boto3 upload path in ``_cdn_s3`` (T3 Storage fix).
 
 T3 Storage drops single-PUT bodies larger than ~24KB; the aws CLI only
-auto-multiparts above 8MB, so the 24KB–8MB band (fonts, audio, JSON) failed.
-These tests pin the behaviour added to replace it: the multipart
-``TransferConfig`` threshold, the content-type resolver, the per-file upload
-metadata, and the directory sync diff that avoids re-uploading unchanged
+auto-multiparts above 8MB, so the 24KB-8MB band (fonts, audio, JSON) failed.
+These tests pin the behaviour added to replace it: the multipart threshold,
+the content-type resolver, the per-file upload metadata + error handling, and
+the directory sync diff (size + mtime) that avoids re-uploading unchanged
 static objects.
 
 boto3 is an external system, so the S3 client and the network-touching
 helpers are monkeypatched. The decision logic (which files to upload) is
-exercised black-box against a fake remote size map.
+exercised black-box against a fake remote object map.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -21,9 +22,10 @@ import pytest
 import _cdn_s3
 from _cdn_s3 import (
     MULTIPART_THRESHOLD_BYTES,
-    _TRANSFER_CONFIG,
+    RemoteObject,
+    _transfer_config,
     content_type_for,
-    list_remote_sizes,
+    list_remote_objects,
     sync_directory,
     upload_file,
 )
@@ -32,10 +34,13 @@ from _cdn_s3 import (
 class _FakeUploadClient:
     """Records boto3 ``upload_file`` calls without touching the network."""
 
-    def __init__(self) -> None:
+    def __init__(self, raise_exc: BaseException | None = None) -> None:
         self.calls: list[dict[str, object]] = []
+        self._raise_exc = raise_exc
 
     def upload_file(self, **kwargs: object) -> None:
+        if self._raise_exc is not None:
+            raise self._raise_exc
         self.calls.append(kwargs)
 
 
@@ -48,7 +53,7 @@ class _FakePaginator:
 
 
 class _FakeListClient:
-    """Yields canned list-objects-v2 pages for ``list_remote_sizes``."""
+    """Yields canned list-objects-v2 pages for ``list_remote_objects``."""
 
     def __init__(self, pages: list[dict[str, object]]) -> None:
         self._pages = pages
@@ -68,8 +73,8 @@ def _record_uploads() -> tuple[list[tuple[Path, str, str, bool]], object]:
 
 
 def _build_sync_dir(root: Path) -> Path:
-    """A sample ``fonts/`` dir: two files, a README, and a nested file."""
-    d = root / "fonts"
+    """A sample dir: two ASCII files, a README, a nested file, and a CJK file."""
+    d = root / "assets"
     d.mkdir()
     (d / "a.woff2").write_bytes(b"AAAA")  # 4 bytes
     (d / "b.json").write_bytes(b"BBBBBBBB")  # 8 bytes
@@ -77,6 +82,9 @@ def _build_sync_dir(root: Path) -> Path:
     nested = d / "sub"
     nested.mkdir()
     (nested / "c.bin").write_bytes(b"CC")  # 2 bytes
+    # CJK filename mirrors the real kanji_animations naming (一.svg); the key
+    # must round-trip without shell metacharacter concerns (boto3 path).
+    (d / "一.svg").write_bytes(b"DDDD")
     return d
 
 
@@ -88,10 +96,11 @@ def _build_sync_dir(root: Path) -> Path:
 def test_multipart_threshold_forces_multipart_under_cli_default():
     # The aws CLI's auto-multipart kicks in at 8MB; we must force it down to
     # 16KB so T3's ~24KB single-PUT limit never applies. A 2MB font (the
-    # failing case) is now well above the threshold → multipart.
+    # failing case) is now well above the threshold -> multipart.
     assert MULTIPART_THRESHOLD_BYTES == 16 * 1024
-    assert _TRANSFER_CONFIG.multipart_threshold == 16 * 1024
-    assert _TRANSFER_CONFIG.multipart_chunksize == 16 * 1024
+    cfg = _transfer_config()
+    assert cfg.multipart_threshold == 16 * 1024  # type: ignore[attr-defined]
+    assert cfg.multipart_chunksize == 16 * 1024  # type: ignore[attr-defined]
     assert 2 * 1024 * 1024 > MULTIPART_THRESHOLD_BYTES
 
 
@@ -115,7 +124,7 @@ def test_content_type_override(filename: str, expected: str):
 
 
 def test_content_type_unknown_falls_back_to_octet_stream():
-    # mimetypes cannot guess .onnx → default binary type.
+    # mimetypes cannot guess .onnx -> default binary type.
     assert content_type_for(Path("model.onnx")) == "application/octet-stream"
 
 
@@ -149,7 +158,6 @@ def test_upload_file_passes_metadata_and_transfer_config(tmp_path, monkeypatch):
         "CacheControl": "public, max-age=1, immutable",
         "ContentType": "font/woff2",
     }
-    assert call["Config"] is _TRANSFER_CONFIG
 
 
 def test_upload_file_dry_run_skips_client(tmp_path, monkeypatch, capsys):
@@ -168,59 +176,105 @@ def test_upload_file_dry_run_skips_client(tmp_path, monkeypatch, capsys):
     assert "no-cache" in out
 
 
+def test_upload_file_aborts_with_key_on_boto3_error(tmp_path, monkeypatch):
+    # A failing upload must surface the offending key and exit non-zero, not
+    # bubble a raw botocore traceback.
+    from botocore.exceptions import ClientError
+
+    local = tmp_path / "broken.woff2"
+    local.write_bytes(b"x" * 10)
+    err = ClientError({"Error": {"Code": "SlowDown", "Message": "boom"}}, "PutObject")
+    monkeypatch.setattr(_cdn_s3, "_s3_upload_client", lambda: _FakeUploadClient(err))
+
+    with pytest.raises(SystemExit) as exc:
+        upload_file(local, "fonts/broken.woff2", "immutable", dry_run=False)
+
+    assert exc.value.code == 1
+
+
 # ---------------------------------------------------------------------------
-# list_remote_sizes
+# list_remote_objects
 # ---------------------------------------------------------------------------
 
 
-def test_list_remote_sizes_paginates_and_normalizes_prefix(monkeypatch):
+def test_list_remote_objects_paginates_and_normalizes_prefix(monkeypatch):
+    last_modified = datetime(2026, 1, 1, tzinfo=timezone.utc)
     pages = [
         {
             "Contents": [
-                {"Key": "fonts/a.woff2", "Size": 4},
-                {"Key": "fonts/b.json", "Size": 8},
+                {"Key": "fonts/a.woff2", "Size": 4, "LastModified": last_modified},
+                {"Key": "fonts/b.json", "Size": 8, "LastModified": last_modified},
             ]
         },
-        {"Contents": [{"Key": "fonts/sub/c.bin", "Size": 2}]},
+        {"Contents": [{"Key": "fonts/sub/c.bin", "Size": 2}]},  # no LastModified
         {},  # empty trailing page
     ]
     monkeypatch.setattr(_cdn_s3, "_s3_upload_client", lambda: _FakeListClient(pages))
 
-    sizes = list_remote_sizes("fonts")  # no trailing slash → normalized inside
+    objects = list_remote_objects("fonts")  # no trailing slash -> normalized
 
-    assert sizes == {
-        "fonts/a.woff2": 4,
-        "fonts/b.json": 8,
-        "fonts/sub/c.bin": 2,
-    }
+    assert objects["fonts/a.woff2"] == RemoteObject(4, last_modified.timestamp())
+    assert objects["fonts/b.json"] == RemoteObject(8, last_modified.timestamp())
+    # Missing LastModified falls back to 0.0 so a newer local file re-uploads.
+    assert objects["fonts/sub/c.bin"] == RemoteObject(2, 0.0)
 
 
 # ---------------------------------------------------------------------------
-# sync_directory — diff decision logic
+# sync_directory — diff decision logic (size + mtime)
 # ---------------------------------------------------------------------------
 
 
-def test_sync_directory_uploads_new_and_changed_skips_unchanged(tmp_path, monkeypatch):
+def test_sync_directory_uploads_new_changed_and_newer_skips_unchanged(
+    tmp_path, monkeypatch
+):
     local_dir = _build_sync_dir(tmp_path)
     calls, fake_upload = _record_uploads()
     monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
-    # a.woff2 matches size (4) → unchanged; c.bin differs (999 vs 2) → changed;
-    # b.json absent remotely → new.
+
+    # a.woff2: same size, remote newer -> skip.
+    # c.bin: size differs -> upload.
+    # 一.svg: same size but remote older -> upload (mtime signal).
+    future = 9_999_999_999.0
     monkeypatch.setattr(
         _cdn_s3,
-        "list_remote_sizes",
-        lambda prefix: {"fonts/a.woff2": 4, "fonts/sub/c.bin": 999},
+        "list_remote_objects",
+        lambda prefix: {
+            "assets/a.woff2": RemoteObject(4, future),
+            "assets/sub/c.bin": RemoteObject(999, future),
+            "assets/一.svg": RemoteObject(4, 0.0),
+        },
     )
 
-    sync_directory(local_dir, "fonts", "public, immutable", dry_run=False)
+    sync_directory(local_dir, "assets", "public, immutable", dry_run=False)
 
-    keys = [key for _, key, _, _ in calls]
-    assert "fonts/b.json" in keys  # missing remotely
-    assert "fonts/sub/c.bin" in keys  # size differs
-    assert "fonts/a.woff2" not in keys  # unchanged → skipped
-    assert "fonts/README.md" not in keys  # README always skipped
+    keys = sorted(key for _, key, _, _ in calls)
+    assert "assets/b.json" in keys  # missing remotely
+    assert "assets/sub/c.bin" in keys  # size differs
+    assert "assets/一.svg" in keys  # local newer than remote
+    assert "assets/a.woff2" not in keys  # unchanged -> skipped
+    assert "assets/README.md" not in keys  # README always skipped
     assert all(cc == "public, immutable" for _, _, cc, _ in calls)
     assert all(dry is False for _, _, _, dry in calls)
+
+
+def test_sync_directory_same_size_newer_local_is_reuploaded(tmp_path, monkeypatch):
+    # The size-only regression: a same-size content edit must still upload via
+    # the mtime signal, or the CDN would serve stale content.
+    local_dir = tmp_path / "d"
+    local_dir.mkdir()
+    target = local_dir / "x.json"
+    target.write_bytes(b"exact-8")  # 7 bytes
+    calls, fake_upload = _record_uploads()
+    monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
+    monkeypatch.setattr(
+        _cdn_s3,
+        "list_remote_objects",
+        lambda prefix: {"d/x.json": RemoteObject(7, 0.0)},  # same size, ancient remote
+    )
+
+    sync_directory(local_dir, "d", "immutable", dry_run=False)
+
+    assert [key for _, key, _, _ in calls] == ["d/x.json"]
 
 
 def test_sync_directory_dry_run_does_nothing_offline(tmp_path, monkeypatch):
@@ -231,14 +285,30 @@ def test_sync_directory_dry_run_does_nothing_offline(tmp_path, monkeypatch):
     calls, fake_upload = _record_uploads()
     monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
 
-    def fail_list(prefix: str) -> dict[str, int]:
+    def fail_list(prefix: str) -> dict[str, RemoteObject]:
         raise AssertionError("dry-run must not list remote objects")
 
-    monkeypatch.setattr(_cdn_s3, "list_remote_sizes", fail_list)
+    monkeypatch.setattr(_cdn_s3, "list_remote_objects", fail_list)
 
-    sync_directory(local_dir, "fonts", "public, immutable", dry_run=True)
+    sync_directory(local_dir, "assets", "public, immutable", dry_run=True)
 
     assert calls == []
+
+
+def test_sync_directory_cjk_key_round_trips(tmp_path, monkeypatch):
+    # CJK filenames (kanji 一.svg) must map to unchanged S3 keys; this is the
+    # boto3-path equivalent of the _UNSAFE_KEY_CHARS guard that the aws-CLI
+    # path needs.
+    local_dir = tmp_path / "kanji_animations"
+    local_dir.mkdir()
+    (local_dir / "一.svg").write_bytes(b"<svg/>")
+    calls, fake_upload = _record_uploads()
+    monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
+    monkeypatch.setattr(_cdn_s3, "list_remote_objects", lambda prefix: {})
+
+    sync_directory(local_dir, "kanji_animations", "immutable", dry_run=False)
+
+    assert [key for _, key, _, _ in calls] == ["kanji_animations/一.svg"]
 
 
 def test_sync_directory_uses_normalized_prefix_key(tmp_path, monkeypatch):
@@ -248,7 +318,7 @@ def test_sync_directory_uses_normalized_prefix_key(tmp_path, monkeypatch):
     (local_dir / "x.woff2").write_bytes(b"data")
     calls, fake_upload = _record_uploads()
     monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
-    monkeypatch.setattr(_cdn_s3, "list_remote_sizes", lambda prefix: {})
+    monkeypatch.setattr(_cdn_s3, "list_remote_objects", lambda prefix: {})
 
     sync_directory(local_dir, "fonts/", "immutable", dry_run=False)
 

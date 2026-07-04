@@ -23,12 +23,12 @@ import mimetypes
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
-import boto3
-from boto3.s3.transfer import TransferConfig
-from botocore.client import BaseClient
+if TYPE_CHECKING:
+    from botocore.client import BaseClient
 
 S3_BUCKET = "adaptable-foodbox-ucep7wx"
 S3_PROFILE = "origa"
@@ -249,35 +249,66 @@ def copy_object_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
 
 # T3 Storage drops single-PUT request bodies larger than ~24KB. The aws CLI
 # only switches to multipart above its 8MB default threshold, so files in the
-# 24KB–8MB band (fonts, audio, JSON) are sent as one PUT and fail. Force
-# multipart at 16KB — every upload above that becomes >=2 parts. Verified
-# working: all 8 font files deployed successfully with this threshold.
+# 24KB-8MB band (fonts, audio, JSON) were sent as one PUT and failed. Both the
+# multipart threshold and the part size are capped by T3's ~24KB per-PUT body
+# limit, so they share one 16KB value -- the largest size verified to pass
+# (all 8 web fonts deployed through it).
+#
+# Trade-off of the tiny part size: large objects become many parts. The biggest
+# objects here are the whisper decoder (118 MB -> ~7200 parts) and the ndlocr
+# and whisper-encoder models (33-41 MB). S3 caps one object at 10 000 parts,
+# so at 16 KB the per-object ceiling is ~156 MB; the current largest object
+# sits under it, but a future model beyond that needs a larger part size, which
+# in turn requires pinning T3's exact PUT limit (only "~24 KB" is known today).
+# A model swap is also slow (thousands of serial parts); steady-state deploys
+# are unaffected because sync_directory skips unchanged objects by size+mtime.
+# Set a bucket lifecycle rule to abort incomplete multipart uploads so a failed
+# large upload does not accumulate storage cost.
 MULTIPART_THRESHOLD_BYTES = 16 * 1024
 
-# Explicit overrides for extensions ``mimetypes`` cannot guess or guesses wrong
-# on Windows. woff2 is the motivating case — browsers expect ``font/woff2`` and
-# ``mimetypes.guess_type`` returns None for it.
+# Explicit pins for extensions whose canonical type matters and that mimetypes
+# either cannot guess (woff/woff2) or resolves inconsistently across minimal
+# installs (.json).
 _CONTENT_TYPE_OVERRIDES: dict[str, str] = {
     ".woff2": "font/woff2",
     ".woff": "font/woff",
     ".json": "application/json",
 }
 
-_TRANSFER_CONFIG = TransferConfig(
-    multipart_threshold=MULTIPART_THRESHOLD_BYTES,
-    multipart_chunksize=MULTIPART_THRESHOLD_BYTES,
-    max_concurrency=1,
-)
+
+class RemoteObject(NamedTuple):
+    size: int
+    last_modified_epoch: float
+
 
 _s3_client: BaseClient | None = None
+_transfer_config_obj: object | None = None
 
 
 def _s3_upload_client() -> BaseClient:
+    # boto3 is imported lazily so refresh_cache_control.py -- which only uses
+    # the aws-CLI helpers above and never uploads -- does not require boto3 to
+    # be installed just to import _cdn_s3.
     global _s3_client
     if _s3_client is None:
+        import boto3
+
         session = boto3.Session(profile_name=S3_PROFILE)
         _s3_client = session.client("s3", endpoint_url=S3_ENDPOINT)
     return _s3_client
+
+
+def _transfer_config() -> object:
+    global _transfer_config_obj
+    if _transfer_config_obj is None:
+        from boto3.s3.transfer import TransferConfig
+
+        _transfer_config_obj = TransferConfig(
+            multipart_threshold=MULTIPART_THRESHOLD_BYTES,
+            multipart_chunksize=MULTIPART_THRESHOLD_BYTES,
+            max_concurrency=1,
+        )
+    return _transfer_config_obj
 
 
 def content_type_for(path: Path) -> str:
@@ -294,7 +325,8 @@ def upload_file(local_path: Path, key: str, cache_control: str, dry_run: bool) -
     A fresh PUT carries CacheControl/ContentType through ExtraArgs directly, so
     no separate metadata copy is needed. The 16KB threshold makes any body
     larger than that upload as multipart parts, sidestepping T3 Storage's
-    single-PUT limit that breaks the aws CLI for 24KB–8MB files.
+    single-PUT limit that breaks the aws CLI for 24KB-8MB files. boto3 errors
+    abort the deploy with the offending key rather than a raw traceback.
     """
     size = local_path.stat().st_size
     content_type = content_type_for(local_path)
@@ -305,32 +337,47 @@ def upload_file(local_path: Path, key: str, cache_control: str, dry_run: bool) -
             f"ContentType={content_type}]"
         )
         return
-    _s3_upload_client().upload_file(
-        Filename=str(local_path),
-        Bucket=S3_BUCKET,
-        Key=key,
-        ExtraArgs={"CacheControl": cache_control, "ContentType": content_type},
-        Config=_TRANSFER_CONFIG,
-    )
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    try:
+        _s3_upload_client().upload_file(
+            Filename=str(local_path),
+            Bucket=S3_BUCKET,
+            Key=key,
+            ExtraArgs={"CacheControl": cache_control, "ContentType": content_type},
+            Config=_transfer_config(),
+        )
+    except (BotoCoreError, ClientError) as exc:
+        print(f"ERROR: boto3 upload failed for {key}: {exc}", file=sys.stderr)
+        sys.exit(1)
 
 
-def list_remote_sizes(prefix: str) -> dict[str, int]:
-    """Map remote object keys under ``prefix`` to their byte sizes.
+def list_remote_objects(prefix: str) -> dict[str, RemoteObject]:
+    """Map remote object keys under ``prefix`` to size + last-modified time.
 
-    Paginates list-objects-v2 fully. ``sync_directory`` uses this to diff
-    against local files so unchanged static objects (100k+ kanji/audio/model
-    files) are not re-uploaded on every deploy.
+    Paginates list-objects-v2 fully. ``sync_directory`` diffs this against
+    local files (size + mtime) so unchanged static objects (100k+ kanji/audio/
+    model files) are not re-uploaded on every deploy.
     """
     client = _s3_upload_client()
     normalized = prefix if prefix.endswith("/") else prefix + "/"
-    sizes: dict[str, int] = {}
+    objects: dict[str, RemoteObject] = {}
     paginator = client.get_paginator("list_objects_v2")
     for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=normalized):
         for obj in page.get("Contents", []):
             obj_key = obj.get("Key")
-            if isinstance(obj_key, str):
-                sizes[obj_key] = int(obj.get("Size", 0))
-    return sizes
+            if not isinstance(obj_key, str):
+                continue
+            last_modified = obj.get("LastModified")
+            last_modified_epoch = (
+                last_modified.timestamp()
+                if isinstance(last_modified, datetime)
+                else 0.0
+            )
+            objects[obj_key] = RemoteObject(
+                int(obj.get("Size", 0)), last_modified_epoch
+            )
+    return objects
 
 
 def sync_directory(
@@ -339,24 +386,31 @@ def sync_directory(
     """Upload new/changed local files under ``local_dir`` to a bucket prefix.
 
     Mirrors ``aws s3 sync``: walk local files recursively, skip README.md, and
-    upload only objects absent remotely or differing in byte size (the CLI's
-    primary change heuristic). The deploy orchestrator prints a per-directory
-    header (name + Cache-Control) before calling this, so in dry-run the
-    function does nothing — it neither walks the 100k+ local tree nor lists
-    remote, keeping the preview instant and offline. A real run fetches the
-    remote size map and uploads only the diff; each upload routes through
-    ``upload_file``, so the 16KB multipart threshold applies.
+    upload only objects that are absent remotely, differ in byte size, or whose
+    local mtime is newer than the remote LastModified (the CLI's size+mtime
+    heuristic, so a same-size content edit is still re-uploaded rather than
+    silently served stale). The deploy orchestrator prints a per-directory
+    header before calling this, so in dry-run the function does nothing -- it
+    neither walks the 100k+ local tree nor lists remote, keeping the preview
+    instant and offline. Each upload routes through ``upload_file``, so the
+    16KB multipart threshold applies.
     """
     if dry_run:
         return
     base_prefix = prefix.rstrip("/") + "/"
-    remote_sizes = list_remote_sizes(prefix)
+    remote = list_remote_objects(prefix)
     for local_path in sorted(local_dir.rglob("*")):
         if not local_path.is_file():
             continue
         if local_path.name == "README.md":
             continue
         key = base_prefix + local_path.relative_to(local_dir).as_posix()
-        if remote_sizes.get(key) == local_path.stat().st_size:
+        stat_result = local_path.stat()
+        info = remote.get(key)
+        if (
+            info is not None
+            and info.size == stat_result.st_size
+            and stat_result.st_mtime <= info.last_modified_epoch
+        ):
             continue
         upload_file(local_path, key, cache_control, dry_run)
