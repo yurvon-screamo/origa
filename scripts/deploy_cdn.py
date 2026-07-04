@@ -62,6 +62,7 @@ SYNC_DIRS = [
     "phrases/audio",
     "phrases/data",
     "whisper",
+    "fonts",
     "well_known_set/irodori_nyuumon",
     "well_known_set/irodori_shokyuu1",
     "well_known_set/irodori_shokyuu2",
@@ -156,21 +157,7 @@ def upload_versioned_files(
         local_path = cdn_dir / relative_path
         cache_control = _cdn_cache.cache_control_for(relative_path)
         print(f"  {relative_path}  [{cache_control}]")
-        _cdn_s3.run_aws(
-            [
-                "s3",
-                "cp",
-                str(local_path),
-                _cdn_s3.s3_uri(relative_path),
-                "--profile",
-                _cdn_s3.S3_PROFILE,
-                "--endpoint-url",
-                _cdn_s3.S3_ENDPOINT,
-                "--cache-control",
-                cache_control,
-            ],
-            dry_run,
-        )
+        _cdn_s3.upload_file(local_path, relative_path, cache_control, dry_run)
 
 
 def sync_directories(cdn_dir: Path, dry_run: bool) -> None:
@@ -185,46 +172,14 @@ def sync_directories(cdn_dir: Path, dry_run: bool) -> None:
         # all-content), so one Cache-Control per directory is correct.
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
         print(f"  {dir_name}/  [{cache_control}]")
-        _cdn_s3.run_aws(
-            [
-                "s3",
-                "sync",
-                str(local_dir),
-                _cdn_s3.s3_uri(dir_name),
-                "--profile",
-                _cdn_s3.S3_PROFILE,
-                "--endpoint-url",
-                _cdn_s3.S3_ENDPOINT,
-                "--exclude",
-                "README.md",
-                "--cache-control",
-                cache_control,
-            ],
-            dry_run,
-        )
+        _cdn_s3.sync_directory(local_dir, dir_name, cache_control, dry_run)
 
 
 def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
     manifest_path = cdn_dir / "manifest.json"
     cache_control = _cdn_cache.cache_control_for("manifest.json")
     print(f"\nUploading manifest.json (Cache-Control: {cache_control})")
-    _cdn_s3.run_aws(
-        [
-            "s3",
-            "cp",
-            str(manifest_path),
-            _cdn_s3.s3_uri("manifest.json"),
-            "--profile",
-            _cdn_s3.S3_PROFILE,
-            "--endpoint-url",
-            _cdn_s3.S3_ENDPOINT,
-            "--cache-control",
-            cache_control,
-            "--metadata-directive",
-            "REPLACE",
-        ],
-        dry_run,
-    )
+    _cdn_s3.upload_file(manifest_path, "manifest.json", cache_control, dry_run)
 
 
 def main() -> None:

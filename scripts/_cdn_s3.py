@@ -1,20 +1,34 @@
-"""S3 CLI wrappers shared by ``deploy_cdn.py``.
+"""S3 transport for ``deploy_cdn.py`` and ``refresh_cache_control.py``.
 
-Centralises ``aws`` CLI invocation (shelled out via ``pwsh`` on Windows because
-that is how the operator's PowerShell environment resolves the AWS wrapper on
-the deployment host) so that ``deploy_cdn.py`` and
-``refresh_cache_control.py`` stay orchestrators rather than a transport layer.
-All shared S3 paths route through here: upload, sync, manifest download.
+Two transports live here because T3 Storage breaks one of them:
+
+- **aws CLI** (shelled out via ``pwsh`` on Windows — how the operator's
+  PowerShell environment resolves the AWS wrapper): list-objects, head-object,
+  copy-object (Cache-Control refresh), and manifest download. These are reads
+  or server-side metadata copies; none uploads a request body, so T3's
+  ~24KB single-PUT limit never applies.
+- **boto3 multipart upload**: ``upload_file`` / ``sync_directory``. The aws
+  CLI only auto-multiparts above its 8MB threshold, so files in the 24KB–8MB
+  band (web fonts, audio, JSON) failed as a single PUT. boto3 with a 16KB
+  ``TransferConfig`` threshold forces multipart and succeeds.
+
+Centralising both keeps ``deploy_cdn.py`` and ``refresh_cache_control.py``
+orchestrators rather than a transport layer.
 """
 
 from __future__ import annotations
 
 import json
+import mimetypes
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from typing import NamedTuple
+
+import boto3
+from boto3.s3.transfer import TransferConfig
+from botocore.client import BaseClient
 
 S3_BUCKET = "adaptable-foodbox-ucep7wx"
 S3_PROFILE = "origa"
@@ -54,19 +68,6 @@ def run_aws_raw(args: list[str]) -> subprocess.CompletedProcess[str]:
     except FileNotFoundError:
         print("ERROR: 'aws' CLI not found.", file=sys.stderr)
         sys.exit(1)
-
-
-def run_aws(args: list[str], dry_run: bool) -> subprocess.CompletedProcess[str]:
-    if dry_run:
-        print(f"  [DRY-RUN] aws {' '.join(args)}")
-        return subprocess.CompletedProcess(args, 0, "", "")
-
-    result = run_aws_raw(args)
-    if result.returncode != 0:
-        print(f"ERROR: aws {' '.join(args)}", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
-        sys.exit(1)
-    return result
 
 
 def download_remote_manifest(dry_run: bool) -> dict[str, object] | None:
@@ -244,3 +245,118 @@ def copy_object_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
         print(result.stderr, file=sys.stderr)
         return False
     return True
+
+
+# T3 Storage drops single-PUT request bodies larger than ~24KB. The aws CLI
+# only switches to multipart above its 8MB default threshold, so files in the
+# 24KB–8MB band (fonts, audio, JSON) are sent as one PUT and fail. Force
+# multipart at 16KB — every upload above that becomes >=2 parts. Verified
+# working: all 8 font files deployed successfully with this threshold.
+MULTIPART_THRESHOLD_BYTES = 16 * 1024
+
+# Explicit overrides for extensions ``mimetypes`` cannot guess or guesses wrong
+# on Windows. woff2 is the motivating case — browsers expect ``font/woff2`` and
+# ``mimetypes.guess_type`` returns None for it.
+_CONTENT_TYPE_OVERRIDES: dict[str, str] = {
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".json": "application/json",
+}
+
+_TRANSFER_CONFIG = TransferConfig(
+    multipart_threshold=MULTIPART_THRESHOLD_BYTES,
+    multipart_chunksize=MULTIPART_THRESHOLD_BYTES,
+    max_concurrency=1,
+)
+
+_s3_client: BaseClient | None = None
+
+
+def _s3_upload_client() -> BaseClient:
+    global _s3_client
+    if _s3_client is None:
+        session = boto3.Session(profile_name=S3_PROFILE)
+        _s3_client = session.client("s3", endpoint_url=S3_ENDPOINT)
+    return _s3_client
+
+
+def content_type_for(path: Path) -> str:
+    override = _CONTENT_TYPE_OVERRIDES.get(path.suffix.lower())
+    if override:
+        return override
+    guessed, _ = mimetypes.guess_type(str(path))
+    return guessed or "application/octet-stream"
+
+
+def upload_file(local_path: Path, key: str, cache_control: str, dry_run: bool) -> None:
+    """Upload one file to S3 via boto3 with a forced-low multipart threshold.
+
+    A fresh PUT carries CacheControl/ContentType through ExtraArgs directly, so
+    no separate metadata copy is needed. The 16KB threshold makes any body
+    larger than that upload as multipart parts, sidestepping T3 Storage's
+    single-PUT limit that breaks the aws CLI for 24KB–8MB files.
+    """
+    size = local_path.stat().st_size
+    content_type = content_type_for(local_path)
+    if dry_run:
+        print(
+            f"  [DRY-RUN] boto3 upload {local_path.name} -> {s3_uri(key)} "
+            f"({size} B) [CacheControl={cache_control}, "
+            f"ContentType={content_type}]"
+        )
+        return
+    _s3_upload_client().upload_file(
+        Filename=str(local_path),
+        Bucket=S3_BUCKET,
+        Key=key,
+        ExtraArgs={"CacheControl": cache_control, "ContentType": content_type},
+        Config=_TRANSFER_CONFIG,
+    )
+
+
+def list_remote_sizes(prefix: str) -> dict[str, int]:
+    """Map remote object keys under ``prefix`` to their byte sizes.
+
+    Paginates list-objects-v2 fully. ``sync_directory`` uses this to diff
+    against local files so unchanged static objects (100k+ kanji/audio/model
+    files) are not re-uploaded on every deploy.
+    """
+    client = _s3_upload_client()
+    normalized = prefix if prefix.endswith("/") else prefix + "/"
+    sizes: dict[str, int] = {}
+    paginator = client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=normalized):
+        for obj in page.get("Contents", []):
+            obj_key = obj.get("Key")
+            if isinstance(obj_key, str):
+                sizes[obj_key] = int(obj.get("Size", 0))
+    return sizes
+
+
+def sync_directory(
+    local_dir: Path, prefix: str, cache_control: str, dry_run: bool
+) -> None:
+    """Upload new/changed local files under ``local_dir`` to a bucket prefix.
+
+    Mirrors ``aws s3 sync``: walk local files recursively, skip README.md, and
+    upload only objects absent remotely or differing in byte size (the CLI's
+    primary change heuristic). The deploy orchestrator prints a per-directory
+    header (name + Cache-Control) before calling this, so in dry-run the
+    function does nothing — it neither walks the 100k+ local tree nor lists
+    remote, keeping the preview instant and offline. A real run fetches the
+    remote size map and uploads only the diff; each upload routes through
+    ``upload_file``, so the 16KB multipart threshold applies.
+    """
+    if dry_run:
+        return
+    base_prefix = prefix.rstrip("/") + "/"
+    remote_sizes = list_remote_sizes(prefix)
+    for local_path in sorted(local_dir.rglob("*")):
+        if not local_path.is_file():
+            continue
+        if local_path.name == "README.md":
+            continue
+        key = base_prefix + local_path.relative_to(local_dir).as_posix()
+        if remote_sizes.get(key) == local_path.stat().st_size:
+            continue
+        upload_file(local_path, key, cache_control, dry_run)
