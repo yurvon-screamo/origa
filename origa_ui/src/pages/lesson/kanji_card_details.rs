@@ -20,7 +20,6 @@ pub fn KanjiCardDetails(
     name: String,
     radicals: Option<Vec<RadicalDisplay>>,
     example_words: Option<Vec<(String, String)>>,
-    #[prop(into)] show_details: Signal<bool>,
     on_readings: Option<Vec<String>>,
     kun_readings: Option<Vec<String>>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
@@ -34,25 +33,48 @@ pub fn KanjiCardDetails(
     let on_readings_stored = StoredValue::new(on_readings);
     let kun_readings_stored = StoredValue::new(kun_readings);
 
+    let details_expanded = RwSignal::new(false);
+    let more_text =
+        Signal::derive(move || i18n.get_keys().common().more_details().inner().to_string());
+    let collapse_text =
+        Signal::derive(move || i18n.get_keys().common().collapse().inner().to_string());
+
     view! {
-        <Show when=move || show_details.get()>
-            <div class="my-6 space-y-4 max-w-max mx-auto">
-                <ReadingGroup label=Signal::derive(move || i18n.get_keys().lesson().on_yomi().inner().to_string()) readings=on_readings_stored />
-                <ReadingGroup label=Signal::derive(move || i18n.get_keys().lesson().kun_yomi().inner().to_string()) readings=kun_readings_stored />
+        <div class="my-6 space-y-4 max-w-max mx-auto">
+            <ReadingGroup
+                label=Signal::derive(move || i18n.get_keys().lesson().on_yomi().inner().to_string())
+                readings=on_readings_stored
+            />
+            <ReadingGroup
+                label=Signal::derive(move || i18n.get_keys().lesson().kun_yomi().inner().to_string())
+                readings=kun_readings_stored
+            />
 
-                <div class="flex gap-4 items-start text-left">
-                    <div class="w-16 shrink-0">
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                            {t!(i18n, lesson.meaning)}
-                        </Text>
-                    </div>
-                    <div class="flex px-2 py-1">
-                        <Text size=TextSize::Large class="text-primary">
-                            {name_stored.get_value()}
-                        </Text>
-                    </div>
+            <div class="flex gap-4 items-start text-left">
+                <div class="w-16 shrink-0">
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                        {t!(i18n, lesson.meaning)}
+                    </Text>
                 </div>
+                <div class="flex px-2 py-1">
+                    <Text size=TextSize::Large class="text-primary">
+                        {name_stored.get_value()}
+                    </Text>
+                </div>
+            </div>
+        </div>
 
+        <div class="mt-3">
+            <button
+                class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
+                on:click=move |_| details_expanded.update(|v| *v = !*v)
+            >
+                {move || if details_expanded.get() { collapse_text.get() } else { more_text.get() }}
+            </button>
+        </div>
+
+        <Show when=move || details_expanded.get()>
+            <div class="my-6 space-y-4 max-w-max mx-auto">
                 <Show when=move || radicals_stored.get_value().is_some()>
                     <div class="flex gap-4 items-start text-left">
                         <div class="w-16 shrink-0">
