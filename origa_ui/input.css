@@ -1,3 +1,85 @@
+/* Self-hosted typography — @font-face declarations.
+   Hardcoded (not build-time generated) because cdn/fonts/ is gitignored.
+   CDN URLs are immutable (content-hash filenames). Update hashes only
+   when regenerating subsets via scripts/subset_fonts.py.
+   See ADR-028 for rationale. */
+
+/* Noto Sans JP — CJK fallback for --font-mono */
+@font-face {
+    font-family: "Noto Sans JP";
+    src: url("https://s3.origa.uwuwu.net/fonts/noto-sans-jp-400-a1fd00ef.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+3000-303F, U+3040-309F, U+30A0-30FF, U+4E00-9FFF, U+FF00-FFEF;
+}
+
+/* Noto Serif JP — CJK fallback for --font-serif */
+@font-face {
+    font-family: "Noto Serif JP";
+    src: url("https://s3.origa.uwuwu.net/fonts/noto-serif-jp-400-6c031ceb.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+3000-303F, U+3040-309F, U+30A0-30FF, U+4E00-9FFF, U+FF00-FFEF;
+}
+
+/* Cormorant Garamond — display/heading serif */
+@font-face {
+    font-family: "Cormorant Garamond";
+    src: url("https://s3.origa.uwuwu.net/fonts/cormorant-garamond-87e70f35.woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
+@font-face {
+    font-family: "Cormorant Garamond";
+    src: url("https://s3.origa.uwuwu.net/fonts/cormorant-garamond-italic-2c52c606.woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: italic;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
+/* DM Mono — UI monospace */
+@font-face {
+    font-family: "DM Mono";
+    src: url("https://s3.origa.uwuwu.net/fonts/dm-mono-300-0ccafd3d.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
+@font-face {
+    font-family: "DM Mono";
+    src: url("https://s3.origa.uwuwu.net/fonts/dm-mono-400-9509bd30.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
+@font-face {
+    font-family: "DM Mono";
+    src: url("https://s3.origa.uwuwu.net/fonts/dm-mono-500-76e94272.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
+@font-face {
+    font-family: "DM Mono";
+    src: url("https://s3.origa.uwuwu.net/fonts/dm-mono-400-italic-d93bb591.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+    unicode-range: U+0000-007F, U+00A0-00FF, U+0100-017F, U+0400-04FF;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
