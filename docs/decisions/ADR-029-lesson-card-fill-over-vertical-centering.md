@@ -43,7 +43,11 @@ visible box is constant across all card types:
   default.
 + The bare wrapper `<div>` in `LessonCardContainer` is removed, so the active
   card's root becomes a DIRECT flex child of `lesson-content` (Leptos 0.8
-  `<Show>` renders no DOM wrapper; the component returns a view fragment).
+  `<Show>` renders no DOM wrapper). For 4 of 5 card types the card is the single
+  in-flow child; the normal-card path (`render_lesson_card`) returns a fragment
+  of `[<LessonCard> + rating-buttons]` (rating-buttons shown when the answer is
+  revealed), but `grow` on the card still claims all free vertical space, so the
+  card fills the rectangle regardless of the sibling.
 + Each card view's `<Card>` adds `grow` (`flex-grow: 1`, basis auto): the card
   grows to fill the container when its content is short, and expands by content
   when tall (then `lesson-content`'s `overflow-y-auto` scrolls).
