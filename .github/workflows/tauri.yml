@@ -245,8 +245,7 @@ jobs:
                       - `Origa_macos-arm64.zip` — fixed-name alias
 
                       ## Android
-                      - `origa_${{ needs.version.outputs.version }}.apk`
-                      - `origa.apk` — fixed-name alias
+                      - `origa.apk`
 
                       ## Updater
                       - `latest.json` — Tauri updater manifest (stable releases only)
