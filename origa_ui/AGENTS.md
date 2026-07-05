@@ -129,9 +129,11 @@ from over-monomorphization — so raising the limit is NOT a fix.
 **Guidance:** prefer changing an existing element's class **string** (type-neutral:
 `Class<&str>` stays `Class<&str>`) over adding new attributes. The structural fix
 is to split deep views into sub-components (delegating rendering to the lib crate,
-which has the higher limit) or to add the attribute to a shallower element. See
-ADR-027 §B3 for the concrete case that forced `justify-[safe_center]` over
-`my-auto` + a new `data-testid`.
+which has the higher limit) or to add the attribute to a shallower element. A
+component **prop** (e.g. `Card`'s `test_id`) is also type-neutral — it is packed
+into the Props struct, not added as a view-tree type-param, so passing it does NOT
+trip this limit (only attributes on a bare HTML element do). See ADR-027 §B3 and
+ADR-029 for concrete cases.
 
 ## Development
 
