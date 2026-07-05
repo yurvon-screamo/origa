@@ -27,12 +27,11 @@ export class GrammarPage extends BasePage {
     readonly loadMoreButton: Locator;
 
     // Practice mode
-    readonly practiceModal: Locator;
+    readonly practiceSession: Locator;
     readonly practiceProgress: Locator;
     readonly practiceCorrectCount: Locator;
     readonly practiceOptions: readonly [Locator, Locator, Locator, Locator];
     readonly practiceNextBtn: Locator;
-    readonly practiceCloseBtn: Locator;
     readonly practiceComplete: Locator;
     readonly practiceAgainBtn: Locator;
     readonly practiceNoWords: Locator;
@@ -41,7 +40,6 @@ export class GrammarPage extends BasePage {
     readonly detailContainer: Locator;
     readonly detailBreadcrumbs: Locator;
     readonly detailBreadcrumbsBack: Locator;
-    readonly detailPracticeBtn: Locator;
     readonly detailFsrs: Locator;
     readonly detailActions: Locator;
     readonly detailDeleteModal: Locator;
@@ -72,7 +70,7 @@ export class GrammarPage extends BasePage {
         this.loadMoreButton = page.getByTestId("grammar-load-more-btn");
 
         // Practice mode
-        this.practiceModal = page.getByTestId("grammar-practice-modal");
+        this.practiceSession = page.getByTestId("grammar-practice-session");
         this.practiceProgress = page.getByTestId("grammar-practice-progress");
         this.practiceCorrectCount = page.getByTestId("grammar-practice-correct-count");
         this.practiceOptions = [
@@ -82,7 +80,6 @@ export class GrammarPage extends BasePage {
             page.getByTestId("grammar-practice-option-3"),
         ] as const;
         this.practiceNextBtn = page.getByTestId("grammar-practice-next-btn");
-        this.practiceCloseBtn = page.getByTestId("grammar-practice-close-btn");
         this.practiceComplete = page.getByTestId("grammar-practice-complete");
         this.practiceAgainBtn = page.getByTestId("grammar-practice-again-btn");
         this.practiceNoWords = page.getByTestId("grammar-practice-no-words");
@@ -91,7 +88,6 @@ export class GrammarPage extends BasePage {
         this.detailContainer = page.getByTestId("grammar-detail-container");
         this.detailBreadcrumbs = page.getByTestId("grammar-detail-breadcrumbs");
         this.detailBreadcrumbsBack = page.getByTestId("grammar-detail-breadcrumbs-back");
-        this.detailPracticeBtn = page.getByTestId("grammar-detail-practice-btn");
         this.detailFsrs = page.getByTestId("grammar-detail-fsrs");
         this.detailActions = page.getByTestId("grammar-detail-actions");
         this.detailDeleteModal = page.getByTestId("grammar-detail-delete-modal");
@@ -216,8 +212,9 @@ export class GrammarPage extends BasePage {
         await card.click();
         await this.page.waitForURL(/\/grammar\/.+/, { timeout: 5000 });
         await expect(this.detailContainer).toBeVisible({ timeout: 30_000 });
-        await expect(this.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
-        await this.detailPracticeBtn.click();
+        // Inline practice session renders on the detail page for rules with a
+        // format map (replaces the former modal opened via a button).
+        await expect(this.practiceSession).toBeVisible({ timeout: 10_000 });
     }
 
     async navigateToDetail(index: number): Promise<void> {

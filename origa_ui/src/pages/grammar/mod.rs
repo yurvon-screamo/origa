@@ -6,7 +6,7 @@ mod grammar_card_item;
 mod grammar_detail;
 mod grammar_detail_hero_card;
 mod grammar_detail_mobile;
-mod grammar_practice_modal;
+mod grammar_practice_session;
 mod header;
 mod rule_item;
 mod rules_list;

@@ -80,7 +80,7 @@ pub use dropdown::{Dropdown, DropdownItem};
 pub use error_alert::ErrorAlert;
 pub use favorite_button::FavoriteButton;
 pub use font_face::inject_font_faces;
-pub use fsrs_metrics::{FsrsMetrics, FsrsMetricsMode};
+pub use fsrs_metrics::FsrsMetrics;
 pub use furigana::FuriganaText;
 pub use history_button::HistoryButton;
 pub use input::Input;

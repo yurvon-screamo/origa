@@ -313,7 +313,7 @@ testWithFreshUser.describe("Grammar Page - Favorite Instant UI Update", () => {
 });
 
 testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
-    testWithFreshUser("should open practice modal with quiz questions from detail page", async ({ page }) => {
+    testWithFreshUser("should open practice inline session with quiz questions from detail page", async ({ page }) => {
         test.setTimeout(90_000);
         const grammarPage = await setupGrammarPage(page);
 
@@ -336,10 +336,10 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         await grammarPage.openPracticeForCard(0);
-        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5000 });
+        await expect(grammarPage.practiceSession).toBeVisible({ timeout: 5000 });
     });
 
-    testWithFreshUser("should open practice modal with correct structure", async ({ page }) => {
+    testWithFreshUser("should show practice inline session with correct structure", async ({ page }) => {
         test.setTimeout(90_000);
         const grammarPage = await setupGrammarPage(page);
 
@@ -351,9 +351,9 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
 
         // Open detail page and practice
         await grammarPage.openPracticeForCard(0);
-        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5000 });
+        await expect(grammarPage.practiceSession).toBeVisible({ timeout: 5000 });
 
-        // Practice modal should show either quiz questions or "no words" message
+        // Practice session should show either quiz questions or "no words" message
         // Both states are valid - depends on whether user has matching vocabulary
         const hasQuizContent = await grammarPage.practiceProgress.isVisible().catch(() => false);
         const hasNoWordsMessage = await grammarPage.practiceNoWords.isVisible().catch(() => false);
@@ -367,13 +367,9 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
             // Options should be visible
             await expect(grammarPage.practiceOptions[0]).toBeVisible();
         }
-
-        // Close the modal
-        await grammarPage.practiceCloseBtn.click();
-        await expect(grammarPage.practiceModal).not.toBeVisible({ timeout: 5000 });
     });
 
-    testWithFreshUser("should show enabled practice button for rules with format_map on detail page", async ({ page }) => {
+    testWithFreshUser("should show inline practice session for rules with format_map on detail page", async ({ page }) => {
         test.setTimeout(60_000);
         const grammarPage = await setupGrammarPage(page);
 
@@ -387,8 +383,8 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         // Wait for detail page content to fully load (async WASM data fetch)
         await expect(grammarPage.detailContainer).toBeVisible({ timeout: 30_000 });
 
-        await expect(grammarPage.detailPracticeBtn).toBeVisible({ timeout: 10_000 });
-        // Button is visible for rules with format_map (no disabled state)
+        // Inline practice session renders for rules with a format_map (no button)
+        await expect(grammarPage.practiceSession).toBeVisible({ timeout: 10_000 });
     });
 
     testWithFreshUser("should complete full practice quiz flow", async ({ page }) => {
@@ -417,7 +413,7 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
         await expect(grammarPage.grammarGrid).toBeVisible({ timeout: 10_000 });
 
         await grammarPage.openPracticeForCard(0);
-        await expect(grammarPage.practiceModal).toBeVisible({ timeout: 5_000 });
+        await expect(grammarPage.practiceSession).toBeVisible({ timeout: 5_000 });
 
         // If quiz has content, answer all questions
         const hasQuizContent = await grammarPage.practiceProgress.isVisible().catch(() => false);
@@ -441,10 +437,6 @@ testWithFreshUser.describe("Grammar Page - Practice Mode", () => {
                 }
             }
         }
-
-        // Close the modal
-        await grammarPage.practiceCloseBtn.click();
-        await expect(grammarPage.practiceModal).not.toBeVisible({ timeout: 5_000 });
     });
 });
 
@@ -543,8 +535,6 @@ testWithFreshUser.describe("Grammar Page - Mobile Detail Layout", () => {
         // Regression guard: top-bar FsrsMetrics must not leak on mobile (dual-render CSS fix)
         await expect(page.getByTestId("grammar-detail-fsrs")).not.toBeVisible();
         await expect(page.getByTestId("grammar-detail-fsrs-mobile")).toBeVisible();
-        // Top-bar Practice button must not leak on mobile
-        await expect(page.getByTestId("grammar-detail-practice-btn")).not.toBeVisible();
         await expect(
             page.locator(".fsrs-metrics").filter({ visible: true }),
         ).toHaveCount(1);

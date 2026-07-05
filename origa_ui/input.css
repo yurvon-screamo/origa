@@ -4656,10 +4656,6 @@ rt {
     .grammar-detail-top-bar .fsrs-metrics {
         display: none;
     }
-
-    .grammar-detail-top-bar .btn-olive {
-        display: none;
-    }
 }
 
 /* === Kanji Detail — Redesigned === */
