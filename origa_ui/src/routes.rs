@@ -280,9 +280,9 @@ pub fn AppRoutes() -> impl IntoView {
     // (e.g., lesson card centering). See ADR-027; height + safe-area stay on the shell.
     let main_class = move || {
         if sidebar_visible.get() {
-            "paper-texture main-with-sidebar pt-safe-t pb-20 lg:pb-0".to_string()
+            "paper-texture main-with-sidebar pt-safe-t-half pb-20 lg:pb-0".to_string()
         } else {
-            "paper-texture pt-safe-t min-h-[100dvh] flex flex-col".to_string()
+            "paper-texture pt-safe-t-half min-h-[100dvh] flex flex-col".to_string()
         }
     };
 
