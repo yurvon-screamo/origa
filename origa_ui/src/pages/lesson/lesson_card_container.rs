@@ -130,8 +130,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     });
 
     view! {
-        <div>
-            <Show when=move || current_lesson_card.get().is_some()>
+        <Show when=move || current_lesson_card.get().is_some()>
                 <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get()>
                     {move || {
                         current_lesson_card.get().map(|lesson_card| {
@@ -334,6 +333,5 @@ pub fn LessonCardContainer() -> impl IntoView {
                     }}
                 </Show>
             </Show>
-        </div>
     }
 }
