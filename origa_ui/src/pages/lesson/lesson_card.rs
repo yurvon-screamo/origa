@@ -68,6 +68,13 @@ pub fn LessonCard(
         .as_ref()
         .map(|t| t.join(", "))
         .unwrap_or_else(|| answer_data.text.clone());
+    let card_question_text = StoredValue::new(if is_reversed {
+        tts_text.clone()
+    } else if is_na_adj {
+        super::na_adjective_helper::append_na_suffix(&question_text)
+    } else {
+        question_text.clone()
+    });
     let answer = StoredValue::new(tts_text);
     let answer_translations_stored = StoredValue::new(answer_data.translations);
     let answer_description_stored = StoredValue::new(answer_data.description);
@@ -249,7 +256,7 @@ pub fn LessonCard(
             <div class="flex-1 flex flex-col justify-center">
                 <Show when=move || !show_answer.get()>
                     <LessonCardQuestion
-                        question_text=display_question.get_value()
+                        question_text=card_question_text.get_value()
                         kanji=kanji_stored.get_value()
                         is_reversed=is_reversed
                         on_show_answer=on_show_answer
