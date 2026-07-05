@@ -219,6 +219,7 @@ pub fn LessonCard(
 
     Effect::new(move |_| {
         if show_answer.get()
+            && card_type != CardType::Kanji
             && let Some(el) = content_ref.get()
         {
             let is_overflow = el.scroll_height() > el.client_height();

@@ -134,7 +134,6 @@ pub fn WritingCard(
         };
 
     let show_details = RwSignal::new(false);
-    let is_expanded = RwSignal::new(true);
 
     let symbol_sv = StoredValue::new(symbol_char);
     let display_text_sv = StoredValue::new(display_text);
@@ -182,7 +181,6 @@ pub fn WritingCard(
                         name=display_text_sv.get_value()
                         radicals=radicals_sv.get_value()
                         example_words=examples_sv.get_value()
-                        show_details=is_expanded
                         on_readings=on_readings_sv.get_value()
                         kun_readings=kun_readings_sv.get_value()
                         known_kanji=known_kanji
