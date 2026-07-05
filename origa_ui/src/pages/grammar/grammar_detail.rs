@@ -5,18 +5,18 @@ use super::super::shared::{
 };
 use super::grammar_detail_hero_card::GrammarDetailHeroCard;
 use super::grammar_detail_mobile::GrammarMobileOverview;
-use super::grammar_practice_modal::GrammarPracticeModal;
+use super::grammar_practice_session::GrammarPracticeSession;
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FsrsMetricsMode,
-    FuriganaText, LoadingOverlay, MarkdownText, TabItem, Tabs, Tag, Text, TextSize,
-    TypographyVariant,
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FuriganaText, LoadingOverlay,
+    MarkdownText, TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
+use leptos_use::use_media_query;
 use origa::dictionary::grammar::{GrammarRule, get_rule_by_id};
 use origa::domain::{Card as DomainCard, StudyCard, User};
 use origa::traits::UserRepository;
@@ -159,9 +159,22 @@ pub fn GrammarDetail() -> impl IntoView {
 
     let is_delete_modal_open = RwSignal::new(false);
     let is_history_open = RwSignal::new(false);
-    let is_practice_open = RwSignal::new(false);
     let navigate = StoredValue::new(use_navigate());
     let active_tab: RwSignal<String> = RwSignal::new("overview".to_string());
+
+    // The practice session is stateful (current question, score, keyboard
+    // handler), so it must mount at most once. use_media_query renders it in
+    // exactly one of the desktop/mobile layouts, avoiding duplicate state and
+    // test-id collisions. Breakpoint mirrors the .grammar-detail-desktop/-mobile
+    // CSS split (1024px).
+    let is_desktop = use_media_query("(min-width: 1024px)");
+
+    let has_quiz_signal = Memo::new(move |_| {
+        study_card
+            .with(|sc| sc.as_ref().and_then(extract_grammar_rule))
+            .map(|r| r.has_format_map())
+            .unwrap_or(false)
+    });
 
     let not_found_text = Signal::derive(move || {
         i18n.get_keys()
@@ -183,17 +196,17 @@ pub fn GrammarDetail() -> impl IntoView {
     });
 
     let tab_items = Signal::derive(move || {
-        vec![
-            TabItem {
-                id: "overview".to_string(),
-                label: i18n
-                    .get_keys()
-                    .grammar_page()
-                    .tab_overview()
-                    .inner()
-                    .to_string(),
-            },
-            TabItem {
+        let mut items = vec![TabItem {
+            id: "overview".to_string(),
+            label: i18n
+                .get_keys()
+                .grammar_page()
+                .tab_overview()
+                .inner()
+                .to_string(),
+        }];
+        if has_quiz_signal.get() {
+            items.push(TabItem {
                 id: "practice".to_string(),
                 label: i18n
                     .get_keys()
@@ -201,30 +214,15 @@ pub fn GrammarDetail() -> impl IntoView {
                     .tab_practice()
                     .inner()
                     .to_string(),
-            },
-            TabItem {
-                id: "stats".to_string(),
-                label: i18n
-                    .get_keys()
-                    .grammar_page()
-                    .tab_stats()
-                    .inner()
-                    .to_string(),
-            },
-        ]
+            });
+        }
+        items
     });
 
     let practice_title = Signal::derive(move || {
         i18n.get_keys()
             .grammar_page()
             .practice()
-            .inner()
-            .to_string()
-    });
-    let practice_label = Signal::derive(move || {
-        i18n.get_keys()
-            .grammar_page()
-            .practice_start()
             .inner()
             .to_string()
     });
@@ -318,13 +316,6 @@ pub fn GrammarDetail() -> impl IntoView {
                             r.content(&native_lang.get()).related_patterns().map(|s| s.to_string())
                         })
                     });
-                    let has_quiz = grammar_rule.map(|r| r.has_format_map()).unwrap_or(false);
-
-                    let next_review = memory
-                        .next_review_date()
-                        .map(|d| d.format("%d.%m.%Y").to_string())
-                        .unwrap_or("-".to_string());
-
                     let memory_history: StoredValue<origa::domain::MemoryHistory> =
                         StoredValue::new(memory.clone());
                     let title_stored: StoredValue<String> = StoredValue::new(title_text.clone());
@@ -340,25 +331,6 @@ pub fn GrammarDetail() -> impl IntoView {
                                 navigate.get_value()("/grammar", Default::default());
                             }),
                         })
-                    });
-
-                    let practice_grammar_rule = grammar_rule;
-                    let on_practice_click = Callback::new(move |_| {
-                        if cfg!(feature = "grammar_practice_lesson_mode") {
-                            if let Some(rule) = practice_grammar_rule {
-                                let path = format!(
-                                    "/lesson?mode=grammar_practice&grammar_id={}",
-                                    rule.rule_id()
-                                );
-                                tracing::info!(
-                                    grammar_rule_id = %rule.rule_id(),
-                                    "Navigating to grammar practice lesson"
-                                );
-                                navigate.get_value()(&path, Default::default());
-                            }
-                        } else {
-                            is_practice_open.set(true);
-                        }
                     });
 
                     let card_id_for_fav = card_id;
@@ -396,18 +368,6 @@ pub fn GrammarDetail() -> impl IntoView {
                                     show_tag=Signal::derive(|| false)
                                 />
                             </div>
-                            <Show when=move || current_user.get().is_some() && grammar_rule.is_some() && has_quiz>
-                                <button
-                                    class="btn btn-olive text-sm cursor-pointer"
-                                    data-testid="grammar-detail-practice-btn"
-                                    on:click=move |ev| {
-                                        ev.stop_propagation();
-                                        on_practice_click.run(());
-                                    }
-                                >
-                                    {practice_label}
-                                </button>
-                            </Show>
                         </div>
 
                         // Desktop layout
@@ -485,6 +445,26 @@ pub fn GrammarDetail() -> impl IntoView {
                             </div>
                         </div>
 
+                        // Desktop inline practice (only when the rule supports quizzes)
+                        <Show when=move || is_desktop.get() && has_quiz_signal.get()>
+                            {move || {
+                                let rule = grammar_rule?;
+                                let user = current_user.get()?;
+                                Some(view! {
+                                    <div class="grammar-detail-desktop">
+                                        <div class="grammar-detail-section-card">
+                                            <div class="grammar-detail-section-title">{practice_title}</div>
+                                            <GrammarPracticeSession
+                                                rule=rule
+                                                user=user
+                                                known_kanji=known_kanji.get()
+                                            />
+                                        </div>
+                                    </div>
+                                }.into_any())
+                            }}
+                        </Show>
+
                         // Mobile layout
                         <div class="grammar-detail-mobile">
                             <div class="grammar-detail-hero-card" style="margin-bottom:16px">
@@ -560,31 +540,20 @@ pub fn GrammarDetail() -> impl IntoView {
                                 <div class="grammar-detail-section">
                                     <div class="grammar-detail-section-card">
                                         <div class="grammar-detail-section-title">{practice_title}</div>
-                                        <Show when=move || current_user.get().is_some() && grammar_rule.is_some() && has_quiz>
-                                            <button
-                                                class="btn btn-olive text-sm cursor-pointer"
-                                                data-testid="grammar-detail-practice-btn-mobile"
-                                                on:click=move |ev| {
-                                                    ev.stop_propagation();
-                                                    on_practice_click.run(());
-                                                }
-                                            >
-                                                {practice_label}
-                                            </button>
+                                        <Show when=move || !is_desktop.get()>
+                                            {move || {
+                                                let rule = grammar_rule?;
+                                                let user = current_user.get()?;
+                                                Some(view! {
+                                                    <GrammarPracticeSession
+                                                        rule=rule
+                                                        user=user
+                                                        known_kanji=known_kanji.get()
+                                                    />
+                                                }.into_any())
+                                            }}
                                         </Show>
                                     </div>
-                                </div>
-                            </Show>
-
-                            <Show when=move || active_tab_cell.get() == "stats">
-                                <div class="grammar-detail-section">
-                                    <FsrsMetrics
-                                        difficulty=memory.difficulty().map(|d| d.value())
-                                        stability=memory.stability().map(|s| s.value())
-                                        next_review_date=next_review.clone()
-                                        mode=FsrsMetricsMode::Expanded
-                                        test_id=Signal::derive(|| "grammar-detail-fsrs-expanded".to_string())
-                                    />
                                 </div>
                             </Show>
                         </div>
@@ -601,22 +570,6 @@ pub fn GrammarDetail() -> impl IntoView {
                             on_confirm=confirm_delete
                             on_close=Callback::new(move |_| is_delete_modal_open.set(false))
                         />
-                        <Show when=move || is_practice_open.get() && grammar_rule.is_some() && current_user.get().is_some()>
-                            {move || {
-                                let rule = grammar_rule?;
-                                let user = current_user.get()?;
-                                Some(view! {
-                                    <GrammarPracticeModal
-                                        rule=rule
-                                        native_language=native_lang
-                                        user=user
-                                        is_open=Signal::derive(move || is_practice_open.get())
-                                        on_close=Callback::new(move |_| is_practice_open.set(false))
-                                        known_kanji=known_kanji.get()
-                                    />
-                                }.into_any())
-                            }}
-                        </Show>
                     }.into_any())
                 }}
             </Show>

@@ -6,9 +6,9 @@ use super::kanji_detail_parts::{KanjiDetailHeroCard, MobileOverview};
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FsrsMetricsMode,
-    FuriganaText, KanjiDrawingPractice, KanjiViewMode, KanjiWritingSection, LoadingOverlay,
-    MarkdownText, TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
+    CardActionBar, CardHistoryModal, DeleteConfirmModal, FsrsMetrics, FuriganaText,
+    KanjiDrawingPractice, KanjiViewMode, KanjiWritingSection, LoadingOverlay, MarkdownText,
+    TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -186,10 +186,6 @@ pub fn KanjiDetail() -> impl IntoView {
                     .inner()
                     .to_string(),
             },
-            TabItem {
-                id: "stats".to_string(),
-                label: i18n.get_keys().kanji_page().tab_stats().inner().to_string(),
-            },
         ]
     });
 
@@ -266,11 +262,6 @@ pub fn KanjiDetail() -> impl IntoView {
                 let has_radicals = !radicals.is_empty();
                 let radicals_stored: StoredValue<String> = StoredValue::new(radicals.clone());
                 let has_examples = Memo::new(move |_| !example_words.get().is_empty());
-
-                let next_review = memory
-                    .next_review_date()
-                    .map(|d| d.format("%d.%m.%Y").to_string())
-                    .unwrap_or("-".to_string());
 
                 let memory_history: StoredValue<origa::domain::MemoryHistory> =
                     StoredValue::new(memory.clone());
@@ -529,18 +520,6 @@ pub fn KanjiDetail() -> impl IntoView {
                             </div>
                             <div class="kanji-detail-section">
                                 <KanjiDrawingPractice kanji=kanji_stored.get_value() />
-                            </div>
-                        </Show>
-
-                        <Show when=move || active_tab_cell.get() == "stats">
-                            <div class="kanji-detail-section">
-                                <FsrsMetrics
-                                    difficulty=memory.difficulty().map(|d| d.value())
-                                    stability=memory.stability().map(|s| s.value())
-                                    next_review_date=next_review.clone()
-                                    mode=FsrsMetricsMode::Expanded
-                                    test_id=Signal::derive(|| "kanji-detail-fsrs-expanded".to_string())
-                                />
                             </div>
                         </Show>
                     </div>
