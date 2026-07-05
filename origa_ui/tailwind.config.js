@@ -5,6 +5,7 @@ module.exports = {
 		extend: {
 			padding: {
 				"safe-t": "env(safe-area-inset-top, 0px)",
+				"safe-t-half": "calc(env(safe-area-inset-top, 0px) / 2)",
 				"safe-b": "env(safe-area-inset-bottom, 0px)",
 				"safe-l": "env(safe-area-inset-left, 0px)",
 				"safe-r": "env(safe-area-inset-right, 0px)",
