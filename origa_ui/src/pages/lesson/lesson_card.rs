@@ -243,7 +243,7 @@ pub fn LessonCard(
     });
 
     view! {
-        <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col grow".to_string()) shadow=Signal::derive(|| true) test_id=Signal::derive(|| "lesson-card-root".to_string())>
+        <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col".to_string()) shadow=Signal::derive(|| true) test_id=Signal::derive(|| "lesson-card-root".to_string())>
             <LessonCardHeader
                 card_type=card_type
                 question_text=if is_reversed { answer.get_value() } else { display_question.get_value() }
