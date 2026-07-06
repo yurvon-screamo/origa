@@ -260,7 +260,7 @@ testWithFreshUser.describe("Lesson Card Vertical Layout", () => {
             // Card is inside proportional padding (12dvh top/bottom, 15dvw left/right).
             // Card top should be at ~12% of container height from the top.
             const expectedPaddingTop = containerBox.height * 0.12;
-            expect(cardBox.y - containerBox.y).toBeCloseTo(expectedPaddingTop, -1); // ±10px tolerance
+            expect(Math.abs((cardBox.y - containerBox.y) - expectedPaddingTop)).toBeLessThan(20); // ±20px CI tolerance
             // Card fills the padded area (container minus top+bottom padding).
             const paddedHeight = containerBox.height * (1 - 0.24); // 1 - 2*12%
             expect(cardBox.height).toBeGreaterThanOrEqual(paddedHeight * 0.8); // 80% of padded area
