@@ -145,7 +145,7 @@ pub fn WritingCard(
     let disabled_sv = StoredValue::new(disabled);
 
     view! {
-        <Card class="p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col" shadow=true test_id="lesson-card-root">
+        <Card class="p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col grow" shadow=true test_id="lesson-card-root">
             <div class="flex items-center justify-between mb-4">
                 <Tag variant=tag_variant>
                     {card_type_label}
