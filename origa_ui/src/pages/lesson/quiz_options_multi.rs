@@ -30,7 +30,7 @@ pub fn QuizOptionsMulti(
         .collect();
 
     view! {
-        <div class="grid grid-cols-2 gap-2 sm:gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
             {options
                 .iter()
                 .enumerate()
