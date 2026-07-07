@@ -228,7 +228,7 @@ testWithFreshUser.describe("Lesson Page", () => {
 
 testWithFreshUser.describe("Lesson Card Vertical Layout", () => {
     testWithFreshUser(
-        "card fills the lesson-content rectangle (no resize/centering between types)",
+        "lesson-content height-chain intact (flex-1 chain from shell fills viewport)",
         async ({ page }) => {
             test.setTimeout(90_000);
 
@@ -237,33 +237,21 @@ testWithFreshUser.describe("Lesson Card Vertical Layout", () => {
 
             const lessonPage = await setupLessonWithCards(page);
 
-            // The card component (data-testid="lesson-card-root") must FILL the
-            // lesson-content rectangle and sit top-anchored, so its visible box
-            // stays constant across card types (quiz/text/writing/phrase/yesno).
-            // lesson-content is flex-1 of the shell's flex column (ADR-027 height
-            // chain); clientHeight > 700 proves that chain is intact. See ADR-029
-            // (fill-over-center, supersedes ADR-027 centering).
-            const card = lessonPage.lessonCardRoot;
-            await expect(card).toBeVisible();
+            // ADR-027 height-chain: shell (<main> flex-col min-h-[100dvh]) →
+            // lesson-page (flex-1) → lesson-card testid (flex-1 min-h-0) →
+            // lesson-content (flex-1). clientHeight > 700 proves the chain is
+            // intact and `flex-1` is filling the shell rather than collapsing
+            // to content height (which would happen if a future leptos_router
+            // upgrade wraps the matched view in a DOM node, breaking the
+            // direct flex-child relationship). Card proportions are intentionally
+            // NOT asserted — see ADR-031 (stable min-h via svh makes fragile
+            // padding/proportion checks obsolete).
+            await expect(lessonPage.lessonContent).toBeVisible();
 
             const containerHeight = await lessonPage.lessonContent.evaluate(
                 (el) => (el as HTMLElement).clientHeight,
             );
-            const containerBox = await lessonPage.lessonContent.boundingBox();
-            const cardBox = await card.boundingBox();
-            if (!containerBox || !cardBox) {
-                throw new Error("lesson-content or card bounding box unavailable");
-            }
-
-            // Height-chain intact: the container fills the shell (ADR-027).
             expect(containerHeight).toBeGreaterThan(700);
-            // Card is inside proportional padding (12dvh top/bottom, 15dvw left/right).
-            // Card top should be at ~12% of container height from the top.
-            const expectedPaddingTop = containerBox.height * 0.12;
-            expect(Math.abs((cardBox.y - containerBox.y) - expectedPaddingTop)).toBeLessThan(20); // ±20px CI tolerance
-            // Card fills the padded area (container minus top+bottom padding).
-            const paddedHeight = containerBox.height * (1 - 0.24); // 1 - 2*12%
-            expect(cardBox.height).toBeGreaterThanOrEqual(paddedHeight * 0.8); // 80% of padded area
         },
     );
 });

@@ -41,6 +41,13 @@ pub use lesson_state::LessonContext;
 
 use leptos::prelude::*;
 
+/// Shared Tailwind class for every lesson card view. Pins a stable minimum
+/// height in `svh` (small viewport height — stable in both Tauri WebView and
+/// dev browser, unlike `dvh` which floats on URL bar collapse) plus `grow` to
+/// fill the available `lesson-content` rectangle. See ADR-031.
+pub(in crate::pages::lesson) const LESSON_CARD_CLASS: &str =
+    "p-4 sm:p-6 min-h-[60svh] sm:min-h-[70svh] flex flex-col grow";
+
 #[component]
 pub fn Lesson() -> impl IntoView {
     view! {
