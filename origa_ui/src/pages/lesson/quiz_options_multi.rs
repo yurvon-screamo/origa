@@ -132,7 +132,7 @@ fn MultiOptionButton(
                         return display.to_class();
                     }
                 }
-                let base = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem]";
+                let base = "p-2 sm:p-3 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[3rem]";
                 let is_selected = selected_options.get_value().contains(&index);
                 if is_selected {
                     format!("{} border-[var(--accent-olive)] bg-[var(--bg-warm)]", base)
@@ -189,7 +189,7 @@ fn tag_class(tag: &str) -> &'static str {
 
 impl OptionDisplay {
     fn to_class(self) -> String {
-        let base = "p-2 sm:p-4 border text-left relative flex flex-col justify-center min-h-[4rem]";
+        let base = "p-2 sm:p-3 border text-left relative flex flex-col justify-center min-h-[3rem]";
         match self {
             OptionDisplay::Correct => {
                 format!(

@@ -52,7 +52,7 @@ pub(in crate::pages::lesson) const LESSON_CARD_CLASS: &str =
 pub fn Lesson() -> impl IntoView {
     view! {
         <div class="flex-1 flex flex-col py-4" data-testid="lesson-page">
-            <div class="min-w-[1200px] max-w-[1200px] mx-auto px-2 sm:px-4 flex-1 flex flex-col min-h-0" data-testid="lesson-card">
+            <div class="min-w-[1152px] max-w-[1152px] mx-auto px-2 sm:px-4 flex-1 flex flex-col min-h-0" data-testid="lesson-card">
                 <LessonContent />
             </div>
         </div>
