@@ -31,7 +31,10 @@ struct FaceSpec {
     unicode_range: &'static str,
 }
 
-const LATIN_RANGE: &str = "U+0000-007F,U+00A0-00FF,U+2000-206F,U+20A0-20CF,U+2100-214F";
+// Cyrillic + Latin-Extended for Cormorant Garamond and IBM Plex Mono (both ship
+// the glyphs; subsetting them in keeps Cyrillic UI text from falling back to a
+// system font). See ADR-030.
+const LATIN_CYRILLIC_RANGE: &str = "U+0000-007F,U+00A0-00FF,U+0100-017F,U+0400-052F,U+1C80-1C88,U+1E00-1EFF,U+2000-206F,U+20A0-20CF,U+20B4,U+2100-214F,U+2DE0-2DFF,U+A640-A69F";
 const CJK_RANGE: &str = "U+3000-303F,U+3040-30FF,U+3400-4DBF,U+4E00-9FFF,U+F900-FAFF,U+FF00-FFEF";
 
 const FACES: &[FaceSpec] = &[
@@ -40,42 +43,42 @@ const FACES: &[FaceSpec] = &[
         family: "Cormorant Garamond",
         weight: "300 700",
         style: "normal",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
         logical: "cormorant-garamond-italic",
         family: "Cormorant Garamond",
         weight: "300 700",
         style: "italic",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
-        logical: "dm-mono-300",
-        family: "DM Mono",
+        logical: "ibm-plex-mono-300",
+        family: "IBM Plex Mono",
         weight: "300",
         style: "normal",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
-        logical: "dm-mono-400",
-        family: "DM Mono",
+        logical: "ibm-plex-mono-400",
+        family: "IBM Plex Mono",
         weight: "400",
         style: "normal",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
-        logical: "dm-mono-500",
-        family: "DM Mono",
+        logical: "ibm-plex-mono-500",
+        family: "IBM Plex Mono",
         weight: "500",
         style: "normal",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
-        logical: "dm-mono-400-italic",
-        family: "DM Mono",
+        logical: "ibm-plex-mono-400-italic",
+        family: "IBM Plex Mono",
         weight: "400",
         style: "italic",
-        unicode_range: LATIN_RANGE,
+        unicode_range: LATIN_CYRILLIC_RANGE,
     },
     FaceSpec {
         logical: "noto-sans-jp-400",

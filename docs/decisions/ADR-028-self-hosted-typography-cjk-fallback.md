@@ -4,6 +4,12 @@
 
 Accepted
 
+> **Updated by [ADR-030](ADR-030-cyrillic-typography-cormorant-subset-ibm-plex-mono.md)**
+> (2026-07-07): DM Mono replaced with IBM Plex Mono (Cyrillic coverage);
+> Cormorant subset extended with Cyrillic; Noto JP switched to
+> `font-display: block`. The Cyrillic-less DM Mono rows in the table below
+> are historical — see ADR-030 for the current font set.
+
 ## Date
 
 2026-07-03
