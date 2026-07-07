@@ -317,6 +317,7 @@ scripts/subset_fonts.py` (подробности в `cdn/README.md`).
   - `card-layout-small`: max-width 480px
   - `card-layout-medium`: max-width 768px
   - `card-layout-large`: max-width 1024px
+  - `card-layout-lesson`: max-width 1280px — интерактивные карточки вопроса/ответа в `/lesson`. Шире `card-layout-large`, потому что карточка заполняет viewport по вертикали (ADR-031 stable min-h через svh) и при прежнем `max-w-4xl` (896px) на десктопе оставляла слишком много пустого места по краям. Quiz options внутри используют 3-колоночный grid на ≥768px (`md:grid-cols-3`).
   - `card-layout-adaptive`: width 100%
 
 ### Responsive Breakpoints
