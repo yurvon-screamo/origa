@@ -7,7 +7,6 @@ export class LessonPage extends BasePage {
     // Page structure
     readonly lessonPage: Locator;
     readonly lessonCard: Locator;
-    readonly lessonCardRoot: Locator;
     readonly lessonHeader: Locator;
 
     // Navigation
@@ -57,7 +56,6 @@ export class LessonPage extends BasePage {
         // Page structure
         this.lessonPage = page.getByTestId("lesson-page");
         this.lessonCard = page.getByTestId("lesson-card");
-        this.lessonCardRoot = page.getByTestId("lesson-card-root");
         this.lessonHeader = page.getByTestId("lesson-header");
 
         // Navigation

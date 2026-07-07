@@ -53,7 +53,7 @@ pub fn PhraseCardView(
     };
 
     view! {
-        <Card class=Signal::derive(|| "p-4 sm:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col grow".to_string()) shadow=Signal::derive(|| true) test_id=Signal::derive(|| "lesson-card-root".to_string())>
+        <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="lesson-card-root">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                     <Tag variant=Signal::derive(move || card_type.tag_variant())>
