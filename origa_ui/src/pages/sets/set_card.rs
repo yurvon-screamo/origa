@@ -57,7 +57,7 @@ pub fn SetCard(
                         />
                     </Show>
                     <Tooltip text=Signal::derive(move || title_for_tooltip.clone())>
-                        <Heading level=Signal::derive(|| HeadingLevel::H4) class="truncate">
+                        <Heading level=Signal::derive(|| HeadingLevel::H4) class="break-words">
                             {title_for_display}
                         </Heading>
                     </Tooltip>

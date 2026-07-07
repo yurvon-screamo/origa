@@ -34,6 +34,14 @@ CACHE_DIR = PROJECT_ROOT / "scripts" / ".font_cache"
 CDN_MANIFEST = PROJECT_ROOT / "end2end" / "cdn-manifest.txt"
 
 LATIN_UNICODES = "U+0000-007F,U+00A0-00FF,U+2000-206F,U+20A0-20CF,U+2100-214F"
+# Cyrillic Supplement + Extended-A/B/C + Hryvnia sign. Cormorant Garamond and
+# IBM Plex Mono ship these glyphs; subsetting them in keeps Cyrillic UI text
+# from falling back to a system font (see ADR-030).
+CYRILLIC_UNICODES = "U+0400-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F"
+# Latin-Extended (diacritics for Vietnamese/EA langs) added for IBM Plex Mono,
+# which is the UI body font and must render Vietnamese loanwords / IPA.
+LATIN_EXTENDED_UNICODES = "U+0100-017F,U+1E00-1EFF"
+LATIN_CYRILLIC_UNICODES = f"{LATIN_UNICODES},{LATIN_EXTENDED_UNICODES},{CYRILLIC_UNICODES}"
 # Ranges included wholesale into the corpus (small, always needed).
 WHOLESALE_RANGES: tuple[range, ...] = (
     range(0x3000, 0x3040),   # CJK symbols and punctuation
@@ -85,37 +93,37 @@ SOURCES: tuple[Source, ...] = (
         logical="cormorant-garamond",
         url="https://raw.githubusercontent.com/google/fonts/main/ofl/cormorantgaramond/CormorantGaramond%5Bwght%5D.ttf",
         sha256="b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0",
-        kind="latin_variable",
+        kind="latin_cyrillic_variable",
     ),
     Source(
         logical="cormorant-garamond-italic",
         url="https://raw.githubusercontent.com/google/fonts/main/ofl/cormorantgaramond/CormorantGaramond-Italic%5Bwght%5D.ttf",
         sha256="0f48ea6abb2084537854f7174c470991a463b13036309e3b50a81511611c530d",
-        kind="latin_variable",
+        kind="latin_cyrillic_variable",
     ),
     Source(
-        logical="dm-mono-300",
-        url="https://raw.githubusercontent.com/google/fonts/main/ofl/dmmono/DMMono-Light.ttf",
-        sha256="c7b3645dc8d28237317b4d017bc47b9ff09a7660758122dacb694a5a82552c24",
-        kind="latin_static",
+        logical="ibm-plex-mono-300",
+        url="https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/IBMPlexMono-Light.ttf",
+        sha256="780bcf65509d72a35ec114b57bcbe220dc6b77d8ea2e9b25e294be3c570c5025",
+        kind="latin_cyrillic_vietnamese_static",
     ),
     Source(
-        logical="dm-mono-400",
-        url="https://raw.githubusercontent.com/google/fonts/main/ofl/dmmono/DMMono-Regular.ttf",
-        sha256="55b4c98f123daebb3ed27947ba47b2af00554fc6284d639a540bcef5e6258ad2",
-        kind="latin_static",
+        logical="ibm-plex-mono-400",
+        url="https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/IBMPlexMono-Regular.ttf",
+        sha256="6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46",
+        kind="latin_cyrillic_vietnamese_static",
     ),
     Source(
-        logical="dm-mono-500",
-        url="https://raw.githubusercontent.com/google/fonts/main/ofl/dmmono/DMMono-Medium.ttf",
-        sha256="fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-        kind="latin_static",
+        logical="ibm-plex-mono-500",
+        url="https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/IBMPlexMono-Medium.ttf",
+        sha256="a9b4c49bb299e05b5f6c481e7fb5e78943d2793249a0c8874ab574a2d1ea6755",
+        kind="latin_cyrillic_vietnamese_static",
     ),
     Source(
-        logical="dm-mono-400-italic",
-        url="https://raw.githubusercontent.com/google/fonts/main/ofl/dmmono/DMMono-Italic.ttf",
-        sha256="32b5bad9cbce64eac6d05c8abbeb619317f7e4cb354e1c33db761adbfaae1b16",
-        kind="latin_static",
+        logical="ibm-plex-mono-400-italic",
+        url="https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexmono/IBMPlexMono-Italic.ttf",
+        sha256="3362fc791b0652193328b862c1c5f23a789bc7288b1617fa63302f88689a2a34",
+        kind="latin_cyrillic_vietnamese_static",
     ),
 )
 
@@ -206,6 +214,18 @@ def write_corpus_file(codepoints: Iterable[int]) -> Path:
     return corpus_path
 
 
+def unicode_for_kind(kind: str) -> str:
+    """Pick the `--unicodes` range for a non-CJK source.
+
+    Cormorant Garamond and IBM Plex Mono both ship Cyrillic (and IBM Plex Mono
+    adds Latin-Extended for Vietnamese), so they share the Latin+Cyrillic range
+    (see ADR-030). Plain Latin-only fonts would fall back to the base range.
+    """
+    if kind in ("latin_cyrillic_variable", "latin_cyrillic_vietnamese_static"):
+        return LATIN_CYRILLIC_UNICODES
+    return LATIN_UNICODES
+
+
 def subset_one(src_path: Path, src: Source, corpus_path: Path) -> Path:
     """Run pyftsubset and return the path to the content-hashed output."""
     raw_out = FONTS_OUT / f"{src.logical}.raw.woff2"
@@ -213,7 +233,7 @@ def subset_one(src_path: Path, src: Source, corpus_path: Path) -> Path:
     if src.kind == "cjk":
         cmd += ["--text-file=" + str(corpus_path)]
     else:
-        cmd += ["--unicodes=" + LATIN_UNICODES]
+        cmd += ["--unicodes=" + unicode_for_kind(src.kind)]
     cmd += [
         "--flavor=woff2",
         "--layout-features=*",
@@ -268,15 +288,29 @@ def update_cdn_manifest(font_relative: Iterable[str]) -> None:
 
 def main() -> None:
     FONTS_OUT.mkdir(parents=True, exist_ok=True)
-    for stale in FONTS_OUT.glob("*.woff2"):
-        stale.unlink()
 
     corpus_path = write_corpus_file(extract_cjk_corpus())
 
     print("Subsetting fonts:")
     produced: list[str] = []
     for src in SOURCES:
-        source_path = ensure_source(src)
+        try:
+            source_path = ensure_source(src)
+        except (subprocess.CalledProcessError, OSError) as e:
+            # Transient network failure (e.g. release-assets.githubusercontent.com
+            # blocked). Preserve any existing woff2 for this logical name so the
+            # CDN/font registry stays consistent; the source can be re-fetched
+            # later from a network with access.
+            existing = sorted(FONTS_OUT.glob(f"{src.logical}-*.woff2"))
+            if existing:
+                print(f"  SKIP {src.logical}: source unavailable, keeping {existing[0].name}")
+                produced.append(f"fonts/{existing[0].name}")
+            else:
+                print(f"  SKIP {src.logical}: source unavailable and no existing woff2")
+            continue
+        # Remove only the stale woff2 for this logical before regenerating.
+        for stale in FONTS_OUT.glob(f"{src.logical}-*.woff2"):
+            stale.unlink()
         raw = subset_one(source_path, src, corpus_path)
         final = hash_rename(raw)
         size_kb = final.stat().st_size // 1024
@@ -293,6 +327,10 @@ def main() -> None:
 # forms), representative kana, and CJK punctuation. A failed assertion means
 # the corpus scan or subset dropped coverage the app depends on.
 MUST_HAVE = "食海語難挨拶あア。、「」ー"
+# Cyrillic glyphs the UI body font MUST render now that Cormorant + IBM Plex
+# Mono subsets include Cyrillic (ADR-030). A failed assertion means the subset
+# unicode range regressed and Cyrillic UI text would fall back to a system font.
+CYRILLIC_MUST_HAVE = "АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя"
 
 
 def verify_glyph_coverage() -> None:
@@ -304,6 +342,17 @@ def verify_glyph_coverage() -> None:
     if missing:
         sys.exit(f"Coverage regression: {missing} missing from {noto.name}")
     print(f"Coverage OK: {len(MUST_HAVE)} must-have glyphs present in {noto.name}")
+
+    mono = next(FONTS_OUT.glob("ibm-plex-mono-400-*.woff2"))
+    mono_cmap = TTFont(mono).getBestCmap()
+    cyrillic_missing = [c for c in CYRILLIC_MUST_HAVE if ord(c) not in mono_cmap]
+    if cyrillic_missing:
+        sys.exit(
+            f"Cyrillic coverage regression: {cyrillic_missing} missing from {mono.name}"
+        )
+    print(
+        f"Cyrillic coverage OK: {len(CYRILLIC_MUST_HAVE)} must-have glyphs present in {mono.name}"
+    )
 
 
 if __name__ == "__main__":

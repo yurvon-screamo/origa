@@ -248,7 +248,7 @@ pub fn MultiLineChart(
                             dominant_baseline="central"
                             fill="var(--fg-muted)"
                             font_size="16"
-                            font_family="DM Mono"
+                            font_family="IBM Plex Mono"
                         >
                             {move || empty_text.get()}
                         </text>
@@ -290,7 +290,7 @@ pub fn MultiLineChart(
                                     dominant_baseline="central"
                                     fill="var(--fg-muted)"
                                     font_size="10"
-                                    font_family="DM Mono"
+                                    font_family="IBM Plex Mono"
                                 >
                                     {format_axis_value(value)}
                                 </text>
@@ -310,7 +310,7 @@ pub fn MultiLineChart(
                                     text_anchor="middle"
                                     fill="var(--fg-muted)"
                                     font_size="10"
-                                    font_family="DM Mono"
+                                    font_family="IBM Plex Mono"
                                 >
                                     {label}
                                 </text>
