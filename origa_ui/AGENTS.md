@@ -100,7 +100,7 @@ Translations compiled at build time by `leptos_i18n_build`.
 
 - Read `DESIGN.md` for the complete design system
 - No `border-radius` on components; no `box-shadow` with blur (only hard offset shadows)
-- Fonts: Cormorant Garamond (headings) + DM Mono (UI); animation prefix: `anima-*`
+- Fonts: Cormorant Garamond (headings) + IBM Plex Mono (UI); animation prefix: `anima-*`
 
 ## Routing
 
