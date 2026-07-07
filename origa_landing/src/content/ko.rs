@@ -227,4 +227,23 @@ pub static CONTENT: Content = Content {
     integrations_anki_note: "Anki 덱을 가져와서 중단한 곳에서 계속 학습하세요 — 모든 진행 상황이 이전됩니다.",
 
     banner_wip: "한국어 지원은 현재 개발 중입니다.",
+
+    // Legal pages: English fallback. Korean legal translation requires native
+    // review and is tracked separately; the WIP banner above already signals
+    // the development status of this locale.
+    footer_legal: "Legal",
+    legal_privacy_link: "Privacy Policy",
+    legal_terms_link: "Terms of Service",
+
+    privacy_meta_title: "Privacy Policy | Origa",
+    privacy_meta_description: "What data Origa collects (account, learning progress, settings), why it is collected, where it is stored, and your rights.",
+    privacy_h1: "Privacy Policy",
+    privacy_last_updated_label: "Last updated",
+    privacy_body: super::en::PR_BODY_EN,
+
+    terms_meta_title: "Terms of Service | Origa",
+    terms_meta_description: "Terms governing use of Origa, the free Japanese-learning application distributed under the BSL license.",
+    terms_h1: "Terms of Service",
+    terms_last_updated_label: "Last updated",
+    terms_body: super::en::TO_BODY_EN,
 };

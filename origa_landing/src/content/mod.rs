@@ -332,6 +332,25 @@ pub struct Content {
 
     // WIP banner (empty for stable locales)
     pub banner_wip: &'static str,
+
+    // Footer Legal column + shared link labels (reused by the in-app links)
+    pub footer_legal: &'static str,
+    pub legal_privacy_link: &'static str,
+    pub legal_terms_link: &'static str,
+
+    // Privacy Policy page (/privacy)
+    pub privacy_meta_title: &'static str,
+    pub privacy_meta_description: &'static str,
+    pub privacy_h1: &'static str,
+    pub privacy_last_updated_label: &'static str,
+    pub privacy_body: &'static str,
+
+    // Terms of Service page (/terms)
+    pub terms_meta_title: &'static str,
+    pub terms_meta_description: &'static str,
+    pub terms_h1: &'static str,
+    pub terms_last_updated_label: &'static str,
+    pub terms_body: &'static str,
 }
 
 mod en;

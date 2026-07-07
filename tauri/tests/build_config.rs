@@ -119,6 +119,28 @@ fn capabilities_template_with_production_defaults_matches_committed_file() {
     assert_eq!(content, committed);
 }
 
+/// The mobile capability file must NOT carry `updater:default`: the updater
+/// plugin is registered under `#[cfg(desktop)]` in `tauri/src/lib.rs`, so on
+/// Android the capability is dead — it references a permission set that no
+/// compiled plugin serves. Shipping it pollutes the security-review surface
+/// (Play reviewers inspect the full capability set) without enabling any
+/// runtime behaviour. This drift guard prevents a regression that reintroduces
+/// `"updater:default"` into the mobile file.
+#[test]
+fn capabilities_mobile_has_no_updater_permission() {
+    let committed = include_str!("../capabilities/mobile.json");
+
+    assert!(
+        !committed.contains("\"updater:default\""),
+        "`tauri/capabilities/mobile.json` must not contain \"updater:default\": \
+         the updater plugin is desktop-only (#[cfg(desktop)] in tauri/src/lib.rs), \
+         so the mobile capability is dead and should not be committed. Got:\n{committed}"
+    );
+
+    serde_json::from_str::<serde_json::Value>(committed)
+        .expect("capabilities/mobile.json must be valid JSON");
+}
+
 /// Verifies that env-controlled hosts are substituted into the capabilities
 /// opener allow-list while preserving the surrounding permission structure,
 /// and that the output is always valid JSON.

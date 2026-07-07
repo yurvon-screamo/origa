@@ -74,7 +74,12 @@
         "autosave_saving": "Saving...",
         "autosave_saved": "Saved",
         "autosave_error": "Save error",
-        "autosave_retry": "Retry"
+        "autosave_retry": "Retry",
+        "legal": "Legal"
+    },
+    "legal": {
+        "privacy_policy": "Privacy Policy",
+        "terms_of_service": "Terms of Service"
     },
     "onboarding": {
         "steps": {

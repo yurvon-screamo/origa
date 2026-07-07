@@ -481,3 +481,57 @@ async fn features_has_visible_faq_block() {
         "FAQ Q1 must appear in the visible .feat-faq section, not only in JSON-LD"
     );
 }
+
+#[tokio::test]
+async fn footer_has_legal_links_on_every_locale() {
+    // The Layout wraps every route, so the footer's Legal column must render
+    // /privacy and /terms links on every locale variant of the home page.
+    // Required for Google Play policy compliance (Privacy Policy reachable
+    // from the app's landing site on every supported language).
+    for (locale_prefix, path_prefix) in [("", ""), ("/ru", "/ru"), ("/ko", "/ko"), ("/vi", "/vi")] {
+        let uri = if locale_prefix.is_empty() {
+            "/".to_string()
+        } else {
+            locale_prefix.to_string()
+        };
+        let body = get_body(&uri).await;
+        let expected_privacy = format!(r#"href="{path_prefix}/privacy""#);
+        let expected_terms = format!(r#"href="{path_prefix}/terms""#);
+        assert!(
+            body.contains(&expected_privacy),
+            "footer must link to {expected_privacy} on {uri}"
+        );
+        assert!(
+            body.contains(&expected_terms),
+            "footer must link to {expected_terms} on {uri}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn privacy_page_renders_breadcrumb_and_h1() {
+    let body = get_body("/privacy").await;
+    let json = find_jsonld_block_by_type(&body, "BreadcrumbList");
+    assert!(
+        json.contains("/privacy"),
+        "BreadcrumbList for /privacy must reference the page URL: {json}"
+    );
+    assert!(
+        body.contains("legal-doc__title") && body.contains("Privacy Policy"),
+        "/privacy must render an h1 with the page title"
+    );
+}
+
+#[tokio::test]
+async fn terms_page_renders_breadcrumb_and_h1() {
+    let body = get_body("/terms").await;
+    let json = find_jsonld_block_by_type(&body, "BreadcrumbList");
+    assert!(
+        json.contains("/terms"),
+        "BreadcrumbList for /terms must reference the page URL: {json}"
+    );
+    assert!(
+        body.contains("legal-doc__title") && body.contains("Terms of Service"),
+        "/terms must render an h1 with the page title"
+    );
+}

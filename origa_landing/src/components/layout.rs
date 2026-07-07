@@ -141,6 +141,15 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                         {c.footer_license}
                     </a>
                 </div>
+                <div>
+                    <p class="landing-footer__heading">{c.footer_legal}</p>
+                    <NavLink prefix href="privacy" class="landing-footer__link">
+                        {c.legal_privacy_link}
+                    </NavLink>
+                    <NavLink prefix href="terms" class="landing-footer__link">
+                        {c.legal_terms_link}
+                    </NavLink>
+                </div>
             </div>
         </footer>
     }

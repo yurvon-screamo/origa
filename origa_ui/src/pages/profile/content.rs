@@ -1,4 +1,4 @@
-use super::{DangerZoneCard, PasswordCard, PersonalDataCard, SettingsCard};
+use super::{DangerZoneCard, PasswordCard, PersonalDataCard, SettingsCard, legal_card};
 use crate::i18n::{native_language_to_locale, t, use_i18n};
 use crate::store::AuthStore;
 use crate::ui_components::{Card, OfflineBundleCard};
@@ -215,6 +215,7 @@ pub fn ProfileContent() -> impl IntoView {
                     </Card>
                     <Card>
                         <SettingsCard test_id="profile-settings" />
+                        {legal_card(Signal::derive(|| "profile-legal".to_string()))}
                     </Card>
                     <DangerZoneCard
                         on_logout={logout}

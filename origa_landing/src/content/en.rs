@@ -227,4 +227,140 @@ pub static CONTENT: Content = Content {
     integrations_anki_note: "Import any Anki deck and continue learning where you left off — all your progress transfers.",
 
     banner_wip: "",
+
+    footer_legal: "Legal",
+    legal_privacy_link: "Privacy Policy",
+    legal_terms_link: "Terms of Service",
+
+    privacy_meta_title: "Privacy Policy | Origa",
+    privacy_meta_description: "What data Origa collects (account, learning progress, settings), why it is collected, where it is stored, and your rights.",
+    privacy_h1: "Privacy Policy",
+    privacy_last_updated_label: "Last updated",
+    privacy_body: PR_BODY_EN,
+
+    terms_meta_title: "Terms of Service | Origa",
+    terms_meta_description: "Terms governing use of Origa, the free Japanese-learning application distributed under the BSL license.",
+    terms_h1: "Terms of Service",
+    terms_last_updated_label: "Last updated",
+    terms_body: TO_BODY_EN,
 };
+
+pub const PR_BODY_EN: &str = r#"
+<section>
+  <h2>What data we collect</h2>
+  <p>To operate your account and synchronise your learning progress across devices, Origa stores the following data on its server:</p>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Details</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Account</td><td>Email address, username, and a server-assigned identifier.</td></tr>
+      <tr><td>Authentication</td><td>Email and password (passwords are hashed server-side and never stored in plain text), or sign-in via Google or Yandex OAuth.</td></tr>
+      <tr><td>Learning progress</td><td>Your study cards (vocabulary, kanji, grammar, phrases), spaced-repetition state, review history, JLPT progress, known-vocabulary index, and current Japanese level.</td></tr>
+      <tr><td>Settings</td><td>Interface language and daily study-load preference.</td></tr>
+      <tr><td>Imported sets</td><td>Identifiers of content sets you imported (the set contents themselves are public catalog data).</td></tr>
+      <tr><td>Optional profile</td><td>A Telegram user identifier, only if you choose to link a Telegram account.</td></tr>
+    </tbody>
+  </table>
+  <p>Origa does <strong>not</strong> collect analytics, crash reports, advertising identifiers, or precise device information. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
+</section>
+<section>
+  <h2>How data is used</h2>
+  <ul>
+    <li>To authenticate you and keep your account secure.</li>
+    <li>To synchronise your learning progress between your devices.</li>
+    <li>To display your progress, level and review schedule inside the app.</li>
+  </ul>
+  <p>The email received from an OAuth provider is used solely to identify your account and to synchronise progress; it is not sold or transferred to third parties.</p>
+</section>
+<section>
+  <h2>Where data is stored</h2>
+  <ul>
+    <li>Account and progress data: the TrailBase server at <code>app.origa.uwuwu.net</code>, hosted in Singapore.</li>
+    <li>Static assets (dictionaries, machine-learning models, phrase audio): the CDN at <code>s3.origa.uwuwu.net</code>. These are public catalog content, not user data.</li>
+    <li>OAuth sign-in is handled by Google and Yandex according to their respective privacy policies.</li>
+  </ul>
+</section>
+<section>
+  <h2>Data retention</h2>
+  <p>We retain your data until you request deletion. Origa does not erase accounts automatically after a period of inactivity. You can delete your account at any time from the in-app profile screen, or by contacting us.</p>
+</section>
+<section>
+  <h2>Your rights</h2>
+  <ul>
+    <li><strong>Access</strong> — request a copy of the data we hold about you.</li>
+    <li><strong>Rectification</strong> — correct inaccurate account or profile data.</li>
+    <li><strong>Erasure</strong> — delete your account and associated data.</li>
+    <li><strong>Portability</strong> — receive your progress data in a machine-readable form.</li>
+  </ul>
+  <p>To exercise any of these rights, use the in-app account-deletion function or contact us at the address below. If you are located in the European Union (GDPR) or the Russian Federation (Federal Law No. 152-FZ), these rights are reflected in the controls described above.</p>
+</section>
+<section>
+  <h2>Children's privacy</h2>
+  <p>Origa is a general-purpose language-learning tool and is not directed at children under 13. We do not knowingly collect data from children under 13. If you believe a child has provided us with personal data, contact us so we can delete it.</p>
+</section>
+<section>
+  <h2>Third-party services</h2>
+  <ul>
+    <li>Google OAuth (accounts.google.com) — optional sign-in provider.</li>
+    <li>Yandex OAuth (oauth.yandex.ru) — optional sign-in provider.</li>
+    <li>Static CDN (s3.origa.uwuwu.net) — public catalog content.</li>
+  </ul>
+  <p>Origa does not include advertising SDKs, analytics SDKs, or cross-device tracking SDKs.</p>
+</section>
+<section>
+  <h2>Changes to this policy</h2>
+  <p>If this policy changes, the updated version will be published on this page.</p>
+</section>
+<section>
+  <h2>Contact</h2>
+  <p>Questions about this policy can be sent to <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+</section>
+"#;
+
+pub const TO_BODY_EN: &str = r#"
+<section>
+  <h2>1. Acceptance of terms</h2>
+  <p>By installing, accessing or using Origa ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, do not install or use the Service.</p>
+</section>
+<section>
+  <h2>2. Description of the service</h2>
+  <p>Origa is a free application for learning the Japanese language. It includes vocabulary, kanji, grammar, listening practice, spaced repetition, and optional on-device optical character recognition and speech recognition. The source code is publicly available on GitHub under the Business Source License (BSL).</p>
+</section>
+<section>
+  <h2>3. License to use</h2>
+  <p>The source code of Origa is distributed under the Business Source License. You may use, study and modify the code for your own non-commercial use. Additional restrictions on commercial use apply; see the BSL terms and the change-of-use date specified in the repository's LICENSE file for details.</p>
+</section>
+<section>
+  <h2>4. User accounts</h2>
+  <p>To synchronise progress across devices, Origa uses an account identified by your email address. You are responsible for maintaining the confidentiality of your sign-in credentials and for all activity that occurs under your account. Provide accurate registration information and keep it current.</p>
+</section>
+<section>
+  <h2>5. Acceptable use</h2>
+  <p>You agree not to misuse the Service, not to attempt to gain unauthorised access to its server or another user's data, and not to use the Service to violate any applicable law. Automated abuse of the Service or its server is prohibited.</p>
+</section>
+<section>
+  <h2>6. User content</h2>
+  <p>You are responsible for any content you import into the Service for your own study (for example, personal text notes or imported study decks). You retain ownership of your content. Origa processes your content solely to provide the learning functionality to you.</p>
+</section>
+<section>
+  <h2>7. Disclaimers</h2>
+  <p>The Service is provided "as is" and "as available", without warranties of any kind, whether express or implied. Machine-learning outputs (OCR, speech recognition, translation) may contain errors and should not be relied upon as authoritative.</p>
+</section>
+<section>
+  <h2>8. Limitation of liability</h2>
+  <p>To the maximum extent permitted by law, the authors and contributors of Origa shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of data, arising out of or related to your use of the Service.</p>
+</section>
+<section>
+  <h2>9. Changes to the service and to these terms</h2>
+  <p>The Service may evolve over time. We may update these Terms; the current version will always be available on this page. Continued use after a change constitutes acceptance of the updated Terms.</p>
+</section>
+<section>
+  <h2>10. Governing law</h2>
+  <p>These Terms are governed by the laws of the Republic of Kazakhstan.</p>
+</section>
+<section>
+  <h2>11. Contact</h2>
+  <p>Questions about these Terms can be sent to <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+</section>
+"#;

@@ -101,6 +101,10 @@ async fn locale_root_with_trailing_slash_redirects(
 #[case("/ru/download/", "/ru/download")]
 #[case("/ko/features/", "/ko/features")]
 #[case("/vi/download/", "/vi/download")]
+#[case("/privacy/", "/privacy")]
+#[case("/terms/", "/terms")]
+#[case("/ru/privacy/", "/ru/privacy")]
+#[case("/ko/terms/", "/ko/terms")]
 // English paths have no locale prefix — the canonical form is /features, not
 // /en/features. These cases guard against a regression where only locale-
 // prefixed paths were normalised.

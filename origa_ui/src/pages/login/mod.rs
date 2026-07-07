@@ -15,7 +15,7 @@ use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
     Alert, AlertType, CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout,
-    PageLayoutVariant, Text, TextSize, TypographyVariant,
+    PageLayoutVariant, Text, TextSize, TypographyVariant, legal_links,
 };
 use email_password_form::EmailPasswordForm;
 use leptos::prelude::*;
@@ -101,10 +101,22 @@ pub fn Login() -> impl IntoView {
                     <oauth_buttons::OAuthButtons debug_sink=oauth_debug />
                 </div>
 
-                {debug_overlay(oauth_debug)}
+                {login_footer(oauth_debug)}
             </CardLayout>
         </PageLayout>
     }
+}
+
+// Combines the legal-links row and the OAuth debug overlay into a single
+// AnyView so the CardLayout's children-tuple length (and therefore the bin
+// crate's monomorphised type-depth) does not grow. See ADR-027 for the
+// recursion_limit rationale.
+fn login_footer(oauth_debug: oauth_buttons::OAuthDebugSink) -> AnyView {
+    view! {
+        {legal_links(Signal::derive(|| "login-legal-links".to_string()))}
+        {debug_overlay(oauth_debug)}
+    }
+    .into_any()
 }
 
 /// Builds the on-screen OAuth diagnostics overlay. Returns `None` (rendered as

@@ -2,11 +2,11 @@
 <!-- Canonical production URLs are intentionally hardcoded (not env-derived): the sitemap
      must advertise stable public URLs for crawlers, independent of the build environment.
 
-     Multilingual pattern per Google Search Central
-     (https://developers.google.com/search/docs/specialty/international/localized-versions):
-     one url element per locale variant of each page, each containing the full set of
-     xhtml:link rel="alternate" hreflang annotations for all variants (including self).
-     5 pages (/, /features, /compare, /content, /download) × 4 locales (en/ru/ko/vi) = 20 url entries. -->
+      Multilingual pattern per Google Search Central
+      (https://developers.google.com/search/docs/specialty/international/localized-versions):
+      one url element per locale variant of each page, each containing the full set of
+      xhtml:link rel="alternate" hreflang annotations for all variants (including self).
+      7 pages (/, /features, /compare, /content, /download, /privacy, /terms) × 4 locales (en/ru/ko/vi) = 28 url entries. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
@@ -198,6 +198,82 @@
     <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/download"/>
     <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/download"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/download"/>
+  </url>
+
+  <!-- ==================== /privacy ==================== -->
+  <url>
+    <loc>https://origa.uwuwu.net/privacy</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/privacy"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/privacy"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/privacy</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/privacy"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/privacy"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/privacy</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/privacy"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/privacy"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/privacy</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/privacy"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/privacy"/>
+  </url>
+
+  <!-- ==================== /terms ==================== -->
+  <url>
+    <loc>https://origa.uwuwu.net/terms</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/terms"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/terms</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/terms"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/terms</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/terms"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/terms</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/terms"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/terms"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/terms"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/terms"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
   </url>
 
 </urlset>
