@@ -355,7 +355,7 @@ pub fn GrammarPracticeSession(
                     }}
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                <div class="grid grid-cols-2 gap-2 sm:gap-3">
                     <button
                         class=move || option_class(0)
                         data-testid="grammar-practice-option-0"

@@ -77,7 +77,7 @@ pub fn PhraseCardView(
                     </Text>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                <div class="grid grid-cols-2 gap-2 sm:gap-3">
                     {move || {
                         options_stored
                             .get_value()
