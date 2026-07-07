@@ -3,7 +3,8 @@
 //! All Tauri platform detection and JS API access should go through this module.
 //! No other file should use `js_sys::Reflect::get(...("__TAURI__"))` directly.
 
-use js_sys::{Function, Object, Reflect};
+use js_sys::{Function, Object, Promise, Reflect};
+use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
@@ -58,6 +59,52 @@ pub fn opener_open_url_fn() -> Option<Function> {
     Reflect::get(&opener, &JsValue::from_str("openUrl"))
         .ok()
         .and_then(|v| v.dyn_into::<Function>().ok())
+}
+
+/// Opens `url` in the system browser (Tauri) or navigates the current tab
+/// (browser). Canonical implementation shared by every call site that needs to
+/// leave the WebView — legal-document links, OAuth provider redirect, etc.
+///
+/// Tauri path: `opener.openUrl` returns a Promise on Tauri v2 (mobile +
+/// desktop). The synchronous `call1` only catches construction-time
+/// exceptions; async rejections (capability scope mismatch, browser-launch
+/// failure on Android) are handled by awaiting the Promise and falling back to
+/// `window.open` on rejection. This mirrors the historic OAuth fix for the
+/// "button does nothing on Android" symptom.
+///
+/// Browser path: `location.href = url` navigates the current tab.
+pub fn open_url_external(url: &str) {
+    let Some(window) = window() else {
+        return;
+    };
+
+    if !is_tauri() {
+        let _ = window.location().set_href(url);
+        return;
+    }
+
+    let Some(open_url_fn) = opener_open_url_fn() else {
+        let _ = window.open_with_url_and_target(url, "_blank");
+        return;
+    };
+
+    match open_url_fn.call1(&JsValue::UNDEFINED, &JsValue::from_str(url)) {
+        Ok(value) => {
+            if let Ok(promise) = value.dyn_into::<Promise>() {
+                let url_owned = url.to_string();
+                spawn_local(async move {
+                    if JsFuture::from(promise).await.is_err()
+                        && let Some(w) = web_sys::window()
+                    {
+                        let _ = w.open_with_url_and_target(&url_owned, "_blank");
+                    }
+                });
+            }
+        },
+        Err(_) => {
+            let _ = window.open_with_url_and_target(url, "_blank");
+        },
+    }
 }
 
 /// Reload the current Tauri WebView.

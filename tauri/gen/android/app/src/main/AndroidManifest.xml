@@ -2,8 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- OCR (camera capture) and STT (microphone capture). wry's
+         RustWebChromeClient.onPermissionRequest bridges getUserMedia to the
+         Android runtime permission dialog for these; MODIFY_AUDIO_SETTINGS is
+         requested by wry alongside RECORD_AUDIO for AUDIO_CAPTURE. All are
+         declared here so the OS dialog can grant them at runtime. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
+
+    <!-- Camera/microphone are optional so the app installs on devices without
+         them (tablets, Android TV). Required=false matches leanback above. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <application
         android:icon="@mipmap/ic_launcher"

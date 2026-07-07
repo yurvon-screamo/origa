@@ -1,11 +1,13 @@
 mod content;
 mod danger_zone_card;
+mod legal_card;
 mod password_card;
 mod personal_data_card;
 mod settings_card;
 
 pub use content::ProfileContent;
 pub use danger_zone_card::DangerZoneCard;
+pub use legal_card::legal_card;
 pub use password_card::PasswordCard;
 pub use personal_data_card::PersonalDataCard;
 pub use settings_card::SettingsCard;

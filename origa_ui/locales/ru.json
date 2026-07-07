@@ -74,7 +74,12 @@
     "autosave_saving": "Сохраняем...",
     "autosave_saved": "Сохранено",
     "autosave_error": "Ошибка сохранения",
-    "autosave_retry": "Повторить"
+    "autosave_retry": "Повторить",
+    "legal": "Правовая информация"
+  },
+  "legal": {
+    "privacy_policy": "Политика конфиденциальности",
+    "terms_of_service": "Условия использования"
   },
   "onboarding": {
     "steps": {

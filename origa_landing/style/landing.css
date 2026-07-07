@@ -236,7 +236,7 @@
 
 .landing-footer__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-lg);
 }
 
@@ -1880,4 +1880,105 @@
     .intg-grid-stagger__row--2-3 {
         grid-template-columns: 1fr;
     }
+}
+
+/* --- Legal documents (/privacy, /terms) --- */
+
+.legal-doc {
+    max-width: 768px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg) var(--space-xxl);
+}
+
+.legal-doc__header {
+    margin-bottom: var(--space-xl);
+}
+
+.legal-doc__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 6vw, 3rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--fg-black);
+}
+
+.legal-doc__body {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--fg-black);
+}
+
+.legal-doc__body h2 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--fg-black);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+}
+
+.legal-doc__body h2:first-child {
+    margin-top: 0;
+}
+
+.legal-doc__body p {
+    margin: 0 0 var(--space-sm);
+}
+
+.legal-doc__body ul {
+    margin: 0 0 var(--space-sm);
+    padding-left: var(--space-md);
+}
+
+.legal-doc__body li {
+    margin-bottom: var(--space-xs);
+}
+
+.legal-doc__body strong {
+    font-weight: 500;
+}
+
+.legal-doc__body em {
+    font-style: italic;
+    color: var(--fg-muted);
+}
+
+.legal-doc__body code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--bg-aged);
+    padding: 1px 4px;
+}
+
+.legal-doc__body a {
+    color: var(--fg-black);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.legal-doc__body a:hover {
+    color: var(--accent-terracotta);
+}
+
+.legal-doc__body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 var(--space-sm);
+    font-size: var(--text-xs);
+}
+
+.legal-doc__body th,
+.legal-doc__body td {
+    border: 1px solid var(--border-dark);
+    text-align: left;
+    padding: var(--space-xs) var(--space-sm);
+    vertical-align: top;
+}
+
+.legal-doc__body th {
+    font-weight: 500;
+    background: var(--bg-aged);
 }

@@ -53,12 +53,30 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // 20 <url> elements: 5 pages (/, /features, /compare, /content, /download)
-    // × 4 locales (en/ru/ko/vi). Google Search Central requires a separate
-    // <url> per locale variant, each with the full hreflang alternate set
-    // (see developers.google.com/search/docs/specialty/international/localized-versions).
+    // 28 <url> elements: 7 pages (/, /features, /compare, /content, /download,
+    // /privacy, /terms) × 4 locales (en/ru/ko/vi). Google Search Central
+    // requires a separate <url> per locale variant, each with the full hreflang
+    // alternate set (see developers.google.com/search/docs/specialty/international/localized-versions).
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 20, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 28, "expected one <lastmod> per <url>");
+}
+
+#[test]
+fn every_url_block_has_full_hreflang_alternate_set() {
+    // Each <url> must carry the full set of locale alternates (en/ru/ko/vi +
+    // x-default = 5) so crawlers can discover every variant from any entry.
+    // The lastmod count test above does not verify hreflang presence, so a
+    // conformant-by-lastmod but non-conformant-by-hreflang sitemap would slip
+    // through without this guard.
+    let xml = sitemap_contents();
+    for block in xml.split("<url>").skip(1) {
+        let url_block = block.split("</url>").next().unwrap_or(block);
+        let alternate_count = url_block.matches("<xhtml:link rel=\"alternate\"").count();
+        assert_eq!(
+            alternate_count, 5,
+            "every <url> must have 5 hreflang alternates (en/ru/ko/vi/x-default); got {alternate_count} in:\n{url_block}"
+        );
+    }
 }
 
 #[test]

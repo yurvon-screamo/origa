@@ -5903,3 +5903,43 @@ rt {
     flex-direction: column;
     gap: 8px;
 }
+
+.legal-card {
+    position: relative;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 24px;
+}
+
+.legal-card__title {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-black);
+    margin-bottom: 16px;
+}
+
+.legal-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legal-links__item {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.legal-links__item:hover {
+    color: var(--fg-black);
+}
