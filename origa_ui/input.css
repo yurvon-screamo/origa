@@ -1781,7 +1781,8 @@ rt {
     cursor: pointer;
     display: inline-block;
     position: relative;
-    vertical-align: baseline;
+    vertical-align: middle;
+    line-height: 1;
 }
 
 .kanji-char-hover:hover,
@@ -3217,8 +3218,8 @@ rt {
 
 .heading-h2 {
     font-family: var(--font-serif);
-    font-weight: 300;
-    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 5vw, 2.75rem);
     line-height: 1.2;
     word-break: break-words;
 }
