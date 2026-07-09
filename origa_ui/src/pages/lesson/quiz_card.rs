@@ -208,7 +208,7 @@ pub fn QuizCardView(
             />
 
             <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-1 sm:mb-2">
+                <div class="text-center mb-0.5 sm:mb-1">
                     <Show when=move || kanji_for_animation.get_value().is_none()>
                         <div class="mb-4">
                             <Heading level=HeadingLevel::H2>
