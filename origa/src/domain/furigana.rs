@@ -68,11 +68,13 @@ fn token_to_furigana_segment(
             .filter(|c| c.is_kanji())
             .all(|c| known_kanji.contains(&c));
 
-        FuriganaSegment::new(
-            surface,
-            Some(token.phonological_surface_form().to_string()),
-            all_kanji_known,
-        )
+        let reading = token.phonological_surface_form();
+        let reading = if reading.is_empty() {
+            None
+        } else {
+            Some(reading.to_string())
+        };
+        FuriganaSegment::new(surface, reading, all_kanji_known)
     } else {
         FuriganaSegment::new(surface, None, false)
     }
@@ -278,6 +280,28 @@ mod tests {
         let segments = furiganize_segments("たべもの", &known_kanji).unwrap();
         assert!(!segments.is_empty());
         assert!(segments.iter().all(|s| !s.has_reading()));
+    }
+
+    // Standalone kanji that Lindera classifies as Unknown (no UniDic lemma on
+    // its own — e.g. 璃 in character names) carries no derivable kana reading,
+    // so the furigana segment must surface `reading == None` rather than
+    // `Some("")`. An empty-string reading would render `<rt></rt>` and lie via
+    // `has_reading() == true`.
+    #[test]
+    fn should_furiganize_unknown_kanji_without_empty_reading() {
+        ensure_dictionary();
+        let known_kanji: HashSet<char> = HashSet::new();
+        let segments = furiganize_segments("杏璃", &known_kanji).unwrap();
+        let ri = segments
+            .iter()
+            .find(|s| s.text() == "璃")
+            .expect("「璃」segment should exist");
+        assert_eq!(ri.reading(), None);
+        assert!(
+            !ri.has_reading(),
+            "unknown kanji must not carry an empty-string reading, got {:?}",
+            ri.reading()
+        );
     }
 
     #[test]
