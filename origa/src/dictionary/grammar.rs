@@ -148,6 +148,10 @@ pub enum FormatAction {
     VerbToOKudasai {},
     VerbToOShimasu {},
 
+    VerbToNasai {},
+    VerbToKudasai {},
+    VerbToIrasshai {},
+
     ReplacePostfix {
         old_postfix: String,
         new_postfix: String,
@@ -218,7 +222,10 @@ impl FormatAction {
             | FormatAction::VerbToTeru {}
             | FormatAction::VerbToONinarimasu {}
             | FormatAction::VerbToOKudasai {}
-            | FormatAction::VerbToOShimasu {} => FormatActionGroup::Verb,
+            | FormatAction::VerbToOShimasu {}
+            | FormatAction::VerbToNasai {}
+            | FormatAction::VerbToKudasai {}
+            | FormatAction::VerbToIrasshai {} => FormatActionGroup::Verb,
 
             FormatAction::ReplacePostfix { .. }
             | FormatAction::AddPostfix { .. }

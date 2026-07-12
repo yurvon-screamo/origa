@@ -84,20 +84,32 @@ pub fn lookup_tokens_translations(
         .enumerate()
         .map(|(index, token)| {
             let base_form = token.orthographic_base_form().to_string();
+            let surface_form = token.orthographic_surface_form().to_string();
+
+            // The masu-stem resolver runs first because it also drives the
+            // translation fallback: a standalone masu-stem (not followed by a
+            // conjugation suffix) prefers its noun dictionary entry (surface)
+            // over the verb lemma (base).
+            let masu_stem_match = resolve_masu_stem_match(token, index, tokens, native_language);
+
             let translation = if is_particle_homonym_blacklisted(token) {
                 None
+            } else if masu_stem_match.is_some() {
+                get_translation(&surface_form, native_language)
+                    .or_else(|| get_translation(&base_form, native_language))
             } else {
                 get_translation(&base_form, native_language)
             };
 
-            let grammar =
-                resolve_sou_da_match(token, index, tokens, native_language).or_else(|| {
+            let grammar = resolve_sou_da_match(token, index, tokens, native_language)
+                .or_else(|| {
                     resolve_grammar_match(token, native_language, original_text, &original_hiragana)
-                });
+                })
+                .or(masu_stem_match);
             let (grammar_label, grammar_description) = split_grammar_fields(grammar);
 
             TokenTranslation {
-                surface_form: token.orthographic_surface_form().to_string(),
+                surface_form,
                 base_form,
                 reading: token.phonological_surface_form().to_string(),
                 pos: token.part_of_speech().clone(),
@@ -388,6 +400,83 @@ fn find_sou_rule(
     }
     None
 }
+
+/// Surfaces that, when following a verb masu-stem, mark it as the base of a
+/// conjugated form (polite/te/past/conditional/...) rather than a standalone
+/// continuative or noun. Empirically validated by the corpus audit POS gate:
+/// た is always AuxiliaryVerb, て is mostly Particle, ば is mostly Particle.
+/// Checking the surface avoids relying on POS alone, which would over-match
+/// for て/ば (Particle) cases.
+const CONJUGATION_SUFFIX_SURFACES: &[&str] = &[
+    "ます",
+    "ません",
+    "まし",
+    "ませ",
+    "た",
+    "て",
+    "ば",
+    "たら",
+    "よう",
+    "う",
+    "たい",
+    "ない",
+];
+
+fn next_token_is_conjugation_suffix(tokens: &[TokenInfo], index: usize) -> bool {
+    let Some(next) = tokens.get(index + 1) else {
+        return false;
+    };
+    if matches!(next.part_of_speech(), PartOfSpeech::AuxiliaryVerb) {
+        return true;
+    }
+    let next_surface = next.orthographic_surface_form();
+    CONJUGATION_SUFFIX_SURFACES.contains(&next_surface)
+}
+
+/// Standalone masu-stem (ren'yōkei) resolver. A verb stem that is NOT followed
+/// by a conjugation suffix is either a continuative joining clauses or a
+/// noun-ified stem (願い=request, 暮らし=living, 話=story). The resolver returns
+/// the 連用形 grammar rule by title — it does NOT go through `find_format_map`
+/// because a `{Verb: [VerbToStem]}` format_map would over-match Path B
+/// (`detect_format_map_rules` → `enrich_phrases_with_grammar`) on every verb
+/// in every text. Mirrors the `resolve_sou_da_match` pattern.
+fn resolve_masu_stem_match(
+    token: &TokenInfo,
+    index: usize,
+    tokens: &[TokenInfo],
+    native_language: &NativeLanguage,
+) -> Option<GrammarMatch> {
+    if token.part_of_speech() != &PartOfSpeech::Verb {
+        return None;
+    }
+    if token.orthographic_surface_form() == token.orthographic_base_form() {
+        return None;
+    }
+    // Honorific irregular verbs (為さる/下さる/いらっしゃる) have their own
+    // suppletive rules (VerbToNasai/Kudasai/Irasshai) and must NOT fall back
+    // to the continuative label.
+    if HONORIFIC_VERB_BASES.contains(&token.orthographic_base_form()) {
+        return None;
+    }
+    if next_token_is_conjugation_suffix(tokens, index) {
+        return None;
+    }
+    let rules = GRAMMAR_RULES.get()?;
+    let rule = rules
+        .iter()
+        .find(|r| r.content(native_language).title().contains("連用形"))?;
+    Some(GrammarMatch::from_rule(rule, native_language))
+}
+
+const HONORIFIC_VERB_BASES: &[&str] = &[
+    "為さる",
+    "なさる",
+    "下さる",
+    "くださる",
+    "御座る",
+    "ござる",
+    "いらっしゃる",
+];
 
 #[cfg(test)]
 mod tests {
@@ -1816,6 +1905,330 @@ mod integration_tests {
                 .is_some_and(|l| l.contains("いつ")),
             "「いつ」should carry the いつ question-word grammar_label via keyword, got: {:?}",
             itsu
+        );
+    }
+
+    // --- Corpus-audit-driven grammar gaps (56k real conjugations without
+    // grammar_label, dominated by i-adjective forms) ---
+    // These forms have FormatAction variants defined and implemented
+    // (AdjectiveToKu / AdjectiveToKatta / AdjectiveToKute) but NO grammar.json
+    // rule exposes them, so conjugated i-adjectives never pick up a label.
+
+    // i-adjective ku-form (adverbial): 早い → 早く. The biggest single gap in
+    // the corpus (~10k hits). The ku-form turns an i-adjective into an adverb.
+    #[test]
+    fn should_label_i_adjective_ku_form_adverbial() {
+        ensure_dictionaries();
+        let text = "もっと早く歩いて";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let hayaku = results
+            .iter()
+            .find(|t| t.surface_form == "早く")
+            .expect("「早く」ku-form token should exist");
+        assert!(
+            hayaku
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("наречие")),
+            "i-adjective ku-form「早く」should carry the adverbial grammar_label, got: {:?}",
+            hayaku
+        );
+    }
+
+    // i-adjective past (katta-form): 早い → 早かった / 早かっ. AdjectiveToKatta
+    // is implemented but exposed by no rule (~5k hits in the corpus).
+    #[test]
+    fn should_label_i_adjective_katta_past_form() {
+        ensure_dictionaries();
+        let text = "昨日の天気が本当に良かった";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let yokatta = results
+            .iter()
+            .find(|t| t.base_form == "良い" && t.surface_form != "良い")
+            .expect("conjugated「良い」token should exist");
+        assert!(
+            yokatta
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("прошедшее")),
+            "i-adjective past form of「良い」should carry the past grammar_label, got: {:?}",
+            yokatta
+        );
+    }
+
+    // i-adjective te-form (kute-form): 早い → 早くて. AdjectiveToKute is
+    // implemented but the ～て／～くて／～で rule carries no format_map, so the
+    // i-adjective branch never matches.
+    #[test]
+    fn should_label_i_adjective_kute_te_form() {
+        ensure_dictionaries();
+        let text = "このケーキは美味しくて止まらない";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let oishikute = results
+            .iter()
+            .find(|t| t.base_form == "美味しい" && t.surface_form != "美味しい")
+            .expect("conjugated「美味しい」token should exist");
+        assert!(
+            oishikute
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("て")),
+            "i-adjective te-form「美味しくて」should carry the te-form grammar_label, got: {:?}",
+            oishikute
+        );
+    }
+
+    // --- Slice-2 (corpus audit Phase 1): masu-stem continuative/noun ---
+
+    // A verb masu-stem standing on its own (next token NOT ます/て/た/ば/...)
+    // is a continuative or a noun-ified stem. It must carry the 連用形
+    // grammar_label.
+    #[test]
+    fn should_label_masu_stem_continuative_when_standalone() {
+        ensure_dictionaries();
+        let text = "返事を願いします";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let negai = results
+            .iter()
+            .find(|t| t.surface_form == "願い")
+            .expect("「願い」token should exist");
+        assert!(
+            negai
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("連用形")),
+            "standalone masu-stem「願い」should carry the continuative grammar_label, got: {:?}",
+            negai
+        );
+    }
+
+    // Anti-regression: a masu-stem directly before ます (polite auxiliary) MUST
+    // NOT carry the continuative label — it is the base of the polite form and
+    // is covered by the ～ます rule.
+    #[test]
+    fn should_not_label_masu_stem_before_polite_aux() {
+        ensure_dictionaries();
+        let text = "ご飯を食べます";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let tabe = results
+            .iter()
+            .find(|t| t.surface_form == "食べ")
+            .expect("「食べ」stem token should exist");
+        assert!(
+            !tabe
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("連用形")),
+            "「食べ」before 「ます」must NOT carry the continuative label (it is the polite base), got: {:?}",
+            tabe
+        );
+    }
+
+    // Anti-regression: masu-stem before て (te-form Particle) must not be
+    // labeled continuative — it is the base of the te-form. This is the case
+    // the POS verification gate flagged: て is Particle (72k) more often than
+    // AuxiliaryVerb, so a POS-only guard would over-match.
+    #[test]
+    fn should_not_label_masu_stem_before_te_particle() {
+        ensure_dictionaries();
+        let text = "食べて飲んで";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let tabe = results
+            .iter()
+            .find(|t| t.surface_form == "食べ")
+            .expect("「食べ」stem token should exist");
+        assert!(
+            !tabe
+                .grammar_label
+                .as_deref()
+                .is_some_and(|l| l.contains("連用形")),
+            "「食べ」before te-form「て」must NOT carry the continuative label, got: {:?}",
+            tabe
+        );
+    }
+
+    // A standalone masu-stem whose surface exists as a noun in the vocabulary
+    // dictionary (願い = request) must surface the noun translation rather than
+    // the verb-base translation (願う = to request). The assertion compares
+    // against `get_translation` directly so a regression that swaps surface
+    // and base lookup is caught.
+    #[test]
+    fn should_use_noun_translation_for_standalone_masu_stem() {
+        ensure_dictionaries();
+        let text = "返事を願いします";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let negai = results
+            .iter()
+            .find(|t| t.surface_form == "願い")
+            .expect("「願い」token should exist");
+
+        use crate::dictionary::vocabulary::get_translation;
+        let surface_translation = get_translation("願い", &NativeLanguage::Russian);
+        let base_translation = get_translation("願う", &NativeLanguage::Russian);
+        // If the dictionary exposes distinct noun (surface) and verb (base)
+        // entries, the noun entry must win for a standalone masu-stem.
+        if surface_translation.is_some()
+            && base_translation.is_some()
+            && surface_translation != base_translation
+        {
+            assert_eq!(
+                negai.translation, surface_translation,
+                "standalone「願い」must use the surface (noun) translation, got: {:?}",
+                negai.translation
+            );
+        } else {
+            assert!(
+                negai.translation.is_some(),
+                "standalone「願い」should carry a translation, got: {:?}",
+                negai
+            );
+        }
+    }
+
+    // --- Slice-4 (corpus audit Phase 2): honorific suppletive forms ---
+
+    // 為さる → なさい (polite imperative). The suppletive form is produced by
+    // the VerbToNasai FormatAction variant (matched by lemma only).
+    #[test]
+    fn should_label_nasai_imperative_from_nasaru() {
+        ensure_dictionaries();
+        let text = "よく考えなさい";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let nasai = results
+            .iter()
+            .find(|t| t.surface_form == "なさい")
+            .expect("「なさい」token should exist");
+        assert!(
+            nasai.grammar_label.is_some(),
+            "「なさい」from 為さる should carry a grammar_label, got: {:?}",
+            nasai
+        );
+    }
+
+    // 下さる → ください (polite imperative). The suppletive form is produced by
+    // the VerbToKudasai FormatAction variant.
+    #[test]
+    fn should_label_kudasai_imperative_from_kudasaru() {
+        ensure_dictionaries();
+        let text = "これをお食べください";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let kudasai = results
+            .iter()
+            .find(|t| t.surface_form == "ください")
+            .expect("「ください」token should exist");
+        assert!(
+            kudasai.grammar_label.is_some(),
+            "「ください」from 下さる should carry a grammar_label, got: {:?}",
+            kudasai
+        );
+    }
+
+    // いらっしゃる → いらっしゃい (imperative greeting). The suppletive form is
+    // produced by the VerbToIrasshai FormatAction variant.
+    #[test]
+    fn should_label_irasshai_imperative_from_irassharu() {
+        ensure_dictionaries();
+        let text = "いらっしゃいませ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let irasshai = results
+            .iter()
+            .find(|t| t.surface_form == "いらっしゃい")
+            .expect("「いらっしゃい」token should exist");
+        assert!(
+            irasshai.grammar_label.is_some(),
+            "「いらっしゃい」from いらっしゃる should carry a grammar_label, got: {:?}",
+            irasshai
+        );
+    }
+
+    // --- Slice-5 (orphan FormatActions): i-adjective conjugation forms ---
+    // Diagnostic on residual conjugation gaps revealed that several
+    // FormatAction variants are defined and implemented in code but exposed
+    // by NO grammar.json rule — so conjugated i-adjectives never pick up a
+    // label through them. AdjectiveToGaru / Kunai / Kunakatta / Kereba were
+    // all orphans (0 rules).
+
+    // AdjectiveToGaru — i-adj stem + がる ("to feel/seem that way").
+    // 怖がってる (怖い→怖がる→怖がって). The te-variant is matched via
+    // formatted_conjugation_variants.
+    #[test]
+    fn should_label_i_adjective_garu_form() {
+        ensure_dictionaries();
+        let text = "周りが怖がってるぞ";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let kowa = results
+            .iter()
+            .find(|t| t.surface_form == "怖")
+            .expect("「怖」token should exist");
+        assert!(
+            kowa.grammar_label.is_some(),
+            "i-adjective がる-form「怖」should carry a grammar_label, got: {:?}",
+            kowa
+        );
+    }
+
+    // AdjectiveToKunai — i-adj negative form (高い→高くない).
+    #[test]
+    fn should_label_i_adjective_kunai_negative_form() {
+        ensure_dictionaries();
+        let text = "この問題は難しくない";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let muzukashi = results
+            .iter()
+            .find(|t| t.base_form == "難しい" && t.surface_form != "難しい")
+            .expect("conjugated「難しい」token should exist");
+        assert!(
+            muzukashi.grammar_label.is_some(),
+            "i-adjective negative form「難しくない」should carry a grammar_label, got: {:?}",
+            muzukashi
+        );
+    }
+
+    // AdjectiveToKunakatta — i-adj negative past (高い→高くなかった).
+    #[test]
+    fn should_label_i_adjective_kunakatta_negative_past_form() {
+        ensure_dictionaries();
+        let text = "あの映画は面白くなかった";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let omoshiro = results
+            .iter()
+            .find(|t| t.base_form == "面白い" && t.surface_form != "面白い")
+            .expect("conjugated「面白い」token should exist");
+        assert!(
+            omoshiro.grammar_label.is_some(),
+            "i-adjective negative past「面白くなかった」should carry a grammar_label, got: {:?}",
+            omoshiro
+        );
+    }
+
+    // AdjectiveToKereba — i-adj conditional (高い→高ければ).
+    #[test]
+    fn should_label_i_adjective_kereba_conditional_form() {
+        ensure_dictionaries();
+        let text = "安ければ買います";
+        let tokens = super::super::tokenize_text(text).unwrap();
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
+        let yasuku = results
+            .iter()
+            .find(|t| t.base_form == "安い" && t.surface_form != "安い")
+            .expect("conjugated「安い」token should exist");
+        assert!(
+            yasuku.grammar_label.is_some(),
+            "i-adjective conditional「安ければ」should carry a grammar_label, got: {:?}",
+            yasuku
         );
     }
 }

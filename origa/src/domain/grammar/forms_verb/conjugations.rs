@@ -10,6 +10,7 @@ use super::irregulars::{
     VOLITIONAL_IRREGULAR, ZU_IRREGULAR, get_irregular_form, is_ichidan, stem_from_godan,
     te_form_stem,
 };
+use crate::domain::OrigaError;
 
 fn main_view_stem(word: &str) -> String {
     if let Some(result) = get_irregular_form(word, MAIN_VIEW_IRREGULAR) {
@@ -184,4 +185,77 @@ pub fn to_nikui_form(word: &str) -> String {
 
 pub fn to_sugiru_form_verb(word: &str) -> String {
     format!("{}すぎる", main_view_stem(word))
+}
+
+// Suppletive honorific imperatives — these verbs (為さる, 下さる, いらっしゃる)
+// have irregular imperative forms that do NOT follow the regular godan
+// imperative paradigm (為され / 下され / いらっしゃれ). They must be matched
+// by lemma: a wrong lemma returns Err so `find_format_map_matches` filters
+// the rule out via `formatted_rule_matches_text`'s Err-as-no-match.
+
+pub fn to_nasai_form(word: &str) -> Result<String, OrigaError> {
+    match word {
+        "為さる" | "なさる" => Ok("なさい".to_string()),
+        _ => Err(OrigaError::GrammarFormatError {
+            reason: format!("VerbToNasai applies only to 為さる/なさる, got '{word}'"),
+        }),
+    }
+}
+
+pub fn to_kudasai_form(word: &str) -> Result<String, OrigaError> {
+    match word {
+        "下さる" => Ok("下さい".to_string()),
+        "くださる" => Ok("ください".to_string()),
+        _ => Err(OrigaError::GrammarFormatError {
+            reason: format!("VerbToKudasai applies only to 下さる/くださる, got '{word}'"),
+        }),
+    }
+}
+
+pub fn to_irasshai_form(word: &str) -> Result<String, OrigaError> {
+    match word {
+        "いらっしゃる" => Ok("いらっしゃい".to_string()),
+        _ => Err(OrigaError::GrammarFormatError {
+            reason: format!("VerbToIrasshai applies only to いらっしゃる, got '{word}'"),
+        }),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn to_nasai_form_maps_nasaru_to_nasai() {
+        assert_eq!(to_nasai_form("為さる").unwrap(), "なさい");
+        assert_eq!(to_nasai_form("なさる").unwrap(), "なさい");
+    }
+
+    #[test]
+    fn to_nasai_form_errors_on_wrong_lemma() {
+        assert!(to_nasai_form("食べる").is_err());
+        assert!(to_nasai_form("為さる").is_ok());
+    }
+
+    #[test]
+    fn to_kudasai_form_maps_kudasaru_to_kudasai() {
+        assert_eq!(to_kudasai_form("下さる").unwrap(), "下さい");
+        assert_eq!(to_kudasai_form("くださる").unwrap(), "ください");
+    }
+
+    #[test]
+    fn to_kudasai_form_errors_on_wrong_lemma() {
+        assert!(to_kudasai_form("食べる").is_err());
+    }
+
+    #[test]
+    fn to_irasshai_form_maps_irassharu_to_irasshai() {
+        assert_eq!(to_irasshai_form("いらっしゃる").unwrap(), "いらっしゃい");
+    }
+
+    #[test]
+    fn to_irasshai_form_errors_on_wrong_lemma() {
+        assert!(to_irasshai_form("食べる").is_err());
+        assert!(to_irasshai_form("為さる").is_err());
+    }
 }
