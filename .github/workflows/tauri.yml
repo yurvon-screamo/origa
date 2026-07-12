@@ -135,18 +135,21 @@ jobs:
                   # auto-updated to an rc build. The URL tag segment is the git
                   # tag (v-prefixed, e.g. v1.0.0) — it MUST match the release's
                   # tag_name (github.ref_name), not the stripped version. The
-                  # asset filename segment keeps the stripped version because
-                  # Tauri stamps bundle names from tauri.conf.json:version (no v).
-                  # The manifest's `version` field is the bare version (1.0.0)
-                  # the updater compares against.
+                  # asset filename segment is the fixed-name alias
+                  # (Origa_x64-setup.exe / Origa_amd64.AppImage) — single-naming
+                  # per ADR-025 addendum; only the alias asset exists in the
+                  # release. The manifest's `version` field is the bare version
+                  # (1.0.0) the updater compares against. Signature is
+                  # content-based (Minisign), so it stays valid after the
+                  # versioned → alias rename in _build-tauri.yml.
                   jq -n \
                     --arg version "$VERSION" \
                     --arg notes "Release $VERSION" \
                     --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     --arg win_sig "$WIN_SIG" \
                     --arg linux_sig "$LINUX_SIG" \
-                    --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_${VERSION}_x64-setup.exe" \
-                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_${VERSION}_amd64.AppImage" \
+                    --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_x64-setup.exe" \
+                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_amd64.AppImage" \
                     '{
                       version: $version,
                       notes: $notes,
@@ -199,21 +202,20 @@ jobs:
             - name: Prepare release assets
               run: |
                   mkdir -p release_assets
-                  # Keep only installable bundles + the updater manifest.
-                  # Each platform ships BOTH a versioned name (release history
-                  # + the exact asset latest.json points at) and a fixed-name
-                  # alias (so /releases/latest/download/<alias> resolves for the
-                  # landing page). Intermediate artifacts (frontend-dist WASM,
-                  # *.sig signatures already embedded into latest.json) are
-                  # excluded so the release stays small. cp -f (not -n): every
-                  # tag is a fresh release, no accumulation across runs.
+                  # Keep only installable bundles + the updater manifest. Each
+                  # platform ships a single fixed-name asset per ADR-025
+                  # addendum (no versioned duplicate) so /releases/latest/download/
+                  # <alias> resolves for the landing page. Intermediate artifacts
+                  # (frontend-dist WASM, *.sig signatures already embedded into
+                  # latest.json) are excluded so the release stays small.
+                  # cp -f (not -n): every tag is a fresh release, no accumulation.
                   find artifacts -type f \( \
                       -name '*-setup.exe' -o \
                       -name '*.msi' -o \
                       -name '*.AppImage' -o \
                       -name '*.deb' -o \
                       -name '*.dmg' -o \
-                      -name 'Origa_*macos-arm64.zip' -o \
+                      -name 'Origa_macos-arm64.zip' -o \
                       -name '*.apk' -o \
                       -name 'latest.json' \
                   \) -exec cp -f {} release_assets/ \;
@@ -231,18 +233,14 @@ jobs:
                       Commit: ${{ github.sha }}
 
                       ## Windows
-                      - `Origa_${{ needs.version.outputs.version }}_x64-setup.exe` — NSIS installer
-                      - `Origa_x64-setup.exe` — fixed-name alias (latest direct download)
+                      - `Origa_x64-setup.exe` — NSIS installer (single-name, no versioned duplicate per ADR-025 addendum)
 
                       ## Linux
-                      - `Origa_${{ needs.version.outputs.version }}_amd64.AppImage` — portable
-                      - `Origa_amd64.AppImage` — fixed-name alias
-                      - `Origa_${{ needs.version.outputs.version }}_amd64.deb` — Debian/Ubuntu
-                      - `Origa_amd64.deb` — fixed-name alias
+                      - `Origa_amd64.AppImage` — portable
+                      - `Origa_amd64.deb` — Debian/Ubuntu
 
                       ## macOS
-                      - `Origa_${{ needs.version.outputs.version }}_macos-arm64.zip` — Apple Silicon
-                      - `Origa_macos-arm64.zip` — fixed-name alias
+                      - `Origa_macos-arm64.zip` — Apple Silicon
 
                       ## Android
                       - `origa.apk`

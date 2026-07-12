@@ -145,12 +145,15 @@ jobs:
                   VERSION: ${{ inputs.version }}
               run: |
                   # Tauri emits Origa_<version>_x64-setup.exe (+ .exe.sig updater
-                  # signature). Mirror to a fixed-name alias so the landing
-                  # page's /releases/latest/download/Origa_x64-setup.exe link
-                  # resolves on every release — GitHub's "latest" download URL
-                  # requires a filename that does not change between releases.
-                  cp "Origa_${VERSION}_x64-setup.exe" "Origa_x64-setup.exe"
-                  [ -f "Origa_${VERSION}_x64-setup.exe.sig" ] && cp "Origa_${VERSION}_x64-setup.exe.sig" "Origa_x64-setup.exe.sig" || true
+                  # signature). Rename to a fixed name so the landing page's
+                  # /releases/latest/download/Origa_x64-setup.exe link resolves on
+                  # every release — GitHub's "latest" download URL requires a
+                  # filename that does not change between releases. Single-name
+                  # (no versioned copy) per ADR-025 addendum: the release tag
+                  # already identifies the version, and duplicate assets clutter
+                  # the release UI.
+                  mv "Origa_${VERSION}_x64-setup.exe" "Origa_x64-setup.exe"
+                  [ -f "Origa_${VERSION}_x64-setup.exe.sig" ] && mv "Origa_${VERSION}_x64-setup.exe.sig" "Origa_x64-setup.exe.sig" || true
 
             - name: Extract signature
               id: signature
@@ -241,11 +244,12 @@ jobs:
                   VERSION: ${{ inputs.version }}
               run: |
                   # Tauri emits Origa_<version>_amd64.AppImage/.deb (+ .AppImage.sig
-                  # updater signature). Mirror each to a fixed-name alias for the
+                  # updater signature). Rename each to a fixed name for the
                   # landing page's /releases/latest/download/<fixed> links.
-                  cp "appimage/Origa_${VERSION}_amd64.AppImage" "appimage/Origa_amd64.AppImage"
-                  [ -f "appimage/Origa_${VERSION}_amd64.AppImage.sig" ] && cp "appimage/Origa_${VERSION}_amd64.AppImage.sig" "appimage/Origa_amd64.AppImage.sig" || true
-                  cp "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
+                  # Single-name (no versioned copy) per ADR-025 addendum.
+                  mv "appimage/Origa_${VERSION}_amd64.AppImage" "appimage/Origa_amd64.AppImage"
+                  [ -f "appimage/Origa_${VERSION}_amd64.AppImage.sig" ] && mv "appimage/Origa_${VERSION}_amd64.AppImage.sig" "appimage/Origa_amd64.AppImage.sig" || true
+                  mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
 
             - name: Extract signature
               id: signature
@@ -337,8 +341,6 @@ jobs:
               run: echo "signature=" >> $GITHUB_OUTPUT
 
             - name: Create macOS app bundle
-              env:
-                  VERSION: ${{ inputs.version }}
               run: |
                   mkdir -p Origa.app/Contents/MacOS
                   mkdir -p Origa.app/Contents/Resources
@@ -366,17 +368,17 @@ jobs:
                   </plist>
                   EOF
                   chmod +x Origa.app/Contents/MacOS/origa
-                  # Versioned archive for release history, plus a fixed-name alias
-                  # for the landing page's /releases/latest/download/Origa_macos-arm64.zip.
-                  zip -r "Origa_${VERSION}_macos-arm64.zip" Origa.app
-                  cp "Origa_${VERSION}_macos-arm64.zip" "Origa_macos-arm64.zip"
+                  # Single fixed-name archive for the landing page's
+                  # /releases/latest/download/Origa_macos-arm64.zip link, and as
+                  # the only macOS asset in the release (no versioned duplicate)
+                  # per ADR-025 addendum.
+                  zip -r "Origa_macos-arm64.zip" Origa.app
 
             - name: Upload macOS artifacts
               uses: actions/upload-artifact@v4
               with:
                   name: macos-build
                   path: |
-                      Origa_${{ inputs.version }}_macos-arm64.zip
                       Origa_macos-arm64.zip
                   retention-days: 7
 

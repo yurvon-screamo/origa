@@ -407,3 +407,58 @@ Actions). Verification is therefore layered:
 - `softprops/action-gh-release` v2 (current `@v2` resolves to v2.6.2; v2.5.0 had a prerelease-detection bug fixed in v2.5.1+)
 - `tauri/tauri.conf.json:56` — updater endpoint `/releases/latest/download/latest.json` (unchanged by this ADR)
 - Existing stable release (0.4.0) assets verified via `gh api repos/yurvon-screamo/origa/releases/latest`
+
+## Addendum (2026-07-12): Single artifact naming (alias-only)
+
+### What changed
+
+§6 "Dual artifact naming" is replaced with **single artifact naming** for
+desktop platforms (Windows NSIS, Linux AppImage/DEB, macOS zip). Each release
+now ships only the fixed-name alias — the versioned copy produced by Tauri's
+default output is renamed (not duplicated) via `mv` in `_build-tauri.yml`.
+
+| Platform | Sole asset in release |
+| --- | --- |
+| Windows NSIS | `Origa_x64-setup.exe` |
+| Linux AppImage | `Origa_amd64.AppImage` |
+| Linux DEB | `Origa_amd64.deb` |
+| macOS zip | `Origa_macos-arm64.zip` |
+| Android APK | `origa.apk` (already single-naming) |
+
+### Rationale
+
+The versioned filename (`Origa_0.4.1_x64-setup.exe`) was redundant with the
+release tag (`v0.4.1`) — both identify the version. The dual naming forced
+users to scan a release asset list that contained two near-identical entries
+per platform, with no guidance on which to pick. Switching to alias-only
+resolves the user complaint ("asset list cluttered with duplicates") while
+preserving every functional contract that dual naming served:
+
+- §9 (landing direct download) — `/releases/latest/download/Origa_x64-setup.exe`
+  still resolves because the alias is still published.
+- `latest.json` URLs (`tauri.yml` `generate-latest-json`) now point at the
+  alias asset inside the git tag, e.g.
+  `releases/download/v0.4.2/Origa_x64-setup.exe`.
+- Tauri updater signature validity is preserved — the `.sig` file is a
+  Minisign signature over the **content** of the bundle, not its filename, so
+  the versioned → alias rename in `_build-tauri.yml` does not invalidate it.
+  The `.sig` is renamed alongside the bundle.
+
+### What did NOT change
+
+- §9 (landing direct download links) — alias filenames are still the contract
+  with `origa_landing/src/pages/download.rs`.
+- §5 (`latest.json` is stable-only) — prereleases still do not refresh the
+  updater manifest.
+- The macOS bundle format (manual `.app` zip, not `.app.tar.gz`) — updater
+  support for macOS remains a known limitation; the signature output is empty
+  for macOS and `latest.json` does not include a `darwin-*` platform entry.
+
+### Migration
+
+Historical releases (`v0.4.0`, `v0.4.1`) keep their dual assets — only
+`v0.4.2+` uses single naming. There is no backward-compat break: the alias
+filenames are unchanged from before, only the versioned duplicates are no
+longer produced. The first post-addendum tag (rc-first per §Migration)
+validates that the rename produces a single asset per platform and that
+`latest.json` URLs resolve against it.
