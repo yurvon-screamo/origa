@@ -1,4 +1,5 @@
 mod auth_store;
+#[cfg(desktop)]
 mod updater_commands;
 
 use std::sync::Mutex;
@@ -6,6 +7,7 @@ use std::sync::Mutex;
 use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
+#[cfg(desktop)]
 use updater_commands::{PendingUpdate, check_for_update, install_update};
 
 struct PendingDeepLink(Mutex<Option<String>>);
@@ -30,6 +32,7 @@ pub fn run() {
         }));
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
         builder = builder.plugin(tauri_plugin_process::init());
+        builder = builder.manage(PendingUpdate::new());
     }
 
     builder
@@ -38,7 +41,6 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_tts::init())
         .manage(PendingDeepLink(Mutex::new(None)))
-        .manage(PendingUpdate::new())
         .invoke_handler(tauri::generate_handler![
             get_pending_deep_link,
             auth_store_get,
