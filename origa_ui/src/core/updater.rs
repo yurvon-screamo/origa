@@ -1,4 +1,12 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+
+use leptos::wasm_bindgen::JsValue;
+use leptos::wasm_bindgen::closure::Closure;
 use serde::Deserialize;
+
+use crate::core::tauri::{event_listen_fn, invoke_with_args, is_tauri};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateInfo {
@@ -6,209 +14,143 @@ pub struct UpdateInfo {
     pub current_version: String,
 }
 
-#[cfg(all(
-    target_arch = "wasm32",
-    any(target_os = "windows", target_os = "macos", target_os = "linux")
-))]
-fn get_js_property(
-    obj: &leptos::wasm_bindgen::JsValue,
-    name: &str,
-    error_msg: &str,
-) -> Option<leptos::wasm_bindgen::JsValue> {
-    let result = js_sys::Reflect::get(obj, &leptos::wasm_bindgen::JsValue::from_str(name));
-    if result.is_err() {
-        leptos::logging::warn!("{}", error_msg);
-    }
-    result.ok()
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "event", content = "data")]
+enum DownloadEvent {
+    #[serde(rename_all = "camelCase")]
+    Started {
+        content_length: Option<u64>,
+    },
+    #[serde(rename_all = "camelCase")]
+    Progress {
+        chunk_length: usize,
+    },
+    Finished,
 }
 
+#[derive(Default)]
+struct ProgressState {
+    total_size: Option<u64>,
+    downloaded: u64,
+}
+
+const PROGRESS_EVENT: &str = "origa-update-progress";
+
+/// Checks the Tauri updater endpoint for a newer release.
+///
+/// Returns `None` outside the Tauri WebView (browser build) or when no update
+/// is available. The runtime `is_tauri()` gate is preferred over a compile-time
+/// `cfg(target_os = …)` because Tauri CLI does not always inject `target_os`
+/// cfg-flags for the WASM build, while `window.__TAURI__` is always present
+/// inside the desktop WebView.
 pub async fn check_for_updates() -> Option<UpdateInfo> {
-    #[cfg(all(
-        target_arch = "wasm32",
-        any(target_os = "windows", target_os = "macos", target_os = "linux")
-    ))]
-    {
-        check_for_updates_tauri().await
-    }
-
-    #[cfg(not(all(
-        target_arch = "wasm32",
-        any(target_os = "windows", target_os = "macos", target_os = "linux")
-    )))]
-    {
-        leptos::logging::log!("Update check is only available in the desktop version");
-        None
-    }
-}
-
-#[cfg(all(
-    target_arch = "wasm32",
-    any(target_os = "windows", target_os = "macos", target_os = "linux")
-))]
-async fn check_for_updates_tauri() -> Option<UpdateInfo> {
-    use super::tauri;
-    use leptos::logging;
-    use leptos::wasm_bindgen::JsCast;
-    use leptos::wasm_bindgen::JsValue;
-
-    let tauri_obj = tauri::tauri_object();
-    let updater_mod = tauri_obj
-        .as_ref()
-        .and_then(|obj| get_js_property(obj, "updater", "Tauri updater module unavailable"));
-    let check_fn_val = updater_mod
-        .as_ref()
-        .and_then(|mod_| get_js_property(mod_, "check", "Tauri updater.check unavailable"));
-    let check_fn = check_fn_val.as_ref().and_then(|val| {
-        let fn_result = val.dyn_into::<js_sys::Function>().ok();
-        if fn_result.is_none() {
-            logging::warn!("updater.check is not a function");
-        }
-        fn_result
-    });
-
-    let result = check_fn
-        .as_ref()
-        .map(|fn_val| fn_val.call0(&JsValue::UNDEFINED));
-
-    match result {
-        Some(Ok(promise)) => {
-            let promise_result =
-                wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise)).await;
-            match promise_result {
-                Ok(update_result) => {
-                    if update_result.is_null() || update_result.is_undefined() {
-                        logging::log!("No updates found");
-                        None
-                    } else {
-                        parse_update_info(&update_result)
-                    }
-                },
-                Err(e) => {
-                    logging::warn!("Error checking for updates: {:?}", e);
-                    None
-                },
-            }
-        },
-        Some(Err(e)) => {
-            logging::warn!("Error calling updater.check: {:?}", e);
-            None
-        },
-        None => {
-            if web_sys::window().is_none() {
-                logging::warn!("Window unavailable");
-            }
-            None
-        },
-    }
-}
-
-#[cfg(all(
-    target_arch = "wasm32",
-    any(target_os = "windows", target_os = "macos", target_os = "linux")
-))]
-fn parse_update_info(value: &leptos::wasm_bindgen::JsValue) -> Option<UpdateInfo> {
-    use super::version::VERSION;
-    use leptos::wasm_bindgen::JsValue;
-
-    let Ok(version) = js_sys::Reflect::get(value, &JsValue::from_str("version")) else {
+    if !is_tauri() {
+        tracing::debug!("updater: skipping check outside Tauri WebView");
         return None;
-    };
-
-    let version_str = version.as_string()?;
-
-    Some(UpdateInfo {
-        version: version_str,
-        current_version: VERSION.to_string(),
-    })
-}
-
-pub async fn download_and_install<F>(_on_progress: F) -> Result<(), String>
-where
-    F: Fn(u8) + Send + Sync + 'static,
-{
-    #[cfg(all(
-        target_arch = "wasm32",
-        any(target_os = "windows", target_os = "macos", target_os = "linux")
-    ))]
-    {
-        download_and_install_tauri(_on_progress).await
     }
 
-    #[cfg(not(all(
-        target_arch = "wasm32",
-        any(target_os = "windows", target_os = "macos", target_os = "linux")
-    )))]
-    {
-        leptos::logging::log!("Update download is only available in the desktop version");
-        Ok(())
+    match invoke_with_args("check_for_update", &JsValue::UNDEFINED).await {
+        Ok(result) if result.is_null() || result.is_undefined() => {
+            tracing::debug!("updater: no update available");
+            None
+        },
+        Ok(result) => match serde_wasm_bindgen::from_value::<UpdateInfo>(result) {
+            Ok(info) => {
+                tracing::info!(?info, "updater: update available");
+                Some(info)
+            },
+            Err(e) => {
+                tracing::warn!("updater: failed to parse UpdateInfo: {e:?}");
+                None
+            },
+        },
+        Err(e) => {
+            tracing::warn!("updater: check_for_update invoke failed: {e}");
+            None
+        },
     }
 }
 
-#[cfg(all(
-    target_arch = "wasm32",
-    any(target_os = "windows", target_os = "macos", target_os = "linux")
-))]
-async fn download_and_install_tauri<F>(on_progress: F) -> Result<(), String>
+/// Downloads and installs the pending update.
+///
+/// Subscribes to `"origa-update-progress"` events emitted by the Rust
+/// `install_update` command, converts chunks into a 0–100 percent value and
+/// forwards it to `on_progress`. Outside Tauri this is a no-op success.
+pub async fn download_and_install<F>(on_progress: F) -> Result<(), String>
 where
     F: Fn(u8) + Send + Sync + 'static,
 {
-    use super::tauri;
-    use leptos::wasm_bindgen::JsCast;
-    use leptos::wasm_bindgen::JsValue;
-    use leptos::wasm_bindgen::closure::Closure;
-    use std::sync::Arc;
+    if !is_tauri() {
+        tracing::debug!("updater: skipping install outside Tauri WebView");
+        return Ok(());
+    }
 
-    let tauri_obj = tauri::tauri_object().ok_or("Tauri API unavailable")?;
+    let listen_fn = event_listen_fn().ok_or_else(|| {
+        "Tauri event.listen unavailable — cannot subscribe to update progress".to_string()
+    })?;
 
-    let updater_mod = js_sys::Reflect::get(&tauri_obj, &JsValue::from_str("updater"))
-        .map_err(|_| "Tauri updater module unavailable")?;
-
-    let download_fn = js_sys::Reflect::get(&updater_mod, &JsValue::from_str("downloadAndInstall"))
-        .map_err(|_| "Tauri updater.downloadAndInstall unavailable")?;
-
-    let download_fn = download_fn
-        .dyn_into::<js_sys::Function>()
-        .map_err(|_| "updater.downloadAndInstall is not a function")?;
-
+    let state = Rc::new(RefCell::new(ProgressState::default()));
     let on_progress = Arc::new(on_progress);
-    let closure = Closure::<dyn Fn(JsValue)>::new(move |event| {
-        if let Ok(data) = js_sys::Reflect::get(&event, &JsValue::from_str("data")) {
-            if let Some(content_length) =
-                js_sys::Reflect::get(&data, &JsValue::from_str("contentLength"))
-                    .ok()
-                    .and_then(|v| v.as_f64())
-            {
-                if content_length > 0.0 {
-                    if let Some(chunk_length) =
-                        js_sys::Reflect::get(&data, &JsValue::from_str("chunkLength"))
-                            .ok()
-                            .and_then(|v| v.as_f64())
-                    {
-                        let progress = ((chunk_length / content_length) * 100.0).min(100.0) as u8;
-                        on_progress(progress);
-                    }
+
+    let state_for_closure = state.clone();
+    let on_progress_for_closure = on_progress.clone();
+    let progress_closure = Closure::<dyn Fn(JsValue)>::new(move |envelope: JsValue| {
+        let Some(event) = extract_event(&envelope) else {
+            return;
+        };
+        let mut s = state_for_closure.borrow_mut();
+        match event {
+            DownloadEvent::Started { content_length } => {
+                s.total_size = content_length;
+            },
+            DownloadEvent::Progress { chunk_length } => {
+                s.downloaded = s.downloaded.saturating_add(chunk_length as u64);
+                if let Some(total) = s.total_size
+                    && total > 0
+                {
+                    let ratio = (s.downloaded as f64 / total as f64).clamp(0.0, 1.0);
+                    on_progress_for_closure((ratio * 100.0) as u8);
                 }
-            }
+            },
+            DownloadEvent::Finished => {
+                on_progress_for_closure(100);
+            },
         }
     });
 
-    let event_name = JsValue::from_str("tauri://update-download-progress");
-
-    let listen_fn = tauri::event_listen_fn().ok_or("Tauri event.listen unavailable")?;
-
-    let _unlisten = listen_fn.call2(&JsValue::UNDEFINED, &event_name, closure.as_ref());
-    closure.forget();
-
-    let result = download_fn.call0(&JsValue::UNDEFINED);
-
-    match result {
-        Ok(promise) => {
-            let promise = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise));
-            promise
-                .await
-                .map(|_| ())
-                .map_err(|e| format!("Error downloading update: {:?}", e))
-        },
-        Err(e) => Err(format!("Error calling downloadAndInstall: {:?}", e)),
+    let event_name = JsValue::from_str(PROGRESS_EVENT);
+    if listen_fn
+        .call2(&JsValue::UNDEFINED, &event_name, progress_closure.as_ref())
+        .is_err()
+    {
+        // Bail out before invoking install_update: without a listener we cannot
+        // surface download progress, and the failure mode is silent (install
+        // would still download but the user would see a frozen progress bar).
+        return Err(
+            "Tauri event.listen call failed — cannot subscribe to update progress".to_string(),
+        );
     }
+    // Intentionally leak: the listener must survive for the duration of
+    // download_and_install (and the app exits/restarts immediately after
+    // install), so there is no natural unlisten point.
+    progress_closure.forget();
+
+    // install_update never returns on Windows (NSIS terminates the process
+    // mid-install); on Linux/macOS the Rust command calls `app.restart()`
+    // which terminates the process before the promise resolves. The only way
+    // this await resolves is when install_update itself returns an Err
+    // (e.g. no pending update) — propagate that, otherwise the success path
+    // never reaches here.
+    invoke_with_args("install_update", &JsValue::UNDEFINED)
+        .await
+        .map(|_| ())
+}
+
+fn extract_event(envelope: &JsValue) -> Option<DownloadEvent> {
+    let payload = js_sys::Reflect::get(envelope, &JsValue::from_str("payload"))
+        .ok()
+        .filter(|v| !v.is_undefined() && !v.is_null())?;
+    serde_wasm_bindgen::from_value::<DownloadEvent>(payload)
+        .map_err(|e| tracing::warn!("updater: failed to parse DownloadEvent payload: {e:?}"))
+        .ok()
 }
