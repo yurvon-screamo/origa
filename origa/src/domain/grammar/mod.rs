@@ -13,11 +13,12 @@ use crate::domain::grammar::forms_adjective::{
 };
 use crate::domain::grammar::forms_verb::{
     to_ba_form, to_causative_form, to_causative_passive_form, to_chau_form, to_imperative_form,
-    to_main_view, to_masen_deshita_form, to_masen_form, to_mashita_form, to_mashou_form,
-    to_masu_form, to_mizenkei_form, to_nai_form, to_nikui_form, to_o_kudasai_form,
-    to_o_ni_narimasu_form, to_o_shimasu_form, to_passive_form, to_potential_form, to_sou_form_verb,
-    to_stem_form, to_sugiru_form_verb, to_ta_form, to_tai_form, to_tara_form, to_te_form,
-    to_teru_form, to_toku_form, to_volitional_form, to_yasui_form, to_zu_form,
+    to_irasshai_form, to_kudasai_form, to_main_view, to_masen_deshita_form, to_masen_form,
+    to_mashita_form, to_mashou_form, to_masu_form, to_mizenkei_form, to_nai_form, to_nasai_form,
+    to_nikui_form, to_o_kudasai_form, to_o_ni_narimasu_form, to_o_shimasu_form, to_passive_form,
+    to_potential_form, to_sou_form_verb, to_stem_form, to_sugiru_form_verb, to_ta_form,
+    to_tai_form, to_tara_form, to_te_form, to_teru_form, to_toku_form, to_volitional_form,
+    to_yasui_form, to_zu_form,
 };
 use crate::domain::{OrigaError, PartOfSpeech, grammar::forms_adjective::adjective_remove_postfix};
 
@@ -81,6 +82,9 @@ pub fn apply_format_actions(
             FormatAction::VerbToONinarimasu {} => Ok(to_o_ni_narimasu_form(&word)),
             FormatAction::VerbToOKudasai {} => Ok(to_o_kudasai_form(&word)),
             FormatAction::VerbToOShimasu {} => Ok(to_o_shimasu_form(&word)),
+            FormatAction::VerbToNasai {} => to_nasai_form(&word),
+            FormatAction::VerbToKudasai {} => to_kudasai_form(&word),
+            FormatAction::VerbToIrasshai {} => to_irasshai_form(&word),
 
             FormatAction::AddPostfix { postfix } => Ok(word + postfix),
             FormatAction::ReplacePostfix {

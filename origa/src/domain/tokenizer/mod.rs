@@ -303,7 +303,7 @@ fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
     } else if user_dict_reading {
         pos_sub1.clone()
     } else {
-        surface.clone()
+        reading_fallback_for_surface(&surface)
     };
 
     let phon_surface_raw = token
@@ -336,6 +336,25 @@ fn token_to_token_info(token: &mut lindera::token::Token) -> TokenInfo {
         orthographic_surface_form,
         phonological_surface_form,
         part_of_speech,
+    }
+}
+
+/// Reading fallback for tokens where Lindera provides neither
+/// ``phonological_base_form`` nor ``reading`` (Unknown-word tokens, e.g.
+/// standalone kanji that are not UniDic lemmas on their own — common in
+/// character names like 杏璃 or rare kanji like 蕩).
+///
+/// A phonological form must be kana. For a kana-only surface the surface
+/// itself is a legitimate reading (onomatopoeia, interjections). For a surface
+/// that carries kanji no kana reading is derivable, so an empty string is
+/// returned instead of leaking the kanji surface as the "reading" — that would
+/// render furigana as kanji-over-kanji and feed non-kana strings to downstream
+/// consumers (furigana annotator, grammar_label hiragana fallback).
+fn reading_fallback_for_surface(surface: &str) -> String {
+    if surface.chars().any(|c| c.is_kanji()) {
+        String::new()
+    } else {
+        surface.to_string()
     }
 }
 
@@ -849,5 +868,27 @@ mod tests {
         let mut tokens = vec![TokenInfo::new_test("田中", PartOfSpeech::ProperNoun)];
         split_compound_proper_nouns(&mut tokens);
         assert_eq!(tokens.len(), 1);
+    }
+
+    #[test]
+    fn should_not_use_kanji_surface_as_phonological_reading_for_unknown_kanji() {
+        ensure_dictionary();
+
+        let tokens = tokenize_text("杏璃").unwrap();
+        let ri = tokens
+            .iter()
+            .find(|t| t.orthographic_surface_form() == "璃")
+            .expect("「璃」token should exist");
+
+        assert!(
+            !ri.phonological_base_form().chars().any(|c| c.is_kanji()),
+            "phonological_base_form must not contain kanji, got '{}'",
+            ri.phonological_base_form()
+        );
+        assert!(
+            !ri.phonological_surface_form().chars().any(|c| c.is_kanji()),
+            "phonological_surface_form must not contain kanji, got '{}'",
+            ri.phonological_surface_form()
+        );
     }
 }

@@ -70,10 +70,16 @@ fn build_internal_tokens(
 
         if longest_end <= buffer_start + 1 {
             let token = &tokens[buffer_start];
+            let hint_raw = token.phonological_surface_form();
+            let reading_hint = if hint_raw.is_empty() {
+                None
+            } else {
+                Some(hint_raw.to_string())
+            };
             result.push(InternalToken::Single {
                 surface: token.orthographic_surface_form().to_string(),
                 lookup_text: token.orthographic_base_form().to_string(),
-                reading_hint: Some(token.phonological_surface_form().to_string()),
+                reading_hint,
             });
             buffer_start += 1;
         } else {
