@@ -84,6 +84,13 @@ fn resolve_migii_path(id: &str) -> Option<String> {
     Some(format!("well_known_set/migii/{}/{}.json", level, id))
 }
 
+fn resolve_spy_family_path(id: &str) -> Option<String> {
+    if id.strip_prefix("spy_family_").is_some() {
+        return Some(format!("well_known_set/spy_family/{}.json", id));
+    }
+    None
+}
+
 fn resolve_duolingo_path(id: &str) -> Option<String> {
     let rest = id.strip_prefix("duolingo_")?;
     let level = rest.split('_').next().unwrap_or("");
@@ -138,6 +145,7 @@ pub fn resolve_set_path(id: &str) -> String {
 
     resolve_jlpt_path(id)
         .or_else(|| resolve_migii_path(id))
+        .or_else(|| resolve_spy_family_path(id))
         .or_else(|| resolve_duolingo_path(id))
         .or_else(|| resolve_minna_path(id))
         .or_else(|| resolve_irodori_path(id))
@@ -213,8 +221,8 @@ mod tests {
     #[case("jlpt_n1", "Jlpt")]
     #[case("migii_n5_1", "Migii")]
     #[case("migii_n4_grammar", "Migii")]
-    #[case("spy_family_s1", "SpyFamily")]
-    #[case("spy_family_1", "SpyFamily")]
+    #[case("spy_family_s01_e01", "SpyFamily")]
+    #[case("spy_family_s01_e12", "SpyFamily")]
     #[case("word_en_1", "DuolingoEn")]
     #[case("lesson_en_01", "DuolingoEn")]
     #[case("word_ru_1", "DuolingoRu")]
@@ -284,10 +292,27 @@ mod tests {
         "irodori_shokyuu2_18",
         "well_known_set/irodori_shokyuu2/irodori_shokyuu2_18.json"
     )]
-    #[case("spy_family_s1", "well_known_set/spy_family_s1.json")]
+    #[case(
+        "spy_family_s01_e01",
+        "well_known_set/spy_family/spy_family_s01_e01.json"
+    )]
+    #[case(
+        "spy_family_s01_e12",
+        "well_known_set/spy_family/spy_family_s01_e12.json"
+    )]
     #[case("random_id", "well_known_set/random_id.json")]
     fn test_resolve_set_path_formats(#[case] id: &str, #[case] expected: &str) {
         assert_eq!(resolve_set_path(id), expected);
+    }
+
+    #[test]
+    fn test_resolve_set_path_returns_fallback_for_spy_family_prefix_without_episode_suffix() {
+        // Real spy_family ids always carry an episode suffix (spy_family_sNN_eNN), so a
+        // bare prefix is not a valid id and intentionally falls through to the generic path.
+        assert_eq!(
+            resolve_set_path("spy_family"),
+            "well_known_set/spy_family.json"
+        );
     }
 
     #[test]
