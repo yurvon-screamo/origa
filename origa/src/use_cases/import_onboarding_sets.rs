@@ -4,7 +4,7 @@ use tracing::{debug, info, warn};
 
 use crate::dictionary::grammar::get_rules_by_level;
 use crate::domain::{
-    Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, StudyCard, VocabularyCard,
+    Card, GrammarRuleCard, JapaneseLevel, KanjiCard, OrigaError, StudyCard, User, VocabularyCard,
     WellKnownSet,
 };
 use crate::domain::{id_to_set_type, resolve_set_path};
@@ -32,20 +32,10 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
 
     pub async fn execute(
         &self,
-        user_id: ulid::Ulid,
+        mut user: User,
         set_ids: Vec<String>,
     ) -> Result<ImportOnboardingResult, OrigaError> {
-        debug!(user_id = %user_id, set_count = set_ids.len(), "Starting onboarding sets import");
-
-        let mut user = self
-            .repository
-            .get_current_user()
-            .await?
-            .ok_or(OrigaError::CurrentUserNotExist)?;
-
-        if user.id() != user_id {
-            return Err(OrigaError::CurrentUserNotExist);
-        }
+        debug!(user_id = %user.id(), set_count = set_ids.len(), "Starting onboarding sets import");
 
         let current_level = user.current_japanese_level();
         let native_language = *user.native_language();
@@ -123,7 +113,7 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
         self.repository.save_sync(&user).await?;
 
         info!(
-            user_id = %user_id,
+            user_id = %user.id(),
             vocabulary = result.created_vocabulary,
             kanji = result.created_kanji,
             grammar = result.created_grammar,
@@ -144,7 +134,7 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             words: Vec<String>,
         }
 
-        let mut results = Vec::new();
+        let mut results = Vec::with_capacity(set_ids.len());
         for id in set_ids {
             let path = resolve_set_path(id);
             let json = self.cdn.fetch_text(&path).await?;

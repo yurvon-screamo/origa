@@ -168,8 +168,6 @@
             "import_n5_n4_all_n3_lessons": "Will be imported: N5+N4 (all) + N3 Lessons 1-{}",
             "import_n5_n4_n3_all_n2_lessons": "Will be imported: N5+N4+N3 (all) + N2 Lessons 1-{}",
             "import_n5_n4_n3_n2_all_n1_lessons": "Will be imported: N5+N4+N3+N2 (all) + N1 Lessons 1-{}",
-            "import_lessons_1_n": "Will be imported: Lessons 1-{}",
-            "import_lessons_1_25_plus": "Will be imported: Lessons 1-25 + 26-{}",
             "import_irodori_nyuumon": "Will be imported: Nyuumon Lessons 1-{}",
             "import_irodori_shokyuu1": "Will be imported: Nyuumon (all) + Shokyuu 1 Lessons 1-{}",
             "import_irodori_shokyuu2": "Will be imported: Nyuumon + Shokyuu 1 (all) + Shokyuu 2 Lessons 1-{}",

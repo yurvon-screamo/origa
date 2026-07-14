@@ -275,7 +275,7 @@ pub fn ScoringStep(
                                     </div>
                                 </div>
 
-                                <div class="mt-4">
+                                <div class="mt-4 text-center">
                                     <MarkdownText
                                         content=Signal::derive(move || card.answer.clone())
                                         known_kanji=HashSet::new()

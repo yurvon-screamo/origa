@@ -148,6 +148,7 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                             let app_id_for_click = app_id.clone();
 
                             let app_id_for_selected = app_id.clone();
+                            let app_id_for_checkbox = app_id.clone();
                             let app_name = app.name.clone();
                             let app_desc_str = app_desc(i18n, app.desc_key);
                             let app_icon = app.icon;
@@ -190,7 +191,9 @@ pub fn AppsStep(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoVie
                                         <Checkbox
                                             checked=Signal::derive(move || is_selected.get())
                                             label=Signal::derive(String::new)
-
+                                            on_change=Callback::new(move |()| {
+                                                toggle_app.run(app_id_for_checkbox.clone());
+                                            })
                                             test_id=Signal::derive(move || format!("{}-checkbox", app_test_id_for_checkbox.clone()))
                                         />
                                     </div>

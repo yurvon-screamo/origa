@@ -83,15 +83,8 @@ pub fn collect_lessons_to_import_all_levels(
     lesson_limit: usize,
 ) -> Vec<String> {
     let mut ids = Vec::new();
-    let levels_order = [
-        JapaneseLevel::N5,
-        JapaneseLevel::N4,
-        JapaneseLevel::N3,
-        JapaneseLevel::N2,
-        JapaneseLevel::N1,
-    ];
 
-    for &level in &levels_order {
+    for &level in JapaneseLevel::ALL.iter() {
         if let Some(lessons) = lessons_by_level.get(&level) {
             if level == selected_level {
                 for lesson in lessons {
@@ -99,7 +92,7 @@ pub fn collect_lessons_to_import_all_levels(
                         ids.push(lesson.id.clone());
                     }
                 }
-            } else if is_lower_level(level, selected_level) {
+            } else if level < selected_level {
                 for lesson in lessons {
                     ids.push(lesson.id.clone());
                 }
@@ -108,22 +101,6 @@ pub fn collect_lessons_to_import_all_levels(
     }
 
     ids
-}
-
-fn is_lower_level(level: JapaneseLevel, selected: JapaneseLevel) -> bool {
-    matches!(
-        (level, selected),
-        (JapaneseLevel::N5, JapaneseLevel::N4)
-            | (JapaneseLevel::N5, JapaneseLevel::N3)
-            | (JapaneseLevel::N5, JapaneseLevel::N2)
-            | (JapaneseLevel::N5, JapaneseLevel::N1)
-            | (JapaneseLevel::N4, JapaneseLevel::N3)
-            | (JapaneseLevel::N4, JapaneseLevel::N2)
-            | (JapaneseLevel::N4, JapaneseLevel::N1)
-            | (JapaneseLevel::N3, JapaneseLevel::N2)
-            | (JapaneseLevel::N3, JapaneseLevel::N1)
-            | (JapaneseLevel::N2, JapaneseLevel::N1)
-    )
 }
 
 pub fn is_lesson_in_levels(
