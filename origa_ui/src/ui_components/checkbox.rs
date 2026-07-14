@@ -21,7 +21,18 @@ pub fn Checkbox(
     };
 
     view! {
-        <label class=move || format!("checkbox-container {}", checkbox_class.get()) data-testid=test_id_val>
+        <label
+            class=move || format!("checkbox-container {}", checkbox_class.get())
+            data-testid=test_id_val
+            on:click=move |ev| {
+                // Stop label-click from bubbling to ancestor click handlers
+                // (e.g. a selectable Card row). The nested input's on:change
+                // is the single source of truth for toggles; without this, a
+                // click on the label would fire both the ancestor handler and
+                // on_change, producing a double-toggle.
+                ev.stop_propagation();
+            }
+        >
             <input
                 type="checkbox"
                 checked=move || checkbox_checked.get()
