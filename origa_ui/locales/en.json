@@ -343,7 +343,6 @@
         "save_session_error": "Failed to save session: {}",
         "email_not_in_token": "Email not found in auth token. Please try logging in again.",
         "auth_code_not_found": "Authorization code not found in callback URL",
-        "pkce_not_found": "PKCE verifier not found. Please try logging in again.",
         "token_exchange_error": "Token exchange error: {}",
         "google_login": "Sign in with Google",
         "yandex_login": "Sign in with Yandex",

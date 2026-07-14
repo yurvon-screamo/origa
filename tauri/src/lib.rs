@@ -2,19 +2,25 @@ mod auth_store;
 #[cfg(desktop)]
 mod updater_commands;
 
-use std::sync::Mutex;
-
 use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
 #[cfg(desktop)]
 use updater_commands::{PendingUpdate, check_for_update, install_update};
 
-struct PendingDeepLink(Mutex<Option<String>>);
-
+/// Returns the deep-link URL that launched (or last targeted) the current
+/// Activity. The frontend polls this on mount because the `deep-link://new-url`
+/// event fires only on warm `onNewIntent`; see ADR-010 for the Android lifecycle.
 #[tauri::command]
-fn get_pending_deep_link(state: tauri::State<'_, PendingDeepLink>) -> Option<String> {
-    state.0.lock().unwrap_or_else(|e| e.into_inner()).take()
+fn get_current_deep_link(app: tauri::AppHandle) -> Option<String> {
+    match app.deep_link().get_current() {
+        Ok(Some(urls)) => urls.first().map(|url| url.to_string()),
+        Ok(None) => None,
+        Err(e) => {
+            tracing::warn!("[deep-link] get_current error: {:?}", e);
+            None
+        },
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -40,9 +46,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_tts::init())
-        .manage(PendingDeepLink(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
-            get_pending_deep_link,
+            get_current_deep_link,
             auth_store_get,
             auth_store_set,
             auth_store_delete,
@@ -84,32 +89,6 @@ pub fn run() {
             });
 
             tracing::info!("[deep-link] listener for 'deep-link://new-url' registered");
-
-            {
-                let pending = app.state::<PendingDeepLink>();
-                match app.deep_link().get_current() {
-                    Ok(Some(urls)) => {
-                        tracing::info!(
-                            "[deep-link] get_current() returned {} url(s) at startup",
-                            urls.len()
-                        );
-                        if let Some(url) = urls.first() {
-                            tracing::info!(
-                                "[deep-link] saved startup deep-link to pending: {}",
-                                url
-                            );
-                            *pending.0.lock().unwrap_or_else(|e| e.into_inner()) =
-                                Some(url.to_string());
-                        }
-                    },
-                    Ok(None) => {
-                        tracing::info!("[deep-link] get_current() returned no urls at startup");
-                    },
-                    Err(e) => {
-                        tracing::warn!("[deep-link] get_current() error at startup: {:?}", e);
-                    },
-                }
-            }
 
             #[cfg(any(windows, target_os = "linux"))]
             {
