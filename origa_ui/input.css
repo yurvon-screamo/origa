@@ -1125,9 +1125,14 @@ input[type="submit"],
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--fg-muted);
+    display: none;
 }
 
-.stepper-step.active .stepper-label,
+.stepper-step.active .stepper-label {
+    display: block;
+    color: var(--fg-black);
+}
+
 .stepper-step.completed .stepper-label {
     color: var(--fg-black);
 }
@@ -3192,12 +3197,8 @@ rt {
 }
 
 /* Stepper */
-.stepper-label-desktop {
-    display: none;
-}
-
-@media (min-width: 768px) {
-    .stepper-label-desktop {
+@media (min-width: 1280px) {
+    .stepper-label {
         display: block;
     }
 }

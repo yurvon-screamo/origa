@@ -65,6 +65,7 @@ fn get_type_icon(set_type: &str) -> Option<String> {
         "DuolingoRu" => Some(public_url("/public/external_icons/duolingo.png")),
         "DuolingoEn" => Some(public_url("/public/external_icons/duolingo.png")),
         "MinnaNoNihongo" => Some(public_url("/public/external_icons/minnanonihongo.png")),
+        "Irodori" => Some(public_url("/public/external_icons/irodori.png")),
         _ => None,
     }
 }
@@ -270,7 +271,7 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                                                 let set_meta_id = set_meta.id.clone();
                                                 let set_id_for_cb = set_meta_id.clone();
                                                 let set_id_for_memo = set_meta_id.clone();
-                                                let set_title = set_meta.title_ru.clone();
+                                                let set_meta_for_title = set_meta.clone();
                                                 let word_count = set_meta.word_count;
                                                 let is_excluded =
                                                     Memo::new(move |_| excluded_sets.get().contains(&set_id_for_memo));
@@ -291,7 +292,10 @@ pub fn SummaryStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                                                         />
                                                         <span class="flex-1">
                                                             <Text size=TextSize::Small variant=TypographyVariant::Primary test_id=Signal::derive(move || format!("{}-title", set_test_id_2.clone()))>
-                                                                {set_title}
+                                                                {move || {
+                                                                    let lang = locale_to_native_language(&i18n.get_locale());
+                                                                    set_meta_for_title.title(&lang).to_string()
+                                                                }}
                                                             </Text>
                                                         </span>
                                                         <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(move || format!("{}-words", set_test_id_3.clone()))>

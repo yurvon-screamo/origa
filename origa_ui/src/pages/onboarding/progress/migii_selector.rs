@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use origa::domain::JapaneseLevel;
 
 use super::super::onboarding_state::OnboardingState;
-use super::app_type::level_to_str;
+use super::import_info::build_cumulative_import_info;
 use super::migii_helpers::{
     build_lesson_items, build_level_items, collect_lessons_to_import_all_levels,
     is_lesson_in_levels,
@@ -50,63 +50,7 @@ pub fn MigiiProgressSelector(
             .strip_prefix("lesson_")
             .and_then(|s| s.parse::<usize>().ok());
 
-        match (level, lesson) {
-            (Some(JapaneseLevel::N5), Some(n)) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .import_n5_lessons()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &n.to_string(), 1),
-            ),
-            (Some(JapaneseLevel::N4), Some(n)) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .import_n5_all_n4_lessons()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &n.to_string(), 1),
-            ),
-            (Some(JapaneseLevel::N3), Some(n)) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .import_n5_n4_all_n3_lessons()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &n.to_string(), 1),
-            ),
-            (Some(JapaneseLevel::N2), Some(n)) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .import_n5_n4_n3_all_n2_lessons()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &n.to_string(), 1),
-            ),
-            (Some(JapaneseLevel::N1), Some(n)) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .import_n5_n4_n3_n2_all_n1_lessons()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &n.to_string(), 1),
-            ),
-            (Some(lvl), None) => Some(
-                i18n.get_keys()
-                    .onboarding()
-                    .progress()
-                    .select_lesson_for()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", level_to_str(lvl), 1),
-            ),
-            _ => None,
-        }
+        build_cumulative_import_info(&i18n, level, lesson)
     });
 
     Effect::new(move |_| {

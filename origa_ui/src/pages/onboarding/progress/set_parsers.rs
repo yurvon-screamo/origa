@@ -4,7 +4,8 @@ use origa::domain::JapaneseLevel;
 use origa::domain::WellKnownSetMeta;
 
 use super::parsers::{
-    parse_duolingo_module_unit, parse_irodori_lesson, parse_migii_level_lesson, parse_minna_lesson,
+    minna_level_from_id, parse_duolingo_module_unit, parse_irodori_lesson,
+    parse_migii_level_lesson, parse_minna_lesson,
 };
 use super::types::{DuolingoModule, DuolingoUnit, IrodoriLesson, MigiiLesson, MinnaLesson};
 
@@ -124,57 +125,60 @@ pub(super) fn parse_migii_lessons(
     by_level
 }
 
-pub(super) fn parse_minna_lessons(sets: &[WellKnownSetMeta], prefix: &str) -> Vec<MinnaLesson> {
+pub(super) fn parse_minna_lessons_by_level(
+    sets: &[WellKnownSetMeta],
+) -> HashMap<JapaneseLevel, Vec<MinnaLesson>> {
+    let mut by_level: HashMap<JapaneseLevel, Vec<MinnaLesson>> = HashMap::new();
     let mut parsed_count = 0;
     let mut total_count = 0;
 
-    let mut lessons: Vec<MinnaLesson> = sets
-        .iter()
-        .filter(|s| s.id.starts_with(prefix))
-        .filter_map(|set| {
-            total_count += 1;
+    for set in sets.iter().filter(|s| s.set_type == "MinnaNoNihongo") {
+        total_count += 1;
 
-            let parsed = parse_minna_lesson(&set.title_ru)
-                .or_else(|| parse_minna_lesson(&set.title_en))
-                .or_else(|| parse_minna_lesson(&set.id));
+        let Some(level) = minna_level_from_id(&set.id) else {
+            continue;
+        };
 
-            if parsed.is_some() {
-                parsed_count += 1;
-            }
+        let parsed = parse_minna_lesson(&set.title_ru)
+            .or_else(|| parse_minna_lesson(&set.title_en))
+            .or_else(|| parse_minna_lesson(&set.id));
 
-            parsed.map(|lesson_number| MinnaLesson {
+        if let Some(lesson_number) = parsed {
+            parsed_count += 1;
+            by_level.entry(level).or_default().push(MinnaLesson {
                 id: set.id.clone(),
                 lesson_number,
-            })
-        })
-        .collect();
+            });
+        }
+    }
 
     if total_count > 0 {
         tracing::info!(
-            "Minna {} parser: {}/{} sets parsed successfully",
-            prefix,
+            "Minna parser: {}/{} sets parsed successfully",
             parsed_count,
             total_count
         );
 
         if parsed_count == 0 {
             tracing::warn!(
-                "No Minna {} sets could be parsed! Check title format in data. \
+                "No Minna sets could be parsed! Check title format in data. \
                  Example titles: {:?}",
-                prefix,
                 sets.iter()
-                    .filter(|s| s.id.starts_with(prefix))
+                    .filter(|s| s.set_type == "MinnaNoNihongo")
                     .take(3)
                     .map(|s| (&s.title_ru, &s.title_en, &s.id))
                     .collect::<Vec<_>>()
             );
         }
     } else {
-        tracing::warn!("No Minna {} sets found in available_sets", prefix);
+        tracing::warn!("No MinnaNoNihongo sets found in available_sets");
     }
 
-    lessons.sort_by_key(|l| l.lesson_number);
-    lessons
+    for lessons in by_level.values_mut() {
+        lessons.sort_by_key(|l| l.lesson_number);
+    }
+
+    by_level
 }
 
 pub(super) fn parse_irodori_lessons(sets: &[WellKnownSetMeta], prefix: &str) -> Vec<IrodoriLesson> {
@@ -370,7 +374,7 @@ mod set_parser_tests {
     }
 
     #[test]
-    fn test_parse_minna_lessons_filters_by_prefix() {
+    fn test_parse_minna_lessons_by_level_groups_and_filters() {
         let sets = vec![
             WellKnownSetMeta {
                 id: "minna_n5_1".to_string(),
@@ -402,15 +406,40 @@ mod set_parser_tests {
                 desc_en: String::new(),
                 word_count: 0,
             },
+            WellKnownSetMeta {
+                id: "minna_n3_7".to_string(),
+                set_type: "MinnaNoNihongo".to_string(),
+                level: JapaneseLevel::N3,
+                title_ru: String::new(),
+                title_en: "Minna no Nihongo N3 Lesson 7".to_string(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+            WellKnownSetMeta {
+                id: "migii_n5_1".to_string(),
+                set_type: "Migii".to_string(),
+                level: JapaneseLevel::N5,
+                title_ru: "Migii N5 Урок 1".to_string(),
+                title_en: String::new(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
         ];
 
-        let n5_lessons = parse_minna_lessons(&sets, "minna_n5_");
-        let n4_lessons = parse_minna_lessons(&sets, "minna_n4_");
+        let by_level = parse_minna_lessons_by_level(&sets);
 
-        assert_eq!(n5_lessons.len(), 2);
-        assert_eq!(n4_lessons.len(), 1);
-        assert_eq!(n5_lessons[0].lesson_number, 1);
-        assert_eq!(n5_lessons[1].lesson_number, 5);
+        assert_eq!(by_level.len(), 3);
+        let n5 = by_level.get(&JapaneseLevel::N5).unwrap();
+        assert_eq!(n5.len(), 2);
+        assert_eq!(n5[0].lesson_number, 1);
+        assert_eq!(n5[1].lesson_number, 5);
+        assert_eq!(by_level.get(&JapaneseLevel::N4).unwrap().len(), 1);
+        let n3 = by_level.get(&JapaneseLevel::N3).unwrap();
+        assert_eq!(n3.len(), 1);
+        assert_eq!(n3[0].lesson_number, 7);
+        assert!(!by_level.contains_key(&JapaneseLevel::N2));
     }
 
     #[test]

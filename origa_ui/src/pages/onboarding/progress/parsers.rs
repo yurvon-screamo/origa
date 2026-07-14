@@ -101,8 +101,8 @@ pub fn parse_minna_lesson(title: &str) -> Option<usize> {
         return Some(num);
     }
 
-    // Try ID format "minna_n5_X" or "minna_n4_X"
-    let re_patterns = ["minna_n5_", "minna_n4_"];
+    // Try ID format "minna_n{level}_X"
+    let re_patterns = ["minna_n5_", "minna_n4_", "minna_n3_", "minna_n2_"];
     for pattern in re_patterns {
         if title.contains(pattern) {
             if let Some(start_idx) = title.find(pattern) {
@@ -117,9 +117,19 @@ pub fn parse_minna_lesson(title: &str) -> Option<usize> {
         }
     }
 
-    // Log warning if parsing fails
     tracing::warn!("Failed to parse Minna lesson number from title: {}", title);
     None
+}
+
+pub fn minna_level_from_id(id: &str) -> Option<JapaneseLevel> {
+    let level = id.strip_prefix("minna_")?.split('_').next()?;
+    match level {
+        "n5" => Some(JapaneseLevel::N5),
+        "n4" => Some(JapaneseLevel::N4),
+        "n3" => Some(JapaneseLevel::N3),
+        "n2" => Some(JapaneseLevel::N2),
+        _ => None,
+    }
 }
 
 pub fn parse_irodori_lesson(title: &str) -> Option<usize> {
@@ -206,10 +216,24 @@ mod parser_tests {
     #[case("Minna no Nihongo N5 Lesson 5", Some(5))]
     #[case("minna_n5_50", Some(50))]
     #[case("minna_n4_1", Some(1))]
+    #[case("minna_n3_1", Some(1))]
+    #[case("minna_n2_15", Some(15))]
     #[case("Invalid title", None)]
     #[case("minna without number", None)]
     fn test_parse_minna_lesson(#[case] title: &str, #[case] expected: Option<usize>) {
         assert_eq!(parse_minna_lesson(title), expected);
+    }
+
+    #[rstest]
+    #[case("minna_n5_1", Some(JapaneseLevel::N5))]
+    #[case("minna_n4_26", Some(JapaneseLevel::N4))]
+    #[case("minna_n3_1", Some(JapaneseLevel::N3))]
+    #[case("minna_n2_15", Some(JapaneseLevel::N2))]
+    #[case("minna_n1_1", None)]
+    #[case("migii_n5_1", None)]
+    #[case("minna_unknown_1", None)]
+    fn test_minna_level_from_id(#[case] id: &str, #[case] expected: Option<JapaneseLevel>) {
+        assert_eq!(minna_level_from_id(id), expected);
     }
 
     #[rstest]

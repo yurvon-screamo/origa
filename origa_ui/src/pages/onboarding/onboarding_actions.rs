@@ -72,14 +72,21 @@ pub(super) fn create_on_start_import_callback(
                 return;
             }
 
-            let Some(user) = current_user.get() else {
+            let Some(mut user) = current_user.get() else {
                 tracing::error!("User not loaded");
                 is_importing.set(false);
                 return;
             };
 
+            // recalculate_user_jlpt_progress depends on JLPT_CONTENT (UI-side
+            // CDN singleton), so it cannot move into origa/. Applied here so
+            // the single save_sync inside execute persists both it and the
+            // imported cards together.
+            user.set_daily_load(state.get_untracked().daily_load);
+            recalculate_user_jlpt_progress(&mut user);
+
             let use_case = ImportOnboardingSetsUseCase::new(&repo, cdn);
-            let result = use_case.execute(user.id(), set_ids).await;
+            let result = use_case.execute(user, set_ids).await;
 
             if disposed.is_disposed() {
                 return;
@@ -93,18 +100,6 @@ pub(super) fn create_on_start_import_callback(
                         import_result.created_grammar,
                         import_result.skipped_duplicates
                     );
-
-                    if let Ok(Some(mut user)) = repo.get_current_user().await {
-                        user.set_daily_load(state.get_untracked().daily_load);
-                        recalculate_user_jlpt_progress(&mut user);
-                        if let Err(e) = repo.save_sync(&user).await {
-                            tracing::error!("Failed to save daily_load: {:?}", e);
-                        }
-                    }
-
-                    if disposed.is_disposed() {
-                        return;
-                    }
 
                     state.update(|s| {
                         s.go_to_next_step();
