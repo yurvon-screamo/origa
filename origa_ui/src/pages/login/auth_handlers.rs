@@ -143,7 +143,7 @@ pub async fn handle_oauth_callback_desktop(
     url: &str,
     auth_store: &AuthStore,
     i18n: &I18nContext<Locale>,
-) -> Result<User, String> {
+) -> Result<Option<User>, String> {
     let parsed = url::Url::parse(url).map_err(|e| format!("Invalid URL: {}", e))?;
 
     let code = parsed
@@ -158,9 +158,12 @@ pub async fn handle_oauth_callback_desktop(
                 .to_string()
         })?;
 
-    let verifier = take_pkce_verifier_async()
-        .await
-        .ok_or_else(|| i18n.get_keys().login().pkce_not_found().inner().to_string())?;
+    let Some(verifier) = take_pkce_verifier_async().await else {
+        // Verifier already consumed → this callback was already processed
+        // (redelivered after Activity recreate / WASM reload). Silent skip, not
+        // an error, so a replayed callback does not surface pkce_not_found.
+        return Ok(None);
+    };
 
     let client = TrailBaseClient::new();
     let session = client
@@ -191,5 +194,7 @@ pub async fn handle_oauth_callback_desktop(
             .to_string());
     }
 
-    get_or_create_profile(auth_store, &session.email, i18n).await
+    get_or_create_profile(auth_store, &session.email, i18n)
+        .await
+        .map(Some)
 }

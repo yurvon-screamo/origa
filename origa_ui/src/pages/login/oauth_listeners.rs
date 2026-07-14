@@ -43,7 +43,7 @@ pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
 
     register_tauri_listener(callback);
 
-    check_pending_deep_link(auth_store, i18n);
+    poll_current_deep_link(auth_store, i18n);
 }
 
 fn extract_url_from_event(event: &JsValue) -> String {
@@ -67,7 +67,7 @@ async fn process_oauth_url(
     url: &str,
     auth_store: &AuthStore,
     i18n: &I18nContext<Locale>,
-) -> Result<User, String> {
+) -> Result<Option<User>, String> {
     let parsed = url::Url::parse(url);
     trace!(parsed = ?parsed, "URL parse result");
 
@@ -78,7 +78,9 @@ async fn process_oauth_url(
 
     if let Some(fragment) = url.split('#').nth(1) {
         debug!(fragment = %fragment, "URL has fragment, calling handle_oauth_callback");
-        return handle_oauth_callback(fragment, auth_store, i18n).await;
+        return handle_oauth_callback(fragment, auth_store, i18n)
+            .await
+            .map(Some);
     }
 
     error!(url = %url, "URL has no 'code' param and no fragment");
@@ -90,11 +92,14 @@ async fn process_oauth_url(
         .to_string())
 }
 
-fn handle_oauth_result(result: Result<User, String>, auth_store: &AuthStore) {
+fn handle_oauth_result(result: Result<Option<User>, String>, auth_store: &AuthStore) {
     match result {
-        Ok(user) => {
+        Ok(Some(user)) => {
             debug!(user_id = %user.id(), "OAuth success — updating user signal");
             auth_store.user.set(Some(user));
+        },
+        Ok(None) => {
+            debug!("OAuth callback skipped (verifier already consumed)");
         },
         Err(e) => {
             error!(error = %e, "OAuth callback error");
@@ -126,8 +131,17 @@ fn register_tauri_listener(callback: Closure<dyn Fn(JsValue)>) {
     }
 }
 
-fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
-    debug!("check_pending_deep_link() called");
+fn poll_current_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
+    debug!("poll_current_deep_link() called");
+
+    // Optimization: if a session is already restored, there is nothing to do.
+    // This is not the correctness guarantee (check_session may not have
+    // restored the user yet on a fresh mount) — the verifier-existence skip in
+    // handle_oauth_callback_desktop is the guarantee against replayed callbacks.
+    if auth_store.is_authenticated().get() {
+        debug!("already authenticated — skipping current deep-link poll");
+        return;
+    }
 
     let Some(invoke_fn) = tauri::invoke_fn() else {
         debug!("__TAURI__.core.invoke not available — not in Tauri, skipping");
@@ -136,13 +150,13 @@ fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
 
     let Ok(result) = invoke_fn.call1(
         &JsValue::UNDEFINED,
-        &JsValue::from_str("get_pending_deep_link"),
+        &JsValue::from_str("get_current_deep_link"),
     ) else {
-        warn!("get_pending_deep_link invoke call failed");
+        warn!("get_current_deep_link invoke call failed");
         return;
     };
     let Ok(promise) = result.dyn_into::<js_sys::Promise>() else {
-        warn!("get_pending_deep_link did not return a Promise");
+        warn!("get_current_deep_link did not return a Promise");
         return;
     };
 
@@ -152,10 +166,10 @@ fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     let on_resolve = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
         let url = value.as_string().unwrap_or_default();
         if url.is_empty() {
-            debug!("no pending deep-link");
+            debug!("no current deep-link");
             return;
         }
-        debug!(url = %url, "processing pending deep-link from cold start");
+        debug!(url = %url, "processing current deep-link from app load");
 
         let auth_store = auth_store_clone.clone();
         let i18n = i18n_clone;
@@ -163,14 +177,14 @@ fn check_pending_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
         spawn_local(async move {
             auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
-            debug!(result = ?result, "pending deep-link process result");
+            debug!(result = ?result, "current deep-link process result");
             handle_oauth_result(result, &auth_store);
             auth_store.is_oauth_loading.set(false);
         });
     });
 
     let on_reject = Closure::<dyn FnMut(JsValue)>::new(|err: JsValue| {
-        warn!(?err, "get_pending_deep_link promise rejected");
+        warn!(?err, "get_current_deep_link promise rejected");
     });
 
     let _ = promise.then2(&on_resolve, &on_reject);

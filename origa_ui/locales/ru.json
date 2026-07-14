@@ -343,7 +343,6 @@
     "save_session_error": "Не удалось сохранить сессию: {}",
     "email_not_in_token": "Email не найден в токене авторизации. Попробуйте войти снова.",
     "auth_code_not_found": "Код авторизации не найден в callback URL",
-    "pkce_not_found": "PKCE verifier не найден. Пожалуйста, попробуйте войти снова.",
     "token_exchange_error": "Ошибка обмена токена: {}",
     "google_login": "Войти через Google",
     "yandex_login": "Войти через Yandex",
