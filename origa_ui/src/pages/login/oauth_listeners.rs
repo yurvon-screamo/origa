@@ -3,12 +3,15 @@ use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
 use crate::repository::take_pkce_verifier_async;
 use crate::store::auth_store::AuthStore;
+use gloo_timers::future::TimeoutFuture;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos::wasm_bindgen::prelude::*;
 use origa::domain::User;
+use std::sync::{Mutex, OnceLock};
 use tracing::{debug, error, trace, warn};
+use wasm_bindgen_futures::JsFuture;
 
 const LOGIN_PATH: &str = "/login";
 
@@ -33,6 +36,11 @@ pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
         auth_store.oauth_error.set(None);
         spawn_local(async move {
             debug!(url = %url, "processing oauth url");
+            if url.starts_with("origa://auth/callback") {
+                *last_processed_callback()
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
+            }
             auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "process_oauth_url result");
@@ -175,6 +183,11 @@ fn poll_current_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
         let i18n = i18n_clone;
         auth_store.oauth_error.set(None);
         spawn_local(async move {
+            if url.starts_with("origa://auth/callback") {
+                *last_processed_callback()
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
+            }
             auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "current deep-link process result");
@@ -190,6 +203,79 @@ fn poll_current_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     let _ = promise.then2(&on_resolve, &on_reject);
     on_resolve.forget();
     on_reject.forget();
+}
+
+async fn fetch_current_deep_link_url() -> Option<String> {
+    let invoke_fn = tauri::invoke_fn()?;
+    let result = invoke_fn
+        .call1(
+            &JsValue::UNDEFINED,
+            &JsValue::from_str("get_current_deep_link"),
+        )
+        .ok()?;
+    let promise = result.dyn_into::<js_sys::Promise>().ok()?;
+    JsFuture::from(promise).await.ok()?.as_string()
+}
+
+// Cross-attempt memory of the last auth-callback URL processed by the poll.
+// `get_current()` does not clear after read (returns the same URL until a new
+// deep link arrives), so without this a retry that starts a new poll would
+// re-process the stale previous URL and stop before the fresh redirect arrives.
+static LAST_PROCESSED_AUTH_CALLBACK: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+
+fn last_processed_callback() -> &'static Mutex<Option<String>> {
+    LAST_PROCESSED_AUTH_CALLBACK.get_or_init(|| Mutex::new(None))
+}
+
+/// Polls the pending deep-link URL on a short interval after the user opens the
+/// OAuth provider externally. On Android the WebView JS is frozen while
+/// backgrounded, so the live `deep-link-received` event emitted during that
+/// window is lost; the poll's timer is paused while frozen and resumes on
+/// Activity `onResume`, recovering the pending callback URL. See ADR-010.
+pub fn start_resume_polling(auth_store: AuthStore, i18n: I18nContext<Locale>) {
+    spawn_local(async move {
+        const POLL_INTERVAL_MS: u32 = 1500;
+        const MAX_POLLS: usize = 120;
+
+        for _ in 0..MAX_POLLS {
+            TimeoutFuture::new(POLL_INTERVAL_MS).await;
+
+            if auth_store.user.with(|u| u.is_some()) {
+                debug!("resume-poll: authenticated, stopping");
+                return;
+            }
+
+            let Some(url) = fetch_current_deep_link_url().await else {
+                continue;
+            };
+            if !url.starts_with("origa://auth/callback") {
+                continue;
+            }
+
+            let already_processed = last_processed_callback()
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .as_deref()
+                == Some(url.as_str());
+            if already_processed {
+                // Stale URL from a previous attempt; keep polling for a fresh one.
+                continue;
+            }
+
+            debug!(url = %url, "resume-poll: processing auth callback");
+            *last_processed_callback()
+                .lock()
+                .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
+            auth_store.oauth_error.set(None);
+            auth_store.is_oauth_loading.set(true);
+            let result = process_oauth_url(&url, &auth_store, &i18n).await;
+            debug!(result = ?result, "resume-poll process result");
+            handle_oauth_result(result, &auth_store);
+            auth_store.is_oauth_loading.set(false);
+            return;
+        }
+        debug!("resume-poll: deadline reached without callback");
+    });
 }
 
 pub fn check_url_oauth_callback(auth_store: &AuthStore, i18n: &I18nContext<Locale>) {
