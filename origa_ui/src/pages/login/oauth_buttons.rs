@@ -1,8 +1,9 @@
 use crate::core::tauri;
-use crate::i18n::{t, use_i18n};
+use crate::i18n::{I18nContext, Locale, t, use_i18n};
 use crate::repository::OAuthProvider;
 use crate::repository::set_pkce_verifier_async;
 use crate::repository::trailbase_client::trailbase_url;
+use crate::store::auth_store::AuthStore;
 use js_sys::Promise;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -82,6 +83,9 @@ pub fn OAuthButtons(
     #[prop(optional)] debug_sink: Option<OAuthDebugSink>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
+    let auth_store_google = auth_store.clone();
+    let auth_store_yandex = auth_store.clone();
     let test_id_val = move || {
         let val = test_id.get();
         if val.is_empty() { None } else { Some(val) }
@@ -112,8 +116,9 @@ pub fn OAuthButtons(
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
+                    let auth_store = auth_store_google.clone();
                     spawn_local(async move {
-                        open_oauth_url(OAuthProvider::Google, debug_sink).await;
+                        open_oauth_url(OAuthProvider::Google, debug_sink, auth_store, i18n).await;
                     });
                 }
             >
@@ -126,8 +131,9 @@ pub fn OAuthButtons(
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
+                    let auth_store = auth_store_yandex.clone();
                     spawn_local(async move {
-                        open_oauth_url(OAuthProvider::Yandex, debug_sink).await;
+                        open_oauth_url(OAuthProvider::Yandex, debug_sink, auth_store, i18n).await;
                     });
                 }
             >
@@ -202,7 +208,12 @@ fn open_url_external(url: &str, debug_sink: Option<OAuthDebugSink>) {
     }
 }
 
-async fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSink>) {
+async fn open_oauth_url(
+    provider: OAuthProvider,
+    debug_sink: Option<OAuthDebugSink>,
+    auth_store: AuthStore,
+    i18n: I18nContext<Locale>,
+) {
     use crate::repository::TrailBaseClient;
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
 
@@ -245,6 +256,13 @@ async fn open_oauth_url(provider: OAuthProvider, debug_sink: Option<OAuthDebugSi
     report_debug!(debug_sink, "oauth url built: {url}");
 
     open_url_external(&url, debug_sink);
+
+    // On Android the WebView JS is frozen while the app is backgrounded in the
+    // external browser, so the deep-link callback event emitted by Rust on
+    // return is lost (its webview.eval delivery never runs). Polling on a timer
+    // sidesteps the missing resume signal: the timer pauses while frozen and
+    // resumes on Activity onResume, recovering the pending callback URL.
+    super::oauth_listeners::start_resume_polling(auth_store, i18n);
 }
 
 #[component]
