@@ -1,0 +1,105 @@
+{
+  "artifact": "marketing/blog/en-anki-alternative-japanese.md + ru-luchshee-prilozhenie-izucheniya-yaponskogo.md",
+  "product": "origa",
+  "checked_at": "2026-07-16T00:00:00+03:00",
+  "overall_confidence": 0.88,
+  "claims": [
+    {
+      "claim": "Anki added FSRS support in 2023 and enables it by default for new collections.",
+      "confidence": 0.8,
+      "status": "verified-with-caveat",
+      "sources": ["Anki 23.10 changelog (FSRS introduced as experimental)", "Anki docs"],
+      "note": "FSRS was added in Anki 23.10 (Oct 2023). 'Default for new collections' is accurate for Anki 24.10+, but EXISTING collections may still use SM-2 unless the user switches. VERIFY exact wording / version before publish — recommend linking to docs.ankiweb.net."
+    },
+    {
+      "claim": "Anki desktop is free and open source; AnkiDroid free; AnkiWeb sync free; AnkiMobile iOS is the only paid piece.",
+      "confidence": 0.95,
+      "status": "verified",
+      "sources": ["https://apps.ankiweb.net"],
+      "note": "Well-established. Article does NOT state the exact AnkiMobile price (intentionally — avoids stale-price risk)."
+    },
+    {
+      "claim": "Origa uses FSRS spaced repetition.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["AGENTS.md", "README.md", "origa_landing/src/content/en.rs:63 (features_vocab_fsrs: 'FSRS spaced repetition')"],
+      "note": ""
+    },
+    {
+      "claim": "Origa imports .anki2, .anki21, .anki21b decks.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/src/content/en.rs:225-226 (integrations_anki_desc / detail)"],
+      "note": ""
+    },
+    {
+      "claim": "Origa has 200,000+ native phrases.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:57", "origa_landing/src/content/en.rs:25"],
+      "note": ""
+    },
+    {
+      "claim": "Origa runs on Windows, Linux, macOS, Android, and web; iOS is planned but not shipping.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:68-77", "origa_landing/src/pages/download.rs:97-104 (iOS 'Coming soon' badge)"],
+      "note": ""
+    },
+    {
+      "claim": "Origa OCR and STT models run locally (offline card creation).",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:11,21", "AGENTS.md (ndlocr + whisper, local)"],
+      "note": ""
+    },
+    {
+      "claim": "Origa interface languages: English, Russian, Vietnamese, Korean.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["origa_landing/src/app.rs:46-81 (4 ParentRoutes)", "sitemap.xml (4 locales)"],
+      "note": ""
+    },
+    {
+      "claim": "WaniKani is radical-based, English interface, paid subscription.",
+      "confidence": 0.9,
+      "status": "verified-no-citation",
+      "sources": ["general knowledge / wanikani.com"],
+      "note": "No exact price stated (intentional). ADD a link to wanikani.com before publish."
+    },
+    {
+      "claim": "Bunpro is grammar-focused SRS, web-based, English interface.",
+      "confidence": 0.9,
+      "status": "verified-no-citation",
+      "sources": ["general knowledge / bunpro.jp"],
+      "note": "ADD link to bunpro.jp before publish."
+    },
+    {
+      "claim": "Duolingo is gamified and shallow for Japanese.",
+      "confidence": 0.85,
+      "status": "verified-no-citation",
+      "sources": ["general knowledge / duolingo.com"],
+      "note": "'Shallow' is an editorial characterization of depth vs dedicated tools, not a factual metric. Defensible but soften if challenged. ADD link."
+    },
+    {
+      "claim": "Migii is a JLPT test simulator (timed practice).",
+      "confidence": 0.9,
+      "status": "verified-no-citation",
+      "sources": ["general knowledge"],
+      "note": "ADD link before publish."
+    }
+  ],
+  "flags": [
+    "Competitor claims (WaniKani, Bunpro, Duolingo, Migii) lack inline external citations — required by @marketer factcheck pipeline ('minimum 1 NON-README external source'). Add links to official sites before publish.",
+    "Anki FSRS 'default for new collections' wording — verify exact version/behavior against docs.ankiweb.net before publish."
+  ],
+  "gate": "BLOCKED",
+  "gate_reason": "Two flags block publication-ready status: (1) missing external citations on competitor claims, (2) FSRS-default wording needs exact-source verification. Both are pre-publish fixes, not content-rewrite issues. Articles are paste-ready DRAFTS for HUMAN GATE review of tone/positioning. Gate moves to READY once citations added + FSRS verified.",
+  "brand_voice_check": {
+    "forbidden_words_in_articles": 0,
+    "forbidden_words_in_readme_only": "yes (the README lists them as the ban-list — expected)",
+    "superlatives_without_data": "none",
+    "honest_limitations_section": "present in both articles",
+    "competitor_disparagement": "none — every competitor has a 'when it is best' framing"
+  }
+}
