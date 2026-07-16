@@ -242,12 +242,12 @@ pub enum DailyLoad {
 impl DailyLoad {
     pub fn new_cards_per_day(&self) -> usize {
         match self {
-            DailyLoad::Minimal => 5,
-            DailyLoad::Light => 10,
-            DailyLoad::Medium => 15,
-            DailyLoad::Hard => 25,
-            DailyLoad::Heavy => 35,
-            DailyLoad::Maximum => 50,
+            DailyLoad::Minimal => 3,
+            DailyLoad::Light => 6,
+            DailyLoad::Medium => 9,
+            DailyLoad::Hard => 15,
+            DailyLoad::Heavy => 21,
+            DailyLoad::Maximum => 30,
         }
     }
 
@@ -675,12 +675,12 @@ mod tests_daily_load {
 
     #[test]
     fn new_cards_per_day_values() {
-        assert_eq!(DailyLoad::Minimal.new_cards_per_day(), 5);
-        assert_eq!(DailyLoad::Light.new_cards_per_day(), 10);
-        assert_eq!(DailyLoad::Medium.new_cards_per_day(), 15);
-        assert_eq!(DailyLoad::Hard.new_cards_per_day(), 25);
-        assert_eq!(DailyLoad::Heavy.new_cards_per_day(), 35);
-        assert_eq!(DailyLoad::Maximum.new_cards_per_day(), 50);
+        assert_eq!(DailyLoad::Minimal.new_cards_per_day(), 3);
+        assert_eq!(DailyLoad::Light.new_cards_per_day(), 6);
+        assert_eq!(DailyLoad::Medium.new_cards_per_day(), 9);
+        assert_eq!(DailyLoad::Hard.new_cards_per_day(), 15);
+        assert_eq!(DailyLoad::Heavy.new_cards_per_day(), 21);
+        assert_eq!(DailyLoad::Maximum.new_cards_per_day(), 30);
     }
 
     #[test]
