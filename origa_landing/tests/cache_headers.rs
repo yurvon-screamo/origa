@@ -11,7 +11,10 @@
 #![cfg(feature = "ssr")]
 
 use axum::body::Body;
-use http::{Request, StatusCode, header::CACHE_CONTROL};
+use http::{
+    Request, StatusCode,
+    header::{CACHE_CONTROL, VARY},
+};
 use http_body_util::BodyExt;
 use tower::ServiceExt;
 
@@ -47,9 +50,35 @@ async fn status_and_cache_control(uri: &str) -> (StatusCode, Option<String>) {
 }
 
 #[tokio::test]
-async fn html_root_has_short_edge_cache() {
-    let cc = cache_control("/").await;
+async fn html_root_has_short_edge_cache_and_locale_vary() {
+    // "/" is content-negotiated by `negotiate_locale`, so its 200 must carry
+    // both the short edge cache and a `Vary` on the negotiation headers.
+    // Without `Vary`, an edge-cached English "/" would be served to
+    // non-English visitors before the redirect can fire (ADR-011 / PR #182).
+    let response = common::test_router()
+        .oneshot(
+            Request::builder()
+                .uri("/")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router responded");
+
+    let cc = response
+        .headers()
+        .get(CACHE_CONTROL)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_owned);
+    let vary = response
+        .headers()
+        .get(VARY)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_owned);
+
+    let _ = response.into_body().collect().await.expect("body");
     assert_eq!(cc.as_deref(), Some("public, max-age=300"));
+    assert_eq!(vary.as_deref(), Some("Cookie, Accept-Language"));
 }
 
 #[tokio::test]
