@@ -348,6 +348,14 @@ fn generate_well_known_meta() {
     );
     println!(
         "cargo:rerun-if-changed={}",
+        base_dir.join("minna_n3").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        base_dir.join("minna_n2").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
         base_dir.join("spy_family").display()
     );
     println!(
@@ -461,6 +469,64 @@ fn generate_well_known_meta() {
                 let mut data = load_json(&path);
                 let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
                 meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N4"));
+            }
+        }
+    }
+
+    // Minna N3 files
+    let minna_n3_dir = base_dir.join("minna_n3");
+    if minna_n3_dir.exists() {
+        let mut entries: Vec<_> = fs::read_dir(&minna_n3_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
+            .collect();
+        entries.sort_by_key(|e| e.file_name());
+
+        for entry in entries {
+            let path = entry.path();
+            if path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with("minna_n3_"))
+                .unwrap_or(false)
+            {
+                let mut data = load_json(&path);
+                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N3"));
+            }
+        }
+    }
+
+    // Minna N2 files
+    let minna_n2_dir = base_dir.join("minna_n2");
+    if minna_n2_dir.exists() {
+        let mut entries: Vec<_> = fs::read_dir(&minna_n2_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
+            .collect();
+        entries.sort_by_key(|e| e.file_name());
+
+        for entry in entries {
+            let path = entry.path();
+            if path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with("minna_n2_"))
+                .unwrap_or(false)
+            {
+                let mut data = load_json(&path);
+                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N2"));
             }
         }
     }

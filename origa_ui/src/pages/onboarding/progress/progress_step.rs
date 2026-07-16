@@ -10,7 +10,7 @@ use super::migii_selector::MigiiProgressSelector;
 use super::minna_selector::MinnaProgressSelector;
 use super::set_parsers::{
     parse_duolingo_modules, parse_irodori_lessons, parse_migii_lessons,
-    parse_minna_lessons_by_level,
+    parse_minna_extras_by_level, parse_minna_lessons_by_level,
 };
 
 #[component]
@@ -109,9 +109,13 @@ pub fn ProgressStep(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                                 let lessons_by_level_signal = Signal::derive(move || {
                                     parse_minna_lessons_by_level(&sets.get())
                                 });
+                                let extras_by_level_signal = Signal::derive(move || {
+                                    parse_minna_extras_by_level(&sets.get())
+                                });
                                 view! {
                                     <MinnaProgressSelector
                                         lessons_by_level=lessons_by_level_signal
+                                        extras_by_level=extras_by_level_signal
                                         state=state
                                     />
                                 }.into_any()

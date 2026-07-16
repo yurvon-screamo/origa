@@ -63,9 +63,16 @@ SYNC_DIRS = [
     "phrases/data",
     "whisper",
     "fonts",
+    "well_known_set/duolingo",
     "well_known_set/irodori_nyuumon",
     "well_known_set/irodori_shokyuu1",
     "well_known_set/irodori_shokyuu2",
+    "well_known_set/migii",
+    "well_known_set/minna_n5",
+    "well_known_set/minna_n4",
+    "well_known_set/minna_n3",
+    "well_known_set/minna_n2",
+    "well_known_set/spy_family",
 ]
 
 MANIFEST_VERSION = 1
