@@ -159,6 +159,8 @@
             "select_section": "Select section",
             "not_studied": "Not studied",
             "lesson_number": "Lesson {}",
+            "extra": "Extra",
+            "import_extra": "Will be imported: Extra {}",
             "select_lesson_for": "Select a lesson for {}",
             "import_module_section": "Will be imported: Module 1 Sections 1-{}",
             "import_modules_section": "Will be imported: Modules 1-{} (all) + Module {} Sections 1-{}",

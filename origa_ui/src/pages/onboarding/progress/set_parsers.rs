@@ -181,6 +181,33 @@ pub(super) fn parse_minna_lessons_by_level(
     by_level
 }
 
+pub(super) fn parse_minna_extras_by_level(
+    sets: &[WellKnownSetMeta],
+) -> HashMap<JapaneseLevel, Vec<String>> {
+    let mut by_level: HashMap<JapaneseLevel, Vec<String>> = HashMap::new();
+
+    for set in sets.iter().filter(|s| s.set_type == "MinnaNoNihongo") {
+        let Some(level) = minna_level_from_id(&set.id) else {
+            continue;
+        };
+
+        let is_lesson = parse_minna_lesson(&set.title_ru)
+            .or_else(|| parse_minna_lesson(&set.title_en))
+            .or_else(|| parse_minna_lesson(&set.id))
+            .is_some();
+
+        if !is_lesson {
+            by_level.entry(level).or_default().push(set.id.clone());
+        }
+    }
+
+    for extras in by_level.values_mut() {
+        extras.sort();
+    }
+
+    by_level
+}
+
 pub(super) fn parse_irodori_lessons(sets: &[WellKnownSetMeta], prefix: &str) -> Vec<IrodoriLesson> {
     let mut parsed_count = 0;
     let mut total_count = 0;
@@ -440,6 +467,51 @@ mod set_parser_tests {
         assert_eq!(n3.len(), 1);
         assert_eq!(n3[0].lesson_number, 7);
         assert!(!by_level.contains_key(&JapaneseLevel::N2));
+    }
+
+    #[test]
+    fn test_parse_minna_extras_by_level_separates_non_lesson_sets() {
+        let sets = vec![
+            WellKnownSetMeta {
+                id: "minna_n2_13".to_string(),
+                set_type: "MinnaNoNihongo".to_string(),
+                level: JapaneseLevel::N2,
+                title_ru: "Minna no Nihongo N2 Урок 13".to_string(),
+                title_en: String::new(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+            WellKnownSetMeta {
+                id: "minna_n2_extra".to_string(),
+                set_type: "MinnaNoNihongo".to_string(),
+                level: JapaneseLevel::N2,
+                title_ru: "Minna no Nihongo N2 Дополнительно".to_string(),
+                title_en: "Minna no Nihongo N2 Extra".to_string(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 158,
+            },
+            WellKnownSetMeta {
+                id: "minna_n3_extra".to_string(),
+                set_type: "MinnaNoNihongo".to_string(),
+                level: JapaneseLevel::N3,
+                title_ru: "Minna no Nihongo N3 Дополнительно".to_string(),
+                title_en: String::new(),
+                desc_ru: String::new(),
+                desc_en: String::new(),
+                word_count: 0,
+            },
+        ];
+
+        let extras = parse_minna_extras_by_level(&sets);
+
+        assert_eq!(extras.len(), 2);
+        let n2 = extras.get(&JapaneseLevel::N2).unwrap();
+        assert_eq!(n2, &vec!["minna_n2_extra".to_string()]);
+        assert_eq!(extras.get(&JapaneseLevel::N3).unwrap().len(), 1);
+        // regular lesson (minna_n2_13) must NOT appear in extras
+        assert!(!n2.contains(&"minna_n2_13".to_string()));
     }
 
     #[test]

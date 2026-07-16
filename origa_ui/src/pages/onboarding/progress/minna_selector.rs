@@ -9,7 +9,8 @@ use origa::domain::JapaneseLevel;
 use super::super::onboarding_state::OnboardingState;
 use super::import_info::build_cumulative_import_info;
 use super::minna_helpers::{
-    build_lesson_items, build_level_items, collect_lessons_to_import, is_lesson_in_levels,
+    build_lesson_items, build_level_items, collect_extras_to_import, collect_lessons_to_import,
+    is_extra_in_levels, is_lesson_in_levels,
 };
 use super::types::MinnaLesson;
 
@@ -27,6 +28,7 @@ fn parse_level(val: &str) -> Option<JapaneseLevel> {
 #[component]
 pub fn MinnaProgressSelector(
     lessons_by_level: Signal<HashMap<JapaneseLevel, Vec<MinnaLesson>>>,
+    extras_by_level: Signal<HashMap<JapaneseLevel, Vec<String>>>,
     state: RwSignal<OnboardingState>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -39,13 +41,31 @@ pub fn MinnaProgressSelector(
     let parsed_level = Signal::derive(move || parse_level(&selected_level.get()));
 
     let lesson_items = Signal::derive(move || {
-        build_lesson_items(&i18n, &lessons_by_level.get(), parsed_level.get())
+        build_lesson_items(
+            &i18n,
+            &lessons_by_level.get(),
+            &extras_by_level.get(),
+            parsed_level.get(),
+        )
     });
 
     let import_info = Signal::derive(move || {
         let level = parsed_level.get();
-        let lesson_num = selected_lesson
-            .get()
+        let selection = selected_lesson.get();
+
+        if selection == "extra" {
+            return level.map(|lvl| {
+                i18n.get_keys()
+                    .onboarding()
+                    .progress()
+                    .import_extra()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", super::app_type::level_to_str(lvl), 1)
+            });
+        }
+
+        let lesson_num = selection
             .strip_prefix("lesson_")
             .and_then(|s| s.parse::<usize>().ok());
 
@@ -54,37 +74,49 @@ pub fn MinnaProgressSelector(
 
     Effect::new(move |_| {
         let level = parsed_level.get();
-        let lesson_num = selected_lesson
-            .get()
-            .strip_prefix("lesson_")
-            .and_then(|s| s.parse::<usize>().ok());
+        let selection = selected_lesson.get();
 
-        if level.is_none() || lesson_num.is_none() {
+        let Some(lvl) = level else {
             return;
-        }
+        };
 
         let lessons_by_level_snapshot = lessons_by_level.get_untracked();
+        let extras_by_level_snapshot = extras_by_level.get_untracked();
         let sets_snapshot: Vec<_> = available_sets.get_untracked();
 
-        if let (Some(lvl), Some(lesson_n)) = (level, lesson_num) {
-            let ids_to_import =
-                collect_lessons_to_import(&lessons_by_level_snapshot, lvl, lesson_n);
+        let ids_to_import = if selection == "extra" {
+            collect_extras_to_import(&extras_by_level_snapshot, lvl)
+        } else {
+            let Some(lesson_n) = selection
+                .strip_prefix("lesson_")
+                .and_then(|s| s.parse::<usize>().ok())
+            else {
+                return;
+            };
+            collect_lessons_to_import(&lessons_by_level_snapshot, lvl, lesson_n)
+        };
 
-            state.update(|s| {
-                s.set_app_selection("MinnaNoNihongo", &format!("{:?}_{}", lvl, lesson_n));
-                s.sets_to_import.retain(|set| {
-                    !is_lesson_in_levels(set.id.as_str(), &lessons_by_level_snapshot)
-                });
-                let sets_to_add: Vec<_> = sets_snapshot
-                    .iter()
-                    .filter(|set_meta| ids_to_import.contains(&set_meta.id))
-                    .cloned()
-                    .collect();
-                for set_meta in sets_to_add {
-                    s.add_set_to_import(set_meta);
-                }
+        let selection_key = if selection == "extra" {
+            format!("{:?}_extra", lvl)
+        } else {
+            selection.clone()
+        };
+
+        state.update(|s| {
+            s.set_app_selection("MinnaNoNihongo", &selection_key);
+            s.sets_to_import.retain(|set| {
+                !is_lesson_in_levels(set.id.as_str(), &lessons_by_level_snapshot)
+                    && !is_extra_in_levels(set.id.as_str(), &extras_by_level_snapshot)
             });
-        }
+            let sets_to_add: Vec<_> = sets_snapshot
+                .iter()
+                .filter(|set_meta| ids_to_import.contains(&set_meta.id))
+                .cloned()
+                .collect();
+            for set_meta in sets_to_add {
+                s.add_set_to_import(set_meta);
+            }
+        });
     });
 
     view! {
