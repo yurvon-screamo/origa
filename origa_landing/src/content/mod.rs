@@ -1,5 +1,15 @@
 use std::str::FromStr;
 
+/// Name of the cookie that records a visitor's chosen UI locale on the landing
+/// site. Shared between the `negotiate_locale` middleware (reads it) and the
+/// language switcher in `Layout` (writes it client-side); keeping it a single
+/// constant prevents the two sides from drifting apart silently.
+pub const LOCALE_COOKIE: &str = "origa_locale";
+
+/// Lifetime of [`LOCALE_COOKIE`], in seconds (HTTP `Max-Age` unit). One year,
+/// matching the persistent locale cookie of the CSR app.
+pub const LOCALE_COOKIE_MAX_AGE_SECS: u64 = 365 * 24 * 60 * 60;
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Locale {
     En,

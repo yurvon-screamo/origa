@@ -3,17 +3,20 @@
 //! Kept in a library module (rather than inline in `main.rs`) so integration
 //! tests in `tests/` can build the exact same router the binary serves.
 
+use std::str::FromStr;
+
 use axum::Router;
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Redirect, Response};
-use http::header::{CACHE_CONTROL, HeaderName, HeaderValue};
-use http::{Method, Request, Uri};
+use http::header::{ACCEPT_LANGUAGE, CACHE_CONTROL, COOKIE, HeaderName, HeaderValue, VARY};
+use http::{HeaderMap, Method, Request, Uri};
 use leptos::config::LeptosOptions;
 use leptos_axum::{ErrorHandler, LeptosRoutes};
 use tower_http::ServiceExt;
 use tower_http::services::{ServeDir, ServeFile};
 
 use crate::app::{App, shell};
+use crate::content::{LOCALE_COOKIE, Locale};
 
 /// HTML pages: short edge cache so users pick up content/nav changes within
 /// 5 minutes, while still letting Cloudflare absorb most origin traffic.
@@ -36,6 +39,13 @@ const NO_CACHE: &str = "no-cache";
 /// `max-age >= 86400` so link equity transfer is not delayed by re-redirects.
 const REDIRECT_CACHE: &str = "public, max-age=86400";
 
+/// `Vary` value forcing edge caches to keep separate entries per combination
+/// of the two request headers that drive locale negotiation on "/". Without
+/// it a cached English "/" is served to a non-English user before the
+/// `negotiate_locale` redirect can fire — the exact CDN edge-poisoning
+/// regression class fixed in ADR-011 / PR #182.
+const VARY_LOCALE: &str = "Cookie, Accept-Language";
+
 /// Build the production Axum router.
 ///
 /// Layering summary (request flows top → bottom; the LAST `.layer()` call is
@@ -51,12 +61,21 @@ const REDIRECT_CACHE: &str = "public, max-age=86400";
 /// 2. `strip_trailing_slash` — normalises `/ru/`, `/images/`, `/favicon.png/`
 ///    to their canonical slash-less form. 308 responses produced here carry
 ///    `REDIRECT_CACHE` directly and short-circuit the inner stack.
-/// 3. `enforce_cache_policy` — applies the cache-control contract to every
+/// 3. `negotiate_locale` — only fires on `GET`/`HEAD "/"`: resolves the
+///    visitor's preferred locale (saved `origa_locale` cookie, else
+///    `Accept-Language`) and, when it is not English, emits a `307` to the
+///    localised path with `Cache-Control: no-cache` + `Vary: Cookie,
+///    Accept-Language`. English and unresolvable requests fall through.
+/// 4. `enforce_cache_policy` — applies the cache-control contract to every
 ///    non-redirect response produced by the inner stack:
 ///    - 2xx without an explicit `Cache-Control` → stamped with `HTML_CACHE`
 ///      (the default for leptos HTML routes, which set no header themselves).
 ///    - 2xx with `Cache-Control` → left intact (static assets keep
 ///      `IMMUTABLE_CACHE`; robots/sitemap keep `NO_CACHE`).
+///    - 2xx on "/" → additionally stamped with `Vary: Cookie, Accept-Language`,
+///      because "/" is content-negotiated by `negotiate_locale` (see above);
+///      without it a cached English "/" would be served to non-English
+///      visitors before the redirect can fire (ADR-011 / PR #182).
 ///    - 4xx/5xx → overridden to `NO_CACHE`, regardless of what the inner
 ///      service set. Without this, `ServeDir`/`ServeFile` would stamp
 ///      `IMMUTABLE_CACHE` on a 404 via `insert_response_header_if_not_present`
@@ -66,8 +85,9 @@ const REDIRECT_CACHE: &str = "public, max-age=86400";
 ///    - 3xx → passed through unchanged. The only 3xx from inner services is
 ///      `304 Not Modified` on conditional requests, which must keep the same
 ///      `Cache-Control` the corresponding 200 would have. `308`s from
-///      `strip_trailing_slash` never reach this middleware (it is one layer
-///      further out and short-circuits the inner stack).
+///      `strip_trailing_slash` and `307`s from `negotiate_locale` never reach
+///      this middleware (they are layers further out and short-circuit the
+///      inner stack).
 ///
 /// Fallback chain: when neither explicit static routes nor leptos' registered
 /// routes match a path, the request hits `ServeDir(public/)`; if no file is
@@ -172,6 +192,7 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
         // that additionally overrides `Cache-Control` to `NO_CACHE` on 4xx/5xx.
         // See `enforce_cache_policy` below for the full rationale.
         .layer(middleware::from_fn(enforce_cache_policy))
+        .layer(middleware::from_fn(negotiate_locale))
         .layer(middleware::from_fn(strip_trailing_slash))
         .layer(middleware::from_fn(security_headers))
         .with_state(leptos_options)
@@ -201,6 +222,7 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
 /// this middleware: they are produced by a layer *outside* this one, which
 /// short-circuits the inner stack.
 async fn enforce_cache_policy(request: Request<axum::body::Body>, next: Next) -> Response {
+    let is_root = request.uri().path() == "/";
     let mut response = next.run(request).await;
     let status = response.status();
 
@@ -208,13 +230,160 @@ async fn enforce_cache_policy(request: Request<axum::body::Body>, next: Next) ->
         response
             .headers_mut()
             .insert(CACHE_CONTROL, HeaderValue::from_static(NO_CACHE));
-    } else if status.is_success() && !response.headers().contains_key(CACHE_CONTROL) {
-        response
-            .headers_mut()
-            .insert(CACHE_CONTROL, HeaderValue::from_static(HTML_CACHE));
+    } else if status.is_success() {
+        if !response.headers().contains_key(CACHE_CONTROL) {
+            response
+                .headers_mut()
+                .insert(CACHE_CONTROL, HeaderValue::from_static(HTML_CACHE));
+        }
+        // The site root "/" is content-negotiated by `negotiate_locale`: the
+        // same URL yields a 200 (English) or a 307 redirect depending on the
+        // request's `Cookie`/`Accept-Language`. An edge cache MUST vary on
+        // those headers, otherwise it serves a cached English 200 to a
+        // non-English user instead of letting the redirect fire — the CDN
+        // edge-poisoning regression class fixed in ADR-011 / PR #182. Every
+        // other path is locale-determined by its URL prefix, so it needs no
+        // `Vary`.
+        if is_root {
+            response
+                .headers_mut()
+                .insert(VARY, HeaderValue::from_static(VARY_LOCALE));
+        }
     }
 
     response
+}
+
+/// Middleware: locale negotiation on the site root.
+///
+/// The root path "/" is the canonical English URL (no locale prefix). Rather
+/// than force every visitor to find the language switcher, this middleware
+/// resolves a preferred locale for a `GET`/`HEAD` to "/" and, when it is not
+/// English, emits a temporary redirect to the matching localised path
+/// (`/ru`, `/ko`, `/vi`). Resolution order: a saved `origa_locale` cookie
+/// wins, otherwise the `Accept-Language` header. English, or requests where
+/// no preference can be resolved, fall through to a normal English "/".
+///
+/// Redirects are `307` (temporary, method-preserving) and carry `Cache-Control: no-cache` plus
+/// `Vary: Cookie, Accept-Language`, because the target depends on those
+/// headers: a permanent or edge-cached redirect would pin one user's locale
+/// for everyone (the ADR-011 / PR #182 edge-poisoning class). The cookie is
+/// written client-side by the language switcher on every switch — including
+/// to English — so a user on `/ko` who clicks "EN" lands on "/" and is not
+/// bounced back.
+async fn negotiate_locale(
+    method: Method,
+    uri: Uri,
+    headers: HeaderMap,
+    request: Request<axum::body::Body>,
+    next: Next,
+) -> Response {
+    if (method != Method::GET && method != Method::HEAD) || uri.path() != "/" {
+        return next.run(request).await;
+    }
+
+    let Some(locale) = preferred_locale(&headers) else {
+        return next.run(request).await;
+    };
+
+    let location = match uri.query() {
+        Some(query) if !query.is_empty() => format!("{}?{query}", locale.path_prefix()),
+        _ => locale.path_prefix().to_string(),
+    };
+    let mut response = Redirect::temporary(&location).into_response();
+    response
+        .headers_mut()
+        .insert(CACHE_CONTROL, HeaderValue::from_static(NO_CACHE));
+    response
+        .headers_mut()
+        .insert(VARY, HeaderValue::from_static(VARY_LOCALE));
+    response
+}
+
+/// Resolve the preferred non-English locale for a request to "/": an explicit
+/// `origa_locale` cookie takes precedence over `Accept-Language`; if no cookie
+/// is present, `Accept-Language` is consulted. Returns `None` for English (the
+/// default root) so the caller can fall through to a normal 200.
+///
+/// Crucially, an explicit English cookie must win over a non-English
+/// `Accept-Language`: a visitor who switched to English on a localised path
+/// must land on "/" and not be bounced back by their browser's language.
+/// That requires distinguishing "no cookie" (fall back to `Accept-Language`)
+/// from "cookie = en" (honour the choice, no redirect).
+fn preferred_locale(headers: &HeaderMap) -> Option<Locale> {
+    if let Some(locale) = cookie_locale(headers) {
+        // An explicit cookie wins entirely, including English (no redirect).
+        return (locale != Locale::En).then_some(locale);
+    }
+    let accept = headers.get(ACCEPT_LANGUAGE)?.to_str().ok()?;
+    locale_from_accept_language(accept)
+}
+
+/// Read the explicit locale from the `origa_locale` cookie, if present and
+/// valid. Returns the locale **including English** — `None` means the cookie
+/// is absent or malformed, signalling the caller to fall back to
+/// `Accept-Language`. Conflating "absent" with "English" would let a
+/// non-English browser override an explicit English choice.
+fn cookie_locale(headers: &HeaderMap) -> Option<Locale> {
+    let cookie = headers.get(COOKIE)?.to_str().ok()?;
+    for pair in cookie.split(';') {
+        let pair = pair.trim();
+        let Some(value) = pair
+            .strip_prefix(LOCALE_COOKIE)
+            .and_then(|rest| rest.strip_prefix('='))
+        else {
+            continue;
+        };
+        if let Ok(locale) = Locale::from_str(value) {
+            return Some(locale);
+        }
+    }
+    None
+}
+
+fn locale_from_accept_language(header: &str) -> Option<Locale> {
+    // Parse Accept-Language per RFC 7231 §5.3.5, e.g.
+    // "en-US,en;q=0.9,ru;q=0.8". Each entry becomes (primary subtag, q). Tags
+    // with q=0 ("not acceptable") are dropped. The entries are then sorted by
+    // q descending — stable, so ties keep the header's listed order — and the
+    // first supported locale (en/ru/ko/vi) wins. English resolves to `None`
+    // (the root URL); a non-English locale becomes a redirect target.
+    //
+    // Q-values matter: an English-primary bilingual ("en;q=0.9,ru;q=0.8") must
+    // NOT be redirected to Russian. A naive "first supported non-English tag"
+    // scan would send them there.
+    let mut entries: Vec<(String, f32)> = header
+        .split(',')
+        .filter_map(|raw| {
+            let mut parts = raw.split(';');
+            let tag = parts.next()?.trim().to_lowercase();
+            if tag.is_empty() {
+                return None;
+            }
+            let primary = tag.split('-').next()?.to_string();
+            let q = parts
+                .next()
+                .and_then(|param| param.trim().strip_prefix("q="))
+                .and_then(|v| v.trim().parse::<f32>().ok())
+                .unwrap_or(1.0);
+            if q <= 0.0 {
+                return None;
+            }
+            Some((primary, q))
+        })
+        .collect();
+    entries.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+    for (primary, _) in &entries {
+        match primary.as_str() {
+            "en" => return None,
+            "ru" => return Some(Locale::Ru),
+            "ko" => return Some(Locale::Ko),
+            "vi" => return Some(Locale::Vi),
+            _ => {},
+        }
+    }
+    None
 }
 
 /// Middleware: redirect `/path/` to `/path` with HTTP 308 Permanent Redirect.

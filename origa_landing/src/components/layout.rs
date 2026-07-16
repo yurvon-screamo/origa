@@ -2,7 +2,7 @@ use leptos::prelude::*;
 use leptos_meta::Html;
 use leptos_router::components::{A, Outlet};
 
-use crate::content::Locale;
+use crate::content::{LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_SECS, Locale};
 
 fn make_href(prefix: &str, page: &str) -> String {
     format!("{prefix}/{page}")
@@ -30,7 +30,7 @@ pub fn Layout(locale: Locale) -> impl IntoView {
             } else {
                 loc.path_prefix().to_string()
             };
-            (*loc, loc.display_label(), href)
+            (*loc, loc.display_label(), href, loc.as_str())
         })
         .collect();
 
@@ -63,37 +63,21 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                 <span class="landing-header__nav-sep">"|"</span>
                 <span class="landing-header__lang">
                     <span class="landing-header__lang-current">{locale.display_label()}</span>
-                    {lang_switcher_items.into_iter().flat_map(|(_, label, href)| {
+                    {lang_switcher_items.into_iter().flat_map(|(_, label, href, code)| {
                         vec![
                             view! { <span class="landing-header__lang-sep">" · "</span> }.into_any(),
-                            view! { <a href=href class="landing-header__lang-link">{label}</a> }
+                            view! {
+                                <a href=href class="landing-header__lang-link" attr:data-locale=code>
+                                    {label}
+                                </a>
+                            }
                                 .into_any(),
                         ]
                     }).collect_view()}
                 </span>
             </nav>
         </header>
-        <script>"
-            (function() {
-                var btn = document.querySelector('.landing-header__hamburger');
-                var nav = document.getElementById('main-nav');
-                if (!btn || !nav) return;
-                btn.addEventListener('click', function() {
-                    var open = nav.classList.toggle('is-open');
-                    btn.classList.toggle('is-open');
-                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-                    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-                });
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && nav.classList.contains('is-open')) {
-                        nav.classList.remove('is-open');
-                        btn.classList.remove('is-open');
-                        btn.setAttribute('aria-expanded', 'false');
-                        btn.setAttribute('aria-label', 'Open menu');
-                    }
-                });
-            })();
-        "</script>
+        <script inner_html=header_inline_script() />
         {if locale.is_development() {
             view! {
                 <div class="landing-wip-banner">{c.banner_wip}</div>
@@ -166,4 +150,45 @@ fn NavLink(
     view! {
         <A href=target attr:class=class>{children()}</A>
     }
+}
+
+/// Inline script for the header: toggles the mobile nav and persists the
+/// visitor's language choice. Built with `format!` so the cookie name and
+/// max-age come from the same constants the `negotiate_locale` middleware
+/// reads, instead of a second hardcoded copy that could drift.
+fn header_inline_script() -> String {
+    format!(
+        r#"
+            (function() {{
+                var btn = document.querySelector('.landing-header__hamburger');
+                var nav = document.getElementById('main-nav');
+                if (!btn || !nav) return;
+                btn.addEventListener('click', function() {{
+                    var open = nav.classList.toggle('is-open');
+                    btn.classList.toggle('is-open');
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+                }});
+                document.addEventListener('keydown', function(e) {{
+                    if (e.key === 'Escape' && nav.classList.contains('is-open')) {{
+                        nav.classList.remove('is-open');
+                        btn.classList.remove('is-open');
+                        btn.setAttribute('aria-expanded', 'false');
+                        btn.setAttribute('aria-label', 'Open menu');
+                    }}
+                }});
+                // Persist the language choice so the locale-negotiation
+                // middleware on "/" redirects returning visitors to their
+                // locale. Writing the cookie on click (including for English)
+                // before navigation is what prevents a user on a localised
+                // path from being bounced back when they switch to English.
+                document.querySelectorAll('.landing-header__lang-link').forEach(function(a) {{
+                    a.addEventListener('click', function() {{
+                        document.cookie = '{LOCALE_COOKIE}=' + a.getAttribute('data-locale')
+                            + '; path=/; max-age={LOCALE_COOKIE_MAX_AGE_SECS}; SameSite=Lax';
+                    }});
+                }});
+            }})();
+        "#
+    )
 }

@@ -10,7 +10,7 @@ fn main() {
     mount_to_body(|| {
         view! {
             <MetaTags />
-            <I18nContextProvider>
+            <I18nContextProvider cookie_options=origa_ui::i18n::persistent_locale_cookie_options()>
                 <Router>
                     <App/>
                 </Router>
