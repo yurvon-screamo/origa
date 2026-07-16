@@ -217,6 +217,7 @@ jobs:
                       -name '*.dmg' -o \
                       -name 'Origa_macos-arm64.zip' -o \
                       -name '*.apk' -o \
+                      -name '*.aab' -o \
                       -name 'latest.json' \
                   \) -exec cp -f {} release_assets/ \;
                   echo "Release assets content:"
@@ -244,6 +245,7 @@ jobs:
 
                       ## Android
                       - `origa.apk`
+                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle for Google Play Console upload
 
                       ## Updater
                       - `latest.json` — Tauri updater manifest (stable releases only)

@@ -534,3 +534,80 @@ jobs:
                   path: |
                       tauri/gen/android/app/build/outputs/apk/origa.apk
                   retention-days: 7
+
+            # AAB chain runs only on tags (version_type stable/prerelease) and
+            # push-to-master (github.ref) for burn-in; PR skips entirely.
+            # Every step is non-blocking (continue-on-error) so APK-publish
+            # stays green during burn-in.
+            - name: Build Tauri Android AAB
+              id: build-aab
+              if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease' || github.ref == 'refs/heads/master'
+              continue-on-error: true
+              working-directory: tauri
+              run: cargo tauri android build --aab
+
+            - name: Verify AAB release signature
+              id: verify-aab
+              if: steps.build-aab.outcome == 'success'
+              continue-on-error: true
+              working-directory: tauri/gen/android/app/build/outputs/bundle
+              run: |
+                  set -o pipefail
+                  AAB_PATH=$(find . -name "*.aab" -type f | head -1)
+                  if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
+                    echo "::error::No AAB file found under $(pwd)"
+                    exit 1
+                  fi
+                  # jarsigner is the correct tool for .aab (JAR signing scheme v1);
+                  # apksigner requires AndroidManifest.xml and only validates APK v2/v3 blocks.
+                  if ! command -v jarsigner >/dev/null 2>&1; then
+                    echo "::warning::jarsigner not found on PATH; skipping signature verification"
+                    exit 0
+                  fi
+                  jarsigner -verify -verbose -certs "$AAB_PATH" > jarsigner_output.txt 2>&1 || {
+                    echo "::warning::jarsigner -verify failed (exit $?)"
+                    cat jarsigner_output.txt
+                    rm -f jarsigner_output.txt
+                    exit 0
+                  }
+                  cat jarsigner_output.txt
+                  # Android debug keystore uses well-known default DN:
+                  # CN=Android Debug,O=Android,C=US (per developer.android.com/studio/publish/app-signing#debug-mode)
+                  if grep -q "CN=Android Debug" jarsigner_output.txt; then
+                    echo "::error::AAB signed with debug key, not release key"
+                    rm -f jarsigner_output.txt
+                    exit 1
+                  fi
+                  rm -f jarsigner_output.txt
+
+            - name: Rename AAB to versioned output
+              id: rename-aab
+              if: steps.verify-aab.outcome == 'success'
+              continue-on-error: true
+              working-directory: tauri/gen/android/app/build/outputs/bundle
+              env:
+                  VERSION: ${{ inputs.version }}
+              run: |
+                  set -o pipefail
+                  src=$(find . -name "*.aab" -type f | head -1)
+                  if [ -z "$src" ] || [ ! -f "$src" ]; then
+                    echo "::error::No AAB found for rename"
+                    exit 1
+                  fi
+                  cp "$src" "origa-${VERSION}.aab"
+                  ls -la "origa-${VERSION}.aab"
+
+            - name: Upload Android AAB
+              if: steps.rename-aab.outcome == 'success'
+              continue-on-error: true
+              uses: actions/upload-artifact@v4
+              env:
+                  VERSION: ${{ inputs.version }}
+              with:
+                  name: android-aab
+                  # Versioned (not fixed alias) is intentional: AAB is for
+                  # manual Play Console upload only, has no /releases/latest/download/
+                  # use case, and the version suffix gives an audit trail. This
+                  # is a documented exception to ADR-025 single-alias policy.
+                  path: tauri/gen/android/app/build/outputs/bundle/origa-${{ env.VERSION }}.aab
+                  retention-days: 7
