@@ -65,23 +65,55 @@ jobs:
                   curl -fL -o pepk.jar \
                     https://www.gstatic.com/play-apps-publisher-rapid/signing-tool/prod/pepk.jar
                   ls -la pepk.jar
+                  echo "=== pepk.jar --help ==="
+                  java -jar pepk.jar --help 2>&1 | head -40 || true
 
-            - name: Run PEPK tool
+            - name: Install expect
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y expect
+
+            - name: Run PEPK tool via expect
               env:
                   KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
                   KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
                   KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
               run: |
                   set -e
-                  # pepk.jar reads keystore + key passwords interactively from stdin
-                  # (line 1 = keystore, line 2 = key). Encryption key is the fixed
-                  # Google Play App Signing public key — same for all developers.
-                  printf '%s\n%s\n' "$KEYSTORE_PASS" "$KEY_PASS" | java -jar pepk.jar \
+                  # pepk.jar uses java.io.Console.readPassword() which returns null in
+                  # CI (no TTY). expect allocates a pseudo-tty so Console works.
+                  # Prompt order is: keystore password first, then key alias password.
+                  cat > /tmp/pepk.expect <<'EXPECT_EOF'
+                  #!/usr/bin/expect -f
+                  set timeout 60
+                  set keystore_pass [lindex $argv 0]
+                  set key_pass      [lindex $argv 1]
+                  set key_alias     [lindex $argv 2]
+                  spawn java -jar pepk.jar \
                     --keystore origa-release.keystore \
-                    --alias "$KEY_ALIAS" \
+                    --alias $key_alias \
                     --output pepk_out.zip \
                     --encryptionkey=0000a58b0431d440a99bfb021dca1ac1b6458ff49aea886e0adc2dcaab167e648f6525e17fde1e255888073f2e2cb64daaf29f8898bb5f8aa630d1c2fd2fd419a34c4e4a \
                     --include-cert
+                  set pw_idx 0
+                  expect {
+                      -re "(?i)password" {
+                          if {$pw_idx == 0} {
+                              send "$keystore_pass\r"
+                          } else {
+                              send "$key_pass\r"
+                          }
+                          incr pw_idx
+                          exp_continue
+                      }
+                      "Error" { exit 1 }
+                      eof
+                  }
+                  catch wait result
+                  exit [lindex $result 3]
+                  EXPECT_EOF
+                  chmod +x /tmp/pepk.expect
+                  /tmp/pepk.expect "$KEYSTORE_PASS" "$KEY_PASS" "$KEY_ALIAS"
                   ls -la pepk_out.zip
                   echo "PEPK extraction complete — pepk_out.zip ready for Google Play App Signing."
 
