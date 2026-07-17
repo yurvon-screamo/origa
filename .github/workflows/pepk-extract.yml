@@ -3,16 +3,23 @@ name: PEPK Extract (temporary)
 # Temporary workflow for one-off PEPK extraction (Google Play App Signing opt-in)
 # and keystore export for RuStore AAB upload. Delete this file after artifacts
 # are downloaded. Branch-guarded to feat/android-debug-symbols only.
+#
+# Trigger: push to this specific file on feat/android-debug-symbols (workflow_dispatch
+# requires the file to exist on the default branch, which we want to avoid for a
+# one-off job that touches secrets).
 
 on:
-    workflow_dispatch:
+    push:
+        branches:
+            - feat/android-debug-symbols
+        paths:
+            - .github/workflows/pepk-extract.yml
 
 permissions:
     contents: read
 
 jobs:
     pepk-extract:
-        if: github.ref == 'refs/heads/feat/android-debug-symbols'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
