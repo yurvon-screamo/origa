@@ -400,6 +400,12 @@ jobs:
             # NDK r26b exact version. Single source of truth — referenced by both
             # the sdkmanager `packages` input and the NDK env-var derivation below.
             NDK_VERSION: '26.1.10909125'
+            # Preserve native debug symbols so AGP can package them into the AAB
+            # for Play Console crash symbolication (build.gradle.kts ndk.debugSymbolLevel).
+            # Cargo.toml [profile.release] has strip=true for desktop; this override
+            # un-strips only Android CI builds. NDK still strips the final .so inside
+            # the APK/AAB, keeping user-facing binary size unchanged.
+            CARGO_PROFILE_RELEASE_STRIP: 'false'
 
         steps:
             - name: Checkout repository
