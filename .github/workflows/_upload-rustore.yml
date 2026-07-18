@@ -118,9 +118,16 @@ jobs:
                       '{appName: "Origa", appType: "MAIN", publishType: "INSTANTLY", whatsNew: $n}')")
 
                   echo "Create draft response: $RESPONSE"
-                  VERSION_ID=$(echo "$RESPONSE" | jq -r '.body.version_id')
+                  # RuStore API returns the new version_id as a scalar directly
+                  # under .body: {"body": 243242}. Some SDKs/documentations show
+                  # it wrapped as {"body": {"version_id": N}} — handle both
+                  # shapes so a future API tightening doesn't silently break us.
+                  VERSION_ID=$(echo "$RESPONSE" | jq -r '
+                    .body | if type == "object" then (.version_id // .id // empty) else . end
+                  ')
                   if [ -z "$VERSION_ID" ] || [ "$VERSION_ID" = "null" ]; then
                     echo "::error::Create draft failed — no version_id in response"
+                    echo "Response was: $RESPONSE"
                     echo "Likely cause: an unfinished draft already exists for this app."
                     echo "Delete drafts in RuStore Console, or via DELETE /version/{id} endpoint."
                     exit 1
