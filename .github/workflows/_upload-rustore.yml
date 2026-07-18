@@ -1,0 +1,163 @@
+name: Upload to RuStore
+
+# Reusable workflow for uploading signed AAB to RuStore via Public API.
+# Called from tauri.yml after build-tauri succeeds on tag pushes.
+#
+# Flow:
+#   1. POST /public/auth/ — exchange signed keyId+timestamp for JWE token (15 min TTL)
+#   2. POST /public/v1/application/{pkg}/version — create draft, returns versionId
+#   3. POST /public/v1/application/{pkg}/version/{id}/aab — multipart upload
+#   4. POST /public/v1/application/{pkg}/version/{id}/commit — submit for moderation
+#
+# Prerequisites (manual, in RuStore Console):
+#   - App created with package net.uwuwu.origa
+#   - AAB signing certificate uploaded (App signing keys section)
+#   - API keypair generated; keyId + private key in GitHub Secrets
+#
+# Auth signature: SHA512withRSA over concatenation keyId+timestamp,
+# using PKCS#8 / PKCS#1 PEM private key. See:
+#   https://www.rustore.ru/help/en/work-with-rustore-api/api-authorization-token
+
+on:
+    workflow_call:
+        inputs:
+            version:
+                type: string
+                required: true
+            version_type:
+                type: string
+                required: true
+        secrets:
+            rustore-key-id:
+                required: true
+            rustore-private-key:
+                required: true
+
+permissions:
+    contents: read
+
+jobs:
+    upload:
+        if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease'
+        runs-on: ubuntu-latest
+        env:
+            PACKAGE_NAME: net.uwuwu.origa
+            RUSTORE_API: https://public-api.rustore.ru
+        steps:
+            - name: Download AAB artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: android-aab
+                  path: aab/
+
+            - name: Locate AAB file
+              id: locate
+              run: |
+                  set -e
+                  AAB_PATH=$(find aab/ -name "*.aab" -type f | head -1)
+                  if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
+                    echo "::error::No AAB file found under aab/"
+                    ls -la aab/ 2>&1 || true
+                    exit 1
+                  fi
+                  SIZE=$(stat -c%s "$AAB_PATH")
+                  echo "Found AAB: $AAB_PATH ($SIZE bytes)"
+                  echo "aab_path=$AAB_PATH" >> "$GITHUB_OUTPUT"
+
+            - name: Authenticate (get JWE token)
+              env:
+                  KEY_ID: ${{ secrets.rustore-key-id }}
+                  PRIVATE_KEY: ${{ secrets.rustore-private-key }}
+              run: |
+                  set -e
+                  # Write private key to a temp file. openssl sha512 -sign accepts
+                  # both PKCS#1 (RSA PRIVATE KEY) and PKCS#8 (PRIVATE KEY) PEM formats.
+                  KEY_FILE=$(mktemp)
+                  printf '%s\n' "$PRIVATE_KEY" > "$KEY_FILE"
+                  chmod 600 "$KEY_FILE"
+                  trap 'rm -f "$KEY_FILE"' EXIT
+
+                  # ISO 8601 with millisecond precision and tz offset,
+                  # e.g. 2026-07-18T12:34:56.789+03:00. Server rejects timestamps
+                  # more than 60 seconds off, so derive from CI clock.
+                  TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3N%:z")
+
+                  # SHA512withRSA over keyId concatenated with timestamp (no separator).
+                  SIGNATURE=$(printf '%s%s' "$KEY_ID" "$TIMESTAMP" \
+                    | openssl dgst -sha512 -sign "$KEY_FILE" \
+                    | base64 -w0)
+
+                  RESPONSE=$(curl -fsS -X POST "$RUSTORE_API/public/auth/" \
+                    -H "Content-Type: application/json" \
+                    -d "$(jq -n --arg k "$KEY_ID" --arg t "$TIMESTAMP" --arg s "$SIGNATURE" \
+                      '{keyId: $k, timestamp: $t, signature: $s}')")
+
+                  echo "Auth response: $RESPONSE"
+                  JWE=$(echo "$RESPONSE" | jq -r '.body.jwe')
+                  if [ -z "$JWE" ] || [ "$JWE" = "null" ]; then
+                    echo "::error::RuStore auth failed — no JWE in response"
+                    exit 1
+                  fi
+                  echo "JWE token acquired (TTL: $(echo "$RESPONSE" | jq -r '.body.ttl')s)"
+                  echo "JWE_TOKEN=$JWE" >> "$GITHUB_ENV"
+
+            - name: Create version draft
+              env:
+                  VERSION: ${{ inputs.version }}
+              run: |
+                  set -e
+                  # whatsNew max 500 chars — release version + commit ref is enough
+                  # for automated CI uploads; full changelog goes to GitHub Release.
+                  WHATS_NEW="Release $VERSION (automated CI upload)"
+
+                  RESPONSE=$(curl -fsS -X POST \
+                    "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version" \
+                    -H "Content-Type: application/json" \
+                    -H "Public-Token: $JWE_TOKEN" \
+                    -d "$(jq -n --arg n "$WHATS_NEW" \
+                      '{appName: "Origa", appType: "MAIN", publishType: "INSTANTLY", whatsNew: $n}')")
+
+                  echo "Create draft response: $RESPONSE"
+                  VERSION_ID=$(echo "$RESPONSE" | jq -r '.body.version_id')
+                  if [ -z "$VERSION_ID" ] || [ "$VERSION_ID" = "null" ]; then
+                    echo "::error::Create draft failed — no version_id in response"
+                    echo "Likely cause: an unfinished draft already exists for this app."
+                    echo "Delete drafts in RuStore Console, or via DELETE /version/{id} endpoint."
+                    exit 1
+                  fi
+                  echo "Draft created: version_id=$VERSION_ID"
+                  echo "VERSION_ID=$VERSION_ID" >> "$GITHUB_ENV"
+
+            - name: Upload AAB
+              run: |
+                  set -e
+                  AAB_PATH=${{ steps.locate.outputs.aab_path }}
+                  echo "Uploading $AAB_PATH to version $VERSION_ID..."
+
+                  RESPONSE=$(curl -fsS -X POST \
+                    "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID/aab" \
+                    -H "Public-Token: $JWE_TOKEN" \
+                    -F "file=@$AAB_PATH")
+
+                  echo "Upload AAB response: $RESPONSE"
+                  CODE=$(echo "$RESPONSE" | jq -r '.code')
+                  if [ "$CODE" != "OK" ]; then
+                    echo "::error::AAB upload failed — code=$CODE"
+                    exit 1
+                  fi
+                  echo "AAB uploaded successfully"
+
+            - name: Submit for moderation
+              run: |
+                  set -e
+                  RESPONSE=$(curl -fsS -X POST \
+                    "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID/commit?priorityUpdate=0" \
+                    -H "Public-Token: $JWE_TOKEN")
+
+                  echo "Submit response: $RESPONSE"
+                  CODE=$(echo "$RESPONSE" | jq -r '.code')
+                  if [ "$CODE" != "OK" ]; then
+                    echo "::error::Submit for moderation failed — code=$CODE"
+                    exit 1
+                  fi
+                  echo "✅ RuStore upload complete — version $VERSION_ID submitted for moderation"

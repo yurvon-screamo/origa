@@ -254,3 +254,24 @@ jobs:
                   prerelease: ${{ needs.version.outputs.version_type == 'prerelease' }}
                   draft: false
                   make_latest: ${{ needs.version.outputs.version_type == 'stable' }}
+
+    upload-rustore:
+        name: Upload to RuStore
+        # Independent of release: failure does NOT block GitHub Release.
+        # Continue-on-error semantics during burn-in — RuStore API has multiple
+        # hard requirements (signing cert in Console, no stale drafts, version
+        # bump) that may not be met on first run. Soft-fail until stable.
+        if: >
+            always() &&
+            needs.build-tauri.result == 'success' &&
+            startsWith(github.ref, 'refs/tags/v') &&
+            (needs.version.outputs.version_type == 'stable' ||
+             needs.version.outputs.version_type == 'prerelease')
+        needs: [version, build-tauri]
+        uses: ./.github/workflows/_upload-rustore.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+            version_type: ${{ needs.version.outputs.version_type }}
+        secrets:
+            rustore-key-id: ${{ secrets.RUSTORE_KEY_ID }}
+            rustore-private-key: ${{ secrets.RUSTORE_PRIVATE_KEY }}
