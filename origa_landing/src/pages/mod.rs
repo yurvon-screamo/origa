@@ -1,3 +1,4 @@
+mod blog;
 mod compare;
 mod download;
 mod features;
@@ -6,6 +7,7 @@ mod integrations;
 mod privacy;
 mod terms;
 
+pub use blog::BlogPostPage;
 pub use compare::ComparePage;
 pub use download::DownloadPage;
 pub use features::FeaturesPage;

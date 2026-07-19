@@ -53,28 +53,38 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // 28 <url> elements: 7 pages (/, /features, /compare, /content, /download,
-    // /privacy, /terms) × 4 locales (en/ru/ko/vi). Google Search Central
-    // requires a separate <url> per locale variant, each with the full hreflang
-    // alternate set (see developers.google.com/search/docs/specialty/international/localized-versions).
+    // 30 <url> elements: 28 static pages (/, /features, /compare, /content,
+    // /download, /privacy, /terms) × 4 locales (en/ru/ko/vi) + 2 blog
+    // articles (EN-only and RU-only). The blog articles do not have KO/VI
+    // translations, so they emit a single `<url>` entry per article with a
+    // self-reference hreflang + x-default — they are NOT replicated across
+    // all four locales. KO/VI fallback URLs (`/ko/blog/...`) are
+    // intentionally absent: those pages carry `robots:noindex,follow` and
+    // must not appear in the sitemap (Google treats sitemap inclusion as an
+    // indexing signal, which contradicts `noindex`).
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 28, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 30, "expected one <lastmod> per <url>");
 }
 
 #[test]
 fn every_url_block_has_full_hreflang_alternate_set() {
-    // Each <url> must carry the full set of locale alternates (en/ru/ko/vi +
-    // x-default = 5) so crawlers can discover every variant from any entry.
-    // The lastmod count test above does not verify hreflang presence, so a
-    // conformant-by-lastmod but non-conformant-by-hreflang sitemap would slip
-    // through without this guard.
+    // Each <url> must carry the full set of locale alternates appropriate
+    // for its translation coverage:
+    //   * fully-translated page (/, /features, /compare, /content, /download,
+    //     /privacy, /terms) → 5 entries (en/ru/ko/vi/x-default)
+    //   * single-locale blog article → 2 entries (self + x-default)
+    // Crawlers must discover every variant from any entry, but advertising
+    // hreflang for URLs that do not exist (e.g. /ko/blog/... with no KO
+    // translation) wastes crawl budget on noindex fallback pages.
     let xml = sitemap_contents();
     for block in xml.split("<url>").skip(1) {
         let url_block = block.split("</url>").next().unwrap_or(block);
         let alternate_count = url_block.matches("<xhtml:link rel=\"alternate\"").count();
+        let is_blog = url_block.contains("/blog/");
+        let expected = if is_blog { 2 } else { 5 };
         assert_eq!(
-            alternate_count, 5,
-            "every <url> must have 5 hreflang alternates (en/ru/ko/vi/x-default); got {alternate_count} in:\n{url_block}"
+            alternate_count, expected,
+            "every <url> must have {expected} hreflang alternates (blog) or 5 (fully-translated); got {alternate_count} in:\n{url_block}"
         );
     }
 }

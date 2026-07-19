@@ -44,7 +44,7 @@ pub fn organization_schema() -> String {
     .to_string()
 }
 
-pub fn breadcrumb_schema(locale: Locale, path: &'static str, current_name: &'static str) -> String {
+pub fn breadcrumb_schema(locale: Locale, path: &str, current_name: &str) -> String {
     let c = locale.content();
     let prefix = locale.path_prefix();
     // The site root carries a trailing slash by convention (ADR-011); locale
@@ -71,6 +71,37 @@ pub fn breadcrumb_schema(locale: Locale, path: &'static str, current_name: &'sta
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [home, current]
+    })
+    .to_string()
+}
+
+/// Schema.org `Article` JSON-LD for a blog post. `datePublished` and
+/// `dateModified` are both sourced from the article's `lastmod` field; the
+/// blog has no separate publication-date metadata today, so the two values
+/// coincide. If Google News / Discover become priorities later, a dedicated
+/// `date_published` frontmatter field should be added — see NOTICED in the
+/// blog implementation plan.
+pub fn article_schema(locale: Locale, post: &crate::blog::BlogPost, canonical_url: &str) -> String {
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.frontmatter.title,
+        "description": post.frontmatter.meta_description,
+        "inLanguage": locale.as_str(),
+        "datePublished": post.frontmatter.lastmod,
+        "dateModified": post.frontmatter.lastmod,
+        "mainEntityOfPage": canonical_url,
+        "image": format!("{BASE_URL}/og-image.png"),
+        "author": {
+            "@type": "Organization",
+            "name": "Origa",
+            "url": BASE_URL
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Origa",
+            "logo": format!("{BASE_URL}/favicon.png")
+        }
     })
     .to_string()
 }
