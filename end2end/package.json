@@ -13,12 +13,12 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@playwright/test": "^1.60.0",
-        "@types/node": "^25.9.3",
-        "eslint": "^10.5.0",
+        "@playwright/test": "^1.61.1",
+        "@types/node": "^26.1.1",
+        "eslint": "^10.7.0",
         "serve": "^14.2.6",
-        "typescript": "^6.0.3",
-        "typescript-eslint": "^8.61.0"
+        "typescript": "^7.0.2",
+        "typescript-eslint": "^8.64.0"
     },
     "dependencies": {
         "dotenv": "^17.4.2"
