@@ -5484,6 +5484,7 @@ dependencies = [
 name = "origa_landing"
 version = "0.1.0"
 dependencies = [
+ "ammonia",
  "axum",
  "http",
  "http-body-util",
@@ -5491,9 +5492,11 @@ dependencies = [
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
+ "pulldown-cmark",
  "rstest",
  "serde",
  "serde_json",
+ "thiserror 2.0.18",
  "tokio",
  "tower",
  "tower-http",

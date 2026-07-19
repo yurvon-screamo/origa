@@ -276,4 +276,27 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
   </url>
 
+  <!-- ==================== /blog/anki-alternative-japanese (EN-only) ====================
+       Blog articles advertise hreflang only for locales that actually carry a
+       translation. This article exists in EN only, so the alternate set is
+       {en, x-default}; no ru/ko/vi entries that would lead crawlers to
+       fallback URLs (which carry robots:noindex and would waste crawl budget). -->
+  <url>
+    <loc>https://origa.uwuwu.net/blog/anki-alternative-japanese</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+  </url>
+
+  <!-- ==================== /ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo (RU-only)
+       Same single-translation pattern as above: ru self-reference + x-default
+       pointing at the only serving URL (the RU one). No EN entry, because the
+       article has no EN translation and the EN URL would 404. -->
+  <url>
+    <loc>https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo"/>
+  </url>
+
 </urlset>

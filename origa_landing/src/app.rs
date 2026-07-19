@@ -51,6 +51,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("download") view=DownloadPage />
                     <Route path=path!("privacy") view=PrivacyPage />
                     <Route path=path!("terms") view=TermsPage />
+                    <Route path=path!("blog/:slug") view=BlogPostPage />
                 </ParentRoute>
                 <ParentRoute path=path!("ru") view=move || view! { <Layout locale=Locale::Ru /> }>
                     <Route path=path!("") view=HomePage />
@@ -60,6 +61,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("download") view=DownloadPage />
                     <Route path=path!("privacy") view=PrivacyPage />
                     <Route path=path!("terms") view=TermsPage />
+                    <Route path=path!("blog/:slug") view=BlogPostPage />
                 </ParentRoute>
                 <ParentRoute path=path!("ko") view=move || view! { <Layout locale=Locale::Ko /> }>
                     <Route path=path!("") view=HomePage />
@@ -69,6 +71,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("download") view=DownloadPage />
                     <Route path=path!("privacy") view=PrivacyPage />
                     <Route path=path!("terms") view=TermsPage />
+                    <Route path=path!("blog/:slug") view=BlogPostPage />
                 </ParentRoute>
                 <ParentRoute path=path!("vi") view=move || view! { <Layout locale=Locale::Vi /> }>
                     <Route path=path!("") view=HomePage />
@@ -78,6 +81,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("download") view=DownloadPage />
                     <Route path=path!("privacy") view=PrivacyPage />
                     <Route path=path!("terms") view=TermsPage />
+                    <Route path=path!("blog/:slug") view=BlogPostPage />
                 </ParentRoute>
             </Routes>
         </Router>

@@ -5,9 +5,11 @@ locale: en
 meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
-lastmod: 2026-07-16
-status: draft
+lastmod: 2026-07-18
+status: ready
 ---
+
+<!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
 
 # Anki Alternative for Japanese: When to Switch (and When to Stick With Anki)
 
@@ -19,7 +21,7 @@ This is a field guide, not a hit piece. It covers where Anki genuinely wins for 
 
 If any of these describe you, Anki is probably the right tool, and you should stop reading listicles and go review your cards.
 
-- **You want a scheduler you fully control.** Anki added FSRS support in 2023 and enables it by default for new collections. It's the same spaced-repetition algorithm the research community converged on. You can tune retention targets, custom steps, and review limits to the day.
+- **You want a scheduler you fully control.** Anki added [FSRS support in version 23.10](https://docs.ankiweb.net/deck-options.html#fsrs) (October 2023) as an experimental option, and enabled it by default for new collections starting with version 24.10. It's the same spaced-repetition algorithm the research community converged on. You can tune retention targets, custom steps, and review limits to the day.
 - **You study more than Japanese.** Anki is domain-agnostic. Medicine, law, music theory, a third language — one app, one review queue.
 - **You build your own card types.** Anki's templating (HTML/CSS with fields) is unmatched. If you enjoy engineering your cards as much as studying them, nothing else comes close.
 - **You want it free and self-hosted.** Anki desktop is free and open source. AnkiDroid is free. AnkiWeb sync is free. The only paid piece is AnkiMobile on iOS, which funds development of the rest.
@@ -89,10 +91,10 @@ If any of those break your workflow, that's a legitimate reason to stay on Anki 
 
 Origa isn't the only option, and depending on your bottleneck it may not be the best one for you.
 
-- **For kanji specifically — WaniKani.** Radical-based, structured order, English interface. Best if you're starting kanji from zero and want a fixed path. It's paid, and its order is its own — you learn what it teaches, not what you encountered today.
-- **For grammar specifically — Bunpro.** Grammar-focused SRS, web-based, English interface. Best if your bottleneck is grammar drilling and you're happy to keep vocabulary in Anki.
-- **For absolute beginners — Duolingo.** Gamified, gentle, shallow. Not a replacement for Anki's retention; a starting point that you outgrow.
-- **For JLPT test simulation — Migii.** Timed test practice. Pairs with a retention tool rather than replacing one.
+- **For kanji specifically — [WaniKani](https://www.wanikani.com/).** Radical-based, structured order, English interface. Best if you're starting kanji from zero and want a fixed path. It's paid, and its order is its own — you learn what it teaches, not what you encountered today.
+- **For grammar specifically — [Bunpro](https://bunpro.jp/).** Grammar-focused SRS, web-based, English interface. Best if your bottleneck is grammar drilling and you're happy to keep vocabulary in Anki.
+- **For absolute beginners — [Duolingo](https://www.duolingo.com/).** Gamified, gentle, shallow. Not a replacement for Anki's retention; a starting point that you outgrow.
+- **For JLPT test simulation — [Migii](https://eup.java-mind.com/).** Timed test practice. Pairs with a retention tool rather than replacing one.
 
 The pattern: most "alternatives" specialize in one slice (kanji, grammar, beginners, tests). The reason people end up on five apps is that no single specialized tool covers the whole. Origa's pitch is that it's the one tool trying to cover the whole — but read the limitations above before assuming that fits you.
 
