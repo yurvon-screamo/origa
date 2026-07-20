@@ -276,27 +276,129 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/terms"/>
   </url>
 
-  <!-- ==================== /blog/anki-alternative-japanese (EN-only) ====================
-       Blog articles advertise hreflang only for locales that actually carry a
-       translation. This article exists in EN only, so the alternate set is
-       {en, x-default}; no ru/ko/vi entries that would lead crawlers to
-       fallback URLs (which carry robots:noindex and would waste crawl budget). -->
+  <!-- ==================== /blog (index) ====================
+       Blog index pages exist in all 4 locales (they list locale-native
+       articles only — strict filter). Hreflang is the full set (5 entries)
+       because the index page itself is a fully-translated hub. -->
+  <url>
+    <loc>https://origa.uwuwu.net/blog</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/blog</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/blog</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/blog</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog"/>
+  </url>
+
+  <!-- ==================== /blog/anki-alternative-japanese (4 locales) ====================
+       Article 1 is translated in all 4 locales under one slug. Hreflang is
+       the full 5-entry set (en/ru/ko/vi + x-default). Crawlers can discover
+       every variant from any entry. -->
   <url>
     <loc>https://origa.uwuwu.net/blog/anki-alternative-japanese</loc>
     <lastmod>{{LASTMOD}}</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/blog/anki-alternative-japanese</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/blog/anki-alternative-japanese</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/blog/anki-alternative-japanese</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/anki-alternative-japanese"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/anki-alternative-japanese"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/anki-alternative-japanese"/>
   </url>
 
-  <!-- ==================== /ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo (RU-only)
-       Same single-translation pattern as above: ru self-reference + x-default
-       pointing at the only serving URL (the RU one). No EN entry, because the
-       article has no EN translation and the EN URL would 404. -->
+  <!-- ==================== /blog/best-japanese-learning-app (4 locales) ====================
+       Article 2 — same 5-entry hreflang pattern. The legacy RU slug
+       (/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo) is NOT listed:
+       it is a 308 redirect to /ru/blog/best-japanese-learning-app, and
+       Google policy requires the redirect-target (not the source) in
+       sitemap. -->
   <url>
-    <loc>https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo</loc>
+    <loc>https://origa.uwuwu.net/blog/best-japanese-learning-app</loc>
     <lastmod>{{LASTMOD}}</lastmod>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ru/blog/best-japanese-learning-app</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/ko/blog/best-japanese-learning-app</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+  </url>
+  <url>
+    <loc>https://origa.uwuwu.net/vi/blog/best-japanese-learning-app</loc>
+    <lastmod>{{LASTMOD}}</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://origa.uwuwu.net/ru/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://origa.uwuwu.net/ko/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://origa.uwuwu.net/vi/blog/best-japanese-learning-app"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://origa.uwuwu.net/blog/best-japanese-learning-app"/>
   </url>
 
 </urlset>

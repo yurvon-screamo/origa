@@ -53,38 +53,28 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // 30 <url> elements: 28 static pages (/, /features, /compare, /content,
-    // /download, /privacy, /terms) × 4 locales (en/ru/ko/vi) + 2 blog
-    // articles (EN-only and RU-only). The blog articles do not have KO/VI
-    // translations, so they emit a single `<url>` entry per article with a
-    // self-reference hreflang + x-default — they are NOT replicated across
-    // all four locales. KO/VI fallback URLs (`/ko/blog/...`) are
-    // intentionally absent: those pages carry `robots:noindex,follow` and
-    // must not appear in the sitemap (Google treats sitemap inclusion as an
-    // indexing signal, which contradicts `noindex`).
+    // 40 <url> elements: 28 static pages (/, /features, /compare, /content,
+    // /download, /privacy, /terms) × 4 locales + 4 blog index URLs + 8
+    // blog article URLs (2 articles × 4 locales). The two obsolete
+    // single-locale entries (the pre-translation blog URLs) are REPLACED
+    // by the 8 four-locale entries; the count went 30 → 40, not 30 → 42.
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 30, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 40, "expected one <lastmod> per <url>");
 }
 
 #[test]
 fn every_url_block_has_full_hreflang_alternate_set() {
-    // Each <url> must carry the full set of locale alternates appropriate
-    // for its translation coverage:
-    //   * fully-translated page (/, /features, /compare, /content, /download,
-    //     /privacy, /terms) → 5 entries (en/ru/ko/vi/x-default)
-    //   * single-locale blog article → 2 entries (self + x-default)
-    // Crawlers must discover every variant from any entry, but advertising
-    // hreflang for URLs that do not exist (e.g. /ko/blog/... with no KO
-    // translation) wastes crawl budget on noindex fallback pages.
+    // Every URL — including blog index and blog articles — now carries the
+    // full 5-entry hreflang set (en/ru/ko/vi + x-default). The previous
+    // `is_blog ? 2 : 5` distinction is gone: every blog article is
+    // translated in all 4 locales, so the alternate set is uniform.
     let xml = sitemap_contents();
     for block in xml.split("<url>").skip(1) {
         let url_block = block.split("</url>").next().unwrap_or(block);
         let alternate_count = url_block.matches("<xhtml:link rel=\"alternate\"").count();
-        let is_blog = url_block.contains("/blog/");
-        let expected = if is_blog { 2 } else { 5 };
         assert_eq!(
-            alternate_count, expected,
-            "every <url> must have {expected} hreflang alternates (blog) or 5 (fully-translated); got {alternate_count} in:\n{url_block}"
+            alternate_count, 5,
+            "every <url> must have 5 hreflang alternates (en/ru/ko/vi/x-default); got {alternate_count} in:\n{url_block}"
         );
     }
 }

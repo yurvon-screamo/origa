@@ -13,7 +13,10 @@ pub fn IntegrationsPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/content" title=c.integrations_meta_title description=c.integrations_meta_description/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/content", c.header_integrations)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.header_integrations, "/content"),
+        ])/>
 
         // ── Section 0: Hero ──
         <section class="intg-hero">

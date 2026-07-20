@@ -13,7 +13,10 @@ pub fn ComparePage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/compare" title=c.compare_meta_title description=c.compare_meta_description/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/compare", c.header_compare)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.header_compare, "/compare"),
+        ])/>
 
         // Section 1: Hero
         <section class="cmp-hero">

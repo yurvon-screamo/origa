@@ -13,6 +13,15 @@ pub static CONTENT: Content = Content {
     header_compare: "Сравнение",
     header_download: "Скачать",
     header_integrations: "Контент",
+    header_blog: "Блог",
+
+    blog_index_meta_title: "Блог Origa — заметки об изучении японского",
+    blog_index_meta_description: "Гайды по изучению японского: альтернативы Anki, выбор приложения, лексика, кандзи и учебные процессы. От команды Origa.",
+    blog_index_h1: "Блог",
+    blog_index_subtitle: "Гайды по изучению японского — когда менять инструменты, что искать и где какое приложение сильнее.",
+    blog_index_empty: "Пока нет статей. Загляните позже.",
+    blog_updated_label: "Обновлено:",
+    breadcrumb_blog: "Блог",
 
     footer_product: "Продукт",
     footer_resources: "Ресурсы",

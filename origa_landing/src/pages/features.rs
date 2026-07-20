@@ -34,7 +34,10 @@ pub fn FeaturesPage() -> impl IntoView {
     view! {
         <PageMeta locale path="/features" title=c.features_meta_title description=c.features_meta_description/>
         <SchemaOrg json=how_to_schema(locale, c.features_schema_how_to_name, &vocab_steps)/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/features", c.header_features)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.header_features, "/features"),
+        ])/>
         <SchemaOrg json=learning_resource_schema(locale)/>
         <SchemaOrg json=faq_schema(locale, &[
             (c.faq_q1, c.faq_a1),

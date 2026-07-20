@@ -12,7 +12,10 @@ pub fn PrivacyPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/privacy" title=c.privacy_meta_title description=c.privacy_meta_description/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/privacy", c.legal_privacy_link)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.legal_privacy_link, "/privacy"),
+        ])/>
 
         <article class="legal-doc">
             <header class="legal-doc__header">
