@@ -1,0 +1,228 @@
+{
+  "artifact": "marketing/playbooks/objections-handling.md",
+  "product": "origa",
+  "checked_at": "2026-07-18T23:59:00+03:00",
+  "checked_by": "@marketer autonomous run (user absent — awaiting review)",
+  "overall_confidence": 0.86,
+  "methodology": [
+    "Self-claims about Origa verified against README.md, AGENTS.md, marketing/origa-seo.factcheck.json, marketing/product-hunt.md (direct read)",
+    "Competitor / ecosystem claims verified against cited URLs in raw research files (marketing/research/2026-07-18-*.md)",
+    "Predictions (Origa-уроки, talking points) explicitly marked as PREDICTIONS, not facts — confidence 0.6-0.8",
+    "Reddit .json endpoints NOT used (dead since May 2026 per system prompt); all Reddit quotes sourced via Tavily search engine indexing"
+  ],
+  "claims": [
+    {
+      "claim": "Origa is built on Rust + Leptos 0.8 + Tauri v2 stack.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["AGENTS.md (project root, Stack section)", "README.md:91-99"],
+      "note": "AGENTS.md explicitly states: Frontend = Leptos 0.8, Desktop = Tauri v2, Business logic in Rust."
+    },
+    {
+      "claim": "Origa uses FSRS (Free Spaced Repetition Scheduler), same algorithm family as Anki.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:20 ('FSRS spaced repetition system (like Anki)')", "AGENTS.md Key dependencies: rs-fsrs"],
+      "note": "rs-fsrs is the Rust port of FSRS, the same algorithm Anki 24.x defaults to."
+    },
+    {
+      "claim": "Origa uses NDLOCR for OCR and Whisper for STT, both running locally.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["AGENTS.md Key dependencies: ort + NDLOCR-Lite (OCR), ort + rustfft (Whisper STT)"],
+      "note": "Both ML models run on-device via ort (ONNX Runtime). No cloud calls for OCR/STT."
+    },
+    {
+      "claim": "Origa uses lindera + UniDic for Japanese tokenization.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["AGENTS.md Key dependencies: lindera + UniDic"],
+      "note": ""
+    },
+    {
+      "claim": "Origa is licensed under BSL 1.1 (Business Source License), which is NOT OSI-approved open source.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:159 ('distributed under the BSL 1.1')", "https://opensource.org/licenses/#bsl"],
+      "note": "BSL is source-available but NOT in the OSI-approved list. README correctly describes restrictions."
+    },
+    {
+      "claim": "marketing/product-hunt.md line 41 contains the phrase 'The app is free and open-source' which is factually incorrect for BSL 1.1.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["marketing/product-hunt.md:41 (direct read)"],
+      "note": "Flagged as BLOCKER B1. This wording must be corrected before launch — any dev-savvy user checking LICENSE will register trust hit."
+    },
+    {
+      "claim": "Origa landing serves 4 locales (EN/RU/KO/VI).",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["marketing/origa-seo.factcheck.json (claim 1, confidence 1.0)"],
+      "note": "Previously verified 2026-06-26."
+    },
+    {
+      "claim": "Origa has 200,000+ native Japanese phrases built in.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["README.md:57 ('200,000+ phrases from native Japanese content')"],
+      "note": ""
+    },
+    {
+      "claim": "Leptos creator gbj announced in May 2026 that Leptos is 'feature-complete' and will be 'lightly maintained going forward, no significant new development'.",
+      "confidence": 0.95,
+      "status": "verified",
+      "sources": ["https://github.com/leptos-rs/leptos/issues/4707 (cited in marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part D4)"],
+      "note": "Snapshot 2026-07-18. The Leptos repo and Issue #4707 are publicly accessible; the quoted text matches the research summary."
+    },
+    {
+      "claim": "NDLOCR-Lite achieves CER 0.016 (1.6%) on printed documents, 0.323 on books, 0.268 on handwriting.",
+      "confidence": 0.85,
+      "status": "verified",
+      "sources": ["https://estyle.co.jp/media/エンジニアアログ/2973/ (cited in research)", "marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part B1"],
+      "note": "Benchmarks from Japanese-language technical blog post. Snapshot 2026-07-18. The 1.6% CER figure is the one most relevant to Origa's use case (manga panels, textbook photos)."
+    },
+    {
+      "claim": "Whisper large-v3-turbo achieves 21.8% CER on Japanese; Google Chirp 3 achieves 6.4% CER.",
+      "confidence": 0.85,
+      "status": "verified",
+      "sources": ["https://neosophie.com/en/blog/20260226-japanese-asr-benchmark", "https://paulkuo.tw/en/articles/google-chirp3-japanese-stt-benchmark/"],
+      "note": "Two independent benchmark sources cited in research. Snapshot 2026-07-18. Numbers vary by test set; these are representative."
+    },
+    {
+      "claim": "Migaku raised lifetime price from $200 to $400 to announced $500 within ~18 months; also raised prices during user trials.",
+      "confidence": 0.9,
+      "status": "verified",
+      "sources": ["https://community.wanikani.com/t/is-migaku-misleading-users/69129 (2025-01-24)", "https://www.reddit.com/r/LearnJapanese/comments/1imwsgn/is_migaku_worth_the_money/ (2025-07-18)"],
+      "note": "Two independent sources (WaniKani Community + Reddit) corroborate the pricing escalation timeline. The 'raised prices during my 10-day trial' quote is from r/LearnJapanese."
+    },
+    {
+      "claim": "jpdb.io had an undocumented 10K deck cap that caused user data loss in 2024.",
+      "confidence": 0.9,
+      "status": "verified",
+      "sources": ["https://community.wanikani.com/t/recent-blunder-on-jpdb-theres-a-10k-cap-on-decks/68793 (2024-12-25)"],
+      "note": "Single primary source (WaniKani Community thread). User reported reaching 9999 vocab and accidentally deleting deck trying to move cards."
+    },
+    {
+      "claim": "Reddit .json endpoints have been dead since May 2026; all research used Tavily search + Playwright + PRAW instead.",
+      "confidence": 1.0,
+      "status": "verified",
+      "sources": ["@marketer system prompt: 'Reddit .json endpoints МЕРТВЫ. С мая 2026 Reddit закрыл публичные .json endpoints'"],
+      "note": "Confirmed by system prompt. This is a hard constraint, not a research finding."
+    },
+    {
+      "claim": "HashiCorp's 2023 MPL→BSL switch caused OpenTofu fork (33K stars in a month) and contributor exodus (21.12% → 9.30% community PRs).",
+      "confidence": 0.85,
+      "status": "verified",
+      "sources": ["marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part D2", "VictoriaMetrics blog (cited in research)"],
+      "note": "Multiple secondary sources. The 21.12%→9.30% community PR figure is from a single retrospective blog; directionally reliable."
+    },
+    {
+      "claim": "Tauri v2 production retrospectives show 22% more native bugs vs Electron, 70% platform-specific WebView bugs.",
+      "confidence": 0.8,
+      "status": "verified",
+      "sources": ["marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part D3, Part E2"],
+      "note": "From a '6 months, 3 apps' production retrospective cited in research. Single source but plausible given WebView fragmentation."
+    },
+    {
+      "claim": "Manabi Reader HN launch received 105 points, 57 comments; positive reception driven by offline-first + Anki integration + known-in-community author.",
+      "confidence": 0.8,
+      "status": "verified",
+      "sources": ["marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part E1"],
+      "note": "HN points count is snapshot-dependent. The reception pattern (offline-first + Anki integration = positive) is the actionable insight."
+    },
+    {
+      "claim": "Origa uses Whisper locally without VAD preprocessing (specific to 'objection #12 — gap' framing).",
+      "confidence": 0.4,
+      "status": "unverified",
+      "sources": [],
+      "note": "[CITATION NEEDED] — Origa's STT implementation details (VAD preprocessing, model size, Whisper variant) are not in README/AGENTS.md. The talking point in objection #12 assumes Whisper's standard configuration; if Origa uses VAD-preprocessed Whisper or a fine-tuned variant, the actual JP CER may be lower. Recommend: check origa/src/stt/ or origa_ui/src/repository/ for STT implementation before publishing objection #12 talking point."
+    },
+    {
+      "claim": "Origa supports Anki .apkg import and export (referenced in objections #1, #6, #9 talking points).",
+      "confidence": 0.3,
+      "status": "unverified",
+      "sources": [],
+      "note": "[CITATION NEEDED] — Neither README.md nor AGENTS.md explicitly confirms .apkg import/export. The README mentions 'Import ready-made word sets from other popular apps' (line 38) but doesn't specify Anki format. BLOCKER B3 in playbook asks user to verify this before launch. If unsupported, objections #1, #6, #9 talking points must be reworded to drop the .apkg claim."
+    },
+    {
+      "claim": "Bunpro has poor SRS quality compared to FSRS — specifically short ghost intervals, no leech handling, and pile-up at small intervals.",
+      "confidence": 0.85,
+      "status": "verified",
+      "sources": ["https://community.bunpro.jp/t/i-love-bunpro-but-the-quality-of-the-srs-is-wanting-me-to-stop-using-it/117502"],
+      "note": "Single primary source (Bunpro Community). Multiple users in the same thread corroborate the same complaints."
+    },
+    {
+      "claim": "WaniKani enforces a strict learning order with no early reviews and no ease system.",
+      "confidence": 0.85,
+      "status": "verified",
+      "sources": ["https://community.wanikani.com/t/question-about-pacing-and-review-hell/70354"],
+      "note": "User-reported in WaniKani Community. Multiple users in different threads confirm the same restriction."
+    },
+    {
+      "claim": "Migii JLPT app has documented issues with incorrect answers in tests and poor audio quality.",
+      "confidence": 0.8,
+      "status": "verified",
+      "sources": ["https://apps.apple.com/us/app/migii-jlpt-jlpt-test-n5-n1/id1463267540 (App Store reviews cited in research)"],
+      "note": "Multiple App Store reviews corroborate. App Store doesn't expose review dates in web view."
+    },
+    {
+      "claim": "Yomitan (Yomichan fork) is the de facto Japanese pop-up dictionary; 2687+ GitHub stars; users complain about dictionary setup friction.",
+      "confidence": 0.9,
+      "status": "verified",
+      "sources": ["https://github.com/yomidevs/yomitan (star count snapshot)", "https://www.reddit.com/r/LearnJapanese/comments/1dctzme/ (dictionary setup friction, dev team acknowledged)"],
+      "note": "Yomitan's own dev team acknowledged the setup friction problem in a public r/LearnJapanese post."
+    },
+    {
+      "claim": "Animecards/QM author was attacked on 4chan /jp/ with 'He's Russian' as a vector.",
+      "confidence": 0.5,
+      "status": "unverified",
+      "sources": ["marketing/research/2026-07-18-adjacent-tools-cross-themes.md Part D5"],
+      "note": "[CITATION NEEDED] — Single secondary reference in research summary; no direct 4chan URL captured (4chan threads are ephemeral). Pattern is plausible given 4chan /jp/ documented toxicity, but the specific case is not independently verifiable."
+    },
+    {
+      "claim": "MaruMori is positioned as 'NO AI' — all content hand-crafted by humans.",
+      "confidence": 0.8,
+      "status": "verified",
+      "sources": ["https://community.kitsun.io/t/double-sale-introducing-marumori-io/6907 (2022-12-22 launch announcement)", "marketing/research/2026-07-18-young-edtech-startups.md §5.3"],
+      "note": "Launch announcement explicitly contrasts MaruMori's hand-crafted approach with AI-generated content. Not directly relevant to Origa positioning but contextually important."
+    },
+    {
+      "claim": "Origa has ~500+ tests covering the domain layer (referenced in objection #14 talking point).",
+      "confidence": 0.5,
+      "status": "unverified",
+      "sources": [],
+      "note": "[CITATION NEEDED] — Approximate figure referenced in objection #14. AGENTS.md mentions 'cargo test --workspace' as a command but no specific test count. The 500+ figure is a placeholder — should be replaced with actual count from `cargo test --workspace 2>&1 | grep 'test result'` before publishing the talking point."
+    }
+  ],
+  "predictions": [
+    {
+      "type": "PREDICTION (not fact)",
+      "claim": "Top 5 objections Origa will face on launch are: #1 'Yet another Anki alternative', #2 'BSL is not OSS', #3 'Leptos maintenance mode', #5 'Migaku already does this', #6 'data portability'.",
+      "confidence": 0.8,
+      "note": "Based on patterns observed in research. Not a fact about future — a structured prediction. Confidence 0.8 = strong pattern match but actual reception may differ."
+    },
+    {
+      "type": "PREDICTION (not fact)",
+      "claim": "Origa's positioning as 'all-in-one Japanese learning app' will trigger 'Migaku parallel' objections in 70%+ of HN/Reddit launch threads.",
+      "confidence": 0.75,
+      "note": "Pattern from Migaku/MaruMori/Kitsun launches. 'All-in-one' is a structural trigger phrase in this community."
+    },
+    {
+      "type": "PREDICTION (not fact)",
+      "claim": "Talking points in §2 are brand-voice compliant and will land with the target audience.",
+      "confidence": 0.7,
+      "note": "Cannot verify without field testing. Talking points follow Builder-Architect / Pragmatic Operator / Precision Educator blend and avoid forbidden words. Real reception requires actual community testing."
+    }
+  ],
+  "flags": [
+    "BLOCKER B1 (product-hunt.md:41 'free and open-source' wording) — must fix before launch",
+    "[CITATION NEEDED] Origa Whisper configuration — verify before publishing objection #12 talking point",
+    "[CITATION NEEDED] Anki .apkg import/export support — verify before publishing objections #1, #6, #9 talking points",
+    "[CITATION NEEDED] Test count (~500+) — replace with actual count before publishing objection #14 talking point",
+    "[CITATION NEEDED] 4chan /jp/ 'Russian author' attack vector — single secondary reference, not directly verifiable",
+    "Pricing model (objection #15) — gap, decision required before launch",
+    "All PREDICTION claims are explicitly predictions, not facts; overall_confidence (0.86) reflects verification of factual claims only"
+  ],
+  "gate": "READY_FOR_REVIEW",
+  "gate_note": "Gate is READY_FOR_REVIEW (not READY_FOR_PUBLISH) because: (1) three BLOCKERS (B1/B2/B3) must be resolved before any launch copy is published, (2) four [CITATION NEEDED] items require user/code verification, (3) HUMAN GATE is pending — user was absent during autonomous run. Awaiting explicit user approval or revision before any artifact is used for launch materials."
+}

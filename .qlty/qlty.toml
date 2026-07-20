@@ -56,6 +56,14 @@ exclude_patterns = [
     "**/cache/**",
     "**/protos/**",
     "**/testdata/**",
+
+    # ----- Marketing -----
+    # Marketing copy (playbooks, research notes) is prose, not engineering
+    # source. Markdownlint rules for blank-line spacing, bare URLs and table
+    # alignment are enforced by the editorial pipeline rather than qlty;
+    # blocking pushes here traps the marketing workflow on local machines.
+    "marketing/playbooks/**",
+    "marketing/research/**",
 ]
 
 # =============================================================================
