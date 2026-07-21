@@ -103,8 +103,11 @@ fn strip_internal_link_attrs(html: &str) -> String {
 }
 
 /// True iff the `href="..."` attribute on an anchor tag body points at a
-/// site-relative URL (starts with `/`). External URLs, protocol-relative
-/// URLs (`//host`), and malformed anchors all return false.
+/// site-relative URL (single leading `/`). Protocol-relative URLs (`//host`)
+/// deliberately return false so they keep the external-link attributes —
+/// they resolve against whatever protocol the host page was served under
+/// and are effectively external for security purposes (tabnabbing, referrer
+/// leakage). Absolute URLs and malformed anchors also return false.
 fn anchor_href_is_internal(tag_body: &str) -> bool {
     let Some(href_idx) = tag_body.find("href=\"") else {
         return false;
@@ -114,7 +117,9 @@ fn anchor_href_is_internal(tag_body: &str) -> bool {
         return false;
     };
     let href = &tag_body[value_start..value_start + end_offset];
-    href.starts_with('/')
+    // Single leading `/` is site-relative; `//host` is protocol-relative
+    // and treated as external (see function doc).
+    href.starts_with('/') && !href.starts_with("//")
 }
 
 #[cfg(test)]
@@ -197,6 +202,28 @@ mod tests {
         assert!(
             !out.contains("target=\"_blank\""),
             "locale-prefixed internal links are still internal; got: {out}"
+        );
+    }
+
+    #[test]
+    fn protocol_relative_url_keeps_external_attrs() {
+        // Protocol-relative URLs (`//host/path`) resolve against the host
+        // page's protocol — they are external for security purposes
+        // (tabnabbing, referrer leakage) and must keep the external-link
+        // attributes. Regression guard for the helper's `//` check.
+        let md = "[link](//cdn.example.com/path)";
+        let out = markdown_to_html(md);
+        assert!(
+            out.contains(r#"href="//cdn.example.com/path""#),
+            "protocol-relative href must survive verbatim; got: {out}"
+        );
+        assert!(
+            out.contains("target=\"_blank\""),
+            "protocol-relative URLs must keep target=_blank (external); got: {out}"
+        );
+        assert!(
+            out.contains("rel=\"noopener noreferrer\""),
+            "protocol-relative URLs must keep safe rel (external); got: {out}"
         );
     }
 

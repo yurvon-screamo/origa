@@ -115,8 +115,11 @@ pub fn item_list_schema(locale: Locale, items: &[(&str, &str)]) -> String {
 /// two diverge only when an editor records the original publication date
 /// separately from the most-recent edit.
 pub fn article_schema(locale: Locale, post: &crate::blog::BlogPost, canonical_url: &str) -> String {
-    let date_published = post.frontmatter.published.as_deref();
-    let date_published = date_published.unwrap_or(&post.frontmatter.lastmod);
+    let date_published = post
+        .frontmatter
+        .published
+        .as_deref()
+        .unwrap_or(&post.frontmatter.lastmod);
     serde_json::json!({
         "@context": "https://schema.org",
         "@type": "Article",

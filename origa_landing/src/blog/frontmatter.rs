@@ -57,6 +57,10 @@ pub enum FrontmatterError {
     InvalidLastmod(String),
     #[error("invalid published `{0}` (expected YYYY-MM-DD)")]
     InvalidPublished(String),
+    #[error(
+        "published `{published}` is after lastmod `{lastmod}` (an article cannot be modified before it was first published)"
+    )]
+    PublishedAfterLastmod { published: String, lastmod: String },
     #[error("unknown frontmatter key `{0}` (typo or unsupported field)")]
     UnknownKey(String),
 }
@@ -134,17 +138,33 @@ pub fn parse(yaml: &str) -> Result<Frontmatter, FrontmatterError> {
         }
     }
 
-    Ok(Frontmatter {
-        title: title.ok_or(FrontmatterError::MissingField("title"))?,
-        locale: locale.ok_or(FrontmatterError::MissingField("locale"))?,
-        meta_title: meta_title.ok_or(FrontmatterError::MissingField("meta_title"))?,
-        meta_description: meta_description
-            .ok_or(FrontmatterError::MissingField("meta_description"))?,
-        target_keywords: target_keywords
-            .ok_or(FrontmatterError::MissingField("target_keywords"))?,
-        lastmod: lastmod.ok_or(FrontmatterError::MissingField("lastmod"))?,
-        published,
-        status: status.ok_or(FrontmatterError::MissingField("status"))?,
+    Ok({
+        let fm = Frontmatter {
+            title: title.ok_or(FrontmatterError::MissingField("title"))?,
+            locale: locale.ok_or(FrontmatterError::MissingField("locale"))?,
+            meta_title: meta_title.ok_or(FrontmatterError::MissingField("meta_title"))?,
+            meta_description: meta_description
+                .ok_or(FrontmatterError::MissingField("meta_description"))?,
+            target_keywords: target_keywords
+                .ok_or(FrontmatterError::MissingField("target_keywords"))?,
+            lastmod: lastmod.ok_or(FrontmatterError::MissingField("lastmod"))?,
+            published,
+            status: status.ok_or(FrontmatterError::MissingField("status"))?,
+        };
+        // Cross-field invariant: `published` (first publication date) cannot
+        // be later than `lastmod` (last edit date). Both are ISO-8601
+        // `YYYY-MM-DD`, so lexicographic comparison is also chronological.
+        // Without this check, JSON-LD `dateModified` < `datePublished` would
+        // be emitted, which Google flags as inconsistent in the Article entity.
+        if let Some(ref p) = fm.published {
+            if p > &fm.lastmod {
+                return Err(FrontmatterError::PublishedAfterLastmod {
+                    published: p.clone(),
+                    lastmod: fm.lastmod.clone(),
+                });
+            }
+        }
+        fm
     })
 }
 
@@ -340,9 +360,11 @@ status: ready
 
     #[test]
     fn parse_extracts_published_when_present() {
-        let src = SAMPLE.to_string() + "\npublished: 2026-07-19";
+        // lastmod in SAMPLE is 2026-07-18; published must be ≤ lastmod
+        // (cross-field invariant enforced by `parse_rejects_published_after_lastmod`).
+        let src = SAMPLE.to_string() + "\npublished: 2026-07-15";
         let fm = parse(&src).expect("valid `published` value must parse");
-        assert_eq!(fm.published.as_deref(), Some("2026-07-19"));
+        assert_eq!(fm.published.as_deref(), Some("2026-07-15"));
     }
 
     #[test]
@@ -353,6 +375,28 @@ status: ready
             matches!(err, FrontmatterError::InvalidPublished(_)),
             "non-ISO published must surface its own error variant, got {err:?}"
         );
+    }
+
+    #[test]
+    fn parse_rejects_published_after_lastmod() {
+        // Cross-field invariant: an article cannot be modified before it was
+        // first published. lastmod in SAMPLE is 2026-07-18; published after
+        // it must surface a dedicated error variant.
+        let src = SAMPLE.to_string() + "\npublished: 2026-12-31";
+        let err = parse(&src).expect_err("published > lastmod must be rejected");
+        assert!(
+            matches!(err, FrontmatterError::PublishedAfterLastmod { .. }),
+            "published-after-lastmod must surface PublishedAfterLastmod, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn parse_accepts_published_equal_to_lastmod() {
+        // Same-day publish-and-edit is allowed: published == lastmod is the
+        // edge of the invariant (lex compare is `>` not `>=`).
+        let src = SAMPLE.to_string() + "\npublished: 2026-07-18";
+        let fm = parse(&src).expect("published == lastmod must parse");
+        assert_eq!(fm.published.as_deref(), Some("2026-07-18"));
     }
 
     #[test]
