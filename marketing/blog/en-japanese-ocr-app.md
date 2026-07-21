@@ -9,6 +9,8 @@ lastmod: 2026-07-21
 status: draft
 ---
 
+<!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
+
 # Japanese OCR Apps: What They're Good For (and Where They Fall Short)
 
 Typing Japanese into a dictionary is painful. If you don't know the reading of a kanji, you have to look it up by radical, which means counting strokes, identifying the radical, navigating a grid — a 60-second operation to find one word. On a phone it's worse. This is the problem OCR solves: photograph the text, get the reading and the meaning in seconds.

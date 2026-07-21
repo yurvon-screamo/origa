@@ -9,6 +9,8 @@ lastmod: 2026-07-21
 status: draft
 ---
 
+<!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
+
 # How to Learn Japanese from Manga (Without Giving Up on Page Three)
 
 Reading manga in Japanese feels like the dream. You open volume one of something you actually like, and within a few chapters you're picking up words from context, getting jokes that don't translate, and building a feel for the language that no textbook gives you.

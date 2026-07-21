@@ -9,6 +9,8 @@ lastmod: 2026-07-21
 status: draft
 ---
 
+<!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
+
 # Japanese AI Tutors: What They're Good At (and What They're Not)
 
 "Japanese AI tutor" is one of the fastest-growing search categories in language learning. ChatGPT made it possible to have an endlessly patient conversation partner that explains grammar on demand, corrects your writing, and never gets tired of your questions. A wave of apps has built products on top of that.

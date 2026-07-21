@@ -9,6 +9,8 @@ lastmod: 2026-07-21
 status: draft
 ---
 
+<!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
+
 # Best Apps to Learn Japanese Offline: What "Offline" Actually Means
 
 "Offline" is one of those words that means whatever the marketing department needs it to mean. Some apps call themselves "offline" because their flashcards work without a connection. Others mean "the dictionary is cached locally." A few mean "every feature, including OCR and voice recognition, runs on the device." When you search for the best app to learn Japanese offline, the useful first question is: offline *what*?
