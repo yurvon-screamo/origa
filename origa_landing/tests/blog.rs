@@ -445,6 +445,68 @@ async fn ru_article_has_inline_competitor_citation() {
 }
 
 #[tokio::test]
+async fn en_article_has_internal_link_to_compare() {
+    // Articles must not be PageRank dead-ends — each must deep-link to the
+    // landing hub pages. The exact pattern `href="/compare"` (closing quote
+    // included) avoids false positives from a substring like `/copmare` or a
+    // bare mention in code-block text.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    assert!(
+        body.contains(r#"href="/compare""#),
+        "EN article must deep-link to /compare; got first 3000 chars: {}",
+        body.chars().take(3000).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn internal_links_in_article_do_not_open_new_tab() {
+    // The sanitize policy differentiates internal (relative-href) links from
+    // external ones — internal links stay in the same tab. This integration
+    // test pins the policy on a real rendered page.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let internal_link_start = body
+        .find(r#"href="/compare""#)
+        .expect("internal /compare link must be present for this assertion");
+    let tag_end = body[internal_link_start..]
+        .find('>')
+        .unwrap_or(body.len() - internal_link_start)
+        + internal_link_start;
+    let internal_anchor = &body[internal_link_start..=tag_end];
+    assert!(
+        !internal_anchor.contains("target=\"_blank\""),
+        "internal link must not carry target=_blank; got: {internal_anchor}"
+    );
+    assert!(
+        !internal_anchor.contains("rel=\"noopener noreferrer\""),
+        "internal link must not carry external rel; got: {internal_anchor}"
+    );
+}
+
+#[tokio::test]
+async fn external_links_in_article_keep_safe_attrs() {
+    // External competitor-citation links (e.g. wanikani.com) must keep
+    // `rel="noopener noreferrer"` and `target="_blank"` after the
+    // sanitize-policy change that strips those attributes from internal links.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let external_link_start = body
+        .find(r#"href="https://www.wanikani.com/""#)
+        .expect("WaniKani external link must be present");
+    let tag_end = body[external_link_start..]
+        .find('>')
+        .unwrap_or(body.len() - external_link_start)
+        + external_link_start;
+    let external_anchor = &body[external_link_start..=tag_end];
+    assert!(
+        external_anchor.contains("rel=\"noopener noreferrer\""),
+        "external link must keep safe rel; got: {external_anchor}"
+    );
+    assert!(
+        external_anchor.contains("target=\"_blank\""),
+        "external link must keep target=_blank; got: {external_anchor}"
+    );
+}
+
+#[tokio::test]
 async fn ru_article_does_not_contain_known_typo() {
     let (_, body) = get("/ru/blog/best-japanese-learning-app").await;
     assert!(

@@ -55,7 +55,7 @@ Danh sách kiểm tra thực sự hữu ích:
 - **Từ điển tiếng Nhật tích hợp ngôn ngữ của bạn.** Nếu thêm thẻ vẫn cần tra từ điển bên ngoài, bạn chỉ dịch chuyển ma sát, không gỡ bỏ.
 - **Furigana tự động với ẩn thông minh.** Furigana nên xuất hiện trên hán tự chưa học và biến mất trên hán tự đã học — không cần mẫu tùy chỉnh.
 - **Hán tự và từ vựng biết về nhau.** Công cụ nên coi 食べる và 食事 là liên quan, không phải là thẻ không liên quan.
-- **OCR hoặc trích xuất văn bản.** Có thể thêm từ từ ảnh trang manga hoặc ảnh chụp giáo trình là khác biệt giữa học nội dung của bạn và học danh sách từ của ai đó.
+- **OCR hoặc trích xuất văn bản.** Có thể thêm từ từ ảnh trang manga hoặc ảnh chụp giáo trình là khác biệt giữa học nội dung của bạn và học danh sách từ của ai đó. ([Xem Origa xử lý thế nào](/vi/features).)
 - **Đường dẫn ngữ pháp dùng từ vựng của bạn.** Nếu không ngữ pháp lại là ứng dụng thứ hai.
 
 Nếu một "thay thế" thất bại ở mục đầu tiên (chất lượng lập lịch), nó không phải thay thế — đó là hạ cấp mặc áo khoác thân thiện hơn.
@@ -97,13 +97,13 @@ Origa không phải lựa chọn duy nhất, và tùy vào điểm nghẽn của
 - **Cho người mới bắt đầu hoàn toàn — [Duolingo](https://www.duolingo.com/).** Game hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
 - **Cho mô phỏng thi JLPT — [Migii](https://eup.java-mind.com/).** Luyện tập thi có thời gian. Bổ sung một công cụ ghi nhớ thay vì thay thế.
 
-Quy luật: hầu hết các "thay thế" chuyên biệt ở một lát cắt (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ — nhưng đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
+Quy luật: hầu hết các "thay thế" chuyên biệt ở một lát cắt (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ — xem [so sánh đầy đủ](/vi/compare) và đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
 
 ## Cách quyết định
 
 Dùng Anki nếu bạn coi trọng sự kiểm soát, học nhiều hơn một môn, hoặc đã đầu tư vào một hệ thống bộ bài hoạt động. Bạn không mất gì khi ở lại.
 
-Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt việc may ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước — nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu.
+Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt việc may ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước — nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu. ([Tải Origa](/vi/download).)
 
 Phiên bản trung thực của "thay thế Anki tốt nhất" là "cái gỡ bỏ *ma sát của bạn*". Tìm ra bước nào trong quy trình hiện tại ngốn nhiều thời gian nhất, và chọn công cụ gỡ bỏ bước đó mà không làm giảm chất lượng lập lịch.
 

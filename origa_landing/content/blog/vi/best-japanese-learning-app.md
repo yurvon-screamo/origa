@@ -41,8 +41,8 @@ Nếu đau khổ của bạn là tạo thẻ thủ công, một giải pháp tha
 
 Hán tự là một vấn đề riêng. Cùng một 食 xuất hiện trong hàng chục từ, và việc quan trọng không chỉ là ghi nhớ ký tự mà còn thấy nó trong nhiều ngữ cảnh.
 
-- **[WaniKani](https://www.wanikani.com/).** Lộ trình có cấu trúc theo bộ thủ, giao diện tiếng Anh, trả phí đăng ký. Phù hợp nếu bạn bắt đầu hán tự từ số không và muốn một thứ tự cố định. Nhược điểm — bạn học cái chương trình coi là cần thiết, không phải cái bạn gặp hôm nay trong manga hay bài báo.
-- **Origa.** Furigana được tạo tự động và ẩn trên các hán tự đã học — những gì bạn đã học không còn được gợi ý, buộc bạn phải nhớ cách đọc. Hán tự được liên kết với từ vựng: hệ thống biết rằng 食べる và 食事 chia sẻ một hán tự, và theo dõi nó trên mọi từ mà bạn đã gặp.
+- **[WaniKani](https://www.wanikani.com/).** Lộ trình có cấu trúc theo bộ thủ, giao diện tiếng Anh, trả phí đăng ký. Phù hợp nếu bạn bắt đầu hán tự từ số không và muốn một thứ tự cố định. Nhược điểm — bạn học cái chương trình coi là cần thiết, không phải cái bạn gặp hôm nay trong manga hay bài báo. Toàn bộ đánh giá đổi lấy giữa Origa và WaniKani (bộ thủ vs theo nội dung, trả phí vs miễn phí, chỉ tiếng Anh vs 4 ngôn ngữ giao diện) nằm trong [so sánh đầy đủ](/vi/compare).
+- **Origa.** Furigana được tạo tự động và ẩn trên các hán tự đã học — những gì bạn đã học không còn được gợi ý, buộc bạn phải nhớ cách đọc. Hán tự được liên kết với từ vựng: hệ thống biết rằng 食べる và 食事 chia sẻ một hán tự, và theo dõi nó trên mọi từ mà bạn đã gặp. ([Xem Origa xử lý hán tự, furigana và liên kết từ vựng thế nào](/vi/features).)
 
 Hai cách tiếp cận khác nhau: WaniKani dẫn bạn lên chiếc thang của chính nó, Origa dạy những gì bạn thực sự gặp trong nội dung của mình.
 

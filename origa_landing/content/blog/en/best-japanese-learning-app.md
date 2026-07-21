@@ -41,8 +41,8 @@ If your pain is creating cards manually, an alternative makes sense. If you've a
 
 Kanji is a separate problem. The same 食 appears in dozens of words, and it's important not just to memorize the character but to see it in different contexts.
 
-- **[WaniKani](https://www.wanikani.com/).** Structured path through radicals, English interface, paid subscription. Suitable if you're starting kanji from zero and want a fixed order. The downside — you learn what the program deems necessary, not what you encountered today in a manga or article.
-- **Origa.** Furigana is generated automatically and hidden on learned kanji — what you've already studied is no longer hinted at, forcing you to recall the reading. Kanji are linked to vocabulary: the system knows that 食べる and 食事 share one kanji, and tracks it across all the words where you've encountered it.
+- **[WaniKani](https://www.wanikani.com/).** Structured path through radicals, English interface, paid subscription. Suitable if you're starting kanji from zero and want a fixed order. The downside — you learn what the program deems necessary, not what you encountered today in a manga or article. For the wider Origa-vs-WaniKani trade-offs (radical order vs. content-driven, paid vs. free, English-only vs. four UI languages), see the [full comparison](/compare).
+- **Origa.** Furigana is generated automatically and hidden on learned kanji — what you've already studied is no longer hinted at, forcing you to recall the reading. Kanji are linked to vocabulary: the system knows that 食べる and 食事 share one kanji, and tracks it across all the words where you've encountered it. (See [how Origa handles kanji, furigana, and vocabulary linkage](/features).)
 
 The approaches differ: WaniKani leads you up its own ladder, Origa teaches what you actually encounter in your content.
 
