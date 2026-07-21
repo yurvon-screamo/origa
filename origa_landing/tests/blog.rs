@@ -711,13 +711,20 @@ async fn old_ru_article_slug_redirects_308() {
 }
 
 // =========================================================================
-// Cross-article coverage (rstest-parameterized over ALL_SLUGS × Locale)
+// Cross-article coverage (rstest-parameterized over ALL_SLUGS)
 // =========================================================================
 //
 // The earlier sections pin specific contracts on a single seed article
 // (e.g. `en_article_has_canonical_url`). The parameterized tests below
 // extend the same contracts to every published article so adding a new
 // slug to `ALL_SLUGS` automatically pulls it into the SEO-coverage net.
+//
+// Only `article_returns_200_with_h1` is parameterized over ALL_SLUGS × Locale
+// (URL reachability is per-locale). The remaining rstest tests parameterize
+// over ALL_SLUGS only and assert on the EN URL (`/blog/<slug>`): hreflang
+// block, canonical, JSON-LD, keywords meta, internal-link presence — these
+// are locale-independent metadata structures on the article entity, so
+// checking EN pins the contract for all locales without redundant cases.
 //
 // rstest is already a workspace dev-dependency; the parameterization style
 // (explicit `#[case]` enumeration) keeps each test self-describing in the
