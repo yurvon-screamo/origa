@@ -28,6 +28,10 @@ const ALL_SLUGS: &[&str] = &[
     "anki-alternative-japanese",
     "best-japanese-learning-app",
     "learn-japanese-from-manga",
+    "japanese-ocr-app",
+    "best-japanese-learning-app-offline",
+    "japanese-ai-tutor",
+    "yaponskiy-s-nulya",
 ];
 
 // =========================================================================
@@ -746,6 +750,22 @@ fn locale_prefix(locale: &str) -> &'static str {
 #[case("learn-japanese-from-manga", "ru")]
 #[case("learn-japanese-from-manga", "ko")]
 #[case("learn-japanese-from-manga", "vi")]
+#[case("japanese-ocr-app", "en")]
+#[case("japanese-ocr-app", "ru")]
+#[case("japanese-ocr-app", "ko")]
+#[case("japanese-ocr-app", "vi")]
+#[case("best-japanese-learning-app-offline", "en")]
+#[case("best-japanese-learning-app-offline", "ru")]
+#[case("best-japanese-learning-app-offline", "ko")]
+#[case("best-japanese-learning-app-offline", "vi")]
+#[case("japanese-ai-tutor", "en")]
+#[case("japanese-ai-tutor", "ru")]
+#[case("japanese-ai-tutor", "ko")]
+#[case("japanese-ai-tutor", "vi")]
+#[case("yaponskiy-s-nulya", "en")]
+#[case("yaponskiy-s-nulya", "ru")]
+#[case("yaponskiy-s-nulya", "ko")]
+#[case("yaponskiy-s-nulya", "vi")]
 #[tokio::test]
 async fn article_returns_200_with_h1(#[case] slug: &str, #[case] locale: &str) {
     let uri = format!("{}/blog/{slug}", locale_prefix(locale));
@@ -762,6 +782,10 @@ async fn article_returns_200_with_h1(#[case] slug: &str, #[case] locale: &str) {
 #[case("anki-alternative-japanese")]
 #[case("best-japanese-learning-app")]
 #[case("learn-japanese-from-manga")]
+#[case("japanese-ocr-app")]
+#[case("best-japanese-learning-app-offline")]
+#[case("japanese-ai-tutor")]
+#[case("yaponskiy-s-nulya")]
 #[tokio::test]
 async fn article_hreflang_lists_all_4_locales(#[case] slug: &str) {
     let (_, body) = get(&format!("/blog/{slug}")).await;
@@ -782,6 +806,10 @@ async fn article_hreflang_lists_all_4_locales(#[case] slug: &str) {
 #[case("anki-alternative-japanese")]
 #[case("best-japanese-learning-app")]
 #[case("learn-japanese-from-manga")]
+#[case("japanese-ocr-app")]
+#[case("best-japanese-learning-app-offline")]
+#[case("japanese-ai-tutor")]
+#[case("yaponskiy-s-nulya")]
 #[tokio::test]
 async fn article_has_canonical_url(#[case] slug: &str) {
     let (_, body) = get(&format!("/blog/{slug}")).await;
@@ -800,6 +828,10 @@ async fn article_has_canonical_url(#[case] slug: &str) {
 #[case("anki-alternative-japanese")]
 #[case("best-japanese-learning-app")]
 #[case("learn-japanese-from-manga")]
+#[case("japanese-ocr-app")]
+#[case("best-japanese-learning-app-offline")]
+#[case("japanese-ai-tutor")]
+#[case("yaponskiy-s-nulya")]
 #[tokio::test]
 async fn article_has_article_jsonld(#[case] slug: &str) {
     let (_, body) = get(&format!("/blog/{slug}")).await;
@@ -814,6 +846,10 @@ async fn article_has_article_jsonld(#[case] slug: &str) {
 #[case("anki-alternative-japanese")]
 #[case("best-japanese-learning-app")]
 #[case("learn-japanese-from-manga")]
+#[case("japanese-ocr-app")]
+#[case("best-japanese-learning-app-offline")]
+#[case("japanese-ai-tutor")]
+#[case("yaponskiy-s-nulya")]
 #[tokio::test]
 async fn article_has_internal_link_to_compare(#[case] slug: &str) {
     // Articles must not be PageRank dead-ends — each must deep-link to the
@@ -832,6 +868,10 @@ async fn article_has_internal_link_to_compare(#[case] slug: &str) {
 #[case("anki-alternative-japanese", "anki alternative japanese")]
 #[case("best-japanese-learning-app", "best japanese learning app")]
 #[case("learn-japanese-from-manga", "learn japanese from manga")]
+#[case("japanese-ocr-app", "japanese ocr app")]
+#[case("best-japanese-learning-app-offline", "learn japanese offline")]
+#[case("japanese-ai-tutor", "japanese ai tutor")]
+#[case("yaponskiy-s-nulya", "japanese from zero")]
 #[tokio::test]
 async fn article_has_keywords_meta_from_frontmatter(#[case] slug: &str, #[case] keyword: &str) {
     // Every article's first target_keyword must surface in the keywords meta

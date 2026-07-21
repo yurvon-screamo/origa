@@ -55,11 +55,11 @@ fn is_iso_date(value: &str) -> bool {
 fn lastmod_appears_once_per_url() {
     // Each <url> element carries exactly one <lastmod>. As of 2026-07-21 the
     // count is: 7 static page groups × 4 locales (28) + 4 blog index URLs +
-    // (2 + N) articles × 4 locales, where N is the number of articles added
-    // beyond the original 2. The count assertion catches drift in either
-    // direction — a missing locale variant or a duplicate entry.
+    // 7 articles × 4 locales (28) = 60 <url> entries. The count assertion
+    // catches drift in either direction — a missing locale variant or a
+    // duplicate entry.
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 44, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 60, "expected one <lastmod> per <url>");
 }
 
 #[test]

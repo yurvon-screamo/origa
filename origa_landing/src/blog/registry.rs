@@ -96,6 +96,97 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "learn-japanese-from-manga",
         include_str!("../../content/blog/vi/learn-japanese-from-manga.md"),
     ),
+    // Article 4: "Japanese OCR Apps" — published in all 4 locales under one
+    // slug. Tooling comparison across general-purpose, manga-specific, and
+    // learning-integrated OCR categories.
+    (
+        Locale::En,
+        "japanese-ocr-app",
+        include_str!("../../content/blog/en/japanese-ocr-app.md"),
+    ),
+    (
+        Locale::Ru,
+        "japanese-ocr-app",
+        include_str!("../../content/blog/ru/japanese-ocr-app.md"),
+    ),
+    (
+        Locale::Ko,
+        "japanese-ocr-app",
+        include_str!("../../content/blog/ko/japanese-ocr-app.md"),
+    ),
+    (
+        Locale::Vi,
+        "japanese-ocr-app",
+        include_str!("../../content/blog/vi/japanese-ocr-app.md"),
+    ),
+    // Article 5: "Best Japanese Learning Apps That Work Offline" — published
+    // in all 4 locales. Four-layer model of what "offline" means across
+    // categories.
+    (
+        Locale::En,
+        "best-japanese-learning-app-offline",
+        include_str!("../../content/blog/en/best-japanese-learning-app-offline.md"),
+    ),
+    (
+        Locale::Ru,
+        "best-japanese-learning-app-offline",
+        include_str!("../../content/blog/ru/best-japanese-learning-app-offline.md"),
+    ),
+    (
+        Locale::Ko,
+        "best-japanese-learning-app-offline",
+        include_str!("../../content/blog/ko/best-japanese-learning-app-offline.md"),
+    ),
+    (
+        Locale::Vi,
+        "best-japanese-learning-app-offline",
+        include_str!("../../content/blog/vi/best-japanese-learning-app-offline.md"),
+    ),
+    // Article 6: "Japanese AI Tutors" — published in all 4 locales. Honest
+    // breakdown of what AI tutors are good at vs. what they leave out
+    // (retention, vocabulary capture).
+    (
+        Locale::En,
+        "japanese-ai-tutor",
+        include_str!("../../content/blog/en/japanese-ai-tutor.md"),
+    ),
+    (
+        Locale::Ru,
+        "japanese-ai-tutor",
+        include_str!("../../content/blog/ru/japanese-ai-tutor.md"),
+    ),
+    (
+        Locale::Ko,
+        "japanese-ai-tutor",
+        include_str!("../../content/blog/ko/japanese-ai-tutor.md"),
+    ),
+    (
+        Locale::Vi,
+        "japanese-ai-tutor",
+        include_str!("../../content/blog/vi/japanese-ai-tutor.md"),
+    ),
+    // Article 7: "Japanese from Zero" — RU-source article, translated to all
+    // 4 locales. Self-study roadmap from kana to N4 immersion.
+    (
+        Locale::En,
+        "yaponskiy-s-nulya",
+        include_str!("../../content/blog/en/yaponskiy-s-nulya.md"),
+    ),
+    (
+        Locale::Ru,
+        "yaponskiy-s-nulya",
+        include_str!("../../content/blog/ru/yaponskiy-s-nulya.md"),
+    ),
+    (
+        Locale::Ko,
+        "yaponskiy-s-nulya",
+        include_str!("../../content/blog/ko/yaponskiy-s-nulya.md"),
+    ),
+    (
+        Locale::Vi,
+        "yaponskiy-s-nulya",
+        include_str!("../../content/blog/vi/yaponskiy-s-nulya.md"),
+    ),
 ];
 
 static REGISTRY: OnceLock<Vec<BlogPost>> = OnceLock::new();
