@@ -6,6 +6,7 @@ meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
 lastmod: 2026-07-20
+published: 2026-07-19
 status: ready
 ---
 
@@ -54,7 +55,7 @@ A checklist that's actually useful:
 - **Built-in Japanese dictionaries in your language.** If adding a card still requires an external dictionary lookup, you've moved the friction, not removed it.
 - **Automatic furigana with smart hiding.** Furigana should appear on kanji you haven't learned and disappear on kanji you have — without a custom template.
 - **Kanji and vocabulary that know about each other.** The tool should treat 食べる and 食事 as related, not as unrelated cards.
-- **OCR or text extraction.** Being able to add words from a photo of a manga page or a textbook screenshot is the difference between studying your content and studying someone else's word list.
+- **OCR or text extraction.** Being able to add words from a photo of a manga page or a textbook screenshot is the difference between studying your content and studying someone else's word list. (See [how Origa handles OCR and text extraction](/features).)
 - **A grammar path that uses your vocabulary.** Otherwise grammar is a second app again.
 
 If an "alternative" fails the first item (scheduler quality), it's not an alternative — it's a downgrade wearing a friendlier interface.
@@ -96,13 +97,13 @@ Origa isn't the only option, and depending on your bottleneck it may not be the 
 - **For absolute beginners — [Duolingo](https://www.duolingo.com/).** Gamified, gentle, shallow. Not a replacement for Anki's retention; a starting point that you outgrow.
 - **For JLPT test simulation — [Migii](https://eup.java-mind.com/).** Timed test practice. Pairs with a retention tool rather than replacing one.
 
-The pattern: most "alternatives" specialize in one slice (kanji, grammar, beginners, tests). The reason people end up on five apps is that no single specialized tool covers the whole. Origa's pitch is that it's the one tool trying to cover the whole — but read the limitations above before assuming that fits you.
+The pattern: most "alternatives" specialize in one slice (kanji, grammar, beginners, tests). The reason people end up on five apps is that no single specialized tool covers the whole. Origa's pitch is that it's the one tool trying to cover the whole — see the [full side-by-side comparison](/compare) and read the limitations above before assuming that fits you.
 
 ## How to decide
 
 Use Anki if you value control, study multiple subjects, or have already invested in a deck system that works. You lose nothing by staying.
 
-Consider Origa if your friction is specifically Japanese card creation, you want furigana and kanji linkage handled for you, you study through a language other than English, or you're tired of stitching grammar onto a vocabulary tool. Import your Anki deck first — if the workflow clicks, keep it; if not, you're back where you started.
+Consider Origa if your friction is specifically Japanese card creation, you want furigana and kanji linkage handled for you, you study through a language other than English, or you're tired of stitching grammar onto a vocabulary tool. Import your Anki deck first — if the workflow clicks, keep it; if not, you're back where you started. ([Download Origa](/download).)
 
 The honest version of "best Anki alternative" is "the one that removes *your* friction." Figure out which step of your current routine eats the most time, and pick the tool that removes that step without dropping the scheduler quality.
 

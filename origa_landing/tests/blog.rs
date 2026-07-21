@@ -272,6 +272,32 @@ async fn vi_articles_do_not_contain_korean() {
 }
 
 #[tokio::test]
+async fn vi_articles_do_not_contain_kanji() {
+    // VI SEO strategy (marketing/strategies/origa-seo.md §6 Market 3) requires
+    // "Hán tự" across the VI locale — "kanji" is the search miss called out as
+    // the single highest-impact content fix. This test guards against regressions
+    // when new VI articles are added or existing ones edited. The substring
+    // "kanji" is case-insensitive; "WaniKani" is a proper noun but does not
+    // contain the substring "kanji" and is therefore safe.
+    for slug in ["anki-alternative-japanese", "best-japanese-learning-app"] {
+        let (_, body) = get(&format!("/vi/blog/{slug}")).await;
+        let body_start = body
+            .find("<div class=\"blog-post__body\"")
+            .unwrap_or(body.len());
+        let body_end = body[body_start..]
+            .find("</article>")
+            .map(|offset| body_start + offset)
+            .unwrap_or(body.len());
+        let article_html = &body[body_start..body_end];
+        let kanji_count = article_html.to_lowercase().matches("kanji").count();
+        assert_eq!(
+            kanji_count, 0,
+            "VI article {slug} must use 'hán tự' instead of 'kanji' per SEO strategy; found {kanji_count} occurrence(s)"
+        );
+    }
+}
+
+#[tokio::test]
 async fn ru_articles_do_not_contain_korean() {
     for slug in ["anki-alternative-japanese", "best-japanese-learning-app"] {
         let (_, body) = get(&format!("/ru/blog/{slug}")).await;
@@ -343,6 +369,55 @@ async fn en_article_has_article_jsonld() {
 }
 
 #[tokio::test]
+async fn en_article_jsonld_has_distinct_dates() {
+    // The Article JSON-LD must carry distinct `datePublished` (original
+    // publication) and `dateModified` (last edit) values once the
+    // `published` frontmatter field is populated. Parsing the JSON-LD block
+    // (rather than substring-matching) protects the assertion from
+    // serde_json formatting drift.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let block = find_jsonld_block_by_type(&body, "Article");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("Article JSON-LD must be valid JSON");
+    assert_eq!(
+        value.get("datePublished").and_then(|v| v.as_str()),
+        Some("2026-07-19"),
+        "datePublished must come from the `published` frontmatter field; got block: {block}"
+    );
+    assert_eq!(
+        value.get("dateModified").and_then(|v| v.as_str()),
+        Some("2026-07-20"),
+        "dateModified must come from the `lastmod` frontmatter field; got block: {block}"
+    );
+}
+
+/// Find the first JSON-LD block whose `@type` matches `type_name`. Mirrors the
+/// helper in `tests/seo_meta.rs`; kept local so each test binary stays
+/// self-contained.
+fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let body_end = rest[body_start..]
+            .find(close)
+            .unwrap_or_else(|| panic!("JSON-LD block not closed"))
+            + body_start;
+        let block = &rest[body_start..body_end];
+        if block.contains(&needle) {
+            return block.to_owned();
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    panic!(
+        "no JSON-LD block with @type={type_name}; body was: {}",
+        html.chars().take(500).collect::<String>()
+    )
+}
+
+#[tokio::test]
 async fn en_article_has_breadcrumb_jsonld() {
     let (_, body) = get("/blog/anki-alternative-japanese").await;
     assert!(
@@ -366,6 +441,68 @@ async fn ru_article_has_inline_competitor_citation() {
     assert!(
         body.contains("wanikani.com"),
         "RU article must link to wanikani.com (competitor citation)"
+    );
+}
+
+#[tokio::test]
+async fn en_article_has_internal_link_to_compare() {
+    // Articles must not be PageRank dead-ends — each must deep-link to the
+    // landing hub pages. The exact pattern `href="/compare"` (closing quote
+    // included) avoids false positives from a substring like `/copmare` or a
+    // bare mention in code-block text.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    assert!(
+        body.contains(r#"href="/compare""#),
+        "EN article must deep-link to /compare; got first 3000 chars: {}",
+        body.chars().take(3000).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn internal_links_in_article_do_not_open_new_tab() {
+    // The sanitize policy differentiates internal (relative-href) links from
+    // external ones — internal links stay in the same tab. This integration
+    // test pins the policy on a real rendered page.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let internal_link_start = body
+        .find(r#"href="/compare""#)
+        .expect("internal /compare link must be present for this assertion");
+    let tag_end = body[internal_link_start..]
+        .find('>')
+        .unwrap_or(body.len() - internal_link_start)
+        + internal_link_start;
+    let internal_anchor = &body[internal_link_start..=tag_end];
+    assert!(
+        !internal_anchor.contains("target=\"_blank\""),
+        "internal link must not carry target=_blank; got: {internal_anchor}"
+    );
+    assert!(
+        !internal_anchor.contains("rel=\"noopener noreferrer\""),
+        "internal link must not carry external rel; got: {internal_anchor}"
+    );
+}
+
+#[tokio::test]
+async fn external_links_in_article_keep_safe_attrs() {
+    // External competitor-citation links (e.g. wanikani.com) must keep
+    // `rel="noopener noreferrer"` and `target="_blank"` after the
+    // sanitize-policy change that strips those attributes from internal links.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let external_link_start = body
+        .find(r#"href="https://www.wanikani.com/""#)
+        .expect("WaniKani external link must be present");
+    let tag_end = body[external_link_start..]
+        .find('>')
+        .unwrap_or(body.len() - external_link_start)
+        + external_link_start;
+    let external_anchor = &body[external_link_start..=tag_end];
+    assert!(
+        external_anchor.contains("rel=\"noopener noreferrer\""),
+        "external link must keep safe rel; got: {external_anchor}"
+    );
+    assert!(
+        external_anchor.contains("target=\"_blank\""),
+        "external link must keep target=_blank; got: {external_anchor}"
     );
 }
 

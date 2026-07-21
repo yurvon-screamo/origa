@@ -3,9 +3,10 @@ title: "Ứng dụng học tiếng Nhật tốt nhất: cách chọn trong năm 
 slug: /vi/blog/best-japanese-learning-app
 locale: vi
 meta_title: "Ứng dụng học tiếng Nhật tốt nhất (2026)"
-meta_description: "Không có ứng dụng tiếng Nhật 'tốt nhất' duy nhất — chỉ có bộ tốt nhất cho mục tiêu của bạn. Phân tích theo danh mục: từ vựng, kanji, ngữ pháp, nghe, JLPT."
-target_keywords: ["ứng dụng học tiếng nhật tốt nhất", "app học tiếng nhật", "tải app học tiếng nhật", "đánh giá app học tiếng nhật"]
+meta_description: "Không có ứng dụng tiếng Nhật 'tốt nhất' duy nhất — chỉ có bộ tốt nhất cho mục tiêu của bạn. Phân tích theo danh mục: từ vựng, hán tự, ngữ pháp, nghe, JLPT."
+target_keywords: ["ứng dụng học tiếng nhật tốt nhất", "app học tiếng nhật", "học tiếng nhật cho người mới bắt đầu", "app học tiếng nhật offline", "hán tự n5"]
 lastmod: 2026-07-20
+published: 2026-07-19
 status: ready
 ---
 
@@ -13,15 +14,15 @@ status: ready
 
 # Ứng dụng học tiếng Nhật tốt nhất: cách chọn trong năm 2026
 
-Cụm từ tìm kiếm "ứng dụng học tiếng Nhật tốt nhất" là một truy vấn không có câu trả lời đúng. Không phải vì ứng dụng ít, mà vì mỗi người học có mục tiêu khác nhau: một người thi JLPT N3 để xin visa làm việc, người khác muốn đọc manga nguyên bản, người thứ ba bắt đầu từ con số không và không biết hiragana khác kanji thế nào. Ứng dụng lý tưởng cho mục tiêu đầu tiên thường vô dụng cho người thứ ba.
+Cụm từ tìm kiếm "ứng dụng học tiếng Nhật tốt nhất" là một truy vấn không có câu trả lời đúng. Không phải vì ứng dụng ít, mà vì mỗi người học có mục tiêu khác nhau: một người thi JLPT N3 để xin visa làm việc, người khác muốn đọc manga nguyên bản, người thứ ba bắt đầu từ con số không và không biết hiragana khác hán tự thế nào. Ứng dụng lý tưởng cho mục tiêu đầu tiên thường vô dụng cho người thứ ba.
 
 Bài viết này không phải danh sách top-10 hay quảng cáo. Đây là phân tích theo từng danh mục: ứng dụng nào giải quyết vấn đề nào, điểm mạnh của từng cái ở đâu, và điểm giới hạn ở đâu. Cuối bài — cách chọn cho tình huống của bạn, kể cả trường hợp bạn học tiếng Nhật qua tiếng Nga (hoặc tiếng Việt, hoặc tiếng Hàn) thay vì qua tiếng Anh.
 
 ## Tại sao "ứng dụng tốt nhất" là câu hỏi sai
 
-Tiếng Nhật không phải một kỹ năng mà ít nhất là bốn: từ vựng, kanji, ngữ pháp, nghe. Cộng thêm trình độ JLPT nếu bạn đang thi. Hầu hết mọi ứng dụng phổ biến chỉ xử lý tốt một hoặc hai danh mục, phần còn lại thì hời hợt hoặc không có.
+Tiếng Nhật không phải một kỹ năng mà ít nhất là bốn: từ vựng, hán tự, ngữ pháp, nghe. Cộng thêm trình độ JLPT nếu bạn đang thi. Hầu hết mọi ứng dụng phổ biến chỉ xử lý tốt một hoặc hai danh mục, phần còn lại thì hời hợt hoặc không có.
 
-Vì vậy bức tranh điển hình của người học tiếng Nhật là ba đến năm ứng dụng cùng lúc: từ vựng ở một app, kanji ở app khác, ngữ pháp ở app thứ ba, nghe lấy từ YouTube. Mỗi ứng dụng có hệ thống lên lịch riêng, từ điển riêng, giao diện riêng. Việc khâu chúng lại với nhau tốn nhiều thời gian không kém gì bản thân việc học.
+Vì vậy bức tranh điển hình của người học tiếng Nhật là ba đến năm ứng dụng cùng lúc: từ vựng ở một app, hán tự ở app khác, ngữ pháp ở app thứ ba, nghe lấy từ YouTube. Mỗi ứng dụng có hệ thống lên lịch riêng, từ điển riêng, giao diện riêng. Việc khâu chúng lại với nhau tốn nhiều thời gian không kém gì bản thân việc học.
 
 "Ứng dụng tốt nhất" trong thực tế có nghĩa: **bộ tốt nhất cho mục tiêu cụ thể của bạn**, không trùng lặp và không có khoảng trống.
 
@@ -36,12 +37,12 @@ Kỹ năng cơ bản là ghi nhớ từ và không quên. Các hệ thống lặ
 
 Nếu đau khổ của bạn là tạo thẻ thủ công, một giải pháp thay thế là có ý nghĩa. Nếu bạn đã lắp ráp được hệ thống hoàn hảo trong Anki và nó hoạt động — không có gì phải thay.
 
-### Kanji
+### Hán tự
 
-Kanji là một vấn đề riêng. Cùng một 食 xuất hiện trong hàng chục từ, và việc quan trọng không chỉ là ghi nhớ ký tự mà còn thấy nó trong nhiều ngữ cảnh.
+Hán tự là một vấn đề riêng. Cùng một 食 xuất hiện trong hàng chục từ, và việc quan trọng không chỉ là ghi nhớ ký tự mà còn thấy nó trong nhiều ngữ cảnh.
 
-- **[WaniKani](https://www.wanikani.com/).** Lộ trình có cấu trúc theo bộ thủ, giao diện tiếng Anh, trả phí đăng ký. Phù hợp nếu bạn bắt đầu kanji từ số không và muốn một thứ tự cố định. Nhược điểm — bạn học cái chương trình coi là cần thiết, không phải cái bạn gặp hôm nay trong manga hay bài báo.
-- **Origa.** Furigana được tạo tự động và ẩn trên các kanji đã học — những gì bạn đã học không còn được gợi ý, buộc bạn phải nhớ cách đọc. Kanji được liên kết với từ vựng: hệ thống biết rằng 食べる và 食事 chia sẻ một kanji, và theo dõi nó trên mọi từ mà bạn đã gặp.
+- **[WaniKani](https://www.wanikani.com/).** Lộ trình có cấu trúc theo bộ thủ, giao diện tiếng Anh, trả phí đăng ký. Phù hợp nếu bạn bắt đầu hán tự từ số không và muốn một thứ tự cố định. Nhược điểm — bạn học cái chương trình coi là cần thiết, không phải cái bạn gặp hôm nay trong manga hay bài báo. Toàn bộ đánh giá đổi lấy giữa Origa và WaniKani (bộ thủ vs theo nội dung, trả phí vs miễn phí, chỉ tiếng Anh vs 4 ngôn ngữ giao diện) nằm trong [so sánh đầy đủ](/vi/compare).
+- **Origa.** Furigana được tạo tự động và ẩn trên các hán tự đã học — những gì bạn đã học không còn được gợi ý, buộc bạn phải nhớ cách đọc. Hán tự được liên kết với từ vựng: hệ thống biết rằng 食べる và 食事 chia sẻ một hán tự, và theo dõi nó trên mọi từ mà bạn đã gặp. ([Xem Origa xử lý hán tự, furigana và liên kết từ vựng thế nào](/vi/features).)
 
 Hai cách tiếp cận khác nhau: WaniKani dẫn bạn lên chiếc thang của chính nó, Origa dạy những gì bạn thực sự gặp trong nội dung của mình.
 
@@ -59,7 +60,7 @@ Origa có cơ sở dữ liệu tích hợp hơn 200.000 cụm từ từ nội du
 ### JLPT và kiểm tra
 
 - **[Migii](https://eup.java-mind.com/).** Bộ mô phỏng đề thi, luyện tập có thời gian. Hữu ích riêng cho việc rèn dạng đề. Nó không thay thế hệ thống ghi nhớ — nó kiểm tra, không dạy.
-- **Origa.** Theo dõi trình độ JLPT, liên kết tham chiếu ngữ pháp và từ điển kanji với các trình độ N5–N1, hiển thị phân tích tiến độ. Đó là nền móng, trên đó Migii luyện dạng đề.
+- **Origa.** Theo dõi trình độ JLPT, liên kết tham chiếu ngữ pháp và từ điển hán tự với các trình độ N5–N1, hiển thị phân tích tiến độ. Đó là nền móng, trên đó Migii luyện dạng đề.
 
 ## Bảng tóm tắt
 
@@ -67,8 +68,8 @@ Origa có cơ sở dữ liệu tích hợp hơn 200.000 cụm từ từ nội du
 | --- | --- | --- |
 | Từ vựng, kiểm soát hoàn toàn | Cần linh hoạt và sẵn sàng cấu hình | Anki |
 | Từ vựng, rườm rà tối thiểu | Muốn gõ một từ và ngay lập tức nhận được thẻ | Origa |
-| Kanji từ số không, có thứ tự | Cần lộ trình cố định qua bộ thủ | WaniKani |
-| Kanji từ nội dung của riêng bạn | Học những gì thực sự đọc | Origa |
+| Hán tự từ số không, có thứ tự | Cần lộ trình cố định qua bộ thủ | WaniKani |
+| Hán tự từ nội dung của riêng bạn | Học những gì thực sự đọc | Origa |
 | Chỉ ngữ pháp | Cần trình luyện ngữ pháp riêng | Bunpro |
 | Ngữ pháp liên kết với từ vựng | Muốn ví dụ trên từ quen thuộc | Origa |
 | Nghe | Cần cụm từ bản địa có audio | Origa |
@@ -84,24 +85,24 @@ Tìm kiếm "ứng dụng học tiếng Nhật bằng [tiếng mẹ đẻ]" gầ
 
 ## Cách chọn
 
-1. **Xác định điểm nghẽn.** Cái gì trong thiết lập hiện tại của bạn ngốn nhiều thời gian nhất — tạo thẻ, tìm kanji, ngữ pháp, nghe? Đó là thứ cần được giải quyết.
+1. **Xác định điểm nghẽn.** Cái gì trong thiết lập hiện tại của bạn ngốn nhiều thời gian nhất — tạo thẻ, tìm hán tự, ngữ pháp, nghe? Đó là thứ cần được giải quyết.
 2. **Kiểm tra chất lượng bộ lập lịch.** Nếu một ứng dụng dùng lặp lại ngắt quãng ngây thơ hoặc khoảng cố định thay vì FSRS — bạn đang đổi lấy trí nhớ thực cho một giao diện thân thiện. Đó là một thỏa thuận tồi.
 3. **Nhìn vào ngôn ngữ giao diện.** Nếu bạn không học qua tiếng Anh, các ứng dụng với lõi tiếng Anh sẽ kéo bạn chậm lại ở mỗi bước.
 4. **Kiểm tra di chuyển.** Nếu bạn đã có bộ bài Anki, đảm bảo ứng dụng mới nhập được nó. Vứt bỏ nhiều năm tiến bộ là chi phí không thể biện minh.
 
-Trong hầu hết trường hợp, một bộ làm việc là một ứng dụng ghi nhớ cộng với một hoặc hai công cụ chuyên biệt (ngữ pháp, định dạng đề). Mục tiêu không phải tìm "một ứng dụng tốt nhất" mà là bao phủ các danh mục mà không trùng lặp. Origa cố gắng là một ứng dụng bao phủ từ vựng, kanji, ngữ pháp và nghe cùng nhau — nhưng các hạn chế được trình bày trung thực bên dưới.
+Trong hầu hết trường hợp, một bộ làm việc là một ứng dụng ghi nhớ cộng với một hoặc hai công cụ chuyên biệt (ngữ pháp, định dạng đề). Mục tiêu không phải tìm "một ứng dụng tốt nhất" mà là bao phủ các danh mục mà không trùng lặp. Origa cố gắng là một ứng dụng bao phủ từ vựng, hán tự, ngữ pháp và nghe cùng nhau — nhưng các hạn chế được trình bày trung thực bên dưới.
 
 ## Hạn chế của Origa
 
 - **Không tùy biến sâu như Anki.** Nếu bạn sống trong các mẫu thẻ HTML/CSS tùy chỉnh, Origa sẽ không thay thế được. Ưu tiên là rào cản gia nhập thấp, không phải kiểm soát tối đa.
 - **Ứng dụng trẻ hơn.** Anki đã được củng cố trường hợp biên hơn một thập kỷ và có thư viện bộ bài dựng sẵn khổng lồ. Thư viện nội dung dựng sẵn của Origa nhỏ hơn, dù đang phát triển.
-- **Không có iOS.** Origa chạy trên Windows, Linux, macOS, Android và trong trình duyệt; iOS đã lên kế hoạch nhưng chưa ra mắt. Nếu bạn chỉ học trên iPhone, đó là blocker thực sự ở ngày hôm nay.
-- **Tương đương tính năng desktop/di động là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, hãy kiểm tra bản build hiện tại cho nền tảng của bạn.
+- **Không có iOS.** Origa chạy trên Windows, Linux, macOS, Android và trong trình duyệt; iOS đã lên kế hoạch nhưng chưa ra mắt. Nếu bạn chỉ học trên iPhone, đó là chướng ngại thực sự ở ngày hôm nay.
+- **Tương đương tính năng desktop/di động là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, hãy kiểm tra bản dựng hiện tại cho nền tảng của bạn.
 
 ## FAQ
 
 **Lặp lại ngắt quãng của Origa có giống Anki không?**
-Có, cả hai đều dùng FSRS. Origa không phát minh ra nó và không tuyên bố khác. Điểm khác biệt là những gì bao quanh bộ lập lịch: tạo thẻ, furigana, theo dõi kanji, ngữ pháp — chứ không phải bản thân thuật toán.
+Có, cả hai đều dùng FSRS. Origa không phát minh ra nó và không tuyên bố khác. Điểm khác biệt là những gì bao quanh bộ lập lịch: tạo thẻ, furigana, theo dõi hán tự, ngữ pháp — chứ không phải bản thân thuật toán.
 
 **Tôi có thể giữ bộ bài Anki không?**
 Có. Origa nhập `.anki2`, `.anki21` và `.anki21b` — bộ bài và lịch sử ôn tập được chuyển.

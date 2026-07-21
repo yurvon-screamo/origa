@@ -108,20 +108,25 @@ pub fn item_list_schema(locale: Locale, items: &[(&str, &str)]) -> String {
     .to_string()
 }
 
-/// Schema.org `Article` JSON-LD for a blog post. `datePublished` and
-/// `dateModified` are both sourced from the article's `lastmod` field; the
-/// blog has no separate publication-date metadata today, so the two values
-/// coincide. If Google News / Discover become priorities later, a dedicated
-/// `date_published` frontmatter field should be added — see NOTICED in the
-/// blog implementation plan.
+/// Schema.org `Article` JSON-LD for a blog post. `datePublished` is sourced
+/// from the optional `published` frontmatter field (falling back to `lastmod`
+/// when absent for backward compatibility with articles that predate the
+/// field). `dateModified` is always the `lastmod` frontmatter value, so the
+/// two diverge only when an editor records the original publication date
+/// separately from the most-recent edit.
 pub fn article_schema(locale: Locale, post: &crate::blog::BlogPost, canonical_url: &str) -> String {
+    let date_published = post
+        .frontmatter
+        .published
+        .as_deref()
+        .unwrap_or(&post.frontmatter.lastmod);
     serde_json::json!({
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": post.frontmatter.title,
         "description": post.frontmatter.meta_description,
         "inLanguage": locale.as_str(),
-        "datePublished": post.frontmatter.lastmod,
+        "datePublished": date_published,
         "dateModified": post.frontmatter.lastmod,
         "mainEntityOfPage": canonical_url,
         "image": format!("{BASE_URL}/og-image.png"),
