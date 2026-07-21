@@ -28,6 +28,8 @@ pub struct BlogPost {
 /// `(locale, slug, raw_markdown_source)`. Add a new article by appending a
 /// tuple here and dropping the `.md` file under `content/blog/<locale>/`.
 const ARTICLES: &[(Locale, &str, &str)] = &[
+    // Article 1: "Anki alternative for Japanese" — published in all 4 locales
+    // under one slug so hreflang alternates resolve to a single article group.
     (
         Locale::En,
         "anki-alternative-japanese",
@@ -35,8 +37,41 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
     ),
     (
         Locale::Ru,
-        "luchshee-prilozhenie-izucheniya-yaponskogo",
-        include_str!("../../content/blog/ru/luchshee-prilozhenie-izucheniya-yaponskogo.md"),
+        "anki-alternative-japanese",
+        include_str!("../../content/blog/ru/anki-alternative-japanese.md"),
+    ),
+    (
+        Locale::Ko,
+        "anki-alternative-japanese",
+        include_str!("../../content/blog/ko/anki-alternative-japanese.md"),
+    ),
+    (
+        Locale::Vi,
+        "anki-alternative-japanese",
+        include_str!("../../content/blog/vi/anki-alternative-japanese.md"),
+    ),
+    // Article 2: "Best Japanese learning app" — same pattern, slug unified
+    // across locales. The original RU slug `luchshee-prilozhenie-izucheniya-
+    // yaponskogo` is kept alive as a 308 redirect in `server.rs`.
+    (
+        Locale::En,
+        "best-japanese-learning-app",
+        include_str!("../../content/blog/en/best-japanese-learning-app.md"),
+    ),
+    (
+        Locale::Ru,
+        "best-japanese-learning-app",
+        include_str!("../../content/blog/ru/best-japanese-learning-app.md"),
+    ),
+    (
+        Locale::Ko,
+        "best-japanese-learning-app",
+        include_str!("../../content/blog/ko/best-japanese-learning-app.md"),
+    ),
+    (
+        Locale::Vi,
+        "best-japanese-learning-app",
+        include_str!("../../content/blog/vi/best-japanese-learning-app.md"),
     ),
 ];
 
@@ -97,31 +132,39 @@ pub fn locales_for_slug(slug: &str) -> Vec<Locale> {
         .collect()
 }
 
+/// All articles published in `locale`, sorted by `lastmod` descending.
+/// Used by the blog index page (`/blog`, `/ru/blog`, etc.) to render the
+/// article list. Strict filter — no EN fallback. If a future article is
+/// published in EN only, it will not appear on `/ko/blog`; that is the
+/// intended behaviour (an index page advertising an untranslated article
+/// would mislead users and waste crawl budget).
+pub fn list_by_locale(locale: Locale) -> Vec<&'static BlogPost> {
+    let mut posts: Vec<&'static BlogPost> =
+        all().iter().filter(|post| post.locale == locale).collect();
+    posts.sort_by(|a, b| b.frontmatter.lastmod.cmp(&a.frontmatter.lastmod));
+    posts
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn registry_contains_expected_seed_article() {
+    fn registry_contains_en_article() {
         let posts = all();
         assert!(
             posts
                 .iter()
                 .any(|p| p.slug == "anki-alternative-japanese" && p.locale == Locale::En),
-            "seed EN article missing from registry: {posts:?}"
+            "EN article missing from registry: {posts:?}"
         );
     }
 
     #[test]
-    fn registry_contains_ru_article() {
-        let posts = all();
-        assert!(
-            posts
-                .iter()
-                .any(|p| p.slug == "luchshee-prilozhenie-izucheniya-yaponskogo"
-                    && p.locale == Locale::Ru),
-            "RU article missing from registry: {posts:?}"
-        );
+    fn registry_contains_eight_translations() {
+        // 2 articles × 4 locales = 8 entries. Drift in ARTICLES const is
+        // caught here before it reaches the sitemap or hreflang layers.
+        assert_eq!(all().len(), 8, "expected 8 articles in registry");
     }
 
     #[test]
@@ -141,24 +184,49 @@ mod tests {
     }
 
     #[test]
-    fn find_returns_none_when_locale_missing() {
-        // No RU translation of the EN seed exists yet; the lookup must
-        // return None rather than silently returning the EN article.
-        // Fallback is the caller's responsibility
-        // (see `pages::blog::BlogPostPage`).
-        assert!(find(Locale::Ru, "anki-alternative-japanese").is_none());
-    }
-
-    #[test]
-    fn locales_for_seed_slug_returns_only_en() {
+    fn locales_for_anki_slug_returns_all_four_locales() {
         let locales = locales_for_slug("anki-alternative-japanese");
-        assert_eq!(locales, vec![Locale::En]);
+        assert!(locales.contains(&Locale::En), "missing EN: {locales:?}");
+        assert!(locales.contains(&Locale::Ru), "missing RU: {locales:?}");
+        assert!(locales.contains(&Locale::Ko), "missing KO: {locales:?}");
+        assert!(locales.contains(&Locale::Vi), "missing VI: {locales:?}");
+        assert_eq!(locales.len(), 4, "expected exactly 4 locales: {locales:?}");
     }
 
     #[test]
-    fn locales_for_ru_slug_returns_only_ru() {
-        let locales = locales_for_slug("luchshee-prilozhenie-izucheniya-yaponskogo");
-        assert_eq!(locales, vec![Locale::Ru]);
+    fn locales_for_best_app_slug_returns_all_four_locales() {
+        let locales = locales_for_slug("best-japanese-learning-app");
+        assert_eq!(locales.len(), 4, "expected 4 locales: {locales:?}");
+    }
+
+    #[test]
+    fn list_by_locale_returns_only_native_articles() {
+        // Strict filter — no cross-locale bleed. Critical for the index page
+        // so it doesn't advertise untranslated articles via a locale URL.
+        for locale in Locale::ALL {
+            let posts = list_by_locale(*locale);
+            for post in &posts {
+                assert_eq!(
+                    post.locale, *locale,
+                    "list_by_locale({:?}) leaked non-native post: {:?}",
+                    locale, post.slug
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn list_by_locale_returns_two_articles_per_locale() {
+        for locale in Locale::ALL {
+            let posts = list_by_locale(*locale);
+            assert_eq!(
+                posts.len(),
+                2,
+                "expected 2 articles in {:?}, got {}",
+                locale,
+                posts.len()
+            );
+        }
     }
 
     #[test]

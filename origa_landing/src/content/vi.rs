@@ -13,6 +13,15 @@ pub static CONTENT: Content = Content {
     header_compare: "So sánh",
     header_download: "Tải xuống",
     header_integrations: "Nội dung",
+    header_blog: "Blog",
+
+    blog_index_meta_title: "Blog Origa — Ghi chú thực tế về học tiếng Nhật",
+    blog_index_meta_description: "Hướng dẫn thực tế về học tiếng Nhật: lựa chọn ứng dụng, thay thế Anki, từ vựng, kanji và quy trình học. Viết bởi đội ngũ Origa.",
+    blog_index_h1: "Blog",
+    blog_index_subtitle: "Hướng dẫn thực tế về học tiếng Nhật — khi nào đổi công cụ, cần tìm gì và mỗi ứng dụng mạnh ở đâu.",
+    blog_index_empty: "Chưa có bài viết. Vui lòng quay lại sau.",
+    blog_updated_label: "Cập nhật:",
+    breadcrumb_blog: "Blog",
 
     footer_product: "Sản phẩm",
     footer_resources: "Tài nguyên",

@@ -12,7 +12,10 @@ pub fn TermsPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/terms" title=c.terms_meta_title description=c.terms_meta_description/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/terms", c.legal_terms_link)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.legal_terms_link, "/terms"),
+        ])/>
 
         <article class="legal-doc">
             <header class="legal-doc__header">

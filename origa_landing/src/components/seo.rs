@@ -44,33 +44,66 @@ pub fn organization_schema() -> String {
     .to_string()
 }
 
-pub fn breadcrumb_schema(locale: Locale, path: &str, current_name: &str) -> String {
-    let c = locale.content();
+pub fn breadcrumb_schema(locale: Locale, items: &[(&str, &str)]) -> String {
     let prefix = locale.path_prefix();
-    // The site root carries a trailing slash by convention (ADR-011); locale
-    // roots do not. Breadcrumb `item` URLs must match the canonical form so
-    // Google's BreadcrumbList validator does not flag a slash mismatch.
-    let home_url = if prefix.is_empty() {
-        format!("{BASE_URL}/")
-    } else {
-        format!("{BASE_URL}{prefix}")
-    };
-    let home = serde_json::json!({
-        "@type": "ListItem",
-        "position": 1,
-        "name": c.breadcrumb_home,
-        "item": home_url
-    });
-    let current = serde_json::json!({
-        "@type": "ListItem",
-        "position": 2,
-        "name": current_name,
-        "item": format!("{BASE_URL}{prefix}{path}")
-    });
+    // Each `(name, path)` pair becomes one BreadcrumbList entry. `path` is
+    // locale-independent (`/features`, `/blog/<slug>`); the locale prefix
+    // (`/ru`, `/ko`, `/vi`) is applied here so callers stay prefix-agnostic.
+    // The root path `"/"` is special-cased: it must carry a trailing slash
+    // for EN (the canonical root URL) and no trailing slash for locale roots
+    // (ADR-011). Every other path is appended verbatim after the prefix.
+    let items_json: Vec<_> = items
+        .iter()
+        .enumerate()
+        .map(|(i, (name, path))| {
+            let url = if *path == "/" {
+                if prefix.is_empty() {
+                    format!("{BASE_URL}/")
+                } else {
+                    format!("{BASE_URL}{prefix}")
+                }
+            } else {
+                format!("{BASE_URL}{prefix}{path}")
+            };
+            serde_json::json!({
+                "@type": "ListItem",
+                "position": i + 1,
+                "name": name,
+                "item": url
+            })
+        })
+        .collect();
     serde_json::json!({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": [home, current]
+        "itemListElement": items_json
+    })
+    .to_string()
+}
+
+/// Schema.org `ItemList` JSON-LD for a listing page (e.g. `/blog` index).
+/// Per ADR-018, `ItemList` is preferred over the semantic-but-rich-result-
+/// less `Blog` type, because `ItemList` is eligible for Google's Carousel
+/// rich result. Each item is a `(name, path)` pair where `path` is locale-
+/// independent; the locale prefix is applied uniformly here.
+pub fn item_list_schema(locale: Locale, items: &[(&str, &str)]) -> String {
+    let prefix = locale.path_prefix();
+    let items_json: Vec<_> = items
+        .iter()
+        .enumerate()
+        .map(|(i, (name, path))| {
+            serde_json::json!({
+                "@type": "ListItem",
+                "position": i + 1,
+                "name": name,
+                "url": format!("{BASE_URL}{prefix}{path}")
+            })
+        })
+        .collect();
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": items_json
     })
     .to_string()
 }

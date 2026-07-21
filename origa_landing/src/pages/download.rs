@@ -26,7 +26,10 @@ pub fn DownloadPage() -> impl IntoView {
 
     view! {
         <PageMeta locale path="/download" title=c.download_meta_title description=c.download_meta_description/>
-        <SchemaOrg json=breadcrumb_schema(locale, "/download", c.header_download)/>
+        <SchemaOrg json=breadcrumb_schema(locale, &[
+            (c.breadcrumb_home, "/"),
+            (c.header_download, "/download"),
+        ])/>
 
         // Hero
         <section class="download-hero">

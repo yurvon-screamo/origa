@@ -178,6 +178,10 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
                 HeaderValue::from_static(NO_CACHE),
             ),
         )
+        .route(
+            "/ru/blog/luchshee-prilozhenie-izucheniya-yaponskogo",
+            axum::routing::get(redirect_old_ru_article_slug),
+        )
         .leptos_routes(&leptos_options, routes, {
             let leptos_options = leptos_options.clone();
             move || shell(leptos_options.clone())
@@ -460,5 +464,26 @@ async fn security_headers(request: Request<axum::body::Body>, next: Next) -> Res
         HeaderName::from_static("permissions-policy"),
         HeaderValue::from_static("camera=(), microphone=(), geolocation=()"),
     );
+    response
+}
+
+/// Permanent 308 redirect from the legacy RU article slug
+/// (`luchshee-prilozhenie-izucheniya-yaponskogo`) to the unified
+/// locale-independent slug (`best-japanese-learning-app`). The rename unifies
+/// all four locale translations of the article under one URL stem so that
+/// `hreflang` alternates point at a single canonical article group; without
+/// it, `/ru/blog/<ru-slug>` and `/blog/<en-slug>` would advertise different
+/// articles that happen to share a translation.
+///
+/// The `Cache-Control: public, max-age=86400` header matches the cache
+/// policy on `strip_trailing_slash`'s 308 responses — edge caches should
+/// serve the redirect without re-hitting origin. `enforce_cache_policy`
+/// passes 3xx through unchanged, so the header must be set on the response
+/// itself rather than via middleware.
+async fn redirect_old_ru_article_slug() -> Response {
+    let mut response = Redirect::permanent("/ru/blog/best-japanese-learning-app").into_response();
+    response
+        .headers_mut()
+        .insert(CACHE_CONTROL, HeaderValue::from_static(REDIRECT_CACHE));
     response
 }

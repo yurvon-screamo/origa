@@ -12,4 +12,4 @@ pub mod frontmatter;
 pub mod registry;
 pub mod render;
 
-pub use registry::{BlogPost, all, find, locales_for_slug};
+pub use registry::{BlogPost, all, find, list_by_locale, locales_for_slug};
