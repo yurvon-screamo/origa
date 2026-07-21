@@ -1,94 +1,31 @@
 {
-  "artifact": "marketing/blog/{en-learn-japanese-from-manga, en-japanese-ocr-app, ru-yaponskiy-s-nulya, en-best-japanese-learning-app-offline, en-japanese-ai-tutor, ru-anki-alternativa-yaponskiy}.md (6 drafts, post-factcheck-fixes)",
+  "artifact": "marketing/blog/ru-anki-alternativa-yaponskiy.md (1 draft remaining; 5 of 6 drafts migrated to production on 2026-07-21)",
   "product": "origa",
   "checked_at": "2026-07-21T00:00:00+03:00",
   "overall_confidence": 0.91,
   "brand_voice_check": {
     "forbidden_words_in_drafts": 0,
     "superlatives_without_data": "none",
-    "honest_limitations_section": "present in all 6",
+    "honest_limitations_section": "present",
     "competitor_disparagement": "none",
-    "fsrs_framing": "correct in ru-anki-alternativa (both use FSRS)"
+    "fsrs_framing": "correct (both this draft and existing anki-alternative-japanese use FSRS)"
   },
   "factcheck_round_2": {
     "method": "External research specialist verification (user-provided), then in-article fixes applied by @marketer",
     "fixes_applied": [
-      "Manga article: removed non-existent 'Mieru' and 'Kaname' mentions; replaced with verified open-source stack (manga-ocr model, Poricom, YomiNinja) and mobile (KanjiSnap)",
-      "Manga article: corrected Yomitan framing — it's a dictionary extension, not OCR; needs external OCR for images",
-      "OCR article: replaced 'Imiwa, Akebi, Shirabe Jisho, Japanese by Renzo Inc.' headline — Shirabe Jisho and Akebi don't have confirmed OCR, 'Japanese by Renzo Inc.' doesn't exist. Now: Imiwa, Nihongo, KanjiSnap (all verified OCR). Added note that Akebi/Shirabe are excellent lookup tools without OCR.",
-      "OCR article: removed unverifiable accuracy percentages ('95%+', '80-90%') — replaced with qualitative framing + caveat about vendor-published numbers",
-      "AI tutor article: pricing updated to verified values — ChatGPT Plus/Claude Pro/Gemini Advanced ~$200/year (~$17/mo); Speak ~$30/mo; Talkpal ~$20/mo; Praktika ~$100/year",
-      "AI tutor article: softened '$30-60/hour human tutor' to 'tens of US dollars per hour and often much more'"
+      "Manga article: removed non-existent 'Mieru' and 'Kaname' mentions; replaced with verified open-source stack (manga-ocr model, Poricom, YomiNinja) and mobile (KanjiSnap) [applied before migration]",
+      "OCR article: replaced 'Imiwa, Akebi, Shirabe Jisho, Japanese by Renzo Inc.' headline — now Imiwa, Nihongo, KanjiSnap; framing reflects Akebi/Shirabe as lookup-only [applied before migration]",
+      "OCR article: removed unverifiable accuracy percentages [applied before migration]",
+      "AI tutor article: pricing updated to verified values [applied before migration]",
+      "AI tutor article: softened '$30-60/hour human tutor' to 'tens of US dollars per hour' [applied before migration]"
     ]
   },
   "articles_status": [
     {
-      "file": "en-learn-japanese-from-manga.md",
-      "target_keyword": "learn japanese from manga",
-      "gate": "READY",
-      "verified_claims": [
-        "manga-ocr (kha-white) — verified open-source library, multi-line manga OCR",
-        "Poricom (blueaxis) — verified desktop GUI for manga-ocr",
-        "YomiNinja (matt-m-o) — verified, pipes OCR into Yomitan/Yomichan",
-        "KanjiSnap (iOS) — verified, uses Apple Live Text",
-        "Yomitan — verified as dictionary extension, NOT OCR (framing corrected)",
-        "Yotsuba&! as beginner manga — canonical recommendation",
-        "2136 jōyō kanji — verified (MEXT official)"
-      ]
-    },
-    {
-      "file": "en-japanese-ocr-app.md",
-      "target_keyword": "japanese ocr app",
-      "gate": "READY",
-      "verified_claims": [
-        "NDLOCR-Lite runs locally in Origa — verified (AGENTS.md)",
-        "Imiwa — verified iOS/Android dictionary with OCR",
-        "Nihongo — verified iOS/Android with OCR (Pro feature)",
-        "KanjiSnap — verified iOS OCR app",
-        "Akebi — verified Android dictionary (no confirmed OCR; framing reflects this)",
-        "Shirabe Jisho — verified popular dictionary (no confirmed OCR; framing reflects this)",
-        "Apple Live Text, Google Lens — verified shipping features",
-        "Accuracy claims — softened to qualitative; vendor numbers explicitly flagged as unreliable"
-      ]
-    },
-    {
-      "file": "ru-yaponskiy-s-nulya.md",
-      "target_keyword": "изучение японского языка с нуля",
-      "gate": "READY",
-      "verified_claims": [
-        "2136 jōyō kanji — verified",
-        "Minna no Nihongo, Genki, Tae Kim's Guide — all real textbooks",
-        "Tae Kim Russian community translation — verified to exist (GitHub)",
-        "JLPT N5 ~100 kanji, ~800 words — community estimate; JLPT does not publish official vocab list (article reflects this)"
-      ]
-    },
-    {
-      "file": "en-best-japanese-learning-app-offline.md",
-      "target_keyword": "learn japanese offline",
-      "gate": "READY",
-      "verified_claims": [
-        "Anki desktop + AnkiDroid free, AnkiWeb sync free — verified",
-        "WaniKani, Bunpro online-only — verified (web apps)",
-        "Origa local NDLOCR + Whisper — verified (AGENTS.md)",
-        "Duolingo offline = downloaded lessons only — verified"
-      ]
-    },
-    {
-      "file": "en-japanese-ai-tutor.md",
-      "target_keyword": "japanese ai tutor",
-      "gate": "READY",
-      "verified_claims": [
-        "ChatGPT Plus, Claude Pro, Gemini Advanced — verified ~$200/year (~$17/month)",
-        "Speak — verified ~$30/month Premium Plus, supports Japanese",
-        "Talkpal — verified ~$20/month Premium, supports Japanese",
-        "Praktika — verified ~$100/year, supports Japanese",
-        "WaniKani, Bunpro pricing — NOT_FOUND in research; article intentionally vague (no specific numbers stated)"
-      ]
-    },
-    {
       "file": "ru-anki-alternativa-yaponskiy.md",
       "target_keyword": "anki японский",
-      "gate": "READY",
+      "gate": "BLOCKED_ON_CANNIBALIZATION_DECISION",
+      "gate_reason": "Draft ready factually but deferred from migration to production due to SEO cannibalization with existing anki-alternative-japanese (RU translation already ships; 2 of 5 target_keywords overlap, near-identical section structure). User decision required: delete / repurpose to setup angle / consolidate via 308 redirect. Tracked in uwuwu/origa-blog-anki-cannibalization-decision.",
       "verified_claims": [
         "Anki FSRS 23.10/24.10 — verified (docs.ankiweb.net, inline citation present)",
         "All competitor citations (wanikani.com, bunpro.jp, duolingo.com, migii) — inline",
@@ -97,8 +34,8 @@
     }
   ],
   "translation_status": {
-    "note": "All 6 drafts EN/RU only. After HUMAN GATE on tone, KO/VI translations to be produced with machine_translated + review_required pattern (same as existing 2 articles). Native KO/VI review still recommended before paid promotion on those markets.",
-    "translation_workflow": "1) HUMAN GATE on tone → 2) migrate EN/RU to content/blog/{locale}/ + registry.rs ARTICLES + sitemap update → 3) KO/VI translation → 4) Script-consistency tests in tests/blog.rs → 5) Native review before KO/VI paid promotion"
+    "note": "1 draft remains EN/RU only. The 5 migrated drafts are now tracked in origa_landing/content/blog/.factcheck.json. The remaining draft will be handled per the cannibalization decision before any KO/VI translation.",
+    "translation_workflow": "Awaiting user decision on uwuwu/origa-blog-anki-cannibalization-decision before further action on the remaining draft."
   },
-  "gate_summary": "ALL 6 ARTICLES READY_FOR_HUMAN_REVIEW. Round-2 factcheck closed: removed non-existent products (Mieru, Kaname, Japanese by Renzo Inc.), softened unverifiable accuracy percentages, corrected Yomitan/Shirabe/Akebi framing, replaced estimated pricing with verified values. Remaining gate is tone/positioning approval from user, then KO/VI translation + migration to content/blog/."
+  "gate_summary": "5 of 6 drafts migrated to production on 2026-07-21 (PR feature/blog-migrate-5-drafts). The 6th draft (ru-anki-alternativa-yaponskiy) is BLOCKED on a user decision regarding SEO cannibalization with anki-alternative-japanese."
 }

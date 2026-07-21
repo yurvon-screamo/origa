@@ -6,7 +6,8 @@ meta_title: "Japanese OCR Apps Compared (2026): What Actually Works"
 meta_description: "OCR turns a photo into text — but learning Japanese from that text is a different problem. A practical comparison of general-purpose, manga-specific, and learning-integrated OCR apps."
 target_keywords: ["japanese ocr app", "japanese ocr android", "japanese ocr best", "ocr japanese to english app"]
 lastmod: 2026-07-21
-status: draft
+published: 2026-07-21
+status: ready
 ---
 
 <!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
@@ -57,7 +58,7 @@ Most apps are built for use case 1. A smaller number handle 2. Almost none handl
 
 ### Learning-integrated OCR (where Origa sits)
 
-Origa is built for use case 3 — vocabulary mining. The OCR is the entry point to a card-creation pipeline: scan a photo, paste a screenshot, or photograph a textbook page. The OCR runs locally (NDLOCR-Lite on the device, no upload), extracts the words, and each one becomes a flashcard with reading, translation, audio, and the sentence it appeared in.
+Origa is built for use case 3 — vocabulary mining. The OCR is the entry point to a card-creation pipeline: scan a photo, paste a screenshot, or photograph a textbook page. The OCR runs locally (NDLOCR-Lite on the device, no upload), extracts the words, and each one becomes a flashcard with reading, translation, audio, and the sentence it appeared in. (See [how Origa handles OCR, furigana, and vocabulary linkage](/features).)
 
 The trade-off is explicit: Origa is not a translation tool and not a dictionary lookup app. If you only want to know what a sign says once, Google Lens is faster. Origa is for the learner whose goal is to never need to look that word up again.
 
@@ -93,9 +94,7 @@ The framing is: Origa is the OCR app for learners who got tired of having Lens, 
 
 ## How to pick
 
-You almost certainly already have a general-purpose OCR app on your phone (Live Text on iOS, Lens on Android). For most one-off translation needs, that's enough and it's free. The question is whether you've outgrown "translate once" and need "capture and learn". If you have — if you keep seeing the same kanji and not remembering it, if you've tried starring words in a dictionary app and never reviewed them, if your manga reading generates words you forget by the next chapter — then a learning-integrated OCR is the missing piece.
-
-Origa is one option in that category, with its OCR running on-device and its pipeline ending in spaced repetition. Try it against your current setup and measure whether you actually review what you scan. If you don't, no OCR app on the market will fix that — the problem isn't the OCR.
+You almost certainly already have a general-purpose OCR app on your phone (Live Text on iOS, Lens on Android). For most one-off translation needs, that's enough and it's free. The question is whether you've outgrown "translate once" and need "capture and learn". If you have — if you keep seeing the same kanji and not remembering it, if you've tried starring words in a dictionary app and never reviewed them, if your manga reading generates words you forget by the next chapter — then a learning-integrated OCR is the missing piece. For how Origa compares with Anki, WaniKani, and the other tools mentioned here, see the [full comparison](/compare), or [download Origa](/download) to try the pipeline end-to-end.
 
 ## FAQ
 

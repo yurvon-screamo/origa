@@ -6,7 +6,8 @@ meta_title: "Learn Japanese from Manga: A Realistic 2026 Guide"
 meta_description: "Reading manga in Japanese is motivating. Learning from it is a different skill. A field guide to a workflow that actually builds vocabulary — tools, friction, and what to skip."
 target_keywords: ["learn japanese from manga", "japanese learning app with anime", "japanese immersion app", "reading manga to learn japanese"]
 lastmod: 2026-07-21
-status: draft
+published: 2026-07-21
+status: ready
 ---
 
 <!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
@@ -58,9 +59,9 @@ There is no single app that is a great manga reader *and* a great SRS *and* a gr
 - **OCR tools built for manga.** The reference open-source stack is `manga-ocr` (a model trained specifically on manga text, including multi-line speech bubbles) wrapped in desktop apps like Poricom or the more flexible YomiNinja. YomiNinja can pipe recognised text straight into Yomitan. On mobile, KanjiSnap (iOS) leans on Apple's Live Text to similar effect. Excellent for lookup friction. The catch is that recognition isn't perfect on stylised manga fonts, and the lookup is usually a one-shot dictionary entry, not an SRS card — you still need to send the word somewhere to retain it.
 - **Dictionary browser extensions** (Yomitan, the maintained successor to Yomichan). Yomitan is not itself an OCR — it's a pop-up dictionary that looks up selected text. It works directly on web-based manga readers where the text is selectable; for images, you pair it with an external OCR (YomiNinja, screenshot tools). Its strength is the Anki export: a lookup can become a card in one click via AnkiConnect.
 - **Anki as the retention layer.** The default SRS for the community. You can build manga-mining decks manually, or use Yomitan's export. Anki handles the scheduling; it does not handle the reading or the OCR.
-- **Origa** (the app I work on). Origa is not a manga reader. It's the SRS side of this workflow. Where it fits: you scan a panel with the phone camera or paste a screenshot, OCR extracts the words, and each word becomes a card with the sentence, reading, translation, and audio — into a deck that schedules itself. The furigana hides on kanji you've already learned, so reading and recall train together.
+- **Origa** (the app I work on). Origa is not a manga reader. It's the SRS side of this workflow. Where it fits: you scan a panel with the phone camera or paste a screenshot, OCR extracts the words, and each word becomes a card with the sentence, reading, translation, and audio — into a deck that schedules itself. The furigana hides on kanji you've already learned, so reading and recall train together. (See [how Origa handles OCR, furigana, and vocabulary linkage](/features).)
 
-The honest framing: a good manga-learning setup in 2026 is **a manga reader + an SRS that actually captures what you read**. Origa is trying to be the second half of that — not the first.
+The honest framing: a good manga-learning setup in 2026 is **a manga reader + an SRS that actually captures what you read**. Origa is trying to be the second half of that — not the first. For how it stacks up against Anki, WaniKani, and the other tools above, see the [full comparison](/compare).
 
 ## Known limitations (Origa, honest)
 
@@ -107,4 +108,4 @@ No. Manga gives you reading and listening (if you read along with the drama CD o
 For standard printed manga: yes, ~90%+ on typical panels. For stylised hand-lettered or sfx-heavy panels: less reliable. Always expect to correct one word in ten by hand.
 
 **Does Origa replace a manga reader?**
-No. Origa is the SRS that sits next to whatever reader you use. Scan from the reader, mine into Origa, review in Origa.
+No. Origa is the SRS that sits next to whatever reader you use. Scan from the reader, mine into Origa, review in Origa. If that's the half you need, [download Origa](/download).

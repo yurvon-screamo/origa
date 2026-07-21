@@ -6,7 +6,8 @@ meta_title: "Japanese AI Tutors Compared (2026): Honest Review"
 meta_description: "AI tutors are good at explaining grammar and correcting sentences. They don't schedule your reviews or help you remember. A practical breakdown of where AI fits in Japanese learning."
 target_keywords: ["japanese ai tutor", "best ai japanese language tutor free", "ai japanese tutor app", "ai conversation practice japanese"]
 lastmod: 2026-07-21
-status: draft
+published: 2026-07-21
+status: ready
 ---
 
 <!-- markdownlint-disable-file MD025 — frontmatter `title` is metadata, not a rendered H1; the body has a single H1 by design. -->
@@ -67,7 +68,7 @@ The pattern across most "AI tutor" apps is the same: they ship the conversation/
 
 Origa uses AI — local OCR (NDLOCR-Lite), local speech-to-text (Whisper), furigana generation, automated vocabulary extraction — but it is **not an AI tutor in the conversational sense**. It does not have a chatbot. It does not explain grammar on demand.
 
-What Origa does is use AI as the entry point to a retention pipeline. You scan a page, the AI reads the words; you record audio, the AI transcribes it; you paste text, the AI extracts vocabulary. Each captured item becomes a flashcard scheduled by FSRS. The AI is the input layer, not the teaching layer.
+What Origa does is use AI as the entry point to a retention pipeline. You scan a page, the AI reads the words; you record audio, the AI transcribes it; you paste text, the AI extracts vocabulary. Each captured item becomes a flashcard scheduled by FSRS. The AI is the input layer, not the teaching layer. (See [how Origa uses AI for OCR, STT, and vocabulary extraction](/features).)
 
 The framing: an AI tutor and Origa are not substitutes. An AI tutor explains a grammar point; Origa makes sure you remember the words in the example sentence. Most serious learners end up using both — a chatbot for one-off questions, an SRS for the things that matter.
 
@@ -103,7 +104,7 @@ The design choice is explicit: use AI where it removes friction from the capture
 
 If your study time is 30 minutes a day and you have to choose between an AI tutor and an SRS, choose the SRS. Spaced repetition is the one component of language learning where the evidence is unambiguous. The AI tutor is the more glamorous purchase, but it's the SRS that delivers the year-over-year progress.
 
-If you can run both — an SRS for retention, an AI tutor for on-demand explanation and conversation practice — that's the actual best-of-both-worlds setup most intermediate-and-up learners converge on. Origa covers the SRS half and uses AI for input, not for conversation. ChatGPT or Claude covers the conversation half. The combination is cheaper and more effective than a single AI-tutor subscription that promises everything and delivers conversation plus weak retention.
+If you can run both — an SRS for retention, an AI tutor for on-demand explanation and conversation practice — that's the actual best-of-both-worlds setup most intermediate-and-up learners converge on. Origa covers the SRS half and uses AI for input, not for conversation. ChatGPT or Claude covers the conversation half. The combination is cheaper and more effective than a single AI-tutor subscription that promises everything and delivers conversation plus weak retention. For how Origa compares with Anki, WaniKani, and the other tools mentioned here, see the [full comparison](/compare); if the SRS half is what you need, [download Origa](/download).
 
 ## FAQ
 
