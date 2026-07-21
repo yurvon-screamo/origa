@@ -272,6 +272,35 @@ async fn vi_articles_do_not_contain_korean() {
 }
 
 #[tokio::test]
+async fn vi_articles_do_not_contain_kanji() {
+    // VI SEO strategy (marketing/strategies/origa-seo.md §6 Market 3) requires
+    // "Hán tự" across the VI locale — "kanji" is the search miss called out as
+    // the single highest-impact content fix. This test guards against regressions
+    // when new VI articles are added or existing ones edited. The substring
+    // "kanji" is case-insensitive; "WaniKani" is a proper noun but does not
+    // contain the substring "kanji" and is therefore safe.
+    for slug in ["anki-alternative-japanese", "best-japanese-learning-app"] {
+        let (_, body) = get(&format!("/vi/blog/{slug}")).await;
+        let body_start = body
+            .find("<div class=\"blog-post__body\"")
+            .unwrap_or(body.len());
+        let body_end = body[body_start..]
+            .find("</article>")
+            .map(|offset| body_start + offset)
+            .unwrap_or(body.len());
+        let article_html = &body[body_start..body_end];
+        let kanji_count = article_html
+            .to_lowercase()
+            .matches("kanji")
+            .count();
+        assert_eq!(
+            kanji_count, 0,
+            "VI article {slug} must use 'hán tự' instead of 'kanji' per SEO strategy; found {kanji_count} occurrence(s)"
+        );
+    }
+}
+
+#[tokio::test]
 async fn ru_articles_do_not_contain_korean() {
     for slug in ["anki-alternative-japanese", "best-japanese-learning-app"] {
         let (_, body) = get(&format!("/ru/blog/{slug}")).await;
