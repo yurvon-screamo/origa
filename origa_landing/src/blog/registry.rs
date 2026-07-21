@@ -73,6 +73,29 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "best-japanese-learning-app",
         include_str!("../../content/blog/vi/best-japanese-learning-app.md"),
     ),
+    // Article 3: "How to Learn Japanese from Manga" — published in all 4
+    // locales under one slug. Manga-mining workflow with tooling landscape
+    // (manga-ocr, YomiNinja, Yomitan, KanjiSnap, Origa).
+    (
+        Locale::En,
+        "learn-japanese-from-manga",
+        include_str!("../../content/blog/en/learn-japanese-from-manga.md"),
+    ),
+    (
+        Locale::Ru,
+        "learn-japanese-from-manga",
+        include_str!("../../content/blog/ru/learn-japanese-from-manga.md"),
+    ),
+    (
+        Locale::Ko,
+        "learn-japanese-from-manga",
+        include_str!("../../content/blog/ko/learn-japanese-from-manga.md"),
+    ),
+    (
+        Locale::Vi,
+        "learn-japanese-from-manga",
+        include_str!("../../content/blog/vi/learn-japanese-from-manga.md"),
+    ),
 ];
 
 static REGISTRY: OnceLock<Vec<BlogPost>> = OnceLock::new();
@@ -161,10 +184,18 @@ mod tests {
     }
 
     #[test]
-    fn registry_contains_eight_translations() {
-        // 2 articles × 4 locales = 8 entries. Drift in ARTICLES const is
-        // caught here before it reaches the sitemap or hreflang layers.
-        assert_eq!(all().len(), 8, "expected 8 articles in registry");
+    fn registry_size_matches_articles_const() {
+        // ARTICLES is the single source of truth for what ships; the parsed
+        // registry must agree with it byte-for-byte. Drift here means a
+        // frontmatter parse failed silently or ARTICLES was edited without
+        // confirming the build.
+        assert_eq!(
+            all().len(),
+            ARTICLES.len(),
+            "registry length must match ARTICLES const (expected {}, got {})",
+            ARTICLES.len(),
+            all().len()
+        );
     }
 
     #[test]
@@ -200,11 +231,21 @@ mod tests {
     }
 
     #[test]
-    fn list_by_locale_returns_only_native_articles() {
-        // Strict filter — no cross-locale bleed. Critical for the index page
-        // so it doesn't advertise untranslated articles via a locale URL.
+    fn list_by_locale_returns_all_native_articles() {
+        // Strict filter — no cross-locale bleed. The per-locale count equals
+        // ARTICLES entries for that locale, whatever that number happens to
+        // be at this point in the content roadmap. Critical for the index
+        // page so it doesn't advertise untranslated articles via a locale URL.
         for locale in Locale::ALL {
             let posts = list_by_locale(*locale);
+            let expected = ARTICLES.iter().filter(|(l, _, _)| *l == *locale).count();
+            assert_eq!(
+                posts.len(),
+                expected,
+                "expected {expected} articles in {:?}, got {}; list_by_locale drift",
+                locale,
+                posts.len()
+            );
             for post in &posts {
                 assert_eq!(
                     post.locale, *locale,
@@ -212,20 +253,6 @@ mod tests {
                     locale, post.slug
                 );
             }
-        }
-    }
-
-    #[test]
-    fn list_by_locale_returns_two_articles_per_locale() {
-        for locale in Locale::ALL {
-            let posts = list_by_locale(*locale);
-            assert_eq!(
-                posts.len(),
-                2,
-                "expected 2 articles in {:?}, got {}",
-                locale,
-                posts.len()
-            );
         }
     }
 
