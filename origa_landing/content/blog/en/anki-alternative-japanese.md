@@ -6,6 +6,7 @@ meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
 lastmod: 2026-07-20
+published: 2026-07-19
 status: ready
 ---
 

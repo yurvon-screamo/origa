@@ -27,8 +27,13 @@ pub struct Frontmatter {
     pub meta_description: String,
     pub target_keywords: Vec<String>,
     /// ISO-8601 date (`YYYY-MM-DD`) lifted verbatim from the `lastmod` field.
-    /// Used for both Schema.org `datePublished` and `dateModified`.
+    /// Used for Schema.org `dateModified` (and for `datePublished` when no
+    /// `published` field is present in the frontmatter).
     pub lastmod: String,
+    /// Optional ISO-8601 date (`YYYY-MM-DD`) of first publication. When
+    /// present, sourced as Schema.org `datePublished`; when absent,
+    /// `datePublished` falls back to `lastmod`.
+    pub published: Option<String>,
     pub status: ArticleStatus,
 }
 
@@ -50,6 +55,8 @@ pub enum FrontmatterError {
     InvalidKeywords(String),
     #[error("invalid lastmod `{0}` (expected YYYY-MM-DD)")]
     InvalidLastmod(String),
+    #[error("invalid published `{0}` (expected YYYY-MM-DD)")]
+    InvalidPublished(String),
     #[error("unknown frontmatter key `{0}` (typo or unsupported field)")]
     UnknownKey(String),
 }
@@ -84,6 +91,7 @@ pub fn parse(yaml: &str) -> Result<Frontmatter, FrontmatterError> {
     let mut meta_description = None;
     let mut target_keywords = None;
     let mut lastmod = None;
+    let mut published = None;
     let mut status = None;
 
     let mut seen: std::collections::HashSet<&str> = std::collections::HashSet::new();
@@ -108,6 +116,13 @@ pub fn parse(yaml: &str) -> Result<Frontmatter, FrontmatterError> {
                 }
                 lastmod = Some(v);
             },
+            "published" => {
+                let v = unquote(value);
+                if !is_iso_date(&v) {
+                    return Err(FrontmatterError::InvalidPublished(v));
+                }
+                published = Some(v);
+            },
             "status" => status = Some(parse_status(value)?),
             // `slug` is documented in the source file but not consumed at
             // runtime — the canonical slug is the filename, so a mismatched
@@ -128,14 +143,16 @@ pub fn parse(yaml: &str) -> Result<Frontmatter, FrontmatterError> {
         target_keywords: target_keywords
             .ok_or(FrontmatterError::MissingField("target_keywords"))?,
         lastmod: lastmod.ok_or(FrontmatterError::MissingField("lastmod"))?,
+        published,
         status: status.ok_or(FrontmatterError::MissingField("status"))?,
     })
 }
 
 /// Validate `YYYY-MM-DD` without pulling in a regex dependency. Matches the
-/// sitemap validator in `tests/sitemap.rs` — the frontmatter `lastmod` is
-/// also the value that ends up in JSON-LD `datePublished` / `dateModified`,
-/// so it must be a real ISO-8601 date or Google flags the Article entity.
+/// sitemap validator in `tests/sitemap.rs` — the frontmatter `lastmod` is the
+/// value that ends up in JSON-LD `dateModified`; `datePublished` falls back to
+/// `lastmod` when `published` is unset, so both must be real ISO-8601 dates or
+/// Google flags the Article entity.
 fn is_iso_date(value: &str) -> bool {
     let bytes = value.as_bytes();
     bytes.len() == 10
@@ -310,6 +327,32 @@ status: ready
         let src = SAMPLE.replacen("lastmod: 2026-07-18", "lastmod: July 18, 2026", 1);
         let err = parse(&src).expect_err("lastmod must be YYYY-MM-DD");
         assert!(matches!(err, FrontmatterError::InvalidLastmod(_)));
+    }
+
+    #[test]
+    fn parse_published_defaults_to_none_when_absent() {
+        let fm = parse(SAMPLE).expect("SAMPLE without `published` must parse");
+        assert!(
+            fm.published.is_none(),
+            "published must default to None when the field is absent"
+        );
+    }
+
+    #[test]
+    fn parse_extracts_published_when_present() {
+        let src = SAMPLE.to_string() + "\npublished: 2026-07-19";
+        let fm = parse(&src).expect("valid `published` value must parse");
+        assert_eq!(fm.published.as_deref(), Some("2026-07-19"));
+    }
+
+    #[test]
+    fn parse_rejects_non_iso_published() {
+        let src = SAMPLE.to_string() + "\npublished: July 19, 2026";
+        let err = parse(&src).expect_err("published must be YYYY-MM-DD");
+        assert!(
+            matches!(err, FrontmatterError::InvalidPublished(_)),
+            "non-ISO published must surface its own error variant, got {err:?}"
+        );
     }
 
     #[test]

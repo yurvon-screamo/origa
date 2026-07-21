@@ -6,6 +6,7 @@ meta_title: "Thay thế Anki cho tiếng Nhật (2026)"
 meta_description: "Anki mạnh nhưng cấu hình ngốn thời gian học của bạn. Hướng dẫn thực chiến: khi nào Anki phù hợp cho tiếng Nhật, khi nào cần thay thế, và cần tìm gì."
 target_keywords: ["thay thế anki tiếng nhật", "app flashcard tiếng nhật", "app lặp lại ngắt quãng tiếng nhật miễn phí", "hán tự n5", "từ vựng tiếng nhật n5"]
 lastmod: 2026-07-20
+published: 2026-07-19
 status: ready
 ---
 

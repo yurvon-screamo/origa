@@ -6,6 +6,7 @@ meta_title: "Best Japanese Learning App (2026)"
 meta_description: "There is no single 'best' Japanese app — there's the best set for your goal. A category-by-category breakdown: vocabulary, kanji, grammar, listening, JLPT."
 target_keywords: ["best japanese learning app", "japanese learning app review", "how to choose japanese app", "japanese learning app comparison"]
 lastmod: 2026-07-20
+published: 2026-07-19
 status: ready
 ---
 

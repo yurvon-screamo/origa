@@ -289,10 +289,7 @@ async fn vi_articles_do_not_contain_kanji() {
             .map(|offset| body_start + offset)
             .unwrap_or(body.len());
         let article_html = &body[body_start..body_end];
-        let kanji_count = article_html
-            .to_lowercase()
-            .matches("kanji")
-            .count();
+        let kanji_count = article_html.to_lowercase().matches("kanji").count();
         assert_eq!(
             kanji_count, 0,
             "VI article {slug} must use 'hán tự' instead of 'kanji' per SEO strategy; found {kanji_count} occurrence(s)"
@@ -369,6 +366,55 @@ async fn en_article_has_article_jsonld() {
         "blog pages must emit Article JSON-LD; got first 2000 chars: {}",
         body.chars().take(2000).collect::<String>()
     );
+}
+
+#[tokio::test]
+async fn en_article_jsonld_has_distinct_dates() {
+    // The Article JSON-LD must carry distinct `datePublished` (original
+    // publication) and `dateModified` (last edit) values once the
+    // `published` frontmatter field is populated. Parsing the JSON-LD block
+    // (rather than substring-matching) protects the assertion from
+    // serde_json formatting drift.
+    let (_, body) = get("/blog/anki-alternative-japanese").await;
+    let block = find_jsonld_block_by_type(&body, "Article");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("Article JSON-LD must be valid JSON");
+    assert_eq!(
+        value.get("datePublished").and_then(|v| v.as_str()),
+        Some("2026-07-19"),
+        "datePublished must come from the `published` frontmatter field; got block: {block}"
+    );
+    assert_eq!(
+        value.get("dateModified").and_then(|v| v.as_str()),
+        Some("2026-07-20"),
+        "dateModified must come from the `lastmod` frontmatter field; got block: {block}"
+    );
+}
+
+/// Find the first JSON-LD block whose `@type` matches `type_name`. Mirrors the
+/// helper in `tests/seo_meta.rs`; kept local so each test binary stays
+/// self-contained.
+fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let body_end = rest[body_start..]
+            .find(close)
+            .unwrap_or_else(|| panic!("JSON-LD block not closed"))
+            + body_start;
+        let block = &rest[body_start..body_end];
+        if block.contains(&needle) {
+            return block.to_owned();
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    panic!(
+        "no JSON-LD block with @type={type_name}; body was: {}",
+        html.chars().take(500).collect::<String>()
+    )
 }
 
 #[tokio::test]
