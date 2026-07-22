@@ -1,0 +1,133 @@
+{
+  "document": "marketing/strategies/origa-distribution-platforms.md",
+  "date": "2026-07-21",
+  "stage": "Draft v2 → HUMAN GATE (pre-outreach)",
+  "factchecker": "@marketer (autonomous)",
+  "methodology": "Per-claim confidence scoring. v2 сужает scope до бесплатных каналов публикации: убраны платные YouTube sponsor slots, podcast advertising, paid placements, competitor blogs (где бесплатно не опубликуют).",
+  "scope_change_v1_to_v2": {
+    "removed": [
+      "Все YouTube sponsor slots (Game Gengo, JapanesePod101, Japanese Ammo with Misa, Kaname Naito, ToKini Andy, Cure Dolly, Comprehensible Japanese, 유하다요, 김마멸) — платные",
+      "Nihongo con Teppei podcast sponsor — платный",
+      "Блоги прямых конкурентов (Migaku blog, Kanjijo blog, Shinobi Japanese) — бесплатно не опубликуют",
+      "Mazii (adjacent competitor) — бесплатно не опубликуют",
+      "WaniKani Community / Bunpro Community forums — конкурент-owned",
+      "Riki Moriji / KotobaBenkyou — конкурент",
+      "DC Inside J갤 — низкое S/N",
+      "TikTok micro-influencers — обычно платно",
+      "Adjacent SRS blogs (MindCards, English Tea Break, StudyCards AI, FlashRecall) — низкий ROI",
+      "Console.dev / TLDR / Hackrmind — низкий ROI для niche JP-app"
+    ],
+    "kept_count": "46 платформ (было ~70)",
+    "tier1_count": "14 (было 16 — убраны Game Gengo и 유하다요 как платные YouTube)"
+  },
+  "claims": [
+    {
+      "claim": "Tofugu — top-3 JP-learning блог глобально, публикует обзоры конкурентов (Bunpro 8/10).",
+      "source": "marketing/research/2026-07-18-jp-learning-competitors.md:27",
+      "confidence": "high",
+      "verified_by": "Прямая ссылка на Tofugu review в research-файле"
+    },
+    {
+      "claim": "Tofugu domain authority ~70.",
+      "source": "Общая оценка ландшафта JP-learning блогов; не измерялось через Moz/AHrefs напрямую",
+      "confidence": "low",
+      "note": "Приблизительно. Перепроверить через Moz/AHrefs перед публичной ссылкой на authority Tofugu."
+    },
+    {
+      "claim": "skerritt.blog публикует 'Best Japanese Learning Tools Annual Award Show'.",
+      "source": "marketing/research/2026-07-18-young-edtech-startups.md:32 (цитата от 2025-12-08)",
+      "confidence": "high",
+      "verified_by": "Прямая URL в research-файле: skerritt.blog/best-japanese-learning-tools-2025-award-show/"
+    },
+    {
+      "claim": "Daigaku Telegram-канал имеет 21,006 подписчиков.",
+      "source": "Публичная страница канала, snapshot 2026-07-21",
+      "confidence": "medium",
+      "note": "Snapshot; число колеблется. Перепроверить в течение 7 дней от pitch'а."
+    },
+    {
+      "claim": "Nihongo Telegram-канал (@yaponskoe) имеет 22,400 подписчиков.",
+      "source": "Публичная страница канала, snapshot 2026-07-21",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Minato Dorumu Facebook-группа имеет 65,000+ участников.",
+      "source": "minato.edu.vn/hoc-mien-phi/ (их собственная marketing-страница)",
+      "confidence": "medium",
+      "note": "Self-reported. Верифицировать через FB group member count."
+    },
+    {
+      "claim": "Naver имеет ~50% поисковой доли в Корее.",
+      "source": "marketing/strategies/origa-seo.md:169 (keyword-research-report reference)",
+      "confidence": "medium",
+      "note": "Из существующего keyword research; не верифицировано независимо."
+    },
+    {
+      "claim": "DC Inside JLPT 마이너 갤러리 имеет pinned Anki 통합 덱 thread с 160K+ просмотрами.",
+      "source": "Страница галереи DC Inside, snapshot 2026-07-21",
+      "confidence": "medium",
+      "note": "Snapshot; pinned-треды ротируются."
+    },
+    {
+      "claim": "Hiragana.co.kr — долгоживущий KO beginner JP-комьюнити.",
+      "source": "cafe.hiragana.co.kr контент, snapshot 2026-07-21",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Tokutei ginou FB groups существуют и совпадают с wedge'ом Origa (work-visa).",
+      "source": "Общее знание; конкретные группы/ссылки не перечислены в стратегии",
+      "confidence": "low",
+      "note": "ТРЕБУЕТСЯ RESEARCH: идентифицировать 3-5 конкретных tokutei ginou FB-групп с размерами и активностью перед outreach'ом. Claim-placeholder."
+    },
+    {
+      "claim": "Origa заливает AAB в RuStore через CI.",
+      "source": "git log 2026-07-21 (commit 79b9f72e 'Auto-upload AAB to RuStore on tag release')",
+      "confidence": "high",
+      "verified_by": "Прямой git log inspection"
+    },
+    {
+      "claim": "Origa — BSL 1.1, не OSI-approved.",
+      "source": "AGENTS.md, marketing/playbooks/objections-handling.md #2",
+      "confidence": "high",
+      "verified_by": "LICENSE-файл repo и проектная документация"
+    },
+    {
+      "claim": "Sentry, CockroachDB, HashiCorp шипят/шипили под BSL.",
+      "source": "Общее industry knowledge",
+      "confidence": "high",
+      "note": "Цитировать конкретные LICENSE-файлы если referenced в outreach."
+    },
+    {
+      "claim": "Tofugu публиковал review Bunpro с оценкой 8/10.",
+      "source": "marketing/research/2026-07-18-jp-learning-competitors.md:27",
+      "confidence": "high",
+      "verified_by": "Прямая URL Tofugu review: tofugu.com/reviews/bunpro/"
+    },
+    {
+      "claim": "Хабр — основная RU tech-блог платформа с dev-аудиторией.",
+      "source": "Общее знание RU tech-landscape",
+      "confidence": "high"
+    },
+    {
+      "claim": "VC.ru принимает EdTech founders' story.",
+      "source": "Общее знание платформы; конкретная editorial-политика требует верификации",
+      "confidence": "medium"
+    }
+  ],
+  "open_questions_for_human_gate": [
+    "Tokutei ginou FB groups — нужен отдельный research-pass для идентификации конкретных групп с размерами. Дать добро?",
+    "Naver Cafes поимённо — я оставил generic 'несколько 10K–100K member cafes'. Идентифицировать конкретные перед pitch'ом или это делает пользователь при onboarding'е?",
+    "Запуск на Show HN — реальный risk BSL-атаки в комментах (см. objections-handling.md #2). Запускаем на launch или ждём зрелости продукта?",
+    "VC.ru vs Хабр для RU founders'-story — оба или один? У VC.ru более business-angle, у Хабра — tech-angle. Можно разнести истории.",
+    "Pitch language для EN-платформ с VI/KO audience (Tofugu аудитория включает VI/KO-носителей) — pitch на EN или на родном языке пользователя? Я default'нул на EN для EN-platforms.",
+    "Лимит на количество одновременных Tier 1 pitch'ей — запускать все 14 одновременно или пачками по 4-5 для управляемости?"
+  ],
+  "items_requiring_verification_before_outreach": [
+    "Все Telegram-подписки (re-snapshot в течение 7 дней от pitch'а)",
+    "Активность всех community-площадок (FB, Naver Cafe, DC Inside) — верифицировать, что живы, и идентифицировать модераторов",
+    "Contact emails для Tofugu, skerritt.blog, MariaTheMillennial, JLPT Samurai, J-Compass (вероятно паттерн first-name @ domain, но верифицировать)",
+    "Tokutei ginou FB groups — конкретная идентификация групп (см. open question)",
+    "Tofugu DA estimate — прогнать Moz/AHrefs перед упоминанием authority в публичных материалах",
+    "Editorial-политика VC.ru и Хабра на текущий момент (формат acceptance, требования к статьям)"
+  ]
+}

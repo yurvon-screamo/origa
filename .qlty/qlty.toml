@@ -64,6 +64,7 @@ exclude_patterns = [
     # blocking pushes here traps the marketing workflow on local machines.
     "marketing/playbooks/**",
     "marketing/research/**",
+    "marketing/strategies/**",
 ]
 
 # =============================================================================
