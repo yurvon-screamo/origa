@@ -63,6 +63,15 @@ export async function uiLogin(
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		await page.goto("http://localhost:1420");
+
+		// The email/password form is collapsed behind a "Sign in with password"
+		// toggle by default (mobile viewport fit). Expand it before waiting for
+		// the inputs; no-op when already expanded.
+		const passwordToggle = page.getByTestId("login-password-toggle");
+		if (await passwordToggle.isVisible().catch(() => false)) {
+			await passwordToggle.click();
+		}
+
 		await page
 			.locator('input[type="email"], input[data-testid="email-input"]')
 			.waitFor({ state: "visible", timeout: 30_000 });
