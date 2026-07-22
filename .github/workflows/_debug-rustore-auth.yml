@@ -1,0 +1,67 @@
+name: Debug RuStore auth
+
+# TEMPORARY one-shot verification: confirms the re-set RUSTORE_KEY_ID /
+# RUSTORE_PRIVATE_KEY secrets produce a valid JWE token via /public/auth/.
+# Auth-only — does NOT create a draft / upload / commit, so it has zero
+# side effects on the RuStore app. DELETE after the check passes.
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    auth-check:
+        runs-on: ubuntu-latest
+        env:
+            RUSTORE_API: https://public-api.rustore.ru
+        steps:
+            - name: Authenticate (auth-only, no side effects)
+              env:
+                  KEY_ID: ${{ secrets.RUSTORE_KEY_ID }}
+                  PRIVATE_KEY: ${{ secrets.RUSTORE_PRIVATE_KEY }}
+              run: |
+                  set -e
+                  KEY_FILE=$(mktemp)
+                  BODY_FILE=$(mktemp)
+                  trap 'rm -f "$KEY_FILE" "$BODY_FILE"' EXIT
+
+                  printf '%s\n' "$PRIVATE_KEY" > "$KEY_FILE"
+                  chmod 600 "$KEY_FILE"
+
+                  TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3N%:z")
+                  SIGNATURE=$(printf '%s%s' "$KEY_ID" "$TIMESTAMP" \
+                    | openssl dgst -sha512 -sign "$KEY_FILE" \
+                    | base64 -w0)
+                  if [ -z "$SIGNATURE" ]; then
+                    echo "::error::openssl produced an empty signature — RUSTORE_PRIVATE_KEY is still not a valid PEM (see 'Could not read private key' above)."
+                    exit 1
+                  fi
+
+                  set +e
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST "$RUSTORE_API/public/auth/" \
+                    -H "Content-Type: application/json" \
+                    -d "$(jq -n --arg k "$KEY_ID" --arg t "$TIMESTAMP" --arg s "$SIGNATURE" \
+                      '{keyId: $k, timestamp: $t, signature: $s}')")
+                  CURL_EXIT=$?
+                  set -e
+
+                  echo "Auth HTTP $HTTP_CODE"
+                  echo "Auth response: $(cat "$BODY_FILE")"
+
+                  if [ "$CURL_EXIT" -ne 0 ]; then
+                    echo "::error::network failure (curl exit $CURL_EXIT)"
+                    exit 1
+                  fi
+                  if [ "$HTTP_CODE" -ge 400 ]; then
+                    echo "::error::RuStore auth failed (HTTP $HTTP_CODE) — see response above"
+                    exit 1
+                  fi
+
+                  JWE=$(jq -r '.body.jwe' "$BODY_FILE")
+                  if [ -z "$JWE" ] || [ "$JWE" = "null" ]; then
+                    echo "::error::HTTP $HTTP_CODE but no JWE in response body"
+                    exit 1
+                  fi
+                  echo "✅ Auth OK — JWE acquired (len ${#JWE}), TTL $(jq -r '.body.ttl' "$BODY_FILE")s"
