@@ -59,7 +59,7 @@ ndarray = "0.17"
 hound = "3.5"
 rustfft = "6.2"
 ort = { version = "2.0.0-rc.12", default-features = false }
-ort-web = "0.2.0"
+ort-web = "0.2.1"
 as-slice = "0.2"
 getrandom = "0.3"
 

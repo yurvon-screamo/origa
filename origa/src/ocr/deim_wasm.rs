@@ -1,9 +1,12 @@
 use super::shared::{DEIM_DEFAULT_INPUT_SIZE, deim_postprocess, deim_preprocess};
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
+use crate::ort_init;
 use futures::lock::Mutex;
 use image::DynamicImage;
+use ort::ep::WebGPU;
 use ort::session::Session;
+use ort::session::builder::GraphOptimizationLevel;
 use ort_web::ValueExt;
 
 pub struct DeimDetector {
@@ -11,40 +14,27 @@ pub struct DeimDetector {
     input_size: u32,
 }
 
-static ORT_INIT: std::sync::Once = std::sync::Once::new();
-
-pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
-    let mut should_init = false;
-    ORT_INIT.call_once(|| {
-        should_init = true;
-    });
-
-    if should_init {
-        let api = ort_web::api(ort_web::FEATURE_NONE)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to get ort API: {:?}", e),
-            })?;
-        ort::set_api(api);
-    }
-
-    Ok(())
-}
-
 impl DeimDetector {
     pub async fn new(model_bytes: &[u8]) -> Result<Self, OrigaError> {
-        ensure_ort_initialized().await?;
+        ort_init::ensure().await?;
 
-        let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create session builder: {:?}", e),
-        })?;
-        let session =
-            builder
-                .commit_from_memory(model_bytes)
-                .await
-                .map_err(|e| OrigaError::OcrError {
-                    reason: format!("Failed to load DEIM model: {:?}", e),
-                })?;
+        let session = Session::builder()
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to create session builder: {e:?}"),
+            })?
+            .with_optimization_level(GraphOptimizationLevel::Level3)
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to set optimization level: {e:?}"),
+            })?
+            .with_execution_providers([WebGPU::default().build()])
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to register WebGPU EP: {e:?}"),
+            })?
+            .commit_from_memory(model_bytes)
+            .await
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to load DEIM model: {e:?}"),
+            })?;
 
         let input_info = session
             .inputs()

@@ -1,0 +1,10 @@
+# Pin the iOS deployment target so cc-rs (rusqlite's bundled SQLite, hound's
+# C deps, etc.) compiles C objects for the same iOS version that Xcode targets
+# via `bundle.iOS.minimumSystemVersion` in tauri.conf.json. Without this, cc-rs
+# defaults to the current iOS SDK version (e.g. 26.x on Xcode 26) and Xcode
+# emits "Object file was built for newer iOS version than being linked"
+# warnings during archive.
+#
+# This matches the iOS 26 floor required for WebGPU in WKWebView.
+[env]
+IPHONEOS_DEPLOYMENT_TARGET = "26.0"
