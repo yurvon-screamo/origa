@@ -1,0 +1,70 @@
+name: Cleanup RuStore draft
+
+# TEMPORARY one-shot: deletes the stale RuStore draft left by the failed
+# v0.4.8 run (its AAB upload timed out at the old --max-time 60, leaving
+# draft 2064719611 unsubmitted, which blocks the next create-draft since
+# RuStore allows only one active draft per app). DELETE after use.
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    cleanup:
+        runs-on: ubuntu-latest
+        env:
+            RUSTORE_API: https://public-api.rustore.ru
+            PACKAGE_NAME: net.uwuwu.origa
+            VERSION_ID: "2064719611"
+        steps:
+            - name: Auth + delete stale draft
+              env:
+                  KEY_ID: ${{ secrets.RUSTORE_KEY_ID }}
+                  PRIVATE_KEY: ${{ secrets.RUSTORE_PRIVATE_KEY }}
+              run: |
+                  set -e
+                  KEY_FILE=$(mktemp)
+                  AUTH_BODY=$(mktemp)
+                  DEL_BODY=$(mktemp)
+                  trap 'rm -f "$KEY_FILE" "$AUTH_BODY" "$DEL_BODY"' EXIT
+
+                  printf '%s\n' "$PRIVATE_KEY" > "$KEY_FILE"
+                  chmod 600 "$KEY_FILE"
+
+                  TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3N%:z")
+                  SIGNATURE=$(printf '%s%s' "$KEY_ID" "$TIMESTAMP" \
+                    | openssl dgst -sha512 -sign "$KEY_FILE" | base64 -w0)
+                  if [ -z "$SIGNATURE" ]; then
+                    echo "::error::empty signature — PRIVATE_KEY not a valid PEM"
+                    exit 1
+                  fi
+
+                  set +e
+                  AUTH_HTTP=$(curl -sS --connect-timeout 10 --max-time 60 -o "$AUTH_BODY" -w "%{http_code}" -X POST "$RUSTORE_API/public/auth/" \
+                    -H "Content-Type: application/json" \
+                    -d "$(jq -n --arg k "$KEY_ID" --arg t "$TIMESTAMP" --arg s "$SIGNATURE" \
+                      '{keyId: $k, timestamp: $t, signature: $s}')")
+                  AC=$?
+                  set -e
+                  echo "Auth HTTP $AUTH_HTTP"
+                  echo "Auth response: $(cat "$AUTH_BODY")"
+                  if [ "$AC" -ne 0 ] || [ "$AUTH_HTTP" -ge 400 ]; then
+                    echo "::error::auth failed"
+                    exit 1
+                  fi
+                  JWE=$(jq -r '.body.jwe' "$AUTH_BODY")
+                  echo "JWE acquired, deleting draft $VERSION_ID..."
+
+                  # Do NOT hard-fail on HTTP >= 400 here: we want to see RuStore's
+                  # response regardless (404 = already gone, 200/204 = deleted, etc).
+                  set +e
+                  DEL_HTTP=$(curl -sS --connect-timeout 10 --max-time 60 -o "$DEL_BODY" -w "%{http_code}" -X DELETE \
+                    "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID" \
+                    -H "Public-Token: $JWE")
+                  DC=$?
+                  set -e
+                  echo "DELETE HTTP $DEL_HTTP"
+                  echo "DELETE response: $(cat "$DEL_BODY")"
+                  echo "Cleanup attempt finished (see response above)."
