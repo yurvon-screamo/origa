@@ -27,6 +27,21 @@ jobs:
                   BODY_FILE=$(mktemp)
                   trap 'rm -f "$KEY_FILE" "$BODY_FILE"' EXIT
 
+                  # Diagnostic: secret SHAPE only (length + PEM markers + newline
+                  # kind). Never prints the secret value. Reveals empty/mangled
+                  # secrets without exposing them.
+                  echo "KEY_ID length: ${#KEY_ID}"
+                  echo "PRIVATE_KEY length: ${#PRIVATE_KEY}"
+                  case "$PRIVATE_KEY" in
+                    *"BEGIN "*"PRIVATE KEY"*) echo "PRIVATE_KEY: PEM BEGIN marker present" ;;
+                    *) echo "PRIVATE_KEY: PEM BEGIN marker MISSING" ;;
+                  esac
+                  case "$PRIVATE_KEY" in
+                    *$'\n'*) echo "PRIVATE_KEY: contains real newlines (correct)" ;;
+                    *'\n'*) echo "PRIVATE_KEY: contains literal backslash-n (mangled by UI/PS)" ;;
+                    *) echo "PRIVATE_KEY: single line, no newlines" ;;
+                  esac
+
                   printf '%s\n' "$PRIVATE_KEY" > "$KEY_FILE"
                   chmod 600 "$KEY_FILE"
 
