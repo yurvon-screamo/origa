@@ -8,6 +8,10 @@ test.describe("Authentication", () => {
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto();
+        // The password form is collapsed by default; most auth tests assert on
+        // the email/password inputs directly, so expand once for the suite.
+        // Tests that care about the collapsed state would opt out explicitly.
+        await loginPage.expandPasswordForm();
     });
 
     test("should display login page", async ({ page }) => {
