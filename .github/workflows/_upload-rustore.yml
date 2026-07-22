@@ -192,8 +192,10 @@ jobs:
 
                   # -F (multipart request body) is orthogonal to -o/-w (response
                   # capture) — the diagnostic pattern works unchanged here.
+                  # AAB is a large binary (~50+ MB); its upload can take minutes,
+                  # so allow 10 min here. auth/create/commit stay at 60s.
                   set +e
-                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST \
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 600 -o "$BODY_FILE" -w "%{http_code}" -X POST \
                     "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID/aab" \
                     -H "Public-Token: $JWE_TOKEN" \
                     -F "file=@$AAB_PATH")
