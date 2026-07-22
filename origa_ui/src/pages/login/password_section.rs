@@ -34,7 +34,7 @@ pub fn PasswordSection(
         if base.is_empty() {
             "login-form".to_string()
         } else {
-            format!("{base}-form")
+            base
         }
     });
 
