@@ -23,23 +23,11 @@ pub fn PasswordSection(
 ) -> impl IntoView {
     let i18n = use_i18n();
 
-    let toggle_test_id = Signal::derive(move || {
-        let base = test_id.get();
-        if base.is_empty() {
-            "login-password-toggle".to_string()
-        } else {
-            format!("{base}-toggle")
-        }
-    });
-
-    let back_test_id = Signal::derive(move || {
-        let base = test_id.get();
-        if base.is_empty() {
-            "login-password-back".to_string()
-        } else {
-            format!("{base}-back")
-        }
-    });
+    // Fixed semantic testids: the toggle/back are the canonical login-form
+    // entry points regardless of the optional base test_id (which only scopes
+    // the inner form). E2E relies on these stable names.
+    const TOGGLE_TEST_ID: &str = "login-password-toggle";
+    const BACK_TEST_ID: &str = "login-password-back";
 
     let form_test_id = Signal::derive(move || {
         let base = test_id.get();
@@ -59,7 +47,7 @@ pub fn PasswordSection(
                         variant=Signal::derive(|| ButtonVariant::Ghost)
                         button_type=Signal::derive(|| "button".to_string())
                         class=Signal::derive(|| "w-full".to_string())
-                        test_id=toggle_test_id
+                        test_id=Signal::derive(|| TOGGLE_TEST_ID.to_string())
                         on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                             expanded.set(true);
                         })
@@ -78,7 +66,7 @@ pub fn PasswordSection(
                 <button
                     type="button"
                     class="w-full text-center cursor-pointer"
-                    data-testid=back_test_id
+                    data-testid=BACK_TEST_ID
                     on:click=move |_: leptos::ev::MouseEvent| {
                         expanded.set(false);
                     }

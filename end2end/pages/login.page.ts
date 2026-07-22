@@ -47,10 +47,12 @@ export class LoginPage extends BasePage {
     /**
      * Reveal the email/password form. The form is collapsed by default behind
      * a "Sign in with password" toggle so the login card fits a mobile
-     * viewport. No-op when the form is already expanded.
+     * viewport. Waits for the toggle to mount (races with WASM load) then
+     * expands; no-op when already expanded.
      */
     async expandPasswordForm(): Promise<void> {
         const toggle = this.passwordFormToggle;
+        await toggle.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
         if (await toggle.isVisible().catch(() => false)) {
             await toggle.click();
         }

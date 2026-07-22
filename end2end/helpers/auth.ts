@@ -65,12 +65,11 @@ export async function uiLogin(
 		await page.goto("http://localhost:1420");
 
 		// The email/password form is collapsed behind a "Sign in with password"
-		// toggle by default (mobile viewport fit). Expand it before waiting for
-		// the inputs; no-op when already expanded.
+		// toggle by default (mobile viewport fit). Wait for the toggle to mount
+		// (races with WASM load) then expand it before waiting for the inputs.
 		const passwordToggle = page.getByTestId("login-password-toggle");
-		if (await passwordToggle.isVisible().catch(() => false)) {
-			await passwordToggle.click();
-		}
+		await passwordToggle.waitFor({ state: "visible", timeout: 30_000 });
+		await passwordToggle.click();
 
 		await page
 			.locator('input[type="email"], input[data-testid="email-input"]')
