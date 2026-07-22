@@ -91,9 +91,17 @@ jobs:
                   TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3N%:z")
 
                   # SHA512withRSA over keyId concatenated with timestamp (no separator).
+                  # Deliberately NOT using `set -o pipefail`: we want openssl's
+                  # own diagnostic ("Could not read private key") to reach the log
+                  # unchanged, then fail explicitly with an actionable message
+                  # rather than a generic set -e abort.
                   SIGNATURE=$(printf '%s%s' "$KEY_ID" "$TIMESTAMP" \
                     | openssl dgst -sha512 -sign "$KEY_FILE" \
                     | base64 -w0)
+                  if [ -z "$SIGNATURE" ]; then
+                    echo "::error::openssl produced an empty signature — RUSTORE_PRIVATE_KEY is not a valid PEM key (see 'Could not read private key' above). Re-set it with: gh secret set RUSTORE_PRIVATE_KEY < key.pem  (the GitHub UI paste often mangles PEM newlines into literal backslash-n)."
+                    exit 1
+                  fi
 
                   set +e
                   HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST "$RUSTORE_API/public/auth/" \
