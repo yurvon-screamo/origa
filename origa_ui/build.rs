@@ -11,6 +11,7 @@ fn main() {
     handle_lindera_dictionary();
     generate_well_known_meta();
     generate_font_registry();
+    stage_fonts_for_bundling();
     println!("cargo:rerun-if-changed=build.rs");
 
     // Version info from CI environment
@@ -784,4 +785,85 @@ fn strip_hash_suffix(filename: &str) -> String {
         },
         _ => stem.to_owned(),
     }
+}
+
+/// Copy the canonical `cdn/fonts/*.woff2` into `origa_ui/public/fonts/` so the
+/// existing trunk `copy-dir href="public"` serves them at `/fonts/` on the
+/// local origin (Tauri builds, first-launch offline CJK). trunk does not accept
+/// assets outside the `index.html` directory (trunk-rs/trunk#1045), so we stage
+/// the canonical files inside `public/` first. `public/fonts/` is gitignored —
+/// `cdn/fonts/` remains the single source of truth, mirrored verbatim here.
+///
+/// Idempotent: re-runs only when `cdn/fonts/` changes (`rerun-if-changed`), and
+/// only rewrites a target file when its bytes differ from the source, so
+/// incremental trunk rebuilds are not invalidated by no-op copies.
+fn stage_fonts_for_bundling() {
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let src_dir = Path::new(&manifest_dir)
+        .join("..")
+        .join("cdn")
+        .join("fonts");
+    let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
+
+    println!("cargo:rerun-if-changed={}", src_dir.display());
+
+    if !src_dir.is_dir() {
+        // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face
+        // degrades to FONT_FILES empty -> system fallback. Do not fail the build.
+        return;
+    }
+
+    fs::create_dir_all(&dest_dir).expect("Failed to create public/fonts/");
+
+    let mut staged: Vec<String> = Vec::new();
+    for entry in fs::read_dir(&src_dir)
+        .unwrap_or_else(|_| panic!("Failed to read {}", src_dir.display()))
+        .flatten()
+    {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("woff2") {
+            continue;
+        }
+        let filename = match path.file_name().and_then(|n| n.to_str()) {
+            Some(name) => name.to_owned(),
+            None => continue,
+        };
+        let dest = dest_dir.join(&filename);
+
+        let copy_needed = match fs::read(&path) {
+            Ok(src_bytes) => match fs::read(&dest) {
+                Ok(dest_bytes) => src_bytes != dest_bytes,
+                Err(_) => true,
+            },
+            Err(e) => panic!("Failed to read source font {}: {e}", path.display()),
+        };
+        if copy_needed {
+            fs::copy(&path, &dest)
+                .unwrap_or_else(|_| panic!("Failed to stage font {filename} into public/fonts/"));
+        }
+        staged.push(filename);
+    }
+
+    // Prune stale woff2 in dest that no longer exist in the canonical source
+    // (keeps public/fonts/ an exact mirror, avoids shipping removed subsets).
+    if dest_dir.is_dir() {
+        for entry in fs::read_dir(&dest_dir).into_iter().flatten().flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("woff2") {
+                continue;
+            }
+            let still_canonical = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|name| staged.iter().any(|s| s == name));
+            if !still_canonical {
+                let _ = fs::remove_file(&path);
+            }
+        }
+    }
+
+    println!(
+        "cargo:warning=Staged {} bundled font(s) into public/fonts/",
+        staged.len()
+    );
 }

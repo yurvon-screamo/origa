@@ -65,6 +65,10 @@ graphify-out/
 # UniDic dictionary (built by build.rs)
 origa_ui/public/dictionaries/unidic/
 
+# Bundled fonts (staged from cdn/fonts/ by build.rs into public/fonts/ for
+# trunk copy-dir; cdn/fonts/ is the canonical source, this is a build mirror)
+origa_ui/public/fonts/
+
 # Android keystore files
 *.keystore
 

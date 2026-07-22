@@ -1,0 +1,93 @@
+use crate::i18n::*;
+use crate::ui_components::{Button, ButtonVariant, Text, TextSize, TypographyVariant};
+use leptos::prelude::*;
+
+use super::email_password_form::EmailPasswordForm;
+
+/// Collapsible email/password login section.
+///
+/// Collapsed by default: only a single "Sign in with password" button is
+/// shown, keeping the login card short enough to fit a mobile viewport without
+/// scrolling. Expanding reveals the email/password form with a "back" link that
+/// collapses it again (so an accidental expand is recoverable, and the user can
+/// return to the OAuth-first layout). Behaviour is uniform across platforms.
+///
+/// Lives in the lib crate (recursion_limit 512) as a sub-component so the
+/// `Login` view-tree depth stays flat for the bin crate (limit 128, see ADR-027).
+#[component]
+pub fn PasswordSection(
+    #[prop(optional, into)] test_id: Signal<String>,
+    expanded: RwSignal<bool>,
+    server_error: RwSignal<Option<String>>,
+    on_submit: Callback<(String, String)>,
+) -> impl IntoView {
+    let i18n = use_i18n();
+
+    let toggle_test_id = Signal::derive(move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            "login-password-toggle".to_string()
+        } else {
+            format!("{base}-toggle")
+        }
+    });
+
+    let back_test_id = Signal::derive(move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            "login-password-back".to_string()
+        } else {
+            format!("{base}-back")
+        }
+    });
+
+    let form_test_id = Signal::derive(move || {
+        let base = test_id.get();
+        if base.is_empty() {
+            "login-form".to_string()
+        } else {
+            format!("{base}-form")
+        }
+    });
+
+    view! {
+        <Show
+            when=move || expanded.get()
+            fallback=move || {
+                view! {
+                    <Button
+                        variant=Signal::derive(|| ButtonVariant::Ghost)
+                        button_type=Signal::derive(|| "button".to_string())
+                        class=Signal::derive(|| "w-full".to_string())
+                        test_id=toggle_test_id
+                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                            expanded.set(true);
+                        })
+                    >
+                        {t!(i18n, login.login_with_password)}
+                    </Button>
+                }
+            }
+        >
+            <div class="space-y-4">
+                <EmailPasswordForm
+                    on_submit=on_submit
+                    server_error=server_error
+                    test_id=form_test_id
+                />
+                <button
+                    type="button"
+                    class="w-full text-center cursor-pointer"
+                    data-testid=back_test_id
+                    on:click=move |_: leptos::ev::MouseEvent| {
+                        expanded.set(false);
+                    }
+                >
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted uppercase=true tracking_widest=true>
+                        {t!(i18n, login.back_to_oauth)}
+                    </Text>
+                </button>
+            </div>
+        </Show>
+    }
+}

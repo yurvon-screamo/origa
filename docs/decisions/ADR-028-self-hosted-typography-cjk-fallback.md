@@ -10,6 +10,25 @@ Accepted
 > `font-display: block`. The Cyrillic-less DM Mono rows in the table below
 > are historical — see ADR-030 for the current font set.
 
+> **Updated (2026-07-22): offline-first bundling implemented.** Alternative #5
+> (bundle fonts for true offline first launch) is now in effect. trunk cannot
+> accept assets outside the `index.html` directory (trunk-rs/trunk#1045), so
+> instead of a direct cross-dir `copy-dir` the canonical `cdn/fonts/` is staged
+> into `origa_ui/public/fonts/` by `build.rs::stage_fonts_for_bundling`
+> (gitignored build mirror, same pattern as `public/dictionaries/unidic/`), and
+> the existing trunk `copy-dir href="public"` ships it at `dist/fonts/`.
+> `font_face.rs` is the single canonical `@font-face` source (the hardcoded
+> rules previously in `input.css` were dead — the runtime `<style>` won the
+> cascade — and are removed); it routes the URL per build flavour: Tauri →
+> `/fonts/<file>` (local origin, CSP `font-src 'self'` already permits it, no
+> asset-protocol needed), web → `cdn_url("/fonts/<file>")`. Per-face
+> `font-display` (CJK `block`, Latin/Cyr `swap`) lives in `FaceSpec.display`,
+> fixing a dormant regression where the runtime path forced `swap` on CJK and
+> would have flashed Chinese glyphs on Xiaomi. Trade-off accepted: every Tauri
+> installer (Win/Linux/macOS/Android) grows by ~3.5 MB (2 Noto JP dominate);
+> justified by correct CJK on the very first launch and offline operation. Web
+> builds are unchanged.
+
 ## Date
 
 2026-07-03
