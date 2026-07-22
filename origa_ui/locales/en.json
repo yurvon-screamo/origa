@@ -333,6 +333,8 @@
         "email_placeholder": "Email",
         "password_placeholder": "Password",
         "login_button": "Sign in",
+        "login_with_password": "Sign in with password",
+        "back_to_oauth": "Other sign-in methods",
         "title": "Sign in to Origa",
         "subtitle": "Study Japanese",
         "email_required": "Email is required",

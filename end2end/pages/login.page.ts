@@ -11,6 +11,7 @@ export class LoginPage extends BasePage {
     readonly emailInput: Locator;
     readonly passwordInput: Locator;
     readonly passwordToggle: Locator;
+    readonly passwordFormToggle: Locator;
     readonly submitButton: Locator;
     readonly errorAlert: Locator;
 
@@ -30,6 +31,7 @@ export class LoginPage extends BasePage {
         this.emailInput = page.getByTestId("email-input");
         this.passwordInput = page.getByTestId("password-input");
         this.passwordToggle = page.getByTestId("password-input-toggle");
+        this.passwordFormToggle = page.getByTestId("login-password-toggle");
         this.submitButton = page.getByTestId("login-submit");
         this.errorAlert = page.getByTestId("login-form-error");
 
@@ -42,9 +44,24 @@ export class LoginPage extends BasePage {
         await this.navigate("/login");
     }
 
+    /**
+     * Reveal the email/password form. The form is collapsed by default behind
+     * a "Sign in with password" toggle so the login card fits a mobile
+     * viewport. Waits for the toggle to mount (races with WASM load) then
+     * expands; no-op when already expanded.
+     */
+    async expandPasswordForm(): Promise<void> {
+        const toggle = this.passwordFormToggle;
+        await toggle.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
+        if (await toggle.isVisible().catch(() => false)) {
+            await toggle.click();
+        }
+    }
+
     async expectLoginFormVisible(): Promise<void> {
         await expect(this.loginPage).toBeVisible();
         await expect(this.loginCard).toBeVisible();
+        await this.expandPasswordForm();
         await expect(this.loginForm).toBeVisible();
         await expect(this.emailInput).toBeVisible();
         await expect(this.passwordInput).toBeVisible();
@@ -79,6 +96,7 @@ export class LoginPage extends BasePage {
         password: string,
     ): Promise<{ success: boolean; error?: string }> {
         try {
+            await this.expandPasswordForm();
             await this.fillEmail(email);
             await this.fillPassword(password);
             await this.submit();

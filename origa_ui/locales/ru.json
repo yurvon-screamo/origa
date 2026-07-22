@@ -333,6 +333,8 @@
     "email_placeholder": "Email",
     "password_placeholder": "Пароль",
     "login_button": "Войти",
+    "login_with_password": "Войти с помощью пароля",
+    "back_to_oauth": "Другие способы входа",
     "title": "Войдите в Origa",
     "subtitle": "Изучайте японский язык",
     "email_required": "Email обязателен",

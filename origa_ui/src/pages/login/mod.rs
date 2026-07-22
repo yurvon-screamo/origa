@@ -5,11 +5,13 @@ mod language_toggle;
 pub mod oauth_buttons;
 pub mod oauth_listeners;
 pub mod password_input;
+mod password_section;
 mod validation;
 
 pub use header::LoginHeader;
 use language_toggle::LoginLanguageToggle;
 use oauth_buttons::DEBUG_OAUTH_ENABLED;
+use password_section::PasswordSection;
 
 use crate::i18n::*;
 use crate::store::auth_store::AuthStore;
@@ -17,7 +19,6 @@ use crate::ui_components::{
     Alert, AlertType, CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout,
     PageLayoutVariant, Text, TextSize, TypographyVariant, legal_links,
 };
-use email_password_form::EmailPasswordForm;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 
@@ -28,6 +29,11 @@ pub fn Login() -> impl IntoView {
     let loading = RwSignal::new(false);
     let server_error = RwSignal::new(None::<String>);
     let disposed = StoredValue::new(());
+    // Collapsed by default so the card fits a mobile viewport without
+    // scrolling. Expanding reveals the email/password form. Uniform across
+    // platforms (a single click to expand on desktop is a minor, accepted
+    // trade-off for visual consistency).
+    let password_expanded = RwSignal::new(false);
 
     // On-device OAuth flow trace slot. Only ever written when
     // `ORIGA_DEBUG_OAUTH=1` is set at compile time (see `oauth_buttons`);
@@ -76,7 +82,8 @@ pub fn Login() -> impl IntoView {
                 <LoginLanguageToggle test_id=Signal::derive(|| "login-lang-toggle".to_string()) />
                 <LoginHeader />
                 <div class="space-y-6">
-                    <EmailPasswordForm
+                    <PasswordSection
+                        expanded=password_expanded
                         on_submit=on_email_submit
                         server_error=server_error
                         test_id=Signal::derive(|| "login-form".to_string())
@@ -113,6 +120,11 @@ pub fn Login() -> impl IntoView {
 // recursion_limit rationale.
 fn login_footer(oauth_debug: oauth_buttons::OAuthDebugSink) -> AnyView {
     view! {
+        <Divider
+            variant=Signal::derive(|| DividerVariant::Single)
+            class=Signal::derive(|| "my-6".to_string())
+            test_id=Signal::derive(|| "login-legal-divider".to_string())
+        />
         {legal_links(Signal::derive(|| "login-legal-links".to_string()))}
         {debug_overlay(oauth_debug)}
     }

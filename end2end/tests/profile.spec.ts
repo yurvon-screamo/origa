@@ -257,7 +257,9 @@ testWithUniqueUser.describe("Profile - Account Deletion", () => {
 
         await profilePage.confirmDelete();
 
-        // Wait for login page — account deletion is async, redirect may be slow
-        await page.locator('input[type="email"], input[data-testid="email-input"]').waitFor({ state: "visible", timeout: 60_000 });
+        // Wait for login page — account deletion is async, redirect may be slow.
+        // The password form is collapsed by default behind the toggle, so wait
+        // for the toggle (collapsed-state indicator) rather than the email input.
+        await page.getByTestId("login-password-toggle").waitFor({ state: "visible", timeout: 60_000 });
     });
 });
