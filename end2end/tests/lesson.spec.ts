@@ -65,20 +65,32 @@ async function completeLessonFlexible(
         const anyInteractive = lessonPage.showAnswerBtn
             .or(lessonPage.quizOptions[0])
             .or(lessonPage.yesnoYesBtn)
+            .or(lessonPage.lessonCardNextBtn)
             .or(lessonPage.completeScreen);
         await expect(anyInteractive).toBeVisible({ timeout: 15_000 });
 
         if (await lessonPage.completeScreen.isVisible().catch(() => false)) break;
+
+        // Pure-manual advance (ADR-033): after submitting a quiz/yesno
+        // answer the user is held on the feedback card until they click
+        // "Next" (or press Space/Enter). The previous 1500ms auto-advance
+        // timer was removed — the helper must explicitly advance.
+        if (await lessonPage.lessonCardNextBtn.isVisible().catch(() => false)) {
+            await lessonPage.clickNextCard();
+            continue;
+        }
 
         if (await lessonPage.showAnswerBtn.isVisible().catch(() => false)) {
             await lessonPage.showAnswer();
             await lessonPage.rate("good");
         } else if (await lessonPage.quizOptions[0].isVisible().catch(() => false)) {
             await lessonPage.selectQuizOption(0);
-            await page.waitForTimeout(2000);
+            // No waitForTimeout: pure-manual advance shows NextCardButton
+            // synchronously after the answer is selected; the next loop
+            // iteration will pick it up via the lessonCardNextBtn check above.
         } else if (await lessonPage.yesnoYesBtn.isVisible().catch(() => false)) {
             await lessonPage.yesnoYesBtn.click();
-            await page.waitForTimeout(2000);
+            // Same as above — NextCardButton will be picked up next iteration.
         } else {
             break;
         }

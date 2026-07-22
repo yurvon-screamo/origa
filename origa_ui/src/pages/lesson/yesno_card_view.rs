@@ -10,6 +10,7 @@ use tracing::warn;
 
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
+use super::next_card_button::NextCardButton;
 use super::quiz_card_header::QuizCardHeader;
 use super::quiz_result::QuizResult;
 
@@ -46,6 +47,8 @@ pub fn YesNoCardView(
     dont_know_selected: Signal<bool>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
+    #[prop(default = Signal::derive(|| false))] waiting_for_next: Signal<bool>,
+    #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = yesno_card.card().clone();
@@ -308,6 +311,10 @@ pub fn YesNoCardView(
                         text=Signal::derive(move || answer_text_display_stored.get_value())
                         known_kanji=known_kanji
                     />
+                </Show>
+
+                <Show when=move || waiting_for_next.get() && show_result.get()>
+                    <NextCardButton on_next_card=on_next_card />
                 </Show>
             </div>
         </Card>

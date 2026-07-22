@@ -1,13 +1,14 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    AudioPlayer, Button, ButtonVariant, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text,
-    TextSize, TranslatorText, TypographyVariant,
+    AudioPlayer, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
+    TranslatorText, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::QuizOption;
 use std::collections::HashSet;
 
 use super::card_type::CardType;
+use super::next_card_button::NextCardButton;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
 
@@ -195,16 +196,7 @@ pub fn PhraseCardView(
                 </Show>
 
                 <Show when=move || waiting_for_next.get() && show_result.get()>
-                    <div class="mt-4 flex justify-center">
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            on_click=Callback::new(move |_| on_next_card.run(()))
-                            test_id=Signal::derive(|| "phrase-next-btn".to_string())
-                        >
-                            <span>{t!(i18n, lesson.next)}</span>
-                            <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
-                    </div>
+                    <NextCardButton on_next_card=on_next_card />
                 </Show>
             </div>
         </Card>

@@ -35,18 +35,29 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let on_rate_callback = create_on_rate_callback(lesson_state, lesson_ctx.clone(), is_rating);
 
-    let on_quiz_select = create_on_quiz_select(lesson_state, on_rate_callback);
+    let on_quiz_select = create_on_quiz_select(lesson_state);
 
-    let on_yesno_select = create_on_yesno_select(lesson_state, on_rate_callback);
+    let on_yesno_select = create_on_yesno_select(lesson_state);
 
     let on_quiz_toggle = create_on_quiz_toggle(lesson_state);
-    let on_quiz_submit = create_on_quiz_submit(lesson_state, on_rate_callback);
+    let on_quiz_submit = create_on_quiz_submit(lesson_state);
 
-    let on_quiz_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
-    let on_yesno_dont_know = create_on_dont_know(lesson_state, on_rate_callback);
+    let on_quiz_dont_know = create_on_dont_know(lesson_state);
+    let on_yesno_dont_know = create_on_dont_know(lesson_state);
 
     let on_next_card = Callback::new(move |_: ()| {
-        let rating = lesson_state.get().pending_rating.unwrap_or(Rating::Good);
+        // Pure-manual advance (ADR-033) contract: every on_* handler that
+        // flips `waiting_for_next` MUST also set `pending_rating`. A `None`
+        // here means a handler forgot — fail loudly in debug. In release we
+        // fall back to `Rating::Again`, the more conservative SRS choice
+        // (re-show the card soon) rather than `Good`, which would silently
+        // inflate intervals and skew FSRS parameters.
+        let state = lesson_state.get();
+        debug_assert!(
+            state.pending_rating.is_some(),
+            "on_next_card invoked without pending_rating — handler bug"
+        );
+        let rating = state.pending_rating.unwrap_or(Rating::Again);
         on_rate_callback.run(rating);
     });
 
@@ -164,6 +175,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
+                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    on_next_card=on_next_card
                                 />
                             })
                         } else {
@@ -211,6 +224,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
+                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    on_next_card=on_next_card
                                 />
                             })
                         } else {
@@ -324,6 +339,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
                                     quiz_variant=QuizVariant::Grammar
+                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    on_next_card=on_next_card
                                 />
                             })
                         } else {

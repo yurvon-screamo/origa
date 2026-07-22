@@ -9,6 +9,7 @@ use std::collections::HashSet;
 use tracing::warn;
 
 use super::card_type::CardType;
+use super::next_card_button::NextCardButton;
 use super::quiz_card_header::QuizCardHeader;
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
@@ -297,6 +298,10 @@ pub fn QuizCardView(
 
                     <Show when=move || show_result.get() && quiz_result() != QuizResult::DontKnow>
                         <QuizResultDisplay quiz_result=quiz_result() />
+                    </Show>
+
+                    <Show when=move || waiting_for_next.get() && show_result.get()>
+                        <NextCardButton on_next_card=on_next_card />
                     </Show>
                 </Show>
             </div>
