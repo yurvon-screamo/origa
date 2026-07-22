@@ -1,0 +1,59 @@
+name: Debug RuStore upload
+
+# TEMPORARY verification harness for diagnosing the RuStore publish failure.
+# Runs ONLY the upload workflow against a mock AAB so the auth step executes
+# in isolation (~40-60s) without a full multi-platform Tauri build.
+#
+# Why this exists: tauri.yml's upload-rustore job is guarded by
+# `startsWith(github.ref,'refs/tags/v')`, so it cannot be re-run via
+# workflow_dispatch. This harness bypasses that guard by calling the reusable
+# _upload-rustore.yml directly (its own guard is on inputs.version_type).
+#
+# Auth fails before any AAB is touched, so a 1-byte mock bundle is enough.
+#
+# CAUTION — stale draft risk: if the original failure was transient (clock skew,
+# short 502) and auth succeeds on re-run, create-draft runs with real creds and
+# a 1-byte mock AAB. The draft is created, the AAB upload is rejected, and a
+# stale draft is left in RuStore Console requiring manual cleanup. Watch the
+# auth-step result: if it PASSES, abort and delete any draft in Console before
+# re-running.
+#
+# DELETE this file once the root cause is resolved (tracked in Slice-2).
+
+on:
+    workflow_dispatch:
+
+concurrency:
+    group: debug-rustore
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    prepare-mock-aab:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Create mock AAB artifact
+              run: |
+                  set -e
+                  mkdir -p aab
+                  printf '\0' > aab/app-release.aab
+                  echo "Mock AAB created (1 byte) — auth step fails before the AAB is used"
+
+            - name: Upload mock AAB artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android-aab
+                  path: aab/
+                  retention-days: 1
+
+    call-upload:
+        needs: prepare-mock-aab
+        uses: ./.github/workflows/_upload-rustore.yml
+        with:
+            version: debug-harness
+            version_type: prerelease
+        secrets:
+            rustore-key-id: ${{ secrets.RUSTORE_KEY_ID }}
+            rustore-private-key: ${{ secrets.RUSTORE_PRIVATE_KEY }}

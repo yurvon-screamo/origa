@@ -17,6 +17,12 @@ name: Upload to RuStore
 # Auth signature: SHA512withRSA over concatenation keyId+timestamp,
 # using PKCS#8 / PKCS#1 PEM private key. See:
 #   https://www.rustore.ru/help/en/work-with-rustore-api/api-authorization-token
+#
+# HTTP diagnostics: every RuStore call is made WITHOUT curl `-f` so that the
+# response body is captured even on HTTP >= 400. The explicit HTTP code
+# (`-w "%{http_code}"`) and the full body are logged before any decision,
+# so a failed step always shows WHY (e.g. "Signature encode error") instead
+# of an opaque curl exit 22.
 
 on:
     workflow_call:
@@ -70,12 +76,14 @@ jobs:
                   PRIVATE_KEY: ${{ secrets.rustore-private-key }}
               run: |
                   set -e
-                  # Write private key to a temp file. openssl sha512 -sign accepts
-                  # both PKCS#1 (RSA PRIVATE KEY) and PKCS#8 (PRIVATE KEY) PEM formats.
                   KEY_FILE=$(mktemp)
+                  BODY_FILE=$(mktemp)
+                  trap 'rm -f "$KEY_FILE" "$BODY_FILE"' EXIT
+
+                  # openssl sha512 -sign accepts both PKCS#1 (RSA PRIVATE KEY)
+                  # and PKCS#8 (PRIVATE KEY) PEM formats.
                   printf '%s\n' "$PRIVATE_KEY" > "$KEY_FILE"
                   chmod 600 "$KEY_FILE"
-                  trap 'rm -f "$KEY_FILE"' EXIT
 
                   # ISO 8601 with millisecond precision and tz offset,
                   # e.g. 2026-07-18T12:34:56.789+03:00. Server rejects timestamps
@@ -87,18 +95,32 @@ jobs:
                     | openssl dgst -sha512 -sign "$KEY_FILE" \
                     | base64 -w0)
 
-                  RESPONSE=$(curl -fsS -X POST "$RUSTORE_API/public/auth/" \
+                  set +e
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST "$RUSTORE_API/public/auth/" \
                     -H "Content-Type: application/json" \
                     -d "$(jq -n --arg k "$KEY_ID" --arg t "$TIMESTAMP" --arg s "$SIGNATURE" \
                       '{keyId: $k, timestamp: $t, signature: $s}')")
+                  CURL_EXIT=$?
+                  set -e
 
-                  echo "Auth response: $RESPONSE"
-                  JWE=$(echo "$RESPONSE" | jq -r '.body.jwe')
-                  if [ -z "$JWE" ] || [ "$JWE" = "null" ]; then
-                    echo "::error::RuStore auth failed — no JWE in response"
+                  echo "Auth HTTP $HTTP_CODE"
+                  echo "Auth response: $(cat "$BODY_FILE")"
+
+                  if [ "$CURL_EXIT" -ne 0 ]; then
+                    echo "::error::RuStore auth request failed (curl exit $CURL_EXIT — network/DNS/timeout)"
                     exit 1
                   fi
-                  echo "JWE token acquired (TTL: $(echo "$RESPONSE" | jq -r '.body.ttl')s)"
+                  if [ "$HTTP_CODE" -ge 400 ]; then
+                    echo "::error::RuStore auth failed (HTTP $HTTP_CODE) — see response above"
+                    exit 1
+                  fi
+
+                  JWE=$(jq -r '.body.jwe' "$BODY_FILE")
+                  if [ -z "$JWE" ] || [ "$JWE" = "null" ]; then
+                    echo "::error::RuStore auth returned HTTP $HTTP_CODE but no JWE in response body"
+                    exit 1
+                  fi
+                  echo "JWE token acquired (TTL: $(jq -r '.body.ttl' "$BODY_FILE")s)"
                   echo "JWE_TOKEN=$JWE" >> "$GITHUB_ENV"
 
             - name: Create version draft
@@ -110,26 +132,42 @@ jobs:
                   # for automated CI uploads; full changelog goes to GitHub Release.
                   WHATS_NEW="Release $VERSION (automated CI upload)"
 
-                  RESPONSE=$(curl -fsS -X POST \
+                  BODY_FILE=$(mktemp)
+                  trap 'rm -f "$BODY_FILE"' EXIT
+
+                  set +e
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST \
                     "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version" \
                     -H "Content-Type: application/json" \
                     -H "Public-Token: $JWE_TOKEN" \
                     -d "$(jq -n --arg n "$WHATS_NEW" \
                       '{appName: "Origa", appType: "MAIN", publishType: "INSTANTLY", whatsNew: $n}')")
+                  CURL_EXIT=$?
+                  set -e
 
-                  echo "Create draft response: $RESPONSE"
+                  echo "Create draft HTTP $HTTP_CODE"
+                  echo "Create draft response: $(cat "$BODY_FILE")"
+
+                  if [ "$CURL_EXIT" -ne 0 ]; then
+                    echo "::error::Create draft request failed (curl exit $CURL_EXIT — network/DNS/timeout)"
+                    exit 1
+                  fi
+                  if [ "$HTTP_CODE" -ge 400 ]; then
+                    echo "::error::Create draft failed (HTTP $HTTP_CODE) — see response above"
+                    echo "Likely cause: an unfinished draft already exists for this app."
+                    echo "Delete drafts in RuStore Console, or via DELETE /version/{id} endpoint."
+                    exit 1
+                  fi
+
                   # RuStore API returns the new version_id as a scalar directly
                   # under .body: {"body": 243242}. Some SDKs/documentations show
                   # it wrapped as {"body": {"version_id": N}} — handle both
                   # shapes so a future API tightening doesn't silently break us.
-                  VERSION_ID=$(echo "$RESPONSE" | jq -r '
+                  VERSION_ID=$(jq -r '
                     .body | if type == "object" then (.version_id // .id // empty) else . end
-                  ')
+                  ' "$BODY_FILE")
                   if [ -z "$VERSION_ID" ] || [ "$VERSION_ID" = "null" ]; then
-                    echo "::error::Create draft failed — no version_id in response"
-                    echo "Response was: $RESPONSE"
-                    echo "Likely cause: an unfinished draft already exists for this app."
-                    echo "Delete drafts in RuStore Console, or via DELETE /version/{id} endpoint."
+                    echo "::error::Create draft returned HTTP $HTTP_CODE but no version_id in response body"
                     exit 1
                   fi
                   echo "Draft created: version_id=$VERSION_ID"
@@ -141,15 +179,34 @@ jobs:
                   AAB_PATH=${{ steps.locate.outputs.aab_path }}
                   echo "Uploading $AAB_PATH to version $VERSION_ID..."
 
-                  RESPONSE=$(curl -fsS -X POST \
+                  BODY_FILE=$(mktemp)
+                  trap 'rm -f "$BODY_FILE"' EXIT
+
+                  # -F (multipart request body) is orthogonal to -o/-w (response
+                  # capture) — the diagnostic pattern works unchanged here.
+                  set +e
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST \
                     "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID/aab" \
                     -H "Public-Token: $JWE_TOKEN" \
                     -F "file=@$AAB_PATH")
+                  CURL_EXIT=$?
+                  set -e
 
-                  echo "Upload AAB response: $RESPONSE"
-                  CODE=$(echo "$RESPONSE" | jq -r '.code')
+                  echo "Upload AAB HTTP $HTTP_CODE"
+                  echo "Upload AAB response: $(cat "$BODY_FILE")"
+
+                  if [ "$CURL_EXIT" -ne 0 ]; then
+                    echo "::error::AAB upload request failed (curl exit $CURL_EXIT — network/DNS/timeout)"
+                    exit 1
+                  fi
+                  if [ "$HTTP_CODE" -ge 400 ]; then
+                    echo "::error::AAB upload failed (HTTP $HTTP_CODE) — see response above"
+                    exit 1
+                  fi
+
+                  CODE=$(jq -r '.code' "$BODY_FILE")
                   if [ "$CODE" != "OK" ]; then
-                    echo "::error::AAB upload failed — code=$CODE"
+                    echo "::error::AAB upload returned HTTP $HTTP_CODE but code=$CODE (expected OK)"
                     exit 1
                   fi
                   echo "AAB uploaded successfully"
@@ -157,14 +214,31 @@ jobs:
             - name: Submit for moderation
               run: |
                   set -e
-                  RESPONSE=$(curl -fsS -X POST \
+                  BODY_FILE=$(mktemp)
+                  trap 'rm -f "$BODY_FILE"' EXIT
+
+                  set +e
+                  HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 60 -o "$BODY_FILE" -w "%{http_code}" -X POST \
                     "$RUSTORE_API/public/v1/application/$PACKAGE_NAME/version/$VERSION_ID/commit?priorityUpdate=0" \
                     -H "Public-Token: $JWE_TOKEN")
+                  CURL_EXIT=$?
+                  set -e
 
-                  echo "Submit response: $RESPONSE"
-                  CODE=$(echo "$RESPONSE" | jq -r '.code')
+                  echo "Submit HTTP $HTTP_CODE"
+                  echo "Submit response: $(cat "$BODY_FILE")"
+
+                  if [ "$CURL_EXIT" -ne 0 ]; then
+                    echo "::error::Submit request failed (curl exit $CURL_EXIT — network/DNS/timeout)"
+                    exit 1
+                  fi
+                  if [ "$HTTP_CODE" -ge 400 ]; then
+                    echo "::error::Submit for moderation failed (HTTP $HTTP_CODE) — see response above"
+                    exit 1
+                  fi
+
+                  CODE=$(jq -r '.code' "$BODY_FILE")
                   if [ "$CODE" != "OK" ]; then
-                    echo "::error::Submit for moderation failed — code=$CODE"
+                    echo "::error::Submit returned HTTP $HTTP_CODE but code=$CODE (expected OK)"
                     exit 1
                   fi
                   echo "✅ RuStore upload complete — version $VERSION_ID submitted for moderation"
