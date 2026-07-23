@@ -20,25 +20,10 @@ pub use ocr_processing::preload_ocr_model;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 
 #[component]
 pub fn Words() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
-
-    // Warm up the OCR and Whisper models (download + ort session +
-    // WebGPU shader compilation) as soon as the user lands on /words,
-    // so the first real OCR / STT is instant. Cold-start shader
-    // compilation alone was adding ~2-3 minutes to the first inference;
-    // this hides it behind UI browsing time. No-op if already cached or
-    // preloading.
-    Effect::new(move |_| {
-        spawn_local(async {
-            preload_ocr_model().await;
-            #[cfg(target_arch = "wasm32")]
-            preload_whisper_model().await;
-        });
-    });
 
     view! {
         <PageLayout variant=PageLayoutVariant::Full test_id="words-page">

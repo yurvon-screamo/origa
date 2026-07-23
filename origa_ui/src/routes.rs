@@ -144,8 +144,8 @@ pub fn start_dictionary_loading(
         }
 
         // Phase E: auto per-card pre-cache (background, only when online)
-        if connectivity.is_online.get() {
-            if let Some(user) = auth_store.user.get() {
+        if connectivity.is_online.get_untracked() {
+            if let Some(user) = auth_store.user.get_untracked() {
                 let cards: Vec<origa::domain::StudyCard> = user
                     .knowledge_set()
                     .study_cards()

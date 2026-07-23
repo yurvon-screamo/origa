@@ -43,7 +43,7 @@ impl ModalState {
             selected_level: RwSignal::new(JapaneseLevel::N5),
             available_rules: RwSignal::new(Vec::new()),
             native_language: RwSignal::new(crate::i18n::locale_to_native_language(
-                &i18n.get_locale(),
+                &i18n.get_locale_untracked(),
             )),
             selected_rule_ids,
             is_loading_rules: RwSignal::new(false),

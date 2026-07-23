@@ -13,7 +13,7 @@ mod generated {
 }
 
 pub use generated::i18n::{I18nContextProvider, Locale, use_i18n};
-pub use leptos_i18n::{I18nContext, t, td_string};
+pub use leptos_i18n::{I18nContext, t, t_string, td_string};
 
 const LOCALE_COOKIE_MAX_AGE_MS: i64 = 365 * 24 * 60 * 60 * 1000;
 

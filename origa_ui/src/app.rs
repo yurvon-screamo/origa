@@ -44,6 +44,16 @@ pub fn App() -> impl IntoView {
         auth_store_for_session.check_session();
     });
 
+    // Preload ML models (OCR + Whisper) in the background as early as
+    // possible — before the user navigates to /words. Cold-start ort
+    // session creation + WebGPU shader compilation takes minutes; this
+    // hides it behind app startup + login + browsing time.
+    spawn_local(async move {
+        crate::pages::words::preload_ocr_model().await;
+        #[cfg(target_arch = "wasm32")]
+        crate::pages::words::preload_whisper_model().await;
+    });
+
     // AD-4: OAuth callback checks run concurrently with session check.
     // check_url_oauth_callback handles the web-build URL-fragment path;
     // setup_oauth_listener handles the Tauri deep-link path (both cold-start

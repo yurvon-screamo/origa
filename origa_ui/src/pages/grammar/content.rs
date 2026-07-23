@@ -1,6 +1,6 @@
 use super::super::shared::{card_list_view, create_card_list_context};
 use super::grammar_card_item::GrammarCardItem;
-use crate::i18n::{td_string, use_i18n};
+use crate::i18n::{t_string, use_i18n};
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use origa::domain::Card;
@@ -19,8 +19,7 @@ pub fn GrammarContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     );
 
     let ctx_for_render = ctx.clone();
-    let empty_message =
-        Signal::derive(move || td_string!(i18n.get_locale(), grammar_page.not_found).to_string());
+    let empty_message = Signal::derive(move || t_string!(i18n, grammar_page.not_found).to_string());
 
     card_list_view(ctx, true, "grammar", empty_message, Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start"), move |card| {
         let ctx = ctx_for_render.clone();
