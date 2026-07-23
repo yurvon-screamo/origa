@@ -6,7 +6,7 @@ use crate::ort_init;
 use crate::stt::tokenizer::WhisperTokenizer;
 use futures::lock::Mutex;
 use ort::ep::WebGPU;
-use ort::session::{RunOptions, builder::GraphOptimizationLevel};
+use ort::session::RunOptions;
 use ort_web::ValueExt;
 
 pub struct WhisperTranscriber {
@@ -195,14 +195,9 @@ async fn build_session(
     label: &str,
     webgpu_active: bool,
 ) -> Result<ort::session::Session, OrigaError> {
-    let builder = ort::session::Session::builder()
-        .map_err(|e| OrigaError::SttError {
-            reason: format!("{label} builder: {e:?}"),
-        })?
-        .with_optimization_level(GraphOptimizationLevel::Level3)
-        .map_err(|e| OrigaError::SttError {
-            reason: format!("{label} optimization level: {e:?}"),
-        })?;
+    let builder = ort::session::Session::builder().map_err(|e| OrigaError::SttError {
+        reason: format!("{label} builder: {e:?}"),
+    })?;
 
     let mut builder = if webgpu_active {
         builder

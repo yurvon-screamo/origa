@@ -6,7 +6,6 @@ use futures::lock::Mutex;
 use image::DynamicImage;
 use ort::ep::WebGPU;
 use ort::session::Session;
-use ort::session::builder::GraphOptimizationLevel;
 use ort_web::ValueExt;
 
 pub struct ParseqRecognizer {
@@ -23,14 +22,9 @@ impl ParseqRecognizer {
     ) -> Result<Self, OrigaError> {
         let init = ort_init::ensure().await?;
 
-        let builder = Session::builder()
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to create session builder: {e:?}"),
-            })?
-            .with_optimization_level(GraphOptimizationLevel::Level3)
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to set optimization level: {e:?}"),
-            })?;
+        let builder = Session::builder().map_err(|e| OrigaError::OcrError {
+            reason: format!("Failed to create session builder: {e:?}"),
+        })?;
 
         let mut builder = if init.webgpu_active {
             builder
