@@ -18,8 +18,7 @@
                 "title": "Origa 「オリガ」",
                 "width": 800,
                 "height": 600,
-                "additionalBrowserArgs": "--enable-unsafe-webgpu",
-                "dataDirectory": "OrigaWebView"
+                "additionalBrowserArgs": "--enable-unsafe-webgpu"
             }
         ],
         "security": {
