@@ -62,10 +62,14 @@ async function completeLessonFlexible(
         const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
         if (isComplete) break;
 
+        // `anyInteractive` deliberately excludes `lessonCardNextBtn`: after
+        // submitting a quiz/yesno answer, both the (still-visible) quiz
+        // options and the freshly-shown NextCardButton are in the DOM, so
+        // including both in the same `.or()` chain would trip Playwright
+        // strict mode. The NextCardButton is checked separately below.
         const anyInteractive = lessonPage.showAnswerBtn
             .or(lessonPage.quizOptions[0])
             .or(lessonPage.yesnoYesBtn)
-            .or(lessonPage.lessonCardNextBtn)
             .or(lessonPage.completeScreen);
         await expect(anyInteractive).toBeVisible({ timeout: 15_000 });
 
