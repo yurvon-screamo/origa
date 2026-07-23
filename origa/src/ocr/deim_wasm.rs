@@ -27,6 +27,12 @@ impl DeimDetector {
                 .map_err(|e| OrigaError::OcrError {
                     reason: format!("Failed to register WebGPU EP: {e:?}"),
                 })?
+                .with_dimension_override("images", 1)
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!(
+                        "Failed to override 'images' batch dimension for WebGPU: {e:?}"
+                    ),
+                })?
         } else {
             builder
         };
