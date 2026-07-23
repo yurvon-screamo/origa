@@ -46,26 +46,33 @@ pub async fn preload_ocr_model() {
     let result = async {
         let config = ModelConfig::new(crate::core::config::cdn_url("/ndlocr"), "ndlocr-model-");
         let loader = ModelLoader::new(config);
+
+        let download_start = Date::now();
         let model_files = loader.load_or_download_model().await.map_err(|e| {
             tracing::warn!(error = ?e, "OCR preload: model files download failed");
             format!("{e:?}")
         })?;
+        let download_ms = Date::now() - download_start;
 
-        let started = Date::now();
+        let init_start = Date::now();
         let model = init_ocr_model(model_files, &OcrLoadingState::default())
             .await
             .map_err(|e| {
                 tracing::warn!(error = %e, "OCR preload: model init failed");
                 e
             })?;
-        let elapsed_ms = Date::now() - started;
+        let init_ms = Date::now() - init_start;
 
         let wrapped = Rc::new(model);
         CACHED_MODEL.with(|cached| {
             *cached.borrow_mut() = Some(wrapped);
         });
 
-        info!(elapsed_ms, "OCR model preloaded and cached");
+        let total_ms = Date::now() - download_start;
+        info!(
+            download_ms,
+            init_ms, total_ms, "OCR model preloaded and cached"
+        );
         Ok::<(), String>(())
     }
     .await;

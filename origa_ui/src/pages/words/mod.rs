@@ -12,6 +12,8 @@ mod ocr_file_utils;
 mod ocr_processing;
 mod vocabulary_card_item;
 
+#[cfg(target_arch = "wasm32")]
+pub use audio_input_stage::preload_whisper_model;
 pub use content::WordsContent;
 pub use header::WordsHeader;
 pub use ocr_processing::preload_ocr_model;
@@ -24,14 +26,17 @@ use leptos::task::spawn_local;
 pub fn Words() -> impl IntoView {
     let refresh_trigger = RwSignal::new(0u32);
 
-    // Warm up the OCR model (download + ort session + WebGPU shader
-    // compilation) as soon as the user lands on /words, so the first
-    // real OCR is instant. Cold-start shader compilation alone was
-    // adding ~2-3 minutes to the first inference; this hides it
-    // behind UI browsing time. No-op if already cached or preloading.
+    // Warm up the OCR and Whisper models (download + ort session +
+    // WebGPU shader compilation) as soon as the user lands on /words,
+    // so the first real OCR / STT is instant. Cold-start shader
+    // compilation alone was adding ~2-3 minutes to the first inference;
+    // this hides it behind UI browsing time. No-op if already cached or
+    // preloading.
     Effect::new(move |_| {
         spawn_local(async {
             preload_ocr_model().await;
+            #[cfg(target_arch = "wasm32")]
+            preload_whisper_model().await;
         });
     });
 
