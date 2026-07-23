@@ -1,15 +1,13 @@
 use super::lesson_state::LessonState;
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 use origa::domain::{LessonCardView, Rating};
 
-pub fn create_on_yesno_select(
-    lesson_state: RwSignal<LessonState>,
-    on_rate_callback: Callback<Rating>,
-) -> Callback<bool> {
-    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+pub fn create_on_yesno_select(lesson_state: RwSignal<LessonState>) -> Callback<bool> {
+    // Defensive: without a dispose sentinel in context the handler returns a
+    // no-op callback. Same pattern as on_quiz_select — see its doc comment.
+    if use_context::<StoredValue<()>>().is_none() {
         return Callback::new(move |_: bool| {});
-    };
+    }
 
     Callback::new(move |answer: bool| {
         lesson_state.update(|state| {
@@ -18,27 +16,27 @@ pub fn create_on_yesno_select(
         });
 
         let state = lesson_state.get();
-        let card_id = state.card_ids.get(state.current_index);
+        let Some(card_id) = state.card_ids.get(state.current_index) else {
+            return;
+        };
+        let Some(lesson_card) = state.cards.get(card_id) else {
+            return;
+        };
+        let LessonCardView::YesNo(yesno) = lesson_card.view() else {
+            return;
+        };
 
-        if let Some(card_id) = card_id
-            && let Some(lesson_card) = state.cards.get(card_id)
-            && let LessonCardView::YesNo(yesno) = lesson_card.view()
-        {
-            let is_correct = yesno.check_answer(answer);
-            let rating = if is_correct {
-                Rating::Good
-            } else {
-                Rating::Again
-            };
+        let rating = if yesno.check_answer(answer) {
+            Rating::Good
+        } else {
+            Rating::Again
+        };
 
-            let on_rate_clone = on_rate_callback;
-            spawn_local(async move {
-                gloo_timers::future::TimeoutFuture::new(1500).await;
-                if is_disposed.is_disposed() {
-                    return;
-                }
-                on_rate_clone.run(rating);
-            });
-        }
+        // Pure-manual advance (ADR-033): the user dismisses the feedback card
+        // themselves via Space/Enter/click. Replaces the previous 1500ms timer.
+        lesson_state.update(|state| {
+            state.waiting_for_next = true;
+            state.pending_rating = Some(rating);
+        });
     })
 }

@@ -1,9 +1,10 @@
 use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant, MarkdownText, MarkdownVariant, Text, TextSize};
+use crate::ui_components::{MarkdownText, MarkdownVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{MultiQuizResult, QuizOption};
 use std::collections::HashSet;
 
+use super::next_card_button::NextCardButton;
 use super::quiz_result::OptionDisplay;
 
 #[component]
@@ -87,16 +88,7 @@ pub fn QuizOptionsMulti(
         </Show>
 
         <Show when=move || waiting_for_next.get() && multi_submitted.get()>
-            <div class="mt-4 flex justify-center">
-                <Button
-                    variant=Signal::derive(|| ButtonVariant::Filled)
-                    on_click=Callback::new(move |_| on_next_card.run(()))
-                    test_id=Signal::derive(|| "quiz-next-btn".to_string())
-                >
-                    <span>{t!(i18n, lesson.next)}</span>
-                    <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
-                </Button>
-            </div>
+            <NextCardButton on_next_card=on_next_card />
         </Show>
     }
 }

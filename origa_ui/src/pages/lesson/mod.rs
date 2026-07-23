@@ -16,6 +16,7 @@ mod lesson_card_renderer;
 mod lesson_progress;
 mod lesson_state;
 mod na_adjective_helper;
+mod next_card_button;
 mod on_dont_know;
 mod on_quiz_select;
 mod on_quiz_submit;

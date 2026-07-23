@@ -18,6 +18,15 @@ pub struct KeyboardActions {
     pub on_next_card: Callback<()>,
 }
 
+/// Keys that dismiss the feedback card under the pure-manual advance model
+/// (ADR-033): Space, Enter, or any single digit (0-9). Used in
+/// `waiting_for_next` state to advance to the next card without an
+/// auto-advance timer. Multi-character strings are rejected so that stray
+/// synthetic events do not advance the card.
+fn is_dismiss_key(key: &str) -> bool {
+    matches!(key, " " | "Enter")
+        || key.len() == 1 && key.chars().next().is_some_and(|c| c.is_ascii_digit())
+}
 pub fn create_keyboard_handler(
     lesson_ctx: LessonContext,
     is_rating: RwSignal<Option<Ulid>>,
@@ -32,8 +41,11 @@ pub fn create_keyboard_handler(
             return;
         }
 
-        // Приоритет: если ждём нажатия "Далее" — Space вызывает on_next_card
-        if state.waiting_for_next && key == " " {
+        // Pure-manual advance (ADR-033): when the user is held on the feedback
+        // card (waiting_for_next), Space, Enter, or any digit dismisses it and
+        // advances to the next card. The previous 1500ms auto-advance timer is
+        // gone — this is the only path forward from the feedback card.
+        if state.waiting_for_next && is_dismiss_key(&key) {
             ev.prevent_default();
             actions.on_next_card.run(());
             return;
@@ -235,5 +247,40 @@ mod tests {
     #[test]
     fn select_is_not_guarded() {
         assert!(!is_typing_target_kind("SELECT", false));
+    }
+
+    // ADR-033: pure-manual advance. The feedback card is dismissed by Space,
+    // Enter, or any digit (0-9). Other keys (e.g. Tab, arrows) do NOT dismiss,
+    // so the user can tab away without accidentally advancing.
+
+    #[test]
+    fn is_dismiss_key_accepts_space_and_enter() {
+        assert!(is_dismiss_key(" "));
+        assert!(is_dismiss_key("Enter"));
+    }
+
+    #[test]
+    fn is_dismiss_key_accepts_any_digit() {
+        for d in 0..=9 {
+            assert!(is_dismiss_key(&d.to_string()), "digit {d} should dismiss");
+        }
+    }
+
+    #[test]
+    fn is_dismiss_key_rejects_non_dismiss_keys() {
+        assert!(!is_dismiss_key("Tab"));
+        assert!(!is_dismiss_key("ArrowUp"));
+        assert!(!is_dismiss_key("Escape"));
+        assert!(!is_dismiss_key("Backspace"));
+        assert!(!is_dismiss_key("a"));
+        assert!(!is_dismiss_key("k"));
+        assert!(!is_dismiss_key("Shift"));
+    }
+
+    #[test]
+    fn is_dismiss_key_rejects_multi_digit_strings() {
+        // Only single digits — "12" or "1a" do not match.
+        assert!(!is_dismiss_key("12"));
+        assert!(!is_dismiss_key("1a"));
     }
 }
