@@ -20,6 +20,60 @@ thread_local! {
     static MODEL_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
+/// Preloads the OCR model (model files + ort session + WebGPU shader
+/// compilation) into `CACHED_MODEL` without running any inference.
+///
+/// Called on `/words` page mount so the first real OCR is instant. The
+/// shader compilation that previously added 2-3 minutes to the first
+/// inference now happens in the background while the user is still
+/// browsing the UI.
+///
+/// Idempotent: returns immediately if the model is already cached, and
+/// refuses to start a second concurrent preload (`MODEL_LOADING` guard).
+/// Errors are logged but not surfaced - preload failure just means the
+/// first real OCR will pay the cold-start cost as before.
+pub async fn preload_ocr_model() {
+    let already_cached = CACHED_MODEL.with(|c| c.borrow().is_some());
+    if already_cached {
+        return;
+    }
+
+    if MODEL_LOADING.with(|l| l.get()) {
+        return;
+    }
+    MODEL_LOADING.with(|l| l.set(true));
+
+    let result = async {
+        let config = ModelConfig::new(crate::core::config::cdn_url("/ndlocr"), "ndlocr-model-");
+        let loader = ModelLoader::new(config);
+        let model_files = loader.load_or_download_model().await.map_err(|e| {
+            tracing::warn!(error = ?e, "OCR preload: model files download failed");
+            format!("{e:?}")
+        })?;
+
+        let started = Date::now();
+        let model = init_ocr_model(model_files, &OcrLoadingState::default())
+            .await
+            .map_err(|e| {
+                tracing::warn!(error = %e, "OCR preload: model init failed");
+                e
+            })?;
+        let elapsed_ms = Date::now() - started;
+
+        let wrapped = Rc::new(model);
+        CACHED_MODEL.with(|cached| {
+            *cached.borrow_mut() = Some(wrapped);
+        });
+
+        info!(elapsed_ms, "OCR model preloaded and cached");
+        Ok::<(), String>(())
+    }
+    .await;
+
+    MODEL_LOADING.with(|l| l.set(false));
+    let _ = result;
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 pub(super) enum OcrState {
     #[default]
