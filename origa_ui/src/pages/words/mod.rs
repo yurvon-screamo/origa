@@ -12,11 +12,8 @@ mod ocr_file_utils;
 mod ocr_processing;
 mod vocabulary_card_item;
 
-#[cfg(target_arch = "wasm32")]
-pub use audio_input_stage::preload_whisper_model;
 pub use content::WordsContent;
 pub use header::WordsHeader;
-pub use ocr_processing::preload_ocr_model;
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;
