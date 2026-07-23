@@ -21,12 +21,15 @@ impl WhisperTranscriber {
         decoder_bytes: &[u8],
         tokenizer_bytes: &[u8],
     ) -> Result<Self, OrigaError> {
-        ort_init::ensure().await?;
+        let init = ort_init::ensure().await?;
 
-        tracing::info!("Loading Whisper model for WASM");
+        tracing::info!(
+            webgpu_active = init.webgpu_active,
+            "Loading Whisper model for WASM"
+        );
 
-        let encoder_session = build_session(encoder_bytes, "encoder").await?;
-        let decoder_session = build_session(decoder_bytes, "decoder").await?;
+        let encoder_session = build_session(encoder_bytes, "encoder", init.webgpu_active).await?;
+        let decoder_session = build_session(decoder_bytes, "decoder", init.webgpu_active).await?;
 
         tracing::info!(
             inputs = ?encoder_session.inputs(),
@@ -190,24 +193,31 @@ impl WhisperTranscriber {
 async fn build_session(
     model_bytes: &[u8],
     label: &str,
+    webgpu_active: bool,
 ) -> Result<ort::session::Session, OrigaError> {
-    let session = ort::session::Session::builder()
+    let builder = ort::session::Session::builder()
         .map_err(|e| OrigaError::SttError {
             reason: format!("{label} builder: {e:?}"),
         })?
         .with_optimization_level(GraphOptimizationLevel::Level3)
         .map_err(|e| OrigaError::SttError {
             reason: format!("{label} optimization level: {e:?}"),
-        })?
-        .with_execution_providers([WebGPU::default().build()])
-        .map_err(|e| OrigaError::SttError {
-            reason: format!("{label} WebGPU EP register: {e:?}"),
-        })?
+        })?;
+
+    let mut builder = if webgpu_active {
+        builder
+            .with_execution_providers([WebGPU::default().build()])
+            .map_err(|e| OrigaError::SttError {
+                reason: format!("{label} WebGPU EP register: {e:?}"),
+            })?
+    } else {
+        builder
+    };
+
+    builder
         .commit_from_memory(model_bytes)
         .await
         .map_err(|e| OrigaError::SttError {
             reason: format!("Load {label}: {e:?}"),
-        })?;
-
-    Ok(session)
+        })
 }

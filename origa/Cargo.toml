@@ -52,6 +52,8 @@ wasm-bindgen-futures = { workspace = true }
 getrandom = { workspace = true, features = ["wasm_js"] }
 as-slice.workspace = true
 futures.workspace = true
+js-sys.workspace = true
+web-sys = { version = "0.3", features = ["Window", "Navigator"] }
 
 [build-dependencies]
 csv = "1"

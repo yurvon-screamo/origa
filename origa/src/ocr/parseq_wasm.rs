@@ -21,25 +21,34 @@ impl ParseqRecognizer {
         vocab: &Vocabulary,
         input_width: u32,
     ) -> Result<Self, OrigaError> {
-        ort_init::ensure().await?;
+        let init = ort_init::ensure().await?;
 
-        let session = Session::builder()
+        let builder = Session::builder()
             .map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to create session builder: {e:?}"),
             })?
             .with_optimization_level(GraphOptimizationLevel::Level3)
             .map_err(|e| OrigaError::OcrError {
                 reason: format!("Failed to set optimization level: {e:?}"),
-            })?
-            .with_execution_providers([WebGPU::default().build()])
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to register WebGPU EP: {e:?}"),
-            })?
-            .commit_from_memory(model_bytes)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to load PARSeq model: {e:?}"),
             })?;
+
+        let mut builder = if init.webgpu_active {
+            builder
+                .with_execution_providers([WebGPU::default().build()])
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to register WebGPU EP: {e:?}"),
+                })?
+        } else {
+            builder
+        };
+
+        let session =
+            builder
+                .commit_from_memory(model_bytes)
+                .await
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to load PARSeq model: {e:?}"),
+                })?;
 
         Ok(Self {
             session: Mutex::new(session),

@@ -5439,6 +5439,7 @@ dependencies = [
  "getrandom 0.3.4",
  "hound",
  "image",
+ "js-sys",
  "lindera",
  "lindera-dictionary",
  "ndarray 0.17.2",
@@ -5459,6 +5460,7 @@ dependencies = [
  "tracing-subscriber",
  "ulid",
  "wasm-bindgen-futures",
+ "web-sys",
  "zip 4.6.1",
 ]
 
