@@ -1,34 +1,13 @@
-use std::cell::Cell;
-
 use super::common::{
     MAX_DECODE_TOKENS, argmax_last_position, build_prompt_tokens, strip_trailing_repeats,
 };
 use crate::domain::OrigaError;
+use crate::ort_init;
 use crate::stt::tokenizer::WhisperTokenizer;
 use futures::lock::Mutex;
+use ort::ep::WebGPU;
 use ort::session::RunOptions;
 use ort_web::ValueExt;
-
-thread_local! {
-    static ORT_INITIALIZED: Cell<bool> = const { Cell::new(false) };
-}
-
-async fn ensure_ort_initialized() -> Result<(), OrigaError> {
-    let already_init = ORT_INITIALIZED.with(|c| c.get());
-    if already_init {
-        return Ok(());
-    }
-
-    let api = ort_web::api(ort_web::FEATURE_NONE)
-        .await
-        .map_err(|e| OrigaError::SttError {
-            reason: format!("Failed to get ort API: {:?}", e),
-        })?;
-    ort::set_api(api);
-
-    ORT_INITIALIZED.with(|c| c.set(true));
-    Ok(())
-}
 
 pub struct WhisperTranscriber {
     encoder_session: Mutex<ort::session::Session>,
@@ -42,35 +21,15 @@ impl WhisperTranscriber {
         decoder_bytes: &[u8],
         tokenizer_bytes: &[u8],
     ) -> Result<Self, OrigaError> {
-        ensure_ort_initialized().await?;
+        let init = ort_init::ensure().await?;
 
-        tracing::info!("Loading Whisper model for WASM");
+        tracing::info!(
+            webgpu_active = init.webgpu_active,
+            "Loading Whisper model for WASM"
+        );
 
-        let encoder_session = {
-            let mut builder =
-                ort::session::Session::builder().map_err(|e| OrigaError::SttError {
-                    reason: format!("Encoder builder: {:?}", e),
-                })?;
-            builder
-                .commit_from_memory(encoder_bytes)
-                .await
-                .map_err(|e| OrigaError::SttError {
-                    reason: format!("Load encoder: {:?}", e),
-                })?
-        };
-
-        let decoder_session = {
-            let mut builder =
-                ort::session::Session::builder().map_err(|e| OrigaError::SttError {
-                    reason: format!("Decoder builder: {:?}", e),
-                })?;
-            builder
-                .commit_from_memory(decoder_bytes)
-                .await
-                .map_err(|e| OrigaError::SttError {
-                    reason: format!("Load decoder: {:?}", e),
-                })?
-        };
+        let encoder_session = build_session(encoder_bytes, "encoder", init.webgpu_active).await?;
+        let decoder_session = build_session(decoder_bytes, "decoder", init.webgpu_active).await?;
 
         tracing::info!(
             inputs = ?encoder_session.inputs(),
@@ -229,4 +188,31 @@ impl WhisperTranscriber {
 
         Ok(tokens)
     }
+}
+
+async fn build_session(
+    model_bytes: &[u8],
+    label: &str,
+    webgpu_active: bool,
+) -> Result<ort::session::Session, OrigaError> {
+    let builder = ort::session::Session::builder().map_err(|e| OrigaError::SttError {
+        reason: format!("{label} builder: {e:?}"),
+    })?;
+
+    let mut builder = if webgpu_active {
+        builder
+            .with_execution_providers([WebGPU::default().build()])
+            .map_err(|e| OrigaError::SttError {
+                reason: format!("{label} WebGPU EP register: {e:?}"),
+            })?
+    } else {
+        builder
+    };
+
+    builder
+        .commit_from_memory(model_bytes)
+        .await
+        .map_err(|e| OrigaError::SttError {
+            reason: format!("Load {label}: {e:?}"),
+        })
 }

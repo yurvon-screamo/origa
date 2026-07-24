@@ -1,9 +1,10 @@
-use super::deim_wasm::ensure_ort_initialized;
 use super::shared::{parseq_postprocess, parseq_preprocess};
 use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
+use crate::ort_init;
 use futures::lock::Mutex;
 use image::DynamicImage;
+use ort::ep::WebGPU;
 use ort::session::Session;
 use ort_web::ValueExt;
 
@@ -19,17 +20,28 @@ impl ParseqRecognizer {
         vocab: &Vocabulary,
         input_width: u32,
     ) -> Result<Self, OrigaError> {
-        ensure_ort_initialized().await?;
+        let init = ort_init::ensure().await?;
 
-        let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create session builder: {:?}", e),
+        let builder = Session::builder().map_err(|e| OrigaError::OcrError {
+            reason: format!("Failed to create session builder: {e:?}"),
         })?;
+
+        let mut builder = if init.webgpu_active {
+            builder
+                .with_execution_providers([WebGPU::default().build()])
+                .map_err(|e| OrigaError::OcrError {
+                    reason: format!("Failed to register WebGPU EP: {e:?}"),
+                })?
+        } else {
+            builder
+        };
+
         let session =
             builder
                 .commit_from_memory(model_bytes)
                 .await
                 .map_err(|e| OrigaError::OcrError {
-                    reason: format!("Failed to load PARSeq model: {:?}", e),
+                    reason: format!("Failed to load PARSeq model: {e:?}"),
                 })?;
 
         Ok(Self {

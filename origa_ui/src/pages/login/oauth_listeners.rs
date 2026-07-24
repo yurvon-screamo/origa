@@ -146,7 +146,7 @@ fn poll_current_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     // This is not the correctness guarantee (check_session may not have
     // restored the user yet on a fresh mount) — the verifier-existence skip in
     // handle_oauth_callback_desktop is the guarantee against replayed callbacks.
-    if auth_store.is_authenticated().get() {
+    if auth_store.is_authenticated().get_untracked() {
         debug!("already authenticated — skipping current deep-link poll");
         return;
     }

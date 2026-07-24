@@ -1,6 +1,7 @@
 use super::shared::{DEIM_DEFAULT_INPUT_SIZE, deim_postprocess, deim_preprocess};
 use super::types::BoundingBox;
 use crate::domain::OrigaError;
+use crate::ort_init;
 use futures::lock::Mutex;
 use image::DynamicImage;
 use ort::session::Session;
@@ -11,40 +12,26 @@ pub struct DeimDetector {
     input_size: u32,
 }
 
-static ORT_INIT: std::sync::Once = std::sync::Once::new();
-
-pub async fn ensure_ort_initialized() -> Result<(), OrigaError> {
-    let mut should_init = false;
-    ORT_INIT.call_once(|| {
-        should_init = true;
-    });
-
-    if should_init {
-        let api = ort_web::api(ort_web::FEATURE_NONE)
-            .await
-            .map_err(|e| OrigaError::OcrError {
-                reason: format!("Failed to get ort API: {:?}", e),
-            })?;
-        ort::set_api(api);
-    }
-
-    Ok(())
-}
-
 impl DeimDetector {
     pub async fn new(model_bytes: &[u8]) -> Result<Self, OrigaError> {
-        ensure_ort_initialized().await?;
+        // Always run DEIM on CPU even when WebGPU is available. DEIM is a
+        // DETR-style detector with intermediate Reshape/Transpose ops that
+        // keep symbolic dimensions in the graph; the ort-web WebGPU EP
+        // crashes inside TensorShape::SizeToDimension when it hits one.
+        // Freezing the model inputs is not enough - the symbolic dims live
+        // in the graph body. PARSeq recognisers have fully static shapes and
+        // are safe to run on WebGPU.
+        let _ = ort_init::ensure().await?;
 
-        let mut builder = Session::builder().map_err(|e| OrigaError::OcrError {
-            reason: format!("Failed to create session builder: {:?}", e),
-        })?;
-        let session =
-            builder
-                .commit_from_memory(model_bytes)
-                .await
-                .map_err(|e| OrigaError::OcrError {
-                    reason: format!("Failed to load DEIM model: {:?}", e),
-                })?;
+        let session = Session::builder()
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to create session builder: {e:?}"),
+            })?
+            .commit_from_memory(model_bytes)
+            .await
+            .map_err(|e| OrigaError::OcrError {
+                reason: format!("Failed to load DEIM model: {e:?}"),
+            })?;
 
         let input_info = session
             .inputs()

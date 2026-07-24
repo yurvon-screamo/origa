@@ -17,7 +17,8 @@
             {
                 "title": "Origa 「オリガ」",
                 "width": 800,
-                "height": 600
+                "height": 600,
+                "additionalBrowserArgs": "--enable-unsafe-webgpu"
             }
         ],
         "security": {
@@ -36,7 +37,9 @@
             "icons/icon.ico"
         ],
         "android": {},
-        "iOS": {}
+        "iOS": {
+            "minimumSystemVersion": "26.0"
+        }
     },
     "plugins": {
         "opener": {},

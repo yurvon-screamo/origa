@@ -280,3 +280,65 @@ pub(crate) fn crop_bbox(image: &DynamicImage, bbox: &BoundingBox) -> DynamicImag
 
     image.crop_imm(x0, y0, width, height)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::RgbaImage;
+
+    fn solid_image(w: u32, h: u32) -> DynamicImage {
+        DynamicImage::ImageRgba8(RgbaImage::new(w, h))
+    }
+
+    fn bbox(x0: i32, y0: i32, x1: i32, y1: i32) -> BoundingBox {
+        BoundingBox {
+            x0,
+            y0,
+            x1,
+            y1,
+            confidence: 1.0,
+            class_index: 0,
+            pred_char_cnt: 0.0,
+        }
+    }
+
+    #[test]
+    fn crop_bbox_returns_full_crop_for_valid_coordinates() {
+        let image = solid_image(100, 100);
+        let cropped = crop_bbox(&image, &bbox(10, 20, 30, 40));
+        assert_eq!(cropped.width(), 20);
+        assert_eq!(cropped.height(), 20);
+    }
+
+    #[test]
+    fn crop_bbox_clamps_negative_origin_to_zero() {
+        let image = solid_image(100, 100);
+        let cropped = crop_bbox(&image, &bbox(-10, -20, 30, 40));
+        assert_eq!(cropped.width(), 30);
+        assert_eq!(cropped.height(), 40);
+    }
+
+    #[test]
+    fn crop_bbox_clamps_to_image_bounds_when_bbox_exceeds_dimensions() {
+        let image = solid_image(50, 50);
+        let cropped = crop_bbox(&image, &bbox(40, 40, 200, 200));
+        assert_eq!(cropped.width(), 10);
+        assert_eq!(cropped.height(), 10);
+    }
+
+    #[test]
+    fn crop_bbox_returns_one_pixel_when_inverted_coordinates() {
+        let image = solid_image(100, 100);
+        let cropped = crop_bbox(&image, &bbox(30, 30, 10, 10));
+        assert_eq!(cropped.width(), 1);
+        assert_eq!(cropped.height(), 1);
+    }
+
+    #[test]
+    fn crop_bbox_returns_one_pixel_when_zero_width() {
+        let image = solid_image(100, 100);
+        let cropped = crop_bbox(&image, &bbox(20, 10, 20, 40));
+        assert_eq!(cropped.width(), 1);
+        assert_eq!(cropped.height(), 1);
+    }
+}

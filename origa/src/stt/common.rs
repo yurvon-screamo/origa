@@ -66,3 +66,32 @@ pub fn strip_trailing_repeats(text: &str) -> String {
         .unwrap_or(0);
     chars[..cutoff].iter().collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::strip_trailing_repeats;
+
+    #[test]
+    fn strip_trailing_repeats_returns_input_when_shorter_than_three_chars() {
+        assert_eq!(strip_trailing_repeats("ab"), "ab");
+        assert_eq!(strip_trailing_repeats("a"), "a");
+        assert_eq!(strip_trailing_repeats(""), "");
+    }
+
+    #[test]
+    fn strip_trailing_repeats_returns_input_when_last_two_differ() {
+        assert_eq!(strip_trailing_repeats("abc"), "abc");
+        assert_eq!(strip_trailing_repeats("あいう"), "あいう");
+    }
+
+    #[test]
+    fn strip_trailing_repeats_collapses_run_of_identical_trailing_chars() {
+        assert_eq!(strip_trailing_repeats("abcddd"), "abc");
+        assert_eq!(strip_trailing_repeats("あいいいい"), "あ");
+    }
+
+    #[test]
+    fn strip_trailing_repeats_all_identical_collapses_to_empty() {
+        assert_eq!(strip_trailing_repeats("aaaa"), "");
+    }
+}

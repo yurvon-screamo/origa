@@ -90,6 +90,12 @@ async fn run_ocr_on_data_url(
     ctx.ocr_state.set(OcrState::Processing);
     ctx.ocr_loading_state.start_time.set(Some(Date::now()));
 
+    // Yield to the browser so the UI repaints with Processing state before
+    // the CPU-bound inference begins. Without this, the single-threaded WASM
+    // event loop runs process_image_with_ocr synchronously and the user
+    // never sees the loading stepper.
+    crate::utils::yield_to_browser().await;
+
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state, &i18n).await;
 
     if ctx.ocr_loading_state.cancel_requested.get_untracked() {

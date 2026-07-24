@@ -91,8 +91,8 @@ pub fn ProfileContent() -> impl IntoView {
 
         spawn_local(async move {
             loop {
-                let language = selected_language.get();
-                let daily_load_val = selected_daily_load.get();
+                let language = selected_language.get_untracked();
+                let daily_load_val = selected_daily_load.get_untracked();
 
                 let use_case = UpdateUserProfileUseCase::new(&repository);
                 let result = use_case.execute(language, daily_load_val, None).await;
@@ -114,7 +114,7 @@ pub fn ProfileContent() -> impl IntoView {
                     return;
                 }
 
-                if needs_resave.get() {
+                if needs_resave.get_untracked() {
                     needs_resave.set(false);
                     save_status.set(AutoSaveStatus::Saving);
                     continue;

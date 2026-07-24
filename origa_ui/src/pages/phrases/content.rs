@@ -18,7 +18,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     let initial_load_done = RwSignal::new(false);
     let on_cards_loaded: CardsLoadedCallback = Arc::new(move |cards: &[StudyCard]| {
-        if initial_load_done.get() {
+        if initial_load_done.get_untracked() {
             return;
         }
 

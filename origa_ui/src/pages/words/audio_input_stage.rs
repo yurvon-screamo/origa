@@ -62,6 +62,9 @@ async fn load_whisper_model_inner(
     status_text: RwSignal<Option<String>>,
 ) -> Result<Rc<WhisperTranscriber>, String> {
     status_text.set(Some("Downloading Whisper model...".to_string()));
+
+    let total_start = web_sys::js_sys::Date::now();
+    let download_start = total_start;
     info!("Loading Whisper model from CDN");
 
     let loader = WhisperModelLoader::new(whisper_base_url());
@@ -70,15 +73,24 @@ async fn load_whisper_model_inner(
         .await
         .map_err(|e| format!("Failed to download Whisper model: {:?}", e))?;
 
+    let download_ms = web_sys::js_sys::Date::now() - download_start;
+    info!(download_ms, "Whisper model files ready");
+
     status_text.set(Some("Initializing Whisper model...".to_string()));
 
+    let init_start = web_sys::js_sys::Date::now();
     let model = WhisperModelLoader::init_model(files)
         .await
         .map_err(|e| format!("Failed to init Whisper model: {:?}", e))?;
+    let init_ms = web_sys::js_sys::Date::now() - init_start;
 
     let wrapped = Rc::new(model);
     CACHED_WHISPER.with(|c| *c.borrow_mut() = Some(wrapped.clone()));
-    info!("Whisper model loaded and cached");
+    let total_ms = web_sys::js_sys::Date::now() - total_start;
+    info!(
+        download_ms,
+        init_ms, total_ms, "Whisper model loaded and cached"
+    );
     Ok(wrapped)
 }
 
@@ -99,15 +111,18 @@ async fn transcribe_via_wasm(
             e
         })?;
 
-    status_text.set(Some(
+    // Status text is read off the i18n context inside an async fn, which
+    // is not a reactive tracking scope. Wrap in untrack to silence the
+    // reactive_graph warning without pretending to subscribe.
+    let loading_label = untrack(|| {
         i18n.get_keys()
             .words()
             .audio()
             .loading_model()
             .inner()
             .to_string()
-            .replacen("{}", name, 1),
-    ));
+    });
+    status_text.set(Some(loading_label.replacen("{}", name, 1)));
     audio_state.set(AudioState::Processing);
 
     let bytes = read_file_as_bytes(file).await.map_err(|e| {
@@ -117,10 +132,18 @@ async fn transcribe_via_wasm(
     })?;
 
     let use_case = origa::use_cases::TranscribeAudioUseCase::new();
-    use_case
+    let infer_start = web_sys::js_sys::Date::now();
+    let result = use_case
         .execute(model.clone(), &bytes)
         .await
-        .map_err(|e| format!("Transcription failed: {:?}", e))
+        .map_err(|e| format!("Transcription failed: {:?}", e));
+    let infer_ms = web_sys::js_sys::Date::now() - infer_start;
+    info!(
+        infer_ms,
+        bytes_len = bytes.len(),
+        "Whisper inference timing"
+    );
+    result
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -317,7 +340,7 @@ pub(super) fn AudioInputStage(
                                     WHISPER_LOADING.with(|l| l.set(false));
                                 })
                             >
-                                {i18n.get_keys().common().cancel().inner().to_string()}
+                                {move || i18n.get_keys().common().cancel().inner().to_string()}
                             </Button>
                         </div>
                     }.into_any(),

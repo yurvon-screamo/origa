@@ -72,7 +72,7 @@ pub fn GrammarCardItem(
             </div>
             <A href=format!("/grammar/{}", card_id) attr:class="grammar-card-link">
                 <div class="grammar-card-rule-box">
-                    <FuriganaText text=title.get() known_kanji=known_kanji/>
+                    <FuriganaText text=title.get_untracked() known_kanji=known_kanji/>
                 </div>
                 <Show when=move || !short_description.get().is_empty()>
                     <div class="grammar-card-content">

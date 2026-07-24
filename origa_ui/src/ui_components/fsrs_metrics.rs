@@ -85,18 +85,20 @@ pub fn FsrsMetrics(
             .inner()
             .to_string()
     });
-    let difficulty_full = i18n
-        .get_keys()
-        .shared()
-        .fsrs_difficulty()
-        .inner()
-        .to_string();
-    let stability_full = i18n
-        .get_keys()
-        .shared()
-        .fsrs_stability()
-        .inner()
-        .to_string();
+    let difficulty_full = Signal::derive(move || {
+        i18n.get_keys()
+            .shared()
+            .fsrs_difficulty()
+            .inner()
+            .to_string()
+    });
+    let stability_full = Signal::derive(move || {
+        i18n.get_keys()
+            .shared()
+            .fsrs_stability()
+            .inner()
+            .to_string()
+    });
 
     view! {
         <span class="fsrs-metrics" role="group" aria-label="FSRS metrics" data-testid=test_id_val>
@@ -127,7 +129,7 @@ pub fn FsrsMetrics(
 #[component]
 fn CompactMetric(
     #[prop(into)] label: Signal<String>,
-    #[prop(into)] tooltip_text: String,
+    #[prop(into)] tooltip_text: Signal<String>,
     value: Option<f64>,
     fill_fn: fn(f64) -> f64,
     color_fn: impl Fn(f64, f64) -> &'static str + 'static,
@@ -138,7 +140,7 @@ fn CompactMetric(
     let data = compute_metric_data(value, fill_fn, &color_fn, other_value);
 
     view! {
-        <Tooltip text=Signal::derive(move || tooltip_text.clone())>
+        <Tooltip text=tooltip_text>
             <span
                 class="fsrs-metric"
                 role="meter"
