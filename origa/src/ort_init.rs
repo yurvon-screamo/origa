@@ -64,26 +64,40 @@ pub async fn ensure() -> Result<InitOutcome, OrigaError> {
 async fn init_inner() -> Result<InitOutcome, OrigaError> {
     let webgpu_active = webgpu_adapter_available().await;
 
-    let feature = if webgpu_active {
+    if webgpu_active {
         tracing::info!("WebGPU adapter detected, initializing ort-web with FEATURE_WEBGPU");
-        ort_web::FEATURE_WEBGPU
+        match ort_web::api(ort_web::FEATURE_WEBGPU).await {
+            Ok(api) => {
+                ort::set_api(api);
+                tracing::info!(webgpu_active = true, "ort-web initialized");
+                return Ok(InitOutcome {
+                    webgpu_active: true,
+                });
+            },
+            Err(e) => {
+                tracing::warn!(
+                    error = ?e,
+                    "WebGPU ort-web init failed (CDN unreachable?), falling back to FEATURE_NONE"
+                );
+            },
+        }
     } else {
         tracing::info!(
             "WebGPU adapter unavailable, initializing ort-web with FEATURE_NONE (CPU-only)"
         );
-        ort_web::FEATURE_NONE
-    };
+    }
 
-    let api = ort_web::api(feature)
+    let api = ort_web::api(ort_web::FEATURE_NONE)
         .await
         .map_err(|e| OrigaError::OcrError {
-            reason: format!("ort_web::api failed: {e:?}"),
+            reason: format!("ort_web::api(FEATURE_NONE) failed: {e:?}"),
         })?;
 
     ort::set_api(api);
-
-    tracing::info!(webgpu_active, "ort-web initialized");
-    Ok(InitOutcome { webgpu_active })
+    tracing::info!(webgpu_active = false, "ort-web initialized");
+    Ok(InitOutcome {
+        webgpu_active: false,
+    })
 }
 
 /// Probes for a real WebGPU adapter by calling `navigator.gpu.requestAdapter()`.
