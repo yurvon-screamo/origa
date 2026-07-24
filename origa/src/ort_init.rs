@@ -12,18 +12,18 @@
 //! memoizes the result. Errors are stored too — if initialization fails once,
 //! subsequent calls return the same error without retrying.
 //!
-//! WebGPU detection: We probe `navigator.gpu` at runtime. Registering the
-//! WebGPU execution provider on a runtime that has no GPU adapter (headless
-//! CI Chromium, old WebView) blocks session creation indefinitely, so we
-//! load `FEATURE_NONE` (CPU-only) when WebGPU is unavailable. On real user
-//! devices (Windows WebView2 113+, macOS/iOS 26+, Android WebView 121+) the
-//! probe returns true and we load `FEATURE_WEBGPU`. WebGL is intentionally
-//! not included — `ort` crate has no `ep::WebGL` struct, so the WebGL bundle
-//! would be downloaded but never registered.
+//! WebGPU detection: We call `navigator.gpu.requestAdapter()` at runtime.
+//! Just checking for the existence of `navigator.gpu` is insufficient —
+//! Playwright headless Chromium exposes the property but `requestAdapter()`
+//! returns null when no GPU is available. Registering the WebGPU EP in that
+//! state causes session creation to download the 25 MB JSEP wasm bundle and
+//! then hang. By actually requesting an adapter we get a definitive answer.
 
 use crate::domain::OrigaError;
 use futures::lock::Mutex;
 use std::sync::OnceLock;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
 
 /// Outcome of one-time ort-web initialization.
 ///
@@ -62,7 +62,7 @@ pub async fn ensure() -> Result<InitOutcome, OrigaError> {
 }
 
 async fn init_inner() -> Result<InitOutcome, OrigaError> {
-    let webgpu_active = webgpu_available();
+    let webgpu_active = webgpu_adapter_available().await;
 
     let feature = if webgpu_active {
         tracing::info!("WebGPU adapter detected, initializing ort-web with FEATURE_WEBGPU");
@@ -86,18 +86,54 @@ async fn init_inner() -> Result<InitOutcome, OrigaError> {
     Ok(InitOutcome { webgpu_active })
 }
 
-/// Probes the host environment for a WebGPU adapter.
+/// Probes for a real WebGPU adapter by calling `navigator.gpu.requestAdapter()`.
 ///
-/// Checks for `navigator.gpu` existence via `Reflect::has` (cheap, no async
-/// adapter request). In headless Chromium without `--enable-unsafe-webgpu`
-/// and GPU passthrough this returns `false`, which keeps CI green; on real
-/// user devices it returns `true` when the WebView supports WebGPU.
-fn webgpu_available() -> bool {
+/// This is async because `requestAdapter()` returns a `Promise<GPUAdapter | null>`.
+/// In headless Chromium (CI) the promise resolves with `null` — no GPU — so
+/// we correctly fall back to CPU. On real user devices the adapter is non-null.
+///
+/// Checking only for `navigator.gpu` property existence is **insufficient**:
+/// Playwright's bundled Chromium exposes the property even without a GPU.
+async fn webgpu_adapter_available() -> bool {
     let Some(window) = web_sys::window() else {
         return false;
     };
     let navigator = window.navigator();
-    js_sys::Reflect::has(&navigator, &js_sys::JsString::from("gpu")).unwrap_or(false)
+
+    let gpu = js_sys::Reflect::get(&navigator, &js_sys::JsString::from("gpu")).ok();
+    let Some(gpu) = gpu else {
+        return false;
+    };
+    if gpu.is_null() || gpu.is_undefined() {
+        return false;
+    }
+
+    let request_adapter =
+        js_sys::Reflect::get(&gpu, &js_sys::JsString::from("requestAdapter")).ok();
+    let Some(request_adapter) = request_adapter else {
+        return false;
+    };
+
+    let Ok(request_fn) = request_adapter.dyn_into::<js_sys::Function>() else {
+        return false;
+    };
+
+    let adapter_result = request_fn.call0(&gpu);
+    let Ok(adapter_promise_val) = adapter_result else {
+        return false;
+    };
+
+    let Ok(adapter_promise) = adapter_promise_val.dyn_into::<js_sys::Promise>() else {
+        return false;
+    };
+
+    match JsFuture::from(adapter_promise).await {
+        Ok(adapter) => !adapter.is_null() && !adapter.is_undefined(),
+        Err(e) => {
+            tracing::warn!(error = ?e, "navigator.gpu.requestAdapter() rejected");
+            false
+        },
+    }
 }
 
 #[cfg(test)]
@@ -108,10 +144,5 @@ mod tests {
     fn init_outcome_is_copy() {
         fn assert_copy<T: Copy>() {}
         assert_copy::<InitOutcome>();
-    }
-
-    #[test]
-    fn webgpu_available_returns_bool_in_test_env() {
-        let _ = webgpu_available();
     }
 }
