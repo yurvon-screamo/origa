@@ -93,7 +93,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Download WASM artifact
               uses: actions/download-artifact@v8
@@ -201,7 +201,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Download WASM artifact
               uses: actions/download-artifact@v8
@@ -309,7 +309,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Download WASM artifact
               uses: actions/download-artifact@v8
