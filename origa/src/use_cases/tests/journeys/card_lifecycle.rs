@@ -50,6 +50,10 @@ async fn well_known_set_minna_nihongo_serialization() {
         title_en: "Minna no Nihongo N5".to_string(),
         desc_ru: "Базовый японский учебник уровень N5".to_string(),
         desc_en: "Basic Japanese textbook N5 level".to_string(),
+        title_ko: "Minna no Nihongo N5".to_string(),
+        desc_ko: "기초 일본어 교재 N5 수준".to_string(),
+        title_vi: "Minna no Nihongo N5".to_string(),
+        desc_vi: "Giáo trình tiếng Nhật cơ bản trình độ N5".to_string(),
         word_count: 100,
     };
 

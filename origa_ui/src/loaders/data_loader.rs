@@ -1,5 +1,7 @@
 use origa::dictionary::cdn_blob::{guard_matches, split_blob};
-use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
+use origa::dictionary::grammar::{
+    GrammarData, init_grammar, is_grammar_loaded, merge_grammar_overlay,
+};
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use origa::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use origa::dictionary::vocabulary::{
@@ -223,7 +225,19 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     tracing::info!("📖 Loading grammar...");
 
     let cdn = cdn_provider();
-    let json = cdn.fetch_text("grammar/grammar_v2.json").await?;
+    let mut json = cdn.fetch_text("grammar/grammar_v2.json").await?;
+    // KO/VI content lives in a separate overlay file: released clients
+    // parse grammar_v2.json with a two-variant NativeLanguage enum and
+    // would reject Korean/Vietnamese content-map keys outright. A missing
+    // or unreadable overlay degrades to the EN/RU corpus, never blocks.
+    match cdn.fetch_text("grammar/grammar_ko_vi.json").await {
+        Ok(overlay) => {
+            json = merge_grammar_overlay(&json, &overlay)?;
+        },
+        Err(e) => {
+            tracing::warn!("📖 Grammar KO/VI overlay unavailable ({e:?}), EN/RU only");
+        },
+    }
     let data = GrammarData { grammar_json: json };
 
     yield_to_browser().await;

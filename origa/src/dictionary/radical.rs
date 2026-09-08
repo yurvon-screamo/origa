@@ -85,6 +85,13 @@ pub struct RadicalInfo {
     name_en: Option<String>,
     /// English projection of `description`; empty until the CDN data ships it.
     description_en: Option<String>,
+    /// Korean projection of `name`/`description`; falls back to English
+    /// (empty string) for legacy CDN data without `_ko` fields.
+    name_ko: Option<String>,
+    description_ko: Option<String>,
+    /// Vietnamese projection of `name`/`description`; see `name_ko`.
+    name_vi: Option<String>,
+    description_vi: Option<String>,
     jlpt: JapaneseLevel,
     kanji: Vec<char>,
 }
@@ -101,10 +108,20 @@ impl RadicalInfo {
     /// Localized radical name. An empty string means "no translation for this
     /// language yet" (legacy CDN data without the `_en` fields) — callers hide
     /// empty copy and degrade to the bare radical symbol instead of showing
-    /// Russian to an English user.
+    /// Russian to an English user. KO/VI reuse the English projection until
+    /// `_ko`/`_vi` fields ship on the CDN.
     pub fn name(&self, lang: &NativeLanguage) -> &str {
         match lang {
             NativeLanguage::English => self.name_en.as_deref().unwrap_or(""),
+            // KO/VI fall back to English for legacy data without `_ko`/`_vi`.
+            NativeLanguage::Korean => self
+                .name_ko
+                .as_deref()
+                .unwrap_or_else(|| self.name_en.as_deref().unwrap_or("")),
+            NativeLanguage::Vietnamese => self
+                .name_vi
+                .as_deref()
+                .unwrap_or_else(|| self.name_en.as_deref().unwrap_or("")),
             NativeLanguage::Russian => &self.name,
         }
     }
@@ -114,6 +131,14 @@ impl RadicalInfo {
     pub fn description(&self, lang: &NativeLanguage) -> &str {
         match lang {
             NativeLanguage::English => self.description_en.as_deref().unwrap_or(""),
+            NativeLanguage::Korean => self
+                .description_ko
+                .as_deref()
+                .unwrap_or_else(|| self.description_en.as_deref().unwrap_or("")),
+            NativeLanguage::Vietnamese => self
+                .description_vi
+                .as_deref()
+                .unwrap_or_else(|| self.description_en.as_deref().unwrap_or("")),
             NativeLanguage::Russian => &self.description,
         }
     }
@@ -154,6 +179,10 @@ impl RadicalDatabase {
                         description: v.description,
                         name_en: v.name_en,
                         description_en: v.description_en,
+                        name_ko: v.name_ko,
+                        description_ko: v.description_ko,
+                        name_vi: v.name_vi,
+                        description_vi: v.description_vi,
                         jlpt,
                         kanji,
                     },
@@ -196,6 +225,14 @@ struct RadicalStoredType {
     description: String,
     name_en: Option<String>,
     description_en: Option<String>,
+    #[serde(default)]
+    name_ko: Option<String>,
+    #[serde(default)]
+    description_ko: Option<String>,
+    #[serde(default)]
+    name_vi: Option<String>,
+    #[serde(default)]
+    description_vi: Option<String>,
     jlpt: String,
 }
 
@@ -236,6 +273,40 @@ mod tests {
         let json = r#"{"radicals": {"山": {"strokeCount": 3, "kanji": [], "name": "mountain", "description": "Mountain", "jlpt": "N5"}}}"#;
         let db = RadicalDatabase::from_json(json).unwrap();
         assert!(db.get_radical_info(&'山').is_ok());
+    }
+
+    #[test]
+    fn korean_vietnamese_projections_use_fields_and_fall_back() {
+        let merged = r#"{"radicals": {
+            "日": {
+                "strokeCount": 4, "kanji": [], "jlpt": "N5",
+                "name": "солнце", "description": "Солнце или день",
+                "name_en": "sun", "description_en": "Sun or day radical",
+                "name_ko": "해", "description_ko": "해 또는 날 부수",
+                "name_vi": "mặt trời", "description_vi": "Bộ thủ mặt trời hoặc ngày"
+            },
+            "山": {
+                "strokeCount": 3, "kanji": [], "jlpt": "N5",
+                "name": "гора", "description": "Гора",
+                "name_en": "mountain", "description_en": "Mountain radical"
+            }
+        }}"#;
+        let db = RadicalDatabase::from_json(merged).unwrap();
+
+        let sun = db.get_radical_info(&'日').unwrap();
+        assert_eq!(sun.name(&NativeLanguage::Korean), "해");
+        assert_eq!(
+            sun.description(&NativeLanguage::Vietnamese),
+            "Bộ thủ mặt trời hoặc ngày"
+        );
+
+        // Legacy entry without `_ko`/`_vi` fields degrades to English.
+        let mountain = db.get_radical_info(&'山').unwrap();
+        assert_eq!(mountain.name(&NativeLanguage::Korean), "mountain");
+        assert_eq!(
+            mountain.description(&NativeLanguage::Vietnamese),
+            "Mountain radical"
+        );
     }
 
     #[test]

@@ -71,12 +71,18 @@ fn main() {
 fn handle_i18n() {
     println!("cargo:rerun-if-changed=locales/en.json");
     println!("cargo:rerun-if-changed=locales/ru.json");
+    println!("cargo:rerun-if-changed=locales/ko.json");
+    println!("cargo:rerun-if-changed=locales/vi.json");
 
     let i18n_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("i18n");
 
     let cfg = leptos_i18n_build::Config::new("en")
         .expect("Failed to create i18n config")
         .add_locale("ru")
+        .expect("Failed to add locale")
+        .add_locale("ko")
+        .expect("Failed to add locale")
+        .add_locale("vi")
         .expect("Failed to add locale");
 
     let infos = leptos_i18n_build::TranslationsInfos::parse(cfg)
@@ -137,6 +143,10 @@ struct WellKnownContent {
     Russian: Option<LanguageContent>,
     #[serde(default)]
     English: Option<LanguageContent>,
+    #[serde(default)]
+    Korean: Option<LanguageContent>,
+    #[serde(default)]
+    Vietnamese: Option<LanguageContent>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -166,6 +176,10 @@ struct WellKnownMeta {
     title_en: String,
     desc_ru: String,
     desc_en: String,
+    title_ko: String,
+    desc_ko: String,
+    title_vi: String,
+    desc_vi: String,
     word_count: usize,
 }
 
@@ -191,6 +205,20 @@ fn extract_meta(
         .map(|e| (e.title.clone(), e.description.clone()))
         .unwrap_or_default();
 
+    let (title_ko, desc_ko) = data
+        .content
+        .Korean
+        .as_ref()
+        .map(|k| (k.title.clone(), k.description.clone()))
+        .unwrap_or_default();
+
+    let (title_vi, desc_vi) = data
+        .content
+        .Vietnamese
+        .as_ref()
+        .map(|v| (v.title.clone(), v.description.clone()))
+        .unwrap_or_default();
+
     WellKnownMeta {
         id: set_id.to_string(),
         set_type: set_type.to_string(),
@@ -199,6 +227,10 @@ fn extract_meta(
         title_en,
         desc_ru,
         desc_en,
+        title_ko,
+        desc_ko,
+        title_vi,
+        desc_vi,
         word_count: data.words.len(),
     }
 }

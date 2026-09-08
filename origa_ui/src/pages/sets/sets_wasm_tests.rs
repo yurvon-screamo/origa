@@ -27,6 +27,10 @@ fn sample_meta() -> origa::domain::WellKnownSetMeta {
         title_en: "Words from Module 1".into(),
         desc_ru: "Русское описание набора".into(),
         desc_en: "English set description".into(),
+        title_ko: String::new(),
+        desc_ko: String::new(),
+        title_vi: String::new(),
+        desc_vi: String::new(),
         word_count: 42,
     }
 }
