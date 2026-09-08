@@ -99,7 +99,7 @@ For most learners these trade-offs are worth it. For someone with an older phone
 Specifics, so the claims are checkable:
 
 - **Local SRS.** FSRS runs on-device. Review works in airplane mode.
-- **Local dictionary.** Bilingual dictionaries (English and Russian paired with Japanese; Vietnamese and Korean are planned) are bundled with the app.
+- **Local dictionary.** Bilingual dictionaries (English, Russian, Korean and Vietnamese paired with Japanese) are bundled with the app.
 - **Local OCR (NDLOCR-Lite).** Scan a photo or paste a screenshot, words are recognized on-device.
 - **Local STT (Whisper).** Add a card from audio without sending the audio to a server.
 - **Local furigana generation.** Furigana over kanji is produced by an on-device model and hides automatically on kanji you've learned.

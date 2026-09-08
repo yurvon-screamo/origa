@@ -51,9 +51,9 @@ The kanji writing feature shows the correct stroke order as an animation you fol
 
 The rating after each card is binary: **Don't know** or **Know** in a regular review, **Remember** or **Don't remember** in acquaintance training. There are no intermediate options (no "hard" or "easy" grades). The FSRS scheduler uses these two signals to set intervals.
 
-## Interface languages are limited
+## Documentation and legal texts are English/Russian only
 
-Origa's interface is currently available in English and Russian. Additional languages are planned but not yet shipped.
+The interface and the learning content — vocabulary, phrases, grammar, kanji — are available in English, Russian, Korean and Vietnamese. These documentation pages and the legal texts (privacy policy, terms of use) are currently available in English and Russian only.
 
 ## Related
 
