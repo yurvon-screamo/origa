@@ -48,6 +48,33 @@ WHOLESALE_RANGES: tuple[range, ...] = (
     range(0x3040, 0x3100),   # Hiragana + katakana
     range(0xFF00, 0xFFEF + 1),  # Halfwidth/Fullwidth forms
     range(0x0020, 0x007F),   # ASCII
+    # Hangul Compatibility Jamo (ㅋㅋ, ㅡㅡ …). U+3130/U+313F/U+3140 are
+    # unassigned in Unicode — no font carries them, so only assigned
+    # subranges go in wholesale (the cmap invariant checks exact coverage).
+    range(0x3131, 0x313E + 1),
+    range(0x3141, 0x318E + 1),
+)
+
+# Hangul ranges collected into the corpus (used-syllable subsetting keeps the
+# KR font small; the full U+AC00-D7AF block is ~11k glyphs).
+HANGUL_RANGES: tuple[tuple[int, int], ...] = (
+    (0x1100, 0x11FF + 1),  # Hangul Jamo
+    (0x3131, 0x313E + 1),  # Hangul Compatibility Jamo (assigned)
+    (0x3141, 0x318E + 1),  # Hangul Compatibility Jamo (assigned)
+    (0xAC00, 0xD7A4),      # Hangul Syllables
+)
+
+
+def _is_hangul(codepoint: int) -> bool:
+    return any(start <= codepoint < end for start, end in HANGUL_RANGES)
+
+
+# Text outside cdn/ that the UI renders: the Korean locale and the KO/VI
+# Locale sources scanned for hangul on top of the cdn/ content (the
+# merged cdn/ data itself — vocab chunks, phrase translations, grammar
+# overlay — now carries the bulk of the hangul corpus).
+EXTRA_CORPUS_GLOBS: tuple[str, ...] = (
+    "origa_ui/locales/ko.json",
 )
 # Kanji ranges: only codepoints actually present in cdn/ content are kept,
 # otherwise the full ~20k ideograph block would defeat subsetting.
@@ -80,6 +107,18 @@ SOURCES: tuple[Source, ...] = (
         kind="cjk",
         archive="NotoSansJP.zip",
         extract_glob="NotoSansJP-Regular.otf",
+    ),
+    # Hangul companion to Noto Sans JP (same noto-cjk release, ADR-030
+    # pattern): subsets to the hangul actually used by the KO locale and the
+    # translation overlays. Subset via the shared corpus text file — the JP
+    # font keeps kanji/kana, this one keeps hangul.
+    Source(
+        logical="noto-sans-kr-400",
+        url="https://github.com/notofonts/noto-cjk/releases/download/Sans2.004/17_NotoSansKR.zip",
+        sha256="ac7eeb4e2b0d41de8ff31b2d6e1e2a41caf253fd5cefb380bfa1f40f1747b612",
+        kind="cjk",
+        archive="NotoSansKR.zip",
+        extract_glob="NotoSansKR-Regular.otf",
     ),
     Source(
         logical="cormorant-garamond",
@@ -194,8 +233,28 @@ def extract_cjk_corpus() -> set[int]:
         except (OSError, UnicodeDecodeError):
             continue
         for ch in text:
-            if _is_kanji(ord(ch)):
+            # Kanji feeds the JP subset; hangul now lives in the CDN data
+            # itself (vocab chunks, phrase translations, grammar overlays)
+            # and feeds the KR subset — collecting only from the locale and
+            # the translation overlays would ship a tofu-prone font.
+            if _is_kanji(ord(ch)) or _is_hangul(ord(ch)):
                 corpus.add(ord(ch))
+
+    for pattern in EXTRA_CORPUS_GLOBS:
+        matches = sorted(PROJECT_ROOT.glob(pattern))
+        if not matches:
+            # These are pinned in-repo files: a missing match means the
+            # locale/overlay was renamed and the hangul corpus would silently
+            # shrink — fail loudly instead of shipping a tofu-prone subset.
+            sys.exit(f"Hangul corpus glob matched nothing: {pattern}")
+        for path in matches:
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as e:
+                sys.exit(f"Failed to read hangul corpus source {path}: {e}")
+            for ch in text:
+                if _is_hangul(ord(ch)):
+                    corpus.add(ord(ch))
     return corpus
 
 
@@ -345,6 +404,26 @@ def verify_glyph_coverage() -> None:
     print(
         f"Cyrillic coverage OK: {len(CYRILLIC_MUST_HAVE)} must-have glyphs present in {mono.name}"
     )
+
+    # Hangul invariant: every hangul char the UI/overlays actually use must be
+    # in the KR subset's cmap. The corpus is derived from the same sources, so
+    # a failure here means the subset was generated against stale corpus data
+    # (e.g. new KO strings landed but the font was not regenerated).
+    kr = next(FONTS_OUT.glob("noto-sans-kr-400-*.woff2"))
+    kr_cmap = TTFont(kr).getBestCmap()
+    used_hangul = {
+        cp
+        for cp in extract_cjk_corpus()
+        if any(start <= cp < end for start, end in HANGUL_RANGES)
+    }
+    hangul_missing = [chr(cp) for cp in sorted(used_hangul) if cp not in kr_cmap]
+    if hangul_missing:
+        sample = "".join(hangul_missing[:40])
+        sys.exit(
+            f"Hangul coverage regression: {len(hangul_missing)} used glyphs missing "
+            f"from {kr.name} (sample: {sample}); regenerate fonts after KO text changes"
+        )
+    print(f"Hangul coverage OK: {len(used_hangul)} used glyphs present in {kr.name}")
 
 
 if __name__ == "__main__":

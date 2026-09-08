@@ -15,9 +15,13 @@ Checks (ERROR = blocking):
               table or code fence
   integrity : related_patterns.rule_id must resolve inside the corpus;
               relation enum values; nuances must have >=1 mistake or note
+  titles    : per-language uniqueness (dup_key preserves qualifiers — see
+              _grammar_title), qualifier required for short bare patterns,
+              identical short_description across rules sharing a pattern
 
 Checks (WARN = non-blocking, tracked for cleanup):
-  legacy format anomalies, duplicate normalized titles (user-approved to keep),
+  legacy format anomalies, title style lint (ASCII parens, space before
+  paren, qualifier length/senses/JLPT level, localization heuristic),
   empty optional fields.
 """
 
@@ -29,8 +33,11 @@ import sys
 import unicodedata
 from pathlib import Path
 
+import _grammar_title
+
 LEVELS = {"N5", "N4", "N3", "N2", "N1"}
-LANGS = {"English", "Russian"}
+LANGS = {"English", "Russian", "Korean", "Vietnamese"}
+REQUIRED_LANGS = {"English", "Russian"}
 REQUIRED_TEXT_FIELDS = (
     "title",
     "short_description",
@@ -77,11 +84,6 @@ def is_jis_or_allowed(char: str) -> bool:
         return False
 
 
-def norm_title(title: str) -> str:
-    stripped = re.sub(r"～|〜|\s|/|／|・", "", title)
-    return re.sub(r"（.*?）|\(.*?\)", "", stripped)
-
-
 class Report:
     def __init__(self) -> None:
         self.errors: list[str] = []
@@ -117,8 +119,16 @@ def validate_rule(rule: dict, idx: int, rule_ids: set[str], report: Report) -> N
         report.error(where, "keywords must be a list of string lists")
 
     content = rule.get("content")
-    if not isinstance(content, dict) or set(content.keys()) != LANGS:
-        report.error(where, f"content must have exactly {sorted(LANGS)}, got {content!r}")
+    if not isinstance(content, dict) or not content:
+        report.error(where, f"content must be a non-empty object, got {content!r}")
+        return
+    missing = REQUIRED_LANGS - set(content.keys())
+    unknown = set(content.keys()) - LANGS
+    if missing:
+        report.error(where, f"content is missing required {sorted(missing)}")
+    if unknown:
+        report.error(where, f"content has unknown languages {sorted(unknown)}")
+    if missing or unknown:
         return
 
     for lang, c in content.items():
@@ -138,6 +148,15 @@ def validate_rule(rule: dict, idx: int, rule_ids: set[str], report: Report) -> N
         title = c.get("title", "")
         if isinstance(title, str) and not title.strip():
             report.error(loc, "empty title")
+
+        if isinstance(title, str) and title.strip():
+            for level_name, message in _grammar_title.title_lint_messages(
+                title, lang
+            ):
+                if level_name == "error":
+                    report.error(loc, f"title: {message}")
+                else:
+                    report.warn(loc, f"title: {message}")
 
         validate_nuances(c.get("nuances"), loc, report)
         validate_warnings(c.get("warnings"), loc, report)
@@ -269,8 +288,10 @@ def validate_corpus(data: dict, report: Report) -> None:
             continue
         validate_rule(rule, idx, rule_ids, report)
 
-    # Referential integrity for related_patterns (needs the full id set).
-    seen_titles: dict[str, int] = {}
+    # Referential integrity for related_patterns (needs the full id set),
+    # per-language title uniqueness and short_description distinctness.
+    seen_titles: dict[str, dict[str, str]] = {lang: {} for lang in LANGS}
+    seen_shorts: dict[tuple[str, str, str], list[str]] = {}
     for rule in rules:
         if not isinstance(rule, dict):
             continue
@@ -289,14 +310,35 @@ def validate_corpus(data: dict, report: Report) -> None:
                 report.error(f"{rid}/{lang}", "related_patterns references itself")
             title = c.get("title")
             if isinstance(title, str) and title:
-                key = norm_title(title)
-                if key in seen_titles:
-                    report.warn(
+                # EN and RU titles of the same rule legitimately coincide;
+                # only same-language collisions across different rules count.
+                key = _grammar_title.dup_key(title)
+                first_rid = seen_titles[lang].get(key)
+                if first_rid is not None and first_rid != rid:
+                    report.error(
                         f"{rid}/{lang}",
-                        f"duplicate normalized title {title!r} (kept by user decision)",
+                        f"duplicate title {title!r} (same as rule {first_rid})",
                     )
-                else:
-                    seen_titles[key] = 1
+                elif first_rid is None:
+                    seen_titles[lang][key] = rid
+
+            short = c.get("short_description")
+            if isinstance(short, str) and short.strip():
+                pattern_key = _grammar_title.normalize_pattern(
+                    _grammar_title.split_title(title if isinstance(title, str) else "")[0]
+                )
+                short_key = (lang, pattern_key, " ".join(short.split()).casefold())
+                seen_shorts.setdefault(short_key, []).append(rid)
+
+    for (lang, pattern_key, _), rids in seen_shorts.items():
+        unique_rids = sorted(set(rids))
+        if len(unique_rids) > 1:
+            for rid in unique_rids:
+                report.error(
+                    f"{rid}/{lang}",
+                    f"short_description identical across rules sharing pattern "
+                    f"{pattern_key!r}: {', '.join(r for r in unique_rids if r != rid)}",
+                )
 
 
 def entry_self_reference(rid: str, related: object) -> bool:

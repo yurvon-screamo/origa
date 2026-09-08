@@ -514,3 +514,60 @@ async fn word_translations_no_description_hidden() {
         "description must NOT be rendered when absent"
     );
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Locale switching (KO/VI)
+// ═══════════════════════════════════════════════════════════════════════
+
+/// KO/VI locales must render their own translations (regression guard for
+/// the locale wiring: build.rs locales + i18n context + td_string keys).
+#[wasm_bindgen_test]
+async fn i18n_locale_switch_renders_korean_and_vietnamese() {
+    use crate::i18n::td_string;
+
+    let wrapper = create_wrapper();
+    // The context is cloned out of the mount closure; I18nContext is a
+    // signal handle and stays usable after the initial render.
+    let i18n_cell = std::rc::Rc::new(std::cell::RefCell::new(
+        Option::<leptos_i18n::I18nContext<Locale>>::None,
+    ));
+    let cell_for_mount = std::rc::Rc::clone(&i18n_cell);
+    mount_to_wrapper(&wrapper, move || {
+        leptos_i18n::provide_i18n_context::<Locale>();
+        let i18n = crate::i18n::use_i18n();
+        *cell_for_mount.borrow_mut() = Some(i18n);
+        view! {
+            <span data-testid="i18n-cancel">
+                {move || td_string!(i18n.get_locale(), common.cancel)}
+            </span>
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let cell_text = |expected: &str| {
+        let text = wrapper
+            .query_selector("[data-testid=\"i18n-cancel\"]")
+            .unwrap()
+            .unwrap()
+            .text_content()
+            .unwrap_or_default();
+        assert_eq!(text, expected);
+    };
+
+    let i18n = i18n_cell
+        .borrow()
+        .clone()
+        .expect("i18n context must be captured during mount");
+    i18n.set_locale(Locale::ko);
+    tick().await;
+    cell_text("취소");
+
+    i18n.set_locale(Locale::vi);
+    tick().await;
+    cell_text("Hủy");
+
+    i18n.set_locale(Locale::en);
+    tick().await;
+    cell_text("Cancel");
+}

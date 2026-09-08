@@ -294,17 +294,54 @@ mod tests {
             assert!(!title.unwrap().text().is_empty());
         }
 
+        /// Strips the （qualifier） part of a title, keeping the pattern.
+        /// Manual split — the `regex` crate is forbidden in this workspace.
+        fn title_pattern(title: &str) -> &str {
+            if let Some(start) = title.find('（').or_else(|| title.find('(')) {
+                &title[..start]
+            } else {
+                title
+            }
+        }
+
+        /// Title convention (grammar title pass, #501): the pattern part of
+        /// a title is identical across locales; only the （qualifier） is
+        /// localized (EN: `～の（nominalizer）`, RU: `～の（номинализация）`).
         #[test]
-        fn returns_different_titles_for_different_languages() {
+        fn title_pattern_equal_across_languages() {
             init_test_grammar();
 
-            let rule_id = get_first_rule_id();
+            for rule in iter_grammar_rules() {
+                let english = rule.content(&NativeLanguage::English).title();
+                let russian = rule.content(&NativeLanguage::Russian).title();
+                assert_eq!(
+                    title_pattern(english),
+                    title_pattern(russian),
+                    "title pattern must match across locales for rule {}",
+                    rule.rule_id()
+                );
+            }
+        }
+
+        #[test]
+        fn title_qualifier_localized_across_languages() {
+            init_test_grammar();
+
+            // Fixture: the ～の pair disambiguated in the title pass — its
+            // qualifiers are localized, so full titles legitimately differ.
+            let rule_id = Ulid::from_string("01G00000000000000018000000").expect("Invalid ULID");
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
             let russian_title = card.title(&NativeLanguage::Russian).unwrap();
             let english_title = card.title(&NativeLanguage::English).unwrap();
 
-            assert_eq!(russian_title.text(), english_title.text());
+            assert_eq!(title_pattern(russian_title.text()), "～の");
+            assert_eq!(title_pattern(english_title.text()), "～の");
+            assert_ne!(
+                russian_title.text(),
+                english_title.text(),
+                "localized qualifiers must differ for the disambiguated ～の rule"
+            );
         }
     }
 

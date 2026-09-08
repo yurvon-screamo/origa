@@ -238,6 +238,8 @@ impl From<JapaneseLevel> for i32 {
 pub enum NativeLanguage {
     English,
     Russian,
+    Korean,
+    Vietnamese,
 }
 
 impl NativeLanguage {
@@ -245,6 +247,8 @@ impl NativeLanguage {
         match self {
             NativeLanguage::English => "English",
             NativeLanguage::Russian => "Russian",
+            NativeLanguage::Korean => "Korean",
+            NativeLanguage::Vietnamese => "Vietnamese",
         }
     }
 }
@@ -259,6 +263,12 @@ impl From<i32> for NativeLanguage {
     fn from(value: i32) -> Self {
         match value {
             0 => NativeLanguage::English,
+            1 => NativeLanguage::Russian,
+            2 => NativeLanguage::Korean,
+            3 => NativeLanguage::Vietnamese,
+            // Legacy values written before Korean/Vietnamese existed are
+            // limited to 0/1, so anything else is data corruption — degrade
+            // to the historical default for unknown values.
             _ => NativeLanguage::Russian,
         }
     }
@@ -269,6 +279,8 @@ impl From<NativeLanguage> for i32 {
         match lang {
             NativeLanguage::English => 0,
             NativeLanguage::Russian => 1,
+            NativeLanguage::Korean => 2,
+            NativeLanguage::Vietnamese => 3,
         }
     }
 }
@@ -891,5 +903,34 @@ mod tests_daily_load {
             expected_phrases,
             "per-lesson phrase cap must equal the former first-lesson daily allowance"
         );
+    }
+}
+
+#[cfg(test)]
+mod tests_native_language_wire {
+    use super::*;
+
+    /// The i32 wire format is persisted in TrailBase and IndexedDB: every
+    /// variant must round-trip, and the historical 0/1 values must keep
+    /// their meaning (Korean=2, Vietnamese=3 were appended).
+    #[test]
+    fn native_language_i32_round_trip() {
+        let cases = [
+            (NativeLanguage::English, 0),
+            (NativeLanguage::Russian, 1),
+            (NativeLanguage::Korean, 2),
+            (NativeLanguage::Vietnamese, 3),
+        ];
+        for (lang, wire) in cases {
+            assert_eq!(i32::from(lang), wire);
+            assert_eq!(NativeLanguage::from(wire), lang);
+        }
+    }
+
+    #[test]
+    fn native_language_unknown_wire_degrades_to_russian() {
+        // Preserves the pre-KO/VI behaviour for corrupt data.
+        assert_eq!(NativeLanguage::from(999), NativeLanguage::Russian);
+        assert_eq!(NativeLanguage::from(-1), NativeLanguage::Russian);
     }
 }

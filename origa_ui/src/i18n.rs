@@ -27,6 +27,8 @@ pub fn native_language_to_locale(lang: &NativeLanguage) -> Locale {
     match lang {
         NativeLanguage::English => Locale::en,
         NativeLanguage::Russian => Locale::ru,
+        NativeLanguage::Korean => Locale::ko,
+        NativeLanguage::Vietnamese => Locale::vi,
     }
 }
 
@@ -34,5 +36,7 @@ pub fn locale_to_native_language(locale: &Locale) -> NativeLanguage {
     match locale {
         Locale::en => NativeLanguage::English,
         Locale::ru => NativeLanguage::Russian,
+        Locale::ko => NativeLanguage::Korean,
+        Locale::vi => NativeLanguage::Vietnamese,
     }
 }

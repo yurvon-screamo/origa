@@ -113,7 +113,14 @@
         Russian-speaking JLPT {level} student
       </criterion>
       <criterion name="title">
-        title must be the grammar pattern itself (e.g. ～ます, ～てください) — same for both languages
+        title = the grammar pattern + a full-width-paren qualifier, e.g.
+        ～の（nominalizer）. The pattern part before （） MUST be identical for
+        both languages; the qualifier is localized (English for en, Russian
+        for ru; established Japanese terms like （伝聞） are allowed in both).
+        No space before （. At most two senses joined by ・. No JLPT level
+        inside the qualifier. A qualifier is REQUIRED when the bare pattern
+        is 2 kana or shorter (～も, ～の) — bare particles are
+        indistinguishable without it.
       </criterion>
       <criterion name="brevity_en">
         EN short_description: 3-6 words
@@ -148,22 +155,22 @@
   <example_output>
     {
       "en": {
-        "title": "～ます",
-        "short_description": "Polite present tense form",
-        "explanation": "`～ます` is the **polite verb form** for present and future tense. Used with strangers, coworkers, and superiors in any situation requiring politness.\n> ⚠️ **Important:** Japanese has no separate future tense. Context determines if the action happens now or later.",
-        "how_to_form": "| Verb Group | Rule | Example |\n|------------|------|--------|\n| Group 1 (う-verbs) | Last う-row sound → い-row + ます | 書く → 書きます |\n| Group 2 (る-verbs) | Remove る + ます | 食べる → 食べます |\n| Group 3 (irregular) | する → します / くる → 来ます | する → します |",
-        "examples": "```\n毎朝コーヒーを飲みます。\nI drink coffee every morning.\n```\n\n```\n明日東京へ行きます。\nI will go to Tokyo tomorrow.\n```",
-        "nuances": "- ❌ Reading `来ます` as `くます` → ✅ Correct: `きます`\n- ❌ Confusing verb groups (not all る-verbs are Group 2) → ✅ Remember exceptions: `知る`, `帰る`, `切る` are Group 1\n- 🔄 With friends, use plain form (`飲む`, `食べる`), but in office/school always use `～ます`",
-        "pro_tip": "When you hear `～ます` at the end of a sentence, you're in a polite or formal context. The more `ます`-forms, the more respectful the speech sounds."
+        "title": "～の（nominalizer）",
+        "short_description": "Nominalizer: action as a noun",
+        "explanation": "`～の` is a **nominalizer** that converts verbs, clauses, or phrases into noun-like expressions. It allows you to treat an entire action or state as a noun that can be modified, followed by particles, or used as a subject/object.\n> ⚠️ **Important:** Always use the plain (dictionary) form before の: 食べるの, never 食べますの.",
+        "how_to_form": "| Usage Type | Formation | Example |\n|------------|-----------|--------|\n| Basic nominalization | Verb (plain) + の | 食べるの |\n| With particles | Verb (plain) + の + は/が/を | 行くのが好き |",
+        "examples": "```\n日本語を勉強するのが好きです。\nI like studying Japanese.\n```\n\n```\nあの本を読むのをお勧めします。\nI recommend reading that book.\n```",
+        "nuances": "- ❌ Polite verb form before の (食べますの) → ✅ Always plain form: 食べるの\n- 🔄 の vs こと: の for concrete, direct experiences; こと for abstract ideas and reported speech",
+        "pro_tip": "の after verbs often appears with 好き／嫌い and ～のが見えます／聞こえます. Think of の as putting the action \"in a box\" so you can talk about it."
       },
       "ru": {
-        "title": "～ます",
-        "short_description": "Вежливая форма настоящего времени",
-        "explanation": "`～ます` — стандартная вежливая форма глагола для настоящего и будущего времени. Используется с незнакомыми, коллегами, старшими и в любой ситуации, где нужна вежливость.\n> ⚠️ **Важно:** В японском нет отдельного будущего времени. Контекст определяет, происходит действие сейчас или позже.",
-        "how_to_form": "| Группа глаголов | Правило | Пример |\n|-----------------|---------|--------|\n| Группа 1 (う-глаголы) | Последний звук у-ряда → и-ряд + ます | 書く → 書きます |\n| Группа 2 (る-глаголы) | Убрать る + ます | 食べる → 食べます |\n| Группа 3 (исключения) | する → します / くる → 来ます | する → します |",
-        "examples": "```\n毎朝コーヒーを飲みます。\nКаждое утро я пью кофе.\n```\n\n```\n明日東京へ行きます。\nЗавтра я поеду в Токио.\n```",
-        "nuances": "- ❌ Читать `来ます` как `くます` → ✅ Правильно: `きます`\n- ❌ Путать группы глаголов (не все る-глаголы относятся ко 2-й группе) → ✅ Запомните исключения: `知る`, `帰る`, `切る` — это Группа 1\n- 🔄 С друзьями можно использовать простую форму (`飲む`, `食べる`), но в офисе/учебе всегда `～ます`",
-        "pro_tip": "Если слышите `～ます` в конце предложения — вы находитесь в вежливом или официальном контексте. Чем больше `ます`-форм, тем уважительнее звучит речь."
+        "title": "～の（номинализация）",
+        "short_description": "Номинализация: действие как существительное",
+        "explanation": "`～の` — это **номинализатор**, который превращает глаголы, словосочетания или целые клаузы в именные выражения. Благодаря ему действие или состояние можно использовать как существительное: с частицами, в роли подлежащего или дополнения.\n> ⚠️ **Важно:** Перед の всегда простая форма глагола: 食べるの, никогда 食べますの.",
+        "how_to_form": "| Тип использования | Образование | Пример |\n|--------------------|-------------|--------|\n| Базовая номинализация | Глагол (простая форма) + の | 食べるの |\n| С частицами | Глагол (простая форма) + の + は/が/を | 行くのが好き |",
+        "examples": "```\n日本語を勉強するのが好きです。\nМне нравится изучать японский язык.\n```\n\n```\nあの本を読むのをお勧めします。\nРекомендую прочитать ту книгу.\n```",
+        "nuances": "- ❌ Вежливая форма глагола перед の (食べますの) → ✅ Всегда простая форма: 食べるの\n- 🔄 の vs こと: の — для конкретных, непосредственных действий; こと — для абстрактных идей и пересказа",
+        "pro_tip": "の после глаголов часто встречается с 好き／嫌い и ～のが見えます／聞こえます. Представь, что の «упаковывает» действие, чтобы говорить о нём как о предмете."
       }
     }
   </example_output>
@@ -175,7 +182,7 @@
     <rule id="4">Format examples in code blocks: Japanese sentence, then translation</rule>
     <rule id="5">Use markdown tables for conjugation/formation rules</rule>
     <rule id="6">Both language versions must have the same structure (same fields)</rule>
-    <rule id="7">The title field must be identical for both EN and RU (the grammar pattern itself)</rule>
+    <rule id="7">The pattern part of title (before （qualifier）) must be identical for both EN and RU; the qualifier itself is localized. Full-width parens, no space before them.</rule>
     <rule id="8">Fields explanation, how_to_form, examples are mandatory. nuances and pro_tip are optional but recommended. Use empty string if not applicable.</rule>
   </rules>
 
