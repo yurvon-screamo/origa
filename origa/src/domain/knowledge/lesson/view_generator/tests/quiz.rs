@@ -196,6 +196,42 @@ mod generate_grammar_quiz_tests {
             other => panic!("Expected Normal, got {:?}", other),
         }
     }
+
+    #[test]
+    fn grammar_quiz_view_carries_word_and_rule_title_for_renderer() {
+        // Arrange
+        init_real_dictionaries();
+
+        let rule_id = get_verb_rule_id();
+        let grammar_card = create_grammar_card(rule_id);
+        let ks = create_known_vocab_set("食べる");
+
+        // Act
+        let view = generation::generate_grammar_quiz(grammar_card, &ks, &NativeLanguage::Russian)
+            .expect("should succeed");
+
+        // Assert: the lesson renderer forwards only gq.quiz() to QuizCardView
+        // (rule title as question, inflected forms as options), so the full
+        // view must carry the base word + rule title alongside it.
+        // Regression guard for #502: renderer showed bare "～ます" with no word.
+        let LessonCardView::GrammarQuiz(gq) = &view else {
+            panic!("Expected GrammarQuiz, got {:?}", view);
+        };
+        assert_eq!(gq.word_text(), "食べる");
+        assert_eq!(gq.grammar_info().title(), "～ます");
+        assert!(!gq.grammar_info().description().is_empty());
+        // The inner quiz card intentionally keeps the bare rule title as its
+        // question — the word travels via word_text(), which the container
+        // forwards as QuizCardView::grammar_base_word. Pin both sides.
+        let forwarded_question = gq
+            .quiz()
+            .card()
+            .question(&NativeLanguage::Russian)
+            .expect("grammar card has a title")
+            .text()
+            .to_string();
+        assert_eq!(forwarded_question, "～ます");
+    }
 }
 
 mod generate_quiz_vocab_kanji_tests {

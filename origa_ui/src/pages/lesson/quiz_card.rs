@@ -46,6 +46,11 @@ pub fn QuizCardView(
     #[prop(default = Signal::derive(|| false))] waiting_for_next: Signal<bool>,
     #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
     #[prop(default = false)] lenient_grading: bool,
+    // Base word the grammar form was built from. Lesson container forwards
+    // only QuizCard to this view, which shows the rule title as the question
+    // and inflected forms as options — without this prop the base word is
+    // invisible (#502). Shown only for QuizVariant::Grammar.
+    #[prop(default = None)] grammar_base_word: Option<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card = quiz_card.card().clone();
@@ -75,6 +80,7 @@ pub fn QuizCardView(
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
+    let base_word_stored = StoredValue::new(grammar_base_word);
 
     let quiz_result = move || {
         if dont_know_selected.get() && show_result.get() {
@@ -155,6 +161,21 @@ pub fn QuizCardView(
                                 <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
                             </Heading>
                         </div>
+                        // Grammar quizzes conjugate a base word that is not part of
+                        // the question (title) or the options (inflected forms).
+                        // Show it explicitly, mirroring the practice session (#502).
+                        <Show when=move || {
+                            quiz_variant == QuizVariant::Grammar
+                                && base_word_stored.get_value().is_some_and(|s| !s.is_empty())
+                        }>
+                            <div class="mb-4" data-testid="lesson-grammar-base-word">
+                                <FuriganaText
+                                    text=base_word_stored.get_value().unwrap_or_default()
+                                    known_kanji=known_kanji.get()
+                                    native_language=native_language
+                                />
+                            </div>
+                        </Show>
                     </Show>
 
                     <Show when=move || kanji_for_animation.get_value().is_some()>
