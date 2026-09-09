@@ -7,6 +7,12 @@ name: TMP Apple build check
 
 on:
     workflow_dispatch:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - "tauri-plugin-aswebauth/**"
+            - ".github/workflows/tmp-apple-build.yml"
 
 jobs:
     apple-build:
