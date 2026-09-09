@@ -527,6 +527,14 @@ jobs:
               # plist, the build would stay green, and App Store validation
               # (or the native SIWA sheet at runtime) would reject it. Fail
               # closed instead.
+              #
+              # PREREQUISITE (plan #505 S0): the "Sign in with Apple"
+              # capability must be enabled on App ID net.uwuwu.origa before
+              # this step can pass — until then darwin builds are red BY
+              # DESIGN (safe direction). If an inspection of the real
+              # downloaded profile shows Apple does not embed the key in
+              # MAC_APP_STORE profiles at all, downgrade this step to a
+              # warning per the plan's S0 decision point.
               run: |
                   python3 "$GITHUB_WORKSPACE/.github/scripts/verify_profile_entitlements.py" \
                     --profile "$RUNNER_TEMP/embedded.provisionprofile" \

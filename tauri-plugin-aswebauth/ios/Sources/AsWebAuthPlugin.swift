@@ -95,34 +95,37 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
     /// `nonce` claim carries. Known-answer vector:
     /// sha256Hex("test") == "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08".
     @objc public func signInWithApple(_ invoke: Invoke) throws {
-        guard appleSignInFlow == nil else {
-            invoke.reject("a Sign in with Apple flow is already in progress")
-            return
-        }
-
-        var nonceBytes = [UInt8](repeating: 0, count: 32)
-        let status = SecRandomCopyBytes(kSecRandomDefault, nonceBytes.count, &nonceBytes)
-        guard status == errSecSuccess else {
-            invoke.reject("nonce generation failed (SecRandomCopyBytes: \(status))")
-            return
-        }
-        let rawNonce = Self.base64URLEncodedNoPad(Data(nonceBytes))
-
-        // Email only: the profile is built from the email address, and Apple
-        // shares the name exactly once — requesting it just to discard the
-        // value would add consent noise without a consumer.
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        request.requestedScopes = [.email]
-        request.nonce = Self.sha256Hex(rawNonce)
-
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-
-        appleSignInFlow = (invoke: invoke, rawNonce: rawNonce)
-        authorizationController = controller
-
+        // All flow-state mutations happen on the main queue: the delegate
+        // callbacks (main-thread by protocol) clear the same properties, and
+        // the invoke itself may arrive on a non-main IPC thread.
         DispatchQueue.main.async {
+            guard self.appleSignInFlow == nil else {
+                invoke.reject("a Sign in with Apple flow is already in progress")
+                return
+            }
+
+            var nonceBytes = [UInt8](repeating: 0, count: 32)
+            let status = SecRandomCopyBytes(kSecRandomDefault, nonceBytes.count, &nonceBytes)
+            guard status == errSecSuccess else {
+                invoke.reject("nonce generation failed (SecRandomCopyBytes: \(status))")
+                return
+            }
+            let rawNonce = Self.base64URLEncodedNoPad(Data(nonceBytes))
+
+            // Email only: the profile is built from the email address, and
+            // Apple shares the name exactly once — requesting it just to
+            // discard the value would add consent noise without a consumer.
+            let request = ASAuthorizationAppleIDProvider().createRequest()
+            request.requestedScopes = [.email]
+            request.nonce = Self.sha256Hex(rawNonce)
+
+            let controller = ASAuthorizationController(authorizationRequests: [request])
+            controller.delegate = self
+            controller.presentationContextProvider = self
+
+            self.appleSignInFlow = (invoke: invoke, rawNonce: rawNonce)
+            self.authorizationController = controller
+
             controller.performRequests()
         }
     }
