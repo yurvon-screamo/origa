@@ -1,0 +1,36 @@
+name: TMP Apple build check
+
+# TEMPORARY (origa#505 follow-up): runs the Apple build pipeline on a branch
+# to verify the SIWA changes compile and pass the entitlement gate WITHOUT
+# cutting a release tag. version_type=prerelease skips the macOS ASC upload.
+# DELETE THIS FILE once the fix is verified and merged.
+
+on:
+    workflow_dispatch:
+    pull_request:
+        branches:
+            - master
+        paths:
+            - "tauri-plugin-aswebauth/**"
+            - ".github/workflows/tmp-apple-build.yml"
+
+permissions:
+    contents: read
+
+jobs:
+    apple-build:
+        name: TMP Build Apple (iOS + macOS)
+        uses: ./.github/workflows/_build-tauri-apple.yml
+        with:
+            version: 0.7.8-alpha.tmp1
+            version_type: prerelease
+            commit_sha: ${{ github.sha }}
+            build_date: 2026-09-09
+        secrets:
+            apple-api-issuer: ${{ secrets.apple-api-issuer }}
+            apple-api-key: ${{ secrets.apple-api-key }}
+            apple-api-key-content: ${{ secrets.apple-api-key-content }}
+            apple-team-id: ${{ secrets.apple-team-id }}
+            apple-mac-app-cert-p12: ${{ secrets.apple-mac-app-cert-p12 }}
+            apple-mac-installer-cert-p12: ${{ secrets.apple-mac-installer-cert-p12 }}
+            apple-mac-cert-password: ${{ secrets.apple-mac-cert-password }}
