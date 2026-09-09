@@ -125,7 +125,7 @@ pub fn OAuthButtons(
         <div class="space-y-3" data-testid=test_id_val>
             <button
                 type="button"
-                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
+                class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--fg-black)] hover:opacity-80 transition-opacity"
                 data-testid=apple_test_id
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_apple.clone();
@@ -135,7 +135,7 @@ pub fn OAuthButtons(
                 }
             >
                 <AppleIcon />
-                <span class="text-[var(--fg-black)]">{t!(i18n, login.apple_login)}</span>
+                <span class="text-[var(--bg-paper)]">{t!(i18n, login.apple_login)}</span>
             </button>
 
             <button
@@ -262,6 +262,18 @@ fn native_oauth_redirect_uri(on_apple: bool) -> String {
     }
 }
 
+/// Whether the Apple button must use the native Sign in with Apple flow
+/// (`ASAuthorizationController`, no web involved).
+///
+/// Apple Tauri builds only: Mac App Store Guideline 4 requires Apple sign-in
+/// to complete "without leaving the app", and a web sheet — even an
+/// `ASWebAuthenticationSession` one — no longer satisfies reviewers. Every
+/// other combination (browsers, other providers, other platforms) keeps its
+/// current flow byte-identical.
+fn uses_native_apple_sign_in(is_tauri: bool, is_apple: bool, provider: OAuthProvider) -> bool {
+    is_tauri && is_apple && provider == OAuthProvider::Apple
+}
+
 async fn open_oauth_url(
     provider: OAuthProvider,
     debug_sink: Option<OAuthDebugSink>,
@@ -270,6 +282,17 @@ async fn open_oauth_url(
 ) {
     use crate::repository::TrailBaseClient;
     use crate::repository::trailbase_auth::{generate_pkce_challenge, generate_pkce_verifier};
+
+    // Native Sign in with Apple goes FIRST: it needs no PKCE pair and no
+    // redirect_uri — the system sheet returns the identity token directly.
+    if uses_native_apple_sign_in(tauri::is_tauri(), tauri::is_apple(), provider) {
+        auth_store.oauth_error.set(None);
+        auth_store.is_oauth_loading.set(true);
+        let result = native_apple_sign_in(debug_sink, &auth_store, &i18n).await;
+        super::oauth_listeners::handle_oauth_result(result, &auth_store);
+        auth_store.is_oauth_loading.set(false);
+        return;
+    }
 
     // Native builds pick the platform-appropriate target (see
     // `native_oauth_redirect_uri`); the web app returns to same-origin
@@ -423,6 +446,120 @@ async fn start_aswebauth(url: &str, callback_scheme: &str) -> Result<String, Str
         .ok_or("missing 'url' field in start_auth response".to_string())
 }
 
+/// Credential returned by the `sign_in_with_apple` plugin command (camelCase
+/// keys on the JS wire, matching the plugin's `AppleCredential`).
+struct NativeAppleCredential {
+    identity_token: String,
+    nonce: String,
+}
+
+/// Invokes the `aswebauth` Tauri plugin to present the native Sign in with
+/// Apple sheet (`ASAuthorizationController`).
+///
+/// Returns the identity token and the raw client nonce on success, or an
+/// error string — `"cancelled"` when the user dismissed the sheet (the raw
+/// rejection string is preserved so the caller can pattern-match on it, same
+/// contract as `start_aswebauth`).
+async fn invoke_sign_in_with_apple() -> Result<NativeAppleCredential, String> {
+    use crate::core::tauri::invoke_with_args;
+
+    let value =
+        invoke_with_args("plugin:aswebauth|sign_in_with_apple", &JsValue::UNDEFINED).await?;
+
+    let identity_token = js_sys::Reflect::get(&value, &JsValue::from_str("identityToken"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .ok_or("missing 'identityToken' field in sign_in_with_apple response".to_string())?;
+    let nonce = js_sys::Reflect::get(&value, &JsValue::from_str("nonce"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .ok_or("missing 'nonce' field in sign_in_with_apple response".to_string())?;
+
+    Ok(NativeAppleCredential {
+        identity_token,
+        nonce,
+    })
+}
+
+/// Native Sign in with Apple flow: system sheet → identity token → login
+/// endpoint → session → profile.
+///
+/// Returns `Ok(None)` when the user cancelled the sheet (a silent outcome by
+/// design — re-opening any browser flow would go against their intent), an
+/// `Err(message)` ready for `handle_oauth_result` otherwise.
+async fn native_apple_sign_in(
+    debug_sink: Option<OAuthDebugSink>,
+    auth_store: &AuthStore,
+    i18n: &I18nContext<Locale>,
+) -> Result<Option<origa::domain::User>, String> {
+    use crate::repository::TrailBaseClient;
+
+    let credential = match invoke_sign_in_with_apple().await {
+        Ok(credential) => credential,
+        Err(e) if e == "cancelled" => {
+            report_debug!(debug_sink, "native apple sign-in cancelled by user");
+            return Ok(None);
+        },
+        Err(e) => {
+            // Technical failure must NOT degrade to any web flow — that is
+            // exactly what App Review rejects. Surface it to the user.
+            report_debug!(debug_sink, "native apple sign-in failed: {e}");
+            tracing::warn!("Native Apple sign-in failed: {e}");
+            return Err(i18n
+                .get_keys_untracked()
+                .login()
+                .oauth_session_error()
+                .inner()
+                .replace("{}", &e));
+        },
+    };
+    report_debug!(debug_sink, "native apple sign-in sheet completed");
+
+    let client = TrailBaseClient::new();
+    let session = match client
+        .login_apple_native(&credential.identity_token, &credential.nonce)
+        .await
+    {
+        Ok(session) => session,
+        Err(crate::repository::trailbase_client::AppleNativeLoginError::MissingEmail) => {
+            // First authorization without a shared email and no existing
+            // account: Apple will never resend the email for this Apple ID.
+            // Tell the user which alternatives exist instead of a generic
+            // failure they cannot act on.
+            return Err(i18n
+                .get_keys_untracked()
+                .login()
+                .apple_email_missing()
+                .inner()
+                .to_string());
+        },
+        Err(e) => {
+            report_debug!(debug_sink, "apple native login exchange failed: {e}");
+            return Err(i18n
+                .get_keys_untracked()
+                .login()
+                .token_exchange_error()
+                .inner()
+                .replace("{}", &e.to_string()));
+        },
+    };
+
+    // The endpoint's JWT carries the account's stored email, so this is only
+    // empty for accounts that were never anchored on an address.
+    if session.email.is_empty() {
+        return Err(i18n
+            .get_keys_untracked()
+            .login()
+            .email_not_in_token()
+            .inner()
+            .to_string());
+    }
+
+    super::auth_handlers::get_or_create_profile(auth_store, &session.email, i18n)
+        .await
+        .map(Some)
+}
+
 #[cfg(test)]
 mod redirect_uri_tests {
     use super::*;
@@ -455,18 +592,54 @@ mod redirect_uri_tests {
             )
         );
     }
+
+    /// The native SIWA flow is for the Apple button on Apple Tauri builds
+    /// only (App Review Guideline 4); every other combination must keep its
+    /// current flow byte-identical.
+    #[test]
+    fn native_apple_sign_in_is_used_only_for_apple_on_apple_tauri() {
+        assert!(uses_native_apple_sign_in(true, true, OAuthProvider::Apple));
+
+        // Other providers on Apple Tauri keep ASWebAuthenticationSession.
+        assert!(!uses_native_apple_sign_in(
+            true,
+            true,
+            OAuthProvider::Google
+        ));
+        assert!(!uses_native_apple_sign_in(
+            true,
+            true,
+            OAuthProvider::Yandex
+        ));
+
+        // The Apple button outside Tauri (browsers on macOS/iOS) keeps the
+        // web redirect flow — no Tauri invoke exists there.
+        assert!(!uses_native_apple_sign_in(
+            false,
+            true,
+            OAuthProvider::Apple
+        ));
+
+        // The Apple button on non-Apple Tauri builds (Windows/Linux/Android)
+        // keeps the opener + interstitial flow byte-identically.
+        assert!(!uses_native_apple_sign_in(
+            true,
+            false,
+            OAuthProvider::Apple
+        ));
+    }
 }
 
 #[component]
 fn AppleIcon() -> impl IntoView {
     // Official Apple mark (simple-icons "apple", CC0 — same source as the
-    // Google/Yandex marks).
+    // Google/Yandex marks). White on the HIG-black button.
     view! {
         <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             // Explicit token (not `currentColor`): the icon must not depend
             // on the inherited `color` cascade, same pattern as YandexIcon.
             <path
-                fill="var(--fg-black)"
+                fill="var(--bg-paper)"
                 d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"
             />
         </svg>

@@ -25,6 +25,26 @@ pub enum AuthError {
     ApiError(String),
 }
 
+/// Errors of the native Sign in with Apple login endpoint.
+///
+/// `MissingEmail` is separate from the generic API error because it needs a
+/// dedicated user-facing message: Apple only shares the email on the first
+/// authorization, and a 424 means no account exists yet to match by Apple ID.
+#[derive(Debug)]
+pub enum AppleNativeLoginError {
+    MissingEmail,
+    Api(String),
+}
+
+impl std::fmt::Display for AppleNativeLoginError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AppleNativeLoginError::MissingEmail => write!(f, "missing email address"),
+            AppleNativeLoginError::Api(message) => write!(f, "API error: {message}"),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub(crate) struct AuthTokenResponse {
     pub(crate) auth_token: String,
@@ -275,6 +295,73 @@ impl TrailBaseClient {
             expires_at,
         };
 
+        Ok(session)
+    }
+
+    /// Logs in with a native Sign in with Apple identity token
+    /// (`ASAuthorizationController` flow, Apple Tauri builds only).
+    ///
+    /// Persists the session (like [`Self::login_with_email_password`]).
+    /// The HTTP status is inspected before the body: 424 means Apple shared
+    /// no email and no account exists yet — surfaced as
+    /// [`AppleNativeLoginError::MissingEmail`] for a dedicated message.
+    pub async fn login_apple_native(
+        &self,
+        identity_token: &str,
+        nonce: &str,
+    ) -> Result<TrailBaseSession, AppleNativeLoginError> {
+        #[derive(Serialize)]
+        struct AppleNativeLoginRequest<'a> {
+            identity_token: &'a str,
+            nonce: &'a str,
+        }
+
+        let response = self
+            .fetch(
+                "/api/auth/v1/oauth/apple/native",
+                Method::POST,
+                Some(&AppleNativeLoginRequest {
+                    identity_token,
+                    nonce,
+                }),
+                None,
+            )
+            .await
+            .map_err(|e| AppleNativeLoginError::Api(e.to_string()))?;
+
+        if !response.ok() {
+            return Err(if response.status() == 424 {
+                AppleNativeLoginError::MissingEmail
+            } else {
+                AppleNativeLoginError::Api(format!(
+                    "Apple native login failed: {}",
+                    response.status_text()
+                ))
+            });
+        }
+
+        let token_response: AuthTokenResponse = Self::json(response)
+            .await
+            .map_err(|e| AppleNativeLoginError::Api(e.to_string()))?;
+
+        let claims = decode_jwt_claims(&token_response.auth_token)
+            .map_err(|e| AppleNativeLoginError::Api(format!("Failed to decode JWT: {}", e)))?;
+
+        let now = current_timestamp();
+        let expires_at = claims.expires_at(now.saturating_add(3600));
+
+        let session = TrailBaseSession {
+            auth_token: token_response.auth_token,
+            refresh_token: token_response.refresh_token.unwrap_or_default(),
+            email: claims.email.clone().unwrap_or_default(),
+            trailbase_id: claims.sub.clone(),
+            record_id: None,
+            expires_at,
+        };
+
+        set_session_async(&session)
+            .await
+            .map_err(AppleNativeLoginError::Api)?;
         Ok(session)
     }
 

@@ -8,11 +8,12 @@ repository.workspace = true
 readme.workspace = true
 links = "tauri-plugin-aswebauth"
 
-# ASWebAuthenticationSession wrapper for Apple platforms. The crate compiles
-# on all targets (it is a workspace member) but the plugin is registered only
-# under Apple cfgs in tauri/src/lib.rs:
+# Apple-platforms auth plugin for Tauri. The crate compiles on all targets
+# (it is a workspace member) but the plugin is registered only under Apple
+# cfgs in tauri/src/lib.rs:
 # - iOS: delegates to the Swift mobile plugin (`ios/Sources`).
-# - macOS: native Rust implementation in `src/macos.rs` via objc2.
+# - macOS: native Rust implementations in `src/macos.rs` (ASWebAuthentication
+#   Session for OAuth) and `src/siwa.rs` (native Sign in with Apple) via objc2.
 
 [build-dependencies]
 tauri-plugin.workspace = true
@@ -27,10 +28,20 @@ tracing.workspace = true
 objc2.workspace = true
 block2.workspace = true
 tokio = { workspace = true, features = ["sync"] }
-objc2-foundation = { workspace = true, features = ["NSURL", "NSString", "NSError"] }
+rand.workspace = true
+sha2.workspace = true
+base64.workspace = true
+objc2-foundation = { workspace = true, features = ["NSURL", "NSString", "NSError", "NSArray", "NSData"] }
 objc2-app-kit = { workspace = true, features = ["NSWindow", "NSResponder"] }
 objc2-authentication-services = { workspace = true, features = [
     "ASWebAuthenticationSession",
     "ASFoundation",
     "block2",
+    "ASAuthorization",
+    "ASAuthorizationController",
+    "ASAuthorizationAppleIDProvider",
+    "ASAuthorizationAppleIDRequest",
+    "ASAuthorizationOpenIDRequest",
+    "ASAuthorizationAppleIDCredential",
+    "ASAuthorizationError",
 ] }

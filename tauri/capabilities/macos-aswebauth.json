@@ -5,6 +5,7 @@
 	"platforms": ["macOS"],
 	"windows": ["main"],
 	"permissions": [
-		"aswebauth:allow-start-auth"
+		"aswebauth:allow-start-auth",
+		"aswebauth:allow-sign-in-with-apple"
 	]
 }

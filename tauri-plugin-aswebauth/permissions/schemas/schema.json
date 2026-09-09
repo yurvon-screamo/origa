@@ -295,6 +295,18 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the sign_in_with_apple command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sign-in-with-apple",
+          "markdownDescription": "Enables the sign_in_with_apple command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sign_in_with_apple command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sign-in-with-apple",
+          "markdownDescription": "Denies the sign_in_with_apple command without any pre-configured scope."
+        },
+        {
           "description": "Enables the start_auth command without any pre-configured scope.",
           "type": "string",
           "const": "allow-start-auth",

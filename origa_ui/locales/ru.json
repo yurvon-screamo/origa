@@ -394,6 +394,7 @@
     "google_login": "Войти через Google",
     "yandex_login": "Войти через Yandex",
     "apple_login": "Войти через Apple",
+    "apple_email_missing": "Apple не передал адрес электронной почты для этого аккаунта. Войдите через Google, Яндекс или по email.",
     "oauth_session_error": "Не удалось открыть окно входа: {}",
     "unsupported_callback": "Неподдерживаемый формат callback URL",
     "login_failed": "Неверный email или пароль"
