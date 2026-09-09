@@ -23,14 +23,17 @@ tauri.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
+# Nonce generation/hash is shared by the macOS implementation and the iOS
+# command (the Swift side only forwards the pre-hashed value), so these stay
+# target-independent.
+base64.workspace = true
+rand.workspace = true
+sha2.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2.workspace = true
 block2.workspace = true
 tokio = { workspace = true, features = ["sync"] }
-rand.workspace = true
-sha2.workspace = true
-base64.workspace = true
 objc2-foundation = { workspace = true, features = ["NSURL", "NSString", "NSError", "NSArray", "NSData"] }
 objc2-app-kit = { workspace = true, features = ["NSWindow", "NSResponder"] }
 objc2-authentication-services = { workspace = true, features = [

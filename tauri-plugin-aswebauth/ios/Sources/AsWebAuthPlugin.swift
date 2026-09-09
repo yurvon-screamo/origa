@@ -21,8 +21,6 @@
 //    client nonce.
 
 import AuthenticationServices
-import CryptoKit
-import Security
 import SwiftRs
 import Tauri
 import UIKit
@@ -31,6 +29,14 @@ import WebKit
 struct StartAuthArgs: Decodable {
     let url: String
     let callbackScheme: String
+}
+
+/// The Rust command generates the raw nonce and its lowercase-hex SHA-256
+/// (see `tauri-plugin-aswebauth/src/nonce.rs` for the cross-platform
+/// contract); this struct only carries the hash over to the sheet request.
+struct SignInWithAppleArgs: Decodable {
+    let nonceHash: String
+    let nonce: String
 }
 
 class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
@@ -90,11 +96,14 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
     /// Guideline 4: authentication must complete without leaving the app).
     ///
     /// Nonce contract shared with the macOS client and the TrailBase endpoint:
-    /// the raw nonce is returned to the caller, and its lowercase-hex SHA-256
-    /// (over the raw string's UTF-8 bytes) is what the identity token's
-    /// `nonce` claim carries. Known-answer vector:
+    /// the raw nonce is generated and hashed by the Rust command, which sends
+    /// the hash here; this method puts it on the authorization request
+    /// (`request.nonce`) and echoes the RAW value back with the result.
+    /// Known-answer vector:
     /// sha256Hex("test") == "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08".
     @objc public func signInWithApple(_ invoke: Invoke) throws {
+        let args = try invoke.parseArgs(SignInWithAppleArgs.self)
+
         // All flow-state mutations happen on the main queue: the delegate
         // callbacks (main-thread by protocol) clear the same properties, and
         // the invoke itself may arrive on a non-main IPC thread.
@@ -104,26 +113,18 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
                 return
             }
 
-            var nonceBytes = [UInt8](repeating: 0, count: 32)
-            let status = SecRandomCopyBytes(kSecRandomDefault, nonceBytes.count, &nonceBytes)
-            guard status == errSecSuccess else {
-                invoke.reject("nonce generation failed (SecRandomCopyBytes: \(status))")
-                return
-            }
-            let rawNonce = Self.base64URLEncodedNoPad(Data(nonceBytes))
-
             // Email only: the profile is built from the email address, and
             // Apple shares the name exactly once — requesting it just to
             // discard the value would add consent noise without a consumer.
             let request = ASAuthorizationAppleIDProvider().createRequest()
             request.requestedScopes = [.email]
-            request.nonce = Self.sha256Hex(rawNonce)
+            request.nonce = args.nonceHash
 
             let controller = ASAuthorizationController(authorizationRequests: [request])
             controller.delegate = self
             controller.presentationContextProvider = self
 
-            self.appleSignInFlow = (invoke: invoke, rawNonce: rawNonce)
+            self.appleSignInFlow = (invoke: invoke, rawNonce: args.nonce)
             self.authorizationController = controller
 
             controller.performRequests()

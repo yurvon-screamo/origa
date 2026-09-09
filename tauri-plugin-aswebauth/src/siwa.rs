@@ -41,11 +41,10 @@ use objc2_authentication_services::{
 use objc2_foundation::{
     MainThreadMarker, NSArray, NSError, NSObjectProtocol, NSString, NSUTF8StringEncoding,
 };
-use rand::RngCore;
-use sha2::{Digest, Sha256};
 use tauri::Manager;
 
 use crate::commands::AppleCredential;
+use crate::nonce::{generate_raw_nonce, sha256_hex};
 
 /// Controller + delegate kept alive until the flow completes.
 ///
@@ -287,31 +286,6 @@ impl AppleIdDelegate {
     }
 }
 
-/// Generates the raw client nonce: 32 random bytes, base64url-encoded without
-/// padding (RFC 4648 §5, un-padded — same alphabet as PKCE verifiers).
-fn generate_raw_nonce() -> String {
-    use base64::Engine as _;
-    use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-
-    let mut bytes = [0u8; 32];
-    rand::rng().fill_bytes(&mut bytes);
-    URL_SAFE_NO_PAD.encode(bytes)
-}
-
-/// Lowercase-hex SHA-256 of the raw nonce string's UTF-8 bytes.
-///
-/// Known-answer vector shared with the TrailBase endpoint and the iOS client:
-/// `sha256_hex("test") == "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"`.
-fn sha256_hex(value: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(value.as_bytes());
-    hasher
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect()
-}
-
 #[cfg(all(test, target_os = "macos"))]
 mod tests {
     use super::*;
@@ -322,25 +296,6 @@ mod tests {
     fn canceled_authorization_maps_to_cancelled_marker() {
         // Canceled == 1001 per ASAuthorizationError.
         assert_eq!(ASAuthorizationError::Canceled.0, 1001);
-    }
-
-    /// The nonce hash is a cross-platform contract (macOS Rust, iOS Swift,
-    /// TrailBase endpoint): pin the documented known-answer vector.
-    #[test]
-    fn sha256_hex_matches_the_cross_platform_test_vector() {
-        assert_eq!(
-            sha256_hex("test"),
-            "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
-        );
-    }
-
-    /// The raw nonce must be valid base64url without padding: 32 bytes
-    /// encode to exactly 43 characters.
-    #[test]
-    fn generated_nonce_is_43_char_base64url() {
-        let nonce = generate_raw_nonce();
-        assert_eq!(nonce.len(), 43);
-        assert!(!nonce.contains('+') && !nonce.contains('/') && !nonce.contains('='));
     }
 
     /// The slot hands its payload out exactly once: after the first take it
