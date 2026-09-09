@@ -210,66 +210,57 @@ jobs:
                   ls -la "$IPA_PATH"
 
             - name: Re-sign .ipa with SIWA entitlements
+              id: resign
               #
               # tauri-cli builds the iOS target with CODE_SIGN_ENTITLEMENTS=""
-              # and re-signs the archive WITHOUT entitlements (via a
-              # self-signed "Apple Distribution" identity in an ephemeral
-              # keychain it deletes right after), so applesignin never
-              # reaches the exported .ipa even when the provisioning profile
-              # grants it — the native SIWA sheet then fails at runtime with
+              # and signs the export with an Apple-issued "Apple Distribution"
+              # certificate it mints via the ASC API in an ephemeral keychain
+              # (deleted right after), WITHOUT entitlements — so applesignin
+              # never reaches the .ipa even though the provisioning profile
+              # grants it, and the native SIWA sheet fails at runtime with
               # ASAuthorizationError.unknown (1000).
               #
-              # Mirror tauri-cli's own trick: generate a self-signed
-              # distribution identity, MERGE applesignin into the app's
-              # current entitlements (keeping application-identifier and the
-              # rest intact) and re-sign. App Store Connect re-signs TestFlight
-              # builds itself, so a self-signed upload identity is accepted
-              # exactly like tauri-cli's own ephemeral one.
+              # App Store Connect rejects uploads whose signing certificate is
+              # not contained in the embedded profile (-19241), and a
+              # self-signed identity does not survive Xcode's re-sign either.
+              # So mirror tauri-cli exactly: mint our own Apple-issued
+              # certificate + a fresh IOS_APP_STORE profile containing it,
+              # replace the embedded profile, MERGE applesignin into the
+              # current entitlements and re-sign. The "Cleanup minted iOS
+              # identity" step deletes the cert/profile afterwards (certificate
+              # slots are limited).
+              env:
+                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
               run: |
                   KEYCHAIN="$HOME/Library/Keychains/resign.keychain-db"
                   KEYCHAIN_PASS=$(uuidgen)
                   IDENTITY="Apple Distribution: Origa CI"
                   IPA_PATH="${{ steps.ipa.outputs.path }}"
 
+                  python3 .github/scripts/mint_ios_identity.py mint \
+                    --bundle-id net.uwuwu.origa \
+                    --out-dir /tmp/minted \
+                    --suffix "${GITHUB_SHA::12}"
+
                   security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
                   security set-keychain-settings -lut 21600 "$KEYCHAIN"
                   security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
-
-                  # security find-identity -p codesigning only lists certs
-                  # with the codeSigning EKU — a bare openssl -x509 cert has
-                  # none and codesign then can't find the identity.
-                  cat > /tmp/resign-cert.cnf <<'EOF'
-                  [req]
-                  distinguished_name = dn
-                  x509_extensions = v3
-                  prompt = no
-                  [dn]
-                  CN = placeholder
-                  O = Origa
-                  C = US
-                  [v3]
-                  basicConstraints = CA:FALSE
-                  keyUsage = critical, digitalSignature
-                  extendedKeyUsage = codeSigning
-                  subjectKeyIdentifier = hash
-                  EOF
-                  sed -i '' "s|^CN = placeholder$|CN = ${IDENTITY}|" /tmp/resign-cert.cnf
-                  openssl req -x509 -newkey rsa:2048 -nodes -days 2 \
-                    -keyout /tmp/resign-key.pem -out /tmp/resign-cert.pem \
-                    -config /tmp/resign-cert.cnf
-                  security import /tmp/resign-key.pem -k "$KEYCHAIN" -T /usr/bin/codesign
-                  security import /tmp/resign-cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
+                  security import /tmp/minted/key.pem -k "$KEYCHAIN" -T /usr/bin/codesign
+                  security import /tmp/minted/cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
                   security set-key-partition-list -S apple-tool:,apple: \
                     -k "$KEYCHAIN_PASS" "$KEYCHAIN"
-                  # codesign --keychain needs the keychain in the search
-                  # list to link the imported key with the certificate.
                   security list-keychains -d user -s "$KEYCHAIN" login.keychain
-
                   security find-identity -v -p codesigning "$KEYCHAIN"
 
                   rm -rf /tmp/resign && mkdir -p /tmp/resign
                   unzip -q "$IPA_PATH" -d /tmp/resign
                   APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
+
+                  # Fresh profile that contains the minted certificate (the
+                  # tauri-cli export embedded one with ITS throwaway cert).
+                  cp /tmp/minted/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
 
                   # Merge applesignin into the CURRENT entitlements instead of
                   # replacing them (keep application-identifier, team-identifier
@@ -290,6 +281,17 @@ jobs:
                   rm -f "$IPA_PATH"
                   (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
                   ls -la "$IPA_PATH"
+
+            - name: Cleanup minted iOS identity
+              if: always() && steps.resign.outputs.cert-id != ''
+              env:
+                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+              run: |
+                  python3 .github/scripts/mint_ios_identity.py cleanup \
+                    --cert-id "${{ steps.resign.outputs.cert-id }}" \
+                    --profile-id "${{ steps.resign.outputs.profile-id }}"
 
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
