@@ -467,13 +467,14 @@ jobs:
                   for KEY in com.apple.security.app-sandbox \
                              com.apple.security.network.client \
                              com.apple.security.device.microphone \
-                             com.apple.security.files.user-selected.read-write; do
+                             com.apple.security.files.user-selected.read-write \
+                             com.apple.developer.applesignin; do
                     if ! grep -q "$KEY" /tmp/entitlements.txt; then
                       echo "::error::Missing entitlement: $KEY"
                       exit 1
                     fi
                   done
-                  echo "✅ All 4 entitlements present"
+                  echo "✅ All 5 entitlements present"
                   rm -f /tmp/entitlements.txt
 
             - name: Embed provisioning profile & re-sign
@@ -516,6 +517,20 @@ jobs:
                     --keychain build.keychain \
                     "$APP_PATH"
                   echo "✅ Re-signed .app with provisioning profile + merged entitlements"
+
+            - name: Verify profile grants Sign in with Apple
+              #
+              # The merge above is a silent union — codesign does not validate
+              # app entitlements against the profile. If the Sign in with
+              # Apple capability is not enabled on the App ID
+              # (developer.apple.com), the key would come only from the app's
+              # plist, the build would stay green, and App Store validation
+              # (or the native SIWA sheet at runtime) would reject it. Fail
+              # closed instead.
+              run: |
+                  python3 "$GITHUB_WORKSPACE/.github/scripts/verify_profile_entitlements.py" \
+                    --profile "$RUNNER_TEMP/embedded.provisionprofile" \
+                    --entitlement com.apple.developer.applesignin
 
             - name: Build .pkg via productbuild
               id: pkg
