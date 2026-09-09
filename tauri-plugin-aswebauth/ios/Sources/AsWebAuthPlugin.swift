@@ -177,21 +177,6 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
         }
     }
 
-    // MARK: - Nonce encoding helpers
-
-    private static func base64URLEncodedNoPad(_ data: Data) -> String {
-        return data
-            .base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-    }
-
-    private static func sha256Hex(_ string: String) -> String {
-        let digest = Insecure.SHA256.hash(data: Data(string.utf8))
-        return digest.map { String(format: "%02x", $0) }.joined()
-    }
-
     // MARK: - ASWebAuthenticationPresentationContextProviding
 
     func presentationAnchor(
