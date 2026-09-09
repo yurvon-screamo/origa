@@ -233,18 +233,18 @@ jobs:
                   # tauri-cli cleaned up its own signing identity after the
                   # build; the re-sign step needs an Apple Distribution
                   # identity back in a keychain. Same p12 as the macOS job.
-                  KEYCHAIN=/tmp/resign.keychain-db
+                  KEYCHAIN=resign.keychain
                   security create-keychain -p "$APPLE_MAC_CERT_PASSWORD" "$KEYCHAIN"
                   security set-keychain-settings -lut 21600 "$KEYCHAIN"
                   security unlock-keychain -p "$APPLE_MAC_CERT_PASSWORD" "$KEYCHAIN"
-                  security list-keychains -d user -s "$KEYCHAIN"
+                  security list-keychains -d user -s "$KEYCHAIN" login.keychain
 
             - name: Import p12 for the re-sign
               uses: apple-actions/import-codesign-certs@v7
               with:
                   p12-file-base64: ${{ secrets.apple-mac-app-cert-p12 }}
                   p12-password: ${{ secrets.apple-mac-cert-password }}
-                  keychain: /tmp/resign.keychain-db
+                  keychain: resign
                   keychain-password: ${{ secrets.apple-mac-cert-password }}
                   create-keychain: false
 
@@ -258,7 +258,7 @@ jobs:
               # (1000). Re-sign the .app with the committed entitlements file
               # (the embedded profile now grants it) and repack the .ipa.
               run: |
-                  KEYCHAIN=/tmp/resign.keychain-db
+                  KEYCHAIN=resign.keychain
                   IPA_PATH="${{ steps.ipa.outputs.path }}"
                   rm -rf /tmp/resign && mkdir -p /tmp/resign
                   unzip -q "$IPA_PATH" -d /tmp/resign
