@@ -1,19 +1,28 @@
 // Copyright 2026 yurvon-screamo
 // SPDX-License-Identifier: MIT
 //
-// ASWebAuthenticationSession wrapper for OAuth flows.
+// Apple-platforms auth plugin for Tauri.
 //
-// Replaces the tauri-plugin-opener + desktop-callback.html + custom-scheme
-// flow on iOS. ASWebAuthenticationSession opens Safari in a dedicated auth
-// context, intercepts the server-side 303 to `origa://auth/callback`
-// (redirect-initiated navigation — JavaScript hops from an interstitial page
-// are NOT intercepted), and returns the callback URL via the completion
-// handler — no CFBundleURLTypes needed.
+// 1. `startAuth`: ASWebAuthenticationSession wrapper for OAuth flows
+//    (Google/Yandex). Replaces the tauri-plugin-opener + desktop-callback.html
+//    + custom-scheme flow on iOS. ASWebAuthenticationSession opens Safari in
+//    a dedicated auth context, intercepts the server-side 303 to
+//    `origa://auth/callback` (redirect-initiated navigation — JavaScript hops
+//    from an interstitial page are NOT intercepted), and returns the callback
+//    URL via the completion handler — no CFBundleURLTypes needed.
 //
-// `prefersEphemeralWebBrowserSession` is intentionally `false`: Google OAuth
-// rejects ephemeral (incognito-like) browser sessions, blocking login.
+//    `prefersEphemeralWebBrowserSession` is intentionally `false`: Google
+//    OAuth rejects ephemeral (incognito-like) browser sessions, blocking
+//    login.
+//
+// 2. `signInWithApple`: native Sign in with Apple via ASAuthorizationController
+//    (Mac App Store Guideline 4 — Apple sign-in must complete without leaving
+//    the app, no web involved). Returns the identity token and the raw
+//    client nonce.
 
 import AuthenticationServices
+import CryptoKit
+import Security
 import SwiftRs
 import Tauri
 import UIKit
@@ -24,11 +33,18 @@ struct StartAuthArgs: Decodable {
     let callbackScheme: String
 }
 
-class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding {
+class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     /// Strong reference to the active session. If this property is nil'd
     /// (or the plugin is deallocated) the session's completion handler
     /// will never fire, hanging the OAuth flow indefinitely.
     private var session: ASWebAuthenticationSession?
+
+    /// Strong reference to the active native Sign in with Apple controller,
+    /// plus the invoke and raw nonce of the flow it belongs to. The controller
+    /// holds its delegate weakly, so clearing this property mid-flow would
+    /// drop the callbacks and hang the invoke forever.
+    private var appleSignInFlow: (invoke: Invoke, rawNonce: String)?
+    private var authorizationController: ASAuthorizationController?
 
     @objc public func startAuth(_ invoke: Invoke) throws {
         let args = try invoke.parseArgs(StartAuthArgs.self)
@@ -68,14 +84,129 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding {
         }
     }
 
+    // MARK: - Native Sign in with Apple (ASAuthorizationController)
+
+    /// Presents the system SIWA sheet — no browser involved (App Review
+    /// Guideline 4: authentication must complete without leaving the app).
+    ///
+    /// Nonce contract shared with the macOS client and the TrailBase endpoint:
+    /// the raw nonce is returned to the caller, and its lowercase-hex SHA-256
+    /// (over the raw string's UTF-8 bytes) is what the identity token's
+    /// `nonce` claim carries. Known-answer vector:
+    /// sha256Hex("test") == "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08".
+    @objc public func signInWithApple(_ invoke: Invoke) throws {
+        guard appleSignInFlow == nil else {
+            invoke.reject("a Sign in with Apple flow is already in progress")
+            return
+        }
+
+        var nonceBytes = [UInt8](repeating: 0, count: 32)
+        let status = SecRandomCopyBytes(kSecRandomDefault, nonceBytes.count, &nonceBytes)
+        guard status == errSecSuccess else {
+            invoke.reject("nonce generation failed (SecRandomCopyBytes: \(status))")
+            return
+        }
+        let rawNonce = Self.base64URLEncodedNoPad(Data(nonceBytes))
+
+        // Email only: the profile is built from the email address, and Apple
+        // shares the name exactly once — requesting it just to discard the
+        // value would add consent noise without a consumer.
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.email]
+        request.nonce = Self.sha256Hex(rawNonce)
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+
+        appleSignInFlow = (invoke: invoke, rawNonce: rawNonce)
+        authorizationController = controller
+
+        DispatchQueue.main.async {
+            controller.performRequests()
+        }
+    }
+
+    private func takeAppleSignInFlow() -> (invoke: Invoke, rawNonce: String)? {
+        let flow = appleSignInFlow
+        appleSignInFlow = nil
+        authorizationController = nil
+        return flow
+    }
+
+    // MARK: - ASAuthorizationControllerDelegate
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        guard let flow = takeAppleSignInFlow() else { return }
+
+        guard
+            let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+            let tokenData = credential.identityToken,
+            let identityToken = String(data: tokenData, encoding: .utf8),
+            !identityToken.isEmpty
+        else {
+            flow.invoke.reject("authorization carried no identity token")
+            return
+        }
+
+        flow.invoke.resolve([
+            "identityToken": identityToken,
+            "nonce": flow.rawNonce,
+        ])
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        guard let flow = takeAppleSignInFlow() else { return }
+
+        if let authorizationError = error as? ASAuthorizationError,
+           authorizationError.code == .canceled {
+            // The exact marker the frontend pattern-matches on.
+            flow.invoke.reject("cancelled")
+        } else {
+            flow.invoke.reject("apple sign-in failed: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Nonce encoding helpers
+
+    private static func base64URLEncodedNoPad(_ data: Data) -> String {
+        return data
+            .base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    private static func sha256Hex(_ string: String) -> String {
+        let digest = Insecure.SHA256.hash(data: Data(string.utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
     // MARK: - ASWebAuthenticationPresentationContextProviding
 
     func presentationAnchor(
         for session: ASWebAuthenticationSession
     ) -> ASPresentationAnchor {
-        // Return the app's key window so Safari's auth sheet appears on top
-        // of the WebView, not a blank anchor. Uses the foreground active scene
-        // to avoid returning a backgrounded window.
+        return Self.foregroundKeyWindowAnchor()
+    }
+
+    // MARK: - ASAuthorizationControllerPresentationContextProviding
+
+    func presentationAnchor(
+        for controller: ASAuthorizationController
+    ) -> ASPresentationAnchor {
+        return Self.foregroundKeyWindowAnchor()
+    }
+
+    /// The app's key window of the foreground-active scene, so auth UI
+    /// appears on top of the WebView, not on a blank anchor.
+    private static func foregroundKeyWindowAnchor() -> ASPresentationAnchor {
         let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .filter { $0.activationState == .foregroundActive }
@@ -91,7 +222,7 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding {
             return window
         }
 
-        // Last resort: empty anchor. The auth session may fail to display,
+        // Last resort: empty anchor. The auth sheet may fail to display,
         // but this should be unreachable in a normal app lifecycle.
         return ASPresentationAnchor()
     }
