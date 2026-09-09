@@ -82,8 +82,7 @@ A web version is also available.
 
 | Languages | Status |
 | :--- | :--- |
-| **Russian, English** | ✅ Available |
-| **Vietnamese, Korean** | 📋 Planned |
+| **Russian, English, Korean, Vietnamese** | ✅ Available |
 | **Indonesian, Spanish** | 📋 Planned |
 
 ---

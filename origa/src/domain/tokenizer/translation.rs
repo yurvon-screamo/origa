@@ -1635,12 +1635,12 @@ mod integration_tests {
 
     #[test]
     fn should_label_te_particle_via_keyword() {
-        assert_marker_has_grammar_label("食べて飲んで", "て", "～て");
+        assert_marker_has_grammar_label("食べて飲んで", "て", "～て（форма тэ）");
     }
 
     #[test]
     fn should_label_tara_conditional_via_keyword() {
-        assert_marker_has_grammar_label("食べたら", "たら", "～たら");
+        assert_marker_has_grammar_label("食べたら", "たら", "～たら（если…то）");
     }
 
     #[test]

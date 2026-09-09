@@ -25,7 +25,10 @@ impl TypesMeta {
             .find(|t| &t.id == set_type)
             .map(|t| match lang {
                 NativeLanguage::Russian => t.label_ru.as_str(),
-                NativeLanguage::English => t.label_en.as_str(),
+                // KO/VI: no CDN data yet — fall back to English labels.
+                NativeLanguage::English | NativeLanguage::Korean | NativeLanguage::Vietnamese => {
+                    t.label_en.as_str()
+                },
             })
             .unwrap_or(set_type)
     }
@@ -163,6 +166,14 @@ pub struct WellKnownSetMeta {
     pub desc_ru: String,
     pub desc_en: String,
     #[serde(default)]
+    pub title_ko: String,
+    #[serde(default)]
+    pub desc_ko: String,
+    #[serde(default)]
+    pub title_vi: String,
+    #[serde(default)]
+    pub desc_vi: String,
+    #[serde(default)]
     pub word_count: usize,
 }
 
@@ -171,6 +182,9 @@ impl WellKnownSetMeta {
         match lang {
             NativeLanguage::Russian => &self.title_ru,
             NativeLanguage::English => &self.title_en,
+            // Empty fields (legacy CDN meta) degrade to the English title.
+            NativeLanguage::Korean => self.pick(&self.title_ko, &self.title_en),
+            NativeLanguage::Vietnamese => self.pick(&self.title_vi, &self.title_en),
         }
     }
 
@@ -178,6 +192,16 @@ impl WellKnownSetMeta {
         match lang {
             NativeLanguage::Russian => &self.desc_ru,
             NativeLanguage::English => &self.desc_en,
+            NativeLanguage::Korean => self.pick(&self.desc_ko, &self.desc_en),
+            NativeLanguage::Vietnamese => self.pick(&self.desc_vi, &self.desc_en),
+        }
+    }
+
+    fn pick<'a>(&'a self, primary: &'a str, fallback: &'a str) -> &'a str {
+        if primary.is_empty() {
+            fallback
+        } else {
+            primary
         }
     }
 
@@ -357,17 +381,53 @@ mod tests {
             title_en: "Test Set".to_string(),
             desc_ru: "Тестовое описание".to_string(),
             desc_en: "A test set".to_string(),
+            title_ko: "테스트 세트".to_string(),
+            desc_ko: "테스트 설명".to_string(),
+            title_vi: "Bộ kiểm thử".to_string(),
+            desc_vi: "Mô tả kiểm thử".to_string(),
             word_count: 0,
         };
 
         assert_eq!(meta.title(&NativeLanguage::English), "Test Set");
         assert_eq!(meta.title(&NativeLanguage::Russian), "Тестовый набор");
+        assert_eq!(meta.title(&NativeLanguage::Korean), "테스트 세트");
+        assert_eq!(meta.title(&NativeLanguage::Vietnamese), "Bộ kiểm thử");
         assert_eq!(meta.description(&NativeLanguage::English), "A test set");
         assert_eq!(
             meta.description(&NativeLanguage::Russian),
             "Тестовое описание"
         );
+        assert_eq!(meta.description(&NativeLanguage::Korean), "테스트 설명");
+        assert_eq!(
+            meta.description(&NativeLanguage::Vietnamese),
+            "Mô tả kiểm thử"
+        );
         assert_eq!(meta.level, JapaneseLevel::N5);
+    }
+
+    #[test]
+    fn korean_vietnamese_meta_falls_back_to_english_when_empty() {
+        // Legacy CDN meta without the _ko/_vi fields must degrade to English.
+        let meta = WellKnownSetMeta {
+            id: "legacy".to_string(),
+            set_type: "Test".to_string(),
+            level: JapaneseLevel::N5,
+            title_ru: "Набор".to_string(),
+            title_en: "Legacy Set".to_string(),
+            desc_ru: "Описание".to_string(),
+            desc_en: "Legacy description".to_string(),
+            title_ko: String::new(),
+            desc_ko: String::new(),
+            title_vi: String::new(),
+            desc_vi: String::new(),
+            word_count: 0,
+        };
+        assert_eq!(meta.title(&NativeLanguage::Korean), "Legacy Set");
+        assert_eq!(meta.title(&NativeLanguage::Vietnamese), "Legacy Set");
+        assert_eq!(
+            meta.description(&NativeLanguage::Vietnamese),
+            "Legacy description"
+        );
     }
 
     #[test]

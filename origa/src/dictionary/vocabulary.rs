@@ -102,6 +102,10 @@ pub struct VocabularyInfo {
     ru_description: Option<String>,
     en_translations: Vec<String>,
     en_description: Option<String>,
+    vi_translations: Vec<String>,
+    vi_description: Option<String>,
+    ko_translations: Vec<String>,
+    ko_description: Option<String>,
 }
 
 impl VocabularyInfo {
@@ -125,6 +129,28 @@ impl VocabularyInfo {
             .join("\n")
     }
 
+    pub fn vietnamese_translation(&self) -> String {
+        self.project(&self.vi_translations, Self::english_translation)
+    }
+
+    pub fn korean_translation(&self) -> String {
+        self.project(&self.ko_translations, Self::english_translation)
+    }
+
+    /// Formatted bullets for `primary`, degrading to `fallback` when the
+    /// primary list is empty (legacy chunks without vi/ko fields).
+    fn project(&self, primary: &[String], fallback: fn(&Self) -> String) -> String {
+        if primary.is_empty() {
+            fallback(self)
+        } else {
+            primary
+                .iter()
+                .map(|t| format!("- {}", t))
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
+    }
+
     pub fn ru_translations(&self) -> &[String] {
         &self.ru_translations
     }
@@ -141,10 +167,21 @@ impl VocabularyInfo {
         self.en_description.as_deref()
     }
 
+    pub fn vi_translations(&self) -> &[String] {
+        &self.vi_translations
+    }
+
+    pub fn ko_translations(&self) -> &[String] {
+        &self.ko_translations
+    }
+
     pub fn translations(&self, lang: &NativeLanguage) -> &[String] {
+        // KO/VI fall back to English for legacy chunks without vi/ko fields.
         match lang {
             NativeLanguage::Russian => &self.ru_translations,
             NativeLanguage::English => &self.en_translations,
+            NativeLanguage::Korean => self.pick(&self.ko_translations),
+            NativeLanguage::Vietnamese => self.pick(&self.vi_translations),
         }
     }
 
@@ -152,7 +189,21 @@ impl VocabularyInfo {
         match lang {
             NativeLanguage::Russian => self.ru_description.as_deref(),
             NativeLanguage::English => self.en_description.as_deref(),
+            NativeLanguage::Korean => self.pick_desc(&self.ko_description),
+            NativeLanguage::Vietnamese => self.pick_desc(&self.vi_description),
         }
+    }
+
+    fn pick<'a>(&'a self, primary: &'a [String]) -> &'a [String] {
+        if primary.is_empty() {
+            &self.en_translations
+        } else {
+            primary
+        }
+    }
+
+    fn pick_desc<'a>(&'a self, primary: &'a Option<String>) -> Option<&'a str> {
+        primary.as_deref().or(self.en_description.as_deref())
     }
 }
 
@@ -162,6 +213,8 @@ struct VocabularyEntryStoredType {
     english_translation: Option<String>,
     ru: Option<TranslationValue>,
     en: Option<TranslationValue>,
+    vi: Option<TranslationValue>,
+    ko: Option<TranslationValue>,
 }
 
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
@@ -316,6 +369,9 @@ fn resolve_translations(
     let (structured, raw) = match lang {
         TranslationLang::Ru => (&entry.ru, &entry.russian_translation),
         TranslationLang::En => (&entry.en, &entry.english_translation),
+        // KO/VI chunks are generated in structured form only.
+        TranslationLang::Vi => (&entry.vi, &None),
+        TranslationLang::Ko => (&entry.ko, &None),
     };
 
     if let Some(tv) = structured {
@@ -332,6 +388,8 @@ fn resolve_translations(
 enum TranslationLang {
     Ru,
     En,
+    Vi,
+    Ko,
 }
 
 impl VocabularyDatabase {
@@ -368,6 +426,10 @@ impl VocabularyDatabase {
                     resolve_translations(&entry, TranslationLang::Ru);
                 let (en_translations, en_description) =
                     resolve_translations(&entry, TranslationLang::En);
+                let (vi_translations, vi_description) =
+                    resolve_translations(&entry, TranslationLang::Vi);
+                let (ko_translations, ko_description) =
+                    resolve_translations(&entry, TranslationLang::Ko);
 
                 (
                     word.clone(),
@@ -377,6 +439,10 @@ impl VocabularyDatabase {
                         ru_description,
                         en_translations,
                         en_description,
+                        vi_translations,
+                        vi_description,
+                        ko_translations,
+                        ko_description,
                     },
                 )
             })
@@ -391,6 +457,8 @@ impl VocabularyDatabase {
             .map(|info| match native_language {
                 NativeLanguage::Russian => info.russian_translation(),
                 NativeLanguage::English => info.english_translation(),
+                NativeLanguage::Korean => info.korean_translation(),
+                NativeLanguage::Vietnamese => info.vietnamese_translation(),
             })
     }
 
@@ -500,6 +568,49 @@ mod tests {
         let db = VocabularyDatabase::from_chunks(data).unwrap();
         assert!(db.get_vocabulary_info("猫").is_some());
         assert!(db.get_vocabulary_info("犬").is_some());
+    }
+
+    #[test]
+    fn korean_vietnamese_translations_use_chunk_fields() {
+        let json = r#"{
+            "猫": {
+                "ru": { "t": ["кошка"], "d": "" },
+                "en": { "t": ["cat"], "d": "" },
+                "vi": { "t": ["con mèo"], "d": "" },
+                "ko": { "t": ["고양이"], "d": "" }
+            },
+            "犬": {
+                "ru": { "t": ["собака"], "d": "" },
+                "en": { "t": ["dog"], "d": "" }
+            }
+        }"#
+        .to_string();
+        let data = empty_chunk_data_with(&json);
+        let db = VocabularyDatabase::from_chunks(data).unwrap();
+
+        let cat = db.get_vocabulary_info("猫").unwrap();
+        assert_eq!(
+            cat.translations(&NativeLanguage::Korean),
+            &["고양이".to_string()]
+        );
+        assert_eq!(
+            cat.translations(&NativeLanguage::Vietnamese),
+            &["con mèo".to_string()]
+        );
+        assert_eq!(cat.korean_translation(), "- 고양이");
+        assert_eq!(cat.vietnamese_translation(), "- con mèo");
+        assert_eq!(
+            db.get_translation("猫", &NativeLanguage::Korean).unwrap(),
+            "- 고양이"
+        );
+
+        // Legacy entry without vi/ko fields degrades to English.
+        let dog = db.get_vocabulary_info("犬").unwrap();
+        assert_eq!(
+            dog.translations(&NativeLanguage::Korean),
+            dog.translations(&NativeLanguage::English)
+        );
+        assert_eq!(dog.vietnamese_translation(), dog.english_translation());
     }
 
     #[test]

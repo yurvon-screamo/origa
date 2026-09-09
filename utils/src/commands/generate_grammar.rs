@@ -14,7 +14,7 @@ fn resolve_grammar_path(custom_path: Option<&PathBuf>) -> PathBuf {
         None => get_base_path()
             .join("cdn")
             .join("grammar")
-            .join("grammar.json"),
+            .join("grammar_v2.json"),
     }
 }
 
@@ -160,7 +160,13 @@ fn update_rule_content(
     let content = rule.get_mut("content").and_then(|c| c.get_mut(language));
 
     if let Some(lang_obj) = content {
-        lang_obj["title"] = Value::String(title.to_string());
+        // Title convention (#501): the corpus title is curated by hand
+        // (pattern + localized qualifier) and must survive LLM enrichment.
+        // Only a hollow rule (empty title) takes the generated one.
+        let existing_title = lang_obj.get("title").and_then(|v| v.as_str()).unwrap_or("");
+        if existing_title.trim().is_empty() {
+            lang_obj["title"] = Value::String(title.to_string());
+        }
         lang_obj["short_description"] = Value::String(short_desc.to_string());
         lang_obj["explanation"] = Value::String(explanation.to_string());
         lang_obj["how_to_form"] = Value::String(how_to_form.to_string());

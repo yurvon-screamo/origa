@@ -49,6 +49,8 @@
     "delete_confirm_message": "Are you sure? This will delete your account and all data permanently.",
     "language_english": "English",
     "language_russian": "Russian",
+    "language_korean": "Korean",
+    "language_vietnamese": "Vietnamese",
     "password_title": "Password",
     "current_password": "Current password",
     "new_password": "New password",

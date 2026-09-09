@@ -67,8 +67,10 @@
     --space-xxl: 48px;
     --space-xxxl: 64px;
 
-    --font-serif: "Cormorant Garamond", "Noto Sans JP", sans-serif;
-    --font-mono: "IBM Plex Mono", "Noto Sans JP", monospace;
+    /* Noto Sans KR after JP: JP has no hangul glyphs, so hangul runs pass
+       through to KR; CJK ideographs stay on JP. */
+    --font-serif: "Cormorant Garamond", "Noto Sans JP", "Noto Sans KR", sans-serif;
+    --font-mono: "IBM Plex Mono", "Noto Sans JP", "Noto Sans KR", monospace;
 
     /* Rounded */
     --rounded-none: 0px;

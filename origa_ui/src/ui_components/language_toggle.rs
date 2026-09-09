@@ -2,6 +2,19 @@ use crate::i18n::{td_string, use_i18n};
 use leptos::prelude::*;
 use origa::domain::NativeLanguage;
 
+const ACTIVE_CLASS: &str =
+    "text-[var(--fg-black)] border-b border-[var(--fg-black)] cursor-default";
+const INACTIVE_CLASS: &str = "text-[var(--fg-muted)] border-b border-transparent hover:text-[var(--fg-black)] hover:border-[var(--border-light)] cursor-pointer";
+
+/// (language, test-id slug, label). Order defines the on-screen order of the
+/// toggle buttons.
+const LANGUAGES: [(NativeLanguage, &str, &str); 4] = [
+    (NativeLanguage::English, "en", "EN"),
+    (NativeLanguage::Russian, "ru", "RU"),
+    (NativeLanguage::Korean, "ko", "KO"),
+    (NativeLanguage::Vietnamese, "vi", "VI"),
+];
+
 #[component]
 pub fn NativeLanguageToggle(
     selected_language: RwSignal<NativeLanguage>,
@@ -15,22 +28,6 @@ pub fn NativeLanguageToggle(
         if val.is_empty() { None } else { Some(val) }
     };
 
-    let en_class = Signal::derive(move || {
-        if selected_language.get() == NativeLanguage::English {
-            "text-[var(--fg-black)] border-b border-[var(--fg-black)] cursor-default"
-        } else {
-            "text-[var(--fg-muted)] border-b border-transparent hover:text-[var(--fg-black)] hover:border-[var(--border-light)] cursor-pointer"
-        }
-    });
-
-    let ru_class = Signal::derive(move || {
-        if selected_language.get() == NativeLanguage::Russian {
-            "text-[var(--fg-black)] border-b border-[var(--fg-black)] cursor-default"
-        } else {
-            "text-[var(--fg-muted)] border-b border-transparent hover:text-[var(--fg-black)] hover:border-[var(--border-light)] cursor-pointer"
-        }
-    });
-
     view! {
         <div
             class="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.15em]"
@@ -38,39 +35,38 @@ pub fn NativeLanguageToggle(
             aria-label=move || td_string!(i18n.get_locale(), common.language_aria_label)
             data-testid=test_id_val
         >
-            <button
-                type="button"
-                data-testid="lang-toggle-en"
-                class=move || format!(
-                    "bg-transparent p-0 transition-colors duration-150 ease-in-out anima-focus-ring {}",
-                    en_class.get()
-                )
-                aria-current=move || if selected_language.get() == NativeLanguage::English { "true" } else { "false" }
-                on:click=move |_| {
-                    selected_language.set(NativeLanguage::English);
-                    if let Some(cb) = &on_change { cb.run(NativeLanguage::English); }
-                }
-            >
-                "EN"
-            </button>
-
-            <span class="text-[var(--border-light)] select-none pointer-events-none">"|"</span>
-
-            <button
-                type="button"
-                data-testid="lang-toggle-ru"
-                class=move || format!(
-                    "bg-transparent p-0 transition-colors duration-150 ease-in-out anima-focus-ring {}",
-                    ru_class.get()
-                )
-                aria-current=move || if selected_language.get() == NativeLanguage::Russian { "true" } else { "false" }
-                on:click=move |_| {
-                    selected_language.set(NativeLanguage::Russian);
-                    if let Some(cb) = &on_change { cb.run(NativeLanguage::Russian); }
-                }
-            >
-                "RU"
-            </button>
+            {LANGUAGES
+                .iter()
+                .enumerate()
+                .map(|(index, &(lang, slug, label))| {
+                    let class = Signal::derive(move || {
+                        if selected_language.get() == lang { ACTIVE_CLASS } else { INACTIVE_CLASS }
+                    });
+                    let separator = (index > 0).then(|| {
+                        view! {
+                            <span class="text-[var(--border-light)] select-none pointer-events-none">"|"</span>
+                        }
+                    });
+                    view! {
+                        {separator}
+                        <button
+                            type="button"
+                            data-testid=format!("lang-toggle-{slug}")
+                            class=move || format!(
+                                "bg-transparent p-0 transition-colors duration-150 ease-in-out anima-focus-ring {}",
+                                class.get()
+                            )
+                            aria-current=move || if selected_language.get() == lang { "true" } else { "false" }
+                            on:click=move |_| {
+                                selected_language.set(lang);
+                                if let Some(cb) = &on_change { cb.run(lang); }
+                            }
+                        >
+                            {label}
+                        </button>
+                    }
+                })
+                .collect::<Vec<_>>()}
         </div>
     }
 }

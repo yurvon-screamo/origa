@@ -1,13 +1,13 @@
-"""Bundle phrases/data/*.json into 4 parts (~12 MB each) for CDN.
+"""Bundle phrases/data/*.json into 6 parts (~13 MB each) for CDN.
 
-198 individual chunks → 4 bundle files. Each bundle is a JSON object
-keyed by chunk ID. WASM peak memory = 1 bundle (~12 MB) at a time.
+198 individual chunks → 6 bundle files. Each bundle is a JSON object
+keyed by chunk ID. WASM peak memory = 1 bundle at a time; the size cap
+keeps that envelope after the KO/VI translation fields landed.
 
 Output:
-  cdn/phrases/data_bundle_0.json  (p0000-p0049)
-  cdn/phrases/data_bundle_1.json  (p0050-p0099)
-  cdn/phrases/data_bundle_2.json  (p0100-p0149)
-  cdn/phrases/data_bundle_3.json  (p0150-p0197)
+  cdn/phrases/data_bundle_0.json  (p0000-p0033)
+  ...
+  cdn/phrases/data_bundle_5.json  (p0170-p0197)
 
 Deterministic: sorted keys, ensure_ascii=False, compact separators.
 """
@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-CHUNKS_PER_BUNDLE = 50
+CHUNKS_PER_BUNDLE = 34
 
 
 def main() -> int:

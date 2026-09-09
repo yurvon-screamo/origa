@@ -135,12 +135,23 @@ pub struct PhraseDetail {
     pub text: String,
     pub translation_ru: Option<String>,
     pub translation_en: Option<String>,
+    pub translation_ko: Option<String>,
+    pub translation_vi: Option<String>,
 }
 
 impl PhraseDetail {
     pub fn translation(&self, lang: &crate::domain::value_objects::NativeLanguage) -> Option<&str> {
         match lang {
             crate::domain::value_objects::NativeLanguage::Russian => self.translation_ru.as_deref(),
+            // Legacy CDN data without vi/ko fields falls back to English.
+            crate::domain::value_objects::NativeLanguage::Korean => self
+                .translation_ko
+                .as_deref()
+                .or(self.translation_en.as_deref()),
+            crate::domain::value_objects::NativeLanguage::Vietnamese => self
+                .translation_vi
+                .as_deref()
+                .or(self.translation_en.as_deref()),
             crate::domain::value_objects::NativeLanguage::English => self.translation_en.as_deref(),
         }
     }
@@ -185,6 +196,12 @@ struct DetailRaw {
     translation_ru: Option<String>,
     #[serde(rename = "en")]
     translation_en: Option<String>,
+    #[serde(default)]
+    #[serde(rename = "ko")]
+    translation_ko: Option<String>,
+    #[serde(default)]
+    #[serde(rename = "vi")]
+    translation_vi: Option<String>,
 }
 
 pub fn init_phrase_index(json: &str) -> Result<(), OrigaError> {
@@ -308,6 +325,8 @@ pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError>
             text: r.text,
             translation_ru: r.translation_ru.map(|s| normalize_translation(&s)),
             translation_en: r.translation_en.map(|s| normalize_translation(&s)),
+            translation_ko: r.translation_ko.map(|s| normalize_translation(&s)),
+            translation_vi: r.translation_vi.map(|s| normalize_translation(&s)),
         })
         .collect();
 
@@ -341,6 +360,9 @@ pub fn get_phrase_translation(id: &Ulid, lang: &NativeLanguage) -> Option<String
     guard.get_detail(id).and_then(|d| match lang {
         NativeLanguage::Russian => d.translation_ru.clone(),
         NativeLanguage::English => d.translation_en.clone(),
+        // Legacy CDN data without vi/ko fields falls back to English.
+        NativeLanguage::Korean => d.translation_ko.clone().or(d.translation_en.clone()),
+        NativeLanguage::Vietnamese => d.translation_vi.clone().or(d.translation_en.clone()),
     })
 }
 
@@ -441,6 +463,8 @@ mod tests {
             text: "Hello world".to_string(),
             translation_ru: Some("Привет мир".to_string()),
             translation_en: Some("Hello world".to_string()),
+            translation_ko: None,
+            translation_vi: None,
         }];
         cache.insert_chunk(0, details);
 
@@ -457,6 +481,47 @@ mod tests {
         assert_eq!(raw_list[0].text, "Hello world");
         assert_eq!(raw_list[0].translation_ru, Some("Привет мир".to_string()));
         assert!(raw_list[0].translation_en.is_some());
+    }
+
+    #[test]
+    fn korean_vietnamese_translations_parse_and_fall_back() {
+        let json = r#"[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","x":"こんにちは","ru":"Привет","en":"Hello","ko":"안녕","vi":"Xin chào"},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","x":"さようなら","ru":"Прощай","en":"Goodbye"}]"#;
+        let raw_list: Vec<DetailRaw> = serde_json::from_str(json).expect("valid chunk JSON");
+
+        assert_eq!(raw_list[0].translation_ko, Some("안녕".to_string()));
+        assert_eq!(raw_list[0].translation_vi, Some("Xin chào".to_string()));
+
+        let with_ko = PhraseDetail {
+            id: raw_list[0].id,
+            text: raw_list[0].text.clone(),
+            translation_ru: raw_list[0].translation_ru.clone(),
+            translation_en: raw_list[0].translation_en.clone(),
+            translation_ko: raw_list[0].translation_ko.clone(),
+            translation_vi: raw_list[0].translation_vi.clone(),
+        };
+        assert_eq!(with_ko.translation(&NativeLanguage::Korean), Some("안녕"));
+        assert_eq!(
+            with_ko.translation(&NativeLanguage::Vietnamese),
+            Some("Xin chào")
+        );
+
+        // Legacy entry without ko/vi fields degrades to English.
+        let legacy = PhraseDetail {
+            id: raw_list[1].id,
+            text: raw_list[1].text.clone(),
+            translation_ru: raw_list[1].translation_ru.clone(),
+            translation_en: raw_list[1].translation_en.clone(),
+            translation_ko: None,
+            translation_vi: None,
+        };
+        assert_eq!(
+            legacy.translation(&NativeLanguage::Korean),
+            legacy.translation(&NativeLanguage::English)
+        );
+        assert_eq!(
+            legacy.translation(&NativeLanguage::Vietnamese),
+            Some("Goodbye")
+        );
     }
 
     #[test]

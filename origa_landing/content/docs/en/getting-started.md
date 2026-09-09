@@ -39,7 +39,7 @@ After the first sign-in, Origa opens a short setup. You can complete it, or skip
 
 The setup covers four things:
 
-- **Language.** Choose between English and Russian for the interface and translations.
+- **Language.** Choose the interface and translation language: English, Russian, Korean or Vietnamese.
 - **Pace.** Pick how many new cards you want to learn per day, from minimal to maximum. You can change this later in your profile.
 - **Level.** Tell Origa your current JLPT level (N5 through N1, or "unknown"). If you already know material below that level, Origa marks it as known so you don't review what you've already mastered.
 - **Apps and textbooks.** If you have studied with other tools — Anki, Migii, Duolingo, Minna no Nihongo, or Irodori — select them and indicate how far you got. Origa imports the corresponding vocabulary so you don't start from zero.

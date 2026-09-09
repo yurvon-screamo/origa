@@ -8,9 +8,11 @@ use origa::traits::CdnProvider;
 use crate::loaders::dictionary::dict_path;
 use crate::repository::cdn_provider;
 
-const BUNDLE_DOWNLOADED_KEY: &str = "/__origa_bundle_downloaded__";
+// v2: layout changed from 4 to 6 bundles when the KO/VI phrase fields
+// landed — the key bump forces a one-time re-precache on updated clients.
+const BUNDLE_DOWNLOADED_KEY: &str = "/__origa_bundle_downloaded_v2__";
 const CONCURRENCY: usize = 20;
-const PHRASE_BUNDLE_COUNT: usize = 4;
+const PHRASE_BUNDLE_COUNT: usize = 6;
 
 #[derive(Clone, Default)]
 pub struct PreCacheProgress {
@@ -53,7 +55,8 @@ pub fn get_base_bundle_resources() -> Vec<String> {
     resources.push("grammar/grammar_v2.json".to_string());
     resources.push("phrases/phrase_index.json".to_string());
 
-    // Phrase data bundles (4 files replace 198 individual chunks).
+    // Phrase data bundles (6 files replace 198 individual chunks; kept
+    // under ~13 MB each after the KO/VI fields doubled the payload).
     // After download, extract_phrase_bundles_to_cache() parses each bundle
     // and stores individual chunks in Cache API so phrase_data_loader
     // gets cache hits without per-chunk CDN requests.

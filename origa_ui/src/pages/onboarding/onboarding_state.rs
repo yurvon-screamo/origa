@@ -243,6 +243,10 @@ mod tests {
             title_en: format!("Test {}", id),
             desc_ru: String::new(),
             desc_en: String::new(),
+            title_ko: String::new(),
+            desc_ko: String::new(),
+            title_vi: String::new(),
+            desc_vi: String::new(),
             word_count: 10,
         }
     }

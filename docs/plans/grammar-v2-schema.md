@@ -59,8 +59,38 @@ Hard invariants (enforced by `scripts/validate_grammar_v2.py`, exit 1 on error):
 - `rule_id` is a valid ULID and unique; existing ids are never regenerated
   (user SRS cards reference them).
 
-Non-blocking warnings: duplicate normalized titles (kept by user decision),
-empty optional fields tracked for content passes.
+Non-blocking warnings: legacy format anomalies, title style lint (see the
+Title convention section), empty optional fields tracked for content passes.
+Duplicate titles, bare short patterns and identical short_descriptions are
+ERRORs (see the Title convention section) and block the CDN deploy gate.
+
+## Title convention (since the #501 title pass)
+
+`title` follows `pattern（qualifier）`:
+
+- Full-width parens `（）`, no space before the opening paren. ASCII parens
+  are legacy and are being converted.
+- The **pattern** (everything before `（）`) is identical in English and
+  Russian. The **qualifier** is localized (EN English, RU Russian;
+  established Japanese terms like （伝聞） are legitimate in both).
+- A qualifier is **required** when the normalized pattern is ≤ 2 kana —
+  bare particles (`～も`, `～の`) are indistinguishable in lists and lesson
+  questions. Escape hatch: `BARE_PATTERN_ALLOWLIST` in
+  `scripts/_grammar_title.py`, every entry needs a recorded justification
+  (currently only `～ます`).
+- Qualifier format: at most 2 senses joined by `・`, no JLPT level inside
+  (the `level` field carries it), at most 24 chars.
+- Titles are unique per language across rules (`dup_key` in
+  `scripts/_grammar_title.py` preserves qualifiers, so （伝聞）／（様態）
+  pairs are fine). EN and RU titles of the same rule may be identical —
+  that is not a collision.
+- `short_description` must differ across rules sharing the same pattern.
+
+Enforcement lives in `scripts/validate_grammar_v2.py` (via
+`scripts/_grammar_title.py`) and in the deploy gate: `deploy_cdn.py` runs
+the validator fail-loud whenever `grammar/grammar_v2.json` is in the
+deploy change set. `utils generate-grammar` preserves existing non-empty
+titles during LLM enrichment (only hollow rules take the generated title).
 
 ## Pipeline
 

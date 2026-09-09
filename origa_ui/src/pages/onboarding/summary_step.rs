@@ -92,6 +92,13 @@ fn format_word_count(i18n: I18nContext<Locale>, count: usize) -> String {
             };
             template.to_string().replace("{count}", &count.to_string())
         },
+        // Korean and Vietnamese have no plural inflection: one template
+        // covers every count.
+        Locale::ko | Locale::vi => summary
+            .word_plural()
+            .inner()
+            .to_string()
+            .replace("{count}", &count.to_string()),
     }
 }
 
@@ -114,6 +121,13 @@ fn format_set_count(i18n: I18nContext<Locale>, count: usize) -> String {
             };
             template.to_string().replace("{count}", &count.to_string())
         },
+        // Korean and Vietnamese have no plural inflection: one template
+        // covers every count.
+        Locale::ko | Locale::vi => summary
+            .set_plural()
+            .inner()
+            .to_string()
+            .replace("{count}", &count.to_string()),
     }
 }
 

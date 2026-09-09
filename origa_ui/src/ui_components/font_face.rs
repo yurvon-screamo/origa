@@ -53,6 +53,10 @@ struct FaceSpec {
 // system font). See ADR-030.
 const LATIN_CYRILLIC_RANGE: &str = "U+0000-007F,U+00A0-00FF,U+0100-017F,U+0400-052F,U+1C80-1C88,U+1E00-1EFF,U+2000-206F,U+20A0-20CF,U+20B4,U+2100-214F,U+2DE0-2DFF,U+A640-A69F";
 const CJK_RANGE: &str = "U+3000-303F,U+3040-30FF,U+3400-4DBF,U+4E00-9FFF,U+F900-FAFF,U+FF00-FFEF";
+// Hangul for Noto Sans KR (jamo + compatibility jamo + syllables). The woff2
+// is subset to the syllables actually used by the KO locale/translations;
+// rare unused syllables degrade per-glyph to the system font instead of tofu.
+const HANGUL_RANGE: &str = "U+1100-11FF,U+3130-318F,U+AC00-D7AF";
 
 const FACES: &[FaceSpec] = &[
     FaceSpec {
@@ -110,6 +114,16 @@ const FACES: &[FaceSpec] = &[
         style: "normal",
         display: "block",
         unicode_range: CJK_RANGE,
+    },
+    FaceSpec {
+        logical: "noto-sans-kr-400",
+        family: "Noto Sans KR",
+        weight: "400",
+        style: "normal",
+        // Same rationale as the JP face (ADR-030): hold the invisible
+        // fallback rather than flashing a wrong-glyph system hangul font.
+        display: "block",
+        unicode_range: HANGUL_RANGE,
     },
 ];
 
@@ -249,7 +263,9 @@ mod tests {
     #[test]
     fn cjk_faces_block_to_avoid_wrong_glyph_flash() {
         for spec in FACES {
-            let is_cjk = spec.unicode_range == CJK_RANGE;
+            // Hangul joins the JP face in the CJK class: both must hold the
+            // invisible fallback rather than flash wrong-glyph system fonts.
+            let is_cjk = spec.unicode_range == CJK_RANGE || spec.unicode_range == HANGUL_RANGE;
             let expected = if is_cjk { "block" } else { "swap" };
             assert_eq!(
                 spec.display, expected,

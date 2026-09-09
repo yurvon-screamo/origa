@@ -25,7 +25,9 @@ pub const MAGIC: &[u8; 4] = b"ORFG";
 /// Version of the header/payload schema. Bump when the payload type changes
 /// in a way old clients cannot deserialize; they will fall back to the
 /// original text/JSON sources.
-pub const SCHEMA_VERSION: u32 = 1;
+///
+/// v2: `VocabularyInfo` gained `vi_*`/`ko_*` fields (KO/VI chunks shipped).
+pub const SCHEMA_VERSION: u32 = 2;
 
 pub const HEADER_LEN: usize = MAGIC.len() + 4 + 32 + 32;
 

@@ -141,6 +141,8 @@ pub struct KanjiInfo {
     used_in: u32,
     description_ru: Vec<String>,
     description_en: Vec<String>,
+    description_ko: Vec<String>,
+    description_vi: Vec<String>,
     radicals: Vec<char>,
     popular_words: Vec<String>,
     on_readings: Vec<String>,
@@ -169,29 +171,33 @@ impl KanjiInfo {
         self.used_in
     }
     pub fn description(&self, lang: &NativeLanguage) -> String {
-        let descs = match lang {
-            NativeLanguage::Russian => &self.description_ru,
-            NativeLanguage::English => {
-                if self.description_en.is_empty() {
-                    &self.description_ru
-                } else {
-                    &self.description_en
-                }
-            },
-        };
-        descs.join(", ")
+        self.descriptions(lang).join(", ")
     }
 
     pub fn descriptions(&self, lang: &NativeLanguage) -> &[String] {
+        // Legacy data without `_ko`/`_vi` fields falls back to English, then
+        // to Russian (same chain as English below).
         match lang {
             NativeLanguage::Russian => &self.description_ru,
-            NativeLanguage::English => {
-                if self.description_en.is_empty() {
-                    &self.description_ru
-                } else {
-                    &self.description_en
-                }
-            },
+            NativeLanguage::English => self.en_or_ru(),
+            NativeLanguage::Korean => self.pick(&self.description_ko),
+            NativeLanguage::Vietnamese => self.pick(&self.description_vi),
+        }
+    }
+
+    fn pick<'a>(&'a self, primary: &'a [String]) -> &'a [String] {
+        if primary.is_empty() {
+            self.en_or_ru()
+        } else {
+            primary
+        }
+    }
+
+    fn en_or_ru(&self) -> &[String] {
+        if self.description_en.is_empty() {
+            &self.description_ru
+        } else {
+            &self.description_en
         }
     }
 
@@ -264,6 +270,8 @@ impl KanjiInfo {
         let fallback = match native_language {
             NativeLanguage::Russian => "Перевод не найден",
             NativeLanguage::English => "Translation not found",
+            NativeLanguage::Korean => "번역을 찾을 수 없습니다",
+            NativeLanguage::Vietnamese => "Không tìm thấy bản dịch",
         };
 
         self.popular_words
@@ -306,6 +314,8 @@ impl KanjiDatabase {
                         used_in: k.used_in,
                         description_ru: k.description_ru,
                         description_en: k.description_en,
+                        description_ko: k.description_ko,
+                        description_vi: k.description_vi,
                         radicals,
                         popular_words: k.popular_words,
                         on_readings: k.on_readings,
@@ -350,6 +360,10 @@ struct KanjiStoredType {
     description_ru: Vec<String>,
     #[serde(default, deserialize_with = "deserialize_string_or_vec")]
     description_en: Vec<String>,
+    #[serde(default, deserialize_with = "deserialize_string_or_vec")]
+    description_ko: Vec<String>,
+    #[serde(default, deserialize_with = "deserialize_string_or_vec")]
+    description_vi: Vec<String>,
     radicals: Vec<String>,
     popular_words: Vec<String>,
     #[serde(default)]
@@ -830,6 +844,8 @@ mod tests {
             used_in,
             description_ru: vec!["test".to_string()],
             description_en: vec!["test".to_string()],
+            description_ko: vec![],
+            description_vi: vec![],
             radicals,
             popular_words: vec![],
             on_readings: vec![],
@@ -921,6 +937,8 @@ mod tests {
             used_in: 1526,
             description_ru: vec!["жизнь".to_string()],
             description_en: vec!["life".to_string()],
+            description_ko: vec![],
+            description_vi: vec![],
             radicals: vec!['生'],
             popular_words: vec![],
             on_readings: vec!["セイ".to_string()],
@@ -1027,5 +1045,102 @@ mod tests {
         assert_eq!(info.reading_frequency("セイ"), Some(1414));
         assert!(!info.is_rare_reading("セイ"));
         assert!(!info.is_rare_reading("なる")); // f=17, above threshold
+    }
+}
+
+#[cfg(test)]
+mod tests_ko_vi_fallback {
+    use super::*;
+
+    fn setup() {
+        if !is_kanji_loaded() {
+            let data = KanjiData {
+                kanji_json: r#"{
+                    "kanji": [
+                        {
+                            "kanji": "日",
+                            "jlpt": "N5",
+                            "used_in": 100,
+                            "description_ru": ["день", "солнце"],
+                            "description_en": ["day", "sun"],
+                            "radicals": ["一", "口"],
+                            "popular_words": ["日本"],
+                            "on_readings": ["NICHI"],
+                            "kun_readings": ["ひ"]
+                        }
+                    ]
+                }"#
+                .to_string(),
+            };
+            init_kanji(data).expect("Failed to init kanji dictionary");
+        }
+    }
+
+    #[test]
+    fn korean_description_falls_back_to_english() {
+        // Legacy CDN data (no `_ko`/`_vi` fields): KO/VI degrade to the
+        // English projection, never panic and never leak Russian.
+        let json = r#"{
+            "kanji": [
+                {
+                    "kanji": "日",
+                    "jlpt": "N5",
+                    "used_in": 100,
+                    "description_ru": ["день", "солнце"],
+                    "description_en": ["day", "sun"],
+                    "radicals": ["日"],
+                    "popular_words": ["日本"]
+                }
+            ]
+        }"#;
+        let db = KanjiDatabase::from_json(json).expect("fixture must parse");
+        let info = db.get_kanji_info("日").expect("fixture kanji");
+        assert_eq!(
+            info.description(&NativeLanguage::Korean),
+            info.description(&NativeLanguage::English)
+        );
+        assert_eq!(
+            info.description(&NativeLanguage::Vietnamese),
+            info.description(&NativeLanguage::English)
+        );
+    }
+
+    #[test]
+    fn korean_vietnamese_descriptions_use_merged_fields() {
+        let json = r#"{
+            "kanji": [
+                {
+                    "kanji": "日",
+                    "jlpt": "N5",
+                    "used_in": 100,
+                    "description_ru": ["день"],
+                    "description_en": ["day"],
+                    "description_ko": ["날"],
+                    "description_vi": ["ngày"],
+                    "radicals": ["日"],
+                    "popular_words": ["日本"]
+                }
+            ]
+        }"#;
+        let db = KanjiDatabase::from_json(json).expect("fixture must parse");
+        let info = db.get_kanji_info("日").expect("fixture kanji");
+        assert_eq!(info.description(&NativeLanguage::Korean), "날");
+        assert_eq!(info.description(&NativeLanguage::Vietnamese), "ngày");
+        assert_eq!(info.description(&NativeLanguage::English), "day");
+        assert_eq!(info.description(&NativeLanguage::Russian), "день");
+    }
+
+    #[test]
+    fn korean_popular_words_fallback_is_english() {
+        setup();
+        let info = get_kanji_info("日").expect("日 must be in the test dictionary");
+        let fallbacks = info.popular_words_with_translations(&NativeLanguage::Korean);
+        assert!(!fallbacks.is_empty());
+        assert!(
+            !fallbacks
+                .iter()
+                .any(|w| w.translation() == "Перевод не найден"),
+            "KO fallback must not leak the Russian string"
+        );
     }
 }

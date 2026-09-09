@@ -107,10 +107,10 @@
       "sources": ["README.md", "AGENTS.md"]
     },
     {
-      "claim": "Origa interface languages: English and Russian shipped; Vietnamese and Korean planned (per README.md Interface Languages table). Blog and landing copy updated 2026-08-14 to match — earlier 'English, Russian, Vietnamese, Korean' wording overstated availability.",
+      "claim": "Origa interface languages: English, Russian, Korean and Vietnamese all shipped (KO/VI content release, 2026-09-08: vocabulary chunks, phrases, grammar overlay, kanji/radical descriptions and well-known set titles deployed to the CDN). Landing, docs and blog copy updated 2026-09-08 — the earlier 'planned' wording is obsolete. Documentation pages and legal texts remain English/Russian only.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["origa_ui/locales/ (en.json, ru.json)", "cdn/dictionary/chunk_*.json (ru/en translation keys only)", "README.md §Interface Languages"]
+      "sources": ["origa_ui/locales/ (en/ru/ko/vi .json)", "cdn/manifest.json (grammar_ko_vi.json, chunk vi/ko fields)", "ADR-047"]
     },
     {
       "claim": "WaniKani is radical-based, English interface, paid subscription.",

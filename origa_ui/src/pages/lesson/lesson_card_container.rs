@@ -328,6 +328,10 @@ pub fn LessonCardContainer() -> impl IntoView {
                         if let LessonCardView::GrammarQuiz(gq) = lesson_card.into_view() {
                             let state = lesson_state.get();
                             let selected_option = state.selected_quiz_option;
+                            // QuizCardView receives only the inner QuizCard (rule title
+                            // as question, inflected forms as options). Forward the
+                            // base word explicitly so it stays visible (#502).
+                            let base_word = gq.word_text().to_string();
 
                             Some(view! {
                                 <QuizCardView
@@ -340,6 +344,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
                                     quiz_variant=QuizVariant::Grammar
+                                    grammar_base_word=Some(base_word)
                                     waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
                                     on_next_card=on_next_card
                                 />
