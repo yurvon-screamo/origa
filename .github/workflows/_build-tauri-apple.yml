@@ -226,6 +226,13 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
+            - name: Upload .ipa artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: ios-build
+                  path: ${{ steps.ipa.outputs.path }}
+                  retention-days: 7
+
             - name: Verify iOS entitlements (SIWA)
               #
               # xcodebuild succeeds with a profile that does NOT grant
@@ -256,13 +263,6 @@ jobs:
                     exit 1
                   fi
                   echo "✅ iOS binary + profile both grant applesignin"
-
-            - name: Upload .ipa artifact
-              uses: actions/upload-artifact@v7
-              with:
-                  name: ios-build
-                  path: ${{ steps.ipa.outputs.path }}
-                  retention-days: 7
 
             - name: Upload to App Store Connect
               id: upload
