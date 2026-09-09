@@ -163,6 +163,7 @@ pub async fn sign_in_with_apple<R: tauri::Runtime>(
 #[serde(rename_all = "camelCase")]
 struct StartAppleArgs {
     nonce_hash: String,
+    nonce: String,
 }
 
 /// macOS: native Sign in with Apple via `ASAuthorizationController`
