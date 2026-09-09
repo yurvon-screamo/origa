@@ -192,6 +192,23 @@ jobs:
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
 
+                  # DIAGNOSTICS (SIWA): which profile was used and does it grant
+                  # applesignin? Catches the case where App Store Connect hands
+                  # out a CACHED profile created before the capability was
+                  # enabled on the App ID (entitlements then get overwritten at
+                  # export time and the runtime sheet fails with error 1000).
+                  echo "--- pbxproj CODE_SIGN_ENTITLEMENTS ---"
+                  grep -c "CODE_SIGN_ENTITLEMENTS" gen/apple/origa-app.xcodeproj/project.pbxproj || true
+                  echo "--- Archives found ---"
+                  find tauri/gen/apple/build target -name "*.xcarchive" -maxdepth 6 -type d 2>/dev/null || true
+                  for ARCHIVE in $(find tauri/gen/apple/build target -name "*.xcarchive" -maxdepth 6 -type d 2>/dev/null); do
+                    PROF=$(find "$ARCHIVE" -name "embedded.mobileprovision" | head -1)
+                    if [ -n "$PROF" ]; then
+                      echo "--- Archive profile: $PROF ---"
+                      security cms -D -i "$PROF" 2>/dev/null | grep -E "applesignin|application-identifier|ExpirationDate|Name" || echo "(no entitlements dump)"
+                    fi
+                  done
+
             - name: Locate .ipa
               id: ipa
               shell: bash
