@@ -226,7 +226,7 @@ jobs:
               # builds itself, so a self-signed upload identity is accepted
               # exactly like tauri-cli's own ephemeral one.
               run: |
-                  KEYCHAIN=resign.keychain
+                  KEYCHAIN="$HOME/Library/Keychains/resign.keychain-db"
                   KEYCHAIN_PASS=$(uuidgen)
                   IDENTITY="Apple Distribution: Origa CI"
                   IPA_PATH="${{ steps.ipa.outputs.path }}"
@@ -261,6 +261,9 @@ jobs:
                   security import /tmp/resign-cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
                   security set-key-partition-list -S apple-tool:,apple: \
                     -k "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  # codesign --keychain needs the keychain in the search
+                  # list to link the imported key with the certificate.
+                  security list-keychains -d user -s "$KEYCHAIN" login.keychain
 
                   security find-identity -v -p codesigning "$KEYCHAIN"
 
