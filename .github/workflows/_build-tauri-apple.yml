@@ -209,6 +209,37 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
+            - name: Verify iOS entitlements (SIWA)
+              #
+              # xcodebuild succeeds with a profile that does NOT grant
+              # com.apple.developer.applesignin when the app was built without
+              # CODE_SIGN_ENTITLEMENTS applied — App Store processing accepts
+              # such a build, but ASAuthorizationController fails at runtime
+              # with ASAuthorizationError.unknown (1000) and the native sheet
+              # never appears. Fail here instead, and print the actual
+              # embedded entitlements + profile grants for diagnosis.
+              run: |
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
+                  rm -rf /tmp/ios_ent && mkdir -p /tmp/ios_ent
+                  unzip -q "$IPA_PATH" -d /tmp/ios_ent
+                  APP_PATH=$(find /tmp/ios_ent -name "*.app" -type d | head -1)
+
+                  echo "--- Binary entitlements ---"
+                  codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/ios_ent/binary.txt
+                  echo "--- Provisioning profile grants ---"
+                  security cms -D -i "$APP_PATH/embedded.mobileprovision" \
+                    2>/dev/null | tee /tmp/ios_ent/profile.plist | grep -A5 entitlements || true
+
+                  if ! grep -q "com.apple.developer.applesignin" /tmp/ios_ent/binary.txt; then
+                    echo "::error::com.apple.developer.applesignin is NOT embedded in the iOS binary — CODE_SIGN_ENTITLEMENTS was not applied to the built target"
+                    exit 1
+                  fi
+                  if ! grep -q "com.apple.developer.applesignin" /tmp/ios_ent/profile.plist; then
+                    echo "::error::the embedded provisioning profile does NOT grant com.apple.developer.applesignin — the App ID capability is missing or the profile predates it"
+                    exit 1
+                  fi
+                  echo "✅ iOS binary + profile both grant applesignin"
+
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
               with:

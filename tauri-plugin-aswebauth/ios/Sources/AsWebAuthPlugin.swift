@@ -173,7 +173,14 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
             // The exact marker the frontend pattern-matches on.
             flow.invoke.reject("cancelled")
         } else {
-            flow.invoke.reject("apple sign-in failed: \(error.localizedDescription)")
+            // error 1000 (.unknown) with no sheet shown almost always means
+            // the installed build lacks the com.apple.developer.applesignin
+            // entitlement (or the device is not signed into iCloud).
+            let code = (error as? ASAuthorizationError)?.code.rawValue ?? -1
+            let hint = code == 1000
+                ? " (check that the installed build embeds the Sign in with Apple entitlement and the device is signed into iCloud)"
+                : ""
+            flow.invoke.reject("apple sign-in failed (code \(code)): \(error.localizedDescription)\(hint)")
         }
     }
 
