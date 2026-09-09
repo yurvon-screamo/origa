@@ -394,6 +394,7 @@
     "google_login": "Sign in with Google",
     "yandex_login": "Sign in with Yandex",
     "apple_login": "Sign in with Apple",
+    "apple_email_missing": "Apple did not share your email address for this account. Please sign in via Google, Yandex or email instead.",
     "oauth_session_error": "Could not open the sign-in window: {}",
     "unsupported_callback": "Unsupported callback URL format",
     "login_failed": "Invalid email or password"

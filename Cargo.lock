@@ -8983,13 +8983,16 @@ dependencies = [
 name = "tauri-plugin-aswebauth"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "block2",
  "objc2",
  "objc2-app-kit",
  "objc2-authentication-services",
  "objc2-foundation",
+ "rand 0.9.5",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-plugin",
  "tokio",

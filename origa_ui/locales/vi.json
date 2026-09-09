@@ -394,6 +394,7 @@
     "google_login": "Đăng nhập bằng Google",
     "yandex_login": "Đăng nhập bằng Yandex",
     "apple_login": "Đăng nhập bằng Apple",
+    "apple_email_missing": "Apple không chia sẻ địa chỉ email của tài khoản này. Vui lòng đăng nhập bằng Google, Yandex hoặc email.",
     "oauth_session_error": "Không thể mở cửa sổ đăng nhập: {}",
     "unsupported_callback": "Định dạng URL gọi lại không được hỗ trợ",
     "login_failed": "Email hoặc mật khẩu không đúng"

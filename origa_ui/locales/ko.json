@@ -394,6 +394,7 @@
     "google_login": "Google로 로그인",
     "yandex_login": "Yandex로 로그인",
     "apple_login": "Apple로 로그인",
+    "apple_email_missing": "Apple이 이 계정의 이메일 주소를 공유하지 않았습니다. Google, Yandex 또는 이메일로 로그인해 주세요.",
     "oauth_session_error": "로그인 창을 열 수 없습니다: {}",
     "unsupported_callback": "지원하지 않는 콜백 URL 형식입니다",
     "login_failed": "이메일 또는 비밀번호가 올바르지 않습니다"
