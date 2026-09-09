@@ -226,6 +226,28 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
+            - name: Import iOS re-sign identity
+              env:
+                  APPLE_MAC_CERT_PASSWORD: ${{ secrets.apple-mac-cert-password }}
+              run: |
+                  # tauri-cli cleaned up its own signing identity after the
+                  # build; the re-sign step needs an Apple Distribution
+                  # identity back in a keychain. Same p12 as the macOS job.
+                  KEYCHAIN=/tmp/resign.keychain-db
+                  security create-keychain -p "$APPLE_MAC_CERT_PASSWORD" "$KEYCHAIN"
+                  security set-keychain-settings -lut 21600 "$KEYCHAIN"
+                  security unlock-keychain -p "$APPLE_MAC_CERT_PASSWORD" "$KEYCHAIN"
+                  security list-keychains -d user -s "$KEYCHAIN"
+
+            - name: Import p12 for the re-sign
+              uses: apple-actions/import-codesign-certs@v7
+              with:
+                  p12-file-base64: ${{ secrets.apple-mac-app-cert-p12 }}
+                  p12-password: ${{ secrets.apple-mac-cert-password }}
+                  keychain: /tmp/resign.keychain-db
+                  keychain-password: ${{ secrets.apple-mac-cert-password }}
+                  create-keychain: false
+
             - name: Re-sign .ipa with SIWA entitlements
               #
               # tauri-cli builds the iOS target with CODE_SIGN_ENTITLEMENTS=""
@@ -236,20 +258,21 @@ jobs:
               # (1000). Re-sign the .app with the committed entitlements file
               # (the embedded profile now grants it) and repack the .ipa.
               run: |
+                  KEYCHAIN=/tmp/resign.keychain-db
                   IPA_PATH="${{ steps.ipa.outputs.path }}"
                   rm -rf /tmp/resign && mkdir -p /tmp/resign
                   unzip -q "$IPA_PATH" -d /tmp/resign
                   APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
 
-                  IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+                  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
                   if [ -z "$IDENTITY" ]; then
                     echo "::error::No Apple Distribution identity in the keychain for the re-sign"
-                    security find-identity -v -p codesigning
+                    security find-identity -v -p codesigning "$KEYCHAIN"
                     exit 1
                   fi
                   echo "Re-signing with identity: $IDENTITY"
 
-                  codesign --force --sign "$IDENTITY" \
+                  codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
                     --entitlements tauri/gen/apple/origa-app_iOS/origa-app_iOS.entitlements \
                     "$APP_PATH"
 
