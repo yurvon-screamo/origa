@@ -235,9 +235,28 @@ jobs:
                   security set-keychain-settings -lut 21600 "$KEYCHAIN"
                   security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
 
+                  # security find-identity -p codesigning only lists certs
+                  # with the codeSigning EKU — a bare openssl -x509 cert has
+                  # none and codesign then can't find the identity.
+                  cat > /tmp/resign-cert.cnf <<'EOF'
+                  [req]
+                  distinguished_name = dn
+                  x509_extensions = v3
+                  prompt = no
+                  [dn]
+                  CN = placeholder
+                  O = Origa
+                  C = US
+                  [v3]
+                  basicConstraints = CA:FALSE
+                  keyUsage = critical, digitalSignature
+                  extendedKeyUsage = codeSigning
+                  subjectKeyIdentifier = hash
+                  EOF
+                  sed -i '' "s|^CN = placeholder$|CN = ${IDENTITY}|" /tmp/resign-cert.cnf
                   openssl req -x509 -newkey rsa:2048 -nodes -days 2 \
                     -keyout /tmp/resign-key.pem -out /tmp/resign-cert.pem \
-                    -subj "/CN=${IDENTITY}/O=Origa/C=US"
+                    -config /tmp/resign-cert.cnf
                   security import /tmp/resign-key.pem -k "$KEYCHAIN" -T /usr/bin/codesign
                   security import /tmp/resign-cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
                   security set-key-partition-list -S apple-tool:,apple: \
