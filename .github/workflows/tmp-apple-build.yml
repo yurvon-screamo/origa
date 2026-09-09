@@ -14,6 +14,9 @@ on:
             - "tauri-plugin-aswebauth/**"
             - ".github/workflows/tmp-apple-build.yml"
 
+permissions:
+    contents: read
+
 jobs:
     apple-build:
         name: TMP Build Apple (iOS + macOS)
