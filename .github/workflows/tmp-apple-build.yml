@@ -25,7 +25,7 @@ jobs:
             version: 0.7.8-alpha.tmp1
             version_type: prerelease
             commit_sha: ${{ github.sha }}
-            build_date: 2026-09-09
+            build_date: "2026-09-09"
         secrets:
             apple-api-issuer: ${{ secrets.apple-api-issuer }}
             apple-api-key: ${{ secrets.apple-api-key }}
