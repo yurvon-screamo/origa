@@ -226,6 +226,40 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
+            - name: Re-sign .ipa with SIWA entitlements
+              #
+              # tauri-cli builds the iOS target with CODE_SIGN_ENTITLEMENTS=""
+              # and re-signs the archive WITHOUT entitlements, so the exported
+              # .ipa never contains com.apple.developer.applesignin even when
+              # the provisioning profile grants it — the native SIWA sheet
+              # then fails at runtime with ASAuthorizationError.unknown
+              # (1000). Re-sign the .app with the committed entitlements file
+              # (the embedded profile now grants it) and repack the .ipa.
+              run: |
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
+                  rm -rf /tmp/resign && mkdir -p /tmp/resign
+                  unzip -q "$IPA_PATH" -d /tmp/resign
+                  APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
+
+                  IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+                  if [ -z "$IDENTITY" ]; then
+                    echo "::error::No Apple Distribution identity in the keychain for the re-sign"
+                    security find-identity -v -p codesigning
+                    exit 1
+                  fi
+                  echo "Re-signing with identity: $IDENTITY"
+
+                  codesign --force --sign "$IDENTITY" \
+                    --entitlements tauri/gen/apple/origa-app_iOS/origa-app_iOS.entitlements \
+                    "$APP_PATH"
+
+                  codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/resign/ent.txt
+                  grep -q "com.apple.developer.applesignin" /tmp/resign/ent.txt
+
+                  rm -f "$IPA_PATH"
+                  (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
+                  ls -la "$IPA_PATH"
+
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
               with:
