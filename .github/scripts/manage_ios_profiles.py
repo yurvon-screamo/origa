@@ -32,7 +32,7 @@ import urllib.request
 
 from download_macos_profile import create_es256_jwt
 
-ASC_API_BASE = "https://api.appstoreconnect.com/v1"
+ASC_API_BASE = "https://api.appstoreconnect.apple.com/v1"
 
 
 def asc_request(path: str, method: str = "GET", body: dict | None = None) -> dict:
