@@ -1,0 +1,783 @@
+{"word": "揚げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Nâng lên, giơ lên\\n- Chiên ngập dầu\\n- Thả, phóng (diều, pháo hoa)\\n- Gửi, nộp (tên vào danh sách)\", \"ko\": \"- 올리다 (내걸다)\\n- 튀기다\\n- 날리다 (연·불꽃놀이)\\n- 올리다 (이름을)\"}"}
+{"word": "挙げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Nêu lên, giơ lên\\n- Đưa ra (ví dụ, vấn đề)\\n- Toàn thể (dốc toàn lực)\", \"ko\": \"- 들다 (올리다)\\n- (예를) 들다\\n- 총동원하여 (전부를)\"}"}
+{"word": "墜ちる", "source": "bloat-fix", "raw": "{\"vi\": \"- Rơi (từ trên cao)\\n- Sụp đổ, sa ngã\\n- Rơi vào (tình cảnh)\", \"ko\": \"- 떨어지다 (추락하다)\\n- 타락하다\\n- (수렁에) 빠지다\"}"}
+{"word": "行る", "source": "bloat-fix", "raw": "{\"vi\": \"- Tiến hành, tổ chức thi hành\", \"ko\": \"- 행하다 (실시하다)\"}"}
+{"word": "スジ", "source": "bloat-fix", "raw": "{\"vi\": \"- Gân, cơ\\n- Lẽ phải, có đạo lý\\n- Đường nét, hướng (đường)\\n- Nguồn gốc (thành phần)\", \"ko\": \"- 힘줄 (근육)\\n- 도리 (사리에 맞음)\\n- (길의) 결, 방향\\n- 연줄 (내력)\"}"}
+{"word": "搾る", "source": "bloat-fix", "raw": "{\"vi\": \"- Vắt, ép (lấy nước)\\n- Vắt kiệt (óc, sức lực)\", \"ko\": \"- 짜다\\n- 짜내다 (머리를)\"}"}
+{"word": "降ろす", "source": "bloat-fix", "raw": "{\"vi\": \"- Hạ xuống (tay, cờ, rèm)\\n- Cho xuống (khách xuống xe)\\n- Thả (neo, thuyền) xuống\", \"ko\": \"- 내리다 (낮추다)\\n- (손님을) 내려주다\\n- (닻을) 내리다\"}"}
+{"word": "打ちこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đóng (đinh, cọc) vào\\n- Dồn hết (công sức, tiền bạc) vào\", \"ko\": \"- 박다 (못을)\\n- 쏟아붓다 (정열을)\"}"}
+{"word": "バリバリ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Xé toạc, rành rạch\\n- Giòn tan (kẹo, bánh)\\n- Rất cừ, thông thạo\", \"ko\": \"- 찢어지는 소리\\n- 바삭바삭 (씹는 소리)\\n- 능란하게 잘하는\"}"}
+{"word": "堅める", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm cứng, siết chặt\\n- Củng cố (quyết tâm, phòng tuyến)\", \"ko\": \"- 굳히다\\n- (결심을) 다지다\"}"}
+{"word": "容れる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho vào, chứa\\n- Chấp nhận, thu nạp\", \"ko\": \"- 넣다 (담다)\\n- 받아들이다\"}"}
+{"word": "撥ねる", "source": "bloat-fix", "raw": "{\"vi\": \"- Bật lên, nảy ra\\n- Từ chối, gạt bỏ\\n- Cắt bỏ, loại (tên, điểm)\", \"ko\": \"- 튀다 (튕기다)\\n- 거절하다 (물리치다)\\n- 잘라내다 (제외하다)\"}"}
+{"word": "極める", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghiên cứu tận tường\\n- Am hiểu sâu, tinh thông\\n- Đưa đến tột cùng\", \"ko\": \"- 규명하다 (철저히 파고들다)\\n- 통달하다\\n- 극에 이르게 하다\"}"}
+{"word": "球", "source": "bloat-fix", "raw": "{\"vi\": \"- Quả bóng\\n- Hình cầu, khối cầu\\n- Đơn vị đếm (bóng)\", \"ko\": \"- 공\\n- 구슬 (물방울)\\n- 개 (공을 세는 단위)\"}"}
+{"word": "ゴロゴロ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Vật to) lăn khắp nơi\\n- Sấm rền (ù ù)\\n- Nhiều, nằm khắp nơi\", \"ko\": \"- 데굴데굴 구르는\\n- 우르릉 (천둥소리)\\n- 여기저기 널려 있는\"}"}
+{"word": "コロコロ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Vật nhỏ tròn) lăn\\n- Thay đổi liên tục\\n- Tròn mượt (mập ú)\", \"ko\": \"- 데굴데굴 (동그란 것)\\n- 수시로 바뀌다\\n- 살찐 통통한\"}"}
+{"word": "伏せる", "source": "bloat-fix", "raw": "{\"vi\": \"- Úp xuống, lật úp\\n- Cúi (mắt, đầu)\\n- Giấu, che giấu\", \"ko\": \"- 엎다 (뒤집다)\\n- (눈을) 내리깔다\\n- 숨기다 (감추다)\"}"}
+{"word": "往く", "source": "bloat-fix", "raw": "{\"vi\": \"- Đi, tiến về phía trước\", \"ko\": \"- 가다 (나아가다)\"}"}
+{"word": "まぁ", "source": "bloat-fix", "raw": "{\"vi\": \"- Chà, nào (thán từ)\\n- Cũng được, khá (tạm ổn)\", \"ko\": \"- 음, 뭐 (감탄사)\\n- 그럭저럭 (제법)\"}"}
+{"word": "当る", "source": "bloat-fix", "raw": "{\"vi\": \"- Trúng, va phải\\n- Đúng (dự đoán)\\n- Tương đương với, vào (lúc)\\n- Chịu, đảm nhiệm (vai trò)\", \"ko\": \"- 맞다 (부딪히다)\\n- 적중하다 (들어맞다)\\n- 해당하다\\n- 맡다 (~에 해당하다)\"}"}
+{"word": "惟う", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghĩ, cho rằng\", \"ko\": \"- 생각하다\"}"}
+{"word": "懸ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Treo lên, móc\\n- Đặt (cược), mạo hiểm\\n- Dốc (toàn lực) vào\", \"ko\": \"- 걸다 (매달다)\\n- 걸다 (내기를)\\n- 쏟다 (힘을)\"}"}
+{"word": "押える", "source": "bloat-fix", "raw": "{\"vi\": \"- Ấn xuống, giữ chặt\\n- Chế ngự, kiềm chế\\n- Nắm chắc (điểm chính)\", \"ko\": \"- 누르다 (붙잡다)\\n- 억누르다 (제어하다)\\n- 짚다 (핵심을)\"}"}
+{"word": "眼", "source": "bloat-fix", "raw": "{\"vi\": \"- Con mắt, nhãn cầu\\n- Ánh mắt, cái nhìn\", \"ko\": \"- 눈 (안구)\\n- 시선 (안광)\"}"}
+{"word": "貼る", "source": "bloat-fix", "raw": "{\"vi\": \"- Dán, áp lên\", \"ko\": \"- 붙이다 (바르다)\"}"}
+{"word": "念う", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghĩ, cho rằng\", \"ko\": \"- 생각하다\"}"}
+{"word": "掛け", "source": "bloat-fix", "raw": "{\"vi\": \"- Phần ghi nợ (còn thiếu)\\n- Phép nhân\\n- Đang trong lúc (làm gì)\", \"ko\": \"- 외상 (미불금)\\n- 곱셈\\n- ~하는 중\"}"}
+{"word": "締め", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc siết, buộc chặt\\n- Tổng cộng, quyết toán\", \"ko\": \"- 조임 (매듭)\\n- 합계 (마감)\"}"}
+{"word": "造る", "source": "bloat-fix", "raw": "{\"vi\": \"- Chế tạo, làm ra\\n- Xây dựng\\n- Ướp, nấu (rượu)\", \"ko\": \"- 만들다 (제조하다)\\n- 짓다 (건조하다)\\n- 빚다 (술을)\"}"}
+{"word": "キズ", "source": "bloat-fix", "raw": "{\"vi\": \"- Vết thương, vết sẹo\\n- Vết xước, tì vết\\n- Khuyết điểm (lỗi)\", \"ko\": \"- 상처 (흉터)\\n- 흠집\\n- 결점 (하자)\"}"}
+{"word": "一発", "source": "bloat-fix", "raw": "{\"vi\": \"- Một phát (súng, đòn)\\n- Một lần (thử là xong)\", \"ko\": \"- 한 발 (일격)\\n- 한 방 (한 번에)\"}"}
+{"word": "引張る", "source": "bloat-fix", "raw": "{\"vi\": \"- Kéo, kéo căng\\n- Lôi kéo (người)\", \"ko\": \"- 잡아당기다\\n- 끌어당기다 (유인하다)\"}"}
+{"word": "界", "source": "bloat-fix", "raw": "{\"vi\": \"- Thế giới, giới (lĩnh vực)\\n- Ranh giới, giới hạn\", \"ko\": \"- 세계 (계층·분야)\\n- 경계 (한계)\"}"}
+{"word": "落ち付く", "source": "bloat-fix", "raw": "{\"vi\": \"- Bình tĩnh lại, ổn định\\n- An cư, định cư\", \"ko\": \"- 안정되다 (침착해지다)\\n- 자리 잡다\"}"}
+{"word": "堅い", "source": "bloat-fix", "raw": "{\"vi\": \"- Cứng, rắn chắc\\n- Cứng ngắc, nghiêm túc\", \"ko\": \"- 굳은 (단단한)\\n- 딱딱한 (융통성 없는)\"}"}
+{"word": "引きだす", "source": "bloat-fix", "raw": "{\"vi\": \"- Kéo ra, lôi ra\\n- Rút (tiền)\\n- Khai thác, khơi dậy (tài năng)\", \"ko\": \"- 끌어내다 (꺼내다)\\n- 인출하다\\n- 이끌어내다 (재능을)\"}"}
+{"word": "非道い", "source": "bloat-fix", "raw": "{\"vi\": \"- Tàn nhẫn, ác nghiệt\\n- Quá mức, dữ dội\", \"ko\": \"- 심한 (혹독한)\\n- 잔인한\"}"}
+{"word": "ガラガラ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Rộc rạo, loảng xoảng\\n- Trống rỗng, vắng tanh\\n- Khàn đặc (giọng)\", \"ko\": \"- 우그락쏠락 (덜그럭거림)\\n- 텅 빈 (한산한)\\n- 쉰 목소리\"}"}
+{"word": "サーヴィス", "source": "bloat-fix", "raw": "{\"vi\": \"- Dịch vụ (phục vụ)\\n- Giảm giá, quà tặng\", \"ko\": \"- 서비스\\n- 덤 (할인)\"}"}
+{"word": "バタバタ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Pạch pạch (loạn xạ)\\n- Bận rộn, cuống cuồng\", \"ko\": \"- 타닥타닥 (펄럭이는 소리)\\n- 허둥지둥 (다급하게)\"}"}
+{"word": "駆り立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Đuổi, xua đuổi\\n- Xúi giục, thôi thúc\", \"ko\": \"- 몰아세우다\\n- 부추기다 (재촉하다)\"}"}
+{"word": "〆", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc buộc chặt (niêm)\\n- Tổng, quyết toán\", \"ko\": \"- 매듭 (조임)\\n- 합계 (마감)\"}"}
+{"word": "ハコ", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái hộp, thùng\\n- Cơ sở, nơi (nhà hàng, hộp đêm)\", \"ko\": \"- 상자 (함)\\n- 업소 (가게)\"}"}
+{"word": "一味", "source": "bloat-fix", "raw": "{\"vi\": \"- Bè phái, đồng bọn\\n- Hương vị (một chút)\", \"ko\": \"- 일당 (패거리)\\n- 풍미 (맛보기)\"}"}
+{"word": "仕掛", "source": "bloat-fix", "raw": "{\"vi\": \"- Cơ chế, thiết bị\\n- Mưu kế, cái bẫy\", \"ko\": \"- 장치\\n- 계략 (작전)\"}"}
+{"word": "以って", "source": "bloat-fix", "raw": "{\"vi\": \"- Bằng, với (văn cổ)\", \"ko\": \"- ~로써 (문어)\"}"}
+{"word": "創る", "source": "bloat-fix", "raw": "{\"vi\": \"- Sáng tạo, tạo nên\", \"ko\": \"- 창조하다 (만들어내다)\"}"}
+{"word": "嵌る", "source": "bloat-fix", "raw": "{\"vi\": \"- Vừa khít, vào vừa\\n- Bị sa vào, say mê (vào)\", \"ko\": \"- 맞아떨어지다 (들어맞다)\\n- 빠지다 (매료되다)\"}"}
+{"word": "抉る", "source": "bloat-fix", "raw": "{\"vi\": \"- Khoét, đục rỗng\\n- Xoi móc (vết thương lòng)\", \"ko\": \"- 파내다 (후비다)\\n- 후벼 파고들다 (마음에)\"}"}
+{"word": "揚がる", "source": "bloat-fix", "raw": "{\"vi\": \"- Tăng lên, nổi lên\\n- Được chiên chín (giòn)\", \"ko\": \"- 오르다 (떠오르다)\\n- 튀겨지다\"}"}
+{"word": "敲く", "source": "bloat-fix", "raw": "{\"vi\": \"- Đập, gõ (nhịp)\", \"ko\": \"- 두드리다 (치다)\"}"}
+{"word": "焼き付ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Nung, in chìm (lên gốm)\\n- Khắc sâu (vào ký ức)\", \"ko\": \"- 구워 새기다\\n- 뇌리에 새기다\"}"}
+{"word": "長", "source": "bloat-fix", "raw": "{\"vi\": \"- Trưởng, người đứng đầu\\n- Số một, tốt nhất\", \"ko\": \"- 장 (우두머리)\\n- 으뜸 (첫째가는)\"}"}
+{"word": "附ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Gắn, đính vào\", \"ko\": \"- 붙이다\"}"}
+{"word": "限", "source": "bloat-fix", "raw": "{\"vi\": \"- Giới hạn, điểm dừng\\n- Hạn cuối\", \"ko\": \"- 한계 (끝)\\n- 기한\"}"}
+{"word": "餘り", "source": "bloat-fix", "raw": "{\"vi\": \"- Phần dư, phần còn lại\\n- Quá (~ mức)\", \"ko\": \"- 나머지 (잔여)\\n- 너무 (~과다)\"}"}
+{"word": "唸り", "source": "bloat-fix", "raw": "{\"vi\": \"- Tiếng rên, tiếng gầm\\n- Tiếng vo ve (máy móc)\", \"ko\": \"- 신음 (으르렁거림)\\n- 웅웅거릠\"}"}
+{"word": "投じる", "source": "bloat-fix", "raw": "{\"vi\": \"- Ném, đổ vào (vốn)\\n- Dấn thân, cống hiến\", \"ko\": \"- 던지다 (투입하다)\\n- 몸을 던지다 (투신하다)\"}"}
+{"word": "捌く", "source": "bloat-fix", "raw": "{\"vi\": \"- Xử lý khéo léo\\n- Chế biến (cá, thịt)\\n- Bán hết, tiêu thụ (hàng)\", \"ko\": \"- 능숙하게 다루다\\n- (생선을) 손질하다\\n- 팔아치우다\"}"}
+{"word": "ごつい", "source": "bloat-fix", "raw": "{\"vi\": \"- Thô kệch, to chắc\\n- Gồ ghề, thô ráp\", \"ko\": \"- 크고 투박한\\n- 울퉁불퉁 거친\"}"}
+{"word": "さぁ", "source": "bloat-fix", "raw": "{\"vi\": \"- Nào (giục, mời)\\n- Chà, ai biết được\", \"ko\": \"- 자, 어서\\n- 글쎄 (모르겠는데)\"}"}
+{"word": "よー", "source": "bloat-fix", "raw": "{\"vi\": \"- Tốt, khéo léo\\n- Thường xuyên\\n- (Thán từ) Nào, này\", \"ko\": \"- 잘 (제대로)\\n- 자주 (많이)\\n- (감탄) 자, 어이\"}"}
+{"word": "カチカチ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Tích tắc, cạch cạch\\n- Cứng đờ (đông cứng)\\n- Cứng nhắc, bảo thủ\", \"ko\": \"- 딸깍딸깍 (초침 소리)\\n- 꽁꽁 언 (딱딱한)\\n- 고지식한\"}"}
+{"word": "廻す", "source": "bloat-fix", "raw": "{\"vi\": \"- Xoay, quay\\n- Chuyển giao, đưa cho (người khác)\\n- Chuyển (điện thoại) sang\", \"ko\": \"- 돌리다 (회전시키다)\\n- 넘기다 (전해주다)\\n- 돌려주다 (전화 등을)\"}"}
+{"word": "括る", "source": "bloat-fix", "raw": "{\"vi\": \"- Buộc lại, bó lại\\n- Tóm gọn, tổng kết\", \"ko\": \"- 묶다\\n- 일괄하다 (총괄하다)\"}"}
+{"word": "掛る", "source": "bloat-fix", "raw": "{\"vi\": \"- Tốn, mất (thời gian, tiền)\\n- Treo, mắc vào\", \"ko\": \"- (시간·돈이) 걸리다\\n- 걸리다 (매달림)\"}"}
+{"word": "断絶", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự đứt đoạn, gián đoạn\\n- Sự tuyệt diệt\", \"ko\": \"- 단절 (중단)\\n- 절멸 (두절)\"}"}
+{"word": "断ち切る", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắt đứt (quan hệ)\\n- Vượt qua, đoạn tuyệt (thói quen)\", \"ko\": \"- 끊어버리다 (절연하다)\\n- 끊어버리다 (습관을)\"}"}
+{"word": "発する", "source": "bloat-fix", "raw": "{\"vi\": \"- Phát ra (âm thanh, ánh sáng)\\n- Khởi phát, gây ra\", \"ko\": \"- 발하다 (내뿜다)\\n- 발생시키다 (일으키다)\"}"}
+{"word": "舐める", "source": "bloat-fix", "raw": "{\"vi\": \"- Liếp\\n- Khinh thường, xem nhẹ\\n- Trải qua, nếm (đau khổ)\", \"ko\": \"- 핥다\\n- 얕보다 (무시하다)\\n- 겪어보다 (맛보다)\"}"}
+{"word": "落着く", "source": "bloat-fix", "raw": "{\"vi\": \"- Ổn định, bình tĩnh lại\\n- An cư vào (nơi ở)\", \"ko\": \"- 안착하다 (침착해지다)\\n- 자리 잡다\"}"}
+{"word": "惚れる", "source": "bloat-fix", "raw": "{\"vi\": \"- Phải lòng, mê mẩn\", \"ko\": \"- 반하다 (홀리다)\"}"}
+{"word": "惡い", "source": "bloat-fix", "raw": "{\"vi\": \"- Xấu, tồi tệ\\n- Không may (xui)\", \"ko\": \"- 나쁜 (불량한)\\n- 불길한\"}"}
+{"word": "懸かる", "source": "bloat-fix", "raw": "{\"vi\": \"- Treo (lên), mắc\\n- Tốn kém, phụ thuộc vào\", \"ko\": \"- 걸리다 (매달리다)\\n- (일이) 걸리다 (달려 있다)\"}"}
+{"word": "潤い", "source": "bloat-fix", "raw": "{\"vi\": \"- Độ ẩm, sự mềm mại\\n- Sự phong phú, ơn huệ\", \"ko\": \"- 윤기 (촉촉함)\\n- 윤택함 (풍요)\"}"}
+{"word": "華", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự rực rỡ, hào quang\\n- Hoa (nở rộ)\", \"ko\": \"- 화려함 (광채)\\n- 꽃 (개화)\"}"}
+{"word": "飛躍", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bứt phá, nhảy vọt\\n- Sự phát triển nhanh\", \"ko\": \"- 비약 (도약)\\n- 비약적 발전\"}"}
+{"word": "とり上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Lấy đi, tịch thu\\n- Đưa ra, đề cập (vấn đề)\", \"ko\": \"- 앗아가다 (몰수하다)\\n- 다루다 (화제를)\"}"}
+{"word": "ガチャガチャ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Loảng xoảng, rộc rạo\\n- Càm ràm, lải nhải\", \"ko\": \"- 철그럭거릠 (우그락쏠락)\\n- 재잘재잘 (불평하듯)\"}"}
+{"word": "來る", "source": "bloat-fix", "raw": "{\"vi\": \"- Đến, tới\", \"ko\": \"- 오다\"}"}
+{"word": "分る", "source": "bloat-fix", "raw": "{\"vi\": \"- Hiểu, biết rõ\", \"ko\": \"- 이해하다 (분명해지다)\"}"}
+{"word": "判る", "source": "bloat-fix", "raw": "{\"vi\": \"- Hiểu, phân biệt rõ\", \"ko\": \"- 분간하다 (알다)\"}"}
+{"word": "取りあげる", "source": "bloat-fix", "raw": "{\"vi\": \"- Lấy đi, tịch thu\\n- Đưa ra, đề cập\", \"ko\": \"- 앗아가다\\n- 다루다 (문제를)\"}"}
+{"word": "只", "source": "bloat-fix", "raw": "{\"vi\": \"- Miễn phí\\n- Chỉ là, đơn thuần\", \"ko\": \"- 공짜 (무료)\\n- 단지 (그저)\"}"}
+{"word": "呑みこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Nuốt chửng (cả thể)\\n- Lĩnh hội, nắm bắt nhanh\", \"ko\": \"- 꿀꺽 삼키다\\n- 순식간에 터득하다\"}"}
+{"word": "呑み込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Nuốt chửng\\n- Lĩnh hội, nắm bắt\", \"ko\": \"- 삼키다\\n- 터득하다 (이해하다)\"}"}
+{"word": "弁", "source": "bloat-fix", "raw": "{\"vi\": \"- Khẩu tài, lời nói\", \"ko\": \"- 말 (변설)\"}"}
+{"word": "戴く", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhận, được cho (kính ngữ)\\n- Ăn, uống (cách nói lịch sự)\", \"ko\": \"- 받다 (공손히)\\n- 먹다 (정중하게)\"}"}
+{"word": "打ち抜く", "source": "bloat-fix", "raw": "{\"vi\": \"- Đâm xuyên, khoan thông\", \"ko\": \"- 뚫고 나가다 (관통하다)\"}"}
+{"word": "採り上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Đưa ra, đề cập\\n- Thu hồi, lấy đi\", \"ko\": \"- 채택하다 (다루다)\\n- 거두어들이다 (압수하다)\"}"}
+{"word": "案ずる", "source": "bloat-fix", "raw": "{\"vi\": \"- Lo âu, bận tâm\\n- Mưu tính, suy nghĩ\", \"ko\": \"- 걱정하다 (염려하다)\\n- 궁리하다 (생각하다)\"}"}
+{"word": "漑ぐ", "source": "bloat-fix", "raw": "{\"vi\": \"- Tưới, rưới (nước)\", \"ko\": \"- 뿌리다 (물을)\"}"}
+{"word": "灌ぐ", "source": "bloat-fix", "raw": "{\"vi\": \"- Tưới (nước), rưới\", \"ko\": \"- 부어주다 (적시다)\"}"}
+{"word": "王道", "source": "bloat-fix", "raw": "{\"vi\": \"- Chính đạo, phép cai trị chính nghĩa\\n- Cách chuẩn mực (đường tắt hữu hiệu)\", \"ko\": \"- 왕도 (정통적 방법)\\n- 지름길 (요령)\"}"}
+{"word": "籠る", "source": "bloat-fix", "raw": "{\"vi\": \"- Tự nhốt mình (trong phòng)\\n- Dồn nén, tích tụ (cảm xúc)\", \"ko\": \"- 틀어박히다\\n- (감정이) 쌓이다 (차오르다)\"}"}
+{"word": "聲", "source": "bloat-fix", "raw": "{\"vi\": \"- Giọng nói, tiếng\", \"ko\": \"- 목소리 (소리)\"}"}
+{"word": "裏面", "source": "bloat-fix", "raw": "{\"vi\": \"- Mặt sau, mặt trái\\n- Phía ngầm, hậu trường\", \"ko\": \"- 이면 (뒷면)\\n- 배후 (안쪽)\"}"}
+{"word": "閑散", "source": "bloat-fix", "raw": "{\"vi\": \"- Vắng vẻ, thưa thớt\\n- Mất sức, ế ẩm (kinh doanh)\", \"ko\": \"- 한산한 (인적 드문)\\n- 불황인 (한가한)\"}"}
+{"word": "順う", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuân theo, làm theo\", \"ko\": \"- 따르다 (순종하다)\"}"}
+{"word": "視る", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhìn, quan sát\", \"ko\": \"- 보다 (살피다)\"}"}
+{"word": "飲込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Nuốt chửng\\n- Lĩnh hội nhanh\", \"ko\": \"- 삼키다\\n- 터득하다\"}"}
+{"word": "騷ぐ", "source": "bloat-fix", "raw": "{\"vi\": \"- Ồn ào, náo loạn\\n- Dấy lên, xôn xao\", \"ko\": \"- 소란 피우다 (떠들썩하다)\\n- 술렁이다 (들썩하다)\"}"}
+{"word": "カワイイ", "source": "bloat-fix", "raw": "{\"vi\": \"- Dễ thương, xinh xắn\", \"ko\": \"- 귀여운\"}"}
+{"word": "ストレート", "source": "bloat-fix", "raw": "{\"vi\": \"- Thẳng, trực tiếp\\n- Thẳng thắn (nói thẳng)\", \"ko\": \"- 스트레이트 (직선)\\n- 직설적인\"}"}
+{"word": "凾", "source": "bloat-fix", "raw": "{\"vi\": \"- Hộp, thùng đựng\", \"ko\": \"- 함 (상자)\"}"}
+{"word": "切り捨てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắt bỏ, loại bỏ\\n- Chém hạ (đối thủ)\\n- Làm tròn xuống (toán)\", \"ko\": \"- 잘라 버리다\\n- 베어 쓰러뜨리다\\n- 버림하다 (내림)\"}"}
+{"word": "匣", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái hộp nhỏ\", \"ko\": \"- 작은 상자 (갑)\"}"}
+{"word": "吹き込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Thổi, tràn vào (gió, mưa)\\n- Truyền, rót vào (ý tưởng)\\n- Ghi âm, thu âm\", \"ko\": \"- (바람이) 불어들다\\n- 불어넣다 (주입하다)\\n- 녹음하다\"}"}
+{"word": "塩梅", "source": "bloat-fix", "raw": "{\"vi\": \"- Độ vừa miệng (gia vị)\\n- Tình hình, trạng thái\", \"ko\": \"- 간 (양념 맛)\\n- 형편 (사정)\"}"}
+{"word": "宿る", "source": "bloat-fix", "raw": "{\"vi\": \"- Trú ngụ, sống trong\\n- Có thai, thụ thai\", \"ko\": \"- 깃들다 (살다)\\n- (아이가) 씌다 (생기다)\"}"}
+{"word": "這入る", "source": "bloat-fix", "raw": "{\"vi\": \"- Đi vào, vào trong\", \"ko\": \"- 들어가다\"}"}
+{"word": "くたくた", "source": "bloat-fix", "raw": "{\"vi\": \"- Kiệt sức, mệt rã\", \"ko\": \"- 녹초가 된 (지쳐 늘어진)\"}"}
+{"word": "カワイい", "source": "bloat-fix", "raw": "{\"vi\": \"- Dễ thương\", \"ko\": \"- 귀여운\"}"}
+{"word": "タダ", "source": "bloat-fix", "raw": "{\"vi\": \"- Miễn phí\\n- Chỉ, không gì hơn\", \"ko\": \"- 공짜\\n- 그저 (다만)\"}"}
+{"word": "ダメ", "source": "bloat-fix", "raw": "{\"vi\": \"- Không được, hỏng\\n- Vô ích, tệ\", \"ko\": \"- 안 되는 (못 쓰는)\\n- 헛된 (소용없는)\"}"}
+{"word": "レヴェル", "source": "bloat-fix", "raw": "{\"vi\": \"- Trình độ, mức\", \"ko\": \"- 레벨 (수준)\"}"}
+{"word": "一色", "source": "bloat-fix", "raw": "{\"vi\": \"- Một màu, đơn sắc\\n- Toàn bộ cùng một kiểu\", \"ko\": \"- 한 가지 색 (단색)\\n- 온통 한 빛깔\"}"}
+{"word": "中堅", "source": "bloat-fix", "raw": "{\"vi\": \"- Lực lượng nòng cốt\\n- Trung cấp, hạng trung\", \"ko\": \"- 중견 (핵심 세력)\\n- 중간급\"}"}
+{"word": "了う", "source": "bloat-fix", "raw": "{\"vi\": \"- Hoàn tất, kết thúc\", \"ko\": \"- 마치다 (끝내다)\"}"}
+{"word": "出づ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đi ra, xuất hiện\\n- Trôi qua (thời gian)\", \"ko\": \"- 나오다 (나가다)\\n- 지나가다 (경과하다)\"}"}
+{"word": "函", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái hộp, thùng\", \"ko\": \"- 함 (상자)\"}"}
+{"word": "割り", "source": "bloat-fix", "raw": "{\"vi\": \"- Tỷ lệ, tỷ suất\", \"ko\": \"- 비율\"}"}
+{"word": "取上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Tịch thu, lấy đi\\n- Đề cập (vấn đề)\", \"ko\": \"- 거두어들이다\\n- 다루다\"}"}
+{"word": "掛かり", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tốn kém (thời gian, chi phí)\\n- Sự liên quan, can dự\", \"ko\": \"- 걸림 (소요)\\n- 관여 (맡음)\"}"}
+{"word": "立直す", "source": "bloat-fix", "raw": "{\"vi\": \"- Xây dựng lại, củng cố lại\", \"ko\": \"- 일으켜 세우다 (재정비하다)\"}"}
+{"word": "綾", "source": "bloat-fix", "raw": "{\"vi\": \"- Hoa văn, đường vân\\n- Vải dệt chéo (lụa)\", \"ko\": \"- 무늬 (결)\\n- 능 (능직물)\"}"}
+{"word": "脱ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuột ra, rơi ra\\n- Bị sót, thiếu\", \"ko\": \"- 빠지다 (이탈하다)\\n- 빠뜨리다 (누락되다)\"}"}
+{"word": "調える", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuẩn bị, sắp xếp đầy đủ\\n- Điều chỉnh cho đúng\", \"ko\": \"- 갖추다 (준비하다)\\n- 조정하다 (바로잡다)\"}"}
+{"word": "谷間", "source": "bloat-fix", "raw": "{\"vi\": \"- Thung lũng, khe núi\\n- Khoảng trống (giai đoạn trũng)\", \"ko\": \"- 골짜기 (계곡)\\n- 공백 (한산기)\"}"}
+{"word": "識る", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhận thức, biết rõ\", \"ko\": \"- 깨닫다 (알다)\"}"}
+{"word": "走らせる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho chạy, phóng (xe, ngựa)\\n- Đưa (mắt, bút) lướt nhanh\", \"ko\": \"- 달리게 하다 (몰다)\\n- (시선·붓을) 빠르게 움직이다\"}"}
+{"word": "追い込み", "source": "bloat-fix", "raw": "{\"vi\": \"- Giai đoạn bứt phá cuối\\n- Sự dồn ép (vào góc)\", \"ko\": \"- 막판 몰이 (마지막 주력)\\n- 몰아붙이기\"}"}
+{"word": "追込み", "source": "bloat-fix", "raw": "{\"vi\": \"- Cú bứt phá cuối cùng\\n- Sự dồn nén\", \"ko\": \"- 막판 추진\\n- 몰아넣기\"}"}
+{"word": "遵う", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuân theo\", \"ko\": \"- 좇다 (따르다)\"}"}
+{"word": "いい加減", "source": "bloat-fix", "raw": "{\"vi\": \"- Qua loa, cẩu thả\\n- Vừa phải, hợp lý\\n- Đủ rồi (chán ngấy)\", \"ko\": \"- 대충대충하는\\n- 적당한\\n- 지긋지긋한 (이제 그만)\"}"}
+{"word": "チョッと", "source": "bloat-fix", "raw": "{\"vi\": \"- Một chút, chốc lát\", \"ko\": \"- 조금 (잠깐)\"}"}
+{"word": "並", "source": "bloat-fix", "raw": "{\"vi\": \"- Trung bình, bình thường\\n- Ngang hàng, tương đương\", \"ko\": \"- 보통 (평균)\\n- 버금가는 (동등)\"}"}
+{"word": "何処までも", "source": "bloat-fix", "raw": "{\"vi\": \"- Đến cùng, mãi mãi\\n- Bất kể nơi đâu\", \"ko\": \"- 끝까지 (어디까지나)\\n- 결코 (조금도)\"}"}
+{"word": "利かす", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho phát huy (tác dụng)\\n- Nêm nếm (gia vị)\", \"ko\": \"- 먹이다 (효과를 주다)\\n- 간을 맞추다\"}"}
+{"word": "刳る", "source": "bloat-fix", "raw": "{\"vi\": \"- Khoét rỗng, đục lõm\", \"ko\": \"- 파내다 (후비다)\"}"}
+{"word": "属性", "source": "bloat-fix", "raw": "{\"vi\": \"- Thuộc tính, đặc tính\", \"ko\": \"- 속성 (특성)\"}"}
+{"word": "引上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Kéo lên\\n- Rút lui, cho về\\n- Nâng (giá)\", \"ko\": \"- 끌어올리다\\n- 철수시키다 (거두어들이다)\\n- 인상하다 (값을)\"}"}
+{"word": "從う", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuân theo, theo\", \"ko\": \"- 따르다\"}"}
+{"word": "歪み", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự méo mó, biến dạng\\n- Độ lệch (quang học)\", \"ko\": \"- 일그러짐 (뒤틀림)\\n- 왜곡 (편차)\"}"}
+{"word": "牽制", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự kiềm chế, răn đe\", \"ko\": \"- 견제 (억제)\"}"}
+{"word": "続き", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tiếp diễn\\n- Phần tiếp theo (câu chuyện)\", \"ko\": \"- 계속됨\\n- 속편\"}"}
+{"word": "蔓", "source": "bloat-fix", "raw": "{\"vi\": \"- Dây leo, chồi non\", \"ko\": \"- 덩굴 (넝쿨)\"}"}
+{"word": "見どころ", "source": "bloat-fix", "raw": "{\"vi\": \"- Điểm hấp dẫn, điểm nhấn\\n- Triển vọng (tương lai sáng)\", \"ko\": \"- 볼거리 (백미)\\n- 장래성\"}"}
+{"word": "覚束ない", "source": "bloat-fix", "raw": "{\"vi\": \"- Bấp bênh, không chắc chắn\\n- Đáng ngờ (không đáng tin)\", \"ko\": \"- 믿직지 않은 (불안정한)\\n- 의심스러운\"}"}
+{"word": "話し", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuyện, câu chuyện\\n- Cuộc trò chuyện\", \"ko\": \"- 이야기 (담화)\\n- 말\"}"}
+{"word": "ずうっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Suốt (cả quãng, cả hồi)\\n- Hẳn, vượt trội\", \"ko\": \"- 줄곧 (계속)\\n- 한층 (훨씬)\"}"}
+{"word": "ふわっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhẹ tênh, bồng bềnh (một cái)\", \"ko\": \"- 살짝 떠오르듯 (포근하게)\"}"}
+{"word": "アンダーグラウンド", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngầm, dưới lòng đất\\n- Phi chính thống, dị biệt\", \"ko\": \"- 언더그라운드 (지하)\\n- 비주류 (반체제)\"}"}
+{"word": "ボウっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Mơ màng, đờ đẫn\", \"ko\": \"- 멍하니 (얼빠지게)\"}"}
+{"word": "ボチボチ", "source": "bloat-fix", "raw": "{\"vi\": \"- Từ từ, thong thả\\n- Sắp (ngay đây)\", \"ko\": \"- 천천히 (조금씩)\\n- 슬슬 (이윽고)\"}"}
+{"word": "一緒にする", "source": "bloat-fix", "raw": "{\"vi\": \"- Gộp chung, làm cùng\\n- Coi như ngang hàng\", \"ko\": \"- 함께 하다 (같이하다)\\n- 동등하게 취급하다\"}"}
+{"word": "上がり", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tăng lên\\n- Thu nhập, tiền lãi\", \"ko\": \"- 오름 (상승)\\n- 벌이 (수입)\"}"}
+{"word": "上段", "source": "bloat-fix", "raw": "{\"vi\": \"- Tầng trên, hàng trên\", \"ko\": \"- 상단 (윗자리)\"}"}
+{"word": "亂暴", "source": "bloat-fix", "raw": "{\"vi\": \"- Bạo lực, thô bạo\\n- Liều lĩnh, cẩu thả\", \"ko\": \"- 난폭한 (거친)\\n- 무모한 (엉망인)\"}"}
+{"word": "五分", "source": "bloat-fix", "raw": "{\"vi\": \"- Một nửa, năm phần\\n- Ngang bằng, hòa nhau\", \"ko\": \"- 반 (오분)\\n- 대등함 (무승부)\"}"}
+{"word": "仕切", "source": "bloat-fix", "raw": "{\"vi\": \"- Vách ngăn, sự phân chia\\n- Việc thanh toán (quyết toán)\", \"ko\": \"- 구획 (막이)\\n- 정산 (결산)\"}"}
+{"word": "仕切り", "source": "bloat-fix", "raw": "{\"vi\": \"- Vách ngăn, phân chia\\n- Việc quyết toán sổ\", \"ko\": \"- 구획 (막음)\\n- 정산\"}"}
+{"word": "仕様が無い", "source": "bloat-fix", "raw": "{\"vi\": \"- Không còn cách nào (đành chịu)\", \"ko\": \"- 어쩔 수 없다\"}"}
+{"word": "件数", "source": "bloat-fix", "raw": "{\"vi\": \"- Số vụ, số ca\", \"ko\": \"- 건수\"}"}
+{"word": "列ねる", "source": "bloat-fix", "raw": "{\"vi\": \"- Xếp hàng, liệt kê\\n- Gia nhập (vào hàng ngũ)\", \"ko\": \"- 나열하다 (줄세우다)\\n- (명단에) 이름을 올리다\"}"}
+{"word": "刻印", "source": "bloat-fix", "raw": "{\"vi\": \"- Dấu khắc (ấn triện)\\n- Vết khắc sâu (ký ức)\", \"ko\": \"- 각인 (인장)\\n- 각인 (마음에 새김)\"}"}
+{"word": "劇しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Dữ dội, khốc liệt\\n- Mãnh liệt (cảm xúc)\", \"ko\": \"- 격렬한 (심한)\\n- 몹시 심한\"}"}
+{"word": "取込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Thu vào, tiếp nhận\\n- Lôi kéo, chiếm lấy\", \"ko\": \"- 거두어들이다\\n- 끌어들이다 (확보하다)\"}"}
+{"word": "吊り上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Nâng lên (treo cao)\\n- Thổi phồng (giá, dư luận)\", \"ko\": \"- 끌어올리다 (매달다)\\n- 부추겨 올리다\"}"}
+{"word": "呑む", "source": "bloat-fix", "raw": "{\"vi\": \"- Uống, nuốt\\n- Nén nhịn (chịu đựng)\", \"ko\": \"- 마시다 (넘기다)\\n- 참아 넘기다\"}"}
+{"word": "圧巻", "source": "bloat-fix", "raw": "{\"vi\": \"- Đỉnh điểm, phần đắt giá nhất\", \"ko\": \"- 백미 (압권)\"}"}
+{"word": "定め", "source": "bloat-fix", "raw": "{\"vi\": \"- Quy định, luật\\n- Số phận (định mệnh)\", \"ko\": \"- 정해진 것 (규정)\\n- 운명 (천명)\"}"}
+{"word": "引き立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm nổi bật (tôn lên)\\n- Hậu thuẫn, đề bạt\", \"ko\": \"- 돋보이게 하다\\n- 후원하다 (중용하다)\"}"}
+{"word": "引っかける", "source": "bloat-fix", "raw": "{\"vi\": \"- Móc, vắt lên\\n- Lừa gạt (gài bẫy)\\n- Hắt, tạt (nước vào)\", \"ko\": \"- 걸치다 (걸다)\\n- 속여서 걸리게 하다\\n- 끼얹다\"}"}
+{"word": "引立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm nổi bật\\n- Hậu thuẫn\", \"ko\": \"- 돋보이게 하다\\n- 후원하다\"}"}
+{"word": "手引", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự hướng dẫn, dẫn dắt\\n- Sách nhập môn (sổ tay)\", \"ko\": \"- 안내 (선참)\\n- 입문서 (지침서)\"}"}
+{"word": "抜群", "source": "bloat-fix", "raw": "{\"vi\": \"- Vượt trội hẳn, xuất chúng\", \"ko\": \"- 발군 (뛰어남)\"}"}
+{"word": "抜き取る", "source": "bloat-fix", "raw": "{\"vi\": \"- Rút ra, nhổ ra\\n- Ăn cắp, móc túi\", \"ko\": \"- 뽑다 (빼앗다)\\n- 낚아채다 (훔치다)\"}"}
+{"word": "搾り上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Vắt kiệt (lấy hết)\\n- Ép (tiền), moi (thông tin)\", \"ko\": \"- 짜내다 (뽑아내다)\\n- 짜서 얻어내다 (돈을)\"}"}
+{"word": "旺ん", "source": "bloat-fix", "raw": "{\"vi\": \"- Hưng thịnh, mạnh mẽ\", \"ko\": \"- 왕성한\"}"}
+{"word": "栖", "source": "bloat-fix", "raw": "{\"vi\": \"- Nơi ở, hang (môi trường sống)\", \"ko\": \"- 서식지 (거처)\"}"}
+{"word": "標", "source": "bloat-fix", "raw": "{\"vi\": \"- Dây rào thiêng (shime)\\n- Biển hiệu, ký hiệu\\n- Bằng chứng, dấu ấn\", \"ko\": \"- 시메 (금줄)\\n- 표지 (표식)\\n- 증표 (증거)\"}"}
+{"word": "氣", "source": "bloat-fix", "raw": "{\"vi\": \"- Khí, tinh thần\\n- Tính khí, khí chất\", \"ko\": \"- 기 (기운)\\n- 기질\"}"}
+{"word": "準じる", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuân theo, tương ứng\\n- Được coi ngang (tương đương)\", \"ko\": \"- 준하다 (준거하다)\\n- 동등하게 치다\"}"}
+{"word": "無縁", "source": "bloat-fix", "raw": "{\"vi\": \"- Không duyên, không liên quan\\n- Cô độc (không người thân)\", \"ko\": \"- 인연 없는 (무관한)\\n- 고독한 (연고 없는)\"}"}
+{"word": "片づける", "source": "bloat-fix", "raw": "{\"vi\": \"- Dọn dẹp, xếp gọn\\n- Giải quyết (xong việc)\", \"ko\": \"- 정리하다 (치우다)\\n- 해결하다 (끝내다)\"}"}
+{"word": "畠", "source": "bloat-fix", "raw": "{\"vi\": \"- Ruộng (trồng rau, cây)\", \"ko\": \"- 밭 (경작지)\"}"}
+{"word": "破れ", "source": "bloat-fix", "raw": "{\"vi\": \"- Vết rách, chỗ thủng\", \"ko\": \"- 찢어짐 (터짐)\"}"}
+{"word": "硬い", "source": "bloat-fix", "raw": "{\"vi\": \"- Cứng, rắn\\n- Cứng nhắc\", \"ko\": \"- 딱딱한 (굳은)\\n- 경직된\"}"}
+{"word": "締まり", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự chặt chẽ, kín đáo\\n- Tính chừng mực (tiết kiệm)\", \"ko\": \"- 조임 (단정함)\\n- 검약 (아낌)\"}"}
+{"word": "興す", "source": "bloat-fix", "raw": "{\"vi\": \"- Hưng khởi, phục hồi\\n- Thành lập, gây dựng\", \"ko\": \"- 일으키다 (흥기시키다)\\n- 창설하다 (세우다)\"}"}
+{"word": "見込", "source": "bloat-fix", "raw": "{\"vi\": \"- Triển vọng, khả năng\\n- Dự tính, dự đoán\", \"ko\": \"- 전망 (가망)\\n- 예상 (내다봄)\"}"}
+{"word": "趨く", "source": "bloat-fix", "raw": "{\"vi\": \"- Hướng tới, đi đến\\n- Tùy theo (theo tình thế)\", \"ko\": \"- ~으로 향하다\\n- (~에) 따르다 (임하다)\"}"}
+{"word": "跳ぶ", "source": "bloat-fix", "raw": "{\"vi\": \"- Bay\\n- Nhảy, văng ra\", \"ko\": \"- 날다\\n- 튀다 (뛰다)\"}"}
+{"word": "連発", "source": "bloat-fix", "raw": "{\"vi\": \"- Liên tiếp (hết cái này đến cái khác)\", \"ko\": \"- 연발 (연타)\"}"}
+{"word": "鋒", "source": "bloat-fix", "raw": "{\"vi\": \"- Mũi nhọn (giáo)\\n- Mũi tiên công, đầu sóng\", \"ko\": \"- 칼끝 (창끝)\\n- 선봉 (예리한 공격)\"}"}
+{"word": "陣", "source": "bloat-fix", "raw": "{\"vi\": \"- Trại, đội hình\\n- Phe, nhóm\", \"ko\": \"- 진 (진지)\\n- 진영 (패거리)\"}"}
+{"word": "降りる", "source": "bloat-fix", "raw": "{\"vi\": \"- Xuống (xe, núi)\\n- Rút lui (khỏi chức)\", \"ko\": \"- 내리다 (하차하다)\\n- 물러나다 (사퇴하다)\"}"}
+{"word": "随う", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuân theo\", \"ko\": \"- 따르다\"}"}
+{"word": "隨う", "source": "bloat-fix", "raw": "{\"vi\": \"- Theo, tuân theo\", \"ko\": \"- 좇다\"}"}
+{"word": "食い込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn, thấm vào (dây vào da)\\n- Xâm lấn (thị phần)\", \"ko\": \"- 파고들다 (살을 파고듦)\\n- 잠식하다 (침투하다)\"}"}
+{"word": "食わせる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho ăn, nuôi\\n- Đãi, mời ăn\", \"ko\": \"- 먹이다 (길러주다)\\n- 대접하다\"}"}
+{"word": "飮む", "source": "bloat-fix", "raw": "{\"vi\": \"- Uống, nuốt\", \"ko\": \"- 마시다\"}"}
+{"word": "〇", "source": "bloat-fix", "raw": "{\"vi\": \"- Dấu tròn (ký hiệu đúng)\", \"ko\": \"- 동그라미\"}"}
+{"word": "この前", "source": "bloat-fix", "raw": "{\"vi\": \"- Hôm trước, cách đây ít lâu\", \"ko\": \"- 지난번 (얼마 전)\"}"}
+{"word": "しぼり上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Vắt kiệt\\n- Ép, moi (thông tin)\", \"ko\": \"- 짜내다\\n- 캐내다 (얻어내다)\"}"}
+{"word": "ひき上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Kéo lên\\n- Rút (quân), thu hồi\", \"ko\": \"- 끌어올리다\\n- 거두어들이다 (철수)\"}"}
+{"word": "ストック", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự dự trữ (kho)\\n- Cổ phiếu\\n- Nước dùng (soup stock)\", \"ko\": \"- 비축 (재고)\\n- 주식\\n- 스톡 (육수)\"}"}
+{"word": "一気に", "source": "bloat-fix", "raw": "{\"vi\": \"- Một hơi (một mạch)\", \"ko\": \"- 단숨에 (한꺼번에)\"}"}
+{"word": "上積み", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc chất đống lên trên\\n- Phần tăng thêm\", \"ko\": \"- 쌓아올림\\n- 증가분\"}"}
+{"word": "凡", "source": "bloat-fix", "raw": "{\"vi\": \"- Bình thường (phàm)\\n- Khoảng chừng, đại khái\", \"ko\": \"- 범범한 (평범)\\n- 대략 (대개)\"}"}
+{"word": "塚", "source": "bloat-fix", "raw": "{\"vi\": \"- Gò đất (mộ cổ)\", \"ko\": \"- 봉분 (흙더미)\"}"}
+{"word": "御所", "source": "bloat-fix", "raw": "{\"vi\": \"- Cung điện (hoàng cung)\", \"ko\": \"- 어소 (궁궐)\"}"}
+{"word": "思惟", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự suy tư (tầm tư)\", \"ko\": \"- 사유 (사색)\"}"}
+{"word": "淡々", "source": "bloat-fix", "raw": "{\"vi\": \"- Điềm đạm (nhạt nhòa)\", \"ko\": \"- 담담한 (무덤덤한)\"}"}
+{"word": "物色", "source": "bloat-fix", "raw": "{\"vi\": \"- Tìm kiếm, tuyển chọn (người, vật)\", \"ko\": \"- 물색 (눈여겨 살핌)\"}"}
+{"word": "登る", "source": "bloat-fix", "raw": "{\"vi\": \"- Leo (lên núi)\", \"ko\": \"- 오르다 (등반하다)\"}"}
+{"word": "美事", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuyệt đẹp, hoàn hảo\", \"ko\": \"- 절묘한 (훌륭한)\"}"}
+{"word": "處", "source": "bloat-fix", "raw": "{\"vi\": \"- Nơi, chỗ\\n- Điểm (khía cạnh)\", \"ko\": \"- 곳 (장소)\\n- 점 (부분)\"}"}
+{"word": "くぎ付け", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị ghim chặt (mắt không rời)\", \"ko\": \"- 못 박듯 고정됨 (시선 뺏김)\"}"}
+{"word": "ご免", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời xin lỗi, xin phép\", \"ko\": \"- 사죄 (양해 구함)\"}"}
+{"word": "その他", "source": "bloat-fix", "raw": "{\"vi\": \"- Những cái khác, ngoài ra\", \"ko\": \"- 기타 (그 밖의 것)\"}"}
+{"word": "ぶっ飛ばす", "source": "bloat-fix", "raw": "{\"vi\": \"- Đánh văng (đập mạnh)\\n- Đuổi bay (xua tan)\", \"ko\": \"- 날려버리다 (후려치다)\\n- 날려 보내다 (털어버리다)\"}"}
+{"word": "やくざ", "source": "bloat-fix", "raw": "{\"vi\": \"- Dân giang hồ, yakuza\\n- Vô dụng (rác)\", \"ko\": \"- 야쿠자 (건달)\\n- 쓸모없음\"}"}
+{"word": "やり手", "source": "bloat-fix", "raw": "{\"vi\": \"- Người có năng lực, lanh lợi\", \"ko\": \"- 유능한 사람 (민첩한 인물)\"}"}
+{"word": "カス", "source": "bloat-fix", "raw": "{\"vi\": \"- Bã, cặn (phế liệu)\", \"ko\": \"- 찌꺼기 (쓰레기)\"}"}
+{"word": "コンセプト", "source": "bloat-fix", "raw": "{\"vi\": \"- Ý tưởng chủ đạo (concept)\", \"ko\": \"- 콘셉트 (관념)\"}"}
+{"word": "ゴタゴタ", "source": "bloat-fix", "raw": "{\"vi\": \"- Rắc rối, cãi vã (náo loạn)\", \"ko\": \"- 말썽 (소란)\"}"}
+{"word": "ドロドロ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sệt, quánh (nhão nhoét)\\n- Rối ren, lằng nhằng (quan hệ)\", \"ko\": \"- 들쭉날쭉 끈적한\\n- 얽히고설킨 (뒤숭숭한)\"}"}
+{"word": "ノリ", "source": "bloat-fix", "raw": "{\"vi\": \"- Rong biển (nori)\\n- Chất, độ phủ (sơn)\\n- Không khí hưng phấn, chây\", \"ko\": \"- 김 (해초)\\n- (페인트의) 점도\\n- 기분 (리듬)\"}"}
+{"word": "ハラハラ", "source": "bloat-fix", "raw": "{\"vi\": \"- Hồi hộp (lo lắng)\\n- Rơi lã tã (lá, cánh hoa)\", \"ko\": \"- 조마조마함\\n- 날리는 모양 (잎이 흩날림)\"}"}
+{"word": "ホント", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự thật, thực tế\", \"ko\": \"- 진실 (사실)\"}"}
+{"word": "ベタベタ", "source": "bloat-fix", "raw": "{\"vi\": \"- Dính (nhớt)\\n- Dán kín (khắp nơi)\", \"ko\": \"- 끈적하게 붙는\\n- 곳곳에 바르는\"}"}
+{"word": "ボウッと", "source": "bloat-fix", "raw": "{\"vi\": \"- Mơ màng (đờ đẫn)\", \"ko\": \"- 멍하니\"}"}
+{"word": "ムチャクチャ", "source": "bloat-fix", "raw": "{\"vi\": \"- Lộn xộn, vô lý\\n- Quá đáng (kinh khủng)\", \"ko\": \"- 엉망진창 (뒤죽박죽)\\n- 터무니없는 (극심한)\"}"}
+{"word": "ムリ", "source": "bloat-fix", "raw": "{\"vi\": \"- Vô lý, không thể\\n- Ép buộc (gượng ép)\", \"ko\": \"- 무리한 (불가능한)\\n- 억지스러운\"}"}
+{"word": "ループ", "source": "bloat-fix", "raw": "{\"vi\": \"- Vòng lặp (loop)\", \"ko\": \"- 루프 (반복)\"}"}
+{"word": "一山", "source": "bloat-fix", "raw": "{\"vi\": \"- Một ngọn núi\\n- Một đống, một nhóm\", \"ko\": \"- 한 개의 산\\n- 한 무더기\"}"}
+{"word": "代り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự thay thế (người thay)\", \"ko\": \"- 대리 (대신)\"}"}
+{"word": "作りもの", "source": "bloat-fix", "raw": "{\"vi\": \"- Đồ nhân tạo (giả)\", \"ko\": \"- 모조품 (인공물)\"}"}
+{"word": "作り物", "source": "bloat-fix", "raw": "{\"vi\": \"- Đồ giả, nhân tạo\", \"ko\": \"- 인공물 (가짜)\"}"}
+{"word": "俗", "source": "bloat-fix", "raw": "{\"vi\": \"- Tục (trần thế)\\n- Phổ biến, thịnh hành\", \"ko\": \"- 속세 (세간)\\n- 속된 (통속적인)\"}"}
+{"word": "係る", "source": "bloat-fix", "raw": "{\"vi\": \"- Liên quan đến\\n- Phụ thuộc, nhờ vào\", \"ko\": \"- 관계되다 (관여하다)\\n- 달려 있다\"}"}
+{"word": "傷める", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm đau, làm bị thương\\n- Làm hư hỏng\", \"ko\": \"- 상하게 하다\\n- 망가뜨리다 (손상시키다)\"}"}
+{"word": "其の外", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngoài ra, phần còn lại\", \"ko\": \"- 그 밖의 것\"}"}
+{"word": "削ぐ", "source": "bloat-fix", "raw": "{\"vi\": \"- Gọt, bào (mỏng)\\n- Làm suy yếu (dập tắt)\", \"ko\": \"- 깎다 (밀다)\\n- 꺾다 (기세를)\"}"}
+{"word": "割りに", "source": "bloat-fix", "raw": "{\"vi\": \"- Tương đối, khá\\n- So với (xét theo)\", \"ko\": \"- 비교적 (의외로)\\n- ~치고는 (값에 비해)\"}"}
+{"word": "反面", "source": "bloat-fix", "raw": "{\"vi\": \"- Mặt khác (mặt trái)\", \"ko\": \"- 반면 (이면)\"}"}
+{"word": "取立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Thu hồi (đòi nợ)\\n- Đề bạt (nâng đỡ)\", \"ko\": \"- 징수하다 (독촉하다)\\n- 발탁하다 (중용하다)\"}"}
+{"word": "取次ぎ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự chuyển đạt (nhắn lại)\\n- Đại lý, trung gian\\n- Sự đón tiếp (trực điện thoại)\", \"ko\": \"- 전달 (중계)\\n- 대리점 (취급)\\n- 응대 (중개)\"}"}
+{"word": "喚ぶ", "source": "bloat-fix", "raw": "{\"vi\": \"- Gọi (triệu tập)\", \"ko\": \"- 부르다 (소환하다)\"}"}
+{"word": "営み", "source": "bloat-fix", "raw": "{\"vi\": \"- Hoạt động, công việc (hành vi)\\n- Nghi lễ (thờ phụng)\", \"ko\": \"- 일상의 행위 (영위)\\n- 예배 (의식)\"}"}
+{"word": "変り種", "source": "bloat-fix", "raw": "{\"vi\": \"- Thứ khác thường, biến thể\\n- Người có cá tính lạ\", \"ko\": \"- 별난 것 (변종)\\n- 별난 사람\"}"}
+{"word": "変わり種", "source": "bloat-fix", "raw": "{\"vi\": \"- Thứ khác thường, biến thể\\n- Người cá tính lạ\", \"ko\": \"- 별난 것 (변종)\\n- 별난 사람\"}"}
+{"word": "将に", "source": "bloat-fix", "raw": "{\"vi\": \"- Chính là, đúng là\\n- Sắp, ngay lúc (sắp xảy ra)\", \"ko\": \"- 마침 (바로)\\n- 막 (~하려는 참)\"}"}
+{"word": "平", "source": "bloat-fix", "raw": "{\"vi\": \"- Đồng bằng, nền phẳng\\n- Bình thường, bình dân\", \"ko\": \"- 평지 (평평함)\\n- 평범한 (평민)\"}"}
+{"word": "幽か", "source": "bloat-fix", "raw": "{\"vi\": \"- Mờ nhạt, thoảng qua\", \"ko\": \"- 희미한 (아련한)\"}"}
+{"word": "弾み", "source": "bloat-fix", "raw": "{\"vi\": \"- Độ nảy, độ bật\\n- Đà, xung lượng\", \"ko\": \"- 탄력 (튕김)\\n- 기세 (추진력)\"}"}
+{"word": "当に", "source": "bloat-fix", "raw": "{\"vi\": \"- Chính là, chắc chắn là\", \"ko\": \"- 바로 (꼭)\"}"}
+{"word": "後れる", "source": "bloat-fix", "raw": "{\"vi\": \"- Trễ, chậm trễ\\n- Tụt lại phía sau\\n- Lạc hậu (thời đại)\", \"ko\": \"- 늦다 (지연되다)\\n- 뒤처지다\\n- 시대에 뒤떨어지다\"}"}
+{"word": "打ち上げ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự phóng (tên lửa, vật thể)\\n- Tiệc tất nhiên sau khi hoàn thành\", \"ko\": \"- 발사 (쏘아올림)\\n- 해단 파티 (끝난 뒤 잔치)\"}"}
+{"word": "打っ飛ばす", "source": "bloat-fix", "raw": "{\"vi\": \"- Đánh văng mạnh\\n- Đuổi bay, xua tan\", \"ko\": \"- 날려버리다 (후려치다)\\n- 날려 보내다 (털어내다)\"}"}
+{"word": "押し殺す", "source": "bloat-fix", "raw": "{\"vi\": \"- Nén kìm (tiếng cười, cảm xúc)\", \"ko\": \"- 억누르다 (참아 죽이다)\"}"}
+{"word": "招ぶ", "source": "bloat-fix", "raw": "{\"vi\": \"- Gọi, mời (triệu)\", \"ko\": \"- 부르다 (초대하다)\"}"}
+{"word": "挙がる", "source": "bloat-fix", "raw": "{\"vi\": \"- Nâng lên, nổi lên (được nêu)\", \"ko\": \"- 올라가다 (떠오르다)\"}"}
+{"word": "控えめ", "source": "bloat-fix", "raw": "{\"vi\": \"- Kín đáo, dè dặt\\n- Vừa phải, không quá\", \"ko\": \"- 겸손한 (수줍은)\\n- 적당한 (과하지 않은)\"}"}
+{"word": "控え目", "source": "bloat-fix", "raw": "{\"vi\": \"- Kín đáo, nhún nhường\\n- Vừa phải\", \"ko\": \"- 겸손한\\n- 적당히 삼가는\"}"}
+{"word": "替り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự thay thế (người thay)\", \"ko\": \"- 대리 (대체)\"}"}
+{"word": "毒々しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhìn độc hại, chói gắt\", \"ko\": \"- 독기 어린 (새카맣게 짙은)\"}"}
+{"word": "活かす", "source": "bloat-fix", "raw": "{\"vi\": \"- Tận dụng, phát huy\\n- Giữ sống, hồi sinh\", \"ko\": \"- 살리다 (활용하다)\\n- 살려두다 (되살리다)\"}"}
+{"word": "浮世", "source": "bloat-fix", "raw": "{\"vi\": \"- Cõi trần (thế gian phù du)\", \"ko\": \"- 부유세 (속세, 덧없는 세상)\"}"}
+{"word": "灼熱", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái nóng thiêu đốt\", \"ko\": \"- 작열 (끓는 듯한 더위)\"}"}
+{"word": "爪牙", "source": "bloat-fix", "raw": "{\"vi\": \"- Móng vuốt, răng nanh\\n- Bọn tay sai (thân tín)\", \"ko\": \"- 발톱과 송곳니\\n- 수족 (앞잡이)\"}"}
+{"word": "申込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Đăng ký, nộp đơn\\n- Cầu hôn, đề nghị\", \"ko\": \"- 신청하다\\n- 청혼하다 (제의하다)\"}"}
+{"word": "疎い", "source": "bloat-fix", "raw": "{\"vi\": \"- Không rành, dốt (về)\\n- Xa cách\", \"ko\": \"- 어두운 (무지한)\\n- 소원한 (친하지 않은)\"}"}
+{"word": "白ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Bầu không khí nguội lạnh\\n- Mất hứng\", \"ko\": \"- 싹 가라앉다 (분위기가)\\n- 흥이 사라지다\"}"}
+{"word": "移入", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự nhập khẩu, du nhập\", \"ko\": \"- 이입 (수입)\"}"}
+{"word": "空ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm trống, dọn đi\\n- Đi vắng (không có nhà)\", \"ko\": \"- 비우다 (치우다)\\n- 비다 (자리를 뜨다)\"}"}
+{"word": "突込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Đâm, nhét sâu vào\\n- Lao vào (xông vào)\", \"ko\": \"- 밀어 넣다\\n- 돌진하다 (파고들다)\"}"}
+{"word": "立てなおす", "source": "bloat-fix", "raw": "{\"vi\": \"- Củng cố lại, dựng lại\", \"ko\": \"- 일으켜 세우다 (재정비하다)\"}"}
+{"word": "立往生", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị đơ ra, tắc kẹt giữa đường\", \"ko\": \"- 그 자리에 얼어붙음 (진퇴양난)\"}"}
+{"word": "粧う", "source": "bloat-fix", "raw": "{\"vi\": \"- Ăn mặc, trang điểm\", \"ko\": \"- 차려입다 (치장하다)\"}"}
+{"word": "綺麗", "source": "bloat-fix", "raw": "{\"vi\": \"- Xinh đẹp\\n- Sạch sẽ, gọn gàng\", \"ko\": \"- 예쁜 (아름다운)\\n- 깨끗한 (맑은)\"}"}
+{"word": "縄張", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc rào dây phân định\\n- Địa bàn, lãnh địa\", \"ko\": \"- 획정 (줄치기)\\n- 세력권 (자기 구역)\"}"}
+{"word": "縄張り", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc rào dây phân định\\n- Địa bàn, lãnh địa\", \"ko\": \"- 나라 끊기 (구역 정하기)\\n- 세력권 (영역)\"}"}
+{"word": "聞き分ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghe mà phân biệt\\n- Nghe lời, hiểu lẽ phải\", \"ko\": \"- 알아듣고 분간하다\\n- 말을 잘 듣다 (철들다)\"}"}
+{"word": "色づく", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuyển màu (lá, quả chín đỏ)\", \"ko\": \"- 물들다 (색이 돌다)\"}"}
+{"word": "莫迦", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngu, đồ ngốc\", \"ko\": \"- 바보 (멍청이)\"}"}
+{"word": "號", "source": "bloat-fix", "raw": "{\"vi\": \"- Số (ấn phẩm)\\n- Bút danh\", \"ko\": \"- 호 (번호)\\n- 별호\"}"}
+{"word": "見附ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Phát hiện, nhìn ra\", \"ko\": \"- 발견하다 (알아차리다)\"}"}
+{"word": "覚束無い", "source": "bloat-fix", "raw": "{\"vi\": \"- Bấp bênh, không chắc chắn\", \"ko\": \"- 믿직지 않은 (불안한)\"}"}
+{"word": "観る", "source": "bloat-fix", "raw": "{\"vi\": \"- Xem (quan sát, thưởng thức)\", \"ko\": \"- 보다 (관람하다)\"}"}
+{"word": "誡め", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời cảnh báo, răn dạy\", \"ko\": \"- 경계 (훈계)\"}"}
+{"word": "負荷", "source": "bloat-fix", "raw": "{\"vi\": \"- Tải trọng, gánh nặng\", \"ko\": \"- 부하 (하중)\"}"}
+{"word": "跳び出す", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhảy ra, lao ra\", \"ko\": \"- 튀어나오다 (뛰쳐나가다)\"}"}
+{"word": "遣り手", "source": "bloat-fix", "raw": "{\"vi\": \"- Người giỏi, sành sỏi\", \"ko\": \"- 유능한 사람 (일 잘하는 이)\"}"}
+{"word": "酷しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Khắc nghiệt, gay gắt\", \"ko\": \"- 혹독한 (심한)\"}"}
+{"word": "鉤", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái móc, lưỡi câu\", \"ko\": \"- 갈고리 (후크)\"}"}
+{"word": "関八州", "source": "bloat-fix", "raw": "{\"vi\": \"- Tám tỉnh Kanto (vùng Kanto xưa)\", \"ko\": \"- 간팔주 (간토 8개국)\"}"}
+{"word": "飛出す", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhảy ra, ló ra\", \"ko\": \"- 튀어나오다\"}"}
+{"word": "１本", "source": "bloat-fix", "raw": "{\"vi\": \"- Một (vật dài: cây, chai...)\\n- Một cuốn (phim, chương trình)\\n- Một cú (bàn thắng, cuộc gọi)\", \"ko\": \"- 한 개 (긴 물건)\\n- 한 편 (영화·프로그램)\\n- 한 통 (전화), 한 골\"}"}
+{"word": "いんちき", "source": "bloat-fix", "raw": "{\"vi\": \"- Gian lận, bịp bợm\", \"ko\": \"- 인치기 (속임수)\"}"}
+{"word": "この上", "source": "bloat-fix", "raw": "{\"vi\": \"- Hơn thế nữa, trên cả điều này\", \"ko\": \"- 이 위에 (게다가)\"}"}
+{"word": "じりじり", "source": "bloat-fix", "raw": "{\"vi\": \"- Chậm rãi siết dần (từng bước)\\n- (Nắng) thiêu đốt\\n- Nóng ruột, sốt ruột\", \"ko\": \"- 조금씩 밀려들다 (서서히)\\n- (태양이) 이글이글\\n- 안달복달하다 (초조하게)\"}"}
+{"word": "つぎ込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Đổ vào, dốc hết (tiền, công sức)\", \"ko\": \"- 쏟아붓다 (투자하다)\"}"}
+{"word": "ぴしっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuẩn xác, dứt khoát (rạch ròi)\", \"ko\": \"- 딱 (반듯하게)\"}"}
+{"word": "キレイ", "source": "bloat-fix", "raw": "{\"vi\": \"- Xinh đẹp\\n- Sạch sẽ\", \"ko\": \"- 예쁜\\n- 깨끗한\"}"}
+{"word": "グズグズ", "source": "bloat-fix", "raw": "{\"vi\": \"- Lề mề, chần chừ\\n- Càu nhàu\", \"ko\": \"- 꾸물꾸물 (더딘)\\n- 투덜투덜 (불평하는)\"}"}
+{"word": "プレイ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự chơi (ván đấu, trò chơi)\", \"ko\": \"- 플레이 (경기)\"}"}
+{"word": "一節", "source": "bloat-fix", "raw": "{\"vi\": \"- Một đoạn, một khổ (văn, nhạc)\", \"ko\": \"- 한 구절 (한 소절)\"}"}
+{"word": "不浄", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự ô uế, bẩn thỉu\", \"ko\": \"- 부정 (더러움, 불결)\"}"}
+{"word": "丸呑み", "source": "bloat-fix", "raw": "{\"vi\": \"- Nuốt trọn (không nhai)\\n- Tiếp nhận nguyên xi (không hiểu)\", \"ko\": \"- 통째로 삼킴\\n- 이해 없이 그대로 받아들임\"}"}
+{"word": "反転", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự đảo chiều, lật ngược\", \"ko\": \"- 반전 (뒤집힘)\"}"}
+{"word": "寇", "source": "bloat-fix", "raw": "{\"vi\": \"- Kẻ thù (quân xâm lược)\", \"ko\": \"- 적 (침입자)\"}"}
+{"word": "平たん", "source": "bloat-fix", "raw": "{\"vi\": \"- Bằng phẳng\", \"ko\": \"- 평탄한\"}"}
+{"word": "平坦", "source": "bloat-fix", "raw": "{\"vi\": \"- Bằng phẳng (đường)\\n- Thuận lợi, êm ả\", \"ko\": \"- 평탄한\\n- 순탄한\"}"}
+{"word": "悪", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái ác, kẻ xấu\", \"ko\": \"- 악 (악인)\"}"}
+{"word": "戒め", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời răn dạy, bài học\", \"ko\": \"- 경계 (훈계)\"}"}
+{"word": "振りかえる", "source": "bloat-fix", "raw": "{\"vi\": \"- Quay đầu lại nhìn\\n- Chuyển (sang cái khác)\", \"ko\": \"- 뒤돌아보다\\n- 돌리다 (바꾸다)\"}"}
+{"word": "換る", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay thế, thay cho\", \"ko\": \"- 교체되다 (대신하다)\"}"}
+{"word": "摩る", "source": "bloat-fix", "raw": "{\"vi\": \"- Xoa, chà, vuốt\", \"ko\": \"- 문지르다 (쓰다듬다)\"}"}
+{"word": "昇る", "source": "bloat-fix", "raw": "{\"vi\": \"- Leo lên, mọc lên (mặt trời)\", \"ko\": \"- 떠오르다 (오르다)\"}"}
+{"word": "服する", "source": "bloat-fix", "raw": "{\"vi\": \"- Phục tùng, tuân theo\\n- Chịu (án), trải qua\", \"ko\": \"- 복종하다 (따르다)\\n- 복역하다 (형을 살다)\"}"}
+{"word": "極道", "source": "bloat-fix", "raw": "{\"vi\": \"- Đạo tặc, lối sống ác độc\", \"ko\": \"- 극악 (악행)\"}"}
+{"word": "構", "source": "bloat-fix", "raw": "{\"vi\": \"- Khung, cấu trúc\\n- Thái độ, tư thế\", \"ko\": \"- 구조 (테)\\n- 태도 (자세)\"}"}
+{"word": "標示", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc ghi rõ, biển báo\", \"ko\": \"- 표시 (게시)\"}"}
+{"word": "沽券", "source": "bloat-fix", "raw": "{\"vi\": \"- Phẩm giá, thể diện\", \"ko\": \"- 체면 (명예)\"}"}
+{"word": "淀む", "source": "bloat-fix", "raw": "{\"vi\": \"- Trì trệ, lắng đọng\", \"ko\": \"- 정체되다 (가라앉다)\"}"}
+{"word": "澱む", "source": "bloat-fix", "raw": "{\"vi\": \"- Lắng đọng, trì trệ\", \"ko\": \"- 가라앉다 (정체되다)\"}"}
+{"word": "生生しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Sống động, rõ rệt\", \"ko\": \"- 생생한 (선연한)\"}"}
+{"word": "穢い", "source": "bloat-fix", "raw": "{\"vi\": \"- Bẩn thỉu, dơ dáy\", \"ko\": \"- 더러운 (부정한)\"}"}
+{"word": "糸瓜", "source": "bloat-fix", "raw": "{\"vi\": \"- Quả mướp (loofah)\", \"ko\": \"- 수세미외 (헤치마)\"}"}
+{"word": "落ちついた", "source": "bloat-fix", "raw": "{\"vi\": \"- Điềm tĩnh, ổn định\", \"ko\": \"- 차분한 (안정된)\"}"}
+{"word": "見通", "source": "bloat-fix", "raw": "{\"vi\": \"- Tầm nhìn\\n- Triển vọng, dự đoán\", \"ko\": \"- 전망 (내다봄)\"}"}
+{"word": "談義", "source": "bloat-fix", "raw": "{\"vi\": \"- Bài diễn thuyết, thảo luận\", \"ko\": \"- 강론 (담의)\"}"}
+{"word": "跳びだす", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhảy ra, lao ra\", \"ko\": \"- 뛰쳐나가다\"}"}
+{"word": "通し", "source": "bloat-fix", "raw": "{\"vi\": \"- Trọn vẹn từ đầu đến cuối\\n- Món khai vị (ẩm thực)\", \"ko\": \"- 통째로 (처음부터 끝까지)\\n- 전채 (스타터)\"}"}
+{"word": "願", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời cầu nguyện, nguyện vọng\", \"ko\": \"- 원 (소원)\"}"}
+{"word": "顧る", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhìn lại (quá khứ)\", \"ko\": \"- 돌아보다 (회고하다)\"}"}
+{"word": "飛びだす", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhảy ra, phóng ra\", \"ko\": \"- 튀어나오다 (뛰쳐나가다)\"}"}
+{"word": "お決まり", "source": "bloat-fix", "raw": "{\"vi\": \"- Thói quen cố định (kiểu cũ)\", \"ko\": \"- 정해진 패턴 (늘 그것)\"}"}
+{"word": "お目見え", "source": "bloat-fix", "raw": "{\"vi\": \"- Buổi ra mắt (lần đầu xuất hiện)\", \"ko\": \"- 첫 대면 (데뷔)\"}"}
+{"word": "ごたごた", "source": "bloat-fix", "raw": "{\"vi\": \"- Rắc rối, lộn xộn\", \"ko\": \"- 말썽 (어수선함)\"}"}
+{"word": "すうっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Thẳng một cái (nhanh, nhẹ)\", \"ko\": \"- 스륵 (사르륵)\"}"}
+{"word": "ずい分", "source": "bloat-fix", "raw": "{\"vi\": \"- Rất, đáng kể\", \"ko\": \"- 상당히 (몹시)\"}"}
+{"word": "すき間", "source": "bloat-fix", "raw": "{\"vi\": \"- Khe hở, khoảng trống\", \"ko\": \"- 틈 (빈틈)\"}"}
+{"word": "とんとん", "source": "bloat-fix", "raw": "{\"vi\": \"- Đều nhau, ngang tài\\n- (Tiếng gõ) Cốc cốc\", \"ko\": \"- 막상막하 (팽팽함)\\n- 톡톡 (두드리는 소리)\"}"}
+{"word": "はまり込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị mắc kẹt trong\\n- Say sưa đắm chìm\", \"ko\": \"- 빠져 헤어나오지 못하다\\n- 푹 빠지다\"}"}
+{"word": "はらはら", "source": "bloat-fix", "raw": "{\"vi\": \"- Hồi hộp, lo lắng\", \"ko\": \"- 조마조마함\"}"}
+{"word": "ぱくり", "source": "bloat-fix", "raw": "{\"vi\": \"- Há to miệng (cắn ngập)\", \"ko\": \"- 덥석 (왕창 입에 넣음)\"}"}
+{"word": "ふんぞり返る", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngả người ra sau (tự đắc)\", \"ko\": \"- 기둥 뒤로 젖혀 앉다 (거만하게)\"}"}
+{"word": "アソコ", "source": "bloat-fix", "raw": "{\"vi\": \"- Chỗ kia, nơi đó\", \"ko\": \"- 저곳 (그쪽)\"}"}
+{"word": "エネルギ", "source": "bloat-fix", "raw": "{\"vi\": \"- Năng lượng, sinh lực\", \"ko\": \"- 에너지\"}"}
+{"word": "キャーキャー", "source": "bloat-fix", "raw": "{\"vi\": \"- (Tiếng thét) Nhao nháo, ầm ĩ\", \"ko\": \"- 꺄꺄 (야단 떠는 소리)\"}"}
+{"word": "サル", "source": "bloat-fix", "raw": "{\"vi\": \"- Con khỉ\", \"ko\": \"- 원숭이\"}"}
+{"word": "スゴい", "source": "bloat-fix", "raw": "{\"vi\": \"- Tuyệt vời, ghê gớm\", \"ko\": \"- 굉장한 (엄청난)\"}"}
+{"word": "スッと", "source": "bloat-fix", "raw": "{\"vi\": \"- Thoát một cái (nhanh nhẹ)\", \"ko\": \"- 스륵 (번쩍)\"}"}
+{"word": "スーッと", "source": "bloat-fix", "raw": "{\"vi\": \"- Thoát một cái (nhẹ nhàng)\", \"ko\": \"- 스윽 (사르륵)\"}"}
+{"word": "チラチラ", "source": "bloat-fix", "raw": "{\"vi\": \"- Lấp lánh, liếc trộm\", \"ko\": \"- 깜빡거림 (힐끔거림)\"}"}
+{"word": "パっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Thoáng một cái (nhanh nhẹ)\", \"ko\": \"- 팟 (번쩍)\"}"}
+{"word": "パタン", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Cạch, rầm (đóng sập)\", \"ko\": \"- 탕 (쾅 닫히는 소리)\"}"}
+{"word": "ブラブラ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đung đưa (lửng lơ)\\n- Đi dạo loanh quanh\", \"ko\": \"- 흔들거리며 늘어짐\\n- 어슬렁거림 (배회함)\"}"}
+{"word": "ブリッジ", "source": "bloat-fix", "raw": "{\"vi\": \"- Cây cầu\\n- Cầu nối (chuyển tiếp)\", \"ko\": \"- 브리지 (다리)\\n- 가교 (연결)\"}"}
+{"word": "ペコペコ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đói meo (bụng)\\n- Cúi lom khom (nịnh bợ)\", \"ko\": \"- 꼬르륵 (배고픔)\\n- 연신 고개 숙임 (아부함)\"}"}
+{"word": "下衆", "source": "bloat-fix", "raw": "{\"vi\": \"- Kẻ đê tiện, thấp hèn\", \"ko\": \"- 비열한 자 (천한 것)\"}"}
+{"word": "下敷", "source": "bloat-fix", "raw": "{\"vi\": \"- Tấm lót (bàn)\\n- Bị đè dưới (mắc kẹt)\", \"ko\": \"- 받침 (받침 종이)\\n- ~에 깔림 (깔려 있음)\"}"}
+{"word": "不見識", "source": "bloat-fix", "raw": "{\"vi\": \"- Thiếu sáng suốt, bất cẩn\", \"ko\": \"- 무분별함 (경솔함)\"}"}
+{"word": "主席", "source": "bloat-fix", "raw": "{\"vi\": \"- Thủ tịch, người đứng đầu\\n- Thủ khoa (học giỏi nhất)\", \"ko\": \"- 수석 (주석)\\n- 수석 (1등)\"}"}
+{"word": "人知れず", "source": "bloat-fix", "raw": "{\"vi\": \"- Một cách bí ẩn (không ai hay biết)\", \"ko\": \"- 은밀히 (남모르게)\"}"}
+{"word": "曲る", "source": "bloat-fix", "raw": "{\"vi\": \"- Cong, uốn cong\\n- Rẽ (đường)\", \"ko\": \"- 굽다 (휘어지다)\\n- (길이) 꺾이다\"}"}
+{"word": "休場", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự nghỉ diễn (đóng cửa nhà hát, vắng mặt giải)\", \"ko\": \"- 휴장 (공연 중단)\"}"}
+{"word": "伸び", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tăng trưởng, sự kéo dài\", \"ko\": \"- 신장 (뻗음)\"}"}
+{"word": "体質", "source": "bloat-fix", "raw": "{\"vi\": \"- Thể chất\\n- Cơ chế đặc thù (tính chất sẵn có)\", \"ko\": \"- 체질\\n- (조직의) 체질 (특성)\"}"}
+{"word": "具合い", "source": "bloat-fix", "raw": "{\"vi\": \"- Tình trạng, sức khỏe\\n- Cách thức\", \"ko\": \"- 형편 (컨디션)\\n- 사정 (구실)\"}"}
+{"word": "円い", "source": "bloat-fix", "raw": "{\"vi\": \"- Tròn, hình tròn\\n- Ôn hòa, dễ mến\", \"ko\": \"- 둥근\\n- 온화한 (원만한)\"}"}
+{"word": "冊子", "source": "bloat-fix", "raw": "{\"vi\": \"- Sách nhỏ, tập sách (bản in)\", \"ko\": \"- 책자 (소책자)\"}"}
+{"word": "剝がす", "source": "bloat-fix", "raw": "{\"vi\": \"- Bóc, lột ra\", \"ko\": \"- 벗겨내다 (떼다)\"}"}
+{"word": "割に", "source": "bloat-fix", "raw": "{\"vi\": \"- Tương đối, khá\\n- Xét theo (~치고는)\", \"ko\": \"- 비교적\\n- ~치고는\"}"}
+{"word": "割り切る", "source": "bloat-fix", "raw": "{\"vi\": \"- Tìm ra giải pháp dứt khoát\\n- Chia hết (toán)\", \"ko\": \"- (나누어) 떨어지다\\n- 단정하다 (현실적으로 받아들이다)\"}"}
+{"word": "勢", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhóm, đám (lực lượng)\\n- Thế, đà (khí thế)\", \"ko\": \"- 세력 (일단)\\n- 기세 (힘)\"}"}
+{"word": "匙加減", "source": "bloat-fix", "raw": "{\"vi\": \"- Liều lượng, cách nêm nếm (khéo léo)\", \"ko\": \"- 간 보기 (감으로 조절)\"}"}
+{"word": "取扱う", "source": "bloat-fix", "raw": "{\"vi\": \"- Xử lý, thao tác\\n- Kinh doanh (bán, chạm vào)\", \"ko\": \"- 취급하다 (다루다)\\n- 판매하다 (취급하다)\"}"}
+{"word": "口止め", "source": "bloat-fix", "raw": "{\"vi\": \"- Cấm miệng (bịt miệng)\", \"ko\": \"- 입막음 (말 못 하게 함)\"}"}
+{"word": "吹きだす", "source": "bloat-fix", "raw": "{\"vi\": \"- Phun ra, trào ra\", \"ko\": \"- 솟아나다 (분출하다)\"}"}
+{"word": "吹き出す", "source": "bloat-fix", "raw": "{\"vi\": \"- Phun ra (bùng ra, bật cười)\", \"ko\": \"- 분출하다\\n- 웃음을 터뜨리다\"}"}
+{"word": "咬む", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn, nhai\\n- Nói líu lưỡi (vấp)\", \"ko\": \"- 씹다 (물다)\\n- 말을 더듬다\"}"}
+{"word": "喰いつく", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn (vào mồi)\\n- Say sưa bám vào (hăng hái)\", \"ko\": \"- 달려들다 (물다)\\n- 매달리다 (파고들다)\"}"}
+{"word": "喰い付く", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn vào, gặm\\n- Bám theo, say sưa\", \"ko\": \"- 물다 (달려들다)\\n- 매달리다 (정신없이 하다)\"}"}
+{"word": "喰う", "source": "bloat-fix", "raw": "{\"vi\": \"- Ăn (thô tục)\\n- Kiếm sống, chịu đựng\", \"ko\": \"- 먹다 (처먹다)\\n- 먹고살다\"}"}
+{"word": "噴き出す", "source": "bloat-fix", "raw": "{\"vi\": \"- Phun trào ra\\n- Bật cười\", \"ko\": \"- 분출하다 (솟구치다)\\n- 웃음을 터뜨리다\"}"}
+{"word": "圧す", "source": "bloat-fix", "raw": "{\"vi\": \"- Ấn, ép xuống\", \"ko\": \"- 누르다 (억누르다)\"}"}
+{"word": "地肌", "source": "bloat-fix", "raw": "{\"vi\": \"- Bộ da (mộc), da đầu\", \"ko\": \"- 맨살 (알몸의 피부)\\n- 두피\"}"}
+{"word": "変り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự thay đổi\\n- Điều bất thường\", \"ko\": \"- 변화 (변동)\\n- 이변 (변고)\"}"}
+{"word": "外皮", "source": "bloat-fix", "raw": "{\"vi\": \"- Lớp vỏ ngoài, da ngoài\", \"ko\": \"- 외피 (겉껍질)\"}"}
+{"word": "大将", "source": "bloat-fix", "raw": "{\"vi\": \"- Tướng, đô đốc\\n- Ông chủ, lão đại\", \"ko\": \"- 대장 (장군)\\n- 우두머리 (두목)\"}"}
+{"word": "夫子", "source": "bloat-fix", "raw": "{\"vi\": \"- Thầy hiền, hiền giả\", \"ko\": \"- 부자 (현인, 스승)\"}"}
+{"word": "天神", "source": "bloat-fix", "raw": "{\"vi\": \"- Thần trời\\n- (Thần) Tenjin (Michizane)\", \"ko\": \"- 천신 (하늘 신)\\n- 덴진 (스가와라 신)\"}"}
+{"word": "子細", "source": "bloat-fix", "raw": "{\"vi\": \"- Lý do, hoàn cảnh\\n- Trục trặc, đáng ngại\", \"ko\": \"- 사정 (내력)\\n- 지장 (고장)\"}"}
+{"word": "宿す", "source": "bloat-fix", "raw": "{\"vi\": \"- Ở lại (tại)\\n- Chứa đựng, ấp ủ\", \"ko\": \"- 머물다 (숙박하다)\\n- 품다 (간직하다)\"}"}
+{"word": "小僧", "source": "bloat-fix", "raw": "{\"vi\": \"- Cậu nhóc, thằng nhóc\", \"ko\": \"- 꼬마 (점둥이)\"}"}
+{"word": "小手先", "source": "bloat-fix", "raw": "{\"vi\": \"- Mánh khóe hời hợt (thủ pháp rẻ tiền)\", \"ko\": \"- 얕은수 (험술)\"}"}
+{"word": "尖端", "source": "bloat-fix", "raw": "{\"vi\": \"- Đầu nhọn, đỉnh nhọn\\n- Tiền phong, hàng đầu\", \"ko\": \"- 첨단 (끝부분)\\n- 최첨단 (선봉)\"}"}
+{"word": "引き上げ", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc kéo lên\\n- Sự rút lui, hồi hương\\n- Việc nâng (giá)\", \"ko\": \"- 인상 (올림)\\n- 철수 (거둠)\\n- (값의) 인상\"}"}
+{"word": "引っこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Rút vào, thụt vào\\n- Ở nhà không ra\", \"ko\": \"- 들어가다 (쑥 들어감)\\n- 틀어박히다\"}"}
+{"word": "強請り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự năn nỉ, van xin\\n- Sự tống tiền\", \"ko\": \"- 조르기 (애걸)\\n- 공갈 (협박 돈 뜯기)\"}"}
+{"word": "径", "source": "bloat-fix", "raw": "{\"vi\": \"- Đường kính\\n- Con đường, lối (đạo)\", \"ko\": \"- 지름 (경)\\n- 길 (도리)\"}"}
+{"word": "律", "source": "bloat-fix", "raw": "{\"vi\": \"- Luật (pháp luật xưa)\\n- Luật (giới luật Phật giáo)\", \"ko\": \"- 율 (법률)\\n- 계율 (불교 율)\"}"}
+{"word": "忍", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự nhẫn nại, kiềm chế\", \"ko\": \"- 인내 (참음)\"}"}
+{"word": "感ずる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cảm thấy, cảm nhận\", \"ko\": \"- 느끼다 (감지하다)\"}"}
+{"word": "感応", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự cảm ứng (đồng cảm)\", \"ko\": \"- 감응 (공감의 교감)\"}"}
+{"word": "手のうち", "source": "bloat-fix", "raw": "{\"vi\": \"- Lòng bàn tay\\n- Kỹ năng, kế sách trong tay\", \"ko\": \"- 손바닥\\n- (손안의) 수완 (계책)\"}"}
+{"word": "手の内", "source": "bloat-fix", "raw": "{\"vi\": \"- Lòng bàn tay\\n- Sức mạnh, kế sách (trong tay)\", \"ko\": \"- 손바닥 (수중)\\n- 패 (계략, 역량)\"}"}
+{"word": "手ばなす", "source": "bloat-fix", "raw": "{\"vi\": \"- Buông tay (trao cho)\", \"ko\": \"- 손에서 놓아주다 (떼어 놓다)\"}"}
+{"word": "手打ち", "source": "bloat-fix", "raw": "{\"vi\": \"- Tự làm mì (bằng tay)\\n- Chốt thỏa thuận, hòa giải\", \"ko\": \"- 수타 (손으로 반죽)\\n- 화해 (타결)\"}"}
+{"word": "手離す", "source": "bloat-fix", "raw": "{\"vi\": \"- Buông tay, dời tay\", \"ko\": \"- 손을 놓다 (손에서 떼다)\"}"}
+{"word": "抑も", "source": "bloat-fix", "raw": "{\"vi\": \"- Vốn dĩ, ngay từ đầu\", \"ko\": \"- 본래 (애초에)\"}"}
+{"word": "抑え", "source": "bloat-fix", "raw": "{\"vi\": \"- Vật đè (chặn giấy)\\n- Sự kìm nén, chế ngự\", \"ko\": \"- 눌림 (문진)\\n- 억제 (누름)\"}"}
+{"word": "托する", "source": "bloat-fix", "raw": "{\"vi\": \"- Giao phó, gửi gắm\\n- Nhờ chuyển (thông điệp)\", \"ko\": \"- 위탁하다 (맡기다)\\n- 전하도록 부탁하다\"}"}
+{"word": "持たせる", "source": "bloat-fix", "raw": "{\"vi\": \"- Để ai cầm, cho ai mang\", \"ko\": \"- (들려) 주다\\n- 지니게 하다\"}"}
+{"word": "捕われる", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị bắt, bị giam\", \"ko\": \"- 잡히다 (포박되다)\"}"}
+{"word": "捕らわれる", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị bắt\\n- Bị ám ảnh (mắc kẹt vào quan niệm)\", \"ko\": \"- 잡히다 (체포되다)\\n- 사로잡히다 (매여 있음)\"}"}
+{"word": "掖", "source": "bloat-fix", "raw": "{\"vi\": \"- Nách, bên hông\", \"ko\": \"- 겨드랑이 (옆구리)\"}"}
+{"word": "換わる", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay thế, thay cho\", \"ko\": \"- 교체되다 (바뀌다)\"}"}
+{"word": "日和", "source": "bloat-fix", "raw": "{\"vi\": \"- Thời tiết đẹp (lý tưởng)\\n- Nhìn thời thế (thời cơ)\", \"ko\": \"- 쾌청 (날씨 좋음)\\n- 형편 보기 (시세)\"}"}
+{"word": "旧情", "source": "bloat-fix", "raw": "{\"vi\": \"- Tình xưa nghĩa cũ\", \"ko\": \"- 옛정 (구정)\"}"}
+{"word": "曇", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự mây mù, u ám\", \"ko\": \"- 흐림 (음지)\"}"}
+{"word": "曝す", "source": "bloat-fix", "raw": "{\"vi\": \"- Phơi (ra nắng, công khai)\", \"ko\": \"- (볕에) 내놓다\\n- 드러내 놓다\"}"}
+{"word": "書き出す", "source": "bloat-fix", "raw": "{\"vi\": \"- Bắt đầu viết\\n- Viết ra, trích xuất\", \"ko\": \"- 쓰기 시작하다\\n- 적어 내다 (추출하다)\"}"}
+{"word": "有らぬ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sai sự thật, vô căn cứ\", \"ko\": \"- 터무니없는 (엉뚱한)\"}"}
+{"word": "沈静", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tĩnh lặng, lắng dịu\", \"ko\": \"- 침정 (가라앉음)\"}"}
+{"word": "泊まり", "source": "bloat-fix", "raw": "{\"vi\": \"- Chỗ ngủ qua đêm\\n- Trực đêm\", \"ko\": \"- 숙박 (자고 가기)\\n- 당직 (밤샘)\"}"}
+{"word": "波立つ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Sóng) gợn lên, dâng cao\", \"ko\": \"- (물결이) 출렁이다 (일다)\"}"}
+{"word": "減じる", "source": "bloat-fix", "raw": "{\"vi\": \"- Giảm đi, vơi đi\", \"ko\": \"- 감하다 (줄어들다)\"}"}
+{"word": "潔よい", "source": "bloat-fix", "raw": "{\"vi\": \"- Quật quyết, cao thượng (đừng vướng víu)\", \"ko\": \"- 결연한 (씩씩한)\"}"}
+{"word": "無暗", "source": "bloat-fix", "raw": "{\"vi\": \"- Vô ý, liều lĩnh (bừa bãi)\", \"ko\": \"- 무턱대고 (분수없이)\"}"}
+{"word": "煙塵", "source": "bloat-fix", "raw": "{\"vi\": \"- Bụi mù, khói bụi\", \"ko\": \"- 연진 (먼지와 연기)\"}"}
+{"word": "煽る", "source": "bloat-fix", "raw": "{\"vi\": \"- Quạt (lửa)\\n- Xúi giục, tung tin đẩy giá\", \"ko\": \"- 부채질하다 (바람 일으키다)\\n- 부추기다 (가격을 띄우다)\"}"}
+{"word": "狂わせる", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm đảo lộn, làm hỏng (kế hoạch, nhịp độ)\", \"ko\": \"- 어긋나게 만들다 (망치다)\"}"}
+{"word": "独歩", "source": "bloat-fix", "raw": "{\"vi\": \"- Đi bộ một mình\\n- Độc nhất vô nhị (tự mình vươn lên)\", \"ko\": \"- 독보적 (홀로 걸음)\\n- 독립 자립\"}"}
+{"word": "猫かぶり", "source": "bloat-fix", "raw": "{\"vi\": \"- Giả vờ hiền lành (ngụy trang tính cách)\", \"ko\": \"- 고양이 쓴 척 (염장)\"}"}
+{"word": "発火", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bắt lửa, cháy\", \"ko\": \"- 발화 (점화)\"}"}
+{"word": "睡る", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngủ (yên nghỉ), vĩnh viễn an giấng\", \"ko\": \"- 잠들다 (영면하다)\"}"}
+{"word": "碧", "source": "bloat-fix", "raw": "{\"vi\": \"- Xanh biếc (lam/lục)\", \"ko\": \"- 푸른빛 (벽색)\"}"}
+{"word": "稍", "source": "bloat-fix", "raw": "{\"vi\": \"- Một chút, hơi\", \"ko\": \"- 약간 (다소)\"}"}
+{"word": "空き", "source": "bloat-fix", "raw": "{\"vi\": \"- Chỗ trống, khoảng trống\\n- Thời gian rảnh\", \"ko\": \"- 빈자리 (여백)\\n- 한가한 틈\"}"}
+{"word": "空蝉", "source": "bloat-fix", "raw": "{\"vi\": \"- Cõi trần (con người trần thế)\\n- Vỏ ve sầu bỏ lại\", \"ko\": \"- 속세의 사람 (우루세)\\n- 매미 허물\"}"}
+{"word": "突きこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đâm sâu vào, nhồi vào\\n- Dấn sâu (vào việc)\", \"ko\": \"- 밀어 넣다\\n- 깊이 파고들다\"}"}
+{"word": "窺く", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhéo mắt nhìn, liếc trộm\\n- Khảo sát (dò xét)\", \"ko\": \"- 엿보다 (훔쳐보다)\\n- 살피다\"}"}
+{"word": "粗目", "source": "bloat-fix", "raw": "{\"vi\": \"- Đường hạt to\\n- Hơi thô (đường kính to)\", \"ko\": \"- 굵은 알갱이 (황설탕)\\n- 거친 결\"}"}
+{"word": "粕", "source": "bloat-fix", "raw": "{\"vi\": \"- Bã (rượu sake), cặn\", \"ko\": \"- 술지게미 (찌꺼기)\"}"}
+{"word": "純朴", "source": "bloat-fix", "raw": "{\"vi\": \"- Giản dị, hồn nhiên chăn quê\", \"ko\": \"- 순박한 (천진난만)\"}"}
+{"word": "紛らす", "source": "bloat-fix", "raw": "{\"vi\": \"- Đánh lạc hướng, xoa dịu (che khuất)\", \"ko\": \"- 달래다 (얼버무리다)\"}"}
+{"word": "結びつける", "source": "bloat-fix", "raw": "{\"vi\": \"- Gắn kết, buộc nối vào\", \"ko\": \"- 결부시키다 (묶어 붙이다)\"}"}
+{"word": "絞り上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Vắt kiệt\\n- Ép, moi (thông tin)\", \"ko\": \"- 짜내다\\n- 캐내다 (얻어내다)\"}"}
+{"word": "結界", "source": "bloat-fix", "raw": "{\"vi\": \"- Ranh giới thiêng (pháp giới)\\n- Kết giới (rào cản)\", \"ko\": \"- 결계 (성역 구획)\\n- 장벽 (배리어)\"}"}
+{"word": "絞り", "source": "bloat-fix", "raw": "{\"vi\": \"- Thuốc nhuộm loang (tie-dye)\\n- Khẩu độ (quang học)\\n- Sự vắt, siết\", \"ko\": \"- 시보리 (홀치기 염색)\\n- 조리개\\n- 짜기 (조임)\"}"}
+{"word": "能く", "source": "bloat-fix", "raw": "{\"vi\": \"- Tốt, khéo\\n- Thường, hay\", \"ko\": \"- 잘 (잘도)\\n- 자주 (꽤)\"}"}
+{"word": "腥い", "source": "bloat-fix", "raw": "{\"vi\": \"- Tanh (mùi cá, mùi máu)\", \"ko\": \"- 비린내 나는\"}"}
+{"word": "菽", "source": "bloat-fix", "raw": "{\"vi\": \"- Đậu (các loại hạt đậu)\", \"ko\": \"- 두류 (콩)\"}"}
+{"word": "見所", "source": "bloat-fix", "raw": "{\"vi\": \"- Điểm đáng xem, điểm nhấn\\n- Triển vọng, tương lai\", \"ko\": \"- 볼거리 (백미)\\n- 장래성 (가망)\"}"}
+{"word": "諭す", "source": "bloat-fix", "raw": "{\"vi\": \"- Khuyên bảo (dùng lẽ phải)\", \"ko\": \"- 타이르다 (이해시키다)\"}"}
+{"word": "豪勢", "source": "bloat-fix", "raw": "{\"vi\": \"- Hoành tráng, sang trọng\", \"ko\": \"- 호화로운 (성대한)\"}"}
+{"word": "車止め", "source": "bloat-fix", "raw": "{\"vi\": \"- Thanh chắn đầu ray (chặn xe)\", \"ko\": \"- 차량 정지 장치 (버퍼)\"}"}
+{"word": "輪廓", "source": "bloat-fix", "raw": "{\"vi\": \"- Đường viền, dáng hình (ngoại quan)\", \"ko\": \"- 윤곽 (외형)\"}"}
+{"word": "通り一遍", "source": "bloat-fix", "raw": "{\"vi\": \"- Qua loa, hời hợt (công thức)\", \"ko\": \"- 대충 (건성으로)\"}"}
+{"word": "邦", "source": "bloat-fix", "raw": "{\"vi\": \"- Quốc gia (bang)\\n- Nhất bang, quê hương\", \"ko\": \"- 방 (나라)\\n- 본국 (고향)\"}"}
+{"word": "鈎", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái móc, lưỡi móc\", \"ko\": \"- 갈고리 (낚싯바늘)\"}"}
+{"word": "闘う", "source": "bloat-fix", "raw": "{\"vi\": \"- Chiến đấu, đấu tranh (với)\", \"ko\": \"- 싸우다 (투쟁하다)\"}"}
+{"word": "附属", "source": "bloat-fix", "raw": "{\"vi\": \"- Gắn liền, trực thuộc\", \"ko\": \"- 부속 (딸림)\"}"}
+{"word": "除ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Né tránh (tiếp xúc)\\n- Dời đi, loại ra\", \"ko\": \"- 피하다 (비키다)\\n- 치우다 (제거하다)\"}"}
+{"word": "障碍", "source": "bloat-fix", "raw": "{\"vi\": \"- Trở ngại, chướng ngại\", \"ko\": \"- 장애 (방해)\"}"}
+{"word": "障礙", "source": "bloat-fix", "raw": "{\"vi\": \"- Trở ngại, chướng ngại\", \"ko\": \"- 장애 (방해)\"}"}
+{"word": "隨分", "source": "bloat-fix", "raw": "{\"vi\": \"- Rất, đáng kể\\n- Thật là (khá)\", \"ko\": \"- 상당히 (몹시)\\n- 엄청\"}"}
+{"word": "革める", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay đổi, cải cách\", \"ko\": \"- 개혁하다 (바꾸다)\"}"}
+{"word": "鞘", "source": "bloat-fix", "raw": "{\"vi\": \"- Bao kiếm (vỏ đựng)\", \"ko\": \"- 칼집 (집)\"}"}
+{"word": "顏", "source": "bloat-fix", "raw": "{\"vi\": \"- Khuôn mặt, sắc mặt\", \"ko\": \"- 얼굴 (안면)\"}"}
+{"word": "風波", "source": "bloat-fix", "raw": "{\"vi\": \"- Gió sóng\\n- Sự ồn ào, thị phi\", \"ko\": \"- 풍파 (풍랑)\\n- 시비 (분쟁)\"}"}
+{"word": "飛んだ", "source": "bloat-fix", "raw": "{\"vi\": \"- Quái đản, quá đáng\", \"ko\": \"- 터무니없는 (엉뚱한)\"}"}
+{"word": "飛び", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bay, cú nhảy\", \"ko\": \"- 비행 (도약)\\n- 매 (숫자의) 비움\"}"}
+{"word": "食いつく", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn (vào mồi)\\n- Bám vào, say sưa\", \"ko\": \"- 달려들다\\n- 매달리다 (몰두하다)\"}"}
+{"word": "飽食", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự ăn no nê (bửu thực)\", \"ko\": \"- 포식 (배부르게 먹기)\"}"}
+{"word": "１発", "source": "bloat-fix", "raw": "{\"vi\": \"- Một phát (súng, đòn)\\n- Một lần (thử là xong)\", \"ko\": \"- 한 발\\n- 한 방 (한 번에)\"}"}
+{"word": "だれる", "source": "bloat-fix", "raw": "{\"vi\": \"- Trễ nãi, uể oải (nhịp trễ xuống)\", \"ko\": \"- 늘어지다 (풀어짐)\"}"}
+{"word": "どうかすると", "source": "bloat-fix", "raw": "{\"vi\": \"- Thỉnh thoảng, có khi\", \"ko\": \"- 가끔은 (어쩌면)\"}"}
+{"word": "ひと口", "source": "bloat-fix", "raw": "{\"vi\": \"- Miếng, một ngụm\\n- Một lời ngắn gọn\", \"ko\": \"- 한 입 (한 모금)\\n- 한마디\"}"}
+{"word": "イヤ", "source": "bloat-fix", "raw": "{\"vi\": \"- Không thích, ghét (khó chịu)\", \"ko\": \"- 싫은 (마음에 안 드는)\"}"}
+{"word": "インチキ", "source": "bloat-fix", "raw": "{\"vi\": \"- Gian lận, bịp bợm\", \"ko\": \"- 속임수 (인치기)\"}"}
+{"word": "ウソ", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời nói dối\", \"ko\": \"- 거짓말 (허풍)\"}"}
+{"word": "パリパリ", "source": "bloat-fix", "raw": "{\"vi\": \"- Giòn rụm (giòn tan)\\n- Hăng hái, rắn rỏi\", \"ko\": \"- 바삭바삭 ( crisp)\\n- 야무지게 (씩씩한)\"}"}
+{"word": "フワフワ", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhẹ tênh, bồng bềnh\\n- Mềm xốp (bông)\", \"ko\": \"- 살랑살랑 (둥실)\\n- 폭신한\"}"}
+{"word": "ヨコ", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngang, nằm ngang\", \"ko\": \"- 가로 (옆으로)\"}"}
+{"word": "一所懸命", "source": "bloat-fix", "raw": "{\"vi\": \"- Dốc hết sức, liều mạng\", \"ko\": \"- 혼신의 노력으로 (필사적으로)\"}"}
+{"word": "不変", "source": "bloat-fix", "raw": "{\"vi\": \"- Bất biến, vĩnh hằng\", \"ko\": \"- 불변의 (영구한)\"}"}
+{"word": "仇", "source": "bloat-fix", "raw": "{\"vi\": \"- Kẻ thù\\n- Oán thù (đố kỵ)\", \"ko\": \"- 원수 (적)\\n- 원한 (한)\"}"}
+{"word": "傾ぐ", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghiêng, xiên về\\n- Đổ (về hướng)\", \"ko\": \"- 기울다 (치우치다)\"}"}
+{"word": "兵馬", "source": "bloat-fix", "raw": "{\"vi\": \"- Binh mã (quân đội, chiến tranh)\", \"ko\": \"- 병마 (군사)\"}"}
+{"word": "凝り固まる", "source": "bloat-fix", "raw": "{\"vi\": \"- Đông cứng lại\\n- Cứng đầu (cực đoan)\", \"ko\": \"- 굳어버리다 (응고하다)\\n- 완고해지다\"}"}
+{"word": "出所", "source": "bloat-fix", "raw": "{\"vi\": \"- Nguồn gốc, xuất xứ\\n- Sự mãn hạn tù\", \"ko\": \"- 출처 (근원)\\n- 출소 (석방)\"}"}
+{"word": "千切る", "source": "bloat-fix", "raw": "{\"vi\": \"- Xé vụn thành mảnh\\n- Hái, ngắt (ra)\", \"ko\": \"- 잘게 찢다\\n- 따다 (뜯다)\"}"}
+{"word": "噓", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời nói dối\", \"ko\": \"- 거짓말\"}"}
+{"word": "噺", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuyện kể, chuyện phiếm\", \"ko\": \"- 이야기 (화제)\"}"}
+{"word": "嚙む", "source": "bloat-fix", "raw": "{\"vi\": \"- Cắn, nhai\", \"ko\": \"- 씹다 (물다)\"}"}
+{"word": "國", "source": "bloat-fix", "raw": "{\"vi\": \"- Quốc gia, đất nước\", \"ko\": \"- 나라 (국가)\"}"}
+{"word": "大てい", "source": "bloat-fix", "raw": "{\"vi\": \"- Phần lớn, đại khái\", \"ko\": \"- 대체로 (대개)\"}"}
+{"word": "大騒動", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự náo động lớn (ồn ào tột độ)\", \"ko\": \"- 대소동 (큰 소란)\"}"}
+{"word": "巣食う", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm tổ, lén chiếm chỗ (trú ngụ)\", \"ko\": \"- 둥지를 틀다 (자리 잡다)\"}"}
+{"word": "年ごろ", "source": "bloat-fix", "raw": "{\"vi\": \"- Độ tuổi (ước chừng)\\n- Tuổi cập kê (con gái)\", \"ko\": \"- (~한) 나이\\n- 혼기 (결혼 적령기)\"}"}
+{"word": "庫", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhà kho, kho chứa\", \"ko\": \"- 고 (창고)\"}"}
+{"word": "廻る", "source": "bloat-fix", "raw": "{\"vi\": \"- Quay quanh, xoay vòng\\n- Đi thăm nhiều nơi\", \"ko\": \"- 돌다 (순회하다)\\n- 돌아다니다\"}"}
+{"word": "引揚", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc kéo lên (cứu vớt)\\n- Sự hồi hương, rút về\", \"ko\": \"- 인양 (건져 올림)\\n- 철수 (귀환)\"}"}
+{"word": "御用", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc, nhu cầu (của khách)\\n- Bị cảnh sát triệu tập\", \"ko\": \"- 용건 (어용)\\n- 체포 (관헌 소환)\"}"}
+{"word": "憂き世", "source": "bloat-fix", "raw": "{\"vi\": \"- Cõi trần đau khổ, phù du\", \"ko\": \"- 우키세 (괴로운 속세)\"}"}
+{"word": "打ち切り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự kết thúc, dừng giữa chừng\", \"ko\": \"- 중단 (종료)\"}"}
+{"word": "拠点", "source": "bloat-fix", "raw": "{\"vi\": \"- Căn cứ, điểm bám\", \"ko\": \"- 거점 (기지)\"}"}
+{"word": "捉われる", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị bắt, bị ám ảnh\", \"ko\": \"- 잡히다 (사로잡히다)\"}"}
+{"word": "提起", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự đặt ra (vấn đề)\\n- Sự khởi kiện\", \"ko\": \"- 제기\\n- 제소 (소제기)\"}"}
+{"word": "束ねる", "source": "bloat-fix", "raw": "{\"vi\": \"- Buộc thành bó\\n- Quản lý, thống lĩnh\", \"ko\": \"- 묶다 (한 다발로)\\n- 통솔하다 (관리하다)\"}"}
+{"word": "根性", "source": "bloat-fix", "raw": "{\"vi\": \"- Ý chí, bản lĩnh\", \"ko\": \"- 근성 (의지)\"}"}
+{"word": "注ぎこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đổ vào (chất lỏng)\\n- Dốc (tiền) vào\", \"ko\": \"- 부어 넣다\\n- (돈을) 쏟아붓다\"}"}
+{"word": "注ぎ込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Đổ vào, bơm vào\\n- Đầu tư, dốc hết (tiền) vào\", \"ko\": \"- 주입하다 (부어 넣다)\\n- 투자하다 (쏟아붓다)\"}"}
+{"word": "浮き世", "source": "bloat-fix", "raw": "{\"vi\": \"- Cõi trần phù du\", \"ko\": \"- 부유세 (속세)\"}"}
+{"word": "深奥", "source": "bloat-fix", "raw": "{\"vi\": \"- Chiều sâu, thâm u\", \"ko\": \"- 심오 (깊은 속)\"}"}
+{"word": "渋る", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngần ngại, ngại làm\", \"ko\": \"- 주저하다 (꺼리다)\"}"}
+{"word": "滅す", "source": "bloat-fix", "raw": "{\"vi\": \"- Hủy diệt, tiêu diệt\", \"ko\": \"- 멸하다 (멸망시키다)\"}"}
+{"word": "灰汁", "source": "bloat-fix", "raw": "{\"vi\": \"- Nước kiềm (xút)\\n- Vị gắt, chát\", \"ko\": \"- 잿물 (알칼리)\\n- 떫은맛\"}"}
+{"word": "無名", "source": "bloat-fix", "raw": "{\"vi\": \"- Vô danh, không nổi tiếng\", \"ko\": \"- 무명 (이름 없는)\"}"}
+{"word": "然らば", "source": "bloat-fix", "raw": "{\"vi\": \"- Nếu vậy, thế thì\", \"ko\": \"- 그렇다면 (그러면)\"}"}
+{"word": "甘味", "source": "bloat-fix", "raw": "{\"vi\": \"- Vị ngọt\\n- Món ngọt, tráng miệng\", \"ko\": \"- 감미 (단맛)\\n- 단 음식 (디저트)\"}"}
+{"word": "畏れ入る", "source": "bloat-fix", "raw": "{\"vi\": \"- Xin lỗi vì đã phiền (khách sáo)\\n- Phục thật, khâm phục\", \"ko\": \"- 황송하다 (미안하다)\\n- 감복하다\"}"}
+{"word": "糟", "source": "bloat-fix", "raw": "{\"vi\": \"- Bã rượu, cặn\", \"ko\": \"- 술지게미\"}"}
+{"word": "締め付ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Siết chặt, bóp nghẹt\", \"ko\": \"- 조여붙이다 (압박하다)\"}"}
+{"word": "聞え", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự nghe được (rõ)\\n- Danh tiếng\", \"ko\": \"- 들림 (잘 들리는 정도)\\n- 평판\"}"}
+{"word": "聞こえ", "source": "bloat-fix", "raw": "{\"vi\": \"- Độ nghe được\\n- Danh tiếng, tiếng tăm\", \"ko\": \"- 들리는 정도\\n- 평판\"}"}
+{"word": "脱落", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự rơi rụng, bị loại (thoát khỏi hàng ngũ)\", \"ko\": \"- 탈락 (이탈)\"}"}
+{"word": "萎える", "source": "bloat-fix", "raw": "{\"vi\": \"- Xìu yếu đi, mất khí lực\", \"ko\": \"- 시들다 (풀 죽다)\"}"}
+{"word": "落ち着いた", "source": "bloat-fix", "raw": "{\"vi\": \"- Điềm tĩnh, trầm tĩnh\", \"ko\": \"- 차분한 (침착한)\"}"}
+{"word": "蟠る", "source": "bloat-fix", "raw": "{\"vi\": \"- Ứ đọng, tiềm ẩn (trong lòng)\", \"ko\": \"- 맺혀 있다 (응어리가 지다)\"}"}
+{"word": "足下", "source": "bloat-fix", "raw": "{\"vi\": \"- Dưới chân, bước chân\", \"ko\": \"- 발밑 (발 아래)\"}"}
+{"word": "過つ", "source": "bloat-fix", "raw": "{\"vi\": \"- Phạm lỗi, sai lầm\", \"ko\": \"- 잘못하다 (그르치다)\"}"}
+{"word": "遠のく", "source": "bloat-fix", "raw": "{\"vi\": \"- Xa dần, lùi xa\", \"ko\": \"- 멀어지다 (거리가 벌어지다)\"}"}
+{"word": "頼りない", "source": "bloat-fix", "raw": "{\"vi\": \"- Bấp bênh, không đáng tin\", \"ko\": \"- cậy곳 없는 (가물가물한)\"}"}
+{"word": "飜る", "source": "bloat-fix", "raw": "{\"vi\": \"- Bay phần phật (lật)\\n- Đảo chiều, thay đổi đột ngột\", \"ko\": \"- 펄럭이다 (뒤집히다)\\n- 돌변하다\"}"}
+{"word": "あたり前", "source": "bloat-fix", "raw": "{\"vi\": \"- Đương nhiên, hiển nhiên\", \"ko\": \"- 당연한\"}"}
+{"word": "くみ取る", "source": "bloat-fix", "raw": "{\"vi\": \"- Múc (nước) lên\\n- Thấu hiểu (tình ý)\", \"ko\": \"- 떠서 담다 (긷다)\\n- 헤아리다 (짐작하다)\"}"}
+{"word": "くみ上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Hút, múc (nước) lên\", \"ko\": \"- 길어 올리다\"}"}
+{"word": "ころっと", "source": "bloat-fix", "raw": "{\"vi\": \"- (Vật nhỏ) lăn cái bịch\\n- Nhẹ nhàng cả tin (dễ ngã)\", \"ko\": \"- 데굴 (굴러 떨어짐)\\n- 쉽게 넘어감\"}"}
+{"word": "さー", "source": "bloat-fix", "raw": "{\"vi\": \"- Nào (giục, hô)\", \"ko\": \"- 자 (어서)\"}"}
+{"word": "しつっこい", "source": "bloat-fix", "raw": "{\"vi\": \"- Dai dẳng, lì lợm\\n- Béo ngấy, đậm\", \"ko\": \"- 끈질긴 (귀찮게 달라붙는)\\n- 느끼한\"}"}
+{"word": "ざわざわ", "source": "bloat-fix", "raw": "{\"vi\": \"- Xôn xao, rậm rộ\\n- (Lá) xào xạc\", \"ko\": \"- 웅성웅성 (소란스러움)\\n- 살랑살랑 (잎 소리)\"}"}
+{"word": "すり抜ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Luồn lách qua, lách khỏi\", \"ko\": \"- 빠져나가다 (새다)\"}"}
+{"word": "そおっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhẹ nhàng, lén lút\", \"ko\": \"- 살며시 (은밀히)\"}"}
+{"word": "そーっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhẹ nhàng, kín đáo\", \"ko\": \"- 조용히 (슬그머니)\"}"}
+{"word": "のらくら", "source": "bloat-fix", "raw": "{\"vi\": \"- Lười nhác, lêu lổng\", \"ko\": \"- 빈둥빈둥 (게으름 피우기)\"}"}
+{"word": "は", "source": "bloat-fix", "raw": "{\"vi\": \"- Trợ từ chủ đề (~ thì...)\\n- Chỉ tương phản, nhấn mạnh\", \"ko\": \"- 주제 조사 (은조사)\\n- 대조 표시 (강조)\"}"}
+{"word": "はけ口", "source": "bloat-fix", "raw": "{\"vi\": \"- Lối thoát (nước, khí)\\n- Đầu ra, thị trường tiêu thụ\", \"ko\": \"- 배수구 (방류처)\\n- 판로 (소통구)\"}"}
+{"word": "ばったん", "source": "bloat-fix", "raw": "{\"vi\": \"- (Âm thanh) Thịch, bịch (ngã sập)\", \"ko\": \"- 탱 (쿵 하고 넘어짐)\"}"}
+{"word": "ぱっと", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhanh thoáng (một cái)\", \"ko\": \"- 팟 (번쩍)\"}"}
+{"word": "ひっくり返る", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị lật ngược, ngã ngửa\", \"ko\": \"- 뒤집히다 (엎어지다)\"}"}
+{"word": "ふらつく", "source": "bloat-fix", "raw": "{\"vi\": \"- Loạng choạng, chao đảo\\n- Lấm le, lang thang\", \"ko\": \"- 비틀거리다\\n- 머뭇거리며 떠돌다\"}"}
+{"word": "ふん囲気", "source": "bloat-fix", "raw": "{\"vi\": \"- Bầu không khí\", \"ko\": \"- 분위기\"}"}
+{"word": "ほくほく", "source": "bloat-fix", "raw": "{\"vi\": \"- Mềm bông, bùi (khoai)\\n- Hí hởng, thỏa mái\", \"ko\": \"- (고구마가) 포슬포슬한\\n- 흐뭇해하는 (싱글벙글)\"}"}
+{"word": "わり込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Chen vào, ép mình vào\", \"ko\": \"- 끼어들다 (밀고 들다)\"}"}
+{"word": "キッチリ", "source": "bloat-fix", "raw": "{\"vi\": \"- Chuẩn xác, vừa vặn\", \"ko\": \"- 꼭 들어맞게 (정확히)\"}"}
+{"word": "クチャクチャ", "source": "bloat-fix", "raw": "{\"vi\": \"- (Nhai) Sụp sụp, nhóp nhép\\n- Nhàu nát, lộn xộn\", \"ko\": \"- 쩝쩝 (우물우물 씹는 소리)\\n- 구겨지고 뒤엉킨\"}"}
+{"word": "クタクタ", "source": "bloat-fix", "raw": "{\"vi\": \"- Kiệt sức, mệt rã\", \"ko\": \"- 지쳐 늘어진 (녹초)\"}"}
+{"word": "クロス", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự giao nhau (chữ thập)\\n- Đường chuyền (bóng đá)\", \"ko\": \"- 크로스 (교차)\\n- (축구) 크로스\"}"}
+{"word": "タヌキ", "source": "bloat-fix", "raw": "{\"vi\": \"- Tanuki (chó gấu)\", \"ko\": \"- 너구리\"}"}
+{"word": "デッキ", "source": "bloat-fix", "raw": "{\"vi\": \"- Boong (tàu, sân quan sát)\\n- Đầu máy cassette\", \"ko\": \"- 갑판 (데크)\\n- 덱 (테이프 덱)\"}"}
+{"word": "トントン", "source": "bloat-fix", "raw": "{\"vi\": \"- Đều nhau, ngang tài\\n- (Tiếng gõ) Cộc cộc\", \"ko\": \"- 팽팽 (대등함)\\n- 톡톡 (두드림)\"}"}
+{"word": "パラパラ", "source": "bloat-fix", "raw": "{\"vi\": \"- Rơi, rắc lả tả\\n- Lật thoăn thoắt (trang sách)\", \"ko\": \"- 후두두 (조금씩 흩어짐)\\n- 탁탁 (책장 넘김)\"}"}
+{"word": "ペラペラ", "source": "bloat-fix", "raw": "{\"vi\": \"- Trôi chảy (nói ngoại ngữ)\\n- Mỏng tang (giấy)\", \"ko\": \"- 술술 (유창하게)\\n- 얇은 (종잇장 같은)\"}"}
+{"word": "ホモ", "source": "bloat-fix", "raw": "{\"vi\": \"- Người đồng tính (nam)\", \"ko\": \"- 호모 (동성애자)\"}"}
+{"word": "ボロボロ", "source": "bloat-fix", "raw": "{\"vi\": \"- Tả tơi, nát bấy\\n- Rơi lả tả (nước mắt, vụn)\", \"ko\": \"- 너덜너덜한 (남아떨어진)\\n- 주르륵 (후두두 흩어짐)\"}"}
+{"word": "マシ", "source": "bloat-fix", "raw": "{\"vi\": \"- Tốt hơn, đỡ hơn\", \"ko\": \"- 그나마 나은\"}"}
+{"word": "モンスター", "source": "bloat-fix", "raw": "{\"vi\": \"- Quái vật\", \"ko\": \"- 몬스터\"}"}
+{"word": "ワンパターン", "source": "bloat-fix", "raw": "{\"vi\": \"- Một khuôn mẫu, lặp đi lặp lại\", \"ko\": \"- 단순 반복 (한 가지 패턴)\"}"}
+{"word": "一人前", "source": "bloat-fix", "raw": "{\"vi\": \"- Một phần, một suất\\n- Đủ trưởng thành, độc lập\", \"ko\": \"- 한 몫 (1인분)\\n- 어른 몫 (제구실을 함)\"}"}
+{"word": "一口", "source": "bloat-fix", "raw": "{\"vi\": \"- Một miếng, một ngụm\", \"ko\": \"- 한 입 (한 모금)\"}"}
+{"word": "一筆", "source": "bloat-fix", "raw": "{\"vi\": \"- Vài dòng (thư ngắn)\", \"ko\": \"- 한 수 (짧은 편지)\"}"}
+{"word": "下げ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự hạ xuống, sự giảm\", \"ko\": \"- 내림 (인하)\"}"}
+{"word": "下敷き", "source": "bloat-fix", "raw": "{\"vi\": \"- Tấm lót (bàn)\\n- Bị đè, mắc kẹt dưới\", \"ko\": \"- 받침 (깔개)\\n- ~에 깔림\"}"}
+{"word": "不安心", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bất an\", \"ko\": \"- 불안 (마음 편치 않음)\"}"}
+{"word": "不義", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự phi nghĩa, bất chính\\n- Sự ngoại tình\", \"ko\": \"- 불의 (비도덕)\\n- 간통 (부정)\"}"}
+{"word": "世俗", "source": "bloat-fix", "raw": "{\"vi\": \"- Thế tục, đời thường\", \"ko\": \"- 세속 (속세)\"}"}
+{"word": "之れ", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái này (văn cổ)\", \"ko\": \"- 그것 (문어 지시사)\"}"}
+{"word": "乘る", "source": "bloat-fix", "raw": "{\"vi\": \"- Lên (xe, tàu)\", \"ko\": \"- 타다 (오르다)\"}"}
+{"word": "二世", "source": "bloat-fix", "raw": "{\"vi\": \"- Thế hệ thứ hai\\n- Đời kế tiếp (thứ hai)\", \"ko\": \"- 2세 (이세)\\n- 제2세 (후계)\"}"}
+{"word": "五里夢中", "source": "bloat-fix", "raw": "{\"vi\": \"- Bối rối, mất phương hướng hoàn toàn\", \"ko\": \"- 오리무중 (갈피를 못 잡음)\"}"}
+{"word": "仁", "source": "bloat-fix", "raw": "{\"vi\": \"- Lòng nhân, nhân đức\", \"ko\": \"- 인 (어진 마음)\"}"}
+{"word": "仕種", "source": "bloat-fix", "raw": "{\"vi\": \"- Cử chỉ, điệu bộ (diễn xuất)\", \"ko\": \"- 몸짓 (연기 동작)\"}"}
+{"word": "人柱", "source": "bloat-fix", "raw": "{\"vi\": \"- Vật hi sinh người, người nộp mạng thay\", \"ko\": \"- 인주 (희생양)\"}"}
+{"word": "代償", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bồi thường, cái giá phải trả\", \"ko\": \"- 대가 (보상)\"}"}
+{"word": "伏する", "source": "bloat-fix", "raw": "{\"vi\": \"- Nằm sấp, cúi phục\", \"ko\": \"- 엎드리다 (복종하다)\"}"}
+{"word": "伝手", "source": "bloat-fix", "raw": "{\"vi\": \"- Mối quan hệ, người giới thiệu\", \"ko\": \"- 연줄 (연락 수단)\"}"}
+{"word": "低調", "source": "bloat-fix", "raw": "{\"vi\": \"- Yếu ớt, trầm lắng (tụt xuống)\", \"ko\": \"- 부진한 (저조한)\"}"}
+{"word": "佑ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Cứu giúp, tế bồi\", \"ko\": \"- 돕다 (구원하다)\"}"}
+{"word": "作りかえる", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm lại, chế tạo lại\", \"ko\": \"- 만들어 고치다 (개조하다)\"}"}
+{"word": "作り変える", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm lại, cải biến\", \"ko\": \"- 개조하다 (만들어 바꾸다)\"}"}
+{"word": "作り換える", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm lại (đúc lại)\", \"ko\": \"- 다시 만들다 (개편하다)\"}"}
+{"word": "併せる", "source": "bloat-fix", "raw": "{\"vi\": \"- Ghép, hợp lại\\n- So sánh, đối chiếu\", \"ko\": \"- 합치다 (맞추다)\\n- 비교하다 (대조하다)\"}"}
+{"word": "倉", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhà kho\", \"ko\": \"- 창고 (곳간)\"}"}
+{"word": "儼として", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghiêm trang, kiên quyết\", \"ko\": \"- 엄연히 (당당하게)\"}"}
+{"word": "入れ替える", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay thế, đổi (vị trí)\", \"ko\": \"- 교체하다 (바꾸다)\"}"}
+{"word": "入れ替わる", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay phiên, đổi chỗ cho nhau\", \"ko\": \"- 교체되다 (바뀌다)\"}"}
+{"word": "入金", "source": "bloat-fix", "raw": "{\"vi\": \"- Tiền vào, khoản nộp\", \"ko\": \"- 입금 (불입)\"}"}
+{"word": "八苦", "source": "bloat-fix", "raw": "{\"vi\": \"- Tám nỗi khổ (Phật giáo)\", \"ko\": \"- 팔고 (여덟 가지 괴로움)\"}"}
+{"word": "其の他", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngoài ra, phần còn lại\", \"ko\": \"- 그 밖에 (기타)\"}"}
+{"word": "内心", "source": "bloat-fix", "raw": "{\"vi\": \"- Trong lòng, ý thật\", \"ko\": \"- 내심 (속마음)\"}"}
+{"word": "冷す", "source": "bloat-fix", "raw": "{\"vi\": \"- Làm nguội, làm lạnh\", \"ko\": \"- 식히다 (차게 하다)\"}"}
+{"word": "凄じい", "source": "bloat-fix", "raw": "{\"vi\": \"- Dữ dội, ghê gớm\", \"ko\": \"- 대단한 (엄청난)\"}"}
+{"word": "冷え込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Trở lạnh đậm, lạnh buốt\", \"ko\": \"- 쌀쌀하게 싸늘해지다\"}"}
+{"word": "出処", "source": "bloat-fix", "raw": "{\"vi\": \"- Nguồn gốc, xuất xứ\", \"ko\": \"- 출처 (근원)\"}"}
+{"word": "出来栄え", "source": "bloat-fix", "raw": "{\"vi\": \"- Chất lượng hoàn thiện, độ xong\", \"ko\": \"- 완성도 (솜씨)\"}"}
+{"word": "切り取り", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc cắt, xé ra (một mảnh)\", \"ko\": \"- 잘라내기 (오려내기)\"}"}
+{"word": "別当", "source": "bloat-fix", "raw": "{\"vi\": \"- Quản gia, người trông nom\", \"ko\": \"- 별당 (관리인)\"}"}
+{"word": "副う", "source": "bloat-fix", "raw": "{\"vi\": \"- Đáp ứng (kỳ vọng)\\n- Cùng đi, kèm theo\", \"ko\": \"- 부응하다 (따르다)\\n- 곁들이다 (따르다)\"}"}
+{"word": "割りこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Chen vào, lách vào\", \"ko\": \"- 끼어들다 (밀고 들다)\"}"}
+{"word": "効く", "source": "bloat-fix", "raw": "{\"vi\": \"- Có hiệu quả, có tác dụng\", \"ko\": \"- 듣다 (효과가 있다)\"}"}
+{"word": "厚板", "source": "bloat-fix", "raw": "{\"vi\": \"- Tấm ván dày, tấm thép dày\", \"ko\": \"- 두꺼운 판 (후판)\"}"}
+{"word": "厳として", "source": "bloat-fix", "raw": "{\"vi\": \"- Nghiêm minh, rõ ràng không thể phủ nhận\", \"ko\": \"- 엄연히 (엄정하게)\"}"}
+{"word": "収容所", "source": "bloat-fix", "raw": "{\"vi\": \"- Trại giam giữ, trại tập trung\", \"ko\": \"- 수용소 (수용 시설)\"}"}
+{"word": "収束", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự chốt lại, thu về một mối (đi đến kết luận)\", \"ko\": \"- 수습 (수렴)\"}"}
+{"word": "取り付く", "source": "bloat-fix", "raw": "{\"vi\": \"- Bám vào, nắm lấy\\n- Bắt tay vào (làm)\", \"ko\": \"- 매달리다 (붙잡다)\\n- 착수하다 (손대다)\"}"}
+{"word": "取締まる", "source": "bloat-fix", "raw": "{\"vi\": \"- Quản lý, kiểm sát, đàn áp\", \"ko\": \"- 단속하다 (감독하다)\"}"}
+{"word": "取締る", "source": "bloat-fix", "raw": "{\"vi\": \"- Quản lý, kiểm soát chặt\", \"ko\": \"- 단속하다 (통제하다)\"}"}
+{"word": "合せる", "source": "bloat-fix", "raw": "{\"vi\": \"- Ghép, khớp lại\\n- So sánh, đối chiếu\", \"ko\": \"- 맞추다 (합치다)\\n- 비교하다 (대조하다)\"}"}
+{"word": "同然", "source": "bloat-fix", "raw": "{\"vi\": \"- Tương tự như, chẳng khác gì\", \"ko\": \"- ~나 다름없는 (마찬가지)\"}"}
+{"word": "吸いあげる", "source": "bloat-fix", "raw": "{\"vi\": \"- Hút lên, bơm lên (rút)\", \"ko\": \"- 빨아 올리다 (퍼 올리다)\"}"}
+{"word": "吸い上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Hút lên, bơm lên\", \"ko\": \"- 빨아올리다 (흡수하다)\"}"}
+{"word": "吸上げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Hút lên, rút lên\", \"ko\": \"- 퍼올리다 (흡수하다)\"}"}
+{"word": "吼える", "source": "bloat-fix", "raw": "{\"vi\": \"- Gầm, hú (sủa ầm ĩ)\", \"ko\": \"- 으르렁거리다 (짖다)\"}"}
+{"word": "呼出", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời gọi, sự triệu tập (paging)\", \"ko\": \"- 호출 (소환)\"}"}
+{"word": "呼出し", "source": "bloat-fix", "raw": "{\"vi\": \"- Lời gọi, sự triệu tập\", \"ko\": \"- 호출 (부름)\"}"}
+{"word": "問いただす", "source": "bloat-fix", "raw": "{\"vi\": \"- Hỏi kỹ, chất vấn, truy vấn\", \"ko\": \"- 캐묻다 (추궁하다)\"}"}
+{"word": "喫驚", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự ngạc nhiên, sửng sốt\", \"ko\": \"- 놀람 (경악)\"}"}
+{"word": "団", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhóm, đoàn (tập thể)\", \"ko\": \"- 단 (무리, 단체)\"}"}
+{"word": "圧倒", "source": "bloat-fix", "raw": "{\"vi\": \"- Áp đảo, chế ngự hoàn toàn\", \"ko\": \"- 압도하다 (눌러 이기다)\"}"}
+{"word": "址", "source": "bloat-fix", "raw": "{\"vi\": \"- Dấu tích, phế tích (di chỉ)\", \"ko\": \"- 터 (유적)\"}"}
+{"word": "変る", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay đổi, biến đổi\\n- Lạ thường, khác biệt\", \"ko\": \"- 변하다 (달라지다)\\n- 별나다 (특이하다)\"}"}
+{"word": "壷", "source": "bloat-fix", "raw": "{\"vi\": \"- Cái chum, bình, lọ\\n- Điểm mấu chốt (tỉnh mắt)\", \"ko\": \"- 독 (항아리)\\n- 요점 (핵심)\"}"}
+{"word": "奧", "source": "bloat-fix", "raw": "{\"vi\": \"- Phần trong, chỗ sâu (nội điện)\", \"ko\": \"- 안쪽 (심처)\"}"}
+{"word": "宗旨", "source": "bloat-fix", "raw": "{\"vi\": \"- Giáo lý, tôn chỉ\", \"ko\": \"- 종지 (교의)\"}"}
+{"word": "射出", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bắn, phóng ra\", \"ko\": \"- 사출 (발사)\"}"}
+{"word": "小童", "source": "bloat-fix", "raw": "{\"vi\": \"- Đứa nhóc, cậu bé\", \"ko\": \"- 꼬마 (아이)\"}"}
+{"word": "尺度", "source": "bloat-fix", "raw": "{\"vi\": \"- Thước đo, tiêu chuẩn\", \"ko\": \"- 척도 (기준)\"}"}
+{"word": "屋", "source": "bloat-fix", "raw": "{\"vi\": \"- Cửa hàng, tiệm\\n- Người (làm nghề ~ gia)\", \"ko\": \"- 가게 (점)\\n- ~장이 (~하는 사람)\"}"}
+{"word": "延いて", "source": "bloat-fix", "raw": "{\"vi\": \"- Không những... mà còn\\n- Suy ra, kéo theo\", \"ko\": \"- 나아가 (~뿐 아니라)\\n- 미쳐서 (이어서)\"}"}
+{"word": "廃退", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự suy tàn, đồi bại\", \"ko\": \"- 폐퇴 (쇠퇴와 타락)\"}"}
+{"word": "引きつる", "source": "bloat-fix", "raw": "{\"vi\": \"- Co cứng, co thắt (mặt, cơ)\", \"ko\": \"- 굳어지다 (쥐가 나다)\"}"}
+{"word": "引き揚げ", "source": "bloat-fix", "raw": "{\"vi\": \"- Việc kéo lên\\n- Sự hồi hương\", \"ko\": \"- 인양 (거둠)\\n- 철수 (귀환)\"}"}
+{"word": "引っこ抜く", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhổ lên, rút ra (săn đón người)\", \"ko\": \"- 뽑아내다 (캐내다)\"}"}
+{"word": "引抜く", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhổ, rút ra (lôi kéo người)\", \"ko\": \"- 뽑다 (스카우트하다)\"}"}
+{"word": "弦", "source": "bloat-fix", "raw": "{\"vi\": \"- Dây đàn (dây cung)\", \"ko\": \"- 현 (활시위, 악기 줄)\"}"}
+{"word": "当りまえ", "source": "bloat-fix", "raw": "{\"vi\": \"- Đương nhiên, hiển nhiên\", \"ko\": \"- 당연한\"}"}
+{"word": "当り前", "source": "bloat-fix", "raw": "{\"vi\": \"- Đương nhiên, hiển nhiên\", \"ko\": \"- 당연한\"}"}
+{"word": "当てはまる", "source": "bloat-fix", "raw": "{\"vi\": \"- Áp dụng được, đúng vào (tiêu chuẩn)\", \"ko\": \"- 해당되다 (들어맞다)\"}"}
+{"word": "往来", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự đi lại (giao thông)\\n- Con đường, phố\", \"ko\": \"- 왕래 (교통)\\n- 길 (거리)\"}"}
+{"word": "後先", "source": "bloat-fix", "raw": "{\"vi\": \"- Trước sau (đầu đuôi, thứ tự)\", \"ko\": \"- 앞뒤 (순서)\"}"}
+{"word": "御利益", "source": "bloat-fix", "raw": "{\"vi\": \"- Ân huệ (của thần), phước lành\", \"ko\": \"- 영험 (신의 은혜)\"}"}
+{"word": "忌", "source": "bloat-fix", "raw": "{\"vi\": \"- Tang chế, kiêng\\n- Ngày giỗ\", \"ko\": \"- 상중 (복)\\n- 기일 (탈상)\"}"}
+{"word": "思いやり", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự quan tâm chu đáo (tâm tư)\", \"ko\": \"- 배려 (사려)\"}"}
+{"word": "思い遣り", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự quan tâm, chu đáo\", \"ko\": \"- 배려 (마음씀)\"}"}
+{"word": "恥部", "source": "bloat-fix", "raw": "{\"vi\": \"- Chỗ riêng tư (khuyết điểm)\", \"ko\": \"- 치부 (은닉부)\"}"}
+{"word": "悠悠", "source": "bloat-fix", "raw": "{\"vi\": \"- Thong thả, nhàn nhã\\n- Cuồn cuộn (mênh mông)\", \"ko\": \"- 유유한 (느긋한)\\n- 유유히 (끝없이)\"}"}
+{"word": "手がかり", "source": "bloat-fix", "raw": "{\"vi\": \"- Manh mối, đầu mối\", \"ko\": \"- 실마리 (단서)\"}"}
+{"word": "手加減", "source": "bloat-fix", "raw": "{\"vi\": \"- Điều chỉnh sức (nhường nhịn)\", \"ko\": \"- 손보기 (봐주기)\"}"}
+{"word": "手繰る", "source": "bloat-fix", "raw": "{\"vi\": \"- Kéo từng nhịp (thu dây)\\n- Truy nguyên (ký ức)\", \"ko\": \"- 거두어 당기다\\n- 더듬어 올라가다 (추적하다)\"}"}
+{"word": "打ち壊す", "source": "bloat-fix", "raw": "{\"vi\": \"- Phá hủy, đập nát\", \"ko\": \"- 부수다 (파괴하다)\"}"}
+{"word": "押しかける", "source": "bloat-fix", "raw": "{\"vi\": \"- Đến ồ ạt (không mời)\", \"ko\": \"- 밀려가다 (불청히 몰려감)\"}"}
+{"word": "押し掛ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Đến ồ ạt không mời\", \"ko\": \"- 몰려가다 (쳐들어감)\"}"}
+{"word": "押し詰める", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhồi nhét đầy\\n- Dồn vào ngõ cụt\", \"ko\": \"- 꽉 채워 넣다\\n- 몰아붙이다\"}"}
+{"word": "押掛ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Đến ồ ạt không mời\", \"ko\": \"- 몰려가다 (불쑥 찾아감)\"}"}
+{"word": "持ちこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Mang vào, đưa vào\\n- Nêu lên (vấn đề)\", \"ko\": \"- 가져오다 (들이다)\\n- 제기하다\"}"}
+{"word": "持込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Mang vào, đưa vào (nêu lên)\", \"ko\": \"- 들고 오다 (제기하다)\"}"}
+{"word": "振り切る", "source": "bloat-fix", "raw": "{\"vi\": \"- Lắc văng (bỏ lại sau)\\n- Vung hết sức\", \"ko\": \"- 털어 버리다 (뿌리치다)\\n- 있는 힘껏 휘두르다\"}"}
+{"word": "掠う", "source": "bloat-fix", "raw": "{\"vi\": \"- Cuốn đi, bắt cóc\\n- Chiếm đoạt hết\", \"ko\": \"- 훔쳐 가다 (납치하다)\\n- 독차지하다\"}"}
+{"word": "推す", "source": "bloat-fix", "raw": "{\"vi\": \"- Đề cử, giới thiệu\\n- Suy ra, đoán\", \"ko\": \"- 추천하다 (천거하다)\\n- 미루어 짐작하다\"}"}
+{"word": "掻き立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Khuấy động (khơi dậy)\\n- Thổi (lửa)\", \"ko\": \"- 부추기다 (일으키다)\\n- (불을) 부치다\"}"}
+{"word": "撤去", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tháo dỡ, rút đi\", \"ko\": \"- 철거 (철수)\"}"}
+{"word": "擽る", "source": "bloat-fix", "raw": "{\"vi\": \"- Chọc ghẹo (cù)\\n- Khơi gợi (tò mò)\", \"ko\": \"- 간지럽히다\\n- (호기심을) 자극하다\"}"}
+{"word": "放く", "source": "bloat-fix", "raw": "{\"vi\": \"- Thả ra, bật ra (nói, làm)\", \"ko\": \"- 내뱉다 (내보내다)\"}"}
+{"word": "故い", "source": "bloat-fix", "raw": "{\"vi\": \"- Cổ xưa, từ lâu\", \"ko\": \"- 오래된 (옛)\"}"}
+{"word": "文科", "source": "bloat-fix", "raw": "{\"vi\": \"- Khoa nhân văn (văn khoa)\", \"ko\": \"- 문과 (인문계)\"}"}
+{"word": "日陰者", "source": "bloat-fix", "raw": "{\"vi\": \"- Kẻ chôn mình trong bóng tối (bị ruồng bỏ)\", \"ko\": \"- 음지에 사는 사람 (찬받신 이)\"}"}
+{"word": "晩熟", "source": "bloat-fix", "raw": "{\"vi\": \"- Chín muộn, trưởng thành muộn\", \"ko\": \"- 만숙 (늦게 여묾)\"}"}
+{"word": "曙光", "source": "bloat-fix", "raw": "{\"vi\": \"- Ánh bình minh, tia hy vọng\", \"ko\": \"- 서광 (여명)\"}"}
+{"word": "替る", "source": "bloat-fix", "raw": "{\"vi\": \"- Thay thế, thay phiên\", \"ko\": \"- 교체되다 (바뀌다)\"}"}
+{"word": "望", "source": "bloat-fix", "raw": "{\"vi\": \"- Mong muốn, nguyện vọng\\n- Triển vọng\", \"ko\": \"- 소망 (염원)\\n- 전망\"}"}
+{"word": "本領", "source": "bloat-fix", "raw": "{\"vi\": \"- Sở trường, bản lĩnh riêng\", \"ko\": \"- 본령 (특기, 장기)\"}"}
+{"word": "検定", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự kiểm định, chứng nhận\", \"ko\": \"- 검정 (공인 시험)\"}"}
+{"word": "正則", "source": "bloat-fix", "raw": "{\"vi\": \"- Chính tắc, chuẩn mực\", \"ko\": \"- 정칙 (정규)\"}"}
+{"word": "歯止め", "source": "bloat-fix", "raw": "{\"vi\": \"- Phanh hãm, điểm dừng\", \"ko\": \"- 브레이크 (제동)\"}"}
+{"word": "毒気", "source": "bloat-fix", "raw": "{\"vi\": \"- Khí độc\", \"ko\": \"- 독기 (독가스)\"}"}
+{"word": "気後れ", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tự ti, e dè\", \"ko\": \"- 기가 죽음 (주눅)\"}"}
+{"word": "汲み取る", "source": "bloat-fix", "raw": "{\"vi\": \"- Múc (nước)\\n- Thấu hiểu (tình ý)\", \"ko\": \"- 긷다 (퍼 담다)\\n- 헤아려 받아들이다\"}"}
+{"word": "汲取る", "source": "bloat-fix", "raw": "{\"vi\": \"- Múc, rút (nước)\\n- Thấu hiểu\", \"ko\": \"- 퍼내다 (긷다)\\n- 헤아리다\"}"}
+{"word": "没する", "source": "bloat-fix", "raw": "{\"vi\": \"- Chìm, mất tích\\n- Qua đời\", \"ko\": \"- 몰하다 (사라지다)\\n- 서거하다\"}"}
+{"word": "流される", "source": "bloat-fix", "raw": "{\"vi\": \"- Trôi theo (bị cuốn)\", \"ko\": \"- 떠내려가다 (휩쓸리다)\"}"}
+{"word": "浸透", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự thấm sâu, lan tỏa\", \"ko\": \"- 침투 (스며듦)\"}"}
+{"word": "消え入る", "source": "bloat-fix", "raw": "{\"vi\": \"- Tan biến dần, tắt lịm đi (giọng)\", \"ko\": \"- 잦아들다 (사그라들다)\"}"}
+{"word": "欲しがる", "source": "bloat-fix", "raw": "{\"vi\": \"- Muốn có, thèm khao khát\", \"ko\": \"- 갖고 싶어하다 (탐내다)\"}"}
+{"word": "清廉", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự liêm khiết, thanh sạch\", \"ko\": \"- 청렴 (결백)\"}"}
+{"word": "潔い", "source": "bloat-fix", "raw": "{\"vi\": \"- Quật quyết, dứt khoát (cao thượng)\", \"ko\": \"- 결연한 (씩씩한)\"}"}
+{"word": "潤む", "source": "bloat-fix", "raw": "{\"vi\": \"- Ướt (mắt hoe)\", \"ko\": \"- 촉촉해지다 (젖어 들다)\"}"}
+{"word": "澹々", "source": "bloat-fix", "raw": "{\"vi\": \"- Điềm nhiên, thản nhiên\", \"ko\": \"- 담담한 (무심한)\"}"}
+{"word": "濃密", "source": "bloat-fix", "raw": "{\"vi\": \"- Đậm đặc, dày đặc\", \"ko\": \"- 농밀한 (짙은)\"}"}
+{"word": "濃厚", "source": "bloat-fix", "raw": "{\"vi\": \"- Đậm đà, đậm đặc\\n- Khả năng cao (nghi ngờ mạnh)\", \"ko\": \"- 농후한 (진한)\\n- 유력한 (가능성이 큰)\"}"}
+{"word": "無傷", "source": "bloat-fix", "raw": "{\"vi\": \"- Không bị thương (nguyên vẹn)\", \"ko\": \"- 무상 (흠 없음)\"}"}
+{"word": "煩う", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị ám ảnh, khổ sở하다\", \"ko\": \"- 번민하다 (괴로워하다)\"}"}
+{"word": "燻ぶる", "source": "bloat-fix", "raw": "{\"vi\": \"- Bốc khói âm ỉ\\n- Sống tối tăm không tiếng tăm\", \"ko\": \"- 김을 내뿜다 (연기 나다)\\n- 세상에 알려지지 않고 지내다\"}"}
+{"word": "物にする", "source": "bloat-fix", "raw": "{\"vi\": \"- Có được, giành lấy\\n- Học cho thuộc (làm chủ)\", \"ko\": \"- 손에 넣다 (이루다)\\n- 익히다 (해내다)\"}"}
+{"word": "狂い", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự lệch lạc, sai lệch\\n- Chứng loạn\", \"ko\": \"- 광기 (들뜸)\\n- 어긋남 (오차)\"}"}
+{"word": "牽強付会", "source": "bloat-fix", "raw": "{\"vi\": \"- Ngụy biện, gượng ép (khớp nối sai)\", \"ko\": \"- 켕켕부회 (억지 해석)\"}"}
+{"word": "献げる", "source": "bloat-fix", "raw": "{\"vi\": \"- Dâng, cúng\\n- Cống hiến (hy sinh)\", \"ko\": \"- 바치다 (공양하다)\\n- 바치다 (헌신하다)\"}"}
+{"word": "現わす", "source": "bloat-fix", "raw": "{\"vi\": \"- Biểu hiện, bộc lộ\", \"ko\": \"- 나타내다 (드러내다)\"}"}
+{"word": "現世", "source": "bloat-fix", "raw": "{\"vi\": \"- Đời hiện tại, cõi trần\", \"ko\": \"- 현세 (이승)\"}"}
+{"word": "甚しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Cực độ, quá đáng\", \"ko\": \"- 심한 (지나친)\"}"}
+{"word": "生成", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự sinh thành, tạo thành\", \"ko\": \"- 생성 (창출)\"}"}
+{"word": "甦える", "source": "bloat-fix", "raw": "{\"vi\": \"- Được hồi sinh\", \"ko\": \"- 소생하다 (되살아나다)\"}"}
+{"word": "甦る", "source": "bloat-fix", "raw": "{\"vi\": \"- Hồi sinh, sống lại\", \"ko\": \"- 되살아나다 (소생하다)\"}"}
+{"word": "申込", "source": "bloat-fix", "raw": "{\"vi\": \"- Đơn đăng ký, đề nghị\", \"ko\": \"- 신청 (응모)\"}"}
+{"word": "申込み", "source": "bloat-fix", "raw": "{\"vi\": \"- Đơn đăng ký, lời đề nghị\", \"ko\": \"- 신청 (응모)\"}"}
+{"word": "異状", "source": "bloat-fix", "raw": "{\"vi\": \"- Tình trạng bất thường, có vấn đề\", \"ko\": \"- 이상 (변조)\"}"}
+{"word": "疎", "source": "bloat-fix", "raw": "{\"vi\": \"- Thưa, cách biệt\", \"ko\": \"- 소 (성긺, 소원함)\"}"}
+{"word": "発散", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự tỏa ra, xả (cảm xúc)\", \"ko\": \"- 발산 (분출)\"}"}
+{"word": "白紙", "source": "bloat-fix", "raw": "{\"vi\": \"- Giấy trắng (chưa có định kiến)\", \"ko\": \"- 백지 (아무것도 없는 상태)\"}"}
+{"word": "目茶目茶", "source": "bloat-fix", "raw": "{\"vi\": \"- Lộn xộn, tơi bời (quá quắt)\", \"ko\": \"- 엉망진창 (뒤죽박죽)\"}"}
+{"word": "知恵袋", "source": "bloat-fix", "raw": "{\"vi\": \"- Nguồn trí tuệ, bộ óc\", \"ko\": \"- 지혜주머니 (두뇌)\"}"}
+{"word": "破綻", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự đổ vỡ, phá sản (lộ lỗi)\", \"ko\": \"- 파탄 (파산)\"}"}
+{"word": "穏健", "source": "bloat-fix", "raw": "{\"vi\": \"- Ôn hòa, ôn hòa chắc chắn\", \"ko\": \"- 온건한 (중용)\"}"}
+{"word": "立ちあがる", "source": "bloat-fix", "raw": "{\"vi\": \"- Đứng dậy, trỗi dậy\", \"ko\": \"- 일어서다 (떨쳐 일어나다)\"}"}
+{"word": "立上がる", "source": "bloat-fix", "raw": "{\"vi\": \"- Đứng dậy, nổi dậy\", \"ko\": \"- 일어서다\"}"}
+{"word": "粗末にする", "source": "bloat-fix", "raw": "{\"vi\": \"- Xài phí phạm, đối xử tệ\", \"ko\": \"- 허투루 쓰다 (소홀히 대하다)\"}"}
+{"word": "糜爛", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự loét, xói mòn da niêm mạc\", \"ko\": \"- 미란 (조직의 염증)\"}"}
+{"word": "系列", "source": "bloat-fix", "raw": "{\"vi\": \"- Loạt, chuỗi (hệ thống)\", \"ko\": \"- 계열 (시리즈)\"}"}
+{"word": "細目", "source": "bloat-fix", "raw": "{\"vi\": \"- Mắt híp, mảnh mai\\n- Chi tiết\", \"ko\": \"- 가는 눈 (가늘게 뜸)\\n- 세목\"}"}
+{"word": "組み", "source": "bloat-fix", "raw": "{\"vi\": \"- Bộ, nhóm, tổ\", \"ko\": \"- 조 (짝, 편성)\"}"}
+{"word": "組職", "source": "bloat-fix", "raw": "{\"vi\": \"- Tổ chức, cơ cấu\", \"ko\": \"- 조직\"}"}
+{"word": "緋", "source": "bloat-fix", "raw": "{\"vi\": \"- Đỏ thắm (màu đỏ điều)\", \"ko\": \"- 비색 (다홍)\"}"}
+{"word": "織り込む", "source": "bloat-fix", "raw": "{\"vi\": \"- Dệt vào, lồng vào (tính đến)\", \"ko\": \"- 짜 넣다 (반영하다)\"}"}
+{"word": "繰る", "source": "bloat-fix", "raw": "{\"vi\": \"- Cuộn, quay (sợi)\\n- Lật (trang)\", \"ko\": \"- 감다 (감아 돌리다)\\n- (책장을) 넘기다\"}"}
+{"word": "耄ける", "source": "bloat-fix", "raw": "{\"vi\": \"- Lú lẫn do già\", \"ko\": \"- 노망들다 (늙어 어리석어짐)\"}"}
+{"word": "聖人", "source": "bloat-fix", "raw": "{\"vi\": \"- Thánh nhân\", \"ko\": \"- 성인 (현인)\"}"}
+{"word": "聞かす", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho nghe, kể cho\", \"ko\": \"- 들려주다 (들려앉히다)\"}"}
+{"word": "聞かせる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cho nghe, kể (phát)\", \"ko\": \"- 들려주다\"}"}
+{"word": "聴く", "source": "bloat-fix", "raw": "{\"vi\": \"- Lắng nghe (nghe kỹ)\\n- Hỏi (thỉnh)\", \"ko\": \"- 듣다 (청취하다)\\n- 듣다 여쭈다\"}"}
+{"word": "胡麻化す", "source": "bloat-fix", "raw": "{\"vi\": \"- Giấu, làm màu qua loa (lừa)\", \"ko\": \"- 얼렁뚱땅 넘기다 (속이다)\"}"}
+{"word": "荒む", "source": "bloat-fix", "raw": "{\"vi\": \"- Trở nên hoang dữ, tàn bạo lên\", \"ko\": \"- 사나워지다 (황폐해지다)\"}"}
+{"word": "蘇える", "source": "bloat-fix", "raw": "{\"vi\": \"- Hồi sinh, sống lại\", \"ko\": \"- 소생하다 (되살아나다)\"}"}
+{"word": "行き違う", "source": "bloat-fix", "raw": "{\"vi\": \"- Đi lạc nhau (không gặp)\\n- Hiểu lầm, contradict—\", \"ko\": \"- 엇갈리다 (어긋나다)\\n- (뜻이) 어긋나다\"}"}
+{"word": "表わす", "source": "bloat-fix", "raw": "{\"vi\": \"- Biểu hiện, thể hiện\", \"ko\": \"- 나타내다 (표하다)\"}"}
+{"word": "見かけ倒し", "source": "bloat-fix", "raw": "{\"vi\": \"- Vẻ bề ngoài lố bịch (hữu danh vô thực)\", \"ko\": \"- 겉보기만 좋은 것 (허세)\"}"}
+{"word": "見のがす", "source": "bloat-fix", "raw": "{\"vi\": \"- Bỏ sót, bỏ qua (làm ngơ)\", \"ko\": \"- 놓치다 (못 본 체하다)\"}"}
+{"word": "見損う", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhìn nhầm, đánh giá sai\", \"ko\": \"- 잘못 보다 (헤아림을 그르치다)\"}"}
+{"word": "見損なう", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhìn nhầm, đánh giá sai\", \"ko\": \"- 잘못 보다 (착각하다)\"}"}
+{"word": "見逃がす", "source": "bloat-fix", "raw": "{\"vi\": \"- Bỏ sót, làm ngơ\", \"ko\": \"- 놓치다 (눈감아 주다)\"}"}
+{"word": "見立てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Chọn, đánh giá\\n- Chẩn đoán (bệnh)\", \"ko\": \"- 고르다 (감정하다)\\n- 진단하다\"}"}
+{"word": "言いつける", "source": "bloat-fix", "raw": "{\"vi\": \"- Bảo (làm), sai bảo\\n- Mách (tố cáo)\", \"ko\": \"- 시키다 (일러두다)\\n- 일러바치다\"}"}
+{"word": "読める", "source": "bloat-fix", "raw": "{\"vi\": \"- Đọc được, hiểu được\", \"ko\": \"- 읽히다 (읽을 수 있다)\"}"}
+{"word": "謳う", "source": "bloat-fix", "raw": "{\"vi\": \"- ca ngợi, hô (khẩu hiệu)\", \"ko\": \"- 외치다 (찬미하다)\"}"}
+{"word": "謳われる", "source": "bloat-fix", "raw": "{\"vi\": \"- Được ca ngợi (nổi tiếng)\", \"ko\": \"- 찬양받다 (회자되다)\"}"}
+{"word": "趣き", "source": "bloat-fix", "raw": "{\"vi\": \"- Vẻ thanh nhã, khí chất\", \"ko\": \"- 정취 (운치)\"}"}
+{"word": "距てる", "source": "bloat-fix", "raw": "{\"vi\": \"- Cách (khoảng cách, thời gian)\", \"ko\": \"- 사이를 두다 (가로놓다)\"}"}
+{"word": "路", "source": "bloat-fix", "raw": "{\"vi\": \"- Con đường, lộ trình\", \"ko\": \"- 길 (로)\"}"}
+{"word": "踏み切り", "source": "bloat-fix", "raw": "{\"vi\": \"- Nơi băng qua đường ray\\n- Quyết tâm dứt khoát\", \"ko\": \"- 건널목\\n- (마음을) 먹음 (단념)\"}"}
+{"word": "躯", "source": "bloat-fix", "raw": "{\"vi\": \"- Thân thể, thân hình\", \"ko\": \"- 몸뚱이 (몸)\"}"}
+{"word": "転移", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự di chuyển, chuyển dịch\\n- Di căn\", \"ko\": \"- 전이 (이동)\\n- 전이 (병의)\"}"}
+{"word": "輪郭", "source": "bloat-fix", "raw": "{\"vi\": \"- Đường viền, ngoại quan\", \"ko\": \"- 윤곽\"}"}
+{"word": "迷い", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự bối rối, do dự (mê lối)\", \"ko\": \"- 미망 (망설임)\"}"}
+{"word": "重苦しい", "source": "bloat-fix", "raw": "{\"vi\": \"- Nặng nề, ngột ngạt\", \"ko\": \"- 답답하고 무거운\"}"}
+{"word": "里帰り", "source": "bloat-fix", "raw": "{\"vi\": \"- Về thăm nhà (cha mẹ)\", \"ko\": \"- 친정 가기 (귀향)\"}"}
+{"word": "野ばら", "source": "bloat-fix", "raw": "{\"vi\": \"- Hoa hồng dại\", \"ko\": \"- 들장미\"}"}
+{"word": "釘付け", "source": "bloat-fix", "raw": "{\"vi\": \"- Bị ghim chặt (không rời mắt)\", \"ko\": \"- 못 박힌 듯 함\"}"}
+{"word": "開眼", "source": "bloat-fix", "raw": "{\"vi\": \"- Sự mở mắt giác ngộ\\n- Đạt đỉnh cao\", \"ko\": \"- 개안 (눈뜸)\\n- 개안 (경지에 이름)\"}"}
+{"word": "陶然", "source": "bloat-fix", "raw": "{\"vi\": \"- Say mê, ngây ngất\", \"ko\": \"- 도연 (넋을 잃음)\"}"}
+{"word": "顕す", "source": "bloat-fix", "raw": "{\"vi\": \"- Biểu hiện, bộc lộ\", \"ko\": \"- 나타내다 (드러내다)\"}"}
+{"word": "飛び越える", "source": "bloat-fix", "raw": "{\"vi\": \"- Nhảy qua, vượt qua\", \"ko\": \"- 뛰어넘다\"}"}
+{"word": "食い荒らす", "source": "bloat-fix", "raw": "{\"vi\": \"- Ăn tàn phá (chèn ép)\", \"ko\": \"- 닥치는 대로 먹어 치우다 (잠식하다)\"}"}
+{"word": "飲みこむ", "source": "bloat-fix", "raw": "{\"vi\": \"- Nuốt chửng\\n- Lĩnh hội nhanh\", \"ko\": \"- 꿀꺽 삼키다\\n- 순식간에 터득하다\"}"}
+{"word": "骨髄", "source": "bloat-fix", "raw": "{\"vi\": \"- Tủy xương, cốt tủy\", \"ko\": \"- 골수\"}"}
+{"word": "高麗", "source": "bloat-fix", "raw": "{\"vi\": \"- Cao Ly (triều đại Triều Tiên)\", \"ko\": \"- 고려 (고구려)\"}"}
+{"word": "１人", "source": "bloat-fix", "raw": "{\"vi\": \"- Một người\\n- Một mình\", \"ko\": \"- 한 사람\\n- 혼자\"}"}
+{"word": "１面", "source": "bloat-fix", "raw": "{\"vi\": \"- Một mặt\\n- Trang nhất (báo)\\n- Toàn bộ bề mặt\", \"ko\": \"- 한 면\\n- 1면 (신문)\\n- 온통 한 면\"}"}

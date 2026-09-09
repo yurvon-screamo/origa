@@ -1,0 +1,124 @@
+{"word": "お出来", "raw": "{\"vi\": \"- Mụn nhọt\\n- Mụn mủ (áp-xe)\\n- (lịch sự của) có thể làm được\", \"ko\": \"- 종기\\n- 부스럼\\n- (의 정중어) 할 수 있다\"}", "source": "claude-manual-clean"}
+{"word": "セイ", "raw": "{\"vi\": \"- (Tên riêng) Sei\\n- Sự trong sạch\\n- Sự chính nghĩa\\n- Thánh nhân\", \"ko\": \"- (이름) 세이\\n- 청결\\n- 정의\\n- 성인\"}", "source": "claude-manual-clean"}
+{"word": "チュウトウ", "raw": "{\"vi\": \"- Trung đẳng, mức trung bình\\n- Trung Đông\\n- Giữa mùa đông, tháng 11 âm lịch\\n- Thời Trung Đường\", \"ko\": \"- 중등, 중간\\n- 중동\\n- 한겨울(음력 11월)\\n- 중당(당나라 중기)\"}", "source": "claude-manual-clean"}
+{"word": "反", "raw": "{\"vi\": \"- Ngược lại, phản\\n- Phản đối, bác bỏ\\n- Phản loạn\", \"ko\": \"- 반대, 거꾸로\\n- 반역\"}", "source": "claude-manual-clean"}
+{"word": "大夫", "raw": "{\"vi\": \"- Diễn viên Nō bậc cao\\n- Trưởng phái diễn Nō\\n- Ca kỹ cấp cao (thời Edo)\\n- Người kể jōruri\", \"ko\": \"- (노가쿠의) 다이부, 명배우\\n- 노 유파의 수장\\n- (에도 시대) 높은 신분의 유녀\\n- 조루리 광대\"}", "source": "claude-manual-clean"}
+{"word": "室", "raw": "{\"vi\": \"- Phòng\\n- Vợ (của người quyền quý)\\n- Vỏ bao kiếm\\n- Chòm sao Thất (28 tú)\", \"ko\": \"- (귀인의) 부인\\n- 칼집\\n- 실 별자리\"}", "source": "claude-manual-clean"}
+{"word": "正中", "raw": "{\"vi\": \"- Chính giữa, trung tâm\\n- Tâm sân khấu Nō\\n- Niên hiệu Shōchū (1324-1326)\", \"ko\": \"- 정중앙\\n- (노무대의) 중심\\n- 쇼추 연호\"}", "source": "claude-manual-clean"}
+{"word": "﨑", "raw": "{\"vi\": \"- Họ Saki (biến thể của chữ)\", \"ko\": \"- 사키의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "𣏕", "raw": "{\"vi\": \"- Biến thể chữ Hán của (cây liễu)\", \"ko\": \"- 유의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "てくシー", "raw": "{\"vi\": \"- Xe taxi (biến thể chính tả của)\", \"ko\": \"- 택시 (표기 변형)\"}", "source": "claude-fix-clean"}
+{"word": "𩊱", "raw": "{\"vi\": \"- Biến thể hiếm của chữ (cửa)\", \"ko\": \"- 호의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "𥶡", "raw": "{\"vi\": \"- Biến thể cổ của chữ (nhìn, xem xét)\", \"ko\": \"- 견의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "なー", "raw": "{\"vi\": \"- Thán từ \\\"nhỉ\\\", \\\"ha\\\" (dạng kéo dài của)\", \"ko\": \"- ~구나, ~지 (감탄사 나의 길게 늘인 형태)\"}", "source": "claude-manual-clean"}
+{"word": "ウリ", "raw": "{\"vi\": \"- Dưa (bầu bí)\\n- Bán (từ lóng của)\", \"ko\": \"- 박과 식물(참외·오이 등)\\n- 팔다 (의 속어)\"}", "source": "claude-manual-clean"}
+{"word": "エヤコン", "raw": "{\"vi\": \"- Máy lạnh (viết tắt của)\", \"ko\": \"- 에어컨 (줄임말)\"}", "source": "claude-manual-clean"}
+{"word": "キズイセン", "raw": "{\"vi\": \"- Không phải từ chuẩn tiếng Nhật (có thể là lỗi chính tả của - cúc vạn thọ)\", \"ko\": \"- 표준어가 아님 (의 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "キリンケツ", "raw": "{\"vi\": \"- Không phải từ chuẩn tiếng Nhật (tổ hợp vô nghĩa của - hươu cao cổ và - mông)\", \"ko\": \"- 표준어가 아님 (키린과 케츠의 무의미한 조합)\"}", "source": "claude-manual-clean"}
+{"word": "ギニョール", "raw": "{\"vi\": \"- Ginyo (nhân vật trong tác phẩm *Quái vật Notre-Dame* của Victor Hugo)\\n- Một hình tượng kỳ dị hoặc giống tượng gargoyle\", \"ko\": \"- 기뇨 (빅토르 위고의 노트르담의 꼽추의 등장인물)\\n- 기괴하거나 가고일 같은 형상\"}", "source": "gen-clean"}
+{"word": "キンバエ", "raw": "{\"vi\": \"- Không phải từ chuẩn (có lẽ chỉ ruồi kim -)\", \"ko\": \"- 표준어가 아님 (금파리 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "ゲン", "raw": "{\"vi\": \"- Gen (tên riêng)\\n- Viết tắt của genki (khỏe)\", \"ko\": \"- 겐 (이름)\\n- (의 줄임) 기운\"}", "source": "claude-manual-clean"}
+{"word": "ゴチ", "raw": "{\"vi\": \"- Đi (dạng lịch sự cũ của)\\n- Ăn (từ lóng)\", \"ko\": \"- 가다 (의 정중한 옛말)\\n- 먹다 (속어)\"}", "source": "claude-manual-clean"}
+{"word": "スベタ", "raw": "{\"vi\": \"- Trượt (quá khứ không chuẩn của)\", \"ko\": \"- 미끄러졌다 (표준이 아닌 과거형)\"}", "source": "claude-manual-clean"}
+{"word": "セキ", "raw": "{\"vi\": \"- Seki (họ)\\n- Seki (địa danh)\\n- cửa ải, ranh giới\", \"ko\": \"- 세키 (성씨)\\n- 세키 (지명)\\n- 관문, 경계\"}", "source": "claude-manual-clean"}
+{"word": "トン・ツー", "raw": "{\"vi\": \"- Từ tượng thanh gõ nhịp liên tục\\n- Lợn con (từ)\", \"ko\": \"- 톡톡 두드리는 소리\\n- 아기 돼지 (에서)\"}", "source": "claude-manual-clean"}
+{"word": "ナシ", "raw": "{\"vi\": \"- Lê (trái lê)\\n- Không có gì (từ lóng của)\", \"ko\": \"- 배 (과일)\\n- 없음 (의 축약어)\"}", "source": "claude-manual-clean"}
+{"word": "ノボリリュウ", "raw": "{\"vi\": \"- Rồng bay lên (nghĩa đen của)\\n- Họ/địa danh từ chữ này\", \"ko\": \"- 등룡, 오르는 용\\n- 그 한자에서 온 성씨·지명\"}", "source": "claude-manual-clean"}
+{"word": "プン", "raw": "{\"vi\": \"- Dấu chấm được sử dụng trong văn bản tiếng Nhật\\n- Một khoảng dừng hoặc ngắt ngắn trong lời nói\", \"ko\": \"- 문장 부호 (일본어 텍스트에서 사용)\\n- 말에서 짧은 멈춤 또는 휴식\"}", "source": "gen-clean"}
+{"word": "ホントー", "raw": "{\"vi\": \"- Thật sự (dạng nhấn của)\\n- Một cách trung thực\", \"ko\": \"- 정말 (의 강조형)\\n- 솔직히 말하면\"}", "source": "claude-manual-clean"}
+{"word": "マリ", "raw": "{\"vi\": \"- Mari (tên nữ)\\n- Rong biển (từ cũ của)\", \"ko\": \"- 마리 (여자 이름)\\n- 해초 (옛말)\"}", "source": "claude-manual-clean"}
+{"word": "マーボー", "raw": "{\"vi\": \"- Món xào thịt băm cay kiểu Tứ Xuyên (từ)\", \"ko\": \"- 마보 (, 중국 요리)\"}", "source": "claude-manual-clean"}
+{"word": "ミケ", "raw": "{\"vi\": \"- Mike (tên)\\n- Michel (viết tắt)\\n- Miko (cô gái đền thờ)\", \"ko\": \"- 마이크 (이름)\\n- 미셸 (줄임말)\\n- 미코 (, 신관 소녀)\"}", "source": "claude-manual-clean"}
+{"word": "モガジシオ", "raw": "{\"vi\": \"- Không phải từ chuẩn (biến thể sai của - Mogadishu)\", \"ko\": \"- 표준어가 아님 (모가디슈의 오기)\"}", "source": "claude-manual-clean"}
+{"word": "ユータナージー", "raw": "{\"vi\": \"- An tử (dạng không chuẩn của euthanasia; chuẩn là)\", \"ko\": \"- 안락사 (비표기: 에우타나시아)\"}", "source": "claude-manual-clean"}
+{"word": "ラーマン", "raw": "{\"vi\": \"- Không phải từ chuẩn (ramen viết đúng là, salaryman là)\", \"ko\": \"- 표준어가 아님 (라멘·샐러리맨의 오기)\"}", "source": "claude-manual-clean"}
+{"word": "リョーマチ", "raw": "{\"vi\": \"- Không phải từ chuẩn (không có nghĩa từ điển; dễ nhầm với)\", \"ko\": \"- 표준어가 아님 (사카모토 료마와 혼동 주의)\"}", "source": "claude-manual-clean"}
+{"word": "ロ", "raw": "{\"vi\": \"- Chữ R (katakana)\\n- Số 10 (trong điểm số)\\n- Âm tiết trong tiếng Nhật\", \"ko\": \"- 로 (가타카나)\\n- 10 (점수 등)\\n- 일본어 음절\"}", "source": "claude-manual-clean"}
+{"word": "すててこ", "raw": "{\"vi\": \"- Vứt đi (phương ngữ của)\\n- Bỏ lại (phương ngữ của)\", \"ko\": \"- 버리다 (방언)\\n- 두고 가다 (방언)\"}", "source": "claude-manual-clean"}
+{"word": "すべた", "raw": "{\"vi\": \"- Đã trượt (quá khứ của)\\n- Trượt ván\\n- Tẻ nhạt, không ai cười (trò đùa)\", \"ko\": \"- 미끄러졌다\\n- 미끄러지다, 활주하다\\n- (농담이) 안 터지다\"}", "source": "claude-manual-clean"}
+{"word": "なれば", "raw": "{\"vi\": \"- Trở thành (dạng điều kiện của)\\n- Nếu\", \"ko\": \"- ~되면 (의 조건형)\\n- ~라면\"}", "source": "claude-manual-clean"}
+{"word": "みいはあ", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể sai chính tả của hoặc)\", \"ko\": \"- 표준어가 아님 (·의 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "井", "raw": "{\"vi\": \"- Giếng nước\\n- Miệng giếng\\n- Chòm sao Tỉnh (28 tú)\", \"ko\": \"- 우물\\n- 우물 테두리\\n- 정수 별자리\"}", "source": "claude-manual-clean"}
+{"word": "仰る", "raw": "{\"vi\": \"- Nói (tôn kính của)\\n- Phát biểu (tôn kính)\", \"ko\": \"- 말씀하시다 (의 높임말)\"}", "source": "claude-manual-clean"}
+{"word": "嘸", "raw": "{\"vi\": \"- Không (biến thể cổ của)\", \"ko\": \"- 없음 (의 옛 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "故", "raw": "{\"vi\": \"- Nguyên nhân, lý do\\n- Đã khuất (quá cố)\\n- Cũ, trước đây\", \"ko\": \"- 까닭, 이유\\n- 고, 작고한\\n- 옛, 전\"}", "source": "claude-manual-clean"}
+{"word": "為さる", "raw": "{\"vi\": \"- Làm (tôn kính của)\\n- Được thực hiện (trợ từ tôn kính)\", \"ko\": \"- 하시다 (의 높임말)\"}", "source": "claude-manual-clean"}
+{"word": "生ける", "raw": "{\"vi\": \"- Sống (dạng cổ của)\\n- Còn sống\\n- Nuôi sống, giữ sống\", \"ko\": \"- 살다 (의 고어)\\n- 살아 있다\\n- 살려 두다\"}", "source": "claude-manual-clean"}
+{"word": "鬼", "raw": "{\"vi\": \"- Quỷ, ác quỷ (truyền thuyết Nhật)\\n- Người độc ác, tàn nhẫn\\n- Mặt nạ quỷ trong kịch Nō\", \"ko\": \"- 귀신, 도깨비\\n- 잔인한 사람\\n- 노의 귀신 탈\"}", "source": "claude-manual-clean"}
+{"word": "おん鳥", "raw": "{\"vi\": \"- Chim (biến thể cổ/literature của)\", \"ko\": \"- 새 (의 옛말)\"}", "source": "claude-manual-clean"}
+{"word": "お召し", "raw": "{\"vi\": \"- Mặc (tôn kính của)\\n- Trang phục đang mặc\", \"ko\": \"- 입으시다 (의 높임말)\\n- 의상\"}", "source": "claude-manual-clean"}
+{"word": "きゅう首", "raw": "{\"vi\": \"- Từ ghép không chuẩn (có thể là ateji của - cựu thủ lĩnh)\", \"ko\": \"- 비표준 조어 (의 아테지로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "す文字", "raw": "{\"vi\": \"- Chữ đọc \\\"su\\\"\\n- Ký hiệu đại diện cho âm su\", \"ko\": \"- '스'로 읽는 글자\\n- 스 음 placeholder\"}", "source": "claude-manual-clean"}
+{"word": "そっ歯", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể lỗi chính tả của - \\\"ra là vậy\\\")\", \"ko\": \"- 표준어가 아님 (의 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "だぼ鯊", "raw": "{\"vi\": \"- Loài cá mập (biến thể phương ngữ của)\", \"ko\": \"- 상어의 일종 (방언)\"}", "source": "claude-manual-clean"}
+{"word": "カホン科", "raw": "{\"vi\": \"- Không phải từ chuẩn (cajón là nhạc cụ gõ; là họ sinh học)\", \"ko\": \"- 표준어가 아님 (카혼은 타악기, 는 생물 분류군)\"}", "source": "claude-manual-clean"}
+{"word": "与え", "raw": "{\"vi\": \"- Được cho (phân từ của)\\n- Nền tảng (trong từ ghép)\", \"ko\": \"- 주어진 것\\n- 부여 (합성어에서)\"}", "source": "claude-manual-clean"}
+{"word": "丗", "raw": "{\"vi\": \"- Biến thể chữ (thế hệ, đời, xã hội)\", \"ko\": \"- 세의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "主あど", "raw": "{\"vi\": \"- Chúa, ngài (dạng cổ/thi ca của)\", \"ko\": \"- 주인, 임금\"}", "source": "claude-manual-clean"}
+{"word": "什宝", "raw": "{\"vi\": \"- Báu vật (biến thể cổ của)\\n- Người/vật may mắn\", \"ko\": \"- 보물 (변형)\\n- 행운의 존재\"}", "source": "claude-manual-clean"}
+{"word": "今様", "raw": "{\"vi\": \"- Thể dân ca thời Kamakura (imayō)\\n- Nhạc kịch Nō\\n- Điệu múa truyền thống\", \"ko\": \"- 금양 (가마쿠라 민요)\\n- 노 음악 양식\"}", "source": "claude-manual-clean"}
+{"word": "仭", "raw": "{\"vi\": \"- Biến thể hiếm của chữ (nhân đức)\", \"ko\": \"- 인의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "仰しゃる", "raw": "{\"vi\": \"- Nói (tôn kính phương ngữ của)\", \"ko\": \"- 말씀하시다 (존경 방언)\"}", "source": "claude-manual-clean"}
+{"word": "何びと", "raw": "{\"vi\": \"- Người nào (từ cổ/literature)\", \"ko\": \"- 누구\"}", "source": "claude-manual-clean"}
+{"word": "佳什", "raw": "{\"vi\": \"- Từ rất hiếm; có thể biến thể của hoặc \\\"vật tốt đẹp\\\" (cổ)\", \"ko\": \"- 매우 드문 말 (좋은 작품·물건, 고어)\"}", "source": "claude-manual-clean"}
+{"word": "先入", "raw": "{\"vi\": \"- Thành kiến (một phần của)\", \"ko\": \"- 선입 (선입견)\"}", "source": "claude-manual-clean"}
+{"word": "八字髭", "raw": "{\"vi\": \"- Râu mép xoẹt hai bên (như chữ)\", \"ko\": \"- 팔자수염\"}", "source": "claude-manual-clean"}
+{"word": "刎頸", "raw": "{\"vi\": \"- Cắt cổ tự vẫn (chứng tỏ lòng trung)\\n- Giao tình sinh tử (từ)\", \"ko\": \"- 목을 끊음\\n- 생사를 같이하는 교분\"}", "source": "claude-manual-clean"}
+{"word": "千人力", "raw": "{\"vi\": \"- Sức ngàn người\\n- Vải có chữ do nghìn người viết (bùa binh sĩ)\", \"ko\": \"- 천인력 (천 명의 힘)\\n- 부적 천인력\"}", "source": "claude-manual-clean"}
+{"word": "卵綴", "raw": "{\"vi\": \"- Hình quả trứng (dáng chữ)\\n- Biến thể/sai của\", \"ko\": \"- 달걀 모양\\n- 의 변형\"}", "source": "claude-manual-clean"}
+{"word": "厨", "raw": "{\"vi\": \"- Bếp (từ cổ/phương ngữ)\\n- Bếp (trong từ ghép)\", \"ko\": \"- 부엌\\n- 주방 (합성어에서)\"}", "source": "claude-manual-clean"}
+{"word": "反英", "raw": "{\"vi\": \"- Phản Anh\", \"ko\": \"- 반영 (영국)\"}", "source": "claude-manual-clean"}
+{"word": "咲う", "raw": "{\"vi\": \"- Nở hoa (dạng cổ của)\", \"ko\": \"- 피다 (의 고어)\"}", "source": "claude-manual-clean"}
+{"word": "喞筒", "raw": "{\"vi\": \"- Không có nghĩa chuẩn (có thể sai của - ống)\", \"ko\": \"- 표준 의미 없음 (의 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "多多", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể sai của - nhiều)\", \"ko\": \"- 표준어가 아님 (·의 오기로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "天爾乎波", "raw": "{\"vi\": \"- Trợ từ tiếng Nhật\\n- Hệ thống trợ từ văn pháp cổ\", \"ko\": \"- 데니오하 (조사 체계)\"}", "source": "claude-manual-clean"}
+{"word": "女日芝", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể lỗi OCR của,)\", \"ko\": \"- 표준어가 아님 (·의 오기 추정)\"}", "source": "claude-manual-clean"}
+{"word": "好く", "raw": "{\"vi\": \"- Thích (dạng cổ của)\\n- Ưa, thiên về\", \"ko\": \"- 좋아하다\"}", "source": "claude-manual-clean"}
+{"word": "妊る", "raw": "{\"vi\": \"- Có thai, thụ thai\", \"ko\": \"- 임신하다\"}", "source": "claude-manual-clean"}
+{"word": "姙る", "raw": "{\"vi\": \"- Có thai (dạng cổ)\", \"ko\": \"- 임신하다\"}", "source": "claude-manual-clean"}
+{"word": "孰か", "raw": "{\"vi\": \"- Ai (dạng cổ của)\\n- Ai đó (cổ)\", \"ko\": \"- 누구\\n- 누군가\"}", "source": "claude-manual-clean"}
+{"word": "少子", "raw": "{\"vi\": \"- Ít con (một phần của)\", \"ko\": \"- 소자 (아이가 적음)\"}", "source": "claude-manual-clean"}
+{"word": "弍", "raw": "{\"vi\": \"- Hai (biến thể của)\", \"ko\": \"- 이 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "弐", "raw": "{\"vi\": \"- Hai (dạng chính thức của)\", \"ko\": \"- 이 (, 공식 표기)\"}", "source": "claude-manual-clean"}
+{"word": "弌", "raw": "{\"vi\": \"- Một (biến thể của)\", \"ko\": \"- 일 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "戸戸", "raw": "{\"vi\": \"- Cửa (biến thể cổ/thi vị của)\", \"ko\": \"- 문 (의 옛말)\"}", "source": "claude-manual-clean"}
+{"word": "斗形", "raw": "{\"vi\": \"- Hình chữ (đấu)\\n- Họ Totada\", \"ko\": \"- 두 모양\\n- 성씨\"}", "source": "claude-manual-clean"}
+{"word": "晧晧", "raw": "{\"vi\": \"- Sáng sủa, trong trắng (biến thể của)\", \"ko\": \"- 호호 (밝고 깨끗함)\"}", "source": "claude-manual-clean"}
+{"word": "暮改", "raw": "{\"vi\": \"- Sửa đổi buổi tối (một phần của)\", \"ko\": \"- 모개 (조령모개의 일부)\"}", "source": "claude-manual-clean"}
+{"word": "朝家", "raw": "{\"vi\": \"- Gia đình buổi sáng\\n- Triều đình (nghĩa cổ)\", \"ko\": \"- 아침의 가정\\n- 조정\"}", "source": "claude-manual-clean"}
+{"word": "朝令", "raw": "{\"vi\": \"- Mệnh lệnh buổi sáng (một phần của)\", \"ko\": \"- 조령 (조령모개의 일부)\"}", "source": "claude-manual-clean"}
+{"word": "朴柏", "raw": "{\"vi\": \"- Họ Phác Bách (hiếm)\\n- Biến thể của\", \"ko\": \"- 표백 (성씨)\"}", "source": "claude-manual-clean"}
+{"word": "様付け", "raw": "{\"vi\": \"- Thêm hậu tố -sama (kính hơn -san)\", \"ko\": \"- 님 붙이기 (- 호칭)\"}", "source": "claude-manual-clean"}
+{"word": "正子", "raw": "{\"vi\": \"- Masako (tên nữ)\\n- Người phụ nữ đức hạnh (cổ)\", \"ko\": \"- 마사코 (여자 이름)\\n- 올곧은 여인\"}", "source": "claude-manual-clean"}
+{"word": "歩こう", "raw": "{\"vi\": \"- Cùng đi bộ nhé (dạng ý chí của)\", \"ko\": \"- 걷자 (의 권유형)\"}", "source": "claude-manual-clean"}
+{"word": "濁り点", "raw": "{\"vi\": \"- Dấu dakuten (hai chấm trong kana)\\n- Dấu hóa thanh\", \"ko\": \"- 탁점 (다쿠테)\"}", "source": "claude-manual-clean"}
+{"word": "無にする", "raw": "{\"vi\": \"- Làm thành vô hiệu\\n- Xóa bỏ, xóa sạch\\n- Quy về không\", \"ko\": \"- 무로 돌리다\\n- 없애 버리다\"}", "source": "claude-manual-clean"}
+{"word": "牀", "raw": "{\"vi\": \"- Giường (biến thể cổ của)\", \"ko\": \"- 침상 (침대)\"}", "source": "claude-manual-clean"}
+{"word": "用たし", "raw": "{\"vi\": \"- Đã dùng (quá khứ của)\\n- Đã có (quá khứ của)\", \"ko\": \"- 썼다, 갖고 있었다\"}", "source": "claude-manual-clean"}
+{"word": "畳字", "raw": "{\"vi\": \"- Chữ trùng lặp (nhân đôi ký tự, ví dụ)\", \"ko\": \"- 첩자 (중복 문자)\"}", "source": "claude-manual-clean"}
+{"word": "盛っ相", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể lỗi của - vẻ ngoài)\", \"ko\": \"- 표준어가 아님 (의 오기 추정)\"}", "source": "claude-manual-clean"}
+{"word": "糸偏", "raw": "{\"vi\": \"- Bộ thủ mạch (- chỉ, tơ lụa)\", \"ko\": \"- 실변 (부수)\"}", "source": "claude-manual-clean"}
+{"word": "緬羊", "raw": "{\"vi\": \"- Cừu (biến thể chữ của)\", \"ko\": \"- 면양 (의 변형)\"}", "source": "claude-manual-clean"}
+{"word": "羗", "raw": "{\"vi\": \"- Tên cổ người Khương (tộc Trung Quốc tây)\\n- Biến thể của\", \"ko\": \"- 강 (의 이체자, 옛 민족명)\"}", "source": "claude-manual-clean"}
+{"word": "聴き", "raw": "{\"vi\": \"- Nghe (dạng danh từ của)\\n- Lắng nghe (dạng nối)\", \"ko\": \"- 들음 (의 명사형)\"}", "source": "claude-manual-clean"}
+{"word": "能う", "raw": "{\"vi\": \"- Có thể, làm được (dạng cổ của)\", \"ko\": \"- 능하다 (할 수 있다, 고어)\"}", "source": "claude-manual-clean"}
+{"word": "芇", "raw": "{\"vi\": \"- Biến thể của chữ (thơm tho, đức hạnh)\", \"ko\": \"- 방의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "葼", "raw": "{\"vi\": \"- Biến thể hiếm của (cây thường xuân leo)\", \"ko\": \"- 담쟁이 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "藤壺", "raw": "{\"vi\": \"- Một loài giáp biển (động vật không xương sống biển)\\n- Một phụ nữ có địa vị cao trong triều đình Heian (nghĩa bóng, ám chỉ địa vị cao và phép ẩn dụ 'giáp biển' trong Truyện kể Genji)\", \"ko\": \"- 따개비 (해양 갑각류)\\n- 헤이안 시대 궁정의 고위층 여성 (은유적, 겐지 이야기의 '따개비' 은유에서 유래한 고귀한 지위를 지칭)\"}", "source": "gen-clean"}
+{"word": "裑", "raw": "{\"vi\": \"- Thân thể (biến thể cổ của)\", \"ko\": \"- 몸 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "貮", "raw": "{\"vi\": \"- Hai (biến thể)\", \"ko\": \"- 이 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "貳", "raw": "{\"vi\": \"- Hai (biến thể cổ)\", \"ko\": \"- 이 (의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "赤だに", "raw": "{\"vi\": \"- Đỏ (dạng cổ/thi vị của)\", \"ko\": \"- 붉다 (고어)\"}", "source": "claude-manual-clean"}
+{"word": "車葉衝羽根草", "raw": "{\"vi\": \"- Thuật ngữ hiếm (có thể biến thể của - cỏ ba lá)\", \"ko\": \"- 희귀어 (차전초류로 추정)\"}", "source": "claude-manual-clean"}
+{"word": "采六", "raw": "{\"vi\": \"- Từ không tồn tại (có thể lỗi chính tả của)\", \"ko\": \"- 표준어가 아님 (의 오기 추정)\"}", "source": "claude-manual-clean"}
+{"word": "長しえ", "raw": "{\"vi\": \"- Dài (dạng cổ/thi vị của)\", \"ko\": \"- 길다 (고어)\"}", "source": "claude-manual-clean"}
+{"word": "開ひ", "raw": "{\"vi\": \"- Mở (dạng cổ của)\\n- Xòe ra, trải ra\", \"ko\": \"- 열다 (의 고어)\"}", "source": "claude-manual-clean"}
+{"word": "阿呍", "raw": "{\"vi\": \"- Biến thể cổ của (A-un)\", \"ko\": \"- 아훈 (아운의 이체자)\"}", "source": "claude-manual-clean"}
+{"word": "隆と", "raw": "{\"vi\": \"- Takashi (tên nam)\\n- Hưng thịnh (dạng cổ của)\", \"ko\": \"- 타카시 (남자 이름)\\n- 융성함 (고어)\"}", "source": "claude-manual-clean"}
+{"word": "隠元", "raw": "{\"vi\": \"- Ẩn Nguyên (thiền sư Trung Quốc 1592-1673, sáng lập Obaku)\\n- Đậu Hà Lan (đậu)\", \"ko\": \"- 잉겐 (스님, 오바쿠 파조)\\n- 강낭콩\"}", "source": "claude-manual-clean"}
+{"word": "雎鳩", "raw": "{\"vi\": \"- Một loài chim như diệc hoặc đại bàng cá (cụ thể là diệc Trung Quốc, *Haliaeetus leucogaster*)\\n- Biểu tượng của lòng chung thủy trong hôn nhân và cuộc hôn nhân hòa thuận (từ bài thơ đầu của Kinh Thi)\", \"ko\": \"- 한 종류의 물수리 또는 어치 (구체적으로 중국물수리, *Haliaeetus leucogaster*)\\n- 부부의 정절과 화목한 결혼의 상징 (시경 첫 번째 시에서 유래)\"}", "source": "gen-clean"}
+{"word": "非ざる", "raw": "{\"vi\": \"- Không phải là (phủ định cổ của)\\n- Không phù hợp\", \"ko\": \"- 걸맞지 않다\"}", "source": "claude-manual-clean"}
+{"word": "頂載", "raw": "{\"vi\": \"- Nhận (biến thể của)\\n- Cảm ơn nhận quà\", \"ko\": \"- 받다 (의 변형)\"}", "source": "claude-manual-clean"}
+{"word": "香欒", "raw": "{\"vi\": \"- Biến thể hiếm của (hoa lan thơm)\", \"ko\": \"- 향란 (난초)의 이체자\"}", "source": "claude-manual-clean"}
+{"word": "高高", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể lỗi của - cao)\", \"ko\": \"- 표준어가 아님 (의 오기 추정)\"}", "source": "claude-manual-clean"}
+{"word": "黄巴旦", "raw": "{\"vi\": \"- Biến thể không chuẩn (có thể là mơ vàng -)\", \"ko\": \"- 비표준어 (의 오기 추정)\"}", "source": "claude-manual-clean"}

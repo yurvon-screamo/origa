@@ -12,13 +12,19 @@ provisioning profile".
 
 This script mirrors the trick deterministically:
 
-  mint    — delete stale CI-minted DISTRIBUTION certificates (dead weight:
-            their private keys are lost), generate a key + CSR, mint a new
-            Apple-issued "Apple Distribution: Origa CI" certificate and an
-            IOS_APP_STORE profile for the bundle that contains it, then
-            write key.pem / cert.pem / profile.mobileprovision to --out-dir.
+  mint    — purge leftovers from previous runs (profiles by the
+            "origa-ci-" name prefix, their certificates by id — Apple
+            rewrites certificate CNs to the account holder name, so a
+            name-based certificate match would never fire), generate a
+            key + CSR, mint a new Apple-issued distribution certificate
+            and an IOS_APP_STORE profile for the bundle that contains it,
+            then write key.pem / cert.pem / profile.mobileprovision to
+            --out-dir. The cert/profile ids are appended to $GITHUB_OUTPUT
+            immediately after each resource is created so a crash cannot
+            orphan a certificate without its id.
   cleanup — delete the minted certificate and profile (call in an always()
-            step; frees the limited certificate slots).
+            step; frees the limited certificate slots). 404 is tolerated:
+            a parallel run may have purged the same leftovers.
 
 Usage:
     APPLE_API_KEY_PATH=... APPLE_API_KEY=... APPLE_API_ISSUER=... \
@@ -43,13 +49,10 @@ from download_macos_profile import create_es256_jwt
 
 ASC_API_BASE = "https://api.appstoreconnect.apple.com/v1"
 
-CERT_CN = "Apple Distribution: Origa CI"
-# CI junk that can never be used again (private keys are gone with the
-# runners): our own previous runs plus the ephemeral tauri-cli mints.
-DEAD_CERT_CNS = {CERT_CN, "Apple Distribution: Tauri (unset)"}
 
-
-def asc_request(path: str, method: str = "GET", body: dict | None = None) -> tuple[int, dict | bytes]:
+def asc_request(
+    path: str, method: str = "GET", body: dict | None = None, *, ignore_missing: bool = False
+) -> dict:
     key_path = os.environ.get("APPLE_API_KEY_PATH", "")
     key_id = os.environ.get("APPLE_API_KEY", "")
     issuer_id = os.environ.get("APPLE_API_ISSUER", "")
@@ -70,15 +73,42 @@ def asc_request(path: str, method: str = "GET", body: dict | None = None) -> tup
     try:
         with urllib.request.urlopen(request) as response:
             raw = response.read().decode()
-            return response.status, (json.loads(raw) if raw.strip() else {})
+            # DELETE returns 204 No Content with an empty body.
+            return json.loads(raw) if raw.strip() else {}
     except urllib.error.HTTPError as error:
         detail = error.read().decode(errors="replace")
+        if ignore_missing and error.code == 404:
+            print(f"{method} {path} -> 404 (already gone, tolerated)")
+            return {}
         raise SystemExit(f"::error::ASC API {method} {path} -> {error.code}: {detail[:2000]}")
 
 
+def expect_data(response: dict, what: str) -> dict:
+    data = response.get("data")
+    if not isinstance(data, dict) or "id" not in data:
+        raise SystemExit(
+            f"::error::unexpected ASC API response for {what}: {json.dumps(response)[:1000]}"
+        )
+    return data
+
+
 def run_openssl(args: list[str]) -> bytes:
-    result = subprocess.run(["openssl", *args], check=True, capture_output=True)
+    result = subprocess.run(["openssl", *args], capture_output=True)
+    if result.returncode != 0:
+        raise SystemExit(
+            f"::error::openssl {' '.join(args)} failed: "
+            f"{result.stderr.decode(errors='replace').strip()[:1000]}"
+        )
     return result.stdout
+
+
+def write_output(key: str, value: str) -> None:
+    # Append immediately after each resource is created: a later crash must
+    # not orphan a minted certificate without leaving its id for cleanup.
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if output_path:
+        with open(output_path, "a", encoding="utf-8") as output:
+            output.write(f"{key}={value}\n")
 
 
 def find_bundle_id_resource(identifier: str) -> dict:
@@ -89,26 +119,32 @@ def find_bundle_id_resource(identifier: str) -> dict:
     return data[0]
 
 
-def delete_dead_certs() -> None:
-    _, response = asc_request("/certificates?filter[certificateType]=DISTRIBUTION&limit=200")
-    for cert in response.get("data", []):
-        name = cert.get("attributes", {}).get("name", "")
-        if name in DEAD_CERT_CNS:
-            cert_id = cert["id"]
-            print(f"deleting dead CI certificate {cert_id} ({name})")
-            asc_request(f"/certificates/{cert_id}", method="DELETE")
-    # Same-name profiles would 409 on retries of the same commit.
+def purge_previous_ci_identities() -> None:
+    # Profile names are fully under our control (ASC preserves them), so
+    # stale runs are found by the "origa-ci-" prefix and their certificates
+    # are unlinked by id through the profile relationship. Certificates are
+    # deliberately NOT matched by name: Apple rewrites certificate CNs to
+    # the account holder name, so a CN match would never fire (and would be
+    # dangerous if it did). A same-name profile would also 409 on retries
+    # of the same commit. Growth is bounded to at most a few profiles, well
+    # under the 200-entry listing below.
     _, response = asc_request("/profiles?limit=200")
     for profile in response.get("data", []):
         name = profile.get("attributes", {}).get("name", "")
-        if name.startswith("origa-ci-"):
-            profile_id = profile["id"]
-            print(f"deleting stale CI profile {profile_id} ({name})")
-            asc_request(f"/profiles/{profile_id}", method="DELETE")
+        if not name.startswith("origa-ci-"):
+            continue
+        profile_id = profile["id"]
+        _, certs = asc_request(f"/profiles/{profile_id}/relationships/certificates")
+        cert_ids = [cert["id"] for cert in certs.get("data", [])]
+        print(f"deleting stale CI profile {profile_id} ({name})")
+        asc_request(f"/profiles/{profile_id}", method="DELETE")
+        for cert_id in cert_ids:
+            print(f"deleting stale CI certificate {cert_id}")
+            asc_request(f"/certificates/{cert_id}", method="DELETE")
 
 
 def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
-    delete_dead_certs()
+    purge_previous_ci_identities()
 
     os.makedirs(out_dir, exist_ok=True)
     key_path = f"{out_dir}/key.pem"
@@ -124,10 +160,11 @@ def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
             "-out",
             csr_path,
             "-subj",
-            f"/CN={CERT_CN}/O=Origa/C=US",
+            "/CN=Apple Distribution: Origa CI/O=Origa/C=US",
         ]
     )
-    csr = open(csr_path).read()
+    with open(csr_path, encoding="utf-8") as csr_file:
+        csr = csr_file.read()
 
     _, response = asc_request(
         "/certificates",
@@ -139,11 +176,14 @@ def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
             }
         },
     )
-    cert_id = response["data"]["id"]
-    cert_b64 = response["data"]["attributes"]["certificateContent"]
-    cert_pem = base64.b64decode(cert_b64)
-    open(f"{out_dir}/cert.pem", "wb").write(cert_pem)
-    print(f"minted certificate {cert_id}: {CERT_CN}")
+    cert = expect_data(response, "certificate creation")
+    cert_id = cert["id"]
+    # Apple rewrites the CN to the account holder name — the printed CN is
+    # only what we requested in the CSR.
+    print(f"minted certificate {cert_id}")
+    write_output("cert-id", cert_id)
+    with open(f"{out_dir}/cert.pem", "wb") as cert_file:
+        cert_file.write(base64.b64decode(cert["attributes"]["certificateContent"]))
 
     bundle = find_bundle_id_resource(bundle_id)
     _, response = asc_request(
@@ -163,24 +203,20 @@ def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
             }
         },
     )
-    profile_id = response["data"]["id"]
-    profile_b64 = response["data"]["attributes"]["profileContent"]
-    open(f"{out_dir}/profile.mobileprovision", "wb").write(base64.b64decode(profile_b64))
+    profile = expect_data(response, "profile creation")
+    profile_id = profile["id"]
     print(f"created profile {profile_id}: origa-ci-{suffix}")
-
-    # Pass the ids to the cleanup step via $GITHUB_OUTPUT-compatible files.
-    with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as output:
-        output.write(f"cert-id={cert_id}\n")
-        output.write(f"profile-id={profile_id}\n")
-    open(f"{out_dir}/ids.txt", "w").write(f"{cert_id} {profile_id}\n")
+    write_output("profile-id", profile_id)
+    with open(f"{out_dir}/profile.mobileprovision", "wb") as profile_file:
+        profile_file.write(base64.b64decode(profile["attributes"]["profileContent"]))
 
 
 def cleanup(cert_id: str, profile_id: str) -> None:
     if profile_id:
-        asc_request(f"/profiles/{profile_id}", method="DELETE")
+        asc_request(f"/profiles/{profile_id}", method="DELETE", ignore_missing=True)
         print(f"deleted profile {profile_id}")
     if cert_id:
-        asc_request(f"/certificates/{cert_id}", method="DELETE")
+        asc_request(f"/certificates/{cert_id}", method="DELETE", ignore_missing=True)
         print(f"deleted certificate {cert_id}")
 
 

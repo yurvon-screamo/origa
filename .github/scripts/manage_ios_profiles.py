@@ -47,14 +47,16 @@ def asc_request(path: str, method: str = "GET", body: dict | None = None) -> dic
     request = urllib.request.Request(
         f"{ASC_API_BASE}{path}",
         method=method,
-        data=(json.dumps(body).encode() if body is not None else None) or None,
+        data=json.dumps(body).encode() if body is not None else None,
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         },
     )
     with urllib.request.urlopen(request) as response:
-        return json.loads(response.read().decode())
+        raw = response.read().decode()
+        # DELETE returns 204 No Content with an empty body.
+        return json.loads(raw) if raw.strip() else {}
 
 
 def find_bundle_id_resource(identifier: str) -> dict:

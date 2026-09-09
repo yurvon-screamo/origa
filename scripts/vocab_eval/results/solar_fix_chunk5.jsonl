@@ -1,0 +1,552 @@
+{"word": "うっさい", "source": "solar-fix", "raw": "{\"vi\": \"- Ồn ào, lớn tiếng\\n- Phiền phức, khó chịu, mệt mỏi, dai dẳng, hay làm phiền\\n- Khó tính, cầu kỳ, kén chọn, hay cằn nhằn, hay ra vẻ bề trên\\n- Im đi, im lặng\", \"ko\": \"- 시끄러운\\n- 성가신, 번거로운, 지루한, 집요한\\n- 까다로운, 변덕스러운, 편식하는, 잔소리하는, 완벽주의적인, 고집 센\\n- 조용히 해, 조용히 해라\"}"}
+{"word": "がつがつ", "source": "solar-fix", "raw": "{\"vi\": \"- Ăn ngấu nghiến\\n- Tham lam\\n- Ăn một cách tham lam\\n- Ăn như điên\", \"ko\": \"- 게걸스럽게\\n- 탐욕스럽게\\n- 허겁지겁\"}"}
+{"word": "とっとと", "source": "solar-fix", "raw": "{\"vi\": \"- Nhanh chóng\\n- Ngay lập tức\\n- Ngay bây giờ\\n- Vội vàng\\n- Gấp rút\", \"ko\": \"- 빨리\\n- 즉시\\n- 당장\\n- 서둘러\"}"}
+{"word": "アオキ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây aucuba Nhật Bản\\n- Aucuba đốm\\n- Aucuba japonica (danh pháp khoa học)\", \"ko\": \"- 일본 월계수\\n- 점박이 월계수\\n- Aucuba japonica (학명)\"}"}
+{"word": "アツモリソウ", "source": "solar-fix", "raw": "{\"vi\": \"- Lan giày hoa lớn\\n- Một loài lan giày\\n- Cypripedium macranthos\\n- Cypripedium macranthos var. speciosum\", \"ko\": \"- 요강꽃과의 난초\\n- 레이디슬리퍼 난초\\n- Cypripedium macranthos (학명)\\n- Cypripedium macranthos var. speciosum (학명)\"}"}
+{"word": "ウェット", "source": "solar-fix", "raw": "{\"vi\": \"- Ướt\\n- Ẩm\\n- Dễ xúc động\\n- Mềm lòng\\n- Nhạy cảm\", \"ko\": \"- 젖은\\n- 촉촉한\\n- 마음이 약한\\n- 다정한\\n- 감상적인\"}"}
+{"word": "オッパイ", "source": "solar-fix", "raw": "{\"vi\": \"- Ngực\\n- Vú\\n- Sữa mẹ\", \"ko\": \"- 가슴\\n- 젖가슴\\n- 모유\"}"}
+{"word": "コンニャク", "source": "solar-fix", "raw": "{\"vi\": \"- Konnyaku (đồ ăn từ củ nưa)\\n- Konjac (củ nưa)\\n- Cây nưa (tên gọi khác)\\n- Thạch konnyaku\\n- Thạch konjac\", \"ko\": \"- 곤약\\n- 곤약 식물\\n- 악마의 혀라고 불리는 식물\\n- 곤약 젤리\\n- 콘자크 젤리\"}"}
+{"word": "ジガバチ", "source": "solar-fix", "raw": "{\"vi\": \"- Ong cát có dải màu đỏ\\n- Ong thắt eo\\n- Ong đào\\n- Ong bùn\", \"ko\": \"- 붉은띠 모래벌\\n- 가느다란 허리의 벌\\n- 파는 벌\\n- 진흙종이벌\"}"}
+{"word": "トゲ", "source": "solar-fix", "raw": "{\"vi\": \"- Gai (cây)\\n- Gai, ngạnh (cá, xương rồng)\\n- Sự châm chích\\n- Mảnh sắc nhọn, vật cứng nhọn\\n- Lời lẽ cay nghiệt\", \"ko\": \"- 가시\\n- (동물·선인장의) 침\\n- 따끔거림\\n- 박힌 파편, 단단하고 날카로운 물건\\n- 비수 같은 말\"}"}
+{"word": "フトモモ", "source": "solar-fix", "raw": "{\"vi\": \"- Quả roi\\n- Quả trâm\\n- Trái jambos\\n- Đùi\\n- Mông\", \"ko\": \"- 로즈애플 (장미사과)\\n- 말라바 플럼\\n- 자보스\\n- 허벅지\\n- 엉덩이\"}"}
+{"word": "ムクドリ", "source": "solar-fix", "raw": "{\"vi\": \"- Sáo xám\\n- Sáo má trắng\\n- Sáo (chim)\\n- Người quê mùa\\n- Người dễ bị lừa\", \"ko\": \"- 찌르레기\\n- 회색 찌르레기\\n- 뺨 흰 찌르레기\\n- 촌사람\\n- 순진한 사람\"}"}
+{"word": "入江", "source": "solar-fix", "raw": "{\"vi\": \"- Vịnh nhỏ\\n- Vũng biển\\n- Rạch\\n- Vịnh hẹp\\n- Vịnh\", \"ko\": \"- 만\\n- 작은 만\\n- 좁은 물길 (만으로 이어지는)\\n- 좁은 만\"}"}
+{"word": "不定期", "source": "solar-fix", "raw": "{\"vi\": \"- Không thường xuyên\\n- Không xác định\\n- Tàu chở hàng (thường gọi là tàu không theo lịch)\\n- Không đều (thanh toán)\", \"ko\": \"- 불규칙한\\n- 불특정한\\n- 부정기선 (화물선)\\n- 불규칙한 (지불)\"}"}
+{"word": "両性", "source": "solar-fix", "raw": "{\"vi\": \"- Lưỡng tính\\n- Có đặc điểm cả nam và nữ\\n- Có cả cơ quan sinh dục đực và cái (động, thực vật)\", \"ko\": \"- 양성\\n- 남녀 양성의 특징을 지님\\n- 자웅동체의\"}"}
+{"word": "六書", "source": "solar-fix", "raw": "{\"vi\": \"- Sáu loại chữ Hán (lục thư)\\n- Sáu loại chữ Trung Quốc\\n- Sáu phong cách lịch sử của việc viết chữ Hán\\n- Sáu quyển đầu tiên của Kinh Thánh\", \"ko\": \"- 한자 여섯 가지 분류 (육서)\\n- 중국 문자 여섯 가지 분류\\n- 한자 쓰기의 여섯 가지 역사적 양식\\n- 헥사테우크 (구약의 앞 여섯 권)\"}"}
+{"word": "割込", "source": "solar-fix", "raw": "{\"vi\": \"- Xô, chen hàng\\n- Xen vào, ngắt lời\\n- Chia sẻ hộp xem kịch (trong nhà hát)\\n- Xen vào, chen vào\", \"ko\": \"- 줄을 거르는 행위\\n- 줄을 뚫고 끼어들기\\n- 끼어들기\\n- 방해\\n- 극장 박스 공유\"}"}
+{"word": "勿体無い", "source": "solar-fix", "raw": "{\"vi\": \"- Lãng phí\\n- Quá tốt (hơn mức đáng nhận)\\n- Không xứng đáng\\n- Bất kính\\n- Báng bổ\", \"ko\": \"- 낭비스러운\\n- 너무 아까운\\n- 마땅히 누릴 자격 이상인\\n- 불경한\\n- 신성 모독적인\"}"}
+{"word": "原色", "source": "solar-fix", "raw": "{\"vi\": \"- Màu cơ bản\\n- Màu nguyên chất\\n- Màu không pha\\n- Màu nổi bật\\n- Màu gốc\", \"ko\": \"- 원색\\n- 순색\\n- 섞지 않은 색\\n- 선명한 색\\n- 본래의 색\"}"}
+{"word": "国内", "source": "solar-fix", "raw": "{\"vi\": \"- Nội bộ\\n- Trong nước\\n- Trong phạm vi quốc gia\", \"ko\": \"- 내부의\\n- 국내의\\n- 국가 내의\"}"}
+{"word": "塁", "source": "solar-fix", "raw": "{\"vi\": \"- Căn cứ (trong bóng chày)\\n- Pháo đài\\n- Thành trì\\n- Hầm kiên cố\\n- Công sự\", \"ko\": \"- 루 (야구)\\n- 요새\\n- 방어 시설\"}"}
+{"word": "墨", "source": "solar-fix", "raw": "{\"vi\": \"- Mực tàu\\n- Thỏi mực, bột mực\\n- Mực bạch tuộc, mực cá\\n- Dây mực thợ mộc\\n- Mexico, mặc học, xăm mình\", \"ko\": \"- 먹\\n- 먹가루\\n- 오징어 먹, 문어 먹\\n- 목수 먹줄\\n- 멕시코, 묵가, 문신\"}"}
+{"word": "大して", "source": "solar-fix", "raw": "{\"vi\": \"- Không nhiều\\n- Không lắm\\n- Không đặc biệt\\n- Không mấy\", \"ko\": \"- 별로 (하지 않은)\\n- 그다지 ~않은\\n- 특별히 ~않은\\n- 별로 특별하지 않은\"}"}
+{"word": "山楂子", "source": "solar-fix", "raw": "{\"vi\": \"- Sơn tra Nhật Bản\\n- Crataegus cuneata (danh pháp khoa học)\\n- Sơn tra trắng (tên gọi khác)\", \"ko\": \"- 산사나무\\n- Crataegus cuneata (학명)\\n- 산사나무 열매\\n- 산사 열매 (한약재)\"}"}
+{"word": "市営バス", "source": "solar-fix", "raw": "{\"vi\": \"- Dịch vụ xe buýt thành phố\\n- Xe buýt do chính quyền thành phố vận hành\", \"ko\": \"- 시영 버스 서비스\\n- 시립 버스 서비스\\n- 시내 버스\\n- 시립 버스\"}"}
+{"word": "影武者", "source": "solar-fix", "raw": "{\"vi\": \"- Người đóng thế\\n- Người đóng kép\\n- Người giật dây (thao túng)\\n- Người đứng sau hậu trường\\n- Chỉ huy ngầm\", \"ko\": \"- 대역\\n- 더블\\n- 배후 조종자\\n- 배후 인물\\n- 그림자 지휘관\"}"}
+{"word": "従士", "source": "solar-fix", "raw": "{\"vi\": \"- Samurai làm người hầu\\n- Bề tôi, gia thần\\n- Tước thane (quý tộc Anh cổ)\", \"ko\": \"- 시종 역할을 하는 사무라이\\n- 가신, 종사\\n- 테인 (고대 영국 귀족 칭호)\"}"}
+{"word": "徴集", "source": "solar-fix", "raw": "{\"vi\": \"- Sự huy động, trưng dụng\\n- Tịch thu\\n- Nghĩa vụ nhập ngũ bắt buộc\\n- Tuyển dụng\\n- Nghĩa vụ quân sự\", \"ko\": \"- 징수\\n- 징발\\n- 징병\\n- 모집\\n- 징집\"}"}
+{"word": "意地悪い", "source": "solar-fix", "raw": "{\"vi\": \"- Độc ác\\n- Gian xảo\\n- Độc địa\\n- Tàn nhẫn\\n- Ác ý\", \"ko\": \"- 심술궂은\\n- 못된\\n- 악의적인\\n- 잔인한\"}"}
+{"word": "押付ける", "source": "solar-fix", "raw": "{\"vi\": \"- Ép vào, ấn vào\\n- Đẩy vào, thúc vào\\n- Ép buộc, cưỡng ép\\n- Giao (nhiệm vụ, trách nhiệm) một cách gượng ép\\n- Áp đặt (ý chí của mình)\", \"ko\": \"- 밀어붙이다\\n- 눌러 대다\\n- 떠넘기다 (과제, 책임)\\n- 강요하다 (자신의 의지)\"}"}
+{"word": "提灯持ち", "source": "solar-fix", "raw": "{\"vi\": \"- Người mang đèn lồng\\n- Kẻ nịnh hót\\n- Người cổ vũ, tâng bốc\\n- Kẻ xu nịnh\", \"ko\": \"- 등불 든 사람\\n- 아첨꾼\\n- 추켜세우는 사람\\n- 아부꾼\"}"}
+{"word": "揺れる", "source": "solar-fix", "raw": "{\"vi\": \"- Lắc lư, rung rinh\\n- Đung đưa\\n- Lung lay, dao động\\n- Rung mạnh, giật\\n- Chập chờn, bất ổn\", \"ko\": \"- 흔들리다\\n- 출렁거리다\\n- 동요하다\\n- 덜컹거리다\\n- 깜빡이다, 불안정해지다\"}"}
+{"word": "散らし", "source": "solar-fix", "raw": "{\"vi\": \"- Sự rắc, sự phân tán\\n- Tờ rơi, truyền đơn\\n- Cơm trộn (sushi rice) trong hộp hoặc bát với các nguyên liệu rắc lên trên\\n- Chữ viết bằng nét không đều\", \"ko\": \"- 뿌림\\n- 전단지, 광고지\\n- 다양한 재료를 뿌린 상자나 그릇 속의 초밥 밥\\n- 불규칙한 필체\"}"}
+{"word": "旋廻", "source": "solar-fix", "raw": "{\"vi\": \"- Sự quay, xoay\\n- Sự xoay tròn\\n- Sự chuyển động vòng tròn\\n- Sự xoay chuyển hướng (máy bay hoặc tàu)\", \"ko\": \"- 회전\\n- 선회\\n- 선회 (항공기나 선박)\"}"}
+{"word": "望む", "source": "solar-fix", "raw": "{\"vi\": \"- Mong muốn\\n- Ước muốn, ao ước\\n- Mong đợi, kỳ vọng\\n- Nhìn thấy, hướng về\\n- Có tầm nhìn ra\", \"ko\": \"- 바라다\\n- 소망하다\\n- 기대하다\\n- 바라보다\\n- 조망하다 (전망이 트이다)\"}"}
+{"word": "木葉微塵", "source": "solar-fix", "raw": "{\"vi\": \"- Vỡ thành những mảnh nhỏ\\n- Nghiền nát tan tành\\n- Mảnh vụn và mảnh vỡ\\n- Thành tro bụi\", \"ko\": \"- 작은 조각으로 부서지다\\n- 산산이 부서져 가루가 되다\\n- 파편과 부스러기\\n- 산산조각\"}"}
+{"word": "果然", "source": "solar-fix", "raw": "{\"vi\": \"- Đúng như mong đợi\\n- Quả nhiên\\n- Hóa ra là\\n- Đúng như dự đoán\", \"ko\": \"- 예상대로\\n- 역시\\n- ~임이 밝혀지다\\n- 마침, 공교롭게도\"}"}
+{"word": "株式会社", "source": "solar-fix", "raw": "{\"vi\": \"- Công ty cổ phần\\n- Tập đoàn, pháp nhân\\n- KK (viết tắt trong tên công ty)\\n- Kabushiki kaisha (phiên âm Nhật)\", \"ko\": \"- 주식회사\\n- 법인\\n- 주식회사 (약어 KK)\"}"}
+{"word": "棚上げ", "source": "solar-fix", "raw": "{\"vi\": \"- Sự gác lại, hoãn xử lý\\n- Gạt sang bên, tạm gác lại\\n- Hoãn lại, trì hoãn\\n- Giữ (hàng hóa) không bán ra thị trường\", \"ko\": \"- 보류, 묵혀 두기\\n- 미결로 돌려놓기\\n- 덮어 두기\\n- 매점 (상품을 시장에서 치워 두기)\"}"}
+{"word": "次長", "source": "solar-fix", "raw": "{\"vi\": \"- Phó trưởng\\n- Phó giám đốc\\n- Trợ lý giám đốc\\n- Phó quản lý\", \"ko\": \"- 차장\\n- 차관 (부청장)\\n- 부장 보좌\\n- 부관리자\"}"}
+{"word": "殆ど", "source": "solar-fix", "raw": "{\"vi\": \"- Phần lớn, hầu hết\\n- Gần như\\n- Thực tế, về cơ bản\\n- Hầu như luôn luôn\\n- Tất cả trừ một số ít\", \"ko\": \"- 대부분\\n- 거의\\n- 사실상\\n- 거의 언제나\\n- 전부 예외 없이\"}"}
+{"word": "洋服だんす", "source": "solar-fix", "raw": "{\"vi\": \"- Tủ quần áo\\n- Tủ nhiều ngăn kéo\\n- Tủ áo kín\\n- Bàn trang điểm có ngăn kéo\\n- Tủ cao nhiều tầng\", \"ko\": \"- 옷장\\n- 서랍장\\n- 붙박이 옷장\\n- 드레서\\n- 탈보이 (키 큰 서랍장)\"}"}
+{"word": "炬火", "source": "solar-fix", "raw": "{\"vi\": \"- Đuốc thông\\n- Ánh đuốc, ánh lửa\\n- Đuốc lửa\\n- Đống lửa lớn\", \"ko\": \"- 소나무 횃불\\n- 횃불 불빛\\n- 타는 장작\\n- 모닥불\"}"}
+{"word": "無理ない", "source": "solar-fix", "raw": "{\"vi\": \"- Tự nhiên\\n- Dễ hiểu\\n- Hợp lý\\n- Thảo nào\", \"ko\": \"- 자연스러운\\n- 이해하기 쉬운\\n- 합리적인\\n- 무리가 없는, 그럴 만하다\"}"}
+{"word": "産毛", "source": "solar-fix", "raw": "{\"vi\": \"- Lông tơ mềm, mịn\\n- Lông tơ mỏng trên da (như vũ đào)\\n- Lông tơ, lông măng\\n- Bông (của hạt)\\n- Lông tơ trên thai nhi\", \"ko\": \"- 부드러운 솜털\\n- 복숭아 털\\n- 솜털\\n- 관모 (씨에 달린 솜털)\\n- 태모 (태아의 잔털)\"}"}
+{"word": "畏縮", "source": "solar-fix", "raw": "{\"vi\": \"- Co rúm lại\\n- Rụt rè\\n- Thu mình, co lại\\n- Giật mình\\n- Lùi lại\", \"ko\": \"- 움츠러들다\\n- 위축되다\\n- 움찔하다\"}"}
+{"word": "皮剝ぎ", "source": "solar-fix", "raw": "{\"vi\": \"- Lột da (động vật)\\n- Lột vỏ (cây)\\n- Việc bóc vỏ cây\\n- Người lột da\\n- Người bóc vỏ cây\", \"ko\": \"- 가죽 벗기기\\n- 껍질 벗기기\\n- 나무껍질 벗기기\\n- 가죽 벗기는 사람\\n- 껍질 벗기는 사람\"}"}
+{"word": "悪習", "source": "solar-fix", "raw": "{\"vi\": \"- Thói xấu\\n- Tập quán xấu\\n- Thực tiễn xấu\\n- Tật xấu\", \"ko\": \"- 나쁜 습관\\n- 나쁜 풍습\\n- 악한 관행\\n- 악습\"}"}
+{"word": "流行", "source": "solar-fix", "raw": "{\"vi\": \"- Thời trang\\n- Xu hướng\\n- Mốt\\n- Sự thịnh hành, phổ biến (kể cả của bệnh)\", \"ko\": \"- 유행\\n- 트렌드\\n- 유행하는 것 (붐)\\n- 열풍\\n- 일시적 유행\"}"}
+{"word": "滿足", "source": "solar-fix", "raw": "{\"vi\": \"- Sự hài lòng\\n- Sự mãn nguyện\\n- Sự thỏa mãn\\n- Đủ, đầy đủ\\n- Thỏa đáng\", \"ko\": \"- 만족\\n- 만족감, 충족\\n- 충분한\\n- 적절한\\n- 만족스러운\"}"}
+{"word": "砕ける", "source": "solar-fix", "raw": "{\"vi\": \"- Vỡ (thành mảnh)\\n- Vỡ tan\\n- Nứt (dưới áp lực)\\n- Tan vỡ (về tinh thần)\", \"ko\": \"- 부서지다 (조각으로)\\n- 산산조각 나다\\n- 깨지다 (압력으로)\\n- (정신적으로) 부서지다\"}"}
+{"word": "移転", "source": "solar-fix", "raw": "{\"vi\": \"- Sự di chuyển\\n- Sự chuyển chỗ\\n- Thay đổi địa chỉ\\n- Sự chuyển nhượng (giấy tờ, tài sản, v.v.)\\n- Sự chuyển giao quyền (pháp lý)\", \"ko\": \"- 이전\\n- 주소 변경\\n- 양도 (문서, 재산 등)\\n- 권리의 이전 (법률상)\"}"}
+{"word": "立てこもる", "source": "solar-fix", "raw": "{\"vi\": \"- Tự nhốt mình lại\\n- Giữ vững (công sự, pháo đài, v.v.)\\n- Tự giam mình trong nhà hoặc phòng\\n- Bị bao vây\\n- Bám trụ phòng thủ\", \"ko\": \"- 스스로 틀어박히다\\n- (요새, 성 등을) 지키다\\n- 틀어박혀 나오지 않다\\n- 포위되다\\n- 진을 치고 버티다\"}"}
+{"word": "節電", "source": "solar-fix", "raw": "{\"vi\": \"- Tiết kiệm điện\\n- Tiết kiệm điện năng\\n- Giảm sử dụng điện\\n- Giảm tiêu thụ điện\\n- Sự cố mất điện (giảm điện áp)\", \"ko\": \"- 절전\\n- 전기 절약\\n- 전기 사용량 감소\\n- 전력 소비 감소\\n- 전압 강하 (브라운아웃)\"}"}
+{"word": "絶対命令", "source": "solar-fix", "raw": "{\"vi\": \"- Mệnh lệnh tuyệt đối\\n- Lệnh phải tuân theo\\n- Chỉ thị tuyệt đối\\n- Chỉ mệnh (trong triết học)\", \"ko\": \"- 절대 명령\\n- 반드시 복종해야 하는 명령\\n- 절대적인 지시\\n- 정언 명령\"}"}
+{"word": "肝っ魂", "source": "solar-fix", "raw": "{\"vi\": \"- Gan\\n- Lòng dũng cảm\\n- Tinh thần\\n- Bản lĩnh\", \"ko\": \"- 배짱, 담력\\n- 용기\\n- 대담함\\n- 기개, 정신\"}"}
+{"word": "自動車専用道路", "source": "solar-fix", "raw": "{\"vi\": \"- Đường cao tốc\\n- Đường chỉ dành cho ô tô\\n- Đường không giao cắt đồng mức\\n- Đường kiểm soát lối vào\", \"ko\": \"- 고속도로\\n- 자동차 전용도로\\n- 통제 접근 고속도로\"}"}
+{"word": "艾", "source": "solar-fix", "raw": "{\"vi\": \"- Thuốc cứu (ngải tảo)\\n- Ngải cứu Nhật Bản\\n- Ngải cứu\\n- Cây ngải (sagebrush)\\n- Ngải để đốt cứu\", \"ko\": \"- 뜸쑥\\n- 일본 쑥\\n- 쑥\\n- 세이지브러시 (쑥류)\\n- 뜸\"}"}
+{"word": "虫喰い", "source": "solar-fix", "raw": "{\"vi\": \"- Bị sâu ăn\\n- Bị sâu bướm ăn\\n- Những lỗ bị sâu, bướm, v.v. ăn trên quần áo, lá, v.v.\\n- Chim chích lá\\n- Chim chích chít\", \"ko\": \"- 벌레 먹은\\n- 나방 먹은\\n- 벌레가 먹어 난 구멍 (옷, 잎 등)\\n- 술새류 (벌레를 잡아먹는 작은 새)\\n- 방울술새 (작은 새)\"}"}
+{"word": "行程", "source": "solar-fix", "raw": "{\"vi\": \"- Hành trình\\n- Lộ trình, lịch trình\\n- Quãng đường\\n- Cuộc hành quân, chuyến bay\\n- Hành trình (pít-tông)\", \"ko\": \"- 여정\\n- 과정\\n- 거리\\n- 행진\\n- 비행\"}"}
+{"word": "規矩", "source": "solar-fix", "raw": "{\"vi\": \"- Quy tắc\\n- Tiêu chuẩn\\n- Tiêu chí\\n- Chuẩn\\n- Com-pa và thước kẻ (nghĩa đen)\", \"ko\": \"- 규칙\\n- 기준\\n- 척도\\n- 규범\\n- 자와 컴퍼스 (도형 그리는 도구)\"}"}
+{"word": "訴人", "source": "solar-fix", "raw": "{\"vi\": \"- Người khởi kiện\\n- Người tố cáo\\n- Người khiếu nại\\n- Người tố giác\\n- Kiện, buộc tội\", \"ko\": \"- 원고\\n- 고발자\\n- 민원인\\n- 제보자\\n- 고소하다, 고발하다\"}"}
+{"word": "議員", "source": "solar-fix", "raw": "{\"vi\": \"- Thành viên của một hội đồng\\n- Thành viên nghị viện, quốc hội\\n- Nghị sĩ\\n- Nghị sĩ (quốc hội các nước)\", \"ko\": \"- 의회 의원\\n- 국회의원\\n- 의원 (각국 의회)\"}"}
+{"word": "貸切", "source": "solar-fix", "raw": "{\"vi\": \"- Đặt trước (sử dụng độc quyền)\\n- Đặt trọn gói\\n- Thuê trọn gói\\n- Đặt trước toàn bộ\", \"ko\": \"- 독점 사용 예약\\n- 전량 예약\\n- 전세 내기\\n- 블록 예약\"}"}
+{"word": "逝く", "source": "solar-fix", "raw": "{\"vi\": \"- Đi (đi xa, rời đi)\\n- Qua đời, mất\\n- Trôi qua (thời gian)\", \"ko\": \"- 가다 (떠나가다)\\n- 세상을 떠나다, 죽다\\n- (시간이) 지나가다\"}"}
+{"word": "酸漿", "source": "solar-fix", "raw": "{\"vi\": \"- Quả lồng đèn (Physalis alkekengi var. franchetii)\\n- Cà chua vỏ khô\\n- Cây đèn lồng Trung Quốc\\n- Đồ chơi tạo tiếng ồn cho trẻ em\", \"ko\": \"- 땅체리 (Physalis alkekengi var. franchetii)\\n- 허스크 토마토\\n- 중국 랜턴 식물\\n- 아이들 소리 내는 장난감\"}"}
+{"word": "鐶", "source": "solar-fix", "raw": "{\"vi\": \"- Vòng\\n- Mắt xích\\n- Tay cầm (dùng để nhấc ấm trà trong trà đạo)\\n- Vòng tay (làm bằng đá hoặc chuông, đeo ở khuỷu tay)\\n- Dụng cụ bảo vệ khuỷu tay của cung thủ\", \"ko\": \"- 고리\\n- 연결고리\\n- 주전자 들게 (다도에서 사용)\\n- 팔찌 (구슬이나 방울로 만든 것, 팔꿈치에 착용)\\n- 팔 보호대 (궁수의 팔꿈치용)\"}"}
+{"word": "隠れ蓑", "source": "solar-fix", "raw": "{\"vi\": \"- Vật che đậy (ví dụ: cho hoạt động bất hợp pháp)\\n- Mặt tiền\\n- Vẻ ngoài\\n- Cây kakuremino (Dendropanax trifidus)\\n- Áo mưa rơm giúp người vô hình\", \"ko\": \"- 은폐물 (예: 불법 활동용)\\n- 위장, 명목\\n- 겉모습\\n- Dendropanax trifidus (학명)\\n- 투명하게 만드는 짚 우비\"}"}
+{"word": "霰", "source": "solar-fix", "raw": "{\"vi\": \"- Mưa đá (đặc biệt là những viên dưới 5 mm)\\n- Mưa tuyết hạt (mưa đá nhỏ)\\n- Các miếng cắt nhỏ, khối nhỏ\\n- Bánh mochi nướng (thường được tẩm nước tương, v.v.)\", \"ko\": \"- 우박 (특히 5mm 미만의 우박알)\\n- 싸락눈, 눈싸락\\n- 다져서 깍둑썬 것\\n- 구운 모찌 조각 (보통 간장 등으로 맛을 냄)\"}"}
+{"word": "風船", "source": "solar-fix", "raw": "{\"vi\": \"- Bóng bay (đặc biệt là loại nhỏ, đồ chơi)\\n- Khí cầu, khinh khí cầu\\n- Bóng (đồ chơi hoặc trang trí)\\n- Bóng (khí nóng hoặc khí)\", \"ko\": \"- 풍선 (특히 작은 장난감 종류)\\n- 비행선, 블림프\\n- 풍선 (장난감 또는 장식)\\n- 풍선 (열기구 또는 가스)\"}"}
+{"word": "飲潰す", "source": "solar-fix", "raw": "{\"vi\": \"- Tiêu sạch tiền vì rượu\\n- Trở thành kẻ nghiện rượu\\n- Say sưa, say xỉn\\n- Uống thắng người khác (tửu lượng hơn)\", \"ko\": \"- 술로 돈을 다 쓰다\\n- 주정뱅이가 되다\\n- 만취하다\\n- 술내기에서 이기다 (상대보다 잘 마시다)\"}"}
+{"word": "餡", "source": "solar-fix", "raw": "{\"vi\": \"- Nhân đậu đỏ\\n- Mứt đậu đỏ\\n- Anko\\n- Sốt củ sắn dây\\n- Nhân (bánh bao, v.v.)\", \"ko\": \"- 팥 앙금\\n- 팥 잼\\n- 앙코\\n- 쿠즈 소스 (칡녹말 소스)\\n- 소 (만두 등)\"}"}
+{"word": "鬼ばば", "source": "solar-fix", "raw": "{\"vi\": \"- Bà già xấu xí\\n- Phù thủy\\n- Người phụ nữ độc ác\\n- Người già keo kiệt hoặc hay cay nghiệt\\n- Người phụ nữ hung dữ\", \"ko\": \"- 할멈\\n- 마녀\\n- 심술궂은 여자, 독한 여자\\n- 구두쇠이거나 심술궂은 노파\\n- 악랄하고 사나운 여자\"}"}
+{"word": "てくシー", "source": "solar-fix", "raw": "{\"vi\": \"- Taxi (biến thể chính tả tiếng lóng)\", \"ko\": \"- 택시 (표기 변형)\"}"}
+{"word": "アオリイカ", "source": "solar-fix", "raw": "{\"vi\": \"- Mực bay (thuật ngữ chung cho loài mực thuộc họ Ommastrephidae)\\n- Mực bay Nhật Bản (cụ thể là Todarodes pacificus)\", \"ko\": \"- 살오징이과 오징어의 총칭\\n- 일본 오징어 (Todarodes pacificus)\"}"}
+{"word": "アカダニ", "source": "solar-fix", "raw": "{\"vi\": \"- Ve đỏ (tổng quát cho các loài nhện nhỏ, thường gây hại hoặc dị ứng)\\n- Ve mùa gặt (ấu trùng họ Trombiculidae)\", \"ko\": \"- 적색 응애 (작은 거미류의 총칭, 해충 또는 알레르겐)\\n- 수확 응애 (Trombiculidae의 유충 단계)\"}"}
+{"word": "アザラシ", "source": "solar-fix", "raw": "{\"vi\": \"- Hải cẩu\", \"ko\": \"- 바다표범\"}"}
+{"word": "アジサシ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim nhạn biển (đặc biệt là nhạn biển thường, Sterna hirundo)\", \"ko\": \"- 제비갈매기 (특히 흰제비갈매기, Sterna hirundo)\"}"}
+{"word": "アナグマ", "source": "solar-fix", "raw": "{\"vi\": \"- Lửng\", \"ko\": \"- 오소리\"}"}
+{"word": "アマツバメ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim yến (họ yến, chim én mưa)\", \"ko\": \"- 칼새 (흰허리칼새)\"}"}
+{"word": "アライグマ", "source": "solar-fix", "raw": "{\"vi\": \"- Gấu mèo (raccoon Bắc Mỹ)\", \"ko\": \"- 라쿤 (아메리카너구리)\"}"}
+{"word": "アリクイ", "source": "solar-fix", "raw": "{\"vi\": \"- Thú ăn kiến (tên chung)\", \"ko\": \"- 개미핥기\"}"}
+{"word": "アワビ", "source": "solar-fix", "raw": "{\"vi\": \"- Bào ngư (động vật thân mềm ăn được)\", \"ko\": \"- 전복\"}"}
+{"word": "イヌワシ", "source": "solar-fix", "raw": "{\"vi\": \"- Đại bàng vàng\", \"ko\": \"- 독수리 (황금독수리)\"}"}
+{"word": "イトヨ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá ba gai (Gasterosteus aculeatus)\", \"ko\": \"- 가시고기 (세가시)\"}"}
+{"word": "インターポール", "source": "solar-fix", "raw": "{\"vi\": \"- Interpol (Tổ chức cảnh sát hình sự quốc tế)\\n- Cảnh sát quốc tế\", \"ko\": \"- 국제형사경찰기구\\n- 국제 경찰\"}"}
+{"word": "ウオノメ", "source": "solar-fix", "raw": "{\"vi\": \"- Mắt cá (vị chai ở gan chân)\", \"ko\": \"- 티눈\"}"}
+{"word": "エソ", "source": "solar-fix", "raw": "{\"vi\": \"- Họ Esocidae (một họ cá, bao gồm cá chó)\\n- Cá chó (cụ thể là cá chó phương Bắc)\", \"ko\": \"- 강꽃치과 (강꽃치를 포함한 어류의 한 과)\\n- 강꽃치 (북방강꽃치)\"}"}
+{"word": "オオケタデ", "source": "solar-fix", "raw": "{\"vi\": \"- Loài cỏ lớn họ Rau răm (Persicaria lapathifolia)\", \"ko\": \"- 큰여뀌 (마디풀과 식물)\"}"}
+{"word": "オオタカ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim cắt lớn (Accipiter gentilis)\", \"ko\": \"- 참매 (Accipiter gentilis)\"}"}
+{"word": "オカヒジキ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây cỏ mặn ven biển (Suaeda japonica)\\n- Rau biển (loại rau mặn dùng làm rau ăn)\", \"ko\": \"- 나문재 (Suaeda japonica)\\n- 바닷가 염생 나물\"}"}
+{"word": "オフサイド", "source": "solar-fix", "raw": "{\"vi\": \"- Việt vị (trong thể thao)\", \"ko\": \"- 오프사이드\"}"}
+{"word": "オミナエシ", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa nữ lang (Patrinia scabiosaefolia)\\n- Cây hoa vàng mọc dại\", \"ko\": \"- 패트리니아 (Patrinia scabiosaefolia)\\n- 노란 꽃이 피는 여러해살이 풀\"}"}
+{"word": "カメムシ", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ xít\\n- Bọ xít có mùi\", \"ko\": \"- 방패벌레\\n- 냄새벌레\"}"}
+{"word": "カワラナデシコ", "source": "solar-fix", "raw": "{\"vi\": \"- Cẩm chướng đẹp (Dianthus superbus)\\n- Cây thân thảo lâu năm họ cẩm chướng, hoa hồng đẹp\", \"ko\": \"- 구슬붓이 (Dianthus superbus)\\n- 분홍 꽃이 피는 패랭이과 다년초\"}"}
+{"word": "キュウカンチョウ", "source": "solar-fix", "raw": "{\"vi\": \"- Sao hôm (Sao Kim)\\n- Hoa anh thảo (Oenothera, hoa nở buổi tối)\", \"ko\": \"- 저녁별 (금성)\\n- 달맞이꽃 (Oenothera속 식물)\"}"}
+{"word": "キンポウゲ", "source": "solar-fix", "raw": "{\"vi\": \"- Mao lương (chi Ranunculus, họ mao lương)\", \"ko\": \"- 미나리아재비 (Ranunculus속 식물)\"}"}
+{"word": "クイナ", "source": "solar-fix", "raw": "{\"vi\": \"- Gà nước (họ Rallidae)\", \"ko\": \"- 뜸부기류 (Rallidae과의 습지 새)\"}"}
+{"word": "クサフジ", "source": "solar-fix", "raw": "{\"vi\": \"- Tử đằng (một loại hoa tử đằng, Wisteria floribunda)\", \"ko\": \"- 구사후지 (등나무류, Wisteria floribunda)\"}"}
+{"word": "クマツヅラ", "source": "solar-fix", "raw": "{\"vi\": \"- Cỏ roi ngựa (Verbena officinalis)\\n- Thuộc họ cỏ roi ngựa\", \"ko\": \"- 마편초 (버베나)\\n- 마편초과의 식물\"}"}
+{"word": "クルマエビ", "source": "solar-fix", "raw": "{\"vi\": \"- Tôm he Nhật Bản\\n- Tôm hổ Nhật Bản\\n- Tôm sú Nhật Bản\", \"ko\": \"- 대하 (쿠루마에비)\\n- 일본산 대하\\n- 호랑이 무늬 대하\"}"}
+{"word": "クロチョウガイ", "source": "solar-fix", "raw": "{\"vi\": \"- Bướm đuôi én đen (Papilio protenor)\", \"ko\": \"- 검은제비나비 (Papilio protenor)\"}"}
+{"word": "クワイ", "source": "solar-fix", "raw": "{\"vi\": \"- Củ mã thầy (thân củ ăn được)\\n- Mã thầy Trung Quốc (thực vật, Eleocharis dulcis)\", \"ko\": \"- 물밤 (식용 구경)\\n- 중국 물밤 (Eleocharis dulcis)\"}"}
+{"word": "ケヤキ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây du Nhật Bản (Zelkova serrata)\\n- Cây du (chi Ulmus)\", \"ko\": \"- 느티나무 (Zelkova serrata)\\n- 느릅나무 (Ulmus 속)\"}"}
+{"word": "コウノトリ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim hạc\", \"ko\": \"- 황새\"}"}
+{"word": "コゲラ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim gõ kiến lùn (Dendrocopos kizuki)\", \"ko\": \"- 작은딱따구리 (Dendrocopos kizuki)\"}"}
+{"word": "コマツナギ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây chàm dại (Indigofera pseudo-tinctoria, họ đậu)\", \"ko\": \"- 코마츠나기 (Indigofera pseudo-tinctoria, 콩과 식물)\"}"}
+{"word": "コリント・ゲーム", "source": "solar-fix", "raw": "{\"vi\": \"- Trò chơi bagatelle (bi lăn ghi điểm)\\n- Bagatelle kiểu Corinthian\", \"ko\": \"- 바가텔 (당구 비슷한 구슬 놀이)\\n- 코린트식 바가텔\"}"}
+{"word": "サイロキシン", "source": "solar-fix", "raw": "{\"vi\": \"- Thyroxine (hormone tuyến giáp)\", \"ko\": \"- 티록신 (갑상선 호르몬)\"}"}
+{"word": "サンドイッチマン", "source": "solar-fix", "raw": "{\"vi\": \"- Người mặc biển quảng cáo di động\", \"ko\": \"- 샌드위치맨\"}"}
+{"word": "サンショウクイ", "source": "solar-fix", "raw": "{\"vi\": \"- Chim đuôi cụt (họ Pittidae)\\n- Chim ăn quả, ăn sâu (các loài họ Pittidae)\", \"ko\": \"- 피타류 (Pittidae과 조류)\\n- 과실을 먹는 조류 (Pittidae과의 총칭)\"}"}
+{"word": "ザンブリ", "source": "solar-fix", "raw": "{\"vi\": \"- Sò cát lớn (Mesodesma donacium)\", \"ko\": \"- 대형 조개의 일종 (Mesodesma donacium)\"}"}
+{"word": "シュウカイドウ", "source": "solar-fix", "raw": "{\"vi\": \"- Hải đường thu (Begonia grandis)\", \"ko\": \"- 추해당 (베고니아)\"}"}
+{"word": "シラウオ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá băng\\n- Cá mì\\n- Cá cơm trắng\", \"ko\": \"- 빙어\\n- 면어 (실처럼 가는 생선)\\n- 작은 흰살 치어\"}"}
+{"word": "ジェット・ラグ", "source": "solar-fix", "raw": "{\"vi\": \"- Chứng lệch múi giờ\\n- Sự mệt mỏi do thay đổi múi giờ\", \"ko\": \"- 시차 적응\"}"}
+{"word": "ジャンバー", "source": "solar-fix", "raw": "{\"vi\": \"- Áo khoác ngắn (loại jacket)\\n- Dây chuyển mạch (jumper cable)\\n- Đầu nối chuyển mạch (jumper)\", \"ko\": \"- 점퍼 (재킷)\\n- 점프 케이블 (전기)\\n- 점퍼 커넥터\"}"}
+{"word": "スターズ・アンド・ストライプス", "source": "solar-fix", "raw": "{\"vi\": \"- Cờ sao sọc (quốc kỳ Hoa Kỳ)\\n- Hoa Kỳ (nghĩa chuyển)\", \"ko\": \"- 성조기 (미국 국기)\\n- 미국 (환유)\"}"}
+{"word": "ステッキ", "source": "solar-fix", "raw": "{\"vi\": \"- Gậy chống\\n- Gậy\\n- Đũa phép\", \"ko\": \"- 지팡이\\n- 지팡이 (막대기)\\n- 마법 지팡이\"}"}
+{"word": "スロー", "source": "solar-fix", "raw": "{\"vi\": \"- Chậm (tính từ)\\n- Giảm tốc độ (động từ, thường không có tân ngữ)\\n- Bóng ném chậm (thuật ngữ bóng chày)\", \"ko\": \"- 느린 (형용사)\\n- 늦추다 (동사, 주로 자동사)\\n- 슬로우 피치 (야구 용어)\"}"}
+{"word": "セキショウ", "source": "solar-fix", "raw": "{\"vi\": \"- Thạch xương bồ Nhật (Acorus gramineus)\\n- Thạch xương bồ lá hẹp\", \"ko\": \"- 석창포 (Acorus gramineus)\\n- 잎이 가는 석창포\"}"}
+{"word": "タブ", "source": "solar-fix", "raw": "{\"vi\": \"- Phím tab (trên bàn phím)\\n- Tab (thành phần giao diện trình duyệt)\\n- Thẻ mục lục\", \"ko\": \"- 탭 (키보드 키)\\n- 탭 (브라우저 인터페이스 요소)\\n- 탭 (목차)\"}"}
+{"word": "ダンパー", "source": "solar-fix", "raw": "{\"vi\": \"- Bộ giảm xóc (trong xe)\\n- Thiết bị giảm rung hoặc dao động trong máy móc\\n- Bộ điều chỉnh lưu lượng khí trong hệ thống HVAC\", \"ko\": \"- 댐퍼 (차량의 쇼크 업소버)\\n- 기계의 진동이나 요동을 줄이는 장치\\n- HVAC 시스템의 공기 흐름을 조절하는 부품\"}"}
+{"word": "チャタテムシ", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ sách (psocids)\\n- Ruồi chấy\", \"ko\": \"- 좀벌레 (책먹이)\\n- 이파리 (파리의 일종)\"}"}
+{"word": "チョウジ", "source": "solar-fix", "raw": "{\"vi\": \"- Đinh hương (gia vị)\", \"ko\": \"- 정향 (향신료)\"}"}
+{"word": "ツチクジラ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá voi mỏ Baird (Berardius bairdii)\", \"ko\": \"- 큰부리고래 (Berardius bairdii)\"}"}
+{"word": "ツマグロヨコバイ", "source": "solar-fix", "raw": "{\"vi\": \"- Rầy đầu đen (loài côn trùng, Erythroneura elegantula)\", \"ko\": \"- 검은머리매미충 (곤충의 일종, Erythroneura elegantula)\"}"}
+{"word": "テングザル", "source": "solar-fix", "raw": "{\"vi\": \"- Khỉ mũi dài (Nasalis larvatus)\\n- Người có mũi dài\", \"ko\": \"- 코주부원숭이 (긴 코 원숭이)\\n- 긴 코를 가진 사람\"}"}
+{"word": "トコン", "source": "solar-fix", "raw": "{\"vi\": \"- Cây ipecac (Cephaelis ipecacuanha)\\n- Cây ipecacuanha (thực vật dùng làm thuốc)\", \"ko\": \"- 토근 (이페카크, Cephaelis ipecacuanha)\\n- 토근 (구토제 원료 식물)\"}"}
+{"word": "トラツグミ", "source": "solar-fix", "raw": "{\"vi\": \"- Hoét vảy (chim hoét đốm)\", \"ko\": \"- 점박이지빠귀 (Zoothera aurea)\"}"}
+{"word": "トーチカ", "source": "solar-fix", "raw": "{\"vi\": \"- Lô cốt (công sự bê tông)\", \"ko\": \"- 토치카 (기관총 진지)\"}"}
+{"word": "ドライリハーサル", "source": "solar-fix", "raw": "{\"vi\": \"- Buổi tập thử không có âm thanh\", \"ko\": \"- 드라이 리허설 (음향·의상 없이 하는 예행 연습)\"}"}
+{"word": "ナタガマ", "source": "solar-fix", "raw": "{\"vi\": \"- Dao hái (liềm lưỡi cong để chặt cành)\", \"ko\": \"- 갈고리낫 (전정용 칼)\"}"}
+{"word": "ネットプライス", "source": "solar-fix", "raw": "{\"vi\": \"- Giá ròng (không tính thuế, phí phụ thêm)\", \"ko\": \"- 순가 (세금·부가비 제외 가격)\"}"}
+{"word": "ノミナル", "source": "solar-fix", "raw": "{\"vi\": \"- Danh nghĩa (chỉ trên danh nghĩa)\", \"ko\": \"- 명목상의 (명의뿐인)\"}"}
+{"word": "ハコベ", "source": "solar-fix", "raw": "{\"vi\": \"- Cỏ sao (chickweed)\\n- Cỏ sao dại\", \"ko\": \"- 좀별꽃 (별꽃속 풀)\\n- 별꽃류\"}"}
+{"word": "ハバナ", "source": "solar-fix", "raw": "{\"vi\": \"- Havana (thủ đô Cuba)\", \"ko\": \"- 아바나\"}"}
+{"word": "ハマヒルガオ", "source": "solar-fix", "raw": "{\"vi\": \"- Bìm bìm biển (Calystegia soldanella)\", \"ko\": \"- 갯메꽃 (Calystegia soldanella)\"}"}
+{"word": "ハリエンジュ", "source": "solar-fix", "raw": "{\"vi\": \"- Keo đen (Robinia pseudoacacia, cây họ đậu)\", \"ko\": \"- 아까시나무 (Robinia pseudoacacia)\"}"}
+{"word": "バイアステープ", "source": "solar-fix", "raw": "{\"vi\": \"- Băng vải chéo (dùng để viền vải)\", \"ko\": \"- 바이어스 테이프 (비스듬히 재단한 끈)\"}"}
+{"word": "バーベナ", "source": "solar-fix", "raw": "{\"vi\": \"- Cỏ roi ngựa (họ cỏ roi ngựa)\", \"ko\": \"- 베르베나\"}"}
+{"word": "ヒイラギ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây ô rô (cây có lá gai, quả đỏ)\\n- Cây giống ô rô\\n- Cá liệt (cá biển nhỏ, dẹt, bạc)\", \"ko\": \"- 호랑가시나무\\n- 호랑가시나무 비슷한 나무\\n- 작은 은빛 납작한 바닷물고기\"}"}
+{"word": "ヒラタケ", "source": "solar-fix", "raw": "{\"vi\": \"- Nấm sò (Pleurotus ostreatus)\", \"ko\": \"- 평버섯 (Pleurotus ostreatus)\"}"}
+{"word": "ビア", "source": "solar-fix", "raw": "{\"vi\": \"- Bia\", \"ko\": \"- 맥주\"}"}
+{"word": "ビンロウジ", "source": "solar-fix", "raw": "{\"vi\": \"- Hạt cây cau\\n- Trầu cau\", \"ko\": \"- 빈랑 (아레카 열매)\\n- 빈랑나무 열매\"}"}
+{"word": "ファール", "source": "solar-fix", "raw": "{\"vi\": \"- Phạm lỗi (trong thể thao)\\n- Bóng phạm lỗi\", \"ko\": \"- 파울 (규칙 위반)\\n- 파울 볼\"}"}
+{"word": "ベイ", "source": "solar-fix", "raw": "{\"vi\": \"- Vịnh\\n- Vũng\", \"ko\": \"- 만\\n- 만주 (큰 만)\"}"}
+{"word": "ペストウ", "source": "solar-fix", "raw": "{\"vi\": \"- Bệnh dịch (bạch huyết, nhiễm trùng máu hoặc phổi)\\n- Dịch (thông tục, chỉ bệnh)\", \"ko\": \"- 페스트 (흑색창, 패혈증성, 폐렴성)\\n- 역병 (구어적 표현)\"}"}
+{"word": "ホシザメ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá chó sao (một loài cá chó)\", \"ko\": \"- 별무늬 상어 (Mustelus asterias)\"}"}
+{"word": "ホホジロ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá nhà táng\", \"ko\": \"- 향유고래\"}"}
+{"word": "ホンジェラス", "source": "solar-fix", "raw": "{\"vi\": \"- Honduras (quốc gia Trung Mỹ)\", \"ko\": \"- 온두라스\"}"}
+{"word": "マイクロウェーブ", "source": "solar-fix", "raw": "{\"vi\": \"- Sóng vi ba (lò vi sóng)\", \"ko\": \"- 전자레인지\"}"}
+{"word": "ポース", "source": "solar-fix", "raw": "{\"vi\": \"- Tư thế hoặc dáng đứng\\n- Khoảng dừng (trong lời nói hoặc hành động)\\n- Bài đăng (trên mạng xã hội)\", \"ko\": \"- 포즈 (자세나 몸짓)\\n- 일시 정지 (말이나 행동에서)\\n- 게시물 (소셜 미디어에서)\"}"}
+{"word": "マイワシ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá mòi Nhật Bản\", \"ko\": \"- 일본 정어리\\n- 마이와시 (일본 정어리)\"}"}
+{"word": "マサキ", "source": "solar-fix", "raw": "{\"vi\": \"- Cây dành dành Nhật (Euonymus japonicus)\", \"ko\": \"- 사방오리나무 (Euonymus japonicus)\"}"}
+{"word": "マツムシソウ", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa cúc dại Nhật (Scabiosa japonica)\", \"ko\": \"- 송충이풀 (Scabiosa japonica)\"}"}
+{"word": "マントル", "source": "solar-fix", "raw": "{\"vi\": \"- Mantle (lớp phủ địa chất)\\n- Lớp phủ (ví dụ: khí)\\n- Lưới đèn khí\", \"ko\": \"- 맨틀\\n- 맨틀 (예: 가스)\\n- 가스 맨틀 (발광망)\"}"}
+{"word": "ミズスマシ", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ nước trượt (côn trùng đi trên mặt nước)\", \"ko\": \"- 소금쟁이\"}"}
+{"word": "ミネラル", "source": "solar-fix", "raw": "{\"vi\": \"- Khoáng chất\", \"ko\": \"- 미네랄 (무기질)\"}"}
+{"word": "ミニゴルフ", "source": "solar-fix", "raw": "{\"vi\": \"- Gôn mini\\n- Chơi gôn kiểu putt-putt\", \"ko\": \"- 미니 골프\\n- 퍼트 퍼트 골프\"}"}
+{"word": "ムラサキツユクサ", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa bìm bìm tím (Ipomoea nil)\\n- Hoa bìm bìm Nhật Bản\", \"ko\": \"- 보라색 나팔꽃 (Ipomoea nil)\\n- 일본 나팔꽃\"}"}
+{"word": "メジロザメ", "source": "solar-fix", "raw": "{\"vi\": \"- Cá mập vây trắng (Carcharhinus albimarginatus)\", \"ko\": \"- 은지느러미상어 (Carcharhinus albimarginatus)\"}"}
+{"word": "メボウキ", "source": "solar-fix", "raw": "{\"vi\": \"- Húng quế (rau thơm họ bạc hà)\", \"ko\": \"- 바질 (여름 약초)\"}"}
+{"word": "モリプデン", "source": "solar-fix", "raw": "{\"vi\": \"- Molybden\", \"ko\": \"- 몰리브덴\"}"}
+{"word": "ヤグルマギク", "source": "solar-fix", "raw": "{\"vi\": \"- Cúc lam (hoa cúc dại màu lam, Centaurea cyanus)\", \"ko\": \"- 수레국화 (Centaurea cyanus)\"}"}
+{"word": "ヤマイモ", "source": "solar-fix", "raw": "{\"vi\": \"- Khoai mài\", \"ko\": \"- 마 (산약, 참마)\"}"}
+{"word": "ヤブカンゾウ", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa hiên dại (Hemerocallis fulva var. kwanso)\", \"ko\": \"- 들원추리 (Hemerocallis fulva var. kwanso)\"}"}
+{"word": "ヤブコウジ", "source": "solar-fix", "raw": "{\"vi\": \"- Tử kim ngưu (Ardisia japonica)\", \"ko\": \"- 자금우 (Ardisia japonica)\"}"}
+{"word": "ユースホステラー", "source": "solar-fix", "raw": "{\"vi\": \"- Người ở trọ nhà nghỉ thanh niên\", \"ko\": \"- 유스호스텔 이용자 (숙박객)\"}"}
+{"word": "ラウンド・ナンバー", "source": "solar-fix", "raw": "{\"vi\": \"- Số tròn (chia hết cho 10, 100, v.v.)\", \"ko\": \"- 끝수가 0인 수 (예: 100, 1,000)\"}"}
+{"word": "ロリコン", "source": "solar-fix", "raw": "{\"vi\": \"- Lolicon\\n- Kẻ bệnh biến thái (bị thu hút bởi các bé gái)\", \"ko\": \"- 로리콘\\n- 어린 소녀에게 끌리는 사람\"}"}
+{"word": "ローンテニス", "source": "solar-fix", "raw": "{\"vi\": \"- Quần vợt sân cỏ\", \"ko\": \"- 론 테니스 (잔디 코트 테니스)\"}"}
+{"word": "ワイヤ", "source": "solar-fix", "raw": "{\"vi\": \"- Dây kim loại\\n- Cáp thép\", \"ko\": \"- 와이어\\n- 와이어 로프\"}"}
+{"word": "いません", "source": "solar-fix", "raw": "{\"vi\": \"- Không tồn tại (dùng cho sinh vật)\\n- Không có (phủ định sở hữu)\", \"ko\": \"- 없다 (생물의 존재 부정)\\n- 가지고 있지 않다 (소유의 부정)\"}"}
+{"word": "じはんき", "source": "solar-fix", "raw": "{\"vi\": \"- Máy bán hàng tự động\", \"ko\": \"- 자판기\"}"}
+{"word": "ちゃんぽんに", "source": "solar-fix", "raw": "{\"vi\": \"- Gọi món mì Chanchan (một loại súp mì kiểu Nagasaki)\\n- Trộn các nguyên liệu khác một cách tùy tiện\", \"ko\": \"- 짬뽕을 주문하다 (나가사키식)\\n- 여러 재료를 무작위로 섞다\"}"}
+{"word": "とっくり", "source": "solar-fix", "raw": "{\"vi\": \"- Bình đựng rượu\\n- Bình rượu sake miệng hẹp\", \"ko\": \"- 토쿠리 (일본 술 주전자)\\n- 술병 (좁은 주둥이의 작은 병)\"}"}
+{"word": "めがね", "source": "solar-fix", "raw": "{\"vi\": \"- Kính (dụng cụ đeo mắt)\\n- Kính cận\", \"ko\": \"- 안경\"}"}
+{"word": "さ来週", "source": "solar-fix", "raw": "{\"vi\": \"- Tuần sau nữa\", \"ko\": \"- 다다음주\"}"}
+{"word": "串カツ", "source": "solar-fix", "raw": "{\"vi\": \"- Món xiên que tẩm bột chiên giòn (thịt, rau, v.v.)\", \"ko\": \"- 꼬치 튀김\"}"}
+{"word": "叔父", "source": "solar-fix", "raw": "{\"vi\": \"- Bác (anh trai của cha)\\n- Chú (em trai của cha)\\n- Cậu hoặc bác (anh em của mẹ)\", \"ko\": \"- 큰아버지 (아버지의 형)\\n- 삼촌 (아버지의 남동생)\\n- 외삼촌 (어머니의 형제)\"}"}
+{"word": "味覚", "source": "solar-fix", "raw": "{\"vi\": \"- Vị giác\\n- Khẩu vị (khả năng nếm)\\n- Khả năng cảm nhận vị\", \"ko\": \"- 미각\\n- 미뢰\"}"}
+{"word": "平方", "source": "solar-fix", "raw": "{\"vi\": \"- Bình phương (toán học, ví dụ bình phương của 3 là 9)\\n- Bình phương (đơn vị diện tích, ví dụ cm bình phương)\", \"ko\": \"- 제곱\"}"}
+{"word": "御輿", "source": "solar-fix", "raw": "{\"vi\": \"- Kiệu rước thần (được mang trong lễ hội)\\n- Kiệu\\n- Mông, lưng dưới, eo, hông\", \"ko\": \"- 미코시 (축제에서 메는 가마 신사)\\n- 가마\\n- 엉덩이, 허리 아래, 허리\"}"}
+{"word": "患", "source": "solar-fix", "raw": "{\"vi\": \"- Suffer, mắc (bệnh)\\n- Lo lắng, bị ám ảnh (về vấn đề)\\n- Bệnh tật\", \"ko\": \"- 앓다\\n- 걱정하다\\n- 질병 또는 병\"}"}
+{"word": "抹茶", "source": "solar-fix", "raw": "{\"vi\": \"- Bột trà xanh mịn\\n- Trà matcha (thức uống được pha từ bột)\", \"ko\": \"- 말차 (고운 녹차 가루)\\n- 말차 (가루로 탄 차 음료)\"}"}
+{"word": "杉", "source": "solar-fix", "raw": "{\"vi\": \"- Liễu sam (tùng Nhật Bản, Cryptomeria japonica)\", \"ko\": \"- 삼나무\"}"}
+{"word": "水を向ける", "source": "solar-fix", "raw": "{\"vi\": \"- Thăm dò (tình ý của ai)\\n- Gợi mở để ai đó nói ra\", \"ko\": \"- 떠보다\\n- 슬쩍 화제를 꺼내다\"}"}
+{"word": "漢和", "source": "solar-fix", "raw": "{\"vi\": \"- Từ điển Hán tự\\n- Nghiên cứu về chữ Hán-Nhật\", \"ko\": \"- 한자 사전 (한화사전)\\n- 한자와 일본 문자에 관한 연구\"}"}
+{"word": "爪先", "source": "solar-fix", "raw": "{\"vi\": \"- Ngón chân\\n- Mũi giày, mũi tất\", \"ko\": \"- 발가락\\n- 신발, 양말, 스타킹의 끝\"}"}
+{"word": "相撲部屋", "source": "solar-fix", "raw": "{\"vi\": \"- Lò sumo (nhóm lực sĩ và huấn luyện viên)\", \"ko\": \"- 스모 부실 (헤야, 스모 훈련소)\"}"}
+{"word": "秋刀魚", "source": "solar-fix", "raw": "{\"vi\": \"- Cá thu đao Thái Bình Dương\\n- Cá thu đao\", \"ko\": \"- 태평양꽁치\\n- 꽁치\"}"}
+{"word": "組合", "source": "solar-fix", "raw": "{\"vi\": \"- Hiệp hội\\n- Công đoàn\\n- Hội nghề\", \"ko\": \"- 협회\\n- 조합\\n- 길드\"}"}
+{"word": "雄牛", "source": "solar-fix", "raw": "{\"vi\": \"- Bò đực\\n- Bò (đực) kéo cày\\n- Bò đực đã thiến\", \"ko\": \"- 황소\\n- 소 (수소)\\n- 거세소\"}"}
+{"word": "いぼた蠟虫", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ sáp Trung Quốc\\n- Ericerus pela\", \"ko\": \"- 중국 밀랍 깍지벌레\\n- Ericerus pela\"}"}
+{"word": "おかど違い", "source": "solar-fix", "raw": "{\"vi\": \"- Nhầm lẫn, lạc đề (làm sai hướng)\\n- Quá lố, không đúng phận sự (vô lễ)\", \"ko\": \"- 엉뚱하고 잘못됨 (가치가 어긋남)\\n- 분수에 맞지 않음, 실례됨\"}"}
+{"word": "おん鳥", "source": "solar-fix", "raw": "{\"vi\": \"- Chim (từ cổ, biến thể văn chương của từ chỉ chim)\", \"ko\": \"- 새 (의 옛말)\"}"}
+{"word": "かぎ裂き", "source": "solar-fix", "raw": "{\"vi\": \"- Vết cào, vết rách (bởi vuốt, móc)\", \"ko\": \"- 긁힌 자국 (발톱·갈고리에 찢긴 자국)\"}"}
+{"word": "かん夫", "source": "solar-fix", "raw": "{\"vi\": \"- Quan bạch (chức nhiếp chính, tể tướng hàng đầu Nhật Bản xưa)\", \"ko\": \"- 간파쿠 (일본의 섭정 또는 최고 재상 직함)\"}"}
+{"word": "きき酒", "source": "solar-fix", "raw": "{\"vi\": \"- Nếm rượu (tại xưởng nấu rượu sake)\\n- Uống rượu (để kiểm tra chất lượng hoặc hương vị)\", \"ko\": \"- 사케 시음 (양조장에서)\\n- 사케를 마시다 (품질이나 맛을 확인하기 위해)\"}"}
+{"word": "けい線", "source": "solar-fix", "raw": "{\"vi\": \"- Đường kẻ (trong bảng, văn bản)\", \"ko\": \"- 괘선 (표 등의 선)\"}"}
+{"word": "こがね虫", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ hung (bọ cánh cứng màu xanh kim loại)\\n- Bọ hung Mimela splendens (màu xanh kim)\", \"ko\": \"- 금빛 풍뎅이류\\n- Mimela splendens (초록 금빛 풍뎅이)\"}"}
+{"word": "こんにゃく版", "source": "solar-fix", "raw": "{\"vi\": \"- Bản in thạch konjac (kỹ thuật in bản giá rẻ)\", \"ko\": \"- 곤약판 (젤라틴 등사판 인쇄술)\"}"}
+{"word": "す文字", "source": "solar-fix", "raw": "{\"vi\": \"- Chữ đọc là su\\n- Ký hiệu đại diện cho âm su\", \"ko\": \"- '스'로 읽는 글자\\n- '스' 음을 대신하는 글자\"}"}
+{"word": "つけ焼き", "source": "solar-fix", "raw": "{\"vi\": \"- Món nướng (thịt, cá hoặc rau) được phết sốt trong khi nướng\", \"ko\": \"- 조리 중에 소스를 바르는 구이 요리 (고기, 생선 또는 채소)\"}"}
+{"word": "とろろ汁", "source": "solar-fix", "raw": "{\"vi\": \"- Súp khoai mài bào\", \"ko\": \"- 토로로국 (강판에 간 마 탕)\"}"}
+{"word": "のけ反る", "source": "solar-fix", "raw": "{\"vi\": \"- Ngả người ra sau\\n- Ngửa người về phía sau\\n- Bị giật mình (lùi lại)\", \"ko\": \"- 뒤로 젖히다\\n- 몸을 뒤로 젖히다\\n- 깜짝 놀라다\"}"}
+{"word": "はぶ茶", "source": "solar-fix", "raw": "{\"vi\": \"- Trà thảo mộc (làm từ hạt cây họ bạch dương, chi Carpinus, ở Nhật)\", \"ko\": \"- 서어나무차 (일본 서어나무 씨로 만든 차)\"}"}
+{"word": "ひら茸", "source": "solar-fix", "raw": "{\"vi\": \"- Nấm sò (loại nấm ăn được, Pleurotus ostreatus)\", \"ko\": \"- 평버섯 (식용 버섯, Pleurotus ostreatus)\"}"}
+{"word": "ぺんぺん草", "source": "solar-fix", "raw": "{\"vi\": \"- Cỏ túi (Capsella bursa-pastoris, rau dại họ cải)\\n- Cỏ dại nhỏ (nghĩa bóng: thứ vặt vãnh)\", \"ko\": \"- 냉이 (Capsella bursa-pastoris)\\n- 잡초 (하찮은 것에 비유)\"}"}
+{"word": "みつ豆", "source": "solar-fix", "raw": "{\"vi\": \"- Món tráng miệng đậu ngọt (đậu, thạch, xi-rô)\", \"ko\": \"- 미츠마메 (단팥·젤리·시럽 디저트)\"}"}
+{"word": "もみ殻", "source": "solar-fix", "raw": "{\"vi\": \"- Trấu\\n- Vỏ trấu, vỏ thóc\", \"ko\": \"- 왕겨 (벼 껍질)\\n- 겨, 왕겨\"}"}
+{"word": "やり投", "source": "solar-fix", "raw": "{\"vi\": \"- Ném lao (điền kinh)\", \"ko\": \"- 창던지기 (투창)\"}"}
+{"word": "アラブ石油輸出国機構", "source": "solar-fix", "raw": "{\"vi\": \"- Tổ chức các nước Ả Rập xuất khẩu dầu mỏ (OAPEC)\\n- OAPEC\", \"ko\": \"- 아랍 석유 수출국 기구 (OAPEC)\\n- OAPEC\"}"}
+{"word": "イボタ蝋", "source": "solar-fix", "raw": "{\"vi\": \"- Sáp trắng (từ bọ sáp trên cây nữ trinh, dùng làm nến, bóng)\", \"ko\": \"- 이보타왁스 (쥐똥나무의 깍지벌레에서 얻는 흰 밀랍)\"}"}
+{"word": "クズ入れ", "source": "solar-fix", "raw": "{\"vi\": \"- Thùng rác\\n- Thùng đựng rác\", \"ko\": \"- 쓰레기통\\n- 휴지통\"}"}
+{"word": "カホン科", "source": "solar-fix", "raw": "{\"vi\": \"- Không phải từ chuẩn (cahon là nhạc cụ gõ, còn 'khoa' là bậc phân loại sinh học)\", \"ko\": \"- 표준어가 아님 (카혼은 타악기, '과'는 생물 분류 단계 — 조합은 표준 용어 아님)\"}"}
+{"word": "シアン化カリウム", "source": "solar-fix", "raw": "{\"vi\": \"- Kali xyanua (KCN)\", \"ko\": \"- 시안화 칼륨\"}"}
+{"word": "タバコ貯蔵箱", "source": "solar-fix", "raw": "{\"vi\": \"- Hộp ủ xì gà (duy trì độ ẩm)\", \"ko\": \"- 시가 보관 상자 (가습 보관함)\"}"}
+{"word": "ベ平連", "source": "solar-fix", "raw": "{\"vi\": \"- Bê Heiren (Liên hiệp công dân vì hòa bình ở Việt Nam, phong trào phản chiến Nhật)\", \"ko\": \"- 베평련 (베트남에 평화를! 시민연합, 시민 반전 운동)\"}"}
+{"word": "ミミズ腫れ", "source": "solar-fix", "raw": "{\"vi\": \"- Vết sưng dài như giun (do đánh đòn)\", \"ko\": \"- 채질 자국의 부기 (지렁이처럼 부어오름)\"}"}
+{"word": "ワットマン紙", "source": "solar-fix", "raw": "{\"vi\": \"- Giấy Whatman (giấy lọc thí nghiệm chất lượng cao)\", \"ko\": \"- 와트만지 (고급 여과지·도화지)\"}"}
+{"word": "一元", "source": "solar-fix", "raw": "{\"vi\": \"- Sự tập trung hóa (quyền lực, thẩm quyền hoặc quỹ)\\n- Thuyết nhất nguyên (một bản thể duy nhất)\", \"ko\": \"- 중앙집권화 (권력, 권한 또는 자금의)\\n- 일원론 (단일 근본 실체 또는 원리)\"}"}
+{"word": "万両", "source": "solar-fix", "raw": "{\"vi\": \"- Ardisia crenata\\n- Quả san hô (quả đỏ như san hô)\", \"ko\": \"- 만량 (Ardisia crenata)\\n- 산호 열매 (붉은 열매)\"}"}
+{"word": "三つ身", "source": "solar-fix", "raw": "{\"vi\": \"- Cỡ áo kimono trẻ em (chiều dài 3/4 thân)\", \"ko\": \"- 아동용 기모노 치수 (몸길이 3/4)\"}"}
+{"word": "三等親", "source": "solar-fix", "raw": "{\"vi\": \"- Họ hàng đời thứ ba (ba đời)\", \"ko\": \"- 3촌 이내 친족 (예: 삼촌, 조카)\"}"}
+{"word": "三面", "source": "solar-fix", "raw": "{\"vi\": \"- Ba mặt\\n- Ba cái mặt (của vật)\\n- Trang ba\", \"ko\": \"- 세 면\\n- 세 개의 면\\n- 3페이지\"}"}
+{"word": "上絵", "source": "solar-fix", "raw": "{\"vi\": \"- Trang trí men phủ (trên đồ gốm)\\n- Họa tiết vẽ phủ lên men\", \"ko\": \"- 상회 (유약 위에 그린 무늬)\\n- 유약 위에 칠한 무늬\"}"}
+{"word": "下駄屋", "source": "solar-fix", "raw": "{\"vi\": \"- Cửa hàng bán dép gỗ (geta)\", \"ko\": \"- 게타 가게 (나막신 가게)\"}"}
+{"word": "不精ひげ", "source": "solar-fix", "raw": "{\"vi\": \"- Râu lởm chởm (vài ngày chưa cạo)\\n- Vẻ ngoài chưa cạo râu\", \"ko\": \"- 수염\\n- 덥수룩한 모습\"}"}
+{"word": "与え", "source": "solar-fix", "raw": "{\"vi\": \"- Được cho, được trao (dạng phân từ)\\n- Dạng thân của động từ 'cho' (trong từ ghép)\", \"ko\": \"- 주어진 것\\n- 부여 (합성어에서)\"}"}
+{"word": "中継局", "source": "solar-fix", "raw": "{\"vi\": \"- Đài chuyển tiếp phát sóng\\n- Trạm chuyển tiếp tín hiệu\", \"ko\": \"- 중계국\\n- 중계소\"}"}
+{"word": "丸坊主", "source": "solar-fix", "raw": "{\"vi\": \"- Đầu trọc cạo sạch\\n- Cạo đầu trọc\", \"ko\": \"- 빡빡 민 머리\\n- 머리를 밀다\"}"}
+{"word": "丹朱", "source": "solar-fix", "raw": "{\"vi\": \"- Chu sa (bột màu đỏ son)\\n- Màu đỏ son\", \"ko\": \"- 주사\\n- 주홍색\"}"}
+{"word": "主脳者", "source": "solar-fix", "raw": "{\"vi\": \"- Nhân vật chủ chốt\\n- Người dẫn đầu, linh hồn của tổ chức\", \"ko\": \"- 주모자 (중심 인물)\\n- 주도 인물\"}"}
+{"word": "二重水素", "source": "solar-fix", "raw": "{\"vi\": \"- Deuterium\\n- Hydro nặng\", \"ko\": \"- 중수소 (무거운 수소)\\n- 듀테륨\"}"}
+{"word": "二頭立て", "source": "solar-fix", "raw": "{\"vi\": \"- Xe ngựa hai con (hoặc phương tiện tương tự được kéo bởi hai con vật)\\n- Đôi gia súc kéo (thường là ngựa) được buộc chung\", \"ko\": \"- 두 마리 마차 (두 짐승이 끄는 차)\\n- 멍에를 함께 맨 두 마리의 역축 (보통 말)\"}"}
+{"word": "五重奏", "source": "solar-fix", "raw": "{\"vi\": \"- Ngũ trọng tấu (bè nhạc cho năm nhạc cụ)\", \"ko\": \"- 오중주\"}"}
+{"word": "亜酸化窒素", "source": "solar-fix", "raw": "{\"vi\": \"- Đinitơ monoxit (N2O, khí cười)\", \"ko\": \"- 아산화질소\"}"}
+{"word": "人臣", "source": "solar-fix", "raw": "{\"vi\": \"- Chư thần\\n- Bề tôi, gia thần\", \"ko\": \"- 신하\\n- 가신\"}"}
+{"word": "仔牛", "source": "solar-fix", "raw": "{\"vi\": \"- Bê (bò con)\", \"ko\": \"- 송아지\"}"}
+{"word": "代理大使", "source": "solar-fix", "raw": "{\"vi\": \"- Đại biện lâm thời (thay thế đại sứ)\", \"ko\": \"- 대리대사 (주재 대사 부재 시 업무 대행)\"}"}
+{"word": "仰けぞる", "source": "solar-fix", "raw": "{\"vi\": \"- Ngả người ra sau\\n- Ngửa người về phía sau\\n- Bị giật mình\", \"ko\": \"- 뒤로 젖히다\\n- 몸을 뒤로 젖히다\\n- 깜짝 놀라다\"}"}
+{"word": "伍長", "source": "solar-fix", "raw": "{\"vi\": \"- Hạ sĩ\", \"ko\": \"- 병장\"}"}
+{"word": "係長", "source": "solar-fix", "raw": "{\"vi\": \"- Tổ trưởng, trưởng nhóm\\n- Trợ lý quản lý\\n- Trưởng văn phòng\", \"ko\": \"- 계장 (말단 관리직)\\n- 주임급 보조\\n- 주임\"}"}
+{"word": "傘貝", "source": "solar-fix", "raw": "{\"vi\": \"- Ốc biển hình ô (loài ốc có vỏ như chiếc ô)\", \"ko\": \"- 우산가이 (바다 달팽이의 일종)\"}"}
+{"word": "優婆塞", "source": "solar-fix", "raw": "{\"vi\": \"- Cận sự nam (Phật tử tại gia)\", \"ko\": \"- 우바새 (재가불자, 남자 신도)\"}"}
+{"word": "先入", "source": "solar-fix", "raw": "{\"vi\": \"- Thành kiến, ấn tượng có trước (bộ phận của thiên kiến)\", \"ko\": \"- 선입 (선입견)\"}"}
+{"word": "光鹵石", "source": "solar-fix", "raw": "{\"vi\": \"- Đá carnallit (khoáng vật kali-magiê clorua)\", \"ko\": \"- 카르날리트 (광물)\"}"}
+{"word": "入夫", "source": "solar-fix", "raw": "{\"vi\": \"- Chồng về ở nhà vợ (rể về nhà vợ)\", \"ko\": \"- 처가에 들어가다\"}"}
+{"word": "公孫樹", "source": "solar-fix", "raw": "{\"vi\": \"- Cây bạch quả\\n- Cây tóc tiên (tên khác)\", \"ko\": \"- 은행나무\"}"}
+{"word": "公魚", "source": "solar-fix", "raw": "{\"vi\": \"- Cá wakasagi (cá nhỏ họ Osmeridae)\", \"ko\": \"- 빙어 (와카사기)\"}"}
+{"word": "内侍", "source": "solar-fix", "raw": "{\"vi\": \"- Thị nữ (cung nữ hầu cận)\\n- Nữ quan trong cung\", \"ko\": \"- 시녀 (궁중 시종)\\n- 궁녀\"}"}
+{"word": "冷水摩擦", "source": "solar-fix", "raw": "{\"vi\": \"- Xoa cơ thể bằng nước lạnh (luyện pháp sức khỏe)\", \"ko\": \"- 냉수 마찰 (찬물로 몸을 문지르는 건강법)\"}"}
+{"word": "出札掛", "source": "solar-fix", "raw": "{\"vi\": \"- Nhân viên bán vé\", \"ko\": \"- 매표원\"}"}
+{"word": "分署", "source": "solar-fix", "raw": "{\"vi\": \"- Trạm chi nhánh (đồn nhỏ của cơ quan)\\n- Chi nhánh cơ quan\", \"ko\": \"- 지서, 분소 (지방 파출 기관)\\n- 분청, 지점\"}"}
+{"word": "刳り船", "source": "solar-fix", "raw": "{\"vi\": \"- Thuyền đục thân (thuyền độc mộc)\", \"ko\": \"- 통나무배 (파서 만든 배)\"}"}
+{"word": "削氷機", "source": "solar-fix", "raw": "{\"vi\": \"- Máy bào đá\", \"ko\": \"- 빙수기 (얼음 깎는 기계)\"}"}
+{"word": "剛情", "source": "solar-fix", "raw": "{\"vi\": \"- Bướng bỉnh\\n- Cứng đầu\\n- Ngang bướng\", \"ko\": \"- 완고하다\\n- 고집이 세다\\n- 고집불통\"}"}
+{"word": "十六夜", "source": "solar-fix", "raw": "{\"vi\": \"- Trăng đêm mười sáu (sau rằm)\", \"ko\": \"- 열여섯 번째 밤의 달\"}"}
+{"word": "南磁極", "source": "solar-fix", "raw": "{\"vi\": \"- Cực từ nam\", \"ko\": \"- 남자기극\"}"}
+{"word": "即時払い", "source": "solar-fix", "raw": "{\"vi\": \"- Thanh toán ngay lập tức\", \"ko\": \"- 즉시 지불\"}"}
+{"word": "卵綴", "source": "solar-fix", "raw": "{\"vi\": \"- Dáng chữ như hình quả trứng\\n- Biến thể chính tả của chữ chỉ trứng\", \"ko\": \"- 달걀 모양\\n- '란'이라는 글자의 변형\"}"}
+{"word": "友釣り", "source": "solar-fix", "raw": "{\"vi\": \"- Câu cá bằng mồi sống (đặc biệt là cá hương ayu)\", \"ko\": \"- 은어 낚시 (산 은어를 미끼로 쓰는 낚시)\"}"}
+{"word": "受け口", "source": "solar-fix", "raw": "{\"vi\": \"- Hàm dưới nhô (răng cắn ngược)\", \"ko\": \"- 아래턱이 나온 입모양 (반대 교합)\"}"}
+{"word": "口げんか", "source": "solar-fix", "raw": "{\"vi\": \"- Cãi vã\\n- Tranh chấp\\n- Tranh cãi\", \"ko\": \"- 말다툼\\n- 다툼\\n- 논쟁\"}"}
+{"word": "叩き切る", "source": "solar-fix", "raw": "{\"vi\": \"- Chặt (gỗ, thịt, v.v.)\\n- Chặt đứt (ví dụ: đầu)\", \"ko\": \"- 난도질하다 (찍어 끊다)\\n- (장작, 고기 등을) 썰다\\n- (머리 등을) 잘라 내다\"}"}
+{"word": "合歓木", "source": "solar-fix", "raw": "{\"vi\": \"- Cây hợp hoan (Albizia julibrissin)\\n- Cây hợp hoan (tóc tằm)\", \"ko\": \"- 자귀나무 (Albizia julibrissin)\\n- 미모사 (속칭)\"}"}
+{"word": "君影草", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa linh lan (hoa chuông thung lũng)\", \"ko\": \"- 은방울꽃\"}"}
+{"word": "吹き付ける", "source": "solar-fix", "raw": "{\"vi\": \"- Thổi mạnh vào (gió thổi vào)\\n- Phun (sơn, v.v. lên bề mặt)\", \"ko\": \"- 불어대다\\n- 분사 (페인트 등)\"}"}
+{"word": "告口", "source": "solar-fix", "raw": "{\"vi\": \"- Mách lẻo, tố cáo (kể chuyện xấu sau lưng)\", \"ko\": \"- 고자질 (일러바침)\"}"}
+{"word": "命名", "source": "solar-fix", "raw": "{\"vi\": \"- Việc đặt tên\\n- Nghi thức đặt tên cho trẻ\", \"ko\": \"- 명명\\n- 세례\"}"}
+{"word": "唐黍", "source": "solar-fix", "raw": "{\"vi\": \"- Cao lương (Sorghum bicolor)\\n- Cây lúa miến\", \"ko\": \"- 수수\\n- 인도 기장\"}"}
+{"word": "嘴広鴨", "source": "solar-fix", "raw": "{\"vi\": \"- Vịt wigeon Âu (Mareca penelope)\\n- Vịt mỏ ngắn đặc trưng\", \"ko\": \"- 흰이마오리 (Mareca penelope)\\n- 짧고 푸른 부리를 가진 오리\"}"}
+{"word": "地役権", "source": "solar-fix", "raw": "{\"vi\": \"- Quyền địa dịch (quyền dùng đất của người khác cho mục đích nhất định)\", \"ko\": \"- 지역권 (타인 토지 이용권)\"}"}
+{"word": "堡礁", "source": "solar-fix", "raw": "{\"vi\": \"- Rạn san hô viền bờ (chắn trước bờ biển)\", \"ko\": \"- 보초 (방벽형 산호초)\"}"}
+{"word": "塩化金", "source": "solar-fix", "raw": "{\"vi\": \"- Clorua vàng\", \"ko\": \"- 염화금\"}"}
+{"word": "夏眠", "source": "solar-fix", "raw": "{\"vi\": \"- Ngủ mùa hè (ngủ hè)\", \"ko\": \"- 하면 (여름잠)\"}"}
+{"word": "多頭政治", "source": "solar-fix", "raw": "{\"vi\": \"- Chế độ đa nguyên (chính trị)\", \"ko\": \"- 다두정 (여럿이 다스리는 정치)\"}"}
+{"word": "夜戦", "source": "solar-fix", "raw": "{\"vi\": \"- Trận đánh ban đêm (tác chiến đêm)\", \"ko\": \"- 야전 (야간 전투)\"}"}
+{"word": "夜霧", "source": "solar-fix", "raw": "{\"vi\": \"- Sương đêm\", \"ko\": \"- 밤안개\"}"}
+{"word": "大名", "source": "solar-fix", "raw": "{\"vi\": \"- Đại danh (daimyo, lãnh chúa phong kiến Nhật)\", \"ko\": \"- 다이묘\"}"}
+{"word": "大山木", "source": "solar-fix", "raw": "{\"vi\": \"- Cây lớn (cụ thể là cây du lớn, Zelkova serrata)\\n- Họ\", \"ko\": \"- 큰 나무 (특히 느티나무)\\n- 성씨\"}"}
+{"word": "大軍艦鳥", "source": "solar-fix", "raw": "{\"vi\": \"- Chim cướp biển lớn (Fregata minor)\", \"ko\": \"- 큰군함조 (Fregata minor)\"}"}
+{"word": "天牛", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ sừng dài (họ Cerambycidae)\", \"ko\": \"- 하늘소\"}"}
+{"word": "太鼓腹", "source": "solar-fix", "raw": "{\"vi\": \"- Bụng bia\\n- Bụng to\", \"ko\": \"- 불룩 나온 배 (장군배)\"}"}
+{"word": "奥書き", "source": "solar-fix", "raw": "{\"vi\": \"- Chú thích cuối sách (văn bản ở cuối sách trình bày thông tin xuất bản)\\n- Lời sau hoặc nhận xét kết luận trong một tài liệu\", \"ko\": \"- 발문 (책 끝에 출판 정보를 적은 글)\\n- 후기, 맺는말\"}"}
+{"word": "女郎花", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa nữ lang (Patrinia scabiosaefolia)\", \"ko\": \"- 오미나에시 (Patrinia scabiosaefolia, 노란 꽃)\"}"}
+{"word": "女日芝", "source": "solar-fix", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể là lỗi OCR hoặc lỗi chính tả)\", \"ko\": \"- 표준어가 아님 (오기 또는 OCR 오류로 추정)\"}"}
+{"word": "姫秧鶏", "source": "solar-fix", "raw": "{\"vi\": \"- Gà nước nhỏ (Porzana parva)\", \"ko\": \"- 쇠뜸부기 (Porzana parva)\"}"}
+{"word": "子癇", "source": "solar-fix", "raw": "{\"vi\": \"- Sản giật (co giật trong thai kỳ)\", \"ko\": \"- 자간\"}"}
+{"word": "宣誓", "source": "solar-fix", "raw": "{\"vi\": \"- Lời thề\\n- Lời từ bỏ (niềm tin)\\n- Lời cam kết\", \"ko\": \"- 맹세\\n- 포기 선언 (신앙 등)\\n- 서약\"}"}
+{"word": "寒鮒", "source": "solar-fix", "raw": "{\"vi\": \"- Cá diếc bắt được vào giữa mùa đông\", \"ko\": \"- 한겨울에 잡은 붕어\"}"}
+{"word": "将軍職", "source": "solar-fix", "raw": "{\"vi\": \"- Chức vị Tướng quân (chức vụ của shogun)\\n- Quyền lực, thẩm quyền của Tướng quân\", \"ko\": \"- 쇼군직 (쇼군이 맡은 직위나 직책)\\n- 쇼군 권한 (쇼군이 행사하는 권력이나 관할권)\"}"}
+{"word": "小寒", "source": "solar-fix", "raw": "{\"vi\": \"- Tiểu hàn (tiết khí đầu mùa đông)\", \"ko\": \"- 소한\"}"}
+{"word": "小揚げ", "source": "solar-fix", "raw": "{\"vi\": \"- Đậu phụ chiên nhỏ (thường dùng trong oden hoặc các món hầm)\\n- Túi đậu phụ chiên ngập dầu (dùng cho inari sushi)\", \"ko\": \"- 작은 튀김 두부 (오뎅이나 조림 요리에 사용)\\n- 튀긴 두부 주머니 (이나리 초밥에 사용)\"}"}
+{"word": "小頭", "source": "solar-fix", "raw": "{\"vi\": \"- Người đứng đầu nhóm nhỏ (đội trưởng)\", \"ko\": \"- 우두머리 (작은 집단의 장)\"}"}
+{"word": "少将", "source": "solar-fix", "raw": "{\"vi\": \"- Thiếu tướng (quân đội)\\n- Phó Đô đốc (hải quân)\\n- Chuẩn Đô đốc (không quân)\", \"ko\": \"- 소장\\n- 해군 소장\\n- 공군 준장\"}"}
+{"word": "尺取虫", "source": "solar-fix", "raw": "{\"vi\": \"- Sâu đo (ấu trùng bướm họ Geometridae)\\n- Ẩn dụ: người tiến chậm nhưng đều\", \"ko\": \"- 자벌레 (뿔나방과의 애벌레)\\n- 은유: 느리지만 꾸준히 전진하는 것\"}"}
+{"word": "山猫争議", "source": "solar-fix", "raw": "{\"vi\": \"- Đình công tự phát (không được cấp trên cho phép)\", \"ko\": \"- 무단 파업 (비공식 자발적 파업)\"}"}
+{"word": "山雀", "source": "solar-fix", "raw": "{\"vi\": \"- Chim bạc má (chim nhỏ bộ sẻ)\", \"ko\": \"- 박새\"}"}
+{"word": "岩礁", "source": "solar-fix", "raw": "{\"vi\": \"- Rạn đá, đá ngầm\", \"ko\": \"- 암초\"}"}
+{"word": "巻き脚絆", "source": "solar-fix", "raw": "{\"vi\": \"- Đai quấn ống chân (của bộ binh)\", \"ko\": \"- 각반 (정강이 감는 천)\"}"}
+{"word": "巻繊汁", "source": "solar-fix", "raw": "{\"vi\": \"- Canh cá thu cuộn (món Nhật gồm cá thu cuộn hầm trong nước dùng)\", \"ko\": \"- 고등어 말이 국 (말은 고등어를 육수에 끓인 일본 요리)\"}"}
+{"word": "希伯来", "source": "solar-fix", "raw": "{\"vi\": \"- Tiếng Hebrew (tiếng Do Thái)\", \"ko\": \"- 히브리어\"}"}
+{"word": "平信", "source": "solar-fix", "raw": "{\"vi\": \"- Thư thường (không đăng ký)\", \"ko\": \"- 보통 우편 (등기 아님)\"}"}
+{"word": "幻日", "source": "solar-fix", "raw": "{\"vi\": \"- Mặt trời ảo (parhelion)\\n- Hiện tượng mặt trời giả\", \"ko\": \"- 가짜 해 (환일 현상)\\n- 햇무리\"}"}
+{"word": "床虱", "source": "solar-fix", "raw": "{\"vi\": \"- Bọ giường\", \"ko\": \"- 빈대\"}"}
+{"word": "府立", "source": "solar-fix", "raw": "{\"vi\": \"- Thuộc phủ (cấp hành chính đô thị)\\n- Của phủ\", \"ko\": \"- 부립 (도도부 소속)\"}"}
+{"word": "座ぶとん", "source": "solar-fix", "raw": "{\"vi\": \"- Đệm ngồi (dùng trên chiếu tatami hoặc sàn nhà)\\n- Đệm ngồi thiền (zafu)\", \"ko\": \"- 방석 (다다미나 바닥에 앉을 때 사용)\\n- 좌복 (명상 방석)\"}"}
+{"word": "廿日大根", "source": "solar-fix", "raw": "{\"vi\": \"- Củ cải 20 ngày (củ cải nhỏ nhanh lớn, thu hoạch khoảng 20 ngày sau khi gieo)\\n- Củ cải sớm\", \"ko\": \"- 이십일 무 (파종 후 약 20일 만에 수확하는 작은 무)\\n- 조기 수확 무\"}"}
+{"word": "引立て", "source": "solar-fix", "raw": "{\"vi\": \"- Thúc đẩy (sự nghiệp hoặc địa vị của ai đó)\\n- Ủng hộ, bênh vực (một người hoặc một mục đích)\\n- Làm nổi bật (một điều gì đó)\", \"ko\": \"- 후원하다 (출세를 도움)\\n- 지지하거나 후원하다\\n- 돋보이게 부각시키다\"}"}
+{"word": "形式的", "source": "solar-fix", "raw": "{\"vi\": \"- Thuộc hình thức (mang tính hình thức)\", \"ko\": \"- 형식적인\"}"}
+{"word": "往路", "source": "solar-fix", "raw": "{\"vi\": \"- Lượt đi (chặng từ điểm xuất phát)\", \"ko\": \"- 가는 길 (출발지로부터의 구간)\"}"}
+{"word": "従卒", "source": "solar-fix", "raw": "{\"vi\": \"- Lính hầu, bồi tá (cấp dưới phục vụ sĩ quan)\\n- Kẻ dưới tay, thủ hạ\", \"ko\": \"- 전령병 (장교를 시중하는 병사)\\n- 부하, 수하\"}"}
+{"word": "御浚い", "source": "solar-fix", "raw": "{\"vi\": \"- Nạo vét (ao, sông, hoặc bể)\\n- Nạo vét\", \"ko\": \"- 준설하다 (연못, 강, 탱크 등을 파내다)\\n- 준설\"}"}
+{"word": "心筋炎", "source": "solar-fix", "raw": "{\"vi\": \"- Viêm cơ tim\", \"ko\": \"- 심근염\"}"}
+{"word": "志ぐれ煮", "source": "solar-fix", "raw": "{\"vi\": \"- Món hầm cá mòi (iwashi) và rau, thường nêm nước tương, mirin và sake\", \"ko\": \"- 정어리 조림 (채소와 간장, 미림, 사케로 조린 요리)\"}"}
+{"word": "急便", "source": "solar-fix", "raw": "{\"vi\": \"- Dịch vụ chuyển phát nhanh\\n- Thư từ khẩn cấp\", \"ko\": \"- 특급 배송\\n- 긴급 서신\"}"}
+{"word": "恙虫病", "source": "solar-fix", "raw": "{\"vi\": \"- Bệnh sốt mò (tsutsugamushi)\", \"ko\": \"- 쯔쯔가무시병\"}"}
+{"word": "懐中電燈", "source": "solar-fix", "raw": "{\"vi\": \"- Đèn pin điện\\n- Đèn soi\", \"ko\": \"- 손전등\\n- 전기 손전등\"}"}
+{"word": "戒厳", "source": "solar-fix", "raw": "{\"vi\": \"- Thiết quân luật\", \"ko\": \"- 계엄령\"}"}
+{"word": "所書き", "source": "solar-fix", "raw": "{\"vi\": \"- Hồ sơ ghi lại (sự kiện, quyết định, hoặc lời khai)\\n- Bản tường trình hoặc bản ghi chép bằng văn bản\", \"ko\": \"- 기록 (사건, 결정, 증언의)\\n- 서면 진술, 문서\"}"}
+{"word": "打診器", "source": "solar-fix", "raw": "{\"vi\": \"- Búa gõ khám (dụng cụ gõ phản xạ, thăm dò)\", \"ko\": \"- 타진봉 (반사 검사용 망치)\"}"}
+{"word": "投縄", "source": "solar-fix", "raw": "{\"vi\": \"- Thòng lọng (dây quăng bắt gia súc)\", \"ko\": \"- 라소\"}"}
+{"word": "振りかぶる", "source": "solar-fix", "raw": "{\"vi\": \"- Vung (tay để ném hoặc vung)\\n- Chuẩn bị cho một đòn đánh hoặc tấn công\", \"ko\": \"- (던지기나 스윙을 위해) 팔을 크게 뒤로 젖히다\\n- 타격이나 공격을 준비하다\"}"}
+{"word": "掃射", "source": "solar-fix", "raw": "{\"vi\": \"- Bắn quét\\n- Quét hạ bằng hỏa lực\\n- Bắn yểm trợ\", \"ko\": \"- 쓸어 쏘다 (기총 소사)\\n- 쓸어 눕히다\\n- 기총 소사하다\"}"}
+{"word": "掛軸", "source": "solar-fix", "raw": "{\"vi\": \"- Tranh cuộn treo (kakemono)\\n- Cuộn tranh treo tường\", \"ko\": \"- 족자 (걸어 두는 그림 두루마리)\"}"}
+{"word": "揚げ雲雀", "source": "solar-fix", "raw": "{\"vi\": \"- Chim sơn ca chiên (món làm từ thịt chim sơn ca)\\n- Chim cút chiên (thường gọi là age-hibari)\", \"ko\": \"- 종다리 튀김 (종다리 고기로 만든 요리)\\n- 메추라기 튀김 (통칭 아게히바리)\"}"}
+{"word": "摂津", "source": "solar-fix", "raw": "{\"vi\": \"- Settsu (tỉnh cũ ở miền bắc, trung Osaka và đông nam Hyogo ngày nay)\", \"ko\": \"- 셋추 (오사카 북부·중부와 효고현 남동부의 옛 지방)\"}"}
+{"word": "改札係", "source": "solar-fix", "raw": "{\"vi\": \"- Người kiểm tra vé\\n- Người thu vé\\n- Người thanh tra\", \"ko\": \"- 검표원\\n- 표 수거원\\n- 검사원\"}"}
+{"word": "救貧院", "source": "solar-fix", "raw": "{\"vi\": \"- Nhà tế bần\\n- Viện cứu trợ người nghèo\\n- Nhà trại lao động cứu tế\", \"ko\": \"- 구빈원\\n- 구빈 노동장\"}"}
+{"word": "文机", "source": "solar-fix", "raw": "{\"vi\": \"- Bàn viết kiểu Nhật\", \"ko\": \"- 일본식 서안 (책상)\"}"}
+{"word": "斑晶", "source": "solar-fix", "raw": "{\"vi\": \"- Ban tinh (tinh thể lớn nằm trong đá magma có hạt mịn)\", \"ko\": \"- 반정 (반상조직의 큰 결정)\"}"}
+{"word": "斬殺す", "source": "solar-fix", "raw": "{\"vi\": \"- Giết bằng kiếm (đao, găm, v.v.)\\n- Giết\\n- Chém chết\", \"ko\": \"- 칼(검, 단검 등)로 죽이다\\n- 살해하다\\n- 참수하다\"}"}
+{"word": "方ホウ石", "source": "solar-fix", "raw": "{\"vi\": \"- Borax (natri borat)\", \"ko\": \"- 붕사 (나트륨 붕산염)\"}"}
+{"word": "日清", "source": "solar-fix", "raw": "{\"vi\": \"- Chiến tranh Nhật-Thanh lần thứ nhất (1894-1895)\\n- Nhật Bản và Thanh triều Trung Quốc\\n- Nissin Foods\", \"ko\": \"- 청일전쟁 (1894-1895)\\n- 일본과 청나라\\n- 닛신 푸드\"}"}
+{"word": "昇降舵", "source": "solar-fix", "raw": "{\"vi\": \"- Cánh lái độ cao (trên máy bay)\\n- Bộ phận điều khiển trục dọc\", \"ko\": \"- 승강타 (항공기의 수평 꼬리 조종면)\"}"}
+{"word": "星群", "source": "solar-fix", "raw": "{\"vi\": \"- Nhóm sao (tập hợp sao không phải chòm sao chính thức)\", \"ko\": \"- 성군 (정식 별자리가 아닌 별의 무리)\"}"}
+{"word": "昼盲症", "source": "solar-fix", "raw": "{\"vi\": \"- Chứng mù ban ngày\\n- Chứng kém mắt dưới ánh sáng ban ngày\", \"ko\": \"- 주맹 (낮에 잘 안 보이는 눈병)\"}"}
+{"word": "暗殺未遂", "source": "solar-fix", "raw": "{\"vi\": \"- Âm mưu ám sát thất bại\", \"ko\": \"- 암살 미수\"}"}
+{"word": "有明", "source": "solar-fix", "raw": "{\"vi\": \"- Trăng còn sáng lúc rạng đông (trăng mờ ban mai)\\n- Ariake (tên địa danh, ví dụ vịnh Ariake ở Kyushu)\", \"ko\": \"- 유명 (새벽까지 남아 있는 달)\\n- 아리아케 (지명, 규슈의 아리아케해 등)\"}"}
+{"word": "木天蓼", "source": "solar-fix", "raw": "{\"vi\": \"- Mộc thiên liêu (Actinidia polygama, cây gây hưng phấn cho mèo)\\n- Cỏ mèo (Nepeta cataria)\", \"ko\": \"- 모천료 (은덩굴, Actinidia polygama)\\n- 캣닢 (고양이 풀)\"}"}
+{"word": "木斛", "source": "solar-fix", "raw": "{\"vi\": \"- Thạch hộc (chi lan Dendrobium)\\n- Thân thạch hộc (dùng trong y học cổ truyền)\", \"ko\": \"- 석곡 (난초의 한 속)\\n- 석곡 (한방 약재로 쓰는 줄기)\"}"}
+{"word": "木蘭", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa mộc lan (cây hoặc hoa)\\n- Chi Mộc lan (một chi thực vật có hoa liên quan)\", \"ko\": \"- 목련 (나무 또는 꽃)\\n- 함박꽃나무속 (근연 속)\"}"}
+{"word": "杉並木", "source": "solar-fix", "raw": "{\"vi\": \"- Hàng liễu sam hai bên đường (đường rợp bóng cây tùng Nhật)\", \"ko\": \"- 삼나무 가로수길\"}"}
+{"word": "杜若", "source": "solar-fix", "raw": "{\"vi\": \"- Diên vĩ tím (kakitsubata, hoa diên vĩ Nhật)\", \"ko\": \"- 두약 (붓꽃과의 꽃)\"}"}
+{"word": "東宮", "source": "solar-fix", "raw": "{\"vi\": \"- Thái tử\", \"ko\": \"- 동궁 (황태자)\"}"}
+{"word": "松葉づえ", "source": "solar-fix", "raw": "{\"vi\": \"- Nạng (chống đi)\\n- Đôi nạng\", \"ko\": \"- 목발\"}"}
+{"word": "林務官", "source": "solar-fix", "raw": "{\"vi\": \"- Lâm vụ quan (quan quản lý rừng)\", \"ko\": \"- 임업 관리관 (산림 공무원)\"}"}
+{"word": "架空索道", "source": "solar-fix", "raw": "{\"vi\": \"- Đường cáp treo (treo trên không)\", \"ko\": \"- 공중 삭도 (케이블카)\"}"}
+{"word": "柊", "source": "solar-fix", "raw": "{\"vi\": \"- Cây ô rô (Ilex cornuta, cây bụi thường xanh)\\n- Cây ô rô (dùng trang trí năm mới Nhật, đi cùng thông)\", \"ko\": \"- 호랑가시나무 (상록 관목)\\n- 호랑가시나무 (정월 장식에 소나무와 함께 씀)\"}"}
+{"word": "棘皮動物", "source": "solar-fix", "raw": "{\"vi\": \"- Động vật da gai\", \"ko\": \"- 극피동물\"}"}
+{"word": "植木屋", "source": "solar-fix", "raw": "{\"vi\": \"- Người làm vườn\", \"ko\": \"- 정원사 (화목 가꾸는 사람)\"}"}
+{"word": "検眼", "source": "solar-fix", "raw": "{\"vi\": \"- Khám mắt (đo khúc xạ)\", \"ko\": \"- 안과 검진\\n- 굴절 검사\"}"}
+{"word": "楕円体", "source": "solar-fix", "raw": "{\"vi\": \"- Thể xoay elip (khối elip)\\n- Hình cầu dẹt hoặc kéo dài\", \"ko\": \"- 타원체\\n- 회전 타원체\"}"}
+{"word": "榠樝", "source": "solar-fix", "raw": "{\"vi\": \"- Mộc qua (quả mộc qua, Pseudocydonia sinensis)\", \"ko\": \"- 모과 (중국 모과나무 열매)\"}"}
+{"word": "槻", "source": "solar-fix", "raw": "{\"vi\": \"- Cây du Nhật Bản (Zelkova serrata)\\n- Cây du (một số ngữ cảnh hoặc phương ngữ)\", \"ko\": \"- 느티나무 (Zelkova serrata)\\n- 느릅나무류 (일부 맥락)\"}"}
+{"word": "樸樹", "source": "solar-fix", "raw": "{\"vi\": \"- Cây Celtis (Celtis sinensis)\\n- Cây Celtis Trung Quốc\", \"ko\": \"- 팽나무 (Celtis sinensis)\\n- 중국 팽나무\"}"}
+{"word": "檜", "source": "solar-fix", "raw": "{\"vi\": \"- Cây hinoki (bách Nhật Bản)\", \"ko\": \"- 편백나무 (히노키)\"}"}
+{"word": "櫛状", "source": "solar-fix", "raw": "{\"vi\": \"- Hình lược\\n- Có răng như lược\", \"ko\": \"- 빗 모양의\\n- 빗살 모양의\"}"}
+{"word": "歌合", "source": "solar-fix", "raw": "{\"vi\": \"- Cuộc thi thơ (waka)\", \"ko\": \"- 와카 시합 (노래 겨루기 대회)\"}"}
+{"word": "正副", "source": "solar-fix", "raw": "{\"vi\": \"- Chính và phó (ví dụ: giám đốc chính và phó)\\n- Bản gốc và bản sao\", \"ko\": \"- 정·부 (예: 정·부 이사)\\n- 원본과 사본 (문서)\"}"}
+{"word": "歩卒", "source": "solar-fix", "raw": "{\"vi\": \"- Bộ binh\", \"ko\": \"- 보병\"}"}
+{"word": "歴青炭", "source": "solar-fix", "raw": "{\"vi\": \"- Than anthracite (than đá khó cháy)\", \"ko\": \"- 무연탄\"}"}
+{"word": "比重計", "source": "solar-fix", "raw": "{\"vi\": \"- Thiết bị đo tỷ trọng\\n- Tỷ trọng kế\", \"ko\": \"- 비중계\\n- 액체 비중계\"}"}
+{"word": "民俗学", "source": "solar-fix", "raw": "{\"vi\": \"- Dân gian học (nghiên cứu folklore)\\n- Khoa học nghiên cứu văn hóa dân gian\", \"ko\": \"- 민속학\"}"}
+{"word": "水先案内船", "source": "solar-fix", "raw": "{\"vi\": \"- Thuyền dẫn đường (lái hoa tiêu)\", \"ko\": \"- 도선선 (항구에서 수로 안내하는 배)\"}"}
+{"word": "水撃", "source": "solar-fix", "raw": "{\"vi\": \"- Hiện tượng búa nước (va đập thủy lực)\", \"ko\": \"- 수격 (수격 현상)\"}"}
+{"word": "水蘚", "source": "solar-fix", "raw": "{\"vi\": \"- Rêu than bùn (rêu đầm lầy)\", \"ko\": \"- 물이끼\\n- 늪 이끼\"}"}
+{"word": "水赤鉄鉱", "source": "solar-fix", "raw": "{\"vi\": \"- Hydrohematite (quặng sắt ngậm nước)\", \"ko\": \"- 수적철광 (하이드로헤마타이트)\"}"}
+{"word": "汚涜", "source": "solar-fix", "raw": "{\"vi\": \"- Sự báng bổ\\n- Sự xúc phạm điều thiêng liêng, ô uế\", \"ko\": \"- 신성모독\\n- 모독\"}"}
+{"word": "沙弥", "source": "solar-fix", "raw": "{\"vi\": \"- Sa di (tu sĩ Phật giáo mới xuất gia)\", \"ko\": \"- 사미\"}"}
+{"word": "河内", "source": "solar-fix", "raw": "{\"vi\": \"- Kawachi (tỉnh cũ ở Nhật, nay thuộc Osaka)\\n- Kawachi (thành phố ở tỉnh Osaka)\", \"ko\": \"- 가와치 (일본의 옛 지방, 오사카 지역)\\n- 가와치 (오사카현의 도시)\"}"}
+{"word": "河鵜", "source": "solar-fix", "raw": "{\"vi\": \"- Chim cốc sông (Phalacrocorax carbo)\\n- Chim cốc dùng trong nghề câu cá bằng chim (ukai) của Nhật\", \"ko\": \"- 가마우지 (Phalacrocorax carbo)\\n- 우카이(가마우지 낚시)에 쓰는 가마우지\"}"}
+{"word": "沼鉄鉱", "source": "solar-fix", "raw": "{\"vi\": \"- Sắt đầm lầy (quặng sắt than bùn)\", \"ko\": \"- 습지 철광 (변철광)\"}"}
+{"word": "波腹", "source": "solar-fix", "raw": "{\"vi\": \"- Điểm bụng sóng (biên độ cực đại)\", \"ko\": \"- 배 (파동의 배, 진폭 최대점)\"}"}
+{"word": "洋種山牛蒡", "source": "solar-fix", "raw": "{\"vi\": \"- Củ salsify (giống phương Tây, Tragopogon porrifolius)\\n- Cây hàu (tên gọi khác)\", \"ko\": \"- 서양우엉 (Tragopogon porrifolius)\\n- 사시파이 (이칭)\"}"}
+{"word": "流星体", "source": "solar-fix", "raw": "{\"vi\": \"- Vi thiên thạch (thiên thể bay trong không gian)\", \"ko\": \"- 유성체\"}"}
+{"word": "海百合", "source": "solar-fix", "raw": "{\"vi\": \"- Hải bách hợp (động vật da gai dạng hoa)\", \"ko\": \"- 바다백합 (극피동물)\\n- 크리노이드\"}"}
+{"word": "海鴉", "source": "solar-fix", "raw": "{\"vi\": \"- Chim anca (Uria aalge)\", \"ko\": \"- 도래류 바닷새 (Uria aalge)\"}"}
+{"word": "涎掛け", "source": "solar-fix", "raw": "{\"vi\": \"- Khăn cho bé hoặc thú cưng đeo (yếm)\\n- Khăn hứng nước dãi\", \"ko\": \"- 턱받이 (아기·반려동물용)\\n- 침받이 수건\"}"}
+{"word": "混成酒", "source": "solar-fix", "raw": "{\"vi\": \"- Đồ uống pha trộn (rượu trộn các loại)\", \"ko\": \"- 혼성주 (섞어 만든 술)\"}"}
+{"word": "渡鴉", "source": "solar-fix", "raw": "{\"vi\": \"- Quạ lớn (Corvus corax)\", \"ko\": \"- 큰까마귀 (Corvus corax)\"}"}
+{"word": "湾流", "source": "solar-fix", "raw": "{\"vi\": \"- Dòng Gulf Stream (hải lưu bắc Đại Tây Dương)\", \"ko\": \"- 만류 (걸프 스트림)\"}"}
+{"word": "潜舵", "source": "solar-fix", "raw": "{\"vi\": \"- Cánh lái lặn (trên tàu ngầm)\\n- Bộ phận điều khiển độ sâu\", \"ko\": \"- 잠항타 (잠수함의 수평 방향타)\\n- 잠수 조종타\"}"}
+{"word": "炭酸", "source": "solar-fix", "raw": "{\"vi\": \"- Nước có ga\\n- Điôxít cacbon (khí carbonic)\", \"ko\": \"- 탄산수\\n- 이산화탄소\"}"}
+{"word": "無性生殖", "source": "solar-fix", "raw": "{\"vi\": \"- Sinh sản vô tính\\n- Sinh sản đơn tính (không qua giao phối)\", \"ko\": \"- 무성 생식\\n- 무성 번식 (교배 없이 증식)\"}"}
+{"word": "無着陸", "source": "solar-fix", "raw": "{\"vi\": \"- Không dừng (chuyến bay)\\n- Không hạ cánh\", \"ko\": \"- 무착륙 (논스톱 비행)\\n- 착륙 없이\"}"}
+{"word": "焼戻し", "source": "solar-fix", "raw": "{\"vi\": \"- Ram thép (xử lý nhiệt sau tôi)\\n- Ủ kim loại (giảm ứng suất)\", \"ko\": \"- 풀림 (열처리 과정)\\n- 어닐링 (금속 가공 과정)\"}"}
+{"word": "煙出し", "source": "solar-fix", "raw": "{\"vi\": \"- Ống khói (của bếp)\\n- Cho khói ra (từ bếp)\", \"ko\": \"- 연통\\n- 연기를 내보내다 (난로에서)\"}"}
+{"word": "熊蜂", "source": "solar-fix", "raw": "{\"vi\": \"- Ong bầu\", \"ko\": \"- 뒤영벌\"}"}
+{"word": "燧鉄", "source": "solar-fix", "raw": "{\"vi\": \"- Miếng thép đánh lửa (gõ vào đá lửa tạo tia lửa)\", \"ko\": \"- 불씨쇠 (부싯돌에 쳐서 불꽃을 내는 쇠조각)\"}"}
+{"word": "片脚", "source": "solar-fix", "raw": "{\"vi\": \"- Một chân\\n- Một chân (tính từ)\", \"ko\": \"- 한쪽 다리\\n- 외다리의\"}"}
+{"word": "犬舎", "source": "solar-fix", "raw": "{\"vi\": \"- Chuồng chó\\n- Nhà cho chó\", \"ko\": \"- 개집\\n- 견사\"}"}
+{"word": "狂歌", "source": "solar-fix", "raw": "{\"vi\": \"- Thơ tanka hài hước (châm biếm)\", \"ko\": \"- 광가 (풍자·익살스러운 와카)\"}"}
+{"word": "猫鮫", "source": "solar-fix", "raw": "{\"vi\": \"- Cá mập đầu mèo (Heterodontus)\", \"ko\": \"- 은상어 (뿔상어과)\"}"}
+{"word": "王妃", "source": "solar-fix", "raw": "{\"vi\": \"- Vương hậu\\n- Vương phi (vợ chính thức của vua)\\n- Hoàng hậu (vợ của hoàng đế)\", \"ko\": \"- 왕비\\n- 왕비 (정비)\\n- 황후 (황제의 정실)\"}"}
+{"word": "球状星団", "source": "solar-fix", "raw": "{\"vi\": \"- Cụm sao cầu\", \"ko\": \"- 구상 성단\"}"}
+{"word": "理神論", "source": "solar-fix", "raw": "{\"vi\": \"- Lý thần luận (thuyết thần duy lý)\", \"ko\": \"- 이신론 (이신교)\"}"}
+{"word": "琴曲", "source": "solar-fix", "raw": "{\"vi\": \"- Âm nhạc đàn koto (bản nhạc cụ truyền thống của Nhật Bản)\\n- Tiểu phẩm dành cho đàn koto\", \"ko\": \"- 고토 음악 (일본 전통 현악기 곡)\\n- 고토를 위한 곡\"}"}
+{"word": "甜瓜", "source": "solar-fix", "raw": "{\"vi\": \"- Dưa vàng (makuwa, giống dưa Đông Á)\\n- Dưa Hàn Quốc (Cucumis melo var. makuwa)\", \"ko\": \"- 참외 (Cucumis melo var. makuwa)\"}"}
+{"word": "町営", "source": "solar-fix", "raw": "{\"vi\": \"- Quản lý thị trấn\\n- Do thị trấn vận hành\", \"ko\": \"- 읍영 (마을 단위 운영)\"}"}
+{"word": "異母", "source": "solar-fix", "raw": "{\"vi\": \"- Anh chị em cùng cha khác mẹ\", \"ko\": \"- 이모 (같은 아버지, 다른 어머니의 배다른 형제)\"}"}
+{"word": "痔瘻", "source": "solar-fix", "raw": "{\"vi\": \"- Rò hậu môn (lỗ rò ở hậu môn)\", \"ko\": \"- 치루\"}"}
+{"word": "瘴気", "source": "solar-fix", "raw": "{\"vi\": \"- Khí độc\\n- Loại không khí xấu trước đây được tin là gây bệnh\", \"ko\": \"- 장기 (독한 습한 기운)\\n- 질병을 유발한다고 믿었던 나쁜 공기\"}"}
+{"word": "白子干", "source": "solar-fix", "raw": "{\"vi\": \"- Túi tinh cá khô (milt, thường là cá tuyết, món ngon)\", \"ko\": \"- 말린 생선 정소 (대구 등, 별미)\"}"}
+{"word": "白子干し", "source": "solar-fix", "raw": "{\"vi\": \"- Cá cơm trắng con phơi khô (shirasu)\\n- Túi tinh cá khô (thường của cá tuyết hoặc cá bơn)\", \"ko\": \"- 시라스보시 (작은 물고기 말린 것)\\n- 말린 생선 정소 (대구·가자미 등)\"}"}
+{"word": "百日紅", "source": "solar-fix", "raw": "{\"vi\": \"- Cây tử vi (Lagerstroemia indica)\\n- Bài dân ca Takasago\", \"ko\": \"- 배롱나무 (Lagerstroemia indica)\\n- 타카사고 (일본 민요)\"}"}
+{"word": "目立て", "source": "solar-fix", "raw": "{\"vi\": \"- Việc nắn răng cưa (ra răng)\", \"ko\": \"- 톱니 고르기 (톱날 세우기)\"}"}
+{"word": "真鰺", "source": "solar-fix", "raw": "{\"vi\": \"- Cá nục Nhật Bản (Trachurus japonicus)\\n- Ma-aji\", \"ko\": \"- 전갱이 (Trachurus japonicus)\\n- 마아지 (참전갱이)\"}"}
+{"word": "矢車草", "source": "solar-fix", "raw": "{\"vi\": \"- Cúc lam (Centaurea cyanus)\", \"ko\": \"- 수레국화 (Centaurea cyanus)\"}"}
+{"word": "石斑魚", "source": "solar-fix", "raw": "{\"vi\": \"- Cá mú\", \"ko\": \"- 바리 (돛바리과 어류)\"}"}
+{"word": "石菖", "source": "solar-fix", "raw": "{\"vi\": \"- Thạch xương bồ (Acorus gramineus)\", \"ko\": \"- 석창포 (Acorus gramineus)\"}"}
+{"word": "石首魚", "source": "solar-fix", "raw": "{\"vi\": \"- Cá chỉ vàng (họ Sciaenidae)\\n- Cá vàng (croaker vàng)\\n- Cá trống (loài cá họ này)\", \"ko\": \"- 조기류 (Sciaenidae과)\\n- 참조기\\n- 민어류\"}"}
+{"word": "砲尾", "source": "solar-fix", "raw": "{\"vi\": \"- Khóa nòng (phần sau họng súng)\", \"ko\": \"- 포미 (포의 뒷부분, 약실 부분)\"}"}
+{"word": "破り子", "source": "solar-fix", "raw": "{\"vi\": \"- Phá thế hòa (trong mạt chược)\\n- Phá thế bế tắc, thế cân bằng\", \"ko\": \"- 동점을 깨다 (마작 등에서)\\n- 교착 상태를 타개하다\"}"}
+{"word": "礼金", "source": "solar-fix", "raw": "{\"vi\": \"- Tiền lễ (phí không hoàn lại trả chủ nhà khi thuê nhà)\\n- Tiền mừng (tiền biếu trong đám cưới, tang lễ)\", \"ko\": \"- 례금 (집주인에게 주는 환불 불가 비용)\\n- 축의금 (결혼·장례 등에 주는 현금)\"}"}
+{"word": "空き巣ねらい", "source": "solar-fix", "raw": "{\"vi\": \"- Trộm cắp (khi chủ vắng nhà)\\n- Âm mưu đột nhập trộm\", \"ko\": \"- 빈집털이 (빈집 절도)\\n- 빈집 절도 시도\"}"}
+{"word": "立ち葵", "source": "solar-fix", "raw": "{\"vi\": \"- Dung quỳ (hoa cao đứng)\", \"ko\": \"- 접시꽃\"}"}
+{"word": "竿秤", "source": "solar-fix", "raw": "{\"vi\": \"- Cân đòn\\n- Cân đòn tay (có quả cân di động)\", \"ko\": \"- 지레저울 (막대저울)\\n- 대칭\"}"}
+{"word": "筝", "source": "solar-fix", "raw": "{\"vi\": \"- Đàn koto (nhạc cụ dây truyền thống Nhật Bản)\", \"ko\": \"- 고토 (일본의 13현 현악기)\"}"}
+{"word": "箱柳", "source": "solar-fix", "raw": "{\"vi\": \"- Liễu Hakuro-nishiki (Salix integra)\\n- Giống liễu lá hồng trắng\", \"ko\": \"- 하쿠로니시키 버들 (Salix integra)\\n- 분홍·흰 잎의 버들 품종\"}"}
+{"word": "籐椅子", "source": "solar-fix", "raw": "{\"vi\": \"- Ghế mây\\n- Ghế đan mây\", \"ko\": \"- 등(라탄) 의자\\n- 라탄 의자\\n- 등죽 의자\"}"}
+{"word": "粟", "source": "solar-fix", "raw": "{\"vi\": \"- Kê (hạt)\\n- Kê đuôi cáo\", \"ko\": \"- 조\\n- 메조\"}"}
+{"word": "糞蠅", "source": "solar-fix", "raw": "{\"vi\": \"- Ruồi phân\\n- Ruồi nhặng (họ Calliphoridae)\", \"ko\": \"- 분똥파리\\n- 금파리 (Calliphoridae과)\"}"}
+{"word": "約束手形", "source": "solar-fix", "raw": "{\"vi\": \"- Lệnh phiếu (giấy nhận nợ)\", \"ko\": \"- 약속어음\"}"}
+{"word": "紅鮭", "source": "solar-fix", "raw": "{\"vi\": \"- Cá hồi sockeye\\n- Cá hồi đỏ\", \"ko\": \"- 홍연어 (붉은 연어)\"}"}
+{"word": "給血", "source": "solar-fix", "raw": "{\"vi\": \"- Hiến máu\", \"ko\": \"- 헌혈\"}"}
+{"word": "綿実", "source": "solar-fix", "raw": "{\"vi\": \"- Hạt bông (hạt cây bông)\", \"ko\": \"- 목화씨\"}"}
+{"word": "緋連雀", "source": "solar-fix", "raw": "{\"vi\": \"- Chim đỏ Nhật (Bombycilla japonicus, họ chim sáp)\", \"ko\": \"- 붉은머리물레새 (일본 물레새)\"}"}
+{"word": "緑便", "source": "solar-fix", "raw": "{\"vi\": \"- Phân xanh (phân màu xanh)\", \"ko\": \"- 녹색 대변\"}"}
+{"word": "繰り糸", "source": "solar-fix", "raw": "{\"vi\": \"- Sợi tơ (đang cuộn)\", \"ko\": \"- 실뽑기 (생사 뽑기)\\n- 감아 낸 실\"}"}
+{"word": "羊脂", "source": "solar-fix", "raw": "{\"vi\": \"- Mỡ cừu\", \"ko\": \"- 양지기름 (양의 기름)\"}"}
+{"word": "羽布団", "source": "solar-fix", "raw": "{\"vi\": \"- Chăn lông vũ\", \"ko\": \"- 오리털 이불\"}"}
+{"word": "習癖", "source": "solar-fix", "raw": "{\"vi\": \"- Thói xấu\", \"ko\": \"- 나쁜 습관, 버릇\"}"}
+{"word": "翼長", "source": "solar-fix", "raw": "{\"vi\": \"- Chỉ huy phi đoàn (cấp bậc không quân)\", \"ko\": \"- 비행단장 (공군 계급, 윙 커맨더)\"}"}
+{"word": "耳滓", "source": "solar-fix", "raw": "{\"vi\": \"- Ráy tai\\n- Sáp tai\", \"ko\": \"- 귀지\"}"}
+{"word": "聞き分けのない", "source": "solar-fix", "raw": "{\"vi\": \"- Vô lý\\n- Bướng bỉnh không nghe lời\", \"ko\": \"- 비이성적인\\n- 버릇없는\"}"}
+{"word": "肝斑", "source": "solar-fix", "raw": "{\"vi\": \"- Chloasma (nám da)\\n- Đốm nám\\n- Nám\", \"ko\": \"- 기미\\n- 간 반점\\n- 색소침착\"}"}
+{"word": "胃弱", "source": "solar-fix", "raw": "{\"vi\": \"- Chứng khó tiêu\\n- Tiêu hóa kém\", \"ko\": \"- 소화불량\\n- 위가 약함\"}"}
+{"word": "背離", "source": "solar-fix", "raw": "{\"vi\": \"- Đi chệch (khỏi một con đường, nguyên tắc, hoặc nhóm)\\n- Ly khai / Tách ra\\n- Phản bội (lòng tin hoặc lòng trung thành)\", \"ko\": \"- 벗어나다 (길, 원칙 또는 집단으로부터)\\n- 이탈하다 / 떨어져 나가다\\n- 배신하다 (신뢰나 충성심)\"}"}
+{"word": "胡粉", "source": "solar-fix", "raw": "{\"vi\": \"- Bột màu trắng gofun (chất màu độc, dùng trong hội họa Nhật)\\n- Bột gạo trộn (dùng làm màu trắng hoặc keo)\", \"ko\": \"- 호분 (전통 일본 회화의 백색 안료)\\n- 쌀가루 풀 (흰 안료·접착제)\"}"}
+{"word": "胼胝", "source": "solar-fix", "raw": "{\"vi\": \"- Mụn chai\\n- Sự chai sần\\n- Mắt cá (nốt chai ở chân)\", \"ko\": \"- 굳은살\"}"}
+{"word": "脱衣", "source": "solar-fix", "raw": "{\"vi\": \"- Cởi quần áo\\n- Cởi đồ\\n- Sự lột áo\", \"ko\": \"- 옷을 벗음\\n- 옷을 벗다\\n- 탈의\"}"}
+{"word": "自動電話", "source": "solar-fix", "raw": "{\"vi\": \"- Điện thoại công cộng\\n- Điện thoại trả tiền\", \"ko\": \"- 공중전화\\n- 동전 전화\"}"}
+{"word": "舞踏病", "source": "solar-fix", "raw": "{\"vi\": \"- Chorea (bệnh múa vờn)\\n- Vũ điệu Thánh Vitus\", \"ko\": \"- 무도병 (코레아)\\n- 성 비투스의 춤\"}"}
+{"word": "船場", "source": "solar-fix", "raw": "{\"vi\": \"- Naniwa (tên lịch sử của Osaka)\\n- Khu bến tàu / khu vực cảng\\n- Khu thương mại (cụ thể ở Osaka)\", \"ko\": \"- 나니와 (오사카의 옛 이름)\\n- 부두 지구 / 항만 지역\\n- 상업 지구 (특히 오사카)\"}"}
+{"word": "芭蕉", "source": "solar-fix", "raw": "{\"vi\": \"- Chuối plaintain (cây chuối sợi)\\n- Matsuo Bashō (bút danh của nhà thơ haiku nổi tiếng)\", \"ko\": \"- 파초 (플랜틴 바나나 나무)\\n- 마츠오 바쇼 (하이쿠 시인의 호)\"}"}
+{"word": "花菱草", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa anh túc California (Eschscholzia californica)\\n- Loài hoa dại màu cam rực\", \"ko\": \"- 캘리포니아 양귀비 (Eschscholzia californica)\\n- 밝은 주황색 야생화\"}"}
+{"word": "苔類", "source": "solar-fix", "raw": "{\"vi\": \"- Rêu (gồm rêu thật, rêu tản, rêu sừng)\\n- Rêu (theo nghĩa thường ngày)\", \"ko\": \"- 선태류 (이끼식물)\\n- 이끼 (일상 용어)\"}"}
+{"word": "苧環", "source": "solar-fix", "raw": "{\"vi\": \"- Vòng sợi gai (cuộn sợi dùng cho dây, trang trí trên kimono, happi)\\n- Cuộn sợi\", \"ko\": \"- 실꾸리 (실을 감아 둔 것)\\n- 삼섬유 고리 (끈·술 장식에 사용)\"}"}
+{"word": "茶番劇", "source": "solar-fix", "raw": "{\"vi\": \"- Hài kịch rẻ tiền\\n- Hài kịch tầm thường\\n- Hài kịch lố\", \"ko\": \"- 풍자 소극 (야료극)\\n- 저급 코미디\\n- 막간 희극\"}"}
+{"word": "草餅", "source": "solar-fix", "raw": "{\"vi\": \"- Bánh gạo trộn với ngải cứu\", \"ko\": \"- 쑥떡 (쑥을 섞은 떡)\"}"}
+{"word": "莟む", "source": "solar-fix", "raw": "{\"vi\": \"- Ra nụ (của hoa)\\n- Đang có nụ\", \"ko\": \"- 봉오리가 맺히다\\n- 봉오리 상태이다\"}"}
+{"word": "萱草", "source": "solar-fix", "raw": "{\"vi\": \"- Hoa hiên (Hemerocallis)\\n- Hoa hiên (hoa nở một ngày)\", \"ko\": \"- 원추리 (Hemerocallis)\\n- 하루꽃\"}"}
+{"word": "葉壁蝨", "source": "solar-fix", "raw": "{\"vi\": \"- Nhện đỏ hại lá (nhện nhỏ hút dịch lá)\", \"ko\": \"- 잎응애 (잎을 가해하는 응애)\"}"}
+{"word": "葉巻虫", "source": "solar-fix", "raw": "{\"vi\": \"- Sâu bướm xì gà (ấu trùng của loài bướm Cucullia verbasci)\\n- Sâu bướm đựng hộp xì gà (ấu trùng của loài bướm Coccygomimus turpitudinis)\", \"ko\": \"- 시가 애벌레 (Cucullia verbasci의 유충)\\n- 시가집 애벌레 (나방 Coccygomimus turpitudinis의 유충)\"}"}
+{"word": "蒲焼き", "source": "solar-fix", "raw": "{\"vi\": \"- Cá chạch hoặc lươn nướng tẩm nước tương kiểu kabayaki\", \"ko\": \"- 간장 소스에 발라 구운 장어 (또는 미꾸라지)\"}"}
+{"word": "蕁麻疹", "source": "solar-fix", "raw": "{\"vi\": \"- Mề đay\\n- Phát ban do cây tầm ma\\n- Bệnh mày đay\", \"ko\": \"- 두드러기\\n- 쐐기풀 발진\"}"}
+{"word": "薩摩の守", "source": "solar-fix", "raw": "{\"vi\": \"- Quan trấn Satsuma (chức danh danh dự của quan trấn tỉnh Satsuma)\", \"ko\": \"- 사쓰마 수호 (사쓰마 지방 장관의 칭호)\"}"}
+{"word": "薬玉", "source": "solar-fix", "raw": "{\"vi\": \"- Cầu thuốc (bông thơm treo trong lễ hội)\\n- Túi thuốc thơm treo\", \"ko\": \"- 약옥 (kusudama, 향 주머니 장식구)\\n- 약을 넣은 장식 주머니\"}"}
+{"word": "藷", "source": "solar-fix", "raw": "{\"vi\": \"- Khoai lang\\n- Củ khoai (khoai mài, sắn)\", \"ko\": \"- 고구마\\n- 마 (산약류)\"}"}
+{"word": "虎列剌", "source": "solar-fix", "raw": "{\"vi\": \"- Bệnh tả (từ cũ)\", \"ko\": \"- 콜레라 (역사적/고어적 용어)\"}"}
+{"word": "藤袴", "source": "solar-fix", "raw": "{\"vi\": \"- Fuji-bakama (Eupatorium fortunei, hoa tím mùa thu)\", \"ko\": \"- 후지바카마 (Eupatorium fortunei, 국화과)\"}"}
+{"word": "蚊火", "source": "solar-fix", "raw": "{\"vi\": \"- Nhang muỗi (nhang đuổi muỗi)\", \"ko\": \"- 모기향\"}"}
+{"word": "蛍石", "source": "solar-fix", "raw": "{\"vi\": \"- Đá fluorit\\n- Quặng fluor\", \"ko\": \"- 형석\\n- 플루오스파르\"}"}
+{"word": "蜀黍", "source": "solar-fix", "raw": "{\"vi\": \"- Cao lương (sorghum)\\n- Lúa miến\", \"ko\": \"- 수수\\n- 인도 기장\"}"}
+{"word": "蝨", "source": "solar-fix", "raw": "{\"vi\": \"- Chấy (rận)\", \"ko\": \"- 이\\n- 머릿좀\"}"}
+{"word": "融解熱", "source": "solar-fix", "raw": "{\"vi\": \"- Nhiệt nóng chảy (nhiệt ẩn nóng chảy)\", \"ko\": \"- 융해열\"}"}
+{"word": "蟹缶", "source": "solar-fix", "raw": "{\"vi\": \"- Thịt cua đóng hộp\", \"ko\": \"- 게 통조림\"}"}
+{"word": "蟇股", "source": "solar-fix", "raw": "{\"vi\": \"- Thanh chống hình chân ếch (kaerumata)\\n- Kết cấu đỡ xà trong kiến trúc truyền thống Nhật\", \"ko\": \"- 개에루마타 (다리 벌린 받침 부재)\\n- 지붕 보를 떠받치는 부재\"}"}
+{"word": "衒学", "source": "solar-fix", "raw": "{\"vi\": \"- Sự khoe kiến thức\\n- Sự phô trương học thức\", \"ko\": \"- 현학 (학식 과시)\\n- 학식 뽐내기\"}"}
+{"word": "衝羽根朝顔", "source": "solar-fix", "raw": "{\"vi\": \"- Bìm bìm cánh xẻ (giống hoa bìm bìm Nhật)\", \"ko\": \"- 갈래꽃잎 나팔꽃 (일본 원예 품종)\"}"}
+{"word": "裙蔕菜", "source": "solar-fix", "raw": "{\"vi\": \"- Cải thảo (Brassica rapa subsp. pekinensis)\\n- Cải thìa\", \"ko\": \"- 배추 (Brassica rapa subsp. pekinensis)\\n- 청경채\"}"}
+{"word": "製革", "source": "solar-fix", "raw": "{\"vi\": \"- Thuộc da (nghề làm da)\", \"ko\": \"- 제혁\"}"}
+{"word": "西洋茜", "source": "solar-fix", "raw": "{\"vi\": \"- Thiến thảo phương Tây (Rubia tinctorum)\", \"ko\": \"- 서양꼭두서니 (Rubia tinctorum)\"}"}
+{"word": "覚え書", "source": "solar-fix", "raw": "{\"vi\": \"- Bản ghi nhớ\\n- Bản ghi nhớ nội bộ\\n- Ghi chú\", \"ko\": \"- 메모\\n- 각서\"}"}
+{"word": "訓示", "source": "solar-fix", "raw": "{\"vi\": \"- Chỉ thị\\n- Chỉ đạo\\n- Bản báo cáo/tóm tắt thông tin\", \"ko\": \"- 지시\\n- 지침\\n- 브리핑\"}"}
+{"word": "試し斬り", "source": "solar-fix", "raw": "{\"vi\": \"- Thử lưỡi kiếm mới (chém thử)\\n- Xưa chém thử trên người, nay trên bó rơm ngâm nước\", \"ko\": \"- 새로운 칼이나 날을 시험해보다\\n- 원래 사람에게 적용되었으나, 현재는 적신 짚 표적에 사용됨\"}"}
+{"word": "象戯", "source": "solar-fix", "raw": "{\"vi\": \"- Cờ shogi (cờ vua kiểu Nhật)\\n- Cờ Nhật Bản\", \"ko\": \"- 쇼기 (일본 장기)\\n- 일본 장기\"}"}
+{"word": "貯蔵庫", "source": "solar-fix", "raw": "{\"vi\": \"- Nhà kho\\n- Kho chứa (bunker)\\n- Silo\", \"ko\": \"- 저장고\\n- 저장 사일로\"}"}
+{"word": "賄賂", "source": "solar-fix", "raw": "{\"vi\": \"- Hối lộ\\n- Tiền bôi trơn\\n- Món quà nhỏ (dùng để làm hài lòng)\", \"ko\": \"- 뇌물\\n- 몰래 주는 돈 (뇌물성 선물)\"}"}
+{"word": "赤とんぼ", "source": "solar-fix", "raw": "{\"vi\": \"- Chuồn chuồn đỏ nhỏ (aki-akane)\\n- Chuồn chuồn đỏ\", \"ko\": \"- 밀잠자리 (붉은 잠자리)\\n- 홍잠자리류\"}"}
+{"word": "走り出る", "source": "solar-fix", "raw": "{\"vi\": \"- Bắt đầu chạy, lao ra ngoài\", \"ko\": \"- 달려 나가다\\n- 뛰기 시작하다\"}"}
+{"word": "足駄", "source": "solar-fix", "raw": "{\"vi\": \"- Dép gỗ truyền thống của Nhật Bản (thường có quai ở giữa các ngón chân)\", \"ko\": \"- 아시다 (전통 일본 나막신)\"}"}
+{"word": "身請", "source": "solar-fix", "raw": "{\"vi\": \"- Trả tiền để chuộc ai đó khỏi cảnh nô lệ\", \"ko\": \"- 몸값을 지불해 노예 상태에서 사람을 구해내다\"}"}
+{"word": "車寄", "source": "solar-fix", "raw": "{\"vi\": \"- Hiên xe\\n- Lối vào\\n- Mái che lối vào (cho xe)\", \"ko\": \"- 마차가 드나드는 현관 (처마 있는 입구)\\n- 현관 입구\\n- 포치 (지붕 있는 입구)\"}"}
+{"word": "軟炭", "source": "solar-fix", "raw": "{\"vi\": \"- Than mềm (than bituminous)\\n- Than cốc luyện kim\", \"ko\": \"- 유연탄 (역청탄)\\n- 코킹탄\"}"}
+{"word": "載炭", "source": "solar-fix", "raw": "{\"vi\": \"- Việc nạp than (cho tàu)\", \"ko\": \"- 석탄 적재 (선박에 연료탄 싣기)\"}"}
+{"word": "輝銅鉱", "source": "solar-fix", "raw": "{\"vi\": \"- Chalcosit (quặng đồng ánh kim)\", \"ko\": \"- 휘동석 (황화동광)\"}"}
+{"word": "轡虫", "source": "solar-fix", "raw": "{\"vi\": \"- Con vè (côn trùng họ vè)\", \"ko\": \"- 여치 (여치과 곤충)\"}"}
+{"word": "逆推進ロケット", "source": "solar-fix", "raw": "{\"vi\": \"- Tên lửa đẩy ngược (phanh bằng động cơ)\", \"ko\": \"- 역추진 로켓\"}"}
+{"word": "透角閃石", "source": "solar-fix", "raw": "{\"vi\": \"- Actinolite (khoáng vật xanh đen thuộc nhóm amphibole)\", \"ko\": \"- 양기석 (각섬석족의 녹색-검은색 광물)\"}"}
+{"word": "連枷", "source": "solar-fix", "raw": "{\"vi\": \"- Cây lìa (dụng cụ đập lúa)\", \"ko\": \"- 도리깨 (곡식 탈곡용)\"}"}
+{"word": "郵便本局", "source": "solar-fix", "raw": "{\"vi\": \"- Bưu cục trung tâm\", \"ko\": \"- 중앙우체국\"}"}
+{"word": "酒石", "source": "solar-fix", "raw": "{\"vi\": \"- Đá rượu (tinh thể tartar lắng trong rượu vang)\", \"ko\": \"- 주석 (타르타르 침전물)\"}"}
+{"word": "野兎病", "source": "solar-fix", "raw": "{\"vi\": \"- Bệnh thỏ (sốt thỏ)\\n- Bệnh tularemia\", \"ko\": \"- 토끼열 (툴레레미아)\"}"}
+{"word": "野老", "source": "solar-fix", "raw": "{\"vi\": \"- Khoai mài (Dioscorea tokoro)\\n- Khoai mài dại (cây thân leo)\", \"ko\": \"- 토코로마 (Dioscorea tokoro)\\n- 들마 (덩굴성 마속 식물)\"}"}
+{"word": "金剛砂", "source": "solar-fix", "raw": "{\"vi\": \"- Corundum (khoáng vật oxit nhôm)\\n- Đá mài emery (làm từ corundum)\", \"ko\": \"- 코런덤 (산화알루미늄 광물)\\n- 에머리 (연마재)\"}"}
+{"word": "金敷き", "source": "solar-fix", "raw": "{\"vi\": \"- Chiếc đe (đỡ vật liệu khi rèn)\", \"ko\": \"- 모루 (대장간의 받침쇠)\"}"}
+{"word": "金雀枝", "source": "solar-fix", "raw": "{\"vi\": \"- Kim tước (Cytisus scoparius, cây họ đậu)\\n- Kim tước dại (Genista)\", \"ko\": \"- 금작아 (Cytisus scoparius)\\n- 비수리류 (Genista)\"}"}
+{"word": "釣台", "source": "solar-fix", "raw": "{\"vi\": \"- Sàn câu cá (cấu trúc trên mặt nước)\\n- Chân máy ảnh hoặc giá đỡ\", \"ko\": \"- 낚시용 잔교 (물 위 구조물)\\n- 삼각대·스탠드\"}"}
+{"word": "鉄剤", "source": "solar-fix", "raw": "{\"vi\": \"- Chế phẩm sắt (thuốc bổ sung sắt)\", \"ko\": \"- 철분 제제 (철 보충제)\"}"}
+{"word": "鉄砲百合", "source": "solar-fix", "raw": "{\"vi\": \"- Loa kèn trắng (Lilium longiflorum)\", \"ko\": \"- 나팔나리 (Lilium longiflorum)\"}"}
+{"word": "銀杏返", "source": "solar-fix", "raw": "{\"vi\": \"- Kiểu tóc búi hình lá bạch quả (thời Edo)\", \"ko\": \"- 은행잎 모양 상투 (에도 시대 여성 머리)\"}"}
+{"word": "錆色", "source": "solar-fix", "raw": "{\"vi\": \"- Màu gỉ (màu rỉ sắt)\", \"ko\": \"- 녹슨 빛 (적갈색 녹)\"}"}
+{"word": "鐙", "source": "solar-fix", "raw": "{\"vi\": \"- Bàn đạp chân ngựa (đều ngựa)\", \"ko\": \"- 등자 (안장에 건 발디딤쇠)\"}"}
+{"word": "長針", "source": "solar-fix", "raw": "{\"vi\": \"- Kim dài (kim phút)\\n- Kim phút\", \"ko\": \"- 긴 침 (분침)\\n- 분침\"}"}
+{"word": "降り立つ", "source": "solar-fix", "raw": "{\"vi\": \"- Hạ cánh (máy bay, tàu vũ trụ)\\n- Xuống (từ phương tiện, ngựa, hoặc vị trí cao)\\n- Đến nơi và xuống (thường ngụ ý xuống khỏi phương tiện)\", \"ko\": \"- 착륙하다 (항공기, 우주선)\\n- 내려서다 (차량, 말 또는 높은 곳에서)\\n- 도착하여 내리다 (목적지에)\"}"}
+{"word": "陰嚢", "source": "solar-fix", "raw": "{\"vi\": \"- Bìu đái (túi bìu)\\n- Tinh hoàn\\n- Hình quả thông\", \"ko\": \"- 음낭\\n- 고환\\n- 솔방울\"}"}
+{"word": "陸相", "source": "solar-fix", "raw": "{\"vi\": \"- Bộ trưởng Lục quân\", \"ko\": \"- 육군대신\"}"}
+{"word": "隠蟹", "source": "solar-fix", "raw": "{\"vi\": \"- Cua ẩn mình (cua hermit)\", \"ko\": \"- 소라게 (등가리)\"}"}
+{"word": "雄螺子", "source": "solar-fix", "raw": "{\"vi\": \"- Ốc vít đực\", \"ko\": \"- 수나사 (바깥나사)\"}"}
+{"word": "雄黄", "source": "solar-fix", "raw": "{\"vi\": \"- Realgar (khoáng vật sulfide asen)\\n- Orpiment (khoáng vật sulfide asen màu vàng)\", \"ko\": \"- 웅황 (황화 비소 광물)\\n- 자황 (노란 황화 비소 광물)\"}"}
+{"word": "雙六", "source": "solar-fix", "raw": "{\"vi\": \"- Sugoroku (trò chơi bàn cờ đánh xúc xắc kiểu Nhật)\", \"ko\": \"- 스고로쿠 (주사위 말판 놀이)\"}"}
+{"word": "雨氷", "source": "solar-fix", "raw": "{\"vi\": \"- Mưa đóng băng (mưa đông đặc)\", \"ko\": \"- 얼음비 (동결우)\"}"}
+{"word": "雪娘", "source": "solar-fix", "raw": "{\"vi\": \"- Người phụ nữ tuyết (yuki-onna)\", \"ko\": \"- 설녀 (눈 여자 요괴)\"}"}
+{"word": "雪解", "source": "solar-fix", "raw": "{\"vi\": \"- Tuyết tan\\n- Nước từ tuyết tan\", \"ko\": \"- 눈이 녹음\\n- 눈 녹은 물\"}"}
+{"word": "雷酸水銀", "source": "solar-fix", "raw": "{\"vi\": \"- Thuỷ ngân fulminat\", \"ko\": \"- 뇌산수은\"}"}
+{"word": "電位計", "source": "solar-fix", "raw": "{\"vi\": \"- Điện vị kế (biến trở)\\n- Vôn kế (đo hiệu điện thế)\", \"ko\": \"- 포텐셔미터\\n- 전압계 (전위차 측정)\"}"}
+{"word": "電離", "source": "solar-fix", "raw": "{\"vi\": \"- Sự ion hóa\\n- Sự phân ly điện\\n- Sự phân ly điện ly\", \"ko\": \"- 이온화\\n- 전기 이온화\\n- 전해 분리\"}"}
+{"word": "霜焼け", "source": "solar-fix", "raw": "{\"vi\": \"- Bỏng lạnh (tê cóng)\\n- Vết tê đỏ do lạnh\", \"ko\": \"- 동상\\n- 동창 (언데기)\"}"}
+{"word": "青葉木菟", "source": "solar-fix", "raw": "{\"vi\": \"- Cú mèo nâu (Ninox scutulata)\", \"ko\": \"- 올빼미류 (아오바즈크, 밤에 활동하는 올빼미)\"}"}
+{"word": "靴下留", "source": "solar-fix", "raw": "{\"vi\": \"- Dụng cụ giữ tất (không bị tuột)\\n- Kẹp tất\", \"ko\": \"- 양말 고정밴드\\n- 양말 집게\"}"}
+{"word": "韭", "source": "solar-fix", "raw": "{\"vi\": \"- Hành boa rô (Allium porrum)\\n- Hẹ (Allium tuberosum)\", \"ko\": \"- 리크\\n- 부추 (Allium tuberosum)\"}"}
+{"word": "風選", "source": "solar-fix", "raw": "{\"vi\": \"- Sàng bằng gió (tách hạt bằng gió)\", \"ko\": \"- 바람 도정 (바람으로 골라냄)\"}"}
+{"word": "飛行艇", "source": "solar-fix", "raw": "{\"vi\": \"- Thuỷ phi cơ (máy bay đáp xuống nước)\", \"ko\": \"- 비행정 (수상 비행기)\"}"}
+{"word": "食細胞", "source": "solar-fix", "raw": "{\"vi\": \"- Tế bào thực bào (tế bào nuốt mầm bệnh)\", \"ko\": \"- 식세포\"}"}
+{"word": "飲薬", "source": "solar-fix", "raw": "{\"vi\": \"- Thuốc uống\\n- Thuốc dạng uống\", \"ko\": \"- 복용약\\n- 경구약\"}"}
+{"word": "養魚", "source": "solar-fix", "raw": "{\"vi\": \"- Nuôi cá\\n- Nuôi trồng thuỷ sản\", \"ko\": \"- 양어 (물고기 사육)\\n- 어류 양식업\"}"}
+{"word": "馬橇", "source": "solar-fix", "raw": "{\"vi\": \"- Xe trượt tuyết kéo bằng ngựa\", \"ko\": \"- 말썰매 (말이 끄는 썰매)\"}"}
+{"word": "馬蛤貝", "source": "solar-fix", "raw": "{\"vi\": \"- Sò máu (Tegillarca granosa, động vật hai mảnh ăn được)\", \"ko\": \"- 피조개 (Tegillarca granosa)\"}"}
+{"word": "驢馬", "source": "solar-fix", "raw": "{\"vi\": \"- Lừa\\n- Kẻ ngu ngốc (nghĩa chửi)\", \"ko\": \"- 당나귀\\n- 어리석은 사람\"}"}
+{"word": "髷物", "source": "solar-fix", "raw": "{\"vi\": \"- Tóc giả (kiểu Nhật cổ)\\n- Tóc nối, tóc độn\", \"ko\": \"- 가발 (전통 일본식 상투 가발)\\n- 덧머리, 가발\"}"}
+{"word": "鬼燈", "source": "solar-fix", "raw": "{\"vi\": \"- Cây đèn lồng (Physalis alkekengi)\\n- Quả lồng đèn\\n- Cây đèn lồng Nhật Bản\", \"ko\": \"- 피잘라 (Physalis alkekengi)\\n- 겨울 체리\\n- 중국 랜턴 식물\"}"}
+{"word": "高高", "source": "solar-fix", "raw": "{\"vi\": \"- Không phải từ chuẩn (có thể là lỗi chính tả của từ 'cao')\", \"ko\": \"- 표준어가 아님 ('타카이(높다)'의 오기로 추정)\"}"}
+{"word": "鬼百合", "source": "solar-fix", "raw": "{\"vi\": \"- Một loại hoa huệ (Lilium auratum, Lilium rubellum, hoa trắng/hồng đốm sẫm)\\n- Ẩn dụ cho vẻ đẹp, sự thuần khiết\", \"ko\": \"- 백합의 한 종 (Lilium속, 반점 있는 흰·분홍 꽃)\\n- 아름다움·순수함의 은유\"}"}
+{"word": "鰌", "source": "solar-fix", "raw": "{\"vi\": \"- Cá chạch (cá nước ngọt)\", \"ko\": \"- 미꾸라지\"}"}
+{"word": "鰆", "source": "solar-fix", "raw": "{\"vi\": \"- Cá thu Nhật (Scomberomorus niphonius)\\n- Mùa xuân (mùa cá, nghĩa văn chương)\", \"ko\": \"- 삼치 (Scomberomorus niphonius)\\n- 봄 (삼치 철을 가리키는 문학적 표현)\"}"}
+{"word": "鱚", "source": "solar-fix", "raw": "{\"vi\": \"- Cá móm (Sillago, cá trắng đánh bắt câu)\", \"ko\": \"- 실라고 (Sillago속, 백색 식용 어류)\"}"}
+{"word": "鯱鉾ばる", "source": "solar-fix", "raw": "{\"vi\": \"- Cứng đờ, khoa trương (như cá chép đầu hổ dựng trên nóc)\", \"ko\": \"- 으스대며 뻣뻣하게 거들먹거리다\"}"}
+{"word": "鳴り物入り", "source": "solar-fix", "raw": "{\"vi\": \"- Fanfare inh ỏi (kèn trống rộn ràng)\\n- Sự khai màn long trọng, ồn ào\", \"ko\": \"- 팡파레\\n- 성대한 팡파레·호들갑\"}"}
+{"word": "鵄尾", "source": "solar-fix", "raw": "{\"vi\": \"- Ngói trang trí hai đầu nóc mái (dáng chim)\", \"ko\": \"- 치미 (지붕 마루 끝 장식 기와)\"}"}
+{"word": "鴬張り", "source": "solar-fix", "raw": "{\"vi\": \"- Sàn oanh (sàn phát tiếng khi bước, kỹ thuật chống trộm)\", \"ko\": \"- 우구이스바리 (소리 나는 마루)\"}"}
+{"word": "鵺", "source": "solar-fix", "raw": "{\"vi\": \"- Sinh vật thần thoại có đầu khỉ, thân tanuki, chân hổ và đuôi rắn\\n- Hoét vảy (Zoothera dauma)\\n- Người bí ẩn, ẩn số\", \"ko\": \"- 원숭이 머리, 너구리 몸, 호랑이 다리, 뱀 꼬리를 가진 신화 속 생물\\n- 점박이지빠귀 (Zoothera dauma)\\n- 신비로운 사람, 수수께끼 같은 사람\"}"}
+{"word": "黄檗宗", "source": "solar-fix", "raw": "{\"vi\": \"- Tông Hoàng Bách (phái Thiền Obaku)\", \"ko\": \"- 오박종 (오박 선불교)\"}"}
+{"word": "黄鶺鴒", "source": "solar-fix", "raw": "{\"vi\": \"- Chim chìa vôi vàng (chi Motacilla)\", \"ko\": \"- 알락할미새 (Motacilla속)\"}"}
+{"word": "黒猩猩", "source": "solar-fix", "raw": "{\"vi\": \"- Tinh tinh\", \"ko\": \"- 침팬지\"}"}
+{"word": "黝輝石", "source": "solar-fix", "raw": "{\"vi\": \"- Augite (pyroxene đen phổ biến)\", \"ko\": \"- 정희석 (휘석류의 검은 광물)\"}"}
+{"word": "鼬鼠", "source": "solar-fix", "raw": "{\"vi\": \"- Con chồn (weasel)\\n- Chồn thuần hóa (ferret)\", \"ko\": \"- 족제비\\n- 페럿\"}"}
+{"word": "鼻茸", "source": "solar-fix", "raw": "{\"vi\": \"- Polyp mũi (thịt dư trong mũi)\", \"ko\": \"- 비용 (콧속 폴립)\"}"}
+{"word": "３年生", "source": "solar-fix", "raw": "{\"vi\": \"- Học sinh lớp ba\\n- Học sinh năm thứ ba\", \"ko\": \"- 3학년 학생\\n- 3학년생\"}"}

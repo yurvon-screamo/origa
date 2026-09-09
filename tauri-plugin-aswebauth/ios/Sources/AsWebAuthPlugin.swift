@@ -168,19 +168,30 @@ class AsWebAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding, 
     ) {
         guard let flow = takeAppleSignInFlow() else { return }
 
-        if let authorizationError = error as? ASAuthorizationError,
-           authorizationError.code == .canceled {
+        guard let authorizationError = error as? ASAuthorizationError else {
+            flow.invoke.reject("apple sign-in failed: \(error.localizedDescription)")
+            return
+        }
+
+        switch authorizationError.code {
+        case .canceled:
             // The exact marker the frontend pattern-matches on.
             flow.invoke.reject("cancelled")
-        } else {
-            // error 1000 (.unknown) with no sheet shown almost always means
-            // the installed build lacks the com.apple.developer.applesignin
-            // entitlement (or the device is not signed into iCloud).
-            let code = (error as? ASAuthorizationError)?.code.rawValue ?? -1
-            let hint = code == 1000
-                ? " (check that the installed build embeds the Sign in with Apple entitlement and the device is signed into iCloud)"
-                : ""
-            flow.invoke.reject("apple sign-in failed (code \(code)): \(error.localizedDescription)\(hint)")
+        case .unknown:
+            // .unknown with no sheet shown almost always means the installed
+            // build lacks the com.apple.developer.applesignin entitlement
+            // (or the device is not signed into iCloud).
+            flow.invoke.reject(
+                "apple sign-in failed (code \(authorizationError.code.rawValue)): "
+                    + "\(error.localizedDescription)"
+                    + " (check that the installed build embeds the Sign in with Apple "
+                    + "entitlement and the device is signed into iCloud)"
+            )
+        default:
+            flow.invoke.reject(
+                "apple sign-in failed (code \(authorizationError.code.rawValue)): "
+                    + "\(error.localizedDescription)"
+            )
         }
     }
 

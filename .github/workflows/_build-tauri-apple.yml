@@ -273,11 +273,17 @@ jobs:
 
                   # Merge applesignin into the CURRENT entitlements instead of
                   # replacing them (keep application-identifier, team-identifier
-                  # and friends exactly as the export produced them).
+                  # and friends exactly as the export produced them). The Add
+                  # is guarded so an upstream tauri-cli fix that starts
+                  # embedding the entitlement degrades to a no-op, not a
+                  # PlistBuddy "Entry already exists" crash.
                   codesign -d --entitlements :/tmp/resign/entitlements.xml "$APP_PATH"
-                  /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" \
-                    -c "Add :com.apple.developer.applesignin:0 string Default" \
-                    /tmp/resign/entitlements.xml
+                  if ! /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" \
+                    /tmp/resign/entitlements.xml >/dev/null 2>&1; then
+                    /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" \
+                      -c "Add :com.apple.developer.applesignin:0 string Default" \
+                      /tmp/resign/entitlements.xml
+                  fi
                   plutil -lint /tmp/resign/entitlements.xml
 
                   codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
@@ -288,6 +294,8 @@ jobs:
                   grep -q "com.apple.developer.applesignin" /tmp/resign/ent.txt
 
                   rm -f "$IPA_PATH"
+                  # The export produces a plain Payload/-only .ipa (static
+                  # Rust + Swift link); repacking keeps that exact shape.
                   (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
                   ls -la "$IPA_PATH"
 
@@ -298,9 +306,17 @@ jobs:
                   APPLE_API_KEY: ${{ secrets.apple-api-key }}
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
               run: |
+                  # 404s are tolerated inside the script: a parallel run may
+                  # have purged the same leftovers (and the next run's
+                  # origa-ci-* purge would collect anything missed here).
                   python3 .github/scripts/mint_ios_identity.py cleanup \
                     --cert-id "${{ steps.resign.outputs.cert-id }}" \
-                    --profile-id "${{ steps.resign.outputs.profile-id }}"
+                    --profile-id "${{ steps.resign.outputs.profile-id }}" || true
+                  # Local hygiene, mirroring the macOS job's final keychain
+                  # cleanup: drop the keychain holding the minted private key
+                  # and the key material itself.
+                  security delete-keychain "$HOME/Library/Keychains/resign.keychain-db" || true
+                  rm -rf /tmp/minted /tmp/resign
 
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
