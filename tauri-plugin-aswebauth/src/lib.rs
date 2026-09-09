@@ -43,6 +43,8 @@ tauri::ios_plugin_binding!(init_plugin_aswebauth);
 mod commands;
 #[cfg(target_os = "macos")]
 pub(crate) mod macos;
+#[cfg(any(target_os = "ios", target_os = "macos"))]
+pub(crate) mod nonce;
 #[cfg(target_os = "macos")]
 pub(crate) mod siwa;
 

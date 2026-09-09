@@ -130,18 +130,39 @@ pub async fn sign_in_with_apple<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
 ) -> Result<AppleCredential, String> {
     use crate::AsWebAuthState;
+    use crate::nonce::{generate_raw_nonce, sha256_hex};
     use tauri::Manager;
 
     let state = app
         .try_state::<AsWebAuthState<R>>()
         .ok_or("aswebauth plugin not initialized")?;
 
+    // The nonce is generated and hashed here: the Swift side neither
+    // generates nor hashes (no CryptoKit dependency there). It puts the
+    // pre-hashed value on the authorization request and echoes the RAW nonce
+    // back with the identity token; the login endpoint re-hashes it against
+    // the token claim.
+    let raw_nonce = generate_raw_nonce();
+    let args = StartAppleArgs {
+        nonce_hash: sha256_hex(&raw_nonce),
+        nonce: raw_nonce,
+    };
+
     let result: AppleCredential = state
         .handle
-        .run_mobile_plugin::<AppleCredential>("signInWithApple", ())
+        .run_mobile_plugin("signInWithApple", args)
         .map_err(|e| e.to_string())?;
 
     Ok(result)
+}
+
+/// Arguments for the iOS `signInWithApple` Swift method (camelCase on the
+/// wire, matching the Swift `Decodable` struct).
+#[cfg(target_os = "ios")]
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StartAppleArgs {
+    nonce_hash: String,
 }
 
 /// macOS: native Sign in with Apple via `ASAuthorizationController`
