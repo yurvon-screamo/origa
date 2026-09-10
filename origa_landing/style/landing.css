@@ -13,17 +13,6 @@
 
 /* --- Header --- */
 
-.landing-wip-banner {
-    background-color: var(--bg-aged);
-    text-align: center;
-    padding: var(--space-sm) var(--space-md);
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-}
-
 .landing-header {
     display: flex;
     align-items: center;

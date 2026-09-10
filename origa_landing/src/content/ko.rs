@@ -31,10 +31,10 @@ pub static CONTENT: Content = Content {
     footer_license: "라이선스",
 
     home_meta_title: "Origa — 일본어 학습 앱: 한자, 문법, JLPT",
-    home_meta_description: "무료 일본어 입문 및 JLPT 대비 앱: 한자, 문법, 어휘, 20만+ 원어민 문장. 완전 오프라인, 한국어 인터페이스.",
+    home_meta_description: "무료 일본어 입문 및 JLPT 대비 앱: N5–N1 한자·문법, 어휘, 20만+ 원어민 문장. 완전 오프라인, 한국어 인터페이스.",
     home_schema_feature_list: "어휘, 한자, 문법, 듣기, JLPT 분석, 오프라인 모드",
     home_hero_title: "모국어로 일본어를 배우는 앱",
-    home_hero_subtitle: "어휘, 한자, 문법, 듣기, 20만 개 이상의 원어민 문장 — 모든 것이 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
+    home_hero_subtitle: "어휘, N5–N1 한자·문법, 듣기, 20만 개 이상의 원어민 문장 — 모든 것이 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
     home_cta_primary: "다운로드",
     home_cta_secondary: "웹 앱 열기",
     home_hero_tagline: "크로스플랫폼 · 오프라인 · 개인정보 보호",
@@ -162,12 +162,12 @@ pub static CONTENT: Content = Content {
     compare_wanikani_title: "WaniKani",
     compare_wanikani_what: "부수 기반 한자 학습 플랫폼.",
     compare_wanikani_when: "입문자를 위한 체계적인 한자 학습 경로.",
-    compare_wanikani_better: "오늘 실제로 마주치는 한자를 배우세요.",
+    compare_wanikani_better: "오늘 실제로 마주치는 N5–N1 한자를 배우세요.",
     compare_wanikani_together: "WaniKani로 기초를 다지고, 실전 연습은 Origa로 전환하세요.",
     compare_bunpro_title: "Bunpro",
     compare_bunpro_what: "문법 드릴 플랫폼.",
     compare_bunpro_when: "집중적인 문법 연습.",
-    compare_bunpro_better: "어휘와 문법 통합 — 예문은 이미 아는 단어를 사용합니다.",
+    compare_bunpro_better: "한자·어휘와 함께하는 N5–N1 문법 — 예문은 이미 아는 단어를 사용합니다.",
     compare_bunpro_together: "Bunpro로 문법 드릴을, Origa를 통합 학습 시스템으로 사용하세요.",
     compare_duolingo_title: "Duolingo",
     compare_duolingo_subtitle: "Duolingo가 적합한 경우: 일본어에 대한 부드러운 입문을 원할 때.",
@@ -241,11 +241,9 @@ pub static CONTENT: Content = Content {
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
     integrations_anki_note: "Anki 덱을 가져와서 중단한 곳에서 계속 학습하세요 — 모든 진행 상황이 이전됩니다.",
 
-    banner_wip: "한국어 지원은 현재 개발 중입니다.",
-
     // Legal pages: English fallback. Korean legal translation requires native
-    // review and is tracked separately; the WIP banner above already signals
-    // the development status of this locale.
+    // review and is tracked separately; the learning content itself is fully
+    // localized.
     footer_legal: "Legal",
     legal_privacy_link: "Privacy Policy",
     legal_terms_link: "Terms of Service",

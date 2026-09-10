@@ -4,13 +4,12 @@ Origa is a Japanese learning app: vocabulary, kanji, grammar, listening, and 200
 native phrases in one place. It works fully offline with local AI (OCR, speech-to-text)
 and FSRS spaced repetition.
 
-It is designed for learners who want to study in their own language. The interface is
-available in English and Russian — no English required to start. Vietnamese and Korean
-are planned.
+It is designed for learners who want to study in their own language. The interface
+is available in English, Russian, Korean and Vietnamese — no English required to start.
 
 ## What it does
 - Vocabulary: built-in dictionaries in your language; create cards from text, photos, or audio.
-- Kanji: automatic furigana that hides as you learn, writing practice with stroke order, JLPT-mapped kanji.
+- Kanji: automatic furigana that hides as you learn, writing practice with stroke order, JLPT kanji dictionaries covering N5–N1.
 - Grammar: structured reference by JLPT level (N5–N1), explained with words you already know.
 - Listening: phrases from anime, visual novels, and native content with original audio, auto-selected for your level.
 - JLPT analytics and a spaced-repetition tracker built in.

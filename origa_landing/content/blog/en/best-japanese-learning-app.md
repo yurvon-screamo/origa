@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning App (2026)"
 meta_description: "There is no single 'best' Japanese app — there's the best set for your goal. A category-by-category breakdown: vocabulary, kanji, grammar, listening, JLPT."
 target_keywords: ["best japanese learning app", "japanese learning app review", "how to choose japanese app", "japanese learning app comparison"]
-lastmod: 2026-07-20
+lastmod: 2026-09-10
 published: 2026-07-19
 status: ready
 ---
@@ -81,7 +81,7 @@ Here is the market's biggest gap. Most of the apps listed above are built for an
 
 If you study Japanese through Russian (or Vietnamese, or Korean), that creates double load: first you translate the Japanese word into English (a second intermediary), then English into your native language. This isn't a philosophical protest — it's lost time on every single word.
 
-The search for "Japanese learning app in [your language]" runs into almost no strong competition — the market is underserved. Origa is built for this from day one: the interface, dictionaries, and grammar explanations exist in Russian (English, too), with Vietnamese and Korean planned — not as a localized layer translated from English, but as the native interface language.
+The search for "Japanese learning app in [your language]" runs into almost no strong competition — the market is underserved. Origa is built for this from day one: the interface, dictionaries, and grammar explanations exist in Russian, Korean and Vietnamese (English, too) — not as a localized layer translated from English, but as the native interface language.
 
 ## How to choose
 

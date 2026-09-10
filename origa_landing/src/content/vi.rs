@@ -31,10 +31,10 @@ pub static CONTENT: Content = Content {
     footer_license: "Giấy phép",
 
     home_meta_title: "Origa — Ứng dụng học tiếng Nhật: Hán tự, Ngữ pháp, JLPT",
-    home_meta_description: "Ứng dụng học tiếng Nhật miễn phí cho người mới bắt đầu: hán tự, ngữ pháp, từ vựng, 200K+ câu bản ngữ, JLPT. Offline, bằng tiếng Việt.",
+    home_meta_description: "Ứng dụng học tiếng Nhật miễn phí cho người mới bắt đầu: hán tự và ngữ pháp N5–N1, từ vựng, 200K+ câu bản ngữ, JLPT. Offline, bằng tiếng Việt.",
     home_schema_feature_list: "Từ vựng, Hán tự, Ngữ pháp, Nghe, Phân tích JLPT, Chế độ ngoại tuyến",
     home_hero_title: "Ứng dụng học tiếng Nhật bằng tiếng mẹ đẻ",
-    home_hero_subtitle: "Từ vựng, hán tự, ngữ pháp, nghe và hơn 200.000 câu bản ngữ — tất cả trong một ứng dụng. Không cần tiếng Anh.",
+    home_hero_subtitle: "Từ vựng, hán tự và ngữ pháp N5–N1, nghe và hơn 200.000 câu bản ngữ — tất cả trong một ứng dụng. Không cần tiếng Anh.",
     home_cta_primary: "Tải xuống",
     home_cta_secondary: "Mở ứng dụng web",
     home_hero_tagline: "Đa nền tảng · Ngoại tuyến · Bảo mật",
@@ -162,12 +162,12 @@ pub static CONTENT: Content = Content {
     compare_wanikani_title: "WaniKani",
     compare_wanikani_what: "Nền tảng học hán tự dựa trên bộ thủ.",
     compare_wanikani_when: "Lộ trình học hán tự có cấu trúc từ con số không.",
-    compare_wanikani_better: "Học hán tự bạn thực sự gặp trong nội dung của mình ngay hôm nay.",
+    compare_wanikani_better: "Học hán tự N5–N1 bạn thực sự gặp trong nội dung của mình ngay hôm nay.",
     compare_wanikani_together: "Xây dựng nền tảng với WaniKani, sau đó chuyển sang Origa để thực hành thực tế.",
     compare_bunpro_title: "Bunpro",
     compare_bunpro_what: "Nền tảng luyện tập ngữ pháp.",
     compare_bunpro_when: "Thực hành ngữ pháp tập trung.",
-    compare_bunpro_better: "Từ vựng và ngữ pháp thống nhất — ví dụ sử dụng từ bạn đã biết.",
+    compare_bunpro_better: "Ngữ pháp N5–N1 cùng với hán tự và từ vựng — ví dụ sử dụng từ bạn đã biết.",
     compare_bunpro_together: "Dùng Bunpro để luyện ngữ pháp và Origa làm hệ thống học tập thống nhất.",
     compare_duolingo_title: "Duolingo",
     compare_duolingo_subtitle: "Khi Duolingo phù hợp: bạn muốn làm quen nhẹ nhàng với tiếng Nhật.",
@@ -241,11 +241,9 @@ pub static CONTENT: Content = Content {
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
     integrations_anki_note: "Nhập bộ bài Anki và tiếp tục học từ nơi bạn dừng lại — mọi tiến trình được chuyển sang.",
 
-    banner_wip: "Hỗ trợ tiếng Việt đang được phát triển.",
-
     // Legal pages: English fallback. Vietnamese legal translation requires
-    // native review and is tracked separately; the WIP banner above already
-    // signals the development status of this locale.
+    // native review and is tracked separately; the learning content itself
+    // is fully localized.
     footer_legal: "Legal",
     legal_privacy_link: "Privacy Policy",
     legal_terms_link: "Terms of Service",

@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Thay thế Anki cho tiếng Nhật (2026)"
 meta_description: "Anki mạnh nhưng cấu hình ngốn thời gian học của bạn. Hướng dẫn thực chiến: khi nào Anki phù hợp cho tiếng Nhật, khi nào cần thay thế, và cần tìm gì."
 target_keywords: ["thay thế anki tiếng nhật", "app flashcard tiếng nhật", "app lặp lại ngắt quãng tiếng nhật miễn phí", "hán tự n5", "từ vựng tiếng nhật n5"]
-lastmod: 2026-07-20
+lastmod: 2026-09-10
 published: 2026-07-19
 status: ready
 ---
@@ -74,7 +74,7 @@ Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung th�
 | Liên kết hán tự ↔ từ vựng | Bạn tự xây | Tích hợp; hán tự được theo dõi qua các từ bạn đã gặp |
 | Ngữ pháp | Ứng dụng riêng | Tham chiếu ngữ pháp có cấu trúc, ví dụ dùng từ bạn đã học |
 | Tạo thẻ OCR | Không tích hợp | Quét ảnh; từ được trích ra thành thẻ |
-| Ngôn ngữ giao diện | Tiếng Anh (có bản dịch cộng đồng) | Tiếng Anh và tiếng Nga; tiếng Việt và tiếng Hàn theo kế hoạch |
+| Ngôn ngữ giao diện | Tiếng Anh (có bản dịch cộng đồng) | Tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt |
 | Nhập từ Anki | — | Nhập bộ bài `.anki2` / `.anki21` |
 
 Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không phải vứt bỏ hàng năm tiến bộ với Anki. Origa nhập các bộ bài Anki hiện có, vì vậy chi phí di chuyển thấp.

@@ -509,6 +509,49 @@ async fn footer_has_legal_links_on_every_locale() {
 }
 
 #[tokio::test]
+async fn ko_vi_landing_have_no_wip_banner() {
+    // Korean and Vietnamese support has shipped (KO/VI content release,
+    // 2026-09-08). The old site-level "language support is under
+    // development" banner claimed the opposite — keep it gone.
+    for uri in ["/ko", "/vi"] {
+        let body = get_body(uri).await;
+        assert!(
+            !body.contains("landing-wip-banner"),
+            "WIP banner markup must not render on {uri}"
+        );
+        assert!(
+            !body.contains("개발 중"),
+            "Korean 'under development' wording must not appear on {uri}"
+        );
+        assert!(
+            !body.contains("đang được phát triển"),
+            "Vietnamese 'under development' wording must not appear on {uri}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn home_schema_description_covers_jlpt_levels_all_locales() {
+    // Grammar and kanji coverage across all JLPT levels (N5–N1) is a core
+    // differentiator, so the home description must state it in every
+    // locale. Guards against locale drift: KO/VI copy carried the levels
+    // while EN/RU did not. The dash is U+2013, matching the content files.
+    for uri in ["/", "/ru", "/ko", "/vi"] {
+        let body = get_body(uri).await;
+        let json = first_jsonld_block(&body);
+        let value: serde_json::Value = serde_json::from_str(&json).expect("JSON-LD must parse");
+        let description = value
+            .get("description")
+            .and_then(|v| v.as_str())
+            .expect("SoftwareApplication schema must have a description");
+        assert!(
+            description.contains("N5–N1"),
+            "home description on {uri} must state JLPT coverage N5–N1; got: {description}"
+        );
+    }
+}
+
+#[tokio::test]
 async fn privacy_page_renders_breadcrumb_and_h1() {
     let body = get_body("/privacy").await;
     let json = find_jsonld_block_by_type(&body, "BreadcrumbList");

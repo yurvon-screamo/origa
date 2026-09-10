@@ -57,10 +57,6 @@ impl Locale {
         }
     }
 
-    pub fn is_development(&self) -> bool {
-        matches!(self, Locale::Ko | Locale::Vi)
-    }
-
     pub fn image_prefix(&self) -> &'static str {
         match self {
             Locale::Ko | Locale::Vi => "en",
@@ -358,9 +354,6 @@ pub struct Content {
     pub integrations_anki_desc: &'static str,
     pub integrations_anki_detail: &'static str,
     pub integrations_anki_note: &'static str,
-
-    // WIP banner (empty for stable locales)
-    pub banner_wip: &'static str,
 
     // Footer Legal column + shared link labels (reused by the in-app links)
     pub footer_legal: &'static str,
