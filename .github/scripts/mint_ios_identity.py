@@ -112,7 +112,7 @@ def write_output(key: str, value: str) -> None:
 
 
 def find_bundle_id_resource(identifier: str) -> dict:
-    _, response = asc_request(f"/bundleIds?filter[identifier]={identifier}")
+    response = asc_request(f"/bundleIds?filter[identifier]={identifier}")
     data = response.get("data", [])
     if not data:
         raise SystemExit(f"::error::No bundleId resource found for {identifier}")
@@ -128,13 +128,13 @@ def purge_previous_ci_identities() -> None:
     # dangerous if it did). A same-name profile would also 409 on retries
     # of the same commit. Growth is bounded to at most a few profiles, well
     # under the 200-entry listing below.
-    _, response = asc_request("/profiles?limit=200")
+    response = asc_request("/profiles?limit=200")
     for profile in response.get("data", []):
         name = profile.get("attributes", {}).get("name", "")
         if not name.startswith("origa-ci-"):
             continue
         profile_id = profile["id"]
-        _, certs = asc_request(f"/profiles/{profile_id}/relationships/certificates")
+        certs = asc_request(f"/profiles/{profile_id}/relationships/certificates")
         cert_ids = [cert["id"] for cert in certs.get("data", [])]
         print(f"deleting stale CI profile {profile_id} ({name})")
         asc_request(f"/profiles/{profile_id}", method="DELETE")
@@ -166,7 +166,7 @@ def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
     with open(csr_path, encoding="utf-8") as csr_file:
         csr = csr_file.read()
 
-    _, response = asc_request(
+    response = asc_request(
         "/certificates",
         method="POST",
         body={
@@ -186,7 +186,7 @@ def mint(bundle_id: str, out_dir: str, suffix: str) -> None:
         cert_file.write(base64.b64decode(cert["attributes"]["certificateContent"]))
 
     bundle = find_bundle_id_resource(bundle_id)
-    _, response = asc_request(
+    response = asc_request(
         "/profiles",
         method="POST",
         body={
