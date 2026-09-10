@@ -1,6 +1,6 @@
 # Origa　「オリガ」
 
-[🇬🇧 English | 🇷🇺 Русский](./README.ru.md)
+🇬🇧 English | [🇷🇺 Русский](./README.ru.md) | [🇰🇷 한국어](./README.ko.md) | [🇻🇳 Tiếng Việt](./README.vi.md)
 
 ---
 
@@ -171,4 +171,4 @@ See the LICENSE file for details.
 
 * GitHub Issues: for bug reports and feature requests.
 * Discussions: for general questions and idea discussions.
-* Made with love for the Japanese language and technology.
+* Made with love for the Japanese language and technology. 🇯🇵💻
