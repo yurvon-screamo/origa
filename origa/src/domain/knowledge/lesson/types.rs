@@ -332,6 +332,12 @@ pub enum LessonCardView {
         audio_file: String,
         options: Vec<QuizOption>,
     },
+    /// Audio-recall: the word is never shown on the question side — the
+    /// learner hears it (CDN pitch audio / TTS, resolved by the UI) and
+    /// self-assesses with know / don't know. The answer side is the classic
+    /// word + translation. Audio availability is a render-time concern: the
+    /// UI degrades this view to `Normal` when no audio source exists.
+    AudioRecall(Card),
     KanjiReadingQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
 }
@@ -343,7 +349,8 @@ impl LessonCardView {
             | LessonCardView::Reversed(card)
             | LessonCardView::GrammarMutated { card, .. }
             | LessonCardView::Writing(card)
-            | LessonCardView::PhraseListen { card, .. } => card,
+            | LessonCardView::PhraseListen { card, .. }
+            | LessonCardView::AudioRecall(card) => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
@@ -361,6 +368,7 @@ impl LessonCardView {
             | LessonCardView::Reversed(_)
             | LessonCardView::Writing(_)
             | LessonCardView::PhraseListen { .. }
+            | LessonCardView::AudioRecall(_)
             | LessonCardView::KanjiReadingQuiz(_) => None,
         }
     }
@@ -698,6 +706,40 @@ mod tests {
             slot_id,
             "nil card_id must be backfilled from the slot id"
         );
+    }
+
+    /// Wire-format contract for `LessonCardView::AudioRecall`: the variant
+    /// must survive a serde roundtrip so persisted lesson payloads stay
+    /// loadable. LessonData itself is never synced across clients, but the
+    /// roundtrip still pins the enum's externally-tagged wire shape.
+    #[test]
+    fn audio_recall_view_roundtrips_through_serde() {
+        let view = LessonCardView::AudioRecall(Card::Vocabulary(VocabularyCard::new(
+            Question::new("温度".to_string()).expect("valid question"),
+        )));
+
+        let json = serde_json::to_string(&view).expect("serialize AudioRecall view");
+        let restored: LessonCardView =
+            serde_json::from_str(&json).expect("deserialize AudioRecall view");
+
+        assert_eq!(restored, view);
+        assert!(
+            json.contains("AudioRecall"),
+            "wire shape must keep the variant tag: {json}"
+        );
+    }
+
+    /// AudioRecall exposes the wrapped card and no grammar info — same
+    /// accessor contract as the other single-card variants.
+    #[test]
+    fn audio_recall_accessors_return_card_and_no_grammar_info() {
+        let card = Card::Vocabulary(VocabularyCard::new(
+            Question::new("温度".to_string()).expect("valid question"),
+        ));
+        let view = LessonCardView::AudioRecall(card.clone());
+
+        assert_eq!(view.card(), &card);
+        assert_eq!(view.grammar_info(), None);
     }
 
     mod yesno_card_deserialize_tests {

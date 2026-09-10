@@ -88,7 +88,11 @@
 
 Карточка урока [LessonCard] — отображение Card в контексте урока: card_id, сам Card, quiz (опционально). В коде: `domain::knowledge::LessonCard`.
 
-Представление карточки [LessonCardView] — view-слой для UI: Normal (простая карточка), YesNo (да/нет Quiz), Quiz (множественный выбор). Генерируется `LessonViewGenerator`. В коде: `domain::knowledge::LessonCardView`.
+Представление карточки [LessonCardView] — view-слой для UI: Normal (простая карточка), YesNo (да/нет Quiz), Quiz (множественный выбор), Reversed (перевод→слово), AudioRecall (аудио-recall). Генерируется `LessonViewGenerator`. В коде: `domain::knowledge::LessonCardView`.
+
+Аудио-recall [LessonCardView::AudioRecall] — strict-recall представление слова: текст вопроса отсутствует, юзер слышит слово (CDN pitch-аудио / TTS) и самооценивается «знаю/не знаю»; сторона ответа — слово + перевод. Доступен только review-словам; при поздней стадии (in_progress/known) входит в strict-recall микс, на стадии «сложное» — в равный микс пяти форматов. При недоступности аудио UI деградирует карточку до Normal. В коде: `domain::knowledge::LessonCardView::AudioRecall`.
+
+Поздняя стадия [late stage] — review-карточка в статусе in_progress или known: recognition-форматы (Quiz, YesNo) для слов запрещены, микс состоит только из strict-recall форматов. В коде: `MemoryHistory::is_in_progress() || MemoryHistory::is_known_card()`.
 
 Генератор представлений [LessonViewGenerator] — преобразует LessonCard в LessonCardView, добавляя quiz/distractors на основе словарей. В коде: `domain::knowledge::LessonViewGenerator`.
 

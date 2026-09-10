@@ -263,6 +263,7 @@
     "grammar": "Грамматика",
     "phrase": "Фраза",
     "quiz": "Тест",
+    "audio_tag": "Аудио",
     "choose_answer": "Выберите правильный ответ:",
     "choose_reading": "Выберите правильное чтение:",
     "choose_grammar": "Выберите конструкцию с этой грамматикой:",
@@ -320,7 +321,8 @@
     "pos_other": "другое",
     "pos_symbol": "символ",
     "pos_whitespace": "пробел",
-    "pos_auxiliary_symbol": "вспомогательный символ"
+    "pos_auxiliary_symbol": "вспомогательный символ",
+    "listen_word": "Прослушайте слово"
   },
   "home": {
     "loading": "Загрузка...",

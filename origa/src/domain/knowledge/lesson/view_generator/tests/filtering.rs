@@ -47,7 +47,7 @@ mod yesno_view_filtering {
     }
 
     #[test]
-    fn high_difficulty_card_never_gets_yesno_view() {
+    fn high_difficulty_card_can_get_yesno_view() {
         init_real_dictionaries();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
@@ -55,14 +55,14 @@ mod yesno_view_filtering {
 
         let (yesno, _other) = count_yesno_views(&study_card, &ks);
 
-        assert_eq!(
-            yesno, 0,
-            "high_difficulty card should never get YesNo view, got {yesno} YesNo out of {ITERATIONS} iterations"
+        assert!(
+            yesno > 0,
+            "high-difficulty card should be able to get YesNo view (even five-way split), got 0 YesNo out of {ITERATIONS} iterations"
         );
     }
 
     #[test]
-    fn in_progress_card_can_get_yesno_view() {
+    fn in_progress_card_never_gets_yesno_view() {
         init_real_dictionaries();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
@@ -70,9 +70,9 @@ mod yesno_view_filtering {
 
         let (yesno, _other) = count_yesno_views(&study_card, &ks);
 
-        assert!(
-            yesno > 0,
-            "in_progress card should be able to get YesNo view, got 0 YesNo out of {ITERATIONS} iterations"
+        assert_eq!(
+            yesno, 0,
+            "in_progress (late-stage) card must never get YesNo view, got {yesno} out of {ITERATIONS} iterations"
         );
     }
 }

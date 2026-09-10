@@ -1202,9 +1202,20 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         NativeLanguage::Russian,
     );
 
+    // Multi-show copies sit on top of the MAX_LESSON_SIZE primary cards
+    // (at most one extra showing per high-difficulty card), so the cap
+    // invariant is on DISTINCT cards, not raw slots.
+    let distinct_cards: std::collections::HashSet<Ulid> =
+        result.values().map(|lc| lc.card_id()).collect();
+
     assert!(
-        result.len() <= MAX_LESSON_SIZE,
-        "High-difficulty cards should be capped at MAX_LESSON_SIZE, got {}",
+        distinct_cards.len() <= MAX_LESSON_SIZE,
+        "Distinct cards should be capped at MAX_LESSON_SIZE, got {}",
+        distinct_cards.len()
+    );
+    assert!(
+        result.len() <= MAX_LESSON_SIZE * 2,
+        "Slot count with multi-show copies must stay within one copy per card, got {}",
         result.len()
     );
 }
@@ -1239,19 +1250,23 @@ fn phrases_added_after_core_cards_learning() {
         NativeLanguage::Russian,
     );
 
-    let core_count = result
-        .keys()
-        .filter(|id| {
-            !matches!(
-                knowledge_set.get_card(**id).unwrap().card(),
-                Card::Phrase(_)
-            )
-        })
-        .count();
+    // Multi-show expansion adds extra SLOTS for the same card; counting
+    // distinct card ids (resolved through the study deck, not slot keys)
+    // keeps the assertion about unique cards, not repeated showings.
+    let mut distinct_core_ids: std::collections::HashSet<Ulid> = std::collections::HashSet::new();
+    for lesson_card in result.values() {
+        let study_card = knowledge_set
+            .get_card(lesson_card.card_id())
+            .expect("lesson card id must resolve to a study card");
+        if !matches!(study_card.card(), Card::Phrase(_)) {
+            distinct_core_ids.insert(lesson_card.card_id());
+        }
+    }
 
     assert!(
-        core_count >= 15,
-        "Core cards should reach at least MIN_LESSON_SIZE, got {core_count}"
+        distinct_core_ids.len() >= 15,
+        "Core cards should reach at least MIN_LESSON_SIZE, got {}",
+        distinct_core_ids.len()
     );
 }
 

@@ -263,6 +263,7 @@
     "grammar": "문법",
     "phrase": "표현",
     "quiz": "퀴즈",
+    "audio_tag": "오디오",
     "choose_answer": "올바른 정답을 고르세요:",
     "choose_reading": "올바른 읽기를 고르세요:",
     "choose_grammar": "이 문법이 쓰인 문장을 고르세요:",
@@ -320,7 +321,8 @@
     "pos_other": "기타",
     "pos_symbol": "기호",
     "pos_whitespace": "공백",
-    "pos_auxiliary_symbol": "보조 기호"
+    "pos_auxiliary_symbol": "보조 기호",
+    "listen_word": "단어를 들어보세요"
   },
   "home": {
     "loading": "불러오는 중...",

@@ -15,19 +15,27 @@ mod transforms;
 
 const QUIZ_OPTIONS_COUNT: usize = 4;
 
-const PROB_NORMAL_VIEW: f32 = 0.15;
-const PROB_QUIZ_VIEW: f32 = 0.30;
-const PROB_YESNO_VIEW: f32 = 0.50;
-const PROB_REVERSED_VIEW: f32 = 0.75;
+// Late-stage vocabulary (in_progress | known): recognition formats (Quiz,
+// YesNo) are forbidden — their answer options hint the answer, letting a
+// barely-known word coast into `is_known_card` on guessed recognition.
+// Only strict-recall formats remain: Normal, AudioRecall, Reversed,
+// GrammarMutated.
+const PROB_LATE_NORMAL_VIEW: f32 = 0.20;
+const PROB_LATE_AUDIO_VIEW: f32 = 0.50;
+const PROB_LATE_REVERSED_VIEW: f32 = 0.80;
+
+// High-difficulty vocabulary: all five formats get an even share. Hint-driven
+// formats are harmless here — stability below the difficulty cap cannot
+// reach the known threshold on a few lucky guesses.
+const PROB_HD_NORMAL_VIEW: f32 = 0.20;
+const PROB_HD_QUIZ_VIEW: f32 = 0.40;
+const PROB_HD_YESNO_VIEW: f32 = 0.60;
+const PROB_HD_AUDIO_VIEW: f32 = 0.80;
 
 const PROB_KANJI_NORMAL: f32 = 1.0 / 5.0;
 const PROB_KANJI_READING_QUIZ: f32 = 2.0 / 5.0;
 const PROB_KANJI_QUIZ: f32 = 3.0 / 5.0;
 const PROB_KANJI_YESNO: f32 = 4.0 / 5.0;
-
-const PROB_NEW_KANJI_NORMAL: f32 = 0.33;
-const PROB_NEW_KANJI_QUIZ: f32 = 0.66;
-const PROB_NEW_VOCAB_NORMAL: f32 = 0.50;
 
 const PROB_NEW_PHRASE_NORMAL: f32 = 0.50;
 const PROB_REVIEW_PHRASE_NORMAL: f32 = 0.15;
@@ -102,10 +110,11 @@ impl<'a> LessonViewGenerator<'a> {
                 }
             },
             CardType::Grammar => LessonCardView::Normal(card.clone()),
-            CardType::Kanji if is_new => {
-                let same_type_cards = self.same_type_cards(&card_type);
-                self.select_new_kanji_view(card, same_type_cards, rng)
-            },
+            // New cards reach the lesson only through the acquaintance hand
+            // (NewCardPolicy::Exclude in production); if one ever slips
+            // through to a review lesson, a plain Normal showing is the safe
+            // default — a first exposure must not be tested by any quiz form.
+            CardType::Kanji if is_new => LessonCardView::Normal(card.clone()),
             CardType::Kanji => {
                 let same_type_cards: &[Card] = self
                     .cards_by_type
@@ -120,10 +129,7 @@ impl<'a> LessonViewGenerator<'a> {
                     self.native_language,
                 )
             },
-            CardType::Vocabulary if is_new => {
-                let same_type_cards = self.same_type_cards(&card_type);
-                self.select_new_vocab_view(card, same_type_cards, rng)
-            },
+            CardType::Vocabulary if is_new => LessonCardView::Normal(card.clone()),
             CardType::Vocabulary => {
                 let same_type_cards = self.same_type_cards(&card_type);
                 self.select_review_vocab_view(card, same_type_cards, study_card.memory(), rng)
@@ -132,23 +138,6 @@ impl<'a> LessonViewGenerator<'a> {
                 let same_type_cards = self.same_type_cards(&card_type);
                 self.select_phrase_view(card, same_type_cards, is_new, rng)
             },
-        }
-    }
-
-    fn select_new_kanji_view<R: Rng>(
-        &self,
-        card: &Card,
-        same_type_cards: &[Card],
-        rng: &mut R,
-    ) -> LessonCardView {
-        let rand_val = rng.random::<f32>();
-        if rand_val < PROB_NEW_KANJI_NORMAL {
-            LessonCardView::Normal(card.clone())
-        } else if rand_val < PROB_NEW_KANJI_QUIZ {
-            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else {
-            LessonCardView::Writing(card.clone())
         }
     }
 
@@ -176,21 +165,6 @@ impl<'a> LessonViewGenerator<'a> {
         }
     }
 
-    fn select_new_vocab_view<R: Rng>(
-        &self,
-        card: &Card,
-        same_type_cards: &[Card],
-        rng: &mut R,
-    ) -> LessonCardView {
-        let rand_val = rng.random::<f32>();
-        if rand_val < PROB_NEW_VOCAB_NORMAL {
-            LessonCardView::Normal(card.clone())
-        } else {
-            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        }
-    }
-
     fn select_review_vocab_view<R: Rng>(
         &self,
         card: &Card,
@@ -204,25 +178,49 @@ impl<'a> LessonViewGenerator<'a> {
             || memory.easy_review_count() > EASY_REVIEWS_FOR_REVERSED
             || memory.good_review_count() >= GOOD_REVIEWS_FOR_REVERSED;
         let rand_val = rng.random::<f32>();
-        if rand_val < PROB_NORMAL_VIEW {
-            LessonCardView::Normal(card.clone())
-        } else if rand_val < PROB_QUIZ_VIEW {
-            generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else if !is_high_difficulty && rand_val < PROB_YESNO_VIEW {
-            generation::generate_yesno(card.clone(), same_type_cards, &self.native_language, rng)
-                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
-        } else if eligible_for_reversed && rand_val < PROB_REVERSED_VIEW {
-            transforms::apply_reversed(card, &self.native_language)
-        } else if eligible_for_advanced {
-            transforms::apply_grammar_mutated(
-                card,
-                &self.known_grammars,
-                rng,
-                &self.native_language,
-            )
+
+        if !is_high_difficulty {
+            // Late stage (in_progress | known): strict recall only.
+            if rand_val < PROB_LATE_NORMAL_VIEW {
+                LessonCardView::Normal(card.clone())
+            } else if rand_val < PROB_LATE_AUDIO_VIEW {
+                LessonCardView::AudioRecall(card.clone())
+            } else if eligible_for_reversed && rand_val < PROB_LATE_REVERSED_VIEW {
+                transforms::apply_reversed(card, &self.native_language)
+            } else if eligible_for_advanced {
+                transforms::apply_grammar_mutated(
+                    card,
+                    &self.known_grammars,
+                    rng,
+                    &self.native_language,
+                )
+            } else {
+                LessonCardView::Normal(card.clone())
+            }
         } else {
-            LessonCardView::Normal(card.clone())
+            // High difficulty: five formats at an even share. GrammarMutated
+            // is unavailable here by eligibility (known | in_progress only);
+            // a non-eligible Reversed falls back to Normal.
+            if rand_val < PROB_HD_NORMAL_VIEW {
+                LessonCardView::Normal(card.clone())
+            } else if rand_val < PROB_HD_QUIZ_VIEW {
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+            } else if rand_val < PROB_HD_YESNO_VIEW {
+                generation::generate_yesno(
+                    card.clone(),
+                    same_type_cards,
+                    &self.native_language,
+                    rng,
+                )
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone()))
+            } else if rand_val < PROB_HD_AUDIO_VIEW {
+                LessonCardView::AudioRecall(card.clone())
+            } else if eligible_for_reversed {
+                transforms::apply_reversed(card, &self.native_language)
+            } else {
+                LessonCardView::Normal(card.clone())
+            }
         }
     }
 
@@ -277,34 +275,21 @@ impl<'a> LessonViewGenerator<'a> {
             .unwrap_or(&[]);
 
         if is_new {
-            build_distinct_views(vec![
-                LessonCardView::Normal(card.clone()),
-                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-            ])
-        } else {
-            let memory = study_card.memory();
-            let is_high_difficulty = memory.is_high_difficulty();
-            let eligible_for_advanced = memory.is_known_card() || memory.is_in_progress();
-            let eligible_for_reversed = eligible_for_advanced
-                || memory.easy_review_count() > EASY_REVIEWS_FOR_REVERSED
-                || memory.good_review_count() >= GOOD_REVIEWS_FOR_REVERSED;
+            // New words cannot sit in a review lesson (Exclude policy);
+            // defensive single Normal showing.
+            return vec![LessonCardView::Normal(card.clone())];
+        }
 
-            let mut candidates = vec![
-                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-            ];
-            if !is_high_difficulty {
-                candidates.push(
-                    generation::generate_yesno(
-                        card.clone(),
-                        same_type_cards,
-                        &self.native_language,
-                        rng,
-                    )
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-                );
-            }
+        let memory = study_card.memory();
+        let is_high_difficulty = memory.is_high_difficulty();
+        let eligible_for_advanced = memory.is_known_card() || memory.is_in_progress();
+        let eligible_for_reversed = eligible_for_advanced
+            || memory.easy_review_count() > EASY_REVIEWS_FOR_REVERSED
+            || memory.good_review_count() >= GOOD_REVIEWS_FOR_REVERSED;
+
+        let mut candidates = vec![LessonCardView::AudioRecall(card.clone())];
+        if !is_high_difficulty {
+            // Late stage: strict recall only — no Quiz/YesNo repeats.
             if eligible_for_reversed {
                 candidates.push(transforms::apply_reversed(card, &self.native_language));
             }
@@ -316,10 +301,27 @@ impl<'a> LessonViewGenerator<'a> {
                     &self.native_language,
                 ));
             }
-            candidates.push(LessonCardView::Normal(card.clone()));
-
-            build_distinct_views(candidates)
+        } else {
+            candidates.push(
+                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
+                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+            );
+            candidates.push(
+                generation::generate_yesno(
+                    card.clone(),
+                    same_type_cards,
+                    &self.native_language,
+                    rng,
+                )
+                .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
+            );
+            if eligible_for_reversed {
+                candidates.push(transforms::apply_reversed(card, &self.native_language));
+            }
         }
+        candidates.push(LessonCardView::Normal(card.clone()));
+
+        build_distinct_views(candidates)
     }
 
     fn candidate_views_for_kanji_repeat<R: Rng>(
@@ -336,12 +338,9 @@ impl<'a> LessonViewGenerator<'a> {
             .unwrap_or(&[]);
 
         if is_new {
-            build_distinct_views(vec![
-                LessonCardView::Normal(card.clone()),
-                generation::generate_quiz(card.clone(), same_type_cards, &self.native_language)
-                    .unwrap_or_else(|_| LessonCardView::Normal(card.clone())),
-                LessonCardView::Writing(card.clone()),
-            ])
+            // New kanji cannot sit in a review lesson (Exclude policy);
+            // defensive single Normal showing.
+            vec![LessonCardView::Normal(card.clone())]
         } else {
             build_distinct_views(vec![
                 generation::generate_kanji_reading_quiz(

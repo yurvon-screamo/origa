@@ -263,6 +263,7 @@
     "grammar": "Ngữ pháp",
     "phrase": "Mẫu câu",
     "quiz": "Câu hỏi",
+    "audio_tag": "Âm thanh",
     "choose_answer": "Chọn đáp án đúng:",
     "choose_reading": "Chọn cách đọc đúng:",
     "choose_grammar": "Chọn câu có ngữ pháp này:",
@@ -320,7 +321,8 @@
     "pos_other": "khác",
     "pos_symbol": "ký hiệu",
     "pos_whitespace": "khoảng trắng",
-    "pos_auxiliary_symbol": "ký hiệu phụ trợ"
+    "pos_auxiliary_symbol": "ký hiệu phụ trợ",
+    "listen_word": "Nghe từ này"
   },
   "home": {
     "loading": "Đang tải...",

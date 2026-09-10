@@ -263,6 +263,7 @@
     "grammar": "Grammar",
     "phrase": "Phrase",
     "quiz": "Quiz",
+    "audio_tag": "Audio",
     "choose_answer": "Choose the correct answer:",
     "choose_reading": "Choose the correct reading:",
     "choose_grammar": "Choose the sentence with this grammar:",
@@ -320,7 +321,8 @@
     "pos_other": "other",
     "pos_symbol": "symbol",
     "pos_whitespace": "whitespace",
-    "pos_auxiliary_symbol": "auxiliary symbol"
+    "pos_auxiliary_symbol": "auxiliary symbol",
+    "listen_word": "Listen to the word"
   },
   "home": {
     "loading": "Loading...",

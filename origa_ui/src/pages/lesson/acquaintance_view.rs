@@ -869,7 +869,11 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
             return;
         }
         let stage = ctx.state.get().stage;
-        if resolve_key_action(stage, false, &ev.key()) == Some(AcquaintanceKeyAction::Advance) {
+        // Аудио-фронта в показе не бывает (он — только Reverse-подфаза
+        // тренировки): флаг всегда false.
+        if resolve_key_action(stage, false, false, &ev.key())
+            == Some(AcquaintanceKeyAction::Advance)
+        {
             ev.prevent_default();
             advance.run(());
         }
