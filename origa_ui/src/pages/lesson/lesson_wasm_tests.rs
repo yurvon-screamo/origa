@@ -13,6 +13,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use super::answer_display::CardAnswerDisplay;
+use super::audio_recall_card::AudioRecallCardView;
 use super::grammar_info_badge::GrammarInfoBadge;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::lesson_card_question::LessonCardQuestion;
@@ -911,7 +912,19 @@ fn lesson_context() -> crate::pages::lesson::LessonContext {
         known_kanji: RwSignal::new(HashSet::new()),
         native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
         core_count: RwSignal::new(0),
+        // Static sample: tests that need a live AudioRecall card provide
+        // their own context (see audio recall tests below).
+        audio_mode_active: Memo::new(|_| false),
     }
+}
+
+/// Vocabulary card through its public serde representation —
+/// `VocabularyCard::new` is `#[cfg(test)] pub(crate)` in the `origa` crate.
+fn vocab_card_fixture(word: &str) -> origa::domain::Card {
+    serde_json::from_str(&format!(
+        r#"{{"Vocabulary":{{"word":{{"text":"{word}"}},"reverse_side":null,"pos":null}}}}"#
+    ))
+    .expect("deserialize vocab card fixture")
 }
 
 #[wasm_bindgen_test]
@@ -1896,6 +1909,7 @@ mod acquaintance_training {
             known_kanji: RwSignal::new(HashSet::new()),
             native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
             core_count: RwSignal::new(0),
+            audio_mode_active: Memo::new(|_| false),
         };
 
         let wrapper = create_wrapper();
@@ -2585,4 +2599,298 @@ mod acquaintance_presentation {
             );
         }
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AudioRecallCardView
+// ═══════════════════════════════════════════════════════════════════════
+
+#[wasm_bindgen_test]
+async fn audio_recall_front_hides_word_and_shows_answer_buttons() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <AudioRecallCardView
+                card=vocab_card_fixture("温度")
+                show_result=Signal::from(false)
+                on_answer=Callback::new(|_: bool| {})
+                on_replay=Callback::new(|()| {})
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+                waiting_for_next=Signal::from(false)
+                on_next_card=Callback::new(|()| {})
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-card-root\"]")
+            .unwrap()
+            .is_some(),
+        "audio recall card root must render"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-play-btn\"]")
+            .unwrap()
+            .is_some(),
+        "replay button must render on the question side"
+    );
+    for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
+        assert!(
+            wrapper
+                .query_selector(&format!("[data-testid=\"{test_id}\"]"))
+                .unwrap()
+                .is_some(),
+            "{test_id} must render before answering"
+        );
+    }
+    // The word itself must NOT leak to the question side — audio-only recall
+    let page = wrapper.text_content().unwrap();
+    assert!(
+        !page.contains("温度"),
+        "the word must be hidden on the audio-recall question side; got: {page}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn audio_recall_answer_reveals_word_and_next_button() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <AudioRecallCardView
+                card=vocab_card_fixture("温度")
+                show_result=Signal::from(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_replay=Callback::new(|()| {})
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+                waiting_for_next=Signal::from(true)
+                on_next_card=Callback::new(|()| {})
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let page = wrapper.text_content().unwrap();
+    assert!(
+        page.contains("温度"),
+        "the word must render on the answer side; got: {page}"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"lesson-card-next-btn\"]")
+            .unwrap()
+            .is_some(),
+        "waiting_for_next must show the next-card button"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LessonCardContainer AudioRecall routing (degradation is render-safe)
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Disposable i18n mount for components that install GLOBAL listeners
+/// (LessonCardContainer registers a document keydown handler): the leaked
+/// variant (`mount_with_i18n`) would keep the handler alive for every
+/// LATER test on the same page and eventually corrupt the runner. The
+/// returned handle unmounts the component (and disposes its reactive
+/// owner, removing the listener) when dropped — keep it alive for the
+/// test body via `let _mount = …`.
+fn mount_container_disposable<F>(
+    wrapper: &web_sys::Element,
+    f: F,
+) -> leptos::mount::UnmountHandle<leptos::tachys::view::any_view::AnyViewState>
+where
+    F: FnOnce() -> AnyView + 'static,
+{
+    crate::test_support::mount_disposable(wrapper, move || {
+        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        f()
+    })
+}
+
+fn lesson_state_with_audio_recall_card() -> RwSignal<crate::pages::lesson::lesson_state::LessonState>
+{
+    use crate::pages::lesson::lesson_state::LessonState;
+    use origa::domain::{LessonCard, LessonCardView};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    let slot_id = Ulid::new();
+    let lesson_card = LessonCard::new(
+        slot_id,
+        LessonCardView::AudioRecall(vocab_card_fixture("温度")),
+        false,
+    );
+    let mut cards = HashMap::new();
+    cards.insert(slot_id, lesson_card);
+    RwSignal::new(LessonState {
+        card_ids: vec![slot_id],
+        cards,
+        ..LessonState::default()
+    })
+}
+
+fn lesson_context_with_audio_mode(
+    lesson_state: RwSignal<crate::pages::lesson::lesson_state::LessonState>,
+    audio_mode_active: bool,
+) -> crate::pages::lesson::LessonContext {
+    crate::pages::lesson::LessonContext {
+        repository: crate::repository::HybridUserRepository::new(),
+        lesson_state,
+        is_completed: RwSignal::new(false),
+        reload_trigger: RwSignal::new(0),
+        is_muted: RwSignal::new(false),
+        known_kanji: RwSignal::new(HashSet::new()),
+        native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
+        core_count: RwSignal::new(1),
+        audio_mode_active: Memo::new(move |_| audio_mode_active),
+    }
+}
+
+#[wasm_bindgen_test]
+async fn container_renders_audio_front_when_mode_active() {
+    let wrapper = create_wrapper();
+    let lesson_state = lesson_state_with_audio_recall_card();
+    let ctx = lesson_context_with_audio_mode(lesson_state, true);
+    let _mount = mount_container_disposable(&wrapper, move || {
+        provide_context(ctx.clone());
+        provide_context(StoredValue::new(()));
+        view! { <super::lesson_card_container::LessonCardContainer /> }.into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-card-root\"]")
+            .unwrap()
+            .is_some(),
+        "live AudioRecall card must render the audio front"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-play-btn\"]")
+            .unwrap()
+            .is_some(),
+        "replay button must be reachable"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn container_degrades_audio_recall_to_normal_when_mode_inactive() {
+    let wrapper = create_wrapper();
+    let lesson_state = lesson_state_with_audio_recall_card();
+    let ctx = lesson_context_with_audio_mode(lesson_state, false);
+    let _mount = mount_container_disposable(&wrapper, move || {
+        provide_context(ctx.clone());
+        provide_context(StoredValue::new(()));
+        view! { <super::lesson_card_container::LessonCardContainer /> }.into_any()
+    });
+    tick().await;
+
+    // Degraded AudioRecall renders through the Normal path (renderer maps
+    // the variant unconditionally) — never an empty slot.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"lesson-card-root\"]")
+            .unwrap()
+            .is_some(),
+        "degraded AudioRecall must render the Normal card, not an empty slot"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-card-root\"]")
+            .unwrap()
+            .is_none(),
+        "audio front must NOT render when the mode is inactive"
+    );
+    // The Normal rendering shows the word itself (text front).
+    let page = wrapper.text_content().unwrap();
+    assert!(
+        page.contains("温度"),
+        "degraded AudioRecall must show the word as a Normal card; got: {page}"
+    );
+}
+
+// Freeze semantics (mode sampled once per showing): flipping the mute or
+// the pitch-loader signal must NOT recompute the mode of the CURRENT card —
+// only advancing to another showing resamples. Guards the ADR-033 rating
+// state machine against mid-card mode flips (double rating / stuck card).
+#[wasm_bindgen_test]
+async fn audio_mode_freezes_for_current_showing_and_resamples_on_advance() {
+    use crate::pages::lesson::lesson_state::LessonState;
+    use origa::domain::{LessonCard, LessonCardView};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    let audio_slot = Ulid::new();
+    let normal_slot = Ulid::new();
+    let mut cards = HashMap::new();
+    cards.insert(
+        audio_slot,
+        LessonCard::new(
+            audio_slot,
+            LessonCardView::AudioRecall(vocab_card_fixture("温度")),
+            false,
+        ),
+    );
+    cards.insert(
+        normal_slot,
+        LessonCard::new(
+            normal_slot,
+            LessonCardView::Normal(vocab_card_fixture("猫")),
+            false,
+        ),
+    );
+    let lesson_state = RwSignal::new(LessonState {
+        card_ids: vec![audio_slot, normal_slot],
+        cards,
+        ..LessonState::default()
+    });
+    let reload_trigger = RwSignal::new(0u32);
+    let is_muted = RwSignal::new(false);
+    let pitch_ready = RwSignal::new(true);
+    let native_language = RwSignal::new(origa::domain::NativeLanguage::Russian);
+
+    let audio_mode = super::lesson_state::create_audio_mode_active(
+        lesson_state,
+        reload_trigger,
+        is_muted,
+        pitch_ready,
+        native_language,
+    );
+
+    // Arrange: the browser test runtime has speechSynthesis, so the word is
+    // voiceable and the first sample is live.
+    assert!(
+        audio_mode.get_untracked(),
+        "fixture: audio card with TTS available must sample active"
+    );
+
+    // Act: mute flips mid-card — the mode must NOT flip with it.
+    is_muted.set(true);
+    assert!(
+        audio_mode.get_untracked(),
+        "muting after the showing must not degrade the live card"
+    );
+
+    // Advance to another showing: the sample now sees the mute.
+    lesson_state.update(|state| state.current_index = 1);
+    assert!(
+        !audio_mode.get_untracked(),
+        "the next card must be sampled with the new mute state"
+    );
+
+    // Unmute and come back to the audio card: resampled as live again.
+    is_muted.set(false);
+    lesson_state.update(|state| state.current_index = 0);
+    assert!(
+        audio_mode.get_untracked(),
+        "returning to the audio card after unmute must resample it as live"
+    );
 }

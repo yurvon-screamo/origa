@@ -90,4 +90,62 @@ pub struct LessonContext {
     pub known_kanji: RwSignal<HashSet<char>>,
     pub native_language: RwSignal<NativeLanguage>,
     pub core_count: RwSignal<usize>,
+    /// Whether the CURRENT showing is a live AudioRecall card (view says
+    /// AudioRecall AND audio is available). Sampled once per showing with
+    /// untracked reads of mute/pitch-loader state, so those flips never
+    /// change the mode of a card mid-answer (they apply to the next card);
+    /// when `false` the card renders and behaves as `Normal` everywhere
+    /// (render, keyboard, rating) — a single source of truth, no split-brain.
+    pub audio_mode_active: Memo<bool>,
+}
+
+/// Builds the per-showing AudioRecall mode signal (see
+/// `LessonContext::audio_mode_active`). Extracted as a free function so
+/// the freeze semantics are unit-testable without mounting the lesson page.
+///
+/// Reactivity contract: the outer memo depends ONLY on the showing identity
+/// (`showing_slot` = lesson generation + current index). Mute and
+/// pitch-loader readiness are read UNTRACKED inside — flipping them never
+/// recomputes the memo, so a live card keeps its mode until the user
+/// advances (mode changes apply to the NEXT card, protecting the ADR-033
+/// rating state machine from double-rating/stuck states).
+pub fn create_audio_mode_active(
+    lesson_state: RwSignal<LessonState>,
+    reload_trigger: RwSignal<u32>,
+    is_muted: RwSignal<bool>,
+    pitch_audio_ready: RwSignal<bool>,
+    native_language: RwSignal<NativeLanguage>,
+) -> Memo<bool> {
+    // Identity of the current showing. Recomputed on every lesson_state
+    // write, but only notifies subscribers when the slot or the lesson
+    // generation changes — answers/reveals of the same card keep the value.
+    let showing_slot = Memo::new(move |_| {
+        let state = lesson_state.get();
+        (reload_trigger.get(), state.current_index)
+    });
+
+    Memo::new(move |_| {
+        showing_slot.get();
+        let state = lesson_state.get_untracked();
+        let Some(&slot_id) = state.card_ids.get(state.current_index) else {
+            return false;
+        };
+        let Some(lesson_card) = state.cards.get(&slot_id) else {
+            return false;
+        };
+        if !matches!(
+            lesson_card.view(),
+            origa::domain::LessonCardView::AudioRecall(_)
+        ) {
+            return false;
+        }
+        let word = lesson_card
+            .card()
+            .question(&native_language.get_untracked())
+            .map(|q| q.text().to_string())
+            .unwrap_or_default();
+        !is_muted.get_untracked()
+            && pitch_audio_ready.get_untracked()
+            && crate::ui_components::word_audio_available(&word)
+    })
 }
