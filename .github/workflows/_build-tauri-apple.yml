@@ -209,12 +209,152 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
+            - name: Re-sign .ipa with SIWA entitlements
+              id: resign
+              #
+              # tauri-cli builds the iOS target with CODE_SIGN_ENTITLEMENTS=""
+              # and signs the export with an Apple-issued "Apple Distribution"
+              # certificate it mints via the ASC API in an ephemeral keychain
+              # (deleted right after), WITHOUT entitlements — so applesignin
+              # never reaches the .ipa even though the provisioning profile
+              # grants it, and the native SIWA sheet fails at runtime with
+              # ASAuthorizationError.unknown (1000).
+              #
+              # App Store Connect rejects uploads whose signing certificate is
+              # not contained in the embedded profile (-19241), and a
+              # self-signed identity does not survive Xcode's re-sign either.
+              # So mirror tauri-cli exactly: mint our own Apple-issued
+              # certificate + a fresh IOS_APP_STORE profile containing it,
+              # replace the embedded profile, MERGE applesignin into the
+              # current entitlements and re-sign. The "Cleanup minted iOS
+              # identity" step deletes the cert/profile afterwards (certificate
+              # slots are limited).
+              env:
+                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+              run: |
+                  KEYCHAIN="$HOME/Library/Keychains/resign.keychain-db"
+                  KEYCHAIN_PASS=$(uuidgen)
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
+
+                  python3 .github/scripts/mint_ios_identity.py mint \
+                    --bundle-id net.uwuwu.origa \
+                    --out-dir /tmp/minted \
+                    --suffix "${GITHUB_SHA::12}"
+
+                  security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  security set-keychain-settings -lut 21600 "$KEYCHAIN"
+                  security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  security import /tmp/minted/key.pem -k "$KEYCHAIN" -T /usr/bin/codesign
+                  security import /tmp/minted/cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple: \
+                    -k "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  security list-keychains -d user -s "$KEYCHAIN" login.keychain
+
+                  # Apple rewrites the certificate CN to the account holder
+                  # name — take the ACTUAL identity from the keychain.
+                  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
+                    | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+                  if [ -z "$IDENTITY" ]; then
+                    echo "::error::No Apple Distribution identity in $KEYCHAIN after the mint"
+                    security find-identity -v -p codesigning "$KEYCHAIN"
+                    exit 1
+                  fi
+                  echo "Re-signing with identity: $IDENTITY"
+
+                  rm -rf /tmp/resign && mkdir -p /tmp/resign
+                  unzip -q "$IPA_PATH" -d /tmp/resign
+                  APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
+
+                  # Fresh profile that contains the minted certificate (the
+                  # tauri-cli export embedded one with ITS throwaway cert).
+                  cp /tmp/minted/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
+
+                  # Merge applesignin into the CURRENT entitlements instead of
+                  # replacing them (keep application-identifier, team-identifier
+                  # and friends exactly as the export produced them). The Add
+                  # is guarded so an upstream tauri-cli fix that starts
+                  # embedding the entitlement degrades to a no-op, not a
+                  # PlistBuddy "Entry already exists" crash.
+                  codesign -d --entitlements :/tmp/resign/entitlements.xml "$APP_PATH"
+                  if ! /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" \
+                    /tmp/resign/entitlements.xml >/dev/null 2>&1; then
+                    /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" \
+                      -c "Add :com.apple.developer.applesignin:0 string Default" \
+                      /tmp/resign/entitlements.xml
+                  fi
+                  plutil -lint /tmp/resign/entitlements.xml
+
+                  codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
+                    --entitlements /tmp/resign/entitlements.xml \
+                    "$APP_PATH"
+
+                  codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/resign/ent.txt
+                  grep -q "com.apple.developer.applesignin" /tmp/resign/ent.txt
+
+                  rm -f "$IPA_PATH"
+                  # The export produces a plain Payload/-only .ipa (static
+                  # Rust + Swift link); repacking keeps that exact shape.
+                  (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
+                  ls -la "$IPA_PATH"
+
+            - name: Cleanup minted iOS identity
+              if: always() && steps.resign.outputs.cert-id != ''
+              env:
+                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+              run: |
+                  # 404s are tolerated inside the script: a parallel run may
+                  # have purged the same leftovers (and the next run's
+                  # origa-ci-* purge would collect anything missed here).
+                  python3 .github/scripts/mint_ios_identity.py cleanup \
+                    --cert-id "${{ steps.resign.outputs.cert-id }}" \
+                    --profile-id "${{ steps.resign.outputs.profile-id }}" || true
+                  # Local hygiene, mirroring the macOS job's final keychain
+                  # cleanup: drop the keychain holding the minted private key
+                  # and the key material itself.
+                  security delete-keychain "$HOME/Library/Keychains/resign.keychain-db" || true
+                  rm -rf /tmp/minted /tmp/resign
+
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
               with:
                   name: ios-build
                   path: ${{ steps.ipa.outputs.path }}
                   retention-days: 7
+
+            - name: Verify iOS entitlements (SIWA)
+              #
+              # xcodebuild succeeds with a profile that does NOT grant
+              # com.apple.developer.applesignin when the app was built without
+              # CODE_SIGN_ENTITLEMENTS applied — App Store processing accepts
+              # such a build, but ASAuthorizationController fails at runtime
+              # with ASAuthorizationError.unknown (1000) and the native sheet
+              # never appears. Fail here instead, and print the actual
+              # embedded entitlements + profile grants for diagnosis.
+              run: |
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
+                  rm -rf /tmp/ios_ent && mkdir -p /tmp/ios_ent
+                  unzip -q "$IPA_PATH" -d /tmp/ios_ent
+                  APP_PATH=$(find /tmp/ios_ent -name "*.app" -type d | head -1)
+
+                  echo "--- Binary entitlements ---"
+                  codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/ios_ent/binary.txt
+                  echo "--- Provisioning profile grants ---"
+                  security cms -D -i "$APP_PATH/embedded.mobileprovision" \
+                    2>/dev/null | tee /tmp/ios_ent/profile.plist | grep -A5 entitlements || true
+
+                  if ! grep -q "com.apple.developer.applesignin" /tmp/ios_ent/binary.txt; then
+                    echo "::error::com.apple.developer.applesignin is NOT embedded in the iOS binary — CODE_SIGN_ENTITLEMENTS was not applied to the built target"
+                    exit 1
+                  fi
+                  if ! grep -q "com.apple.developer.applesignin" /tmp/ios_ent/profile.plist; then
+                    echo "::error::the embedded provisioning profile does NOT grant com.apple.developer.applesignin — the App ID capability is missing or the profile predates it"
+                    exit 1
+                  fi
+                  echo "✅ iOS binary + profile both grant applesignin"
 
             - name: Upload to App Store Connect
               id: upload

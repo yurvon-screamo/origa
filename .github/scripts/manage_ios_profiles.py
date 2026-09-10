@@ -32,7 +32,7 @@ import urllib.request
 
 from download_macos_profile import create_es256_jwt
 
-ASC_API_BASE = "https://api.appstoreconnect.com/v1"
+ASC_API_BASE = "https://api.appstoreconnect.apple.com/v1"
 
 
 def asc_request(path: str, method: str = "GET", body: dict | None = None) -> dict:
@@ -54,7 +54,9 @@ def asc_request(path: str, method: str = "GET", body: dict | None = None) -> dic
         },
     )
     with urllib.request.urlopen(request) as response:
-        return json.loads(response.read().decode())
+        raw = response.read().decode()
+        # DELETE returns 204 No Content with an empty body.
+        return json.loads(raw) if raw.strip() else {}
 
 
 def find_bundle_id_resource(identifier: str) -> dict:
