@@ -1,7 +1,6 @@
 use leptos::prelude::*;
 use leptos_meta::Html;
 use leptos_router::components::{A, Outlet};
-use leptos_router::hooks::use_location;
 
 use crate::content::{LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_SECS, Locale};
 
@@ -12,21 +11,6 @@ fn make_href(prefix: &str, page: &str) -> String {
 #[component]
 pub fn Layout(locale: Locale) -> impl IntoView {
     provide_context(locale);
-
-    // The WIP banner ("KO/VI language support is under development") tells
-    // visitors that the *site* UI for their locale is incomplete. On an
-    // article URL served as an EN fallback (e.g. `/ko/blog/<en-slug>`), the
-    // banner would read "Korean support is under development" above an
-    // English article — a contradiction. The in-article locale marker
-    // ("Showing English article · KO") already discloses the fallback, so
-    // suppress the site-level banner there. On `/blog` index pages, no
-    // fallback happens (strict locale filter), so the banner stays.
-    let path = use_location().pathname;
-    let is_blog_article_route = {
-        let p = path.get();
-        let mut segments = p.split('/').filter(|s| !s.is_empty());
-        segments.next() == Some("blog") && segments.next().is_some()
-    };
 
     let c = locale.content();
     let prefix = locale.path_prefix();
@@ -100,14 +84,6 @@ pub fn Layout(locale: Locale) -> impl IntoView {
             </nav>
         </header>
         <script inner_html=header_inline_script() />
-        {if locale.is_development() && !is_blog_article_route {
-            view! {
-                <div class="landing-wip-banner">{c.banner_wip}</div>
-            }
-                .into_any()
-        } else {
-            ().into_any()
-        }}
         <main>
             <Outlet />
         </main>

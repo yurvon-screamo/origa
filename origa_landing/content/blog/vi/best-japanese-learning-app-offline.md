@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Ứng dụng học tiếng Nhật tốt nhất hoạt động ngoại tuyến (2026)"
 meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau — ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. Phân tích thực tế ứng dụng học tiếng Nhật nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
 target_keywords: ["học tiếng nhật ngoại tuyến", "app học tiếng nhật offline", "app học tiếng nhật miễn phí offline", "app flashcard tiếng nhật offline"]
-lastmod: 2026-07-21
+lastmod: 2026-09-10
 published: 2026-07-21
 status: ready
 ---
@@ -99,7 +99,7 @@ Cho đa số người học các đánh đổi này đáng. Cho ai đó có đi�
 Cụ thể, để các tuyên bố có thể kiểm tra:
 
 - **SRS cục bộ.** FSRS chạy trên thiết bị. Ôn hoạt động trong chế độ máy bay.
-- **Từ điển cục bộ.** Từ điển song ngữ (tiếng Anh và tiếng Nga ghép với tiếng Nhật; tiếng Việt và tiếng Hàn theo kế hoạch) được đóng gói với ứng dụng.
+- **Từ điển cục bộ.** Từ điển song ngữ (tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt ghép với tiếng Nhật) được đóng gói với ứng dụng.
 - **OCR cục bộ (NDLOCR-Lite).** Quét ảnh hoặc dán ảnh chụp màn hình, từ được nhận dạng trên thiết bị.
 - **STT cục bộ (Whisper).** Thêm thẻ từ âm thanh mà không gửi âm thanh đến máy chủ.
 - **Tạo furigana cục bộ.** Furigana trên hán tự được tạo bởi mô hình trên thiết bị và ẩn tự động trên các hán tự bạn đã học.

@@ -21,7 +21,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 * **Privacy** — all AI models run locally on your device. Your photos, audio, and study activity are processed on-device and never uploaded.
 * **Offline-first** — full functionality without internet after the initial setup.
 * **Cross-platform** — Web, Windows, Linux, macOS, Android.
-* **Learn in your language** — interface and dictionaries in Russian and English (more languages planned).
+* **Learn in your language** — interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned).
 * **JLPT analytics** — track your current level and forecast your progress.
 
 ![Origa overview](origa_landing/public/images/en.all_in_one.png)
@@ -43,12 +43,12 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 * Automatic furigana generation for all study content.
 * Smart hiding: learned kanji no longer show furigana, training your reading skills.
 * Proper kanji writing trainer.
-* Built-in kanji dictionaries strictly mapped to JLPT levels.
+* Built-in kanji dictionaries strictly mapped to JLPT levels N5–N1.
 * Interactive kanji reading tests.
 
 ### Grammar
 
-* Built-in structured grammar reference mapped to JLPT levels.
+* Built-in structured grammar reference covering JLPT levels N5–N1.
 * Contextual learning: grammar rules are explained using words you've *already* learned.
 * Practical tests to reinforce grammar patterns.
 
@@ -103,7 +103,7 @@ The project is built on a modern stack that delivers native app performance with
 * Mobile platforms: iOS release.
 * Social features: competitions between users.
 * New exercise types: reading texts, manga, contextual sentences, audio, video.
-* Localization: add Vietnamese, Korean, Indonesian, and Spanish.
+* Localization: add Indonesian and Spanish.
 
 ---
 
