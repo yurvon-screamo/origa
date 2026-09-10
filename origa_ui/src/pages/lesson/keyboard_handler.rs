@@ -14,6 +14,8 @@ pub struct KeyboardActions {
     pub on_yesno_dont_know: Callback<()>,
     pub on_quiz_toggle: Callback<usize>,
     pub on_quiz_submit: Callback<()>,
+    pub on_audio_answer: Callback<bool>,
+    pub on_replay_audio: Callback<()>,
     pub show_answer: Box<dyn Fn()>,
     pub on_next_card: Callback<()>,
 }
@@ -76,6 +78,12 @@ pub fn create_keyboard_handler(
         let is_phrase_listen = current_card
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
             .unwrap_or(false);
+        // Live AudioRecall card only: a degraded one (mode sampled false)
+        // keeps the Normal keyboard semantics below.
+        let is_audio_recall_active = current_card
+            .map(|c| matches!(c.view(), LessonCardView::AudioRecall(_)))
+            .unwrap_or(false)
+            && lesson_ctx.audio_mode_active.get();
         if !state.showing_answer {
             if is_quiz || is_phrase_listen {
                 if is_multi_quiz {
@@ -107,6 +115,16 @@ pub fn create_keyboard_handler(
                 );
                 return;
             }
+
+            if is_audio_recall_active {
+                handle_audio_recall_key(
+                    &ev,
+                    &key,
+                    &actions.on_audio_answer,
+                    &actions.on_replay_audio,
+                );
+                return;
+            }
         }
 
         if state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
@@ -114,7 +132,13 @@ pub fn create_keyboard_handler(
             return;
         }
 
-        if key == " " && !state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
+        if key == " "
+            && !state.showing_answer
+            && !is_quiz
+            && !is_yesno
+            && !is_phrase_listen
+            && !is_audio_recall_active
+        {
             ev.prevent_default();
             (actions.show_answer)();
         }
@@ -188,6 +212,33 @@ fn handle_yesno_key(
         " " => {
             ev.prevent_default();
             on_dont_know.run(());
+        },
+        _ => {},
+    }
+}
+
+/// AudioRecall hotkeys before the answer: 1 = «Не знаю», 2 = «Знаю»,
+/// Space = replay the audio. Replay is NOT muted: it is an explicit user
+/// action, and a textless card without sound would be unanswerable. After
+/// the answer the universal dismiss path (Space/Enter/digit) takes over.
+fn handle_audio_recall_key(
+    ev: &KeyboardEvent,
+    key: &str,
+    on_answer: &Callback<bool>,
+    on_replay: &Callback<()>,
+) {
+    match key {
+        "1" => {
+            ev.prevent_default();
+            on_answer.run(false);
+        },
+        "2" => {
+            ev.prevent_default();
+            on_answer.run(true);
+        },
+        " " => {
+            ev.prevent_default();
+            on_replay.run(());
         },
         _ => {},
     }

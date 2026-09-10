@@ -9,8 +9,8 @@ use tracing::warn;
 use wasm_bindgen_futures::JsFuture;
 
 use super::{
-    extract_japanese_text, get_reading_from_text, speak_tts_text, speak_tts_text_with_callback,
-    stop_speech,
+    extract_japanese_text, get_reading_from_text, is_speech_supported, speak_tts_text,
+    speak_tts_text_with_callback, stop_speech,
 };
 use crate::repository::cdn_provider::prefetch_blob_url;
 
@@ -71,6 +71,15 @@ fn lookup_audio_path(word: &str) -> Option<String> {
     let reading_hira = kata_to_hira(&reading);
     let entry = get_audio_for_reading(word, &reading_hira)?;
     Some(format!("/{}", entry.cdn_path()))
+}
+
+/// Whether the word can be voiced at all: a CDN pitch-audio entry exists
+/// OR the platform TTS is available. Pure synchronous lookup — no side
+/// effects, safe to call from render-time predicates (AudioRecall
+/// degradation). Note: the pitch dictionary is loaded asynchronously, so
+/// callers gating on loader readiness must also check the loader signal.
+pub fn word_audio_available(word: &str) -> bool {
+    lookup_audio_path(word).is_some() || is_speech_supported()
 }
 
 /// Prefetch the blob URL for `word` and play it. `on_end` is invoked when the
