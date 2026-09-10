@@ -2,16 +2,17 @@ use super::acquaintance_keyboard::{
     AcquaintanceKeyboardActions, create_acquaintance_keyboard_handler,
 };
 use super::acquaintance_state::{
-    AcquaintanceContext, AcquaintanceSlideData, should_autoplay_word_audio,
+    AcquaintanceContext, AcquaintanceFrontKind, AcquaintanceSlideData, should_autoplay_word_audio,
 };
 use super::grammar_example::{first_example_markdown, grammar_example_front};
 use super::keyboard_handler::is_typing_target;
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, MarkdownText, MarkdownVariant, ReadingGroup,
-    is_speech_supported, speak_word,
+    is_speech_supported, speak_word, word_audio_available,
 };
 use leptos::prelude::*;
+use leptos_icons::Icon;
 use leptos_use::use_event_listener;
 use origa::domain::{AcquaintanceSubphase, AnswerOutcome, NativeLanguage};
 use ulid::Ulid;
@@ -124,15 +125,104 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
         order[rotation_index.get() % order.len()]
     });
 
-    // Автозвук Forward-фронта — один на СМЕНУ карты: Memo по card_id
+    // Mute + pitch-loader readiness for the audio-front availability
+    // sample (same predicate inputs as the lesson AudioRecall mode).
+    let lesson_ctx = use_context::<super::lesson_state::LessonContext>();
+    let is_muted = lesson_ctx.as_ref().map(|ctx| ctx.is_muted);
+    let pitch_ready = use_context::<crate::store::auth_store::AuthStore>()
+        .map(|store| store.is_pitch_audio_loaded);
+
+    // Audio front of the CURRENT card in the reverse subphase (50/50 mix,
+    // frozen per card per subphase — see AcquaintanceState::audio_fronts).
+    // The coin is flipped by a dedicated Effect BELOW (the only writer);
+    // this Memo purely READS the stored decision, so no signal is updated
+    // during a render pass.
+    let audio_front_ctx = ctx_stored;
+    let current_audio_front = Memo::new(move |_| {
+        let card_id = current_id.get();
+        if card_id.is_nil() {
+            return false;
+        }
+        let ctx = audio_front_ctx.get_value();
+        let reverse = ctx
+            .state
+            .with(|state| state.hand.as_ref().and_then(|h| h.subphase()))
+            == Some(AcquaintanceSubphase::Reverse);
+        if !reverse {
+            return false;
+        }
+        ctx.state.with(|state| {
+            matches!(
+                state.audio_fronts.get(&card_id),
+                Some(AcquaintanceFrontKind::Audio)
+            )
+        })
+    });
+
+    // Coin-flip effect: at a word card's first showing in the reverse
+    // subphase, store the front decision (frozen by front_kind_for on
+    // re-runs). Runs OUTSIDE the render pass — updating the hand state
+    // from inside a render closure would panic the reactive runtime.
+    // Subphase is read TRACKED: a single-word hand switches the subphase
+    // without changing the current card id, and the re-run must re-roll
+    // the (cleared) decision for the new subphase.
+    let sample_ctx = ctx_stored;
+    Effect::new(move |_| {
+        let card_id = current_id.get();
+        if card_id.is_nil() {
+            return;
+        }
+        let ctx = sample_ctx.get_value();
+        let reverse = ctx
+            .state
+            .with(|state| state.hand.as_ref().and_then(|h| h.subphase()))
+            == Some(AcquaintanceSubphase::Reverse);
+        if !reverse {
+            return;
+        }
+        let already_decided = ctx
+            .state
+            .with_untracked(|state| state.audio_fronts.contains_key(&card_id));
+        if already_decided {
+            return;
+        }
+        let Some(word) = ctx
+            .slides
+            .get_untracked()
+            .iter()
+            .find(|slide| slide.card_id() == card_id)
+            .and_then(|slide| slide.word().map(str::to_string))
+        else {
+            return;
+        };
+        let muted = is_muted
+            .as_ref()
+            .map(|signal| signal.get_untracked())
+            .unwrap_or(false);
+        let pitch = pitch_ready
+            .as_ref()
+            .map(|signal| signal.get_untracked())
+            .unwrap_or(false);
+        let audio_available = !muted && pitch && word_audio_available(&word);
+        let roll = ulid::Ulid::new().0 & 1 == 0;
+        // The returned kind is consumed by the reader Memo above; here we
+        // only persist the decision.
+        ctx.state.update(|state| {
+            state.front_kind_for(card_id, roll, audio_available);
+        });
+    });
+    // Автозвук фронта — один на СМЕНУ карты: Memo по card_id
     // молчит при перезапусках рендер-замыкания с той же картой (запись
-    // ответа, пересборка slides), звучит только новой карте. Reverse
+    // ответа, пересборка slides), звучит только новой карте. Озвучиваются
+    // Forward-фронт и аудио-фронт Reverse-подфазы; текстовый Reverse-фронт
     // озвучивается при раскрытии ответа (speak_reverse_answer).
     // Тот же канал, что и автозвук обычного урока (speak_word): сначала
     // CDN pitch-аудио файла, TTS — только fallback (юзер-репорт: в
     // знакомстве звучал TTS вместо аудиофайла).
-    let is_muted =
-        use_context::<super::lesson_state::LessonContext>().map(|lesson_ctx| lesson_ctx.is_muted);
+    // `current_audio_front` читается TRACKED: coin-flip Effect пишет
+    // решение тем же тиком, и если автозвук успел выполниться раньше —
+    // изменение Memo перезапускает эффект и звук доигрывается, вместо
+    // негласной зависимости на порядок объявления эффектов.
     let autoplay_ctx = ctx_stored;
     Effect::new(move |_| {
         let card_id = current_id.get();
@@ -144,14 +234,8 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
             .state
             .with_untracked(|state| state.hand.as_ref().and_then(|h| h.subphase()))
             == Some(AcquaintanceSubphase::Forward);
-        if !forward {
-            return;
-        }
-        let muted = is_muted
-            .as_ref()
-            .map(|signal| signal.get_untracked())
-            .unwrap_or(false);
-        if !should_autoplay_word_audio(muted, is_speech_supported()) {
+        let audio_front = !forward && current_audio_front.get();
+        if !forward && !audio_front {
             return;
         }
         let word = ctx
@@ -160,9 +244,19 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
             .iter()
             .find(|slide| slide.card_id() == card_id)
             .and_then(|slide| slide.word().map(str::to_string));
-        if let Some(word) = word {
-            speak_word(&word, 1.0);
+        let Some(word) = word else {
+            return;
+        };
+        let muted = is_muted
+            .as_ref()
+            .map(|signal| signal.get_untracked())
+            .unwrap_or(false);
+        // Availability = pitch audio OR TTS (not TTS-only): in pitch-only
+        // environments the audio front must still autoplay.
+        if !should_autoplay_word_audio(muted, word_audio_available(&word)) {
+            return;
         }
+        speak_word(&word, 1.0);
     });
 
     // Текущая карта тренировки для тега типа в шапке: отдельный сигнал,
@@ -176,6 +270,7 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
     // финиша — внутри do_reveal/do_rate.
     let handle_keydown = {
         let c = ctx_stored;
+        let audio_front_probe = current_audio_front;
         create_acquaintance_keyboard_handler(
             c.get_value(),
             showing_answer,
@@ -195,7 +290,26 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                         remembered,
                     );
                 }),
+                on_replay_audio: Box::new(move || {
+                    // Явное действие пользователя: мьют не гейтит повтор
+                    // (безтекстовый фронт без звука нерешаем).
+                    let card_id = current_id.get_untracked();
+                    if card_id.is_nil() {
+                        return;
+                    }
+                    let ctx = c.get_value();
+                    if let Some(word) = ctx
+                        .slides
+                        .get_untracked()
+                        .iter()
+                        .find(|slide| slide.card_id() == card_id)
+                        .and_then(|slide| slide.word().map(str::to_string))
+                    {
+                        speak_word(&word, 1.0);
+                    }
+                }),
             },
+            Box::new(move || audio_front_probe.get_untracked()),
         )
     };
 
@@ -251,6 +365,7 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                                 ctx=ctx_stored.get_value()
                                 card_id=card_id
                                 reverse=reverse
+                                audio_front=current_audio_front.get()
                             />
                         </div>
                         <Show when=move || showing_answer.get() fallback=move || ()>
@@ -278,7 +393,15 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                         test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
                     >
                         {t!(i18n, lesson.show_answer)}
-                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
+                        // На аудио-фронте Space занят повтором аудио —
+                        // раскрытие подсказываем Enter'ом.
+                        <span class="kbd-hint">
+                            {move || if current_audio_front.get_untracked() {
+                                t!(i18n, lesson.enter_key).into_any()
+                            } else {
+                                t!(i18n, lesson.space_key).into_any()
+                            }}
+                        </span>
                     </Button>
                 </div>
             </Show>
@@ -445,7 +568,9 @@ fn finish_answer(
     match action {
         AfterAnswerAction::SwitchedSubphase => {
             // Сторона сменилась в момент заполнения полосы: новый круг
-            // с нуля в перемешанном порядке.
+            // с нуля в перемешанном порядке. Фронты аудио разыгрываются
+            // заново — решения прошлой подфазы не переносятся.
+            ctx.state.update(|state| state.audio_fronts.clear());
             rotation_index.set(0);
             training_order.set(reshuffle_avoiding_repeat(
                 prev_last,
@@ -494,12 +619,27 @@ fn WordTrainingFront(
 }
 
 /// Фронт тренировки: японская сторона (Forward) или перевод (Reverse,
-/// только слова). Кандзи показывают только знак — значение является
-/// ответом; грамматика — японскую строку примера без перевода (смысл
-/// тоже ответ, спека §Тренировка).
+/// только слова). Аудио-фронт Reverse-подфазы прячет текст полностью —
+/// слово только звучит (иконка + повтор). Кандзи показывают только знак —
+/// значение является ответом; грамматика — японскую строку примера без
+/// перевода (смысл тоже ответ, спека §Тренировка).
 #[component]
-fn TrainingFrontSlide(ctx: AcquaintanceContext, card_id: Ulid, reverse: bool) -> impl IntoView {
+fn TrainingFrontSlide(
+    ctx: AcquaintanceContext,
+    card_id: Ulid,
+    reverse: bool,
+    #[prop(default = false)] audio_front: bool,
+) -> impl IntoView {
     let known_kanji = ctx.known_kanji;
+    let i18n = use_i18n();
+    // Повтор аудио — явное действие: безтекстовый фронт без звука
+    // нерешаем, мьют его не гейтит.
+    let replay_word = ctx
+        .slides
+        .get_untracked()
+        .iter()
+        .find(|s| s.card_id() == card_id)
+        .and_then(|slide| slide.word().map(str::to_string));
     // Отступы фронта зависят от фазы: пока юзер думает — воздух вокруг
     // вопроса; после раскрытия ответа вопрос сжимается в шапку ответа
     // (баг-репорт: огромные отступы съедали место на стороне ответа).
@@ -524,7 +664,28 @@ fn TrainingFrontSlide(ctx: AcquaintanceContext, card_id: Ulid, reverse: bool) ->
                 };
                 match slide {
                     AcquaintanceSlideData::Vocabulary { word, translations, .. } => {
-                        if reverse {
+                        if reverse && audio_front {
+                            let replay_word = replay_word.clone();
+                            view! {
+                                <div class="flex flex-col items-center gap-4">
+                                    <button
+                                        data-testid="acquaintance-audio-front-play"
+                                        class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
+                                        on:click=move |_| {
+                                            if let Some(word) = replay_word.as_deref() {
+                                                speak_word(word, 1.0);
+                                            }
+                                        }
+                                    >
+                                        <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
+                                    </button>
+                                    <p class="font-mono text-lg text-[var(--fg-muted)]">
+                                        {t!(i18n, lesson.listen_word)}
+                                    </p>
+                                </div>
+                            }
+                                .into_any()
+                        } else if reverse {
                             view! {
                                 <p class="font-mono text-3xl text-[var(--fg-black)]">
                                     {translations.join(", ")}

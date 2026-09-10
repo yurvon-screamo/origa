@@ -93,6 +93,16 @@ pub fn LessonContent() -> impl IntoView {
         native_language.set(crate::i18n::locale_to_native_language(&i18n.get_locale()));
     });
 
+    // AudioRecall mode of the CURRENT showing, sampled once per card (see
+    // LessonContext::audio_mode_active for the freeze rationale).
+    let audio_mode_active = super::lesson_state::create_audio_mode_active(
+        lesson_state,
+        reload_trigger,
+        is_muted,
+        auth_store.is_pitch_audio_loaded,
+        native_language,
+    );
+
     let lesson_ctx = LessonContext {
         repository: repository.clone(),
         lesson_state,
@@ -102,6 +112,7 @@ pub fn LessonContent() -> impl IntoView {
         known_kanji,
         native_language,
         core_count: core_count_signal,
+        audio_mode_active,
     };
     provide_context(lesson_ctx);
 

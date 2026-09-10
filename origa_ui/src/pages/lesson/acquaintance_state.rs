@@ -2,11 +2,32 @@ use crate::repository::HybridUserRepository;
 use leptos::{prelude::*, task::spawn_local};
 use origa::domain::{AcquaintanceHand, AcquaintanceSubphase, NativeLanguage};
 use origa::use_cases::CompleteAcquaintanceHandUseCase;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
 use super::kanji_card_details::RadicalDisplay;
 use crate::ui_components::ReadingItem;
+
+/// Front kind of a training card in the reverse subphase (рус→яп):
+/// the default text front (translation to recall the word from) or the
+/// audio front (the word is only heard, never shown — trains listening
+/// recognition from the very first day; owner decision: 50/50 mix).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AcquaintanceFrontKind {
+    Audio,
+    Text,
+}
+
+/// Pure decision for the audio-front coin flip: audio only when the roll
+/// says so AND the word is actually voiceable. Kept as a free function so
+/// the randomness lives outside (UI rolls once per card per subphase).
+pub fn resolve_front_kind(roll: bool, audio_available: bool) -> AcquaintanceFrontKind {
+    if audio_available && roll {
+        AcquaintanceFrontKind::Audio
+    } else {
+        AcquaintanceFrontKind::Text
+    }
+}
 
 /// Стадии руки знакомства на странице урока (docs/acquaintance-mode.md):
 /// показ → тренировка → переходный экран → обычное ревью. `Inactive` —
@@ -30,6 +51,12 @@ pub struct AcquaintanceState {
     pub hand: Option<AcquaintanceHand>,
     pub slide_index: usize,
     pub skipped_ids: HashSet<Ulid>,
+    /// Front kind per card in the CURRENT reverse subphase: the coin is
+    /// flipped once at the card's first showing and then frozen (both
+    /// outcomes persist), so re-showings keep the same front even if the
+    /// mute or the pitch dictionary flips mid-subphase. Cleared on every
+    /// subphase change and on `start_new_hand`.
+    pub audio_fronts: HashMap<Ulid, AcquaintanceFrontKind>,
     /// Рука закрывается: персистенция идёт, экран завершения ещё не
     /// смонтирован (stage станет Completed после коммита записи — защита
     /// бага #462). UI в этом окне замораживает отвеченную карту и прячет
@@ -78,7 +105,23 @@ impl AcquaintanceState {
         self.hand = Some(hand);
         self.slide_index = 0;
         self.skipped_ids.clear();
+        self.audio_fronts.clear();
         self.hand_finishing = false;
+    }
+
+    /// Front kind of a training card: flips the coin at the card's first
+    /// showing in the current subphase and freezes the outcome (both Audio
+    /// and Text persist). Subsequent showings return the stored decision.
+    pub fn front_kind_for(
+        &mut self,
+        card_id: Ulid,
+        roll: bool,
+        audio_available: bool,
+    ) -> AcquaintanceFrontKind {
+        *self
+            .audio_fronts
+            .entry(card_id)
+            .or_insert_with(|| resolve_front_kind(roll, audio_available))
     }
 
     /// Переходит к следующей непомеченной «Уже знаю» карте.
@@ -304,6 +347,7 @@ mod advance_presentation_tests {
             hand: Some(hand),
             slide_index: 0,
             skipped_ids: HashSet::new(),
+            audio_fronts: HashMap::new(),
             hand_finishing: false,
         }
     }
@@ -360,6 +404,7 @@ mod advance_presentation_tests {
             hand: Some(hand),
             slide_index: 0,
             skipped_ids: HashSet::from([b]),
+            audio_fronts: HashMap::new(),
             hand_finishing: false,
         };
 
@@ -368,5 +413,81 @@ mod advance_presentation_tests {
         assert_eq!(state.slide_index, 2);
         // следующий advance исчерпывает показ
         assert!(state.advance_presentation());
+    }
+}
+
+#[cfg(test)]
+mod front_kind_tests {
+    use super::*;
+
+    #[rstest::rstest]
+    #[case::roll_with_audio(true, true, AcquaintanceFrontKind::Audio)]
+    #[case::roll_without_audio(true, false, AcquaintanceFrontKind::Text)]
+    #[case::no_roll_with_audio(false, true, AcquaintanceFrontKind::Text)]
+    #[case::no_roll_without_audio(false, false, AcquaintanceFrontKind::Text)]
+    fn resolve_front_kind_combines_roll_and_availability(
+        #[case] roll: bool,
+        #[case] audio_available: bool,
+        #[case] expected: AcquaintanceFrontKind,
+    ) {
+        assert_eq!(resolve_front_kind(roll, audio_available), expected);
+    }
+
+    fn empty_state() -> AcquaintanceState {
+        AcquaintanceState::default()
+    }
+
+    #[test]
+    fn front_kind_frozen_after_first_showing_even_if_availability_flips() {
+        let card_id = Ulid::new();
+        let mut state = empty_state();
+
+        // First showing rolls Audio (voiceable at that moment).
+        assert_eq!(
+            state.front_kind_for(card_id, true, true),
+            AcquaintanceFrontKind::Audio
+        );
+
+        // Re-showing in the same subphase: the SAME front even though the
+        // word is no longer voiceable (muted / dictionary not ready).
+        assert_eq!(
+            state.front_kind_for(card_id, true, false),
+            AcquaintanceFrontKind::Audio
+        );
+    }
+
+    #[test]
+    fn front_kind_text_outcome_also_persists() {
+        let card_id = Ulid::new();
+        let mut state = empty_state();
+
+        // First showing rolls Text (not voiceable right now).
+        assert_eq!(
+            state.front_kind_for(card_id, true, false),
+            AcquaintanceFrontKind::Text
+        );
+
+        // Later showings after the dictionary loaded: still Text — the
+        // card does not switch fronts mid-subphase.
+        assert_eq!(
+            state.front_kind_for(card_id, true, true),
+            AcquaintanceFrontKind::Text
+        );
+    }
+
+    #[test]
+    fn start_new_hand_clears_front_decisions() {
+        let card_id = Ulid::new();
+        let mut state = empty_state();
+        state.front_kind_for(card_id, true, true);
+
+        let hand =
+            AcquaintanceHand::new(vec![(card_id, origa::domain::CardType::Vocabulary)]).unwrap();
+        state.start_new_hand(hand);
+
+        assert!(
+            state.audio_fronts.is_empty(),
+            "a new hand must re-roll every front decision"
+        );
     }
 }

@@ -46,6 +46,15 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             is_reversed: true,
             grammar_info: None,
         },
+        // AudioRecall degrades to the Normal rendering path when audio is
+        // unavailable (the container decides via `audio_mode_active`); the
+        // renderer itself is degradation-agnostic and maps the variant
+        // unconditionally.
+        LessonCardView::AudioRecall(card) => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: None,
+        },
         LessonCardView::GrammarMutated { card, grammar_info } => LessonCardParams {
             card,
             is_reversed: false,

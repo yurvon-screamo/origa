@@ -1,6 +1,8 @@
+use super::audio_recall_card::AudioRecallCardView;
 use super::keyboard_handler::{KeyboardActions, create_keyboard_handler, is_typing_target};
 use super::lesson_card_renderer::render_lesson_card;
 use super::lesson_state::LessonContext;
+use super::on_audio_select::create_on_audio_select;
 use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_quiz_submit::create_on_quiz_submit;
@@ -23,6 +25,7 @@ use ulid::Ulid;
 pub fn LessonCardContainer() -> impl IntoView {
     let lesson_ctx = use_context::<LessonContext>().expect("lesson context");
     let lesson_state = lesson_ctx.lesson_state;
+    let audio_mode_active = lesson_ctx.audio_mode_active;
     let is_rating = RwSignal::new(None::<Ulid>);
     let known_kanji = lesson_ctx.known_kanji;
     let native_language = lesson_ctx.native_language;
@@ -44,6 +47,30 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let on_quiz_dont_know = create_on_dont_know(lesson_state);
     let on_yesno_dont_know = create_on_dont_know(lesson_state);
+
+    let on_audio_select = create_on_audio_select(lesson_state);
+
+    // Replay speaks the CURRENT card's word: manual replay is an explicit
+    // user action and is not gated by the lesson mute (a textless card
+    // without sound is unanswerable).
+    let on_replay_audio = Callback::new(move |_: ()| {
+        let state = lesson_state.get_untracked();
+        let Some(slot_id) = state.card_ids.get(state.current_index) else {
+            return;
+        };
+        let Some(lesson_card) = state.cards.get(slot_id) else {
+            return;
+        };
+        if !matches!(lesson_card.view(), LessonCardView::AudioRecall(_)) {
+            return;
+        }
+        let word = lesson_card
+            .card()
+            .question(&native_language.get_untracked())
+            .map(|q| q.text().to_string())
+            .unwrap_or_default();
+        crate::ui_components::speak_word(&word, 1.0);
+    });
 
     let on_next_card = Callback::new(move |_: ()| {
         // Pure-manual advance (ADR-033) contract: every on_* handler that
@@ -73,6 +100,8 @@ pub fn LessonCardContainer() -> impl IntoView {
             on_yesno_dont_know,
             on_quiz_toggle,
             on_quiz_submit,
+            on_audio_answer: on_audio_select,
+            on_replay_audio,
             show_answer: Box::new(show_answer),
             on_next_card,
         },
@@ -129,6 +158,19 @@ pub fn LessonCardContainer() -> impl IntoView {
             .unwrap_or(false)
     });
 
+    // Live AudioRecall showing: the view says AudioRecall AND the mode was
+    // sampled available for this showing (audio source + not muted). A
+    // degraded AudioRecall card falls through to the default branch below,
+    // where the renderer maps it to the Normal path — one routing scheme,
+    // no empty render in any combination.
+    let is_audio_recall_active = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::AudioRecall(_)))
+            .unwrap_or(false)
+            && audio_mode_active.get()
+    });
+
     on_cleanup(move || {
         stop_current_audio();
     });
@@ -142,7 +184,7 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     view! {
         <Show when=move || current_lesson_card.get().is_some()>
-            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get()>
+            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_audio_recall_active.get()>
                 {move || {
                     current_lesson_card.get().map(|lesson_card| {
                         render_lesson_card(
@@ -273,6 +315,29 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     dont_know_selected=state.dont_know_selected
                                     phrase_text=phrase_text
                                     phrase_translation=phrase_translation
+                                    known_kanji=Signal::from(known_kanji)
+                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    on_next_card=on_next_card
+                                />
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                }}
+            </Show>
+
+            <Show when=move || is_audio_recall_active.get()>
+                {move || {
+                    current_lesson_card.get().and_then(|lesson_card| {
+                        if let LessonCardView::AudioRecall(card) = lesson_card.into_view() {
+                            Some(view! {
+                                <AudioRecallCardView
+                                    card=card
+                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    on_answer=on_audio_select
+                                    on_replay=on_replay_audio
+                                    native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
                                     waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
                                     on_next_card=on_next_card
