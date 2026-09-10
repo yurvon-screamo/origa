@@ -1,6 +1,6 @@
 # Origa　「オリガ」
 
-[🇬🇧 English](./README.md) | 🇷🇺 Русский
+[🇬🇧 English](./README.md) | 🇷🇺 Русский | [🇰🇷 한국어](./README.ko.md) | [🇻🇳 Tiếng Việt](./README.vi.md)
 
 ---
 
