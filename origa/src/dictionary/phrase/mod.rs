@@ -100,6 +100,10 @@ pub fn get_index_entry(id: &Ulid) -> Option<IndexEntry> {
     }
 }
 
+/// All indexed phrases, one owned clone per entry. The full index is
+/// materialized up front (both storage forms) — callers iterating only a
+/// prefix still pay the one-pass clone cost; current consumers (the
+/// startup seeding pass, lesson builder fixtures) iterate everything.
 pub fn iter_index_entries() -> Option<impl Iterator<Item = IndexEntry>> {
     PHRASE_INDEX.get().map(|store| match store {
         PhraseStore::Owned(index) => index
