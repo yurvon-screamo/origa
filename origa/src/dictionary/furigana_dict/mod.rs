@@ -6,8 +6,6 @@ mod parse;
 
 use std::sync::OnceLock;
 
-use rkyv::util::AlignedVec;
-
 use crate::domain::OrigaError;
 
 pub use parse::ArchivedFuriganaDictionary;
@@ -114,14 +112,9 @@ pub fn serialize_furigana_dict_to_rkyv(dict: &FuriganaDictionary) -> Result<Vec<
 pub fn access_furigana_payload(
     payload: &[u8],
 ) -> Result<&'static ArchivedFuriganaDictionary, OrigaError> {
-    let aligned: &'static AlignedVec = Box::leak(Box::new({
-        let mut buffer = AlignedVec::new();
-        buffer.extend_from_slice(payload);
-        buffer
-    }));
-    rkyv::access::<ArchivedFuriganaDictionary, rkyv::rancor::Error>(aligned.as_slice()).map_err(
-        |e| OrigaError::FuriganaError {
+    crate::dictionary::cdn_blob::access_leaked::<ArchivedFuriganaDictionary>(payload).map_err(|e| {
+        OrigaError::FuriganaError {
             reason: format!("failed to access furigana blob: {e}"),
-        },
-    )
+        }
+    })
 }

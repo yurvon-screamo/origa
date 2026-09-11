@@ -261,32 +261,46 @@ mod tests {
         assert_eq!(prefixed[0].text, "大人");
     }
 
-    /// The zero-copy archived view must answer exactly like the owned
-    /// dictionary built from the same text.
-    #[rstest::rstest]
-    #[case::exact_word("大人", "word")]
-    #[case::prefix_scan("大", "prefix")]
-    #[case::single_entry_word("指", "word")]
-    #[case::unknown_word("手", "word")]
-    fn archived_lookups_match_owned_dictionary(#[case] key: &str, #[case] mode: &str) {
-        // Arrange
-        let content = "\
+    fn parity_content() -> &'static str {
+        "\
 指|ゆび|0:ゆび
 間に合う|まにあう|0:ま;2:あ
 大人|おとな|0-1:おとな
 大人|だいじん|0-1:だいじん
-方程式|ほうていしき|0:ほう;1:てい;2:しき";
-        let dict = FuriganaDictionary::from_text(content).unwrap();
+方程式|ほうていしき|0:ほう;1:てい;2:しき"
+    }
+
+    fn parity_fixture() -> (FuriganaDictionary, &'static ArchivedFuriganaDictionary) {
+        let dict = FuriganaDictionary::from_text(parity_content()).unwrap();
         let payload = serialize_furigana_dict_to_rkyv(&dict).unwrap();
         let view = access_furigana_payload(&payload).unwrap();
+        (dict, view)
+    }
 
-        // Act / Assert
-        let (owned, archived) = if mode == "word" {
-            (dict.lookup_word(key), view.lookup_word(key))
-        } else {
-            (dict.lookup_prefixed(key), view.lookup_prefixed(key))
-        };
-        assert_eq!(archived, owned, "{mode} lookup mismatch for {key}");
+    /// The zero-copy archived view must answer exactly like the owned
+    /// dictionary built from the same text.
+    #[test]
+    fn archived_word_lookups_match_owned_dictionary() {
+        let (dict, view) = parity_fixture();
+        for word in ["大人", "指", "手"] {
+            assert_eq!(
+                view.lookup_word(word),
+                dict.lookup_word(word),
+                "word lookup mismatch for {word}"
+            );
+        }
+    }
+
+    #[test]
+    fn archived_prefix_scans_match_owned_dictionary() {
+        let (dict, view) = parity_fixture();
+        for prefix in ["大", "食べ"] {
+            assert_eq!(
+                view.lookup_prefixed(prefix),
+                dict.lookup_prefixed(prefix),
+                "prefix scan mismatch for {prefix}"
+            );
+        }
     }
 
     #[test]

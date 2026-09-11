@@ -3,7 +3,6 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use rkyv::util::AlignedVec;
 use serde::Deserialize;
 
 use crate::domain::OrigaError;
@@ -165,12 +164,7 @@ fn clone_entry(entry: &rkyv::Archived<PitchAudioEntry>) -> PitchAudioEntry {
 pub fn access_pitch_index_blob(
     payload: &[u8],
 ) -> Result<&'static ArchivedPitchAudioIndexBlob, OrigaError> {
-    let aligned: &'static AlignedVec = Box::leak(Box::new({
-        let mut buffer = AlignedVec::new();
-        buffer.extend_from_slice(payload);
-        buffer
-    }));
-    rkyv::access::<ArchivedPitchAudioIndexBlob, rkyv::rancor::Error>(aligned.as_slice()).map_err(
+    crate::dictionary::cdn_blob::access_leaked::<ArchivedPitchAudioIndexBlob>(payload).map_err(
         |e| OrigaError::PitchAudioParseError {
             reason: format!("failed to access pitch audio index blob: {e}"),
         },

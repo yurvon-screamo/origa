@@ -9,7 +9,7 @@ use std::sync::OnceLock;
 
 pub use blob::{
     ArchivedVocabularyBlob, VocabularyBlob, VocabularyDatabase, access_vocabulary_blob,
-    serialize_vocabulary_blob_to_rkyv, vocabulary_database_from_blob_rkyv,
+    serialize_vocabulary_blob_to_rkyv,
 };
 pub use chunks::{VocabularyChunkData, build_vocabulary_database_from_chunks};
 pub use info::VocabularyInfo;

@@ -153,6 +153,29 @@ pub fn guard_matches(header: &BlobHeader, expectation: &GuardExpectation) -> boo
     }
 }
 
+/// Zero-copy archived view of a blob payload over an immortal aligned copy.
+///
+/// The payload is copied once into a leaked `AlignedVec`: rkyv's checked
+/// `access` requires properly aligned bytes, a plain `Vec<u8>` only
+/// guarantees alignment 1, and a CDN blob header offset leaves the payload
+/// at an arbitrary alignment. The leaked buffer lives for the rest of the
+/// process — the dictionaries are load-once anyway. A validation failure
+/// leaves the leaked bytes unreclaimed until reload; callers map the error
+/// to their per-resource `OrigaError` and fall back to the original
+/// text/JSON sources, so the app keeps working.
+pub fn access_leaked<T>(payload: &[u8]) -> Result<&'static T, rkyv::rancor::Error>
+where
+    T: rkyv::Portable
+        + for<'a> rkyv::bytecheck::CheckBytes<rkyv::api::high::HighValidator<'a, rkyv::rancor::Error>>,
+{
+    let aligned: &'static rkyv::util::AlignedVec = Box::leak(Box::new({
+        let mut buffer = rkyv::util::AlignedVec::new();
+        buffer.extend_from_slice(payload);
+        buffer
+    }));
+    rkyv::access::<T, rkyv::rancor::Error>(aligned.as_slice())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

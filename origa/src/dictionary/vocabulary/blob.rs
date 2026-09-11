@@ -7,7 +7,6 @@
 use std::collections::{BTreeMap, HashMap};
 
 use rkyv::string::ArchivedString;
-use rkyv::util::AlignedVec;
 use rkyv::vec::ArchivedVec;
 
 use super::info::VocabularyInfo;
@@ -90,9 +89,10 @@ pub fn serialize_vocabulary_blob_to_rkyv(db: &VocabularyDatabase) -> Result<Vec<
 }
 
 /// Deserialize a CDN-blob payload into a database (owned form, no JSON).
-pub fn vocabulary_database_from_blob_rkyv(
-    payload: &[u8],
-) -> Result<VocabularyDatabase, OrigaError> {
+/// Test-only today: the production path consumes blobs via zero-copy
+/// `access_vocabulary_blob`; this guards the payload format round-trip.
+#[cfg(test)]
+fn vocabulary_database_from_blob_rkyv(payload: &[u8]) -> Result<VocabularyDatabase, OrigaError> {
     let blob: VocabularyBlob = rkyv::from_bytes::<VocabularyBlob, rkyv::rancor::Error>(payload)
         .map_err(|e| OrigaError::VocabularyParseError {
             reason: format!("Failed to deserialize vocabulary blob: {}", e),
@@ -112,12 +112,7 @@ pub fn vocabulary_database_from_blob_rkyv(
 pub fn access_vocabulary_blob(
     payload: &[u8],
 ) -> Result<&'static ArchivedVocabularyBlob, OrigaError> {
-    let aligned: &'static AlignedVec = Box::leak(Box::new({
-        let mut buffer = AlignedVec::new();
-        buffer.extend_from_slice(payload);
-        buffer
-    }));
-    rkyv::access::<ArchivedVocabularyBlob, rkyv::rancor::Error>(aligned.as_slice()).map_err(|e| {
+    crate::dictionary::cdn_blob::access_leaked::<ArchivedVocabularyBlob>(payload).map_err(|e| {
         OrigaError::VocabularyParseError {
             reason: format!("failed to access vocabulary blob: {e}"),
         }

@@ -61,7 +61,10 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     // this wrapper because the Cache API layer is not natively testable; it
     // is behaviour-covered by e2e only. The CDN-rkyv core above carries the
     // native mock tests.
-    // Fast path: try loading from rkyv cache (pre-parsed VocabularyDatabase).
+    // Fast path: try loading from the rkyv cache — the deterministic CDN
+    // blob form, consumed via zero-copy access (see
+    // `init_vocabulary_from_rkyv`). A pre-unification cache entry (the old
+    // VocabularyDatabase form) fails access and falls through to network.
     match get_cached_vocabulary_rkyv().await {
         Ok(Some(bytes)) => {
             tracing::info!("📖 Cached vocabulary found, {} bytes", bytes.len());
@@ -135,7 +138,7 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     yield_to_browser().await;
     init_vocabulary(data)?;
 
-    // Cache the parsed VocabularyDatabase for future fast-path loads.
+    // Cache the deterministic CDN-blob form for future fast-path loads.
     let cache_start = now_ms();
     match serialize_vocabulary_to_rkyv() {
         Ok(mut bytes) => {

@@ -3,7 +3,6 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
-use rkyv::util::AlignedVec;
 use serde::Deserialize;
 use ulid::Ulid;
 
@@ -282,12 +281,7 @@ fn clone_entry(entry: &rkyv::Archived<IndexEntryBlob>) -> IndexEntry {
 /// aligned bytes); a validation failure leaves the leaked bytes
 /// unreclaimed until reload while callers fall back to the JSON path.
 pub fn access_phrase_blob(payload: &[u8]) -> Result<&'static ArchivedPhraseIndexBlob, OrigaError> {
-    let aligned: &'static AlignedVec = Box::leak(Box::new({
-        let mut buffer = AlignedVec::new();
-        buffer.extend_from_slice(payload);
-        buffer
-    }));
-    rkyv::access::<ArchivedPhraseIndexBlob, rkyv::rancor::Error>(aligned.as_slice()).map_err(|e| {
+    crate::dictionary::cdn_blob::access_leaked::<ArchivedPhraseIndexBlob>(payload).map_err(|e| {
         OrigaError::PhraseParseError {
             reason: format!("failed to access phrase index blob: {e}"),
         }
@@ -398,46 +392,54 @@ mod tests {
     /// The archived view must answer exactly like the owned index built
     /// from the same JSON — the zero-copy fast path may not change lookup
     /// semantics.
-    #[rstest::rstest]
-    #[case::by_id("id")]
-    #[case::by_token("token")]
-    #[case::all_ids("all_ids")]
-    #[case::iteration("iter")]
-    fn archived_blob_lookups_match_owned_index(#[case] aspect: &str) {
+    fn parity_fixture() -> (PhraseIndex, &'static ArchivedPhraseIndexBlob) {
         let index = PhraseIndex::from_json(index_json_with_grammar()).unwrap();
         let payload = serialize_phrase_index_blob_to_rkyv(&index.to_blob()).unwrap();
         let view = access_phrase_blob(&payload).unwrap();
+        (index, view)
+    }
 
-        match aspect {
-            "id" => {
-                assert_eq!(
-                    view.get_entry(&first_id()),
-                    index.get_entry(&first_id()).cloned()
-                );
-                assert_eq!(view.get_entry(&Ulid::new()), None);
-            },
-            "token" => {
-                let owned: Vec<IndexEntry> = index
-                    .get_phrases_by_token("world")
-                    .into_iter()
-                    .cloned()
-                    .collect();
-                assert_eq!(view.get_phrases_by_token("world"), owned);
-                assert!(view.get_phrases_by_token("missing").is_empty());
-            },
-            "all_ids" => {
-                assert_eq!(view.all_ids(), index.all_ids().clone());
-            },
-            _ => {
-                let mut owned: Vec<IndexEntry> = index.iter_entries().cloned().collect();
-                owned.sort_by(|a, b| a.id().cmp(b.id()));
-                let mut archived: Vec<IndexEntry> = view.iter_entries().collect();
-                archived.sort_by(|a, b| a.id().cmp(b.id()));
-                assert_eq!(archived, owned);
-                assert_eq!(view.len(), index.len());
-                assert_eq!(view.version(), (index.version, index.hash.clone()));
-            },
-        }
+    #[test]
+    fn archived_entry_lookup_matches_owned_index() {
+        let (index, view) = parity_fixture();
+        assert_eq!(
+            view.get_entry(&first_id()),
+            index.get_entry(&first_id()).cloned()
+        );
+        assert_eq!(view.get_entry(&Ulid::new()), None);
+    }
+
+    #[test]
+    fn archived_token_lookup_matches_owned_index() {
+        let (index, view) = parity_fixture();
+        let owned: Vec<IndexEntry> = index
+            .get_phrases_by_token("world")
+            .into_iter()
+            .cloned()
+            .collect();
+        assert_eq!(view.get_phrases_by_token("world"), owned);
+        assert!(view.get_phrases_by_token("missing").is_empty());
+    }
+
+    #[test]
+    fn archived_all_ids_match_owned_index() {
+        let (index, view) = parity_fixture();
+        assert_eq!(view.all_ids(), index.all_ids().clone());
+    }
+
+    #[test]
+    fn archived_iteration_and_metadata_match_owned_index() {
+        let (index, view) = parity_fixture();
+
+        // HashMap iteration order is random — sort both sides by id.
+        let mut owned: Vec<IndexEntry> = index.iter_entries().cloned().collect();
+        owned.sort_by(|a, b| a.id().cmp(b.id()));
+        let mut archived: Vec<IndexEntry> = view.iter_entries().collect();
+        archived.sort_by(|a, b| a.id().cmp(b.id()));
+
+        assert_eq!(archived, owned);
+        assert_eq!(view.len(), index.len());
+        assert_eq!(view.version(), (index.version, index.hash.clone()));
     }
 
     #[test]
