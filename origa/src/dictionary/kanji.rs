@@ -265,8 +265,6 @@ impl KanjiInfo {
         &self,
         native_language: &NativeLanguage,
     ) -> Vec<PopularWord> {
-        use crate::dictionary::vocabulary::VOCABULARY_DICTIONARY;
-
         let fallback = match native_language {
             NativeLanguage::Russian => "Перевод не найден",
             NativeLanguage::English => "Translation not found",
@@ -277,10 +275,9 @@ impl KanjiInfo {
         self.popular_words
             .iter()
             .map(|word| {
-                let translation = VOCABULARY_DICTIONARY
-                    .get()
-                    .and_then(|db| db.get_translation(word, native_language))
-                    .unwrap_or_else(|| fallback.to_string());
+                let translation =
+                    crate::dictionary::vocabulary::get_translation(word, native_language)
+                        .unwrap_or_else(|| fallback.to_string());
                 PopularWord::new(word.clone(), translation)
             })
             .collect()
