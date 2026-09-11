@@ -1,78 +1,14 @@
+//! JmdictFurigana text parsing and the lookup implementations for both
+//! storage forms (owned `BTreeMap` and its archived zero-copy twin).
+
 use std::collections::BTreeMap;
-use std::sync::OnceLock;
 
+use super::{FuriganaEntry, ReadingSpan};
 use crate::domain::OrigaError;
-
-#[derive(Debug, Clone, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
-pub struct ReadingSpan {
-    pub start_index: usize,
-    pub end_index: usize,
-    pub text: String,
-}
-
-#[derive(Debug, Clone, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
-pub struct FuriganaEntry {
-    pub text: String,
-    pub reading: String,
-    pub reading_spans: Vec<ReadingSpan>,
-}
 
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct FuriganaDictionary {
-    entries: BTreeMap<String, Vec<FuriganaEntry>>,
-}
-
-static FURIGANA_DICT: OnceLock<FuriganaDictionary> = OnceLock::new();
-
-pub fn is_furigana_dict_loaded() -> bool {
-    FURIGANA_DICT.get().is_some()
-}
-
-/// Build the dictionary from JmdictFurigana text without installing it into
-/// the global slot. Used by the CDN blob builder and by loader tests.
-pub fn build_furigana_dict_from_text(content: &str) -> Result<FuriganaDictionary, OrigaError> {
-    FuriganaDictionary::from_text(content)
-}
-
-/// Install an already-built dictionary (e.g. deserialized from a CDN blob)
-/// into the global slot. Fails if another dictionary is already installed.
-pub fn set_furigana_dict(dict: FuriganaDictionary) -> Result<(), OrigaError> {
-    FURIGANA_DICT
-        .set(dict)
-        .map_err(|_| OrigaError::FuriganaError {
-            reason: "Furigana dictionary already loaded".to_string(),
-        })
-}
-
-/// Serialize a built dictionary to rkyv bytes (payload of a CDN blob).
-pub fn serialize_furigana_dict_to_rkyv(dict: &FuriganaDictionary) -> Result<Vec<u8>, OrigaError> {
-    rkyv::to_bytes::<rkyv::rancor::Error>(dict)
-        .map(|bytes| bytes.to_vec())
-        .map_err(|e| OrigaError::FuriganaError {
-            reason: format!("failed to serialize furigana dictionary: {e}"),
-        })
-}
-
-/// Deserialize a dictionary from rkyv payload bytes (CDN blob payload).
-pub fn furigana_dict_from_rkyv(payload: &[u8]) -> Result<FuriganaDictionary, OrigaError> {
-    rkyv::from_bytes::<FuriganaDictionary, rkyv::rancor::Error>(payload).map_err(|e| {
-        OrigaError::FuriganaError {
-            reason: format!("failed to deserialize furigana dictionary: {e}"),
-        }
-    })
-}
-
-pub fn init_furigana_dict(content: &str) -> Result<(), OrigaError> {
-    let dict = FuriganaDictionary::from_text(content)?;
-    FURIGANA_DICT
-        .set(dict)
-        .map_err(|_| OrigaError::FuriganaError {
-            reason: "Furigana dictionary already loaded".to_string(),
-        })
-}
-
-pub fn get_furigana_dict() -> Option<&'static FuriganaDictionary> {
-    FURIGANA_DICT.get()
+    pub(super) entries: BTreeMap<String, Vec<FuriganaEntry>>,
 }
 
 impl FuriganaDictionary {
@@ -93,25 +29,68 @@ impl FuriganaDictionary {
         Ok(Self { entries })
     }
 
-    pub fn lookup_word(&self, word: &str) -> Vec<&FuriganaEntry> {
+    pub fn lookup_word(&self, word: &str) -> Vec<FuriganaEntry> {
         self.entries
             .get(word)
-            .map(|v| v.iter().collect())
+            .map(|v| v.iter().cloned())
             .unwrap_or_default()
+            .collect()
     }
 
-    pub fn lookup_prefixed(&self, prefix: &str) -> Vec<&FuriganaEntry> {
+    pub fn lookup_prefixed(&self, prefix: &str) -> Vec<FuriganaEntry> {
         self.entries
             .range(prefix.to_string()..)
             .map_while(|(text, entries)| {
                 if text.starts_with(prefix) {
-                    Some(entries.iter())
+                    Some(entries.iter().cloned())
                 } else {
                     None
                 }
             })
             .flatten()
             .collect()
+    }
+}
+
+impl ArchivedFuriganaDictionary {
+    pub fn lookup_word(&self, word: &str) -> Vec<FuriganaEntry> {
+        self.entries
+            .get(word)
+            .map(|v| v.iter().map(clone_entry).collect())
+            .unwrap_or_default()
+    }
+
+    pub fn lookup_prefixed(&self, prefix: &str) -> Vec<FuriganaEntry> {
+        self.entries
+            .range::<str, _>((
+                std::ops::Bound::Included(prefix),
+                std::ops::Bound::Unbounded,
+            ))
+            .map_while(|(text, entries)| {
+                if text.as_str().starts_with(prefix) {
+                    Some(entries.iter().map(clone_entry))
+                } else {
+                    None
+                }
+            })
+            .flatten()
+            .collect()
+    }
+}
+
+fn clone_entry(entry: &rkyv::Archived<FuriganaEntry>) -> FuriganaEntry {
+    FuriganaEntry {
+        text: entry.text.as_str().to_string(),
+        reading: entry.reading.as_str().to_string(),
+        reading_spans: entry
+            .reading_spans
+            .iter()
+            .map(|span| ReadingSpan {
+                start_index: u32::from(span.start_index) as usize,
+                end_index: u32::from(span.end_index) as usize,
+                text: span.text.as_str().to_string(),
+            })
+            .collect(),
     }
 }
 
@@ -158,6 +137,7 @@ fn parse_reading_spans(input: &str) -> Option<Vec<ReadingSpan>> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::{access_furigana_payload, serialize_furigana_dict_to_rkyv};
     use super::*;
 
     #[test]
@@ -259,22 +239,6 @@ mod tests {
     }
 
     #[test]
-    fn rkyv_payload_round_trip_preserves_lookups() {
-        // Arrange
-        let content = "大人|おとな|0-1:おとな\n大人|だいじん|0-1:だいじん\n指|ゆび|0:ゆび";
-        let dict = build_furigana_dict_from_text(content).unwrap();
-
-        // Act
-        let payload = serialize_furigana_dict_to_rkyv(&dict).unwrap();
-        let restored = furigana_dict_from_rkyv(&payload).unwrap();
-
-        // Assert
-        assert_eq!(restored.lookup_word("大人").len(), 2);
-        assert_eq!(restored.lookup_word("指").len(), 1);
-        assert_eq!(restored.lookup_prefixed("大").len(), 2);
-    }
-
-    #[test]
     fn integration_lookup_across_multiple_entries() {
         let content = "\
 指|ゆび|0:ゆび
@@ -295,5 +259,55 @@ mod tests {
         let prefixed = dict.lookup_prefixed("大");
         assert_eq!(prefixed.len(), 1);
         assert_eq!(prefixed[0].text, "大人");
+    }
+
+    /// The zero-copy archived view must answer exactly like the owned
+    /// dictionary built from the same text.
+    #[rstest::rstest]
+    #[case::exact_word("大人", "word")]
+    #[case::prefix_scan("大", "prefix")]
+    #[case::single_entry_word("指", "word")]
+    #[case::unknown_word("手", "word")]
+    fn archived_lookups_match_owned_dictionary(#[case] key: &str, #[case] mode: &str) {
+        // Arrange
+        let content = "\
+指|ゆび|0:ゆび
+間に合う|まにあう|0:ま;2:あ
+大人|おとな|0-1:おとな
+大人|だいじん|0-1:だいじん
+方程式|ほうていしき|0:ほう;1:てい;2:しき";
+        let dict = FuriganaDictionary::from_text(content).unwrap();
+        let payload = serialize_furigana_dict_to_rkyv(&dict).unwrap();
+        let view = access_furigana_payload(&payload).unwrap();
+
+        // Act / Assert
+        let (owned, archived) = if mode == "word" {
+            (dict.lookup_word(key), view.lookup_word(key))
+        } else {
+            (dict.lookup_prefixed(key), view.lookup_prefixed(key))
+        };
+        assert_eq!(archived, owned, "{mode} lookup mismatch for {key}");
+    }
+
+    #[test]
+    fn access_rejects_truncated_payload() {
+        // Arrange: checked access must refuse an archive claiming structures
+        // beyond the buffer. Content-level corruption is the CDN blob
+        // header guard's job (`dictionary::cdn_blob`).
+        let content = "\
+指|ゆび|0:ゆび
+間に合う|まにあう|0:ま;2:あ
+大人|おとな|0-1:おとな
+大人|だいじん|0-1:だいじん
+方程式|ほうていしき|0:ほう;1:てい;2:しき";
+        let dict = FuriganaDictionary::from_text(content).unwrap();
+        let payload = serialize_furigana_dict_to_rkyv(&dict).unwrap();
+        let truncated = &payload[..payload.len() / 2];
+
+        // Act
+        let result = access_furigana_payload(truncated);
+
+        // Assert
+        assert!(result.is_err());
     }
 }

@@ -5,9 +5,9 @@ use origa::dictionary::grammar::{
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use origa::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use origa::dictionary::vocabulary::{
-    VocabularyChunkData, VocabularyDatabase, init_vocabulary, init_vocabulary_from_rkyv,
-    is_vocabulary_loaded, serialize_vocabulary_to_rkyv, set_vocabulary_database,
-    vocabulary_database_from_blob_rkyv,
+    ArchivedVocabularyBlob, VocabularyChunkData, access_vocabulary_blob, init_vocabulary,
+    init_vocabulary_from_rkyv, install_archived_vocabulary, is_vocabulary_loaded,
+    serialize_vocabulary_to_rkyv,
 };
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
@@ -44,11 +44,11 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading vocabulary...");
 
-    // Fastest path: pre-built rkyv blob from the CDN (cache-first). Skips
-    // both the JSON parsing of ~35 MB of chunks and the client-side
-    // re-serialization into the local rkyv cache.
-    if let Some(database) = load_vocabulary_from_cdn_blob(cdn_provider()).await? {
-        set_vocabulary_database(database)?;
+    // Fastest path: pre-built rkyv blob from the CDN (cache-first),
+    // consumed via zero-copy access — no owned-structure build and no
+    // client-side re-serialization into the local rkyv cache.
+    if let Some(view) = load_vocabulary_from_cdn_blob(cdn_provider()).await? {
+        install_archived_vocabulary(view)?;
         tracing::info!(
             "📖 Vocabulary loaded from CDN rkyv blob ({:.2}s)",
             (now_ms() - start) / 1000.0
@@ -160,10 +160,13 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
 
 /// CDN-rkyv fast path core. `Ok(None)` means "no usable blob — use the
 /// fallback chain" (fetch error, invalid header, guard mismatch or payload
-/// failure are all non-fatal: the original sources remain loadable).
+/// failure are all non-fatal: the original sources remain loadable). The
+/// returned archived view is installed by the caller — tests exercise this
+/// core without touching the one-shot global slot.
 async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
     provider: &P,
-) -> Result<Option<VocabularyDatabase>, OrigaError> {
+) -> Result<Option<&'static ArchivedVocabularyBlob>, OrigaError> {
+    let fetch_start = now_ms();
     let blob = match provider.fetch_bytes(VOCABULARY_BLOB_PATH).await {
         Ok(blob) => blob,
         Err(e) => {
@@ -171,6 +174,7 @@ async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
             return Ok(None);
         },
     };
+    let fetch_ms = now_ms() - fetch_start;
 
     let (header, payload) = match split_blob(&blob) {
         Ok(split) => split,
@@ -186,10 +190,18 @@ async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
         return Ok(None);
     }
 
-    match vocabulary_database_from_blob_rkyv(payload) {
-        Ok(database) => Ok(Some(database)),
+    let access_start = now_ms();
+    match access_vocabulary_blob(payload) {
+        Ok(view) => {
+            tracing::debug!(
+                "📖 Vocabulary blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
+                fetch_ms / 1000.0,
+                (now_ms() - access_start) / 1000.0
+            );
+            Ok(Some(view))
+        },
         Err(e) => {
-            tracing::warn!("📖 Vocabulary blob payload failed to deserialize: {e:?}");
+            tracing::warn!("📖 Vocabulary blob payload failed to access: {e:?}");
             Ok(None)
         },
     }
@@ -378,14 +390,14 @@ mod tests {
         let provider = MockCdn::with_blob(Some(valid_blob()));
 
         // Act
-        let database = load_vocabulary_from_cdn_blob(&provider)
+        let view = load_vocabulary_from_cdn_blob(&provider)
             .await
             .unwrap()
             .expect("valid blob must load");
 
         // Assert
         assert_eq!(
-            database.get_translations("猫", &origa::domain::NativeLanguage::Russian),
+            view.translations("猫", &origa::domain::NativeLanguage::Russian),
             Some(vec!["кот".to_string()])
         );
         let chunk_requested = provider
@@ -401,10 +413,10 @@ mod tests {
         let provider = MockCdn::with_blob(None);
 
         // Act
-        let database = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
+        let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
 
         // Assert
-        assert!(database.is_none());
+        assert!(view.is_none());
     }
 
     #[tokio::test]
@@ -415,10 +427,10 @@ mod tests {
         let provider = MockCdn::with_blob(Some(blob));
 
         // Act
-        let database = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
+        let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
 
         // Assert
-        assert!(database.is_none());
+        assert!(view.is_none());
     }
 
     #[tokio::test]
@@ -430,9 +442,9 @@ mod tests {
         let provider = MockCdn::with_blob(Some(blob));
 
         // Act
-        let database = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
+        let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
 
         // Assert
-        assert!(database.is_none());
+        assert!(view.is_none());
     }
 }

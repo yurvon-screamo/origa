@@ -1,7 +1,8 @@
 use origa::dictionary::cdn_blob::{guard_matches, split_blob};
 use origa::dictionary::furigana_dict::{
-    FuriganaDictionary, build_furigana_dict_from_text, furigana_dict_from_rkyv,
-    is_furigana_dict_loaded, set_furigana_dict,
+    ArchivedFuriganaDictionary, FuriganaDictionary, access_furigana_payload,
+    build_furigana_dict_from_text, install_archived_furigana, is_furigana_dict_loaded,
+    set_furigana_dict,
 };
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
@@ -13,19 +14,13 @@ use crate::utils::now_ms;
 const FURIGANA_DICT_PATH: &str = "dictionaries/JmdictFurigana.txt";
 const FURIGANA_BLOB_PATH: &str = "dictionaries/JmdictFurigana.rkyv";
 
-/// Which representation produced the loaded dictionary — asserted by loader
-/// tests and logged by the wrapper for startup diagnostics.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FuriganaSource {
-    /// Pre-parsed rkyv blob from the CDN (fast path, no text parsing).
-    CdnBlob,
-    /// Original JmdictFurigana text parsed on the fly (fallback).
-    SourceText,
-}
-
-pub struct LoadedFurigana {
-    pub dict: FuriganaDictionary,
-    pub source: FuriganaSource,
+/// Result of the provider-parameterized load: either the zero-copy archived
+/// view of the pre-parsed CDN blob (fast path) or the dictionary built from
+/// the original JmdictFurigana text (fallback). Installing into the global
+/// slot is the wrapper's job, so tests can exercise the core repeatedly.
+pub enum LoadedFurigana {
+    CdnBlob(&'static ArchivedFuriganaDictionary),
+    SourceText(FuriganaDictionary),
 }
 
 pub async fn load_furigana_dict() -> Result<(), OrigaError> {
@@ -36,30 +31,36 @@ pub async fn load_furigana_dict() -> Result<(), OrigaError> {
 
     let start = now_ms();
     let loaded = load_furigana_dict_via(cdn_provider()).await?;
-    set_furigana_dict(loaded.dict)?;
+    match loaded {
+        LoadedFurigana::CdnBlob(view) => install_archived_furigana(view)?,
+        LoadedFurigana::SourceText(dict) => set_furigana_dict(dict)?,
+    }
 
     tracing::info!(
-        "📖 Furigana dictionary loaded via {:?} ({:.2}s)",
-        loaded.source,
+        "📖 Furigana dictionary loaded ({:.2}s)",
         (now_ms() - start) / 1000.0
     );
     Ok(())
 }
 
-/// Provider-parameterized core: try the CDN rkyv blob first, fall back to
-/// the original text source on any validation or fetch failure. The blob is
-/// verified against the remote manifest guard when one was fetched (offline
-/// starts trust the cache, matching every other cache entry).
+/// Provider-parameterized core: try the CDN rkyv blob first (zero-copy
+/// access, no owned-structure build), fall back to the original text
+/// source on any validation or fetch failure. The blob is verified against
+/// the remote manifest guard when one was fetched (offline starts trust
+/// the cache, matching every other cache entry).
 pub async fn load_furigana_dict_via<P: CdnProvider>(
     provider: &P,
 ) -> Result<LoadedFurigana, OrigaError> {
+    let fetch_start = now_ms();
     match provider.fetch_bytes(FURIGANA_BLOB_PATH).await {
         Ok(blob) => {
-            if let Some(dict) = furigana_from_blob(&blob) {
-                return Ok(LoadedFurigana {
-                    dict,
-                    source: FuriganaSource::CdnBlob,
-                });
+            let fetch_ms = now_ms() - fetch_start;
+            if let Some(view) = furigana_view_from_blob(&blob) {
+                tracing::debug!(
+                    "📖 Furigana blob consumed (fetch {:.2}s, zero-copy)",
+                    fetch_ms / 1000.0
+                );
+                return Ok(LoadedFurigana::CdnBlob(view));
             }
             tracing::warn!("📖 Furigana rkyv blob rejected, falling back to text source");
         },
@@ -71,15 +72,15 @@ pub async fn load_furigana_dict_via<P: CdnProvider>(
     }
 
     let text = provider.fetch_text(FURIGANA_DICT_PATH).await?;
-    Ok(LoadedFurigana {
-        dict: build_furigana_dict_from_text(&text)?,
-        source: FuriganaSource::SourceText,
-    })
+    Ok(LoadedFurigana::SourceText(build_furigana_dict_from_text(
+        &text,
+    )?))
 }
 
-/// Validate the blob header, verify the manifest guard and deserialize the
-/// payload. Any failure yields `None` (caller falls back to the text path).
-fn furigana_from_blob(blob: &[u8]) -> Option<FuriganaDictionary> {
+/// Validate the blob header, verify the manifest guard and access the
+/// payload as a zero-copy view. Any failure yields `None` (caller falls
+/// back to the text path).
+fn furigana_view_from_blob(blob: &[u8]) -> Option<&'static ArchivedFuriganaDictionary> {
     let (header, payload) = match split_blob(blob) {
         Ok(split) => split,
         Err(e) => {
@@ -94,10 +95,10 @@ fn furigana_from_blob(blob: &[u8]) -> Option<FuriganaDictionary> {
         return None;
     }
 
-    match furigana_dict_from_rkyv(payload) {
-        Ok(dict) => Some(dict),
+    match access_furigana_payload(payload) {
+        Ok(view) => Some(view),
         Err(e) => {
-            tracing::warn!("📖 Furigana blob payload failed to deserialize: {e:?}");
+            tracing::warn!("📖 Furigana blob payload failed to access: {e:?}");
             None
         },
     }
@@ -213,9 +214,12 @@ mod tests {
         // Act
         let loaded = load_furigana_dict_via(&provider).await.unwrap();
 
-        // Assert
-        assert_eq!(loaded.source, FuriganaSource::CdnBlob);
-        assert_eq!(loaded.dict.lookup_word("指").len(), 1);
+        // Assert: the zero-copy view answers with the same entries the
+        // text source would have produced.
+        let LoadedFurigana::CdnBlob(view) = &loaded else {
+            panic!("expected the CDN blob fast path");
+        };
+        assert_eq!(view.lookup_word("指").len(), 1);
         assert!(
             !provider
                 .requested_paths()
@@ -234,8 +238,10 @@ mod tests {
         let loaded = load_furigana_dict_via(&provider).await.unwrap();
 
         // Assert
-        assert_eq!(loaded.source, FuriganaSource::SourceText);
-        assert_eq!(loaded.dict.lookup_word("大人").len(), 1);
+        let LoadedFurigana::SourceText(dict) = &loaded else {
+            panic!("expected the text fallback");
+        };
+        assert_eq!(dict.lookup_word("大人").len(), 1);
     }
 
     #[tokio::test]
@@ -247,7 +253,7 @@ mod tests {
         let loaded = load_furigana_dict_via(&provider).await.unwrap();
 
         // Assert
-        assert_eq!(loaded.source, FuriganaSource::SourceText);
+        assert!(matches!(loaded, LoadedFurigana::SourceText(_)));
         assert!(
             provider
                 .requested_paths()
@@ -267,6 +273,6 @@ mod tests {
         let loaded = load_furigana_dict_via(&provider).await.unwrap();
 
         // Assert
-        assert_eq!(loaded.source, FuriganaSource::SourceText);
+        assert!(matches!(loaded, LoadedFurigana::SourceText(_)));
     }
 }

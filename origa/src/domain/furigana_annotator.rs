@@ -1,4 +1,6 @@
-use crate::dictionary::furigana_dict::{self, FuriganaEntry, ReadingSpan, get_furigana_dict};
+use crate::dictionary::furigana_dict::{
+    FuriganaEntry, FuriganaStore, ReadingSpan, get_furigana_dict,
+};
 use crate::domain::OrigaError;
 use crate::domain::hiragana_to_katakana;
 use crate::domain::tokenizer::{TokenInfo, tokenize_text};
@@ -39,10 +41,7 @@ pub fn annotate_text(text: &str) -> Result<Vec<AnnotatedSpan>, OrigaError> {
         .collect())
 }
 
-fn build_internal_tokens(
-    tokens: &[TokenInfo],
-    dict: &furigana_dict::FuriganaDictionary,
-) -> Vec<InternalToken> {
+fn build_internal_tokens(tokens: &[TokenInfo], dict: &FuriganaStore) -> Vec<InternalToken> {
     if tokens.is_empty() {
         return vec![];
     }
@@ -100,7 +99,7 @@ fn find_longest_match(
     tokens: &[TokenInfo],
     buffer_start: usize,
     buffer_end: usize,
-    possibilities: &[&FuriganaEntry],
+    possibilities: &[FuriganaEntry],
 ) -> usize {
     let mut longest_end = buffer_end;
     while longest_end > buffer_start {
@@ -120,10 +119,7 @@ fn concat_surfaces(tokens: &[TokenInfo]) -> String {
         .collect()
 }
 
-fn resolve_annotation(
-    token: InternalToken,
-    dict: &furigana_dict::FuriganaDictionary,
-) -> AnnotatedSpan {
+fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSpan {
     match token {
         InternalToken::Single {
             surface,
@@ -191,7 +187,7 @@ mod tests {
             crate::domain::init_dictionary(data).unwrap();
         }
 
-        if !furigana_dict::is_furigana_dict_loaded() {
+        if !crate::dictionary::furigana_dict::is_furigana_dict_loaded() {
             let content = "\
 食べる|たべる|0:た
 食べ物|たべもの|0:たべ;2:もの
@@ -199,7 +195,7 @@ mod tests {
 大人|だいじん|0-1:だいじん
 指|ゆび|0:ゆび
 ";
-            let _ = furigana_dict::init_furigana_dict(content);
+            let _ = crate::dictionary::furigana_dict::init_furigana_dict(content);
         }
     }
 
@@ -283,7 +279,9 @@ mod tests {
 明日|あした|0-1:あした
 明日|あす|0-1:あす
 ";
-        let dict = furigana_dict::FuriganaDictionary::from_text(content).unwrap();
+        let dict = FuriganaStore::Owned(
+            crate::dictionary::furigana_dict::FuriganaDictionary::from_text(content).unwrap(),
+        );
 
         // Resolve the annotation for the 明日 token as a Single-type
         // InternalToken — this is the path that previously called
