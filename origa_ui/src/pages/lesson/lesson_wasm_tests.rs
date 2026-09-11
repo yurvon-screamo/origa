@@ -2606,7 +2606,7 @@ mod acquaintance_presentation {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn audio_recall_front_hides_word_and_shows_answer_buttons() {
+async fn audio_recall_front_hides_word_and_shows_reveal_button() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         view! {
@@ -2614,6 +2614,7 @@ async fn audio_recall_front_hides_word_and_shows_answer_buttons() {
                 card=vocab_card_fixture("温度")
                 show_result=Signal::from(false)
                 on_answer=Callback::new(|_: bool| {})
+                on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
                 known_kanji=Signal::derive(|| HashSet::new())
@@ -2639,13 +2640,22 @@ async fn audio_recall_front_hides_word_and_shows_answer_buttons() {
             .is_some(),
         "replay button must render on the question side"
     );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-reveal-btn\"]")
+            .unwrap()
+            .is_some(),
+        "the reveal («Показать») button must render on the question side"
+    );
+    // Self-assessment lives on the ANSWER side — the rating buttons must
+    // NOT be on the question side.
     for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
         assert!(
             wrapper
                 .query_selector(&format!("[data-testid=\"{test_id}\"]"))
                 .unwrap()
-                .is_some(),
-            "{test_id} must render before answering"
+                .is_none(),
+            "{test_id} must NOT render before the reveal"
         );
     }
     // The word itself must NOT leak to the question side — audio-only recall
@@ -2657,7 +2667,7 @@ async fn audio_recall_front_hides_word_and_shows_answer_buttons() {
 }
 
 #[wasm_bindgen_test]
-async fn audio_recall_answer_reveals_word_and_next_button() {
+async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         view! {
@@ -2665,10 +2675,11 @@ async fn audio_recall_answer_reveals_word_and_next_button() {
                 card=vocab_card_fixture("温度")
                 show_result=Signal::from(true)
                 on_answer=Callback::new(|_: bool| {})
+                on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
                 known_kanji=Signal::derive(|| HashSet::new())
-                waiting_for_next=Signal::from(true)
+                waiting_for_next=Signal::from(false)
                 on_next_card=Callback::new(|()| {})
             />
         }
@@ -2681,6 +2692,40 @@ async fn audio_recall_answer_reveals_word_and_next_button() {
         page.contains("温度"),
         "the word must render on the answer side; got: {page}"
     );
+    // The self-assessment buttons live on the answer side, before the
+    // manual advance is armed.
+    for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
+        assert!(
+            wrapper
+                .query_selector(&format!("[data-testid=\"{test_id}\"]"))
+                .unwrap()
+                .is_some(),
+            "{test_id} must render on the revealed answer side"
+        );
+    }
+}
+
+#[wasm_bindgen_test]
+async fn audio_recall_answered_hides_rating_and_shows_next_button() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <AudioRecallCardView
+                card=vocab_card_fixture("温度")
+                show_result=Signal::from(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_reveal=Callback::new(|()| {})
+                on_replay=Callback::new(|()| {})
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+                waiting_for_next=Signal::from(true)
+                on_next_card=Callback::new(|()| {})
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
     assert!(
         wrapper
             .query_selector("[data-testid=\"lesson-card-next-btn\"]")
@@ -2688,6 +2733,16 @@ async fn audio_recall_answer_reveals_word_and_next_button() {
             .is_some(),
         "waiting_for_next must show the next-card button"
     );
+    // Once answered, the rating buttons give way to the advance control.
+    for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
+        assert!(
+            wrapper
+                .query_selector(&format!("[data-testid=\"{test_id}\"]"))
+                .unwrap()
+                .is_none(),
+            "{test_id} must NOT render after the answer is given"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
