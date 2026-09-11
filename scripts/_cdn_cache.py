@@ -62,6 +62,9 @@ _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
         "phrases/data/",
         "phrases/data_bundle",  # phrases/data_bundle_0.json etc
         "phrases/phrase_index.json",
+        # Regenerated with its source on every content change — must not
+        # sit behind a year-long immutable edge cache.
+        "phrases/phrase_index.rkyv",
         "pitch/",
         "well_known_set/",
     }
