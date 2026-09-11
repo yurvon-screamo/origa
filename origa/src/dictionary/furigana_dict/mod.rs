@@ -105,15 +105,6 @@ pub fn serialize_furigana_dict_to_rkyv(dict: &FuriganaDictionary) -> Result<Vec<
         })
 }
 
-/// Deserialize a dictionary from rkyv payload bytes (owned form).
-pub fn furigana_dict_from_rkyv(payload: &[u8]) -> Result<FuriganaDictionary, OrigaError> {
-    rkyv::from_bytes::<FuriganaDictionary, rkyv::rancor::Error>(payload).map_err(|e| {
-        OrigaError::FuriganaError {
-            reason: format!("failed to deserialize furigana dictionary: {}", e),
-        }
-    })
-}
-
 /// Zero-copy archived view of a blob payload.
 ///
 /// The payload is copied once into an immortal `AlignedVec` — rkyv's

@@ -5,9 +5,10 @@ import { Given, Then } from "../fixtures";
 /**
  * Clean-cache fast-path scenario: a fresh browser context (empty Cache API)
  * logs in and fully loads the app while every network request URL is
- * recorded. The fast path must fetch the two rkyv blobs and must NOT touch
- * the fallback sources (vocabulary JSON chunks, furigana text) — a silent
- * fallback regression fails here instead of green-lighting CI.
+ * recorded. The fast path must fetch the four rkyv blobs (vocabulary,
+ * furigana, phrase index, pitch index) and must NOT touch the fallback
+ * sources (vocabulary JSON chunks, furigana text, phrase/pitch index JSON)
+ * — a silent fallback regression fails here instead of green-lighting CI.
  *
  * Scope note: the offline-bundle flow legitimately downloads chunks/txt, so
  * this assertion only covers the startup scenario driven below; other
@@ -49,7 +50,10 @@ function tracing_note_stuck_url(page: import("@playwright/test").Page): void {
 Then('словари загружены через rkyv-блобы', async ({ cdnRequestLog }) => {
     const fallbackRequests = cdnRequestLog.filter(
         (url) =>
-            url.includes("dictionary/chunk_") || url.includes("JmdictFurigana.txt"),
+            url.includes("dictionary/chunk_") ||
+            url.includes("JmdictFurigana.txt") ||
+            url.endsWith("phrases/phrase_index.json") ||
+            url.endsWith("pitch/index.json"),
     );
     expect(
         fallbackRequests,
@@ -57,5 +61,5 @@ Then('словари загружены через rkyv-блобы', async ({ cd
     ).toHaveLength(0);
 
     const rkyvRequests = cdnRequestLog.filter((url) => url.endsWith(".rkyv"));
-    expect(rkyvRequests.length, "both rkyv blobs must be fetched").toBeGreaterThanOrEqual(2);
+    expect(rkyvRequests.length, "all four rkyv blobs must be fetched").toBeGreaterThanOrEqual(4);
 });
