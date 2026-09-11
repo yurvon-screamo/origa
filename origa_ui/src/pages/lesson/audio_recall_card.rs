@@ -24,6 +24,7 @@ pub fn AudioRecallCardView(
     card: DomainCard,
     show_result: Signal<bool>,
     on_answer: Callback<bool>,
+    on_reveal: Callback<()>,
     on_replay: Callback<()>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
@@ -103,23 +104,19 @@ pub fn AudioRecallCardView(
                 </div>
 
                 <Show when=move || !show_result.get()>
-                    <div class="grid grid-cols-2 gap-3">
+                    // Question side: audio + the classic «Показать» reveal —
+                    // the self-assessment lives on the ANSWER side, after the
+                    // learner has seen the word and its translation.
+                    <div class="flex justify-center">
                         <Button
-                            test_id=Signal::derive(|| "audio-recall-dont-know-btn".to_string())
-                            variant=Signal::derive(|| ButtonVariant::Default)
-                            disabled=Signal::derive(move || show_result.get())
-                            on_click=Callback::new(move |_| on_answer.run(false))
+                            variant=Signal::derive(|| ButtonVariant::Filled)
+                            on_click=Callback::new(move |_| on_reveal.run(()))
+                            test_id=Signal::derive(|| "audio-recall-reveal-btn".to_string())
                         >
-                            {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
-                        </Button>
-
-                        <Button
-                            test_id=Signal::derive(|| "audio-recall-know-btn".to_string())
-                            variant=Signal::derive(|| ButtonVariant::Olive)
-                            disabled=Signal::derive(move || show_result.get())
-                            on_click=Callback::new(move |_| on_answer.run(true))
-                        >
-                            {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
+                            {t!(i18n, lesson.show_answer)}
+                            // Space is taken by the audio replay on this
+                            // side — the reveal is hinted with Enter.
+                            <span class="kbd-hint">{t!(i18n, lesson.enter_key)}</span>
                         </Button>
                     </div>
                 </Show>
@@ -141,6 +138,29 @@ pub fn AudioRecallCardView(
                         text=Signal::derive(move || answer_text.get_value())
                         known_kanji=known_kanji
                     />
+
+                    // Self-assessment buttons appear on the ANSWER side,
+                    // before the manual advance is armed. `on_answer`
+                    // (Callback<bool>, Copy) is captured by both buttons.
+                    <Show when=move || !waiting_for_next.get()>
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <Button
+                                test_id=Signal::derive(|| "audio-recall-dont-know-btn".to_string())
+                                variant=Signal::derive(|| ButtonVariant::Default)
+                                on_click=Callback::new(move |_| on_answer.run(false))
+                            >
+                                {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
+                            </Button>
+
+                            <Button
+                                test_id=Signal::derive(|| "audio-recall-know-btn".to_string())
+                                variant=Signal::derive(|| ButtonVariant::Olive)
+                                on_click=Callback::new(move |_| on_answer.run(true))
+                            >
+                                {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
+                            </Button>
+                        </div>
+                    </Show>
                 </Show>
 
                 <Show when=move || waiting_for_next.get() && show_result.get()>

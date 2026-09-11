@@ -336,6 +336,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     card=card
                                     show_result=Signal::derive(move || lesson_state.get().showing_answer)
                                     on_answer=on_audio_select
+                                    on_reveal=Callback::new(move |_| show_answer())
                                     on_replay=on_replay_audio
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)

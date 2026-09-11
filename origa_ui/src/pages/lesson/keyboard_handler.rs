@@ -117,14 +117,22 @@ pub fn create_keyboard_handler(
             }
 
             if is_audio_recall_active {
-                handle_audio_recall_key(
-                    &ev,
-                    &key,
-                    &actions.on_audio_answer,
-                    &actions.on_replay_audio,
-                );
+                let reveal = &actions.show_answer;
+                handle_audio_recall_key(&ev, &key, reveal.as_ref(), &actions.on_replay_audio);
                 return;
             }
+        }
+
+        // Revealed AudioRecall, answer not yet given: 1 = «Не знаю»,
+        // 2 = «Знаю» (the self-assessment lives on the ANSWER side). The
+        // dismiss path above covers the post-answer waiting window.
+        // ORDERING CONTRACT: this branch MUST stay ABOVE the generic
+        // rating branch below — otherwise 1/2 on a revealed audio card
+        // would rate directly (bypassing pending_rating/waiting_for_next,
+        // ADR-033) and skip the NextCard step.
+        if is_audio_recall_active && state.showing_answer && !state.waiting_for_next {
+            handle_audio_rate_key(&key, &actions.on_audio_answer);
+            return;
         }
 
         if state.showing_answer && !is_quiz && !is_yesno && !is_phrase_listen {
@@ -217,29 +225,49 @@ fn handle_yesno_key(
     }
 }
 
-/// AudioRecall hotkeys before the answer: 1 = «Не знаю», 2 = «Знаю»,
-/// Space = replay the audio. Replay is NOT muted: it is an explicit user
-/// action, and a textless card without sound would be unanswerable. After
-/// the answer the universal dismiss path (Space/Enter/digit) takes over.
+/// AudioRecall hotkeys before the reveal, resolved from the key name:
+/// Space = replay the audio, Enter = show the answer («Показать»).
+/// Replay is NOT muted: it is an explicit user action, and a textless
+/// card without sound would be unanswerable.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum AudioRecallPreRevealKey {
+    Replay,
+    Reveal,
+}
+
+pub(crate) fn resolve_audio_recall_key(key: &str) -> Option<AudioRecallPreRevealKey> {
+    match key {
+        " " => Some(AudioRecallPreRevealKey::Replay),
+        "Enter" => Some(AudioRecallPreRevealKey::Reveal),
+        _ => None,
+    }
+}
+
 fn handle_audio_recall_key(
     ev: &KeyboardEvent,
     key: &str,
-    on_answer: &Callback<bool>,
+    reveal: &dyn Fn(),
     on_replay: &Callback<()>,
 ) {
-    match key {
-        "1" => {
-            ev.prevent_default();
-            on_answer.run(false);
-        },
-        "2" => {
-            ev.prevent_default();
-            on_answer.run(true);
-        },
-        " " => {
+    match resolve_audio_recall_key(key) {
+        Some(AudioRecallPreRevealKey::Replay) => {
             ev.prevent_default();
             on_replay.run(());
         },
+        Some(AudioRecallPreRevealKey::Reveal) => {
+            ev.prevent_default();
+            reveal();
+        },
+        None => {},
+    }
+}
+
+/// AudioRecall rating keys on the ANSWER side: 1 = «Не знаю» (Again),
+/// 2 = «Знаю» (Good). Any other key is ignored.
+fn handle_audio_rate_key(key: &str, on_answer: &Callback<bool>) {
+    match key {
+        "1" => on_answer.run(false),
+        "2" => on_answer.run(true),
         _ => {},
     }
 }
@@ -333,5 +361,57 @@ mod tests {
         // Only single digits — "12" or "1a" do not match.
         assert!(!is_dismiss_key("12"));
         assert!(!is_dismiss_key("1a"));
+    }
+
+    // ─── AudioRecall keyboard matrix (reveal pattern) ────────────────────
+    // The matrix is the essence of the fix: before the reveal only
+    // replay/reveal work; the self-assessment digits live on the ANSWER
+    // side. The dispatch ORDER inside create_keyboard_handler (audio-rate
+    // branch above the generic rating branch) is a separate contract,
+    // documented at the branch.
+
+    #[test]
+    fn audio_recall_before_reveal_resolves_space_replay_and_enter_reveal() {
+        assert_eq!(
+            resolve_audio_recall_key(" "),
+            Some(AudioRecallPreRevealKey::Replay)
+        );
+        assert_eq!(
+            resolve_audio_recall_key("Enter"),
+            Some(AudioRecallPreRevealKey::Reveal)
+        );
+    }
+
+    #[test]
+    fn audio_recall_before_reveal_ignores_digits_and_other_keys() {
+        for key in ["1", "2", "a", "Tab", "Backspace", ""] {
+            assert_eq!(
+                resolve_audio_recall_key(key),
+                None,
+                "{key:?} must do nothing before the reveal"
+            );
+        }
+    }
+
+    #[test]
+    fn audio_rate_keys_map_digits_to_self_assessment() {
+        Owner::new().with(|| {
+            let answers = RwSignal::new(Vec::<bool>::new());
+            let on_answer = Callback::new(move |knows_word: bool| {
+                answers.update(|v| v.push(knows_word));
+            });
+
+            handle_audio_rate_key("1", &on_answer);
+            handle_audio_rate_key("2", &on_answer);
+            for ignored in ["Enter", " ", "a", ""] {
+                handle_audio_rate_key(ignored, &on_answer);
+            }
+
+            assert_eq!(
+                answers.get_untracked(),
+                vec![false, true],
+                "1 = «Не знаю» (false), 2 = «Знаю» (true); other keys ignored"
+            );
+        });
     }
 }
