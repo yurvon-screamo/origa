@@ -23,7 +23,10 @@ pub use acquaintance::{
     HAND_MAX_SIZE, seed_first_review,
 };
 pub use error::{ErrorCategory, OrigaError};
-pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
+pub use furigana::{
+    FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html,
+    furiganize_text_precomputed,
+};
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{

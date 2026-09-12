@@ -31,6 +31,41 @@ pub fn serialize_precompute_blob_to_rkyv(blob: &PrecomputeBlob) -> Result<Vec<u8
         })
 }
 
+/// Deflates a built blob for CDN storage. The precompute payloads are
+/// string-heavy (token surfaces, readings, spans) and deflate to roughly
+/// a quarter of the raw size, keeping the lazy per-chunk fetch cheap.
+pub fn deflate_blob(blob: &[u8]) -> Vec<u8> {
+    use std::io::Write;
+
+    let mut encoder = flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::new(6));
+    // write_all on Vec-backed DeflateEncoder cannot fail except for OOM,
+    // which aborts anyway.
+    let _ = encoder.write_all(blob);
+    encoder.finish().unwrap_or_default()
+}
+
+/// Inflates a deflated CDN blob (the mirror of [`deflate_blob`]).
+pub fn inflate_blob(deflated: &[u8]) -> Result<Vec<u8>, OrigaError> {
+    use std::io::Read;
+
+    let mut decoder = flate2::read::DeflateDecoder::new(deflated);
+    let mut blob = Vec::new();
+    decoder
+        .read_to_end(&mut blob)
+        .map_err(|e| OrigaError::TokenizerError {
+            reason: format!("failed to inflate precompute blob: {e}"),
+        })?;
+    Ok(blob)
+}
+
+/// Inflates and accesses a deflated CDN blob.
+pub fn access_precompute_deflated_blob(
+    deflated: &[u8],
+) -> Result<&'static ArchivedPrecomputeBlob, OrigaError> {
+    let blob = inflate_blob(deflated)?;
+    access_precompute_blob(&blob)
+}
+
 /// Zero-copy archived view of a blob payload. The payload is copied once
 /// into an immortal `AlignedVec` (checked `access` requires properly
 /// aligned bytes); a validation failure leaves the leaked bytes

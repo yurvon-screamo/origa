@@ -323,4 +323,22 @@ pub enum Commands {
         #[arg(long, default_value = None)]
         cdn_dir: Option<PathBuf>,
     },
+
+    /// Build phrase tokenization precompute blobs (#521): per-chunk rkyv
+    /// blobs with furigana spans + tokens for every phrase render string.
+    ///
+    /// Requires the tokenizer dictionary (lindera) and JmdictFurigana in
+    /// the CDN checkout. Freshness binds to the chunk bytes plus the
+    /// dictionary inputs, so a dictionary bump regenerates all chunks.
+    BuildGrammarPrecompute {
+        /// CDN root directory (defaults to <repo>/cdn next to the crate).
+        #[arg(long, default_value = None)]
+        cdn_dir: Option<PathBuf>,
+    },
+
+    BuildPhrasePrecompute {
+        /// CDN root directory (defaults to <repo>/cdn next to the crate).
+        #[arg(long, default_value = None)]
+        cdn_dir: Option<PathBuf>,
+    },
 }

@@ -1,5 +1,7 @@
 mod build_cdn_rkyv;
+mod build_grammar_precompute;
 mod build_phrase_dataset;
+mod build_phrase_precompute;
 mod dedup_kanji_readings;
 mod enrich_phrases_with_grammar;
 mod find_missing;
@@ -15,7 +17,9 @@ mod tokenize_well_known;
 mod validate_dictionary;
 
 pub use build_cdn_rkyv::run_build_cdn_rkyv;
+pub use build_grammar_precompute::run_build_grammar_precompute;
 pub use build_phrase_dataset::run_build_phrase_dataset;
+pub use build_phrase_precompute::run_build_phrase_precompute;
 pub use dedup_kanji_readings::run_dedup_kanji_readings;
 pub use enrich_phrases_with_grammar::run_enrich_phrases_with_grammar;
 pub use find_missing::run_find_missing;

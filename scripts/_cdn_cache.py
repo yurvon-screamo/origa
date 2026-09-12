@@ -65,6 +65,9 @@ _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
         # Regenerated with its source on every content change — must not
         # sit behind a year-long immutable edge cache.
         "phrases/phrase_index.rkyv",
+        # Tokenization precompute blobs (#521) — rebuilt when their chunk
+        # or the tokenizer dictionaries change.
+        "phrases/precomputed/",
         "pitch/",
         "well_known_set/",
     }

@@ -261,6 +261,21 @@ pub fn furiganize_text(text: &str, known_kanji: &HashSet<char>) -> Result<String
     Ok(furiganize_text_html(&segments))
 }
 
+/// Precompute-path twin of [`furiganize_text`]: renders the store's
+/// furigana spans for exactly this string. Returns `None` when the store
+/// has no usable entry (no entry, or empty spans per the `precomputed`
+/// contract) — the caller then falls back to the live path.
+pub fn furiganize_text_precomputed(text: &str, known_kanji: &HashSet<char>) -> Option<String> {
+    let entry = lookup_precomputed(text)?;
+    if entry.furigana_spans.is_empty() {
+        return None;
+    }
+    Some(furiganize_text_html(&spans_to_segments(
+        entry.furigana_spans,
+        known_kanji,
+    )))
+}
+
 #[cfg(test)]
 mod tests {
     use std::{env, fs, io::Read, path::PathBuf};
@@ -578,6 +593,40 @@ mod tests {
             .collect();
         assert!(!kanji_segments.is_empty(), "render must not be empty");
         assert!(kanji_segments.iter().all(|s| s.has_reading()));
+        assert!(furiganize_text_precomputed("食べ物", &known_kanji).is_none());
+        reset_precomputed_store();
+    }
+
+    #[test]
+    fn furiganize_text_precomputed_renders_ruby_from_store() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange
+        install_precomputed_entry(
+            "食べ物",
+            PrecomputedEntry {
+                furigana_spans: vec![AnnotatedSpan {
+                    text: "食べ物".to_string(),
+                    reading: Some("タベモノ".to_string()),
+                    reading_spans: vec![],
+                }],
+                tokens: vec![],
+            },
+        );
+        let known_kanji: HashSet<char> = HashSet::new();
+
+        // Act
+        let html = furiganize_text_precomputed("食べ物", &known_kanji);
+
+        // Assert
+        assert_eq!(
+            html.as_deref(),
+            Some(
+                "<ruby class=\"furigana-ruby\">食べ物<rp>(</rp><rt class=\"furigana-rt\">タベモノ</rt><rp>)</rp></ruby>"
+            )
+        );
+        assert!(furiganize_text_precomputed("missing", &known_kanji).is_none());
         reset_precomputed_store();
     }
 

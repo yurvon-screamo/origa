@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use ammonia::clean;
 use ego_tree::NodeRef;
 use leptos::prelude::*;
-use origa::domain::furiganize_text;
+use origa::domain::{furiganize_text, furiganize_text_precomputed};
 use pulldown_cmark::{Options, Parser, html};
 use scraper::{Html, Node};
 
@@ -147,9 +147,14 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {
                 if in_skip {
                     output.push_str(text_str);
                 } else {
-                    match furiganize_text(text_str, known_kanji) {
-                        Ok(furigana) => output.push_str(&furigana),
-                        Err(_) => output.push_str(text_str),
+                    // Precompute path first (#521): grammar markdown text
+                    // nodes were keyed offline; the live tokenizer path
+                    // stays as the fallback for anything else.
+                    let furigana = furiganize_text_precomputed(text_str, known_kanji)
+                        .or_else(|| furiganize_text(text_str, known_kanji).ok());
+                    match furigana {
+                        Some(furigana) => output.push_str(&furigana),
+                        None => output.push_str(text_str),
                     }
                 }
             },
