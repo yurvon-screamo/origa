@@ -6,7 +6,11 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
-use origa::domain::{NativeLanguage, TokenTranslation, lookup_tokens_translations, tokenize_text};
+use origa::domain::{
+    NativeLanguage, TokenTranslation, lookup_precomputed, lookup_tokens_translations, tokenize_text,
+};
+
+use crate::loaders::dictionary::ensure_tokenizer_loaded;
 
 fn has_kanji(text: &str) -> bool {
     text.chars().any(|c| {
@@ -49,8 +53,27 @@ pub fn TranslatorText(
     let text_for_spawn = text.clone();
     spawn_local(async move {
         let lang = native_lang.get();
-        let tokens = tokenize_text(&text_for_spawn).unwrap_or_default();
-        translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
+        // Precompute path (#521): phrases and card words carry offline
+        // tokens — no tokenizer dictionary involved.
+        if let Some(entry) = lookup_precomputed(&text_for_spawn)
+            && !entry.tokens.is_empty()
+        {
+            let tokens: Vec<_> = entry.tokens.iter().map(|t| t.to_token_info()).collect();
+            translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
+            is_loaded.set(true);
+            return;
+        }
+
+        // Live path: gate on tokenizer readiness (it left the startup
+        // overlay and may still be warming up). An empty result leaves
+        // `translations` empty and the plain-text fallback renders the
+        // original string instead of a blank span.
+        if let Ok(tokens) = ensure_tokenizer_loaded()
+            .await
+            .and_then(|()| tokenize_text(&text_for_spawn))
+        {
+            translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
+        }
         is_loaded.set(true);
     });
 
@@ -91,8 +114,11 @@ pub fn TranslatorText(
             data-testid=test_id_val
         >
             <Show
-                when=move || is_loaded.get()
+                when=move || is_loaded.get() && !translations.get().is_empty()
                 fallback=move || view! {
+                    // Covers both the loading state and the empty-token
+                    // outcome (tokenizer unavailable): the original text
+                    // stays visible instead of a blank span.
                     <span class="translator-loading font-serif">{text.clone()}</span>
                 }
             >

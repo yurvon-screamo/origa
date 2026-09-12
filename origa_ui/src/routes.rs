@@ -1,6 +1,5 @@
 use crate::loaders::{
     data_loader::{load_grammar, load_kanji, load_radicals, load_vocabulary},
-    dictionary::load_dictionary,
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
     loading_message::{
@@ -18,6 +17,7 @@ use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
 use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
+use crate::utils::now_ms;
 use futures::Future;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -92,6 +92,8 @@ pub fn start_dictionary_loading(
     offline_store: OfflineBundleStore,
 ) {
     spawn_local(async move {
+        let warmup_start = now_ms();
+
         // Phase A: manifest check
         if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
             tracing::warn!("Cache manifest check failed: {e}");
@@ -112,19 +114,19 @@ pub fn start_dictionary_loading(
         // and the intermediate Vec/String buffers are dropped.
         //
         // Sizes (CDN, compressed):
-        //   Stage 1 — dictionary: largest single inflate
-        //   Stage 2 — vocab+phrases+furigana+pitch: ~91 MB text
-        //   Stage 3 — kanji+grammar+radicals: ~4 MB text
+        //   Stage 1 — vocab+phrases+furigana+pitch: ~91 MB text
+        //   Stage 2 — kanji+grammar+radicals: ~4 MB text
+        //
+        // The tokenizer dictionary (SudachiDict, ~344 MB raw) is NOT part of
+        // the overlay anymore (#521): renders answer from the precompute
+        // store, and content-creation paths gate on
+        // `ensure_tokenizer_loaded`. It still loads in the background after
+        // the light phases — after them, so its inflate never overlaps the
+        // heavy stage above (iOS jetsam budget).
 
-        // Stage 1: tokenizer dictionary — solo, dominates memory usage.
-        if let Err(e) = load_dictionary().await {
-            tracing::error!("Failed to load dictionary: {e}");
-        }
-        auth_store.is_dictionary_loaded.set(true);
-
-        // Stage 2: medium resources in parallel. Each readiness flag flips
+        // Stage 1: medium resources in parallel. Each readiness flag flips
         // as ITS loader finishes — the overlay counter no longer waits for
-        // the whole stage before moving past "1 из 9".
+        // the whole stage before moving past "1 из 8".
         let (vocab_r, phrases_r, furigana_r, pitch_r) = futures::join!(
             tracked(
                 "vocabulary",
@@ -155,7 +157,7 @@ pub fn start_dictionary_loading(
         // results are consumed here only to satisfy `must_use`.
         let _ = (vocab_r, phrases_r, furigana_r, pitch_r);
 
-        // Stage 3: light resources in parallel.
+        // Stage 2: light resources in parallel.
         let (kanji_r, grammar_r, radicals_r) = futures::join!(
             tracked(
                 "kanji",
@@ -225,6 +227,22 @@ pub fn start_dictionary_loading(
 
         // Signal completion only after all migrations finish
         auth_store.is_jlpt_content_loaded.set(true);
+
+        // Phase F (#521): background tokenizer warmup. The overlay is gone
+        // by now and the heavy stages finished — the ~344 MB dictionary
+        // inflate runs alone, keeping the iOS jetsam budget intact.
+        // Failures are non-fatal: content-creation paths retry on demand
+        // via `ensure_tokenizer_loaded`.
+        spawn_local(async move {
+            match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                Ok(()) => tracing::info!(
+                    "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
+                    (now_ms() - warmup_start) / 1000.0
+                ),
+                Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
+            }
+            auth_store.is_dictionary_loaded.set(true);
+        });
     });
 }
 
@@ -323,7 +341,6 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                     radicals: store.is_radicals_loaded.get(),
                     phrases: store.is_phrases_loaded.get(),
                     pitch_audio: store.is_pitch_audio_loaded.get(),
-                    dictionary: store.is_dictionary_loaded.get(),
                     furigana: store.is_furigana_loaded.get(),
                     jlpt_content: store.is_jlpt_content_loaded.get(),
                 };
@@ -351,7 +368,6 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                     store.is_radicals_loaded.get(),
                     store.is_phrases_loaded.get(),
                     store.is_pitch_audio_loaded.get(),
-                    store.is_dictionary_loaded.get(),
                     store.is_furigana_loaded.get(),
                     store.is_jlpt_content_loaded.get(),
                 ]

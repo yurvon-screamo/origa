@@ -122,7 +122,10 @@ impl AuthStore {
         Memo::new(move |_| is_checking_session.get() || is_syncing.get())
     }
 
-    /// Returns a reactive Memo indicating if ALL data resources are loaded
+    /// Returns a reactive Memo indicating if ALL overlay-gating data
+    /// resources are loaded. The tokenizer dictionary is intentionally
+    /// NOT among them (#521): renders answer from the precompute store
+    /// and it warms up in the background.
     pub fn is_all_data_loaded(&self) -> Memo<bool> {
         let v = self.is_vocabulary_loaded;
         let k = self.is_kanji_loaded;
@@ -130,19 +133,10 @@ impl AuthStore {
         let r = self.is_radicals_loaded;
         let p = self.is_phrases_loaded;
         let pa = self.is_pitch_audio_loaded;
-        let d = self.is_dictionary_loaded;
         let f = self.is_furigana_loaded;
         let j = self.is_jlpt_content_loaded;
         Memo::new(move |_| {
-            v.get()
-                && k.get()
-                && g.get()
-                && r.get()
-                && p.get()
-                && pa.get()
-                && d.get()
-                && f.get()
-                && j.get()
+            v.get() && k.get() && g.get() && r.get() && p.get() && pa.get() && f.get() && j.get()
         })
     }
 
@@ -471,6 +465,7 @@ impl AuthStore {
 
         self.user.set(None);
         origa::domain::reset_precomputed_store();
+        crate::loaders::dictionary::reset_tokenizer_lifecycle();
         self.reset_data_loading_signals();
     }
 
@@ -508,6 +503,7 @@ impl AuthStore {
         clear_session();
         self.user.set(None);
         origa::domain::reset_precomputed_store();
+        crate::loaders::dictionary::reset_tokenizer_lifecycle();
         self.reset_data_loading_signals();
         self.is_checking_session.set(false);
     }

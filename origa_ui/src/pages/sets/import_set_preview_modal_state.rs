@@ -211,6 +211,15 @@ impl ImportPreviewModalState {
         async move {
             is_importing.set(true);
             error.set(None);
+
+            // Set import tokenizes the word list (#521).
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                tracing::warn!("tokenizer unavailable for set import: {e:?}");
+                error.set(Some(e.to_string()));
+                is_importing.set(false);
+                return Err(e.to_string());
+            }
+
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
             match use_case.execute(words_to_create, set_ids_opt).await {
                 Ok(result) => {
