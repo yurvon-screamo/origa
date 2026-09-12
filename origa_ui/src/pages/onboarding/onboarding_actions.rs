@@ -127,6 +127,14 @@ pub(super) fn create_on_start_import_callback(
                 return;
             };
 
+            // Set import tokenizes the word lists (#521): the tokenizer
+            // left the startup overlay, so gate on its readiness here.
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                tracing::error!("tokenizer unavailable for onboarding import: {e:?}");
+                is_importing.set(false);
+                return;
+            }
+
             // recalculate_user_jlpt_progress depends on JLPT_CONTENT (UI-side
             // CDN singleton), so it cannot move into origa/. Applied here so
             // the single save_sync inside execute persists both it and the

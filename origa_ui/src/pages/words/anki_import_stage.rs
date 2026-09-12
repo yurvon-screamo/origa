@@ -258,8 +258,20 @@ pub fn AnkiImportStage(
             let is_open_sig = is_open;
             let disposed = disposed;
             let i18n = i18n;
+            let error_message = error_message;
 
             spawn_local(async move {
+                // Anki import tokenizes the extracted questions (#521).
+                if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                    tracing::warn!("tokenizer unavailable for Anki import: {e:?}");
+                    if !disposed.is_disposed() {
+                        error_message.set(e.to_string());
+                        stage.set(Stage::Done);
+                        is_open_sig.set(false);
+                    }
+                    return;
+                }
+
                 let use_case = ImportAnkiPackUseCase::new(&repo);
                 match use_case.execute(cards).await {
                     Ok(result) => {
