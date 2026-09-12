@@ -675,7 +675,7 @@ async fn translator_warming_dictionary_shows_explicit_loader() {
     // rather than silently rendering bare text (#521 UX contract — the
     // warmup is a one-off and must not look like the final state).
     let wrapper = create_wrapper();
-    mount_to_wrapper(&wrapper, || {
+    crate::test_support::mount_with_i18n(&wrapper, || {
         view! {
             <TranslatorText
                 text="こんにちは".to_string()
