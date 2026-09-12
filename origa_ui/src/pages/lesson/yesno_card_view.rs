@@ -275,9 +275,18 @@ pub fn YesNoCardView(
                         }}
                     </Show>
 
-                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                        {move || statement_value.get_value()}
-                    </Text>
+                    // The statement (the claimed translation) is the
+                    // question. On the result side a CORRECT claim would
+                    // duplicate the revealed answer below the verdict —
+                    // hide it there; a distractor claim stays visible as
+                    // the contrast against the real answer.
+                    <Show when=move || !show_result.get() || !is_statement_correct>
+                        <div data-testid="yesno-statement">
+                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                {move || statement_value.get_value()}
+                            </Text>
+                        </div>
+                    </Show>
 
                     <Show when=move || !show_result.get()>
                         <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
