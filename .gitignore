@@ -1,81 +1,98 @@
-
-*~
-# Android keystore files
-# Android signing
-.audio-fix-backup/
-.blob-report/
-# Bundled fonts (staged from cdn/fonts/ by build.rs into public/fonts/ for
-.cache/
-# Cache
-# cdn
-cdn
-concatenated_*
-data
-**/dist
-.DS_Store
-end2end/blob-report/
-end2end/.cdn.pid
-!end2end/package-lock.json
-end2end/.trailbase.pid
-.fastembed_cache
-# Font source cache (downloaded by scripts/subset_fonts.py)
-# Grammar N1 authoring batches are reviewable sources, not artifacts
-# Graphify knowledge graph output
-graphify-out/
-# IDE
-.idea/
-# Internal fix-restore artifacts (status notes from parallel work, not production)
-*.keystore
-*.log
-# Logs
-.media/store/.fonts/
-missing_vocabulary.md
-models/whisper-tiny/
-models/whisper-tiny-onnx/
-# Node
-node_modules
-nul
-# One-time CDN migration artifacts (Railway → Tigris, executed 2026-08-02)
-!origa_landing/package-lock.json
-origa-release.keystore
-origa_ui/public/fonts/
-# OS
-output/
-output_*
-# Output directory
-package-lock.json
-playwright/.cache/
-# Playwright / E2E Tests
-playwright-report/
-**__pycache__
-*_report.*.json
-*_report.json
 # Rust
-scripts/.cdn_migration_cache/
-!scripts/data/
-scripts/.font_cache/
-scripts/migrate-cdn-log.txt
-scripts/t3-migrate-log.txt
-standard_sample*.wav
-*.swo
-*.swp
 **/target
+**/dist
 target
-tauri/resources/whisper/decoder_model.onnx
-tauri/resources/whisper/encoder_model.onnx
+.fastembed_cache
+data
+# Grammar N1 authoring batches are reviewable sources, not artifacts
+!scripts/data/
+
+# Node
+package-lock.json
+!end2end/package-lock.json
+!origa_landing/package-lock.json
+node_modules
+
+# Playwright / E2E Tests
+test-results/
+playwright-report/
+playwright/.cache/
+.blob-report/
+end2end/blob-report/
+.trace/
+end2end/.trailbase.pid
+end2end/.cdn.pid
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+nul
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output directory
+output/
+
+# Temporary files
+*.tmp
 *.temp
 temp_*
-temp_*/
-# Temporary files
-test-results/
-Thumbs.db
-*.tmp
 tokens_*
-.trace/
+output_*
 trimmed_*
+concatenated_*
+missing_vocabulary.md
+*_report.json
+*_report.*.json
+standard_sample*.wav
+temp_*/
+**__pycache__
+
+# Logs
+*.log
+
+# Cache
+.cache/
+
+# Internal fix-restore artifacts (status notes from parallel work, not production)
+.audio-fix-backup/
+
+# Graphify knowledge graph output
+graphify-out/
+
+# Bundled fonts (staged from cdn/fonts/ by build.rs into public/fonts/ for
 # trunk copy-dir; cdn/fonts/ is the canonical source, this is a build mirror)
-.venv-deploy/
-.vscode/
-webdriver.json
-# Whisper local model caches (downloaded from HuggingFace, not needed in repo)
+origa_ui/public/fonts/
+
+# Android keystore files
+*.keystore
+
+# Android signing
+origa-release.keystore
+
 # Whisper ONNX models (large binary files - must be placed manually)
+tauri/resources/whisper/encoder_model.onnx
+tauri/resources/whisper/decoder_model.onnx
+
+# Whisper local model caches (downloaded from HuggingFace, not needed in repo)
+models/whisper-tiny/
+models/whisper-tiny-onnx/
+
+# cdn
+cdn
+
+# Font source cache (downloaded by scripts/subset_fonts.py)
+scripts/.font_cache/
+
+# One-time CDN migration artifacts (Railway → Tigris, executed 2026-08-02)
+scripts/.cdn_migration_cache/
+scripts/migrate-cdn-log.txt
+scripts/t3-migrate-log.txt
+.media/store/.fonts/
+webdriver.json
+.venv-deploy/

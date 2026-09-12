@@ -4,9 +4,7 @@ use origa::dictionary::phrase::{
     PhraseDetail, cache_phrase_details, get_cached_phrase_detail, get_chunk_id, index_version,
     is_chunk_loaded,
 };
-use origa::dictionary::precompute_blob::{
-    access_precompute_deflated_blob, install_precompute_view,
-};
+use origa::dictionary::precompute_blob::{access_precompute_deflated, install_precompute_view};
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 use ulid::Ulid;
@@ -18,6 +16,15 @@ use crate::repository::cdn_provider;
 /// `Option` inside keeps the initializer const (`HashSet::new` is not).
 static PRECOMPUTE_LOADED_CHUNKS: std::sync::RwLock<Option<std::collections::HashSet<u32>>> =
     std::sync::RwLock::new(None);
+
+/// Drops the attempted-chunk set (logout): the installed views are cleared
+/// by `reset_precomputed_store`, and the next user must be able to
+/// re-install views for the chunks their phrase pages load.
+pub fn reset_phrase_precompute_chunks() {
+    *PRECOMPUTE_LOADED_CHUNKS
+        .write()
+        .unwrap_or_else(|e| e.into_inner()) = None;
+}
 
 fn mark_precompute_chunk_attempted(chunk_id: u32) -> bool {
     let mut guard = PRECOMPUTE_LOADED_CHUNKS
@@ -46,8 +53,8 @@ async fn load_phrase_precompute_chunk(chunk_id: u32) {
             return;
         },
     };
-    match access_precompute_deflated_blob(&blob) {
-        Ok(view) => install_precompute_view(view),
+    match access_precompute_deflated(&blob) {
+        Ok((view, _header)) => install_precompute_view(view),
         Err(e) => tracing::warn!("phrase precompute blob rejected (chunk {chunk_id}): {e:?}"),
     }
 }

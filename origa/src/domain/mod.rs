@@ -13,7 +13,7 @@ mod score_content;
 mod serde_utils;
 mod srs;
 mod stats;
-mod tokenizer;
+pub(crate) mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
 mod well_known_set;

@@ -293,6 +293,10 @@ RKYV_BLOB_SOURCES: dict[str, list[str]] = {
 # Deflated precompute blobs (#521): stored deflate-compressed on the CDN
 # (string-heavy payloads shrink to ~a quarter). Their source hash also
 # includes the tokenizer inputs so a dictionary bump forces regeneration.
+# Keep in sync with the OTHER copies of the dictionary version:
+# SUDACHIDICT_DIR in origa, origa_ui/build.rs and VERSIONED_FILES above —
+# a forgotten bump fails loud here (freshness hash mismatch), but every
+# copy must move together.
 SUDACHIDICT_DIR_NAME = "sudachidict-20260723"
 
 
