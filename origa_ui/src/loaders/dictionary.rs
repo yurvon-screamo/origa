@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU8, Ordering};
 
 use origa::domain::{
     DictionaryData, OrigaError, SUDACHIDICT_DIR, init_dictionary, is_dictionary_loaded,
@@ -10,6 +11,87 @@ use crate::repository::{
 };
 use crate::utils::{now_ms, yield_to_browser};
 use origa::traits::CdnProvider;
+
+/// Lifecycle of the tokenizer dictionary (#521): it left the startup
+/// overlay, so content-creation paths and rare arbitrary-text renders
+/// gate on this instead. 0 = idle, 1 = loading, 2 = ready, 3 = failed.
+static TOKENIZER_STATE: AtomicU8 = AtomicU8::new(0);
+
+const TOKENIZER_IDLE: u8 = 0;
+const TOKENIZER_LOADING: u8 = 1;
+const TOKENIZER_READY: u8 = 2;
+const TOKENIZER_FAILED: u8 = 3;
+
+/// Awaits tokenizer readiness, loading it on demand. Concurrent callers
+/// coalesce onto the in-flight load (yield-loop wait); a caller arriving
+/// after a failed load retries it.
+pub async fn ensure_tokenizer_loaded() -> Result<(), OrigaError> {
+    if is_dictionary_loaded() {
+        TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
+        return Ok(());
+    }
+
+    let took_over = TOKENIZER_STATE
+        .compare_exchange(
+            TOKENIZER_IDLE,
+            TOKENIZER_LOADING,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        )
+        .is_ok()
+        || TOKENIZER_STATE
+            .compare_exchange(
+                TOKENIZER_FAILED,
+                TOKENIZER_LOADING,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            )
+            .is_ok();
+    if took_over {
+        let result = load_dictionary().await;
+        TOKENIZER_STATE.store(
+            if result.is_ok() {
+                TOKENIZER_READY
+            } else {
+                TOKENIZER_FAILED
+            },
+            Ordering::Release,
+        );
+        return result;
+    }
+
+    // Another task is loading: wait for it to conclude, then report the
+    // resulting state (its failure surfaces here, the next caller
+    // retries).
+    loop {
+        yield_to_browser().await;
+        if is_dictionary_loaded() {
+            TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
+            return Ok(());
+        }
+        match TOKENIZER_STATE.load(Ordering::Acquire) {
+            TOKENIZER_READY => return Ok(()),
+            TOKENIZER_FAILED => {
+                return Err(OrigaError::TokenizerError {
+                    reason: "tokenizer dictionary failed to load".to_string(),
+                });
+            },
+            TOKENIZER_IDLE => return Box::pin(ensure_tokenizer_loaded()).await,
+            _ => {},
+        }
+    }
+}
+
+/// Resets the on-demand lifecycle state (the dictionary itself stays
+/// loaded for the process — `OnceLock` semantics). Called on logout so a
+/// fresh session re-attempts after a transient failure.
+pub fn reset_tokenizer_lifecycle() {
+    if is_dictionary_loaded() {
+        TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
+    } else {
+        TOKENIZER_STATE.store(TOKENIZER_IDLE, Ordering::Relaxed);
+    }
+}
 
 /// Processing order of the fetch→inflate→persist pipeline: the eight
 /// lindera files deflated on the CDN (words first — the largest single

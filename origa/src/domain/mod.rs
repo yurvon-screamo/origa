@@ -13,7 +13,7 @@ mod score_content;
 mod serde_utils;
 mod srs;
 mod stats;
-mod tokenizer;
+pub(crate) mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
 mod well_known_set;
@@ -23,7 +23,10 @@ pub use acquaintance::{
     HAND_MAX_SIZE, seed_first_review,
 };
 pub use error::{ErrorCategory, OrigaError};
-pub use furigana::{FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html};
+pub use furigana::{
+    FuriganaSegment, furiganize_segments, furiganize_text, furiganize_text_html,
+    furiganize_text_precomputed,
+};
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
@@ -33,7 +36,7 @@ pub use grammar::quiz_generation::{
 pub use grammar::{detect_format_map_rules, detect_grammar_rules_in_text, detect_keyword_rules};
 pub use import_preview::{WordImportClassifier, WordImportOutcome, WordImportPreview};
 pub use japanese::{JapaneseChar, JapaneseText};
-pub use japanese::{hiragana_to_katakana, katakana_to_hiragana};
+pub use japanese::{hiragana_to_katakana, katakana_to_hiragana, split_japanese_sentences};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{
     CategoryCounts, CategoryProgress, JlptProgress, LevelProgressDetail, ProgressUpdate,
@@ -44,7 +47,7 @@ pub use knowledge::{
     GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData,
     LessonEmptyDiagnosis, LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard,
     QuizCard, QuizMode, QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
-    estimate_completion_date,
+    estimate_completion_date, install_precompute_for_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
 
@@ -61,8 +64,10 @@ pub use score_content::ScoreContentResult;
 pub use srs::RateMode;
 pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use tokenizer::{
-    DictionaryData, PartOfSpeech, SUDACHIDICT_DIR, TokenInfo, TokenTranslation, init_dictionary,
-    is_dictionary_loaded, lookup_tokens_translations, tokenize_text,
+    DictionaryData, PartOfSpeech, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, TokenInfo,
+    TokenTranslation, init_dictionary, install_precomputed_entries, install_precomputed_entry,
+    is_dictionary_loaded, lookup_precomputed, lookup_tokens_translations,
+    owned_precomputed_entries_len, reset_precomputed_store, tokenize_call_count, tokenize_text,
 };
 pub use user::{ONBOARDING_COMPLETED_KEY, ONBOARDING_SKIPPED_KEY, User, WordKnowledge};
 pub use value_objects::{

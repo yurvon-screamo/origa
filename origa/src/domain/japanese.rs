@@ -98,6 +98,22 @@ pub fn hiragana_to_katakana(text: &str) -> String {
         .collect()
 }
 
+/// Japanese sentence terminators used by [`split_japanese_sentences`].
+const JP_SENTENCE_TERMINATORS: &[char] = &['。', '！', '？'];
+
+/// Split Japanese text by sentence terminators (`。！？`), preserving the
+/// delimiter. Returns empty Vec if input is empty/whitespace-only.
+///
+/// Shared contract between the precompute builder and the UI: phrase
+/// components render each sentence separately, so the precomputed store is
+/// keyed per sentence produced by this exact function.
+pub fn split_japanese_sentences(text: &str) -> Vec<String> {
+    text.split_inclusive(JP_SENTENCE_TERMINATORS)
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -249,5 +265,26 @@ mod tests {
         assert_eq!(hiragana_to_katakana("hello"), "hello");
         assert_eq!(hiragana_to_katakana("アイウ"), "アイウ");
         assert_eq!(hiragana_to_katakana("123"), "123");
+    }
+
+    #[rstest]
+    #[case::empty("", vec![])]
+    #[case::whitespace_only("   ", vec![])]
+    #[case::single_sentence_no_terminator("こんにちは", vec!["こんにちは"])]
+    #[case::single_sentence_with_terminator("こんにちは。", vec!["こんにちは。"])]
+    #[case::two_sentences(
+        "私は学生です。小林さんは先生です。",
+        vec!["私は学生です。", "小林さんは先生です。"]
+    )]
+    #[case::trims_around_terminators(" A。 B！", vec!["A。", "B！"])]
+    #[case::consecutive_terminators_each_own_fragment("。。A。", vec!["。", "。", "A。"])]
+    fn split_japanese_sentences_matches_render_units(
+        #[case] input: &str,
+        #[case] expected: Vec<&str>,
+    ) {
+        assert_eq!(
+            split_japanese_sentences(input),
+            expected.into_iter().map(String::from).collect::<Vec<_>>()
+        );
     }
 }

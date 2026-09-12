@@ -116,6 +116,15 @@ impl PreviewModalState {
         info!(text_length = text.len(), "Starting text analysis");
 
         spawn_local(async move {
+            // Analysis tokenizes user text (#521): the tokenizer left the
+            // startup overlay, so gate on its readiness here.
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                tracing::warn!("tokenizer unavailable for analysis: {e:?}");
+                if !disposed.is_disposed() {
+                    error.set(Some(e.to_string()));
+                }
+                return;
+            }
             let use_case = AnalyzeTextForCardsUseCase::new(&repository);
             match use_case.execute(text).await {
                 Ok(result) => {
@@ -186,6 +195,14 @@ impl PreviewModalState {
         async move {
             is_creating.set(true);
             error.set(None);
+
+            // Creation tokenizes the previewed words (#521).
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                tracing::warn!("tokenizer unavailable for creation: {e:?}");
+                error.set(Some(e.to_string()));
+                is_creating.set(false);
+                return Err(e.to_string());
+            }
 
             let use_case = CreateCardsFromAnalysisUseCase::new(&repository);
             match use_case.execute(words_to_create, None).await {

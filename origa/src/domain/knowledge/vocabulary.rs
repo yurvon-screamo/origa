@@ -1,7 +1,10 @@
 use crate::dictionary::grammar::GrammarRule;
 use crate::dictionary::vocabulary::{get_description, get_translation, get_translations};
 use crate::domain::tokenizer::{PartOfSpeech, tokenize_text};
-use crate::domain::{CardAnswer, NativeLanguage, OrigaError, Question};
+use crate::domain::{
+    CardAnswer, NativeLanguage, OrigaError, PrecomputedEntry, PrecomputedToken, Question,
+    install_precomputed_entry,
+};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -18,6 +21,8 @@ pub struct VocabularyCard {
     reverse_side: Option<Question>,
     #[serde(default)]
     pos: Option<PartOfSpeech>,
+    #[serde(default)]
+    tokens: Option<Vec<PrecomputedToken>>,
 }
 
 impl VocabularyCard {
@@ -28,6 +33,7 @@ impl VocabularyCard {
             word,
             reverse_side: None,
             pos: None,
+            tokens: None,
         }
     }
 
@@ -46,6 +52,7 @@ impl VocabularyCard {
             word,
             reverse_side,
             pos,
+            tokens: None,
         }
     }
 
@@ -55,14 +62,24 @@ impl VocabularyCard {
     pub fn from_known_word(word: &str, lang: &NativeLanguage) -> Result<Self, OrigaError> {
         Self::validate_translation(word, lang)?;
         let question = Question::new(word.to_string())?;
-        let pos = tokenize_text(word)
-            .ok()
+        let precomputed = tokenize_text(word).ok();
+        let pos = precomputed
+            .as_ref()
             .and_then(|tokens| tokens.first().map(|t| t.part_of_speech().clone()));
-        Ok(Self {
+        let tokens = precomputed.map(|tokens| {
+            tokens
+                .iter()
+                .map(PrecomputedToken::from_token_info)
+                .collect()
+        });
+        let card = Self {
             word: question,
             reverse_side: None,
             pos,
-        })
+            tokens,
+        };
+        install_card_precompute(&card);
+        Ok(card)
     }
 
     /// Создаёт карточки из текста с токенизацией и валидацией
@@ -91,7 +108,9 @@ impl VocabularyCard {
 
             match Self::from_known_word(word_text, lang) {
                 Ok(mut card) => {
-                    card.pos = Some(token_pos);
+                    card.pos = Some(token_pos.clone());
+                    card.tokens = Some(vec![PrecomputedToken::from_token_info(&token)]);
+                    install_card_precompute(&card);
                     cards.push(card);
                 },
                 Err(_) => skipped.push(word_text.to_string()),
@@ -159,6 +178,23 @@ impl VocabularyCard {
         self.pos.clone()
     }
 
+    /// Persisted token precompute for the card word. `None` on legacy
+    /// cards created before #521 — the startup
+    /// [`BackfillCardTokensUseCase`](crate::use_cases::BackfillCardTokensUseCase)
+    /// migrates them once.
+    pub fn tokens(&self) -> Option<&[PrecomputedToken]> {
+        self.tokens.as_deref()
+    }
+
+    /// The same card with a token cache attached — the migration's
+    /// replacement form.
+    pub fn with_tokens(self, tokens: Vec<PrecomputedToken>) -> Self {
+        Self {
+            tokens: Some(tokens),
+            ..self
+        }
+    }
+
     pub fn with_grammar_rule(
         &self,
         rule: &GrammarRule,
@@ -177,6 +213,7 @@ impl VocabularyCard {
             word: Question::new(formatted_word)?,
             reverse_side: Some(answer_text),
             pos: self.pos.clone(),
+            tokens: self.tokens.clone(),
         };
 
         Ok((card, grammar_description))
@@ -188,8 +225,50 @@ impl VocabularyCard {
             word: Question::new(meaning_text)?,
             reverse_side: Some(self.word.clone()),
             pos: self.pos.clone(),
+            tokens: self.tokens.clone(),
         })
     }
+}
+
+/// Installs the card's token precompute into the global store so render
+/// paths (TranslatorText on a lesson question) answer without lindera.
+/// The entry deliberately carries no furigana spans: card-word furigana
+/// resolves through the furigana dictionary's single-word lookup instead
+/// (empty spans = miss for the furiganize path — see the `precomputed`
+/// contract), so a card entry can never shadow a better reading.
+fn install_card_precompute(card: &VocabularyCard) {
+    if let Some(tokens) = card.tokens.as_ref() {
+        install_precomputed_entry(
+            card.word.text(),
+            PrecomputedEntry {
+                furigana_spans: Vec::new(),
+                tokens: tokens.clone(),
+            },
+        );
+    }
+}
+
+/// Backfills the precompute store for already-persisted cards after the
+/// user loads. Cards created since #521 carry persisted `tokens`; legacy
+/// cards are synthesized without lindera when they cached a part of
+/// speech: `surface = base = word`, the reading comes from the furigana
+/// dictionary (katakana-normalized like the annotator does). A legacy
+/// card without `pos` yields no entry — the live paths keep serving it.
+pub fn install_precompute_for_cards<'a>(cards: impl IntoIterator<Item = &'a VocabularyCard>) {
+    let entries = cards
+        .into_iter()
+        .filter_map(|card| {
+            let tokens = card.tokens.clone()?;
+            Some((
+                card.word.text().to_string(),
+                PrecomputedEntry {
+                    furigana_spans: Vec::new(),
+                    tokens,
+                },
+            ))
+        })
+        .collect::<Vec<_>>();
+    crate::domain::install_precomputed_entries(entries);
 }
 
 #[cfg(test)]
@@ -203,6 +282,7 @@ mod tests {
             word: Question::new(word.to_string()).unwrap(),
             reverse_side: None,
             pos: None,
+            tokens: None,
         }
     }
 
@@ -281,6 +361,7 @@ mod tests {
             word: question,
             reverse_side: Some(reverse_side),
             pos: None,
+            tokens: None,
         };
 
         let answer = card.answer(&NativeLanguage::Russian);
@@ -450,6 +531,84 @@ mod tests {
     }
 
     #[test]
+    fn legacy_json_without_tokens_field_deserializes() {
+        // Arrange: cards persisted before #521 carry no `tokens` field
+        let legacy_json = r#"{"word":{"text":"猫"},"pos":null}"#;
+
+        // Act
+        let card: VocabularyCard = serde_json::from_str(legacy_json).unwrap();
+
+        // Assert
+        assert_eq!(card.word().text(), "猫");
+        assert!(card.tokens().is_none());
+    }
+
+    #[test]
+    fn from_known_word_persists_token_precompute() {
+        init_real_dictionaries();
+
+        let card = VocabularyCard::from_known_word("猫", &NativeLanguage::Russian).unwrap();
+
+        let tokens = card.tokens().expect("tokens must be persisted at creation");
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].surface, "猫");
+        assert_eq!(card.pos().expect("pos"), tokens[0].pos);
+    }
+
+    #[test]
+    fn install_precompute_for_cards_answers_lookup_for_persisted_tokens() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        crate::domain::reset_precomputed_store();
+        let card = VocabularyCard {
+            word: Question::new("猫".to_string()).unwrap(),
+            reverse_side: None,
+            pos: Some(PartOfSpeech::Noun),
+            tokens: Some(vec![PrecomputedToken {
+                surface: "猫".to_string(),
+                base: "猫".to_string(),
+                reading: "ネコ".to_string(),
+                pos: PartOfSpeech::Noun,
+            }]),
+        };
+
+        install_precompute_for_cards(std::iter::once(&card));
+
+        let entry = crate::domain::lookup_precomputed("猫").expect("store must answer");
+        assert!(
+            entry.furigana_spans.is_empty(),
+            "card entries carry no spans"
+        );
+        assert_eq!(entry.tokens.len(), 1);
+        assert_eq!(entry.tokens[0].reading, "ネコ");
+        crate::domain::reset_precomputed_store();
+    }
+
+    #[test]
+    fn install_precompute_for_cards_skips_legacy_cards_without_tokens() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        crate::domain::reset_precomputed_store();
+        // Legacy shapes — with or without a POS cache — have no tokens and
+        // yield no entry; the startup backfill migrates them instead.
+        let with_pos = VocabularyCard::new_with_pos(
+            Question::new("猫".to_string()).unwrap(),
+            Some(PartOfSpeech::Noun),
+            None,
+        );
+        let without_pos =
+            VocabularyCard::new_with_pos(Question::new("犬".to_string()).unwrap(), None, None);
+
+        install_precompute_for_cards([&with_pos, &without_pos]);
+
+        assert!(crate::domain::lookup_precomputed("猫").is_none());
+        assert!(crate::domain::lookup_precomputed("犬").is_none());
+        crate::domain::reset_precomputed_store();
+    }
+
+    #[test]
     fn serialization_roundtrip_with_reverse_side() {
         let question = Question::new("猫".to_string()).unwrap();
         let reverse_side = Question::new("кошка".to_string()).unwrap();
@@ -457,6 +616,7 @@ mod tests {
             word: question,
             reverse_side: Some(reverse_side),
             pos: None,
+            tokens: None,
         };
 
         let json = serde_json::to_string(&card).unwrap();

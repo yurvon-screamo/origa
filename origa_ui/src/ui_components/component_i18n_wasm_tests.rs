@@ -94,6 +94,55 @@ async fn furigana_kanji_with_reading_produces_ruby() {
     );
 }
 
+/// The #521 invariant: a precomputed render must not touch the tokenizer.
+/// wasm-bindgen tests run sequentially on one thread, so the global
+/// tokenize counter is safe to snapshot around the render here.
+#[wasm_bindgen_test]
+async fn furigana_precomputed_hit_renders_without_tokenizing() {
+    origa::domain::install_precomputed_entry(
+        "学生",
+        origa::domain::PrecomputedEntry {
+            furigana_spans: vec![origa::domain::AnnotatedSpan {
+                text: "学生".to_string(),
+                reading: Some("ガクセイ".to_string()),
+                reading_spans: vec![],
+            }],
+            tokens: vec![],
+        },
+    );
+    let wrapper = create_wrapper();
+    let known: HashSet<char> = HashSet::new();
+    let before = origa::domain::tokenize_call_count();
+
+    mount_to_wrapper(&wrapper, move || {
+        view! {
+            <FuriganaText
+                text="学生"
+                known_kanji=known.clone()
+                test_id="fur-precomputed"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let html = wrapper
+        .query_selector("[data-testid=\"fur-precomputed\"]")
+        .unwrap()
+        .unwrap()
+        .inner_html();
+    assert!(
+        html.contains("ガクセイ"),
+        "precomputed reading must render; got: {html}"
+    );
+    assert_eq!(
+        origa::domain::tokenize_call_count(),
+        before,
+        "precomputed render must not call the tokenizer"
+    );
+    origa::domain::reset_precomputed_store();
+}
+
 #[wasm_bindgen_test]
 async fn furigana_renders_text_content() {
     let wrapper = create_wrapper();

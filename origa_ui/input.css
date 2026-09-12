@@ -1946,6 +1946,18 @@ rt {
     opacity: 0.6;
 }
 
+/* One-off tokenizer dictionary warmup inside a TranslatorText (#521):
+   inline spinner + label, sized to the text line so phrases don't jump
+   when tokens replace the loader. */
+.translator-loading-dict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    opacity: 1;
+}
+
 .token-word {
     position: relative;
     display: inline;
