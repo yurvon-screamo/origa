@@ -1,9 +1,15 @@
 mod part_of_speech;
+pub(crate) mod precomputed;
 pub mod translation;
 
 use std::sync::OnceLock;
 
 pub use part_of_speech::PartOfSpeech;
+pub use precomputed::{
+    PrecomputedEntry, PrecomputedToken, install_precomputed_entries, install_precomputed_entry,
+    lookup_precomputed, owned_precomputed_entries_len, reset_precomputed_store,
+    tokenize_call_count,
+};
 pub use translation::{TokenTranslation, lookup_tokens_translations};
 
 use crate::domain::{JapaneseChar, OrigaError, hiragana_to_katakana};
@@ -159,6 +165,7 @@ fn init_tokenizer_from_dictionary(
 }
 
 pub fn tokenize_text(text: &str) -> Result<Vec<TokenInfo>, OrigaError> {
+    precomputed::record_tokenize_call();
     let mut result = Vec::new();
     let mut current_segment = String::new();
     let mut is_current_japanese = false;
