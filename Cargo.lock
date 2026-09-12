@@ -10127,15 +10127,19 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 name = "utils"
 version = "0.1.0"
 dependencies = [
+ "ammonia",
  "chrono",
  "clap",
+ "ego-tree",
  "flate2",
  "futures",
  "hmac",
  "image",
  "origa",
+ "pulldown-cmark",
  "reqwest 0.12.28",
  "rkyv",
+ "scraper",
  "serde",
  "serde_json",
  "sha2",
