@@ -4,15 +4,15 @@ use origa::domain::{LessonCardView, Rating};
 
 /// Answer handler for the AudioRecall card: `true` = «Знаю», `false` =
 /// «Не знаю». Self-assessment maps binary to the classic ratings (Good /
-/// Again) and defers the advance to the user via `waiting_for_next`
-/// (pure-manual advance, ADR-033) — the same contract as on_yesno_select.
-pub fn create_on_audio_select(lesson_state: RwSignal<LessonState>) -> Callback<bool> {
-    // Defensive: without a dispose sentinel in context the handler returns a
-    // no-op callback. Same pattern as on_quiz_select / on_yesno_select.
-    if use_context::<StoredValue<()>>().is_none() {
-        return Callback::new(move |_: bool| {});
-    }
-
+/// Again) and advances immediately through the shared rating pipeline —
+/// the same contract as the normal cards' RatingButtons (ADR-050). Unlike
+/// the quiz/yesno/phrase feedback cards there is no verdict to read on
+/// the answer side (the word and translation are already revealed), so a
+/// separate «Далее» step would only repeat the same content.
+pub fn create_on_audio_select(
+    lesson_state: RwSignal<LessonState>,
+    on_rate: Callback<Rating>,
+) -> Callback<bool> {
     Callback::new(move |knows_word: bool| {
         let state = lesson_state.get();
         let Some(card_id) = state.card_ids.get(state.current_index) else {
@@ -30,12 +30,7 @@ pub fn create_on_audio_select(lesson_state: RwSignal<LessonState>) -> Callback<b
         } else {
             Rating::Again
         };
-
-        lesson_state.update(|state| {
-            state.showing_answer = true;
-            state.waiting_for_next = true;
-            state.pending_rating = Some(rating);
-        });
+        on_rate.run(rating);
     })
 }
 
@@ -69,36 +64,41 @@ mod tests {
         (RwSignal::new(state), slot_id)
     }
 
-    #[test]
-    fn audio_select_know_reveals_answer_and_sets_good_rating() {
-        let state = Owner::new().with(|| {
-            provide_context(StoredValue::<()>::new(()));
-            let (lesson_state, _) = setup_state(audio_recall_lesson_card());
-            let on_audio_select = create_on_audio_select(lesson_state);
-
-            on_audio_select.run(true);
-            lesson_state.get()
+    fn recorded_ratings() -> (RwSignal<Vec<Rating>>, Callback<Rating>) {
+        let recorded = RwSignal::new(Vec::<Rating>::new());
+        let recorder = recorded;
+        let on_rate = Callback::new(move |rating: Rating| {
+            recorder.update(|ratings| ratings.push(rating));
         });
-
-        assert!(state.showing_answer, "answer side must be revealed");
-        assert!(state.waiting_for_next, "manual advance must be armed");
-        assert_eq!(state.pending_rating, Some(Rating::Good));
+        (recorded, on_rate)
     }
 
     #[test]
-    fn audio_select_dont_know_sets_again_rating() {
+    fn audio_select_know_forwards_good_rating() {
         let state = Owner::new().with(|| {
-            provide_context(StoredValue::<()>::new(()));
             let (lesson_state, _) = setup_state(audio_recall_lesson_card());
-            let on_audio_select = create_on_audio_select(lesson_state);
+            let (recorded, on_rate) = recorded_ratings();
+            let on_audio_select = create_on_audio_select(lesson_state, on_rate);
 
-            on_audio_select.run(false);
-            lesson_state.get()
+            on_audio_select.run(true);
+            recorded.get()
         });
 
-        assert!(state.showing_answer);
-        assert!(state.waiting_for_next);
-        assert_eq!(state.pending_rating, Some(Rating::Again));
+        assert_eq!(state, vec![Rating::Good]);
+    }
+
+    #[test]
+    fn audio_select_dont_know_forwards_again_rating() {
+        let state = Owner::new().with(|| {
+            let (lesson_state, _) = setup_state(audio_recall_lesson_card());
+            let (recorded, on_rate) = recorded_ratings();
+            let on_audio_select = create_on_audio_select(lesson_state, on_rate);
+
+            on_audio_select.run(false);
+            recorded.get()
+        });
+
+        assert_eq!(state, vec![Rating::Again]);
     }
 
     // The handler must be a no-op for any non-AudioRecall view: a wrong-mode
@@ -108,31 +108,25 @@ mod tests {
         let phrase_card = Card::Phrase(PhraseCard::new(Ulid::new()));
         let lesson_card = LessonCard::new(Ulid::new(), LessonCardView::Normal(phrase_card), false);
 
-        let state = Owner::new().with(|| {
-            provide_context(StoredValue::<()>::new(()));
+        let (ratings, waiting_armed) = Owner::new().with(|| {
             let (lesson_state, _) = setup_state(lesson_card);
-            let on_audio_select = create_on_audio_select(lesson_state);
+            let (recorded, on_rate) = recorded_ratings();
+            let on_audio_select = create_on_audio_select(lesson_state, on_rate);
 
             on_audio_select.run(true);
-            lesson_state.get()
+            (
+                recorded.get_untracked(),
+                lesson_state.get_untracked().waiting_for_next,
+            )
         });
 
         assert!(
-            !state.showing_answer && state.pending_rating.is_none(),
-            "non-AudioRecall card must not be mutated by the audio handler"
+            ratings.is_empty(),
+            "non-AudioRecall card must not produce a rating"
         );
-    }
-
-    #[test]
-    fn audio_select_without_dispose_context_returns_noop_callback() {
-        let state = Owner::new().with(|| {
-            let (lesson_state, _) = setup_state(audio_recall_lesson_card());
-            let on_audio_select = create_on_audio_select(lesson_state);
-
-            on_audio_select.run(true);
-            lesson_state.get()
-        });
-
-        assert!(!state.showing_answer, "noop callback must not mutate state");
+        assert!(
+            !waiting_armed,
+            "audio handler must not arm the manual advance"
+        );
     }
 }

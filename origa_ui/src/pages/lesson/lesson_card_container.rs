@@ -48,7 +48,10 @@ pub fn LessonCardContainer() -> impl IntoView {
     let on_quiz_dont_know = create_on_dont_know(lesson_state);
     let on_yesno_dont_know = create_on_dont_know(lesson_state);
 
-    let on_audio_select = create_on_audio_select(lesson_state);
+    // The audio self-assessment forwards into the shared rating pipeline
+    // and advances the lesson immediately (ADR-050) — no manual «Далее»
+    // step on the AudioRecall answer side.
+    let on_audio_select = create_on_audio_select(lesson_state, on_rate_callback);
 
     // Replay speaks the CURRENT card's word: manual replay is an explicit
     // user action and is not gated by the lesson mute (a textless card
@@ -73,7 +76,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     });
 
     let on_next_card = Callback::new(move |_: ()| {
-        // Pure-manual advance (ADR-033) contract: every on_* handler that
+        // Pure-manual advance contract: every on_* handler that
         // flips `waiting_for_next` MUST also set `pending_rating`. A `None`
         // here means a handler forgot — fail loudly in debug. In release we
         // fall back to `Rating::Again`, the more conservative SRS choice
@@ -340,8 +343,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     on_replay=on_replay_audio
                                     native_language=native_language.get()
                                     known_kanji=Signal::from(known_kanji)
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
-                                    on_next_card=on_next_card
+                                    disabled=Signal::derive(move || is_rating.get().is_some())
                                 />
                             })
                         } else {

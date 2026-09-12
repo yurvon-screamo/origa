@@ -20,9 +20,10 @@ pub struct KeyboardActions {
     pub on_next_card: Callback<()>,
 }
 
-/// Keys that dismiss the feedback card under the pure-manual advance model
-/// (ADR-033): Space, Enter, or any single digit (0-9). Used in
-/// `waiting_for_next` state to advance to the next card without an
+/// Keys that dismiss the feedback card under the pure-manual advance
+/// contract (quiz/yesno/phrase feedback cards; see ADR-050 for the
+/// AudioRecall exception): Space, Enter, or any single digit (0-9). Used
+/// in `waiting_for_next` state to advance to the next card without an
 /// auto-advance timer. Multi-character strings are rejected so that stray
 /// synthetic events do not advance the card.
 fn is_dismiss_key(key: &str) -> bool {
@@ -43,10 +44,11 @@ pub fn create_keyboard_handler(
             return;
         }
 
-        // Pure-manual advance (ADR-033): when the user is held on the feedback
-        // card (waiting_for_next), Space, Enter, or any digit dismisses it and
-        // advances to the next card. The previous 1500ms auto-advance timer is
-        // gone — this is the only path forward from the feedback card.
+        // Pure-manual advance contract (quiz/yesno/phrase feedback cards):
+        // when the user is held on the feedback card (waiting_for_next),
+        // Space, Enter, or any digit dismisses it and advances to the next
+        // card. The previous 1500ms auto-advance timer is gone — this is
+        // the only path forward from the feedback card.
         if state.waiting_for_next && is_dismiss_key(&key) {
             ev.prevent_default();
             actions.on_next_card.run(());
@@ -125,12 +127,15 @@ pub fn create_keyboard_handler(
 
         // Revealed AudioRecall, answer not yet given: 1 = «Не знаю»,
         // 2 = «Знаю» (the self-assessment lives on the ANSWER side). The
-        // dismiss path above covers the post-answer waiting window.
+        // rating goes through the shared on_rate pipeline and advances the
+        // lesson immediately (ADR-050) — there is no post-answer waiting
+        // window on this card type.
         // ORDERING CONTRACT: this branch MUST stay ABOVE the generic
-        // rating branch below — otherwise 1/2 on a revealed audio card
-        // would rate directly (bypassing pending_rating/waiting_for_next,
-        // ADR-033) and skip the NextCard step.
-        if is_audio_recall_active && state.showing_answer && !state.waiting_for_next {
+        // rating branch below. Today both map 1→Again/2→Good, so the
+        // visible difference is none — the contract guards the FUTURE:
+        // the rating scale is free to grow keys (Hard/Easy, four-button
+        // semantics) while the audio self-assessment stays binary.
+        if is_audio_recall_active && state.showing_answer {
             handle_audio_rate_key(&key, &actions.on_audio_answer);
             return;
         }
@@ -328,9 +333,10 @@ mod tests {
         assert!(!is_typing_target_kind("SELECT", false));
     }
 
-    // ADR-033: pure-manual advance. The feedback card is dismissed by Space,
-    // Enter, or any digit (0-9). Other keys (e.g. Tab, arrows) do NOT dismiss,
-    // so the user can tab away without accidentally advancing.
+    // Pure-manual advance contract (quiz/yesno/phrase feedback cards): the
+    // feedback card is dismissed by Space, Enter, or any digit (0-9). Other
+    // keys (e.g. Tab, arrows) do NOT dismiss, so the user can tab away
+    // without accidentally advancing.
 
     #[test]
     fn is_dismiss_key_accepts_space_and_enter() {

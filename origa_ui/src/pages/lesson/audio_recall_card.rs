@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
-    TypographyVariant, speak_word, stop_current_audio, word_audio_available,
+    AudioButtons, Button, ButtonVariant, Card, MarkdownText, MarkdownVariant, Tag, TagVariant,
+    Text, TextSize, TypographyVariant, speak_word, stop_current_audio, word_audio_available,
 };
 use leptos::prelude::*;
 use leptos_icons::Icon;
@@ -11,13 +11,14 @@ use std::collections::HashSet;
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_type::CardType;
 use super::lesson_state::LessonContext;
-use super::next_card_button::NextCardButton;
 
 /// Audio-recall card: the word is NEVER shown on the question side — the
-/// learner hears it (autoplay + manual replay) and self-assesses with
-/// «Не знаю» / «Знаю». The answer side is the classic one: the word and
-/// its translation. Manual replay is NOT gated by the lesson mute: it is
-/// an explicit user action, and a textless card without sound would be
+/// learner hears it (autoplay + manual replay) and opens the answer with
+/// «Показать». The answer side is the classic one: the word, its
+/// translation and the binary self-assessment («Не знаю» / «Знаю») which
+/// rates and advances immediately, like the normal cards' rating buttons
+/// (ADR-050). Manual replay is NOT gated by the lesson mute: it is an
+/// explicit user action, and a textless card without sound would be
 /// unanswerable (see docs — AudioRecall mute matrix).
 #[component]
 pub fn AudioRecallCardView(
@@ -28,8 +29,7 @@ pub fn AudioRecallCardView(
     on_replay: Callback<()>,
     native_language: NativeLanguage,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
-    #[prop(default = Signal::derive(|| false))] waiting_for_next: Signal<bool>,
-    #[prop(default = Callback::new(|_: ()| {}))] on_next_card: Callback<()>,
+    #[prop(default = Signal::derive(|| false))] disabled: Signal<bool>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let card_type = CardType::from(&card);
@@ -46,6 +46,9 @@ pub fn AudioRecallCardView(
         question_text.clone()
     };
     let word_stored = StoredValue::new(display_word);
+    // The tags-row replay button speaks the raw word (no な-suffix) — the
+    // same text the question-side big button replays via `on_replay`.
+    let header_replay_text = StoredValue::new(question_text.clone());
 
     let answer_data = extract_card_answer(&card, &lang, &card_type);
     let answer_translations = StoredValue::new(answer_data.translations);
@@ -81,29 +84,40 @@ pub fn AudioRecallCardView(
                 <Tag variant=Signal::derive(move || TagVariant::Filled)>
                     {t!(i18n, lesson.audio_tag)}
                 </Tag>
+                // Answer side: a compact replay button on the right edge of
+                // the tags row, like the normal cards' header audio — the
+                // question side keeps the big play button (its core
+                // interaction).
+                <Show when=move || show_result.get()>
+                    <div class="ml-auto shrink-0">
+                        <AudioButtons
+                            text=header_replay_text.get_value()
+                            audio_path=None
+                            test_id=Signal::derive(|| "audio-recall-header-play-btn".to_string())
+                        />
+                    </div>
+                </Show>
             </div>
             <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="audio-recall-card-root">
 
             <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-3 sm:mb-6">
-                    <button
-                        data-testid="audio-recall-play-btn"
-                        class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
-                        on:click=move |_| on_replay.run(())
-                    >
-                        <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
-                    </button>
-                    <Show when=move || !show_result.get()>
+                <Show when=move || !show_result.get()>
+                    <div class="text-center mb-3 sm:mb-6">
+                        <button
+                            data-testid="audio-recall-play-btn"
+                            class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
+                            on:click=move |_| on_replay.run(())
+                        >
+                            <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
+                        </button>
                         <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
                             {t!(i18n, lesson.listen_word)}
                         </Text>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted class="mt-1">
-                            {t!(i18n, lesson.space_key)}
+                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                         </Text>
-                    </Show>
-                </div>
+                    </div>
 
-                <Show when=move || !show_result.get()>
                     // Question side: audio + the classic «Показать» reveal —
                     // the self-assessment lives on the ANSWER side, after the
                     // learner has seen the word and its translation.
@@ -139,32 +153,30 @@ pub fn AudioRecallCardView(
                         known_kanji=known_kanji
                     />
 
-                    // Self-assessment buttons appear on the ANSWER side,
-                    // before the manual advance is armed. `on_answer`
-                    // (Callback<bool>, Copy) is captured by both buttons.
-                    <Show when=move || !waiting_for_next.get()>
-                        <div class="grid grid-cols-2 gap-3 mt-4">
-                            <Button
-                                test_id=Signal::derive(|| "audio-recall-dont-know-btn".to_string())
-                                variant=Signal::derive(|| ButtonVariant::Default)
-                                on_click=Callback::new(move |_| on_answer.run(false))
-                            >
-                                {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
-                            </Button>
+                    // Self-assessment rates and advances immediately
+                    // (ADR-050): the word and translation are already on
+                    // screen, there is nothing else to hold the learner for.
+                    // `on_answer` (Callback<bool>, Copy) is captured by both
+                    // buttons.
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <Button
+                            test_id=Signal::derive(|| "audio-recall-dont-know-btn".to_string())
+                            variant=Signal::derive(|| ButtonVariant::Default)
+                            disabled=disabled
+                            on_click=Callback::new(move |_| on_answer.run(false))
+                        >
+                            {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
+                        </Button>
 
-                            <Button
-                                test_id=Signal::derive(|| "audio-recall-know-btn".to_string())
-                                variant=Signal::derive(|| ButtonVariant::Olive)
-                                on_click=Callback::new(move |_| on_answer.run(true))
-                            >
-                                {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
-                            </Button>
-                        </div>
-                    </Show>
-                </Show>
-
-                <Show when=move || waiting_for_next.get() && show_result.get()>
-                    <NextCardButton on_next_card=on_next_card />
+                        <Button
+                            test_id=Signal::derive(|| "audio-recall-know-btn".to_string())
+                            variant=Signal::derive(|| ButtonVariant::Olive)
+                            disabled=disabled
+                            on_click=Callback::new(move |_| on_answer.run(true))
+                        >
+                            {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
+                        </Button>
+                    </div>
                 </Show>
             </div>
         </Card>
