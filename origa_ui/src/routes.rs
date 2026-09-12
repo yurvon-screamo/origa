@@ -178,6 +178,30 @@ pub fn start_dictionary_loading(
         );
         let _ = (kanji_r, grammar_r, radicals_r);
 
+        // Background tokenizer warmup (#521): the dictionary left the
+        // overlay, but content-creation flows (add word, set imports)
+        // still need it — so the warmup starts HERE, in parallel with the
+        // light phases below, and is typically ready by the time the
+        // overlay lifts. Memory-wise this stays inside the iOS jetsam
+        // budget: the heavy stage-1 barrier above has completed and
+        // dropped its buffers; the remaining phases are light. Failures
+        // are non-fatal — creation paths retry on demand via
+        // `ensure_tokenizer_loaded`.
+        spawn_local({
+            let auth_store = auth_store.clone();
+            async move {
+                let warmup_started = now_ms();
+                match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                    Ok(()) => tracing::info!(
+                        "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
+                        (now_ms() - warmup_started) / 1000.0
+                    ),
+                    Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
+                }
+                auth_store.is_dictionary_loaded.set(true);
+            }
+        });
+
         // Phase C: jlpt_content (depends on kanji + grammar)
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
             tracing::error!("Failed to load jlpt_content: {e}");
@@ -225,23 +249,6 @@ pub fn start_dictionary_loading(
 
         // Signal completion only after all migrations finish
         auth_store.is_jlpt_content_loaded.set(true);
-
-        // Phase F (#521): background tokenizer warmup. The overlay is gone
-        // by now and the heavy stages finished — the ~344 MB dictionary
-        // inflate runs alone, keeping the iOS jetsam budget intact.
-        // Failures are non-fatal: content-creation paths retry on demand
-        // via `ensure_tokenizer_loaded`.
-        spawn_local(async move {
-            let warmup_started = now_ms();
-            match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
-                Ok(()) => tracing::info!(
-                    "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
-                    (now_ms() - warmup_started) / 1000.0
-                ),
-                Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
-            }
-            auth_store.is_dictionary_loaded.set(true);
-        });
     });
 }
 
