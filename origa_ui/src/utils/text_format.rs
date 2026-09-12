@@ -21,12 +21,10 @@ const LATIN_SENTENCE_TERMINATORS: &[char] = &['.', '!', '?'];
 
 /// Split Japanese text by sentence terminators (`。！？`), preserving the
 /// delimiter. Returns empty Vec if input is empty/whitespace-only.
-pub fn split_japanese_sentences(text: &str) -> Vec<String> {
-    text.split_inclusive(JP_SENTENCE_TERMINATORS)
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .collect()
-}
+///
+/// Lives in the `origa` domain: the CDN precompute builder and this UI
+/// must derive identical phrase-sentence keys (#521).
+pub use origa::domain::split_japanese_sentences;
 
 /// Split text by sentence-ending punctuation (`.!?` for Latin, `。！？` for
 /// Japanese) followed by whitespace, then format with markdown hard-breaks

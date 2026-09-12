@@ -44,7 +44,7 @@ pub use knowledge::{
     GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData,
     LessonEmptyDiagnosis, LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard,
     QuizCard, QuizMode, QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
-    estimate_completion_date,
+    estimate_completion_date, install_precompute_for_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
 
