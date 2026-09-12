@@ -10,6 +10,7 @@ use origa::domain::{
     NativeLanguage, TokenTranslation, lookup_precomputed, lookup_tokens_translations, tokenize_text,
 };
 
+use crate::i18n::{t, use_i18n};
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
 
 fn has_kanji(text: &str) -> bool {
@@ -19,6 +20,17 @@ fn has_kanji(text: &str) -> bool {
             '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}' | '\u{F900}'..='\u{FAFF}'
         )
     })
+}
+
+/// Render phase of the translator: while the tokenizer dictionary warms
+/// up (#521) the component shows an explicit loader instead of silently
+/// rendering bare text — the wait is a one-off operation and must not
+/// look like the final state.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum TranslatorPhase {
+    WaitingDictionary,
+    Ready,
+    PlainText,
 }
 
 #[component]
@@ -50,8 +62,9 @@ pub fn TranslatorText(
 
     let translations: RwSignal<Vec<TokenTranslation>> = RwSignal::new(vec![]);
     let expanded: RwSignal<Option<usize>> = RwSignal::new(None);
-    let is_loaded: RwSignal<bool> = RwSignal::new(false);
+    let phase: RwSignal<TranslatorPhase> = RwSignal::new(TranslatorPhase::WaitingDictionary);
     let container_ref = NodeRef::<leptos::html::Span>::new();
+    let i18n = use_i18n();
 
     let text_for_spawn = text.clone();
     spawn_local(async move {
@@ -63,21 +76,24 @@ pub fn TranslatorText(
         {
             let tokens: Vec<_> = entry.tokens.iter().map(|t| t.to_token_info()).collect();
             translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
-            is_loaded.set(true);
+            phase.set(TranslatorPhase::Ready);
             return;
         }
 
         // Live path: gate on tokenizer readiness (it left the startup
-        // overlay and may still be warming up). An empty result leaves
-        // `translations` empty and the plain-text fallback renders the
-        // original string instead of a blank span.
-        if let Ok(tokens) = ensure_tokenizer_loaded()
+        // overlay and may still be warming up). A failed load or empty
+        // tokenization settles on the plain-text render — the original
+        // string stays visible instead of a blank span.
+        match ensure_tokenizer_loaded()
             .await
             .and_then(|()| tokenize_text(&text_for_spawn))
         {
-            translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
+            Ok(tokens) if !tokens.is_empty() => {
+                translations.set(lookup_tokens_translations(&tokens, &lang, &text_for_spawn));
+                phase.set(TranslatorPhase::Ready);
+            },
+            _ => phase.set(TranslatorPhase::PlainText),
         }
-        is_loaded.set(true);
     });
 
     let _ = use_event_listener(document(), leptos::ev::click, {
@@ -117,12 +133,30 @@ pub fn TranslatorText(
             data-testid=test_id_val
         >
             <Show
-                when=move || is_loaded.get() && !translations.get().is_empty()
-                fallback=move || view! {
-                    // Covers both the loading state and the empty-token
-                    // outcome (tokenizer unavailable): the original text
-                    // stays visible instead of a blank span.
-                    <span class="translator-loading font-serif">{text.clone()}</span>
+                when=move || phase.get() == TranslatorPhase::Ready
+                fallback=move || {
+                    if phase.get() == TranslatorPhase::WaitingDictionary {
+                        view! {
+                            // One-off dictionary warmup (#521): an explicit
+                            // loader, never bare text — silence would read
+                            // as the final state.
+                            <span
+                                class="translator-loading translator-loading-dict"
+                                data-testid="translator-dict-loading"
+                            >
+                                <span class="spinner spinner-sm" aria-hidden="true"></span>
+                                {t!(i18n, ui.loading_dictionaries)}
+                            </span>
+                        }
+                        .into_any()
+                    } else {
+                        // Final plain-text outcome (no tokens): the
+                        // original string stays visible.
+                        view! {
+                            <span class="translator-loading font-serif">{text.clone()}</span>
+                        }
+                        .into_any()
+                    }
                 }
             >
                 <For

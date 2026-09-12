@@ -628,6 +628,7 @@
     "delete_card": "Delete card?",
     "delete_card_message": "The card will be deleted permanently.",
     "loading_animation": "Loading...",
+    "loading_dictionaries": "Loading dictionaries…",
     "connectivity_banner": "You are offline — changes are saved locally",
     "dropdown_search": "Search...",
     "update_available": "Update available",

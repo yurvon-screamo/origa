@@ -668,6 +668,32 @@ async fn translator_without_language_renders_plain_fallback() {
     );
 }
 
+#[wasm_bindgen_test]
+async fn translator_warming_dictionary_shows_explicit_loader() {
+    // No precompute entry and no tokenizer dictionary in the test
+    // environment: the render must show the explicit dictionary loader
+    // rather than silently rendering bare text (#521 UX contract — the
+    // warmup is a one-off and must not look like the final state).
+    let wrapper = create_wrapper();
+    mount_to_wrapper(&wrapper, || {
+        view! {
+            <TranslatorText
+                text="こんにちは".to_string()
+                native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+                test_id="tr2"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let loader = wrapper.query_selector("[data-testid=\"translator-dict-loading\"]");
+    assert!(
+        loader.unwrap().is_some(),
+        "dictionary warmup must render the explicit loader"
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // ConnectivityBanner
 // ═══════════════════════════════════════════════════════════════════════
