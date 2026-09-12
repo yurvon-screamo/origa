@@ -6,12 +6,24 @@ mod parse;
 
 use std::sync::OnceLock;
 
+use serde::{Deserialize, Serialize};
+
 use crate::domain::OrigaError;
 
 pub use parse::ArchivedFuriganaDictionary;
 pub use parse::FuriganaDictionary;
 
-#[derive(Debug, Clone, PartialEq, Eq, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+)]
 pub struct ReadingSpan {
     pub start_index: usize,
     pub end_index: usize,

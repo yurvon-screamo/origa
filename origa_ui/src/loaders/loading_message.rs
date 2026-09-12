@@ -10,13 +10,13 @@ pub struct LoadingFlags {
     pub radicals: bool,
     pub phrases: bool,
     pub pitch_audio: bool,
-    pub dictionary: bool,
     pub furigana: bool,
     pub jlpt_content: bool,
 }
 
-// 8 parallel base resources + 1 JLPT finalization signal.
-pub const LOADING_RESOURCES_TOTAL: u8 = 9;
+// 7 parallel base resources + 1 JLPT finalization signal. The tokenizer
+// dictionary left the overlay (#521) — it warms up in the background.
+pub const LOADING_RESOURCES_TOTAL: u8 = 8;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LoadingMessageState {
@@ -42,7 +42,6 @@ pub fn loading_message_state(flags: &LoadingFlags) -> LoadingMessageState {
         flags.radicals,
         flags.phrases,
         flags.pitch_audio,
-        flags.dictionary,
         flags.furigana,
         flags.jlpt_content,
     ]
@@ -56,7 +55,6 @@ pub fn loading_message_state(flags: &LoadingFlags) -> LoadingMessageState {
         && flags.radicals
         && flags.phrases
         && flags.pitch_audio
-        && flags.dictionary
         && flags.furigana;
 
     match (completed, all_base_done, flags.jlpt_content) {
@@ -113,7 +111,6 @@ mod tests {
             radicals: false,
             phrases: false,
             pitch_audio: false,
-            dictionary: false,
             furigana: false,
             jlpt_content: false,
         }
@@ -127,25 +124,24 @@ mod tests {
             radicals: true,
             phrases: true,
             pitch_audio: true,
-            dictionary: true,
             furigana: true,
             jlpt_content: false,
         }
     }
 
     #[rstest]
-    #[case::start(base(), LoadingMessageState::Fetching { completed: 0, total: 9 })]
+    #[case::start(base(), LoadingMessageState::Fetching { completed: 0, total: 8 })]
     #[case::one_base(
         LoadingFlags { kanji: true, ..base() },
-        LoadingMessageState::Fetching { completed: 1, total: 9 }
+        LoadingMessageState::Fetching { completed: 1, total: 8 }
     )]
-    #[case::seven_base(
+    #[case::six_base(
         LoadingFlags { kanji: false, ..all_base_loaded() },
-        LoadingMessageState::Fetching { completed: 7, total: 9 }
+        LoadingMessageState::Fetching { completed: 6, total: 8 }
     )]
     #[case::all_base_finalizing(
         all_base_loaded(),
-        LoadingMessageState::Finalizing { completed: 8, total: 9 }
+        LoadingMessageState::Finalizing { completed: 7, total: 8 }
     )]
     #[case::all_complete(
         LoadingFlags { jlpt_content: true, ..all_base_loaded() },
@@ -153,7 +149,7 @@ mod tests {
     )]
     #[case::robustness_jlpt_before_base(
         LoadingFlags { kanji: false, jlpt_content: true, ..all_base_loaded() },
-        LoadingMessageState::Fetching { completed: 8, total: 9 }
+        LoadingMessageState::Fetching { completed: 7, total: 8 }
     )]
     fn classifies_loading_state(
         #[case] flags: LoadingFlags,
@@ -164,20 +160,20 @@ mod tests {
 
     #[rstest]
     #[case::fetching_progress(
-        LoadingMessageState::Fetching { completed: 3, total: 9 },
-        "F 3-9"
+        LoadingMessageState::Fetching { completed: 3, total: 8 },
+        "F 3-8"
     )]
     #[case::fetching_zero(
-        LoadingMessageState::Fetching { completed: 0, total: 9 },
-        "F 0-9"
+        LoadingMessageState::Fetching { completed: 0, total: 8 },
+        "F 0-8"
     )]
     #[case::finalizing(
-        LoadingMessageState::Finalizing { completed: 8, total: 9 },
-        "FIN 8 of 9"
+        LoadingMessageState::Finalizing { completed: 7, total: 8 },
+        "FIN 7 of 8"
     )]
     #[case::complete_falls_back_to_finalizing_deterministic(
         LoadingMessageState::Complete,
-        "FIN 9 of 9"
+        "FIN 8 of 8"
     )]
     fn formats_message(#[case] state: LoadingMessageState, #[case] expected: &str) {
         assert_eq!(
@@ -191,7 +187,7 @@ mod tests {
         let fetching = format_loading_message(
             LoadingMessageState::Fetching {
                 completed: 3,
-                total: 9,
+                total: 8,
             },
             "Loading {}",
             "Finalizing {} of {}",
@@ -200,8 +196,8 @@ mod tests {
 
         let finalizing = format_loading_message(
             LoadingMessageState::Finalizing {
-                completed: 8,
-                total: 9,
+                completed: 7,
+                total: 8,
             },
             "Loading {}",
             "Done",

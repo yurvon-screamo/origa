@@ -14,7 +14,16 @@ pub fn FuriganaText(
     #[prop(optional, into)] native_language: Option<NativeLanguage>,
     #[prop(optional, default = false)] with_kanji_tooltip: bool,
 ) -> impl IntoView {
+    // Miss paths (no precompute, no furigana-dictionary entry) depend on
+    // the tokenizer, which left the startup overlay (#521). Tracking its
+    // readiness re-runs the derivation once the background warmup lands.
+    let tokenizer_ready = use_context::<crate::store::auth_store::AuthStore>()
+        .map(|store| store.is_dictionary_loaded);
+
     let segments = move || {
+        if let Some(ready) = tokenizer_ready {
+            ready.get();
+        }
         furiganize_segments(&text, &known_kanji)
             .unwrap_or_else(|_| vec![FuriganaSegment::new(text.clone(), None, false)])
     };

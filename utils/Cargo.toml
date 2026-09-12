@@ -29,3 +29,7 @@ hmac.workspace = true
 sha2.workspace = true
 chrono.workspace = true
 urlencoding.workspace = true
+pulldown-cmark.workspace = true
+ammonia.workspace = true
+scraper.workspace = true
+ego-tree.workspace = true

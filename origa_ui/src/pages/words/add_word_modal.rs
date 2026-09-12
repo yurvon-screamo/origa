@@ -36,6 +36,17 @@ pub fn AddWordModal() -> impl IntoView {
             error_signal.set(None);
 
             spawn_local(async move {
+                // Word creation tokenizes user text (#521): the tokenizer
+                // left the startup overlay, so gate on its readiness here.
+                if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                    if disposed.is_disposed() {
+                        return;
+                    }
+                    is_loading_signal.set(false);
+                    error_signal.set(Some(e.to_string()));
+                    return;
+                }
+
                 let use_case = CreateVocabularyCardUseCase::new(&repository_clone);
 
                 match use_case.execute(word.clone()).await {

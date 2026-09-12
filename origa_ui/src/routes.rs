@@ -1,6 +1,5 @@
 use crate::loaders::{
     data_loader::{load_grammar, load_kanji, load_radicals, load_vocabulary},
-    dictionary::load_dictionary,
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
     loading_message::{
@@ -18,6 +17,7 @@ use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
 use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
+use crate::utils::now_ms;
 use futures::Future;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -112,19 +112,19 @@ pub fn start_dictionary_loading(
         // and the intermediate Vec/String buffers are dropped.
         //
         // Sizes (CDN, compressed):
-        //   Stage 1 — dictionary: largest single inflate
-        //   Stage 2 — vocab+phrases+furigana+pitch: ~91 MB text
-        //   Stage 3 — kanji+grammar+radicals: ~4 MB text
+        //   Stage 1 — vocab+phrases+furigana+pitch: ~91 MB text
+        //   Stage 2 — kanji+grammar+radicals: ~4 MB text
+        //
+        // The tokenizer dictionary (SudachiDict, ~344 MB raw) is NOT part of
+        // the overlay anymore (#521): renders answer from the precompute
+        // store, and content-creation paths gate on
+        // `ensure_tokenizer_loaded`. It still loads in the background after
+        // the light phases — after them, so its inflate never overlaps the
+        // heavy stage above (iOS jetsam budget).
 
-        // Stage 1: tokenizer dictionary — solo, dominates memory usage.
-        if let Err(e) = load_dictionary().await {
-            tracing::error!("Failed to load dictionary: {e}");
-        }
-        auth_store.is_dictionary_loaded.set(true);
-
-        // Stage 2: medium resources in parallel. Each readiness flag flips
+        // Stage 1: medium resources in parallel. Each readiness flag flips
         // as ITS loader finishes — the overlay counter no longer waits for
-        // the whole stage before moving past "1 из 9".
+        // the whole stage before moving past "1 из 8".
         let (vocab_r, phrases_r, furigana_r, pitch_r) = futures::join!(
             tracked(
                 "vocabulary",
@@ -155,7 +155,7 @@ pub fn start_dictionary_loading(
         // results are consumed here only to satisfy `must_use`.
         let _ = (vocab_r, phrases_r, furigana_r, pitch_r);
 
-        // Stage 3: light resources in parallel.
+        // Stage 2: light resources in parallel.
         let (kanji_r, grammar_r, radicals_r) = futures::join!(
             tracked(
                 "kanji",
@@ -177,6 +177,45 @@ pub fn start_dictionary_loading(
             ),
         );
         let _ = (kanji_r, grammar_r, radicals_r);
+
+        // Background tokenizer warmup (#521): the dictionary left the
+        // overlay, but content-creation flows (add word, set imports)
+        // still need it — so the warmup starts HERE, in parallel with the
+        // light phases below, and is typically ready by the time the
+        // overlay lifts. Memory-wise this stays inside the iOS jetsam
+        // budget: the heavy stage-1 barrier above has completed and
+        // dropped its buffers; the remaining phases are light. Failures
+        // are non-fatal — creation paths retry on demand via
+        // `ensure_tokenizer_loaded`.
+        spawn_local({
+            let auth_store = auth_store.clone();
+            let repository = repository.clone();
+            async move {
+                let warmup_started = now_ms();
+                match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                    Ok(()) => {
+                        tracing::info!(
+                            "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
+                            (now_ms() - warmup_started) / 1000.0
+                        );
+                        // One-time migration (#521): legacy cards created
+                        // before token caching get their `tokens`
+                        // persisted — after this every card renders from
+                        // its cache and the pass is a no-op.
+                        match origa::use_cases::BackfillCardTokensUseCase::new(&repository)
+                            .execute()
+                            .await
+                        {
+                            Ok(0) => {},
+                            Ok(n) => tracing::info!(n, "📖 Legacy card token caches migrated"),
+                            Err(e) => tracing::warn!("Card token backfill failed: {e}"),
+                        }
+                    },
+                    Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
+                }
+                auth_store.is_dictionary_loaded.set(true);
+            }
+        });
 
         // Phase C: jlpt_content (depends on kanji + grammar)
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
@@ -323,7 +362,6 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                     radicals: store.is_radicals_loaded.get(),
                     phrases: store.is_phrases_loaded.get(),
                     pitch_audio: store.is_pitch_audio_loaded.get(),
-                    dictionary: store.is_dictionary_loaded.get(),
                     furigana: store.is_furigana_loaded.get(),
                     jlpt_content: store.is_jlpt_content_loaded.get(),
                 };
@@ -351,7 +389,6 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                     store.is_radicals_loaded.get(),
                     store.is_phrases_loaded.get(),
                     store.is_pitch_audio_loaded.get(),
-                    store.is_dictionary_loaded.get(),
                     store.is_furigana_loaded.get(),
                     store.is_jlpt_content_loaded.get(),
                 ]

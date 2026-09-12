@@ -95,3 +95,4 @@ scripts/migrate-cdn-log.txt
 scripts/t3-migrate-log.txt
 .media/store/.fonts/
 webdriver.json
+.venv-deploy/
