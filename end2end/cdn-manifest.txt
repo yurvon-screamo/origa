@@ -34,6 +34,7 @@ fonts/noto-sans-jp-400-a1fd00ef.woff2
 grammar/grammar.json
 grammar/grammar_ko_vi.json
 grammar/grammar_v2.json
+grammar/grammar_precompute.rkyv
 manifest.json
 ndlocr/deim.onnx
 ndlocr/parseq-100.onnx
