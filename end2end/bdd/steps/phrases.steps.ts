@@ -44,7 +44,10 @@ Then('текст фраз содержит фуригану', async ({ page }) =
     // Furigana arrives either from the precompute blob (#521 fast path)
     // or from the background tokenizer warmup — generous timeout covers
     // the latter in CI (~344 MB dictionary download from the mirror).
-    const first = page.getByTestId("phrases-card-text").first();
+    // Anchored to the card (not the translator span): the translator's
+    // no-language fallback branch renders plain text without inner
+    // test ids, and the card is the stable container either way.
+    const first = page.getByTestId("phrases-card-item").first();
     await expect(first).toBeVisible({ timeout: 30_000 });
     await expect(
         first.locator(".furigana-ruby").first(),

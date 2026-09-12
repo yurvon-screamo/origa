@@ -72,6 +72,18 @@ impl ImportPreviewModalState {
             if disposed.is_disposed() {
                 return;
             }
+            // The preview classifier tokenizes every word (lemma lookup),
+            // so it needs the tokenizer — which left the startup overlay
+            // (#521). Gate here: without it, a not-yet-warmed dictionary
+            // classifies every word as NoDictionaryEntry and the import
+            // button stays disabled forever.
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                if !disposed.is_disposed() {
+                    error.set(Some(e.to_string()));
+                    is_loading_preview.set(false);
+                }
+                return;
+            }
             let set = match well_known_loader.load_set(set_id.clone()).await {
                 Ok(s) => s,
                 Err(e) => {
@@ -131,6 +143,16 @@ impl ImportPreviewModalState {
                     None => return,
                 };
             if disposed.is_disposed() {
+                return;
+            }
+            // Same tokenizer gate as the single-set preview: the
+            // classifier tokenizes lemmas and must not run against a
+            // not-yet-warmed dictionary (#521).
+            if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                if !disposed.is_disposed() {
+                    error.set(Some(e.to_string()));
+                    is_loading_preview.set(false);
+                }
                 return;
             }
             let loaded_sets = match well_known_loader.load_sets(set_ids.clone()).await {

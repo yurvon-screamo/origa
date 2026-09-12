@@ -38,7 +38,10 @@ pub fn TranslatorText(
 
     let Some(native_lang) = native_lang else {
         return view! {
-            <span class=move || format!("translator-text {}", class.get()) data-testid=test_id_val>
+            <span
+                class=move || format!("translator-text {}", class.get())
+                data-testid=test_id_val
+            >
                 <span class="translator-loading font-serif">{text.clone()}</span>
             </span>
         }
