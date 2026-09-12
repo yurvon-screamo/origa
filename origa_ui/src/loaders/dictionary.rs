@@ -70,6 +70,9 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading tokenizer dictionary...");
 
+    // Acquire = warm cache read OR cold fetch+inflate; tracked separately
+    // from init so startup logs attribute time to IO vs CPU.
+    let acquire_start = now_ms();
     let files = match get_cached_dictionary_files().await {
         Some(raw_files) => {
             tracing::debug!("📖 Raw dictionary cache hit ({} files)", raw_files.len());
@@ -78,11 +81,19 @@ pub async fn load_dictionary() -> Result<(), OrigaError> {
         },
         None => fetch_inflate_and_cache_raw().await?,
     };
+    let acquire_ms = now_ms() - acquire_start;
 
+    let init_start = now_ms();
     let data = assemble_dictionary_data(files)?;
     init_dictionary(data)?;
+    let init_ms = now_ms() - init_start;
 
-    tracing::info!("📖 Dictionary loaded ({:.2}s)", (now_ms() - start) / 1000.0);
+    tracing::info!(
+        "📖 Dictionary loaded ({:.2}s total, acquire {:.2}s, init {:.2}s)",
+        (now_ms() - start) / 1000.0,
+        acquire_ms / 1000.0,
+        init_ms / 1000.0
+    );
     Ok(())
 }
 

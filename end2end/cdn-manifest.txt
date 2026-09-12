@@ -239,7 +239,9 @@ phrases/data/p0195.json
 phrases/data/p0196.json
 phrases/data/p0197.json
 phrases/phrase_index.json
+phrases/phrase_index.rkyv
 pitch/index.json
+pitch/index.rkyv
 well_known_set/duolingo/n3/duolingo_en_n3_1.json
 well_known_set/duolingo/n3/duolingo_en_n3_10.json
 well_known_set/duolingo/n3/duolingo_en_n3_11.json

@@ -50,6 +50,41 @@ where
     Err(last_err.expect("at least one attempt was made"))
 }
 
+/// How a tracked loader's failure is logged. Full resources (vocabulary,
+/// phrases, kanji, …) fail loudly; furigana and pitch are best-effort —
+/// the app keeps working without them.
+#[derive(Clone, Copy)]
+enum FailureSeverity {
+    Error,
+    Warn,
+}
+
+/// Runs one resource loader and flips its readiness flag the moment that
+/// loader finishes — success or failure — instead of after the stage-wide
+/// `join!` barrier, so the loading overlay reflects real per-resource
+/// progress. The stage barriers themselves are preserved by the callers:
+/// the loaders still run within their stage's `join!`, keeping the staged
+/// memory plan (iOS jetsam) unchanged.
+async fn tracked<F, Fut>(
+    resource: &'static str,
+    flag: RwSignal<bool>,
+    severity: FailureSeverity,
+    loader: F,
+) -> Result<(), OrigaError>
+where
+    F: Fn() -> Fut,
+    Fut: Future<Output = Result<(), OrigaError>>,
+{
+    let result = loader().await;
+    match (&result, severity) {
+        (Ok(()), _) => {},
+        (Err(e), FailureSeverity::Warn) => tracing::warn!("Failed to load {resource}: {e}"),
+        (Err(e), FailureSeverity::Error) => tracing::error!("Failed to load {resource}: {e}"),
+    }
+    flag.set(true);
+    result
+}
+
 pub fn start_dictionary_loading(
     auth_store: AuthStore,
     repository: HybridUserRepository,
@@ -87,55 +122,61 @@ pub fn start_dictionary_loading(
         }
         auth_store.is_dictionary_loaded.set(true);
 
-        // Stage 2: medium resources in parallel.
+        // Stage 2: medium resources in parallel. Each readiness flag flips
+        // as ITS loader finishes — the overlay counter no longer waits for
+        // the whole stage before moving past "1 из 9".
         let (vocab_r, phrases_r, furigana_r, pitch_r) = futures::join!(
-            load_vocabulary(),
-            load_phrases(),
-            load_furigana_dict(),
-            load_pitch_audio(),
+            tracked(
+                "vocabulary",
+                auth_store.is_vocabulary_loaded,
+                FailureSeverity::Error,
+                load_vocabulary,
+            ),
+            tracked(
+                "phrases",
+                auth_store.is_phrases_loaded,
+                FailureSeverity::Error,
+                load_phrases,
+            ),
+            tracked(
+                "furigana",
+                auth_store.is_furigana_loaded,
+                FailureSeverity::Warn,
+                load_furigana_dict,
+            ),
+            tracked(
+                "pitch audio",
+                auth_store.is_pitch_audio_loaded,
+                FailureSeverity::Warn,
+                load_pitch_audio,
+            ),
         );
-
-        if let Err(e) = vocab_r {
-            tracing::error!("Failed to load vocabulary: {e}");
-        }
-        auth_store.is_vocabulary_loaded.set(true);
-
-        if let Err(e) = phrases_r {
-            tracing::error!("Failed to load phrases: {e}");
-        }
-        auth_store.is_phrases_loaded.set(true);
-
-        if let Err(e) = furigana_r {
-            tracing::warn!("Failed to load furigana: {e}");
-        }
-        auth_store.is_furigana_loaded.set(true);
-
-        if let Err(e) = pitch_r {
-            tracing::warn!("Failed to load pitch audio: {e}");
-        }
-        auth_store.is_pitch_audio_loaded.set(true);
+        // Failures are logged and flags flipped inside `tracked`; the
+        // results are consumed here only to satisfy `must_use`.
+        let _ = (vocab_r, phrases_r, furigana_r, pitch_r);
 
         // Stage 3: light resources in parallel.
         let (kanji_r, grammar_r, radicals_r) = futures::join!(
-            load_with_retry(load_kanji, 1),
-            load_grammar(),
-            load_with_retry(load_radicals, 1),
+            tracked(
+                "kanji",
+                auth_store.is_kanji_loaded,
+                FailureSeverity::Error,
+                || load_with_retry(load_kanji, 1),
+            ),
+            tracked(
+                "grammar",
+                auth_store.is_grammar_loaded,
+                FailureSeverity::Error,
+                load_grammar,
+            ),
+            tracked(
+                "radicals",
+                auth_store.is_radicals_loaded,
+                FailureSeverity::Error,
+                || load_with_retry(load_radicals, 1),
+            ),
         );
-
-        if let Err(e) = kanji_r {
-            tracing::error!("Failed to load kanji: {e}");
-        }
-        auth_store.is_kanji_loaded.set(true);
-
-        if let Err(e) = grammar_r {
-            tracing::error!("Failed to load grammar: {e}");
-        }
-        auth_store.is_grammar_loaded.set(true);
-
-        if let Err(e) = radicals_r {
-            tracing::error!("Failed to load radicals: {e}");
-        }
-        auth_store.is_radicals_loaded.set(true);
+        let _ = (kanji_r, grammar_r, radicals_r);
 
         // Phase C: jlpt_content (depends on kanji + grammar)
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
@@ -396,5 +437,65 @@ pub fn AppRoutes() -> impl IntoView {
             </Routes>
             <BottomTabBar test_id="bottom-tab" />
         </main>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    async fn succeeding_loader() -> Result<(), OrigaError> {
+        Ok(())
+    }
+
+    async fn failing_loader() -> Result<(), OrigaError> {
+        Err(OrigaError::TokenizerError {
+            reason: "tracked loader probe".to_string(),
+        })
+    }
+
+    #[test]
+    fn tracked_success_sets_the_readiness_flag() {
+        // Arrange: signals live in the reactive arena — create, run and
+        // assert inside one Owner scope (the project's signal-test
+        // pattern), so the tests behave identically with and without the
+        // `sandboxed-arenas` feature unification.
+        Owner::new().with(|| {
+            let flag = RwSignal::new(false);
+
+            // Act
+            let result = futures::executor::block_on(tracked(
+                "probe",
+                flag,
+                FailureSeverity::Warn,
+                succeeding_loader,
+            ));
+
+            // Assert
+            assert!(result.is_ok());
+            assert!(flag.get_untracked());
+        });
+    }
+
+    #[test]
+    fn tracked_failure_sets_the_flag_and_propagates_the_error() {
+        // Arrange
+        Owner::new().with(|| {
+            let flag = RwSignal::new(false);
+
+            // Act
+            let result = futures::executor::block_on(tracked(
+                "probe",
+                flag,
+                FailureSeverity::Error,
+                failing_loader,
+            ));
+
+            // Assert: readiness must be signalled even on failure — the
+            // overlay counter may not stall on a resource that will never
+            // load.
+            assert!(result.is_err());
+            assert!(flag.get_untracked());
+        });
     }
 }

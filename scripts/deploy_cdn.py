@@ -43,6 +43,8 @@ VERSIONED_FILES: list[str] = [
     # `utils build-cdn-rkyv` — see regenerate_rkyv_blobs below)
     "dictionaries/JmdictFurigana.rkyv",
     "dictionary/vocabulary.rkyv",
+    "phrases/phrase_index.rkyv",
+    "pitch/index.rkyv",
     # SudachiDict (lindera 5.x, current clients)
     "dictionaries/sudachidict-20260723/char_def.bin",
     "dictionaries/sudachidict-20260723/matrix.mtx",
@@ -277,6 +279,8 @@ RKYV_BLOB_SOURCES: dict[str, list[str]] = {
     "dictionary/vocabulary.rkyv": [
         f"dictionary/chunk_{index:02d}.json" for index in range(1, 12)
     ],
+    "phrases/phrase_index.rkyv": ["phrases/phrase_index.json"],
+    "pitch/index.rkyv": ["pitch/index.json"],
 }
 
 

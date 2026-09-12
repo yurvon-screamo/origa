@@ -412,7 +412,7 @@ fn collect_phrase_cards<'a>(
 /// relevant phrase wins a word's slot when contention occurs.
 struct PerWordCap<'a> {
     known_pool: &'a HashSet<String>,
-    word_count: HashMap<&'static str, usize>,
+    word_count: HashMap<String, usize>,
 }
 
 impl<'a> PerWordCap<'a> {
@@ -444,7 +444,7 @@ impl<'a> PerWordCap<'a> {
             if !crate::domain::grammar::is_grammatical_particle(token)
                 && self.known_pool.contains(token)
             {
-                *self.word_count.entry(token.as_str()).or_insert(0) += 1;
+                *self.word_count.entry(token.clone()).or_insert(0) += 1;
             }
         }
         true
@@ -544,7 +544,7 @@ impl<'a> InterleavePicker<'a> {
     /// consumption to the shared allowance (free for due phrases).
     fn fill<F>(
         &mut self,
-        entries: &[&'static crate::dictionary::phrase::IndexEntry],
+        entries: &[crate::dictionary::phrase::IndexEntry],
         picked: &mut Vec<(Ulid, &'a StudyCard)>,
         memory_predicate: F,
         consume_budget: bool,
@@ -762,9 +762,9 @@ fn place_phrases_constraint_aware(
                 continue;
             },
         };
-        let tokens: &[String] = crate::dictionary::phrase::get_index_entry(&phrase_id)
-            .map(|e| e.tokens())
-            .unwrap_or(&[]);
+        let tokens: Vec<String> = crate::dictionary::phrase::get_index_entry(&phrase_id)
+            .map(|e| e.tokens().to_vec())
+            .unwrap_or_default();
         let anchors: Vec<usize> = tokens
             .iter()
             .filter_map(|t| word_to_card.get(t.as_str()).copied())
@@ -2635,9 +2635,9 @@ mod tests {
             let Some(phrase_id) = lesson_phrase_id(lc) else {
                 continue;
             };
-            let tokens: &[String] = crate::dictionary::phrase::get_index_entry(&phrase_id)
-                .map(|e| e.tokens())
-                .unwrap_or(&[]);
+            let tokens: Vec<String> = crate::dictionary::phrase::get_index_entry(&phrase_id)
+                .map(|e| e.tokens().to_vec())
+                .unwrap_or_default();
             for token in tokens {
                 if let Some(anchor_slot) = word_to_slot.get(token.as_str()) {
                     let anchor_pos = positions.get(anchor_slot).copied().unwrap_or(usize::MAX);
