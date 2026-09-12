@@ -83,6 +83,21 @@ pub fn access_precompute_deflated(
 /// into an immortal `AlignedVec` (checked `access` requires properly
 /// aligned bytes); a validation failure leaves the leaked bytes
 /// unreclaimed until reload while callers fall back to live tokenization.
+///
+/// NOTE: pass the payload slice from `split_blob`, not the full blob.
+/// rkyv 0.8 resolves the archive root from the buffer END
+/// (`root_position = size - size_of::<T>()`), so passing a header-prefixed
+/// buffer accidentally works — but that is an implementation detail of
+/// the current rkyv major, not a contract. The payload slice is correct
+/// by construction and stays correct across rkyv bumps.
+///
+/// Validation depth (accepted trade-off): `access` runs `CheckBytes`,
+/// which does not traverse the whole string tree, and raw deflate carries
+/// no checksum — a corrupted payload may install and serve garbage
+/// strings instead of failing over to live tokenization. The
+/// `manifest_guard` binds the blob to its manifest SOURCES (not the
+/// payload bytes), and the transport (TLS + S3) is integrity-checked end
+/// to end in practice, which is why this depth is considered sufficient.
 pub fn access_precompute_blob(
     payload: &[u8],
 ) -> Result<&'static ArchivedPrecomputeBlob, OrigaError> {
