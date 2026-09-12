@@ -628,6 +628,7 @@
     "delete_card": "Удалить карточку?",
     "delete_card_message": "Карточка будет удалена без возможности восстановления.",
     "loading_animation": "Загрузка...",
+    "loading_dictionaries": "Загрузка словарей…",
     "connectivity_banner": "Вы офлайн — изменения сохраняются локально",
     "dropdown_search": "Поиск...",
     "update_available": "Доступно обновление",

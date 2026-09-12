@@ -628,6 +628,7 @@
     "delete_card": "카드를 삭제할까요?",
     "delete_card_message": "카드가 영구적으로 삭제됩니다.",
     "loading_animation": "불러오는 중...",
+    "loading_dictionaries": "사전 불러오는 중…",
     "connectivity_banner": "오프라인 상태입니다 — 변경 사항은 로컬에 저장됩니다",
     "dropdown_search": "검색...",
     "update_available": "업데이트 가능",
