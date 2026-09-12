@@ -176,37 +176,40 @@ pub fn AcquaintanceView() -> impl IntoView {
                 let ctx = ctx_stored.get_value();
                 ctx.state.get().stage != AcquaintanceStage::Completed
             }>
-            <div class="flex flex-wrap items-center gap-2 mb-2">
-                <div class="flex items-center gap-2 flex-wrap min-w-0">
-                    <Tag test_id=Signal::derive(|| "acquaintance-phase-tag".to_string())>
-                        {move || phase_label.get()}
+            <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2">
+                // Один плоский flex-wrap контейнер (паттерн LessonCardTags):
+                // теги переносятся по одному, а кнопка озвучки (ml-auto)
+                // делит строку с последним рядом тегов — во вложенном
+                // контейнере она конкурировала со ВСЕМИ тегами как с одним
+                // атомарным элементом и уезжала на отдельную строку.
+                <Tag test_id=Signal::derive(|| "acquaintance-phase-tag".to_string())>
+                    {move || phase_label.get()}
+                </Tag>
+                <Show when=move || direction_label.get().is_some()>
+                    <Tag test_id=Signal::derive(|| "acquaintance-direction-tag".to_string())>
+                        {move || direction_label.get().unwrap_or_default()}
                     </Tag>
-                    <Show when=move || direction_label.get().is_some()>
-                        <Tag test_id=Signal::derive(|| "acquaintance-direction-tag".to_string())>
-                            {move || direction_label.get().unwrap_or_default()}
-                        </Tag>
-                    </Show>
-                    <Show when=move || card_type_tag.get().is_some()>
-                        <Tag
-                            variant=Signal::derive(move || {
-                                card_type_tag.get().map(|t| t.tag_variant()).unwrap_or_default()
-                            })
-                            test_id=Signal::derive(|| "acquaintance-card-type-tag".to_string())
-                        >
-                            {move || {
-                                card_type_tag
-                                    .get()
-                                    .map(|t| t.label(&i18n))
-                                    .unwrap_or_default()
-                            }}
-                        </Tag>
-                    </Show>
-                    <Show when=move || pos_tag_label.get().is_some()>
-                        <Tag test_id=Signal::derive(|| "acquaintance-pos-tag".to_string())>
-                            {move || pos_tag_label.get().unwrap_or_default()}
-                        </Tag>
-                    </Show>
-                </div>
+                </Show>
+                <Show when=move || card_type_tag.get().is_some()>
+                    <Tag
+                        variant=Signal::derive(move || {
+                            card_type_tag.get().map(|t| t.tag_variant()).unwrap_or_default()
+                        })
+                        test_id=Signal::derive(|| "acquaintance-card-type-tag".to_string())
+                    >
+                        {move || {
+                            card_type_tag
+                                .get()
+                                .map(|t| t.label(&i18n))
+                                .unwrap_or_default()
+                        }}
+                    </Tag>
+                </Show>
+                <Show when=move || pos_tag_label.get().is_some()>
+                    <Tag test_id=Signal::derive(|| "acquaintance-pos-tag".to_string())>
+                        {move || pos_tag_label.get().unwrap_or_default()}
+                    </Tag>
+                </Show>
 
                 // Кнопка озвучки — правый край ряда тегов, как в обычном
                 // уроке (LessonCardTags: ml-auto). Замыкание по слову:
@@ -611,9 +614,18 @@ fn KanjiSlide(
 ) -> impl IntoView {
     view! {
         <div class="text-center" data-testid="acquaintance-kanji-slide">
-            // Сам знак крупно с анимацией черт (спека §8.2) — чтения и
-            // значения ниже через существующий компонент деталей.
-            <div class="flex justify-center">
+            // Статичный знак рядом с анимацией черт (спека §8.2): на
+            // сложных кандзи анимация не даёт зафиксировать форму —
+            // статичная версия остаётся для фокуса, анимация показывает
+            // порядок черт. Колонки не стекаются: глиф + анимация (109px)
+            // + зазор влезают в мобильную ширину карточки.
+            <div class="flex items-center justify-center gap-6 sm:gap-10">
+                <p
+                    class="font-serif text-6xl sm:text-8xl text-[var(--fg-black)] leading-none"
+                    data-testid="acquaintance-kanji-static"
+                >
+                    {kanji.clone()}
+                </p>
                 <KanjiAnimation
                     kanji=kanji.clone()
                     fallback=None
@@ -662,8 +674,24 @@ fn GrammarSlide(
                 {stored_title.get_value()}
             </h2>
             <p class="font-mono text-sm">{stored_short.get_value()}</p>
+            // Определение (explanation) идёт сразу за коротким описанием:
+            // таблицы образования и примеры до объяснения не давали
+            // понять, что за конструкция (юзер-репорт). Порядок блоков —
+            // спека §8.2.
+            <Show when=move || !stored_explanation.get_value().is_empty()>
+                <div data-testid="acquaintance-grammar-explanation">
+                    <MarkdownText
+                        content=Signal::derive(move || stored_explanation.get_value())
+                        known_kanji=kk_for_explanation.clone()
+                        variant=Signal::derive(|| MarkdownVariant::Default)
+                    />
+                </div>
+            </Show>
             <Show when=move || !stored_how_to.get_value().is_empty()>
-                <div class="border border-[var(--border-light)] bg-[var(--bg-warm)] p-4">
+                <div
+                    class="border border-[var(--border-light)] bg-[var(--bg-warm)] p-4"
+                    data-testid="acquaintance-grammar-how-to-form"
+                >
                     <MarkdownText
                         content=Signal::derive(move || stored_how_to.get_value())
                         known_kanji=kk_for_how_to.clone()
@@ -672,17 +700,10 @@ fn GrammarSlide(
                 </div>
             </Show>
             <Show when=move || !stored_examples.get_value().is_empty()>
-                <MarkdownText
-                    content=Signal::derive(move || stored_examples.get_value())
-                    known_kanji=kk_for_examples.clone()
-                    variant=Signal::derive(|| MarkdownVariant::Default)
-                />
-            </Show>
-            <Show when=move || !stored_explanation.get_value().is_empty()>
-                <div data-testid="acquaintance-grammar-explanation">
+                <div data-testid="acquaintance-grammar-examples">
                     <MarkdownText
-                        content=Signal::derive(move || stored_explanation.get_value())
-                        known_kanji=kk_for_explanation.clone()
+                        content=Signal::derive(move || stored_examples.get_value())
+                        known_kanji=kk_for_examples.clone()
                         variant=Signal::derive(|| MarkdownVariant::Default)
                     />
                 </div>

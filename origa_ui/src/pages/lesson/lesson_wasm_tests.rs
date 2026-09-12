@@ -783,6 +783,13 @@ async fn yesno_card_view_shows_statement_and_buttons() {
         page.contains("ねこ"),
         "the word must render somewhere in the view; got: {page}"
     );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"yesno-statement\"]")
+            .unwrap()
+            .is_some(),
+        "the statement (claimed translation) must render on the question side"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -840,6 +847,75 @@ async fn yesno_card_view_correct_hides_correct_answer_line() {
     assert!(
         !page.contains("Correct answer"),
         "a correct answer must show only the verdict; got: {page}"
+    );
+}
+
+// A correct claim equals the revealed answer — keeping the statement on
+// the result side would print the same text twice (user report: «chosen
+// answer — ПРАВИЛЬНО — the same answer again»). The statement must go.
+#[wasm_bindgen_test]
+async fn yesno_card_view_correct_claim_hides_statement_on_result() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(true)
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"yesno-statement\"]")
+            .unwrap()
+            .is_none(),
+        "a correct claim must not duplicate the revealed answer"
+    );
+    let answer = wrapper.query_selector(".lesson-answer");
+    assert!(
+        answer.is_ok_and(|a| a.is_some()),
+        "the card answer itself must stay revealed"
+    );
+}
+
+// A distractor claim is NOT the answer — on the result side it stays as
+// the contrast against the revealed truth (the negative scenario keeps
+// its informative layout).
+#[wasm_bindgen_test]
+async fn yesno_card_view_distractor_claim_stays_on_result() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(false)
+                show_result=Signal::from(true)
+                selected_answer=Some(false)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"yesno-statement\"]")
+            .unwrap()
+            .is_some(),
+        "a distractor claim must stay visible next to the revealed answer"
     );
 }
 
@@ -2409,6 +2485,58 @@ mod acquaintance_presentation {
         );
     }
 
+    // Ряд тегов — ОДИН плоский flex-wrap контейнер (паттерн
+    // LessonCardTags): кнопка озвучки делит строку с тегами через
+    // ml-auto. Во вложенном контейнере кнопка конкурировала со всеми
+    // тегами как с одним атомарным блоком и переносилась на отдельную
+    // строку, хотя место справа было (юзер-репорт).
+    #[wasm_bindgen_test]
+    async fn tags_row_audio_button_shares_flat_container_with_tags() {
+        // Arrange: слайд слова с частью речи
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(hand_of(card_id, origa::domain::CardType::Vocabulary))
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "読む".to_string(),
+            pos_label: Some("Глагол".to_string()),
+            translations: vec!["читать".to_string()],
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert: тег и кнопка — прямые сиблинги одного контейнера ряда.
+        // AudioButtons рендерит собственный wrapper (.audio-buttons), поэтому
+        // ml-auto-контейнер кнопки — на два уровня выше самой кнопки.
+        let pos_tag = wrapper
+            .query_selector("[data-testid=\"acquaintance-pos-tag\"]")
+            .unwrap()
+            .expect("POS-тег отрендерен");
+        let audio_btn = wrapper
+            .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+            .unwrap()
+            .expect("кнопка озвучки отрендерена");
+        let ml_auto_wrapper = audio_btn
+            .parent_element()
+            .and_then(|p| p.parent_element())
+            .expect("ml-auto-обёртка кнопки озвучки");
+        assert_eq!(
+            ml_auto_wrapper.parent_element(),
+            pos_tag.parent_element(),
+            "ml-auto-обёртка кнопки — прямой ребёнок ряда тегов (плоский \
+             контейнер), а не отдельная/вложенная строка"
+        );
+    }
+
     #[wasm_bindgen_test]
     async fn tags_row_audio_button_hidden_on_kanji_slide() {
         // Arrange
@@ -2485,6 +2613,57 @@ mod acquaintance_presentation {
         let html = wrapper.inner_html();
         assert!(html.contains("みょう"), "чтения остаются на слайде");
         assert!(html.contains("свет"), "значение остаётся на слайде");
+    }
+
+    // Статичная версия знака рядом с анимацией (спека §8.2): на сложных
+    // кандзи одна анимация не даёт зафиксировать форму. Оба элемента —
+    // сиблинги одного flex-контейнера (двухколоночная раскладка).
+    #[wasm_bindgen_test]
+    async fn kanji_slide_shows_static_glyph_beside_animation() {
+        // Arrange
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state
+            .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Kanji)));
+        ctx.slides.set(vec![AcquaintanceSlideData::Kanji {
+            card_id,
+            kanji: "明".to_string(),
+            name: "свет".to_string(),
+            radicals: None,
+            example_words: None,
+            on_readings: None,
+            kun_readings: None,
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert
+        let static_glyph = wrapper
+            .query_selector("[data-testid=\"acquaintance-kanji-static\"]")
+            .unwrap()
+            .expect("статичный знак отрендерен на слайде");
+        assert_eq!(
+            static_glyph.text_content().unwrap(),
+            "明",
+            "статичный знак — тот же кандзи"
+        );
+        let animation = wrapper
+            .query_selector("[data-testid=\"acquaintance-kanji-animation\"]")
+            .unwrap()
+            .expect("анимация черт отрендерена на слайде");
+        let static_parent = static_glyph.parent_element();
+        let animation_parent = animation.parent_element();
+        assert!(
+            static_parent.is_some_and(|p| animation_parent.is_some_and(|a| p == a)),
+            "статичный знак и анимация — сиблинги одного flex-контейнера"
+        );
     }
 
     #[wasm_bindgen_test]
@@ -2599,6 +2778,58 @@ mod acquaintance_presentation {
             );
         }
     }
+
+    // Порядок контент-блоков грам-слайда (спека §8.2): определение
+    // (explanation) идёт сразу за коротким описанием — ДО таблиц
+    // образования и примеров (юзер-репорт: «тяжело понять, что это
+    // вообще такое»).
+    #[wasm_bindgen_test]
+    async fn grammar_slide_places_explanation_before_how_to_form_and_examples() {
+        // Arrange: все блоки непустые
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state
+            .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            title: "～は～です".to_string(),
+            short_description: "Базовый паттерн".to_string(),
+            how_to_form: "| Элемент |".to_string(),
+            examples: "```\n私は学生です。\n```".to_string(),
+            explanation: "Фундаментальная конструкция".to_string(),
+            nuances: "нюанс".to_string(),
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert: порядок блоков в DOM
+        let html = wrapper.inner_html();
+        let position = |marker: &str| {
+            html.find(marker)
+                .unwrap_or_else(|| panic!("{marker} должен присутствовать в DOM"))
+        };
+        let explanation = position("acquaintance-grammar-explanation");
+        let how_to_form = position("acquaintance-grammar-how-to-form");
+        let examples = position("acquaintance-grammar-examples");
+        let nuances = position("acquaintance-grammar-nuances");
+        assert!(
+            explanation < how_to_form && explanation < examples,
+            "explanation идёт раньше how_to_form и examples; got: \
+             explanation={explanation}, how_to_form={how_to_form}, examples={examples}"
+        );
+        assert!(
+            how_to_form < examples && examples < nuances,
+            "остальной порядок не менялся: how_to_form < examples < nuances; got: \
+             how_to_form={how_to_form}, examples={examples}, nuances={nuances}"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2618,8 +2849,6 @@ async fn audio_recall_front_hides_word_and_shows_reveal_button() {
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
                 known_kanji=Signal::derive(|| HashSet::new())
-                waiting_for_next=Signal::from(false)
-                on_next_card=Callback::new(|()| {})
             />
         }
         .into_any()
@@ -2646,6 +2875,15 @@ async fn audio_recall_front_hides_word_and_shows_reveal_button() {
             .unwrap()
             .is_some(),
         "the reveal («Показать») button must render on the question side"
+    );
+    // The compact header replay belongs to the ANSWER side only — the
+    // question side keeps the single big play button.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-header-play-btn\"]")
+            .unwrap()
+            .is_none(),
+        "the tags-row replay must NOT render on the question side"
     );
     // Self-assessment lives on the ANSWER side — the rating buttons must
     // NOT be on the question side.
@@ -2679,8 +2917,6 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
                 known_kanji=Signal::derive(|| HashSet::new())
-                waiting_for_next=Signal::from(false)
-                on_next_card=Callback::new(|()| {})
             />
         }
         .into_any()
@@ -2692,8 +2928,8 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
         page.contains("温度"),
         "the word must render on the answer side; got: {page}"
     );
-    // The self-assessment buttons live on the answer side, before the
-    // manual advance is armed.
+    // The self-assessment buttons live on the answer side and rate
+    // immediately — there is no separate advance step to wait for.
     for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
         assert!(
             wrapper
@@ -2703,10 +2939,62 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
             "{test_id} must render on the revealed answer side"
         );
     }
+    // The big play button gives way to the compact tags-row replay on the
+    // answer side.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-play-btn\"]")
+            .unwrap()
+            .is_none(),
+        "the big play button must NOT render on the answer side"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"audio-recall-header-play-btn\"]")
+            .unwrap()
+            .is_some(),
+        "the tags-row replay must render on the answer side"
+    );
 }
 
 #[wasm_bindgen_test]
-async fn audio_recall_answered_hides_rating_and_shows_next_button() {
+async fn audio_recall_space_hint_is_keyboard_only_affordance() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <AudioRecallCardView
+                card=vocab_card_fixture("温度")
+                show_result=Signal::from(false)
+                on_answer=Callback::new(|_: bool| {})
+                on_reveal=Callback::new(|()| {})
+                on_replay=Callback::new(|()| {})
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    // The [Space] replay hint must be a keyboard-only affordance: wrapped
+    // in .kbd-hint it disappears on touch-primary devices (pointer:
+    // coarse), exactly like the [1]/[2] hints on the rating buttons. The
+    // wasm runner is a fine-pointer environment, so only the wrapper's
+    // presence is asserted. Scoped to the question-side prompt block so a
+    // future kbd-hint higher in the tree cannot shadow the assertion.
+    let hint = wrapper
+        .query_selector("[data-testid=\"audio-recall-card-root\"] .kbd-hint")
+        .unwrap()
+        .and_then(|el| el.text_content())
+        .unwrap_or_default();
+    assert!(
+        hint.trim() == "[Пробел]" || hint.trim() == "[Space]",
+        "the space hint must be the kbd-hint element; got: {hint:?}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn audio_recall_answer_side_keeps_rating_buttons_and_has_no_next_step() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         view! {
@@ -2718,29 +3006,28 @@ async fn audio_recall_answered_hides_rating_and_shows_next_button() {
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
                 known_kanji=Signal::derive(|| HashSet::new())
-                waiting_for_next=Signal::from(true)
-                on_next_card=Callback::new(|()| {})
             />
         }
         .into_any()
     });
     tick().await;
 
+    // ADR-050: the self-assessment rates and advances immediately — the
+    // «Далее» step must not exist on this card type.
     assert!(
         wrapper
             .query_selector("[data-testid=\"lesson-card-next-btn\"]")
             .unwrap()
-            .is_some(),
-        "waiting_for_next must show the next-card button"
+            .is_none(),
+        "the next-card button must never render on the audio-recall card"
     );
-    // Once answered, the rating buttons give way to the advance control.
     for test_id in ["audio-recall-know-btn", "audio-recall-dont-know-btn"] {
         assert!(
             wrapper
                 .query_selector(&format!("[data-testid=\"{test_id}\"]"))
                 .unwrap()
-                .is_none(),
-            "{test_id} must NOT render after the answer is given"
+                .is_some(),
+            "{test_id} must stay on the answer side — no post-answer swap"
         );
     }
 }
@@ -2874,7 +3161,7 @@ async fn container_degrades_audio_recall_to_normal_when_mode_inactive() {
 
 // Freeze semantics (mode sampled once per showing): flipping the mute or
 // the pitch-loader signal must NOT recompute the mode of the CURRENT card —
-// only advancing to another showing resamples. Guards the ADR-033 rating
+// only advancing to another showing resamples. Guards the lesson rating
 // state machine against mid-card mode flips (double rating / stuck card).
 #[wasm_bindgen_test]
 async fn audio_mode_freezes_for_current_showing_and_resamples_on_advance() {
