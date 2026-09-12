@@ -27,7 +27,7 @@ pub use lesson_builder::{MAX_LESSON_SIZE, NewCardPolicy};
 pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
-pub use vocabulary::VocabularyCard;
+pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
 
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};

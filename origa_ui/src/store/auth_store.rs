@@ -5,6 +5,26 @@ use origa::traits::UserRepository;
 
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
+
+/// Installs the loaded user's card-token precompute (#521): word and
+/// lesson renders then answer from the store instead of the tokenizer
+/// dictionary. Legacy cards without persisted tokens are synthesized from
+/// their cached part of speech.
+fn install_user_card_precompute(user: &User) {
+    let vocabulary_cards: Vec<&origa::domain::VocabularyCard> = user
+        .knowledge_set()
+        .study_cards()
+        .values()
+        .filter_map(|study_card| match study_card.card() {
+            origa::domain::Card::Vocabulary(card) => Some(card),
+            _ => None,
+        })
+        .collect();
+    if !vocabulary_cards.is_empty() {
+        origa::domain::install_precompute_for_cards(vocabulary_cards);
+    }
+}
+
 use crate::repository::{
     AuthError, HybridUserRepository, TrailBaseClient, clear_session, clear_session_async,
     get_session_async, set_session_async,
@@ -143,6 +163,7 @@ impl AuthStore {
     ) -> Result<(), OrigaError> {
         match self.repository.get_current_user().await {
             Ok(Some(user)) => {
+                install_user_card_precompute(&user);
                 user_signal.set(Some(user));
                 Ok(())
             },
@@ -150,6 +171,7 @@ impl AuthStore {
                 if self.repository.merge_current_user().await.is_ok()
                     && let Ok(Some(user)) = self.repository.get_current_user().await
                 {
+                    install_user_card_precompute(&user);
                     user_signal.set(Some(user));
                 }
                 Ok(())
@@ -205,6 +227,7 @@ impl AuthStore {
                         return;
                     }
                     tracing::debug!("Loaded user from local storage: {}", user.id());
+                    install_user_card_precompute(&user);
                     user_signal.set(Some(user));
                     is_checking.set(false);
 
@@ -292,6 +315,7 @@ impl AuthStore {
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
+                        install_user_card_precompute(&user);
                         self.user.set(Some(user));
                         self.is_syncing.set(false);
                         Ok(())
@@ -345,6 +369,7 @@ impl AuthStore {
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
+                        install_user_card_precompute(&user);
                         self.user.set(Some(user));
                         self.is_oauth_loading.set(false);
                         Ok(())
@@ -445,6 +470,7 @@ impl AuthStore {
         }
 
         self.user.set(None);
+        origa::domain::reset_precomputed_store();
         self.reset_data_loading_signals();
     }
 
@@ -456,6 +482,7 @@ impl AuthStore {
     pub async fn refresh_user(&self) -> Result<(), OrigaError> {
         match self.repository.get_current_user().await {
             Ok(Some(user)) => {
+                install_user_card_precompute(&user);
                 self.user.set(Some(user));
                 Ok(())
             },
@@ -480,6 +507,7 @@ impl AuthStore {
 
         clear_session();
         self.user.set(None);
+        origa::domain::reset_precomputed_store();
         self.reset_data_loading_signals();
         self.is_checking_session.set(false);
     }
