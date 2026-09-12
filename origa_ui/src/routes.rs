@@ -92,8 +92,6 @@ pub fn start_dictionary_loading(
     offline_store: OfflineBundleStore,
 ) {
     spawn_local(async move {
-        let warmup_start = now_ms();
-
         // Phase A: manifest check
         if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
             tracing::warn!("Cache manifest check failed: {e}");
@@ -234,10 +232,11 @@ pub fn start_dictionary_loading(
         // Failures are non-fatal: content-creation paths retry on demand
         // via `ensure_tokenizer_loaded`.
         spawn_local(async move {
+            let warmup_started = now_ms();
             match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
                 Ok(()) => tracing::info!(
                     "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
-                    (now_ms() - warmup_start) / 1000.0
+                    (now_ms() - warmup_started) / 1000.0
                 ),
                 Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
             }

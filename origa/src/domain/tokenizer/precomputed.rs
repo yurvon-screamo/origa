@@ -163,6 +163,14 @@ pub fn tokenize_call_count() -> usize {
 #[cfg(test)]
 pub(crate) static STORE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
+/// Test-only accessor for the shared store lock — the `tokenizer` module
+/// is private, other modules' tests reach the lock through the domain
+/// re-export.
+#[cfg(test)]
+pub(crate) fn precomputed_test_lock_guard() -> std::sync::MutexGuard<'static, ()> {
+    STORE_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -330,12 +330,23 @@ pub enum Commands {
     /// Requires the tokenizer dictionary (lindera) and JmdictFurigana in
     /// the CDN checkout. Freshness binds to the chunk bytes plus the
     /// dictionary inputs, so a dictionary bump regenerates all chunks.
+    /// Build grammar tokenization precompute (#521): one deflated rkyv
+    /// blob with furigana spans for every grammar markdown text node and
+    /// whole string. Freshness binds to both grammar sources plus the
+    /// tokenizer inputs.
     BuildGrammarPrecompute {
         /// CDN root directory (defaults to <repo>/cdn next to the crate).
         #[arg(long, default_value = None)]
         cdn_dir: Option<PathBuf>,
     },
 
+    /// Build phrase tokenization precompute (#521): per-chunk deflated
+    /// rkyv blobs keyed by the full phrase text and each of its render
+    /// sentences.
+    ///
+    /// Requires the tokenizer dictionary (lindera) and JmdictFurigana in
+    /// the CDN checkout. Freshness binds the chunk bytes plus the
+    /// dictionary inputs, so a dictionary bump regenerates all chunks.
     BuildPhrasePrecompute {
         /// CDN root directory (defaults to <repo>/cdn next to the crate).
         #[arg(long, default_value = None)]

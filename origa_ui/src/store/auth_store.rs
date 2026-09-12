@@ -6,6 +6,12 @@ use origa::traits::UserRepository;
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
 
+use crate::repository::{
+    AuthError, HybridUserRepository, TrailBaseClient, clear_session, clear_session_async,
+    get_session_async, set_session_async,
+    trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
+};
+
 /// Installs the loaded user's card-token precompute (#521): word and
 /// lesson renders then answer from the store instead of the tokenizer
 /// dictionary. Legacy cards without persisted tokens are synthesized from
@@ -24,12 +30,6 @@ fn install_user_card_precompute(user: &User) {
         origa::domain::install_precompute_for_cards(vocabulary_cards);
     }
 }
-
-use crate::repository::{
-    AuthError, HybridUserRepository, TrailBaseClient, clear_session, clear_session_async,
-    get_session_async, set_session_async,
-    trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
-};
 
 /// AuthStore - centralized authentication state management
 /// Single source of truth for:
@@ -465,6 +465,7 @@ impl AuthStore {
 
         self.user.set(None);
         origa::domain::reset_precomputed_store();
+        crate::loaders::phrase_data_loader::reset_phrase_precompute_chunks();
         crate::loaders::dictionary::reset_tokenizer_lifecycle();
         self.reset_data_loading_signals();
     }
@@ -503,6 +504,7 @@ impl AuthStore {
         clear_session();
         self.user.set(None);
         origa::domain::reset_precomputed_store();
+        crate::loaders::phrase_data_loader::reset_phrase_precompute_chunks();
         crate::loaders::dictionary::reset_tokenizer_lifecycle();
         self.reset_data_loading_signals();
         self.is_checking_session.set(false);

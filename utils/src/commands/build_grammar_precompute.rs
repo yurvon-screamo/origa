@@ -24,17 +24,15 @@ use std::path::Path;
 
 use ego_tree::NodeRef;
 use origa::dictionary::cdn_blob::{self, BlobHeader, SCHEMA_VERSION, build_blob, split_blob};
-use origa::dictionary::furigana_dict::{build_furigana_dict_from_text, set_furigana_dict};
 use origa::dictionary::precompute_blob::{
     PrecomputeBlob, deflate_blob, inflate_blob, serialize_precompute_blob_to_rkyv,
 };
-use origa::domain::{
-    JapaneseText, OrigaError, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, annotate_text,
-    tokenize_text,
-};
+use origa::domain::{JapaneseText, OrigaError};
 use scraper::{Html, Node};
-use sha2::{Digest, Sha256};
 
+use super::precompute_common::{
+    init_furigana_and_dictionary_ingredients, precompute_entry, sha256_hex, sha256_raw,
+};
 use crate::dictionary::load_dictionary;
 
 const GRAMMAR_SOURCE: &str = "grammar/grammar_v2.json";
@@ -55,15 +53,6 @@ const MARKDOWN_FIELDS: &[&str] = &[
 /// Same skip set as `markdown.rs`: furigana is never nested into existing
 /// ruby markup.
 const SKIP_TAGS: &[&str] = &["ruby", "rt", "rp"];
-
-fn sha256_hex(data: &[u8]) -> String {
-    let digest: [u8; 32] = Sha256::digest(data).into();
-    digest.iter().map(|b| format!("{b:02x}")).collect()
-}
-
-fn sha256_raw(data: &[u8]) -> [u8; 32] {
-    Sha256::digest(data).into()
-}
 
 /// The exact markdown→html rendering `MarkdownText` performs before
 /// walking text nodes.
@@ -141,41 +130,14 @@ fn collect_value_keys(value: &serde_json::Value, key: &str, keys: &mut BTreeMap<
     }
 }
 
-fn precompute_entry(text: &str) -> Option<PrecomputedEntry> {
-    if !text.contains_kanji() {
-        return None;
-    }
-    let tokens: Vec<PrecomputedToken> = tokenize_text(text)
-        .ok()?
-        .iter()
-        .map(PrecomputedToken::from_token_info)
-        .collect();
-    let furigana_spans = annotate_text(text).ok()?;
-    Some(PrecomputedEntry {
-        furigana_spans,
-        tokens,
-    })
-}
-
 pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaError> {
     let cdn_dir = cdn_dir.unwrap_or_else(|| Path::new("cdn"));
     load_dictionary().map_err(|e| OrigaError::RepositoryError {
         reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
     })?;
 
-    let furigana_source =
-        fs::read(cdn_dir.join(FURIGANA_SOURCE)).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("failed to read {FURIGANA_SOURCE}: {e}"),
-        })?;
-    let furigana_text =
-        String::from_utf8(furigana_source.clone()).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("{FURIGANA_SOURCE} is not valid UTF-8: {e}"),
-        })?;
-    set_furigana_dict(build_furigana_dict_from_text(&furigana_text)?).map_err(|e| {
-        OrigaError::RepositoryError {
-            reason: format!("furigana dictionary already loaded: {e:?}"),
-        }
-    })?;
+    let dictionary_ingredients =
+        init_furigana_and_dictionary_ingredients(&cdn_dir.join(FURIGANA_SOURCE))?;
 
     let grammar_v2 =
         fs::read(cdn_dir.join(GRAMMAR_SOURCE)).map_err(|e| OrigaError::RepositoryError {
@@ -193,10 +155,7 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
     let mut source_with_ingredients = Vec::new();
     source_with_ingredients.extend_from_slice(&grammar_v2);
     source_with_ingredients.extend_from_slice(&overlay);
-    source_with_ingredients.extend_from_slice(b"|sudachidict:");
-    source_with_ingredients.extend_from_slice(SUDACHIDICT_DIR.as_bytes());
-    source_with_ingredients.extend_from_slice(b"|furigana:");
-    source_with_ingredients.extend_from_slice(&sha256_raw(&furigana_source));
+    source_with_ingredients.extend_from_slice(&dictionary_ingredients);
 
     let existing = fs::read(cdn_dir.join(GRAMMAR_PRECOMPUTE_BLOB))
         .ok()

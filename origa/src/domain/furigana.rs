@@ -563,9 +563,6 @@ mod tests {
         reset_precomputed_store();
     }
 
-    /// Serializes tests that mutate the global precomputed store: parallel
-    /// install/reset of the same slot is a race otherwise. The lock lives
-    /// in the `precomputed` module so every suite shares one mutex.
     #[test]
     fn precomputed_entry_without_spans_does_not_shadow_live_paths() {
         let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK

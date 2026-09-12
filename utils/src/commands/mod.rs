@@ -10,6 +10,7 @@ mod generate_grammar_prompt;
 mod kanji_common;
 mod ndlocr;
 mod patch_kanji_readings;
+mod precompute_common;
 mod regenerate_invalid;
 pub mod retokenize_phrases;
 mod tokenize;

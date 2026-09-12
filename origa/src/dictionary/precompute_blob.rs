@@ -13,6 +13,8 @@ use std::sync::RwLock;
 use crate::domain::OrigaError;
 use crate::domain::{PartOfSpeech, PrecomputedEntry, PrecomputedToken};
 
+use super::cdn_blob::split_blob;
+
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct PrecomputeBlob {
     pub entries: BTreeMap<String, PrecomputedEntry>,
@@ -58,12 +60,23 @@ pub fn inflate_blob(deflated: &[u8]) -> Result<Vec<u8>, OrigaError> {
     Ok(blob)
 }
 
-/// Inflates and accesses a deflated CDN blob.
-pub fn access_precompute_deflated_blob(
+/// Inflates a deflated CDN blob and splits it: the payload is accessed
+/// zero-copy, the header is returned for the caller's manifest guard.
+pub fn access_precompute_deflated(
     deflated: &[u8],
-) -> Result<&'static ArchivedPrecomputeBlob, OrigaError> {
+) -> Result<
+    (
+        &'static ArchivedPrecomputeBlob,
+        crate::dictionary::cdn_blob::BlobHeader,
+    ),
+    OrigaError,
+> {
     let blob = inflate_blob(deflated)?;
-    access_precompute_blob(&blob)
+    let (header, payload) = split_blob(&blob).map_err(|e| OrigaError::TokenizerError {
+        reason: format!("precompute blob header invalid: {e}"),
+    })?;
+    let view = access_precompute_blob(payload)?;
+    Ok((view, header))
 }
 
 /// Zero-copy archived view of a blob payload. The payload is copied once
@@ -202,6 +215,7 @@ mod tests {
 
     #[test]
     fn serialize_access_roundtrip_answers_lookups() {
+        let _guard = crate::domain::tokenizer::precomputed::precomputed_test_lock_guard();
         // Arrange
         let blob = PrecomputeBlob {
             entries: BTreeMap::from([("私は学生です。".to_string(), sample_entry())]),
@@ -209,6 +223,9 @@ mod tests {
         let payload = serialize_precompute_blob_to_rkyv(&blob).unwrap();
 
         // Act
+        // Act: the payload is fed directly (this test serializes the raw
+        // payload without a CDN header — `split_blob` is exercised by the
+        // deflated loader tests).
         let view = access_precompute_blob(&payload).unwrap();
         install_precompute_view(view);
         let found = lookup_precomputed("私は学生です。");

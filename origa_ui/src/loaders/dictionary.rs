@@ -17,30 +17,44 @@ use origa::traits::CdnProvider;
 /// gate on this instead. 0 = idle, 1 = loading, 2 = ready, 3 = failed.
 static TOKENIZER_STATE: AtomicU8 = AtomicU8::new(0);
 
+const TOKENIZER_IDLE: u8 = 0;
+const TOKENIZER_LOADING: u8 = 1;
+const TOKENIZER_READY: u8 = 2;
+const TOKENIZER_FAILED: u8 = 3;
+
 /// Awaits tokenizer readiness, loading it on demand. Concurrent callers
 /// coalesce onto the in-flight load (yield-loop wait); a caller arriving
 /// after a failed load retries it.
 pub async fn ensure_tokenizer_loaded() -> Result<(), OrigaError> {
-    const IDLE: u8 = 0;
-    const LOADING: u8 = 1;
-    const READY: u8 = 2;
-    const FAILED: u8 = 3;
-
     if is_dictionary_loaded() {
-        TOKENIZER_STATE.store(READY, Ordering::Relaxed);
+        TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
         return Ok(());
     }
 
     let took_over = TOKENIZER_STATE
-        .compare_exchange(IDLE, LOADING, Ordering::AcqRel, Ordering::Acquire)
+        .compare_exchange(
+            TOKENIZER_IDLE,
+            TOKENIZER_LOADING,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        )
         .is_ok()
         || TOKENIZER_STATE
-            .compare_exchange(FAILED, LOADING, Ordering::AcqRel, Ordering::Acquire)
+            .compare_exchange(
+                TOKENIZER_FAILED,
+                TOKENIZER_LOADING,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            )
             .is_ok();
     if took_over {
         let result = load_dictionary().await;
         TOKENIZER_STATE.store(
-            if result.is_ok() { READY } else { FAILED },
+            if result.is_ok() {
+                TOKENIZER_READY
+            } else {
+                TOKENIZER_FAILED
+            },
             Ordering::Release,
         );
         return result;
@@ -52,17 +66,17 @@ pub async fn ensure_tokenizer_loaded() -> Result<(), OrigaError> {
     loop {
         yield_to_browser().await;
         if is_dictionary_loaded() {
-            TOKENIZER_STATE.store(READY, Ordering::Relaxed);
+            TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
             return Ok(());
         }
         match TOKENIZER_STATE.load(Ordering::Acquire) {
-            READY => return Ok(()),
-            FAILED => {
+            TOKENIZER_READY => return Ok(()),
+            TOKENIZER_FAILED => {
                 return Err(OrigaError::TokenizerError {
                     reason: "tokenizer dictionary failed to load".to_string(),
                 });
             },
-            IDLE => return Box::pin(ensure_tokenizer_loaded()).await,
+            TOKENIZER_IDLE => return Box::pin(ensure_tokenizer_loaded()).await,
             _ => {},
         }
     }
@@ -73,9 +87,9 @@ pub async fn ensure_tokenizer_loaded() -> Result<(), OrigaError> {
 /// fresh session re-attempts after a transient failure.
 pub fn reset_tokenizer_lifecycle() {
     if is_dictionary_loaded() {
-        TOKENIZER_STATE.store(2, Ordering::Relaxed);
+        TOKENIZER_STATE.store(TOKENIZER_READY, Ordering::Relaxed);
     } else {
-        TOKENIZER_STATE.store(0, Ordering::Relaxed);
+        TOKENIZER_STATE.store(TOKENIZER_IDLE, Ordering::Relaxed);
     }
 }
 

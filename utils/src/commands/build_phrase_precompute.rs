@@ -17,32 +17,19 @@ use std::fs;
 use std::path::Path;
 
 use origa::dictionary::cdn_blob::{self, BlobHeader, SCHEMA_VERSION, build_blob, split_blob};
-use origa::dictionary::furigana_dict::{
-    build_furigana_dict_from_text, serialize_furigana_dict_to_rkyv, set_furigana_dict,
-};
 use origa::dictionary::precompute_blob::{
     PrecomputeBlob, deflate_blob, inflate_blob, serialize_precompute_blob_to_rkyv,
 };
-use origa::domain::{
-    JapaneseText, OrigaError, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, annotate_text,
-    split_japanese_sentences, tokenize_text,
-};
-use sha2::{Digest, Sha256};
+use origa::domain::{OrigaError, PrecomputedEntry, split_japanese_sentences};
 
+use super::precompute_common::{
+    init_furigana_and_dictionary_ingredients, precompute_entry, sha256_hex, sha256_raw,
+};
 use crate::dictionary::load_dictionary;
 
 const FURIGANA_SOURCE: &str = "dictionaries/JmdictFurigana.txt";
 const PHRASE_DATA_DIR: &str = "phrases/data";
 const PRECOMPUTE_DIR: &str = "phrases/precomputed";
-
-fn sha256_hex(data: &[u8]) -> String {
-    let digest: [u8; 32] = Sha256::digest(data).into();
-    digest.iter().map(|b| format!("{b:02x}")).collect()
-}
-
-fn sha256_raw(data: &[u8]) -> [u8; 32] {
-    Sha256::digest(data).into()
-}
 
 fn chunk_ids(cdn_dir: &Path) -> Result<Vec<u32>, String> {
     let mut ids = Vec::new();
@@ -62,25 +49,6 @@ fn chunk_ids(cdn_dir: &Path) -> Result<Vec<u32>, String> {
     }
     ids.sort_unstable();
     Ok(ids)
-}
-
-/// Derives the precompute entry for one exact render string. Kanji-free
-/// strings are skipped: the runtime fast path answers them without any
-/// dictionary, so precomputing them would only bloat the blob.
-fn precompute_entry(text: &str) -> Option<PrecomputedEntry> {
-    if !text.contains_kanji() {
-        return None;
-    }
-    let tokens: Vec<PrecomputedToken> = tokenize_text(text)
-        .ok()?
-        .iter()
-        .map(PrecomputedToken::from_token_info)
-        .collect();
-    let furigana_spans = annotate_text(text).ok()?;
-    Some(PrecomputedEntry {
-        furigana_spans,
-        tokens,
-    })
 }
 
 fn chunk_entry_keys(text: &str) -> Vec<String> {
@@ -158,27 +126,8 @@ pub fn run_build_phrase_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaEr
         reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
     })?;
 
-    let furigana_source =
-        fs::read(cdn_dir.join(FURIGANA_SOURCE)).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("failed to read {FURIGANA_SOURCE}: {e}"),
-        })?;
-    let furigana_text =
-        String::from_utf8(furigana_source.clone()).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("{FURIGANA_SOURCE} is not valid UTF-8: {e}"),
-        })?;
-    let dict = build_furigana_dict_from_text(&furigana_text)?;
-    // Keep a serialized copy out of the loop below: hashing the source is
-    // enough for the ingredients, but building asserts the source parses.
-    let _ = serialize_furigana_dict_to_rkyv(&dict);
-    set_furigana_dict(dict).map_err(|e| OrigaError::RepositoryError {
-        reason: format!("furigana dictionary already loaded: {e:?}"),
-    })?;
-
-    let mut dictionary_ingredients = Vec::new();
-    dictionary_ingredients.extend_from_slice(b"|sudachidict:");
-    dictionary_ingredients.extend_from_slice(SUDACHIDICT_DIR.as_bytes());
-    dictionary_ingredients.extend_from_slice(b"|furigana:");
-    dictionary_ingredients.extend_from_slice(&sha256_raw(&furigana_source));
+    let dictionary_ingredients =
+        init_furigana_and_dictionary_ingredients(&cdn_dir.join(FURIGANA_SOURCE))?;
 
     let ids = chunk_ids(cdn_dir).map_err(|reason| OrigaError::RepositoryError { reason })?;
     tracing::info!("precomputing {} phrase chunks", ids.len());

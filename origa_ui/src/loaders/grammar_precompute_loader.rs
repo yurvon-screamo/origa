@@ -2,10 +2,8 @@
 //! furigana spans for every grammar markdown text node and whole string
 //! so grammar pages and grammar lessons render off the tokenizer.
 
-use origa::dictionary::cdn_blob::{guard_matches, split_blob};
-use origa::dictionary::precompute_blob::{
-    access_precompute_blob, inflate_blob, install_precompute_view,
-};
+use origa::dictionary::cdn_blob::guard_matches;
+use origa::dictionary::precompute_blob::{access_precompute_deflated, install_precompute_view};
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
@@ -25,11 +23,8 @@ pub async fn load_grammar_precompute() -> Result<(), OrigaError> {
 /// falls back to live tokenization.
 pub async fn load_grammar_precompute_via<P: CdnProvider>(provider: &P) -> Result<(), OrigaError> {
     let blob = provider.fetch_bytes(GRAMMAR_PRECOMPUTE_PATH).await?;
-    let inflated = inflate_blob(&blob)?;
+    let (view, header) = access_precompute_deflated(&blob)?;
 
-    let (header, _) = split_blob(&inflated).map_err(|e| OrigaError::GrammarParseError {
-        reason: format!("grammar precompute blob header invalid: {e}"),
-    })?;
     let expectation = guard_expectation_for(&GRAMMAR_SOURCES);
     if !guard_matches(&header, &expectation) {
         return Err(OrigaError::GrammarParseError {
@@ -37,7 +32,6 @@ pub async fn load_grammar_precompute_via<P: CdnProvider>(provider: &P) -> Result
         });
     }
 
-    let view = access_precompute_blob(&inflated)?;
     install_precompute_view(view);
     Ok(())
 }
@@ -132,13 +126,14 @@ mod tests {
     async fn valid_blob_installs_and_answers_lookups() {
         // Arrange
         let provider = MockCdn::with_blob(Some(valid_blob("{}", "{}")));
-        let before = installed_precompute_views_len();
 
         // Act
         load_grammar_precompute_via(&provider).await.unwrap();
 
-        // Assert
-        assert_eq!(installed_precompute_views_len(), before + 1);
+        // Assert: registry-relative length is deliberately not asserted —
+        // sibling tests may install views concurrently; the lookup below
+        // is the race-free observable outcome of THIS install.
+        assert!(installed_precompute_views_len() >= 1);
         let entry = lookup_precomputed("私は学生です。").expect("installed view answers");
         assert!(
             entry.furigana_spans[0]
