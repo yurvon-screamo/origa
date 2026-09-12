@@ -189,13 +189,28 @@ pub fn start_dictionary_loading(
         // `ensure_tokenizer_loaded`.
         spawn_local({
             let auth_store = auth_store.clone();
+            let repository = repository.clone();
             async move {
                 let warmup_started = now_ms();
                 match crate::loaders::dictionary::ensure_tokenizer_loaded().await {
-                    Ok(()) => tracing::info!(
-                        "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
-                        (now_ms() - warmup_started) / 1000.0
-                    ),
+                    Ok(()) => {
+                        tracing::info!(
+                            "📖 Tokenizer dictionary warmed up in the background ({:.2}s)",
+                            (now_ms() - warmup_started) / 1000.0
+                        );
+                        // One-time migration (#521): legacy cards created
+                        // before token caching get their `tokens`
+                        // persisted — after this every card renders from
+                        // its cache and the pass is a no-op.
+                        match origa::use_cases::BackfillCardTokensUseCase::new(&repository)
+                            .execute()
+                            .await
+                        {
+                            Ok(0) => {},
+                            Ok(n) => tracing::info!(n, "📖 Legacy card token caches migrated"),
+                            Err(e) => tracing::warn!("Card token backfill failed: {e}"),
+                        }
+                    },
                     Err(e) => tracing::warn!("Background tokenizer warmup failed: {e}"),
                 }
                 auth_store.is_dictionary_loaded.set(true);

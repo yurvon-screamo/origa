@@ -1,9 +1,11 @@
 # ADR-048: Precomputed tokenization — lindera off the render path
 
 ## Status
+
 Accepted
 
 ## Date
+
 2026-09-12
 
 ## Context
@@ -36,11 +38,16 @@ Split by content lifecycle instead of by component:
    Blobs are deflated rkyv (~23% of raw), lazy per phrase chunk,
    freshness binds source bytes PLUS tokenizer inputs (dictionary
    version dir + furigana source hash) so a dictionary bump regenerates.
-2. **User cards → cache at creation.** `VocabularyCard.tokens`
-   (serde-default, legacy-safe) persists the token the constructor
-   already computes. On user load the store is backfilled; legacy cards
-   are synthesized from the cached POS + a furigana-dictionary reading —
-   no lindera, no persistent migration.
+2. **User cards → cache at creation + one-time startup migration.**
+   `VocabularyCard.tokens` (serde-default, legacy-safe) persists the
+   token the constructor already computes. For cards created before the
+   field existed, `BackfillCardTokensUseCase` runs once at startup after
+   the background warmup completes: it tokenizes every legacy card and
+   persists the result through the regular `save` (the same
+   write-on-startup pattern as the phrase seeding). The pass is idempotent
+   and becomes a no-op; renders answer from the persistent cache, and
+   until the pass completes legacy cards simply use the live-path
+   fallback.
 3. **Everything else → fast paths + on-demand gate.**
    `furiganize_segments` resolves kanji-free text as one plain segment
    (no dictionary at all), consults the precompute store, then tries a
@@ -52,6 +59,7 @@ Split by content lifecycle instead of by component:
    lifecycle with call coalescing and retry-after-failure).
 
 **Contract invariants** (enforced by tests):
+
 - A store entry with **empty `furigana_spans` is a miss** for the
   furiganize path — it serves token translations only, so a card entry
   can never shadow a better reading from the live paths.
@@ -61,17 +69,23 @@ Split by content lifecycle instead of by component:
 ## Alternatives Considered
 
 ### Runtime memoization of tokenization (client-side cache)
+
 Rejected: first render of every phrase still needs lindera; cold lesson
 starts stay on the heavy path; no answer for offline first view.
 
 ### Full `TokenTranslation` precompute per native language
+
 Rejected: 4× blob size for data the render already has in memory
 (vocabulary/grammar dictionaries load before the overlay lifts);
 token-level precompute is language-independent.
 
-### Persistent migration of legacy cards (one-time rewrite)
-Rejected: load-time synthesis from the POS cache achieves the same
-without a migration path, write amplification or versioned user data.
+### Runtime synthesis of legacy tokens (POS cache + furigana reading)
+
+Rejected after an initial implementation: it avoided the one-time write
+but kept a permanent second code path (real vs synthesized tokens) with
+extra contract cases. A dumb one-time migration on startup is simpler
+and converges: after the pass every card carries a real persisted cache
+and the synthesis branch disappears.
 
 ## Consequences
 

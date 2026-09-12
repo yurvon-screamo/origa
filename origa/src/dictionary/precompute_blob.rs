@@ -84,7 +84,7 @@ pub fn access_precompute_deflated(
 /// aligned bytes); a validation failure leaves the leaked bytes
 /// unreclaimed until reload while callers fall back to live tokenization.
 ///
-/// NOTE: pass the payload slice from `split_blob`, not the full blob.
+/// Pass the payload slice from `split_blob`, not the full blob.
 /// rkyv 0.8 resolves the archive root from the buffer END
 /// (`root_position = size - size_of::<T>()`), so passing a header-prefixed
 /// buffer accidentally works — but that is an implementation detail of
