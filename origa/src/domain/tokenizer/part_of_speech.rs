@@ -2,7 +2,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::domain::OrigaError;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+)]
 pub enum PartOfSpeech {
     Verb,
     Noun,

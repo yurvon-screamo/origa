@@ -4,8 +4,19 @@ use crate::dictionary::furigana_dict::{
 use crate::domain::OrigaError;
 use crate::domain::hiragana_to_katakana;
 use crate::domain::tokenizer::{TokenInfo, tokenize_text};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+)]
 pub struct AnnotatedSpan {
     pub text: String,
     pub reading: Option<String>,

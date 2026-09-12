@@ -1,8 +1,14 @@
 use std::collections::HashSet;
 
-use crate::dictionary::furigana_dict::{ReadingSpan, is_furigana_dict_loaded};
+use crate::dictionary::furigana_dict::{
+    FuriganaStore, ReadingSpan, get_furigana_dict, is_furigana_dict_loaded,
+};
+use crate::domain::JapaneseText;
 use crate::domain::furigana_annotator::AnnotatedSpan;
-use crate::domain::{OrigaError, japanese::JapaneseChar, tokenizer::tokenize_text};
+use crate::domain::hiragana_to_katakana;
+use crate::domain::{
+    OrigaError, japanese::JapaneseChar, lookup_precomputed, tokenizer::tokenize_text,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FuriganaSegment {
@@ -41,6 +47,35 @@ pub fn furiganize_segments(
     text: &str,
     known_kanji: &HashSet<char>,
 ) -> Result<Vec<FuriganaSegment>, OrigaError> {
+    // Kanji-free fast path: furigana attaches only to kanji, so texts
+    // without kanji (phrase translations, Latin fragments) render as one
+    // plain segment without touching any dictionary.
+    if !text.contains_kanji() {
+        return if text.trim().is_empty() {
+            Ok(Vec::new())
+        } else {
+            Ok(vec![FuriganaSegment::new(text.to_string(), None, false)])
+        };
+    }
+
+    // Precomputed fast path: the store is keyed by this exact render
+    // string. Entries with empty spans serve token translations only —
+    // see the `precomputed` module contract — and must not shadow the
+    // live paths below.
+    if let Some(entry) = lookup_precomputed(text)
+        && !entry.furigana_spans.is_empty()
+    {
+        return Ok(spans_to_segments(entry.furigana_spans, known_kanji));
+    }
+
+    // Single-word fast path: card words are dictionary lemmas, so the
+    // furigana dictionary answers them directly — no tokenizer needed.
+    if let Some(dict) = get_furigana_dict()
+        && let Some(span) = annotate_single_word(text, dict)
+    {
+        return Ok(spans_to_segments(vec![span], known_kanji));
+    }
+
     if is_furigana_dict_loaded() {
         let spans = crate::domain::furigana_annotator::annotate_text(text)?;
         return Ok(spans_to_segments(spans, known_kanji));
@@ -53,6 +88,27 @@ pub fn furiganize_segments(
         .into_iter()
         .map(|token| token_to_furigana_segment(token, known_kanji))
         .collect())
+}
+
+/// Resolves the furigana of a whole string treated as one dictionary
+/// word. Mirrors the `Single` branch of the annotator's
+/// `resolve_annotation` (katakana-normalized reading, span layout), but
+/// skips tokenization: the caller guarantees the text is already a lemma.
+fn annotate_single_word(text: &str, dict: &FuriganaStore) -> Option<AnnotatedSpan> {
+    let best = dict.lookup_word(text).into_iter().next()?;
+    Some(AnnotatedSpan {
+        text: text.to_string(),
+        reading: Some(hiragana_to_katakana(&best.reading)),
+        reading_spans: best
+            .reading_spans
+            .iter()
+            .map(|span| ReadingSpan {
+                start_index: span.start_index,
+                end_index: span.end_index,
+                text: hiragana_to_katakana(&span.text),
+            })
+            .collect(),
+    })
 }
 
 fn token_to_furigana_segment(
@@ -212,7 +268,10 @@ mod tests {
     use flate2::read::DeflateDecoder;
 
     use super::*;
-    use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
+    use crate::domain::{
+        DictionaryData, PrecomputedEntry, init_dictionary, install_precomputed_entry,
+        is_dictionary_loaded, reset_precomputed_store,
+    };
 
     fn decompress(data: Vec<u8>) -> Vec<u8> {
         let mut decoder = DeflateDecoder::new(&data[..]);
@@ -405,6 +464,121 @@ mod tests {
         let result = furiganize_text("食べ物", &known_kanji).unwrap();
         assert!(result.contains("<ruby"));
         assert!(result.contains("<rt class=\"furigana-rt\">"));
+    }
+
+    #[test]
+    fn kanji_free_text_renders_one_plain_segment_without_dictionaries() {
+        let known_kanji: HashSet<char> = HashSet::new();
+
+        let segments = furiganize_segments("hello world", &known_kanji).unwrap();
+        let reading = furiganize_segments("Привет мир", &known_kanji).unwrap();
+
+        assert_eq!(segments.len(), 1);
+        assert_eq!(segments[0].text(), "hello world");
+        assert!(!segments[0].has_reading());
+        assert_eq!(reading.len(), 1);
+        assert_eq!(reading[0].text(), "Привет мир");
+    }
+
+    #[test]
+    fn empty_text_returns_no_segments_without_dictionaries() {
+        let known_kanji: HashSet<char> = HashSet::new();
+        assert!(furiganize_segments("", &known_kanji).unwrap().is_empty());
+        assert!(furiganize_segments("   ", &known_kanji).unwrap().is_empty());
+    }
+
+    #[test]
+    fn precomputed_hit_answers_without_any_dictionary_loaded() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange: no lindera dictionary and no furigana dictionary are
+        // guaranteed here — the only way this call can return Ok with a
+        // reading is the precomputed store hit.
+        let known_kanji: HashSet<char> = HashSet::new();
+        install_precomputed_entry(
+            "食べ物",
+            PrecomputedEntry {
+                furigana_spans: vec![AnnotatedSpan {
+                    text: "食べ物".to_string(),
+                    reading: Some("テストヨミ".to_string()),
+                    reading_spans: vec![],
+                }],
+                tokens: vec![],
+            },
+        );
+
+        // Act
+        let segments = furiganize_segments("食べ物", &known_kanji);
+
+        // Assert
+        let segments = segments.expect("precompute must answer without dictionaries");
+        assert_eq!(segments.len(), 1);
+        assert_eq!(segments[0].reading(), Some("テストヨミ"));
+        reset_precomputed_store();
+    }
+
+    #[test]
+    fn precomputed_hit_hides_furigana_for_known_kanji() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange
+        install_precomputed_entry(
+            "食べ物",
+            PrecomputedEntry {
+                furigana_spans: vec![AnnotatedSpan {
+                    text: "食べ物".to_string(),
+                    reading: Some("タベモノ".to_string()),
+                    reading_spans: vec![],
+                }],
+                tokens: vec![],
+            },
+        );
+        let mut known_kanji: HashSet<char> = HashSet::new();
+        known_kanji.insert('食');
+        known_kanji.insert('物');
+
+        // Act
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
+
+        // Assert: is_known is resolved at render time from known_kanji,
+        // so the same precomputed entry keeps tracking the user's progress.
+        assert!(segments[0].is_known());
+        reset_precomputed_store();
+    }
+
+    /// Serializes tests that mutate the global precomputed store: parallel
+    /// install/reset of the same slot is a race otherwise. The lock lives
+    /// in the `precomputed` module so every suite shares one mutex.
+    #[test]
+    fn precomputed_entry_without_spans_does_not_shadow_live_paths() {
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange: entries with empty spans serve token translations only
+        // and must fall through to the live furigana paths.
+        install_precomputed_entry(
+            "食べ物",
+            PrecomputedEntry {
+                furigana_spans: vec![],
+                tokens: vec![],
+            },
+        );
+        ensure_dictionary();
+        let known_kanji: HashSet<char> = HashSet::new();
+
+        // Act
+        let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
+
+        // Assert
+        let kanji_segments: Vec<_> = segments
+            .iter()
+            .filter(|s| s.text().chars().any(|c| c.is_kanji()))
+            .collect();
+        assert!(!kanji_segments.is_empty(), "render must not be empty");
+        assert!(kanji_segments.iter().all(|s| s.has_reading()));
+        reset_precomputed_store();
     }
 
     #[test]
