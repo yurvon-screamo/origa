@@ -645,6 +645,11 @@
       "body": "Origa sẽ tải từ điển tiếng Nhật và tài liệu học (~230 MB) xuống thiết bị của bạn. Việc này chỉ xảy ra một lần; dữ liệu được lưu cục bộ để dùng ngoại tuyến.",
       "start": "Tải xuống"
     },
+    "load_error": {
+      "title": "Không thể tải từ điển",
+      "body": "Không tải được dữ liệu học và thiết bị này chưa lưu gì. Hãy kiểm tra kết nối và thử lại.",
+      "retry": "Thử lại"
+    },
     "selected_count": "Đã chọn: {}",
     "selected_count_with_label": "Đã chọn: {} {}",
     "seconds_short": "~{} giây",
