@@ -45,7 +45,7 @@ pub fn create_on_quiz_select(lesson_state: RwSignal<LessonState>) -> Callback<us
                     Rating::Again
                 };
 
-                // Pure-manual advance (ADR-033): the user dismisses the
+                // Pure-manual advance (ADR-051): the user dismisses the
                 // feedback card themselves via Space/Enter/click. The previous
                 // 1500ms timer was the source of the "stuck on the answer
                 // window" complaint — replaced uniformly for phrase and
@@ -125,7 +125,7 @@ mod tests {
     }
 
     // Non-phrase branch was previously gated by a 1500ms spawn_local timer;
-    // pure-manual advance (ADR-033) unified it with the phrase branch. Both
+    // pure-manual advance (ADR-051) unified it with the phrase branch. Both
     // branches now set `waiting_for_next` synchronously; only the synchronous
     // prefix is observable from native tests, which is why there is no
     // separate non-phrase characterization test — it would be redundant.
