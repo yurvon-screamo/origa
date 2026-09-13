@@ -273,7 +273,7 @@ pub const PR_BODY_EN: &str = r#"
       <tr><td>Settings</td><td>Interface language and daily study-load preference.</td></tr>
       <tr><td>Imported sets</td><td>Identifiers of content sets you imported (the set contents themselves are public catalog data).</td></tr>
       <tr><td>Optional profile</td><td>A Telegram user identifier, only if you choose to link a Telegram account.</td></tr>
-      <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model. These records are not linked to your account, email, or learning progress.</td></tr>
+      <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model, and an anonymous installation identifier — a random UUID generated on first launch and used to count installations. These records are not linked to your account, email, or learning progress.</td></tr>
     </tbody>
   </table>
   <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or browsing and search history. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
@@ -285,6 +285,7 @@ pub const PR_BODY_EN: &str = r#"
     <li>To synchronise your learning progress between your devices.</li>
     <li>To display your progress, level and review schedule inside the app.</li>
     <li>To diagnose crashes and performance problems, so they can be fixed.</li>
+    <li>To measure installations and launches in aggregate, through the anonymous installation identifier sent to Sentry.</li>
   </ul>
   <p>The email received from an OAuth provider is used solely to identify your account and to synchronise progress; it is not sold or transferred to third parties. Diagnostic records sent to Sentry serve no advertising purpose and are not combined with data from other services.</p>
 </section>
