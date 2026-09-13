@@ -25,8 +25,13 @@ pub enum FetchDecision {
 /// goes to the network unless the CDN was already proven unreachable
 /// this run (instant refusal instead of a doomed request).
 pub fn fetch_decision(cache_hit: bool, cdn_unreachable: bool) -> FetchDecision {
-    let _ = (cache_hit, cdn_unreachable);
-    FetchDecision::FetchFromNetwork
+    if cache_hit {
+        FetchDecision::ServeFromCache
+    } else if cdn_unreachable {
+        FetchDecision::FailOffline
+    } else {
+        FetchDecision::FetchFromNetwork
+    }
 }
 
 /// Process-global "the CDN is not reachable" verdict. Set by the
@@ -36,21 +41,42 @@ pub fn fetch_decision(cache_hit: bool, cdn_unreachable: bool) -> FetchDecision {
 /// which is why it is never set from `navigator.onLine` alone.
 static CDN_UNREACHABLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-pub fn mark_cdn_unreachable() {}
-
-pub fn is_cdn_unreachable() -> bool {
-    false
+#[cfg(any(target_arch = "wasm32", test))]
+pub fn mark_cdn_unreachable() {
+    CDN_UNREACHABLE.store(true, std::sync::atomic::Ordering::Release);
 }
 
-pub fn clear_cdn_unreachable() {}
+pub fn is_cdn_unreachable() -> bool {
+    CDN_UNREACHABLE.load(std::sync::atomic::Ordering::Acquire)
+}
+
+pub fn clear_cdn_unreachable() {
+    CDN_UNREACHABLE.store(false, std::sync::atomic::Ordering::Release);
+}
 
 /// Marker for the instant refusal errors produced under the
 /// unreachable flag (distinct from idle timeouts and HTTP failures).
+/// Consumed on WASM (provider/runtime) and in tests; slice 3's native
+/// failure classifier will lift the cfg.
+#[cfg(any(target_arch = "wasm32", test))]
 pub struct CdnUnreachableError;
 
+#[cfg(any(target_arch = "wasm32", test))]
 impl CdnUnreachableError {
-    pub fn is_match(_error: &OrigaError) -> bool {
-        false
+    pub fn is_match(error: &OrigaError) -> bool {
+        matches!(
+            error,
+            OrigaError::NetworkError { reason, .. } if reason.starts_with(UNREACHABLE_MARKER)
+        )
+    }
+}
+
+const UNREACHABLE_MARKER: &str = "cdn unreachable";
+
+fn cdn_unreachable_error(url: &str) -> OrigaError {
+    OrigaError::NetworkError {
+        url: url.to_string(),
+        reason: format!("{UNREACHABLE_MARKER}: skipping request after probe verdict"),
     }
 }
 
@@ -245,7 +271,14 @@ impl CdnProvider for CacheFirstCdnProvider {
         async move {
             let cache = open_cache().await?;
 
-            if let Some(text) = get_text_from_cache(&cache, &path).await {
+            let cache_hit = get_text_from_cache(&cache, &path).await;
+            if fetch_decision(cache_hit.is_some(), is_cdn_unreachable())
+                == FetchDecision::FailOffline
+            {
+                tracing::debug!(path = %path, "Cache miss, CDN unreachable — refusing");
+                return Err(cdn_unreachable_error(&path));
+            }
+            if let Some(text) = cache_hit {
                 tracing::debug!(path = %path, "Cache hit (text)");
                 return Ok(text);
             }
@@ -266,7 +299,14 @@ impl CdnProvider for CacheFirstCdnProvider {
         async move {
             let cache = open_cache().await?;
 
-            if let Some(bytes) = get_bytes_from_cache(&cache, &path).await {
+            let cache_hit = get_bytes_from_cache(&cache, &path).await;
+            if fetch_decision(cache_hit.is_some(), is_cdn_unreachable())
+                == FetchDecision::FailOffline
+            {
+                tracing::debug!(path = %path, "Cache miss, CDN unreachable — refusing");
+                return Err(cdn_unreachable_error(&path));
+            }
+            if let Some(bytes) = cache_hit {
                 tracing::debug!(path = %path, "Cache hit (bytes)");
                 return Ok(bytes);
             }
@@ -489,6 +529,49 @@ mod tests {
         let _type_witness: fn(&str) -> Option<String> = resolve_audio_url;
         // Touch the symbol so the assignment is not dead-code eliminated.
         let _ = _type_witness as fn(&str) -> Option<String>;
+    }
+
+    #[test]
+    fn unreachable_flag_round_trips_between_mark_and_clear() {
+        clear_cdn_unreachable();
+        assert!(!is_cdn_unreachable());
+
+        mark_cdn_unreachable();
+        assert!(is_cdn_unreachable());
+
+        clear_cdn_unreachable();
+        assert!(!is_cdn_unreachable());
+    }
+
+    #[test]
+    fn unreachable_refusal_marker_is_recognizable() {
+        let refusal = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "cdn unreachable: skipping request after probe verdict".to_string(),
+        };
+        assert!(CdnUnreachableError::is_match(&refusal));
+
+        let stalled = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "idle timeout after 10000 ms without data".to_string(),
+        };
+        assert!(!CdnUnreachableError::is_match(&stalled));
+
+        let http = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "HTTP 503".to_string(),
+        };
+        assert!(!CdnUnreachableError::is_match(&http));
+    }
+
+    #[test]
+    fn fetch_decision_matrix_prefers_cache_and_refuses_dead_network() {
+        use super::FetchDecision::*;
+
+        assert_eq!(fetch_decision(true, false), ServeFromCache);
+        assert_eq!(fetch_decision(true, true), ServeFromCache);
+        assert_eq!(fetch_decision(false, false), FetchFromNetwork);
+        assert_eq!(fetch_decision(false, true), FailOffline);
     }
 
     #[test]

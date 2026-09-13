@@ -22,6 +22,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 async fn cache_miss_fails_instantly_when_cdn_is_unreachable() {
     // Arrange: nothing cached under this unique path, the flag is set.
     clear_cdn_unreachable();
+    mark_cdn_unreachable();
     let provider = CacheFirstCdnProvider;
     let path = "/offline-probe/never-cached.json";
 
@@ -39,6 +40,8 @@ async fn cache_miss_fails_instantly_when_cdn_is_unreachable() {
         elapsed < 900.0,
         "refusal must be immediate, took {elapsed} ms"
     );
+
+    clear_cdn_unreachable();
 }
 
 #[wasm_bindgen_test]
