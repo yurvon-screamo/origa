@@ -69,15 +69,17 @@ async fn stalled_stream_aborts_with_the_idle_timeout_marker() {
 
 #[wasm_bindgen_test]
 async fn chunk_progress_resets_the_idle_deadline() {
-    // Chunks arrive every 60 ms while the deadline is only 30 ms: the
-    // read can only finish if every received chunk restarts the watchdog.
-    let stream = stream_with_periodic_chunks(60, 3);
+    // Chunks arrive every 60 ms under a 100 ms deadline, and the whole
+    // transfer takes ~300 ms: an aggregate deadline would abort at
+    // 100 ms, but the idle watchdog must restart on every chunk and let
+    // the progressing stream finish.
+    let stream = stream_with_periodic_chunks(60, 5);
 
-    let bytes = read_all_with_idle(stream, "probe://slow", 30)
+    let bytes = read_all_with_idle(stream, "probe://slow", 100)
         .await
-        .expect("a progressing stream must complete despite a tight idle budget");
+        .expect("a progressing stream must outlive the idle budget chunk by chunk");
 
-    assert_eq!(bytes, vec![0, 1, 2]);
+    assert_eq!(bytes, vec![0, 1, 2, 3, 4]);
 }
 
 #[wasm_bindgen_test]

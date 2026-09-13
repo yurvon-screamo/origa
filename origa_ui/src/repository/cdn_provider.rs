@@ -190,108 +190,12 @@ async fn save_response_to_cache(
 
 async fn fetch_text_from_cdn(path: &str) -> Result<(web_sys::Response, String), OrigaError> {
     let url = cdn_url(&ensure_leading_slash(path));
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let cloned = response.clone().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to clone response: {:?}", e),
-    })?;
-
-    let text = JsFuture::from(cloned.text().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to get text promise: {:?}", e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to read text: {:?}", e),
-    })?;
-
-    let text_str = text.as_string().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "Response is not a string".to_string(),
-    })?;
-
-    Ok((response, text_str))
+    crate::utils::net_timeout::fetch_text_idle(&url).await
 }
 
 async fn fetch_bytes_from_cdn(path: &str) -> Result<(web_sys::Response, Vec<u8>), OrigaError> {
     let url = cdn_url(&ensure_leading_slash(path));
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let cloned = response.clone().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to clone response: {:?}", e),
-    })?;
-
-    let ab = JsFuture::from(
-        cloned
-            .array_buffer()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to get array_buffer promise: {:?}", e),
-            })?,
-    )
-    .await
-    .map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to read array_buffer: {:?}", e),
-    })?;
-
-    let arr = js_sys::Uint8Array::new(&ab);
-    Ok((response, arr.to_vec()))
+    crate::utils::net_timeout::fetch_bytes_idle(&url).await
 }
 
 impl CdnProvider for CacheFirstCdnProvider {
@@ -438,32 +342,14 @@ pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
     }
 
     let url = cdn_url(&key);
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url,
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
+    // Idle-deadline fetch (ADR-052): a dead network must not hang a
+    // prefetch. The rebuilt response keeps the content type, so cached
+    // audio still decodes via blob: URLs.
+    let fetched = crate::utils::net_timeout::fetch_idle(
+        &url,
+        crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
+    )
+    .await?;
 
     let request = web_sys::Request::new_with_str(&cdn_cache_url(&key)).map_err(|e| {
         OrigaError::RepositoryError {
@@ -471,7 +357,7 @@ pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
         }
     })?;
 
-    JsFuture::from(cache.put_with_request(&request, &response))
+    JsFuture::from(cache.put_with_request(&request, &fetched.response))
         .await
         .map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to cache: {:?}", e),
