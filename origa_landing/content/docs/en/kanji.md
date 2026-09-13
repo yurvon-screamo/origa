@@ -13,11 +13,11 @@ status: ready
 
 # Kanji
 
-Kanji is woven through every part of Origa — vocabulary, grammar examples, phrases. This page covers the kanji-specific features: furigana behavior, writing practice, dictionaries, and tests.
+Kanji is woven through every part of Origa: vocabulary, grammar examples, phrases. This page covers the kanji-specific features: furigana behavior, writing practice, dictionaries, and tests.
 
 ## Automatic furigana
 
-Every piece of Japanese text in Origa — a word, a sentence, a grammar example — gets furigana generated automatically. You do not add it manually.
+Every piece of Japanese text in Origa (a word, a sentence, a grammar example) gets furigana generated automatically. You do not add it manually.
 
 The key behavior is **gradual hiding**. When you first see a kanji, furigana shows the reading above it. Once Origa considers that kanji learned (based on your reviews of cards containing it), the furigana disappears for that kanji. Other kanji in the same word keep their furigana until you learn them too.
 
@@ -25,7 +25,7 @@ This forces you to recall readings of kanji you have mastered, while still suppo
 
 ## Writing practice
 
-For kanji cards, the lesson can include a writing view. The kanji is shown with its stroke order animated — you watch the correct sequence of strokes play out, then follow along.
+For kanji cards, the lesson can include a writing view. The kanji is shown with its stroke order animated. You watch the correct sequence of strokes play out, then follow along.
 
 Writing practice is currently a guided animation rather than free-form handwriting recognition. You learn the stroke order by observing and tracing.
 
@@ -35,7 +35,7 @@ Origa's kanji data is organized by JLPT level, from N5 through N1. When you stud
 
 ## Reading tests
 
-During a lesson, you may see a card type that shows a word with hidden furigana and asks you to supply the reading. This tests whether you can read the word unaided — a different skill from recognizing the meaning.
+During a lesson, you may see a card type that shows a word with hidden furigana and asks you to supply the reading. This tests whether you can read the word unaided, a different skill from recognizing the meaning.
 
 ## How kanji enters your collection
 

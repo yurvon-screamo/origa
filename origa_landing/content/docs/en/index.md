@@ -23,20 +23,20 @@ If you are new, start here. The guide covers install, sign-in, onboarding, your 
 
 ## By feature
 
-- **[Lessons](/docs/lesson)** — what is in a lesson, the acquaintance stage for new cards, card types, rating, and how spaced repetition schedules your reviews.
-- **[How Origa decides what to show you](/docs/fsrs)** — the forgetting curve, FSRS, paces and daily limits: why cards run out and why that is normal.
-- **[Vocabulary](/docs/vocabulary)** — built-in dictionaries, audio pronunciation, four ways to add cards, and pre-built word sets.
-- **[Kanji](/docs/kanji)** — automatic furigana that hides as you learn, writing practice with stroke order, and JLPT-mapped kanji.
-- **[Grammar](/docs/grammar)** — JLPT-organized reference with examples built from vocabulary you already know.
-- **[Phrases and listening](/docs/phrases)** — native-speaker phrases with original audio, automatically selected for your level.
-- **[Capture](/docs/capture)** — on-device OCR and speech recognition: how to use them, when models download, and known limits.
+- **[Lessons](/docs/lesson):** what is in a lesson, the acquaintance stage for new cards, card types, rating, and how spaced repetition schedules your reviews.
+- **[How Origa decides what to show you](/docs/fsrs):** the forgetting curve, FSRS, paces and daily limits: why cards run out and why that is normal.
+- **[Vocabulary](/docs/vocabulary):** built-in dictionaries, audio pronunciation, four ways to add cards, and pre-built word sets.
+- **[Kanji](/docs/kanji):** automatic furigana that hides as you learn, writing practice with stroke order, and JLPT-mapped kanji.
+- **[Grammar](/docs/grammar):** JLPT-organized reference with examples built from vocabulary you already know.
+- **[Phrases and listening](/docs/phrases):** native-speaker phrases with original audio, automatically selected for your level.
+- **[Capture](/docs/capture):** on-device OCR and speech recognition: how to use them, when models download, and known limits.
 
 ## Reference
 
-- **[Limitations](/docs/limitations)** — current boundaries of Origa, stated plainly.
+- **[Limitations](/docs/limitations):** current boundaries of Origa, stated plainly.
 
 ## What this documentation is not
 
-These pages describe how Origa works and how to use it. They are not a comparison with other apps — for that, see [Compare](/compare). They are not release notes or a changelog — those live on GitHub.
+These pages describe how Origa works and how to use it. They are not a comparison with other apps. For that, see [Compare](/compare). They are not release notes or a changelog. Those live on GitHub.
 
 If something here is out of date, please open an issue.

@@ -13,21 +13,15 @@ status: ready
 
 # Known limitations
 
-This page lists the current boundaries of Origa. Limits are not bugs — they describe what the app does not do today, so you can decide whether it fits your workflow.
+This page lists the current boundaries of Origa. Limits are not bugs. They describe what the app does not do today, so you can decide whether it fits your workflow.
 
 ## Audio transcription accepts WAV only
 
-The speech recognition feature accepts `.wav` files. Other common formats — MP3, M4A, OGG — are not currently supported. Convert your audio before uploading. See [Capture](/docs/capture) for the full flow.
+The speech recognition feature accepts `.wav` files. Other common formats (MP3, M4A, OGG) are not currently supported. Convert your audio before uploading. See [Capture](/docs/capture) for the full flow.
 
 ## OCR is approximate on difficult input
 
-Optical character recognition works well on printed text and clean screenshots. It struggles with:
-
-- Heavily stylized or decorative fonts
-- Low-contrast or backlit photos
-- Vertical text in unusual layouts
-- Very small characters
-- Handwritten text (not supported)
+Optical character recognition works well on printed text and clean screenshots. It struggles with heavily stylized or decorative fonts, low-contrast or backlit photos, vertical text in unusual layouts, very small characters, and handwritten text (not supported).
 
 Always review the recognized words before adding them as cards.
 
@@ -53,7 +47,7 @@ The rating after each card is binary: **Don't know** or **Know** in a regular re
 
 ## Documentation and legal texts are English/Russian only
 
-The interface and the learning content — vocabulary, phrases, grammar, kanji — are available in English, Russian, Korean and Vietnamese. These documentation pages and the legal texts (privacy policy, terms of use) are currently available in English and Russian only.
+The interface and the learning content (vocabulary, phrases, grammar, kanji) are available in English, Russian, Korean and Vietnamese. These documentation pages and the legal texts (privacy policy, terms of use) are currently available in English and Russian only.
 
 ## Related
 
