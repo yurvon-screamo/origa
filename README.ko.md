@@ -10,6 +10,8 @@
 
 간격 반복 알고리즘(FSRS), 내장 OCR, 텍스트 및 음성 인식 — AI 처리는 기기 내에서 로컬로 실행됩니다. 인터넷 연결은 첫 로그인과 초기 콘텐츠 다운로드 시에만 필요합니다.
 
+**웹사이트:** <https://origa.uwuwu.net> · **웹 앱:** <https://app.origa.uwuwu.net>
+
 ![Origa 메인 대시보드](origa_landing/public/images/en.hero.png)
 
 ---
@@ -65,16 +67,22 @@
 
 ## 📥 다운로드
 
+Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://origa.uwuwu.net/ko/download)입니다 — 시스템에 맞는 빌드를 제안합니다.
+
+직접 링크 (최신 안정 릴리스):
+
 | 플랫폼 | 상태 | 형식 |
 | :--- | :--- | :--- |
-| **Windows** | ✅ 지원 | `.exe`, `.msi` |
-| **Linux** | ✅ 지원 | `.deb`, `.AppImage`, `.rpm` |
-| **macOS** | ✅ 지원 | `.dmg`, `.app` |
-| **Android** | ✅ 지원 | `.apk` |
+| **Windows** | ✅ 지원 | [`.exe` 설치 파일](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
+| **Linux** | ✅ 지원 | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Android** | ✅ 지원 | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **macOS** | ⏳ 준비 중 | Mac App Store |
 
 > 모든 버전이 오프라인 모드를 지원합니다.
 
-웹 버전도 이용할 수 있습니다.
+모든 빌드와 릴리스 노트: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).
+
+[웹 버전](https://app.origa.uwuwu.net)도 이용할 수 있습니다.
 
 ---
 
