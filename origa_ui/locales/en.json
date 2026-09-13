@@ -623,6 +623,25 @@
     "not_found": "No phrases found",
     "hint": "Phrase cards are auto-created when you learn all words in a phrase"
   },
+  "feedback": {
+    "title": "Report a problem",
+    "subject": "Subject",
+    "message_label": "What is wrong?",
+    "message_placeholder": "DESCRIBE THE PROBLEM",
+    "auto_context": "Attached automatically",
+    "privacy_note": "Sent anonymously - no name or email",
+    "submit": "Send",
+    "cancel": "Cancel",
+    "sent": "Sent",
+    "sent_note": "Thank you for making Origa more precise",
+    "submit_failed": "Failed to send",
+    "retry": "Retry",
+    "release_only": "Sending reports is available in release builds",
+    "offline_hint": "Connection required",
+    "translator_report": "Wrong translation?",
+    "lesson_report_aria": "Report a problem with this card",
+    "lesson_report_disabled_aria": "Available after answering"
+  },
   "ui": {
     "card_not_studied": "Card hasn't been studied yet",
     "delete_card": "Delete card?",

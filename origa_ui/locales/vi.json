@@ -623,6 +623,25 @@
     "not_found": "Không tìm thấy mẫu câu nào",
     "hint": "Thẻ mẫu câu được tự động tạo khi bạn học hết các từ trong mẫu câu"
   },
+  "feedback": {
+    "title": "Báo cáo sự cố",
+    "subject": "Đối tượng",
+    "message_label": "Có gì sai?",
+    "message_placeholder": "MÔ TẢ VẤN ĐỀ",
+    "auto_context": "Tự động đính kèm",
+    "privacy_note": "Gửi ẩn danh - không có tên hay email",
+    "submit": "Gửi",
+    "cancel": "Hủy",
+    "sent": "Đã gửi",
+    "sent_note": "Cảm ơn bạn đã giúp Origa chính xác hơn",
+    "submit_failed": "Gửi không thành công",
+    "retry": "Thử lại",
+    "release_only": "Gửi báo cáo có sẵn trong bản phát hành chính thức",
+    "offline_hint": "Cần kết nối mạng",
+    "translator_report": "Bản dịch sai?",
+    "lesson_report_aria": "Báo cáo sự cố với thẻ này",
+    "lesson_report_disabled_aria": "Có sẵn sau khi trả lời"
+  },
   "ui": {
     "card_not_studied": "Thẻ này chưa được học",
     "delete_card": "Xóa thẻ?",

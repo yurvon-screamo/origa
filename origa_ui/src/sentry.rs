@@ -25,6 +25,13 @@ use web_sys::{Document, Element};
 /// Build-time-injected Sentry configuration. Empty values disable Sentry
 /// (the dev/Dependabot path). See `build.rs`.
 const DSN: &str = env!("SENTRY_DSN_UI");
+
+/// Compile-time Sentry DSN for the UI layer (ADR-053). Empty = Sentry is
+/// compiled out (dev/e2e builds) — the only legitimate trigger of the
+/// feedback form's "available in release builds" info state.
+pub fn dsn_ui() -> &'static str {
+    DSN
+}
 const RELEASE: &str = env!("SENTRY_RELEASE_UI");
 const ENVIRONMENT: &str = env!("SENTRY_ENVIRONMENT_UI");
 
