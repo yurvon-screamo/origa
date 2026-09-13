@@ -199,8 +199,8 @@ fn rebuild_response(
     .map_err(|e| network_error(url, format!("failed to rebuild blob: {e:?}")))?;
 
     let init = web_sys::ResponseInit::new();
-    init.set_status(200);
-    init.set_status_text("OK");
+    init.set_status(original.status());
+    init.set_status_text(&original.status_text());
     web_sys::Response::new_with_opt_blob_and_init(Some(&blob), &init)
         .map_err(|e| network_error(url, format!("failed to rebuild response: {e:?}")))
 }
@@ -229,13 +229,47 @@ pub async fn send_request_idle(
     init: &web_sys::RequestInit,
     idle_ms: u32,
 ) -> Result<IdleResponse, OrigaError> {
-    let _ = (url, init, idle_ms);
-    let empty = web_sys::Response::new()
-        .map_err(|e| network_error(url, format!("stub response: {e:?}")))?;
-    Ok(IdleResponse {
-        response: empty,
-        bytes: Vec::new(),
-    })
+    let window = web_sys::window().ok_or_else(|| network_error(url, "No window found"))?;
+    let controller = web_sys::AbortController::new()
+        .map_err(|e| network_error(url, format!("AbortController unavailable: {e:?}")))?;
+
+    init.set_signal(Some(&controller.signal()));
+
+    let request = web_sys::Request::new_with_str_and_init(url, init)
+        .map_err(|e| network_error(url, format!("failed to build request: {e:?}")))?;
+
+    let response_value = with_idle_deadline(
+        JsFuture::from(window.fetch_with_request(&request)),
+        url,
+        idle_ms,
+        Some(&controller),
+    )
+    .await?
+    .map_err(|e| network_error(url, format!("Failed to send: {e:?}")))?;
+    let response: web_sys::Response = response_value
+        .dyn_into()
+        .map_err(|e| network_error(url, format!("Failed to cast response: {e:?}")))?;
+
+    let bytes = match response.body() {
+        Some(stream) => read_all_with_idle(stream, url, idle_ms).await?,
+        None => {
+            let buffer_promise = response
+                .array_buffer()
+                .map_err(|e| network_error(url, format!("no body reader: {e:?}")))?;
+            let buffer = with_idle_deadline(
+                JsFuture::from(buffer_promise),
+                url,
+                idle_ms,
+                Some(&controller),
+            )
+            .await?
+            .map_err(|e| network_error(url, format!("Failed to read body: {e:?}")))?;
+            js_sys::Uint8Array::new(&buffer).to_vec()
+        },
+    };
+
+    let response = rebuild_response(&response, &bytes, url)?;
+    Ok(IdleResponse { response, bytes })
 }
 
 #[cfg(all(target_arch = "wasm32", test))]

@@ -115,7 +115,7 @@ async fn refused_api_post_fails_as_a_network_error() {
     // send_request_idle; a dead API endpoint must surface as a network
     // error (fast refusal, not the idle-timeout marker) so login and
     // session flows fail fast offline instead of hanging.
-    let mut init = web_sys::RequestInit::new();
+    let init = web_sys::RequestInit::new();
     init.set_method("POST");
     init.set_body(&JsValue::from_str(r#"{"email":"x@y.z"}"#));
 
