@@ -60,11 +60,24 @@ pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     Ok(())
 }
 
+/// Native no-op: the browser probe does not exist outside WASM.
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn probe_manifest_reachable() -> bool {
+    true
+}
+
 #[cfg(target_arch = "wasm32")]
 pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     let remote = match fetch_remote_manifest().await {
         Ok(m) => m,
         Err(e) => {
+            // An HTTP status means the server answered (alive CDN, broken
+            // manifest) — content may still be downloadable. Everything
+            // else (refusal, idle timeout) is a network-level failure:
+            // record the verdict so cache misses refuse instantly.
+            if !error_reason_starts_with_http(&e) {
+                super::cdn_provider::mark_cdn_unreachable();
+            }
             tracing::warn!(error = ?e, "Failed to fetch remote manifest, skipping invalidation");
             return Ok(());
         },
@@ -144,6 +157,42 @@ fn build_manifest_url() -> String {
         d.get_date()
     );
     format!("{}/manifest.json?t={}", base, date)
+}
+
+/// A short HEAD probe of the manifest URL: any HTTP status (even 405
+/// Method Not Allowed on proxies that dislike HEAD) proves the CDN is
+/// reachable; a refusal or an idle timeout proves it is not and records
+/// the [`super::cdn_provider::mark_cdn_unreachable`] verdict.
+///
+/// `navigator.onLine` lies on WKWebView custom schemes in both
+/// directions, so it only decides WHETHER to probe — never the verdict
+/// itself (ADR-052).
+#[cfg(target_arch = "wasm32")]
+pub async fn probe_manifest_reachable() -> bool {
+    const PROBE_IDLE_MS: u32 = 2_000;
+
+    let init = web_sys::RequestInit::new();
+    init.set_method("HEAD");
+
+    let url = build_manifest_url();
+    match crate::utils::net_timeout::send_request_idle(&url, &init, PROBE_IDLE_MS).await {
+        Ok(_) => true,
+        Err(e) => {
+            super::cdn_provider::mark_cdn_unreachable();
+            tracing::debug!(error = ?e, "CDN probe failed");
+            false
+        },
+    }
+}
+
+/// Whether the error is an HTTP-status failure (the server answered)
+/// rather than a transport-level one.
+#[cfg(target_arch = "wasm32")]
+fn error_reason_starts_with_http(error: &OrigaError) -> bool {
+    matches!(
+        error,
+        OrigaError::NetworkError { reason, .. } if reason.starts_with("HTTP")
+    )
 }
 
 #[cfg(target_arch = "wasm32")]
