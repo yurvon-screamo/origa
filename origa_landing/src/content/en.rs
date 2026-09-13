@@ -268,15 +268,16 @@ pub const PR_BODY_EN: &str = r#"
     </thead>
     <tbody>
       <tr><td>Account</td><td>Email address, username, and a server-assigned identifier.</td></tr>
-      <tr><td>Authentication</td><td>Email and password (passwords are hashed server-side and never stored in plain text), or sign-in via Google or Yandex OAuth.</td></tr>
+      <tr><td>Authentication</td><td>Email and password (passwords are hashed server-side and never stored in plain text), or sign-in via Google, Yandex, or Apple OAuth.</td></tr>
       <tr><td>Learning progress</td><td>Your study cards (vocabulary, kanji, grammar, phrases), spaced-repetition state, review history, JLPT progress, known-vocabulary index, and current Japanese level.</td></tr>
       <tr><td>Settings</td><td>Interface language and daily study-load preference.</td></tr>
       <tr><td>Imported sets</td><td>Identifiers of content sets you imported (the set contents themselves are public catalog data).</td></tr>
       <tr><td>Optional profile</td><td>A Telegram user identifier, only if you choose to link a Telegram account.</td></tr>
       <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model, and an anonymous installation identifier — a random UUID generated on first launch and used to count installations. These records are not linked to your account, email, or learning progress.</td></tr>
+      <tr><td>Web analytics</td><td>Aggregated pageview statistics for this website and the web app (pages visited, referrer, approximate country, browser and operating system), sent to Umami Cloud (cloud.umami.is), a privacy-focused analytics service. The tracker sets no cookies, uses no cross-site identifiers, does not store IP addresses, and is not linked to your account or the diagnostics identifier. If your browser sends a Do Not Track signal, pageviews are not recorded.</td></tr>
     </tbody>
   </table>
-  <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or browsing and search history. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
+  <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or your browsing activity outside Origa services; pageview statistics inside Origa services are aggregated and anonymous, as described above. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
 </section>
 <section>
   <h2>How data is used</h2>
@@ -286,6 +287,7 @@ pub const PR_BODY_EN: &str = r#"
     <li>To display your progress, level and review schedule inside the app.</li>
     <li>To diagnose crashes and performance problems, so they can be fixed.</li>
     <li>To measure installations and launches in aggregate, through the anonymous installation identifier sent to Sentry.</li>
+    <li>To understand, in aggregate, which pages and features visitors use, through anonymous web analytics.</li>
   </ul>
   <p>The email received from an OAuth provider is used solely to identify your account and to synchronise progress; it is not sold or transferred to third parties. Diagnostic records sent to Sentry serve no advertising purpose and are not combined with data from other services.</p>
 </section>
@@ -294,8 +296,9 @@ pub const PR_BODY_EN: &str = r#"
   <ul>
     <li>Account and progress data: the TrailBase server at <code>app.origa.uwuwu.net</code>, hosted in Singapore.</li>
     <li>Crash reports, performance traces and technical logs: Sentry (sentry.io), hosted in the USA. These records are not linked to your account.</li>
+    <li>Aggregated web-analytics statistics: Umami Cloud (cloud.umami.is), operated by Umami. Anonymous records, not linked to your account.</li>
     <li>Static assets (dictionaries, machine-learning models, phrase audio): the CDN at <code>s3.origa.uwuwu.net</code>. These are public catalog content, not user data.</li>
-    <li>OAuth sign-in is handled by Google and Yandex according to their respective privacy policies.</li>
+    <li>OAuth sign-in is handled by Google, Yandex, and Apple according to their respective privacy policies.</li>
   </ul>
 </section>
 <section>
@@ -321,7 +324,9 @@ pub const PR_BODY_EN: &str = r#"
   <ul>
     <li>Google OAuth (accounts.google.com) — optional sign-in provider.</li>
     <li>Yandex OAuth (oauth.yandex.ru) — optional sign-in provider.</li>
+    <li>Apple OAuth (appleid.apple.com) — optional sign-in provider.</li>
     <li>Sentry (sentry.io) — crash reporting and error monitoring; receives crash reports, performance traces and technical logs, not linked to your account.</li>
+    <li>Umami Cloud (cloud.umami.is) — privacy-focused web analytics; receives anonymous, cookieless pageview statistics, not linked to your account.</li>
     <li>Static CDN (s3.origa.uwuwu.net) — public catalog content.</li>
   </ul>
   <p>Origa does not include advertising SDKs or cross-device tracking SDKs, and the data listed above is not used for advertising and is not transferred to data brokers.</p>
