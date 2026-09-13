@@ -30,6 +30,15 @@ use origa::use_cases::SeedReadyPhrasesUseCase;
 
 use crate::repository::HybridUserRepository;
 
+/// Whether a failed loader attempt deserves one more try (ADR-052):
+/// a stalled neighbour (idle timeout) or a proven-unreachable CDN make
+/// the retry pure latency — skip it. Transient errors (HTTP 5xx, an
+/// immediate refusal on a live network) still retry once.
+fn should_retry_after_error(error: &OrigaError, cdn_unreachable: bool) -> bool {
+    let _ = (error, cdn_unreachable);
+    true
+}
+
 async fn load_with_retry<F, Fut>(loader: F, max_retries: usize) -> Result<(), OrigaError>
 where
     F: Fn() -> Fut,
@@ -534,5 +543,29 @@ mod tests {
             assert!(result.is_err());
             assert!(flag.get_untracked());
         });
+    }
+
+    #[test]
+    fn retry_policy_skips_stalled_and_unreachable_failures() {
+        use crate::repository::cdn_provider::mark_cdn_unreachable;
+
+        // Transient failures on a live network still retry.
+        let http_500 = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "HTTP 500".to_string(),
+        };
+        assert!(should_retry_after_error(&http_500, false));
+
+        // An idle-timeout stall never retries: the neighbour already
+        // proved the network dead (ADR-052, R3-C1).
+        let stalled = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "idle timeout after 10000 ms without data".to_string(),
+        };
+        assert!(!should_retry_after_error(&stalled, false));
+
+        // A proven-unreachable CDN makes any failure terminal for now.
+        mark_cdn_unreachable();
+        assert!(!should_retry_after_error(&http_500, true));
     }
 }
