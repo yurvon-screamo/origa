@@ -14,7 +14,7 @@ status: ready
 
 # JLPT N5: What It Takes and How to Prepare
 
-N5 is the lowest level of the official Japanese Language Proficiency Test. On its own it lands no job or visa — but it solves a different problem: it turns "I think I know some Japanese" into a document with a score. For many learners, that's the first objective milestone.
+N5 is the lowest level of the official Japanese Language Proficiency Test. On its own it lands no job or visa, but it solves a different problem: it turns "I think I know some Japanese" into a document with a score. For many learners, that's the first objective milestone.
 
 This breakdown covers what N5 actually contains, how the exam is structured, how long prep takes from zero, and where test-takers lose the most points.
 
@@ -24,8 +24,8 @@ An honest caveat first: the organizers (the Japan Foundation together with JEES)
 
 By those estimates, N5 covers:
 
-- **~100 kanji** — high-frequency characters: 数字， 時間， 人， 行く；
-- **~800 words** — basic everyday vocabulary: family, numbers, time, motion verbs;
+- **~100 kanji**, high-frequency characters: 数字， 時間， 人， 行く；
+- **~800 words**, basic everyday vocabulary: family, numbers, time, motion verbs;
 - **basic grammar**: polite ます/です forms, particles は、が、を、に、で、へ， simple verb and adjective conjugations, counter suffixes.
 
 If you've finished roughly the first half of Minna no Nihongo or Genki I, you're formally inside N5 territory.
@@ -48,7 +48,7 @@ Practical takeaway: **you cannot ignore listening.** It's the most common resit 
 
 The Japan Foundation's classroom benchmark is around 350 hours to N5. Self-studying from zero at 30–60 minutes a day, a realistic timeline is 4–8 months. Faster is possible with more daily hours or prior groundwork (say, kana already learned).
 
-The first two weeks of those 4–8 months go to kana — [our learning plan](/blog/learn-hiragana-katakana) fits exactly that window.
+The first two weeks of those 4–8 months go to kana. [Our learning plan](/blog/learn-hiragana-katakana) fits exactly that window.
 
 ## The Preparation Plan
 
@@ -66,14 +66,14 @@ The first two weeks of those 4–8 months go to kana — [our learning plan](/bl
 
 The 800 words distribute predictably across themes, which makes coverage checks easy:
 
-- **People and family**: 父， 母， 友達， 先生 — plus polite suffixes さん and ちゃん；
-- **Numbers, time, days of the week**: 一時半， 月曜日 — including counter suffixes for objects and people;
-- **Core motion and action verbs**: 行く， 来る， 食べる， 飲む， 見る， する — in every form on the syllabus;
-- **Both adjective types**: 大きい (i-type) and 静か (na-type) — with their distinct negation rules;
-- **Place and direction**: 学校， 家， 上， 下， 中 — the material particles に and で exercises build on;
+- **People and family**: 父， 母， 友達， 先生, plus polite suffixes さん and ちゃん；
+- **Numbers, time, days of the week**: 一時半， 月曜日, including counter suffixes for objects and people;
+- **Core motion and action verbs**: 行く， 来る， 食べる， 飲む， 見る， する, in every form on the syllabus;
+- **Both adjective types**: 大きい (i-type) and 静か (na-type), with their distinct negation rules;
+- **Place and direction**: 学校， 家， 上， 下， 中, the material particles に and で exercises build on;
 - **High-frequency daily vocabulary**: food, money, transport, weather.
 
-A readiness test: describe your typical day aloud in simple sentences. If "wake up, eat, go, work, return" flows without pauses — your vocabulary base is there.
+A readiness test: describe your typical day aloud in simple sentences. If "wake up, eat, go, work, return" flows without pauses, your vocabulary base is there.
 
 ## Common Mistakes
 
@@ -89,21 +89,21 @@ A readiness test: describe your typical day aloud in simple sentences. If "wake 
 
 Origa helps with the content side of preparation, within clear bounds:
 
-- **Not an exam simulator.** Origa tracks your JLPT level, ties kanji dictionaries and the grammar reference to levels N5–N1, and shows review analytics — but it doesn't drill the timed test format. That's Migii's job, or official sample tests.
-- **In-app listening** uses audio phrases with level-based selection — real comprehension training, not the Listening section format itself.
-- **No iOS.** If you study exclusively on iPhone, that's a blocker — details in [the alternatives comparison](/blog/anki-alternative-japanese).
+- **Not an exam simulator.** Origa tracks your JLPT level, ties kanji dictionaries and the grammar reference to levels N5–N1, and shows review analytics, but it doesn't drill the timed test format. That's Migii's job, or official sample tests.
+- **In-app listening** uses audio phrases with level-based selection: real comprehension training, not the Listening section format itself.
+- **No iOS.** If you study exclusively on iPhone, that's a blocker; details in [the alternatives comparison](/blog/anki-alternative-japanese).
 
 ## Bottom Line
 
 N5 is an achievable goal for the first 6–8 months of self-study: ~100 kanji, ~800 words, basic grammar, and mandatory daily listening. The passing threshold is forgiving (80 of 180), but per-section minimums punish lopsided preparation.
 
-After N5 comes N4 — same approach, doubled volume. Starting from zero? Begin with [the zero-to-start plan](/blog/yaponskiy-s-nulya) and pick tools in [the full comparison](/compare).
+After N5 comes N4, same approach, doubled volume. Starting from zero? Begin with [the zero-to-start plan](/blog/yaponskiy-s-nulya) and pick tools in [the full comparison](/compare).
 
 ## FAQ
 
 ### When is the JLPT held?
 
-Typically the first Sunday of July and December. Some countries host it only once a year — check your local center.
+Typically the first Sunday of July and December. Some countries host it only once a year; check your local center.
 
 ### Can I take it online?
 
@@ -111,7 +111,7 @@ No. The JLPT is administered in person at certified centers only.
 
 ### Is N5 enough for working in Japan?
 
-On its own, no — employers expect N3–N2 at minimum. But N5 works well as an intermediate checkpoint and a first taste of the exam format before higher-stakes levels.
+On its own, no. Employers expect N3–N2 at minimum. But N5 works well as an intermediate checkpoint and a first taste of the exam format before higher-stakes levels.
 
 ### What score do I need to pass?
 
@@ -119,4 +119,4 @@ On its own, no — employers expect N3–N2 at minimum. But N5 works well as an 
 
 ### What comes after N5?
 
-N4: same scheme — second halves of the textbooks, vocabulary up to ~1500 words, kanji up to ~300. The difference is volume plus faster speech in the listening section.
+N4: same scheme, second halves of the textbooks, vocabulary up to ~1500 words, kanji up to ~300. The difference is volume plus faster speech in the listening section.

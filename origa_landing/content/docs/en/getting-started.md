@@ -35,14 +35,14 @@ Switch the interface language on the login screen or in the first onboarding ste
 
 ## 3. Onboarding
 
-After the first sign-in, Origa opens a short setup. You can complete it, or skip it — but without it, your first lesson will be empty because Origa has no cards to show you yet.
+After the first sign-in, Origa opens a short setup. You can complete it, or skip it. But without it, your first lesson will be empty because Origa has no cards to show you yet.
 
 The setup covers four things:
 
 - **Language.** Choose the interface and translation language: English, Russian, Korean or Vietnamese.
 - **Pace.** Pick how many new cards you want to learn per day, from minimal to maximum. You can change this later in your profile.
 - **Level.** Tell Origa your current JLPT level (N5 through N1, or "unknown"). If you already know material below that level, Origa marks it as known so you don't review what you've already mastered.
-- **Apps and textbooks.** If you have studied with other tools — Anki, Migii, Duolingo, Minna no Nihongo, or Irodori — select them and indicate how far you got. Origa imports the corresponding vocabulary so you don't start from zero.
+- **Apps and textbooks.** If you have studied with other tools (Anki, Migii, Duolingo, Minna no Nihongo, or Irodori), select them and indicate how far you got. Origa imports the corresponding vocabulary so you don't start from zero.
 
 At the end of the setup, Origa loads the dictionaries, kanji, grammar, and phrase data it needs. This step requires an internet connection. Once it finishes, you can study without one.
 
@@ -54,7 +54,7 @@ A lesson is a sequence of cards. You see a question, reveal the answer, and rate
 
 If there are new cards for today, the lesson starts with the acquaintance stage: you browse the new group (a word with furigana and translation, kanji, grammar) and then run a short training round on it. The stage ends with a "To reviews" screen, after which the regular part of the lesson begins. Details are in [how lessons work](/docs/lesson).
 
-The regular part uses a two-button rating — "Don't know" or "Know" (in acquaintance training it is "Remember" / "Don't remember"). Cards come in several shapes: recognition (Japanese to your language), recall (your language to Japanese), listening, writing, kanji reading, and grammar. Origa picks the mix based on what you have learned and what is due for review.
+The regular part uses a two-button rating, "Don't know" or "Know" (in acquaintance training it is "Remember" / "Don't remember"). Cards come in several shapes: recognition (Japanese to your language), recall (your language to Japanese), listening, writing, kanji reading, and grammar. Origa picks the mix based on what you have learned and what is due for review.
 
 When the lesson ends, your progress syncs to the server. From here you can start another lesson or return to the dashboard.
 
@@ -88,10 +88,10 @@ The internet is needed to:
 - Check for app updates
 - Import pre-built vocabulary sets from the catalog
 
-If you know you will be offline for a while — a flight, a long commute — open **Profile → Offline bundle** and download everything in advance. After that, the only thing that needs the internet is account sync.
+If you know you will be offline for a while (a flight, a long commute), open **Profile → Offline bundle** and download everything in advance. After that, the only thing that needs the internet is account sync.
 
 ## Where to go next
 
-- [How lessons work](/docs/lesson) — the review cycle, card types, and how Origa schedules reviews
-- [Vocabulary](/docs/vocabulary) — dictionaries, audio, and importing word sets
-- [Capture (OCR and speech)](/docs/capture) — how on-device recognition works and its limits
+- [How lessons work](/docs/lesson): the review cycle, card types, and how Origa schedules reviews
+- [Vocabulary](/docs/vocabulary): dictionaries, audio, and importing word sets
+- [Capture (OCR and speech)](/docs/capture): how on-device recognition works and its limits
