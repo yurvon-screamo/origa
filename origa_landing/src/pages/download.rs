@@ -52,7 +52,11 @@ pub fn DownloadPage() -> impl IntoView {
                             <p class="download-platform__formats">{c.download_windows_formats}</p>
                         </div>
                     </div>
-                    <a href=DOWNLOAD_WINDOWS class="btn btn-filled btn-lg download-primary__btn">
+                    <a
+                        href=DOWNLOAD_WINDOWS
+                        class="btn btn-filled btn-lg download-primary__btn"
+                        attr:data-umami-event="download_windows"
+                    >
                         {c.download_button}
                         " →"
                     </a>
@@ -67,7 +71,11 @@ pub fn DownloadPage() -> impl IntoView {
                             <p class="download-platform__name">{c.download_web}</p>
                         </div>
                     </div>
-                    <a href=WEB_APP_URL class="btn btn-filled btn-lg download-primary__btn">
+                    <a
+                        href=WEB_APP_URL
+                        class="btn btn-filled btn-lg download-primary__btn"
+                        attr:data-umami-event="open_webapp"
+                    >
                         {c.download_try_web}
                     </a>
                 </div>
@@ -89,6 +97,7 @@ pub fn DownloadPage() -> impl IntoView {
                     formats=c.download_linux_formats
                     href=DOWNLOAD_LINUX_APPIMAGE
                     button_text=c.download_button
+                    umami_event="download_linux"
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
@@ -96,6 +105,7 @@ pub fn DownloadPage() -> impl IntoView {
                     formats=c.download_android_formats
                     href=DOWNLOAD_ANDROID
                     button_text=c.download_button
+                    umami_event="download_android"
                 />
                 // iOS — coming soon (no download button)
                 <DownloadCard
@@ -117,6 +127,9 @@ fn DownloadCard(
     #[prop(optional)] href: Option<&'static str>,
     #[prop(optional)] button_text: Option<&'static str>,
     #[prop(optional)] badge: Option<&'static str>,
+    // Umami event name (`data-umami-event`, ADR-054) — only set for cards
+    // with a real download button; "coming soon" cards have nothing to track.
+    #[prop(optional)] umami_event: Option<&'static str>,
 ) -> impl IntoView {
     let card_class = match badge {
         Some(_) => "download-secondary__card download-secondary__card--soon",
@@ -134,13 +147,18 @@ fn DownloadCard(
                     <p class="download-platform__formats">{formats}</p>
                 </div>
             </div>
-            {match (badge, href, button_text) {
-                (Some(badge_text), _, _) => view! {
+            {match (badge, href, button_text, umami_event) {
+                (Some(badge_text), _, _, _) => view! {
                     <p class="download-coming-soon-badge">{badge_text}</p>
                 }.into_any(),
-                (None, Some(href), Some(btn)) => view! {
-                    <a href=href class="btn">{btn}" →"</a>
-                }.into_any(),
+                (None, Some(href), Some(btn), event) => match event {
+                    Some(event) => view! {
+                        <a href=href class="btn" attr:data-umami-event=event>{btn}" →"</a>
+                    }.into_any(),
+                    None => view! {
+                        <a href=href class="btn">{btn}" →"</a>
+                    }.into_any(),
+                },
                 _ => ().into_any(),
             }}
         </div>

@@ -42,6 +42,18 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
                 <meta name="google-site-verification" content="8HXC9phyHedz5AeimJ12tIo7HtXXHrnm2ewE4Qm3zEw" />
                 <meta name="msvalidate.01" content="36F67711155024DF2B7F9B5EBF72E9D0" />
                 <MetaTags />
+                // Umami Cloud analytics (ADR-054). Static tag: the landing is
+                // never executed inside CI, so no build-time mute gate is
+                // needed. `data-domains` restricts tracking to the production
+                // host (local dev is not tracked); `data-do-not-track`
+                // respects the browser DNT setting.
+                <script
+                    defer
+                    src="https://cloud.umami.is/script.js"
+                    data-website-id="0b8b69aa-9c94-41ef-b27a-f928011b797b"
+                    data-domains="origa.uwuwu.net"
+                    data-do-not-track="true"
+                ></script>
             </head>
             <body class="min-h-screen paper-texture">
                 <App />
