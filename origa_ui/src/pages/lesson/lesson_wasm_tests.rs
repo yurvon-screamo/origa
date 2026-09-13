@@ -30,6 +30,7 @@ use super::rating_buttons_view::RatingButtonsView;
 use super::yesno_card_view::YesNoCardView;
 use crate::test_support::{
     create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
+    wait_until,
 };
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -3235,4 +3236,316 @@ async fn audio_mode_freezes_for_current_showing_and_resamples_on_advance() {
         audio_mode.get_untracked(),
         "returning to the audio card after unmute must resample it as live"
     );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LessonCardContainer: disposed-signal regression across all Show branches
+// ═══════════════════════════════════════════════════════════════════════
+
+fn quiz_card_fixture(mode: origa::domain::QuizMode, option_text: &str) -> origa::domain::QuizCard {
+    origa::domain::QuizCard::new(
+        vocab_card_fixture("quizword"),
+        vec![origa::domain::QuizOption::new(
+            option_text.to_string(),
+            true,
+            None,
+        )],
+        mode,
+    )
+}
+
+/// How the test drives a branch through the production rating pipeline:
+/// `Rate` — keyboard "1" after the reveal dispatches `on_rate` (the async
+/// spawn_local persist → advance path from Sentry RUST-5); `Next` —
+/// keyboard "1" selects an option (synchronously sets
+/// `waiting_for_next`/`pending_rating`), then the visible «Далее» button
+/// runs `on_next_card` → `on_rate`; `MultiNext` — like `Next` but through
+/// the multi-quiz toggle/submit keys.
+enum BranchDrive {
+    Rate,
+    Next,
+    MultiNext,
+}
+
+/// Eight lesson cards — exactly one per Show branch of
+/// `LessonCardContainer` (default, quiz, writing, yesno, phrase_listen,
+/// audio_recall, kanji_reading_quiz, grammar_quiz) — paired with a DOM
+/// marker that must be present while the card is showing, the stage the
+/// marker appears at (question side or answer side) and the drive kind.
+fn all_branch_cards(
+    writing_marker: &str,
+) -> Vec<(origa::domain::LessonCard, String, bool, BranchDrive)> {
+    use origa::domain::{Card, LessonCardView, PhraseCard, QuizMode};
+    use ulid::Ulid;
+
+    let normal = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::Normal(vocab_card_fixture("normword")),
+        false,
+    );
+    let quiz = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::Quiz(quiz_card_fixture(QuizMode::Single, "quizopt1")),
+        false,
+    );
+    let writing = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::Writing(vocab_card_fixture("writeword")),
+        false,
+    );
+    let yesno = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::YesNo(origa::domain::YesNoCard::new(
+            vocab_card_fixture("yesword"),
+            "yesword".to_string(),
+            "yesnostmt".to_string(),
+            true,
+        )),
+        false,
+    );
+    let phrase_listen = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::PhraseListen {
+            card: Card::Phrase(PhraseCard::new(Ulid::new())),
+            audio_file: "phrases/audio/none.opus".to_string(),
+            options: vec![origa::domain::QuizOption::new(
+                "phropt1".to_string(),
+                true,
+                None,
+            )],
+        },
+        false,
+    );
+    let audio_recall = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::AudioRecall(vocab_card_fixture("audioword")),
+        false,
+    );
+    let kanji_reading = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::KanjiReadingQuiz(quiz_card_fixture(QuizMode::Multi, "krqopt1")),
+        false,
+    );
+    let grammar_quiz = origa::domain::LessonCard::new(
+        Ulid::new(),
+        LessonCardView::GrammarQuiz(origa::domain::GrammarQuizCard::new(
+            vocab_card_fixture("gqword"),
+            origa::domain::GrammarInfo::new(None, "gqtitle".to_string(), String::new()),
+            "grambase".to_string(),
+            quiz_card_fixture(QuizMode::Single, "gqopt1"),
+        )),
+        false,
+    );
+
+    // (card, DOM marker, marker_on_answer_side_only, drive)
+    vec![
+        (normal, "normword".to_string(), false, BranchDrive::Rate),
+        (quiz, "quizopt1".to_string(), false, BranchDrive::Next),
+        // WritingCard renders a localized "kanji only" fallback for a
+        // vocabulary card (kanji fixtures need the CDN kradfile), which
+        // still proves the writing branch rendered.
+        (
+            writing,
+            writing_marker.to_string(),
+            false,
+            BranchDrive::Rate,
+        ),
+        (yesno, "yesnostmt".to_string(), false, BranchDrive::Next),
+        (
+            phrase_listen,
+            "phropt1".to_string(),
+            false,
+            BranchDrive::Next,
+        ),
+        // AudioRecall hides the word on the question side by design — the
+        // marker only exists after the reveal.
+        (
+            audio_recall,
+            "audioword".to_string(),
+            true,
+            BranchDrive::Rate,
+        ),
+        (
+            kanji_reading,
+            "krqopt1".to_string(),
+            false,
+            BranchDrive::MultiNext,
+        ),
+        (grammar_quiz, "gqopt1".to_string(), false, BranchDrive::Next),
+    ]
+}
+
+/// Regression for the "Tried to access a reactive value that has already
+/// been disposed" panic cascade (Sentry RUST-5/4/9): every Show branch used
+/// to receive per-card `Signal::derive`s that died with the rendered
+/// fragment, so an effect scheduled before an advance could read a disposed
+/// signal during the swap flush. The container now shares container-scoped
+/// projections with the card views; this test mounts the real container and
+/// cycles reveal → advance through ALL eight branch types. A failure mode
+/// of this test is the panic itself resurfacing in the reactive flush.
+#[wasm_bindgen_test]
+async fn lesson_container_reveal_advance_cycle_covers_all_card_branches() {
+    use ulid::Ulid;
+
+    let (set_writing_marker, get_writing_marker) = shared_cell::<String>();
+    let (set_lesson_state, get_lesson_state) =
+        shared_cell::<RwSignal<crate::pages::lesson::lesson_state::LessonState>>();
+    let (set_is_completed, get_is_completed) = shared_cell::<RwSignal<bool>>();
+    let wrapper = create_wrapper();
+
+    let _mount = mount_with_router_and_stores(&wrapper, None, move || {
+        let i18n = crate::i18n::use_i18n();
+        let writing_marker =
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.writing_card_kanji_only)
+                .to_string();
+        set_writing_marker.set(Some(writing_marker.clone()));
+
+        let cards = all_branch_cards(&writing_marker);
+        // The dispose sentinel `content.rs` provides in production: without
+        // it every on_* handler (on_rate included) degrades to a no-op.
+        provide_context(StoredValue::<()>::new(()));
+        let mut state = crate::pages::lesson::lesson_state::LessonState::default();
+        let total = cards.len();
+        for (card, _, _, _) in &cards {
+            let slot = Ulid::new();
+            state.cards.insert(slot, card.clone());
+            state.card_ids.push(slot);
+        }
+        state.core_count = total;
+        let lesson_state = RwSignal::new(state);
+
+        // A live audio_mode_active so the AudioRecall branch is actually
+        // taken (not degraded to the default branch): pitch loader "ready"
+        // and browser speechSynthesis availability make the sample true.
+        let pitch_ready = RwSignal::new(true);
+        let audio_mode_active = crate::pages::lesson::lesson_state::create_audio_mode_active(
+            lesson_state,
+            RwSignal::new(0),
+            RwSignal::new(false),
+            pitch_ready,
+            RwSignal::new(origa::domain::NativeLanguage::Russian),
+        );
+
+        let mut ctx = lesson_context();
+        ctx.lesson_state = lesson_state;
+        let is_completed = RwSignal::new(false);
+        set_is_completed.set(Some(is_completed));
+        ctx.is_completed = is_completed;
+        ctx.core_count = RwSignal::new(total);
+        ctx.audio_mode_active = audio_mode_active;
+        provide_context(ctx);
+
+        set_lesson_state.set(Some(lesson_state));
+        view! {
+            <crate::pages::lesson::lesson_card_container::LessonCardContainer />
+        }
+        .into_any()
+    });
+
+    let lesson_state = get_lesson_state.get().expect("captured lesson state");
+    let is_completed = get_is_completed.get().expect("captured is_completed");
+    let writing_marker = get_writing_marker.take().expect("captured writing marker");
+
+    // Dispatch a real keydown on the document: the container's global
+    // keyboard handler is the production entry into the rating pipeline.
+    fn press_key(key: &str) {
+        let init = web_sys::KeyboardEventInit::new();
+        init.set_key(key);
+        let event = web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init)
+            .expect("keydown event");
+        web_sys::window()
+            .expect("window")
+            .document()
+            .expect("document")
+            .dispatch_event(&event)
+            .expect("dispatch keydown");
+    }
+
+    fn next_button_is_visible(wrapper: &web_sys::Element) -> bool {
+        wrapper
+            .query_selector("[data-testid=\"lesson-card-next-btn\"]")
+            .is_ok_and(|button| button.is_some())
+    }
+
+    /// Click the visible «Далее» button (NextCardButton) that the
+    /// quiz-family branches surface once `waiting_for_next` is set.
+    fn click_next_button(wrapper: &web_sys::Element) {
+        let next = wrapper
+            .query_selector("[data-testid=\"lesson-card-next-btn\"]")
+            .expect("query")
+            .expect("next button visible after selection");
+        next.unchecked_into::<web_sys::HtmlElement>().click();
+    }
+
+    for (index, (_, marker, answer_side_only, drive)) in
+        all_branch_cards(&writing_marker).into_iter().enumerate()
+    {
+        // The advance flush from the previous iteration (and the initial
+        // mount) must have rendered the current card without a disposed
+        // signal read.
+        tick().await;
+        if !answer_side_only {
+            let shown = wait_until(|| wrapper.inner_html().contains(marker.as_str()), 20, 10).await;
+            assert!(shown, "card {index} question side must show {marker}");
+        }
+
+        // Drive the branch through the production rating pipeline: the
+        // async persist → advance continuation is exactly where the
+        // disposed-signal panics clustered in production (Sentry RUST-5).
+        match drive {
+            BranchDrive::Rate => {
+                // Reveal flips the shared showing_answer projection; for
+                // AudioRecall the marker only exists on the answer side.
+                lesson_state.update(|state| state.showing_answer = true);
+                tick().await;
+                if answer_side_only {
+                    let shown =
+                        wait_until(|| wrapper.inner_html().contains(marker.as_str()), 20, 10).await;
+                    assert!(shown, "card {index} answer side must show {marker}");
+                }
+                press_key("1");
+            },
+            BranchDrive::Next => {
+                // "1" selects option 0: synchronously reveals the result
+                // side and arms pending_rating/waiting_for_next.
+                press_key("1");
+                tick().await;
+                let armed = wait_until(|| next_button_is_visible(&wrapper), 20, 10).await;
+                assert!(armed, "card {index} selection must arm the next button");
+                click_next_button(&wrapper);
+            },
+            BranchDrive::MultiNext => {
+                // Multi-quiz: toggle option 0, submit with Enter.
+                press_key("1");
+                tick().await;
+                press_key("Enter");
+                tick().await;
+                let armed = wait_until(|| next_button_is_visible(&wrapper), 20, 10).await;
+                assert!(armed, "card {index} submission must arm the next button");
+                click_next_button(&wrapper);
+            },
+        }
+
+        // The rating continuation runs `advance_lesson_state` from a
+        // spawn_local AFTER the repository round-trip — the old fragment
+        // dies while its effects are still subscribed to the shared
+        // projections. The LAST card flips `is_completed` instead of
+        // advancing the index.
+        let advanced = wait_until(
+            || {
+                lesson_state.get_untracked().current_index == index + 1
+                    || is_completed.get_untracked()
+            },
+            100,
+            30,
+        )
+        .await;
+        assert!(advanced, "card {index} rating must advance the lesson");
+        tick().await;
+    }
+
+    // The last rating completed the lesson: the container's fragment is
+    // fully disposed — exactly the disposal the regression guards.
+    let completed = wait_until(|| is_completed.get_untracked(), 20, 10).await;
+    assert!(completed, "the last card rating must complete the lesson");
 }

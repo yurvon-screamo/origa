@@ -24,15 +24,26 @@ thread_local! {
     static CURRENT_AUDIO: RefCell<Option<ActiveAudio>> = const { RefCell::new(None) };
 }
 
+/// Detach handlers and pause a superseded or stopped audio element.
+///
+/// Must be called AFTER releasing the `CURRENT_AUDIO` borrow: `on_stop`
+/// callbacks are free to re-enter `register_audio`/`stop_current_audio`,
+/// and running them inside the borrow would panic with "RefCell already
+/// borrowed". Firing `on_stop` before the element is detached also lets
+/// listeners observe the supersede in a consistent state.
+fn teardown_active_audio(active: ActiveAudio) {
+    if let Some(on_stop) = active.on_stop {
+        on_stop();
+    }
+    active.element.set_onended(None);
+    active.element.set_onerror(None);
+    let _ = active.element.pause();
+}
+
 pub fn stop_current_audio() {
     let prev = CURRENT_AUDIO.with(|cell| cell.borrow_mut().take());
     if let Some(active) = prev {
-        if let Some(on_stop) = active.on_stop {
-            on_stop();
-        }
-        active.element.set_onended(None);
-        active.element.set_onerror(None);
-        let _ = active.element.pause();
+        teardown_active_audio(active);
     }
     let _ = stop_speech();
 }
@@ -42,13 +53,21 @@ pub fn register_audio(
     on_stop: Option<Box<dyn Fn()>>,
     closures: Vec<Closure<dyn FnMut()>>,
 ) {
-    CURRENT_AUDIO.with(|cell| {
-        *cell.borrow_mut() = Some(ActiveAudio {
+    // Supersede the previously active audio BEFORE it is dropped: its
+    // element still points at the closures stored in ActiveAudio, and
+    // dropping them without detaching makes a later `error`/`ended` event
+    // fire into a dead closure ("closure invoked recursively or after
+    // being dropped").
+    let superseded = CURRENT_AUDIO.with(|cell| {
+        cell.borrow_mut().replace(ActiveAudio {
             element,
             on_stop,
             _closures: closures,
-        });
+        })
     });
+    if let Some(prev) = superseded {
+        teardown_active_audio(prev);
+    }
 }
 
 fn kata_to_hira(text: &str) -> String {

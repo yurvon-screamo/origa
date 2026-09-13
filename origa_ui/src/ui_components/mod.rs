@@ -79,6 +79,8 @@ mod translator;
 mod typography;
 mod update_drawer;
 mod word_audio;
+#[cfg(test)]
+mod word_audio_wasm_tests;
 mod word_translations;
 
 pub use alert::{Alert, AlertType};

@@ -4,7 +4,6 @@ use super::rating_buttons_view::RatingButtonsView;
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
-use ulid::Ulid;
 
 struct LessonCardParams {
     card: Card,
@@ -17,8 +16,8 @@ pub(in crate::pages::lesson) fn render_lesson_card(
     show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
-    is_rating: RwSignal<Option<Ulid>>,
-    known_kanji: RwSignal<HashSet<char>>,
+    disabled: Signal<bool>,
+    known_kanji: Signal<HashSet<char>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
     let params = match lesson_card.into_view() {
@@ -86,14 +85,14 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 on_show_answer=on_show_answer
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
-                known_kanji=Signal::from(known_kanji)
+                known_kanji=known_kanji
                 audio_path=phrase_audio_path
             />
 
             <Show when=move || show_answer.get()>
                 <PhraseRatingButtons
                     on_rate=on_rate_callback
-                    disabled=Signal::derive(move || is_rating.get().is_some())
+                    disabled=disabled
                     test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
                 />
             </Show>
@@ -108,14 +107,14 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 on_show_answer=on_show_answer
                 grammar_info=params.grammar_info
                 native_language=native_language.get()
-                known_kanji=Signal::from(known_kanji)
+                known_kanji=known_kanji
                 audio_path=None
             />
 
             <Show when=move || show_answer.get()>
                 <RatingButtonsView
                     on_rate=on_rate_callback
-                    disabled=Signal::derive(move || is_rating.get().is_some())
+                    disabled=disabled
                 />
             </Show>
         }
