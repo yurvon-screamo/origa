@@ -903,8 +903,11 @@ jobs:
         # push, so workflow-level breakage (like the import-codesign-certs
         # post-step exit 50) surfaces in CI instead of on a release tag.
         # iOS is skipped (skip_ios) — it stays a release-time target to
-        # bound macOS runner minutes; App Store upload is gated by
-        # version_type inside the reusable workflow.
+        # bound macOS runner minutes. The App Store Connect upload is
+        # skipped too (skip_appstore_upload): on a stable tag both this
+        # workflow and tauri.yml call the reusable Apple workflow, and
+        # ASC accepts exactly one build per version — tauri.yml is the
+        # single uploader; CI only validates the build path.
         needs: [changes, version, e2e-build]
         if: needs.changes.outputs.run_build_macos == 'true'
         uses: ./.github/workflows/_build-tauri-apple.yml
@@ -916,6 +919,7 @@ jobs:
             build_date: ${{ needs.version.outputs.build_date }}
             wasm_artifact_name: wasm-dist
             skip_ios: true
+            skip_appstore_upload: true
         secrets:
             apple-api-issuer: ${{ secrets.APPLE_API_ISSUER }}
             apple-api-key: ${{ secrets.APPLE_API_KEY }}

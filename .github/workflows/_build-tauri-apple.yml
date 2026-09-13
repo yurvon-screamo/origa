@@ -6,10 +6,12 @@ on:
             version:
                 type: string
                 required: true
-            # version_base and version_type are retained for caller
-            # compatibility (ci.yml and tauri.yml pass them) but are not
-            # consumed inside this workflow. Kept as required: false to
-            # avoid implying they affect behavior.
+            # version_type drives the Sentry environment mapping and —
+            # together with skip_appstore_upload — the App Store Connect
+            # upload gate: uploads happen only for version_type == 'stable'
+            # AND when the caller does not opt out. version_base is kept
+            # for caller compatibility (ci.yml and tauri.yml pass it) and
+            # is not consumed inside this workflow.
             version_base:
                 type: string
                 required: false
@@ -32,6 +34,17 @@ on:
             # macOS-only to keep macOS runner minutes bounded on every
             # push; iOS stays a release-time target (tauri.yml).
             skip_ios:
+                type: boolean
+                default: false
+            # Skip the App Store Connect upload (the macOS build/sign/pkg
+            # steps still run). ci.yml sets this: on a stable tag BOTH
+            # ci.yml and tauri.yml call this workflow, and App Store
+            # Connect accepts exactly one build per version — the release
+            # upload belongs to tauri.yml, CI only validates the build
+            # path. Without this the second uploader always fails with
+            # ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE and reddens the CI
+            # Gate (broke every stable tag v0.7.11–v0.7.16).
+            skip_appstore_upload:
                 type: boolean
                 default: false
         secrets:
@@ -758,7 +771,11 @@ jobs:
               # via the GitHub Release assets (.pkg is uploaded there);
               # App Store Connect gets exactly one build per version, from
               # the stable tag. CI/dispatch builds (alpha) never upload.
-              if: inputs.version_type == 'stable'
+              # skip_appstore_upload removes the CI caller on stable tags
+              # too: tauri.yml is the single uploader — two parallel
+              # uploads of the same version race and the loser fails with
+              # ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE.
+              if: inputs.version_type == 'stable' && inputs.skip_appstore_upload != true
               timeout-minutes: 15
               env:
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
