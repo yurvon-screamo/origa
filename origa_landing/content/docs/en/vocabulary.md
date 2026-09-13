@@ -17,7 +17,7 @@ Vocabulary is the core of Origa. This page covers where words come from, how car
 
 ## Built-in dictionaries
 
-Origa ships with bilingual dictionaries — Japanese to your language. When you add a word, the dictionary supplies the translation, part of speech, and reading. You do not need to type translations manually unless you want to override them.
+Origa ships with bilingual dictionaries, Japanese to your language. When you add a word, the dictionary supplies the translation, part of speech, and reading. You do not need to type translations manually unless you want to override them.
 
 If a word is not in the dictionary, Origa skips it during batch creation. You can still add it manually with your own translation.
 
@@ -51,14 +51,7 @@ You can import sets during onboarding, or later from the Sets page. Each set cre
 
 ## Card fields
 
-A vocabulary card carries:
-
-- The Japanese word or phrase
-- Reading (furigana for kanji)
-- Translation in your language
-- Part of speech
-- JLPT level (if known)
-- Audio (if available)
+A vocabulary card carries the Japanese word or phrase, reading (furigana for kanji), translation in your language, part of speech, JLPT level (if known), and audio (if available).
 
 Most fields fill automatically when the word exists in the dictionary. You can edit any field after creation.
 
@@ -66,7 +59,7 @@ Most fields fill automatically when the word exists in the dictionary. You can e
 
 The words screen lists every card in your collection. Filter by JLPT level, by source (imported set or self-added), or by review state (new, learning, mature). You can search by Japanese or by translation.
 
-To remove cards, open the card detail and delete. Deletion is permanent — there is no trash bin.
+To remove cards, open the card detail and delete. Deletion is permanent. There is no trash bin.
 
 ## Related
 

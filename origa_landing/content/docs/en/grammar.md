@@ -17,7 +17,7 @@ Grammar in Origa is a structured reference linked to your vocabulary. This page 
 
 ## JLPT-organized reference
 
-The grammar reference is organized by JLPT level, from N5 (beginner) through N1 (advanced). Each entry covers a specific grammar point — a particle usage, a conjugation pattern, a sentence-ending expression, a connective.
+The grammar reference is organized by JLPT level, from N5 (beginner) through N1 (advanced). Each entry covers a specific grammar point: a particle usage, a conjugation pattern, a sentence-ending expression, a connective.
 
 Browse the reference by level, or jump to a specific point from a lesson or from text you are reading.
 
@@ -31,7 +31,7 @@ If you have not yet learned enough vocabulary for a given grammar point, example
 
 ## Searching grammar
 
-When you are reading Japanese text outside of Origa — in a book, on a webpage, in a subtitle — and you encounter a pattern you do not recognize, you can search for it. Origa indexes grammar points by their typical surface forms, so a search by the relevant particle or verb form usually finds the entry.
+When you are reading Japanese text outside of Origa (in a book, on a webpage, in a subtitle) and you encounter a pattern you do not recognize, you can search for it. Origa indexes grammar points by their typical surface forms, so a search by the relevant particle or verb form usually finds the entry.
 
 ## Grammar in lessons
 

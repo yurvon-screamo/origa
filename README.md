@@ -6,9 +6,9 @@
 
 **Learn Japanese without an English middleman.**
 
-オリガ is a comprehensive app for learning Japanese and focused preparation for the JLPT exam.
+オリガ is an app for learning Japanese and preparing for the JLPT exam.
 
-Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition — AI processing runs locally on your device. An internet connection is needed only for the first sign-in and the initial content download.
+Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition. AI processing runs locally on your device. An internet connection is needed only for the first sign-in and the initial content download.
 
 **Website:** <https://origa.uwuwu.net> · **Web app:** <https://app.origa.uwuwu.net>
 
@@ -18,13 +18,13 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 
 ## 🎯 Principles
 
-* **Learn from your own content** — you choose what to study. The app adapts to what you already know and what you're reading, watching, or listening to right now.
-* **Smart algorithms** — FSRS spaced repetition system (like Anki) optimizes review intervals for each word.
-* **Privacy** — all AI models run locally on your device. Your photos, audio, and study activity are processed on-device and never uploaded.
-* **Offline-first** — full functionality without internet after the initial setup.
-* **Cross-platform** — Web, Windows, Linux, macOS, Android.
-* **Learn in your language** — interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned).
-* **JLPT analytics** — track your current level and forecast your progress.
+* **Learn from your own content:** you choose what to study. The app adapts to what you already know and what you're reading, watching, or listening to right now.
+* **Smart algorithms:** FSRS spaced repetition system (like Anki) optimizes review intervals for each word.
+* **Privacy:** all AI models run locally on your device. Your photos, audio, and study activity are processed on-device and never uploaded.
+* **Offline-first:** full functionality without internet after the initial setup.
+* **Cross-platform:** Web, Windows, Linux, macOS, Android.
+* **Learn in your language:** interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned).
+* **JLPT analytics:** track your current level and forecast your progress.
 
 ![Origa overview](origa_landing/public/images/en.all_in_one.png)
 
@@ -35,7 +35,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 ### Vocabulary
 
 * Built-in dictionaries in your native language.
-* Ultra-fast card creation — just type a word or sentence in Japanese.
+* Ultra-fast card creation: just type a word or sentence in Japanese.
 * Automatic recognition and extraction of vocabulary from text, photos, and audio.
 * Import ready-made word sets from other popular apps and classic textbooks.
 * Built-in audio bank with correct pronunciation (based on NHK and other reliable sources).
@@ -67,7 +67,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 
 ## 📥 Download
 
-The easiest way to install Origa is the [download page](https://origa.uwuwu.net/download) — it offers the right build for your system.
+The easiest way to install Origa is the [download page](https://origa.uwuwu.net/download). It offers the right build for your system.
 
 Direct links (latest stable release):
 
@@ -99,9 +99,9 @@ A [web version](https://app.origa.uwuwu.net) is also available.
 
 The project is built on a modern stack that delivers native app performance with web interface flexibility.
 
-* **Core & backend**: **Rust** — safety and high-speed data processing.
-* **Desktop wrapper**: **Tauri v2** — native apps for Windows, macOS, and Linux.
-* **Frontend**: **Leptos** — reactive UI framework in Rust (WebAssembly) for instant interface response.
+* **Core & backend**: **Rust** for safety and high-speed data processing.
+* **Desktop wrapper**: **Tauri v2** for native apps on Windows, macOS, and Linux.
+* **Frontend**: **Leptos**, a reactive UI framework in Rust (WebAssembly) for instant interface response.
 * **Mobile**: Native **Android** build via Tauri Mobile.
 
 ---
@@ -131,21 +131,21 @@ A powerful and flexible spaced repetition app for any material.
 A flashcard-based vocabulary memorization app.
 
 * **When to use ReWord:** quick start and mechanical memorization of basic word lists without context.
-* **Origa's advantage:** vocabulary is tied to your content, grammar, and native audio — giving you a deeper understanding of the language.
+* **Origa's advantage:** vocabulary is tied to your content, grammar, and native audio, giving you a deeper understanding of the language.
 
 ### Bunpro
 
 A specialized grammar trainer (Grammar SRS).
 
 * **When to use Bunpro:** you want to focus exclusively on drilling grammar rules.
-* **Origa's advantage:** grammar examples are built on *words you've already learned* — vocabulary and grammar work as a unified whole.
+* **Origa's advantage:** grammar examples are built on *words you've already learned*, so vocabulary and grammar work as a unified whole.
 
 ### WaniKani
 
 A popular kanji and vocabulary learning service using mnemonics.
 
 * **When to use WaniKani:** a rigid order of learning kanji by radicals from scratch works for you.
-* **Origa's advantage:** you learn exactly the kanji and words you encountered today — in manga, an article, or at work.
+* **Origa's advantage:** you learn exactly the kanji and words you encountered today, in manga, an article, or at work.
 
 ### Duolingo
 
@@ -157,7 +157,7 @@ An engaging app that gradually immerses you in a language.
 
 A serious JLPT test preparation simulator.
 
-* **Pair with Origa:** use Migii to practice solving exam tests against the clock. Origa serves as your foundation to comprehensively collect and reinforce all the material needed to pass those tests.
+* **Pair with Origa:** use Migii to practice solving exam tests against the clock, and Origa to collect and reinforce all the material you need to pass those tests.
 
 ---
 

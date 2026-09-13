@@ -13,7 +13,7 @@ status: ready
 
 # Capture: OCR and speech recognition
 
-Origa can read Japanese from images and transcribe it from audio. Both features run on your device — the processing never sends your photos or recordings to a server. This page covers how to use them and what their limits are.
+Origa can read Japanese from images and transcribe it from audio. Both features run on your device. The processing never sends your photos or recordings to a server. This page covers how to use them and what their limits are.
 
 ## Optical character recognition (OCR)
 
@@ -36,7 +36,7 @@ OCR extracts Japanese text from images. Use it when you have a photo of a menu, 
 
 ## Speech recognition (STT)
 
-STT transcribes spoken Japanese from an audio file. Use it when you have a recording of speech — a podcast clip, a line from a show, a voice memo.
+STT transcribes spoken Japanese from an audio file. Use it when you have a recording of speech: a podcast clip, a line from a show, a voice memo.
 
 **How to use:**
 
@@ -45,7 +45,7 @@ STT transcribes spoken Japanese from an audio file. Use it when you have a recor
 3. Origa transcribes it on-device and shows the recognized text.
 4. Review and add the words you want.
 
-**Supported format:** WAV only. Other common formats (MP3, M4A, OGG) are not currently accepted — convert your file before uploading.
+**Supported format:** WAV only. Other common formats (MP3, M4A, OGG) are not currently accepted. Convert your file before uploading.
 
 **When the model downloads:** As with OCR, the STT model is not bundled. It downloads on first use, then runs offline.
 
@@ -59,7 +59,7 @@ Both OCR and STT run entirely on your device. The image or audio you supply is p
 
 ## When to use capture
 
-Capture is not the primary way to add vocabulary — typing is faster for words you already know. Capture shines when:
+Capture is not the primary way to add vocabulary. Typing is faster for words you already know. Capture shines when:
 
 - You are reading physical material (a book, a sign) and want to capture unknown words without typing.
 - You have a screenshot from a manga reader or a subtitle and want to turn it into cards.

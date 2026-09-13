@@ -18,7 +18,7 @@ status: ready
 
 This article is not a ranking. It's a breakdown of what AI tutors are actually good at, where they fall short, and where they fit in a serious Japanese-learning workflow. The short version: AI tutors are excellent at one half of the job and absent from the other half. Conflating the two is how learners end up paying for a chatbot subscription and forgetting everything they "learned" by next month.
 
-Includes Origa — Origa uses AI, but it is not an AI tutor in the conversational sense most people mean.
+Includes Origa. Origa uses AI, but it is not an AI tutor in the conversational sense most people mean.
 
 ## What AI tutors are genuinely good at
 
@@ -26,7 +26,7 @@ When the underlying model is competent (and current models are, for Japanese up 
 
 **On-demand grammar explanation.** You saw ばかり in a manga and the textbook explanation doesn't fit. Paste the sentence into a chatbot, ask "why is ばかり used here?", and you get a contextual answer in seconds. Textbooks can't do this because they're written in advance.
 
-**Sentence correction with reasoning.** Write a sentence, ask "is this natural?", and a good AI tutor will mark what's off and explain why. A human tutor does this better, but Japanese specialists typically run tens of US dollars per hour and often much more — the AI does it for a flat subscription.
+**Sentence correction with reasoning.** Write a sentence, ask "is this natural?", and a good AI tutor will mark what's off and explain why. A human tutor does this better, but Japanese specialists typically run tens of US dollars per hour and often much more. The AI does it for a flat subscription.
 
 **Conversation practice without shame.** Most learners won't speak out loud because they're embarrassed. An AI doesn't judge. Two minutes of "let's talk about my day" with an AI builds confidence in a way that textbooks can't.
 
@@ -58,19 +58,19 @@ The pattern across most "AI tutor" apps is the same: they ship the conversation/
 
 ### Dedicated AI language apps (Speak, Talkpal, Praktika, etc.)
 
-**Strength:** the AI is wrapped in a learning-shaped UI — scenario cards, progress badges, lesson flows. The conversation is guided, so you don't have to invent the topic.
+**Strength:** the AI is wrapped in a learning-shaped UI: scenario cards, progress badges, lesson flows. The conversation is guided, so you don't have to invent the topic.
 
-**Weakness:** the SRS layer is usually thin or absent. Lessons are pre-built; vocabulary capture is weak; long-term retention is on you. Subscription pricing compounds — Speak Premium Plus is ~$30/month, Talkpal Premium ~$20/month, Praktika ~$100/year (prices fluctuate by region and platform). For Japanese specifically, the depth is often shallower than for English or Spanish — the market is smaller, and the AI training data for Japanese learning scenarios is thinner.
+**Weakness:** the SRS layer is usually thin or absent. Lessons are pre-built; vocabulary capture is weak; long-term retention is on you. Subscription pricing compounds. Speak Premium Plus is ~$30/month, Talkpal Premium ~$20/month, Praktika ~$100/year (prices fluctuate by region and platform). For Japanese specifically, the depth is often shallower than for English or Spanish: the market is smaller, and the AI training data for Japanese learning scenarios is thinner.
 
 **Best for:** learners who want guided conversation practice and don't mind paying for the structure.
 
 ### Learning-integrated AI (where Origa sits, partially)
 
-Origa uses AI — local OCR (NDLOCR-Lite), local speech-to-text (Whisper), furigana generation, automated vocabulary extraction — but it is **not an AI tutor in the conversational sense**. It does not have a chatbot. It does not explain grammar on demand.
+Origa uses AI: local OCR (NDLOCR-Lite), local speech-to-text (Whisper), furigana generation, automated vocabulary extraction. But it is **not an AI tutor in the conversational sense**. It does not have a chatbot. It does not explain grammar on demand.
 
 What Origa does is use AI as the entry point to a retention pipeline. You scan a page, the AI reads the words; you record audio, the AI transcribes it; you paste text, the AI extracts vocabulary. Each captured item becomes a flashcard scheduled by FSRS. The AI is the input layer, not the teaching layer. (See [how Origa uses AI for OCR, STT, and vocabulary extraction](/docs/capture).)
 
-An AI tutor and Origa are not substitutes. An AI tutor explains a grammar point; Origa makes sure you remember the words in the example sentence. Most serious learners end up using both — a chatbot for one-off questions, an SRS for the things that matter.
+An AI tutor and Origa are not substitutes. An AI tutor explains a grammar point; Origa makes sure you remember the words in the example sentence. Most serious learners end up using both: a chatbot for one-off questions, an SRS for the things that matter.
 
 ## What to look for in an AI tutor
 
@@ -80,7 +80,7 @@ A checklist that actually separates value from hype:
 - **Is the AI correction reliable at your level?** Test with sentences you already know the answer to. If the AI is wrong on those, it'll be worse on what you don't know.
 - **Is the AI guidance optional or required?** Beginners benefit from structure (guided flows). Intermediate learners benefit from free-form. Pick the right shape for your level.
 - **Where does the AI run?** Cloud-based AI is smarter but logs every interaction. On-device AI is private but less capable. Neither is universally better.
-- **What's the subscription math?** As of mid-2026: ChatGPT Plus, Claude Pro and Gemini Advanced are each ~$200/year (~$17/month); dedicated AI language apps run higher — Speak ~$30/month, Talkpal ~$20/month, Praktika ~$100/year. Stack one of those with a paid SRS or kanji app and you're comfortably at $30–50/month recurring, $360–600/year, indefinitely. Check whether a one-time-purchase or source-available alternative closes most of the gap.
+- **What's the subscription math?** As of mid-2026: ChatGPT Plus, Claude Pro and Gemini Advanced are each ~$200/year (~$17/month); dedicated AI language apps run higher, Speak ~$30/month, Talkpal ~$20/month, Praktika ~$100/year. Stack one of those with a paid SRS or kanji app and you're comfortably at $30–50/month recurring, $360–600/year, indefinitely. Check whether a one-time-purchase or source-available alternative closes most of the gap.
 
 ## How Origa uses AI
 
@@ -104,21 +104,21 @@ The design choice is explicit: use AI where it removes friction from the capture
 
 If your study time is 30 minutes a day and you have to choose between an AI tutor and an SRS, choose the SRS. Spaced repetition is the one component of language learning where the evidence is unambiguous; speaking practice makes sense once you have roughly an N4 base ([the zero-to-start plan](/blog/yaponskiy-s-nulya)). The AI tutor is the more glamorous purchase, but it's the SRS that delivers the year-over-year progress.
 
-If you can run both — an SRS for retention, an AI tutor for on-demand explanation and conversation practice — that's the actual best-of-both-worlds setup most intermediate-and-up learners converge on. Origa covers the SRS half and uses AI for input, not for conversation. ChatGPT or Claude covers the conversation half. The combination is cheaper and more effective than a single AI-tutor subscription that promises everything and delivers conversation plus weak retention. If the SRS half is what you need, [download Origa](/download).
+If you can run both, an SRS for retention and an AI tutor for on-demand explanation and conversation practice, that's the actual best-of-both-worlds setup most intermediate-and-up learners converge on. Origa covers the SRS half and uses AI for input, not for conversation. ChatGPT or Claude covers the conversation half. The combination is cheaper and more effective than a single AI-tutor subscription that promises everything and delivers conversation plus weak retention. If the SRS half is what you need, [download Origa](/download).
 
 ## FAQ
 
 ### Can I learn Japanese just with ChatGPT?
 
-You can practice conversation and get grammar explanations. You will not retain what you learn without a separate SRS. ChatGPT alone is a tutor without a curriculum or a memory — useful, incomplete.
+You can practice conversation and get grammar explanations. You will not retain what you learn without a separate SRS. ChatGPT alone is a tutor without a curriculum or a memory. Useful, incomplete.
 
 ### Are AI tutor apps better than ChatGPT?
 
-For guided scenarios and structured lessons, yes — they wrap the AI in a learning flow. For raw flexibility, no. The best choice depends on whether you want structure (use an AI tutor app) or flexibility (use ChatGPT directly).
+For guided scenarios and structured lessons, yes: they wrap the AI in a learning flow. For raw flexibility, no. The best choice depends on whether you want structure (use an AI tutor app) or flexibility (use ChatGPT directly).
 
 ### Does Origa have an AI chatbot?
 
-No. Origa uses AI for OCR, speech-to-text, and vocabulary extraction — the input side of learning. For conversational AI, pair Origa with ChatGPT, Claude, or a dedicated AI tutor app.
+No. Origa uses AI for OCR, speech-to-text, and vocabulary extraction, the input side of learning. For conversational AI, pair Origa with ChatGPT, Claude, or a dedicated AI tutor app.
 
 ### Is local AI as good as cloud AI?
 

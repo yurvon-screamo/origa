@@ -14,7 +14,7 @@ status: ready
 
 # How Many Kanji Do You Actually Need: Honest Numbers
 
-"Japanese has 2,136 characters" — the sentence used to scare beginners most. It's technically true and practically useless: 2,136 jōyō kanji is the volume for reading newspapers, not the entry threshold for the language.
+"Japanese has 2,136 characters." The sentence used to scare beginners most. It's technically true and practically useless: 2,136 jōyō kanji is the volume for reading newspapers, not the entry threshold for the language.
 
 The right question is: how many kanji does **your** goal require? The answers are concrete numbers, and they're far below the scary figure.
 
@@ -32,19 +32,19 @@ The JLPT institute publishes no official kanji or vocabulary lists at any level.
 | Novels, TV without subtitles | ~1300–1800 | N2–N1 |
 | Newspapers, official documents | 2136 jōyō + name characters | N1+ |
 
-Two observations. First: at just a couple hundred characters, furigana manga already opens up — real reading of real content. Second: between "read manga" and "read a newspaper" lies a tenfold gap, and most learners will never need the far end. More on getting started with manga in [the dedicated article](/blog/learn-japanese-from-manga).
+Two observations. First: at just a couple hundred characters, furigana manga already opens up to real reading of real content. Second: between "read manga" and "read a newspaper" lies a tenfold gap, and most learners will never need the far end. More on getting started with manga in [the dedicated article](/blog/learn-japanese-from-manga).
 
 ## Why "Knowing Kanji" Is the Wrong Frame
 
-A kanji doesn't exist on its own — it lives inside words. 食 appears in 食べる (to eat), 食事 (a meal), 和食 (Japanese cuisine) — read differently each time. Learning "the kanji 食" in isolation means memorizing an abstraction that fades within a week.
+A kanji doesn't exist on its own. It lives inside words. 食 appears in 食べる (to eat), 食事 (a meal), 和食 (Japanese cuisine), read differently each time. Learning "the kanji 食" in isolation means memorizing an abstraction that fades within a week.
 
-So the meaningful unit isn't the character — it's the **word**. 300 kanji translates to roughly 900–1500 words containing them. Once you know those words, "which reading and meaning applies here" resolves through context automatically.
+So the meaningful unit isn't the character. It's the **word**. 300 kanji translates to roughly 900–1500 words containing them. Once you know those words, "which reading and meaning applies here" resolves through context automatically.
 
 Practical takeaway: frame your goal as "a vocabulary of X words covering Y kanji," never "memorize a kanji list." Bare character lists are the fastest way to waste a month.
 
 ## How to Get There
 
-**Learn kanji from your own content.** A character met in manga or an article is anchored to a plot and a sentence — retention is dramatically better than from a list.
+**Learn kanji from your own content.** A character met in manga or an article is anchored to a plot and a sentence. Retention is dramatically better than from a list.
 
 **Spaced repetition is non-negotiable.** Without a system, yesterday's word vanishes within a week; with SRS, intervals stretch to weeks and months automatically.
 
@@ -54,11 +54,11 @@ Practical takeaway: frame your goal as "a vocabulary of X words covering Y kanji
 
 What kanji-through-vocabulary looks like, using 食：
 
-- You meet **食べる** (taberu) — "to eat." First reading: ta. The word goes into SRS.
-- A week later — **食事** (shokuji) — "a meal." New reading: shoku. The app links both words through the shared character.
-- Later still — **和食** (washoku) — "Japanese cuisine." Third word, no new readings needed.
+- You meet **食べる** (taberu), "to eat." First reading: ta. The word goes into SRS.
+- A week later you meet **食事** (shokuji), "a meal." New reading: shoku. The app links both words through the shared character.
+- Later still, **和食** (washoku), "Japanese cuisine." Third word, no new readings needed.
 
-Result: instead of an abstract "kanji #126 with three readings," you own three living words and an intuition that 食 means food in any company. Your kanji counter ticks up by one as a side effect of three cards — exactly how it should grow. Learning the character "in advance," before meeting it in context, means learning it twice.
+Result: instead of an abstract "kanji #126 with three readings," you own three living words and an intuition that 食 means food in any company. Your kanji counter ticks up by one as a side effect of three cards, exactly how it should grow. Learning the character "in advance," before meeting it in context, means learning it twice.
 
 ## Measuring Your Progress
 
@@ -72,14 +72,14 @@ Three working metrics:
 
 Origa shows counts of learned vocabulary and kanji, tracks your JLPT level, and automatically hides furigana on characters you've mastered ([details](/docs/kanji)). Honest limits of this mechanics:
 
-- **"Learned" ≠ "forever."** SRS intervals stretch into months, but memory decays without periodic reviews — the counter reflects your review schedule's state, not permanent ownership.
+- **"Learned" ≠ "forever."** SRS intervals stretch into months, but memory decays without periodic reviews. The counter reflects your review schedule's state, not permanent ownership.
 - **Word metrics beat character metrics**, so treat the vocabulary counter as primary: it maps closer to actual language volume.
 
 ## Bottom Line
 
 Furigana manga takes a couple hundred kanji, web articles about a thousand, newspapers require the full jōyō set. Count words, not characters; learn them from context with spaced repetition; use furigana as removable scaffolding.
 
-At the very beginning? [The zero-to-start plan](/blog/yaponskiy-s-nulya) shows where kanji appear along the way. Ready to build volume — [download Origa](/download).
+At the very beginning? [The zero-to-start plan](/blog/yaponskiy-s-nulya) shows where kanji appear along the way. Ready to build volume? [Download Origa](/download).
 
 ## FAQ
 
@@ -97,4 +97,4 @@ Yes, without review. Spaced repetition keeps them active on stretching intervals
 
 ### Can I write Japanese words in romaji or hiragana instead?
 
-Hiragana — yes, natives do it for uncommon characters too. Romaji — people will understand you, but the text looks foreign and you're not training the character recognition reading requires.
+For hiragana, yes: natives do it for uncommon characters too. For romaji, people will understand you, but the text looks foreign and you're not training the character recognition reading requires.
