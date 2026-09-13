@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { Given, When, Then } from "../fixtures";
+import { Before, Given, When, Then, test } from "../fixtures";
 import { getTrailBaseUrl } from "../../config";
 
 /**
@@ -12,6 +12,13 @@ import { getTrailBaseUrl } from "../../config";
  * Wi-Fi, no uplink" grey zone — and, unlike context.setOffline, works
  * across reloads.
  */
+
+// The offline lesson scenario seeds a word (tokenizer download +
+// inflation) and then walks the full lesson — the default 180 s test
+// budget does not cover the seeding on CI runners.
+Before('@slow-startup', () => {
+    test.info().setTimeout(420_000);
+});
 
 const CDN_URL = "http://localhost:8080/**";
 const APP_ORIGIN = "http://localhost:1420";
@@ -165,7 +172,10 @@ When('интернет становится доступен', async ({ page }) 
 });
 
 When('пользователь нажимает кнопку «Повторить»', async ({ page }) => {
-    await page.getByTestId("app-load-error-retry").click({ timeout: 10_000 });
+    // The error screen appears only after the startup pipeline concludes
+    // (cold WASM boot + manifest probe under a dead network can take a
+    // while) — the click itself waits for the button.
+    await page.getByTestId("app-load-error-retry").click({ timeout: 30_000 });
 });
 
 // ── Then ─────────────────────────────────────────────────────────────
