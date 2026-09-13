@@ -173,9 +173,19 @@ When('интернет становится доступен', async ({ page }) 
 
 When('пользователь нажимает кнопку «Повторить»', async ({ page }) => {
     // The error screen appears only after the startup pipeline concludes
-    // (cold WASM boot + manifest probe under a dead network can take a
-    // while) — the click itself waits for the button.
-    await page.getByTestId("app-load-error-retry").click({ timeout: 30_000 });
+    // (cold WASM boot under a dead network) — wait for it explicitly,
+    // then click; a bare click timeout races the boot on slow runners.
+    const screen = page.getByTestId("app-load-error");
+    await expect(screen).toBeVisible({ timeout: 60_000 });
+    await page.getByTestId("app-load-error-retry").click({ timeout: 10_000 });
+});
+
+Then('видна страница входа', async ({ page }) => {
+    // 60 s covers the cold CI WASM boot; the shared login-page helper
+    // only waits 15 s for the password toggle.
+    await expect(page.getByTestId("login-password-toggle")).toBeVisible({
+        timeout: 60_000,
+    });
 });
 
 // ── Then ─────────────────────────────────────────────────────────────
