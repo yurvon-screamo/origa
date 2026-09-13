@@ -1,4 +1,4 @@
-# ADR-052: Offline-First Resource Loading
+# ADR-053: Offline-First Resource Loading
 
 ## Status
 
