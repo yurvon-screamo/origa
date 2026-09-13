@@ -29,10 +29,13 @@ log() {
     printf '[geoip %s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"
 }
 
-# --- Skip if fresh enough ---
+# --- Skip if fresh enough (a corrupt or truncated leftover fails the size check
+# and gets re-downloaded instead of being trusted) ---
 if [ -f "${GEOIP_DEST}" ]; then
+    existing_size=$(stat -c %s "${GEOIP_DEST}")
     file_age=$(( $(date +%s) - $(stat -c %Y "${GEOIP_DEST}") ))
-    if [ "${file_age}" -lt $(( FRESHNESS_DAYS * 86400 )) ]; then
+    if [ "${existing_size}" -ge "${MIN_SIZE_BYTES}" ] \
+        && [ "${file_age}" -lt $(( FRESHNESS_DAYS * 86400 )) ]; then
         log "Database is fresh (${FRESHNESS_DAYS}d window), skipping."
         exit 0
     fi
@@ -42,10 +45,12 @@ mkdir -p "$(dirname "${GEOIP_DEST}")"
 
 # --- Atomic download: tmp file in the target directory, then rename ---
 log "Downloading GeoLite2-Country..."
+rm -f "${GEOIP_DEST}".tmp.* # orphans from a SIGKILLed run; -f tolerates no matches
 tmp_file="${GEOIP_DEST}.tmp.$$"
 trap 'rm -f "${tmp_file}"' EXIT
 
-curl -sSfL --max-time "${CURL_TIMEOUT}" -o "${tmp_file}" "${GEOIP_URL}"
+curl -sSfL --max-time "${CURL_TIMEOUT}" --retry 3 --retry-delay 2 \
+    -o "${tmp_file}" "${GEOIP_URL}"
 
 downloaded_size=$(stat -c %s "${tmp_file}")
 if [ "${downloaded_size}" -lt "${MIN_SIZE_BYTES}" ]; then
