@@ -174,6 +174,18 @@ pub fn LessonCardContainer() -> impl IntoView {
             && audio_mode_active.get()
     });
 
+    // Lesson-state projections shared by every card view below, created
+    // ONCE here: card components read them from Effects, and per-card
+    // `Signal::derive`s inside the Show branches die with the rendered
+    // fragment — a late-scheduled effect after an advance would read a
+    // disposed signal. Container scope outlives every card fragment.
+    let show_answer_sig = Signal::derive(move || lesson_state.get().showing_answer);
+    let dont_know_sig = Signal::derive(move || lesson_state.get().dont_know_selected);
+    let waiting_for_next_sig = Signal::derive(move || lesson_state.get().waiting_for_next);
+    let multi_submitted_sig = Signal::derive(move || lesson_state.get().multi_quiz_submitted);
+    let rating_disabled_sig = Signal::derive(move || is_rating.get().is_some());
+    let known_kanji_sig = Signal::from(known_kanji);
+
     on_cleanup(move || {
         stop_current_audio();
     });
@@ -192,11 +204,11 @@ pub fn LessonCardContainer() -> impl IntoView {
                     current_lesson_card.get().map(|lesson_card| {
                         render_lesson_card(
                             lesson_card,
-                            Signal::derive(move || lesson_state.get().showing_answer),
+                            show_answer_sig,
                             Callback::new(move |_| show_answer()),
                             on_rate_callback,
-                            is_rating,
-                            known_kanji,
+                            rating_disabled_sig,
+                            known_kanji_sig,
                             native_language,
                         )
                     })
@@ -213,14 +225,14 @@ pub fn LessonCardContainer() -> impl IntoView {
                             Some(view! {
                                 <QuizCardView
                                     quiz_card=quiz
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     selected_option=selected_option
                                     on_select_option=on_quiz_select
                                     on_dont_know=on_quiz_dont_know
-                                    dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
+                                    dont_know_selected=dont_know_sig
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    known_kanji=known_kanji_sig
+                                    waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
                                 />
                             })
@@ -240,9 +252,9 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     card=card
                                     on_rate=on_rate_callback
                                     on_show_answer=Callback::new(move |_| show_answer())
-                                    disabled=Signal::derive(move || is_rating.get().is_some())
+                                    disabled=rating_disabled_sig
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
+                                    known_kanji=known_kanji_sig
                                 />
                             })
                         } else {
@@ -262,14 +274,14 @@ pub fn LessonCardContainer() -> impl IntoView {
                             Some(view! {
                                 <YesNoCardView
                                     yesno_card=yesno
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     selected_answer=selected_answer
                                     on_answer=on_yesno_select
                                     on_dont_know=on_yesno_dont_know
-                                    dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
+                                    dont_know_selected=dont_know_sig
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    known_kanji=known_kanji_sig
+                                    waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
                                 />
                             })
@@ -311,15 +323,15 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     card_type=card_type
                                     audio_file=audio_file
                                     options=options
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     selected_option=selected_option
                                     on_select_option=on_quiz_select
                                     on_dont_know=on_quiz_dont_know
                                     dont_know_selected=state.dont_know_selected
                                     phrase_text=phrase_text
                                     phrase_translation=phrase_translation
-                                    known_kanji=Signal::from(known_kanji)
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    known_kanji=known_kanji_sig
+                                    waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
                                 />
                             })
@@ -337,13 +349,13 @@ pub fn LessonCardContainer() -> impl IntoView {
                             Some(view! {
                                 <AudioRecallCardView
                                     card=card
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     on_answer=on_audio_select
                                     on_reveal=Callback::new(move |_| show_answer())
                                     on_replay=on_replay_audio
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
-                                    disabled=Signal::derive(move || is_rating.get().is_some())
+                                    known_kanji=known_kanji_sig
+                                    disabled=rating_disabled_sig
                                 />
                             })
                         } else {
@@ -365,20 +377,20 @@ pub fn LessonCardContainer() -> impl IntoView {
                             Some(view! {
                                 <QuizCardView
                                     quiz_card=quiz
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     selected_option=selected_option
                                     on_select_option=on_quiz_select
                                     on_dont_know=on_quiz_dont_know
-                                    dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
+                                    dont_know_selected=dont_know_sig
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
+                                    known_kanji=known_kanji_sig
                                     quiz_variant=QuizVariant::Reading
                                     selected_options=Signal::derive(move || selected_options.clone())
-                                    multi_submitted=Signal::derive(move || lesson_state.get().multi_quiz_submitted)
+                                    multi_submitted=multi_submitted_sig
                                     multi_result=multi_result
                                     on_toggle=on_quiz_toggle
                                     on_submit=on_quiz_submit
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
                                     lenient_grading=true
                                 />
@@ -404,16 +416,16 @@ pub fn LessonCardContainer() -> impl IntoView {
                             Some(view! {
                                 <QuizCardView
                                     quiz_card=gq.quiz().clone()
-                                    show_result=Signal::derive(move || lesson_state.get().showing_answer)
+                                    show_result=show_answer_sig
                                     selected_option=selected_option
                                     on_select_option=on_quiz_select
                                     on_dont_know=on_quiz_dont_know
-                                    dont_know_selected=Signal::derive(move || lesson_state.get().dont_know_selected)
+                                    dont_know_selected=dont_know_sig
                                     native_language=native_language.get()
-                                    known_kanji=Signal::from(known_kanji)
+                                    known_kanji=known_kanji_sig
                                     quiz_variant=QuizVariant::Grammar
                                     grammar_base_word=Some(base_word)
-                                    waiting_for_next=Signal::derive(move || lesson_state.get().waiting_for_next)
+                                    waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
                                 />
                             })

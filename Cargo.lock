@@ -6046,6 +6046,7 @@ dependencies = [
  "tempfile",
  "tracing",
  "tracing-subscriber",
+ "tts",
  "uuid",
 ]
 
