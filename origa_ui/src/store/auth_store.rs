@@ -127,13 +127,6 @@ impl AuthStore {
         Memo::new(move |_| user.with(|u| u.is_some()))
     }
 
-    /// Returns a reactive Memo indicating if we're in loading state
-    pub fn is_loading(&self) -> Memo<bool> {
-        let is_checking_session = self.is_checking_session;
-        let is_syncing = self.is_syncing;
-        Memo::new(move |_| is_checking_session.get() || is_syncing.get())
-    }
-
     /// Returns a reactive Memo indicating if ALL overlay-gating data
     /// resources are loaded. The tokenizer dictionary is intentionally
     /// NOT among them (#521): renders answer from the precompute store

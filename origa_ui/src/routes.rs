@@ -457,7 +457,16 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     });
 
     move || {
-        if auth_store.is_loading().get() {
+        // Pre-existing login-swallowed-error fix (surfaced by the
+        // offline specs): while a login submit is in flight the
+        // NOT-authenticated branch must keep <Login/> mounted — routing
+        // it through the overlay unmounts the form and its server_error
+        // signal, so the failure arrived as a silently collapsed form.
+        // The overlay still covers authenticated syncing (onboarding,
+        // sync checkpoints) and session checks as before.
+        let session_checking_or_authenticated_sync = auth_store.is_checking_session.get()
+            || (is_authenticated.get() && auth_store.is_syncing.get());
+        if session_checking_or_authenticated_sync {
             let loading_msg: Signal<String> = Signal::derive(move || {
                 crate::i18n::use_i18n()
                     .get_keys()
