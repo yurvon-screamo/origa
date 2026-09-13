@@ -21,14 +21,15 @@ const APP_ORIGIN = "http://localhost:1420";
  * user record — those must survive a dictionary-cache wipe. */
 const ORIGA_CACHE_PREFIX = "origa-";
 
-/** Every vocabulary fallback layer: the CDN rkyv blob, the 11 JSON chunks
- * (both keyed in origa-cdn-v1) and the parsed rkyv cache store. A partial
- * wipe leaves a live layer and silently green-tests the happy path. */
+/** Every vocabulary fallback layer as URL fragments: the CDN rkyv blob
+ * and the 11 JSON chunks (both keyed in origa-cdn-v1). A partial wipe
+ * leaves a live layer and silently green-tests the happy path. The
+ * parsed rkyv store is deleted whole (its name is a store, not a URL). */
 const VOCABULARY_CACHE_HINTS = [
     "/dictionary/vocabulary.rkyv",
     "/dictionary/chunk_",
-    "/__origa_vocabulary_cached__",
 ];
+const VOCABULARY_RKYV_STORE = "origa-vocabulary-rkyv-v1";
 
 async function abortExternalTraffic(page: Page): Promise<void> {
     const trailBaseUrl = getTrailBaseUrl();
@@ -85,33 +86,36 @@ Given('кэш словарей пуст', async ({ page }) => {
 });
 
 Given('кэш словаря слов очищен полностью', async ({ page }) => {
-    await page.evaluate(async () => {
-        const keys = await caches.keys();
-        for (const key of keys) {
-            if (key === "origa-vocabulary-rkyv-v1") {
-                await caches.delete(key);
-                continue;
-            }
-            if (key !== "origa-cdn-v1") continue;
-            const cache = await caches.open(key);
-            const requests = await cache.keys();
-            for (const request of requests) {
-                const url = request.url;
-                if (
-                    url.includes("/dictionary/vocabulary.rkyv") ||
-                    url.includes("/dictionary/chunk_")
-                ) {
-                    await cache.delete(request);
+    await page.evaluate(
+        ([hints, rkyvStore]) => {
+            return (async () => {
+                const keys = await caches.keys();
+                for (const key of keys) {
+                    if (key === rkyvStore) {
+                        await caches.delete(key);
+                        continue;
+                    }
+                    if (key !== "origa-cdn-v1") continue;
+                    const cache = await caches.open(key);
+                    const requests = await cache.keys();
+                    for (const request of requests) {
+                        if (hints.some((hint) => request.url.includes(hint))) {
+                            await cache.delete(request);
+                        }
+                    }
                 }
-            }
-        }
-    });
+            })();
+        },
+        [VOCABULARY_CACHE_HINTS, VOCABULARY_RKYV_STORE] as const,
+    );
 });
 
 Given('локальный профиль пользователя отсутствует', async ({ page }) => {
-    // Surgical wipe: clear only the `users` object store of the app DB.
-    // The TrailBase session lives in localStorage and must survive — the
-    // scenario asserts the merge-branch behaviour of check_session.
+    // Surgical wipe: clear only the `users` object store of the app DB
+    // (names mirror DB_NAME/STORE_NAME in file_repository.rs — keep them
+    // in sync). The TrailBase session lives in localStorage and must
+    // survive — the scenario asserts the merge-branch behaviour of
+    // check_session.
     await page.evaluate(
         () =>
             new Promise<void>((resolve, reject) => {

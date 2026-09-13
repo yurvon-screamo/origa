@@ -36,11 +36,12 @@ use crate::repository::HybridUserRepository;
 /// a stalled neighbour (idle timeout) or a proven-unreachable CDN make
 /// the retry pure latency — skip it. Transient errors (HTTP 5xx, an
 /// immediate refusal on a live network) still retry once.
-fn should_retry_after_error(error: &OrigaError, cdn_unreachable: bool) -> bool {
-    if cdn_unreachable {
+fn should_retry_after_error(error: &OrigaError) -> bool {
+    if crate::repository::cdn_provider::is_cdn_unreachable() {
         return false;
     }
     !crate::utils::net_timeout::is_idle_timeout(error)
+        && !crate::repository::cdn_provider::CdnUnreachableError::is_match(error)
 }
 
 /// Critical resources of the startup pipeline (ADR-053): the app is
@@ -86,24 +87,22 @@ where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<(), OrigaError>>,
 {
-    let mut last_err = None;
-    for attempt in 0..=max_retries {
+    let mut attempt = 0;
+    loop {
         match loader().await {
             Ok(()) => return Ok(()),
             Err(e) => {
-                if attempt < max_retries && should_retry_after_error(&e, false) {
-                    tracing::info!("Retrying after error: {e}");
-                } else {
+                if attempt >= max_retries || !should_retry_after_error(&e) {
                     if attempt < max_retries {
                         tracing::info!("Skipping retry after stalled/unreachable error: {e}");
                     }
                     return Err(e);
                 }
-                last_err = Some(e);
+                tracing::info!("Retrying after error: {e}");
+                attempt += 1;
             },
         }
     }
-    Err(last_err.expect("at least one attempt was made"))
 }
 
 /// How a tracked loader's failure is logged. Full resources (vocabulary,
@@ -141,6 +140,25 @@ where
     result
 }
 
+/// Phase A of the startup pipeline: the cache-manifest check. When the
+/// browser claims offline, a short HEAD probe settles the truth
+/// (WKWebView lies about onLine in both directions): a live CDN still
+/// gets its manifest validation (cache invalidation must keep working),
+/// a dead one records the verdict and skips straight to the cache-first
+/// stages (ADR-053).
+async fn run_manifest_phase(connectivity: &ConnectivityStore) {
+    let manifest_check_allowed = if connectivity.is_online.get_untracked() {
+        true
+    } else {
+        crate::repository::cache_manager::probe_manifest_reachable().await
+    };
+    if manifest_check_allowed
+        && let Err(e) = crate::repository::cache_manager::check_and_invalidate().await
+    {
+        tracing::warn!("Cache manifest check failed: {e}");
+    }
+}
+
 pub fn start_dictionary_loading(
     auth_store: AuthStore,
     repository: HybridUserRepository,
@@ -152,22 +170,7 @@ pub fn start_dictionary_loading(
         // stale run resolving after a Retry must stay silent (ADR-053).
         let generation = auth_store.load_generation.get_untracked();
 
-        // Phase A: manifest check. When the browser claims offline, a
-        // short HEAD probe settles the truth (WKWebView lies about
-        // onLine in both directions): a live CDN still gets its
-        // manifest validation (cache invalidation must keep working),
-        // a dead one records the verdict and skips straight to the
-        // cache-first stages (ADR-053).
-        let manifest_check_allowed = if connectivity.is_online.get_untracked() {
-            true
-        } else {
-            crate::repository::cache_manager::probe_manifest_reachable().await
-        };
-        if manifest_check_allowed
-            && let Err(e) = crate::repository::cache_manager::check_and_invalidate().await
-        {
-            tracing::warn!("Cache manifest check failed: {e}");
-        }
+        run_manifest_phase(&connectivity).await;
 
         // Phase B: staged loading to minimize peak WASM linear memory.
         //
@@ -701,12 +704,14 @@ mod tests {
 
     #[test]
     fn retry_policy_skips_stalled_and_unreachable_failures() {
+        use crate::repository::cdn_provider::{clear_cdn_unreachable, mark_cdn_unreachable};
+
         // Transient failures on a live network still retry.
         let http_500 = OrigaError::NetworkError {
             url: "probe".to_string(),
             reason: "HTTP 500".to_string(),
         };
-        assert!(should_retry_after_error(&http_500, false));
+        assert!(should_retry_after_error(&http_500));
 
         // An idle-timeout stall never retries: the neighbour already
         // proved the network dead (ADR-053, R3-C1).
@@ -714,10 +719,20 @@ mod tests {
             url: "probe".to_string(),
             reason: "idle timeout after 10000 ms without data".to_string(),
         };
-        assert!(!should_retry_after_error(&stalled, false));
+        assert!(!should_retry_after_error(&stalled));
+
+        // An instant refusal produced under the unreachable verdict
+        // never retries either.
+        let refused = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "cdn unreachable: skipping request after probe verdict".to_string(),
+        };
+        assert!(!should_retry_after_error(&refused));
 
         // A proven-unreachable CDN makes any failure terminal for now.
-        assert!(!should_retry_after_error(&http_500, true));
+        mark_cdn_unreachable();
+        assert!(!should_retry_after_error(&http_500));
+        clear_cdn_unreachable();
     }
 
     fn network_fail() -> OrigaError {

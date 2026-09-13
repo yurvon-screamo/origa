@@ -465,6 +465,11 @@ impl AuthStore {
         self.is_furigana_loaded.set(false);
         self.is_jlpt_content_loaded.set(false);
         self.is_data_loading_started.set(false);
+        // A stale failure verdict must not outlive its run: without this
+        // reset, a logout after an offline failure would re-render the
+        // error screen over a freshly (and successfully) loaded app.
+        self.load_failure.set(false);
+        self.load_generation.update(|generation| *generation += 1);
     }
 
     /// Internal: Clear all authentication-related state
