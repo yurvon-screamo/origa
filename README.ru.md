@@ -14,6 +14,8 @@
 устройстве. Подключение к интернету требуется только для первого входа
 и первичной загрузки контента.
 
+**Сайт:** <https://origa.uwuwu.net> · **Web-версия:** <https://app.origa.uwuwu.net>
+
 ![Origa — главный экран](origa_landing/public/images/ru.hero.png)
 
 ---
@@ -69,16 +71,22 @@
 
 ## 📥 Скачать
 
+Проще всего установить Origa со [страницы загрузки](https://origa.uwuwu.net/ru/download) — она предложит подходящую сборку для вашей системы.
+
+Прямые ссылки (последний стабильный релиз):
+
 | Платформа | Статус | Формат |
 | :--- | :--- | :--- |
-| **Windows** | ✅ Готово | `.exe`, `.msi` |
-| **Linux** | ✅ Готово | `.deb`, `.AppImage`, `.rpm` |
-| **macOS** | ✅ Готово | `.dmg`, `.app` |
-| **Android** | ✅ Готово | `.apk` |
+| **Windows** | ✅ Готово | [установщик `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
+| **Linux** | ✅ Готово | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Android** | ✅ Готово | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **macOS** | ⏳ Скоро | Mac App Store |
 
 > Все версии поддерживают оффлайн-режим работы.
 
-Также доступна web-версия.
+Все сборки и заметки релизов: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).
+
+Также доступна [web-версия](https://app.origa.uwuwu.net).
 
 ---
 

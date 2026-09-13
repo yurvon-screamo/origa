@@ -282,6 +282,80 @@ block, applied in: `tauri.yml::build-frontend`, `_build-tauri.yml::build-{window
 - **Sentry crate bump past 0.49** — out of scope; revisit when future-incompat
   becomes a hard error.
 
+## Addendum (2026-09-13): Release-health sessions & install identifier
+
+**Status:** Accepted (addendum to the ADR above).
+
+**Motivation:** a distribution review showed there was no installation
+metric at all — GitHub asset download counts are a skewed proxy (updater
+`latest.json` fetches, CI/QA downloads of `-rc` assets). Release Health
+in Sentry fills that gap with data the SDK already sends.
+
+### What was added
+
+1. **Manual session start in `setup()`** (`tauri/src/lib.rs`): after
+   `init_sentry()`, the app sets an anonymous install id as the scope
+   user and calls `sentry::start_session()`.
+2. **`tauri/src/install_id.rs`**: a UUID v4 persisted to
+   `<app_data_dir>/install.json` (plain `std::fs` + `serde_json`, so the
+   helpers are unit-tested without an `AppHandle`).
+
+### Why manual `start_session`, not `auto_session_tracking: true`
+
+A session created by `sentry::init` (what `auto_session_tracking` does)
+captures `scope.user` at creation time via `Session::from_stack` — before
+the setup callback runs and before the install id is known, so every
+session would carry `distinct_id: None` and Release Health "Users" would
+stay empty. Starting the session in `setup()` after `set_user`
+guarantees `distinct_id == install id`.
+
+**Invariant:** `set_user` must run strictly before `start_session`, both
+on the main-thread hub that `sentry::init` bound the client to. A quiet
+regression here is possible only if the threading model of the
+initialization is refactored.
+
+**Cost:** events captured between `init_sentry()` and `setup()` (early
+startup) fall outside the session. For an installation-count metric this
+is irrelevant.
+
+The `_sentry_guard` stays on the `run()` stack: its `Drop` calls
+`end_session()` + `client.close(None)` for manually started sessions too,
+so the flush contract is unchanged. When Sentry is disabled (empty DSN),
+the hub check in `setup()` skips both the install file and the session —
+no telemetry, no file.
+
+### Known measurement limitations
+
+- A session reaches Sentry only on graceful shutdown (`Drop` of the
+  guard) or piggybacked on a captured event's envelope. `SIGKILL`
+  (Android swipe-away, desktop force-kill, OOM) loses the session:
+  "Users" is a **lower bound**, desktop-centric.
+- Android: the Rust process outlives Activity destroy; session length is
+  inflated by background time.
+- Read metrics with the `layer=tauri` filter: the WASM/JS SDK layer
+  (`layer=ui`) sends its own browser sessions with its own anonymous user
+  ids (JS `autoSessionTracking` is on by default) and must not be mixed
+  into desktop counts.
+- Sessions are not a billing unit in Sentry quotas.
+
+### Privacy
+
+The install id is a random UUID, generated locally, never linked to an
+account, email, or learning progress; `send_default_pii(false)` stays on.
+The landing `/privacy` page (EN + RU bodies; KO/VI render the EN body)
+was updated to disclose session statistics and the identifier.
+
+### Verification
+
+- Unit tests: `tauri/src/install_id.rs` — create on first launch, stable
+  reread, corrupted file → regenerate, missing data dir → create.
+- Manual smoke (same pattern as §Slice 4): build with a real DSN
+  (`SENTRY_DSN`, `SENTRY_ENVIRONMENT=development`,
+  `ORIGA_CDN_BASE_URL`), run the app, close the window normally, then in
+  the Sentry UI confirm a `layer=tauri` session whose distinct_id equals
+  the UUID in `app_data_dir/install.json`, and Users ≥ 1 (filtered by
+  `layer=tauri`, environment `development`).
+
 ## References
 
 - Sentry Rust SDK: <https://docs.sentry.io/platforms/rust/>

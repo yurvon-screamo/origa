@@ -1,4 +1,8 @@
 mod auth_store;
+// Anonymous installation identifier for Sentry release-health sessions
+// (see the ADR-036 addendum). Plain std::fs helpers — no AppHandle — so
+// the module stays unit-testable.
+mod install_id;
 // Android JNI context ownership: since Tauri 2.11 (tao 0.35) nothing
 // publishes the JavaVM/Application into `ndk-context`, so this module owns
 // the invariant (JNI_OnLoad capture + publication). See ADR-044.
@@ -178,6 +182,8 @@ pub fn run() {
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
 
+            start_release_health_session(app);
+
             let handle_for_event = app.handle().clone();
 
             app.listen("deep-link://new-url", move |event: tauri::Event| {
@@ -240,6 +246,53 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+/// Starts the Sentry release-health session with the anonymous install id
+/// (ADR-036 addendum).
+///
+/// The session is started manually — NOT via `auto_session_tracking` —
+/// because a session created inside `sentry::init` captures `scope.user`
+/// at creation time, before the install id is known; Release Health
+/// "Users" would stay empty. Invariant: `set_user` strictly BEFORE
+/// `start_session`, both on this main-thread hub that `sentry::init`
+/// bound the client to. The `_sentry_guard` stays on the `run()` stack —
+/// moving it closer to this call site would drop it early and break the
+/// exit flush.
+fn start_release_health_session(app: &tauri::App) {
+    if sentry::Hub::current().client().is_none() {
+        return;
+    }
+
+    use tauri::Manager;
+
+    match app.path().app_data_dir() {
+        Ok(data_dir) => {
+            match install_id::read_or_create(&data_dir) {
+                Some(install_id) => {
+                    sentry::configure_scope(|scope| {
+                        scope.set_user(Some(sentry::User {
+                            id: Some(install_id.to_string()),
+                            ..Default::default()
+                        }));
+                    });
+                },
+                None => {
+                    tracing::warn!(
+                        "[sentry] install id unavailable; session will carry no distinct_id"
+                    );
+                },
+            }
+            sentry::start_session();
+            tracing::info!("[sentry] release-health session started");
+        },
+        Err(e) => {
+            tracing::warn!(
+                "[sentry] app_data_dir unavailable ({e}); starting session without install id"
+            );
+            sentry::start_session();
+        },
+    }
 }
 
 /// Register the tracing subscriber with a Sentry layer.

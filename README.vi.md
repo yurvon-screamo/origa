@@ -10,6 +10,8 @@
 
 Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng văn bản và giọng nói — toàn bộ xử lý AI chạy cục bộ trên thiết bị của bạn. Chỉ cần kết nối internet cho lần đăng nhập đầu tiên và tải nội dung ban đầu.
 
+**Trang web:** <https://origa.uwuwu.net> · **Ứng dụng web:** <https://app.origa.uwuwu.net>
+
 ![Bảng điều khiển chính của Origa](origa_landing/public/images/en.hero.png)
 
 ---
@@ -65,16 +67,22 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 
 ## 📥 Tải xuống
 
+Cách đơn giản nhất để cài đặt Origa là [trang tải xuống](https://origa.uwuwu.net/vi/download) — trang sẽ đề xuất bản dựng phù hợp với hệ thống của bạn.
+
+Liên kết trực tiếp (bản phát hành ổn định mới nhất):
+
 | Nền tảng | Trạng thái | Định dạng |
 | :--- | :--- | :--- |
-| **Windows** | ✅ Sẵn sàng | `.exe`, `.msi` |
-| **Linux** | ✅ Sẵn sàng | `.deb`, `.AppImage`, `.rpm` |
-| **macOS** | ✅ Sẵn sàng | `.dmg`, `.app` |
-| **Android** | ✅ Sẵn sàng | `.apk` |
+| **Windows** | ✅ Sẵn sàng | [trình cài đặt `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
+| **Linux** | ✅ Sẵn sàng | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **macOS** | ⏳ Sắp ra mắt | Mac App Store |
 
 > Tất cả các phiên bản đều hỗ trợ chế độ ngoại tuyến.
 
-Phiên bản web cũng có sẵn.
+Tất cả bản dựng và ghi chú phát hành: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).
+
+[Phiên bản web](https://app.origa.uwuwu.net) cũng có sẵn.
 
 ---
 
