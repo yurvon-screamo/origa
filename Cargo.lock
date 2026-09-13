@@ -6045,6 +6045,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tracing",
  "tracing-subscriber",
+ "tts",
 ]
 
 [[package]]

@@ -57,6 +57,12 @@ tauri-plugin-single-instance.workspace = true
 tauri-plugin-updater.workspace = true
 tauri-plugin-process.workspace = true
 
+# Linux-only TTS availability probe (see lib.rs plugin registration): the
+# version MUST track the `tts` dep of tauri-plugin-tts (currently 0.26.x) so
+# the probe exercises the exact same engine init the plugin performs.
+[target.'cfg(target_os = "linux")'.dependencies]
+tts.workspace = true
+
 # device-ai plugin + crate: native ASR/OCR/TTS, primary on macOS/iOS/Android.
 # Excluded on Windows (upstream windows.rs does not compile against windows
 # 0.58 and Windows TTS does not play audio — see root Cargo.toml note) and
