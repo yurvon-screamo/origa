@@ -71,6 +71,16 @@ pub struct AuthStore {
     /// Guard against triggering start_dictionary_loading multiple times
     pub is_data_loading_started: RwSignal<bool>,
 
+    /// Full critical failure of the last startup pipeline run (ADR-052):
+    /// every critical resource failed and there is no cached fallback.
+    /// Renders the load-error screen; cleared by Retry.
+    pub load_failure: RwSignal<bool>,
+
+    /// Startup run counter: Retry bumps it, and only the current
+    /// generation may set completion/failure signals — a stale run's
+    /// late error must not override a retry in flight.
+    pub load_generation: RwSignal<u64>,
+
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
 
@@ -99,6 +109,8 @@ impl AuthStore {
             is_furigana_loaded: RwSignal::new(false),
             is_jlpt_content_loaded: RwSignal::new(false),
             is_data_loading_started: RwSignal::new(false),
+            load_failure: RwSignal::new(false),
+            load_generation: RwSignal::new(0),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
