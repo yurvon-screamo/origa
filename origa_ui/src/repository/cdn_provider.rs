@@ -56,12 +56,9 @@ pub fn clear_cdn_unreachable() {
 
 /// Marker for the instant refusal errors produced under the
 /// unreachable flag (distinct from idle timeouts and HTTP failures).
-/// Consumed on WASM (provider/runtime) and in tests; slice 3's native
-/// failure classifier will lift the cfg.
-#[cfg(any(target_arch = "wasm32", test))]
+/// Consumed by the retry gate (`should_retry_after_error`).
 pub struct CdnUnreachableError;
 
-#[cfg(any(target_arch = "wasm32", test))]
 impl CdnUnreachableError {
     pub fn is_match(error: &OrigaError) -> bool {
         matches!(

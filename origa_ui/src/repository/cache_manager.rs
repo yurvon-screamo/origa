@@ -187,12 +187,46 @@ pub async fn probe_manifest_reachable() -> bool {
 
 /// Whether the error is an HTTP-status failure (the server answered)
 /// rather than a transport-level one.
-#[cfg(target_arch = "wasm32")]
+#[cfg(any(target_arch = "wasm32", test))]
 fn error_reason_starts_with_http(error: &OrigaError) -> bool {
     matches!(
         error,
         OrigaError::NetworkError { reason, .. } if reason.starts_with("HTTP")
     )
+}
+
+#[cfg(test)]
+mod http_classifier_tests {
+    use super::error_reason_starts_with_http;
+    use origa::domain::OrigaError;
+
+    fn network(reason: &str) -> OrigaError {
+        OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: reason.to_string(),
+        }
+    }
+
+    // Contract: the classifier feeds the unreachable verdict in
+    // check_and_invalidate — an answered status must NOT mark the CDN
+    // dead (content may still be downloadable), while stalls and
+    // refusals must. Coupled to the `format!("HTTP {status}")` reason
+    // of utils/net_timeout.rs — edit both together.
+    #[test]
+    fn http_status_failures_mean_an_alive_server() {
+        assert!(error_reason_starts_with_http(&network("HTTP 404")));
+        assert!(error_reason_starts_with_http(&network("HTTP 500")));
+    }
+
+    #[test]
+    fn transport_failures_are_not_http_statuses() {
+        assert!(!error_reason_starts_with_http(&network(
+            "Failed to fetch: TypeError"
+        )));
+        assert!(!error_reason_starts_with_http(&network(
+            "idle timeout after 10000 ms without data"
+        )));
+    }
 }
 
 #[cfg(target_arch = "wasm32")]

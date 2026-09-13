@@ -52,7 +52,7 @@ async fn stalled_stream_aborts_with_the_idle_timeout_marker() {
     let started = now_ms();
     let stream = web_sys::ReadableStream::new().expect("empty stream");
 
-    let error = read_all_with_idle(stream, "probe://stalled", 100)
+    let error = read_all_with_idle(stream, "probe://stalled", 100, None)
         .await
         .expect_err("a stalled stream must not complete");
 
@@ -75,7 +75,7 @@ async fn chunk_progress_resets_the_idle_deadline() {
     // the progressing stream finish.
     let stream = stream_with_periodic_chunks(60, 5);
 
-    let bytes = read_all_with_idle(stream, "probe://slow", 100)
+    let bytes = read_all_with_idle(stream, "probe://slow", 100, None)
         .await
         .expect("a progressing stream must outlive the idle budget chunk by chunk");
 

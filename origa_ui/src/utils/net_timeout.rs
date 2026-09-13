@@ -86,12 +86,16 @@ where
 
 /// Reads a response body stream to the end under the idle deadline:
 /// every received chunk restarts the watchdog, so only a silent stall
-/// (no bytes for `idle_ms`) aborts. Testable seam for the WASM tests —
-/// streams are cheap to fake, fetches are not.
+/// (no bytes for `idle_ms`) aborts. The abort controller cancels the
+/// underlying connection on a stall — without it the returned error
+/// still unblocks the caller, but the dead socket keeps occupying a
+/// browser per-host connection slot. Testable seam for the WASM tests
+/// (they pass `None`): streams are cheap to fake, fetches are not.
 pub(crate) async fn read_all_with_idle(
     stream: web_sys::ReadableStream,
     url: &str,
     idle_ms: u32,
+    abort: Option<&web_sys::AbortController>,
 ) -> Result<Vec<u8>, OrigaError> {
     let generic_reader = stream.get_reader();
     let reader: web_sys::ReadableStreamDefaultReader = generic_reader
@@ -101,7 +105,7 @@ pub(crate) async fn read_all_with_idle(
     let mut bytes = Vec::new();
     loop {
         let read_promise = reader.read();
-        let result = with_idle_deadline(JsFuture::from(read_promise), url, idle_ms, None)
+        let result = with_idle_deadline(JsFuture::from(read_promise), url, idle_ms, abort)
             .await?
             .map_err(|e| network_error(url, format!("stream read rejected: {e:?}")))?;
 
@@ -154,7 +158,7 @@ pub async fn fetch_idle(url: &str, idle_ms: u32) -> Result<IdleResponse, OrigaEr
     }
 
     let bytes = match response.body() {
-        Some(stream) => read_all_with_idle(stream, url, idle_ms).await?,
+        Some(stream) => read_all_with_idle(stream, url, idle_ms, Some(&controller)).await?,
         None => {
             // No streaming body available (legacy/opaque responses):
             // fall back to arrayBuffer under the same deadline.
@@ -224,6 +228,9 @@ pub async fn fetch_bytes_idle(url: &str) -> Result<(web_sys::Response, Vec<u8>),
 /// aborting when no data arrives for `idle_ms`. Unlike [`fetch_idle`],
 /// HTTP error statuses are NOT translated into an error — API callers
 /// inspect statuses themselves (401 refresh, 424 Apple flow).
+///
+/// Note: mutates `init` by installing the abort `signal` — pass an
+/// init object you own.
 pub async fn send_request_idle(
     url: &str,
     init: &web_sys::RequestInit,
@@ -251,7 +258,7 @@ pub async fn send_request_idle(
         .map_err(|e| network_error(url, format!("Failed to cast response: {e:?}")))?;
 
     let bytes = match response.body() {
-        Some(stream) => read_all_with_idle(stream, url, idle_ms).await?,
+        Some(stream) => read_all_with_idle(stream, url, idle_ms, Some(&controller)).await?,
         None => {
             let buffer_promise = response
                 .array_buffer()

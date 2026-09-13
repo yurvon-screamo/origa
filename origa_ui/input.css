@@ -2367,6 +2367,17 @@ rt {
     padding: 0 1.5rem;
 }
 
+/* Load-error screen content (ADR-053): same centered-column geometry as
+   the consent card — kept as its own class so the two screens can evolve
+   independently. */
+.load-error-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 32rem;
+    padding: 0 1.5rem;
+}
+
 /* Progress bar inside the loading overlay — constrained width so the thin
    track stays legible against the full-screen overlay. */
 .loading-overlay-progress {

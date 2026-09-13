@@ -15,7 +15,7 @@ pub fn LoadErrorScreen(#[prop(into)] on_retry: Callback<()>) -> impl IntoView {
 
     view! {
         <div class="loading-overlay anima-page-fade" data-testid="app-load-error">
-            <div class="resource-download-consent">
+            <div class="load-error-content">
                 <Text size=TextSize::Large variant=TypographyVariant::Primary>
                     {t!(i18n, ui.load_error.title)}
                 </Text>
