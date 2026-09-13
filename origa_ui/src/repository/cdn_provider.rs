@@ -13,6 +13,47 @@ use crate::core::config::cdn_url;
 
 pub const CDN_CACHE_NAME: &str = "origa-cdn-v1";
 
+/// Outcome of the cache-first policy for one resource (ADR-052).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FetchDecision {
+    ServeFromCache,
+    FetchFromNetwork,
+    FailOffline,
+}
+
+/// Pure form of the provider policy: a cache hit always wins; a miss
+/// goes to the network unless the CDN was already proven unreachable
+/// this run (instant refusal instead of a doomed request).
+pub fn fetch_decision(cache_hit: bool, cdn_unreachable: bool) -> FetchDecision {
+    let _ = (cache_hit, cdn_unreachable);
+    FetchDecision::FetchFromNetwork
+}
+
+/// Process-global "the CDN is not reachable" verdict. Set by the
+/// startup manifest probe / a stalled manifest fetch; cleared by Retry
+/// and by the browser `online` event. A false positive only costs one
+/// extra attempt after the clear; a false negative hangs the app —
+/// which is why it is never set from `navigator.onLine` alone.
+static CDN_UNREACHABLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub fn mark_cdn_unreachable() {}
+
+pub fn is_cdn_unreachable() -> bool {
+    false
+}
+
+pub fn clear_cdn_unreachable() {}
+
+/// Marker for the instant refusal errors produced under the
+/// unreachable flag (distinct from idle timeouts and HTTP failures).
+pub struct CdnUnreachableError;
+
+impl CdnUnreachableError {
+    pub fn is_match(_error: &OrigaError) -> bool {
+        false
+    }
+}
+
 pub struct CacheFirstCdnProvider;
 
 static CDN_PROVIDER: OnceLock<CacheFirstCdnProvider> = OnceLock::new();
@@ -401,6 +442,10 @@ pub async fn store_text_in_cache(path: &str, text: &str) -> Result<(), OrigaErro
         })?;
     Ok(())
 }
+
+#[cfg(all(target_arch = "wasm32", test))]
+#[path = "cdn_offline_wasm_tests.rs"]
+mod cdn_offline_wasm_tests;
 
 #[cfg(test)]
 mod tests {
