@@ -1,9 +1,10 @@
+use crate::repository::api_response::ApiResponse;
 use crate::repository::session::{TrailBaseSession, set_session_async};
 use crate::repository::trailbase_auth::{decode_jwt_claims, urlencoding_decode};
 use crate::repository::trailbase_records::RecordApi;
 use crate::repository::trailbase_session::current_timestamp;
 
-use gloo_net::http::{Method, Request, Response};
+use gloo_net::http::Method;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -81,56 +82,71 @@ impl TrailBaseClient {
         method: Method,
         body: Option<&T>,
         headers: Option<HashMap<String, String>>,
-    ) -> Result<Response, AuthError> {
+    ) -> Result<ApiResponse, AuthError> {
         let url = format!("{}{}", self.base_url, path);
 
-        let request_builder = match method {
-            Method::GET => Request::get(&url),
-            Method::POST => Request::post(&url),
-            Method::PUT => Request::put(&url),
-            Method::DELETE => Request::delete(&url),
-            Method::PATCH => Request::patch(&url),
-            _ => {
+        let init = web_sys::RequestInit::new();
+        init.set_method(match method {
+            Method::GET => "GET",
+            Method::POST => "POST",
+            Method::PUT => "PUT",
+            Method::DELETE => "DELETE",
+            Method::PATCH => "PATCH",
+            other => {
                 return Err(AuthError::ApiError(format!(
-                    "Unsupported HTTP method: {:?}",
-                    method
+                    "Unsupported HTTP method: {other:?}"
                 )));
             },
-        };
+        });
 
-        let request_builder = if let Some(h) = headers {
-            let mut builder = request_builder;
-            for (key, value) in h {
-                builder = builder.header(&key, &value);
+        let header_entries: Vec<(String, String)> = match (&headers, body.is_some()) {
+            (Some(extra), true) => {
+                let mut entries =
+                    vec![("Content-Type".to_string(), "application/json".to_string())];
+                entries.extend(extra.iter().map(|(k, v)| (k.clone(), v.clone())));
+                entries
+            },
+            (Some(extra), false) => extra.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+            (None, true) => vec![("Content-Type".to_string(), "application/json".to_string())],
+            (None, false) => Vec::new(),
+        };
+        if !header_entries.is_empty() {
+            let js_headers = js_sys::Array::new();
+            for (key, value) in &header_entries {
+                js_headers.push(&wasm_bindgen::JsValue::from_str(key));
+                js_headers.push(&wasm_bindgen::JsValue::from_str(value));
             }
-            builder
-        } else {
-            request_builder
-        };
+            init.set_headers(&js_headers.into());
+        }
 
-        let request = if let Some(json_body) = body {
+        if let Some(json_body) = body {
             let json = serde_json::to_string(json_body)
                 .map_err(|e| AuthError::ApiError(format!("Failed to serialize: {}", e)))?;
-            request_builder
-                .header("Content-Type", "application/json")
-                .body(json)
-                .map_err(|e| AuthError::ApiError(format!("Failed to build request: {}", e)))?
-        } else {
-            request_builder
-                .build()
-                .map_err(|e| AuthError::ApiError(format!("Failed to build request: {}", e)))?
-        };
+            init.set_body(&wasm_bindgen::JsValue::from_str(&json));
+        }
 
-        request
-            .send()
-            .await
-            .map_err(|e| AuthError::NetworkError(e.to_string()))
+        // Idle-deadline transport (ADR-052): gloo_net exposes no
+        // AbortSignal, so the request goes through the shared primitive —
+        // a dead API server fails fast instead of hanging auth flows.
+        let sent = crate::utils::net_timeout::send_request_idle(
+            &url,
+            &init,
+            crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
+        )
+        .await
+        .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+
+        let response = sent.response;
+        Ok(ApiResponse::new(
+            response.status(),
+            response.status_text(),
+            sent.bytes,
+        ))
     }
 
-    pub(crate) async fn json<T: DeserializeOwned>(response: Response) -> Result<T, AuthError> {
+    pub(crate) fn json<T: DeserializeOwned>(response: &ApiResponse) -> Result<T, AuthError> {
         response
             .json()
-            .await
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))
     }
 
@@ -182,7 +198,7 @@ impl TrailBaseClient {
             )));
         }
 
-        let token_response: AuthTokenResponse = Self::json(response).await?;
+        let token_response: AuthTokenResponse = Self::json(&response)?;
 
         let claims = decode_jwt_claims(&token_response.auth_token)
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
@@ -235,7 +251,7 @@ impl TrailBaseClient {
             )));
         }
 
-        let token_response: AuthTokenResponse = Self::json(response).await?;
+        let token_response: AuthTokenResponse = Self::json(&response)?;
 
         let claims = decode_jwt_claims(&token_response.auth_token)
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
@@ -340,9 +356,8 @@ impl TrailBaseClient {
             });
         }
 
-        let token_response: AuthTokenResponse = Self::json(response)
-            .await
-            .map_err(|e| AppleNativeLoginError::Api(e.to_string()))?;
+        let token_response: AuthTokenResponse =
+            Self::json(&response).map_err(|e| AppleNativeLoginError::Api(e.to_string()))?;
 
         let claims = decode_jwt_claims(&token_response.auth_token)
             .map_err(|e| AppleNativeLoginError::Api(format!("Failed to decode JWT: {}", e)))?;
@@ -383,5 +398,5 @@ pub trait AuthRequestClient: Clone + Send + Sync {
         path: &str,
         method: Method,
         body: Option<&T>,
-    ) -> Result<Response, AuthError>;
+    ) -> Result<ApiResponse, AuthError>;
 }
