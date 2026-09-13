@@ -41,9 +41,9 @@ on:
             # ci.yml and tauri.yml call this workflow, and App Store
             # Connect accepts exactly one build per version — the release
             # upload belongs to tauri.yml, CI only validates the build
-            # path. Without this the second uploader always fails with
-            # ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE and reddens the CI
-            # Gate (broke every stable tag v0.7.11–v0.7.16).
+            # path. Without this the second uploader fails with
+            # ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE, which historically
+            # reddened every stable-tag CI run.
             skip_appstore_upload:
                 type: boolean
                 default: false

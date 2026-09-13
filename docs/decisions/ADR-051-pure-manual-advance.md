@@ -40,9 +40,6 @@ Feedback-карточки отличаются от рейтинг-карточ�
   `pending_rating` (контракт `on_next_card`; в debug — ассерт, в release
   fallback `Rating::Again` — консервативнее для FSRS, чем молча
   завышенный `Good`).
-- Гейт CI: `skipped` легален только при path-skip; skip при `run=true`
-  роняет CI Gate (не связано с advance напрямую, но тот же принцип
-  fail-closed).
 
 ## Последствия
 
