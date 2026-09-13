@@ -140,7 +140,20 @@ impl TrailBaseClient {
             crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
         )
         .await
-        .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+        .map_err(|e| {
+            // Transport-level failure of a TrailBase HTTP call (network
+            // down, DNS, CORS, timeout). Logged here once — at the single
+            // choke point every authorized/unauthorized request passes —
+            // so infrastructure failures stay visible in Sentry even when
+            // a caller swallows the Err.
+            tracing::error!(
+                error = %e,
+                method = ?method,
+                url = %url,
+                "TrailBase request network failure"
+            );
+            AuthError::NetworkError(e.to_string())
+        })?;
 
         let response = sent.response;
         Ok(ApiResponse::new(
@@ -148,6 +161,7 @@ impl TrailBaseClient {
             response.status_text(),
             sent.bytes,
         ))
+
     }
 
     pub(crate) fn json<T: DeserializeOwned>(response: &ApiResponse) -> Result<T, AuthError> {

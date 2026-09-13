@@ -211,6 +211,7 @@ impl PreviewModalState {
                     Ok(result)
                 },
                 Err(e) => {
+                    error!(error = %e, "OCR preview card creation failed");
                     error.set(Some(e.to_string()));
                     is_creating.set(false);
                     Err(e.to_string())
