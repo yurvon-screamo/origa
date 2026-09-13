@@ -10,6 +10,8 @@
 
 Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition — AI processing runs locally on your device. An internet connection is needed only for the first sign-in and the initial content download.
 
+**Website:** <https://origa.uwuwu.net> · **Web app:** <https://app.origa.uwuwu.net>
+
 ![Origa main dashboard](origa_landing/public/images/en.hero.png)
 
 ---
@@ -65,16 +67,22 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition �
 
 ## 📥 Download
 
+The easiest way to install Origa is the [download page](https://origa.uwuwu.net/download) — it offers the right build for your system.
+
+Direct links (latest stable release):
+
 | Platform | Status | Format |
 | :--- | :--- | :--- |
-| **Windows** | ✅ Ready | `.exe`, `.msi` |
-| **Linux** | ✅ Ready | `.deb`, `.AppImage`, `.rpm` |
-| **macOS** | ✅ Ready | `.dmg`, `.app` |
-| **Android** | ✅ Ready | `.apk` |
+| **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
+| **Linux** | ✅ Ready | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **macOS** | ⏳ Coming soon | Mac App Store |
 
 > All versions support offline mode.
 
-A web version is also available.
+All builds and release notes: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).
+
+A [web version](https://app.origa.uwuwu.net) is also available.
 
 ---
 
