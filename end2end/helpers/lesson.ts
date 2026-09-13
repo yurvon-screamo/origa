@@ -237,7 +237,7 @@ export async function completeLessonFlexible(
         const isComplete = await lessonPage.completeScreen.isVisible().catch(() => false);
         if (isComplete) break;
 
-        // Pure-manual advance (ADR-033): after submitting a quiz/yesno
+        // Pure-manual advance (ADR-051): after submitting a quiz/yesno
         // answer the user is held on the feedback card until they click
         // "Next" (or press Space/Enter). The check MUST run before the
         // `anyInteractive` wait below: on VOCABULARY quiz cards the options

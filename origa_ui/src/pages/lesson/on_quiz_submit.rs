@@ -35,7 +35,7 @@ pub fn create_on_quiz_submit(lesson_state: RwSignal<LessonState>) -> Callback<()
             state.multi_result = Some(multi_result);
         });
 
-        // Pure-manual advance (ADR-033): the user dismisses the feedback card
+        // Pure-manual advance (ADR-051): the user dismisses the feedback card
         // themselves via Space/Enter/click. Replaces the previous 1500ms timer
         // branch for non-phrase non-multi KanjiReadingQuiz submissions.
         lesson_state.update(|state| {

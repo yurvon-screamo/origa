@@ -42,7 +42,7 @@ export class LessonPage extends BasePage {
     readonly yesnoYesBtn: Locator;
     readonly yesnoNoBtn: Locator;
 
-    // Pure-manual advance (ADR-033): in-lesson "Next card" button shown after
+    // Pure-manual advance (ADR-051): in-lesson "Next card" button shown after
     // a quiz/yesno/phrase answer is submitted. Distinct from `nextLessonBtn`
     // which is on the completion screen and starts the NEXT lesson.
     readonly lessonCardNextBtn: Locator;
@@ -103,7 +103,7 @@ export class LessonPage extends BasePage {
         this.yesnoYesBtn = page.getByTestId("yesno-yes-btn");
         this.yesnoNoBtn = page.getByTestId("yesno-no-btn");
 
-        // Pure-manual advance (ADR-033): in-lesson "Next card" button.
+        // Pure-manual advance (ADR-051): in-lesson "Next card" button.
         this.lessonCardNextBtn = page.getByTestId("lesson-card-next-btn");
 
         // Lesson completion
@@ -182,7 +182,7 @@ export class LessonPage extends BasePage {
 
     /**
      * Advance to the next card under the pure-manual advance model
-     * (ADR-033). After a quiz/yesno/phrase answer is submitted, the user is
+     * (ADR-051). After a quiz/yesno/phrase answer is submitted, the user is
      * held on the feedback card until they press Space/Enter or click the
      * "Next" button.
      */

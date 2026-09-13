@@ -32,7 +32,7 @@ pub fn create_on_yesno_select(lesson_state: RwSignal<LessonState>) -> Callback<b
             Rating::Again
         };
 
-        // Pure-manual advance (ADR-033): the user dismisses the feedback card
+        // Pure-manual advance (ADR-051): the user dismisses the feedback card
         // themselves via Space/Enter/click. Replaces the previous 1500ms timer.
         lesson_state.update(|state| {
             state.waiting_for_next = true;
