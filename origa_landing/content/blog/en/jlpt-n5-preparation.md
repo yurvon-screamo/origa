@@ -66,11 +66,11 @@ The first two weeks of those 4–8 months go to kana. [Our learning plan](/blog/
 
 The 800 words distribute predictably across themes, which makes coverage checks easy:
 
-- **People and family**: 父， 母， 友達， 先生, plus polite suffixes さん and ちゃん；
-- **Numbers, time, days of the week**: 一時半， 月曜日, including counter suffixes for objects and people;
-- **Core motion and action verbs**: 行く， 来る， 食べる， 飲む， 見る， する, in every form on the syllabus;
+- **People and family**: 父， 母， 友達， 先生 plus polite suffixes さん and ちゃん；
+- **Numbers, time, days of the week**: 一時半， 月曜日 and counter suffixes for objects and people;
+- **Core motion and action verbs**: 行く， 来る， 食べる， 飲む， 見る， する in every form on the syllabus;
 - **Both adjective types**: 大きい (i-type) and 静か (na-type), with their distinct negation rules;
-- **Place and direction**: 学校， 家， 上， 下， 中, the material particles に and で exercises build on;
+- **Place and direction**: 学校， 家， 上， 下， 中 and the material particles に and で exercises build on;
 - **High-frequency daily vocabulary**: food, money, transport, weather.
 
 A readiness test: describe your typical day aloud in simple sentences. If "wake up, eat, go, work, return" flows without pauses, your vocabulary base is there.

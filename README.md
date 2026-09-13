@@ -99,9 +99,9 @@ A [web version](https://app.origa.uwuwu.net) is also available.
 
 The project is built on a modern stack that delivers native app performance with web interface flexibility.
 
-* **Core & backend**: Rust for safety and high-speed data processing.
-* **Desktop wrapper**: Tauri v2 for native apps on Windows, macOS, and Linux.
-* **Frontend**: Leptos, a reactive UI framework in Rust (WebAssembly) for instant interface response.
+* **Core & backend**: **Rust** for safety and high-speed data processing.
+* **Desktop wrapper**: **Tauri v2** for native apps on Windows, macOS, and Linux.
+* **Frontend**: **Leptos**, a reactive UI framework in Rust (WebAssembly) for instant interface response.
 * **Mobile**: Native **Android** build via Tauri Mobile.
 
 ---

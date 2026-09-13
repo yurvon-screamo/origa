@@ -62,7 +62,7 @@ Priority: **JP → EN → none.** Japanese subtitles train the sound-to-writing 
 
 **Pausing the episode at every unknown word.** Watching turns into drudgery and gets abandoned within a week. The norm: watch through, extract after.
 
-**Choosing a show above your level "for growth."** i+1 works when "+1" is a couple of unknown words per scene. A fantasy series at N5 level gives "+30", which nets zero acquisition.
+**Choosing a show above your level "for growth."** i+1 works when "+1" is a couple of unknown words per scene. A fantasy series at N5 level gives "+30," which nets zero acquisition.
 
 **Counting background watching as study.** Re-watching favorites without subtitles helps; playing something new over dinner is rest. Also needed, just don't call it study.
 

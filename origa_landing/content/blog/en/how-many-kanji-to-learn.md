@@ -14,7 +14,7 @@ status: ready
 
 # How Many Kanji Do You Actually Need: Honest Numbers
 
-"Japanese has 2,136 characters". The sentence used to scare beginners most. It's technically true and practically useless: 2,136 jōyō kanji is the volume for reading newspapers, not the entry threshold for the language.
+"Japanese has 2,136 characters." The sentence used to scare beginners most. It's technically true and practically useless: 2,136 jōyō kanji is the volume for reading newspapers, not the entry threshold for the language.
 
 The right question is: how many kanji does **your** goal require? The answers are concrete numbers, and they're far below the scary figure.
 
@@ -32,7 +32,7 @@ The JLPT institute publishes no official kanji or vocabulary lists at any level.
 | Novels, TV without subtitles | ~1300–1800 | N2–N1 |
 | Newspapers, official documents | 2136 jōyō + name characters | N1+ |
 
-Two observations. First: at just a couple hundred characters, furigana manga already opens up, real reading of real content. Second: between "read manga" and "read a newspaper" lies a tenfold gap, and most learners will never need the far end. More on getting started with manga in [the dedicated article](/blog/learn-japanese-from-manga).
+Two observations. First: at just a couple hundred characters, furigana manga already opens up to real reading of real content. Second: between "read manga" and "read a newspaper" lies a tenfold gap, and most learners will never need the far end. More on getting started with manga in [the dedicated article](/blog/learn-japanese-from-manga).
 
 ## Why "Knowing Kanji" Is the Wrong Frame
 

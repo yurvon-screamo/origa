@@ -109,4 +109,4 @@ For recognition, no — 5–10 traces per character suffice for attention. For w
 
 ### What should I read after learning both scripts?
 
-A textbook; kana appear there in a controlled order. From real-world content: captions, menus, signs, all short forms with a high share of loanwords. Full texts with furigana come after your first few hundred words; more on that in [learning Japanese through manga](/blog/learn-japanese-from-manga).
+A textbook; kana appear there in a controlled order. From real-world content, pick captions, menus, and signs: short forms with a high share of loanwords. Full texts with furigana come after your first few hundred words; more on that in [learning Japanese through manga](/blog/learn-japanese-from-manga).

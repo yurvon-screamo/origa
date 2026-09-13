@@ -66,7 +66,7 @@ Not every card has every shape. A vocabulary card can be recognition or recall; 
 
 ## Rating
 
-Which pair of buttons you see depends on the part of the lesson: in acquaintance training it is **Remember** / **Don't remember**, in a regular review **Don't know** / **Know**. Both are a single binary signal for the scheduler.
+Which pair of buttons you see depends on the part of the lesson: in acquaintance training it is **Remember** / **Don't remember**, in a regular review it is **Don't know** / **Know**. Both are a single binary signal for the scheduler.
 
 - **Don't remember / Don't know** schedules the card to come back soon. "Don't remember" in acquaintance training also resets that card's progress.
 - **Remember / Know** moves the card forward: in training it brings the group closer to completion; in review it extends the interval before the next showing. The longer the streak, the longer the interval.

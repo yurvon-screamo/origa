@@ -46,7 +46,7 @@ The dream workflow is: read manga, see unknown word, learn it. The reality has f
 
 Manga mining assumes you know the kana and have at least an N5-size vocabulary. If that isn't you yet, start with [the zero-to-start plan](/blog/yaponskiy-s-nulya). A workflow that actually works has three stages, repeated per session:
 
-1. **Read.** Pick one chapter, not the whole volume. Read for the story first. Mark unknown words but don't stop to learn them mid-read, that breaks flow.
+1. **Read.** Pick one chapter, not the whole volume. Read for the story first. Mark unknown words but don't stop to learn them mid-read. That breaks flow.
 2. **Mine.** After the chapter, go back to the 5–15 words you marked. Add each to an SRS with the sentence it appeared in, the reading, and (ideally) the panel image.
 3. **Review.** The next day, review the cards. The day after, again. The SRS handles the spacing.
 

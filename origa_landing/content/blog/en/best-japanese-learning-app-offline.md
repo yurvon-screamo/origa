@@ -115,7 +115,7 @@ There is no feature in Origa's normal flow that requires an internet connection.
 
 ## How to choose
 
-If your offline need is "review my existing Anki deck on the subway", AnkiMobile (iOS) or AnkiDroid (Android) is the cheapest, most proven answer ([when to stay with Anki](/blog/anki-alternative-japanese)).
+If your offline need is "review my existing Anki deck on the subway," AnkiMobile (iOS) or AnkiDroid (Android) is the cheapest, most proven answer ([when to stay with Anki](/blog/anki-alternative-japanese)).
 
 If your offline need is "I'm travelling for a month with bad connectivity and I want to keep adding vocabulary from manga and textbooks I encounter", you need an app where OCR and content creation work offline, not just review. Origa is built for that exact use case.
 
