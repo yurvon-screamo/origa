@@ -49,7 +49,7 @@ Training writes nothing to the schedule: FSRS starts counting intervals when a c
 
 The number of new cards per day is set by the pace in your profile settings: six paces, from one group of new cards per day up to an intense volume (new cards are dealt in full groups of seven). A lesson is built from the day's new cards and the reviews that have come due.
 
-**Lessons ran out and you are ready to keep going.** That means the daily quota of new cards is spent and no reviews are due. Origa says "No cards to study". This is not an error or an account limit: tomorrow FSRS will schedule new reviews, and lessons will appear again. If the volume is not enough, raise the pace in your profile or add a set of the next level (see "JLPT progress").
+**Lessons ran out and you are ready to keep going.** That means the daily quota of new cards is spent and no reviews are due. Origa says "No cards to study." This is not an error or an account limit: tomorrow FSRS will schedule new reviews, and lessons will appear again. If the volume is not enough, raise the pace in your profile or add a set of the next level (see "JLPT progress").
 
 ## Card types
 
@@ -81,7 +81,7 @@ You can start another lesson immediately, or return to the dashboard. The dashbo
 
 ## JLPT progress
 
-Every card is tagged with a JLPT level (N5 through N1). Origa shows the lowest JLPT level in which you still have gaps. New cards are issued in ascending level order (N5 → N1) the same way for everyone. The app does not diagnose "where exactly your holes are". The level indicator reflects your material, not its route. As you learn and retain cards at a level, your JLPT progress for that level rises. The dashboard reflects this so you can see where you stand.
+Every card is tagged with a JLPT level (N5 through N1). Origa shows the lowest JLPT level in which you still have gaps. New cards are issued in ascending level order (N5 → N1) the same way for everyone. The app does not diagnose "where exactly your holes are." The level indicator reflects your material, not its route. As you learn and retain cards at a level, your JLPT progress for that level rises. The dashboard reflects this so you can see where you stand.
 
 JLPT progress is an internal estimate based on the cards you have studied. It is not an official JLPT score.
 

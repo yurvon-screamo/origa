@@ -39,7 +39,7 @@ A large batch of new cards today is not just those cards. It is many more review
 
 The number of new cards per day is set by the pace in your profile settings: six paces, from one small group of new cards per day to an intense volume. New cards are dealt in full groups of seven (the acquaintance group, see [how lessons work](/docs/lesson)), so every pace is a whole number of groups per day.
 
-A lesson is built from the day's new cards and the cards whose review has come due, up to 22 cards. When both new cards and due reviews are exhausted, Origa says "No cards to study". That is not an error and not an account limit: tomorrow FSRS will schedule new reviews, and lessons will appear again.
+A lesson is built from the day's new cards and the cards whose review has come due, up to 22 cards. When both new cards and due reviews are exhausted, Origa says "No cards to study." That is not an error and not an account limit: tomorrow FSRS will schedule new reviews, and lessons will appear again.
 
 ## Related
 

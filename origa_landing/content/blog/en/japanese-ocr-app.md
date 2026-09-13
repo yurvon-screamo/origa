@@ -28,7 +28,7 @@ There are three real use cases, and they pull in different directions:
 2. **Reading support.** You're reading a manga, a textbook, or a news article. You want to OCR a sentence or a panel, get the readings of unknown words, and keep going. You're learning, but the OCR is a lookup tool.
 3. **Vocabulary mining.** You want every word you OCR to become a flashcard you'll review later. The OCR is a pipeline into an SRS, not a one-shot lookup.
 
-Most apps are built for use case 1. A smaller number handle 2. Almost none handle 3 without significant manual work. Knowing which one you need determines which app is "best". There is no winner across all three.
+Most apps are built for use case 1. A smaller number handle 2. Almost none handle 3 without significant manual work. Knowing which one you need determines which app is "best." There is no winner across all three.
 
 ## The three categories
 
