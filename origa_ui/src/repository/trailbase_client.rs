@@ -125,7 +125,7 @@ impl TrailBaseClient {
             init.set_body(&wasm_bindgen::JsValue::from_str(&json));
         }
 
-        // Idle-deadline transport (ADR-052): gloo_net exposes no
+        // Idle-deadline transport (ADR-053): gloo_net exposes no
         // AbortSignal, so the request goes through the shared primitive —
         // a dead API server fails fast instead of hanging auth flows.
         let sent = crate::utils::net_timeout::send_request_idle(

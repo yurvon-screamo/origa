@@ -32,7 +32,7 @@ use origa::use_cases::SeedReadyPhrasesUseCase;
 
 use crate::repository::HybridUserRepository;
 
-/// Whether a failed loader attempt deserves one more try (ADR-052):
+/// Whether a failed loader attempt deserves one more try (ADR-053):
 /// a stalled neighbour (idle timeout) or a proven-unreachable CDN make
 /// the retry pure latency — skip it. Transient errors (HTTP 5xx, an
 /// immediate refusal on a live network) still retry once.
@@ -43,7 +43,7 @@ fn should_retry_after_error(error: &OrigaError, cdn_unreachable: bool) -> bool {
     !crate::utils::net_timeout::is_idle_timeout(error)
 }
 
-/// Critical resources of the startup pipeline (ADR-052): the app is
+/// Critical resources of the startup pipeline (ADR-053): the app is
 /// unusable without ALL of them, so a full failure renders the load
 /// error screen while a partial one keeps the app open with what
 /// loaded (product decision: never block on partial data).
@@ -149,7 +149,7 @@ pub fn start_dictionary_loading(
 ) {
     spawn_local(async move {
         // Only the current generation may set terminal signals — a
-        // stale run resolving after a Retry must stay silent (ADR-052).
+        // stale run resolving after a Retry must stay silent (ADR-053).
         let generation = auth_store.load_generation.get_untracked();
 
         // Phase A: manifest check. When the browser claims offline, a
@@ -157,7 +157,7 @@ pub fn start_dictionary_loading(
         // onLine in both directions): a live CDN still gets its
         // manifest validation (cache invalidation must keep working),
         // a dead one records the verdict and skips straight to the
-        // cache-first stages (ADR-052).
+        // cache-first stages (ADR-053).
         let manifest_check_allowed = if connectivity.is_online.get_untracked() {
             true
         } else {
@@ -250,7 +250,7 @@ pub fn start_dictionary_loading(
             ),
         );
 
-        // Full critical failure verdict (ADR-052): every critical
+        // Full critical failure verdict (ADR-053): every critical
         // resource down and nothing cached to fall back on → the load
         // error screen. A partial failure keeps the app open with what
         // loaded. Only the current generation may conclude the run.
@@ -387,7 +387,7 @@ fn reset_failed_readiness(auth_store: &AuthStore) {
     auth_store.is_jlpt_content_loaded.set(false);
 }
 
-/// Retry entry point (ADR-052): clears the failure, lifts the
+/// Retry entry point (ADR-053): clears the failure, lifts the
 /// unreachable verdict (Retry always tries the network — it never
 /// trusts a stale probe), bumps the generation so the old run goes
 /// silent, and restarts the pipeline. Idempotent by construction:
@@ -709,7 +709,7 @@ mod tests {
         assert!(should_retry_after_error(&http_500, false));
 
         // An idle-timeout stall never retries: the neighbour already
-        // proved the network dead (ADR-052, R3-C1).
+        // proved the network dead (ADR-053, R3-C1).
         let stalled = OrigaError::NetworkError {
             url: "probe".to_string(),
             reason: "idle timeout after 10000 ms without data".to_string(),

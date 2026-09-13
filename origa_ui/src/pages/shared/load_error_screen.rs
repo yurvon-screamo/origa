@@ -1,4 +1,4 @@
-//! Load-error screen for a full critical startup failure (ADR-052).
+//! Load-error screen for a full critical startup failure (ADR-053).
 //!
 //! Shown only when EVERY critical resource failed and the device has
 //! nothing cached to fall back on (first offline launch, evicted

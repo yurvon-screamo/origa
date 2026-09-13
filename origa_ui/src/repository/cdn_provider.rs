@@ -13,7 +13,7 @@ use crate::core::config::cdn_url;
 
 pub const CDN_CACHE_NAME: &str = "origa-cdn-v1";
 
-/// Outcome of the cache-first policy for one resource (ADR-052).
+/// Outcome of the cache-first policy for one resource (ADR-053).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FetchDecision {
     ServeFromCache,
@@ -423,7 +423,7 @@ pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
     }
 
     let url = cdn_url(&key);
-    // Idle-deadline fetch (ADR-052): a dead network must not hang a
+    // Idle-deadline fetch (ADR-053): a dead network must not hang a
     // prefetch. The rebuilt response keeps the content type, so cached
     // audio still decodes via blob: URLs.
     let fetched = crate::utils::net_timeout::fetch_idle(

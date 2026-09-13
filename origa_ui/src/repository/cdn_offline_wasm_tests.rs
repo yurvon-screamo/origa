@@ -1,5 +1,5 @@
 //! WASM/browser test: the cache-first provider must refuse to touch the
-//! network once the CDN was proven unreachable (ADR-052, slice 2).
+//! network once the CDN was proven unreachable (ADR-053, slice 2).
 //!
 //! A cache miss under the unreachable flag must fail instantly with a
 //! recognizable error — the offline startup budget (~3 s honest offline)

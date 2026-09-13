@@ -1,4 +1,4 @@
-//! API response envelope for the TrailBase transport (ADR-052, slice 1b).
+//! API response envelope for the TrailBase transport (ADR-053, slice 1b).
 //!
 //! The transport reads the whole body under an idle deadline (gloo_net
 //! exposes no AbortSignal, so the request goes through

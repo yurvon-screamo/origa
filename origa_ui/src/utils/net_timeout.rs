@@ -1,4 +1,4 @@
-//! Network fetch primitive with an idle deadline (ADR-052).
+//! Network fetch primitive with an idle deadline (ADR-053).
 //!
 //! Every CDN/TrailBase request goes through here so a dead network can
 //! never hang the startup pipeline: a request is aborted when no data has
@@ -7,7 +7,7 @@
 //!
 //! Timeout errors carry a textual marker and are recognizable via
 //! [`is_idle_timeout`] — the retry gate refuses to re-run a request whose
-//! neighbour already stalled (ADR-052, R3-C1).
+//! neighbour already stalled (ADR-053, R3-C1).
 
 use futures::future::{Fuse, FutureExt};
 use gloo_timers::future::TimeoutFuture;

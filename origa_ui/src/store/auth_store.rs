@@ -71,7 +71,7 @@ pub struct AuthStore {
     /// Guard against triggering start_dictionary_loading multiple times
     pub is_data_loading_started: RwSignal<bool>,
 
-    /// Full critical failure of the last startup pipeline run (ADR-052):
+    /// Full critical failure of the last startup pipeline run (ADR-053):
     /// every critical resource failed and there is no cached fallback.
     /// Renders the load-error screen; cleared by Retry.
     pub load_failure: RwSignal<bool>,
