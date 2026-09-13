@@ -13,7 +13,7 @@ use wasm_bindgen_test::*;
 
 use super::read_all_with_idle;
 use crate::utils::now_ms;
-use leptos::wasm_bindgen::JsCast;
+use leptos::wasm_bindgen::{JsCast, JsValue};
 use origa::domain::OrigaError;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -105,6 +105,23 @@ async fn refused_connection_fails_fast_without_the_timeout_marker() {
     let error = super::fetch_idle("http://127.0.0.1:9/probe", 2_000)
         .await
         .expect_err("closed port must fail");
+
+    assert!(!super::is_idle_timeout(&error));
+}
+
+#[wasm_bindgen_test]
+async fn refused_api_post_fails_as_a_network_error() {
+    // The TrailBase transport sends method/headers/body via
+    // send_request_idle; a dead API endpoint must surface as a network
+    // error (fast refusal, not the idle-timeout marker) so login and
+    // session flows fail fast offline instead of hanging.
+    let mut init = web_sys::RequestInit::new();
+    init.set_method("POST");
+    init.set_body(&JsValue::from_str(r#"{"email":"x@y.z"}"#));
+
+    let error = super::send_request_idle("http://127.0.0.1:9/api/auth/v1/login", &init, 2_000)
+        .await
+        .expect_err("closed API port must fail");
 
     assert!(!super::is_idle_timeout(&error));
 }

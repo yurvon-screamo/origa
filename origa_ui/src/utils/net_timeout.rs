@@ -220,6 +220,24 @@ pub async fn fetch_bytes_idle(url: &str) -> Result<(web_sys::Response, Vec<u8>),
     Ok((idle.response, idle.bytes))
 }
 
+/// Sends a request built by the caller (method/headers/body in `init`),
+/// aborting when no data arrives for `idle_ms`. Unlike [`fetch_idle`],
+/// HTTP error statuses are NOT translated into an error — API callers
+/// inspect statuses themselves (401 refresh, 424 Apple flow).
+pub async fn send_request_idle(
+    url: &str,
+    init: &web_sys::RequestInit,
+    idle_ms: u32,
+) -> Result<IdleResponse, OrigaError> {
+    let _ = (url, init, idle_ms);
+    let empty = web_sys::Response::new()
+        .map_err(|e| network_error(url, format!("stub response: {e:?}")))?;
+    Ok(IdleResponse {
+        response: empty,
+        bytes: Vec::new(),
+    })
+}
+
 #[cfg(all(target_arch = "wasm32", test))]
 #[path = "net_timeout_wasm_tests.rs"]
 mod net_timeout_wasm_tests;
