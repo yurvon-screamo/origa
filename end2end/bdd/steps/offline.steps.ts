@@ -3,7 +3,7 @@ import { Given, When, Then } from "../fixtures";
 import { getTrailBaseUrl } from "../../config";
 
 /**
- * Offline startup scenarios (ADR-052): the app must open from cache or
+ * Offline startup scenarios (ADR-053): the app must open from cache or
  * show an actionable error — never spin forever on the loading overlay.
  *
  * "Интернет недоступен" is emulated by aborting every request EXCEPT the

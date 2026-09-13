@@ -1,4 +1,4 @@
-//! WASM tests for the idle-deadline network primitive (ADR-052).
+//! WASM tests for the idle-deadline network primitive (ADR-053).
 //!
 //! The stream-reader core is exercised directly with hand-built
 //! ReadableStreams: a stalled stream (never enqueues) must abort with a
@@ -101,7 +101,7 @@ fn idle_timeout_errors_are_recognizable_among_network_errors() {
 async fn refused_connection_fails_fast_without_the_timeout_marker() {
     // Port 9 (discard) has no listener: the browser rejects the fetch
     // immediately. The error must NOT look like an idle timeout —
-    // that distinction feeds the retry gate (ADR-052).
+    // that distinction feeds the retry gate (ADR-053).
     let error = super::fetch_idle("http://127.0.0.1:9/probe", 2_000)
         .await
         .expect_err("closed port must fail");

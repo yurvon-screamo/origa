@@ -23,7 +23,7 @@ impl ConnectivityStore {
                 let w = window_online.clone();
                 let closure = Closure::wrap(Box::new(move |_: web_sys::Event| {
                     // The network is back: lift the unreachable verdict
-                    // so the next cache miss retries the CDN (ADR-052).
+                    // so the next cache miss retries the CDN (ADR-053).
                     crate::repository::cdn_provider::clear_cdn_unreachable();
                     is_online_online.set(true);
                 }) as Box<dyn Fn(_)>);

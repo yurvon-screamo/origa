@@ -166,7 +166,7 @@ fn build_manifest_url() -> String {
 ///
 /// `navigator.onLine` lies on WKWebView custom schemes in both
 /// directions, so it only decides WHETHER to probe — never the verdict
-/// itself (ADR-052).
+/// itself (ADR-053).
 #[cfg(target_arch = "wasm32")]
 pub async fn probe_manifest_reachable() -> bool {
     const PROBE_IDLE_MS: u32 = 2_000;
@@ -199,7 +199,7 @@ fn error_reason_starts_with_http(error: &OrigaError) -> bool {
 async fn fetch_remote_manifest() -> Result<CacheManifest, OrigaError> {
     let url = build_manifest_url();
 
-    // Idle-deadline fetch (ADR-052): a dead network must surface as a
+    // Idle-deadline fetch (ADR-053): a dead network must surface as a
     // quick warning ("skipping invalidation"), never hang the startup
     // pipeline before Stage 1.
     let (_response, text_str) = crate::utils::net_timeout::fetch_text_idle(&url).await?;
