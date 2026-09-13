@@ -2,3 +2,8 @@
 # Twice daily: 03:00 and 15:00
 # Weekly/monthly rotation is determined inside backup.sh by date.
 0 3,15 * * * /app/backup.sh
+
+# Weekly GeoIP database refresh (Mon 06:17 UTC, staggered from backups).
+# TrailBase loads the database at startup: a refreshed file is picked up on
+# the next container restart, not live.
+17 6 * * 1 /app/geoip.sh

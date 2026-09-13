@@ -130,10 +130,12 @@ RUN apk add --no-cache curl sqlite aws-cli
 COPY --from=builder /app/origa_ui/dist /app/public
 
 # Backup machinery: GFS-rotation script, custom entrypoint (crond + trail), crontab
+# GeoIP provisioning for log geo enrichment (see geoip.sh)
 COPY origa_ui/backup.sh     /app/backup.sh
+COPY origa_ui/geoip.sh      /app/geoip.sh
 COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 COPY origa_ui/crontab       /app/crontab
-RUN chmod +x /app/backup.sh /app/entrypoint.sh \
+RUN chmod +x /app/backup.sh /app/entrypoint.sh /app/geoip.sh \
  && chmod 600 /app/crontab
 
 RUN chown -R trailbase:trailbase /app
