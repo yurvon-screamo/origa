@@ -150,51 +150,10 @@ fn build_manifest_url() -> String {
 async fn fetch_remote_manifest() -> Result<CacheManifest, OrigaError> {
     let url = build_manifest_url();
 
-    let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Network error: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if response.status() == 404 {
-        return Err(OrigaError::RepositoryError {
-            reason: "Manifest not found (404)".to_string(),
-        });
-    }
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let text = JsFuture::from(response.text().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to get text() promise: {:?}", e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to read response text: {:?}", e),
-    })?;
-
-    let text_str = text
-        .as_string()
-        .ok_or_else(|| OrigaError::RepositoryError {
-            reason: "Response text is not a string".to_string(),
-        })?;
+    // Idle-deadline fetch (ADR-052): a dead network must surface as a
+    // quick warning ("skipping invalidation"), never hang the startup
+    // pipeline before Stage 1.
+    let (_response, text_str) = crate::utils::net_timeout::fetch_text_idle(&url).await?;
 
     serde_json::from_str(&text_str).map_err(|e| OrigaError::RepositoryError {
         reason: format!("Failed to parse manifest JSON: {:?}", e),

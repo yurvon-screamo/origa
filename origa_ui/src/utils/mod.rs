@@ -1,7 +1,7 @@
 pub mod display_name;
 mod drag_drop;
 pub mod file;
-mod net_timeout;
+pub mod net_timeout;
 pub mod scroll_lock;
 pub mod text_format;
 pub mod time;
