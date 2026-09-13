@@ -3,7 +3,7 @@ use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 
 /// Unified "Next" button shown after the user submits an answer, under the
-/// pure-manual advance model (ADR-033). Rendered by every lesson card view
+/// pure-manual advance model (ADR-051). Rendered by every lesson card view
 /// (single-select quiz, yesno, multi-quiz, phrase) when the parent decides
 /// the user is held on the feedback card (`waiting_for_next == true`).
 ///

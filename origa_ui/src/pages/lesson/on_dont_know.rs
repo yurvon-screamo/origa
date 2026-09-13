@@ -14,7 +14,7 @@ pub fn create_on_dont_know(lesson_state: RwSignal<LessonState>) -> Callback<()> 
             state.multi_quiz_submitted = true;
         });
 
-        // Pure-manual advance (ADR-033): all branches converge on
+        // Pure-manual advance (ADR-051): all branches converge on
         // waiting_for_next, regardless of card type or quiz mode. The
         // previous 1500ms timer branch for non-phrase non-multi was the
         // source of the "stuck on the answer window" complaint.

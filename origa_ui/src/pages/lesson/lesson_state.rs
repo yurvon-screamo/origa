@@ -107,7 +107,7 @@ pub struct LessonContext {
 /// (`showing_slot` = lesson generation + current index). Mute and
 /// pitch-loader readiness are read UNTRACKED inside — flipping them never
 /// recomputes the memo, so a live card keeps its mode until the user
-/// advances (mode changes apply to the NEXT card, protecting the ADR-033
+/// advances (mode changes apply to the NEXT card, protecting the ADR-051
 /// rating state machine from double-rating/stuck states).
 pub fn create_audio_mode_active(
     lesson_state: RwSignal<LessonState>,
