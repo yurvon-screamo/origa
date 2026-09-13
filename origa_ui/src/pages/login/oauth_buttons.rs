@@ -127,6 +127,7 @@ pub fn OAuthButtons(
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--fg-black)] hover:opacity-80 transition-opacity"
                 data-testid=apple_test_id
+                attr:data-umami-event="login_apple"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_apple.clone();
                     spawn_local(async move {
@@ -142,6 +143,7 @@ pub fn OAuthButtons(
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
+                attr:data-umami-event="login_google"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_google.clone();
                     spawn_local(async move {
@@ -157,6 +159,7 @@ pub fn OAuthButtons(
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
+                attr:data-umami-event="login_yandex"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_yandex.clone();
                     spawn_local(async move {

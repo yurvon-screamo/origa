@@ -55,6 +55,21 @@ fn main() {
     println!("cargo:rustc-env=SENTRY_ENVIRONMENT_UI={sentry_environment}");
     println!("cargo:rustc-env=SENTRY_RELEASE_UI={sentry_release}");
 
+    // Umami Cloud analytics (ADR-054). `UMAMI_DISABLED=1` compiles the
+    // tracker out entirely for CI builds that execute the app (e2e headless
+    // runs, android-smoke emulator) so their localhost traffic never reaches
+    // production analytics; `UMAMI_WEBSITE_ID` optionally overrides the
+    // committed default (website IDs are public — see build_config.rs). The
+    // emitted value is read via `env!()` by `core::analytics`; an empty
+    // value makes the runtime injection a no-op.
+    let umami_website_id = build_config::resolve_umami(
+        env::var("UMAMI_DISABLED").ok().as_deref(),
+        env::var("UMAMI_WEBSITE_ID").ok().as_deref(),
+    );
+    println!("cargo:rustc-env=UMAMI_WEBSITE_ID={umami_website_id}");
+    println!("cargo:rerun-if-env-changed=UMAMI_DISABLED");
+    println!("cargo:rerun-if-env-changed=UMAMI_WEBSITE_ID");
+
     println!("cargo:rerun-if-env-changed=ORIGA_VERSION");
     println!("cargo:rerun-if-env-changed=ORIGA_COMMIT");
     println!("cargo:rerun-if-env-changed=ORIGA_BUILD_DATE");

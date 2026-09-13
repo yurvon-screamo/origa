@@ -42,6 +42,22 @@ ORIGA_CDN_BASE_URL=http://localhost:8080
 (словари в dev бандлятся локально) — запускай его с `CI=true npx playwright
 test --project=bdd`, чтобы webServer отдал `origa_ui/dist`, как в CI.
 
+### Umami-аналитика (ADR-054)
+
+Dev-сборка (`trunk serve`) включает трекер Umami по умолчанию, а его
+`data-domains` пропускает `localhost` (так работает desktop-прод на Linux).
+Локальные e2e-прогоны шлют настоящие pageviews в прод-аналитику — запускай их
+с мьютом:
+
+```bash
+UMAMI_DISABLED=1 npx playwright test
+```
+
+(webServer наследует окружение процесса.) Guard-сценарий «Трекер аналитики
+Umami отключён в CI-сборке» вне CI пропускается: он проверяет именно CI-дист,
+скомпилированный с `UMAMI_DISABLED=1` (см. `helpers/analytics.ts`); при
+запуске с `CI=true` без мьюта он упадёт намеренно.
+
 ## Структура
 
 ```text
