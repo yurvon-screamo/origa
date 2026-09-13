@@ -2,6 +2,7 @@ use super::add_grammar_modal_state::ModalState;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::CreateGrammarCardUseCase;
+use tracing::error;
 use ulid::Ulid;
 
 pub struct ModalHandlers {
@@ -41,6 +42,7 @@ impl ModalHandlers {
                             state_for_async.refresh_trigger.update(|v| *v += 1);
                         },
                         Err(e) => {
+                            error!(error = %e, "Grammar card creation failed");
                             if disposed.is_disposed() {
                                 return;
                             }

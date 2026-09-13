@@ -5,6 +5,7 @@ use origa::dictionary::kanji::{KanjiInfo, get_kanji_list, sort_by_difficulty};
 use origa::domain::{Card, JapaneseLevel};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
+use tracing::error;
 
 #[derive(Clone)]
 pub struct ModalState {
@@ -107,6 +108,7 @@ impl ModalState {
                     is_loading.set(false);
                 },
                 Err(e) => {
+                    error!(error = %e, "Kanji modal user data load failed");
                     if disposed.is_disposed() {
                         return;
                     }

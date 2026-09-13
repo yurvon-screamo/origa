@@ -5,6 +5,7 @@ use origa::dictionary::grammar::{GrammarRule, iter_grammar_rules};
 use origa::domain::{Card, JapaneseLevel, NativeLanguage};
 use origa::traits::UserRepository;
 use std::collections::HashSet;
+use tracing::error;
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -102,6 +103,7 @@ impl ModalState {
                     ));
                 },
                 Err(e) => {
+                    error!(error = %e, "Grammar modal user data load failed");
                     if disposed.is_disposed() {
                         return;
                     }

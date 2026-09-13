@@ -13,6 +13,7 @@ use origa::use_cases::{
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::future::Future;
+use tracing::error;
 
 #[derive(Clone)]
 pub struct ImportPreviewModalState {
@@ -87,6 +88,7 @@ impl ImportPreviewModalState {
             let set = match well_known_loader.load_set(set_id.clone()).await {
                 Ok(s) => s,
                 Err(e) => {
+                    error!(error = %e, "Well-known set load failed");
                     if !disposed.is_disposed() {
                         error.set(Some(e.to_string()));
                         is_loading_preview.set(false);
@@ -158,6 +160,7 @@ impl ImportPreviewModalState {
             let loaded_sets = match well_known_loader.load_sets(set_ids.clone()).await {
                 Ok(sets) => sets,
                 Err(e) => {
+                    error!(error = %e, "Well-known sets load failed");
                     if !disposed.is_disposed() {
                         error.set(Some(e.to_string()));
                         is_loading_preview.set(false);
@@ -249,6 +252,7 @@ impl ImportPreviewModalState {
                     Ok(result)
                 },
                 Err(e) => {
+                    error!(error = %e, "Well-known set import failed");
                     error.set(Some(e.to_string()));
                     is_importing.set(false);
                     Err(e.to_string())

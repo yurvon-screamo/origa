@@ -8,6 +8,7 @@ use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
 use origa::domain::{DailyLoad, NativeLanguage, User};
 use origa::use_cases::UpdateUserProfileUseCase;
+use tracing::error;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum AutoSaveStatus {
@@ -235,7 +236,9 @@ pub fn ProfileContent() -> impl IntoView {
         is_deleting.set(true);
 
         spawn_local(async move {
-            let _ = auth_store_clone.delete_account().await;
+            if let Err(e) = auth_store_clone.delete_account().await {
+                error!(error = %e, "Account deletion failed");
+            }
             if disposed.is_disposed() {
                 return;
             }
