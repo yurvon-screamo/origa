@@ -49,6 +49,11 @@ pub(crate) const DEFAULT_SENTRY_INGEST_HOST: &str = "o4511840951992320.ingest.us
 /// single host rather than `*.sentry.io` avoids the exfiltration vector
 /// of a wildcard on the multi-tenant `sentry.io` SaaS — see ADR-036 §7.
 ///
+/// Umami Cloud analytics (`https://cloud.umami.is`, ADR-054) is allow-listed
+/// in `script-src` (tracker) and `connect-src` (`/api/send` beacons on the
+/// same host). Same pinning discipline as Sentry: the host executes JS in
+/// the WebView where Tauri IPC is in reach, so no wildcards.
+///
 /// Session Replay requires three extra directives beyond the loader /
 /// bundle / ingest hosts:
 /// - `connect-src data:` — the SDK encodes compression payloads as
@@ -68,7 +73,7 @@ pub(crate) fn build_csp(
     sentry_ingest_host: &str,
 ) -> String {
     format!(
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.pyke.io https://js.sentry-cdn.com https://browser.sentry-cdn.com; connect-src 'self' ipc: http://ipc.localhost data: {cdn} {landing} {trailbase} https://huggingface.co https://signal.pyke.io https://cdn.pyke.io https://cdn.jsdelivr.net https://browser.sentry-cdn.com https://{sentry_ingest_host}; img-src 'self' data: blob: {cdn}; media-src 'self' blob: data: {cdn}; style-src 'self' 'unsafe-inline'; font-src 'self' {cdn}; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'; worker-src 'self' blob:; child-src 'self' blob:"
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.pyke.io https://js.sentry-cdn.com https://browser.sentry-cdn.com https://cloud.umami.is; connect-src 'self' ipc: http://ipc.localhost data: {cdn} {landing} {trailbase} https://huggingface.co https://signal.pyke.io https://cdn.pyke.io https://cdn.jsdelivr.net https://browser.sentry-cdn.com https://{sentry_ingest_host} https://cloud.umami.is; img-src 'self' data: blob: {cdn}; media-src 'self' blob: data: {cdn}; style-src 'self' 'unsafe-inline'; font-src 'self' {cdn}; form-action 'self' https://accounts.google.com https://oauth.yandex.ru; frame-ancestors 'none'; worker-src 'self' blob:; child-src 'self' blob:"
     )
 }
 
