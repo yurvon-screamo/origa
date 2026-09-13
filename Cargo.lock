@@ -6043,8 +6043,10 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-tts",
  "tauri-plugin-updater",
+ "tempfile",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
