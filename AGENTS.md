@@ -63,7 +63,7 @@ JavaVM/Application в `ndk-context` — инвариант принадлежи�
 ### Переменные окружения (compile-time, `build.rs`)
 
 Обязательные: `ORIGA_CDN_BASE_URL`; для сборки `origa_landing` (clippy/test) — также `ORIGA_APP_BASE_URL` (или пара `ORIGA_BASE_URI` + `ORIGA_APP_URI_PREFIX`), без неё `origa_landing/build.rs` паникует.
-Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`, `ORIGA_LANDING_BASE_URL` (дефолт `https://origa.uwuwu.net`), `SENTRY_DSN`, `SENTRY_ENVIRONMENT`.
+Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`, `ORIGA_LANDING_BASE_URL` (дефолт `https://origa.uwuwu.net`), `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `UMAMI_WEBSITE_ID` / `UMAMI_DISABLED` (только `origa_ui` build.rs: analytics override и CI-мьют `UMAMI_DISABLED=1`; пустое значение = трекер скомпилирован out — ADR-054).
 
 **Sentry** (ADR-036): единый `SENTRY_DSN` пробрасывается во все build-скрипты; пустой/не задан = Sentry отключен. `SENTRY_ENVIRONMENT` маппится в CI из `version_type` (`stable`→`production`, `prerelease`→`staging`, иначе `development`). `SENTRY_RELEASE` выводится из `ORIGA_VERSION` (отдельная CI-переменная не нужна). Локально для теста Sentry:
 

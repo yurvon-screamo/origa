@@ -107,6 +107,7 @@ pub fn EmailPasswordForm(
                 loading=loading
                 disabled=loading
                 button_type=Signal::derive(|| "submit".to_string())
+                attr:data-umami-event="login_submit"
                 class=Signal::derive(|| "w-full".to_string())
                 test_id=Signal::derive(|| "login-submit".to_string())
             >

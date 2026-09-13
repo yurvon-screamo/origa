@@ -24,6 +24,7 @@ pub fn ScoringFinishButton(
             })
             disabled=Signal::derive(move || is_finishing.get())
             attr:data-loading=Signal::derive(move || is_finishing.get().to_string())
+            attr:data-umami-event="onboarding_complete"
             test_id=test_id
         >
             {move || if is_finishing.get() { t!(i18n, onboarding.completing).into_any() } else { t!(i18n, onboarding.finish).into_any() }}

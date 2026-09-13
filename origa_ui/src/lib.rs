@@ -61,3 +61,12 @@ pub fn init_tracing() {
     tracing::subscriber::set_global_default(subscriber)
         .expect("Не удалось установить глобальный subscriber для tracing");
 }
+
+/// Inject the Umami Cloud analytics tracker into `<head>`.
+///
+/// Must run before the app mounts so auto-tracking catches the initial
+/// pageview. No-op in builds compiled with `UMAMI_DISABLED=1` (CI) — see
+/// ADR-054 and `core::analytics`.
+pub fn init_analytics() {
+    core::analytics::inject_umami();
+}

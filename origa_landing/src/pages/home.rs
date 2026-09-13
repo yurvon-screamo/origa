@@ -42,10 +42,16 @@ pub fn HomePage() -> impl IntoView {
                 <hr class="home-hero__rule" />
                 <p class="home-hero__subtitle">{c.home_hero_subtitle}</p>
                 <div class="home-hero__cta">
-                    <A href=format!("{prefix}/download") attr:class="btn btn-filled">
+                    <A
+                        href=format!("{prefix}/download")
+                        attr:class="btn btn-filled"
+                        attr:data-umami-event="hero_cta_download"
+                    >
                         {c.home_cta_primary}
                     </A>
-                    <a href=app_url class="btn">{c.home_cta_secondary}</a>
+                    <a href=app_url class="btn" attr:data-umami-event="open_webapp">
+                        {c.home_cta_secondary}
+                    </a>
                 </div>
                 <p class="home-hero__tagline">{c.home_hero_tagline}</p>
             </div>
