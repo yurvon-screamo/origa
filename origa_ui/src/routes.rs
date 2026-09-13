@@ -706,6 +706,10 @@ mod tests {
     fn retry_policy_skips_stalled_and_unreachable_failures() {
         use crate::repository::cdn_provider::{clear_cdn_unreachable, mark_cdn_unreachable};
 
+        // This test mutates the process-global unreachable flag. It is
+        // the ONLY native test allowed to do so — a second one would
+        // race under parallel `cargo test`. Keep the mark/clear bracket
+        // tight if you extend it.
         // Transient failures on a live network still retry.
         let http_500 = OrigaError::NetworkError {
             url: "probe".to_string(),
