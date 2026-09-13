@@ -18,6 +18,7 @@ mod drawer;
 mod dropdown;
 mod error_alert;
 mod favorite_button;
+mod feedback_modal;
 mod font_face;
 mod fsrs_metrics;
 mod furigana;
@@ -54,6 +55,7 @@ mod content_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod context_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
+mod feedback_modal_wasm_tests;
 mod feedback_wasm_tests;
 mod filter_tag;
 #[cfg(all(target_arch = "wasm32", test))]
@@ -105,6 +107,7 @@ pub use drawer::Drawer;
 pub use dropdown::{Dropdown, DropdownItem};
 pub use error_alert::ErrorAlert;
 pub use favorite_button::FavoriteButton;
+pub use feedback_modal::FeedbackModal;
 pub use font_face::inject_font_faces;
 pub use fsrs_metrics::FsrsMetrics;
 pub use furigana::FuriganaText;

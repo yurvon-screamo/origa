@@ -2040,6 +2040,40 @@ rt {
     margin-top: var(--space-xs);
 }
 
+/* "Wrong translation?" entry inside the token popup (ADR-053): a quiet
+   level-0 action line — no frame at rest, muted; hover flips to fg-black.
+   Tap target padded to 44px. */
+.token-popup-report-sep {
+    border-top: 1px solid var(--border-light);
+    margin: 12px -4px 0;
+}
+
+.token-popup-report {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    background: none;
+    border: none;
+    padding: 8px 4px;
+    margin-top: 4px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.token-popup-report:hover {
+    color: var(--fg-black);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.token-popup-report:active {
+    transform: translateY(1px);
+}
+
 .kanji-animation-container {
     display: flex;
     flex-direction: column;
@@ -6328,4 +6362,179 @@ rt {
 }
 .scoring-card-answer-area {
     min-height: 60px;
+}
+
+/* ==========================================================================
+   Feedback modal (issue #414, ADR-053)
+   ========================================================================== */
+
+/* Subject plate: the content being reported (level-2 surface: light border,
+   aged background — a service block, not a card). */
+.feedback-subject {
+    background: var(--bg-aged);
+    border: 1px solid var(--border-light);
+    padding: 12px 16px;
+    margin-bottom: var(--space-md);
+}
+
+.feedback-subject__surface {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.feedback-subject__reading {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--fg-muted);
+    margin-top: 4px;
+}
+
+.feedback-subject__context {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--fg-muted);
+    margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.feedback-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-black);
+}
+
+.feedback-label__required {
+    color: var(--accent-terracotta);
+    margin-left: 2px;
+}
+
+/* Auto-context disclosure: quiet toggle + stamp line of attached data. */
+.feedback-auto-toggle {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-light);
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+}
+
+.feedback-auto-toggle:hover {
+    color: var(--fg-black);
+}
+
+.feedback-auto-line {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    color: var(--fg-light);
+    background: var(--bg-aged);
+    padding: 6px 10px;
+}
+
+.feedback-offline-hint,
+.feedback-info {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--fg-muted);
+    border-left: 4px solid var(--accent-gold);
+    padding: 8px 12px;
+    background: var(--bg-warm);
+}
+
+.feedback-error {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--error);
+    border-left: 4px solid var(--error);
+    padding: 8px 12px;
+    background: var(--bg-warm);
+}
+
+.feedback-privacy {
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm);
+    color: var(--fg-light);
+}
+
+.feedback-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    margin-top: var(--space-xs);
+}
+
+/* Success state: check-draw + auto-close. */
+.feedback-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 0;
+}
+
+.feedback-success__check {
+    color: var(--accent-olive);
+}
+
+.feedback-success__check path {
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: anima-check-draw 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.feedback-success__title {
+    font-size: 24px;
+}
+
+.feedback-success__note {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: var(--fg-muted);
+    text-align: center;
+}
+
+/* Lesson header report button (ADR-053): same quiet pattern as the mute
+   button, tinted with the error color so the affordance reads instantly.
+   `disabled` on the question phase keeps the header layout stable. */
+.lesson-report-btn {
+    padding: 6px;
+    color: var(--error);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.lesson-report-btn:hover:not(:disabled) {
+    opacity: 0.75;
+}
+
+.lesson-report-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.lesson-report-btn:disabled {
+    color: var(--fg-light);
+    cursor: default;
+    opacity: 0.6;
 }
