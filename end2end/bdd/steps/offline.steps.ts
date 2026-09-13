@@ -172,11 +172,9 @@ When('интернет становится доступен', async ({ page }) 
 });
 
 When('пользователь нажимает кнопку «Повторить»', async ({ page }) => {
-    // The error screen appears only after the startup pipeline concludes
-    // (cold WASM boot under a dead network) — wait for it explicitly,
-    // then click; a bare click timeout races the boot on slow runners.
-    const screen = page.getByTestId("app-load-error");
-    await expect(screen).toBeVisible({ timeout: 60_000 });
+    // The scenario asserts the error screen BEFORE unrouting the
+    // network: restoring connectivity mid-pipeline lets the manifest
+    // and dictionaries download for real, and the screen never appears.
     await page.getByTestId("app-load-error-retry").click({ timeout: 10_000 });
 });
 
