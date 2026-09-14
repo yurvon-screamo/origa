@@ -12,4 +12,11 @@ crond -c "$CROND_DIR" -l 8
 # (5s start-period + 3 retries × 30s) together with a cold trail start.
 GEOIP_TIMEOUT=45 /app/geoip.sh || echo "[entrypoint] geoip: fetch failed, starting without geo"
 
+# The data volume shadows /app/traildepot, so the auth-UI wasm baked into the
+# image would go stale across trail upgrades; re-sync it from /opt on every
+# boot (best-effort — the previously deployed component keeps working).
+mkdir -p /app/traildepot/wasm
+cp -f /opt/trailbase/wasm/trailbase_auth_ui_component.wasm \
+  /app/traildepot/wasm/ 2>/dev/null || echo "[entrypoint] wasm auth-ui sync failed"
+
 exec "$@"

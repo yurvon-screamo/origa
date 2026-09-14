@@ -111,21 +111,35 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     --mount=type=cache,target=/root/.cache/trunk,sharing=locked \
     trunk build --release --dist dist
 
-# Runtime: TrailBase + SPA static files
-# TEMP: test image carrying the Apple `response_mode=form_post` fix
-# (trailbaseio/trailbase#282) until an upstream release ships it. Based on v0.33.5.
-# apple-native: the same fork plus the native Sign in with Apple endpoint
-# (POST /api/auth/v1/oauth/apple/native, App Review Guideline 4, origa#505).
-FROM ghcr.io/yurvon-screamo/trailbase:apple-native
+# Runtime: official TrailBase release artifacts + SPA static files.
+# TrailBase publishes no official Docker image, so the runtime stage
+# assembles the official release artifacts on alpine (same layout as
+# upstream's own image): static musl `trail` binary + the auth-UI wasm
+# component, which the binary loads from /app/traildepot/wasm at boot.
+ARG TRAILBASE_VERSION=v0.33.16
+FROM alpine:3.23
+
+ARG TRAILBASE_VERSION
 
 USER root
 WORKDIR /app
 
+# hadolint ignore=DL3018
+RUN apk add --no-cache tini curl sqlite aws-cli ca-certificates unzip
+
+ADD https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_x86_64_linux.zip /tmp/trail.zip
+ADD https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_wasm_auth_ui.zip /tmp/auth_ui.zip
+
+RUN unzip -o /tmp/trail.zip -d /app \
+ && mkdir -p /app/traildepot/wasm /opt/trailbase/wasm \
+ && unzip -o /tmp/auth_ui.zip -d /opt/trailbase/wasm \
+ && rm -f /app/CHANGELOG.md /app/LICENSE /tmp/trail.zip /tmp/auth_ui.zip \
+ && chmod +x /app/trail \
+ && adduser -D trailbase \
+ && chown -R trailbase:trailbase /app /opt/trailbase
+
 ARG ORIGA_CDN_BASE_URL
 ENV ORIGA_CDN_BASE_URL=${ORIGA_CDN_BASE_URL}
-
-# hadolint ignore=DL3018
-RUN apk add --no-cache curl sqlite aws-cli
 
 COPY --from=builder /app/origa_ui/dist /app/public
 
@@ -136,9 +150,8 @@ COPY origa_ui/geoip.sh      /app/geoip.sh
 COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 COPY origa_ui/crontab       /app/crontab
 RUN chmod +x /app/backup.sh /app/entrypoint.sh /app/geoip.sh \
- && chmod 600 /app/crontab
-
-RUN chown -R trailbase:trailbase /app
+ && chmod 600 /app/crontab \
+ && chown trailbase:trailbase /app/backup.sh /app/entrypoint.sh /app/geoip.sh /app/crontab
 
 USER trailbase
 
