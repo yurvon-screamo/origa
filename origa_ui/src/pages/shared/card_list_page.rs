@@ -22,6 +22,27 @@ use std::collections::HashMap;
 
 pub type CardsLoadedCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
 
+/// Callback for the visible (rendered) card slice — the lazy data-load
+/// trigger of #540-В1.
+pub type VisibleCardsCallback = Arc<dyn Fn(&[StudyCard]) + Send + Sync>;
+
+/// Page-specific hooks into the shared list view (#540-В1).
+///
+/// The phrases page is data-lazy: unlike the other pages it must NOT load
+/// every phrase's details up front, so it (a) injects its own search
+/// signal to observe queries and (b) subscribes to the currently visible
+/// card slice to load details for what is actually on screen. Every other
+/// page passes the default (no overrides) and behaves exactly as before.
+#[derive(Default)]
+pub struct CardListExtras {
+    /// Use this signal as the list's search box state instead of a local
+    /// one — lets the page observe queries (deferred full load).
+    pub search: Option<RwSignal<String>>,
+    /// Called whenever the visible (filtered + paginated) card slice
+    /// changes — the lazy data-load trigger.
+    pub on_visible_cards: Option<VisibleCardsCallback>,
+}
+
 #[derive(Clone)]
 pub struct CardListContext {
     #[expect(
@@ -131,10 +152,10 @@ pub fn create_card_list_context(
 pub fn card_list_view<F>(
     ctx: CardListContext,
     grouping: ListGrouping,
-    sort_cards: bool,
     test_id_prefix: &'static str,
     empty_message: Signal<String>,
     grid_classes: Option<&'static str>,
+    extras: CardListExtras,
     render_card: F,
 ) -> AnyView
 where
@@ -146,7 +167,9 @@ where
     let native_lang = ctx.native_lang;
     let toasts = ctx.toasts;
 
-    let search = RwSignal::new(String::new());
+    let search = extras
+        .search
+        .unwrap_or_else(|| RwSignal::new(String::new()));
     let filter = RwSignal::new(Filter::All);
     // JLPT axis — only meaningful for `ListGrouping::ByJlptLevel`. For Flat
     // pages (`/words`, `/phrases`) the row is not rendered and the filter
@@ -229,11 +252,11 @@ where
                 // of calling `level_index.get()` again inside this branch.
                 cards = order_cards_by_group(&cards, &index);
             },
-            ListGrouping::Flat => {
-                if sort_cards {
-                    cards.sort_by_key(|c| *c.card_id());
-                }
-            },
+            // Flat pages render in stable card-id order; grouped pages
+            // are ordered by their group axis instead (both arms kept
+            // their previous unconditional behavior — every caller passed
+            // the same flag).
+            ListGrouping::Flat => cards.sort_by_key(|c| *c.card_id()),
         }
         cards
     });
@@ -265,6 +288,17 @@ where
             .take(visible_count.get())
             .collect::<Vec<_>>()
     });
+
+    // Lazy-load hook (#540-В1): notify the page whenever the rendered
+    // slice changes (first render, "load more", filter/search switches).
+    // Runs after the memo settled; the page's callback decides what to
+    // fetch. Unsubscribed pages pay nothing.
+    if let Some(on_visible_cards) = extras.on_visible_cards {
+        Effect::new(move |_| {
+            let cards = visible_cards.get();
+            on_visible_cards(&cards);
+        });
+    }
 
     let counts = Memo::new(move |_| {
         let cards = all_cards.get();

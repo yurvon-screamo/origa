@@ -1,5 +1,6 @@
 mod content;
 pub(crate) mod header;
+mod lazy_details;
 pub(crate) mod phrase_card_item;
 #[cfg(all(target_arch = "wasm32", test))]
 mod phrases_wasm_tests;
