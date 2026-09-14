@@ -182,6 +182,14 @@ pub fn is_chunk_loaded(chunk_id: u32) -> bool {
         .unwrap_or(false)
 }
 
+/// Drops the phrase detail cache entirely. Cross-crate test isolation
+/// only (the UI loader's unit tests share the process globals); the
+/// production cache is content-addressed by chunk id and never needs a
+/// reset. Same naming precedent as `set_timestamp_for_test`.
+pub fn reset_phrase_data_for_test() {
+    *PHRASE_DATA.write().unwrap_or_else(|e| e.into_inner()) = None;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
