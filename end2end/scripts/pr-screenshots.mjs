@@ -22,35 +22,51 @@ const TRAILBASE = "http://127.0.0.1:4000";
 
 const runId = `shot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+/// Admin login → { token, csrfToken } (matches fixtures/admin.ts).
 async function adminToken() {
     const res = await globalThis.fetch(`${TRAILBASE}/api/auth/v1/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: ADMIN.email, password: ADMIN.password }),
     });
-    const csrf = res.headers.get("set-cookie")?.match(/csrf_token[^;]*/)?.[0];
-    const login = await res.json();
-    const token = login.auth_token ?? login.token;
-    return { token, csrf };
+    if (!res.ok) throw new Error(`admin login failed: ${res.status}`);
+    const data = await res.json();
+    if (!data.csrf_token) throw new Error("admin login missing csrf_token");
+    return { token: data.auth_token, csrfToken: data.csrf_token };
 }
 
+/// Create a verified test user via the admin API (fixtures/admin.ts flow).
 async function createUser(email, password) {
-    const { token, csrf } = await adminToken();
-    await globalThis.fetch(`${TRAILBASE}/api/auth/v1/admin/users`, {
+    const { token, csrfToken } = await adminToken();
+    const res = await globalThis.fetch(`${TRAILBASE}/api/_admin/user`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            ...(csrf ? { Cookie: csrf } : {}),
+            "csrf-token": csrfToken,
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, verified: true, admin: false }),
     });
+    if (!res.ok) {
+        throw new Error(`create user failed: ${res.status} ${await res.text()}`);
+    }
+    const data = await res.json();
+    console.log(`[admin] Created ${email} (${data.id})`);
+    return data.id;
 }
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     locale: "ru-RU",
+});
+await context.addInitScript(() => {
+    // Runs in the page (browser globals via globalThis — the eslint node
+    // profile for scripts/*.mjs has no `window`).
+    const g = globalThis;
+    if (g.location?.origin === "http://localhost:1420") {
+        g.localStorage?.setItem("origa_resource_download_consented", "true");
+    }
 });
 const page = await context.newPage();
 
@@ -60,19 +76,98 @@ await createUser(email, password);
 
 // Login through the UI.
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
-await page.getByTestId("email-input").waitFor({ timeout: 60_000 });
+const toggle = page.getByTestId("login-password-toggle");
+await toggle.waitFor({ state: "visible", timeout: 60_000 });
+await toggle.click();
+await page.getByTestId("email-input").waitFor({ timeout: 30_000 });
 await page.getByTestId("email-input").fill(email);
 await page.getByTestId("password-input").fill(password);
 await page.getByTestId("login-form").locator("button[type=submit]").click();
+// Terminal route after login: /home (onboarded) or /onboarding (fresh user).
+await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
 
-// Skip onboarding if it appears.
-const skip = page.getByTestId("onboarding-skip");
-if (await skip.isVisible({ timeout: 20_000 }).catch(() => false)) {
-    await skip.click();
-    const confirm = page.getByTestId("onboarding-confirm-ok");
-    if (await confirm.isVisible().catch(() => false)) await confirm.click();
+const ONBOARDED_MODE = process.env.SHOTS_MODE === "onboarded";
+
+if (ONBOARDED_MODE) {
+    // Full onboarding at N5 (skip apps): the phrases catalogue becomes
+    // available, which the plain skip flow does not provide. Mirrors
+    // completeOnboardingToScoring + mark-all + finish.
+    await page.goto(`${BASE}/`);
+    await page.waitForURL(/\/onboarding$/, { timeout: 30_000 });
+    await page
+        .getByTestId("onboarding-spinner")
+        .waitFor({ state: "hidden", timeout: 30_000 })
+        .catch(() => {});
+    await page.getByTestId("onboarding-next").click();
+    await page.getByTestId("onboarding-load-step").waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByTestId("onboarding-next").click();
+    await page.getByTestId("onboarding-jlpt-step").waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByTestId("jlpt-option-n5").click();
+    await page
+        .getByTestId("jlpt-option-n5")
+        .waitFor({ state: "visible", timeout: 5_000 });
+    await page.getByTestId("onboarding-next").click();
+    await page.getByTestId("onboarding-apps-step").waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByTestId("onboarding-next").click();
+    await page
+        .getByTestId("onboarding-progress-step")
+        .waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByTestId("onboarding-next").click();
+    await page
+        .getByTestId("onboarding-summary-step")
+        .waitFor({ state: "visible", timeout: 10_000 });
+    // Summary → Import → Scoring (see completeOnboardingToScoring).
+    await page.getByTestId("onboarding-import").click();
+    // Import runs, then the scoring step appears (may take a while).
+    await page
+        .getByTestId("onboarding-scoring-step")
+        .waitFor({ state: "visible", timeout: 240_000 });
+    await page.getByTestId("scoring-step-hint").waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByTestId("onboarding-mark-all-known").click();
+    await page.getByTestId("onboarding-confirm-ok").click();
+    await page
+        .getByTestId("scoring-step-complete")
+        .waitFor({ state: "visible", timeout: 240_000 });
+    await page.getByTestId("onboarding-finish").click();
+    await page.waitForURL(/\/home$/, { timeout: 240_000 });
+} else {
+    // Skip onboarding if it appears.
+    await page
+        .getByTestId("onboarding-spinner")
+        .waitFor({ state: "hidden", timeout: 30_000 })
+        .catch(() => {});
+    const skip = page.getByTestId("onboarding-skip");
+    if (await skip.isVisible({ timeout: 15_000 }).catch(() => false)) {
+        await skip.click();
+        const confirm = page.getByTestId("onboarding-confirm-ok");
+        await confirm
+            .waitFor({ state: "visible", timeout: 10_000 })
+            .then(() => confirm.click())
+            .catch(() => {});
+    }
+    await page.waitForURL(/\/home$/, { timeout: 60_000 });
 }
-await page.waitForURL(/\/home$/, { timeout: 60_000 });
+
+if (ONBOARDED_MODE) {
+    // 4) Token popup on the phrases catalogue.
+    await page.goto(`${BASE}/phrases`);
+    await page
+        .getByTestId("phrases-card-item")
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForTimeout(3000);
+    const token = page.locator(".token-word .token-surface").first();
+    await token.waitFor({ state: "visible", timeout: 30_000 });
+    await token.click();
+    await page
+        .getByTestId("token-popup-report")
+        .waitFor({ state: "visible", timeout: 10_000 });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: join(OUT, "04-token-popup-report.png") });
+    await browser.close();
+    console.log("screenshots in", OUT);
+    process.exit(0);
+}
 
 // Add a word from text (same flow as BDD).
 await page.goto(`${BASE}/words`);
@@ -82,29 +177,51 @@ await page.getByTestId("words-drawer-textarea").fill("私は本を読みます")
 await page.getByTestId("words-drawer-analyze-btn").click();
 await page.getByText(/Найдено/).waitFor({ timeout: 15_000 });
 const items = page.getByTestId("words-drawer-item");
+await items.first().waitFor({ state: "visible", timeout: 10_000 });
+// analyze_text() pre-selects everything; deselect all, then pick the first
+// (words.page.ts selectFirstWord flow, incl. disabled items).
 const count = await items.count();
 for (let i = 0; i < count; i++) {
-    const checked = await items.nth(i).locator("input[type=checkbox]").isChecked().catch(() => true);
-    if (checked) await items.nth(i).click().catch(() => null);
+    const item = items.nth(i);
+    const checkbox = item.locator('input[type="checkbox"]');
+    if (await checkbox.isChecked().catch(() => false)) {
+        const isDisabled = await item
+            .evaluate((el) => el.classList.contains("cursor-not-allowed"))
+            .catch(() => false);
+        if (isDisabled) continue;
+        await item.click();
+        await page.waitForTimeout(150);
+    }
 }
-await items.first().click().catch(() => null);
+await items.first().click();
+await page.waitForTimeout(200);
 await page.getByTestId("words-drawer-add-btn").click();
-await page.getByTestId("words-grid").waitFor({ timeout: 15_000 });
+await page.getByTestId("words-grid").waitFor({ timeout: 20_000 });
 
 // Start a lesson.
 await page.goto(`${BASE}/lesson`);
-await page.getByTestId("lesson-page, [data-testid=lesson-header]").first().waitFor({ timeout: 60_000 });
+await page.getByTestId("lesson-header").waitFor({ state: "visible", timeout: 60_000 });
 
 // 1) Lesson header with the report button (question phase: disabled).
 await page.getByTestId("lesson-report-btn").waitFor({ state: "visible", timeout: 60_000 });
 await page.screenshot({ path: join(OUT, "01-lesson-header-report-disabled.png") });
 
-// Walk the acquaintance presentation to the training reveal.
+// Walk the acquaintance presentation to the training reveal
+// (runAcquaintancePresentation flow from helpers/lesson.ts).
+await page.getByTestId("acquaintance-view").waitFor({ state: "visible", timeout: 30_000 });
 const next = page.getByTestId("acquaintance-next-btn");
-for (let i = 0; i < 25; i++) {
-    if (await page.getByTestId("acquaintance-training").isVisible().catch(() => false)) break;
-    await next.click({ timeout: 2_000 }).catch(() => null);
+for (let i = 0; i < 20; i++) {
+    await next.click({ timeout: 3_000 }).catch(() => null);
+    const training = await page
+        .getByTestId("acquaintance-training")
+        .waitFor({ state: "visible", timeout: 1_000 })
+        .then(() => true)
+        .catch(() => false);
+    if (training) break;
 }
+await page
+    .getByTestId("acquaintance-training")
+    .waitFor({ state: "visible", timeout: 15_000 });
 const reveal = page.getByTestId("acquaintance-reveal-btn");
 await reveal.waitFor({ state: "visible", timeout: 30_000 });
 await reveal.click();
@@ -121,22 +238,22 @@ await page.getByTestId("feedback-auto-toggle").click();
 await page.waitForTimeout(300);
 await page.screenshot({ path: join(OUT, "03-feedback-modal-filled.png") });
 
-// 3) Token popup: find a translator token on the lesson card and click it.
+// 3) Token popup with the "wrong translation?" line: the phrases page
+// renders TranslatorText (token popups) on every phrase card.
 await page.keyboard.press("Escape");
 await page.waitForTimeout(400);
+await page.goto(`${BASE}/phrases`);
+await page.getByTestId("phrases-card-item").first().waitFor({ state: "visible", timeout: 30_000 });
+await page.waitForTimeout(3000);
+await page.screenshot({ path: join(OUT, "diag-phrases.png") });
 const token = page.locator(".token-word .token-surface").first();
-if (await token.isVisible().catch(() => false)) {
-    await token.click();
-    await page.waitForTimeout(400);
-    const reportLine = page.getByTestId("token-popup-report");
-    if (await reportLine.isVisible().catch(() => false)) {
-        await page.screenshot({ path: join(OUT, "04-token-popup-report.png") });
-    } else {
-        console.warn("token popup rendered without the report line");
-    }
-} else {
-    console.warn("no token-word found on the current card; skipping popup shot");
-}
+await token.waitFor({ state: "visible", timeout: 30_000 });
+await token.click();
+await page.waitForTimeout(400);
+await page
+    .getByTestId("token-popup-report")
+    .waitFor({ state: "visible", timeout: 10_000 });
+await page.screenshot({ path: join(OUT, "04-token-popup-report.png") });
 
 await browser.close();
 console.log("screenshots in", OUT);
