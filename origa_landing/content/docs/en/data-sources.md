@@ -45,6 +45,6 @@ Pre-built word sets for import come from [Irodori](https://www.irodori.jpf.go.jp
 
 ## Fonts
 
-- Cormorant Garamond — SIL Open Font License
-- IBM Plex Mono — SIL Open Font License
-- Noto Sans JP — SIL Open Font License
+- Cormorant Garamond: SIL Open Font License
+- IBM Plex Mono: SIL Open Font License
+- Noto Sans JP: SIL Open Font License

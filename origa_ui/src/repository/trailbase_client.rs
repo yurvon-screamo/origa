@@ -111,10 +111,16 @@ impl TrailBaseClient {
             (None, false) => Vec::new(),
         };
         if !header_entries.is_empty() {
+            // HeadersInit is a sequence of [name, value] PAIRS — a flat
+            // [k, v, k, v] array is silently malformed and the headers
+            // never reach the server (the login body then parses as
+            // empty credentials).
             let js_headers = js_sys::Array::new();
             for (key, value) in &header_entries {
-                js_headers.push(&wasm_bindgen::JsValue::from_str(key));
-                js_headers.push(&wasm_bindgen::JsValue::from_str(value));
+                let pair = js_sys::Array::new();
+                pair.push(&wasm_bindgen::JsValue::from_str(key));
+                pair.push(&wasm_bindgen::JsValue::from_str(value));
+                js_headers.push(&pair);
             }
             init.set_headers(&js_headers.into());
         }
@@ -134,7 +140,20 @@ impl TrailBaseClient {
             crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
         )
         .await
-        .map_err(|e| AuthError::NetworkError(e.to_string()))?;
+        .map_err(|e| {
+            // Transport-level failure of a TrailBase HTTP call (network
+            // down, DNS, CORS, timeout). Logged here once — at the single
+            // choke point every authorized/unauthorized request passes —
+            // so infrastructure failures stay visible in Sentry even when
+            // a caller swallows the Err.
+            tracing::error!(
+                error = %e,
+                method = ?method,
+                url = %url,
+                "TrailBase request network failure"
+            );
+            AuthError::NetworkError(e.to_string())
+        })?;
 
         let response = sent.response;
         Ok(ApiResponse::new(

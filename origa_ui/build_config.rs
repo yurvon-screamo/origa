@@ -49,3 +49,41 @@ pub(crate) fn resolve_cdn(env_value: Option<&str>) -> String {
         _ => defaults::DEFAULT_CDN.to_string(),
     }
 }
+
+/// Production Umami Cloud website ID.
+///
+/// Website IDs are public identifiers — every visitor's page HTML exposes them
+/// in the tracker tag — so committing the default is safe (unlike, say, an API
+/// key). Used by `resolve_umami` as the fallback when `UMAMI_WEBSITE_ID` is
+/// unset OR empty, mirroring the `resolve_trailbase` empty-handling contract
+/// (ADR-020). See ADR-054 for the analytics integration.
+pub(crate) const DEFAULT_UMAMI_WEBSITE_ID: &str = "0b8b69aa-9c94-41ef-b27a-f928011b797b";
+
+/// Resolve the Umami Cloud website ID to emit via `cargo:rustc-env`. Returns
+/// an empty string (= analytics compiled out, runtime injection is a no-op)
+/// when `disabled` is truthy; otherwise falls back from an explicit
+/// non-empty `website_id` to `DEFAULT_UMAMI_WEBSITE_ID`.
+///
+/// `UMAMI_DISABLED` exists so CI builds that actually execute the app (e2e
+/// headless runs, the android-smoke emulator) can keep their
+/// localhost/tauri.localhost traffic out of production analytics — a static
+/// tracker tag in `index.html` cannot be muted per build, which is why the
+/// tag is injected from WASM instead (ADR-054).
+pub(crate) fn resolve_umami(disabled: Option<&str>, website_id: Option<&str>) -> String {
+    if is_truthy(disabled) {
+        return String::new();
+    }
+    match website_id {
+        Some(v) if !v.is_empty() => v.to_string(),
+        _ => DEFAULT_UMAMI_WEBSITE_ID.to_string(),
+    }
+}
+
+/// Truthy values for `UMAMI_DISABLED`: exactly `"1"` or `"true"`, matched
+/// case-insensitively. Anything else (`"0"`, `"false"`, `""`, arbitrary
+/// strings, unset) leaves analytics enabled — fail-open, because a typo'd
+/// flag value silently losing analytics on a release build is worse than a
+/// noisy CI run.
+fn is_truthy(value: Option<&str>) -> bool {
+    matches!(value, Some(v) if v.eq_ignore_ascii_case("1") || v.eq_ignore_ascii_case("true"))
+}

@@ -155,7 +155,7 @@ utils generate-grammar --all --grammar-path path/to/grammar.json
 
 - `rule_id` - Rule ID to generate (omit with `--all` for batch mode)
 - `--all` - Generate descriptions for all rules
-- `--level <LEVEL>` - Filter by JLPT level (N5, N4, N3) — use with `--all`
+- `--level <LEVEL>` - Filter by JLPT level (N5, N4, N3), use with `--all`
 - `--api-base <API_BASE>` - OpenAI API base URL
   (default: `http://10.2.11.6:8001/v1`)
 - `--api-key <API_KEY>` - OpenAI API key (default: `none`)
@@ -209,8 +209,8 @@ utils validate-dictionary --api-key YOUR_KEY -o results/invalid.jsonl
 
 **Output:**
 
-- `.jsonl` file — append-only progress (crash-safe)
-- `.json` file — final summary with list of invalid words for re-generation
+- `.jsonl` file: append-only progress (crash-safe)
+- `.json` file: final summary with list of invalid words for re-generation
 
 ## Getting Help
 

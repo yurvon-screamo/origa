@@ -17,7 +17,7 @@ Origa includes a corpus of phrases pulled from native Japanese content. This pag
 
 ## The phrase corpus
 
-The corpus contains native Japanese sentences drawn from content made by Japanese speakers, for Japanese speakers. Sources include visual novels and anime. Each phrase comes with its original voice acting — recorded by the original performers, not synthesized.
+The corpus contains native Japanese sentences drawn from content made by Japanese speakers, for Japanese speakers. Sources include visual novels and anime. Each phrase comes with its original voice acting, recorded by the original performers, not synthesized.
 
 This is real, conversational Japanese. The phrasing, intonation, and vocabulary reflect how the language is actually used.
 
@@ -31,17 +31,17 @@ Selection is driven by your known-vocabulary index. As you learn more words, the
 
 During a lesson, a listening card plays the audio for a phrase and asks you to recognize or transcribe it. The audio is the original recording; you hear it at natural speed.
 
-You can replay the audio as many times as you need. There is no slowdown or pitch shift — the goal is to train your ear on real speech.
+You can replay the audio as many times as you need. There is no slowdown or pitch shift. The goal is to train your ear on real speech.
 
 ## Where phrases enter your collection
 
 Phrases do not need to be added manually. They enter your review cycle automatically as your vocabulary grows. The pace depends on the daily load you set and how many phrases Origa can match to your level.
 
-If a specific source appeals to you — for example, vocabulary from a particular anime — you can import it as a set from the Sets page. Imported phrases behave like any other phrase card: scheduled by FSRS, eligible for listening cards.
+If a specific source appeals to you (for example, vocabulary from a particular anime), you can import it as a set from the Sets page. Imported phrases behave like any other phrase card: scheduled by FSRS, eligible for listening cards.
 
 ## What phrases are not
 
-Phrases are not full dialogue tracks or subtitled episodes. They are individual sentences pulled out of longer content. Origa does not include the source video or audio in full — only the sentence-level audio needed for study.
+Phrases are not full dialogue tracks or subtitled episodes. They are individual sentences pulled out of longer content. Origa does not include the source video or audio in full. Only the sentence-level audio needed for study.
 
 ## Related
 

@@ -452,6 +452,10 @@ jobs:
               env:
                   ORIGA_CDN_BASE_URL: http://localhost:8080
                   TRAILBASE_URL: http://localhost:4000
+                  # Mute Umami analytics for builds that execute the app:
+                  # this dist feeds e2e runs AND the wasm-dist artifact reused
+                  # by CI-validated build-tauri/build-macos (ADR-054).
+                  UMAMI_DISABLED: "1"
 
             - name: Upload WASM artifact
               uses: actions/upload-artifact@v7
@@ -622,6 +626,11 @@ jobs:
             # e2e-build / production artifact.
             - name: Build WASM frontend
               run: cd origa_ui && trunk build --release
+              env:
+                  # Mute Umami analytics: this dist runs inside the
+                  # android-smoke emulator and must not pollute production
+                  # analytics with tauri.localhost traffic (ADR-054).
+                  UMAMI_DISABLED: "1"
 
             - name: Build debug APK (x86_64)
               working-directory: tauri
@@ -792,7 +801,7 @@ jobs:
                       ;;
                     onboarding-lesson)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding)\.feature\.spec\.js"
+                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding|feedback|feedback_translation)\.feature\.spec\.js"
                       ;;
                     stress)
                       # Full-corpus N1 scenarios: each seeds ~11k cards

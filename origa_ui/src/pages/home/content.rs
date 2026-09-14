@@ -173,7 +173,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     if disposed.is_disposed() {
                         return;
                     }
-                    tracing::error!("Home: sync error: {:?}", e);
                     show_sync_error_toast(toasts, i18n, &e);
                 },
             }
