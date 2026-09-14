@@ -440,6 +440,7 @@ phrases/precomputed/p0195.rkyv
 phrases/precomputed/p0196.rkyv
 phrases/precomputed/p0197.rkyv
 phrases/phrase_index.rkyv
+phrases/phrase_index.v3.rkyv
 pitch/index.json
 pitch/index.rkyv
 well_known_set/duolingo/n3/duolingo_en_n3_1.json

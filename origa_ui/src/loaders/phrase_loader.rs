@@ -1,8 +1,10 @@
 use origa::dictionary::cdn_blob::{guard_matches, split_blob};
 use origa::dictionary::phrase::{
-    ArchivedPhraseIndexBlob, access_phrase_blob, init_phrase_index, install_archived_phrase_index,
+    ArchivedPhraseIndexBlob, ArchivedPhraseIndexBlobV3, access_phrase_blob, access_phrase_blob_v3,
+    init_phrase_index, install_archived_phrase_index, install_archived_phrase_index_v3,
     is_phrases_loaded, phrase_index_len,
 };
+use origa::dictionary::precompute_blob::inflate_blob;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
@@ -12,6 +14,7 @@ use crate::utils::{now_ms, yield_to_browser};
 
 const PHRASE_INDEX_PATH: &str = "phrases/phrase_index.json";
 const PHRASE_INDEX_BLOB_PATH: &str = "phrases/phrase_index.rkyv";
+const PHRASE_INDEX_BLOB_V3_PATH: &str = "phrases/phrase_index.v3.rkyv";
 
 /// Result of the provider-parameterized load: the zero-copy archived view
 /// of the pre-parsed CDN blob (fast path) or the raw JSON text (fallback).
@@ -19,6 +22,7 @@ const PHRASE_INDEX_BLOB_PATH: &str = "phrases/phrase_index.rkyv";
 /// exercise the core repeatedly.
 pub enum LoadedPhrases {
     CdnBlob(&'static ArchivedPhraseIndexBlob),
+    CdnBlobV3(&'static ArchivedPhraseIndexBlobV3),
     SourceJson(String),
 }
 
@@ -41,6 +45,14 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
                 (now_ms() - start) / 1000.0
             );
         },
+        LoadedPhrases::CdnBlobV3(view) => {
+            install_archived_phrase_index_v3(view)?;
+            tracing::info!(
+                "Phrases index loaded: {} phrases ({:.2}s total, zero-copy v3 blob)",
+                phrase_index_len(),
+                (now_ms() - start) / 1000.0
+            );
+        },
         LoadedPhrases::SourceJson(json) => {
             yield_to_browser().await;
             let parse_start = now_ms();
@@ -58,11 +70,74 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
     Ok(())
 }
 
-/// Provider-parameterized core: try the CDN rkyv blob first (zero-copy
-/// access — no JSON text scan, no inverted-index rebuild), fall back to
-/// the original JSON on any validation or fetch failure. The blob is
-/// verified against the remote manifest guard when one was fetched.
+/// Current WASM linear-memory size for the load-timing log (#535
+/// measurement): the v3 checkpoint compares time AND peak memory.
+#[cfg(target_arch = "wasm32")]
+fn wasm_memory_mib() -> f64 {
+    use wasm_bindgen::{JsCast, memory};
+
+    let buffer = js_sys::Reflect::get(&memory(), &js_sys::JsValue::from_str("buffer"))
+        .ok()
+        .and_then(|value| value.dyn_into::<js_sys::ArrayBuffer>().ok());
+    buffer.map_or(0.0, |buffer| buffer.byte_length() as f64 / 1024.0 / 1024.0)
+}
+
+/// Provider-parameterized core: try the v3 CDN blob first (deflated,
+/// deduplicated — #535), then the v2 blob, then the original JSON. Each
+/// layer falls back on any fetch or validation failure.
 pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhrases, OrigaError> {
+    let t0 = now_ms();
+    match provider.fetch_bytes(PHRASE_INDEX_BLOB_V3_PATH).await {
+        Ok(deflated) => {
+            let fetch_ms = now_ms() - t0;
+            let t1 = now_ms();
+            let inflated = match inflate_blob(&deflated) {
+                Ok(inflated) => inflated,
+                Err(e) => {
+                    tracing::warn!("📖 Phrase index v3 blob not deflated ({e:?})");
+                    return load_phrases_via_v2(provider).await;
+                },
+            };
+            let inflate_ms = now_ms() - t1;
+            let t2 = now_ms();
+            match phrase_view_from_blob_v3(&inflated) {
+                Ok(view) => {
+                    tracing::info!(
+                        "📖 Phrase index v3 blob consumed (fetch {:.2}s, inflate {:.2}s, access {:.2}s, deflated {:.1} MB -> raw {:.1} MB{})",
+                        fetch_ms / 1000.0,
+                        inflate_ms / 1000.0,
+                        (now_ms() - t2) / 1000.0,
+                        deflated.len() as f64 / 1024.0 / 1024.0,
+                        inflated.len() as f64 / 1024.0 / 1024.0,
+                        memory_note()
+                    );
+                    return Ok(LoadedPhrases::CdnBlobV3(view));
+                },
+                Err(e) => tracing::warn!(
+                    "📖 Phrase index v3 blob rejected ({e:?}), falling back to v2/JSON"
+                ),
+            }
+        },
+        Err(e) => {
+            tracing::warn!("📖 Phrase index v3 blob unavailable ({e:?}), falling back to v2/JSON")
+        },
+    }
+
+    load_phrases_via_v2(provider).await
+}
+
+#[cfg(target_arch = "wasm32")]
+fn memory_note() -> String {
+    format!(", wasm mem {:.0} MiB", wasm_memory_mib())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn memory_note() -> String {
+    String::new()
+}
+
+/// v2 layer: the legacy raw rkyv blob, then the JSON source.
+async fn load_phrases_via_v2<P: CdnProvider>(provider: &P) -> Result<LoadedPhrases, OrigaError> {
     let fetch_start = now_ms();
     match provider.fetch_bytes(PHRASE_INDEX_BLOB_PATH).await {
         Ok(blob) => {
@@ -71,7 +146,7 @@ pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhra
             match phrase_view_from_blob(&blob) {
                 Ok(view) => {
                     tracing::debug!(
-                        "📖 Phrase index blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
+                        "📖 Phrase index v2 blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
                         fetch_ms / 1000.0,
                         (now_ms() - access_start) / 1000.0
                     );
@@ -91,6 +166,26 @@ pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhra
 
     let json = provider.fetch_text(PHRASE_INDEX_PATH).await?;
     Ok(LoadedPhrases::SourceJson(json))
+}
+
+/// Validate the v3 blob header, verify the manifest guard and access the
+/// payload as a zero-copy view. Any failure yields `Err` (caller falls
+/// back to the v2/JSON path).
+fn phrase_view_from_blob_v3(
+    inflated: &[u8],
+) -> Result<&'static ArchivedPhraseIndexBlobV3, OrigaError> {
+    let (header, payload) = split_blob(inflated).map_err(|e| OrigaError::PhraseParseError {
+        reason: format!("phrase index v3 blob header invalid: {e}"),
+    })?;
+
+    let expectation = guard_expectation_for(&[PHRASE_INDEX_PATH]);
+    if !guard_matches(&header, &expectation) {
+        return Err(OrigaError::PhraseParseError {
+            reason: "phrase index v3 blob stale relative to manifest".to_string(),
+        });
+    }
+
+    access_phrase_blob_v3(payload)
 }
 
 /// Validate the blob header, verify the manifest guard and access the

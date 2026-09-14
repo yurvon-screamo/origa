@@ -52,6 +52,10 @@ VERSIONED_FILES: list[str] = [
     "dictionaries/JmdictFurigana.rkyv",
     "dictionary/vocabulary.rkyv",
     "phrases/phrase_index.rkyv",
+    # #535: deduplicated + interned v3 form, deflated on the CDN.
+    # Freshness is checked by the dedicated inflate-aware procedure below
+    # (its header is not readable from the raw deflated bytes).
+    "phrases/phrase_index.v3.rkyv",
     "pitch/index.rkyv",
     # SudachiDict (lindera 5.x, current clients)
     "dictionaries/sudachidict-20260723/char_def.bin",
@@ -403,9 +407,42 @@ def grammar_precompute_freshness_problems(cdn_dir: Path) -> list[str]:
     return []
 
 
+def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
+    """Freshness check for the deflated v3 phrase index blob (#535).
+
+    Mirrors the builder: inflate the stored bytes, then verify the header
+    (schema + sha256 of phrases/phrase_index.json — the blob carries no
+    tokenizer inputs, the index is derived from the JSON alone).
+    """
+    blob = cdn_dir / "phrases/phrase_index.v3.rkyv"
+    if not blob.is_file():
+        return [
+            "phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"
+        ]
+    try:
+        inflated = inflate_deflated(blob)
+    except zlib.error as e:
+        return [f"phrases/phrase_index.v3.rkyv: not deflated ({e})"]
+    if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
+        return ["phrases/phrase_index.v3.rkyv: unreadable header"]
+    schema_version = int.from_bytes(inflated[4:8], "little")
+    if schema_version != RKYV_SCHEMA_VERSION:
+        return [
+            f"phrases/phrase_index.v3.rkyv: schema {schema_version} "
+            f"!= {RKYV_SCHEMA_VERSION}"
+        ]
+    source = cdn_dir / "phrases/phrase_index.json"
+    if not source.is_file():
+        return ["phrases/phrase_index.v3.rkyv: source phrase_index.json not found"]
+    if hashlib.sha256(source.read_bytes()).digest() != inflated[8:40]:
+        return ["phrases/phrase_index.v3.rkyv: stale relative to phrase_index.json"]
+    return []
+
+
 def assert_rkyv_blobs_fresh(cdn_dir: Path) -> None:
     problems = rkyv_blob_freshness_problems(cdn_dir)
     problems += grammar_precompute_freshness_problems(cdn_dir)
+    problems += phrase_index_v3_freshness_problems(cdn_dir)
     if problems:
         for problem in problems:
             print(f"ERROR: rkyv blob freshness: {problem}", file=sys.stderr)
