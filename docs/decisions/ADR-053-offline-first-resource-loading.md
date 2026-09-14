@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-13)
+Accepted (2026-09-13); amended 2026-09-14 — sync budget exception (see §1)
 
 ## Context
 
@@ -54,6 +54,17 @@ alternative of racing and abandoning gloo requests would leak browser
 per-host connection slots on retry loops). TrailBase call sites consume an
 `ApiResponse` envelope with the accessor surface they had before, minus the
 async: the transport has already read the body.
+
+**Sync budget exception (ADR-045, amended 2026-09-14):** the TrailBase
+user-record repository (`TrailBaseUserRepository`) raises the idle budget of
+its own transport instance to **100 s** (`SYNC_IDLE_TIMEOUT_MS`). The sync
+PATCH uploads a multi-megabyte knowledge-set body, and the fetch API exposes
+no upload progress — the entire upload + server-processing window counts as
+"no data received" to the watchdog, so the 10 s default aborted
+slow-but-healthy pushes and failed the home-page sync. A sync is background
+and non-fatal (the local record is authoritative for the device and survives
+the timeout), so waiting is preferred to aborting. Auth/login and CDN
+requests keep the 10 s default.
 
 **Memory invariant (iOS jetsam, staged plan in `routes.rs`):** the
 text/bytes paths already buffered whole bodies in JS (`text()` /
@@ -155,6 +166,10 @@ it harmless.
   refusal cascade → error screen in ~10–11 s.
 - Warm cache offline: probe ≤2 s + cache parse — target ~2–6 s; the e2e
   ceiling of 10 s is CI-runner headroom, not the design goal.
+- Sync push (slow-but-alive uplink): 100 s idle per request; a full
+  `sync_merge` cycle is 3–4 sequential requests (raw fetch, PATCH push,
+  fingerprint re-fetch, possible self-heal re-resolve) — worst case
+  300–400 s of background, non-fatal sync work.
 - E2E runs against a static build only: `trunk serve`'s live-reload WS
   bridge force-reloads on offline disconnects and poisons the scenarios.
 
@@ -166,6 +181,11 @@ it harmless.
 - `guard_expectation` already treats a missing remote manifest as
   `Unavailable` (trust the cache), so the offline-skip of Phase A is
   consistent with the blob freshness model.
+- Accepted degradation (sync budget): on a silently dead network the startup
+  merge branch of a saved session without a local profile waits up to 100 s
+  before the error surfaces (was 10 s). An upload that cannot finish within
+  100 s still fails the sync — the structural fix (chunked sync /
+  upload-progress-aware deadlines) remains a follow-up.
 - Follow-ups (tracked, out of scope here): partial-degradation banner,
   auto-refetch of failed resources on the `online` event, Sentry events for
   `load_failure`, a full offline contract for sync push (`save_sync`).

@@ -21,6 +21,16 @@ use wasm_bindgen_futures::JsFuture;
 /// dead network surfaces as an error in seconds, not minutes.
 pub const DEFAULT_IDLE_TIMEOUT_MS: u32 = 10_000;
 
+/// Idle budget for the local-remote user-record sync (ADR-045), applied
+/// per-instance by `TrailBaseUserRepository`. The sync PATCH uploads a
+/// multi-megabyte knowledge-set body, and the fetch API exposes no upload
+/// progress — the whole upload + server-processing window counts as "no
+/// data received" to the watchdog, so the 10 s default aborts slow-but-
+/// healthy pushes. A sync is background and non-fatal (the local record
+/// is authoritative for the device and survives the timeout), hence the
+/// larger budget; auth/login/CDN requests keep the default.
+pub const SYNC_IDLE_TIMEOUT_MS: u32 = 100_000;
+
 /// Errors produced by the idle watchdog start with this marker so callers
 /// can distinguish "network stalled" from HTTP/parse failures without
 /// extending the shared domain error enum.
