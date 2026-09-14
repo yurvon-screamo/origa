@@ -293,10 +293,16 @@ impl PhraseIndex {
             .map(|(idx, rule)| (*rule, idx as u32))
             .collect();
 
+        // Invariant (held by the single constructor `from_json`):
+        // every entry token also appears as an inverted-index key and
+        // every entry id is in `entries`, so the direct index lookups
+        // below cannot miss. debug_asserts document the contract; a
+        // violation would surface at build time, not in a client.
         let entries: BTreeMap<u32, IndexEntryBlobV3> = self
             .entries
             .iter()
             .map(|(id, entry)| {
+                debug_assert!(id_index.contains_key(&u128::from(*id)));
                 (
                     id_index[&u128::from(*id)],
                     IndexEntryBlobV3 {
@@ -408,9 +414,31 @@ impl ArchivedPhraseIndexBlobV3 {
     }
 
     pub fn iter_entries(&self) -> impl Iterator<Item = IndexEntry> + '_ {
-        self.entries
-            .keys()
-            .filter_map(|key| self.entry_by_key(u32::from(*key)))
+        self.entries.iter().map(|(key, archived)| {
+            let idx = u32::from(*key) as usize;
+            IndexEntry {
+                id: Ulid::from(u128::from(self.phrase_ids[idx])),
+                tokens: archived
+                    .tokens
+                    .iter()
+                    .map(|token| {
+                        self.token_pool[u32::from(*token) as usize]
+                            .as_str()
+                            .to_string()
+                    })
+                    .collect(),
+                chunk_id: u32::from(archived.chunk_id),
+                grammar_rules: archived
+                    .grammar_rules
+                    .iter()
+                    .map(|rule| {
+                        Ulid::from(u128::from(
+                            self.grammar_rule_pool[u32::from(*rule) as usize],
+                        ))
+                    })
+                    .collect(),
+            }
+        })
     }
 
     pub fn all_ids(&self) -> HashSet<Ulid> {

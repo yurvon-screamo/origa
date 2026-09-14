@@ -174,12 +174,21 @@ async fn load_phrases_via_v2<P: CdnProvider>(provider: &P) -> Result<LoadedPhras
 fn phrase_view_from_blob_v3(
     inflated: &[u8],
 ) -> Result<&'static ArchivedPhraseIndexBlobV3, OrigaError> {
+    let expectation = guard_expectation_for(&[PHRASE_INDEX_PATH]);
+    phrase_view_from_blob_v3_with_expectation(inflated, &expectation)
+}
+
+/// Testable core: the guard expectation is injectable (the process
+/// manifest is a OnceLock the unit tests cannot prime per-case).
+fn phrase_view_from_blob_v3_with_expectation(
+    inflated: &[u8],
+    expectation: &origa::dictionary::cdn_blob::GuardExpectation,
+) -> Result<&'static ArchivedPhraseIndexBlobV3, OrigaError> {
     let (header, payload) = split_blob(inflated).map_err(|e| OrigaError::PhraseParseError {
         reason: format!("phrase index v3 blob header invalid: {e}"),
     })?;
 
-    let expectation = guard_expectation_for(&[PHRASE_INDEX_PATH]);
-    if !guard_matches(&header, &expectation) {
+    if !guard_matches(&header, expectation) {
         return Err(OrigaError::PhraseParseError {
             reason: "phrase index v3 blob stale relative to manifest".to_string(),
         });
@@ -234,8 +243,20 @@ mod tests {
 
     impl MockCdn {
         fn with_blob_and_json(blob: Option<Vec<u8>>, json: &str) -> Self {
+            Self::with_blobs_and_json(None, blob, json)
+        }
+
+        /// v3 blob (deflated) + v2 blob (raw) + JSON source; any may be
+        /// absent to exercise the fallback chain.
+        fn with_blobs_and_json(v3: Option<Vec<u8>>, v2: Option<Vec<u8>>, json: &str) -> Self {
             let mut responses = Vec::new();
-            if let Some(bytes) = blob {
+            if let Some(bytes) = v3 {
+                responses.push((
+                    PHRASE_INDEX_BLOB_V3_PATH.to_string(),
+                    MockResponse::Bytes(bytes),
+                ));
+            }
+            if let Some(bytes) = v2 {
                 responses.push((
                     PHRASE_INDEX_BLOB_PATH.to_string(),
                     MockResponse::Bytes(bytes),
@@ -306,6 +327,114 @@ mod tests {
             manifest_guard: manifest_guard_from_hex_hashes(&[&source_hex]),
         };
         build_blob(&header, &payload)
+    }
+
+    fn valid_v3_blob(json: &str) -> Vec<u8> {
+        use origa::dictionary::precompute_blob::deflate_blob;
+
+        let index = build_phrase_index_from_json(json).unwrap();
+        let payload =
+            origa::dictionary::phrase::serialize_phrase_index_v3_blob_to_rkyv(&index.to_blob_v3())
+                .unwrap();
+        let source_hex = sha256_bytes(json.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let header = BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: sha256_bytes(json.as_bytes()),
+            manifest_guard: manifest_guard_from_hex_hashes(&[&source_hex]),
+        };
+        deflate_blob(&build_blob(&header, &payload))
+    }
+
+    #[tokio::test]
+    async fn valid_v3_blob_loads_without_touching_v2_or_the_json_source() {
+        // Arrange
+        let provider = MockCdn::with_blobs_and_json(
+            Some(valid_v3_blob(SAMPLE_JSON)),
+            Some(valid_blob(SAMPLE_JSON)),
+            SAMPLE_JSON,
+        );
+
+        // Act
+        let loaded = load_phrases_via(&provider).await.unwrap();
+
+        // Assert: the v3 fast path answers and neither fallback layer is
+        // ever requested.
+        let LoadedPhrases::CdnBlobV3(view) = &loaded else {
+            panic!("expected the v3 CDN blob fast path");
+        };
+        assert_eq!(view.len(), 1);
+        assert_eq!(view.get_phrases_by_token("world").len(), 1);
+        let requested = provider.requested_paths();
+        assert!(!requested.contains(&PHRASE_INDEX_BLOB_PATH.to_string()));
+        assert!(!requested.contains(&PHRASE_INDEX_PATH.to_string()));
+    }
+
+    #[tokio::test]
+    async fn corrupted_v3_deflate_falls_back_to_the_v2_blob() {
+        // Arrange: bytes that do not inflate — the exact shape of a
+        // truncated/garbage v3 object.
+        let garbage = vec![0xff_u8; 64];
+        let provider =
+            MockCdn::with_blobs_and_json(Some(garbage), Some(valid_blob(SAMPLE_JSON)), SAMPLE_JSON);
+
+        // Act
+        let loaded = load_phrases_via(&provider).await.unwrap();
+
+        // Assert: the v2 layer serves the index, JSON untouched.
+        assert!(matches!(loaded, LoadedPhrases::CdnBlob(_)));
+        assert!(
+            !provider
+                .requested_paths()
+                .contains(&PHRASE_INDEX_PATH.to_string())
+        );
+    }
+
+    #[test]
+    fn stale_v3_guard_is_rejected_against_a_fetched_manifest() {
+        // Arrange: a well-formed v3 blob whose guard binds to a DIFFERENT
+        // content generation — the deploy-window scenario. The process
+        // manifest is a OnceLock the tests cannot prime, so the guard
+        // expectation is injected directly (the same pure derivation the
+        // cache manager performs from a fetched manifest).
+        use origa::dictionary::precompute_blob::{deflate_blob, inflate_blob};
+
+        let index = build_phrase_index_from_json(SAMPLE_JSON).unwrap();
+        let payload =
+            origa::dictionary::phrase::serialize_phrase_index_v3_blob_to_rkyv(&index.to_blob_v3())
+                .unwrap();
+        let stale_hex = sha256_bytes(b"older content generation")
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let stale_header = BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: sha256_bytes(b"older content generation"),
+            manifest_guard: manifest_guard_from_hex_hashes(&[&stale_hex]),
+        };
+        let stale_blob = inflate_blob(&deflate_blob(&build_blob(&stale_header, &payload))).unwrap();
+
+        let fresh_hex = sha256_bytes(SAMPLE_JSON.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let manifest = crate::repository::cache_manager::CacheManifest {
+            version: 1,
+            files: [("phrases/phrase_index.json".to_string(), fresh_hex)].into(),
+        };
+        let fresh_expectation = crate::repository::cache_manager::guard_expectation_from_manifest(
+            Some(&manifest),
+            &["phrases/phrase_index.json"],
+        );
+
+        // Act
+        let rejected = phrase_view_from_blob_v3_with_expectation(&stale_blob, &fresh_expectation);
+
+        // Assert: a stale blob never installs — the live path proceeds
+        // to the v2 layer instead.
+        assert!(rejected.is_err(), "a stale guard must be rejected");
     }
 
     #[tokio::test]
