@@ -100,7 +100,11 @@ fn map_auth_error(e: AuthError) -> OrigaError {
 impl TrailBaseUserRepository {
     pub fn new() -> Self {
         Self {
-            client: TrailBaseClient::new(),
+            // The raised idle budget is what keeps slow-but-healthy
+            // multi-MB sync pushes alive (rationale: SYNC_IDLE_TIMEOUT_MS).
+            // Auth/login client instances keep the default.
+            client: TrailBaseClient::new()
+                .with_idle_timeout_ms(crate::utils::net_timeout::SYNC_IDLE_TIMEOUT_MS),
             table_name: "domain_user".to_string(),
         }
     }
