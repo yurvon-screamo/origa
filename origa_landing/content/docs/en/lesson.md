@@ -5,7 +5,7 @@ locale: en
 meta_title: "How Lessons Work in Origa — Reviews, Cards, Scheduling"
 meta_description: "The structure of an Origa lesson: the acquaintance stage for new cards (presentation and training), card types, rating, and review scheduling."
 target_keywords: ["origa lesson", "how to learn new japanese words", "spaced repetition japanese", "fsrs japanese", "japanese review system", "japanese flashcards review"]
-lastmod: 2026-08-30
+lastmod: 2026-09-14
 status: ready
 ---
 
@@ -72,6 +72,10 @@ Which pair of buttons you see depends on the part of the lesson: in acquaintance
 - **Remember / Know** moves the card forward: in training it brings the group closer to completion; in review it extends the interval before the next showing. The longer the streak, the longer the interval.
 
 The scheduler behind this is FSRS, the same family of algorithms used by modern spaced-repetition systems. It adapts to your memory curve per card.
+
+## If a card looks wrong
+
+Spotted a wrong translation, reading, or card data: report it right from the lesson. The header button (available once the answer is shown) opens a short form with the card text filled in automatically. In the token translation popup, the "Wrong translation?" line does the same for that exact token.
 
 ## What happens after a lesson
 

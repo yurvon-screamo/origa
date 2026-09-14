@@ -38,7 +38,6 @@ pub fn FeedbackModal() -> impl IntoView {
     let is_open = RwSignal::new(false);
     let message = RwSignal::new(String::new());
     let state = RwSignal::new(FormState::Idle);
-    let show_auto_context = RwSignal::new(false);
 
     // Opening a draft (re)initializes the form: fresh textarea, fresh state.
     // A resubmission after Error keeps the draft but resets Sending.
@@ -46,7 +45,6 @@ pub fn FeedbackModal() -> impl IntoView {
         if draft.get().is_some() {
             message.set(String::new());
             state.set(FormState::Idle);
-            show_auto_context.set(false);
             is_open.set(true);
         }
     });
@@ -117,21 +115,6 @@ pub fn FeedbackModal() -> impl IntoView {
         });
     });
 
-    let auto_context_line = Signal::derive(move || {
-        draft
-            .get()
-            .map(|d| {
-                format!(
-                    "{} · {} · {} · {}",
-                    d.environment.app_version,
-                    d.environment.platform,
-                    d.environment.page,
-                    d.environment.ui_language,
-                )
-            })
-            .unwrap_or_default()
-    });
-
     let block_close = Signal::derive(move || state.get() == FormState::Sending);
 
     let title = Signal::derive(move || i18n.get_keys().feedback().title().inner().to_string());
@@ -184,23 +167,6 @@ pub fn FeedbackModal() -> impl IntoView {
                                 test_id=Signal::derive(|| "feedback-message-input".to_string())
                             />
 
-                            // Auto-context disclosure.
-                            <button
-                                class="feedback-auto-toggle"
-                                data-testid="feedback-auto-toggle"
-                                aria-expanded=move || show_auto_context.get().to_string()
-                                on:click=move |_| show_auto_context.update(|v| *v = !*v)
-                            >
-                                {move || i18n.get_keys().feedback().auto_context().inner().to_string()}
-                                <span class="feedback-auto-toggle__caret">
-                                    {move || if show_auto_context.get() { "−" } else { "+" }}
-                                </span>
-                            </button>
-                            <Show when=move || show_auto_context.get()>
-                                <div class="feedback-auto-line" data-testid="feedback-auto-context">
-                                    {auto_context_line}
-                                </div>
-                            </Show>
 
                             <Show when=move || is_offline.get()>
                                 <div class="feedback-offline-hint" data-testid="feedback-offline-hint">
@@ -219,9 +185,6 @@ pub fn FeedbackModal() -> impl IntoView {
                                 </div>
                             </Show>
 
-                            <div class="feedback-privacy">
-                                {move || i18n.get_keys().feedback().privacy_note().inner().to_string()}
-                            </div>
 
                             <div class="feedback-actions">
                                 <Button

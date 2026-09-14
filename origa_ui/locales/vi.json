@@ -627,8 +627,6 @@
     "title": "Báo cáo sự cố",
     "message_label": "Có gì sai?",
     "message_placeholder": "MÔ TẢ VẤN ĐỀ",
-    "auto_context": "Tự động đính kèm",
-    "privacy_note": "Gửi ẩn danh - không có tên hay email",
     "submit": "Gửi",
     "cancel": "Hủy",
     "sent": "Đã gửi",
