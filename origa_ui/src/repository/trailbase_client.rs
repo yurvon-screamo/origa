@@ -10,6 +10,8 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 use thiserror::Error;
 
+use crate::utils::net_timeout::{DEFAULT_IDLE_TIMEOUT_MS, send_request_idle};
+
 pub use crate::repository::trailbase_auth::OAuthProvider;
 pub type TrailBaseRecordApi = RecordApi<TrailBaseClient>;
 
@@ -67,13 +69,32 @@ pub(crate) fn trailbase_url() -> &'static str {
 #[derive(Clone, Debug)]
 pub struct TrailBaseClient {
     base_url: String,
+    idle_timeout_ms: u32,
 }
 
 impl TrailBaseClient {
     pub fn new() -> Self {
         Self {
             base_url: trailbase_url().to_string(),
+            idle_timeout_ms: DEFAULT_IDLE_TIMEOUT_MS,
         }
+    }
+
+    /// Per-instance override of the idle budget. The sync repository uses
+    /// this to raise the budget to [`SYNC_IDLE_TIMEOUT_MS`] — see the
+    /// constant's docs for why uploads need a larger window than the
+    /// default.
+    pub fn with_idle_timeout_ms(mut self, idle_ms: u32) -> Self {
+        self.idle_timeout_ms = idle_ms;
+        self
+    }
+
+    /// Test-only view of the configured budget: lets the repository tests
+    /// assert which budget the sync transport instance carries. Does not
+    /// exist in non-test builds, so no dead-code allowance is needed.
+    #[cfg(test)]
+    pub(crate) fn idle_timeout_ms(&self) -> u32 {
+        self.idle_timeout_ms
     }
 
     pub(crate) async fn fetch<T: Serialize>(
@@ -133,27 +154,25 @@ impl TrailBaseClient {
 
         // Idle-deadline transport (ADR-053): gloo_net exposes no
         // AbortSignal, so the request goes through the shared primitive —
-        // a dead API server fails fast instead of hanging auth flows.
-        let sent = crate::utils::net_timeout::send_request_idle(
-            &url,
-            &init,
-            crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
-        )
-        .await
-        .map_err(|e| {
-            // Transport-level failure of a TrailBase HTTP call (network
-            // down, DNS, CORS, timeout). Logged here once — at the single
-            // choke point every authorized/unauthorized request passes —
-            // so infrastructure failures stay visible in Sentry even when
-            // a caller swallows the Err.
-            tracing::error!(
-                error = %e,
-                method = ?method,
-                url = %url,
-                "TrailBase request network failure"
-            );
-            AuthError::NetworkError(e.to_string())
-        })?;
+        // a dead API server surfaces as an error instead of hanging the
+        // flow. The budget is per-instance: the sync repository raises it
+        // (see `with_idle_timeout_ms`), auth/login keep the default.
+        let sent = send_request_idle(&url, &init, self.idle_timeout_ms)
+            .await
+            .map_err(|e| {
+                // Transport-level failure of a TrailBase HTTP call (network
+                // down, DNS, CORS, timeout). Logged here once — at the single
+                // choke point every authorized/unauthorized request passes —
+                // so infrastructure failures stay visible in Sentry even when
+                // a caller swallows the Err.
+                tracing::error!(
+                    error = %e,
+                    method = ?method,
+                    url = %url,
+                    "TrailBase request network failure"
+                );
+                AuthError::NetworkError(e.to_string())
+            })?;
 
         let response = sent.response;
         Ok(ApiResponse::new(
@@ -418,4 +437,36 @@ pub trait AuthRequestClient: Clone + Send + Sync {
         method: Method,
         body: Option<&T>,
     ) -> Result<ApiResponse, AuthError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_client_carries_the_default_idle_budget() {
+        // Arrange / Act
+        let client = TrailBaseClient::new();
+
+        // Assert
+        assert_eq!(client.idle_timeout_ms(), DEFAULT_IDLE_TIMEOUT_MS);
+    }
+
+    #[test]
+    fn default_client_carries_the_default_idle_budget() {
+        // Arrange / Act
+        let client = TrailBaseClient::default();
+
+        // Assert
+        assert_eq!(client.idle_timeout_ms(), DEFAULT_IDLE_TIMEOUT_MS);
+    }
+
+    #[test]
+    fn builder_overrides_the_idle_budget_for_the_instance() {
+        // Arrange / Act
+        let client = TrailBaseClient::new().with_idle_timeout_ms(100_000);
+
+        // Assert
+        assert_eq!(client.idle_timeout_ms(), 100_000);
+    }
 }
