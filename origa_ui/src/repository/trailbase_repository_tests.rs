@@ -127,3 +127,17 @@ fn user_to_json_then_userrow_roundtrip_preserves_onboarding_sentinels() {
     );
     assert!(restored.is_onboarding_completed());
 }
+
+#[test]
+fn sync_repository_client_carries_the_sync_idle_budget() {
+    // Arrange / Act — the repository owns its own transport instance; the
+    // auth/login clients are built elsewhere and must keep the default.
+    let repo = TrailBaseUserRepository::new();
+
+    // Assert — the sync path's multi-megabyte PATCH upload gets the raised
+    // budget (SYNC_IDLE_TIMEOUT_MS), not the 10 s network default.
+    assert_eq!(
+        repo.client.idle_timeout_ms(),
+        crate::utils::net_timeout::SYNC_IDLE_TIMEOUT_MS
+    );
+}
