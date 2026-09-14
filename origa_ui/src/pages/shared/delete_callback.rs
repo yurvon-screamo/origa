@@ -3,6 +3,7 @@ use crate::ui_components::{ToastData, ToastType};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::DeleteCardUseCase;
+use tracing::error;
 use ulid::Ulid;
 
 pub struct DeleteRequest {
@@ -37,6 +38,7 @@ pub fn create_delete_callback(
                     on_success.run(())
                 },
                 Err(e) => {
+                    error!(error = %e, "Card delete failed");
                     if disposed.is_disposed() {
                         return;
                     }

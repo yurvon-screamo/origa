@@ -4,6 +4,7 @@ use leptos_router::hooks::use_navigate;
 use tracing::{debug, error, trace};
 
 use crate::core::updater;
+use crate::feedback::FeedbackContext;
 use crate::i18n::{native_language_to_locale, use_i18n};
 use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth_listener};
 use crate::repository::migrate_session_to_store_if_needed;
@@ -12,8 +13,8 @@ use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
 use crate::store::offline_bundle_store::OfflineBundleStore;
 use crate::ui_components::{
-    ConnectivityBanner, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer, hide_boot_splash,
-    inject_font_faces,
+    ConnectivityBanner, FeedbackModal, LoadingOverlay, ToastContainer, ToastData, UpdateDrawer,
+    hide_boot_splash, inject_font_faces,
 };
 
 #[component]
@@ -30,6 +31,8 @@ pub fn App() -> impl IntoView {
     provide_context(auth_store.clone());
     provide_context(connectivity);
     provide_context(offline_bundle_store);
+    // Feedback channel (ADR-055): modal state + Sentry transport.
+    provide_context(FeedbackContext::new());
 
     let i18n = use_i18n();
     let navigate = use_navigate();
@@ -175,6 +178,7 @@ pub fn App() -> impl IntoView {
             />
         })}
         <ToastContainer toasts=toasts duration_ms=5000 />
+        <FeedbackModal />
         <Show when=move || auth_store_for_oauth.is_oauth_loading.get()>
             {move || {
                 let message = i18n.get_keys().app().logging_in().inner().to_string();

@@ -13,6 +13,7 @@ use origa::use_cases::{
     read_anki_database,
 };
 use std::sync::Arc;
+use tracing::error;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 
@@ -55,6 +56,7 @@ pub fn AnkiImportStage(
                 let bytes = match read_file_as_bytes(&file).await {
                     Ok(b) => b,
                     Err(e) => {
+                        error!(error = %e, "Anki import file read failed");
                         if disposed.is_disposed() {
                             return;
                         }
@@ -79,6 +81,7 @@ pub fn AnkiImportStage(
                 let db_bytes = match extract_anki_db_bytes(&bytes) {
                     Ok(b) => b,
                     Err(e) => {
+                        error!(error = %e, "Anki deck bytes extraction failed");
                         if disposed.is_disposed() {
                             return;
                         }
@@ -116,6 +119,7 @@ pub fn AnkiImportStage(
                         stage.set(Stage::FieldSelect);
                     },
                     Err(e) => {
+                        error!(error = %e, "Anki deck database parse failed");
                         if disposed.is_disposed() {
                             return;
                         }
@@ -226,6 +230,7 @@ pub fn AnkiImportStage(
                     stage.set(Stage::Preview);
                 },
                 Err(e) => {
+                    error!(error = %e, "Anki card extraction failed");
                     stage.set(Stage::Error);
                     error_message.set(
                         i18n.get_keys()
@@ -284,6 +289,7 @@ pub fn AnkiImportStage(
                         is_open_sig.set(false);
                     },
                     Err(e) => {
+                        error!(error = %e, "Anki pack import failed");
                         if disposed.is_disposed() {
                             return;
                         }
