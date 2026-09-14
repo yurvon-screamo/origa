@@ -2,7 +2,7 @@ import { Page, Locator, expect } from "@playwright/test";
 import { BasePage } from "./base.page";
 
 /**
- * Feedback modal (issue #414, ADR-053). Opened contextually from the
+ * Feedback modal (issue #414, ADR-055). Opened contextually from the
  * translator token popup or the lesson header button — never navigated to.
  */
 export class FeedbackPage extends BasePage {

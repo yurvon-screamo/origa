@@ -45,7 +45,7 @@ pub fn LessonHeader() -> impl IntoView {
     let total = Signal::derive(move || lesson_state.get().card_ids.len());
     let core_count_signal = Signal::derive(move || core_count.get());
 
-    // Report entry (ADR-053): enabled only while the answer is shown — the
+    // Report entry (ADR-055): enabled only while the answer is shown — the
     // subject is built from the revealed answer, and on the question side a
     // report modal would spoil it. `disabled` (not hidden) keeps the header
     // layout stable across card phases. Two answer sources: regular lesson

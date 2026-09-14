@@ -1,6 +1,6 @@
 //! In-app user feedback (issue #414, plan: Sentry `captureFeedback` channel).
 //!
-//! Architecture (ADR-053):
+//! Architecture (ADR-055):
 //!
 //! - [`types`] — the report model: category/source (from the entry point),
 //!   subject (the content the user is looking at), message, environment

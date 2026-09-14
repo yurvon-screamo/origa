@@ -3,12 +3,12 @@ import { When, Then } from "../fixtures";
 import { FeedbackPage, LessonPage } from "../../pages";
 
 // ═══════════════════════════════════════════════════════════════════════
-// Lesson header report button (ADR-053)
+// Lesson header report button (ADR-055)
 // ═══════════════════════════════════════════════════════════════════════
 
 // The alert-triangle button is disabled while the card shows its question
 // side: the report subject is built from the revealed answer, and an early
-// report would spoil the answer (see ADR-053).
+// report would spoil the answer (see ADR-055).
 Then("кнопка проблемы на уроке неактивна", async ({ page }) => {
     const lessonPage = new LessonPage(page);
     await expect(lessonPage.reportButton).toBeVisible();
@@ -47,7 +47,7 @@ When("пользователь отправляет форму обратной 
 
 // The e2e build compiles without SENTRY_DSN (see ci.yml e2e-build), so a
 // submission surfaces the informational "release builds only" state — not
-// an error (ADR-053: empty compile-time DSN is the single legit trigger).
+// an error (ADR-055: empty compile-time DSN is the single legit trigger).
 Then(
     "отображается подсказка о доступности в релизных сборках",
     async ({ page }) => {

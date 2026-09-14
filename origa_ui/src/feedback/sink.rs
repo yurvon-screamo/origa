@@ -5,7 +5,7 @@
 //! by [`crate::sentry`]); a fallback transport (e.g. a TrailBase table) can be
 //! added later without touching the modal or the entry points.
 //!
-//! ## Error contract (ADR-053)
+//! ## Error contract (ADR-055)
 //!
 //! - `SentryUnavailable` is returned **only** when the compile-time
 //!   `SENTRY_DSN_UI` is empty (dev/e2e builds). The modal shows an
@@ -55,7 +55,7 @@ pub struct SentryFeedbackSink;
 
 impl SentryFeedbackSink {
     /// Compile-time DSN emptiness — the single legitimate trigger of the
-    /// "available in release builds" info state (ADR-053).
+    /// "available in release builds" info state (ADR-055).
     fn compiled_out() -> bool {
         crate::sentry::dsn_ui().is_empty()
     }
