@@ -36,6 +36,18 @@ suppress:
     reason: "Lexicography genre: entries define words, so AI-tell vocabulary appears as legitimate translation content; verified 2026-09-14"
 
   # ============================================================
+  # GENRE: phrase translations (156 228 phrases × EN/RU/KO/VI)
+  # Source: cdn/phrases/data/*.json -> per-language text fields
+  # Extract to: /tmp/opencode/phrases-audit/{en,ru,ko,vi}/phrases.md
+  # ============================================================
+  # Verified 2026-09-14: translations of anime/VN dialogue where the
+  # "AI-tell vocabulary" is faithful translation of the source words:
+  # delve=紐解く, beacon=ビーコン/目印, realm=〜界 (人間界/修羅界),
+  # testament=証. Fantasy register is the source genre, not slop.
+  - file: "**/phrases-audit/**"
+    reason: "Translation genre: 'slop vocabulary' is faithful translation of the Japanese source words; corpus verified 2026-09-14"
+
+  # ============================================================
   # GENRE: word-set metadata titles/descriptions (146 texts × 4 languages)
   # Source: cdn/well_known_set/**/*.json content-fields
   # Extract to: /tmp/opencode/wks-audit/{en,ru,ko,vi}/texts.md
