@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use leptos::prelude::{RwSignal, Set};
+use leptos::prelude::{Get, RwSignal, Set};
 
 use super::sink::{FeedbackSubmitFn, SentryFeedbackSink, sink_to_fn};
 use super::types::{FeedbackCategory, FeedbackEnvironment, FeedbackSource, FeedbackSubject};
@@ -21,6 +21,12 @@ pub struct FeedbackDraft {
     pub environment: FeedbackEnvironment,
 }
 
+/// Anti-spam cooldown after a SUCCESSFUL submission (ADR-055): 15s. A
+/// legitimate multi-report flow (several wrong tokens in one phrase) types
+/// the next message for longer than that, so it is never blocked; an
+/// immediate resubmit is.
+pub const FEEDBACK_COOLDOWN_MS: f64 = 15_000.0;
+
 /// Context provided once in `app.rs`. Holds the open draft and the transport.
 #[derive(Clone)]
 pub struct FeedbackContext {
@@ -28,6 +34,8 @@ pub struct FeedbackContext {
     pub draft: RwSignal<Option<FeedbackDraft>>,
     /// Type-erased submission transport (Sentry in production, fake in tests).
     pub submit: FeedbackSubmitFn,
+    /// `Date::now()` ms of the last successful submission (cooldown source).
+    last_success_at: RwSignal<Option<f64>>,
 }
 
 impl FeedbackContext {
@@ -41,7 +49,20 @@ impl FeedbackContext {
         Self {
             draft: RwSignal::new(None),
             submit,
+            last_success_at: RwSignal::new(None),
         }
+    }
+
+    /// Whether an immediate resubmit is suppressed by the cooldown.
+    pub fn is_cooling_down(&self) -> bool {
+        self.last_success_at
+            .get()
+            .is_some_and(|sent_at| (js_sys::Date::now() - sent_at) < FEEDBACK_COOLDOWN_MS)
+    }
+
+    /// Record a successful submission timestamp (cooldown starts).
+    pub fn note_submission(&self) {
+        self.last_success_at.set(Some(js_sys::Date::now()));
     }
 
     /// Open the modal from an entry point. The environment is snapshotted

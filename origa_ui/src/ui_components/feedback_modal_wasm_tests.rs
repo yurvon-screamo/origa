@@ -285,3 +285,13 @@ async fn environment_snapshot_taken_on_open() {
     assert!(!opened.environment.platform.is_empty());
     assert!(!opened.environment.ui_language.is_empty());
 }
+
+#[wasm_bindgen_test]
+async fn cooldown_suppresses_immediate_resubmission() {
+    let h = harness(Ok(()));
+    // Before any submission there is no cooldown.
+    assert!(!h.ctx.is_cooling_down());
+    // A successful submission starts it (15s window, ADR-055).
+    h.ctx.note_submission();
+    assert!(h.ctx.is_cooling_down());
+}

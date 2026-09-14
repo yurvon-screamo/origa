@@ -103,6 +103,10 @@ impl FeedbackSink for SentryFeedbackSink {
 
         // Argument 2 hint: captureContext with filterable tags + structured
         // extra, so the feedback stream is triageable by category/source.
+        // Reflect::set failures on these decorative fields are swallowed
+        // (`let _`): a partial context is better than a dropped report.
+        // Only the `message` field above is hard (SubmitFailed on error) —
+        // a payload without the user text is pointless.
         let env = &report.environment;
         let tags = Object::new();
         for (key, value) in [

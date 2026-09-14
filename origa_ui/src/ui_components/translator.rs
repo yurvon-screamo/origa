@@ -72,9 +72,10 @@ pub fn TranslatorText(
     let phase: RwSignal<TranslatorPhase> = RwSignal::new(TranslatorPhase::WaitingDictionary);
     let container_ref = NodeRef::<leptos::html::Span>::new();
     let i18n = use_i18n();
-    // UI locale at component scope — handed to the feedback draft when the
-    // report entry fires (environment snapshot must not read i18n itself).
-    let report_locale = StoredValue::new(i18n.get_locale().to_string());
+    // i18n context at component scope — the report entry reads the LIVE
+    // locale when it fires (a mid-session language switch is reflected);
+    // StoredValue keeps the per-token children closure Fn-compatible.
+    let report_i18n = StoredValue::new(i18n);
 
     let text_for_spawn = text.clone();
     spawn_local(async move {
@@ -207,7 +208,7 @@ pub fn TranslatorText(
                             show_base,
                         ));
 
-                        // "Wrong translation?" entry point (ADR-053): opens
+                        // "Wrong translation?" entry point (ADR-055): opens
                         // the feedback modal with this exact token + the
                         // source line as the captured subject. Rendered only
                         // when the FeedbackContext is mounted (app shell);
@@ -219,7 +220,7 @@ pub fn TranslatorText(
                             reading.clone(),
                             source_line.get_value(),
                         ));
-                        let report_locale_data = report_locale;
+                        let report_i18n_data = report_i18n;
                         let on_report = feedback_context.get_value().as_ref().map(|feedback| {
                             let feedback = feedback.clone();
                             Callback::new(move |()| {
@@ -227,7 +228,7 @@ pub fn TranslatorText(
                                     report_data.with_value(|(s, r, l)| {
                                         (s.clone(), r.clone(), l.clone())
                                     });
-                                let locale = report_locale_data.get_value();
+                                let locale = report_i18n_data.get_value().get_locale().to_string();
                                 // Close the popup first: the modal renders
                                 // above it and the popup should not linger.
                                 expanded.set(None);

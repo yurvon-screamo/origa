@@ -51,9 +51,9 @@ pub fn LessonHeader() -> impl IntoView {
     // layout stable across card phases. Two answer sources: regular lesson
     // cards (`LessonState.showing_answer`) and the acquaintance hand training
     // (`AcquaintanceContext.showing_answer`).
-    let acq_showing_answer = use_context::<AcquaintanceContext>().map(|acq| acq.showing_answer);
-    let acq_current_card = use_context::<AcquaintanceContext>().map(|acq| acq.current_card);
     let acq_context = use_context::<AcquaintanceContext>();
+    let acq_showing_answer = acq_context.as_ref().map(|acq| acq.showing_answer);
+    let acq_current_card = acq_context.as_ref().map(|acq| acq.current_card);
     let can_report = Signal::derive(move || {
         if lesson_state.get().showing_answer {
             return true;
@@ -85,6 +85,11 @@ pub fn LessonHeader() -> impl IntoView {
                 FeedbackSource::LessonHeader,
                 subject,
                 &ui_language,
+            );
+        } else {
+            tracing::warn!(
+                current_index = state.current_index,
+                "Lesson report clicked with no resolvable subject"
             );
         }
     });

@@ -16,8 +16,10 @@ pub(crate) fn is_image_file(file: &File) -> bool {
 }
 
 pub(crate) async fn read_file_as_data_url(file: &File) -> Result<String, String> {
-    let reader =
-        web_sys::FileReader::new().map_err(|e| format!("Failed to create FileReader: {:?}", e))?;
+    let reader = web_sys::FileReader::new().map_err(|e| {
+        tracing::error!(error = ?e, "Failed to create FileReader for OCR input");
+        format!("Failed to create FileReader: {:?}", e)
+    })?;
 
     let reader_clone = reader.clone();
     let (sender, receiver) = futures::channel::oneshot::channel();
@@ -34,9 +36,10 @@ pub(crate) async fn read_file_as_data_url(file: &File) -> Result<String, String>
     }
     closure.forget();
 
-    reader
-        .read_as_data_url(file)
-        .map_err(|e| format!("Failed to read file: {:?}", e))?;
+    reader.read_as_data_url(file).map_err(|e| {
+        tracing::error!(error = ?e, "Failed to read OCR input file");
+        format!("Failed to read file: {:?}", e)
+    })?;
 
     receiver
         .await

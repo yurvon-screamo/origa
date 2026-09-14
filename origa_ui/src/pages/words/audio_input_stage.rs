@@ -150,7 +150,7 @@ async fn transcribe_via_wasm(
     let use_case = origa::use_cases::TranscribeAudioUseCase::new();
     let infer_start = web_sys::js_sys::Date::now();
     let result = use_case.execute(model.clone(), &bytes).await.map_err(|e| {
-        error!(error = ?e, "Whisper transcription failed");
+        error!(error = %e, "Whisper transcription failed");
         format!("Transcription failed: {:?}", e)
     });
     let infer_ms = web_sys::js_sys::Date::now() - infer_start;

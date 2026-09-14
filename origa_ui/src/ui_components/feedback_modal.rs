@@ -67,8 +67,12 @@ pub fn FeedbackModal() -> impl IntoView {
     let message_trimmed_empty = Signal::derive(move || message.get().trim().is_empty());
     let is_offline =
         Signal::derive(move || connectivity.as_ref().is_some_and(|c| !c.is_online.get()));
+    let feedback_for_gating = feedback.clone();
     let can_submit = Signal::derive(move || {
-        state.get() == FormState::Idle && !message_trimmed_empty.get() && !is_offline.get()
+        state.get() == FormState::Idle
+            && !message_trimmed_empty.get()
+            && !is_offline.get()
+            && !feedback_for_gating.is_cooling_down()
     });
 
     let submit = Callback::new(move |_: ()| {
@@ -82,6 +86,7 @@ pub fn FeedbackModal() -> impl IntoView {
 
         state.set(FormState::Sending);
         let submit_fn = feedback.submit.clone();
+        let feedback_for_cooldown = feedback.clone();
         let report = FeedbackReport {
             category: current_draft.category,
             source: current_draft.source,
@@ -93,6 +98,7 @@ pub fn FeedbackModal() -> impl IntoView {
         spawn_local(async move {
             match (submit_fn)(&report).await {
                 Ok(()) => {
+                    feedback_for_cooldown.note_submission();
                     state.set(FormState::Success);
                     // Auto-close after the check-draw animation had its time.
                     gloo_timers::future::TimeoutFuture::new(1500).await;

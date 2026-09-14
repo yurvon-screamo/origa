@@ -54,6 +54,7 @@ pub fn show_sync_error_toast(
     i18n: I18nContext<Locale>,
     error: &OrigaError,
 ) {
+    tracing::error!(error = %error, "User data sync failed");
     let title = i18n
         .get_keys_untracked()
         .home()

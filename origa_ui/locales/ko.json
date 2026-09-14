@@ -625,7 +625,6 @@
   },
   "feedback": {
     "title": "문제 신고",
-    "subject": "대상",
     "message_label": "무엇이 잘못 되었나요?",
     "message_placeholder": "문제를 설명하세요",
     "auto_context": "자동으로 첨부됨",

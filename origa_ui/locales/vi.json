@@ -625,7 +625,6 @@
   },
   "feedback": {
     "title": "Báo cáo sự cố",
-    "subject": "Đối tượng",
     "message_label": "Có gì sai?",
     "message_placeholder": "MÔ TẢ VẤN ĐỀ",
     "auto_context": "Tự động đính kèm",

@@ -625,7 +625,6 @@
   },
   "feedback": {
     "title": "Сообщить о проблеме",
-    "subject": "Предмет",
     "message_label": "Что не так?",
     "message_placeholder": "ОПИШИТЕ ПРОБЛЕМУ",
     "auto_context": "Приложится автоматически",
