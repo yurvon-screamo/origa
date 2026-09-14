@@ -71,6 +71,16 @@ pub struct AuthStore {
     /// Guard against triggering start_dictionary_loading multiple times
     pub is_data_loading_started: RwSignal<bool>,
 
+    /// Full critical failure of the last startup pipeline run (ADR-053):
+    /// every critical resource failed and there is no cached fallback.
+    /// Renders the load-error screen; cleared by Retry.
+    pub load_failure: RwSignal<bool>,
+
+    /// Startup run counter: Retry bumps it, and only the current
+    /// generation may set completion/failure signals — a stale run's
+    /// late error must not override a retry in flight.
+    pub load_generation: RwSignal<u64>,
+
     /// Logout in progress (prevents race conditions)
     is_logging_out: RwSignal<bool>,
 
@@ -99,6 +109,8 @@ impl AuthStore {
             is_furigana_loaded: RwSignal::new(false),
             is_jlpt_content_loaded: RwSignal::new(false),
             is_data_loading_started: RwSignal::new(false),
+            load_failure: RwSignal::new(false),
+            load_generation: RwSignal::new(0),
             is_logging_out: RwSignal::new(false),
             is_deleting_account: RwSignal::new(false),
         }
@@ -113,13 +125,6 @@ impl AuthStore {
     pub fn is_authenticated(&self) -> Memo<bool> {
         let user = self.user;
         Memo::new(move |_| user.with(|u| u.is_some()))
-    }
-
-    /// Returns a reactive Memo indicating if we're in loading state
-    pub fn is_loading(&self) -> Memo<bool> {
-        let is_checking_session = self.is_checking_session;
-        let is_syncing = self.is_syncing;
-        Memo::new(move |_| is_checking_session.get() || is_syncing.get())
     }
 
     /// Returns a reactive Memo indicating if ALL overlay-gating data
@@ -453,6 +458,11 @@ impl AuthStore {
         self.is_furigana_loaded.set(false);
         self.is_jlpt_content_loaded.set(false);
         self.is_data_loading_started.set(false);
+        // A stale failure verdict must not outlive its run: without this
+        // reset, a logout after an offline failure would re-render the
+        // error screen over a freshly (and successfully) loaded app.
+        self.load_failure.set(false);
+        self.load_generation.update(|generation| *generation += 1);
     }
 
     /// Internal: Clear all authentication-related state

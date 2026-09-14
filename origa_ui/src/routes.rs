@@ -8,7 +8,9 @@ use crate::loaders::{
     phrase_loader::load_phrases,
     pitch_audio_loader::load_pitch_audio,
 };
-use crate::pages::shared::{ResourceDownloadConsent, is_resource_download_consented};
+use crate::pages::shared::{
+    LoadErrorScreen, ResourceDownloadConsent, is_resource_download_consented,
+};
 use crate::pages::{
     Grammar, GrammarDetail, Home, Kanji, KanjiDetail, Lesson, Login, Onboarding, Phrases, Profile,
     Sets, Words,
@@ -30,24 +32,77 @@ use origa::use_cases::SeedReadyPhrasesUseCase;
 
 use crate::repository::HybridUserRepository;
 
+/// Whether a failed loader attempt deserves one more try (ADR-053):
+/// a stalled neighbour (idle timeout) or a proven-unreachable CDN make
+/// the retry pure latency — skip it. Transient errors (HTTP 5xx, an
+/// immediate refusal on a live network) still retry once.
+fn should_retry_after_error(error: &OrigaError) -> bool {
+    if crate::repository::cdn_provider::is_cdn_unreachable() {
+        return false;
+    }
+    !crate::utils::net_timeout::is_idle_timeout(error)
+        && !crate::repository::cdn_provider::CdnUnreachableError::is_match(error)
+}
+
+/// Critical resources of the startup pipeline (ADR-053): the app is
+/// unusable without ALL of them, so a full failure renders the load
+/// error screen while a partial one keeps the app open with what
+/// loaded (product decision: never block on partial data).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CriticalResource {
+    Vocabulary,
+    Phrases,
+    Kanji,
+    Grammar,
+    Radicals,
+}
+
+pub const CRITICAL_RESOURCES: [CriticalResource; 5] = [
+    CriticalResource::Vocabulary,
+    CriticalResource::Phrases,
+    CriticalResource::Kanji,
+    CriticalResource::Grammar,
+    CriticalResource::Radicals,
+];
+
+/// Pure verdict: the load-error screen appears only when EVERY critical
+/// resource failed (nothing to show); a partial success keeps the app
+/// open with the loaded subset.
+pub fn load_failure_verdict(critical_results: &[Result<(), OrigaError>; 5]) -> bool {
+    critical_results.iter().all(Result::is_err)
+}
+
+/// Pure retry plan: readiness flags of resources whose DOMAIN slot
+/// never materialized (the loader failed) must be reset so the restart
+/// actually re-runs them; successful loaders early-return on their
+/// domain guard and stay untouched.
+pub fn retry_plan(domain_loaded: &[bool; 5], readiness: &[bool; 5]) -> Vec<usize> {
+    (0..CRITICAL_RESOURCES.len())
+        .filter(|&i| !domain_loaded[i] && readiness[i])
+        .collect()
+}
+
 async fn load_with_retry<F, Fut>(loader: F, max_retries: usize) -> Result<(), OrigaError>
 where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<(), OrigaError>>,
 {
-    let mut last_err = None;
-    for attempt in 0..=max_retries {
+    let mut attempt = 0;
+    loop {
         match loader().await {
             Ok(()) => return Ok(()),
             Err(e) => {
-                if attempt < max_retries {
-                    tracing::info!("Retrying after error: {e}");
+                if attempt >= max_retries || !should_retry_after_error(&e) {
+                    if attempt < max_retries {
+                        tracing::info!("Skipping retry after stalled/unreachable error: {e}");
+                    }
+                    return Err(e);
                 }
-                last_err = Some(e);
+                tracing::info!("Retrying after error: {e}");
+                attempt += 1;
             },
         }
     }
-    Err(last_err.expect("at least one attempt was made"))
 }
 
 /// How a tracked loader's failure is logged. Full resources (vocabulary,
@@ -85,6 +140,25 @@ where
     result
 }
 
+/// Phase A of the startup pipeline: the cache-manifest check. When the
+/// browser claims offline, a short HEAD probe settles the truth
+/// (WKWebView lies about onLine in both directions): a live CDN still
+/// gets its manifest validation (cache invalidation must keep working),
+/// a dead one records the verdict and skips straight to the cache-first
+/// stages (ADR-053).
+async fn run_manifest_phase(connectivity: &ConnectivityStore) {
+    let manifest_check_allowed = if connectivity.is_online.get_untracked() {
+        true
+    } else {
+        crate::repository::cache_manager::probe_manifest_reachable().await
+    };
+    if manifest_check_allowed
+        && let Err(e) = crate::repository::cache_manager::check_and_invalidate().await
+    {
+        tracing::warn!("Cache manifest check failed: {e}");
+    }
+}
+
 pub fn start_dictionary_loading(
     auth_store: AuthStore,
     repository: HybridUserRepository,
@@ -92,10 +166,11 @@ pub fn start_dictionary_loading(
     offline_store: OfflineBundleStore,
 ) {
     spawn_local(async move {
-        // Phase A: manifest check
-        if let Err(e) = crate::repository::cache_manager::check_and_invalidate().await {
-            tracing::warn!("Cache manifest check failed: {e}");
-        }
+        // Only the current generation may set terminal signals — a
+        // stale run resolving after a Retry must stay silent (ADR-053).
+        let generation = auth_store.load_generation.get_untracked();
+
+        run_manifest_phase(&connectivity).await;
 
         // Phase B: staged loading to minimize peak WASM linear memory.
         //
@@ -152,8 +227,9 @@ pub fn start_dictionary_loading(
             ),
         );
         // Failures are logged and flags flipped inside `tracked`; the
-        // results are consumed here only to satisfy `must_use`.
-        let _ = (vocab_r, phrases_r, furigana_r, pitch_r);
+        // critical results feed the failure verdict below, the
+        // best-effort ones are consumed here.
+        let _ = (furigana_r, pitch_r);
 
         // Stage 2: light resources in parallel.
         let (kanji_r, grammar_r, radicals_r) = futures::join!(
@@ -176,7 +252,20 @@ pub fn start_dictionary_loading(
                 || load_with_retry(load_radicals, 1),
             ),
         );
-        let _ = (kanji_r, grammar_r, radicals_r);
+
+        // Full critical failure verdict (ADR-053): every critical
+        // resource down and nothing cached to fall back on → the load
+        // error screen. A partial failure keeps the app open with what
+        // loaded. Only the current generation may conclude the run.
+        let critical_results = [vocab_r, phrases_r, kanji_r, grammar_r, radicals_r];
+        if load_failure_verdict(&critical_results) {
+            if auth_store.load_generation.get_untracked() == generation {
+                tracing::error!("All critical resources failed — rendering the load error screen");
+                auth_store.load_failure.set(true);
+                return;
+            }
+            return;
+        }
 
         // Background tokenizer warmup (#521): the dictionary left the
         // overlay, but content-creation flows (add word, set imports)
@@ -263,8 +352,63 @@ pub fn start_dictionary_loading(
         }
 
         // Signal completion only after all migrations finish
-        auth_store.is_jlpt_content_loaded.set(true);
+        if auth_store.load_generation.get_untracked() == generation {
+            auth_store.is_jlpt_content_loaded.set(true);
+        }
     });
+}
+
+/// Resets the readiness flags of resources whose domain slot never
+/// installed (failed loaders) so a Retry actually re-runs them; the
+/// successful ones early-return on their domain guards. The final
+/// JLPT flag always restarts — the new pipeline sets it again.
+fn reset_failed_readiness(auth_store: &AuthStore) {
+    let domain_loaded = [
+        origa::dictionary::vocabulary::is_vocabulary_loaded(),
+        origa::dictionary::phrase::is_phrases_loaded(),
+        origa::dictionary::kanji::is_kanji_loaded(),
+        origa::dictionary::grammar::is_grammar_loaded(),
+        origa::dictionary::radical::is_radicals_loaded(),
+    ];
+    let readiness = [
+        auth_store.is_vocabulary_loaded.get_untracked(),
+        auth_store.is_phrases_loaded.get_untracked(),
+        auth_store.is_kanji_loaded.get_untracked(),
+        auth_store.is_grammar_loaded.get_untracked(),
+        auth_store.is_radicals_loaded.get_untracked(),
+    ];
+
+    for index in retry_plan(&domain_loaded, &readiness) {
+        match CRITICAL_RESOURCES[index] {
+            CriticalResource::Vocabulary => auth_store.is_vocabulary_loaded.set(false),
+            CriticalResource::Phrases => auth_store.is_phrases_loaded.set(false),
+            CriticalResource::Kanji => auth_store.is_kanji_loaded.set(false),
+            CriticalResource::Grammar => auth_store.is_grammar_loaded.set(false),
+            CriticalResource::Radicals => auth_store.is_radicals_loaded.set(false),
+        }
+    }
+    auth_store.is_jlpt_content_loaded.set(false);
+}
+
+/// Retry entry point (ADR-053): clears the failure, lifts the
+/// unreachable verdict (Retry always tries the network — it never
+/// trusts a stale probe), bumps the generation so the old run goes
+/// silent, and restarts the pipeline. Idempotent by construction:
+/// re-running a successful loader is a domain-guard early-return.
+fn retry_load(
+    auth_store: AuthStore,
+    repository: HybridUserRepository,
+    connectivity: ConnectivityStore,
+    offline_store: OfflineBundleStore,
+) {
+    auth_store.load_failure.set(false);
+    auth_store
+        .load_generation
+        .update(|generation| *generation += 1);
+    crate::repository::cdn_provider::clear_cdn_unreachable();
+    reset_failed_readiness(&auth_store);
+    auth_store.is_data_loading_started.set(true);
+    start_dictionary_loading(auth_store, repository, connectivity, offline_store);
 }
 
 #[component]
@@ -313,7 +457,16 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     });
 
     move || {
-        if auth_store.is_loading().get() {
+        // Pre-existing login-swallowed-error fix (surfaced by the
+        // offline specs): while a login submit is in flight the
+        // NOT-authenticated branch must keep <Login/> mounted — routing
+        // it through the overlay unmounts the form and its server_error
+        // signal, so the failure arrived as a silently collapsed form.
+        // The overlay still covers authenticated syncing (onboarding,
+        // sync checkpoints) and session checks as before.
+        let session_checking_or_authenticated_sync = auth_store.is_checking_session.get()
+            || (is_authenticated.get() && auth_store.is_syncing.get());
+        if session_checking_or_authenticated_sync {
             let loading_msg: Signal<String> = Signal::derive(move || {
                 crate::i18n::use_i18n()
                     .get_keys()
@@ -348,6 +501,28 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
                             offline_bundle_for_start.clone(),
                         );
                     }
+                />
+            }
+            .into_any()
+        } else if is_authenticated.get() && auth_store.load_failure.get() {
+            // R3-L1: the failure branch outranks the readiness check —
+            // after a full failure every readiness flag is also true
+            // (tracked flips them on errors), so ordering here decides
+            // between the error screen and a hollow "successful" open.
+            let auth_store_for_retry = auth_store.clone();
+            let repository_for_retry = repository.clone();
+            let connectivity_for_retry = connectivity.clone();
+            let offline_bundle_for_retry = offline_bundle.clone();
+            view! {
+                <LoadErrorScreen
+                    on_retry=Callback::new(move |_| {
+                        retry_load(
+                            auth_store_for_retry.clone(),
+                            repository_for_retry.clone(),
+                            connectivity_for_retry.clone(),
+                            offline_bundle_for_retry.clone(),
+                        );
+                    })
                 />
             }
             .into_any()
@@ -534,5 +709,96 @@ mod tests {
             assert!(result.is_err());
             assert!(flag.get_untracked());
         });
+    }
+
+    #[test]
+    fn retry_policy_skips_stalled_and_unreachable_failures() {
+        use crate::repository::cdn_provider::{clear_cdn_unreachable, mark_cdn_unreachable};
+
+        // This test mutates the process-global unreachable flag. It is
+        // the ONLY native test allowed to do so — a second one would
+        // race under parallel `cargo test`. Keep the mark/clear bracket
+        // tight if you extend it.
+        // Transient failures on a live network still retry.
+        let http_500 = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "HTTP 500".to_string(),
+        };
+        assert!(should_retry_after_error(&http_500));
+
+        // An idle-timeout stall never retries: the neighbour already
+        // proved the network dead (ADR-053, R3-C1).
+        let stalled = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "idle timeout after 10000 ms without data".to_string(),
+        };
+        assert!(!should_retry_after_error(&stalled));
+
+        // An instant refusal produced under the unreachable verdict
+        // never retries either.
+        let refused = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "cdn unreachable: skipping request after probe verdict".to_string(),
+        };
+        assert!(!should_retry_after_error(&refused));
+
+        // A proven-unreachable CDN makes any failure terminal for now.
+        mark_cdn_unreachable();
+        assert!(!should_retry_after_error(&http_500));
+        clear_cdn_unreachable();
+    }
+
+    fn network_fail() -> OrigaError {
+        OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "Failed to fetch".to_string(),
+        }
+    }
+
+    #[test]
+    fn full_critical_failure_demands_the_error_screen() {
+        let all_failed = [
+            Err(network_fail()),
+            Err(network_fail()),
+            Err(network_fail()),
+            Err(network_fail()),
+            Err(network_fail()),
+        ];
+        assert!(load_failure_verdict(&all_failed));
+    }
+
+    #[test]
+    fn partial_critical_failure_keeps_the_app_open() {
+        let partial = [
+            Err(network_fail()),
+            Ok(()),
+            Err(network_fail()),
+            Ok(()),
+            Ok(()),
+        ];
+        assert!(!load_failure_verdict(&partial));
+
+        let all_ok = [Ok(()), Ok(()), Ok(()), Ok(()), Ok(())];
+        assert!(!load_failure_verdict(&all_ok));
+    }
+
+    #[test]
+    fn retry_plan_resets_only_failed_readiness_flags() {
+        // Domain slots tell success from failure: vocabulary and kanji
+        // never installed their dictionaries (failed), phrases/grammar/
+        // radicals did (loaded) — their readiness flags stay as-is.
+        let domain_loaded = [false, true, false, true, true];
+        let readiness = [true, true, true, true, true];
+
+        let reset = retry_plan(&domain_loaded, &readiness);
+
+        assert_eq!(reset, vec![0, 2], "only failed resources restart");
+    }
+
+    #[test]
+    fn retry_plan_is_empty_when_everything_loaded() {
+        let domain_loaded = [true, true, true, true, true];
+        let readiness = [true, true, true, true, true];
+        assert!(retry_plan(&domain_loaded, &readiness).is_empty());
     }
 }

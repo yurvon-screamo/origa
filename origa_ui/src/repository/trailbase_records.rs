@@ -1,5 +1,6 @@
+use crate::repository::api_response::ApiResponse;
 use crate::repository::trailbase_client::{AuthError, AuthRequestClient};
-use gloo_net::http::{Method, Response};
+use gloo_net::http::Method;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 #[derive(Clone)]
@@ -36,7 +37,6 @@ impl<C: AuthRequestClient> RecordApi<C> {
 
         let list: ListResponseInner<T> = response
             .json()
-            .await
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))?;
         Ok(list.records)
     }
@@ -52,7 +52,7 @@ impl<C: AuthRequestClient> RecordApi<C> {
             .await?;
 
         if !response.ok() {
-            let error_text = extract_error_text(response).await;
+            let error_text = extract_error_text(&response);
             return Err(AuthError::ApiError(format!(
                 "Failed to create record: {}",
                 error_text
@@ -66,7 +66,6 @@ impl<C: AuthRequestClient> RecordApi<C> {
 
         let create_response: CreateResponse = response
             .json()
-            .await
             .map_err(|e| AuthError::ApiError(format!("Failed to parse response: {}", e)))?;
         create_response
             .ids
@@ -83,7 +82,7 @@ impl<C: AuthRequestClient> RecordApi<C> {
             .await?;
 
         if !response.ok() {
-            let error_text = extract_error_text(response).await;
+            let error_text = extract_error_text(&response);
             return Err(AuthError::ApiError(format!(
                 "Failed to update record: {}",
                 error_text
@@ -101,7 +100,7 @@ impl<C: AuthRequestClient> RecordApi<C> {
             .await?;
 
         if !response.ok() {
-            let error_text = extract_error_text(response).await;
+            let error_text = extract_error_text(&response);
             return Err(AuthError::ApiError(format!(
                 "Failed to delete record: {}",
                 error_text
@@ -112,9 +111,8 @@ impl<C: AuthRequestClient> RecordApi<C> {
     }
 }
 
-pub async fn extract_error_text(response: Response) -> String {
+pub fn extract_error_text(response: &ApiResponse) -> String {
     response
         .text()
-        .await
         .unwrap_or_else(|_| "Unknown error".to_string())
 }
