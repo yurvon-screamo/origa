@@ -1,0 +1,47 @@
+# Origa per-project desloper false-positive layer.
+# Layered on top of desloper's global config/exceptions.yaml.
+#
+# CONVENTION: CDN JSON content is extracted to /tmp/opencode/<section>-audit/<lang>/*.md
+# before scanning (desloper scans markdown); path globs below match those locations.
+# When re-extracting, keep the directory names stable.
+
+suppress:
+  # ============================================================
+  # GENRE: Japanese grammar textbook (720 articles × EN/RU/KO/VI)
+  # Source: cdn/grammar/grammar_v2.json + grammar_ko_vi.json
+  # Extract to: /tmp/opencode/grammar-audit/{en,ru,ko,vi}/grammar.md
+  # ============================================================
+  # Corpus manually verified 2026-09-14: all 140 findings are genre FPs.
+  # - "in order to" teaches ために/ように; "не только" teaches だけでなく
+  # - "Synergy" is the translation of と相まって; "could not be happier"
+  #   translates うれしい限りだ; "Việc" translates the こと-nominalizer
+  # - RU "является" ×16 is the XはYです lesson content itself
+  # - connector counters ×2-×11 are per-corpus (720 articles), not per-text
+  # - KO risk_band=medium is a corpus-concatenation artifact
+  # NOTE: newly added grammar articles need manual review (this rule
+  # suppresses genre noise wholesale for the verified corpus).
+  - file: "**/grammar-audit/**"
+    reason: "Grammar textbook genre: formal lexicon and connectors are the teaching instrument; corpus verified 2026-09-14"
+
+  # ============================================================
+  # GENRE: lexicographic definitions (97 456 entries, RU 65 686 / EN 7 993)
+  # Source: cdn/dictionary/chunk_*.json -> d-fields
+  # Extract to: /tmp/opencode/dictionary-audit/{ru,en}/definitions.md
+  # ============================================================
+  # Verified 2026-09-14: "slop words" here are translations of the headwords
+  # themselves (バイブル = "ultimate guide", 蒼 = "vibrant shade of blue",
+  # 刻印 = "lasting impression"). RU "является" ×2645 is the definition
+  # copula, not inflation. Connector counters are per-97k-corpus.
+  - file: "**/dictionary-audit/**"
+    reason: "Lexicography genre: entries define words, so AI-tell vocabulary appears as legitimate translation content; verified 2026-09-14"
+
+  # ============================================================
+  # GENRE: word-set metadata titles/descriptions (146 texts × 4 languages)
+  # Source: cdn/well_known_set/**/*.json content-fields
+  # Extract to: /tmp/opencode/wks-audit/{en,ru,ko,vi}/texts.md
+  # ============================================================
+  # One-line labels like "Words list, recommended for learning language for
+  # N5 level" — set descriptions, not prose. (The "Recomended" typo found in
+  # audit was fixed in source files, not suppressed.)
+  - file: "**/wks-audit/**"
+    reason: "Word-set metadata: one-line labels, not prose; verified 2026-09-14"
