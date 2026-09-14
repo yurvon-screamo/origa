@@ -16,10 +16,10 @@ pub static CONTENT: Content = Content {
     header_blog: "블로그",
     header_docs: "문서",
 
-    blog_index_meta_title: "Origa 블로그 — 일본어 학습 필드 노트",
+    blog_index_meta_title: "Origa 블로그: 일본어 학습 필드 노트",
     blog_index_meta_description: "일본어 학습에 대한 실전 가이드: Anki 대안, 앱 선택, 어휘, 한자, 학습 워크플로우. Origa 팀이 작성.",
     blog_index_h1: "블로그",
-    blog_index_subtitle: "일본어 학습에 대한 실전 가이드 — 언제 도구를 바꿀지, 무엇을 찾을지, 각 앱이 어디서 강한지.",
+    blog_index_subtitle: "일본어 학습에 대한 실전 가이드: 언제 도구를 바꿀지, 무엇을 찾을지, 각 앱이 어디서 강한지.",
     blog_index_empty: "아직 게시된 글이 없습니다. 나중에 다시 확인해 주세요.",
     blog_updated_label: "업데이트:",
     breadcrumb_blog: "블로그",
@@ -34,7 +34,7 @@ pub static CONTENT: Content = Content {
     home_meta_description: "무료 일본어 입문 및 JLPT 대비 앱: N5–N1 한자·문법, 어휘, 20만+ 원어민 문장. 완전 오프라인, 한국어 인터페이스.",
     home_schema_feature_list: "어휘, 한자, 문법, 듣기, JLPT 분석, 오프라인 모드",
     home_hero_title: "모국어로 일본어를 배우는 앱",
-    home_hero_subtitle: "어휘, N5–N1 한자·문법, 듣기, 20만 개 이상의 원어민 문장 — 모든 것이 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
+    home_hero_subtitle: "어휘, N5–N1 한자·문법, 듣기, 20만 개 이상의 원어민 문장이 모두 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
     home_cta_primary: "다운로드",
     home_cta_secondary: "웹 앱 열기",
     home_hero_tagline: "크로스플랫폼 · 오프라인 · 개인정보 보호",
@@ -69,7 +69,7 @@ pub static CONTENT: Content = Content {
     features_vocab_h2: "어휘",
     features_vocab_label: "작동 방식",
     features_vocab_step1: "일본어 단어나 문장을 입력하거나 붙여넣기",
-    features_vocab_step2: "사진 스캔 — OCR이 단어를 추출하고 자동으로 번역을 추가합니다",
+    features_vocab_step2: "사진 스캔: OCR이 단어를 추출하고 자동으로 번역을 추가합니다",
     features_vocab_step3: "새 단어는 소개와 훈련을 거친 뒤 간격 반복으로 기억에 남습니다",
     features_vocab_dict: "내장 이중언어 사전",
     features_vocab_cards: "즉시 카드 생성",
@@ -104,7 +104,7 @@ pub static CONTENT: Content = Content {
     features_listening_n1: "N+1 자동 선택",
     features_listening_n1_desc: "현재 레벨보다 한 단계 높은 문장이 자동으로 선택됩니다.",
     features_listening_audio: "원본 음성",
-    features_listening_audio_desc: "원어민 일본어 콘텐츠의 오디오 — 애니메이션, 비주얼 노벨 등.",
+    features_listening_audio_desc: "원어민 일본어 콘텐츠의 오디오: 애니메이션, 비주얼 노벨 등.",
     features_listening_comp: "듣기 이해",
     features_listening_comp_desc: "문맥 속 일본어 듣기 이해력을 연습하세요.",
     features_listening_everyday: "일상 일본어",
@@ -167,7 +167,7 @@ pub static CONTENT: Content = Content {
     compare_bunpro_title: "Bunpro",
     compare_bunpro_what: "문법 드릴 플랫폼.",
     compare_bunpro_when: "집중적인 문법 연습.",
-    compare_bunpro_better: "한자·어휘와 함께하는 N5–N1 문법 — 예문은 이미 아는 단어를 사용합니다.",
+    compare_bunpro_better: "한자·어휘와 함께하는 N5–N1 문법. 예문은 이미 아는 단어를 사용합니다.",
     compare_bunpro_together: "Bunpro로 문법 드릴을, Origa를 통합 학습 시스템으로 사용하세요.",
     compare_duolingo_title: "Duolingo",
     compare_duolingo_subtitle: "Duolingo가 적합한 경우: 일본어에 대한 부드러운 입문을 원할 때.",
@@ -193,7 +193,7 @@ pub static CONTENT: Content = Content {
     download_ios_formats: "iPhone, iPad",
     download_ios_coming_soon: "출시 예정",
     download_button: "다운로드",
-    download_subtitle: "어떤 기기에나 Origa를 다운로드하세요 — 모든 것이 오프라인에서 작동합니다.",
+    download_subtitle: "어떤 기기에나 Origa를 다운로드하세요. 모든 것이 오프라인에서 작동합니다.",
     download_try_web: "열기 →",
 
     integrations_meta_title: "단어 세트 및 콘텐츠 | Origa",
@@ -233,13 +233,13 @@ pub static CONTENT: Content = Content {
     integrations_migii_detail: "레벨별 JLPT 준비 세트",
 
     integrations_spy_name: "스파이 패밀리",
-    integrations_spy_desc: "인기 애니메이션의 어휘 — 좋아하는 콘텐츠로 일본어를 배우세요.",
+    integrations_spy_desc: "인기 애니메이션의 어휘. 좋아하는 콘텐츠로 일본어를 배우세요.",
     integrations_spy_detail: "시즌 1 어휘",
 
     integrations_anki_name: "Anki 가져오기",
     integrations_anki_desc: "Anki 덱을 Origa로 직접 가져오세요. .anki2, .anki21 및 .anki21b 형식을 지원합니다.",
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
-    integrations_anki_note: "Anki 덱을 가져와서 중단한 곳에서 계속 학습하세요 — 모든 진행 상황이 이전됩니다.",
+    integrations_anki_note: "Anki 덱을 가져와서 중단한 곳에서 계속 학습하세요. 모든 진행 상황이 이전됩니다.",
 
     // Legal pages: English fallback. Korean legal translation requires native
     // review and is tracked separately; the learning content itself is fully

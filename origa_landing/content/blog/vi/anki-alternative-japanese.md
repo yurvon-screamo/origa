@@ -16,18 +16,18 @@ status: ready
 
 Anki là câu trả lời mặc định cho câu hỏi "làm sao để ghi nhớ từ vựng tiếng Nhật". Danh tiếng đó là xứng đáng. Nó cũng là công cụ đòi hỏi bạn nhiều thứ: xây dựng bộ bài, thiết kế mẫu thẻ, tìm âm thanh, cấu hình bộ lập lịch, đồng bộ giữa các thiết bị. Một số người học thích sự tự do đó. Người khác dành nhiều thời gian quản lý Anki hơn là học tiếng Nhật.
 
-Đây là hướng dẫn thực chiến, không phải bài bóc phốt. Nó bao quát nơi Anki thực sự thắng với tiếng Nhật, nơi nó cản trở, "thay thế" thực sự nên cung cấp điều gì, và cách một vài lựa chọn hiện tại so sánh — bao gồm Origa, ứng dụng tôi đang phát triển.
+Đây là hướng dẫn thực chiến, không phải bài bóc phốt. Nó bao quát nơi Anki thực sự thắng với tiếng Nhật, nơi nó cản trở, "thay thế" thực sự nên cung cấp điều gì, và cách một vài lựa chọn hiện tại so sánh, bao gồm Origa, ứng dụng tôi đang phát triển.
 
 ## Nơi Anki thắng
 
 Nếu bất kỳ điều nào dưới đây mô tả bạn, Anki có lẽ là công cụ đúng, và bạn nên ngừng đọc các danh sách và đi ôn thẻ.
 
 - **Bạn muốn bộ lập lịch kiểm soát hoàn toàn.** Anki đã thêm [hỗ trợ FSRS trong phiên bản 23.10](https://docs.ankiweb.net/deck-options.html#fsrs) (tháng 10 năm 2023) như tùy chọn thử nghiệm, và bật mặc định cho các bộ sưu tập mới từ phiên bản 24.10. Đó là cùng thuật toán lặp lại ngắt quãng mà cộng đồng nghiên cứu đã hội tụ. Bạn có thể tinh chỉnh tỷ lệ ghi nhớ, bước tùy chỉnh và giới hạn ôn theo ngày.
-- **Bạn học nhiều hơn tiếng Nhật.** Anki không phụ thuộc lĩnh vực. Y khoa, luật, lý thuyết âm nhạc, ngôn ngữ thứ ba — một ứng dụng, một hàng đợi ôn tập.
+- **Bạn học nhiều hơn tiếng Nhật.** Anki không phụ thuộc lĩnh vực. Y khoa, luật, lý thuyết âm nhạc, ngôn ngữ thứ ba. Một ứng dụng, một hàng đợi ôn tập.
 - **Bạn tự xây dựng loại thẻ riêng.** Hệ thống mẫu của Anki (HTML/CSS với các trường) không có đối thủ. Nếu bạn thích tự thiết kế thẻ không kém gì học qua chúng, không có gì so được.
 - **Bạn muốn miễn phí và tự host.** Anki desktop miễn phí và open source. AnkiDroid miễn phí. Đồng bộ AnkiWeb miễn phí. Phần duy nhất trả phí là AnkiMobile trên iOS, vốn tài trợ cho sự phát triển của phần còn lại.
 
-Điểm cuối cùng quan trọng. "Miễn phí và mở" không phải là câu khẩu hiệu cho Anki — đó là lý do cấu trúc mà hệ sinh thái có hàng nghìn bộ bài dùng chung và một thập kỷ bảo trì cộng đồng.
+Điểm cuối cùng quan trọng. "Miễn phí và mở" không phải là câu khẩu hiệu cho Anki. Đó là lý do cấu trúc mà hệ sinh thái có hàng nghìn bộ bài dùng chung và một thập kỷ bảo trì cộng đồng.
 
 ## Nơi Anki cản trở riêng cho tiếng Nhật
 
@@ -37,7 +37,7 @@ Anki là động cơ mục đích chung. Tiếng Nhật không mục đích chun
 
 **Hán tự và từ vựng tồn tại như những mảng tách biệt.** Anki không biết rằng 食べる và 食事 chia sẻ cùng hán tự, hoặc rằng bạn "biết" một hán tự khi đã thấy nó trong năm từ khác nhau. Bạn tự xây dựng liên kết đó, hoặc không có nó.
 
-**Furigana là thứ bạn thêm, không phải thứ bạn có.** Ẩn furigana trên hán tự đã học — để buộc bạn nhớ đọc — đòi hỏi cấu hình tùy chỉnh. Mặc định, furigana luôn bật hoặc luôn tắt.
+**Furigana là thứ bạn thêm, không phải thứ bạn có.** Ẩn furigana trên hán tự đã học (để buộc bạn nhớ đọc) đòi hỏi cấu hình tùy chỉnh. Mặc định, furigana luôn bật hoặc luôn tắt.
 
 **Ngữ pháp là ứng dụng riêng.** Đa số người học ghép Anki với một SRS ngữ pháp (Bunpro) hoặc giáo trình. Anki không có khái niệm "giải thích điểm ngữ pháp này bằng từ ta đã biết", vì nó không có khái niệm về việc ta biết từ nào.
 
@@ -53,18 +53,18 @@ Danh sách kiểm tra thực sự hữu ích:
 
 - **Cùng chất lượng lập lịch.** Nếu thay thế dùng hộp Leitner ngây thơ hoặc khoảng cố định, bạn đang đổi lấy trí nhớ thực cho sự tiện lợi. Tìm FSRS hoặc thuật toán SRS được tài liệu hóa.
 - **Từ điển tiếng Nhật tích hợp ngôn ngữ của bạn.** Nếu thêm thẻ vẫn cần tra từ điển bên ngoài, bạn chỉ dịch chuyển ma sát, không gỡ bỏ.
-- **Furigana tự động với ẩn thông minh.** Furigana nên xuất hiện trên hán tự chưa học và biến mất trên hán tự đã học — không cần mẫu tùy chỉnh.
+- **Furigana tự động với ẩn thông minh.** Furigana nên xuất hiện trên hán tự chưa học và biến mất trên hán tự đã học, không cần mẫu tùy chỉnh.
 - **Hán tự và từ vựng biết về nhau.** Công cụ nên coi 食べる và 食事 là liên quan, không phải là thẻ không liên quan.
 - **OCR hoặc trích xuất văn bản.** Có thể thêm từ từ ảnh trang manga hoặc ảnh chụp giáo trình là khác biệt giữa học nội dung của bạn và học danh sách từ của ai đó. ([Xem Origa xử lý thế nào](/vi/docs/capture).)
 - **Đường dẫn ngữ pháp dùng từ vựng của bạn.** Nếu không ngữ pháp lại là ứng dụng thứ hai.
 
-Nếu một "thay thế" thất bại ở mục đầu tiên (chất lượng lập lịch), nó không phải thay thế — đó là hạ cấp mặc áo khoác thân thiện hơn.
+Nếu một "thay thế" thất bại ở mục đầu tiên (chất lượng lập lịch), nó không phải thay thế. Đó là hạ cấp mặc áo khoác thân thiện hơn.
 
 ## Origa xử lý điều này thế nào
 
 Vì vậy tôi sẽ cụ thể để bạn có thể kiểm tra các tuyên bố. Nó tồn tại vì vấn đề "năm ứng dụng cho một ngôn ngữ" mô tả ở trên chính xác là điều tác giả gặp phải.
 
-Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung thực rằng **cả hai đều dùng FSRS** — Origa không phát minh ra thuật toán, và Anki không tụt hậu với nó. Chất lượng lập lịch tương đương. Điểm khác biệt nằm ở mọi thứ bao quanh bộ lập lịch.
+Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung thực rằng **cả hai đều dùng FSRS**. Origa không phát minh ra thuật toán, và Anki không tụt hậu với nó. Chất lượng lập lịch tương đương. Điểm khác biệt nằm ở mọi thứ bao quanh bộ lập lịch.
 
 | Khía cạnh | Anki | Origa |
 | --- | --- | --- |
@@ -92,18 +92,18 @@ Nếu bất kỳ điều nào phá vỡ quy trình của bạn, đó là lý do 
 
 Origa không phải lựa chọn duy nhất, và tùy vào điểm nghẽn của bạn, có thể không phải tốt nhất.
 
-- **Riêng hán tự — [WaniKani](https://www.wanikani.com/).** Dựa theo gốc, thứ tự có cấu trúc, giao diện tiếng Anh. Tốt nhất nếu bạn bắt đầu hán tự từ số 0 và muốn một lộ trình cố định. Nó trả phí, và thứ tự của nó là của riêng nó — bạn học cái nó dạy, không phải cái bạn gặp hôm nay.
-- **Riêng ngữ pháp — [Bunpro](https://bunpro.jp/).** SRS ngữ pháp, dựa trên web, giao diện tiếng Anh. Tốt nhất nếu điểm nghẽn là drill ngữ pháp và bạn sẵn sàng giữ từ vựng trong Anki.
-- **Cho người mới bắt đầu hoàn toàn — [Duolingo](https://www.duolingo.com/).** Game hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
-- **Cho mô phỏng thi JLPT — [Migii](https://eup.java-mind.com/).** Luyện tập thi có thời gian. Bổ sung một công cụ ghi nhớ thay vì thay thế.
+- **Riêng hán tự: [WaniKani](https://www.wanikani.com/).** Dựa theo gốc, thứ tự có cấu trúc, giao diện tiếng Anh. Tốt nhất nếu bạn bắt đầu hán tự từ số 0 và muốn một lộ trình cố định. Nó trả phí, và thứ tự của nó là của riêng nó. Bạn học cái nó dạy, không phải cái bạn gặp hôm nay.
+- **Riêng ngữ pháp: [Bunpro](https://bunpro.jp/).** SRS ngữ pháp, dựa trên web, giao diện tiếng Anh. Tốt nhất nếu điểm nghẽn là drill ngữ pháp và bạn sẵn sàng giữ từ vựng trong Anki.
+- **Cho người mới bắt đầu hoàn toàn: [Duolingo](https://www.duolingo.com/).** Game hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
+- **Cho mô phỏng thi JLPT: [Migii](https://eup.java-mind.com/).** Luyện tập thi có thời gian. Bổ sung một công cụ ghi nhớ thay vì thay thế.
 
-Quy luật: hầu hết các "thay thế" chuyên biệt ở một lát cắt (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ — xem [so sánh đầy đủ](/vi/compare) và đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
+Quy luật: hầu hết các "thay thế" chuyên biệt ở một lát cắt (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ. Xem [so sánh đầy đủ](/vi/compare) và đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
 
 ## Cách quyết định
 
 Dùng Anki nếu bạn coi trọng sự kiểm soát, học nhiều hơn một môn, hoặc đã đầu tư vào một hệ thống bộ bài hoạt động. Bạn không mất gì khi ở lại.
 
-Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt việc may ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước — nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu. ([Tải Origa](/vi/download).)
+Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt việc may ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước. Nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu. ([Tải Origa](/vi/download).)
 
 Phiên bản trung thực của "thay thế Anki tốt nhất" là "cái gỡ bỏ *ma sát của bạn*". Tìm ra bước nào trong quy trình hiện tại ngốn nhiều thời gian nhất, và chọn công cụ gỡ bỏ bước đó mà không làm giảm chất lượng lập lịch. Tiêu chí chọn theo từng nhóm nhiệm vụ được tổng hợp trong [tổng quan ứng dụng học tiếng Nhật](/vi/blog/best-japanese-learning-app).
 
@@ -111,7 +111,7 @@ Phiên bản trung thực của "thay thế Anki tốt nhất" là "cái gỡ b�
 
 ### Lặp lại ngắt quãng của Origa có giống Anki không?
 
-Cả hai dùng FSRS. Origa không phát minh ra nó và không tuyên bố điều đó. Điểm khác biệt là những gì bao quanh bộ lập lịch — tạo thẻ, furigana, theo dõi hán tự, ngữ pháp — chứ không phải bản thân thuật toán.
+Cả hai dùng FSRS. Origa không phát minh ra nó và không tuyên bố điều đó. Điểm khác biệt là những gì bao quanh bộ lập lịch (tạo thẻ, furigana, theo dõi hán tự, ngữ pháp), không phải bản thân thuật toán.
 
 ### Tôi có thể giữ bộ bài Anki không?
 
@@ -127,4 +127,4 @@ Có. Các mô hình OCR và nhận dạng giọng nói chạy cục bộ, vì v�
 
 ### Nếu tôi chỉ học trên iPhone thì sao?
 
-Chưa. Origa chạy trên Windows, Linux, macOS, Android và web. iOS đã lên kế hoạch nhưng chưa có sẵn hôm nay — nếu iPhone là thiết bị duy nhất của bạn, hãy đợi bản phát hành iOS hoặc ở lại Anki.
+Chưa. Origa chạy trên Windows, Linux, macOS, Android và web. iOS đã lên kế hoạch nhưng chưa có sẵn hôm nay. Nếu iPhone là thiết bị duy nhất của bạn, hãy đợi bản phát hành iOS hoặc ở lại Anki.

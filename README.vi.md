@@ -8,7 +8,7 @@
 
 オリガ là ứng dụng học tiếng Nhật và ôn luyện cho kỳ thi JLPT.
 
-Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng văn bản và giọng nói — toàn bộ xử lý AI chạy cục bộ trên thiết bị của bạn. Chỉ cần kết nối internet cho lần đăng nhập đầu tiên và tải nội dung ban đầu.
+Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng văn bản và giọng nói. Toàn bộ xử lý AI chạy cục bộ trên thiết bị của bạn. Chỉ cần kết nối internet cho lần đăng nhập đầu tiên và tải nội dung ban đầu.
 
 **Trang web:** <https://origa.uwuwu.net> · **Ứng dụng web:** <https://app.origa.uwuwu.net>
 
@@ -18,13 +18,13 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 
 ## 🎯 Nguyên tắc
 
-* **Học từ nội dung của bạn** — bạn chọn những gì muốn học. Ứng dụng thích ứng với những gì bạn đã biết và những gì bạn đang đọc, xem hoặc nghe ngay lúc này.
-* **Thuật toán thông minh** — hệ thống lặp lại ngắt quãng FSRS (giống Anki) tối ưu hóa khoảng cách ôn tập cho từng từ.
-* **Quyền riêng tư** — mọi mô hình AI chạy cục bộ trên thiết bị. Ảnh, âm thanh và hoạt động học được xử lý ngay trên máy, không tải lên dịch vụ bên ngoài.
-* **Ưu tiên ngoại tuyến** — đầy đủ chức năng không cần internet sau lần thiết lập đầu tiên.
-* **Đa nền tảng** — Web, Windows, Linux, macOS, Android.
-* **Học bằng tiếng mẹ đẻ** — giao diện và từ điển bằng tiếng Nga, tiếng Anh, tiếng Hàn và tiếng Việt (tiếng Indonesia và tiếng Tây Ban Nha trong kế hoạch).
-* **Phân tích JLPT** — theo dõi cấp độ hiện tại và dự báo tiến độ học.
+* **Học từ nội dung của bạn:** bạn chọn những gì muốn học. Ứng dụng thích ứng với những gì bạn đã biết và những gì bạn đang đọc, xem hoặc nghe ngay lúc này.
+* **Thuật toán thông minh:** hệ thống lặp lại ngắt quãng FSRS (giống Anki) tối ưu hóa khoảng cách ôn tập cho từng từ.
+* **Quyền riêng tư:** mọi mô hình AI chạy cục bộ trên thiết bị. Ảnh, âm thanh và hoạt động học được xử lý ngay trên máy, không tải lên dịch vụ bên ngoài.
+* **Ưu tiên ngoại tuyến:** đầy đủ chức năng không cần internet sau lần thiết lập đầu tiên.
+* **Đa nền tảng:** Web, Windows, Linux, macOS, Android.
+* **Học bằng tiếng mẹ đẻ:** giao diện và từ điển bằng tiếng Nga, tiếng Anh, tiếng Hàn và tiếng Việt (tiếng Indonesia và tiếng Tây Ban Nha trong kế hoạch).
+* **Phân tích JLPT:** theo dõi cấp độ hiện tại và dự báo tiến độ học.
 
 ![Tổng quan về Origa](origa_landing/public/images/en.all_in_one.png)
 
@@ -35,7 +35,7 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 ### Từ vựng
 
 * Từ điển tích hợp bằng tiếng mẹ đẻ của bạn.
-* Tạo thẻ siêu nhanh — chỉ cần gõ một từ hoặc câu tiếng Nhật.
+* Tạo thẻ siêu nhanh: chỉ cần gõ một từ hoặc câu tiếng Nhật.
 * Tự động nhận dạng và trích xuất từ vựng từ văn bản, ảnh và âm thanh.
 * Nhập sẵn bộ từ từ các ứng dụng phổ biến và giáo trình kinh điển.
 * Ngân hàng âm thanh tích hợp với phát âm chuẩn (dựa trên NHK và các nguồn đáng tin cậy khác).
@@ -67,7 +67,7 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 
 ## 📥 Tải xuống
 
-Cách đơn giản nhất để cài đặt Origa là [trang tải xuống](https://origa.uwuwu.net/vi/download) — trang sẽ đề xuất bản dựng phù hợp với hệ thống của bạn.
+Cách đơn giản nhất để cài đặt Origa là [trang tải xuống](https://origa.uwuwu.net/vi/download). Trang sẽ đề xuất bản dựng phù hợp với hệ thống của bạn.
 
 Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 
@@ -99,9 +99,9 @@ Tất cả bản dựng và ghi chú phát hành: [GitHub Releases](https://gith
 
 Dự án được xây dựng trên nền tảng công nghệ hiện đại, mang lại hiệu năng của ứng dụng native cùng sự linh hoạt của giao diện web.
 
-* **Lõi và backend**: **Rust** — an toàn và xử lý dữ liệu tốc độ cao.
-* **Lớp desktop**: **Tauri v2** — ứng dụng native cho Windows, macOS và Linux.
-* **Frontend**: **Leptos** — framework UI phản ứng trên Rust (WebAssembly) cho phản hồi giao diện tức thì.
+* **Lõi và backend**: an toàn và xử lý dữ liệu tốc độ cao với Rust.
+* **Lớp desktop**: ứng dụng native cho Windows, macOS và Linux với Tauri v2.
+* **Frontend**: framework UI phản ứng trên Rust (WebAssembly) cho phản hồi giao diện tức thì là Leptos.
 * **Di động**: bản build **Android** native qua Tauri Mobile.
 
 ---
@@ -131,21 +131,21 @@ Dự án được xây dựng trên nền tảng công nghệ hiện đại, man
 Ứng dụng ghi nhớ từ vựng bằng flashcard.
 
 * **Khi dùng ReWord:** khởi động nhanh và ghi nhớ máy móc các danh sách từ cơ bản không ngữ cảnh.
-* **Lợi thế của Origa:** từ vựng gắn với nội dung, ngữ pháp và âm thanh bản ngữ của bạn — hiểu ngôn ngữ sâu hơn.
+* **Lợi thế của Origa:** từ vựng gắn với nội dung, ngữ pháp và âm thanh bản ngữ của bạn, hiểu ngôn ngữ sâu hơn.
 
 ### Bunpro
 
 Trình luyện ngữ pháp chuyên biệt (Grammar SRS).
 
 * **Khi dùng Bunpro:** bạn muốn tập trung hoàn toàn vào luyện các quy tắc ngữ pháp.
-* **Lợi thế của Origa:** ví dụ ngữ pháp được xây từ *những từ bạn đã học* — từ vựng và ngữ pháp vận hành như một khối thống nhất.
+* **Lợi thế của Origa:** ví dụ ngữ pháp được xây từ *những từ bạn đã học*; từ vựng và ngữ pháp vận hành như một khối thống nhất.
 
 ### WaniKani
 
 Dịch vụ phổ biến để học hán tự và từ vựng bằng phép ghi nhớ (mnemonics).
 
 * **Khi dùng WaniKani:** cách học hán tự theo radical với trật tự cố định từ đầu phù hợp với bạn.
-* **Lợi thế của Origa:** bạn học đúng những hán tự và từ gặp hôm nay — trong manga, một bài báo hay ở chỗ làm.
+* **Lợi thế của Origa:** bạn học đúng những hán tự và từ gặp hôm nay, trong manga, một bài báo hay ở chỗ làm.
 
 ### Duolingo
 
