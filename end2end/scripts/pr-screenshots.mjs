@@ -69,8 +69,6 @@ await context.addInitScript(() => {
     }
 });
 const page = await context.newPage();
-page.on("pageerror", (e) => console.log("[pageerror]", String(e).slice(0, 300)));
-page.on("requestfailed", (r) => console.log("[reqfail]", r.url().slice(0, 140), r.failure()?.errorText));
 
 const email = `${runId}@example.com`;
 const password = "Passw0rd!train";
@@ -166,11 +164,6 @@ if (ONBOARDED_MODE) {
         .waitFor({ state: "visible", timeout: 10_000 });
     await page.waitForTimeout(300);
     await page.screenshot({ path: join(OUT, "04-token-popup-report.png") });
-    await page.getByTestId("token-popup-report").click();
-    await page.waitForTimeout(1000);
-    const modal = await page.getByTestId("feedback-modal").count();
-    console.log("[diag] feedback-modal count after click:", modal);
-    await page.screenshot({ path: join(OUT, "diag-after-click.png") });
     await browser.close();
     console.log("screenshots in", OUT);
     process.exit(0);
