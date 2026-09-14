@@ -22,7 +22,7 @@ Below is a breakdown of five options without a "best of the best" rating. Each c
 
 The standard of Japanese language schools worldwide. The main text is entirely in Japanese from lesson one, but within the kana you've learned.
 
-Strengths: strict structure, JLPT-level alignment, enormous exercise volume, decades of polish. One caveat worth knowing upfront: grammar explanations come in a **separate translation volume**, which effectively doubles your budget. The main book alone is of little use for self-study.
+Strengths: strict structure, JLPT-level alignment, large exercise volume, decades of polish. One caveat worth knowing upfront: grammar explanations come in a **separate translation volume**, which effectively doubles your budget. The main book alone is of little use for self-study.
 
 Best for: learners ready for systematic study who want a clear lesson → exercise sequence.
 

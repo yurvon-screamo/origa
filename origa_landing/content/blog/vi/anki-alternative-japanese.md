@@ -82,7 +82,7 @@ Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không 
 ### Hạn chế đã biết
 
 - **Origa không tùy biến sâu như Anki.** Nếu bạn sống trong mẫu thẻ HTML/CSS tùy chỉnh, Origa không thay thế được. Nó tối ưu cho mặc định ít ma sát hơn là kiểm soát tối đa.
-- **Nó mới hơn.** Anki có hơn một thập kỷ củng cố trường hợp biên và hệ sinh thái bộ bài khổng lồ. Thư viện nội dung dựng sẵn của Origa đang phát triển nhưng nhỏ hơn.
+- **Nó mới hơn.** Anki có hơn một thập kỷ củng cố trường hợp biên và hệ sinh thái bộ bài lớn. Thư viện nội dung dựng sẵn của Origa đang phát triển nhưng nhỏ hơn.
 - **AnkiMobile trên iOS chưa có tương đương trên Origa.** Origa chạy trên Windows, Linux, macOS, Android và web; iOS nằm trong lộ trình nhưng chưa ra mắt. Nếu toàn bộ dòng học của bạn trên iPhone, đó là chướng ngại thực sự.
 - **Tính tương đương tính năng desktop/di động tốt nhưng không tuyệt đối.** Kiểm tra bản dựng hiện tại cho nền tảng của bạn trước khi cam kết hoàn toàn.
 

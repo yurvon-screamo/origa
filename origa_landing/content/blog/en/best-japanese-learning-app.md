@@ -14,7 +14,7 @@ status: ready
 
 # Best Japanese Learning App: How to Choose in 2026
 
-The query "best Japanese learning app" is a query without a correct answer. Not because there are few apps, but because every learner has a different goal: one is taking JLPT N3 for a work visa, another wants to read manga in the original, a third is starting from zero and doesn't know how hiragana differs from kanji. The app that's ideal for the first goal is usually useless for the third.
+The query "best Japanese learning app" has no correct answer, because every learner has a different goal: one is taking JLPT N3 for a work visa, another wants to read manga in the original, a third is starting from zero and doesn't know how hiragana differs from kanji. The app that's ideal for the first goal is usually useless for the third.
 
 This article is not a top-10 list or an ad. It's a category-by-category breakdown: which app solves which problem, where each one is strong, and where each hits a wall. At the end, how to choose for your situation, including the case where you study Japanese through Russian (or Vietnamese, or Korean) rather than through English.
 
@@ -39,7 +39,7 @@ If your pain is creating cards manually, an alternative makes sense. If you've a
 
 ### Kanji
 
-Kanji is a separate problem. The same 食 appears in dozens of words, and it's important not just to memorize the character but to see it in different contexts.
+Kanji is a separate problem. The same 食 appears in dozens of words: memorizing the character is not enough, you need to recognize it in each one.
 
 - **[WaniKani](https://www.wanikani.com/).** Structured path through radicals, English interface, paid subscription. Suitable if you're starting kanji from zero and want a fixed order. The downside is that you learn what the program deems necessary, not what you encountered today in a manga or article. For the wider Origa-vs-WaniKani trade-offs (radical order vs. content-driven, paid vs. free, English-only vs. non-English interface), see the [full comparison](/compare).
 - **Origa.** Furigana is generated automatically and hidden on learned kanji. What you've already studied is no longer hinted at, forcing you to recall the reading. Kanji are linked to vocabulary: the system knows that 食べる and 食事 share one kanji, and tracks it across all the words where you've encountered it. (See [how Origa handles kanji, furigana, and vocabulary linkage](/docs/kanji).)
@@ -77,7 +77,7 @@ Origa has a built-in database of more than 200,000 phrases from native Japanese 
 
 ## A separate case: Japanese not through English
 
-Here is the market's biggest gap. Most of the apps listed above are built for an English-speaking learner. WaniKani, Bunpro, and [Duolingo](https://www.duolingo.com/) have an English interface, English explanations, and English dictionaries at their core.
+Here is the market's biggest gap. Most of the apps listed above are built for an English-speaking learner. WaniKani, Bunpro, and [Duolingo](https://www.duolingo.com/) are English through and through: interface, explanations, dictionaries.
 
 If you study Japanese through Russian (or Vietnamese, or Korean), that creates double load: first you translate the Japanese word into English (a second intermediary), then English into your native language. This isn't a philosophical protest. It's lost time on every single word.
 
@@ -90,12 +90,12 @@ The search for a Japanese learning app in your own language runs into almost no 
 3. **Look at the interface language.** If you don't study through English, apps with an English core will slow you down at every step.
 4. **Check migration.** If you already have an Anki deck, make sure the new app imports it. Throwing away years of progress is an unjustified cost.
 
-In most cases a working set is one memorization app plus one or two specialized tools (grammar, exam format). The goal is not to find "one best app" but to cover categories without duplication. Origa tries to be the one app that covers vocabulary, kanji, grammar, and listening together, but see the limitations below.
+In most cases a working set is one memorization app plus one or two specialized tools (grammar, exam format). The goal is to cover categories without duplication. Origa tries to be the one app that covers vocabulary, kanji, grammar, and listening together, but see the limitations below.
 
 ## Origa's limitations
 
 - **Not as deep customization as Anki.** If you build your own HTML/CSS card templates, Origa won't replace that. The priority is a low entry barrier, not maximum control.
-- **The app is younger.** Anki has a decade of edge-case hardening and a huge library of ready-made decks. Origa's prebuilt content library is smaller, though growing.
+- **The app is younger.** Anki has a decade of edge-case hardening and a large library of ready-made decks. Origa's prebuilt content library is smaller, though growing.
 - **No iOS.** Origa runs on Windows, Linux, macOS, Android, and in the browser; iOS is planned but not yet available. If you study only on an iPhone, that's a real blocker today.
 - **Desktop/mobile parity is good but not absolute.** Before fully switching, check the current build for your platform.
 
