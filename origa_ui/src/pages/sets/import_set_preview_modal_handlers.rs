@@ -5,6 +5,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 
 use super::import_set_preview_modal_state::ImportPreviewModalState;
+use tracing::error;
 
 #[derive(Clone)]
 pub struct ImportPreviewHandlers {
@@ -109,6 +110,7 @@ pub fn create_import_preview_handlers(
                     });
                 },
                 Err(e) => {
+                    error!(error = %e, "Set import execution failed");
                     if disposed.is_disposed() {
                         return;
                     }

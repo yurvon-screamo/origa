@@ -623,6 +623,22 @@
     "not_found": "표현을 찾을 수 없습니다",
     "hint": "표현의 모든 단어를 학습하면 표현 카드가 자동으로 만들어집니다"
   },
+  "feedback": {
+    "title": "문제 신고",
+    "message_label": "무엇이 잘못 되었나요?",
+    "message_placeholder": "문제를 설명하세요",
+    "submit": "보내기",
+    "cancel": "취소",
+    "sent": "전송됨",
+    "sent_note": "Origa를 더 정확하게 만들어 주셔서 감사합니다",
+    "submit_failed": "전송 실패",
+    "retry": "다시 시도",
+    "release_only": "보고서 전송은 릴리스 빌드에서 사용할 수 있습니다",
+    "offline_hint": "연결이 필요합니다",
+    "translator_report": "번역이 틀렸나요?",
+    "lesson_report_aria": "이 카드에 문제 신고",
+    "lesson_report_disabled_aria": "답변 후 사용 가능"
+  },
   "ui": {
     "card_not_studied": "아직 학습하지 않은 카드입니다",
     "delete_card": "카드를 삭제할까요?",

@@ -53,6 +53,12 @@ impl<C: AuthRequestClient> RecordApi<C> {
 
         if !response.ok() {
             let error_text = extract_error_text(&response);
+            tracing::error!(
+                table = %self.table_name,
+                status = response.status(),
+                error = %error_text,
+                "Failed to create record"
+            );
             return Err(AuthError::ApiError(format!(
                 "Failed to create record: {}",
                 error_text
@@ -83,6 +89,12 @@ impl<C: AuthRequestClient> RecordApi<C> {
 
         if !response.ok() {
             let error_text = extract_error_text(&response);
+            tracing::error!(
+                table = %self.table_name,
+                status = response.status(),
+                error = %error_text,
+                "Failed to update record"
+            );
             return Err(AuthError::ApiError(format!(
                 "Failed to update record: {}",
                 error_text
@@ -101,6 +113,12 @@ impl<C: AuthRequestClient> RecordApi<C> {
 
         if !response.ok() {
             let error_text = extract_error_text(&response);
+            tracing::error!(
+                table = %self.table_name,
+                status = response.status(),
+                error = %error_text,
+                "Failed to delete record"
+            );
             return Err(AuthError::ApiError(format!(
                 "Failed to delete record: {}",
                 error_text

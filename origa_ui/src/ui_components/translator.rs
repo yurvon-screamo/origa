@@ -10,6 +10,7 @@ use origa::domain::{
     NativeLanguage, TokenTranslation, lookup_precomputed, lookup_tokens_translations, tokenize_text,
 };
 
+use crate::feedback::{FeedbackCategory, FeedbackContext, FeedbackSource, FeedbackSubject};
 use crate::i18n::{t, use_i18n};
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
 
@@ -62,9 +63,19 @@ pub fn TranslatorText(
 
     let translations: RwSignal<Vec<TokenTranslation>> = RwSignal::new(vec![]);
     let expanded: RwSignal<Option<usize>> = RwSignal::new(None);
+    // StoredValue (Copy) so the per-token `children` closure can capture it
+    // without moving the Option out of the root children closure (Fn bound).
+    let feedback_context = StoredValue::new(use_context::<FeedbackContext>());
+    // StoredValue (Copy) so the per-token `children` closure can capture it
+    // without moving the String out of the root children closure (Fn bound).
+    let source_line = StoredValue::new(text.clone());
     let phase: RwSignal<TranslatorPhase> = RwSignal::new(TranslatorPhase::WaitingDictionary);
     let container_ref = NodeRef::<leptos::html::Span>::new();
     let i18n = use_i18n();
+    // i18n context at component scope — the report entry reads the LIVE
+    // locale when it fires (a mid-session language switch is reflected);
+    // StoredValue keeps the per-token children closure Fn-compatible.
+    let report_i18n = StoredValue::new(i18n);
 
     let text_for_spawn = text.clone();
     spawn_local(async move {
@@ -197,6 +208,43 @@ pub fn TranslatorText(
                             show_base,
                         ));
 
+                        // "Wrong translation?" entry point (ADR-055): opens
+                        // the feedback modal with this exact token + the
+                        // source line as the captured subject. Rendered only
+                        // when the FeedbackContext is mounted (app shell);
+                        // isolated component tests see no button. The subject
+                        // lives in a StoredValue so the per-token children
+                        // closure stays `Fn` (same pattern as popup_data).
+                        let report_data = StoredValue::new((
+                            surface.clone(),
+                            reading.clone(),
+                            source_line.get_value(),
+                        ));
+                        let report_i18n_data = report_i18n;
+                        let on_report = feedback_context.get_value().as_ref().map(|feedback| {
+                            let feedback = feedback.clone();
+                            Callback::new(move |()| {
+                                let (surface, reading, line) =
+                                    report_data.with_value(|(s, r, l)| {
+                                        (s.clone(), r.clone(), l.clone())
+                                    });
+                                let locale = report_i18n_data.get_value().get_locale().to_string();
+                                // Close the popup first: the modal renders
+                                // above it and the popup should not linger.
+                                expanded.set(None);
+                                feedback.open(
+                                    FeedbackCategory::Translation,
+                                    FeedbackSource::TranslatorPopup,
+                                    FeedbackSubject {
+                                        surface: surface.clone(),
+                                        reading: (!reading.is_empty()).then(|| reading.clone()),
+                                        context_line: (!line.is_empty()).then(|| line.clone()),
+                                    },
+                                    &locale,
+                                );
+                            })
+                        });
+
                         if clickable {
                             view! {
                                 <span class=move || {
@@ -237,6 +285,7 @@ pub fn TranslatorText(
                                                     grammar_label=Signal::derive(move || gl.clone())
                                                     grammar_description=Signal::derive(move || gd.clone())
                                                     translation_text=Signal::derive(move || tt.clone())
+                                                    on_report=on_report
                                                 />
                                             }.into_any()
                                         } else {
@@ -267,7 +316,9 @@ fn TokenPopup(
     #[prop(optional, into)] grammar_label: Signal<Option<String>>,
     #[prop(optional, into)] grammar_description: Signal<Option<String>>,
     #[prop(optional, into)] translation_text: Signal<Option<String>>,
+    on_report: Option<Callback<()>>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let popup_ref: NodeRef<leptos::html::Div> = NodeRef::new();
     let shift_x: RwSignal<f64> = RwSignal::new(0.0);
 
@@ -323,6 +374,24 @@ fn TokenPopup(
                             variant=Signal::derive(|| MarkdownVariant::Compact)
                             furigana=false
                         />
+                    }.into_any()
+                }).unwrap_or_else(|| ().into_any())
+            }}
+            {move || {
+                on_report.as_ref().map(|report| {
+                    let report = *report;
+                    view! {
+                        <div class="token-popup-report-sep" aria-hidden="true"></div>
+                        <button
+                            class="token-popup-report"
+                            data-testid="token-popup-report"
+                            on:click=move |ev: leptos::ev::MouseEvent| {
+                                ev.stop_propagation();
+                                report.run(());
+                            }
+                        >
+                            {t!(i18n, feedback.translator_report)}
+                        </button>
                     }.into_any()
                 }).unwrap_or_else(|| ().into_any())
             }}

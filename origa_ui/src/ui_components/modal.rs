@@ -8,6 +8,11 @@ pub fn Modal(
     #[prop(optional)] on_close: Option<Callback<leptos::ev::MouseEvent>>,
     #[prop(optional, into)] title: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
+    /// When `true`, close paths (backdrop click, X, Escape) are ignored.
+    /// Used by the feedback modal to protect an in-flight submission from
+    /// being discarded mid-send.
+    #[prop(optional, into, default = Signal::from(false))]
+    block_close: Signal<bool>,
     children: ChildrenFn,
 ) -> impl IntoView {
     let children = StoredValue::new(children);
@@ -38,6 +43,9 @@ pub fn Modal(
     };
 
     let close_modal_anim = move |ev: leptos::ev::MouseEvent| {
+        if block_close.get() {
+            return;
+        }
         is_closing.set(true);
         let is_open_clone = is_open;
         let on_close_inner = on_close_clone;
@@ -57,6 +65,9 @@ pub fn Modal(
         leptos::ev::keydown,
         move |ev: leptos::ev::KeyboardEvent| {
             if ev.key() == "Escape" {
+                if block_close.get() {
+                    return;
+                }
                 is_closing.set(true);
                 let is_open_clone = is_open;
                 let on_close_inner = on_close_clone;

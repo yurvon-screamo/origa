@@ -83,8 +83,10 @@ impl TrailBaseClient {
         }
 
         let token_response: AuthTokenResponse = Self::json(&response)?;
-        let claims = decode_jwt_claims(&token_response.auth_token)
-            .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
+        let claims = decode_jwt_claims(&token_response.auth_token).map_err(|e| {
+            tracing::error!(error = %e, "Failed to decode refreshed session JWT");
+            AuthError::ApiError(format!("Failed to decode JWT: {}", e))
+        })?;
 
         let now = current_timestamp();
         let expires_at = claims.expires_at(now.saturating_add(3600));
@@ -117,6 +119,10 @@ impl TrailBaseClient {
 
             let elapsed = current_timestamp().saturating_sub(start);
             if elapsed >= timeout_secs {
+                tracing::error!(
+                    waited_secs = elapsed,
+                    "Session refresh coordination timeout"
+                );
                 return Err(AuthError::ApiError(
                     "Refresh coordination timeout".to_string(),
                 ));
