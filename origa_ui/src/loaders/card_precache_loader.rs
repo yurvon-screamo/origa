@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn kanji_svg_resources_extracts_kanji_chars() {
-        let _guard = ART_MANIFEST_TEST_LOCK
+        let _guard = crate::loaders::kanji_art_manifest::STATE_TEST_LOCK
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         // No manifest installed: the raw per-kanji path behavior.
@@ -258,12 +258,9 @@ mod tests {
         assert!(resources.contains(&"kanji_frames/%E8%AA%9E.svg".to_string()));
     }
 
-    /// Serializes tests that touch the process-global art manifest.
-    static ART_MANIFEST_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
     #[test]
     fn kanji_svg_resources_drops_kanji_absent_from_the_art_manifest() {
-        let _guard = ART_MANIFEST_TEST_LOCK
+        let _guard = crate::loaders::kanji_art_manifest::STATE_TEST_LOCK
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         // Arrange: the manifest knows 日 but not 語 — 語 must produce no
@@ -292,7 +289,7 @@ mod tests {
 
     #[test]
     fn kanji_svg_resources_without_manifest_keeps_unfiltered_paths() {
-        let _guard = ART_MANIFEST_TEST_LOCK
+        let _guard = crate::loaders::kanji_art_manifest::STATE_TEST_LOCK
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         // Arrange: no manifest installed (offline first run / old CDN).

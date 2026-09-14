@@ -94,19 +94,27 @@ pub async fn ensure_kanji_art_manifest() -> Result<(), OrigaError> {
             )
             .is_ok();
     if took_over {
-        let result = load_kanji_art_manifest_via(crate::repository::cdn_provider()).await;
-        // `load_via` flips the state to READY on success; failures are
-        // marked here so waiting callers see UNAVAILABLE (the next
-        // caller retries).
-        if result.is_err() {
-            MANIFEST_STATE.store(MANIFEST_UNAVAILABLE, Ordering::Release);
-            tracing::warn!("Kanji art manifest unavailable, art filtering disabled: {result:?}");
-        }
-        return result;
+        // The load runs in a detached task, NOT on this caller's future:
+        // `ensure` is reached from cancellable contexts (Leptos
+        // LocalResource drops its future on owner dispose), and an
+        // abandoned in-flight load would strand the state in LOADING
+        // forever — hanging every later waiter, the card pre-cache
+        // included. The spawned finisher always reaches a terminal state
+        // (the underlying fetch is timeout-bounded); a dropped caller
+        // merely stops waiting.
+        leptos::task::spawn_local(async move {
+            let result = load_kanji_art_manifest_via(crate::repository::cdn_provider()).await;
+            if result.is_err() {
+                MANIFEST_STATE.store(MANIFEST_UNAVAILABLE, Ordering::Release);
+                tracing::warn!(
+                    "Kanji art manifest unavailable, art filtering disabled: {result:?}"
+                );
+            }
+        });
     }
 
-    // Another task is loading: wait for it to conclude (its failure
-    // surfaces here; the next caller retries).
+    // Wait for the terminal state (LOADING = the finisher above is still
+    // running; its failure surfaces here, the next caller retries).
     loop {
         crate::utils::yield_to_browser().await;
         match MANIFEST_STATE.load(Ordering::Acquire) {
@@ -152,6 +160,62 @@ pub fn kanji_art_exists(bundle_type: KanjiBundleType, kanji: char) -> Option<boo
         .and_then(|guard| guard.as_ref().map(|m| m.contains(bundle_type, kanji)))
 }
 
+/// Fetches one kanji art SVG through the availability gates (#540) —
+/// the shared runtime path for `KanjiAnimation` and
+/// `KanjiDrawingPractice`:
+///
+/// 1. the in-memory JLPT bundle store (all levels — the caller does not
+///    know the level);
+/// 2. the art manifest gates (ensure → known-miss → manifest-miss):
+///    a kanji the CDN has no art for produces no request;
+/// 3. the CDN fetch (cache-first); a reachable-network failure is
+///    recorded as a session miss, an offline failure stays retryable.
+///
+/// `kanji` is expected to be a single kanji (all current callers);
+/// multi-char strings bypass gates 2-3 cache-wise and fetch as-is.
+pub async fn fetch_kanji_art_svg(
+    bundle_type: KanjiBundleType,
+    kanji: &str,
+    path: &str,
+) -> Option<String> {
+    // 1. In-memory JLPT bundles (no CDN request at all).
+    for level in ["n5", "n4", "n3", "n2", "n1"] {
+        if let Some(svg) = crate::loaders::kanji_bundle_store::get_svg(bundle_type, level, kanji) {
+            return Some(svg);
+        }
+    }
+
+    let single_kanji = kanji.chars().next().filter(|_| kanji.chars().count() == 1);
+
+    // 2. Manifest gates. An unavailable manifest (offline / old CDN)
+    // keeps the pre-manifest unfiltered behavior.
+    if ensure_kanji_art_manifest().await.is_ok()
+        && let Some(kanji_char) = single_kanji
+    {
+        if is_known_kanji_art_miss(bundle_type, kanji_char) {
+            return None;
+        }
+        if kanji_art_exists(bundle_type, kanji_char) == Some(false) {
+            record_kanji_art_miss(bundle_type, kanji_char);
+            return None;
+        }
+    }
+
+    // 3. CDN fetch (cache-first); record the miss only when the network
+    // was reachable — an offline failure must stay retryable.
+    match crate::repository::cdn_provider().fetch_text(path).await {
+        Ok(text) => Some(text),
+        Err(e) => {
+            if !crate::repository::cdn_provider::CdnUnreachableError::is_match(&e)
+                && let Some(kanji_char) = single_kanji
+            {
+                record_kanji_art_miss(bundle_type, kanji_char);
+            }
+            None
+        },
+    }
+}
+
 /// Records a runtime-confirmed miss so repeated mounts of the same kanji
 /// skip the doomed fetch for the rest of the session.
 pub fn record_kanji_art_miss(bundle_type: KanjiBundleType, kanji: char) {
@@ -190,17 +254,18 @@ pub(crate) fn install_manifest_for_test(manifest: KanjiArtManifest) {
     MANIFEST_STATE.store(MANIFEST_READY, Ordering::Release);
 }
 
+/// Serializes tests that mutate the process-global manifest state —
+/// shared with the `card_precache_loader` tests over the same store
+/// (parallel install/reset across modules is a race otherwise).
+#[cfg(test)]
+pub(crate) static STATE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[cfg(test)]
 mod tests {
     use std::cell::RefCell;
     use std::future::Future;
-    use std::sync::Mutex;
 
     use super::*;
-
-    /// Serializes tests that mutate the process-global manifest state —
-    /// parallel install/reset of the same store is a race otherwise.
-    static STATE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
     /// Recording mock over the external CDN boundary (same pattern as
     /// grammar_precompute_loader tests).

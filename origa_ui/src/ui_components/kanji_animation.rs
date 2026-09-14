@@ -1,9 +1,7 @@
 use crate::i18n::{t, use_i18n};
-use crate::loaders::kanji_bundle_store::{self, KanjiBundleType};
-use crate::repository::cdn_provider;
+use crate::loaders::kanji_bundle_store::KanjiBundleType;
 use leptos::prelude::*;
 use leptos::task::spawn_local_scoped_with_cancellation;
-use origa::traits::CdnProvider;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
@@ -78,71 +76,14 @@ pub fn KanjiAnimation(
         let mode_val = mode;
 
         async move {
-            // 1. Try in-memory JLPT bundle store first (no CDN request)
             let bundle_type = match mode_val {
                 KanjiViewMode::Animation => KanjiBundleType::Animations,
                 KanjiViewMode::Frames => KanjiBundleType::Frames,
             };
-
-            // We don't know the JLPT level here, so try each level.
-            // The store is populated by card_precache_loader before cards render.
-            for level in &["n5", "n4", "n3", "n2", "n1"] {
-                if let Some(svg) = kanji_bundle_store::get_svg(bundle_type, level, &kanji_str) {
-                    return Some(svg);
-                }
-            }
-
-            // 2. Skip kanji the CDN has no art for: the manifest answers
-            // authoritatively (#540), and a runtime-confirmed miss is
-            // remembered for the session so repeated mounts of the same
-            // kanji do not re-fetch a doomed 404. The first component to
-            // reach this point pulls the manifest (single-flight, ~50 KB)
-            // — the pre-cache awaits it up front, this covers sessions
-            // where the pre-cache had nothing to do.
-            if crate::loaders::kanji_art_manifest::ensure_kanji_art_manifest()
+            // Bundles → manifest gates → CDN fallback (#540), all in the
+            // shared art-fetch helper.
+            crate::loaders::kanji_art_manifest::fetch_kanji_art_svg(bundle_type, &kanji_str, &path)
                 .await
-                .is_err()
-            {
-                // Manifest unavailable (offline / old CDN): keep the
-                // pre-manifest unfiltered behavior.
-                let cdn = cdn_provider();
-                return cdn.fetch_text(&path).await.ok();
-            }
-            let kanji_char = kanji_str.chars().next();
-            if let Some(kanji_char) = kanji_char
-                && crate::loaders::kanji_art_manifest::is_known_kanji_art_miss(
-                    bundle_type,
-                    kanji_char,
-                )
-            {
-                return None;
-            }
-            if let Some(kanji_char) = kanji_char
-                && crate::loaders::kanji_art_manifest::kanji_art_exists(bundle_type, kanji_char)
-                    == Some(false)
-            {
-                crate::loaders::kanji_art_manifest::record_kanji_art_miss(bundle_type, kanji_char);
-                return None;
-            }
-
-            // 3. Fallback: CDN fetch (backward compat, cache-first). A
-            // miss is recorded for the session ONLY when the network was
-            // reachable — an offline failure must stay retryable.
-            let cdn = cdn_provider();
-            match cdn.fetch_text(&path).await {
-                Ok(text) => Some(text),
-                Err(e) => {
-                    if !crate::repository::cdn_provider::CdnUnreachableError::is_match(&e)
-                        && let Some(kanji_char) = kanji_char
-                    {
-                        crate::loaders::kanji_art_manifest::record_kanji_art_miss(
-                            bundle_type,
-                            kanji_char,
-                        );
-                    }
-                    None
-                },
-            }
         }
     });
 
