@@ -4,13 +4,12 @@ mod stroke_comparison;
 mod svg_parser;
 
 use crate::i18n::{t, use_i18n};
-use crate::repository::cdn_provider;
+use crate::loaders::kanji_bundle_store::KanjiBundleType;
 use canvas_renderer::redraw_canvas;
 use leptos::ev::PointerEvent;
 use leptos::html::Canvas;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
-use origa::traits::CdnProvider;
 use std::sync::{Arc, Mutex};
 use svg_parser::parse_stroke_paths;
 use web_sys::CanvasRenderingContext2d;
@@ -51,9 +50,17 @@ pub fn KanjiDrawingPractice(
     let svg_content = LocalResource::new(move || {
         let encoded = urlencoding::encode(&kanji);
         let path = format!("kanji_animations/{}.svg", encoded);
+        let kanji_str = kanji.clone();
         async move {
-            let cdn = cdn_provider();
-            cdn.fetch_text(&path).await.ok()
+            // Shared art path (#540): JLPT bundles → availability gates →
+            // CDN fallback — a kanji without CDN art produces no doomed
+            // request instead of a per-mount 404.
+            crate::loaders::kanji_art_manifest::fetch_kanji_art_svg(
+                KanjiBundleType::Animations,
+                &kanji_str,
+                &path,
+            )
+            .await
         }
     });
 
