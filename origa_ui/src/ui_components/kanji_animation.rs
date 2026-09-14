@@ -92,9 +92,57 @@ pub fn KanjiAnimation(
                 }
             }
 
-            // 2. Fallback: CDN fetch (backward compat, cache-first)
+            // 2. Skip kanji the CDN has no art for: the manifest answers
+            // authoritatively (#540), and a runtime-confirmed miss is
+            // remembered for the session so repeated mounts of the same
+            // kanji do not re-fetch a doomed 404. The first component to
+            // reach this point pulls the manifest (single-flight, ~50 KB)
+            // — the pre-cache awaits it up front, this covers sessions
+            // where the pre-cache had nothing to do.
+            if crate::loaders::kanji_art_manifest::ensure_kanji_art_manifest()
+                .await
+                .is_err()
+            {
+                // Manifest unavailable (offline / old CDN): keep the
+                // pre-manifest unfiltered behavior.
+                let cdn = cdn_provider();
+                return cdn.fetch_text(&path).await.ok();
+            }
+            let kanji_char = kanji_str.chars().next();
+            if let Some(kanji_char) = kanji_char
+                && crate::loaders::kanji_art_manifest::is_known_kanji_art_miss(
+                    bundle_type,
+                    kanji_char,
+                )
+            {
+                return None;
+            }
+            if let Some(kanji_char) = kanji_char
+                && crate::loaders::kanji_art_manifest::kanji_art_exists(bundle_type, kanji_char)
+                    == Some(false)
+            {
+                crate::loaders::kanji_art_manifest::record_kanji_art_miss(bundle_type, kanji_char);
+                return None;
+            }
+
+            // 3. Fallback: CDN fetch (backward compat, cache-first). A
+            // miss is recorded for the session ONLY when the network was
+            // reachable — an offline failure must stay retryable.
             let cdn = cdn_provider();
-            cdn.fetch_text(&path).await.ok()
+            match cdn.fetch_text(&path).await {
+                Ok(text) => Some(text),
+                Err(e) => {
+                    if !crate::repository::cdn_provider::CdnUnreachableError::is_match(&e)
+                        && let Some(kanji_char) = kanji_char
+                    {
+                        crate::loaders::kanji_art_manifest::record_kanji_art_miss(
+                            bundle_type,
+                            kanji_char,
+                        );
+                    }
+                    None
+                },
+            }
         }
     });
 

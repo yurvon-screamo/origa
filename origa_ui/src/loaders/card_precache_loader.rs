@@ -3,6 +3,7 @@ use origa::domain::{Card, JapaneseChar, OrigaError, StudyCard};
 
 use leptos::prelude::{GetUntracked, Set};
 
+use crate::loaders::kanji_art_manifest::{ensure_kanji_art_manifest, kanji_art_exists};
 use crate::loaders::kanji_bundle_store::{KanjiBundleType, is_level_loaded, load_bundle};
 use crate::loaders::precache_loader::{DownloadResult, PreCacheProgress, batch_download};
 use crate::ui_components::get_reading_from_text;
@@ -34,7 +35,10 @@ fn kanji_svg_resources(kanji_text: &str, jlpt: Option<&str>) -> Vec<String> {
         }
     }
 
-    // Fallback: individual CDN paths
+    // Fallback: individual CDN paths, filtered by the art manifest
+    // (#540) — a kanji the CDN has no art for must produce no request at
+    // all instead of a doomed 404. `None` (manifest not loaded/offline)
+    // keeps the pre-manifest unfiltered behavior.
     kanji_text
         .chars()
         .filter(|c| c.is_kanji())
@@ -42,9 +46,19 @@ fn kanji_svg_resources(kanji_text: &str, jlpt: Option<&str>) -> Vec<String> {
             let kanji_str = c.to_string();
             let encoded = urlencoding::encode(&kanji_str);
             [
-                format!("kanji_animations/{encoded}.svg"),
-                format!("kanji_frames/{encoded}.svg"),
+                (
+                    format!("kanji_animations/{encoded}.svg"),
+                    kanji_art_exists(KanjiBundleType::Animations, c),
+                ),
+                (
+                    format!("kanji_frames/{encoded}.svg"),
+                    kanji_art_exists(KanjiBundleType::Frames, c),
+                ),
             ]
+        })
+        .filter_map(|(path, exists)| match exists {
+            Some(false) => None,
+            _ => Some(path),
         })
         .collect()
 }
@@ -138,6 +152,14 @@ pub async fn precache_all_cards(
     cards: &[StudyCard],
     on_progress: impl Fn(PreCacheProgress) + Clone + 'static,
 ) -> Result<DownloadResult, OrigaError> {
+    // The art manifest gates every kanji SVG path below (#540): await it
+    // BEFORE building the resource lists, so kanji without CDN art
+    // produce no doomed 404 requests. A failed fetch only disables the
+    // filtering (pre-manifest behavior).
+    if let Err(e) = ensure_kanji_art_manifest().await {
+        tracing::warn!("Pre-cache proceeds without the kanji art manifest: {e:?}");
+    }
+
     // Lazy-load kanji JLPT bundles for levels present in kanji cards.
     // This populates the in-memory kanji_bundle_store so that
     // kanji_svg_resources returns empty (no CDN per-file fetch needed).
@@ -222,6 +244,11 @@ mod tests {
 
     #[test]
     fn kanji_svg_resources_extracts_kanji_chars() {
+        let _guard = ART_MANIFEST_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // No manifest installed: the raw per-kanji path behavior.
+        crate::loaders::kanji_art_manifest::reset_kanji_art_state();
         let resources = kanji_svg_resources("日本語", None);
         assert!(resources.contains(&"kanji_animations/%E6%97%A5.svg".to_string()));
         assert!(resources.contains(&"kanji_frames/%E6%97%A5.svg".to_string()));
@@ -229,6 +256,54 @@ mod tests {
         assert!(resources.contains(&"kanji_frames/%E6%9C%AC.svg".to_string()));
         assert!(resources.contains(&"kanji_animations/%E8%AA%9E.svg".to_string()));
         assert!(resources.contains(&"kanji_frames/%E8%AA%9E.svg".to_string()));
+    }
+
+    /// Serializes tests that touch the process-global art manifest.
+    static ART_MANIFEST_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn kanji_svg_resources_drops_kanji_absent_from_the_art_manifest() {
+        let _guard = ART_MANIFEST_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange: the manifest knows 日 but not 語 — 語 must produce no
+        // doomed request paths (#540).
+        crate::loaders::kanji_art_manifest::install_manifest_for_test(
+            crate::loaders::kanji_art_manifest::KanjiArtManifest {
+                frames: ['日'].into_iter().collect(),
+                animations: ['日'].into_iter().collect(),
+            },
+        );
+
+        // Act
+        let resources = kanji_svg_resources("日本語", None);
+
+        // Assert
+        assert!(
+            resources.contains(&"kanji_frames/%E6%97%A5.svg".to_string()),
+            "listed kanji keeps its paths"
+        );
+        assert!(
+            !resources.iter().any(|r| r.contains("%E8%AA%9E")),
+            "unlisted kanji produces no paths"
+        );
+        crate::loaders::kanji_art_manifest::reset_kanji_art_state();
+    }
+
+    #[test]
+    fn kanji_svg_resources_without_manifest_keeps_unfiltered_paths() {
+        let _guard = ART_MANIFEST_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        // Arrange: no manifest installed (offline first run / old CDN).
+        crate::loaders::kanji_art_manifest::reset_kanji_art_state();
+
+        // Act
+        let resources = kanji_svg_resources("日本語", None);
+
+        // Assert: pre-manifest behavior — every kanji yields both paths.
+        assert_eq!(resources.len(), 6);
+        crate::loaders::kanji_art_manifest::reset_kanji_art_state();
     }
 
     #[test]
