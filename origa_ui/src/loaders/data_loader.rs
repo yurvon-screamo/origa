@@ -260,10 +260,14 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
 
     // Best-effort precompute install (#521): grammar markdown nodes and
     // whole strings were keyed offline. A missing/stale blob only means
-    // the live tokenizer path keeps serving grammar renders.
-    if let Err(e) = crate::loaders::grammar_precompute_loader::load_grammar_precompute().await {
-        tracing::warn!("📖 Grammar precompute unavailable ({e:?}), live path serves renders");
-    }
+    // the live tokenizer path keeps serving grammar renders. Spawned
+    // (NOT awaited): the 4.2 MB blob must never hold the grammar
+    // readiness flag — and with it the startup overlay — hostage.
+    leptos::task::spawn_local(async move {
+        if let Err(e) = crate::loaders::grammar_precompute_loader::load_grammar_precompute().await {
+            tracing::warn!("📖 Grammar precompute unavailable ({e:?}), live path serves renders");
+        }
+    });
 
     tracing::info!("📖 Grammar loaded ({:.2}s)", (now_ms() - start) / 1000.0);
     Ok(())
