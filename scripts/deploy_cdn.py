@@ -23,6 +23,10 @@ import _cdn_s3
 import _cdn_verify
 
 VERSIONED_FILES: list[str] = [
+    # Kanji art availability manifest (#540): regenerated with the art
+    # directories on every deploy; root path (not inside kanji_frames/)
+    # so the immutable directory rule never applies to it.
+    "kanji_art_manifest.json",
     "dictionary/chunk_01.json",
     "dictionary/chunk_02.json",
     "dictionary/chunk_03.json",
@@ -532,6 +536,30 @@ def _force_all_deploy(dry_run: bool) -> None:
     print("\nForce-all deploy complete!", flush=True)
 
 
+def generate_kanji_art_manifest(cdn_dir: Path) -> None:
+    """Write kanji_art_manifest.json (#540): the kanji that actually have
+    per-file SVG art on the CDN, per kind. Clients filter their download
+    lists (card pre-cache) and runtime fallbacks against it instead of
+    discovering missing files through 404 storms.
+
+    Sorted lists keep the file byte-deterministic; the file is deployed
+    from the repo root (NOT inside kanji_frames/) so the directory-wide
+    immutable cache rule never applies to it (release-updated default).
+    """
+    manifest: dict[str, list[str]] = {}
+    for key, folder in (("frames", "kanji_frames"), ("animations", "kanji_animations")):
+        dir_path = cdn_dir / folder
+        kanji = sorted(
+            p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1
+        )
+        manifest[key] = kanji
+        print(f"  kanji_art_manifest {key}: {len(kanji)} kanji")
+    out_path = cdn_dir / "kanji_art_manifest.json"
+    out_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Deploy CDN to S3")
     parser.add_argument(
@@ -634,6 +662,10 @@ def main() -> None:
                 print(f"  {line}")
         else:
             print(f"  {script} not found, skipping")
+
+    # Kanji art manifest (#540): list which kanji have per-file SVG art so
+    # clients stop probing missing files with 404s.
+    generate_kanji_art_manifest(cdn_dir)
 
     # Step 0.5: Regenerate pre-parsed rkyv blobs and verify freshness
     # (BEFORE manifest: blob hashes must be computed from current bytes)

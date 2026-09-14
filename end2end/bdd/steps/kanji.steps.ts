@@ -2,6 +2,73 @@ import { expect } from "@playwright/test";
 import { Given, When, Then } from "../fixtures";
 import { KanjiPage } from "../../pages";
 
+/**
+ * Network log across the app-reload When-step of the art-manifest
+ * scenario (#540): the Then-step asserts kanji WITHOUT CDN art are never
+ * requested once the manifest is in the e2e mirror.
+ */
+let reloadRequestLog: string[] = [];
+
+/** N5-set kanji that have no kanji_frames/kanji_animations art on the
+ * CDN (verified against the deployed kanji_art_manifest.json). */
+const ARTLESS_N5_KANJI_URL_ENCODED = [
+    "%E5%85%B6", // 其
+    "%E6%AD%A4", // 此
+    "%E7%A2%97", // 碗
+    "%E8%B3%91", // 賑
+    "%E8%BF%9A", // 迚
+    "%E9%86%A4", // 醤
+    "%E9%9E%84", // 鞄
+    "%E9%A3%B4", // 飴
+    "%E9%B9%B8", // 鹸
+];
+
+When("пользователь перезагружает приложение с записью сетевых запросов", async ({ page }) => {
+    reloadRequestLog = [];
+    page.on("request", (request) => reloadRequestLog.push(request.url()));
+    await page.reload({ waitUntil: "domcontentloaded" });
+    // The startup pipeline (incl. the card pre-cache trigger in Phase E)
+    // runs while/after the overlay; wait it out before asserting.
+    await page
+        .locator(".loading-overlay")
+        .waitFor({ state: "hidden", timeout: 120_000 });
+});
+
+When("дождавшись запросов кандзи-арта", async ({ page }) => {
+    // Positive control: the pre-cache must reach the kanji art stage —
+    // at least one covered kanji produces a request. Without this the
+    // negative assertion below could pass vacuously.
+    const deadline = Date.now() + 90_000;
+    while (Date.now() < deadline) {
+        const hasArtRequest = reloadRequestLog.some(
+            (url) => url.includes("kanji_frames/") || url.includes("kanji_animations/"),
+        );
+        if (hasArtRequest) {
+            // Give the pre-cache a moment to finish its batch so a late
+            // artless request is not missed by the assert below.
+            await page.waitForTimeout(2_000);
+            return;
+        }
+        await page.waitForTimeout(500);
+    }
+    throw new Error(
+        "Positive control failed: no kanji art requests observed — the pre-cache never reached the art stage",
+    );
+});
+
+Then("кандзи без арта на CDN не запрашиваются", async () => {
+    const offenders = reloadRequestLog.filter((url) =>
+        ARTLESS_N5_KANJI_URL_ENCODED.some(
+            (encoded) =>
+                url.includes(`kanji_frames/${encoded}`) || url.includes(`kanji_animations/${encoded}`),
+        ),
+    );
+    expect(
+        offenders,
+        `kanji without CDN art must not be requested (#540 manifest filter), got: ${offenders.join(", ")}`,
+    ).toEqual([]);
+});
+
 Given('у пользователя есть добавленное кандзи', async ({ page }) => {
     const kanjiPage = new KanjiPage(page);
     await kanjiPage.goto();
