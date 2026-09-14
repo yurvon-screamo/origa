@@ -82,7 +82,7 @@ That last row matters if you're considering a switch: you don't have to throw aw
 ### Known limitations
 
 - **Origa is not as customizable as Anki.** If you live in custom HTML/CSS card templates, Origa won't replace that. It optimizes for low-friction defaults over maximal control.
-- **It's newer.** Anki has a decade-plus of edge-case hardening and a huge deck ecosystem. Origa's library of pre-built content is growing but smaller.
+- **It's newer.** Anki has a decade-plus of edge-case hardening and a large deck ecosystem. Origa's library of pre-built content is growing but smaller.
 - **AnkiMobile on iOS has no Origa equivalent yet.** Origa runs on Windows, Linux, macOS, Android, and the web; iOS is on the roadmap but not shipping today. If your entire study flow is on an iPhone, that's a real blocker.
 - **The desktop/mobile feature parity is good but not absolute.** Check the current build for your platform before committing.
 
