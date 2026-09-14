@@ -68,7 +68,7 @@ pub fn PhraseCardItem(
     let known_kanji_for_markdown = known_kanji;
 
     view! {
-        <div class="phrase-card anima-lift" data-testid="phrases-card-item">
+        <div class="phrase-card" data-testid="phrases-card-item">
             <div class="phrase-card-body">
                 <div class="phrase-card-header">
                     <div class="phrase-card-phrase" data-testid="phrases-card-phrase">

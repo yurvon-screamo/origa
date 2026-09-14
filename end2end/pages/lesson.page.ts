@@ -13,7 +13,7 @@ export class LessonPage extends BasePage {
     readonly backButton: Locator;
     readonly muteButton: Locator;
 
-    // Feedback (ADR-053): alert-triangle report entry in the lesson header.
+    // Feedback (ADR-055): alert-triangle report entry in the lesson header.
     // Enabled only while the card answer is shown.
     readonly reportButton: Locator;
 

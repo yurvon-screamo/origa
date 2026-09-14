@@ -1973,6 +1973,15 @@ rt {
     outline: none;
 }
 
+/* While a token's popup is open, the token creates a high stacking layer so
+   the popup (its child) floats ABOVE the neighbouring phrase cards — the
+   grid cards are positioned siblings painted in DOM order, and without this
+   the card below intercepts pointer events over the popup's lower half
+   (incl. the report button). */
+.token-word-active {
+    z-index: 300;
+}
+
 .token-word:active {
     background: var(--accent-olive);
     color: var(--bg-paper);
@@ -2401,7 +2410,7 @@ rt {
     padding: 0 1.5rem;
 }
 
-/* Load-error screen content (ADR-055): same centered-column geometry as
+/* Load-error screen content (ADR-053): same centered-column geometry as
    the consent card — kept as its own class so the two screens can evolve
    independently. */
 .load-error-content {
@@ -5793,7 +5802,20 @@ rt {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
     position: relative;
-    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+    /* Hover lift via `top`, NOT transform: transform would create a
+       stacking context on hover and hoist this card above the translator
+       popup of the previous card (its z-index is scoped inside that card's
+       context) — the popup buttons became unclickable whenever the pointer
+       path crossed this card. */
+    transition: top var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.phrase-card:hover {
+    top: -2px;
+}
+
+.phrase-card:active {
+    top: 0;
 }
 
 .phrase-card::after {
@@ -5806,10 +5828,6 @@ rt {
     border: 1px solid var(--border-dark);
     z-index: -1;
     background: var(--bg-aged);
-}
-
-.phrase-card:hover {
-    transform: translateY(-2px);
 }
 
 .phrase-card-body {

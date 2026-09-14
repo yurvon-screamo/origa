@@ -625,7 +625,6 @@
   },
   "feedback": {
     "title": "Report a problem",
-    "subject": "Subject",
     "message_label": "What is wrong?",
     "message_placeholder": "DESCRIBE THE PROBLEM",
     "auto_context": "Attached automatically",

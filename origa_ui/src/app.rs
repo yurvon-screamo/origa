@@ -31,7 +31,7 @@ pub fn App() -> impl IntoView {
     provide_context(auth_store.clone());
     provide_context(connectivity);
     provide_context(offline_bundle_store);
-    // Feedback channel (ADR-053): modal state + Sentry transport.
+    // Feedback channel (ADR-055): modal state + Sentry transport.
     provide_context(FeedbackContext::new());
 
     let i18n = use_i18n();

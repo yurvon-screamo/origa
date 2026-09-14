@@ -62,3 +62,36 @@ Then("кнопка отправки формы обратной связи не�
     await expect(feedbackPage.submitButton).toBeVisible();
     await expect(feedbackPage.submitButton).toBeDisabled();
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// Translator token popup entry (A1, ADR-055)
+// ═══════════════════════════════════════════════════════════════════════
+
+When("открывает попап перевода первого токена фразы", async ({ page }) => {
+    // Vocabulary/grammar tokens render as clickable .token-word spans on
+    // phrase cards (TranslatorText); the popup mounts right below the token.
+    const token = page.locator(".token-word .token-surface").first();
+    await token.waitFor({ state: "visible", timeout: 30_000 });
+    await token.click();
+    await page
+        .getByTestId("token-popup-report")
+        .waitFor({ state: "visible", timeout: 10_000 });
+});
+
+When("нажимает кнопку неверного перевода в попапе", async ({ page }) => {
+    // Deterministic after the phrase-card stacking fix (hover lift via
+    // `top`, not transform): the popup stays on top of neighbouring cards.
+    await page.getByTestId("token-popup-report").click();
+});
+
+Then("открылась форма обратной связи с предметом токена", async ({ page }) => {
+    const feedbackPage = new FeedbackPage(page);
+    await feedbackPage.expectOpen();
+    const subjectText = (await feedbackPage.subject.textContent()) ?? "";
+    expect(
+        subjectText,
+        `subject must contain a CJK token, got: ${subjectText}`,
+    ).toMatch(/[぀-ヿ㐀-䶿一-鿿]/u);
+    // The popup must be closed by the report action (modal renders above it).
+    await expect(page.getByTestId("token-popup-report")).not.toBeVisible();
+});
