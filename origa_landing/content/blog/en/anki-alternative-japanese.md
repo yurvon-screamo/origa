@@ -16,7 +16,7 @@ status: ready
 
 Anki is the default answer to "how do I memorize Japanese vocabulary." It earned that reputation. It's also a tool that asks a lot of you: build the deck, design the card template, find audio, configure the scheduler, sync across devices. Some learners love that freedom. Others spend more time managing Anki than studying Japanese.
 
-This is a field guide, not a hit piece. It covers where Anki genuinely wins for Japanese, where it gets in the way, what "an alternative" should actually offer, and how a few of the current options compare, including Origa, the app I work on.
+This is a field guide, not a hit piece. It covers where Anki wins for Japanese, where it gets in the way, what "an alternative" should actually offer, and how a few of the current options compare, including Origa, the app I work on.
 
 ## Where Anki wins
 
@@ -24,7 +24,7 @@ If any of these describe you, Anki is probably the right tool, and you should st
 
 - **You want a scheduler you fully control.** Anki added [FSRS support in version 23.10](https://docs.ankiweb.net/deck-options.html#fsrs) (October 2023) as an experimental option, and enabled it by default for new collections starting with version 24.10. It's the same spaced-repetition algorithm the research community converged on. You can tune retention targets, custom steps, and review limits to the day.
 - **You study more than Japanese.** Anki is domain-agnostic. Medicine, law, music theory, a third language. One app, one review queue.
-- **You build your own card types.** Anki's templating (HTML/CSS with fields) is unmatched. If you enjoy engineering your cards as much as studying them, nothing else comes close.
+- **You build your own card types.** Anki's templating (HTML/CSS with fields) goes deeper than any of the tools below. If you enjoy engineering your cards as much as studying them, nothing else in this comparison matches it.
 - **You want it free and self-hosted.** Anki desktop is free and open source. AnkiDroid is free. AnkiWeb sync is free. The only paid piece is AnkiMobile on iOS, which funds development of the rest.
 
 That last point matters. "Free and open" isn't a marketing line for Anki. It's the structural reason the ecosystem has thousands of shared decks and a decade of community maintenance.
@@ -47,7 +47,7 @@ None of this is a flaw in Anki. Anki does exactly what it set out to do. It's a 
 
 ## What a good alternative should offer
 
-If you're shopping for "an Anki alternative for Japanese," the question isn't "is there something easier." Lots of things are easier and worse. The useful question is: **does it remove a specific piece of friction without giving up the parts of Anki that matter?**
+If you're shopping for "an Anki alternative for Japanese," ease alone tells you nothing. Lots of things are easier and worse. The useful question is: **does it remove a specific piece of friction without giving up the parts of Anki that matter?**
 
 A checklist that's actually useful:
 
@@ -58,7 +58,7 @@ A checklist that's actually useful:
 - **OCR or text extraction.** Being able to add words from a photo of a manga page or a textbook screenshot is the difference between studying your content and studying someone else's word list. (See [how Origa handles OCR and text extraction](/docs/capture).)
 - **A grammar path that uses your vocabulary.** Otherwise grammar is a second app again.
 
-If an "alternative" fails the first item (scheduler quality), it's not an alternative. It's a downgrade wearing a friendlier interface.
+If an "alternative" fails the first item (scheduler quality), it's a downgrade wearing a friendlier interface.
 
 ## How Origa handles this
 

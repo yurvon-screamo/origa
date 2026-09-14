@@ -33,7 +33,7 @@ In Anki you pick from four buttons after each answer: "again", "hard", "good", "
 
 ## Why there is a daily limit on new cards
 
-A large batch of new cards today is not just those cards. It is many more reviews over the next two weeks, which FSRS will schedule out of those new cards. The new-card limit keeps the daily review volume within the range you actually do, rather than accumulate debt. An overloaded deck comes back as an avalanche: cards shown "on credit" return more often, and the volume grows faster than you can keep up. Hence the paces: you can change them, but each next pace has its own price in minutes per day.
+A large batch of new cards today turns into many more reviews over the next two weeks, which FSRS will schedule out of those new cards. The new-card limit keeps the daily review volume within the range you actually do, rather than accumulate debt. An overloaded deck comes back as an avalanche: cards shown "on credit" return more often, and the volume grows faster than you can keep up. Hence the paces: you can change them, but each next pace has its own price in minutes per day.
 
 ## Paces and lesson size
 
