@@ -6438,35 +6438,6 @@ rt {
     margin-left: 2px;
 }
 
-/* Auto-context disclosure: quiet toggle + stamp line of attached data. */
-.feedback-auto-toggle {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-light);
-    background: none;
-    border: none;
-    padding: 4px 0;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    align-self: flex-start;
-}
-
-.feedback-auto-toggle:hover {
-    color: var(--fg-black);
-}
-
-.feedback-auto-line {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    color: var(--fg-light);
-    background: var(--bg-aged);
-    padding: 6px 10px;
-}
-
 .feedback-offline-hint,
 .feedback-info {
     font-family: var(--font-mono);
@@ -6484,12 +6455,6 @@ rt {
     border-left: 4px solid var(--error);
     padding: 8px 12px;
     background: var(--bg-warm);
-}
-
-.feedback-privacy {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    color: var(--fg-light);
 }
 
 .feedback-actions {

@@ -627,8 +627,6 @@
     "title": "문제 신고",
     "message_label": "무엇이 잘못 되었나요?",
     "message_placeholder": "문제를 설명하세요",
-    "auto_context": "자동으로 첨부됨",
-    "privacy_note": "익명으로 전송됩니다 - 이름이나 이메일 없음",
     "submit": "보내기",
     "cancel": "취소",
     "sent": "전송됨",

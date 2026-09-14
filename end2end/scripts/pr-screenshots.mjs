@@ -234,8 +234,6 @@ await page.screenshot({ path: join(OUT, "02-feedback-modal-subject.png") });
 
 // Fill + auto-context disclosure open.
 await page.getByTestId("feedback-message-input").fill("Чтение не соответствует карточке");
-await page.getByTestId("feedback-auto-toggle").click();
-await page.waitForTimeout(300);
 await page.screenshot({ path: join(OUT, "03-feedback-modal-filled.png") });
 
 // 3) Token popup with the "wrong translation?" line: the phrases page

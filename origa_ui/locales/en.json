@@ -627,8 +627,6 @@
     "title": "Report a problem",
     "message_label": "What is wrong?",
     "message_placeholder": "DESCRIBE THE PROBLEM",
-    "auto_context": "Attached automatically",
-    "privacy_note": "Sent anonymously - no name or email",
     "submit": "Send",
     "cancel": "Cancel",
     "sent": "Sent",
