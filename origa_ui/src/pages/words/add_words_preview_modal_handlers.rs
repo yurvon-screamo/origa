@@ -2,6 +2,7 @@ use super::add_words_preview_modal_state::PreviewModalState;
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use tracing::error;
 
 pub struct PreviewModalHandlers {
     pub on_analyze: Callback<()>,
@@ -57,6 +58,7 @@ pub fn create_preview_modal_handlers(
                         state_for_async.refresh_trigger.update(|v| *v += 1);
                     },
                     Err(e) => {
+                        error!(error = %e, "OCR preview word creation failed");
                         if disposed.is_disposed() {
                             return;
                         }

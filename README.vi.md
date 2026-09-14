@@ -6,7 +6,7 @@
 
 **Học tiếng Nhật không qua trung gian tiếng Anh.**
 
-オリガ là ứng dụng học tiếng Nhật toàn diện và ôn luyện chuyên sâu cho kỳ thi JLPT.
+オリガ là ứng dụng học tiếng Nhật và ôn luyện cho kỳ thi JLPT.
 
 Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng văn bản và giọng nói — toàn bộ xử lý AI chạy cục bộ trên thiết bị của bạn. Chỉ cần kết nối internet cho lần đăng nhập đầu tiên và tải nội dung ban đầu.
 

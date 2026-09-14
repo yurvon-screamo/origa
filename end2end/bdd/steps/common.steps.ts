@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { Given, When, Then } from "../fixtures";
 import { OnboardingPage } from "../../pages";
 import { skipOnboarding } from "../../helpers/navigation";
+import { expectUmamiTrackerAbsent } from "../../helpers/analytics";
 
 Given('новый пользователь', async ({ page }) => {
     await page.waitForURL(/\/(home|onboarding)/, { timeout: 30_000 });
@@ -15,6 +16,12 @@ Then('отображается страница онбординга', async ({ 
     const onboardingPage = new OnboardingPage(page);
     await expect(onboardingPage.onboardingSpinner).not.toBeVisible({ timeout: 10_000 });
     await onboardingPage.expectOnboardingVisible();
+});
+
+// ADR-054: e2e dist is compiled with UMAMI_DISABLED=1 — the guard asserts the
+// tracker never appears, so CI traffic cannot pollute production analytics.
+Then('трекер Umami отсутствует на странице', async ({ page }) => {
+    await expectUmamiTrackerAbsent(page);
 });
 
 // Generic CRUD steps — work across any card-list page

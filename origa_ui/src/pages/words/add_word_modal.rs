@@ -6,6 +6,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::CreateVocabularyCardUseCase;
+use tracing::error;
 
 #[component]
 pub fn AddWordModal() -> impl IntoView {
@@ -58,6 +59,7 @@ pub fn AddWordModal() -> impl IntoView {
                         new_word_signal.set(String::new());
                     },
                     Err(e) => {
+                        error!(error = %e, "Vocabulary card creation failed");
                         if disposed.is_disposed() {
                             return;
                         }

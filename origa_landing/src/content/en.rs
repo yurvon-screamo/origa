@@ -19,7 +19,7 @@ pub static CONTENT: Content = Content {
     blog_index_meta_title: "Origa Blog — Japanese Learning Field Notes",
     blog_index_meta_description: "Field guides on learning Japanese: Anki alternatives, app selection, vocabulary, kanji, and study workflows. Written by the Origa team.",
     blog_index_h1: "Blog",
-    blog_index_subtitle: "Field guides on learning Japanese — when to switch tools, what to look for, and where each app wins.",
+    blog_index_subtitle: "Field guides on learning Japanese: when to switch tools, what to look for, and where each app wins.",
     blog_index_empty: "No articles published yet. Check back soon.",
     blog_updated_label: "Updated:",
     breadcrumb_blog: "Blog",
@@ -31,10 +31,10 @@ pub static CONTENT: Content = Content {
     footer_license: "License",
 
     home_meta_title: "Origa — App to Learn Japanese: Kanji, Grammar, JLPT, Offline",
-    home_meta_description: "Learn Japanese free — vocabulary, kanji and grammar N5–N1, 200K+ native phrases and JLPT analytics. Offline, in your own language.",
+    home_meta_description: "Learn Japanese free: vocabulary, kanji and grammar N5–N1, 200K+ native phrases and JLPT analytics. Offline, in your own language.",
     home_schema_feature_list: "Vocabulary, Kanji, Grammar, Listening, JLPT Analytics, Offline Mode",
     home_hero_title: "The app to learn Japanese in your own language",
-    home_hero_subtitle: "Vocabulary, kanji and grammar from N5 to N1, listening and 200,000+ native phrases — all in one app. No English required.",
+    home_hero_subtitle: "Vocabulary, kanji and grammar from N5 to N1, listening and 200,000+ native phrases, all in one app. No English required.",
     home_cta_primary: "Download",
     home_cta_secondary: "Open web app",
     home_hero_tagline: "Cross-platform · Offline-first · Privacy-first",
@@ -42,10 +42,10 @@ pub static CONTENT: Content = Content {
     home_faq_free_question: "Is Origa free?",
     home_faq_free_answer: "Yes. The apps for every platform and the web version are free.",
     home_problem_h2: "Five apps for one language",
-    home_problem_text: "Vocabulary in Anki. Kanji in WaniKani. Grammar in Bunpro. Listening on YouTube. You stitch together five subscriptions and hope they somehow connect. Origa is one app — vocabulary, kanji, grammar, listening and 200,000+ phrases, built to work together from day one.",
+    home_problem_text: "Vocabulary in Anki. Kanji in WaniKani. Grammar in Bunpro. Listening on YouTube. You stitch together five subscriptions and hope they somehow connect. Origa is one app: vocabulary, kanji, grammar, listening and 200,000+ phrases, built to work together from day one.",
     home_features_h2: "Everything you need. Nothing you don't.",
     home_feature_vocab_title: "Vocabulary",
-    home_feature_vocab_text: "Built-in dictionaries in your language. Create cards in seconds — type a word, scan a photo, or record audio.",
+    home_feature_vocab_text: "Built-in dictionaries in your language. Create cards in seconds: type a word, scan a photo, or record audio.",
     home_feature_kanji_title: "Kanji",
     home_feature_kanji_text: "Automatic furigana that hides as you learn. Writing practice with stroke order. JLPT-mapped kanji dictionaries.",
     home_feature_grammar_title: "Grammar",
@@ -53,7 +53,7 @@ pub static CONTENT: Content = Content {
     home_feature_listening_title: "Phrases",
     home_feature_listening_text: "Phrases from anime, visual novels and native content with original voice acting. Auto-selected for your level.",
     home_principle_content_title: "Learn from your own content.",
-    home_principle_content_text: "Study what you're actually reading, watching or listening to — not someone else's word list.",
+    home_principle_content_text: "Study what you're actually reading, watching or listening to, not someone else's word list.",
     home_principle_fsrs_title: "Smart spaced repetition.",
     home_principle_fsrs_text: "FSRS algorithm adapts review intervals to your memory.",
     home_principle_local_title: "Everything runs locally.",
@@ -63,13 +63,13 @@ pub static CONTENT: Content = Content {
     home_cta_title: "Start learning Japanese your way",
 
     features_meta_title: "Vocabulary, Kanji, Grammar & Listening | Origa",
-    features_meta_description: "Built-in dictionaries, smart flashcards, automatic furigana, kanji and grammar N5–N1, 200K+ phrases with audio — offline, all in one app.",
+    features_meta_description: "Built-in dictionaries, smart flashcards, automatic furigana, kanji and grammar N5–N1, 200K+ phrases with audio, offline, all in one app.",
     features_schema_how_to_name: "How to build Japanese vocabulary with Origa",
     features_h1: "Everything for Japanese learning",
     features_vocab_h2: "Vocabulary",
     features_vocab_label: "How it works",
     features_vocab_step1: "Type or paste a Japanese word or sentence",
-    features_vocab_step2: "Scan a photo — OCR extracts words and adds translations automatically",
+    features_vocab_step2: "Scan a photo: OCR extracts words and adds translations automatically",
     features_vocab_step3: "A new word is introduced, trained, and then kept by spaced repetition",
     features_vocab_dict: "Built-in bilingual dictionaries",
     features_vocab_cards: "Instant card creation",
@@ -86,7 +86,7 @@ pub static CONTENT: Content = Content {
     features_kanji_dict: "JLPT kanji dictionaries",
     features_kanji_dict_desc: "Kanji organized by JLPT level from N5 to N1.",
     features_kanji_tests: "Interactive reading tests",
-    features_kanji_tests_desc: "Test your kanji reading in context with interactive exercises.",
+    features_kanji_tests_desc: "Test your kanji reading within words with interactive exercises.",
     features_kanji_insight: "You don't need to learn all jōyō kanji at once. Learn the ones that appear in your content.",
     features_grammar_h2: "Grammar",
     features_grammar_subtitle: "Structured grammar reference by JLPT level with contextual examples.",
@@ -98,15 +98,15 @@ pub static CONTENT: Content = Content {
     features_grammar_tests_desc: "Test your understanding with grammar practice tests.",
     features_grammar_search: "Grammar search",
     features_grammar_search_desc: "Look up grammar patterns directly from text you're reading.",
-    features_grammar_insight: "Grammar examples use vocabulary you already know — so you focus on the pattern itself.",
+    features_grammar_insight: "Grammar examples use vocabulary you already know, so you focus on the pattern itself.",
     features_listening_h2: "Phrases",
     features_listening_subtitle: "Phrases from real Japanese content, auto-selected for your level.",
     features_listening_n1: "N+1 auto-selection",
     features_listening_n1_desc: "Phrases automatically selected at your current level plus one.",
     features_listening_audio: "Original voice acting",
-    features_listening_audio_desc: "Audio from native Japanese content — anime, visual novels and more.",
+    features_listening_audio_desc: "Audio from native Japanese content: anime, visual novels and more.",
     features_listening_comp: "Listening comprehension",
-    features_listening_comp_desc: "Practice understanding spoken Japanese in context.",
+    features_listening_comp_desc: "Practice understanding spoken Japanese on real phrases.",
     features_listening_everyday: "Everyday Japanese",
     features_listening_everyday_desc: "Learn phrases used in daily life by native speakers.",
     features_listening_insight: "These phrases come from content made by Japanese speakers, for Japanese speakers.",
@@ -167,7 +167,7 @@ pub static CONTENT: Content = Content {
     compare_bunpro_title: "Bunpro",
     compare_bunpro_what: "Grammar drilling platform.",
     compare_bunpro_when: "Focused grammar practice.",
-    compare_bunpro_better: "Grammar N5–N1 together with kanji and vocabulary — examples use words you already know.",
+    compare_bunpro_better: "Grammar N5–N1 together with kanji and vocabulary. Examples use words you already know.",
     compare_bunpro_together: "Use Bunpro for grammar drilling and Origa as your unified learning system.",
     compare_duolingo_title: "Duolingo",
     compare_duolingo_subtitle: "When Duolingo is right: you want a gentle introduction to Japanese.",
@@ -193,7 +193,7 @@ pub static CONTENT: Content = Content {
     download_ios_formats: "iPhone, iPad",
     download_ios_coming_soon: "Coming soon",
     download_button: "Download",
-    download_subtitle: "Download Origa to any device — everything works offline.",
+    download_subtitle: "Download Origa to any device. Everything works offline.",
     download_try_web: "Open →",
 
     integrations_meta_title: "Vocabulary Sets & Word Lists | Origa",
@@ -233,13 +233,13 @@ pub static CONTENT: Content = Content {
     integrations_migii_detail: "JLPT prep sets by level",
 
     integrations_spy_name: "Spy × Family",
-    integrations_spy_desc: "Vocabulary from the popular anime — learn Japanese through content you enjoy.",
+    integrations_spy_desc: "Vocabulary from the popular anime. Learn Japanese through content you enjoy.",
     integrations_spy_detail: "Season 1 vocabulary",
 
     integrations_anki_name: "Anki Import",
     integrations_anki_desc: "Import any Anki deck directly into Origa. Supports .anki2, .anki21 and .anki21b formats.",
     integrations_anki_detail: ".anki2 · .anki21 · .anki21b",
-    integrations_anki_note: "Import any Anki deck and continue learning where you left off — all your progress transfers.",
+    integrations_anki_note: "Import any Anki deck and continue learning where you left off. All your progress transfers.",
 
     footer_legal: "Legal",
     legal_privacy_link: "Privacy Policy",
@@ -268,15 +268,16 @@ pub const PR_BODY_EN: &str = r#"
     </thead>
     <tbody>
       <tr><td>Account</td><td>Email address, username, and a server-assigned identifier.</td></tr>
-      <tr><td>Authentication</td><td>Email and password (passwords are hashed server-side and never stored in plain text), or sign-in via Google or Yandex OAuth.</td></tr>
+      <tr><td>Authentication</td><td>Email and password (passwords are hashed server-side and never stored in plain text), or sign-in via Google, Yandex, or Apple OAuth.</td></tr>
       <tr><td>Learning progress</td><td>Your study cards (vocabulary, kanji, grammar, phrases), spaced-repetition state, review history, JLPT progress, known-vocabulary index, and current Japanese level.</td></tr>
       <tr><td>Settings</td><td>Interface language and daily study-load preference.</td></tr>
       <tr><td>Imported sets</td><td>Identifiers of content sets you imported (the set contents themselves are public catalog data).</td></tr>
       <tr><td>Optional profile</td><td>A Telegram user identifier, only if you choose to link a Telegram account.</td></tr>
-      <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model, and an anonymous installation identifier — a random UUID generated on first launch and used to count installations. These records are not linked to your account, email, or learning progress.</td></tr>
+      <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model, and an anonymous installation identifier, a random UUID generated on first launch and used to count installations. These records are not linked to your account, email, or learning progress.</td></tr>
+      <tr><td>Web analytics</td><td>Aggregated pageview statistics for this website and the web app (pages visited, referrer, approximate country, browser and operating system), sent to Umami Cloud (cloud.umami.is), a privacy-focused analytics service. The tracker sets no cookies, uses no cross-site identifiers, does not store IP addresses, and is not linked to your account or the diagnostics identifier. If your browser sends a Do Not Track signal, pageviews are not recorded.</td></tr>
     </tbody>
   </table>
-  <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or browsing and search history. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
+  <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or your browsing activity outside Origa services; pageview statistics inside Origa services are aggregated and anonymous, as described above. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
 </section>
 <section>
   <h2>How data is used</h2>
@@ -286,6 +287,7 @@ pub const PR_BODY_EN: &str = r#"
     <li>To display your progress, level and review schedule inside the app.</li>
     <li>To diagnose crashes and performance problems, so they can be fixed.</li>
     <li>To measure installations and launches in aggregate, through the anonymous installation identifier sent to Sentry.</li>
+    <li>To understand, in aggregate, which pages and features visitors use, through anonymous web analytics.</li>
   </ul>
   <p>The email received from an OAuth provider is used solely to identify your account and to synchronise progress; it is not sold or transferred to third parties. Diagnostic records sent to Sentry serve no advertising purpose and are not combined with data from other services.</p>
 </section>
@@ -294,8 +296,9 @@ pub const PR_BODY_EN: &str = r#"
   <ul>
     <li>Account and progress data: the TrailBase server at <code>app.origa.uwuwu.net</code>, hosted in Singapore.</li>
     <li>Crash reports, performance traces and technical logs: Sentry (sentry.io), hosted in the USA. These records are not linked to your account.</li>
+    <li>Aggregated web-analytics statistics: Umami Cloud (cloud.umami.is), operated by Umami. Anonymous records, not linked to your account.</li>
     <li>Static assets (dictionaries, machine-learning models, phrase audio): the CDN at <code>s3.origa.uwuwu.net</code>. These are public catalog content, not user data.</li>
-    <li>OAuth sign-in is handled by Google and Yandex according to their respective privacy policies.</li>
+    <li>OAuth sign-in is handled by Google, Yandex, and Apple according to their respective privacy policies.</li>
   </ul>
 </section>
 <section>
@@ -321,7 +324,9 @@ pub const PR_BODY_EN: &str = r#"
   <ul>
     <li>Google OAuth (accounts.google.com) — optional sign-in provider.</li>
     <li>Yandex OAuth (oauth.yandex.ru) — optional sign-in provider.</li>
+    <li>Apple OAuth (appleid.apple.com) — optional sign-in provider.</li>
     <li>Sentry (sentry.io) — crash reporting and error monitoring; receives crash reports, performance traces and technical logs, not linked to your account.</li>
+    <li>Umami Cloud (cloud.umami.is) — privacy-focused web analytics; receives anonymous, cookieless pageview statistics, not linked to your account.</li>
     <li>Static CDN (s3.origa.uwuwu.net) — public catalog content.</li>
   </ul>
   <p>Origa does not include advertising SDKs or cross-device tracking SDKs, and the data listed above is not used for advertising and is not transferred to data brokers.</p>

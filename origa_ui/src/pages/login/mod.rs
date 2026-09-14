@@ -71,7 +71,10 @@ pub fn Login() -> impl IntoView {
                 loading.set(false);
 
                 if let Err(e) = result {
-                    tracing::error!("Login error: {:?}", e);
+                    // Server-answered rejections (wrong password) are logged
+                    // at info level inside AuthStore::login; transport
+                    // failures are logged at error level there as well.
+                    tracing::debug!(error = %e, "Login finished with error");
                     server_error.set(Some(
                         i18n.get_keys().login().login_failed().inner().to_string(),
                     ));

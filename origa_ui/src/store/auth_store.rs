@@ -127,13 +127,6 @@ impl AuthStore {
         Memo::new(move |_| user.with(|u| u.is_some()))
     }
 
-    /// Returns a reactive Memo indicating if we're in loading state
-    pub fn is_loading(&self) -> Memo<bool> {
-        let is_checking_session = self.is_checking_session;
-        let is_syncing = self.is_syncing;
-        Memo::new(move |_| is_checking_session.get() || is_syncing.get())
-    }
-
     /// Returns a reactive Memo indicating if ALL overlay-gating data
     /// resources are loaded. The tokenizer dictionary is intentionally
     /// NOT among them (#521): renders answer from the precompute store
@@ -327,6 +320,10 @@ impl AuthStore {
                         Ok(())
                     },
                     Err(e) => {
+                        tracing::error!(
+                            error = %e,
+                            "Profile load failed after successful login"
+                        );
                         self.is_syncing.set(false);
                         Err(OrigaError::NetworkError {
                             url: "/api/auth/v1/login".to_string(),
@@ -337,6 +334,20 @@ impl AuthStore {
             },
             Err(e) => {
                 self.is_syncing.set(false);
+                // Distinguish transport failures (nothing reached the server:
+                // network down, DNS, CORS — Sentry-worthy incidents) from
+                // server-answered auth rejections (wrong credentials — an
+                // expected user-input path, not an incident). The transport
+                // layer already logs raw network failures per-request; this
+                // catch-all keeps login-specific context.
+                match &e {
+                    AuthError::NetworkError(_) => {
+                        tracing::error!(error = %e, "Login network failure");
+                    },
+                    _ => {
+                        tracing::info!(error = %e, "Login rejected by server");
+                    },
+                }
                 Err(OrigaError::NetworkError {
                     url: "/api/auth/v1/login".to_string(),
                     reason: e.to_string(),

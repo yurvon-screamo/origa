@@ -13,6 +13,10 @@ export class LessonPage extends BasePage {
     readonly backButton: Locator;
     readonly muteButton: Locator;
 
+    // Feedback (ADR-055): alert-triangle report entry in the lesson header.
+    // Enabled only while the card answer is shown.
+    readonly reportButton: Locator;
+
     // Loading states
     readonly lessonLoading: Locator;
     readonly lessonSpinner: Locator;
@@ -68,6 +72,7 @@ export class LessonPage extends BasePage {
         // Navigation
         this.backButton = page.getByTestId("lesson-back-btn");
         this.muteButton = page.getByTestId("lesson-mute-btn");
+        this.reportButton = page.getByTestId("lesson-report-btn");
 
         // Loading states
         this.lessonLoading = page.getByTestId("lesson-loading");

@@ -24,8 +24,8 @@ Bao gồm Origa, ứng dụng tôi đang phát triển, với hạn chế đư�
 
 Có ba trường hợp sử dụng thực, và chúng kéo theo các hướng khác nhau:
 
-1. **Tra cứu dịch.** Bạn đang ở nhà hàng, menu toàn hán tự, bạn cần biết món ăn có gì. Bạn cần OCR nhanh + dịch đáng tin cậy. Bạn không quan tâm đến việc học.
-2. **Hỗ trợ đọc.** Bạn đang đọc manga, sách giáo khoa, hoặc bài báo. Bạn muốn OCR một câu hoặc một khung hình, nhận âm đọc của các từ lạ, và đi tiếp. Bạn đang học, nhưng OCR là công cụ tra cứu.
+1. **Tra cứu dịch.** Bạn đang ở nhà hàng, menu toàn hán tự, cần biết món ăn có gì. Cần OCR nhanh + dịch đáng tin cậy, không quan tâm đến việc học.
+2. **Hỗ trợ đọc.** Bạn đang đọc manga, sách giáo khoa, hoặc bài báo. Muốn OCR một câu hoặc một khung hình, nhận âm đọc của các từ lạ, và đi tiếp. Đây vẫn là học, nhưng OCR là công cụ tra cứu.
 3. **Khai thác từ vựng.** Bạn muốn mỗi từ bạn OCR trở thành một thẻ bạn sẽ ôn sau. OCR là một đường ống vào SRS, không phải tra cứu một lần.
 
 Đa số ứng dụng được dựng cho trường hợp 1. Một số ít xử lý 2. Gần như không ai xử lý 3 mà không cần làm tay đáng kể. Biết cái nào bạn cần quyết định ứng dụng nào "tốt nhất" — không có người thắng cho cả ba.
@@ -69,7 +69,7 @@ Một danh sách kiểm tra thực sự phân tách các danh mục:
 - **Kết quả OCR đi đâu?** Chỉ văn bản thuần = công cụ dịch. Mục từ từ điển = công cụ tra cứu. Đường ống thẻ = công cụ học. Hai cái đầu không giúp bạn nhớ gì cả.
 - **Nó chạy trên thiết bị hay đám mây?** OCR đám mây thường chính xác hơn nhưng cần kết nối internet và gửi ảnh của bạn lên máy chủ. OCR trên thiết bị (NDLOCR, khuôn khổ Apple Vision, mô hình ML trên thiết bị) hoạt động ngoại tuyến và riêng tư. Không có cái nào phổ quát tốt hơn — chọn dựa trên việc bạn cần ngoại tuyến + riêng tư hay chính xác tối đa.
 - **Nó xử lý văn bản dọc không?** Tiếng Nhật thường được đặt theo chiều dọc, đặc biệt trong manga và tiểu thuyết. Nhiều engine OCR đa năng được chỉnh cho văn bản ngang và xáo trộn đầu vào dọc.
-- **Nó xử lý furigana không?** Furigana là kana nhỏ in cạnh hán tự. OCR rẻ đọc nó như một từ riêng và làm bẩn đầu ra. OCR tốt hơn hoặc bỏ qua furigana hoặc gắn nó với hán tự đúng.
+- **Nó xử lý furigana không?** Furigana là kana nhỏ in cạnh hán tự. OCR rẻ đọc nó như một từ riêng và làm bẩn đầu ra. Cái tốt hơn thì hoặc bỏ qua furigana, hoặc gắn nó với hán tự đúng.
 - **OCR là cuối đường ống hay đầu?** Đây là câu hỏi mà đa số danh sách "OCR app tốt nhất" bỏ qua. Nếu câu trả lời là "cuối", bạn có công cụ tra cứu. Nếu "đầu", bạn có công cụ học.
 
 ## Origa xử lý việc này thế nào

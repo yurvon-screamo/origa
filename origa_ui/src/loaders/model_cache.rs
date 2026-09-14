@@ -37,13 +37,17 @@ impl ModelCache {
 
         let cache_name = sanitize_cache_name(&self.cache_name);
 
-        let cache_storage = window
-            .caches()
-            .map_err(|e| self.js_err("Failed to get cache storage", &e))?;
+        let cache_storage = window.caches().map_err(|e| {
+            tracing::error!(cache = %self.cache_name, error = ?e, "CacheStorage API unavailable");
+            self.js_err("Failed to get cache storage", &e)
+        })?;
 
         let cache = JsFuture::from(cache_storage.open(&cache_name))
             .await
-            .map_err(|e| self.js_err("Failed to open cache", &e))?;
+            .map_err(|e| {
+                tracing::error!(cache = %self.cache_name, error = ?e, "Failed to open cache");
+                self.js_err("Failed to open cache", &e)
+            })?;
 
         cache
             .dyn_into::<Cache>()

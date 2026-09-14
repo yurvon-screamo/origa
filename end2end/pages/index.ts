@@ -1,4 +1,5 @@
 export { BasePage } from "./base.page";
+export { FeedbackPage } from "./feedback.page";
 export { GrammarPage } from "./grammar.page";
 export { HomePage } from "./home.page";
 export { KanjiPage } from "./kanji.page";

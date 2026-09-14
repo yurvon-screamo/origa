@@ -14,6 +14,7 @@ use origa_ui::i18n::I18nContextProvider;
 
 fn main() {
     origa_ui::init_tracing();
+    origa_ui::init_analytics();
 
     mount_to_body(|| {
         view! {

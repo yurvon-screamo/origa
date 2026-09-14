@@ -79,7 +79,7 @@ Một danh sách kiểm tra thực sự phân tách giá trị từ hype:
 - **AI có kết nối với cơ chế ghi nhớ không?** Nếu "lưu từ này" không nạp SRS, AI là giải trí.
 - **Sửa AI có đáng tin ở trình độ của bạn không?** Thử với các câu bạn đã biết câu trả lời. Nếu AI sai trên chúng, nó sẽ tệ hơn trên thứ bạn không biết.
 - **Hướng dẫn AI là tùy chọn hay bắt buộc?** Người mới hưởng lợi từ cấu trúc (luồng có hướng dẫn). Người trung cấp hưởng lợi từ tự do. Chọn hình thức đúng cho trình độ của bạn.
-- **AI chạy ở đâu?** AI đám mây thông minh hơn nhưng ghi log mọi tương tác. AI trên thiết bị riêng tư nhưng kém năng lực hơn. Không có cái nào phổ quát tốt hơn.
+- **AI chạy ở đâu?** Đám mây thông minh hơn nhưng ghi log mọi tương tác. Trên thiết bị riêng tư nhưng kém năng lực hơn. Không có cái nào phổ quát tốt hơn.
 - **Toán thuê bao là gì?** Tính đến giữa 2026: ChatGPT Plus, Claude Pro và Gemini Advanced mỗi cái ~$200/năm (~$17/tháng); các ứng dụng ngôn ngữ AI chuyên dụng chạy cao hơn — Speak ~$30/tháng, Talkpal ~$20/tháng, Praktika ~$100/năm. Xếp một trong số đó với SRS trả phí hoặc ứng dụng hán tự và bạn thoải mái ở $30–50/tháng định kỳ, $360–600/năm, vô thời hạn. Kiểm tra xem một lựa chọn mua một lần hoặc nguồn công khai có đóng phần lớn khoảng cách không.
 
 ## Origa dùng AI thế nào

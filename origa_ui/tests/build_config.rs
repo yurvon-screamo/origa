@@ -9,7 +9,7 @@
 #[path = "../build_config.rs"]
 mod build_config;
 
-use build_config::{resolve_cdn, resolve_trailbase};
+use build_config::{DEFAULT_UMAMI_WEBSITE_ID, resolve_cdn, resolve_trailbase, resolve_umami};
 
 #[test]
 fn trailbase_uses_production_default_when_unset() {
@@ -44,5 +44,62 @@ fn cdn_uses_explicit_value_when_set() {
     assert_eq!(
         resolve_cdn(Some("https://cdn.staging.example.com")),
         "https://cdn.staging.example.com"
+    );
+}
+
+#[test]
+fn umami_uses_production_default_when_unset() {
+    assert_eq!(resolve_umami(None, None), DEFAULT_UMAMI_WEBSITE_ID);
+}
+
+#[test]
+fn umami_uses_production_default_when_website_id_empty() {
+    assert_eq!(resolve_umami(None, Some("")), DEFAULT_UMAMI_WEBSITE_ID);
+}
+
+#[test]
+fn umami_uses_explicit_website_id_when_set() {
+    assert_eq!(
+        resolve_umami(None, Some("11111111-2222-3333-4444-555555555555")),
+        "11111111-2222-3333-4444-555555555555"
+    );
+}
+
+#[test]
+fn umami_disabled_one_disables_analytics() {
+    assert_eq!(resolve_umami(Some("1"), None), "");
+}
+
+#[test]
+fn umami_disabled_true_lowercase_disables_analytics() {
+    assert_eq!(resolve_umami(Some("true"), None), "");
+}
+
+#[test]
+fn umami_disabled_true_mixed_case_disables_analytics() {
+    assert_eq!(resolve_umami(Some("TRUE"), None), "");
+    assert_eq!(resolve_umami(Some("True"), None), "");
+}
+
+#[test]
+fn umami_disabled_zero_keeps_analytics_enabled() {
+    assert_eq!(resolve_umami(Some("0"), None), DEFAULT_UMAMI_WEBSITE_ID);
+}
+
+#[test]
+fn umami_disabled_false_keeps_analytics_enabled() {
+    assert_eq!(resolve_umami(Some("false"), None), DEFAULT_UMAMI_WEBSITE_ID);
+}
+
+#[test]
+fn umami_disabled_empty_keeps_analytics_enabled() {
+    assert_eq!(resolve_umami(Some(""), None), DEFAULT_UMAMI_WEBSITE_ID);
+}
+
+#[test]
+fn umami_disabled_flag_wins_over_explicit_website_id() {
+    assert_eq!(
+        resolve_umami(Some("1"), Some("11111111-2222-3333-4444-555555555555")),
+        ""
     );
 }

@@ -6,6 +6,7 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use tracing::error;
 
 #[component]
 pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -56,6 +57,7 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                     confirm_password.set(String::new());
                 },
                 Err(e) => {
+                    error!(error = %e, "Password change failed");
                     error_message.set(Some(format!(
                         "{}: {}",
                         td_string!(i18n.get_locale(), profile.password_change_error),

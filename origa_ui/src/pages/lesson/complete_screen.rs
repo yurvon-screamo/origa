@@ -186,6 +186,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 <Button
                     test_id=Signal::derive(|| "lesson-next-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Filled)
+                    attr:data-umami-event="lesson_finish"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_next_lesson.run(());
                     })
@@ -196,6 +197,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
                 <Button
                     test_id=Signal::derive(|| "lesson-home-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Ghost)
+                    attr:data-umami-event="lesson_finish"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_home.run(());
                     })

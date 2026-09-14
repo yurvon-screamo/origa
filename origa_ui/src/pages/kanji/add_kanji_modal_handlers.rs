@@ -2,6 +2,7 @@ use super::add_kanji_modal_state::ModalState;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::use_cases::CreateKanjiCardUseCase;
+use tracing::error;
 
 pub struct ModalHandlers {
     pub on_add: Callback<leptos::ev::MouseEvent>,
@@ -40,6 +41,7 @@ impl ModalHandlers {
                             state_for_async.refresh_trigger.update(|v| *v += 1);
                         },
                         Err(e) => {
+                            error!(error = %e, "Kanji card creation failed");
                             if disposed.is_disposed() {
                                 return;
                             }

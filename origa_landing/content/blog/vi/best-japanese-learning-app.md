@@ -39,7 +39,7 @@ Nếu khó khăn của bạn là tạo thẻ thủ công, một giải pháp tha
 
 ### Hán tự
 
-Hán tự là một vấn đề riêng. Cùng một 食 xuất hiện trong hàng chục từ, và việc quan trọng không chỉ là ghi nhớ ký tự mà còn thấy nó trong nhiều ngữ cảnh.
+Hán tự là một vấn đề riêng. Cùng một 食 xuất hiện trong hàng chục từ: ghi nhớ ký tự thôi chưa đủ, bạn cần nhận ra nó trong từng từ.
 
 - **[WaniKani](https://www.wanikani.com/).** Lộ trình có cấu trúc theo bộ thủ, giao diện tiếng Anh, trả phí đăng ký. Phù hợp nếu bạn bắt đầu hán tự từ số không và muốn một thứ tự cố định. Nhược điểm — bạn học cái chương trình coi là cần thiết, không phải cái bạn gặp hôm nay trong manga hay bài báo. Toàn bộ đánh giá đổi lấy giữa Origa và WaniKani (bộ thủ vs theo nội dung, trả phí vs miễn phí, chỉ tiếng Anh vs. giao diện phi tiếng Anh) nằm trong [so sánh đầy đủ](/vi/compare).
 - **Origa.** Furigana được tạo tự động và ẩn trên các hán tự đã học — những gì bạn đã học không còn được gợi ý, buộc bạn phải nhớ cách đọc. Hán tự được liên kết với từ vựng: hệ thống biết rằng 食べる và 食事 chia sẻ một hán tự, và theo dõi nó trên mọi từ mà bạn đã gặp. ([Xem Origa xử lý hán tự, furigana và liên kết từ vựng thế nào](/vi/docs/kanji).)
@@ -95,7 +95,7 @@ Trong hầu hết trường hợp, một bộ làm việc là một ứng dụng
 ## Hạn chế của Origa
 
 - **Không tùy biến sâu như Anki.** Nếu bạn sống trong các mẫu thẻ HTML/CSS tùy chỉnh, Origa sẽ không thay thế được. Ưu tiên là rào cản gia nhập thấp, không phải kiểm soát tối đa.
-- **Ứng dụng trẻ hơn.** Anki đã được củng cố trường hợp biên hơn một thập kỷ và có thư viện bộ bài dựng sẵn khổng lồ. Thư viện nội dung dựng sẵn của Origa nhỏ hơn, dù đang phát triển.
+- **Ứng dụng trẻ hơn.** Anki đã được củng cố trường hợp biên hơn một thập kỷ và có thư viện bộ bài dựng sẵn lớn. Thư viện nội dung dựng sẵn của Origa nhỏ hơn, dù đang phát triển.
 - **Không có iOS.** iOS đã lên kế hoạch nhưng chưa ra mắt.
 - **Tương đương tính năng desktop/di động là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, hãy kiểm tra bản dựng hiện tại cho nền tảng của bạn.
 

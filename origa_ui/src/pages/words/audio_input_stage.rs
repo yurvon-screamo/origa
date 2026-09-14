@@ -7,7 +7,7 @@ use std::cell::{Cell, RefCell};
 #[cfg(target_arch = "wasm32")]
 use std::rc::Rc;
 #[cfg(target_arch = "wasm32")]
-use tracing::info;
+use tracing::{error, info};
 use wasm_bindgen::JsCast;
 
 #[cfg(target_arch = "wasm32")]
@@ -108,6 +108,7 @@ async fn transcribe_via_wasm(
     error_message: RwSignal<Option<String>>,
 ) -> Result<String, String> {
     let bytes = read_file_as_bytes(file).await.map_err(|e| {
+        error!(error = %e, "Audio file read failed");
         audio_state.set(AudioState::Error);
         error_message.set(Some(e.clone()));
         e
@@ -126,6 +127,7 @@ async fn transcribe_via_wasm(
     let model = get_or_load_whisper_model(i18n, status_text)
         .await
         .map_err(|e| {
+            error!(error = %e, "Whisper model load failed");
             audio_state.set(AudioState::Error);
             error_message.set(Some(e.clone()));
             e
@@ -147,10 +149,10 @@ async fn transcribe_via_wasm(
 
     let use_case = origa::use_cases::TranscribeAudioUseCase::new();
     let infer_start = web_sys::js_sys::Date::now();
-    let result = use_case
-        .execute(model.clone(), &bytes)
-        .await
-        .map_err(|e| format!("Transcription failed: {:?}", e));
+    let result = use_case.execute(model.clone(), &bytes).await.map_err(|e| {
+        error!(error = %e, "Whisper transcription failed");
+        format!("Transcription failed: {:?}", e)
+    });
     let infer_ms = web_sys::js_sys::Date::now() - infer_start;
     info!(
         infer_ms,
