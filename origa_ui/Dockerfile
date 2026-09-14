@@ -116,10 +116,9 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
 # assembles the official release artifacts on alpine (same layout as
 # upstream's own image): static musl `trail` binary + the auth-UI wasm
 # component, which the binary loads from /app/traildepot/wasm at boot.
-ARG TRAILBASE_VERSION=v0.33.16
 FROM alpine:3.23
 
-ARG TRAILBASE_VERSION
+ARG TRAILBASE_VERSION=v0.33.16
 
 USER root
 WORKDIR /app
