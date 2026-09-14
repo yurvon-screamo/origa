@@ -35,6 +35,7 @@ grammar/grammar.json
 grammar/grammar_ko_vi.json
 grammar/grammar_v2.json
 grammar/grammar_precompute.rkyv
+kanji_art_manifest.json
 manifest.json
 ndlocr/deim.onnx
 ndlocr/parseq-100.onnx
