@@ -161,7 +161,6 @@ impl TrailBaseClient {
             response.status_text(),
             sent.bytes,
         ))
-
     }
 
     pub(crate) fn json<T: DeserializeOwned>(response: &ApiResponse) -> Result<T, AuthError> {

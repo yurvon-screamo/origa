@@ -2040,7 +2040,7 @@ rt {
     margin-top: var(--space-xs);
 }
 
-/* "Wrong translation?" entry inside the token popup (ADR-053): a quiet
+/* "Wrong translation?" entry inside the token popup (ADR-055): a quiet
    level-0 action line — no frame at rest, muted; hover flips to fg-black.
    Tap target padded to 44px. */
 .token-popup-report-sep {
@@ -2401,7 +2401,7 @@ rt {
     padding: 0 1.5rem;
 }
 
-/* Load-error screen content (ADR-053): same centered-column geometry as
+/* Load-error screen content (ADR-055): same centered-column geometry as
    the consent card — kept as its own class so the two screens can evolve
    independently. */
 .load-error-content {
@@ -6365,7 +6365,7 @@ rt {
 }
 
 /* ==========================================================================
-   Feedback modal (issue #414, ADR-053)
+   Feedback modal (issue #414, ADR-055)
    ========================================================================== */
 
 /* Subject plate: the content being reported (level-2 surface: light border,
@@ -6511,7 +6511,7 @@ rt {
     text-align: center;
 }
 
-/* Lesson header report button (ADR-053): same quiet pattern as the mute
+/* Lesson header report button (ADR-055): same quiet pattern as the mute
    button, tinted with the error color so the affordance reads instantly.
    `disabled` on the question phase keeps the header layout stable. */
 .lesson-report-btn {

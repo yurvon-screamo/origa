@@ -26,7 +26,7 @@ use web_sys::{Document, Element};
 /// (the dev/Dependabot path). See `build.rs`.
 const DSN: &str = env!("SENTRY_DSN_UI");
 
-/// Compile-time Sentry DSN for the UI layer (ADR-053). Empty = Sentry is
+/// Compile-time Sentry DSN for the UI layer (ADR-055). Empty = Sentry is
 /// compiled out (dev/e2e builds) — the only legitimate trigger of the
 /// feedback form's "available in release builds" info state.
 pub fn dsn_ui() -> &'static str {

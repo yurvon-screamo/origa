@@ -1,4 +1,4 @@
-//! Feedback modal (issue #414, ADR-053): the single form every entry point
+//! Feedback modal (issue #414, ADR-055): the single form every entry point
 //! opens. Shows the captured subject, collects the user's description, and
 //! submits through the [`FeedbackContext`] transport.
 //!
