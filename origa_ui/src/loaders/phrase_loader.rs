@@ -1,8 +1,10 @@
 use origa::dictionary::cdn_blob::{guard_matches, split_blob};
 use origa::dictionary::phrase::{
-    ArchivedPhraseIndexBlob, access_phrase_blob, init_phrase_index, install_archived_phrase_index,
+    ArchivedPhraseIndexBlob, ArchivedPhraseIndexBlobV3, access_phrase_blob, access_phrase_blob_v3,
+    init_phrase_index, install_archived_phrase_index, install_archived_phrase_index_v3,
     is_phrases_loaded, phrase_index_len,
 };
+use origa::dictionary::precompute_blob::inflate_blob;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
@@ -12,6 +14,7 @@ use crate::utils::{now_ms, yield_to_browser};
 
 const PHRASE_INDEX_PATH: &str = "phrases/phrase_index.json";
 const PHRASE_INDEX_BLOB_PATH: &str = "phrases/phrase_index.rkyv";
+const PHRASE_INDEX_BLOB_V3_PATH: &str = "phrases/phrase_index.v3.rkyv";
 
 /// Result of the provider-parameterized load: the zero-copy archived view
 /// of the pre-parsed CDN blob (fast path) or the raw JSON text (fallback).
@@ -19,6 +22,7 @@ const PHRASE_INDEX_BLOB_PATH: &str = "phrases/phrase_index.rkyv";
 /// exercise the core repeatedly.
 pub enum LoadedPhrases {
     CdnBlob(&'static ArchivedPhraseIndexBlob),
+    CdnBlobV3(&'static ArchivedPhraseIndexBlobV3),
     SourceJson(String),
 }
 
@@ -41,6 +45,14 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
                 (now_ms() - start) / 1000.0
             );
         },
+        LoadedPhrases::CdnBlobV3(view) => {
+            install_archived_phrase_index_v3(view)?;
+            tracing::info!(
+                "Phrases index loaded: {} phrases ({:.2}s total, zero-copy v3 blob)",
+                phrase_index_len(),
+                (now_ms() - start) / 1000.0
+            );
+        },
         LoadedPhrases::SourceJson(json) => {
             yield_to_browser().await;
             let parse_start = now_ms();
@@ -58,11 +70,74 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
     Ok(())
 }
 
-/// Provider-parameterized core: try the CDN rkyv blob first (zero-copy
-/// access — no JSON text scan, no inverted-index rebuild), fall back to
-/// the original JSON on any validation or fetch failure. The blob is
-/// verified against the remote manifest guard when one was fetched.
+/// Current WASM linear-memory size for the load-timing log (#535
+/// measurement): the v3 checkpoint compares time AND peak memory.
+#[cfg(target_arch = "wasm32")]
+fn wasm_memory_mib() -> f64 {
+    use wasm_bindgen::{JsCast, JsValue, memory};
+
+    let buffer = js_sys::Reflect::get(&memory(), &JsValue::from_str("buffer"))
+        .ok()
+        .and_then(|value| value.dyn_into::<js_sys::ArrayBuffer>().ok());
+    buffer.map_or(0.0, |buffer| buffer.byte_length() as f64 / 1024.0 / 1024.0)
+}
+
+/// Provider-parameterized core: try the v3 CDN blob first (deflated,
+/// deduplicated — #535), then the v2 blob, then the original JSON. Each
+/// layer falls back on any fetch or validation failure.
 pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhrases, OrigaError> {
+    let t0 = now_ms();
+    match provider.fetch_bytes(PHRASE_INDEX_BLOB_V3_PATH).await {
+        Ok(deflated) => {
+            let fetch_ms = now_ms() - t0;
+            let t1 = now_ms();
+            let inflated = match inflate_blob(&deflated) {
+                Ok(inflated) => inflated,
+                Err(e) => {
+                    tracing::warn!("📖 Phrase index v3 blob not deflated ({e:?})");
+                    return load_phrases_via_v2(provider).await;
+                },
+            };
+            let inflate_ms = now_ms() - t1;
+            let t2 = now_ms();
+            match phrase_view_from_blob_v3(&inflated) {
+                Ok(view) => {
+                    tracing::info!(
+                        "📖 Phrase index v3 blob consumed (fetch {:.2}s, inflate {:.2}s, access {:.2}s, deflated {:.1} MB -> raw {:.1} MB{})",
+                        fetch_ms / 1000.0,
+                        inflate_ms / 1000.0,
+                        (now_ms() - t2) / 1000.0,
+                        deflated.len() as f64 / 1024.0 / 1024.0,
+                        inflated.len() as f64 / 1024.0 / 1024.0,
+                        memory_note()
+                    );
+                    return Ok(LoadedPhrases::CdnBlobV3(view));
+                },
+                Err(e) => tracing::warn!(
+                    "📖 Phrase index v3 blob rejected ({e:?}), falling back to v2/JSON"
+                ),
+            }
+        },
+        Err(e) => {
+            tracing::warn!("📖 Phrase index v3 blob unavailable ({e:?}), falling back to v2/JSON")
+        },
+    }
+
+    load_phrases_via_v2(provider).await
+}
+
+#[cfg(target_arch = "wasm32")]
+fn memory_note() -> String {
+    format!(", wasm mem {:.0} MiB", wasm_memory_mib())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn memory_note() -> String {
+    String::new()
+}
+
+/// v2 layer: the legacy raw rkyv blob, then the JSON source.
+async fn load_phrases_via_v2<P: CdnProvider>(provider: &P) -> Result<LoadedPhrases, OrigaError> {
     let fetch_start = now_ms();
     match provider.fetch_bytes(PHRASE_INDEX_BLOB_PATH).await {
         Ok(blob) => {
@@ -71,7 +146,7 @@ pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhra
             match phrase_view_from_blob(&blob) {
                 Ok(view) => {
                     tracing::debug!(
-                        "📖 Phrase index blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
+                        "📖 Phrase index v2 blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
                         fetch_ms / 1000.0,
                         (now_ms() - access_start) / 1000.0
                     );
@@ -91,6 +166,35 @@ pub async fn load_phrases_via<P: CdnProvider>(provider: &P) -> Result<LoadedPhra
 
     let json = provider.fetch_text(PHRASE_INDEX_PATH).await?;
     Ok(LoadedPhrases::SourceJson(json))
+}
+
+/// Validate the v3 blob header, verify the manifest guard and access the
+/// payload as a zero-copy view. Any failure yields `Err` (caller falls
+/// back to the v2/JSON path).
+fn phrase_view_from_blob_v3(
+    inflated: &[u8],
+) -> Result<&'static ArchivedPhraseIndexBlobV3, OrigaError> {
+    let expectation = guard_expectation_for(&[PHRASE_INDEX_PATH]);
+    phrase_view_from_blob_v3_with_expectation(inflated, &expectation)
+}
+
+/// Testable core: the guard expectation is injectable (the process
+/// manifest is a OnceLock the unit tests cannot prime per-case).
+fn phrase_view_from_blob_v3_with_expectation(
+    inflated: &[u8],
+    expectation: &origa::dictionary::cdn_blob::GuardExpectation,
+) -> Result<&'static ArchivedPhraseIndexBlobV3, OrigaError> {
+    let (header, payload) = split_blob(inflated).map_err(|e| OrigaError::PhraseParseError {
+        reason: format!("phrase index v3 blob header invalid: {e}"),
+    })?;
+
+    if !guard_matches(&header, expectation) {
+        return Err(OrigaError::PhraseParseError {
+            reason: "phrase index v3 blob stale relative to manifest".to_string(),
+        });
+    }
+
+    access_phrase_blob_v3(payload)
 }
 
 /// Validate the blob header, verify the manifest guard and access the
@@ -139,8 +243,20 @@ mod tests {
 
     impl MockCdn {
         fn with_blob_and_json(blob: Option<Vec<u8>>, json: &str) -> Self {
+            Self::with_blobs_and_json(None, blob, json)
+        }
+
+        /// v3 blob (deflated) + v2 blob (raw) + JSON source; any may be
+        /// absent to exercise the fallback chain.
+        fn with_blobs_and_json(v3: Option<Vec<u8>>, v2: Option<Vec<u8>>, json: &str) -> Self {
             let mut responses = Vec::new();
-            if let Some(bytes) = blob {
+            if let Some(bytes) = v3 {
+                responses.push((
+                    PHRASE_INDEX_BLOB_V3_PATH.to_string(),
+                    MockResponse::Bytes(bytes),
+                ));
+            }
+            if let Some(bytes) = v2 {
                 responses.push((
                     PHRASE_INDEX_BLOB_PATH.to_string(),
                     MockResponse::Bytes(bytes),
@@ -211,6 +327,114 @@ mod tests {
             manifest_guard: manifest_guard_from_hex_hashes(&[&source_hex]),
         };
         build_blob(&header, &payload)
+    }
+
+    fn valid_v3_blob(json: &str) -> Vec<u8> {
+        use origa::dictionary::precompute_blob::deflate_blob;
+
+        let index = build_phrase_index_from_json(json).unwrap();
+        let payload =
+            origa::dictionary::phrase::serialize_phrase_index_v3_blob_to_rkyv(&index.to_blob_v3())
+                .unwrap();
+        let source_hex = sha256_bytes(json.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let header = BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: sha256_bytes(json.as_bytes()),
+            manifest_guard: manifest_guard_from_hex_hashes(&[&source_hex]),
+        };
+        deflate_blob(&build_blob(&header, &payload))
+    }
+
+    #[tokio::test]
+    async fn valid_v3_blob_loads_without_touching_v2_or_the_json_source() {
+        // Arrange
+        let provider = MockCdn::with_blobs_and_json(
+            Some(valid_v3_blob(SAMPLE_JSON)),
+            Some(valid_blob(SAMPLE_JSON)),
+            SAMPLE_JSON,
+        );
+
+        // Act
+        let loaded = load_phrases_via(&provider).await.unwrap();
+
+        // Assert: the v3 fast path answers and neither fallback layer is
+        // ever requested.
+        let LoadedPhrases::CdnBlobV3(view) = &loaded else {
+            panic!("expected the v3 CDN blob fast path");
+        };
+        assert_eq!(view.len(), 1);
+        assert_eq!(view.get_phrases_by_token("world").len(), 1);
+        let requested = provider.requested_paths();
+        assert!(!requested.contains(&PHRASE_INDEX_BLOB_PATH.to_string()));
+        assert!(!requested.contains(&PHRASE_INDEX_PATH.to_string()));
+    }
+
+    #[tokio::test]
+    async fn corrupted_v3_deflate_falls_back_to_the_v2_blob() {
+        // Arrange: bytes that do not inflate — the exact shape of a
+        // truncated/garbage v3 object.
+        let garbage = vec![0xff_u8; 64];
+        let provider =
+            MockCdn::with_blobs_and_json(Some(garbage), Some(valid_blob(SAMPLE_JSON)), SAMPLE_JSON);
+
+        // Act
+        let loaded = load_phrases_via(&provider).await.unwrap();
+
+        // Assert: the v2 layer serves the index, JSON untouched.
+        assert!(matches!(loaded, LoadedPhrases::CdnBlob(_)));
+        assert!(
+            !provider
+                .requested_paths()
+                .contains(&PHRASE_INDEX_PATH.to_string())
+        );
+    }
+
+    #[test]
+    fn stale_v3_guard_is_rejected_against_a_fetched_manifest() {
+        // Arrange: a well-formed v3 blob whose guard binds to a DIFFERENT
+        // content generation — the deploy-window scenario. The process
+        // manifest is a OnceLock the tests cannot prime, so the guard
+        // expectation is injected directly (the same pure derivation the
+        // cache manager performs from a fetched manifest).
+        use origa::dictionary::precompute_blob::{deflate_blob, inflate_blob};
+
+        let index = build_phrase_index_from_json(SAMPLE_JSON).unwrap();
+        let payload =
+            origa::dictionary::phrase::serialize_phrase_index_v3_blob_to_rkyv(&index.to_blob_v3())
+                .unwrap();
+        let stale_hex = sha256_bytes(b"older content generation")
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let stale_header = BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: sha256_bytes(b"older content generation"),
+            manifest_guard: manifest_guard_from_hex_hashes(&[&stale_hex]),
+        };
+        let stale_blob = inflate_blob(&deflate_blob(&build_blob(&stale_header, &payload))).unwrap();
+
+        let fresh_hex = sha256_bytes(SAMPLE_JSON.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let manifest = crate::repository::cache_manager::CacheManifest {
+            version: 1,
+            files: [("phrases/phrase_index.json".to_string(), fresh_hex)].into(),
+        };
+        let fresh_expectation = crate::repository::cache_manager::guard_expectation_from_manifest(
+            Some(&manifest),
+            &["phrases/phrase_index.json"],
+        );
+
+        // Act
+        let rejected = phrase_view_from_blob_v3_with_expectation(&stale_blob, &fresh_expectation);
+
+        // Assert: a stale blob never installs — the live path proceeds
+        // to the v2 layer instead.
+        assert!(rejected.is_err(), "a stale guard must be rejected");
     }
 
     #[tokio::test]

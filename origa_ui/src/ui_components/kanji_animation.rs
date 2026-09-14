@@ -1,9 +1,7 @@
 use crate::i18n::{t, use_i18n};
-use crate::loaders::kanji_bundle_store::{self, KanjiBundleType};
-use crate::repository::cdn_provider;
+use crate::loaders::kanji_bundle_store::KanjiBundleType;
 use leptos::prelude::*;
 use leptos::task::spawn_local_scoped_with_cancellation;
-use origa::traits::CdnProvider;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum KanjiViewMode {
@@ -78,23 +76,14 @@ pub fn KanjiAnimation(
         let mode_val = mode;
 
         async move {
-            // 1. Try in-memory JLPT bundle store first (no CDN request)
             let bundle_type = match mode_val {
                 KanjiViewMode::Animation => KanjiBundleType::Animations,
                 KanjiViewMode::Frames => KanjiBundleType::Frames,
             };
-
-            // We don't know the JLPT level here, so try each level.
-            // The store is populated by card_precache_loader before cards render.
-            for level in &["n5", "n4", "n3", "n2", "n1"] {
-                if let Some(svg) = kanji_bundle_store::get_svg(bundle_type, level, &kanji_str) {
-                    return Some(svg);
-                }
-            }
-
-            // 2. Fallback: CDN fetch (backward compat, cache-first)
-            let cdn = cdn_provider();
-            cdn.fetch_text(&path).await.ok()
+            // Bundles → manifest gates → CDN fallback (#540), all in the
+            // shared art-fetch helper.
+            crate::loaders::kanji_art_manifest::fetch_kanji_art_svg(bundle_type, &kanji_str, &path)
+                .await
         }
     });
 

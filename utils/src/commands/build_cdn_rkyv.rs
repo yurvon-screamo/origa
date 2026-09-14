@@ -19,8 +19,10 @@ use origa::dictionary::furigana_dict::{
 };
 use origa::dictionary::phrase::{
     build_phrase_index_from_json, serialize_phrase_index_blob_to_rkyv,
+    serialize_phrase_index_v3_blob_to_rkyv,
 };
 use origa::dictionary::pitch_audio::serialize_pitch_index_blob_to_rkyv;
+use origa::dictionary::precompute_blob::{deflate_blob, inflate_blob};
 use origa::dictionary::vocabulary::{
     VocabularyChunkData, build_vocabulary_database_from_chunks, serialize_vocabulary_blob_to_rkyv,
 };
@@ -221,6 +223,57 @@ fn build_phrase_index_blob(cdn_dir: &Path) -> Result<bool, String> {
     })
 }
 
+/// #535 — the deduplicated + interned v3 phrase index blob. Stored
+/// deflate-compressed on the CDN (the payload is string-heavy); the
+/// freshness read therefore inflates before the header check. The v2
+/// blob keeps building alongside (old clients stay on it until the
+/// minimum supported version rises).
+fn build_phrase_index_v3_blob(cdn_dir: &Path) -> Result<bool, String> {
+    const PHRASE_INDEX_BLOB_V3: &str = "phrases/phrase_index.v3.rkyv";
+
+    let source = read(cdn_dir, PHRASE_INDEX_SOURCE)?;
+    let source_hex = sha256_hex(&source);
+    let source_hash = sha256_raw(&source);
+
+    let existing = read(cdn_dir, PHRASE_INDEX_BLOB_V3)
+        .ok()
+        .and_then(|deflated| inflate_blob(&deflated).ok());
+    let is_fresh = matches!(
+        existing.as_deref().map(split_blob),
+        Some(Ok((header, _))) if header.schema_version == SCHEMA_VERSION
+            && header.source_sha256 == source_hash
+    );
+    if is_fresh {
+        tracing::info!("{PHRASE_INDEX_BLOB_V3} is fresh, skipping regeneration");
+        return Ok(false);
+    }
+
+    let text = String::from_utf8(source.clone())
+        .map_err(|e| format!("{PHRASE_INDEX_SOURCE} is not valid UTF-8: {e}"))?;
+    let index = build_phrase_index_from_json(&text)
+        .map_err(|e| format!("failed to build phrase index: {e}"))?;
+    let payload = serialize_phrase_index_v3_blob_to_rkyv(&index.to_blob_v3())
+        .map_err(|e| format!("failed to serialize phrase index v3 blob: {e}"))?;
+
+    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
+    let header = BlobHeader {
+        schema_version: SCHEMA_VERSION,
+        source_sha256: source_hash,
+        manifest_guard: guard,
+    };
+    let built = build_blob(&header, &payload);
+    let deflated = deflate_blob(&built);
+    let deflated_len = deflated.len();
+    fs::write(cdn_dir.join(PHRASE_INDEX_BLOB_V3), deflated)
+        .map_err(|e| format!("failed to write {PHRASE_INDEX_BLOB_V3}: {e}"))?;
+    tracing::info!(
+        "rebuilt {PHRASE_INDEX_BLOB_V3}: {:.1} MB deflated ({:.1} MB raw payload)",
+        deflated_len as f64 / 1024.0 / 1024.0,
+        payload.len() as f64 / 1024.0 / 1024.0
+    );
+    Ok(true)
+}
+
 fn build_pitch_index_blob(cdn_dir: &Path) -> Result<bool, String> {
     build_single_source_index(cdn_dir, PITCH_INDEX_SOURCE, PITCH_INDEX_BLOB, |text| {
         let index = origa::dictionary::pitch_audio::PitchAudioIndex::from_json(text)
@@ -246,10 +299,17 @@ pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {
         build_vocabulary(&cdn_dir).map_err(|reason| OrigaError::RepositoryError { reason })?;
     let phrase_rebuilt = build_phrase_index_blob(&cdn_dir)
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
+    let phrase_v3_rebuilt = build_phrase_index_v3_blob(&cdn_dir)
+        .map_err(|reason| OrigaError::RepositoryError { reason })?;
     let pitch_rebuilt = build_pitch_index_blob(&cdn_dir)
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
 
-    if !furigana_rebuilt && !vocabulary_rebuilt && !phrase_rebuilt && !pitch_rebuilt {
+    if !furigana_rebuilt
+        && !vocabulary_rebuilt
+        && !phrase_rebuilt
+        && !phrase_v3_rebuilt
+        && !pitch_rebuilt
+    {
         println!("All CDN rkyv blobs are fresh, nothing to do");
     }
     Ok(())

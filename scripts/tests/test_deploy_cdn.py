@@ -12,6 +12,8 @@ store, the network, or AWS credentials.
 
 from __future__ import annotations
 
+import json
+
 from deploy_cdn import VERSIONED_FILES, compare_manifests, compute_files_to_upload
 from _cdn_verify import MANIFEST_ERROR
 
@@ -301,3 +303,40 @@ def test_missing_source_file_is_reported(tmp_path: Path):
     assert problems == [
         "dictionary/vocabulary.rkyv: source dictionary/chunk_05.json not found"
     ]
+
+
+class TestGenerateKanjiArtManifest:
+    """#540: the manifest must list exactly the single-kanji SVG stems per
+    kind, sorted, so clients can filter doomed 404 art requests."""
+
+    def test_lists_single_kanji_stems_sorted_per_kind(self, tmp_path):
+        from deploy_cdn import generate_kanji_art_manifest
+
+        frames = tmp_path / "kanji_frames"
+        animations = tmp_path / "kanji_animations"
+        frames.mkdir()
+        animations.mkdir()
+        (frames / "本.svg").write_text("x", encoding="utf-8")
+        (frames / "日.svg").write_text("x", encoding="utf-8")
+        (frames / "日語.svg").write_text("x", encoding="utf-8")  # multi-char: filtered
+        (animations / "日.svg").write_text("x", encoding="utf-8")
+
+        generate_kanji_art_manifest(tmp_path)
+
+        manifest = json.loads(
+            (tmp_path / "kanji_art_manifest.json").read_text(encoding="utf-8")
+        )
+        assert manifest == {"frames": ["日", "本"], "animations": ["日"]}
+
+    def test_empty_directories_produce_empty_lists(self, tmp_path):
+        from deploy_cdn import generate_kanji_art_manifest
+
+        (tmp_path / "kanji_frames").mkdir()
+        (tmp_path / "kanji_animations").mkdir()
+
+        generate_kanji_art_manifest(tmp_path)
+
+        manifest = json.loads(
+            (tmp_path / "kanji_art_manifest.json").read_text(encoding="utf-8")
+        )
+        assert manifest == {"frames": [], "animations": []}

@@ -15,17 +15,20 @@ pub use detail::{
     get_phrase_translation, is_chunk_loaded,
 };
 pub use index::{
-    ArchivedPhraseIndexBlob, IndexEntry, PhraseIndex, PhraseIndexBlob, access_phrase_blob,
-    build_phrase_index_from_json, serialize_phrase_index_blob_to_rkyv,
+    ArchivedPhraseIndexBlob, ArchivedPhraseIndexBlobV3, IndexEntry, PhraseIndex, PhraseIndexBlob,
+    PhraseIndexBlobV3, access_phrase_blob, access_phrase_blob_v3, build_phrase_index_from_json,
+    serialize_phrase_index_blob_to_rkyv, serialize_phrase_index_v3_blob_to_rkyv,
 };
 
 use crate::domain::OrigaError;
 
-/// Loaded phrase index storage. The CDN rkyv blob installs a zero-copy
-/// archived view; the JSON fallback builds the owned index.
+/// Loaded phrase index storage. A CDN rkyv blob installs a zero-copy
+/// archived view (v3 — deduplicated/interned — preferred, v2 legacy);
+/// the JSON fallback builds the owned index.
 enum PhraseStore {
     Owned(PhraseIndex),
     Archived(&'static ArchivedPhraseIndexBlob),
+    ArchivedV3(&'static ArchivedPhraseIndexBlobV3),
 }
 
 static PHRASE_INDEX: OnceLock<PhraseStore> = OnceLock::new();
@@ -58,6 +61,17 @@ pub fn install_archived_phrase_index(
         })
 }
 
+/// Install the zero-copy archived view of a v3 CDN blob payload (#535).
+pub fn install_archived_phrase_index_v3(
+    view: &'static ArchivedPhraseIndexBlobV3,
+) -> Result<(), OrigaError> {
+    PHRASE_INDEX
+        .set(PhraseStore::ArchivedV3(view))
+        .map_err(|_| OrigaError::PhraseParseError {
+            reason: "phrase index already initialized".to_string(),
+        })
+}
+
 pub fn is_phrases_loaded() -> bool {
     PHRASE_INDEX.get().is_some()
 }
@@ -68,6 +82,7 @@ pub fn phrase_index_len() -> usize {
     match PHRASE_INDEX.get() {
         Some(PhraseStore::Owned(index)) => index.len(),
         Some(PhraseStore::Archived(view)) => view.len(),
+        Some(PhraseStore::ArchivedV3(view)) => view.len(),
         None => 0,
     }
 }
@@ -80,6 +95,7 @@ pub fn get_phrases_by_token(token: &str) -> Vec<IndexEntry> {
             .cloned()
             .collect(),
         Some(PhraseStore::Archived(view)) => view.get_phrases_by_token(token),
+        Some(PhraseStore::ArchivedV3(view)) => view.get_phrases_by_token(token),
         None => Vec::new(),
     }
 }
@@ -88,6 +104,7 @@ pub fn get_chunk_id(id: &Ulid) -> Option<u32> {
     match PHRASE_INDEX.get() {
         Some(PhraseStore::Owned(index)) => index.get_entry(id).map(|e| e.chunk_id()),
         Some(PhraseStore::Archived(view)) => view.get_entry(id).map(|e| e.chunk_id()),
+        Some(PhraseStore::ArchivedV3(view)) => view.get_entry(id).map(|e| e.chunk_id()),
         None => None,
     }
 }
@@ -96,6 +113,7 @@ pub fn get_index_entry(id: &Ulid) -> Option<IndexEntry> {
     match PHRASE_INDEX.get() {
         Some(PhraseStore::Owned(index)) => index.get_entry(id).cloned(),
         Some(PhraseStore::Archived(view)) => view.get_entry(id),
+        Some(PhraseStore::ArchivedV3(view)) => view.get_entry(id),
         None => None,
     }
 }
@@ -112,6 +130,7 @@ pub fn iter_index_entries() -> Option<impl Iterator<Item = IndexEntry>> {
             .collect::<Vec<_>>()
             .into_iter(),
         PhraseStore::Archived(view) => view.iter_entries().collect::<Vec<_>>().into_iter(),
+        PhraseStore::ArchivedV3(view) => view.iter_entries().collect::<Vec<_>>().into_iter(),
     })
 }
 
@@ -119,6 +138,7 @@ pub fn get_all_index_ids() -> HashSet<Ulid> {
     match PHRASE_INDEX.get() {
         Some(PhraseStore::Owned(index)) => index.all_ids().clone(),
         Some(PhraseStore::Archived(view)) => view.all_ids(),
+        Some(PhraseStore::ArchivedV3(view)) => view.all_ids(),
         None => HashSet::new(),
     }
 }
@@ -127,6 +147,7 @@ pub fn index_version() -> (u32, String) {
     match PHRASE_INDEX.get() {
         Some(PhraseStore::Owned(index)) => (index.version, index.hash.clone()),
         Some(PhraseStore::Archived(view)) => view.version(),
+        Some(PhraseStore::ArchivedV3(view)) => view.version(),
         None => (0, String::new()),
     }
 }

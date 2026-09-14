@@ -23,6 +23,10 @@ import _cdn_s3
 import _cdn_verify
 
 VERSIONED_FILES: list[str] = [
+    # Kanji art availability manifest (#540): regenerated with the art
+    # directories on every deploy; root path (not inside kanji_frames/)
+    # so the immutable directory rule never applies to it.
+    "kanji_art_manifest.json",
     "dictionary/chunk_01.json",
     "dictionary/chunk_02.json",
     "dictionary/chunk_03.json",
@@ -48,6 +52,10 @@ VERSIONED_FILES: list[str] = [
     "dictionaries/JmdictFurigana.rkyv",
     "dictionary/vocabulary.rkyv",
     "phrases/phrase_index.rkyv",
+    # #535: deduplicated + interned v3 form, deflated on the CDN.
+    # Freshness is checked by the dedicated inflate-aware procedure below
+    # (its header is not readable from the raw deflated bytes).
+    "phrases/phrase_index.v3.rkyv",
     "pitch/index.rkyv",
     # SudachiDict (lindera 5.x, current clients)
     "dictionaries/sudachidict-20260723/char_def.bin",
@@ -399,9 +407,42 @@ def grammar_precompute_freshness_problems(cdn_dir: Path) -> list[str]:
     return []
 
 
+def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
+    """Freshness check for the deflated v3 phrase index blob (#535).
+
+    Mirrors the builder: inflate the stored bytes, then verify the header
+    (schema + sha256 of phrases/phrase_index.json — the blob carries no
+    tokenizer inputs, the index is derived from the JSON alone).
+    """
+    blob = cdn_dir / "phrases/phrase_index.v3.rkyv"
+    if not blob.is_file():
+        return [
+            "phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"
+        ]
+    try:
+        inflated = inflate_deflated(blob)
+    except zlib.error as e:
+        return [f"phrases/phrase_index.v3.rkyv: not deflated ({e})"]
+    if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
+        return ["phrases/phrase_index.v3.rkyv: unreadable header"]
+    schema_version = int.from_bytes(inflated[4:8], "little")
+    if schema_version != RKYV_SCHEMA_VERSION:
+        return [
+            f"phrases/phrase_index.v3.rkyv: schema {schema_version} "
+            f"!= {RKYV_SCHEMA_VERSION}"
+        ]
+    source = cdn_dir / "phrases/phrase_index.json"
+    if not source.is_file():
+        return ["phrases/phrase_index.v3.rkyv: source phrase_index.json not found"]
+    if hashlib.sha256(source.read_bytes()).digest() != inflated[8:40]:
+        return ["phrases/phrase_index.v3.rkyv: stale relative to phrase_index.json"]
+    return []
+
+
 def assert_rkyv_blobs_fresh(cdn_dir: Path) -> None:
     problems = rkyv_blob_freshness_problems(cdn_dir)
     problems += grammar_precompute_freshness_problems(cdn_dir)
+    problems += phrase_index_v3_freshness_problems(cdn_dir)
     if problems:
         for problem in problems:
             print(f"ERROR: rkyv blob freshness: {problem}", file=sys.stderr)
@@ -532,6 +573,30 @@ def _force_all_deploy(dry_run: bool) -> None:
     print("\nForce-all deploy complete!", flush=True)
 
 
+def generate_kanji_art_manifest(cdn_dir: Path) -> None:
+    """Write kanji_art_manifest.json (#540): the kanji that actually have
+    per-file SVG art on the CDN, per kind. Clients filter their download
+    lists (card pre-cache) and runtime fallbacks against it instead of
+    discovering missing files through 404 storms.
+
+    Sorted lists keep the file byte-deterministic; the file is deployed
+    from the repo root (NOT inside kanji_frames/) so the directory-wide
+    immutable cache rule never applies to it (release-updated default).
+    """
+    manifest: dict[str, list[str]] = {}
+    for key, folder in (("frames", "kanji_frames"), ("animations", "kanji_animations")):
+        dir_path = cdn_dir / folder
+        kanji = sorted(
+            p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1
+        )
+        manifest[key] = kanji
+        print(f"  kanji_art_manifest {key}: {len(kanji)} kanji")
+    out_path = cdn_dir / "kanji_art_manifest.json"
+    out_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Deploy CDN to S3")
     parser.add_argument(
@@ -634,6 +699,10 @@ def main() -> None:
                 print(f"  {line}")
         else:
             print(f"  {script} not found, skipping")
+
+    # Kanji art manifest (#540): list which kanji have per-file SVG art so
+    # clients stop probing missing files with 404s.
+    generate_kanji_art_manifest(cdn_dir)
 
     # Step 0.5: Regenerate pre-parsed rkyv blobs and verify freshness
     # (BEFORE manifest: blob hashes must be computed from current bytes)
