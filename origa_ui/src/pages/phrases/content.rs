@@ -50,10 +50,10 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 return;
             }
             let ids = phrase_ids_of(cards);
-            visible_ids.set(ids.clone());
             if missing_details(&ids).is_empty() {
                 return;
             }
+            visible_ids.set(ids);
             if running.swap(true, Ordering::AcqRel) {
                 rerun.store(true, Ordering::Release);
                 return;
@@ -77,8 +77,11 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
 
     // Search semantics parity with the pre-lazy behavior: matching runs
     // over the loaded details instantly, while the REST of the user's
-    // phrases stream in once per session — results grow as chunks land,
-    // and the indicator tells the user the search is not final yet.
+    // phrases load once per session. Deviation from the planned
+    // chunk-by-chunk streaming (#540-В1): the backfill is ONE parallel
+    // batch — search results jump to complete when it lands (the browser
+    // serializes the fetches over its connection pool anyway), and the
+    // indicator stays visible for the whole load.
     {
         let all_ids = all_phrase_ids;
         let backfill_done_sig = backfill_done;
