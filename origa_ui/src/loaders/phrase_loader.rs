@@ -74,9 +74,9 @@ pub async fn load_phrases() -> Result<(), OrigaError> {
 /// measurement): the v3 checkpoint compares time AND peak memory.
 #[cfg(target_arch = "wasm32")]
 fn wasm_memory_mib() -> f64 {
-    use wasm_bindgen::{JsCast, memory};
+    use wasm_bindgen::{JsCast, JsValue, memory};
 
-    let buffer = js_sys::Reflect::get(&memory(), &js_sys::JsValue::from_str("buffer"))
+    let buffer = js_sys::Reflect::get(&memory(), &JsValue::from_str("buffer"))
         .ok()
         .and_then(|value| value.dyn_into::<js_sys::ArrayBuffer>().ok());
     buffer.map_or(0.0, |buffer| buffer.byte_length() as f64 / 1024.0 / 1024.0)
