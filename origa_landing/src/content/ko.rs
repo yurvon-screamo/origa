@@ -16,7 +16,7 @@ pub static CONTENT: Content = Content {
     header_blog: "블로그",
     header_docs: "문서",
 
-    blog_index_meta_title: "Origa 블로그: 일본어 학습 필드 노트",
+    blog_index_meta_title: "Origa 블로그 — 일본어 학습 필드 노트",
     blog_index_meta_description: "일본어 학습에 대한 실전 가이드: Anki 대안, 앱 선택, 어휘, 한자, 학습 워크플로우. Origa 팀이 작성.",
     blog_index_h1: "블로그",
     blog_index_subtitle: "일본어 학습에 대한 실전 가이드: 언제 도구를 바꿀지, 무엇을 찾을지, 각 앱이 어디서 강한지.",
