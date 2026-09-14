@@ -645,6 +645,11 @@
       "body": "Origa downloads Japanese dictionaries and study materials (~230 MB) to your device. This happens once; the data is cached locally for offline use.",
       "start": "Download"
     },
+    "load_error": {
+      "title": "Could not load the dictionaries",
+      "body": "Study data could not be downloaded and nothing is stored on this device yet. Check your connection and try again.",
+      "retry": "Retry"
+    },
     "selected_count": "Selected: {}",
     "selected_count_with_label": "Selected: {} {}",
     "seconds_short": "~{} sec",

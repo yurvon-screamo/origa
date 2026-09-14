@@ -6,7 +6,8 @@ use crate::repository::trailbase_client::{
     AuthError, AuthRequestClient, AuthTokenResponse, TrailBaseClient,
 };
 
-use gloo_net::http::{Method, Response};
+use crate::repository::api_response::ApiResponse;
+use gloo_net::http::Method;
 use gloo_timers::future::TimeoutFuture;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -81,7 +82,7 @@ impl TrailBaseClient {
             return Err(AuthError::SessionExpired);
         }
 
-        let token_response: AuthTokenResponse = Self::json(response).await?;
+        let token_response: AuthTokenResponse = Self::json(&response)?;
         let claims = decode_jwt_claims(&token_response.auth_token)
             .map_err(|e| AuthError::ApiError(format!("Failed to decode JWT: {}", e)))?;
 
@@ -193,7 +194,7 @@ impl TrailBaseClient {
         path: &str,
         method: Method,
         body: Option<&T>,
-    ) -> Result<Response, AuthError> {
+    ) -> Result<ApiResponse, AuthError> {
         let session = get_session().ok_or(AuthError::SessionExpired)?;
         let session = self.ensure_fresh_session(session, "pre-request").await?;
 
@@ -259,7 +260,6 @@ impl TrailBaseClient {
         if !response.ok() {
             let error_text = response
                 .text()
-                .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
             return Err(AuthError::ApiError(format!(
                 "Password change failed: {}",
@@ -277,7 +277,7 @@ impl AuthRequestClient for TrailBaseClient {
         path: &str,
         method: Method,
         body: Option<&T>,
-    ) -> Result<Response, AuthError> {
+    ) -> Result<ApiResponse, AuthError> {
         self._request_with_auth_impl(path, method, body).await
     }
 }

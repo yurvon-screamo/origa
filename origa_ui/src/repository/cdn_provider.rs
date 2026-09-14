@@ -13,6 +13,70 @@ use crate::core::config::cdn_url;
 
 pub const CDN_CACHE_NAME: &str = "origa-cdn-v1";
 
+/// Outcome of the cache-first policy for one resource (ADR-053).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FetchDecision {
+    ServeFromCache,
+    FetchFromNetwork,
+    FailOffline,
+}
+
+/// Pure form of the provider policy: a cache hit always wins; a miss
+/// goes to the network unless the CDN was already proven unreachable
+/// this run (instant refusal instead of a doomed request).
+pub fn fetch_decision(cache_hit: bool, cdn_unreachable: bool) -> FetchDecision {
+    if cache_hit {
+        FetchDecision::ServeFromCache
+    } else if cdn_unreachable {
+        FetchDecision::FailOffline
+    } else {
+        FetchDecision::FetchFromNetwork
+    }
+}
+
+/// Process-global "the CDN is not reachable" verdict. Set by the
+/// startup manifest probe / a stalled manifest fetch; cleared by Retry
+/// and by the browser `online` event. A false positive only costs one
+/// extra attempt after the clear; a false negative hangs the app —
+/// which is why it is never set from `navigator.onLine` alone.
+static CDN_UNREACHABLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+#[cfg(any(target_arch = "wasm32", test))]
+pub fn mark_cdn_unreachable() {
+    CDN_UNREACHABLE.store(true, std::sync::atomic::Ordering::Release);
+}
+
+pub fn is_cdn_unreachable() -> bool {
+    CDN_UNREACHABLE.load(std::sync::atomic::Ordering::Acquire)
+}
+
+pub fn clear_cdn_unreachable() {
+    CDN_UNREACHABLE.store(false, std::sync::atomic::Ordering::Release);
+}
+
+/// Marker for the instant refusal errors produced under the
+/// unreachable flag (distinct from idle timeouts and HTTP failures).
+/// Consumed by the retry gate (`should_retry_after_error`).
+pub struct CdnUnreachableError;
+
+impl CdnUnreachableError {
+    pub fn is_match(error: &OrigaError) -> bool {
+        matches!(
+            error,
+            OrigaError::NetworkError { reason, .. } if reason.starts_with(UNREACHABLE_MARKER)
+        )
+    }
+}
+
+const UNREACHABLE_MARKER: &str = "cdn unreachable";
+
+fn cdn_unreachable_error(url: &str) -> OrigaError {
+    OrigaError::NetworkError {
+        url: url.to_string(),
+        reason: format!("{UNREACHABLE_MARKER}: skipping request after probe verdict"),
+    }
+}
+
 pub struct CacheFirstCdnProvider;
 
 static CDN_PROVIDER: OnceLock<CacheFirstCdnProvider> = OnceLock::new();
@@ -190,108 +254,12 @@ async fn save_response_to_cache(
 
 async fn fetch_text_from_cdn(path: &str) -> Result<(web_sys::Response, String), OrigaError> {
     let url = cdn_url(&ensure_leading_slash(path));
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let cloned = response.clone().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to clone response: {:?}", e),
-    })?;
-
-    let text = JsFuture::from(cloned.text().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to get text promise: {:?}", e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to read text: {:?}", e),
-    })?;
-
-    let text_str = text.as_string().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "Response is not a string".to_string(),
-    })?;
-
-    Ok((response, text_str))
+    crate::utils::net_timeout::fetch_text_idle(&url).await
 }
 
 async fn fetch_bytes_from_cdn(path: &str) -> Result<(web_sys::Response, Vec<u8>), OrigaError> {
     let url = cdn_url(&ensure_leading_slash(path));
-
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let cloned = response.clone().map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to clone response: {:?}", e),
-    })?;
-
-    let ab = JsFuture::from(
-        cloned
-            .array_buffer()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to get array_buffer promise: {:?}", e),
-            })?,
-    )
-    .await
-    .map_err(|e| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: format!("Failed to read array_buffer: {:?}", e),
-    })?;
-
-    let arr = js_sys::Uint8Array::new(&ab);
-    Ok((response, arr.to_vec()))
+    crate::utils::net_timeout::fetch_bytes_idle(&url).await
 }
 
 impl CdnProvider for CacheFirstCdnProvider {
@@ -300,7 +268,14 @@ impl CdnProvider for CacheFirstCdnProvider {
         async move {
             let cache = open_cache().await?;
 
-            if let Some(text) = get_text_from_cache(&cache, &path).await {
+            let cache_hit = get_text_from_cache(&cache, &path).await;
+            if fetch_decision(cache_hit.is_some(), is_cdn_unreachable())
+                == FetchDecision::FailOffline
+            {
+                tracing::debug!(path = %path, "Cache miss, CDN unreachable — refusing");
+                return Err(cdn_unreachable_error(&path));
+            }
+            if let Some(text) = cache_hit {
                 tracing::debug!(path = %path, "Cache hit (text)");
                 return Ok(text);
             }
@@ -321,7 +296,14 @@ impl CdnProvider for CacheFirstCdnProvider {
         async move {
             let cache = open_cache().await?;
 
-            if let Some(bytes) = get_bytes_from_cache(&cache, &path).await {
+            let cache_hit = get_bytes_from_cache(&cache, &path).await;
+            if fetch_decision(cache_hit.is_some(), is_cdn_unreachable())
+                == FetchDecision::FailOffline
+            {
+                tracing::debug!(path = %path, "Cache miss, CDN unreachable — refusing");
+                return Err(cdn_unreachable_error(&path));
+            }
+            if let Some(bytes) = cache_hit {
                 tracing::debug!(path = %path, "Cache hit (bytes)");
                 return Ok(bytes);
             }
@@ -438,32 +420,14 @@ pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
     }
 
     let url = cdn_url(&key);
-    let window = web_sys::window().ok_or_else(|| OrigaError::NetworkError {
-        url: url.clone(),
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Failed to fetch: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url,
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
+    // Idle-deadline fetch (ADR-053): a dead network must not hang a
+    // prefetch. The rebuilt response keeps the content type, so cached
+    // audio still decodes via blob: URLs.
+    let fetched = crate::utils::net_timeout::fetch_idle(
+        &url,
+        crate::utils::net_timeout::DEFAULT_IDLE_TIMEOUT_MS,
+    )
+    .await?;
 
     let request = web_sys::Request::new_with_str(&cdn_cache_url(&key)).map_err(|e| {
         OrigaError::RepositoryError {
@@ -471,7 +435,7 @@ pub async fn prefetch_to_cache(path: &str) -> Result<(), OrigaError> {
         }
     })?;
 
-    JsFuture::from(cache.put_with_request(&request, &response))
+    JsFuture::from(cache.put_with_request(&request, &fetched.response))
         .await
         .map_err(|e| OrigaError::RepositoryError {
             reason: format!("Failed to cache: {:?}", e),
@@ -516,6 +480,10 @@ pub async fn store_text_in_cache(path: &str, text: &str) -> Result<(), OrigaErro
     Ok(())
 }
 
+#[cfg(all(target_arch = "wasm32", test))]
+#[path = "cdn_offline_wasm_tests.rs"]
+mod cdn_offline_wasm_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -558,6 +526,49 @@ mod tests {
         let _type_witness: fn(&str) -> Option<String> = resolve_audio_url;
         // Touch the symbol so the assignment is not dead-code eliminated.
         let _ = _type_witness as fn(&str) -> Option<String>;
+    }
+
+    #[test]
+    fn unreachable_flag_round_trips_between_mark_and_clear() {
+        clear_cdn_unreachable();
+        assert!(!is_cdn_unreachable());
+
+        mark_cdn_unreachable();
+        assert!(is_cdn_unreachable());
+
+        clear_cdn_unreachable();
+        assert!(!is_cdn_unreachable());
+    }
+
+    #[test]
+    fn unreachable_refusal_marker_is_recognizable() {
+        let refusal = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "cdn unreachable: skipping request after probe verdict".to_string(),
+        };
+        assert!(CdnUnreachableError::is_match(&refusal));
+
+        let stalled = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "idle timeout after 10000 ms without data".to_string(),
+        };
+        assert!(!CdnUnreachableError::is_match(&stalled));
+
+        let http = OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: "HTTP 503".to_string(),
+        };
+        assert!(!CdnUnreachableError::is_match(&http));
+    }
+
+    #[test]
+    fn fetch_decision_matrix_prefers_cache_and_refuses_dead_network() {
+        use super::FetchDecision::*;
+
+        assert_eq!(fetch_decision(true, false), ServeFromCache);
+        assert_eq!(fetch_decision(true, true), ServeFromCache);
+        assert_eq!(fetch_decision(false, false), FetchFromNetwork);
+        assert_eq!(fetch_decision(false, true), FailOffline);
     }
 
     #[test]

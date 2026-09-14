@@ -60,11 +60,24 @@ pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     Ok(())
 }
 
+/// Native no-op: the browser probe does not exist outside WASM.
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn probe_manifest_reachable() -> bool {
+    true
+}
+
 #[cfg(target_arch = "wasm32")]
 pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     let remote = match fetch_remote_manifest().await {
         Ok(m) => m,
         Err(e) => {
+            // An HTTP status means the server answered (alive CDN, broken
+            // manifest) — content may still be downloadable. Everything
+            // else (refusal, idle timeout) is a network-level failure:
+            // record the verdict so cache misses refuse instantly.
+            if !error_reason_starts_with_http(&e) {
+                super::cdn_provider::mark_cdn_unreachable();
+            }
             tracing::warn!(error = ?e, "Failed to fetch remote manifest, skipping invalidation");
             return Ok(());
         },
@@ -146,55 +159,84 @@ fn build_manifest_url() -> String {
     format!("{}/manifest.json?t={}", base, date)
 }
 
+/// A short HEAD probe of the manifest URL: any HTTP status (even 405
+/// Method Not Allowed on proxies that dislike HEAD) proves the CDN is
+/// reachable; a refusal or an idle timeout proves it is not and records
+/// the [`super::cdn_provider::mark_cdn_unreachable`] verdict.
+///
+/// `navigator.onLine` lies on WKWebView custom schemes in both
+/// directions, so it only decides WHETHER to probe — never the verdict
+/// itself (ADR-053).
+#[cfg(target_arch = "wasm32")]
+pub async fn probe_manifest_reachable() -> bool {
+    const PROBE_IDLE_MS: u32 = 2_000;
+
+    let init = web_sys::RequestInit::new();
+    init.set_method("HEAD");
+
+    let url = build_manifest_url();
+    match crate::utils::net_timeout::send_request_idle(&url, &init, PROBE_IDLE_MS).await {
+        Ok(_) => true,
+        Err(e) => {
+            super::cdn_provider::mark_cdn_unreachable();
+            tracing::debug!(error = ?e, "CDN probe failed");
+            false
+        },
+    }
+}
+
+/// Whether the error is an HTTP-status failure (the server answered)
+/// rather than a transport-level one.
+#[cfg(any(target_arch = "wasm32", test))]
+fn error_reason_starts_with_http(error: &OrigaError) -> bool {
+    matches!(
+        error,
+        OrigaError::NetworkError { reason, .. } if reason.starts_with("HTTP")
+    )
+}
+
+#[cfg(test)]
+mod http_classifier_tests {
+    use super::error_reason_starts_with_http;
+    use origa::domain::OrigaError;
+
+    fn network(reason: &str) -> OrigaError {
+        OrigaError::NetworkError {
+            url: "probe".to_string(),
+            reason: reason.to_string(),
+        }
+    }
+
+    // Contract: the classifier feeds the unreachable verdict in
+    // check_and_invalidate — an answered status must NOT mark the CDN
+    // dead (content may still be downloadable), while stalls and
+    // refusals must. Coupled to the `format!("HTTP {status}")` reason
+    // of utils/net_timeout.rs — edit both together.
+    #[test]
+    fn http_status_failures_mean_an_alive_server() {
+        assert!(error_reason_starts_with_http(&network("HTTP 404")));
+        assert!(error_reason_starts_with_http(&network("HTTP 500")));
+    }
+
+    #[test]
+    fn transport_failures_are_not_http_statuses() {
+        assert!(!error_reason_starts_with_http(&network(
+            "Failed to fetch: TypeError"
+        )));
+        assert!(!error_reason_starts_with_http(&network(
+            "idle timeout after 10000 ms without data"
+        )));
+    }
+}
+
 #[cfg(target_arch = "wasm32")]
 async fn fetch_remote_manifest() -> Result<CacheManifest, OrigaError> {
     let url = build_manifest_url();
 
-    let window = web_sys::window().ok_or_else(|| OrigaError::RepositoryError {
-        reason: "No window found".to_string(),
-    })?;
-
-    let resp_value = JsFuture::from(window.fetch_with_str(&url))
-        .await
-        .map_err(|e| OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("Network error: {:?}", e),
-        })?;
-
-    let response: web_sys::Response =
-        resp_value
-            .dyn_into()
-            .map_err(|e| OrigaError::NetworkError {
-                url: url.clone(),
-                reason: format!("Failed to cast response: {:?}", e),
-            })?;
-
-    if response.status() == 404 {
-        return Err(OrigaError::RepositoryError {
-            reason: "Manifest not found (404)".to_string(),
-        });
-    }
-
-    if !response.ok() {
-        return Err(OrigaError::NetworkError {
-            url: url.clone(),
-            reason: format!("HTTP {}", response.status()),
-        });
-    }
-
-    let text = JsFuture::from(response.text().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to get text() promise: {:?}", e),
-    })?)
-    .await
-    .map_err(|e| OrigaError::RepositoryError {
-        reason: format!("Failed to read response text: {:?}", e),
-    })?;
-
-    let text_str = text
-        .as_string()
-        .ok_or_else(|| OrigaError::RepositoryError {
-            reason: "Response text is not a string".to_string(),
-        })?;
+    // Idle-deadline fetch (ADR-053): a dead network must surface as a
+    // quick warning ("skipping invalidation"), never hang the startup
+    // pipeline before Stage 1.
+    let (_response, text_str) = crate::utils::net_timeout::fetch_text_idle(&url).await?;
 
     serde_json::from_str(&text_str).map_err(|e| OrigaError::RepositoryError {
         reason: format!("Failed to parse manifest JSON: {:?}", e),

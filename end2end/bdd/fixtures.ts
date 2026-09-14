@@ -32,6 +32,7 @@ export const test = base.extend<
         loginGateRelease: { release: (() => Promise<void>) | null };
         cdnRequestLog: string[];
         apiRequestLog: string[];
+        offlineNetLog: { requests: string[]; okResponses: string[] };
         secondDevicePage: Page;
     },
     object
@@ -114,6 +115,17 @@ export const test = base.extend<
         },
         { scope: "test" },
     ],
+    // Offline-startup network log: the When-step that reloads the app
+    // under a dead network records CDN-origin requests and successful
+    // responses; the Then-steps assert "no successful CDN responses" and
+    // the single allowed manifest probe. Aborted requests never fire a
+    // `response` event, so only live responses land in `okResponses`.
+    offlineNetLog: [
+        async ({}, use) => {
+            await use({ requests: [] as string[], okResponses: [] as string[] });
+        },
+        { scope: "test" },
+    ],
     // A second, independent browser context logged into the SAME test
     // account — an honest "new device": its IndexedDB partition is empty,
     // so the first login there exercises the remote→local restore path
@@ -140,4 +152,4 @@ export const test = base.extend<
     ],
 });
 
-export const { Given, When, Then, After } = createBdd(test);
+export const { Given, When, Then, Before, After } = createBdd(test);
