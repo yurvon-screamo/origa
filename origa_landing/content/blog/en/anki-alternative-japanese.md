@@ -24,7 +24,7 @@ If any of these describe you, Anki is probably the right tool, and you should st
 
 - **You want a scheduler you fully control.** Anki added [FSRS support in version 23.10](https://docs.ankiweb.net/deck-options.html#fsrs) (October 2023) as an experimental option, and enabled it by default for new collections starting with version 24.10. It's the same spaced-repetition algorithm the research community converged on. You can tune retention targets, custom steps, and review limits to the day.
 - **You study more than Japanese.** Anki is domain-agnostic. Medicine, law, music theory, a third language. One app, one review queue.
-- **You build your own card types.** Anki's templating (HTML/CSS with fields) goes deeper than any of the tools below. If you enjoy engineering your cards as much as studying them, nothing else in this comparison matches it.
+- **You build your own card types.** Anki's templating (HTML/CSS with fields) goes deeper than anything the tools below offer. If you enjoy engineering your cards as much as studying them, nothing else in this comparison matches it.
 - **You want it free and self-hosted.** Anki desktop is free and open source. AnkiDroid is free. AnkiWeb sync is free. The only paid piece is AnkiMobile on iOS, which funds development of the rest.
 
 That last point matters. "Free and open" isn't a marketing line for Anki. It's the structural reason the ecosystem has thousands of shared decks and a decade of community maintenance.

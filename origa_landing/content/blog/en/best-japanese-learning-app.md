@@ -90,7 +90,7 @@ The search for a Japanese learning app in your own language runs into almost no 
 3. **Look at the interface language.** If you don't study through English, apps with an English core will slow you down at every step.
 4. **Check migration.** If you already have an Anki deck, make sure the new app imports it. Throwing away years of progress is an unjustified cost.
 
-In most cases a working set is one memorization app plus one or two specialized tools (grammar, exam format). The goal is to cover categories without duplication, not to find "one best app." Origa tries to be the one app that covers vocabulary, kanji, grammar, and listening together, but see the limitations below.
+In most cases a working set is one memorization app plus one or two specialized tools (grammar, exam format). The goal is to cover categories without duplication. Origa tries to be the one app that covers vocabulary, kanji, grammar, and listening together, but see the limitations below.
 
 ## Origa's limitations
 
