@@ -35,6 +35,7 @@ grammar/grammar.json
 grammar/grammar_ko_vi.json
 grammar/grammar_v2.json
 grammar/grammar_precompute.rkyv
+kanji_art_manifest.json
 manifest.json
 ndlocr/deim.onnx
 ndlocr/parseq-100.onnx
@@ -439,6 +440,7 @@ phrases/precomputed/p0195.rkyv
 phrases/precomputed/p0196.rkyv
 phrases/precomputed/p0197.rkyv
 phrases/phrase_index.rkyv
+phrases/phrase_index.v3.rkyv
 pitch/index.json
 pitch/index.rkyv
 well_known_set/duolingo/n3/duolingo_en_n3_1.json

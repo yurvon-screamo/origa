@@ -61,5 +61,16 @@ Then('словари загружены через rkyv-блобы', async ({ cd
     ).toHaveLength(0);
 
     const rkyvRequests = cdnRequestLog.filter((url) => url.endsWith(".rkyv"));
-    expect(rkyvRequests.length, "all four rkyv blobs must be fetched").toBeGreaterThanOrEqual(4);
+    expect(rkyvRequests.length, "all rkyv blobs must be fetched").toBeGreaterThanOrEqual(4);
+
+    // #535: the phrase index must ride the v3 blob (deduplicated +
+    // deflated), with the legacy v2 blob never fetched by new clients.
+    expect(
+        cdnRequestLog.some((url) => url.endsWith("phrases/phrase_index.v3.rkyv")),
+        "the v3 phrase index blob must be on the fast path",
+    ).toBe(true);
+    expect(
+        cdnRequestLog.some((url) => url.endsWith("phrases/phrase_index.rkyv")),
+        "the legacy v2 phrase blob must not be fetched when v3 is present",
+    ).toBe(false);
 });
