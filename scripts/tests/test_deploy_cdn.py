@@ -366,7 +366,7 @@ def test_sync_directories_size_only_for_truly_static_dirs(tmp_path, monkeypatch)
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False):
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
@@ -378,40 +378,73 @@ def test_sync_directories_size_only_for_truly_static_dirs(tmp_path, monkeypatch)
     assert by_prefix["well_known_set/minna_n5"] is False  # release: keep mtime
 
 
-def test_sync_directories_cli_flag_forces_size_only_everywhere(
+def test_sync_directories_ignore_mtime_flag_covers_release_and_static(
     tmp_path, monkeypatch
 ):
     """``--ignore-mtime`` overrides the mtime rule in every directory."""
     import deploy_cdn
 
+    static_dir = tmp_path / "fonts"
+    static_dir.mkdir()
+    (static_dir / "f.woff2").write_bytes(b"x")
     release_dir = tmp_path / "well_known_set" / "minna_n5"
     release_dir.mkdir(parents=True)
     (release_dir / "set.json").write_text("{}", encoding="utf-8")
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False):
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
 
     deploy_cdn.sync_directories(tmp_path, dry_run=False, ignore_mtime=True)
 
-    assert dict(received)["well_known_set/minna_n5"] is True
+    by_prefix = dict(received)
+    assert by_prefix["well_known_set/minna_n5"] is True
+    assert by_prefix["fonts"] is True
+
+
+def test_sync_directories_force_bypasses_diff_for_all_dirs(tmp_path, monkeypatch):
+    """``--force`` re-uploads every sync-dir file — the recovery path when a
+    size-only directory receives a same-size content edit."""
+    import deploy_cdn
+
+    static_dir = tmp_path / "fonts"
+    static_dir.mkdir()
+    (static_dir / "f.woff2").write_bytes(b"x")
+
+    received: list[tuple[str, bool]] = []
+
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+        received.append((prefix, force))
+
+    monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
+
+    deploy_cdn.sync_directories(tmp_path, dry_run=False, force=True)
+
+    assert dict(received)["fonts"] is True
 
 
 def test_size_only_sync_dirs_are_immutable_tier():
-    """Every size-only dir must map to the immutable Cache-Control tier.
+    """Two-way coupling guard between sync mode and cache policy.
 
-    Guards the coupling between the sync mode and the cache policy: a dir
-    may only skip the mtime signal when its content is genuinely immutable.
+    Forward: every size-only dir must be in SYNC_DIRS and map to the
+    immutable Cache-Control tier. Reverse: every immutable-tier SYNC_DIR
+    must be size-only — otherwise a new static directory added to SYNC_DIRS
+    and _cdn_cache but forgotten in SIZE_ONLY_SYNC_DIRS silently
+    re-introduces the #551 mtime-skew re-upload for that directory.
     """
     import deploy_cdn
     from _cdn_cache import IMMUTABLE, cache_control_for
 
-    from deploy_cdn import SIZE_ONLY_SYNC_DIRS
+    from deploy_cdn import SIZE_ONLY_SYNC_DIRS, SYNC_DIRS
 
     assert SIZE_ONLY_SYNC_DIRS, "static set must not be empty"
     for dir_name in SIZE_ONLY_SYNC_DIRS:
-        assert dir_name in deploy_cdn.SYNC_DIRS, dir_name
+        assert dir_name in SYNC_DIRS, dir_name
         assert cache_control_for(dir_name + "/") == IMMUTABLE, dir_name
+
+    for dir_name in SYNC_DIRS:
+        if cache_control_for(dir_name + "/") == IMMUTABLE:
+            assert dir_name in SIZE_ONLY_SYNC_DIRS, dir_name

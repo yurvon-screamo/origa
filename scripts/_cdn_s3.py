@@ -506,8 +506,11 @@ def list_remote_objects(prefix: str) -> dict[str, RemoteObject]:
     """Map remote object keys under ``prefix`` to size + last-modified time.
 
     Paginates list-objects-v2 fully. ``sync_directory`` diffs this against
-    local files (size + mtime) so unchanged static objects (100k+ kanji/audio/
-    model files) are not re-uploaded on every deploy.
+    local files. Change detection depends on the directory's cache tier:
+    release-updated dirs compare size + mtime; truly-static dirs (immutable
+    content — audio, models, stroke art, fonts) compare byte size only,
+    because a git checkout refreshes local mtimes in bulk and the mtime rule
+    would otherwise re-upload 100k+ unchanged files on every deploy (#551).
     """
     client = _s3_upload_client()
     normalized = prefix if prefix.endswith("/") else prefix + "/"
@@ -536,6 +539,7 @@ def sync_directory(
     cache_control: str,
     dry_run: bool,
     ignore_mtime: bool = False,
+    force: bool = False,
 ) -> None:
     """Upload new/changed local files under ``local_dir`` to a bucket prefix.
 
@@ -544,10 +548,16 @@ def sync_directory(
     local mtime is newer than the remote LastModified. Shows a progress bar
     (count/total + percentage) for each directory.
 
+    ``force`` skips the diff entirely and re-uploads every file — the
+    recovery path when a size-only directory (see ``deploy_cdn``) receives a
+    same-size content edit that the size comparison cannot see.
+
     ``ignore_mtime`` drops the mtime comparison and trusts matching byte
-    sizes. Use it on machines that are not the deploy origin: a cdn/ checkout
-    copied *after* the last deploy has fresh mtimes for every file, and the
-    mtime rule would otherwise re-upload the entire static tree.
+    sizes. It is the standing policy for truly-static directories (see
+    ``deploy_cdn.SIZE_ONLY_SYNC_DIRS``) and an opt-in for the rest via
+    ``--ignore-mtime``: a cdn/ checkout copied *after* the last deploy has
+    fresh mtimes for every file, and the mtime rule would otherwise
+    re-upload the entire static tree.
     """
     if dry_run:
         return
@@ -571,7 +581,8 @@ def sync_directory(
         stat_result = local_path.stat()
         info = remote.get(key)
         if (
-            info is not None
+            not force
+            and info is not None
             and info.size == stat_result.st_size
             and (
                 ignore_mtime

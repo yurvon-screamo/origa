@@ -15,9 +15,9 @@ import json
 import subprocess
 import sys
 import zlib
-from typing import Final
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Final
 
 import _cdn_cache
 import _cdn_s3
@@ -273,13 +273,19 @@ def upload_versioned_files(
         _cdn_s3.upload_file(local_path, relative_path, cache_control, dry_run)
 
 
-def sync_directories(cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False) -> None:
+def sync_directories(
+    cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False, force: bool = False
+) -> None:
     """Sync all SYNC_DIRS; size-only change detection for truly-static ones.
 
     ``ignore_mtime`` (CLI ``--ignore-mtime``) forces size-only comparison for
     every directory. Additionally, dirs in SIZE_ONLY_SYNC_DIRS always compare
     by size only: their content is immutable, so a fresh local mtime from a
     git checkout operation must not trigger a re-upload (#551).
+
+    ``force`` (CLI ``--force``) skips the diff and re-uploads every sync-dir
+    file — the recovery path for a same-size content edit in a size-only
+    directory.
     """
     print("\nSyncing directories:")
     for dir_name in SYNC_DIRS:
@@ -291,16 +297,16 @@ def sync_directories(cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False) -
         # Each SYNC_DIR is homogeneous in update frequency (all-ML, all-art,
         # all-content), so one Cache-Control per directory is correct.
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
-        if dir_name in SIZE_ONLY_SYNC_DIRS:
-            print(f"  {dir_name}/  [{cache_control}] (size-only)")
-        else:
-            print(f"  {dir_name}/  [{cache_control}]")
+        effective = ignore_mtime or dir_name in SIZE_ONLY_SYNC_DIRS
+        marker = " (size-only)" if effective else ""
+        print(f"  {dir_name}/  [{cache_control}]{marker}")
         _cdn_s3.sync_directory(
             local_dir,
             dir_name,
             cache_control,
             dry_run,
-            ignore_mtime or dir_name in SIZE_ONLY_SYNC_DIRS,
+            effective,
+            force=force,
         )
 
 
@@ -644,8 +650,12 @@ def main() -> None:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Force upload all versioned files, ignoring manifest comparison. "
-        "Use when CDN actual files are stale but the manifest is current.",
+        help="Force upload all versioned files, ignoring manifest comparison, "
+        "and re-upload every sync-dir file, skipping the size/mtime diff. "
+        "The latter is the recovery path for a same-size content edit in a "
+        "size-only (truly-static) directory, which the size comparison "
+        "cannot detect. Use when CDN actual files are stale but the "
+        "manifest is current.",
     )
     parser.add_argument(
         "--force-all",
@@ -787,7 +797,7 @@ def main() -> None:
 
     # Step 5: Sync directories
     print("\nStep 5: Syncing directories...")
-    sync_directories(cdn_dir, dry_run, args.ignore_mtime)
+    sync_directories(cdn_dir, dry_run, args.ignore_mtime, force=args.force)
 
     # Step 6: Upload manifest
     print("\nStep 6: Uploading manifest...")
