@@ -27,8 +27,13 @@ export interface CompleteOnboardingOptions {
      * JLPT level picked at the level step. The summary then offers the
      * cumulative set (N5..level). Defaults to "N4" — the level every
      * existing caller was hardcoded to.
+     *
+     * `"none"` leaves the level step untouched so nothing is queued for
+     * import from there. MUST be paired with `skipApps: true` — otherwise
+     * app-progress selectors queue their studied sets back into the import
+     * and the corpus is no longer empty.
      */
-    level?: "N5" | "N4" | "N3" | "N2" | "N1";
+    level?: "N5" | "N4" | "N3" | "N2" | "N1" | "none";
 
     /**
      * Wait for the scoring step to become ready after the import. The
@@ -106,11 +111,14 @@ export async function completeOnboardingToScoring(
     await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
 
     // JLPT: select the requested level (cumulative corpus N5..level).
+    // "none" skips selection entirely — no sets are queued from this step.
     const level = options.level ?? "N4";
-    await page.getByTestId(`jlpt-option-${level.toLowerCase()}`).click();
-    await expect(page.getByTestId(`jlpt-option-${level.toLowerCase()}`)).toHaveClass(/selected/, {
-        timeout: 5000,
-    });
+    if (level !== "none") {
+        await page.getByTestId(`jlpt-option-${level.toLowerCase()}`).click();
+        await expect(page.getByTestId(`jlpt-option-${level.toLowerCase()}`)).toHaveClass(/selected/, {
+            timeout: 5000,
+        });
+    }
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
 
