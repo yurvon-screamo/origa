@@ -45,23 +45,15 @@ pub fn LessonHeader() -> impl IntoView {
     let total = Signal::derive(move || lesson_state.get().card_ids.len());
     let core_count_signal = Signal::derive(move || core_count.get());
 
-    // Report entry (ADR-055): enabled only while the answer is shown — the
-    // subject is built from the revealed answer, and on the question side a
-    // report modal would spoil it. `disabled` (not hidden) keeps the header
-    // layout stable across card phases. Two answer sources: regular lesson
-    // cards (`LessonState.showing_answer`) and the acquaintance hand training
+    // Report entry (ADR-055): active in every card phase. Spoiler guard: the
+    // subject is built from the revealed answer only after the reveal; on the
+    // question side it carries only what the user already sees, so the modal
+    // cannot spoil the answer. Two answer sources: regular lesson cards
+    // (`LessonState.showing_answer`) and the acquaintance hand training
     // (`AcquaintanceContext.showing_answer`).
     let acq_context = use_context::<AcquaintanceContext>();
     let acq_showing_answer = acq_context.as_ref().map(|acq| acq.showing_answer);
     let acq_current_card = acq_context.as_ref().map(|acq| acq.current_card);
-    let can_report = Signal::derive(move || {
-        if lesson_state.get().showing_answer {
-            return true;
-        }
-        acq_showing_answer
-            .as_ref()
-            .is_some_and(|signal| signal.get())
-    });
     let on_report = Callback::new(move |()| {
         let Some(feedback) = feedback.clone() else {
             return;
@@ -70,14 +62,22 @@ pub fn LessonHeader() -> impl IntoView {
         let lang = lesson_ctx.native_language.get_untracked();
         // During the acquaintance hand the subject comes from the hand slides
         // (the hand stores ids, not domain cards); regular cards come from
-        // the lesson state.
+        // the lesson state. The hand branch requires an active hand: the
+        // context outlives it, so a stale `current_card` must not hijack the
+        // subject of a regular review card.
         let current_id = acq_current_card
             .as_ref()
             .and_then(|signal| signal.get_untracked());
-        let subject = match (&acq_context, current_id) {
-            (Some(acq), Some(card_id)) => acquaintance_slide_subject(acq, &card_id),
-            _ => lesson_feedback_subject(&state, &lang),
+        let (subject, answer_shown) = match (&acq_context, current_id) {
+            (Some(acq), Some(card_id)) if acq_hand_active(acq) => (
+                acquaintance_slide_subject(acq, &card_id),
+                acq_showing_answer
+                    .as_ref()
+                    .is_some_and(|signal| signal.get_untracked()),
+            ),
+            _ => (lesson_feedback_subject(&state, &lang), state.showing_answer),
         };
+        let subject = subject.map(|subject| strip_unrevealed(subject, answer_shown));
         if let Some(subject) = subject {
             let ui_language = i18n.get_locale().to_string();
             feedback.open(
@@ -98,11 +98,11 @@ pub fn LessonHeader() -> impl IntoView {
         <div class="flex items-center gap-2 mb-2 shrink-0" data-testid="lesson-header">
             <button
                 data-testid="lesson-back-btn"
-                class="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+                class="flex items-center -m-2 p-2 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
                 aria-label={move || i18n.get_keys().common().back().inner().to_string()}
                 on:click=move |_| navigate("/home", Default::default())
             >
-                <Icon icon=icondata::LuArrowLeft width="14" height="14" />
+                <Icon icon=icondata::LuArrowLeft width="16" height="16" />
             </button>
 
             <div class="flex-1 min-w-0">
@@ -128,21 +128,35 @@ pub fn LessonHeader() -> impl IntoView {
             <button
                 data-testid="lesson-report-btn"
                 class="lesson-report-btn shrink-0"
-                disabled=move || !can_report.get()
-                aria-disabled=move || (!can_report.get()).to_string()
-                aria-label=move || {
-                    if can_report.get() {
-                        i18n.get_keys().feedback().lesson_report_aria().inner().to_string()
-                    } else {
-                        i18n.get_keys().feedback().lesson_report_disabled_aria().inner().to_string()
-                    }
-                }
+                aria-label={move || {
+                    i18n.get_keys().feedback().lesson_report_aria().inner().to_string()
+                }}
                 on:click=move |_| on_report.run(())
             >
                 <Icon icon=icondata::LuTriangleAlert width="16" height="16" />
             </button>
         </div>
     }
+}
+
+/// The acquaintance hand (presentation or training) is on screen. Mirrors the
+/// `acq_hand_active` predicate in `content.rs`: the context outlives the hand
+/// (the transition screen flips the stage to `Inactive`, while `hand` and
+/// `current_card` stay), so a stale `current_card` must not hijack the
+/// subject of a regular review card.
+fn acq_hand_active(acq: &AcquaintanceContext) -> bool {
+    acq.state
+        .with_untracked(|state| state.stage != AcquaintanceStage::Inactive && state.hand.is_some())
+}
+
+/// Spoiler guard (ADR-055): before the reveal the modal may show only what
+/// the question side already shows — drop the reading and the answer context.
+fn strip_unrevealed(mut subject: FeedbackSubject, answer_shown: bool) -> FeedbackSubject {
+    if !answer_shown {
+        subject.reading = None;
+        subject.context_line = None;
+    }
+    subject
 }
 
 /// Subject of the current acquaintance-hand training card, built from the
@@ -234,6 +248,13 @@ mod tests {
         .expect("deserialize vocab card fixture")
     }
 
+    fn vocab_card_with_answer(word: &str, translation: &str) -> Card {
+        serde_json::from_str(&format!(
+            r#"{{"Vocabulary":{{"word":{{"text":"{word}"}},"reverse_side":{{"text":"{translation}"}},"pos":null}}}}"#
+        ))
+        .expect("deserialize vocab card fixture")
+    }
+
     fn state_with_current_card(view: LessonCardView) -> LessonState {
         let slot = Ulid::new();
         let mut cards = HashMap::new();
@@ -276,5 +297,31 @@ mod tests {
     fn feedback_subject_none_for_empty_lesson() {
         let state = LessonState::default();
         assert!(lesson_feedback_subject(&state, &NativeLanguage::English).is_none());
+    }
+
+    /// Spoiler guard: before the reveal the subject must not carry the
+    /// answer (the modal would spoil it); after the reveal the answer is
+    /// the context line.
+    #[test]
+    fn spoiler_guard_hides_answer_before_reveal() {
+        let state = state_with_current_card(LessonCardView::Normal(vocab_card_with_answer(
+            "温度",
+            "temperature",
+        )));
+        let subject =
+            lesson_feedback_subject(&state, &NativeLanguage::English).expect("subject built");
+        assert_eq!(
+            subject.context_line.as_deref(),
+            Some("temperature"),
+            "builder must expose the answer for the guard to strip"
+        );
+
+        let guarded = strip_unrevealed(subject.clone(), false);
+        assert_eq!(guarded.surface, "温度");
+        assert_eq!(guarded.context_line, None);
+        assert_eq!(guarded.reading, None);
+
+        let revealed = strip_unrevealed(subject, true);
+        assert_eq!(revealed.context_line.as_deref(), Some("temperature"));
     }
 }
