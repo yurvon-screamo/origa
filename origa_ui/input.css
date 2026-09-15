@@ -6496,7 +6496,8 @@ rt {
 
 /* Lesson header report button (ADR-055): same quiet pattern as the mute
    button, tinted with the error color so the affordance reads instantly.
-   `disabled` on the question phase keeps the header layout stable. */
+   Active in every card phase — on the question side the report subject is
+   built without the answer (spoiler guard). */
 .lesson-report-btn {
     padding: 6px;
     color: var(--error);
@@ -6508,16 +6509,10 @@ rt {
     align-items: center;
 }
 
-.lesson-report-btn:hover:not(:disabled) {
+.lesson-report-btn:hover {
     opacity: 0.75;
 }
 
-.lesson-report-btn:active:not(:disabled) {
+.lesson-report-btn:active {
     transform: translateY(1px);
-}
-
-.lesson-report-btn:disabled {
-    color: var(--fg-light);
-    cursor: default;
-    opacity: 0.6;
 }
