@@ -512,7 +512,12 @@ jobs:
             - name: Setup Android SDK + NDK + emulator
               uses: android-actions/setup-android@v4
               with:
-                  packages: 'tools platform-tools ndk;${{ env.NDK_VERSION }} emulator system-images;android-34;google_apis;x86_64'
+                  # The legacy `tools` package was removed from Google's SDK
+                  # repository; sdkmanager on the current runner image
+                  # (cmdline-tools 20.0) fails the whole step with
+                  # "Failed to find package 'tools'". cmdline-tools are
+                  # preinstalled, nothing consumes the legacy directory.
+                  packages: 'platform-tools ndk;${{ env.NDK_VERSION }} emulator system-images;android-34;google_apis;x86_64'
 
             - name: Configure NDK environment
               # setup-android@v4 exports ANDROID_SDK_ROOT/ANDROID_HOME but NOT
