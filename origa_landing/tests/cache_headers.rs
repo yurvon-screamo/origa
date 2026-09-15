@@ -127,6 +127,85 @@ async fn image_has_immutable_cache() {
     assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
 }
 
+/// Same-origin landing web fonts (@font-face rules in style/input.css,
+/// files committed under public/fonts/landing/ and served immutable via
+/// the /fonts nest_service). The test below DERIVES the expected font list
+/// from input.css, so an @font-face added without its woff2 file fails
+/// here instead of 404-ing in production — the exact failure mode of the
+/// 2026-09 incident this test guards against.
+const INPUT_CSS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/style/input.css");
+
+/// Extract every `/fonts/landing/…` URL referenced by a `src: url("…")` in
+/// input.css. Manual scan (no regex): each match starts at `url("/fonts/`
+/// and ends at the closing `")`.
+fn landing_font_urls() -> Vec<String> {
+    let css = std::fs::read_to_string(INPUT_CSS).expect("style/input.css is readable");
+    let mut urls = Vec::new();
+    let mut rest = css.as_str();
+    while let Some(start) = rest.find("url(\"/fonts/") {
+        let after = &rest[start + "url(\"".len()..];
+        let Some(end) = after.find("\")") else {
+            break;
+        };
+        urls.push(after[..end].to_string());
+        rest = &after[end..];
+    }
+    urls
+}
+
+#[tokio::test]
+async fn every_input_css_font_face_resolves_to_committed_file() {
+    let urls = landing_font_urls();
+    assert!(
+        urls.len() >= 10,
+        "input.css references {} landing fonts; expected at least the 10 \
+         shipped ones — did the @font-face block move or get renamed?",
+        urls.len()
+    );
+
+    let mut broken = Vec::new();
+    for path in &urls {
+        let (status, cc) = status_and_cache_control(path).await;
+        if status != StatusCode::OK {
+            broken.push(format!(
+                "{path}: status {status} (file missing from public/?):"
+            ));
+        } else if cc.as_deref() != Some("public, max-age=31536000, immutable") {
+            broken.push(format!("{path}: not immutable ({cc:?})"));
+        }
+    }
+    assert!(
+        broken.is_empty(),
+        "input.css @font-face references that do not resolve to a committed, \
+         immutably-served file:\n{}",
+        broken.join("\n")
+    );
+}
+
+#[tokio::test]
+async fn stylesheet_href_keeps_cache_bust_suffix() {
+    // The stylesheet is served immutable; app.rs MUST reference it with a
+    // `?v=` cache-bust suffix or returning visitors keep stale CSS for a
+    // year. This only guards the suffix itself — bumping `v` on every CSS
+    // change remains a manual contract (see the comment at the href).
+    let app_rs = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/app.rs"))
+        .expect("src/app.rs is readable");
+    assert!(
+        app_rs.contains("landing.processed.css?v="),
+        "stylesheet href lost its ?v= cache-bust suffix"
+    );
+}
+
+#[tokio::test]
+async fn versioned_css_query_serves_immutable() {
+    // app.rs pins the stylesheet with a `?v=` cache-bust suffix (immutable
+    // contract: bump v on ANY css change). The route matches on path only,
+    // so the query-carrying URL must be served by the same ServeFile.
+    let (status, cc) = status_and_cache_control("/landing.processed.css?v=20260915").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(cc.as_deref(), Some("public, max-age=31536000, immutable"));
+}
+
 #[tokio::test]
 async fn robots_txt_has_no_cache() {
     let cc = cache_control("/robots.txt").await;

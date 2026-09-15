@@ -25,8 +25,8 @@ use crate::content::{LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_SECS, Locale};
 const HTML_CACHE: &str = "public, max-age=300";
 
 /// Hashed/static assets that never change between releases (favicon, OG image,
-/// prebuilt CSS, `/images/*`). A year of immutable caching is the standard max
-/// for HTTP/1.1 caches.
+/// prebuilt CSS, `/images/*`, `/fonts/*`). A year of immutable caching is the
+/// standard max for HTTP/1.1 caches.
 const IMMUTABLE_CACHE: &str = "public, max-age=31536000, immutable";
 
 /// Crawl-control files (robots.txt, sitemap.xml): search engines must always
@@ -113,6 +113,19 @@ pub fn build_router(leptos_options: LeptosOptions) -> Router {
         .nest_service(
             "/images",
             ServeDir::new(format!("{public_dir}/images")).insert_response_header_if_not_present(
+                CACHE_CONTROL,
+                HeaderValue::from_static(IMMUTABLE_CACHE),
+            ),
+        )
+        // Same-origin landing web fonts (public/fonts/landing/, see
+        // style/input.css). The font version (v21/v16) is part of the
+        // filename, so a deliberate font upgrade changes the URL and the
+        // immutable copy cannot go stale the way an unversioned asset would;
+        // content changes within one upstream font version are not covered
+        // by that guarantee — treat them like an upgrade and rename.
+        .nest_service(
+            "/fonts",
+            ServeDir::new(format!("{public_dir}/fonts")).insert_response_header_if_not_present(
                 CACHE_CONTROL,
                 HeaderValue::from_static(IMMUTABLE_CACHE),
             ),
