@@ -29,7 +29,7 @@ re-sign — **до** загрузки в ASC. Слоты сертификато�
   `origa-ci-*` профили и их сертификаты — retry релиза или подряд идущие rc-теги
   отзывали сертификат соседнего прогона в полёте.
 
-Корневая причина всего цикла — auto-provisioning: с видимимыми `APPLE_API_*`
+Корневая причина всего цикла — auto-provisioning: с видимым `APPLE_API_*`
 кредами tauri-cli вообще не подписывает архив
 (`skip_signing = credentials.is_some()`, `mobile/ios/build.rs`) и доверяет
 подпись export-time `-allowProvisioningUpdates`, который минтит сертификаты.
@@ -89,7 +89,8 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
 - Годовая ротация секрета cert+profile (см. runbook) — та же дисциплина, что у
   существующих `APPLE_MAC_APP_CERT_P12` macOS-секретов.
 - При смене capabilities App ID профиль надо перегенерировать в портале и
-  обновить секрет (manual signing не самозаляется — осознанный trade-off).
+  обновить секрет (manual signing не обновляет его автоматически — осознанный
+  trade-off).
 - **Runbook ротации** (раз в год, до истечения срока действия сертификата):
   1. Портал → Certificates: создать новый Apple Distribution (CSR/P12), не
      отзывая старый до завершения перехода.
