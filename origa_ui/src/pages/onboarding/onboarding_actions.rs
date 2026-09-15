@@ -110,8 +110,44 @@ pub(super) fn create_on_start_import_callback(
         spawn_local(async move {
             let set_ids = state.get().get_final_sets();
 
+            // An empty selection is a valid outcome: the user chose to import
+            // nothing. Persist the choices made on the earlier steps (daily
+            // load, JLPT progress) through the same sync checkpoint as the
+            // skip path, then advance to Scoring — with no imported sets the
+            // scoring queue is empty and completes immediately, so onboarding
+            // finishes from there. Error branches below stay log-only by
+            // parity with the skip/import paths (surfacing errors in
+            // onboarding UI is a separate concern); the button un-sticks and
+            // the user can retry.
             if set_ids.is_empty() {
-                tracing::warn!("No sets selected for import");
+                tracing::info!("No sets selected for import — advancing to scoring");
+
+                let Ok(Some(mut user)) = repo.get_current_user().await else {
+                    tracing::error!(
+                        "Onboarding empty import: get_current_user failed or no user record"
+                    );
+                    is_importing.set(false);
+                    return;
+                };
+
+                user.set_daily_load(state.get_untracked().daily_load);
+                recalculate_user_jlpt_progress(&mut user);
+
+                // Hard block on remote failure: this save commits the daily
+                // load picked on step 2 — proceeding without it would
+                // silently drop the user's choice.
+                if let Err(e) = repo.save_sync(&user).await {
+                    tracing::error!("Onboarding empty import: save error: {:?}", e);
+                    is_importing.set(false);
+                    return;
+                }
+
+                if disposed.is_disposed() {
+                    return;
+                }
+                state.update(|s| {
+                    s.go_to_next_step();
+                });
                 is_importing.set(false);
                 return;
             }
