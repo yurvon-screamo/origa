@@ -359,7 +359,9 @@ jobs:
             - name: Setup Android SDK + NDK
               uses: android-actions/setup-android@v4
               with:
-                  packages: 'tools platform-tools ndk;${{ env.NDK_VERSION }}'
+                  # Same rationale as ci.yml: the legacy `tools` package is
+                  # gone from Google's repository and fails sdkmanager.
+                  packages: 'platform-tools ndk;${{ env.NDK_VERSION }}'
 
             - name: Configure NDK environment
               # setup-android@v4 exports ANDROID_SDK_ROOT/ANDROID_HOME but NOT
