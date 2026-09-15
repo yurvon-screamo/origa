@@ -72,10 +72,25 @@ between the injector landing and the CSP change (both shipped together).**
 ### 3. Tauri CSP extension
 
 `https://cloud.umami.is` is allow-listed in `script-src` (tracker) and
-`connect-src` (`/api/send` beacons, same host) in
-`tauri/build_config.rs::build_csp` and `tauri.conf.json` (byte-equality is
-drift-tested). Same pinning discipline as Sentry (ADR-036 §7): the host
-executes JS in the WebView where Tauri IPC is in reach, so no wildcards.
+`connect-src` in `tauri/build_config.rs::build_csp` and `tauri.conf.json`
+(byte-equality is drift-tested). Same pinning discipline as Sentry
+(ADR-036 §7): the host executes JS in the WebView where Tauri IPC is in
+reach, so no wildcards.
+
+**Post-mortem (2026-09-15):** the cloud tracker script does NOT send to its
+own origin — its built-in default endpoint is
+`https://gateway.umami.is/api/send` (unless `data-host-url` overrides it),
+and the tracker swallows fetch failures silently. The first release
+therefore loaded the script on desktop but dropped every beacon to the CSP.
+`connect-src` now also pins `https://gateway.umami.is`. Browsers (web app,
+landing) were never affected: no CSP header is served there.
+
+**Recurrence vector:** the CSP pins the tracker's *internal* default
+endpoint. If Umami changes that default in a future `script.js`, desktop
+repeats this exact silent failure (`catch {}` swallows it; e2e is muted and
+the wasm tests only assert tag attributes). The desktop Realtime check
+below is therefore a standing release-checklist item, not a one-time
+post-CSP gate.
 
 **Accepted supply-chain risk:** a compromise of Umami Cloud means hostile JS
 running inside the desktop app. Precedent: jsdelivr, sentry-cdn are already
