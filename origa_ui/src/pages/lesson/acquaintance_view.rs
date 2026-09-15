@@ -17,7 +17,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
-use origa::domain::{AcquaintanceSubphase, NativeLanguage};
+use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
 use origa::use_cases::{MarkCardAsKnownUseCase, TakeAcquaintanceReplacementUseCase};
 use std::collections::HashSet;
@@ -59,36 +59,6 @@ pub fn AcquaintanceView() -> impl IntoView {
                 .inner()
                 .to_string(),
             AcquaintanceStage::Completed | AcquaintanceStage::Inactive => String::new(),
-        }
-    });
-
-    // Направление тренировки слов — отдельным компактным тегом: единый
-    // длинный тег «фаза · направление» не влезал на мобильных и растягивал
-    // строку по вертикали.
-    let direction_label = Signal::derive(move || {
-        let ctx = ctx_stored.get_value();
-        if ctx.state.with(|state| state.stage) != AcquaintanceStage::Training {
-            return None;
-        }
-        match ctx
-            .state
-            .with(|state| state.hand.as_ref().and_then(|h| h.subphase()))
-        {
-            Some(AcquaintanceSubphase::Forward) => Some(
-                i18n.get_keys()
-                    .acquaintance()
-                    .dir_forward()
-                    .inner()
-                    .to_string(),
-            ),
-            Some(AcquaintanceSubphase::Reverse) => Some(
-                i18n.get_keys()
-                    .acquaintance()
-                    .dir_reverse()
-                    .inner()
-                    .to_string(),
-            ),
-            None => None,
         }
     });
 
@@ -158,13 +128,15 @@ pub fn AcquaintanceView() -> impl IntoView {
     });
 
     // Кнопка озвучки видна, когда японская сторона слова на экране
-    // (Reverse-фронт прячет её — кнопка не подсказывает ответ).
+    // (Reverse-фронт и аудио-фронт Forward прячет её — кнопка не дублирует
+    // повтор в теле аудио-фронта и не подсказывает ответ голосом).
     let audio_visible = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
         audio_button_visible(
             state.stage,
             state.hand.as_ref().and_then(|hand| hand.subphase()),
+            ctx.audio_front.get(),
             ctx.showing_answer.get(),
             current_word.get().is_some(),
         )
@@ -185,11 +157,6 @@ pub fn AcquaintanceView() -> impl IntoView {
                 <Tag test_id=Signal::derive(|| "acquaintance-phase-tag".to_string())>
                     {move || phase_label.get()}
                 </Tag>
-                <Show when=move || direction_label.get().is_some()>
-                    <Tag test_id=Signal::derive(|| "acquaintance-direction-tag".to_string())>
-                        {move || direction_label.get().unwrap_or_default()}
-                    </Tag>
-                </Show>
                 <Show when=move || card_type_tag.get().is_some()>
                     <Tag
                         variant=Signal::derive(move || {
