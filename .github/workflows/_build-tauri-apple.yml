@@ -242,6 +242,30 @@ jobs:
                   # through the --config merge patch — belt and braces alongside
                   # the team ID tauri-cli derives from the P12 certificate.
                   APP_STORE_CONFIG="{\"bundle\":{\"iOS\":{\"developmentTeam\":\"$APPLE_TEAM_ID\"}}}"
+                  # Belt and braces: pin PROVISIONING_PROFILE_SPECIFIER ourselves.
+                  # tauri-cli derives the profile UUID with `security cms -D` and
+                  # swallows failures (uuid().ok() -> None), leaving Manual signing
+                  # without a profile specifier — archive fails with "requires a
+                  # provisioning profile". Writing the key here is idempotent:
+                  # synchronize_project_config only overwrites keys it resolved.
+                  PROFILE_DECODED=$(mktemp)
+                  printf '%s' "$IOS_MOBILE_PROVISION" | base64 --decode > "$PROFILE_DECODED"
+                  PROFILE_PLIST=$(mktemp)
+                  security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
+                  PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
+                  PBXPROJ=tauri/gen/apple/origa-app.xcodeproj/project.pbxproj
+                  sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
+                              PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" "$PBXPROJ"
+                  grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBXPROJ" > /tmp/spec_count
+                  if [ "$(cat /tmp/spec_count)" != "2" ]; then
+                    echo "::error::PROVISIONING_PROFILE_SPECIFIER injection failed (count $(cat /tmp/spec_count), expected 2)"
+                    exit 1
+                  fi
+                  # Same for the export step: tauri-cli merges its generated
+                  # options OVER this file, so keys it does not set survive.
+                  /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" \
+                    -c "Add :provisioningProfiles:net.uwuwu.origa string $PROFILE_UUID" \
+                    tauri/gen/apple/ExportOptions.plist 2>/dev/null || true
                   cargo tauri ios build \
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
