@@ -372,7 +372,9 @@ impl TrailBaseClient {
 
         let response = self
             .fetch(
-                "/api/auth/v1/oauth/apple/native",
+                // Upstream TrailBase v0.33.16+ native Sign in with Apple
+                // (auth.apple_native_client_id server config).
+                "/api/auth/v1/apple/authorize",
                 Method::POST,
                 Some(&AppleNativeLoginRequest {
                     identity_token,
