@@ -253,7 +253,8 @@ jobs:
                   PROFILE_PLIST=$(mktemp)
                   security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
                   PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
-                  PBXPROJ=tauri/gen/apple/origa-app.xcodeproj/project.pbxproj
+                  # NOTE: this step runs with working-directory: tauri.
+                  PBXPROJ=gen/apple/origa-app.xcodeproj/project.pbxproj
                   sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
                               PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" "$PBXPROJ"
                   grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBXPROJ" > /tmp/spec_count
@@ -265,7 +266,7 @@ jobs:
                   # options OVER this file, so keys it does not set survive.
                   /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" \
                     -c "Add :provisioningProfiles:net.uwuwu.origa string $PROFILE_UUID" \
-                    tauri/gen/apple/ExportOptions.plist 2>/dev/null || true
+                    gen/apple/ExportOptions.plist 2>/dev/null || true
                   cargo tauri ios build \
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
