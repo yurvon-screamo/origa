@@ -308,14 +308,22 @@ pub fn LessonContent() -> impl IntoView {
                             let failed_set: HashSet<Ulid> = failed_phrase_ids.into_iter().collect();
                             let mut cards_to_delete: Vec<Ulid> = Vec::new();
 
+                            // Only PERMANENT losses drop the phrase from the
+                            // lesson. Transient failures (chunk not loaded
+                            // yet — e.g. another batch holds it in flight,
+                            // #540) keep the card in the lesson: rendering
+                            // falls back until the details land, which is
+                            // strictly better than silently shrinking the
+                            // lesson for the rest of the session.
                             lesson_data.cards.retain(|(card_id, lc)| {
                                 if let Card::Phrase(pc) = lc.view().card() {
                                     let phrase_id = pc.phrase_id();
                                     if failed_set.contains(phrase_id) {
                                         if permanent.contains(phrase_id) {
                                             cards_to_delete.push(*card_id);
+                                            return false;
                                         }
-                                        return false;
+                                        return true;
                                     }
                                 }
                                 true
@@ -341,7 +349,7 @@ pub fn LessonContent() -> impl IntoView {
                             } else {
                                 tracing::warn!(
                                     count = failed_set.len(),
-                                    "Filtered transient-failed phrases from lesson (not deleting from deck)"
+                                    "Kept transient-failed phrases in the lesson (details still arriving; nothing deleted)"
                                 );
                             }
                         }

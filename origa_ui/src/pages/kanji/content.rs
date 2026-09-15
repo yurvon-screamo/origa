@@ -1,4 +1,6 @@
-use super::super::shared::{ListGrouping, card_list_view, create_card_list_context};
+use super::super::shared::{
+    CardListExtras, ListGrouping, card_list_view, create_card_list_context,
+};
 use super::kanji_card_item::KanjiCardItem;
 use crate::i18n::{t_string, use_i18n};
 use crate::repository::HybridUserRepository;
@@ -21,7 +23,9 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let ctx_for_render = ctx.clone();
     let empty_message = Signal::derive(move || t_string!(i18n, kanji_page.not_found).to_string());
 
-    card_list_view(ctx, ListGrouping::ByJlptLevel { card_type: CardType::Kanji }, true, "kanji", empty_message, Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start"), move |card| {
+    card_list_view(ctx, ListGrouping::ByJlptLevel { card_type: CardType::Kanji }, "kanji", empty_message, Some("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start"),
+        CardListExtras::default(),
+        move |card| {
         let ctx = ctx_for_render.clone();
         let card_id = *card.card_id();
         view! {

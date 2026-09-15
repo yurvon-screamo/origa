@@ -621,7 +621,8 @@
   },
   "phrases": {
     "not_found": "Không tìm thấy mẫu câu nào",
-    "hint": "Thẻ mẫu câu được tự động tạo khi bạn học hết các từ trong mẫu câu"
+    "hint": "Thẻ mẫu câu được tự động tạo khi bạn học hết các từ trong mẫu câu",
+    "search_in_progress": "Đang tìm trong tất cả các câu của bạn — kết quả sẽ tiếp tục xuất hiện…"
   },
   "feedback": {
     "title": "Báo cáo sự cố",
