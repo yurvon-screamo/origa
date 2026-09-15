@@ -1,5 +1,6 @@
 pub(crate) mod forms_adjective;
 pub(crate) mod forms_verb;
+pub(crate) mod near_miss;
 pub(crate) mod particles;
 pub mod quiz_generation;
 

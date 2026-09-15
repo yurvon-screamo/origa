@@ -30,8 +30,8 @@ pub use furigana::{
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
-    GrammarPracticeQuestion, apply_mutated_pattern, find_known_vocab_words_for_pos,
-    generate_grammar_distractors, generate_grammar_practice_questions,
+    GrammarPracticeQuestion, find_known_vocab_words_for_pos, generate_grammar_distractors,
+    generate_grammar_practice_questions,
 };
 pub use grammar::{detect_format_map_rules, detect_grammar_rules_in_text, detect_keyword_rules};
 pub use import_preview::{WordImportClassifier, WordImportOutcome, WordImportPreview};

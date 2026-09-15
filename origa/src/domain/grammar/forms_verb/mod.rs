@@ -16,6 +16,9 @@ pub use conjugations::{
     to_potential_form, to_sou_form_verb, to_stem_form, to_sugiru_form_verb, to_tai_form,
     to_tara_form, to_teru_form, to_toku_form, to_volitional_form, to_yasui_form, to_zu_form,
 };
+pub(crate) use godan_tables::{
+    GODAN_TO_IMPERATIVE, GODAN_TO_MIZENKEI, GODAN_TO_O_ROW, GODAN_TO_STEM,
+};
 pub use te_ta::{to_ta_form, to_te_form};
 
 #[cfg(test)]
