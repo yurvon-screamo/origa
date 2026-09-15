@@ -120,8 +120,6 @@ pub(super) fn create_on_start_import_callback(
             // onboarding UI is a separate concern); the button un-sticks and
             // the user can retry.
             if set_ids.is_empty() {
-                tracing::info!("No sets selected for import — advancing to scoring");
-
                 let Ok(Some(mut user)) = repo.get_current_user().await else {
                     tracing::error!(
                         "Onboarding empty import: get_current_user failed or no user record"
@@ -145,6 +143,9 @@ pub(super) fn create_on_start_import_callback(
                 if disposed.is_disposed() {
                     return;
                 }
+                // Logged after the checkpoint so the message states an
+                // outcome, not an intent that an error branch would refute.
+                tracing::info!("No sets selected for import — advancing to scoring");
                 state.update(|s| {
                     s.go_to_next_step();
                 });
