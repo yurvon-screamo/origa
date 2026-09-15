@@ -621,7 +621,8 @@
   },
   "phrases": {
     "not_found": "No phrases found",
-    "hint": "Phrase cards are auto-created when you learn all words in a phrase"
+    "hint": "Phrase cards are auto-created when you learn all words in a phrase",
+    "search_in_progress": "Searching all your phrases — results will keep appearing…"
   },
   "feedback": {
     "title": "Report a problem",
