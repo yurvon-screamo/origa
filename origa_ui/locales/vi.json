@@ -637,8 +637,7 @@
     "release_only": "Gửi báo cáo có sẵn trong bản phát hành chính thức",
     "offline_hint": "Cần kết nối mạng",
     "translator_report": "Bản dịch sai?",
-    "lesson_report_aria": "Báo cáo sự cố với thẻ này",
-    "lesson_report_disabled_aria": "Có sẵn sau khi trả lời"
+    "lesson_report_aria": "Báo cáo sự cố với thẻ này"
   },
   "ui": {
     "card_not_studied": "Thẻ này chưa được học",
