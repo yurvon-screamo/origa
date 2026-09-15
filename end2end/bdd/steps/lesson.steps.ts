@@ -74,16 +74,29 @@ Then('каждый круг тренировки показывает кажду
     }
 });
 
-Then('направление тренировки всё ещё яп→рус', async ({ page }) => {
-    await expect(page.getByTestId("acquaintance-direction-tag")).toContainText(
-        /ЯП\s*→\s*РУС/,
-    );
-});
-
-Then('направление тренировки меняется на рус→яп', async ({ page }) => {
-    await expect(page.getByTestId("acquaintance-direction-tag")).toContainText(
-        /РУС\s*→\s*ЯП/,
-    );
+Then('фронт тренировки показывает слово или аудио', async ({ page }) => {
+    const front = page.getByTestId("acquaintance-training-front");
+    await front.waitFor({ state: "visible", timeout: 10_000 });
+    // J-итерация: монета 50/50 аудио/текст живёт на фронте яп→рус. В
+    // e2e-среде аудио может быть недоступно — монета тогда даёт текстовый
+    // фронт. Сильный ассерт «ещё не реверсед»: Forward показывает
+    // японское слово ИЛИ кнопку прослушивания; Reverse показал бы
+    // только перевод.
+    const text = (await front.textContent()) ?? "";
+    const showsWord = /[\u3040-\u30ff\u4e00-\u9faf]/.test(text);
+    let showsAudio = false;
+    try {
+        await expect(front.getByTestId("acquaintance-audio-front-play")).toBeVisible({
+            timeout: 500,
+        });
+        showsAudio = true;
+    } catch {
+        showsAudio = false;
+    }
+    expect(
+        showsWord || showsAudio,
+        `фронт яп→рус показывает слово или аудио-кнопку, got: ${text}`,
+    ).toBe(true);
 });
 
 Then('фронт тренировки показывает перевод', async ({ page }) => {
@@ -347,6 +360,27 @@ Then('модалка закрыта и карта остаётся в руке',
 
 When('нажимает клавишу Пробел', async ({ page }) => {
     await page.keyboard.press(" ");
+});
+
+// --- Клавиатура в тренировке: J-итерация, монета 50/50 аудио/текст на
+// фронте яп→рус. На аудио-фронте Space занят повтором аудио, раскрытие
+// подсказывается Enter'ом (acquaintance_keyboard.rs). Шаг сам выбирает
+// клавишу по фактическому фронту: сценарий не флейкует на случайном
+// исходе монеты. ---
+
+When('нажимает клавишу Пробел в тренировке', async ({ page }) => {
+    await expect(page.getByTestId("acquaintance-training")).toBeVisible({
+        timeout: 10_000,
+    });
+    const audioFront = page.getByTestId("acquaintance-audio-front-play");
+    let isAudioFront = false;
+    try {
+        await expect(audioFront).toBeVisible({ timeout: 1_000 });
+        isAudioFront = true;
+    } catch {
+        isAudioFront = false;
+    }
+    await page.keyboard.press(isAudioFront ? "Enter" : " ");
 });
 
 // --- Клавиатура в тренировке: Пробел до раскрытия = «Показать ответ»

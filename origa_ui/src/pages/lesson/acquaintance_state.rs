@@ -2,31 +2,30 @@ use crate::repository::HybridUserRepository;
 use leptos::{prelude::*, task::spawn_local};
 use origa::domain::{AcquaintanceHand, AcquaintanceSubphase, NativeLanguage};
 use origa::use_cases::CompleteAcquaintanceHandUseCase;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use ulid::Ulid;
 
 use super::kanji_card_details::RadicalDisplay;
 use crate::ui_components::ReadingItem;
 
-/// Front kind of a training card in the reverse subphase (рус→яп):
-/// the default text front (translation to recall the word from) or the
-/// audio front (the word is only heard, never shown — trains listening
-/// recognition from the very first day; owner decision: 50/50 mix).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AcquaintanceFrontKind {
-    Audio,
-    Text,
-}
-
-/// Pure decision for the audio-front coin flip: audio only when the roll
-/// says so AND the word is actually voiceable. Kept as a free function so
-/// the randomness lives outside (UI rolls once per card per subphase).
-pub fn resolve_front_kind(roll: bool, audio_available: bool) -> AcquaintanceFrontKind {
-    if audio_available && roll {
-        AcquaintanceFrontKind::Audio
-    } else {
-        AcquaintanceFrontKind::Text
-    }
+/// Аудио-фронт тренировки: живёт ТОЛЬКО в подфазе «яп→рус» (Forward) —
+/// монета 50/50 бросается заново на КАЖДЫЙ показ: половина карт звучит
+/// без текста (юзер вспоминает перевод на слух), половина — текстовый
+/// фронт. Подфаза «рус→яп» (Reverse) — всегда текстовый реверсед, монета
+/// там не бросается (решение владельца, 2026-09-15).
+///
+/// Чистое решение одного броска: `true` (аудио-фронт) только для слова в
+/// Forward-подфазе при выпавшем roll и реальной озвучиваемости слова.
+/// Свободная функция: случайность и доступность аудио живут снаружи
+/// (UI), а инвариант «аудио-фронт недостижим на Reverse и несловесных
+/// картах» закреплён юнит-матрицей, а не рассыпан по Effect'у.
+pub fn resolve_audio_front(
+    is_word: bool,
+    subphase: Option<AcquaintanceSubphase>,
+    roll: bool,
+    audio_available: bool,
+) -> bool {
+    is_word && subphase == Some(AcquaintanceSubphase::Forward) && roll && audio_available
 }
 
 /// Стадии руки знакомства на странице урока (docs/acquaintance-mode.md):
@@ -51,12 +50,6 @@ pub struct AcquaintanceState {
     pub hand: Option<AcquaintanceHand>,
     pub slide_index: usize,
     pub skipped_ids: HashSet<Ulid>,
-    /// Front kind per card in the CURRENT reverse subphase: the coin is
-    /// flipped once at the card's first showing and then frozen (both
-    /// outcomes persist), so re-showings keep the same front even if the
-    /// mute or the pitch dictionary flips mid-subphase. Cleared on every
-    /// subphase change and on `start_new_hand`.
-    pub audio_fronts: HashMap<Ulid, AcquaintanceFrontKind>,
     /// Рука закрывается: персистенция идёт, экран завершения ещё не
     /// смонтирован (stage станет Completed после коммита записи — защита
     /// бага #462). UI в этом окне замораживает отвеченную карту и прячет
@@ -75,10 +68,12 @@ pub fn should_autoplay_word_audio(is_muted: bool, speech_supported: bool) -> boo
 /// Видимость кнопки озвучки в шапке руки: кнопка озвучивает японскую
 /// сторону слова — она доступна, только когда JP на экране. Reverse-фронт
 /// показывает перевод (JP скрыта) — кнопка спрятана, чтобы не подсказывать
-/// ответ голосом. Несловесные карты озвучивать нечем.
+/// ответ голосом. Аудио-фронт Forward-подфазы тоже прячет JP — повтор
+/// доступен кнопкой в теле фронта. Несловесные карты озвучивать нечем.
 pub fn audio_button_visible(
     stage: AcquaintanceStage,
     subphase: Option<AcquaintanceSubphase>,
+    audio_front: bool,
     showing_answer: bool,
     is_word: bool,
 ) -> bool {
@@ -87,8 +82,12 @@ pub fn audio_button_visible(
     }
     match stage {
         AcquaintanceStage::Presentation => true,
-        AcquaintanceStage::Training => {
-            subphase != Some(AcquaintanceSubphase::Reverse) || showing_answer
+        AcquaintanceStage::Training => match subphase {
+            Some(AcquaintanceSubphase::Reverse) => showing_answer,
+            Some(AcquaintanceSubphase::Forward) => !audio_front,
+            // Рука без подфаз не содержит слов: ветка недостижима при
+            // is_word = true, значение сохранено из прежней логики.
+            None => true,
         },
         AcquaintanceStage::Completed | AcquaintanceStage::Inactive => false,
     }
@@ -105,23 +104,7 @@ impl AcquaintanceState {
         self.hand = Some(hand);
         self.slide_index = 0;
         self.skipped_ids.clear();
-        self.audio_fronts.clear();
         self.hand_finishing = false;
-    }
-
-    /// Front kind of a training card: flips the coin at the card's first
-    /// showing in the current subphase and freezes the outcome (both Audio
-    /// and Text persist). Subsequent showings return the stored decision.
-    pub fn front_kind_for(
-        &mut self,
-        card_id: Ulid,
-        roll: bool,
-        audio_available: bool,
-    ) -> AcquaintanceFrontKind {
-        *self
-            .audio_fronts
-            .entry(card_id)
-            .or_insert_with(|| resolve_front_kind(roll, audio_available))
     }
 
     /// Переходит к следующей непомеченной «Уже знаю» карте.
@@ -217,6 +200,13 @@ pub struct AcquaintanceContext {
     /// шапка и TrainingBody делят его без чтений общего state, а дерево
     /// префазы стабильно (Memo-гейт content.rs не перемонтирует его).
     pub showing_answer: RwSignal<bool>,
+    /// Бросок монеты аудио-фронта ТЕКУЩЕЙ карты тренировки: свежий на
+    /// каждый показ (без заморозки — решение владельца). Пишет только
+    /// TrainingBody (Effect монеты, безусловная запись на каждый показ),
+    /// читают шапка (видимость кнопки озвучки) и клавиатурный предикат.
+    /// `true` достижим только для слова в Forward-подфазе — инвариант
+    /// держит `resolve_audio_front`.
+    pub audio_front: RwSignal<bool>,
 }
 
 impl AcquaintanceContext {
@@ -279,19 +269,29 @@ mod audio_button_visible_tests {
     const WORD: bool = true;
 
     #[rstest::rstest]
-    #[case::presentation(true, None, false)]
-    #[case::presentation_answer_shown(true, None, true)]
-    #[case::forward_front(true, Some(AcquaintanceSubphase::Forward), false)]
-    #[case::forward_answer(true, Some(AcquaintanceSubphase::Forward), true)]
-    #[case::reverse_front_hidden(false, Some(AcquaintanceSubphase::Reverse), false)]
-    #[case::reverse_answer(true, Some(AcquaintanceSubphase::Reverse), true)]
+    #[case::presentation(true, None, false, false)]
+    #[case::presentation_answer(true, None, false, true)]
+    #[case::forward_text_front(true, Some(AcquaintanceSubphase::Forward), false, false)]
+    #[case::forward_text_answer(true, Some(AcquaintanceSubphase::Forward), false, true)]
+    #[case::forward_audio_front_hidden(false, Some(AcquaintanceSubphase::Forward), true, false)]
+    #[case::forward_audio_answer_hidden(false, Some(AcquaintanceSubphase::Forward), true, true)]
+    #[case::reverse_front_hidden(false, Some(AcquaintanceSubphase::Reverse), false, false)]
+    #[case::reverse_answer(true, Some(AcquaintanceSubphase::Reverse), false, true)]
+    #[case::reverse_ignores_audio_front(false, Some(AcquaintanceSubphase::Reverse), true, false)]
     fn training_visibility_depends_on_jp_side(
         #[case] expected: bool,
         #[case] subphase: Option<AcquaintanceSubphase>,
+        #[case] audio_front: bool,
         #[case] showing_answer: bool,
     ) {
         assert_eq!(
-            audio_button_visible(AcquaintanceStage::Training, subphase, showing_answer, WORD),
+            audio_button_visible(
+                AcquaintanceStage::Training,
+                subphase,
+                audio_front,
+                showing_answer,
+                WORD,
+            ),
             expected
         );
     }
@@ -306,7 +306,10 @@ mod audio_button_visible_tests {
         #[case] is_word: bool,
         #[case] expected: bool,
     ) {
-        assert_eq!(audio_button_visible(stage, None, false, is_word), expected);
+        assert_eq!(
+            audio_button_visible(stage, None, false, false, is_word),
+            expected
+        );
     }
 }
 
@@ -347,7 +350,6 @@ mod advance_presentation_tests {
             hand: Some(hand),
             slide_index: 0,
             skipped_ids: HashSet::new(),
-            audio_fronts: HashMap::new(),
             hand_finishing: false,
         }
     }
@@ -404,7 +406,6 @@ mod advance_presentation_tests {
             hand: Some(hand),
             slide_index: 0,
             skipped_ids: HashSet::from([b]),
-            audio_fronts: HashMap::new(),
             hand_finishing: false,
         };
 
@@ -417,77 +418,71 @@ mod advance_presentation_tests {
 }
 
 #[cfg(test)]
-mod front_kind_tests {
+mod front_signal_tests {
     use super::*;
 
+    /// Матрица инварианта: аудио-фронт достижим ТОЛЬКО для слова в
+    /// Forward-подфазе при выпавшей монете и реальной озвучиваемости —
+    /// на Reverse и у несловесных карт фронт текстовый независимо от
+    /// броска (иначе протухший аудио-фронт озвучивал бы ответ Reverse
+    /// или ломал Space на кандзи/грамматике).
     #[rstest::rstest]
-    #[case::roll_with_audio(true, true, AcquaintanceFrontKind::Audio)]
-    #[case::roll_without_audio(true, false, AcquaintanceFrontKind::Text)]
-    #[case::no_roll_with_audio(false, true, AcquaintanceFrontKind::Text)]
-    #[case::no_roll_without_audio(false, false, AcquaintanceFrontKind::Text)]
-    fn resolve_front_kind_combines_roll_and_availability(
+    #[case::word_forward_roll_available(
+        true,
+        Some(AcquaintanceSubphase::Forward),
+        true,
+        true,
+        true
+    )]
+    #[case::word_forward_roll_unavailable(
+        true,
+        Some(AcquaintanceSubphase::Forward),
+        true,
+        false,
+        false
+    )]
+    #[case::word_forward_no_roll(true, Some(AcquaintanceSubphase::Forward), false, true, false)]
+    #[case::word_reverse_never(true, Some(AcquaintanceSubphase::Reverse), true, true, false)]
+    #[case::word_reverse_no_roll_never(
+        true,
+        Some(AcquaintanceSubphase::Reverse),
+        false,
+        true,
+        false
+    )]
+    #[case::non_word_forward_never(false, Some(AcquaintanceSubphase::Forward), true, true, false)]
+    #[case::word_no_subphase_never(true, None, true, true, false)]
+    fn audio_front_only_for_words_in_forward(
+        #[case] is_word: bool,
+        #[case] subphase: Option<AcquaintanceSubphase>,
         #[case] roll: bool,
         #[case] audio_available: bool,
-        #[case] expected: AcquaintanceFrontKind,
+        #[case] expected: bool,
     ) {
-        assert_eq!(resolve_front_kind(roll, audio_available), expected);
-    }
-
-    fn empty_state() -> AcquaintanceState {
-        AcquaintanceState::default()
-    }
-
-    #[test]
-    fn front_kind_frozen_after_first_showing_even_if_availability_flips() {
-        let card_id = Ulid::new();
-        let mut state = empty_state();
-
-        // First showing rolls Audio (voiceable at that moment).
         assert_eq!(
-            state.front_kind_for(card_id, true, true),
-            AcquaintanceFrontKind::Audio
-        );
-
-        // Re-showing in the same subphase: the SAME front even though the
-        // word is no longer voiceable (muted / dictionary not ready).
-        assert_eq!(
-            state.front_kind_for(card_id, true, false),
-            AcquaintanceFrontKind::Audio
+            resolve_audio_front(is_word, subphase, roll, audio_available),
+            expected
         );
     }
 
     #[test]
-    fn front_kind_text_outcome_also_persists() {
+    fn start_new_hand_resets_presentation_stream() {
         let card_id = Ulid::new();
-        let mut state = empty_state();
-
-        // First showing rolls Text (not voiceable right now).
-        assert_eq!(
-            state.front_kind_for(card_id, true, false),
-            AcquaintanceFrontKind::Text
-        );
-
-        // Later showings after the dictionary loaded: still Text — the
-        // card does not switch fronts mid-subphase.
-        assert_eq!(
-            state.front_kind_for(card_id, true, true),
-            AcquaintanceFrontKind::Text
-        );
-    }
-
-    #[test]
-    fn start_new_hand_clears_front_decisions() {
-        let card_id = Ulid::new();
-        let mut state = empty_state();
-        state.front_kind_for(card_id, true, true);
+        let mut state = AcquaintanceState {
+            stage: AcquaintanceStage::Completed,
+            slide_index: 1,
+            hand_finishing: true,
+            skipped_ids: HashSet::from([card_id]),
+            ..AcquaintanceState::default()
+        };
 
         let hand =
             AcquaintanceHand::new(vec![(card_id, origa::domain::CardType::Vocabulary)]).unwrap();
         state.start_new_hand(hand);
 
-        assert!(
-            state.audio_fronts.is_empty(),
-            "a new hand must re-roll every front decision"
-        );
+        assert_eq!(state.stage, AcquaintanceStage::Presentation);
+        assert_eq!(state.slide_index, 0);
+        assert!(!state.hand_finishing);
+        assert!(state.skipped_ids.is_empty());
     }
 }

@@ -1,6 +1,6 @@
 //! Клавиатура режима знакомства: те же хендлы, что в обычном уроке
 //! (спека §8.3): Space = показать/дальше, [1]/[2] = оценка. Аудио-фронт
-//! Reverse-подфазы: Space = повтор аудио, Enter = показать ответ.
+//! Forward-подфазы: Space = повтор аудио, Enter = показать ответ.
 
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceStage};
 use leptos::ev::KeyboardEvent;
@@ -24,7 +24,7 @@ pub enum AcquaintanceKeyAction {
 
 /// Чистая функция разрешения клавиши — покрывается host-тестами без
 /// браузерного окружения. `audio_front` — текущий фронт аудио
-/// (Reverse-подфаза, слово озвучивается вместо текста перевода).
+/// (Forward-подфаза, слово озвучивается вместо показа текста).
 pub fn resolve_key_action(
     stage: AcquaintanceStage,
     showing_answer: bool,
@@ -56,7 +56,7 @@ pub struct AcquaintanceKeyboardActions {
 
 /// Обработчик keydown: резолвит действие и исполняет колбэк.
 /// Guard на поля ввода — на стороне слушателя (`is_typing_target`);
-/// `is_audio_front` сообщает, озвучивается ли текущий фронт (Reverse).
+/// `is_audio_front` сообщает, озвучивается ли текущий фронт (Forward).
 pub fn create_acquaintance_keyboard_handler(
     ctx: AcquaintanceContext,
     showing_answer: RwSignal<bool>,
