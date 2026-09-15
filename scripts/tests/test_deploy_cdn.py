@@ -340,3 +340,78 @@ class TestGenerateKanjiArtManifest:
             (tmp_path / "kanji_art_manifest.json").read_text(encoding="utf-8")
         )
         assert manifest == {"frames": [], "animations": []}
+
+
+# ---------------------------------------------------------------------------
+# sync_directories — per-dir size-only change detection (#551)
+# ---------------------------------------------------------------------------
+
+
+def test_sync_directories_size_only_for_truly_static_dirs(tmp_path, monkeypatch):
+    """Immutable sync dirs compare by size only; release-updated keep mtime.
+
+    The #551 regression: a git branch switch bulk-refreshes local mtimes, and
+    the mtime rule then re-uploads 100k+ unchanged audio files on every
+    deploy. Truly-static dirs (immutable cache tier) must trust byte size.
+    """
+    import deploy_cdn
+
+    # One static and one release-updated dir, both present locally.
+    static_dir = tmp_path / "phrases" / "audio"
+    static_dir.mkdir(parents=True)
+    release_dir = tmp_path / "well_known_set" / "minna_n5"
+    release_dir.mkdir(parents=True)
+    (static_dir / "a.opus").write_bytes(b"x")
+    (release_dir / "set.json").write_text("{}", encoding="utf-8")
+
+    received: list[tuple[str, bool]] = []
+
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False):
+        received.append((prefix, ignore_mtime))
+
+    monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
+
+    deploy_cdn.sync_directories(tmp_path, dry_run=False, ignore_mtime=False)
+
+    by_prefix = dict(received)
+    assert by_prefix["phrases/audio"] is True  # static: size-only
+    assert by_prefix["well_known_set/minna_n5"] is False  # release: keep mtime
+
+
+def test_sync_directories_cli_flag_forces_size_only_everywhere(
+    tmp_path, monkeypatch
+):
+    """``--ignore-mtime`` overrides the mtime rule in every directory."""
+    import deploy_cdn
+
+    release_dir = tmp_path / "well_known_set" / "minna_n5"
+    release_dir.mkdir(parents=True)
+    (release_dir / "set.json").write_text("{}", encoding="utf-8")
+
+    received: list[tuple[str, bool]] = []
+
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False):
+        received.append((prefix, ignore_mtime))
+
+    monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
+
+    deploy_cdn.sync_directories(tmp_path, dry_run=False, ignore_mtime=True)
+
+    assert dict(received)["well_known_set/minna_n5"] is True
+
+
+def test_size_only_sync_dirs_are_immutable_tier():
+    """Every size-only dir must map to the immutable Cache-Control tier.
+
+    Guards the coupling between the sync mode and the cache policy: a dir
+    may only skip the mtime signal when its content is genuinely immutable.
+    """
+    import deploy_cdn
+    from _cdn_cache import IMMUTABLE, cache_control_for
+
+    from deploy_cdn import SIZE_ONLY_SYNC_DIRS
+
+    assert SIZE_ONLY_SYNC_DIRS, "static set must not be empty"
+    for dir_name in SIZE_ONLY_SYNC_DIRS:
+        assert dir_name in deploy_cdn.SYNC_DIRS, dir_name
+        assert cache_control_for(dir_name + "/") == IMMUTABLE, dir_name
