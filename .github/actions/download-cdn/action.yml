@@ -5,7 +5,7 @@ inputs:
   cache-key:
     description: "Cache key prefix"
     required: false
-    default: "cdn-data-v14"
+    default: "cdn-data-v15"
   cdn-base-url:
     description: "CDN base URL for downloading files"
     required: true
@@ -26,49 +26,40 @@ runs:
       env:
         CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
+        set -euo pipefail
+        VERIFY="$GITHUB_ACTION_PATH/scripts/verify_cdn_integrity.py"
+
         if [ "${{ steps.cache-cdn.outputs.cache-hit }}" != "true" ]; then
-          echo "cache_miss=true" >> $GITHUB_OUTPUT
+          echo "cache_miss=true" >> "$GITHUB_OUTPUT"
           exit 0
         fi
-        echo "Cache hit — verifying freshness via manifest..."
+        echo "Cache hit — verifying integrity..."
 
-        # Download fresh manifest to check if cached data is stale
-        curl -sSf --connect-timeout 10 --max-time 30 -o /tmp/fresh_manifest.json "${CDN_BASE}/manifest.json" || {
-          echo "WARN: Could not download fresh manifest, keeping cache"
-          echo "cache_miss=false" >> $GITHUB_OUTPUT
-          exit 0
-        }
-
-        STALE=0
-        # Check SHA256 of critical versioned files against fresh manifest
-        for f in "grammar/grammar.json" "grammar/grammar_v2.json"; do
-          if [ ! -s "cdn/$f" ]; then
-            echo "MISSING: cdn/$f"
-            STALE=$((STALE + 1))
-            continue
-          fi
-          expected=$(python3 -c "import json; print(json.load(open('/tmp/fresh_manifest.json'))['files']['$f'])" 2>/dev/null || echo "")
-          if [ -z "$expected" ]; then
-            echo "WARN: $f not found in fresh manifest, skipping hash check"
-            continue
-          fi
-          actual=$(sha256sum "cdn/$f" | cut -d' ' -f1)
-          if [ "$actual" != "$expected" ]; then
-            echo "STALE: cdn/$f (cached=$actual, expected=$expected)"
-            STALE=$((STALE + 1))
-          else
-            echo "FRESH: cdn/$f"
-          fi
-        done
-
-        if [ "$STALE" -gt 0 ]; then
-          echo "Cache stale ($STALE files outdated) — will re-download"
+        # A poisoned cache entry (e.g. saved after a partial download) must be
+        # caught here: any missing/empty file from cdn-manifest.txt invalidates it.
+        if ! python3 "$VERIFY" --cdn-dir cdn --file-list end2end/cdn-manifest.txt; then
+          echo "Cache incomplete — discarding and re-downloading"
           rm -rf cdn
-          echo "cache_miss=true" >> $GITHUB_OUTPUT
-        else
-          echo "Cache verified fresh"
-          echo "cache_miss=false" >> $GITHUB_OUTPUT
+          echo "cache_miss=true" >> "$GITHUB_OUTPUT"
+          exit 0
         fi
+
+        # Freshness: compare cached SHA256 against the fresh prod manifest.
+        # A transient manifest download failure must NOT discard a valid cache.
+        if ! curl -sSf --connect-timeout 10 --max-time 30 -o /tmp/fresh_manifest.json "${CDN_BASE}/manifest.json"; then
+          echo "WARN: Could not download fresh manifest, keeping cache"
+          echo "cache_miss=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if ! python3 "$VERIFY" --cdn-dir cdn --file-list end2end/cdn-manifest.txt --hash-manifest /tmp/fresh_manifest.json; then
+          echo "Cache stale — discarding and re-downloading"
+          rm -rf cdn
+          echo "cache_miss=true" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "Cache verified fresh"
+        echo "cache_miss=false" >> "$GITHUB_OUTPUT"
 
     - name: Download CDN data
       if: steps.verify.outputs.cache_miss == 'true'
@@ -78,28 +69,43 @@ runs:
       run: |
         set -euo pipefail
 
+        # Stall detection instead of a hard per-attempt timeout: large files
+        # (whisper .onnx, ~150 MB) survive slow-but-alive transfers, while a
+        # dead transfer aborts after 60 s below 10 KB/s. The absolute cap
+        # still bounds the worst case per attempt (issue #544).
+        CURL_OPTS=(--connect-timeout 10 --speed-limit 10240 --speed-time 60 --max-time 900)
+
         dl() {
           local file="$1"
           local url="$2"
           local retries=3
           for i in $(seq 1 $retries); do
-            if curl -sSf --connect-timeout 10 --max-time 120 -o "$file" "$url" && [ -s "$file" ]; then
+            if curl -sSf "${CURL_OPTS[@]}" -o "$file" "$url" && [ -s "$file" ]; then
               return 0
             fi
-            echo "Retry $i/$retries for $(basename $file)"
+            echo "Retry $i/$retries for $(basename "$file")"
             rm -f "$file"
-            sleep 2
+            sleep $((i * 5))
           done
           echo "FAILED: $file after $retries attempts"
           return 1
         }
 
-        TOTAL=$(wc -l < end2end/cdn-manifest.txt)
+        # Manifest lines are paths; blank lines and # markers (FONTS-START/END,
+        # consumed by scripts/subset_fonts.py) must never be downloaded.
+        # Counts lines, so duplicated manifest entries are counted twice; the
+        # integrity script counts unique paths (a set) and reports lower totals.
+        TOTAL=$(grep -cv -e '^[[:space:]]*$' -e '^[[:space:]]*#' end2end/cdn-manifest.txt || true)
         echo "Downloading $TOTAL CDN files from manifest..."
         OK=0
         FAIL=0
         while IFS= read -r path; do
-          [ -z "$path" ] && continue
+          # Trim leading/trailing whitespace to match the Python parser's
+          # strip() (verify_cdn_integrity.py); a whitespace-only line must be
+          # skipped, not downloaded as an empty path.
+          path="${path#"${path%%[![:space:]]*}"}"
+          path="${path%"${path##*[![:space:]]}"}"
+          case "$path" in ''|\#*) continue ;; esac
           mkdir -p "cdn/$(dirname "$path")"
           if dl "cdn/$path" "${CDN_BASE}/$path"; then
             OK=$((OK + 1))
@@ -109,32 +115,27 @@ runs:
         done < end2end/cdn-manifest.txt
         echo "Downloaded $OK/$TOTAL files ($FAIL failed)"
 
+        # Fail loud: a silently incomplete cdn/ used to reach the e2e jobs
+        # (issue #544) and, once cached, poisoned every subsequent run.
+        if [ "$FAIL" -gt 0 ]; then
+          echo "FATAL: $FAIL/$TOTAL manifest files failed to download"
+          exit 1
+        fi
+
     - name: Final verification
       shell: bash
-      env:
-        CDN_BASE: ${{ inputs.cdn-base-url }}
       run: |
+        set -euo pipefail
         echo "Verifying CDN data..."
         ERRORS=0
 
-        # Verify SHA256 of versioned files against manifest.json
-        if [ -s "cdn/manifest.json" ]; then
-          for f in "grammar/grammar.json" "grammar/grammar_v2.json"; do
-            if [ ! -s "cdn/$f" ]; then
-              echo "ERROR: cdn/$f is missing or empty!"
-              ERRORS=$((ERRORS + 1))
-              continue
-            fi
-            expected=$(python3 -c "import json; print(json.load(open('cdn/manifest.json'))['files']['$f'])" 2>/dev/null || echo "")
-            actual=$(sha256sum "cdn/$f" | cut -d' ' -f1)
-            actual_size=$(wc -c < "cdn/$f")
-            if [ -n "$expected" ] && [ "$actual" != "$expected" ]; then
-              echo "ERROR: cdn/$f hash mismatch (actual=$actual, expected=$expected) — stale!"
-              ERRORS=$((ERRORS + 1))
-            else
-              echo "  OK: cdn/$f ($actual_size bytes, hash verified)"
-            fi
-          done
+        # Single choke-point invariant (issue #544): cdn/ ⊇ cdn-manifest.txt
+        # (present and non-empty) plus SHA256 of every manifest.json entry the
+        # mirror downloads. Runs on both cache-hit and fresh-download paths.
+        if ! python3 "$GITHUB_ACTION_PATH/scripts/verify_cdn_integrity.py" \
+          --cdn-dir cdn --file-list end2end/cdn-manifest.txt \
+          --hash-manifest cdn/manifest.json; then
+          ERRORS=$((ERRORS + 1))
         fi
 
         # Size checks for other critical files
@@ -146,6 +147,10 @@ runs:
         MIN_SIZES["dictionaries/JmdictFurigana.txt"]=1000
         MIN_SIZES["phrases/phrase_index.json"]=100
         MIN_SIZES["pitch/index.json"]=100
+        # Truncation guards for the large ML models (not hash-covered).
+        MIN_SIZES["whisper/onnx/encoder_model.onnx"]=10000000
+        MIN_SIZES["whisper/onnx/decoder_model.onnx"]=50000000
+        MIN_SIZES["whisper/tokenizer.json"]=1000000
 
         for f in "${!MIN_SIZES[@]}"; do
           min_size=${MIN_SIZES[$f]}
@@ -163,11 +168,11 @@ runs:
           fi
         done
 
-        # Self-hosted fonts (ADR-028): the cdn-manifest FONTS block lists them,
-        # but the download loop only logs failures without aborting. Assert the
-        # subset landed, otherwise CI would go green while E2E renders Chinese
-        # fallback glyphs (woff2 404). Hashed names are globbed, so a missing
-        # deploy or a stale cdn-data cache is caught here.
+        # Self-hosted fonts (ADR-028): the download loop and the integrity
+        # script already guarantee every cdn-manifest path exists, but the
+        # subset is asserted explicitly here because the deployed woff2 files
+        # carry hashed names that are globbed. A missing deploy or a stale
+        # cdn-data cache is caught before E2E renders Chinese fallback glyphs.
         FONT_COUNT=$(find cdn/fonts -name '*.woff2' 2>/dev/null | wc -l)
         if [ "$FONT_COUNT" -lt 7 ]; then
           echo "ERROR: expected >=7 woff2 in cdn/fonts/, found $FONT_COUNT"
