@@ -4,7 +4,9 @@ mod godan_tables;
 mod irregulars;
 mod te_ta;
 
-#[cfg(test)]
+// `classify_verb` is required by the near-miss distractor generator
+// (`grammar/near_miss.rs`) to pick the decomposition strategy per verb
+// group; the cfg(test) gate predates that production consumer.
 pub use classify::{VerbGroup, classify_verb};
 pub use conjugations::{
     to_ba_form, to_causative_form, to_causative_passive_form, to_chau_form, to_imperative_form,
