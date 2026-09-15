@@ -313,6 +313,50 @@ def test_sync_directory_same_size_newer_local_is_reuploaded(tmp_path, monkeypatc
     assert [key for _, key, _, _ in calls] == ["d/x.json"]
 
 
+def test_sync_directory_ignore_mtime_skips_same_size_newer_local(
+    tmp_path, monkeypatch
+):
+    # The #551 transport path: with ignore_mtime=True (the standing policy for
+    # truly-static dirs) a fresh local mtime alone must NOT trigger an upload.
+    local_dir = tmp_path / "d"
+    local_dir.mkdir()
+    target = local_dir / "a.opus"
+    target.write_bytes(b"exact-8")
+    calls, fake_upload = _record_uploads()
+    monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
+    monkeypatch.setattr(
+        _cdn_s3,
+        "list_remote_objects",
+        lambda prefix: {"d/a.opus": RemoteObject(7, 0.0)},  # same size, ancient remote
+    )
+
+    sync_directory(local_dir, "d", "immutable", dry_run=False, ignore_mtime=True)
+
+    assert calls == []
+
+
+def test_sync_directory_force_uploads_even_matching_remote(
+    tmp_path, monkeypatch
+):
+    # force skips the diff entirely — the recovery path when a size-only
+    # directory receives a same-size content edit the size comparison misses.
+    local_dir = tmp_path / "d"
+    local_dir.mkdir()
+    target = local_dir / "a.opus"
+    target.write_bytes(b"exact-8")
+    calls, fake_upload = _record_uploads()
+    monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload)
+    monkeypatch.setattr(
+        _cdn_s3,
+        "list_remote_objects",
+        lambda prefix: {"d/a.opus": RemoteObject(7, 9_999_999_999.0)},  # identical-looking
+    )
+
+    sync_directory(local_dir, "d", "immutable", dry_run=False, force=True)
+
+    assert [key for _, key, _, _ in calls] == ["d/a.opus"]
+
+
 def test_sync_directory_dry_run_does_nothing_offline(tmp_path, monkeypatch):
     # The deploy orchestrator prints a per-directory header itself; in dry-run
     # sync_directory must neither walk the (100k+) local tree nor list remote,
