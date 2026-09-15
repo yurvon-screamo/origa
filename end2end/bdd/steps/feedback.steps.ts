@@ -6,14 +6,9 @@ import { FeedbackPage, LessonPage } from "../../pages";
 // Lesson header report button (ADR-055)
 // ═══════════════════════════════════════════════════════════════════════
 
-// The alert-triangle button is disabled while the card shows its question
-// side: the report subject is built from the revealed answer, and an early
-// report would spoil the answer (see ADR-055).
-Then("кнопка проблемы на уроке неактивна", async ({ page }) => {
-    const lessonPage = new LessonPage(page);
-    await expect(lessonPage.reportButton).toBeVisible();
-    await expect(lessonPage.reportButton).toBeDisabled();
-});
+// The alert-triangle button opens the feedback form in every card phase
+// (ADR-055): on the question side the subject carries only the question
+// surface (spoiler guard), so an early report cannot spoil the answer.
 
 When("пользователь нажимает кнопку проблемы на уроке", async ({ page }) => {
     const lessonPage = new LessonPage(page);

@@ -637,8 +637,7 @@
     "release_only": "Sending reports is available in release builds",
     "offline_hint": "Connection required",
     "translator_report": "Wrong translation?",
-    "lesson_report_aria": "Report a problem with this card",
-    "lesson_report_disabled_aria": "Available after answering"
+    "lesson_report_aria": "Report a problem with this card"
   },
   "ui": {
     "card_not_studied": "Card hasn't been studied yet",

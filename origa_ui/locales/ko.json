@@ -637,8 +637,7 @@
     "release_only": "보고서 전송은 릴리스 빌드에서 사용할 수 있습니다",
     "offline_hint": "연결이 필요합니다",
     "translator_report": "번역이 틀렸나요?",
-    "lesson_report_aria": "이 카드에 문제 신고",
-    "lesson_report_disabled_aria": "답변 후 사용 가능"
+    "lesson_report_aria": "이 카드에 문제 신고"
   },
   "ui": {
     "card_not_studied": "아직 학습하지 않은 카드입니다",
