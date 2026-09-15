@@ -17,6 +17,7 @@ import sys
 import zlib
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Final
 
 import _cdn_cache
 import _cdn_s3
@@ -118,6 +119,26 @@ SYNC_DIRS = [
     "well_known_set/minna_n2",
     "well_known_set/spy_family",
 ]
+
+# Sync dirs whose content is truly static (immutable Cache-Control tier in
+# _cdn_cache.py): audio, ML models, stroke art, content-addressed fonts. Their
+# content changes only through deliberate regeneration, and the generator
+# never re-emits a different file under the same byte size in practice, so a
+# matching size means identical content. Change detection for these dirs trusts
+# byte size only (#551): the mtime rule is unreliable on a git working tree —
+# a branch switch/merge refreshes local mtimes in bulk, and every deploy then
+# "sees" 100k+ unchanged audio files as changed (a projected 4+ hour
+# full re-upload, observed since 2026-06).
+SIZE_ONLY_SYNC_DIRS: Final[frozenset[str]] = frozenset(
+    {
+        "fonts",
+        "kanji_animations",
+        "kanji_frames",
+        "ndlocr",
+        "phrases/audio",
+        "whisper",
+    }
+)
 
 # Kanji JLPT bundles — deployed as individual files (not in SYNC_DIRS because
 # they're generated top-level files in cdn/, not in a subdirectory)
@@ -252,7 +273,20 @@ def upload_versioned_files(
         _cdn_s3.upload_file(local_path, relative_path, cache_control, dry_run)
 
 
-def sync_directories(cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False) -> None:
+def sync_directories(
+    cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False, force: bool = False
+) -> None:
+    """Sync all SYNC_DIRS; size-only change detection for truly-static ones.
+
+    ``ignore_mtime`` (CLI ``--ignore-mtime``) forces size-only comparison for
+    every directory. Additionally, dirs in SIZE_ONLY_SYNC_DIRS always compare
+    by size only: their content is immutable, so a fresh local mtime from a
+    git checkout operation must not trigger a re-upload (#551).
+
+    ``force`` (CLI ``--force``) skips the diff and re-uploads every sync-dir
+    file — the recovery path for a same-size content edit in a size-only
+    directory.
+    """
     print("\nSyncing directories:")
     for dir_name in SYNC_DIRS:
         local_dir = cdn_dir / dir_name
@@ -263,8 +297,17 @@ def sync_directories(cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False) -
         # Each SYNC_DIR is homogeneous in update frequency (all-ML, all-art,
         # all-content), so one Cache-Control per directory is correct.
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
-        print(f"  {dir_name}/  [{cache_control}]")
-        _cdn_s3.sync_directory(local_dir, dir_name, cache_control, dry_run, ignore_mtime)
+        effective = ignore_mtime or dir_name in SIZE_ONLY_SYNC_DIRS
+        marker = " (size-only)" if effective else ""
+        print(f"  {dir_name}/  [{cache_control}]{marker}")
+        _cdn_s3.sync_directory(
+            local_dir,
+            dir_name,
+            cache_control,
+            dry_run,
+            effective,
+            force=force,
+        )
 
 
 def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
@@ -607,8 +650,12 @@ def main() -> None:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Force upload all versioned files, ignoring manifest comparison. "
-        "Use when CDN actual files are stale but the manifest is current.",
+        help="Force upload all versioned files, ignoring manifest comparison, "
+        "and re-upload every sync-dir file, skipping the size/mtime diff. "
+        "The latter is the recovery path for a same-size content edit in a "
+        "size-only (truly-static) directory, which the size comparison "
+        "cannot detect. Use when CDN actual files are stale but the "
+        "manifest is current.",
     )
     parser.add_argument(
         "--force-all",
@@ -631,10 +678,12 @@ def main() -> None:
     parser.add_argument(
         "--ignore-mtime",
         action="store_true",
-        help="Directory sync trusts matching byte sizes and skips the mtime "
-        "check. Use on machines that are not the deploy origin: a cdn/ "
-        "checkout copied after the last deploy has fresh mtimes everywhere, "
-        "and the mtime rule would re-upload the whole static tree.",
+        help="Force size-only comparison in ALL synced directories "
+        "(truly-static dirs in SIZE_ONLY_SYNC_DIRS always compare by "
+        "size only). Use on machines that are not the deploy origin: a "
+        "cdn/ checkout copied after the last deploy has fresh mtimes "
+        "everywhere, and the mtime rule would re-upload the whole "
+        "static tree.",
     )
     args = parser.parse_args()
     dry_run = args.dry_run
@@ -748,7 +797,7 @@ def main() -> None:
 
     # Step 5: Sync directories
     print("\nStep 5: Syncing directories...")
-    sync_directories(cdn_dir, dry_run, args.ignore_mtime)
+    sync_directories(cdn_dir, dry_run, args.ignore_mtime, force=args.force)
 
     # Step 6: Upload manifest
     print("\nStep 6: Uploading manifest...")

@@ -26,6 +26,7 @@ EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
     "whisper": IMMUTABLE,
     "fonts": IMMUTABLE,
     "phrases/data": RELEASE_UPDATED,
+    "phrases/precomputed": RELEASE_UPDATED,
     "well_known_set/duolingo": RELEASE_UPDATED,
     "well_known_set/irodori_nyuumon": RELEASE_UPDATED,
     "well_known_set/irodori_shokyuu1": RELEASE_UPDATED,
