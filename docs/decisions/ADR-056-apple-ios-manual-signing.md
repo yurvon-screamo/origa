@@ -101,6 +101,22 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
   5. Только после зелёного прогона отозвать старый сертификат. Одно письмо
      «has revoked your certificate» на этом шаге — **ожидаемо**, это плановая
      ротация, а не инцидент.
+- **Генерация cert/P12** (работает с любого Linux, ключ не покидает машину):
+  ```bash
+  openssl genrsa -out ci.key 2048
+  openssl req -new -key ci.key -out ci.csr -subj "/CN=Origa CI/O=Origa/C=US"
+  # портал: Certificates → Apple Distribution → upload ci.csr → download .cer
+  openssl x509 -inform der -in distribution.cer -out ci.pem
+  # ВАЖНО: -legacy обязателен — OpenSSL 3.x по умолчанию подписывает PKCS#12
+  # MAC'ом SHA-256, который macOS `security import` отвергает с обманчивым
+  # «MAC verification failed (wrong password?)». -legacy даёт SHA-1 MAC +
+  # RC2/3DES — формат, который принимает keychain.
+  openssl pkcs12 -export -legacy -inkey ci.key -in ci.pem -out ci.p12 \
+    -passout file:p12.password.txt
+  base64 -w0 ci.p12   # → APPLE_IOS_CERTIFICATE
+  ```
+  Рабочие материалы ротации живут на машине владельца в
+  `~/apple-certs-adr056/` (ключ 600, пароль P12 в `p12.password.txt`).
 - **Первичная настройка** (однократно): до неё CI-прогон iOS-джобы падает на
   префлайте «manual signing secrets present» — это fail-loud по дизайну;
   секреты должны существовать до мерджа этого ADR в master.
