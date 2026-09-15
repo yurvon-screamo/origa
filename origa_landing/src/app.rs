@@ -19,24 +19,26 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
                 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
                 <link rel="icon" type="image/png" href="/favicon.png" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-                // Fonts are self-hosted on the project CDN (@font-face rules in
-                // style/input.css); preload only the hero-critical serif faces.
-                // Cross-origin font preloads REQUIRE the crossorigin attribute
-                // even when anonymous, or browsers re-fetch and double-load.
-                <link rel="preconnect" href="https://s3.origa.uwuwu.net" crossorigin="anonymous" />
+                // Fonts are self-hosted same-origin from /fonts/landing/
+                // (@font-face rules in style/input.css); preload only the
+                // two faces above the fold — the serif headline face and the
+                // mono body face. The crossorigin attribute is REQUIRED for
+                // as=font preloads even same-origin — without it browsers
+                // fetch twice (the preload is discarded because the font
+                // fetch is CORS-mode).
                 <link
                     rel="preload"
                     attr:as="font"
                     type="font/woff2"
                     crossorigin="anonymous"
-                    href="https://s3.origa.uwuwu.net/fonts/landing/cormorant-garamond-v21-cyrillic_latin-300.woff2"
+                    href="/fonts/landing/cormorant-garamond-v21-cyrillic_latin-300.woff2"
                 />
                 <link
                     rel="preload"
                     attr:as="font"
                     type="font/woff2"
                     crossorigin="anonymous"
-                    href="https://s3.origa.uwuwu.net/fonts/landing/dm-mono-v16-latin_latin-ext-regular.woff2"
+                    href="/fonts/landing/dm-mono-v16-latin_latin-ext-regular.woff2"
                 />
                 <meta name="yandex-verification" content="95bbd9366a113be4" />
                 <meta name="google-site-verification" content="8HXC9phyHedz5AeimJ12tIo7HtXXHrnm2ewE4Qm3zEw" />
@@ -67,7 +69,13 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/landing.processed.css" />
+        // The `?v=` suffix is the immutable-cache contract for the stylesheet
+        // (served with `max-age=31536000, immutable` in src/server.rs):
+        // browsers keep it for a year and never revalidate, so ANY change to
+        // landing.css MUST bump `v` here, or returning visitors keep the old
+        // CSS. Query strings are part of the browser/edge cache key, while
+        // the route in server.rs matches on path only.
+        <Stylesheet id="leptos" href="/landing.processed.css?v=20260915" />
         <Title text="Origa — Japanese Learning App" />
         <Router>
             <Routes fallback=NotFound>
