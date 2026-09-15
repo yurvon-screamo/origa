@@ -407,12 +407,17 @@ def test_sync_directories_ignore_mtime_flag_covers_release_and_static(
 
 def test_sync_directories_force_bypasses_diff_for_all_dirs(tmp_path, monkeypatch):
     """``--force`` re-uploads every sync-dir file — the recovery path when a
-    size-only directory receives a same-size content edit."""
+    size-only directory receives a same-size content edit. Both static and
+    release dirs are covered so a future narrowing of force to size-only
+    dirs cannot slip through."""
     import deploy_cdn
 
     static_dir = tmp_path / "fonts"
     static_dir.mkdir()
     (static_dir / "f.woff2").write_bytes(b"x")
+    release_dir = tmp_path / "well_known_set" / "minna_n5"
+    release_dir.mkdir(parents=True)
+    (release_dir / "set.json").write_text("{}", encoding="utf-8")
 
     received: list[tuple[str, bool]] = []
 
@@ -423,7 +428,9 @@ def test_sync_directories_force_bypasses_diff_for_all_dirs(tmp_path, monkeypatch
 
     deploy_cdn.sync_directories(tmp_path, dry_run=False, force=True)
 
-    assert dict(received)["fonts"] is True
+    by_prefix = dict(received)
+    assert by_prefix["fonts"] is True
+    assert by_prefix["well_known_set/minna_n5"] is True
 
 
 def test_size_only_sync_dirs_are_immutable_tier():

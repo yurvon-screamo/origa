@@ -564,7 +564,9 @@ def sync_directory(
     import time as _time
 
     base_prefix = prefix.rstrip("/") + "/"
-    remote = list_remote_objects(prefix)
+    # force skips the diff entirely, so the remote listing would be dead work
+    # (a minute+ of pagination across 100k+ objects on the recovery path).
+    remote = {} if force else list_remote_objects(prefix)
 
     # Count total files first for progress bar
     all_files = [
