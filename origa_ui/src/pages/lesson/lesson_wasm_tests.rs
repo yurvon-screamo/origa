@@ -1272,6 +1272,7 @@ mod acquaintance_training {
             native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
             current_card: RwSignal::new(None),
             showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
         }
     }
 
@@ -2061,6 +2062,7 @@ mod acquaintance_training_fronts {
             native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
             current_card: RwSignal::new(None),
             showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
         }
     }
 
@@ -2310,6 +2312,195 @@ mod acquaintance_training_fronts {
         );
         assert!(!text.contains("опыт"), "смысл не утекает, got: {text}");
     }
+
+    /// Диспетч клавиши на document: глобальный слушатель TrainingBody —
+    /// производственный вход в матрицу Space/Enter ([1]/[2]).
+    fn press_key(key: &str) {
+        let init = web_sys::KeyboardEventInit::new();
+        init.set_key(key);
+        let event = web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init)
+            .expect("keydown event");
+        web_sys::window()
+            .expect("window")
+            .document()
+            .expect("document")
+            .dispatch_event(&event)
+            .expect("dispatch keydown");
+    }
+
+    /// Протухший аудио-фронт не доживает до Reverse-подфазы: монета
+    /// бросается эффектом на каждый показ, а resolve_audio_front
+    /// гарантирует текстовый фронт на Reverse — иначе Space озвучил бы
+    /// слово-ответ (утечка голосом) вместо раскрытия.
+    #[wasm_bindgen_test]
+    async fn stale_audio_front_resets_to_text_on_reverse_subphase() {
+        // Arrange: рука из слова в Reverse (закрыли Forward доменными
+        // вызовами); сигнал предзадан true — как после аудио-фронта Forward
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        let mut hand = origa::domain::AcquaintanceHand::new(vec![(
+            card_id,
+            origa::domain::CardType::Vocabulary,
+        )])
+        .unwrap();
+        for _ in 0..3 {
+            hand.record_answer(card_id, true).unwrap();
+        }
+        assert!(hand.advance_subphase_if_words_done());
+        ctx.state.update(|state| state.hand = Some(hand));
+        ctx.slides.set(vec![AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "読む".to_string(),
+            pos_label: None,
+            translations: vec!["читать".to_string()],
+        }]);
+        ctx.audio_front.set(true);
+
+        let wrapper = mount_training(&ctx);
+        tick().await;
+
+        // Effect монеты перезаписал протухший true: Reverse — текст.
+        assert!(
+            !ctx.audio_front.get_untracked(),
+            "аудио-фронт недостижим на Reverse-подфазе"
+        );
+
+        // Act: Space до раскрытия — на текстовом фронте это Reveal.
+        press_key(" ");
+        tick().await;
+
+        // Assert: ответ раскрылся (не ReplayAudio).
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-training-answer\"]")
+                .unwrap()
+                .is_some(),
+            "Space на текстовом Reverse-фронте раскрывает ответ"
+        );
+    }
+
+    /// Протухший аудио-фронт не доживает до несловесной карты: кандзи не
+    /// участвует в монете — иначе Space уходит в ReplayAudio (который на
+    /// кандзи молчит) и «Показать ответ» ломается.
+    #[wasm_bindgen_test]
+    async fn stale_audio_front_resets_to_text_on_non_word_card() {
+        // Arrange: рука из кандзи; сигнал предзадан true — как после
+        // аудио-фронта слова, показывавшегося предыдущей картой круга
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Kanji,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Kanji {
+            card_id,
+            kanji: "明".to_string(),
+            name: "свет".to_string(),
+            radicals: None,
+            example_words: None,
+            on_readings: None,
+            kun_readings: None,
+        }]);
+        ctx.audio_front.set(true);
+
+        let wrapper = mount_training(&ctx);
+        tick().await;
+
+        // Effect монеты перезаписал протухший true: кандзи — текст.
+        assert!(
+            !ctx.audio_front.get_untracked(),
+            "аудио-фронт недостижим на несловесной карте"
+        );
+
+        // Act: Space до раскрытия — на текстовом фронте это Reveal.
+        press_key(" ");
+        tick().await;
+
+        // Assert: ответ раскрылся (не ReplayAudio).
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-training-answer\"]")
+                .unwrap()
+                .is_some(),
+            "Space на текстовом фронте кандзи раскрывает ответ"
+        );
+    }
+
+    /// Детерминированная проверка audio-ветки рендера: сигнал пишется
+    /// руками — Effect монеты перезапускается только по смене показа
+    /// (current_id/rotation_index не трогаем), случайный бросок в тест
+    /// не участвует. Инвариант: аудио-фронт прячет текст слова и рендерит
+    /// кнопку повтора; текстовый фронт — наоборот.
+    #[wasm_bindgen_test]
+    async fn audio_front_signal_hides_word_text_and_shows_replay_button() {
+        // Arrange: рука из одного слова, подфаза Forward
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Vocabulary,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "読む".to_string(),
+            pos_label: None,
+            translations: vec!["читать".to_string()],
+        }]);
+
+        let wrapper = mount_training(&ctx);
+        tick().await;
+
+        // Act: аудио-фронт
+        ctx.audio_front.set(true);
+        tick().await;
+
+        // Assert: текст слова скрыт, кнопка повтора отрендерена
+        let front = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-front\"]")
+            .unwrap()
+            .unwrap();
+        let text = front.text_content().unwrap();
+        assert!(
+            !text.contains("読む"),
+            "аудио-фронт прячет текст слова, got: {text}"
+        );
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_some(),
+            "аудио-фронт рендерит кнопку повтора"
+        );
+
+        // Act: текстовый фронт
+        ctx.audio_front.set(false);
+        tick().await;
+
+        // Assert: слово видно, кнопки нет
+        let front = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-front\"]")
+            .unwrap()
+            .unwrap();
+        let text = front.text_content().unwrap();
+        assert!(text.contains("読む"), "текстовый фронт показывает слово");
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_none(),
+            "текстовый фронт без кнопки повтора"
+        );
+    }
 }
 
 mod acquaintance_presentation {
@@ -2333,6 +2524,7 @@ mod acquaintance_presentation {
             native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
             current_card: RwSignal::new(None),
             showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
         }
     }
 

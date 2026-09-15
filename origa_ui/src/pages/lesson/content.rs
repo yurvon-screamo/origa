@@ -127,6 +127,7 @@ pub fn LessonContent() -> impl IntoView {
             native_language,
             current_card: RwSignal::new(None),
             showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
         });
     }
 
