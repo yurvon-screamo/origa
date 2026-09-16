@@ -56,6 +56,12 @@ on:
                 required: false
             apple-team-id:
                 required: false
+            apple-ios-certificate:
+                required: false
+            apple-ios-certificate-password:
+                required: false
+            apple-ios-mobile-provision:
+                required: false
             apple-mac-app-cert-p12:
                 required: false
             apple-mac-installer-cert-p12:
@@ -102,6 +108,27 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v7
 
+            - name: Preflight manual signing secrets
+              # Manual signing (ADR-056) requires three secrets. They are
+              # declared required:false in the workflow_call block (ci.yml
+              # calls this workflow with skip_ios: true and never provides
+              # them), which would hide a typo in a secret name until a live
+              # release run — fail here instead, in seconds, not after the
+              # Xcode/Rust setup.
+              shell: bash
+              env:
+                  IOS_CERTIFICATE: ${{ secrets.apple-ios-certificate }}
+                  IOS_CERTIFICATE_PASSWORD: ${{ secrets.apple-ios-certificate-password }}
+                  IOS_MOBILE_PROVISION: ${{ secrets.apple-ios-mobile-provision }}
+              run: |
+                  for SECRET_NAME in IOS_CERTIFICATE IOS_CERTIFICATE_PASSWORD IOS_MOBILE_PROVISION; do
+                    if [ -z "${!SECRET_NAME}" ]; then
+                      echo "::error::$SECRET_NAME is empty — create the Apple Distribution certificate and App Store profile, then set the repo secrets (runbook: docs/decisions/ADR-056-apple-ios-manual-signing.md)"
+                      exit 1
+                    fi
+                  done
+                  echo "✅ manual signing secrets present"
+
             - name: Select latest Xcode with iOS 26 SDK
               shell: bash
               run: |
@@ -131,13 +158,16 @@ jobs:
 
             - name: Decode Apple API Key
               id: decode-key
+              # Writes ./private_keys/AuthKey_<ID>.p8 — the search path
+              # xcrun altool uses in the upload step. It must NOT leak into
+              # the build step env: APPLE_API_* credentials switch tauri-cli
+              # to unsigned-archive + export-time auto-provisioning, which
+              # mints (and later churns) distribution certificates — the
+              # exact failure mode ADR-056 moved away from.
               uses: ./.github/actions/decode-apple-key
               with:
                   apple-api-key-content: ${{ secrets.apple-api-key-content }}
                   apple-api-key: ${{ secrets.apple-api-key }}
-
-            - name: Set API key env
-              run: echo "APPLE_API_KEY_PATH=${{ steps.decode-key.outputs.key-path }}" >> "$GITHUB_ENV"
 
             - name: Update version in config files
               uses: ./.github/actions/update-version
@@ -181,9 +211,24 @@ jobs:
             - name: Build iOS .ipa (App Store export)
               working-directory: tauri
               env:
-                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
-                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
-                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+                  # Manual signing (ADR-056): tauri-cli reads these three,
+                  # creates a temporary keychain from the P12, installs the
+                  # profile into ~/Library/Developer/MobileDevice/ and pins
+                  # CODE_SIGN_STYLE=Manual + identity + profile UUID in the
+                  # pbxproj and ExportOptions — no ASC API certificate
+                  # churn, nothing to revoke after the upload.
+                  #
+                  # INVARIANT: no APPLE_API_* variables may reach this step
+                  # (step env OR $GITHUB_ENV exports). With API credentials
+                  # present, tauri-cli skips archive signing entirely
+                  # (skip_signing = credentials.is_some()) and export-time
+                  # auto-provisioning mints a fresh distribution certificate
+                  # per run — the revoked-certificate 90721 failures and
+                  # "null null has revoked your certificate" emails that
+                  # ADR-056 eliminated.
+                  IOS_CERTIFICATE: ${{ secrets.apple-ios-certificate }}
+                  IOS_CERTIFICATE_PASSWORD: ${{ secrets.apple-ios-certificate-password }}
+                  IOS_MOBILE_PROVISION: ${{ secrets.apple-ios-mobile-provision }}
                   APPLE_TEAM_ID: ${{ secrets.apple-team-id }}
                   # ORIGA_APP_STORE signals tauri/build.rs to emit the
                   # `app_store` rustc cfg, which gates out updater /
@@ -194,13 +239,33 @@ jobs:
                   ORIGA_APP_STORE: "1"
               run: |
                   # Pass APPLE_TEAM_ID via tauri.conf.json `bundle.iOS.developmentTeam`
-                  # through the --config merge patch. Without this, xcodebuild
-                  # fails with "No Account for Team" / "No profiles for
-                  # 'net.uwuwu.origa' were found" because tauri-cli's
-                  # auto-provisioning needs to know which team owns the bundle ID.
-                  # The APPLE_TEAM_ID env var alone is NOT picked up by tauri-cli
-                  # for iOS team assignment — it must be in the config.
+                  # through the --config merge patch — belt and braces alongside
+                  # the team ID tauri-cli derives from the P12 certificate.
                   APP_STORE_CONFIG="{\"bundle\":{\"iOS\":{\"developmentTeam\":\"$APPLE_TEAM_ID\"}}}"
+                  # Belt and braces: pin PROVISIONING_PROFILE_SPECIFIER ourselves.
+                  # tauri-cli derives the profile UUID with `security cms -D` and
+                  # swallows failures (uuid().ok() -> None), leaving Manual signing
+                  # without a profile specifier — archive fails with "requires a
+                  # provisioning profile". Writing the key here is idempotent:
+                  # synchronize_project_config only overwrites keys it resolved.
+                  PROFILE_DECODED=$(mktemp)
+                  printf '%s' "$IOS_MOBILE_PROVISION" | base64 --decode > "$PROFILE_DECODED"
+                  PROFILE_PLIST=$(mktemp)
+                  security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
+                  PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
+                  # NOTE: this step runs with working-directory: tauri.
+                  # Fragility (ADR-056): the sed below matches the pbxproj
+                  # STRING FORMAT produced by xcodegen (installed unpinned via
+                  # brew) — if a future xcodegen changes the layout, this fails
+                  # loudly here rather than silently.
+                  PBXPROJ=gen/apple/origa-app.xcodeproj/project.pbxproj
+                  sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
+                              PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" "$PBXPROJ"
+                  SPEC_COUNT=$(grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBXPROJ" || true)
+                  if [ "$SPEC_COUNT" != "2" ]; then
+                    echo "::error::PROVISIONING_PROFILE_SPECIFIER injection failed (got ${SPEC_COUNT:-0} matches, expected 2). If the count is 0, the pbxproj format likely changed — check the xcodegen version (brew, unpinned) against ADR-056"
+                    exit 1
+                  fi
                   cargo tauri ios build \
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
@@ -222,74 +287,46 @@ jobs:
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
 
-            - name: Re-sign .ipa with SIWA entitlements
-              id: resign
+            - name: Re-sign .ipa with the CI distribution identity
               #
-              # tauri-cli builds the iOS target with CODE_SIGN_ENTITLEMENTS=""
-              # and signs the export with an Apple-issued "Apple Distribution"
-              # certificate it mints via the ASC API in an ephemeral keychain
-              # (deleted right after), WITHOUT entitlements — so applesignin
-              # never reaches the .ipa even though the provisioning profile
-              # grants it, and the native SIWA sheet fails at runtime with
-              # ASAuthorizationError.unknown (1000).
-              #
-              # App Store Connect rejects uploads whose signing certificate is
-              # not contained in the embedded profile (-19241), and a
-              # self-signed identity does not survive Xcode's re-sign either.
-              # So mirror tauri-cli exactly: mint our own Apple-issued
-              # certificate + a fresh IOS_APP_STORE profile containing it,
-              # replace the embedded profile, MERGE applesignin into the
-              # current entitlements and re-sign. The "Cleanup minted iOS
-              # identity" step deletes the cert/profile afterwards (certificate
-              # slots are limited).
+              # -exportArchive re-signs the app using the entitlements of
+              # whichever App Store profile it resolves, and profile
+              # auto-selection is not fully pinnable on Xcode 26 — the
+              # exported binary can end up with a stale cached profile's
+              # entitlement set (applesignin stripped; caught by the SIWA
+              # gate below). Re-sign the exported .ipa deterministically
+              # with the persistent CI certificate + the secret profile:
+              # same machinery that shipped every release during the #505
+              # era, minus certificate minting/revocation (ADR-056).
               env:
-                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
-                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+                  IOS_CERTIFICATE: ${{ secrets.apple-ios-certificate }}
+                  IOS_CERTIFICATE_PASSWORD: ${{ secrets.apple-ios-certificate-password }}
+                  IOS_MOBILE_PROVISION: ${{ secrets.apple-ios-mobile-provision }}
               run: |
-                  KEYCHAIN="$HOME/Library/Keychains/resign.keychain-db"
+                  KEYCHAIN="$RUNNER_TEMP/resign.keychain-db"
                   KEYCHAIN_PASS=$(uuidgen)
-                  IPA_PATH="${{ steps.ipa.outputs.path }}"
-
-                  python3 .github/scripts/mint_ios_identity.py mint \
-                    --bundle-id net.uwuwu.origa \
-                    --out-dir /tmp/minted \
-                    --suffix "${GITHUB_SHA::12}"
-
                   security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
                   security set-keychain-settings -lut 21600 "$KEYCHAIN"
                   security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
-                  security import /tmp/minted/key.pem -k "$KEYCHAIN" -T /usr/bin/codesign
-                  security import /tmp/minted/cert.pem -k "$KEYCHAIN" -T /usr/bin/codesign
+                  printf '%s' "$IOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/resign.p12"
+                  security import "$RUNNER_TEMP/resign.p12" -k "$KEYCHAIN" \
+                    -P "$IOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
                   security set-key-partition-list -S apple-tool:,apple: \
                     -k "$KEYCHAIN_PASS" "$KEYCHAIN"
                   security list-keychains -d user -s "$KEYCHAIN" login.keychain
 
-                  # Apple rewrites the certificate CN to the account holder
-                  # name — take the ACTUAL identity from the keychain.
-                  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
-                    | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
-                  if [ -z "$IDENTITY" ]; then
-                    echo "::error::No Apple Distribution identity in $KEYCHAIN after the mint"
-                    security find-identity -v -p codesigning "$KEYCHAIN"
-                    exit 1
-                  fi
-                  echo "Re-signing with identity: $IDENTITY"
-
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
                   rm -rf /tmp/resign && mkdir -p /tmp/resign
                   unzip -q "$IPA_PATH" -d /tmp/resign
                   APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
 
-                  # Fresh profile that contains the minted certificate (the
-                  # tauri-cli export embedded one with ITS throwaway cert).
-                  cp /tmp/minted/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
+                  printf '%s' "$IOS_MOBILE_PROVISION" | base64 --decode \
+                    > /tmp/resign/profile.mobileprovision
+                  cp /tmp/resign/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
 
-                  # Merge applesignin into the CURRENT entitlements instead of
-                  # replacing them (keep application-identifier, team-identifier
-                  # and friends exactly as the export produced them). The Add
-                  # is guarded so an upstream tauri-cli fix that starts
-                  # embedding the entitlement degrades to a no-op, not a
-                  # PlistBuddy "Entry already exists" crash.
+                  # Merge applesignin into the binary's CURRENT entitlements
+                  # instead of replacing them (guarded so a future tauri-cli
+                  # that embeds the entitlement degrades to a no-op).
                   codesign -d --entitlements :/tmp/resign/entitlements.xml "$APP_PATH"
                   if ! /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" \
                     /tmp/resign/entitlements.xml >/dev/null 2>&1; then
@@ -299,37 +336,33 @@ jobs:
                   fi
                   plutil -lint /tmp/resign/entitlements.xml
 
-                  codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
-                    --entitlements /tmp/resign/entitlements.xml \
-                    "$APP_PATH"
+                  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
+                    | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+                  if [ -z "$IDENTITY" ]; then
+                    echo "::error::No Apple Distribution identity in the resign keychain"
+                    security find-identity -v -p codesigning "$KEYCHAIN"
+                    exit 1
+                  fi
+                  echo "Re-signing with identity: $IDENTITY"
 
+                  codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
+                    --entitlements /tmp/resign/entitlements.xml "$APP_PATH"
                   codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/resign/ent.txt
                   grep -q "com.apple.developer.applesignin" /tmp/resign/ent.txt
 
                   rm -f "$IPA_PATH"
-                  # The export produces a plain Payload/-only .ipa (static
-                  # Rust + Swift link); repacking keeps that exact shape.
                   (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
                   ls -la "$IPA_PATH"
+                  security delete-keychain "$KEYCHAIN"
 
-            - name: Cleanup minted iOS identity
-              if: always() && steps.resign.outputs.cert-id != ''
-              env:
-                  APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
-                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+            - name: Clean up resign keychain material
+              # Failure-path hygiene: the re-sign step deletes its keychain
+              # only on success. The runner is ephemeral, but keep the same
+              # standard as the macOS job's always() cleanup.
+              if: always()
               run: |
-                  # 404s are tolerated inside the script: a parallel run may
-                  # have purged the same leftovers (and the next run's
-                  # origa-ci-* purge would collect anything missed here).
-                  python3 .github/scripts/mint_ios_identity.py cleanup \
-                    --cert-id "${{ steps.resign.outputs.cert-id }}" \
-                    --profile-id "${{ steps.resign.outputs.profile-id }}" || true
-                  # Local hygiene, mirroring the macOS job's final keychain
-                  # cleanup: drop the keychain holding the minted private key
-                  # and the key material itself.
-                  security delete-keychain "$HOME/Library/Keychains/resign.keychain-db" || true
-                  rm -rf /tmp/minted /tmp/resign
+                  security delete-keychain "$RUNNER_TEMP/resign.keychain-db" 2>/dev/null || true
+                  rm -f "$RUNNER_TEMP/resign.p12" || true
 
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
@@ -353,6 +386,12 @@ jobs:
                   unzip -q "$IPA_PATH" -d /tmp/ios_ent
                   APP_PATH=$(find /tmp/ios_ent -name "*.app" -type d | head -1)
 
+                  echo "--- Embedded provisioning profile identity ---"
+                  security cms -D -i "$APP_PATH/embedded.mobileprovision" \
+                    2>/dev/null > /tmp/ios_ent/pp_full.plist
+                  /usr/libexec/PlistBuddy -c "Print :Name" -c "Print :UUID" \
+                    /tmp/ios_ent/pp_full.plist || echo "profile decode failed"
+
                   echo "--- Binary entitlements ---"
                   codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/ios_ent/binary.txt
                   echo "--- Provisioning profile grants ---"
@@ -375,13 +414,14 @@ jobs:
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
                   APPLE_API_KEY: ${{ secrets.apple-api-key }}
               run: |
-                  # xcrun altool handles App Store Connect upload using the same
-                  # API key as signing. altool can return exit 0 even on
-                  # server-side errors (HTTP 409 duplicate version, validation
-                  # failures, etc.) — so we capture output and check for error
-                  # patterns to ensure a failed upload fails the job.
-                  # The .ipa is preserved as artifact for manual upload via
-                  # Transporter.app.
+                  # xcrun altool handles the App Store Connect upload with the
+                  # ASC API key decoded into ./private_keys/ (search-path
+                  # convention; signing itself is manual, see ADR-056). altool
+                  # can return exit 0 even on server-side errors (HTTP 409
+                  # duplicate version, validation failures, etc.) — so we
+                  # capture output and check for error patterns to ensure a
+                  # failed upload fails the job. The .ipa is preserved as
+                  # artifact for manual upload via Transporter.app.
                   set +e
                   xcrun altool --upload-app --type ios \
                     --file "${{ steps.ipa.outputs.path }}" \

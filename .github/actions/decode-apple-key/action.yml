@@ -24,8 +24,10 @@ runs:
               APPLE_API_KEY_CONTENT: ${{ inputs.apple-api-key-content }}
               APPLE_API_KEY: ${{ inputs.apple-api-key }}
           run: |
-              # Write .p8 to ./private_keys/ (search path for xcrun altool)
-              # and set APPLE_API_KEY_PATH for cargo-mobile2 (iOS auto-provisioning).
+              # Write .p8 to ./private_keys/ (search path for xcrun altool).
+              # Do NOT export APPLE_API_KEY_PATH to the job env from here:
+              # APPLE_API_* reaching `cargo tauri ios build` switches tauri-cli
+              # to auto-provisioning (certificate minting churn) — see ADR-056.
               #
               # The APPLE_API_KEY_CONTENT secret may hold either:
               # (a) base64-encoded .p8 contents
