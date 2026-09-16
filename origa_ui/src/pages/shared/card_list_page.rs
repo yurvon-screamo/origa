@@ -375,12 +375,18 @@ where
                                     }
                                 }
                             />
-                            <JlptFilterBtn
-                                filter=JlptFilter::Other
-                                count=move || jlpt_counts.get().other
-                                active=jlpt_filter
-                                test_id=format!("{test_id_prefix}-filter-jlpt-other")
-                            />
+                            // "No level" is an impossible state for
+                            // JLPT-indexed content (every kanji/grammar
+                            // card has a level); the chip renders only
+                            // when levelless cards actually exist.
+                            <Show when=move || { jlpt_counts.get().other > 0 }>
+                                <JlptFilterBtn
+                                    filter=JlptFilter::Other
+                                    count=move || jlpt_counts.get().other
+                                    active=jlpt_filter
+                                    test_id=format!("{test_id_prefix}-filter-jlpt-other")
+                                />
+                            </Show>
                         </div>
                     }
                 })}

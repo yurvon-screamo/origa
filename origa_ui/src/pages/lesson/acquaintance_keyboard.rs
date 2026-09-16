@@ -1,6 +1,7 @@
 //! Клавиатура режима знакомства: те же хендлы, что в обычном уроке
 //! (спека §8.3): Space = показать/дальше, [1]/[2] = оценка. Аудио-фронт
-//! Forward-подфазы: Space = повтор аудио, Enter = показать ответ.
+//! Forward-подфазы: Space = показать ответ (единый паттерн раскрытия),
+//! Enter = повтор аудио.
 
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceStage};
 use leptos::ev::KeyboardEvent;
@@ -12,9 +13,9 @@ pub enum AcquaintanceKeyAction {
     /// Space в показе — следующий слайд («Дальше»).
     Advance,
     /// Space в тренировке до раскрытия — «Показать ответ»
-    /// (Enter — на аудио-фронте).
+    /// (единый паттерн, включая аудио-фронт).
     Reveal,
-    /// Space на аудио-фронтe тренировки — повтор аудио.
+    /// Enter на аудио-фронте тренировки — повтор аудио.
     ReplayAudio,
     /// [1] после раскрытия — «Не помню».
     RateDontRemember,
@@ -34,9 +35,8 @@ pub fn resolve_key_action(
     match stage {
         AcquaintanceStage::Presentation => (key == " ").then_some(AcquaintanceKeyAction::Advance),
         AcquaintanceStage::Training => match (showing_answer, key) {
-            (false, " ") if audio_front => Some(AcquaintanceKeyAction::ReplayAudio),
             (false, " ") => Some(AcquaintanceKeyAction::Reveal),
-            (false, "Enter") if audio_front => Some(AcquaintanceKeyAction::Reveal),
+            (false, "Enter") if audio_front => Some(AcquaintanceKeyAction::ReplayAudio),
             (true, "1") => Some(AcquaintanceKeyAction::RateDontRemember),
             (true, "2") => Some(AcquaintanceKeyAction::RateRemember),
             _ => None,
@@ -118,18 +118,18 @@ mod tests {
     }
 
     #[test]
-    fn training_space_on_audio_front_replays_audio() {
+    fn training_space_on_audio_front_reveals() {
         assert_eq!(
             resolve_key_action(AcquaintanceStage::Training, false, true, " "),
-            Some(AcquaintanceKeyAction::ReplayAudio)
+            Some(AcquaintanceKeyAction::Reveal)
         );
     }
 
     #[test]
-    fn training_enter_on_audio_front_reveals() {
+    fn training_enter_on_audio_front_replays_audio() {
         assert_eq!(
             resolve_key_action(AcquaintanceStage::Training, false, true, "Enter"),
-            Some(AcquaintanceKeyAction::Reveal)
+            Some(AcquaintanceKeyAction::ReplayAudio)
         );
     }
 

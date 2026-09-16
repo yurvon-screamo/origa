@@ -126,9 +126,12 @@ fn render_markdown(content: &str) -> String {
 
 // Furigana is intentionally skipped inside existing ruby markup to avoid
 // nested <ruby> elements. Code-fence (<pre><code>) content is NOT skipped:
-// every grammar-rule "examples" block is rendered as a code fence (see
-// cdn/grammar/rules/*.json) and contains Japanese-language content that
-// needs furigana — verified by audit (3253/3253 code blocks contain kana/kanji).
+// grammar "how_to_form" blocks are still rendered as code fences and
+// contain Japanese-language content that needs furigana (see
+// cdn/grammar/rules/*.json). Grammar "examples" fences are converted to
+// paragraphs before rendering (ui_components::markdown_examples), so the
+// furigana pass applies to them as plain text nodes — same result, no
+// fence dependency.
 const SKIP_TAGS: &[&str] = &["ruby", "rt", "rp"];
 
 fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {

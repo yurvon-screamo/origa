@@ -90,7 +90,7 @@ pub fn StudiedTodayList(
                             let known_kanji_val = known_kanji.get();
 
                             view! {
-                                <Card class=Signal::derive(|| "p-4 h-full flex flex-col".to_string()) test_id=Signal::derive(String::new)>
+                                <Card class=Signal::derive(|| "recent-study-card p-3 h-full flex flex-col".to_string()) test_id=Signal::derive(String::new)>
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="flex-1 min-w-0">
                                             <MarkdownText

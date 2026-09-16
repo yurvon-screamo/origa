@@ -44,6 +44,8 @@ mod quiz_result;
 pub(crate) mod quiz_result_display;
 mod rating_buttons;
 mod rating_buttons_view;
+mod training_answer;
+mod training_front;
 mod training_view;
 mod writing_card;
 mod yesno_card_view;
