@@ -498,18 +498,6 @@ impl FormatAction {
             FormatAction::AdjectiveToGaru {},
         ]
     }
-
-    /// Returns all FormatActions from the same group, excluding self.
-    /// Returns empty Vec for Universal group.
-    pub fn mutation_alternatives(&self) -> Vec<&'static FormatAction> {
-        let all: &[FormatAction] = match self.group() {
-            FormatActionGroup::Verb => Self::all_verb_actions(),
-            FormatActionGroup::IAdjective => Self::all_i_adjective_actions(),
-            FormatActionGroup::NaAdjective => Self::all_na_adjective_actions(),
-            FormatActionGroup::Universal => return Vec::new(),
-        };
-        all.iter().filter(|a| !std::ptr::eq(*a, self)).collect()
-    }
 }
 
 impl GrammarRule {
@@ -814,22 +802,6 @@ mod tests_format_action_group {
             .group(),
             FormatActionGroup::Universal
         );
-    }
-
-    #[test]
-    fn mutation_alternatives_excludes_self() {
-        let action = FormatAction::VerbToMasu {};
-        let alternatives = action.mutation_alternatives();
-        assert!(!alternatives.iter().any(|a| std::ptr::eq(*a, &action)));
-        assert!(!alternatives.is_empty());
-    }
-
-    #[test]
-    fn universal_has_no_mutation_alternatives() {
-        let action = FormatAction::AddPostfix {
-            postfix: "test".into(),
-        };
-        assert!(action.mutation_alternatives().is_empty());
     }
 
     #[test]
