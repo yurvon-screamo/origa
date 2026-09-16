@@ -375,12 +375,18 @@ where
                                     }
                                 }
                             />
-                            <JlptFilterBtn
-                                filter=JlptFilter::Other
-                                count=move || jlpt_counts.get().other
-                                active=jlpt_filter
-                                test_id=format!("{test_id_prefix}-filter-jlpt-other")
-                            />
+                            // «Без уровня» — невозможное состояние для
+                            // JLPT-контента (каждая карта кандзи/грамматики
+                            // имеет уровень); чип рендерится только если
+                            // реально есть карты без уровня.
+                            <Show when=move || { jlpt_counts.get().other > 0 }>
+                                <JlptFilterBtn
+                                    filter=JlptFilter::Other
+                                    count=move || jlpt_counts.get().other
+                                    active=jlpt_filter
+                                    test_id=format!("{test_id_prefix}-filter-jlpt-other")
+                                />
+                            </Show>
                         </div>
                     }
                 })}
