@@ -14,6 +14,11 @@ use common::get;
 
 mod common;
 
+/// Compile-time landing base URL — canonical/hreflang assertions stay exact
+/// without hardcoding the production domain (survives builds with a custom
+/// `ORIGA_LANDING_BASE_URL`).
+const BASE_URL: &str = env!("ORIGA_LANDING_BASE_URL");
+
 /// Canonical list of every sidebar doc slug (the `index` page is the docs
 /// landing, not an article). Shared by every test below so adding a doc page
 /// is a one-line edit here.
@@ -108,7 +113,9 @@ async fn ko_and_vi_docs_are_indexable() {
 async fn ko_article_canonical_points_at_ko_url() {
     let (_, body) = get("/ko/docs/fsrs").await;
     assert!(
-        body.contains(r#"rel="canonical" href="https://origa.uwuwu.net/ko/docs/fsrs""#),
+        body.contains(&format!(
+            r#"rel="canonical" href="{BASE_URL}/ko/docs/fsrs""#
+        )),
         "KO native doc must be self-canonical"
     );
 }
@@ -117,7 +124,9 @@ async fn ko_article_canonical_points_at_ko_url() {
 async fn vi_article_canonical_points_at_vi_url() {
     let (_, body) = get("/vi/docs/fsrs").await;
     assert!(
-        body.contains(r#"rel="canonical" href="https://origa.uwuwu.net/vi/docs/fsrs""#),
+        body.contains(&format!(
+            r#"rel="canonical" href="{BASE_URL}/vi/docs/fsrs""#
+        )),
         "VI native doc must be self-canonical"
     );
 }
@@ -125,14 +134,11 @@ async fn vi_article_canonical_points_at_vi_url() {
 #[tokio::test]
 async fn ko_article_hreflang_lists_all_4_locales() {
     let (_, body) = get("/ko/docs/fsrs").await;
-    for (lang, prefix) in [
-        ("en", "https://origa.uwuwu.net/docs/fsrs"),
-        ("ru", "https://origa.uwuwu.net/ru/docs/fsrs"),
-        ("ko", "https://origa.uwuwu.net/ko/docs/fsrs"),
-        ("vi", "https://origa.uwuwu.net/vi/docs/fsrs"),
-    ] {
+    for (lang, prefix) in [("en", ""), ("ru", "/ru"), ("ko", "/ko"), ("vi", "/vi")] {
         assert!(
-            body.contains(&format!(r#"hreflang="{lang}" href="{prefix}""#)),
+            body.contains(&format!(
+                r#"hreflang="{lang}" href="{BASE_URL}{prefix}/docs/fsrs""#
+            )),
             "KO native doc must declare hreflang={lang}"
         );
     }

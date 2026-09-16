@@ -85,7 +85,7 @@ Bạn có thể bắt đầu ngay bài khác, hoặc quay lại bảng điều k
 
 ## Tiến trình JLPT
 
-Mỗi thẻ gắn một trình độ JLPT, từ N5 đến N1. Origa hiển thị trình độ JLPT thấp nhất mà bạn còn hổng; thẻ mới phát theo thứ tự trình độ tăng dần (N5 → N1), như nhau với mọi người. Ứng dụng không "chẩn đoán lỗ hổng của bạn ở đâu" — chỉ báo trình độ phản ánh vật liệu của bạn, không phải lộ trình của nó. Học và giữ được thẻ ở một trình độ, tiến trình JLPT của trình độ đó sẽ tăng. Bảng điều khiển phản ánh điều này để bạn thấy mình đang ở đâu.
+Mỗi thẻ gắn một trình độ JLPT, từ N5 đến N1. Origa hiển thị trình độ JLPT thấp nhất mà bạn còn hổng; thẻ mới phát theo thứ tự trình độ tăng dần (N5 → N1), như nhau với mọi người. Ứng dụng không "chẩn đoán lỗ hổng của bạn ở đâu": chỉ báo trình độ phản ánh vật liệu của bạn, không phải lộ trình của nó. Học và giữ được thẻ ở một trình độ, tiến trình JLPT của trình độ đó sẽ tăng. Bảng điều khiển phản ánh điều này để bạn thấy mình đang ở đâu.
 
 Tiến trình JLPT là ước lượng nội bộ dựa trên các thẻ bạn đã học. Nó không phải điểm JLPT chính thức.
 
