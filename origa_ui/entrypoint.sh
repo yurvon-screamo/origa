@@ -12,12 +12,11 @@ crond -c "$CROND_DIR" -l 8
 # (5s start-period + 3 retries × 30s) together with a cold trail start.
 GEOIP_TIMEOUT=45 /app/geoip.sh || echo "[entrypoint] geoip: fetch failed, starting without geo"
 
-# The data volume shadows /app/traildepot, so the auth-UI wasm baked into the
-# image would go stale across trail upgrades; re-sync it from /opt on every
-# boot (best-effort — the previously deployed component keeps working).
-mkdir -p /app/traildepot/wasm
-cp -f /opt/trailbase/wasm/trailbase_auth_ui_component.wasm \
-  /app/traildepot/wasm/ 2>/dev/null || echo "[entrypoint] wasm auth-ui sync failed"
+# The image no longer ships the auth-UI WASM component (memory: wasmtime
+# engine + per-boot JIT cost ~250 MB). The data volume, however, may still
+# hold one from an older image — remove it so trail starts without the
+# component (fail-safe: nothing to remove on a fresh volume).
+rm -f /app/traildepot/wasm/*.wasm
 
 # THP_DISABLE=1 (also true/yes): launch trail through the static THP-disable
 # launcher. The prctl flag survives execve and stops the host's THP=always
