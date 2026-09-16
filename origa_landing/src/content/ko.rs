@@ -184,6 +184,7 @@ pub static CONTENT: Content = Content {
     download_windows_formats: ".exe, .msi",
     download_linux: "Linux",
     download_linux_formats: ".deb, .flatpak",
+    download_linux_terminal: "또는 터미널로 설치:",
     download_macos: "macOS",
     download_macos_formats: "Mac",
     download_android: "Android",

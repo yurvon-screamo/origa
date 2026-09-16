@@ -78,6 +78,12 @@ Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://o
 | **Android** | ✅ 지원 | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ 준비 중 | Mac App Store |
 
+Linux(flatpak) 한 줄 설치 — GNOME 런타임은 자동으로 다운로드됩니다:
+
+```sh
+flatpak install --user https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak
+```
+
 > 모든 버전이 오프라인 모드를 지원합니다.
 
 모든 빌드와 릴리스 노트: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).

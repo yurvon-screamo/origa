@@ -16,6 +16,11 @@ const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_FLATPAK: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak";
+// One-liner shown on the Linux card: the bundle carries a runtime-repo
+// reference, so flatpak pulls the GNOME runtime automatically (ADR-056).
+fn download_linux_terminal_cmd() -> String {
+    format!("flatpak install --user {DOWNLOAD_LINUX_FLATPAK}")
+}
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
@@ -98,6 +103,8 @@ pub fn DownloadPage() -> impl IntoView {
                     href=DOWNLOAD_LINUX_FLATPAK
                     button_text=c.download_button
                     umami_event="download_linux"
+                    terminal_label=c.download_linux_terminal
+                    terminal_cmd=download_linux_terminal_cmd()
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
@@ -130,6 +137,10 @@ fn DownloadCard(
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
     // with a real download button; "coming soon" cards have nothing to track.
     #[prop(optional)] umami_event: Option<&'static str>,
+    // Optional terminal one-liner rendered as a copyable code chip under the
+    // button (used by the Linux flatpak card, ADR-056).
+    #[prop(optional)] terminal_label: Option<&'static str>,
+    #[prop(optional)] terminal_cmd: Option<String>,
 ) -> impl IntoView {
     let card_class = match badge {
         Some(_) => "download-secondary__card download-secondary__card--soon",
@@ -159,6 +170,15 @@ fn DownloadCard(
                         <a href=href class="btn">{btn}" →"</a>
                     }.into_any(),
                 },
+                _ => ().into_any(),
+            }}
+            {match (terminal_label, terminal_cmd) {
+                (Some(label), Some(cmd)) => view! {
+                    <div class="download-terminal">
+                        <p class="download-terminal__label">{label}</p>
+                        <code class="download-terminal__cmd">{cmd}</code>
+                    </div>
+                }.into_any(),
                 _ => ().into_any(),
             }}
         </div>
