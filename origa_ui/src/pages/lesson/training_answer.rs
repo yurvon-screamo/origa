@@ -1,8 +1,9 @@
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceSlideData};
 use super::grammar_example::first_example_markdown;
-use crate::i18n::*;
-use crate::ui_components::{FuriganaText, MarkdownText, MarkdownVariant, ReadingGroup};
+use super::kanji_card_details::KanjiCardDetails;
+use crate::ui_components::{FuriganaText, MarkdownText, MarkdownVariant};
 use leptos::prelude::*;
+use std::collections::HashSet;
 use ulid::Ulid;
 
 /// Ответ тренировки: противоположная фронту сторона. Для слов Reverse —
@@ -15,7 +16,6 @@ pub(super) fn TrainingAnswerSlide(
     reverse: bool,
 ) -> impl IntoView {
     let known_kanji = ctx.known_kanji;
-    let i18n = use_i18n();
     view! {
         <div class="text-center space-y-3" data-testid="acquaintance-training-answer">
             {move || {
@@ -71,43 +71,30 @@ pub(super) fn TrainingAnswerSlide(
                         }
                     },
                     AcquaintanceSlideData::Kanji {
+                        kanji,
                         name,
+                        radicals,
+                        example_words,
                         on_readings,
                         kun_readings,
                         ..
                     } => {
-                        let has_on = on_readings.is_some();
-                        let has_kun = kun_readings.is_some();
-                        let on = StoredValue::new(on_readings);
-                        let kun = StoredValue::new(kun_readings);
                         // Знак уже смотрит на юзера сжатым вопросом над
-                        // divider — ответ его не повторяет (баг-репорт о
-                        // дубле): главным текстом идёт значение, под ним
-                        // частотные чтения по центральной оси карточки.
+                        // divider — ответ его не повторяет: тот же блок
+                        // деталей, что в обычном уроке и показе руки
+                        // (чтения, значение, свёрнутые «Подробнее»).
+                        let known_kanji_signal: Signal<HashSet<char>> = known_kanji.into();
                         view! {
-                            <p class="font-serif text-3xl text-[var(--fg-black)]">{name}</p>
-                            <div class="answer-readings pt-2 space-y-2">
-                                {has_on.then(|| {
-                                    view! {
-                                        <ReadingGroup
-                                            label=Signal::derive(move || {
-                                                i18n.get_keys().lesson().on_yomi().inner().to_string()
-                                            })
-                                            readings=on
-                                        />
-                                    }
-                                })}
-                                {has_kun.then(|| {
-                                    view! {
-                                        <ReadingGroup
-                                            label=Signal::derive(move || {
-                                                i18n.get_keys().lesson().kun_yomi().inner().to_string()
-                                            })
-                                            readings=kun
-                                        />
-                                    }
-                                })}
-                            </div>
+                            <KanjiCardDetails
+                                kanji=kanji
+                                name
+                                radicals
+                                example_words
+                                on_readings
+                                kun_readings
+                                known_kanji=known_kanji_signal
+                                native_language=ctx.native_language.get_untracked()
+                            />
                         }
                             .into_any()
                     },
