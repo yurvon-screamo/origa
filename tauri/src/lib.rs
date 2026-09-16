@@ -240,9 +240,10 @@ pub fn run() {
             tracing::info!("[deep-link] listener for 'deep-link://new-url' registered");
 
             // Runtime scheme registration is a Windows/Linux mechanism (for
-            // installs that bypass the installer, e.g. a raw AppImage). On
-            // macOS the scheme is registered statically by the bundle
-            // (MacOS-Info.plist CFBundleURLTypes) and register_all() always
+            // installs where the static desktop-file registration does not
+            // cover them, e.g. a raw binary). On macOS the scheme is
+            // registered statically by the bundle (MacOS-Info.plist
+            // CFBundleURLTypes) and register_all() always
             // returns Err(UnsupportedPlatform) — calling it there only
             // produced a false error on every launch.
             #[cfg(any(windows, target_os = "linux"))]

@@ -14,8 +14,8 @@ use crate::content::Locale;
 // is live; no direct-download link is published.
 const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
-const DOWNLOAD_LINUX_APPIMAGE: &str =
-    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage";
+const DOWNLOAD_LINUX_FLATPAK: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak";
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
@@ -95,7 +95,7 @@ pub fn DownloadPage() -> impl IntoView {
                     icon=view! { <IconLinux /> }.into_any()
                     name=c.download_linux
                     formats=c.download_linux_formats
-                    href=DOWNLOAD_LINUX_APPIMAGE
+                    href=DOWNLOAD_LINUX_FLATPAK
                     button_text=c.download_button
                     umami_event="download_linux"
                 />

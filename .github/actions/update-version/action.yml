@@ -1,5 +1,5 @@
 name: "Update Version"
-description: "Update version in Cargo.toml and tauri.conf.json"
+description: "Update version in Cargo.toml, tauri.conf.json and the Flatpak manifest"
 
 inputs:
   version:
@@ -21,4 +21,14 @@ runs:
       run: |
           sed -i.bak 's/^version = ".*"/version = "'${VERSION}'"/' Cargo.toml && rm -f Cargo.toml.bak
           sed -i.bak 's/"version": ".*"/"version": "'${VERSION}'"/' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
+          # Flatpak (ADR-056): re-point the manifest git source at the tag
+          # being released and refresh the appstream <releases> entry so the
+          # bundle metadata matches. The manifest has exactly one `tag:`
+          # line (the origa git source); the metainfo exactly one
+          # <release> entry. The tag pattern is indentation-agnostic —
+          # verify it stays matching (a silent no-op ships a stale tag).
+          sed -i.bak 's/^\( *\)tag: v.*/\1tag: v'${VERSION}'/' packaging/flatpak/net.uwuwu.origa.yml && rm -f packaging/flatpak/net.uwuwu.origa.yml.bak
+          sed -i.bak 's|<release version=".*" date=".*"/>|<release version="'"${VERSION}"'" date="'"$(date -u +%F)"'"/>|' packaging/flatpak/net.uwuwu.origa.metainfo.xml && rm -f packaging/flatpak/net.uwuwu.origa.metainfo.xml.bak
+          grep -q "tag: v${VERSION}" packaging/flatpak/net.uwuwu.origa.yml || { echo "::error::flatpak manifest tag sed did not apply"; exit 1; }
+          grep -q "version=\"${VERSION}\"" packaging/flatpak/net.uwuwu.origa.metainfo.xml || { echo "::error::metainfo version sed did not apply"; exit 1; }
           echo "Updated version to ${VERSION}"

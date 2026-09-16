@@ -183,7 +183,7 @@ pub static CONTENT: Content = Content {
     download_windows: "Windows",
     download_windows_formats: ".exe, .msi",
     download_linux: "Linux",
-    download_linux_formats: ".deb, .AppImage, .rpm",
+    download_linux_formats: ".deb, .flatpak",
     download_macos: "macOS",
     download_macos_formats: "Mac",
     download_android: "Android",
