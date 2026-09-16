@@ -19,7 +19,7 @@ const DOWNLOAD_LINUX_FLATPAK: &str =
 // One-liner shown on the Linux card: the bundle carries a runtime-repo
 // reference, so flatpak pulls the GNOME runtime automatically (ADR-056).
 fn download_linux_terminal_cmd() -> String {
-    format!("flatpak install --user {DOWNLOAD_LINUX_FLATPAK}")
+    format!("curl -LO {DOWNLOAD_LINUX_FLATPAK} && flatpak install --user ./Origa_amd64.flatpak")
 }
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
