@@ -414,9 +414,10 @@ jobs:
               # version_base (v0.7.20-rc1/rc2/alpha all bundle as 0.7.20),
               # so a non-stable upload poisons the ASC version slot and the
               # later stable upload is rejected as a duplicate (-19232).
-              # RC builds ship via GitHub Release assets; ASC gets exactly
-              # one build per version, from the stable tag. force_apple
-              # dispatch runs validate build+sign+gate but never upload.
+              # ASC gets exactly one build per version, from the stable tag;
+              # prerelease iOS builds stay a CI artifact (no sideload
+              # channel on iOS). force_apple dispatch runs validate
+              # build+sign+gate but never upload.
               if: inputs.version_type == 'stable' && inputs.skip_appstore_upload != true
               env:
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
