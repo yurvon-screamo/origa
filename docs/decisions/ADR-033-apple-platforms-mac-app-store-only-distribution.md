@@ -132,7 +132,7 @@ File location: `tauri/gen/apple/PrivacyInfo.xcprivacy`. Wired into iOS
 target sources via `project.yml`; copied to macOS bundle via
 `tauri.conf.json` `bundle.resources` map form.
 
-### 5. iOS Info.plist source-of-truth = `project.yml info.properties`
+### 5. Apple Info.plist declarations: iOS = `project.yml info.properties`, macOS = `MacOS-Info.plist`
 
 iOS Info.plist usage descriptions (`NSCameraUsageDescription`,
 `NSMicrophoneUsageDescription`, `NSPhotoLibraryUsageDescription`,
@@ -142,6 +142,17 @@ iOS Info.plist usage descriptions (`NSCameraUsageDescription`,
 into `Info.plist`. XcodeGen applies `info.properties` as an overlay
 over the file during project generation, so keys declared in
 `project.yml` survive `cargo tauri ios build` regeneration.
+
+The macOS equivalent declaration lives in `tauri/MacOS-Info.plist`
+(merged into the bundle by tauri-bundler via
+`tauri.conf.json` → `bundle.macOS.infoPlist`):
+`ITSAppUsesNonExemptEncryption` = `false` — the app implements no
+proprietary crypto; it only uses OS-provided TLS (HTTPS) and standard
+algorithms for authentication (HMAC-SHA256, ES256), which qualifies
+for the export compliance exemption. Without this key App Store
+Connect asks the manual "App Encryption Documentation" question on
+every macOS TestFlight upload (iOS never asks because of the
+`project.yml` key above).
 
 ### 6. macOS signing requires both API Key + Mac Distribution certs
 
