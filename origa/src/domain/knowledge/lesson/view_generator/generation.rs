@@ -391,7 +391,6 @@ pub(crate) fn generate_grammar_quiz(
         &applicable_pos,
         &correct_text,
         needed_distractors,
-        &mut rng,
     );
 
     if distractors.len() < needed_distractors {

@@ -2,7 +2,7 @@ pub(super) const GODAN_IRU_ERU_VERBS: &[&str] = &[
     "要る", "入る", "減る", "茂る", "耽る", "喋る", "遮る", "罵る", "悟る",
 ];
 
-pub(super) const GODAN_TO_STEM: &[(char, &str)] = &[
+pub(crate) const GODAN_TO_STEM: &[(char, &str)] = &[
     ('う', "い"),
     ('く', "き"),
     ('ぐ', "ぎ"),
@@ -114,7 +114,7 @@ pub(super) const GODAN_TO_CAUSATIVE_PASSIVE: &[(char, &str)] = &[
     ('る', "らされる"),
 ];
 
-pub(super) const GODAN_TO_IMPERATIVE: &[(char, &str)] = &[
+pub(crate) const GODAN_TO_IMPERATIVE: &[(char, &str)] = &[
     ('う', "え"),
     ('く', "け"),
     ('ぐ', "げ"),
@@ -162,7 +162,7 @@ pub(super) const GODAN_TO_ZU: &[(char, &str)] = &[
     ('る', "らず"),
 ];
 
-pub(super) const GODAN_TO_MIZENKEI: &[(char, &str)] = &[
+pub(crate) const GODAN_TO_MIZENKEI: &[(char, &str)] = &[
     ('う', "わ"),
     ('く', "か"),
     ('ぐ', "が"),
@@ -176,6 +176,26 @@ pub(super) const GODAN_TO_MIZENKEI: &[(char, &str)] = &[
     ('ぷ', "ぱ"),
     ('む', "ま"),
     ('る', "ら"),
+];
+
+/// O-row (己段) of the final kana — the volitional base (意向形の語幹:
+/// Xおう minus う). Needed by the near-miss distractor generator as the
+/// last-resort wrong-row candidate; kept here so all five godan rows live
+/// in one place.
+pub(crate) const GODAN_TO_O_ROW: &[(char, &str)] = &[
+    ('う', "お"),
+    ('く', "こ"),
+    ('ぐ', "ご"),
+    ('す', "そ"),
+    ('ず', "ぞ"),
+    ('つ', "と"),
+    ('づ', "ど"),
+    ('ぬ', "の"),
+    ('ふ', "ほ"),
+    ('ぶ', "ぼ"),
+    ('ぷ', "ぽ"),
+    ('む', "も"),
+    ('る', "ろ"),
 ];
 
 pub(super) const TE_TA_MAPPING: &[(char, &str, &str)] = &[
