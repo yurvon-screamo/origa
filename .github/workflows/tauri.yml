@@ -14,6 +14,10 @@ on:
                 description: "Force Microsoft Store MSIX build (smoke-testing outside stable tags)"
                 type: boolean
                 default: false
+            force_flatpak:
+                description: "Force Flatpak build (smoke-testing outside stable tags)"
+                type: boolean
+                default: false
 
 concurrency:
     group: tauri-${{ github.ref }}
@@ -158,6 +162,104 @@ jobs:
             build_date: ${{ needs.version.outputs.build_date }}
             wasm_artifact_name: frontend-dist
 
+    build-flatpak:
+        name: Build Flatpak
+        # Linux universal channel (ADR-056): WebKitGTK comes from the GNOME
+        # runtime, not from an Ubuntu-built bundle — see the manifest header.
+        # Tags only (stable + prerelease); the sandbox build is too heavy for
+        # every PR run. `force_flatpak` exists for smoke-testing this job
+        # BEFORE the first real tag relies on it.
+        # Unlike msix/rustore this job IS a hard gate in release.needs —
+        # deliberate exception to the isolation doctrine: flatpak is the
+        # primary universal Linux channel (a Linux release without it would
+        # ship the deprecated-AppImage experience to everyone). See ADR-056.
+        if: >-
+            always() &&
+            needs.build-frontend.result == 'success' &&
+            (startsWith(github.ref, 'refs/tags/v') || inputs.force_flatpak == true) &&
+            github.actor != 'dependabot[bot]'
+        needs: [version, build-frontend]
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        env:
+            # Consumed by the manifest-templating step below (python reads
+            # os.environ). ORIGA_VERSION/COMMIT/BUILD_DATE are deliberately
+            # NOT passed here — the sandbox build derives them from the git
+            # tag checkout (see manifest build-commands).
+            SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+            SENTRY_ENVIRONMENT: ${{ needs.version.outputs.version_type == 'stable' && 'production' || needs.version.outputs.version_type == 'prerelease' && 'staging' || 'development' }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Update version in config files
+              uses: ./.github/actions/update-version
+              with:
+                  version: ${{ needs.version.outputs.version }}
+
+            - name: Download WASM artifact
+              uses: actions/download-artifact@v8
+              with:
+                  name: frontend-dist
+                  path: origa_ui/dist/
+
+            - name: Install flatpak + flatpak-builder
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y flatpak flatpak-builder
+                  flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+            - name: Build flatpak
+              # The release metadata (SENTRY_DSN/SENTRY_ENVIRONMENT via job
+              # env, ORIGA_APP_STORE) is templated into a copy of the
+              # manifest: the flatpak-builder sandbox does not inherit job
+              # env. The generated manifest MUST live in the same directory
+              # as the original — the relative source paths
+              # (../../origa_ui/dist, cargo-sources.json) resolve against
+              # the manifest directory. The manifest's git source is pinned
+              # to the release tag by update-version above; the frontend
+              # dist was built by build-frontend on the same commit
+              # (ADR-056).
+              run: |
+                  python3 - <<'EOF'
+                  import os, yaml
+                  m = yaml.safe_load(open('packaging/flatpak/net.uwuwu.origa.yml'))
+                  mod = next(mo for mo in m['modules'] if mo.get('name') == 'origa')
+                  bo_env = mod['build-options'].setdefault('env', {})
+                  for key in ('SENTRY_DSN', 'SENTRY_ENVIRONMENT'):
+                      if os.environ.get(key):
+                          bo_env[key] = os.environ[key]
+                  with open('packaging/flatpak/flatpak-manifest.generated.yml', 'w') as f:
+                      yaml.safe_dump(m, f, sort_keys=False, allow_unicode=True)
+                  EOF
+                  flatpak-builder --user \
+                      --install-deps-from=flathub \
+                      --repo=flatpak-repo \
+                      --force-clean \
+                      flatpak-build \
+                      packaging/flatpak/flatpak-manifest.generated.yml
+
+            - name: Create flatpak bundle
+              # Fixed-name alias (ADR-025 addendum): the landing page links
+              # /releases/latest/download/Origa_amd64.flatpak. The bundle
+              # embeds the runtime-repo reference so a fresh user machine
+              # gets the org.gnome.Platform runtime offered automatically.
+              run: |
+                  flatpak build-bundle \
+                      --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+                      flatpak-repo \
+                      Origa_amd64.flatpak \
+                      net.uwuwu.origa
+                  ls -la Origa_amd64.flatpak
+
+            - name: Upload flatpak artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: flatpak-build
+                  path: Origa_amd64.flatpak
+                  retention-days: 7
+
     build-apple:
         name: Build Apple (iOS + macOS)
         # Apple builds use expensive macOS runners (~30 min/target).
@@ -204,7 +306,6 @@ jobs:
                   VERSION: ${{ needs.version.outputs.version }}
                   GIT_TAG: ${{ github.ref_name }}
                   WIN_SIG: ${{ needs.build-tauri.outputs.windows-signature }}
-                  LINUX_SIG: ${{ needs.build-tauri.outputs.linux-signature }}
               run: |
                   # Stable-only: prereleases deliberately do NOT refresh the
                   # updater manifest, so users on the stable channel never get
@@ -212,20 +313,25 @@ jobs:
                   # tag (v-prefixed, e.g. v1.0.0) — it MUST match the release's
                   # tag_name (github.ref_name), not the stripped version. The
                   # asset filename segment is the fixed-name alias
-                  # (Origa_x64-setup.exe / Origa_amd64.AppImage) — single-naming
-                  # per ADR-025 addendum; only the alias asset exists in the
-                  # release. The manifest's `version` field is the bare version
-                  # (1.0.0) the updater compares against. Signature is
-                  # content-based (Minisign), so it stays valid after the
-                  # versioned → alias rename in _build-tauri.yml.
+                  # (Origa_x64-setup.exe) — single-naming per ADR-025 addendum;
+                  # only the alias asset exists in the release. The manifest's
+                  # `version` field is the bare version (1.0.0) the updater
+                  # compares against. Signature is content-based (Minisign),
+                  # so it stays valid after the versioned → alias rename in
+                  # _build-tauri.yml.
+                  #
+                  # Linux has NO updater entry since ADR-056: the AppImage
+                  # channel was retired and Linux distribution is Flatpak +
+                  # .deb (updated by re-install / the flatpak repository once
+                  # published). A linux-x86_64 entry with a stale signature
+                  # and URL would make the updater fail with TargetNotFound
+                  # instead of silently skipping.
                   jq -n \
                     --arg version "$VERSION" \
                     --arg notes "Release $VERSION" \
                     --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     --arg win_sig "$WIN_SIG" \
-                    --arg linux_sig "$LINUX_SIG" \
                     --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_x64-setup.exe" \
-                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_amd64.AppImage" \
                     '{
                       version: $version,
                       notes: $notes,
@@ -234,10 +340,6 @@ jobs:
                         "windows-x86_64": {
                           signature: $win_sig,
                           url: $win_url
-                        },
-                        "linux-x86_64": {
-                          signature: $linux_sig,
-                          url: $linux_url
                         }
                       }
                     }' > latest.json
@@ -255,6 +357,7 @@ jobs:
         if: >
             always() &&
             needs.build-tauri.result == 'success' &&
+            needs.build-flatpak.result == 'success' &&
             startsWith(github.ref, 'refs/tags/v') &&
             (needs.version.outputs.version_type == 'stable' ||
              needs.version.outputs.version_type == 'prerelease') &&
@@ -264,6 +367,7 @@ jobs:
             [
                 version,
                 build-tauri,
+                build-flatpak,
                 build-apple,
                 generate-latest-json,
             ]
@@ -294,7 +398,7 @@ jobs:
                   find artifacts -type f \( \
                       -name '*-setup.exe' -o \
                       -name '*.msi' -o \
-                      -name '*.AppImage' -o \
+                      -name '*.flatpak' -o \
                       -name '*.deb' -o \
                       -name '*.pkg' -o \
                       -name '*.apk' -o \
@@ -319,8 +423,23 @@ jobs:
                       - `Origa_x64-setup.exe` — NSIS installer (single-name, no versioned duplicate per ADR-025 addendum)
 
                       ## Linux
-                      - `Origa_amd64.AppImage` — portable
+                      - `Origa_amd64.flatpak` — Flatpak (any distribution; requires flatpak)
                       - `Origa_amd64.deb` — Debian/Ubuntu
+
+                      ### Migrating from the retired AppImage (ADR-056)
+                      The AppImage channel was removed — its bundled webview
+                      was incompatible with newer distributions. Install the
+                      Flatpak (or .deb) and carry your data over with:
+
+                      ```sh
+                      mkdir -p ~/.var/app/net.uwuwu.origa/data
+                      cp -a ~/.local/share/net.uwuwu.origa ~/.var/app/net.uwuwu.origa/data/
+                      ```
+
+                      Note: system-voice TTS inside the Flatpak sandbox uses
+                      the host speech-dispatcher daemon (needs `speechd`
+                      running on the host); phrase audio from the CDN is
+                      unaffected.
 
                       ## iOS
                       ${{ needs.build-apple.outputs.ios-upload-status == 'success' && '- App Store: install via TestFlight (see App Store Connect)' || '- ⚠️ iOS upload FAILED — check CI logs. Download ios-build artifact and upload via Transporter.app' }}
@@ -347,7 +466,8 @@ jobs:
         # Release via the `release` job.
         #
         # Intentionally NOT a dependency of `release`: this job is absent from
-        # release.needs ([version, build-tauri, build-apple, generate-latest-json]).
+        # release.needs ([version, build-tauri, build-flatpak, build-apple,
+        # generate-latest-json]).
         # Transient RuStore failures (network, stale drafts, moderation quirks)
         # even on a stable release MUST NOT block the GitHub Release.
         # Do NOT add upload-rustore to release.needs — that regresses isolation.
