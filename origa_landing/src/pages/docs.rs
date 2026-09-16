@@ -1,11 +1,12 @@
 //! `/docs` index and `/docs/<slug>` article pages.
 //!
-//! The index renders the `index.md` content for the requested locale. Article
-//! pages fall back to the English version when no translation exists (KO/VI),
-//! with `robots: noindex, follow` and a canonical URL pointing at the EN
-//! version — mirroring the blog fallback strategy. Both layouts share a
-//! two-column structure: a fixed sidebar listing every doc page and a content
-//! column rendering the markdown body.
+//! The index renders the `index.md` content for the requested locale. Docs
+//! ship in all four locales; the article pages keep an EN fallback for future
+//! pages that land in fewer locales first — a fallback render carries
+//! `robots: noindex, follow` and a canonical URL pointing at the EN version
+//! (the same strategy the blog uses for its EN+RU cluster). Both layouts
+//! share a two-column structure: a fixed sidebar listing every doc page and a
+//! content column rendering the markdown body.
 
 use leptos::prelude::*;
 use leptos_meta::{Meta, Title};
@@ -45,6 +46,11 @@ pub fn DocsArticlePage() -> impl IntoView {
 /// Static descriptor of how a request was resolved. The fallback variant
 /// records that the user asked for a non-EN locale but received the EN page —
 /// drives the `noindex` + canonical-redirect SEO signals.
+///
+/// With docs shipping in all four locales this branch is dormant today; it
+/// exists for future pages added in fewer locales first (the blog relies on
+/// the same pattern for its EN+RU cluster), so a partial translation degrades
+/// to an EN render instead of a 404.
 enum Resolution {
     Native(&'static DocPage),
     Fallback(&'static DocPage),
@@ -319,11 +325,16 @@ mod tests {
     }
 
     #[test]
-    fn resolve_returns_fallback_for_ko_slug() {
+    fn resolve_returns_native_for_ko_slug() {
         assert!(matches!(
             resolve(Locale::Ko, "getting-started"),
-            Resolution::Fallback(_)
+            Resolution::Native(_)
         ));
+    }
+
+    #[test]
+    fn resolve_returns_native_for_vi_slug() {
+        assert!(matches!(resolve(Locale::Vi, "fsrs"), Resolution::Native(_)));
     }
 
     #[test]

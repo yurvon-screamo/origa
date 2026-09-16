@@ -200,8 +200,8 @@ Linux-каналы: Flatpak (universal, WebKit из GNOME runtime) + `.deb` (Deb
 
 ## Документация лендинга (`/docs/*`)
 
-Раздел `/docs` — markdown-driven (как `content/blog/`), контент в `content/docs/{en,ru}/*.md`,
-2 языка (EN+RU). Landing = единственный LLM-facing surface для Origa (GPTBot/ClaudeBot/PerplexityBot
+Раздел `/docs` — markdown-driven (как `content/blog/`), контент в `content/docs/{en,ru,ko,vi}/*.md`,
+4 языка (EN+RU+KO+VI). Landing = единственный LLM-facing surface для Origa (GPTBot/ClaudeBot/PerplexityBot
 не индексируют GitHub для японских запросов), поэтому критична актуальность и точность.
 
 ### Tone rules (наследуются от лендинга + дополнения)
