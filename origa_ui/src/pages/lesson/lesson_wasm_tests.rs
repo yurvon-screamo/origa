@@ -2144,6 +2144,48 @@ mod acquaintance_training_fronts {
     use crate::ui_components::ReadingItem;
     use ulid::Ulid;
 
+    /// The grammar front renders through TranslatorText, whose async
+    /// pipeline hits the network-backed tokenizer path in a bare test
+    /// environment. Installing a precomputed entry for the exact front
+    /// string routes the component through its offline branch (#521
+    /// precompute contract) — no CDN dictionary fetch — and the text
+    /// settles after a tick. Poll bounded for robustness.
+    async fn translated_front_text(wrapper: &web_sys::Element) -> String {
+        let front = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-front\"]")
+            .unwrap()
+            .expect("training front renders");
+        for _ in 0..10 {
+            crate::utils::yield_to_browser().await;
+            tick().await;
+            let loader = front.query_selector("[data-testid=\"translator-dict-loading\"]");
+            if loader.is_ok_and(|l| l.is_none()) {
+                return front.text_content().unwrap_or_default();
+            }
+        }
+        front.text_content().unwrap_or_default()
+    }
+
+    /// Offline tokenizer entry for one exact JP string (surface kept
+    /// verbatim so the front projection matches the input).
+    fn install_front_precompute(text: &str) {
+        use origa::domain::{
+            PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+        };
+        install_precomputed_entry(
+            text,
+            PrecomputedEntry {
+                furigana_spans: vec![],
+                tokens: vec![PrecomputedToken {
+                    surface: text.to_string(),
+                    base: text.to_string(),
+                    reading: text.to_string(),
+                    pos: PartOfSpeech::Noun,
+                }],
+            },
+        );
+    }
+
     fn acq_context() -> AcquaintanceContext {
         let state = RwSignal::new(AcquaintanceState::default());
         state.update(|s| s.stage = AcquaintanceStage::Training);
@@ -2295,14 +2337,11 @@ mod acquaintance_training_fronts {
 
         // Act
         let wrapper = mount_training(&ctx);
+        install_front_precompute("私は学生です。");
         tick().await;
 
         // Assert: фронт — японская строка примера; ни перевод, ни смысл
-        let front = wrapper
-            .query_selector("[data-testid=\"acquaintance-training-front\"]")
-            .unwrap()
-            .unwrap();
-        let text = front.text_content().unwrap();
+        let text = translated_front_text(&wrapper).await;
         assert!(
             text.contains("私は学生です。"),
             "японский пример во фронте, got: {text}"
@@ -2391,14 +2430,11 @@ mod acquaintance_training_fronts {
 
         // Act
         let wrapper = mount_training(&ctx);
+        install_front_precompute("～たことがある");
         tick().await;
 
         // Assert: фронт — заголовок конструкции; смысл скрыт до раскрытия
-        let front = wrapper
-            .query_selector("[data-testid=\"acquaintance-training-front\"]")
-            .unwrap()
-            .unwrap();
-        let text = front.text_content().unwrap();
+        let text = translated_front_text(&wrapper).await;
         assert!(
             text.contains("～たことがある"),
             "фолбэк на заголовок, got: {text}"
