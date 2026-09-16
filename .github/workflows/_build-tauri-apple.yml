@@ -266,29 +266,6 @@ jobs:
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
 
-            - name: Debug manual signing state (temporary, ADR-056 bring-up)
-              if: failure()
-              shell: bash
-              run: |
-                  echo "--- installed profiles ---"
-                  ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || echo "no profiles installed"
-                  for P in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
-                    [ -e "$P" ] || continue
-                    echo "--- cms decode of $(basename "$P") ---"
-                    if security cms -D -i "$P" > /tmp/pp.plist 2>/tmp/pp.err; then
-                      echo "security cms: OK"
-                      /usr/libexec/PlistBuddy -c "Print :UUID" /tmp/pp.plist || true
-                    else
-                      echo "security cms FAILED:"
-                      cat /tmp/pp.err
-                    fi
-                  done
-                  echo "--- pbxproj signing settings ---"
-                  grep -n 'CODE_SIGN_STYLE\|CODE_SIGN_IDENTITY\|PROVISIONING_PROFILE_SPECIFIER\|DEVELOPMENT_TEAM\|CODE_SIGN_ENTITLEMENTS' \
-                    tauri/gen/apple/origa-app.xcodeproj/project.pbxproj || echo "no signing settings in pbxproj"
-                  echo "--- ExportOptions.plist ---"
-                  cat tauri/gen/apple/ExportOptions.plist 2>/dev/null || echo "no ExportOptions.plist"
-
             - name: Locate .ipa
               id: ipa
               shell: bash

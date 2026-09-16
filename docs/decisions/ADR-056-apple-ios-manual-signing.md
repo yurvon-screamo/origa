@@ -55,6 +55,29 @@ re-sign — **до** загрузки в ASC. Слоты сертификато�
 - Репозиторные секреты: `APPLE_IOS_CERTIFICATE`,
   `APPLE_IOS_CERTIFICATE_PASSWORD`, `APPLE_IOS_MOBILE_PROVISION`.
 
+### Пост-экспортный re-sign (эмпирика bring-up)
+
+Два свойства tauri-cli/Xcode 26 потребовали дополнительного шага:
+
+1. `uuid()` профиля у tauri-cli глотает ошибки (`uuid().ok() → None`) — на
+   раннере `PROVISIONING_PROFILE_SPECIFIER` в pbxproj не попадал, архив
+   падал с «requires a provisioning profile». Workflow сам декодирует
+   профиль из секрета и инжектирует specifier в обе конфигурации таргета
+   (идемпотентно: synchronize перезаписывает только те ключи, которые сам
+   вычислил).
+2. `-exportArchive` подписывает финальный бинарник энтайлментами ВЫБРАННОГО
+   им App Store профиля, а выбор профиля на Xcode 26 не пиннится
+   (`provisioningProfiles` игнорируется и по UUID, и по имени) — экспорт
+   подхватывал протухший кэшированный профиль без SIWA/push и срезал
+   capability (ловилось fail-closed гейтом).
+
+Поэтому после экспорта .ipa детерминированно переподписывается: P12 в
+одноразовый keychain, `embedded.mobileprovision` ← наш профиль, applesignin
+доливается в текущие энтайлменты (guarded Add), `codesign --force` +
+rezip. Это механика, которая поставляла все релизы эры #505 — минус минт и
+ревокация. Fail-closed гейт «Verify iOS entitlements (SIWA)» остаётся после
+re-sign перед upload.
+
 ### Инвариант
 
 `APPLE_API_*` не должны попадать в env шага build iOS-джобы — ни через
@@ -66,13 +89,15 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
 
 ### Удалено
 
-- Шаги «Re-sign .ipa with SIWA entitlements» и «Cleanup minted iOS identity».
-- `mint_ios_identity.py` — весь его сценарий (минт/ревок) умер.
+- Минт-скрипт `mint_ios_identity.py` — создание и ревокация сертификатов на
+  каждый прогон (корневая причина инцидента).
 - `manage_ios_profiles.py` — flush кэша ASC-профилей нужен был только
   auto-provisioning; при manual signing профиль фиксирован секретом.
+- Шаг «Set API key env» (GITHUB_ENV-экспорт `APPLE_API_KEY_PATH`).
 - Fail-closed гейт «Verify iOS entitlements (SIWA)» **сохранён** перед upload:
-  если manual signing когда-нибудь не применит entitlements, CI упадёт до
-  загрузки, а не отдаст сломанный билд в ASC.
+  если что-то снова срежет entitlements, CI упадёт до загрузки, а не отдаст
+  сломанный билд в ASC. Гейт дополнительно печатает identity встроенного
+  профиля (Name/UUID) для диагностики.
 
 ## Альтернативы
 
