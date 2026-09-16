@@ -1,7 +1,7 @@
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceSlideData};
 use super::grammar_example::grammar_example_front;
 use crate::i18n::*;
-use crate::ui_components::{FuriganaText, speak_word};
+use crate::ui_components::{FuriganaText, TranslatorText, speak_word, strip_emphasis_markers};
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use origa::domain::NativeLanguage;
@@ -131,12 +131,21 @@ pub(super) fn TrainingFrontSlide(
                     AcquaintanceSlideData::Grammar { title, examples, .. } => {
                         // Пустые examples — фронт вырождается в заголовок
                         // конструкции («знак» правила, не смысл).
-                        let front =
-                            grammar_example_front(&examples).unwrap_or_else(|| title.clone());
+                        // TranslatorText — тот же компонент, что во фразах:
+                        // фуригана на токенах и словарные попапы; маркеры
+                        // emphasis из examples зачищаются (плоский текст
+                        // фронта их не рендерит).
+                        let front = grammar_example_front(&examples)
+                            .map(|line| strip_emphasis_markers(&line))
+                            .unwrap_or_else(|| title.clone());
+                        let native_lang: Signal<NativeLanguage> = ctx.native_language.into();
+                        let front_class = "font-serif text-3xl text-[var(--fg-black)] leading-relaxed";
                         view! {
-                            <p class="font-serif text-3xl text-[var(--fg-black)] leading-relaxed">
-                                {front}
-                            </p>
+                            <TranslatorText
+                                text=front
+                                class=Signal::derive(move || front_class.to_string())
+                                native_language=native_lang
+                            />
                         }
                             .into_any()
                     },

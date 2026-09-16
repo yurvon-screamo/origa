@@ -670,7 +670,11 @@ fn GrammarSlide(
             <Show when=move || !stored_examples.get_value().is_empty()>
                 <div data-testid="acquaintance-grammar-examples">
                     <MarkdownText
-                        content=Signal::derive(move || stored_examples.get_value())
+                        content=Signal::derive(move || {
+                            crate::ui_components::example_fences_to_paragraphs(
+                                &stored_examples.get_value(),
+                            )
+                        })
                         known_kanji=kk_for_examples.clone()
                         variant=Signal::derive(|| MarkdownVariant::Default)
                     />

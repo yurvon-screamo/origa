@@ -183,15 +183,27 @@ mod tests {
 
         assert!(out.contains("&lt;"), "less-than stays literal; got: {out}");
         assert!(out.contains("&amp;"), "ampersand stays literal; got: {out}");
-        assert!(out.contains("\\_"), "underscore cannot become emphasis; got: {out}");
-        assert!(out.contains("\\~"), "tilde cannot become strikethrough; got: {out}");
+        assert!(
+            out.contains("\\_"),
+            "underscore cannot become emphasis; got: {out}"
+        );
+        assert!(
+            out.contains("\\~"),
+            "tilde cannot become strikethrough; got: {out}"
+        );
         assert!(out.contains("\\`"), "backtick cannot open code; got: {out}");
     }
 
     #[test]
     fn strippy_removes_emphasis_markers() {
-        assert_eq!(strip_emphasis_markers("彼は**[他に強い]**。"), "彼は[他に強い]。");
-        assert_eq!(strip_emphasis_markers("*A: どうして泣いているの？*"), "A: どうして泣いているの？");
+        assert_eq!(
+            strip_emphasis_markers("彼は**[他に強い]**。"),
+            "彼は[他に強い]。"
+        );
+        assert_eq!(
+            strip_emphasis_markers("*A: どうして泣いているの？*"),
+            "A: どうして泣いているの？"
+        );
         assert_eq!(strip_emphasis_markers("素朴なテキスト"), "素朴なテキスト");
     }
 }

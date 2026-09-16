@@ -310,7 +310,14 @@ pub fn GrammarDetail() -> impl IntoView {
                         grammar_rule.map(|r| r.content(&native_lang.get()).how_to_form().to_string())
                     });
                     let examples = Memo::new(move |_| {
-                        grammar_rule.map(|r| r.content(&native_lang.get()).examples().to_string())
+                        grammar_rule.map(|r| {
+                            // Example fences carry inline emphasis that a
+                            // code-block render would keep raw — convert
+                            // them to paragraphs before rendering.
+                            crate::ui_components::example_fences_to_paragraphs(
+                                r.content(&native_lang.get()).examples(),
+                            )
+                        })
                     });
                     let nuances = Memo::new(move |_| {
                         grammar_rule.map(|r| r.content(&native_lang.get()).nuances().clone())

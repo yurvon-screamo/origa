@@ -132,7 +132,11 @@ pub(super) fn TrainingAnswerSlide(
                             <p class="font-mono text-sm">{short_description}</p>
                             <Show when=move || !front_was_title>
                                 <MarkdownText
-                                    content=Signal::derive(move || examples_stored.get_value())
+                                    content=Signal::derive(move || {
+                                        crate::ui_components::example_fences_to_paragraphs(
+                                            &examples_stored.get_value(),
+                                        )
+                                    })
                                     known_kanji=known_kanji.get_untracked()
                                     variant=Signal::derive(|| MarkdownVariant::Compact)
                                 />

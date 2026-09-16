@@ -93,7 +93,9 @@ pub fn GrammarDetailsExpand(
                                     />
                                     <GrammarSection
                                         title=examples_title.get()
-                                        content=content.examples().to_string()
+                                        content=crate::ui_components::example_fences_to_paragraphs(
+                                            content.examples(),
+                                        )
                                         known_kanji=known_kanji_stored.get_value()
                                     />
                                     <div>
