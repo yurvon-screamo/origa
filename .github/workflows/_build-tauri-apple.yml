@@ -253,7 +253,6 @@ jobs:
                   PROFILE_PLIST=$(mktemp)
                   security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
                   PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
-                  PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$PROFILE_PLIST")
                   # NOTE: this step runs with working-directory: tauri.
                   PBXPROJ=gen/apple/origa-app.xcodeproj/project.pbxproj
                   sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
@@ -263,18 +262,6 @@ jobs:
                     echo "::error::PROVISIONING_PROFILE_SPECIFIER injection failed (count $(cat /tmp/spec_count), expected 2)"
                     exit 1
                   fi
-                  # Same for the export step: tauri-cli merges its generated
-                  # options OVER this file, so keys it does not set survive.
-                  # provisioningProfiles values must be the profile NAME
-                  # (UUIDs are ignored by -exportArchive profile selection —
-                  # without this Xcode auto-picks a stale cached profile and
-                  # strips entitlements it does not grant, applesignin
-                  # included).
-                  /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" \
-                    -c "Add :provisioningProfiles:net.uwuwu.origa string $PROFILE_NAME" \
-                    gen/apple/ExportOptions.plist
-                  echo "--- ExportOptions.plist after injection ---"
-                  cat gen/apple/ExportOptions.plist
                   cargo tauri ios build \
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
@@ -318,6 +305,74 @@ jobs:
                   fi
                   echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
                   ls -la "$IPA_PATH"
+
+            - name: Re-sign .ipa with the CI distribution identity
+              #
+              # -exportArchive re-signs the app using the entitlements of
+              # whichever App Store profile it resolves, and profile
+              # auto-selection is not fully pinnable on Xcode 26 — the
+              # exported binary can end up with a stale cached profile's
+              # entitlement set (applesignin stripped; caught by the SIWA
+              # gate below). Re-sign the exported .ipa deterministically
+              # with the persistent CI certificate + the secret profile:
+              # same machinery that shipped every release during the #505
+              # era, minus certificate minting/revocation (ADR-056).
+              env:
+                  IOS_CERTIFICATE: ${{ secrets.apple-ios-certificate }}
+                  IOS_CERTIFICATE_PASSWORD: ${{ secrets.apple-ios-certificate-password }}
+                  IOS_MOBILE_PROVISION: ${{ secrets.apple-ios-mobile-provision }}
+              run: |
+                  KEYCHAIN="$RUNNER_TEMP/resign.keychain-db"
+                  KEYCHAIN_PASS=$(uuidgen)
+                  security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  security set-keychain-settings -lut 21600 "$KEYCHAIN"
+                  security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  printf '%s' "$IOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/resign.p12"
+                  security import "$RUNNER_TEMP/resign.p12" -k "$KEYCHAIN" \
+                    -P "$IOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple: \
+                    -k "$KEYCHAIN_PASS" "$KEYCHAIN"
+                  security list-keychains -d user -s "$KEYCHAIN" login.keychain
+
+                  IPA_PATH="${{ steps.ipa.outputs.path }}"
+                  rm -rf /tmp/resign && mkdir -p /tmp/resign
+                  unzip -q "$IPA_PATH" -d /tmp/resign
+                  APP_PATH=$(find /tmp/resign -name "*.app" -type d | head -1)
+
+                  printf '%s' "$IOS_MOBILE_PROVISION" | base64 --decode \
+                    > /tmp/resign/profile.mobileprovision
+                  cp /tmp/resign/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
+
+                  # Merge applesignin into the binary's CURRENT entitlements
+                  # instead of replacing them (guarded so a future tauri-cli
+                  # that embeds the entitlement degrades to a no-op).
+                  codesign -d --entitlements :/tmp/resign/entitlements.xml "$APP_PATH"
+                  if ! /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" \
+                    /tmp/resign/entitlements.xml >/dev/null 2>&1; then
+                    /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" \
+                      -c "Add :com.apple.developer.applesignin:0 string Default" \
+                      /tmp/resign/entitlements.xml
+                  fi
+                  plutil -lint /tmp/resign/entitlements.xml
+
+                  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
+                    | grep "Apple Distribution" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+                  if [ -z "$IDENTITY" ]; then
+                    echo "::error::No Apple Distribution identity in the resign keychain"
+                    security find-identity -v -p codesigning "$KEYCHAIN"
+                    exit 1
+                  fi
+                  echo "Re-signing with identity: $IDENTITY"
+
+                  codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN" \
+                    --entitlements /tmp/resign/entitlements.xml "$APP_PATH"
+                  codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/resign/ent.txt
+                  grep -q "com.apple.developer.applesignin" /tmp/resign/ent.txt
+
+                  rm -f "$IPA_PATH"
+                  (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
+                  ls -la "$IPA_PATH"
+                  security delete-keychain "$KEYCHAIN"
 
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
