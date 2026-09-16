@@ -74,7 +74,7 @@ Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://o
 | 플랫폼 | 상태 | 형식 |
 | :--- | :--- | :--- |
 | **Windows** | ✅ 지원 | [`.exe` 설치 파일](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ 지원 | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ 지원 | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
 | **Android** | ✅ 지원 | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ 준비 중 | Mac App Store |
 

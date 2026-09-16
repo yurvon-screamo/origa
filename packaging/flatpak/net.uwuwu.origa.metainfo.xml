@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>net.uwuwu.origa</id>
+    <launchable type="desktop-id">net.uwuwu.origa.desktop</launchable>
+    <name>Origa</name>
+    <summary>Learn Japanese — kanji, vocabulary and grammar with spaced repetition</summary>
+    <developer id="net.uwuwu">
+        <name>yurvon-screamo</name>
+    </developer>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>LicenseRef-Proprietary</project_license>
+    <url type="homepage">https://origa.uwuwu.net</url>
+    <url type="bugtracker">https://github.com/yurvon-screamo/origa/issues</url>
+    <supports>
+        <control>pointing</control>
+        <control>keyboard</control>
+        <control>touch</control>
+    </supports>
+    <description>
+        <p>
+            Origa is a spaced-repetition trainer for Japanese. It covers
+            kanji, vocabulary and grammar from JLPT N5 to N1 and schedules
+            reviews with the FSRS algorithm.
+        </p>
+        <p>
+            Study materials are downloaded once and cached on the device,
+            so the app works fully offline. Kanji include stroke-order
+            animations, vocabulary entries come with pitch-accent audio,
+            and lessons grade free-form answers instead of multiple choice.
+        </p>
+    </description>
+    <content_rating type="oars-1.1"/>
+    <releases>
+        <release version="0.7.19" date="2026-09-15"/>
+    </releases>
+</component>

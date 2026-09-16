@@ -271,7 +271,7 @@ CTA → /download
 Platform cards with download buttons:
 
 - Windows (.exe, .msi)
-- Linux (.deb, .AppImage, .rpm)
+- Linux (.flatpak, .deb)
 - macOS (.dmg, .app)
 - Android (.apk)
 - Web version (link)

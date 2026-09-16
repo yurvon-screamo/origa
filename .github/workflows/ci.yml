@@ -161,6 +161,7 @@ jobs:
                       tauri:
                           - tauri/**
                           - tauri-plugin-aswebauth/**
+                          - packaging/**
                       e2e:
                           - end2end/**
                       utils:

@@ -50,8 +50,8 @@ on:
         outputs:
             windows-signature:
                 value: ${{ jobs.build-windows.outputs.signature }}
-            linux-signature:
-                value: ${{ jobs.build-linux.outputs.signature }}
+            # linux-signature removed with the AppImage channel (ADR-056): the
+            # updater manifest no longer carries a linux-x86_64 entry.
 
 env:
     CARGO_TERM_COLOR: always
@@ -195,8 +195,6 @@ jobs:
         runs-on: ubuntu-24.04
         permissions:
             contents: read
-        outputs:
-            signature: ${{ steps.signature.outputs.signature }}
         env:
             ORIGA_VERSION: ${{ inputs.version }}
             ORIGA_COMMIT: ${{ inputs.commit_sha }}
@@ -253,45 +251,35 @@ jobs:
             - name: Build Tauri app for Linux
               working-directory: tauri
               # --no-sign for Dependabot — see build-windows for the rationale.
+              # ADR-056: deb-only bundles. The AppImage channel is retired —
+              # its bundled Ubuntu WebKitGTK breaks on rolling distributions
+              # (ADR-056 for the incident) — Linux distribution is Flatpak +
+              # .deb. `targets: "all"` in tauri.conf.json would also build an
+              # AppImage here, so the deb target is pinned explicitly.
               run: |
                   EXTRA_FLAGS=""
                   if [ "$GITHUB_ACTOR" = "dependabot[bot]" ]; then
                       EXTRA_FLAGS="--no-sign"
                   fi
-                  cargo tauri build --target x86_64-unknown-linux-gnu $EXTRA_FLAGS
+                  cargo tauri build --target x86_64-unknown-linux-gnu --config '{"bundle":{"targets":["deb"]}}' $EXTRA_FLAGS
 
-            - name: Create fixed-name aliases
+            - name: Create fixed-name alias
               working-directory: target/x86_64-unknown-linux-gnu/release/bundle
               env:
                   VERSION: ${{ inputs.version }}
               run: |
-                  # Tauri emits Origa_<version>_amd64.AppImage/.deb (+ .AppImage.sig
-                  # updater signature). Rename each to a fixed name for the
-                  # landing page's /releases/latest/download/<fixed> links.
-                  # Single-name (no versioned copy) per ADR-025 addendum.
-                  mv "appimage/Origa_${VERSION}_amd64.AppImage" "appimage/Origa_amd64.AppImage"
-                  [ -f "appimage/Origa_${VERSION}_amd64.AppImage.sig" ] && mv "appimage/Origa_${VERSION}_amd64.AppImage.sig" "appimage/Origa_amd64.AppImage.sig" || true
+                  # Tauri emits Origa_<version>_amd64.deb. Rename to a fixed
+                  # name for the landing page's /releases/latest/download/
+                  # <fixed> links. Single-name (no versioned copy) per ADR-025
+                  # addendum. (AppImage aliases removed with the channel —
+                  # ADR-056.)
                   mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
-
-            - name: Extract signature
-              id: signature
-              shell: bash
-              run: |
-                  SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.sig 2>/dev/null | head -1 || true)
-                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
-                    SIG_CONTENT=$(cat "$SIG_FILE")
-                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
-                  else
-                    echo "signature=" >> $GITHUB_OUTPUT
-                  fi
 
             - name: Upload Linux artifacts
               uses: actions/upload-artifact@v7
               with:
                   name: linux-build
                   path: |
-                      **/bundle/appimage/*.AppImage
-                      **/bundle/appimage/*.sig
                       **/bundle/deb/*.deb
                   retention-days: 7
 

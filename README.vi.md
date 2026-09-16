@@ -74,7 +74,7 @@ Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 | Nền tảng | Trạng thái | Định dạng |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Sẵn sàng | [trình cài đặt `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Sẵn sàng | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ Sẵn sàng | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
 | **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Sắp ra mắt | Mac App Store |
 
