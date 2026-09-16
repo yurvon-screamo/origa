@@ -4877,10 +4877,10 @@ rt {
 }
 
 .grammar-detail-hero-form {
-    font-family: var(--font-serif);
-    font-size: 32px;
-    line-height: 1.2;
-    color: var(--fg-black);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    line-height: 1.4;
+    color: var(--fg-muted);
 }
 
 .grammar-detail-hero-info {
@@ -4889,10 +4889,10 @@ rt {
 }
 
 .grammar-detail-hero-meaning {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm, 16px);
+    font-family: var(--font-serif);
+    font-size: 32px;
     color: var(--fg-black);
-    line-height: 1.4;
+    line-height: 1.2;
 }
 
 .grammar-detail-hero-badge {
@@ -5078,8 +5078,22 @@ rt {
     background: var(--bg-aged);
 }
 
+/* Chip heading: localized meaning leads in serif — the chip follows the
+   same hierarchy as every other grammar surface (#503 UX); the pattern
+   inside stays mono via .grammar-related-chip-pattern. */
 .grammar-related-chip-title {
+    font-family: var(--font-serif);
     color: var(--fg-black);
+}
+
+/* Secondary line inside the chip: the bare Japanese pattern under the
+   localized heading (#503 UX hierarchy). */
+.grammar-related-chip-pattern {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-label-sm, 11px);
+    color: var(--fg-muted);
+    margin-top: 2px;
 }
 
 .grammar-related-chip-level {
@@ -5093,6 +5107,25 @@ rt {
     font-size: 0.85em;
     color: var(--fg-muted);
     max-width: 280px;
+}
+
+/* Grammar badge on lesson cards: the Tag base (uppercase mono, wide
+   tracking) is unreadable for a sentence-length meaning, so both spans
+   reset it. The localized meaning leads, the pattern trails in mono. */
+.grammar-badge-meaning {
+    font-family: var(--font-serif);
+    font-size: var(--text-sm, 16px);
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--fg-black);
+    margin-right: 8px;
+}
+
+.grammar-badge-pattern {
+    font-family: var(--font-mono);
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--fg-muted);
 }
 
 .grammar-detail-mobile {
@@ -5979,13 +6012,11 @@ rt {
     padding: 0 20px 10px;
 }
 
-.grammar-card-short-desc {
+.grammar-card-heading {
     font-family: var(--font-serif);
-    font-size: var(--text-sm, 16px);
-    color: var(--fg-muted);
-    font-style: italic;
-    line-height: 1.5;
-    margin: 0;
+    font-size: var(--text-base, 18px);
+    color: var(--fg-black);
+    line-height: 1.4;
 }
 
 .grammar-card-divider {

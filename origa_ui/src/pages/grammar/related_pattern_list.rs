@@ -36,6 +36,10 @@ pub fn RelatedPatternList(
                         return view! { <span></span> }.into_any();
                     };
                     let title = rule.content(&native_language).title().to_string();
+                    let meaning = rule
+                        .content(&native_language)
+                        .short_description()
+                        .to_string();
                     let level = rule.level().to_string();
                     let note = StoredValue::new(pattern.note().map(|n| n.to_string()).unwrap_or_default());
                     let card_href = current_user
@@ -43,6 +47,7 @@ pub fn RelatedPatternList(
                         .and_then(|user| study_card_href(user, pattern.rule_id()));
 
                     let (linked_title, plain_title) = (title.clone(), title.clone());
+                    let (linked_meaning, plain_meaning) = (meaning.clone(), meaning.clone());
                     let (linked_level, plain_level) = (level.clone(), level.clone());
                     view! {
                         <div class="grammar-related-chip">
@@ -50,10 +55,13 @@ pub fn RelatedPatternList(
                                 Some(href) => view! {
                                     <A href=href attr:class="grammar-related-chip-link">
                                         <span class="grammar-related-chip-title">
-                                            <FuriganaText
-                                                text=linked_title
-                                                known_kanji=known_kanji_stored.get_value()
-                                            />
+                                            {linked_meaning}
+                                            <span class="grammar-related-chip-pattern">
+                                                <FuriganaText
+                                                    text=linked_title
+                                                    known_kanji=known_kanji_stored.get_value()
+                                                />
+                                            </span>
                                         </span>
                                         <span class="grammar-related-chip-level">{linked_level}</span>
                                     </A>
@@ -61,10 +69,13 @@ pub fn RelatedPatternList(
                                     .into_any(),
                                 None => view! {
                                     <span class="grammar-related-chip-title">
-                                        <FuriganaText
-                                            text=plain_title
-                                            known_kanji=known_kanji_stored.get_value()
-                                        />
+                                        {plain_meaning}
+                                        <span class="grammar-related-chip-pattern">
+                                            <FuriganaText
+                                                text=plain_title
+                                                known_kanji=known_kanji_stored.get_value()
+                                            />
+                                        </span>
                                     </span>
                                     <span class="grammar-related-chip-level">{plain_level}</span>
                                 }

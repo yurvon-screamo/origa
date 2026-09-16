@@ -410,10 +410,16 @@ async fn lesson_progress_reactive_current_updates_label() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn grammar_info_badge_renders_title_as_tag() {
+async fn grammar_info_badge_leads_with_meaning_and_trails_pattern() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
-        view! { <GrammarInfoBadge title="〜なければならない".to_string() /> }.into_any()
+        view! {
+            <GrammarInfoBadge
+                pattern="〜なければならない".to_string()
+                meaning="Долженствование".to_string()
+            />
+        }
+        .into_any()
     });
     tick().await;
 
@@ -424,8 +430,18 @@ async fn grammar_info_badge_renders_title_as_tag() {
         .expect("badge must render as a Tag");
     let text = tag.text_content().unwrap();
     assert!(
+        text.contains("Долженствование"),
+        "badge must lead with the localized meaning; got: {text}"
+    );
+    assert!(
         text.contains("〜なければならない"),
-        "badge must show the title; got: {text}"
+        "badge must trail with the pattern; got: {text}"
+    );
+    let meaning_first = text.find("Долженствование").unwrap();
+    let pattern_pos = text.find("〜なければならない").unwrap();
+    assert!(
+        meaning_first < pattern_pos,
+        "meaning must precede the pattern in the badge"
     );
 }
 
