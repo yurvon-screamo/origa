@@ -1961,7 +1961,11 @@ mod integration_tests {
             yokatta
                 .grammar_label
                 .as_deref()
-                .is_some_and(|l| l.contains("прошедшее")),
+                .is_some_and(|l| l == "～かった")
+                && yokatta
+                    .grammar_description
+                    .as_deref()
+                    .is_some_and(|d| d.contains("Прошедшее")),
             "i-adjective past form of「良い」should carry the past grammar_label, got: {:?}",
             yokatta
         );
