@@ -3,7 +3,7 @@ title: "Ứng dụng học tiếng Nhật tốt nhất: cách chọn trong năm 
 slug: /vi/blog/best-japanese-learning-app
 locale: vi
 meta_title: "Ứng dụng học tiếng Nhật tốt nhất (2026)"
-meta_description: "Không có ứng dụng tiếng Nhật 'tốt nhất' duy nhất. Chỉ có bộ tốt nhất cho mục tiêu của bạn. Phân tích theo danh mục: từ vựng, hán tự, ngữ pháp, nghe, JLPT."
+meta_description: "Không có ứng dụng tiếng Nhật 'tốt nhất' duy nhất. Chỉ có bộ tốt nhất cho mục tiêu của bạn. Phân tích theo danh mục: từ vựng, hán tự, ngữ pháp, nghe, JLPT — hướng dẫn cho người mới bắt đầu học tiếng Nhật."
 target_keywords: ["ứng dụng học tiếng nhật tốt nhất", "app học tiếng nhật", "học tiếng nhật cho người mới bắt đầu", "app học tiếng nhật offline", "hán tự n5"]
 lastmod: 2026-09-10
 published: 2026-07-19
