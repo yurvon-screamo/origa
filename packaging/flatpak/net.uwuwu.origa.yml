@@ -122,5 +122,13 @@ modules:
           - install -Dm644 tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/net.uwuwu.origa.png
           - install -Dm644 tauri/icons/icon-512.png /app/share/icons/hicolor/512x512/apps/net.uwuwu.origa.png
           - install -Dm644 packaging/flatpak/net.uwuwu.origa.desktop /app/share/applications/net.uwuwu.origa.desktop
+          # Label the appstream release with the version being built (the
+          # tag checkout carries the PREVIOUS release's version — update-version
+          # only seds the workspace copy, which the sandbox never sees).
+          - |
+              V="$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || true)"; V="${V:-0.0.0}"
+              D="$(git log -1 --format=%cd --date=short 2>/dev/null || true)"; D="${D:-1970-01-01}"
+              sed -i "s|<release version=\"[^\"]*\" date=\"[^\"]*\"/>|<release version=\"${V}\" date=\"${D}\"/>|" packaging/flatpak/net.uwuwu.origa.metainfo.xml
+              grep -q "version=\"${V}\"" packaging/flatpak/net.uwuwu.origa.metainfo.xml || { echo "::error::metainfo version sed did not apply"; exit 1; }
           - install -Dm644 packaging/flatpak/net.uwuwu.origa.metainfo.xml /app/share/metainfo/net.uwuwu.origa.metainfo.xml
           - desktop-file-validate /app/share/applications/net.uwuwu.origa.desktop
