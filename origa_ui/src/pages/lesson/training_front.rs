@@ -6,7 +6,8 @@ use leptos::prelude::*;
 use leptos_icons::Icon;
 use origa::domain::NativeLanguage;
 use std::collections::HashSet;
-use ulid::Ulid;/// Forward-фронт слова в тренировке: чистый рендер — автозвук живёт в
+use ulid::Ulid;
+/// Forward-фронт слова в тренировке: чистый рендер — автозвук живёт в
 /// `TrainingBody` одним Effect'ом по Memo текущей карты (дедуп: один
 /// звук на смену карты, а не на каждое перемонтирование фронта).
 #[component]
@@ -42,14 +43,6 @@ pub(super) fn TrainingFrontSlide(
 ) -> impl IntoView {
     let known_kanji = ctx.known_kanji;
     let i18n = use_i18n();
-    // Повтор аудио — явное действие: безтекстовый фронт без звука
-    // нерешаем, мьют его не гейтит.
-    let replay_word = ctx
-        .slides
-        .get_untracked()
-        .iter()
-        .find(|s| s.card_id() == card_id)
-        .and_then(|slide| slide.word().map(str::to_string));
     // Отступы фронта зависят от фазы: пока юзер думает — воздух вокруг
     // вопроса; после раскрытия ответа вопрос сжимается в шапку ответа
     // (баг-репорт: огромные отступы съедали место на стороне ответа).
@@ -78,20 +71,34 @@ pub(super) fn TrainingFrontSlide(
                             // Аудио-фронт достижим только на Forward
                             // (инвариант resolve_audio_front): звучит
                             // слово, текст спрятан — вспомнить перевод.
-                            let replay_word = replay_word.clone();
+                            // Повтор — явное действие: безтекстовый фронт
+                            // без звука нерешаем, мьют его не гейтит. На
+                            // стороне ответа кнопка скрыта: слово уже на
+                            // экране, повтор — кнопкой в шапке.
+                            let ctx_for_replay = ctx.clone();
                             view! {
                                 <div class="flex flex-col items-center gap-4">
-                                    <button
-                                        data-testid="acquaintance-audio-front-play"
-                                        class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
-                                        on:click=move |_| {
-                                            if let Some(word) = replay_word.as_deref() {
-                                                speak_word(word, 1.0);
+                                    <Show when=move || !ctx.showing_answer.get()>
+                                        <button
+                                            data-testid="acquaintance-audio-front-play"
+                                            class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
+                                            on:click=move |_| {
+                                                let word = ctx_for_replay
+                                                    .slides
+                                                    .get_untracked()
+                                                    .iter()
+                                                    .find(|s| s.card_id() == card_id)
+                                                    .and_then(|slide| {
+                                                        slide.word().map(str::to_string)
+                                                    });
+                                                if let Some(word) = word.as_deref() {
+                                                    speak_word(word, 1.0);
+                                                }
                                             }
-                                        }
-                                    >
-                                        <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
-                                    </button>
+                                        >
+                                            <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
+                                        </button>
+                                    </Show>
                                     <p class="font-mono text-lg text-[var(--fg-muted)]">
                                         {t!(i18n, lesson.listen_word)}
                                     </p>

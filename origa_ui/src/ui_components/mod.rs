@@ -33,6 +33,7 @@ mod level_selector;
 mod loading;
 mod logo;
 mod markdown;
+mod markdown_examples;
 mod modal;
 mod multi_line_chart;
 mod nav_config;
@@ -121,6 +122,7 @@ pub use level_selector::LevelSelector;
 pub use loading::{LoadingOverlay, Spinner};
 pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
+pub use markdown_examples::{example_fences_to_paragraphs, strip_emphasis_markers};
 pub use modal::Modal;
 pub use multi_line_chart::{ChartLine, MultiLineChart};
 #[expect(unused_imports, reason = "prepared for future navigation")]

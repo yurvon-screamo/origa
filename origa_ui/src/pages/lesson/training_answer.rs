@@ -42,6 +42,25 @@ pub(super) fn TrainingAnswerSlide(
                                 </p>
                             }
                                 .into_any()
+                        } else if ctx.audio_front.get_untracked() {
+                            // Аудио-фронт: слова на вопросе не было (только
+                            // звук) — ответ показывает слово и перевод, как
+                            // текстовый фронт после раскрытия. Повтор
+                            // доступен кнопкой в шапке (владелец, 2026-09-16).
+                            view! {
+                                <p class="font-serif text-5xl text-[var(--fg-black)] break-words">
+                                    <FuriganaText
+                                        text=word
+                                        known_kanji=known_kanji.get_untracked()
+                                        native_language=ctx.native_language.get_untracked()
+                                        with_kanji_tooltip=true
+                                    />
+                                </p>
+                                <p class="font-mono text-2xl text-[var(--fg-black)] pt-1">
+                                    {translations.join(", ")}
+                                </p>
+                            }
+                                .into_any()
                         } else {
                             view! {
                                 <p class="font-mono text-2xl text-[var(--fg-black)]">

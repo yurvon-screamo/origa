@@ -1756,6 +1756,99 @@ mod acquaintance_training {
         );
     }
 
+    /// Ответ аудио-фронта показывает слово + перевод (слова на вопросе не
+    /// было — только звук); повтор — кнопкой в шапке: кнопка шапки видна
+    /// на ответе, кнопка повтора в теле фронта скрыта (дубль афордансов
+    /// убран).
+    #[wasm_bindgen_test]
+    async fn training_audio_front_answer_shows_word_translation_and_header_replay() {
+        // Arrange: рука из одного слова в Forward-подфазе
+        let ctx = acq_context(AcquaintanceStage::Training);
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Vocabulary,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "読む".to_string(),
+            pos_label: None,
+            translations: vec!["читать".to_string()],
+        }]);
+
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Аудио-фронт выставляется руками: случайный бросок монеты в
+        // тесте не участвует (Effect монеты триггерится только сменой
+        // показа — reveal её не перебрасывает).
+        ctx.audio_front.set(true);
+        tick().await;
+
+        // Фронт: кнопки шапки нет (JP скрыта), в теле — кнопка повтора.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_none(),
+            "аудио-фронт: кнопка шапки скрыта до раскрытия"
+        );
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_some(),
+            "аудио-фронт: кнопка повтора в теле до раскрытия"
+        );
+
+        // Act: раскрыть ответ (кнопка и Space делят хендлер do_reveal).
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        // Assert: ответ — слово и перевод.
+        let answer = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-answer\"]")
+            .unwrap()
+            .expect("answer side renders after reveal");
+        let text = answer.text_content().unwrap();
+        assert!(
+            text.contains("読む") && text.contains("читать"),
+            "ответ аудио-фронта = слово + перевод; got: {text}"
+        );
+
+        // Повтор — только кнопкой шапки: она видна, кнопка тела скрыта.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "ответ аудио-фронта: кнопка озвучки шапки видна"
+        );
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_none(),
+            "ответ аудио-фронта: кнопка повтора в теле скрыта"
+        );
+    }
+
     #[wasm_bindgen_test]
     async fn training_reveals_answer_and_rating_buttons_with_hints() {
         let ctx = acq_context(AcquaintanceStage::Training);
