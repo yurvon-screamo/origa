@@ -364,3 +364,18 @@ async fn invalid_lang_param_ignored() {
         "invalid lang must not stamp a cookie"
     );
 }
+
+#[tokio::test]
+async fn invalid_lang_param_stripped_but_other_query_kept() {
+    // The combined case of the invalid-lang stripper: the bogus `lang=` pair
+    // is dropped from the redirect target while the other query pairs
+    // survive (`redirect_preserves_query_string` covers the no-lang half).
+    let (status, headers) = request("/?lang=xyz&ref=twitter", Method::GET, Some("ru"), None).await;
+
+    assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
+    assert_eq!(
+        header_value(&headers, &LOCATION).as_deref(),
+        Some("/ru?ref=twitter"),
+        "invalid lang pair must be stripped, other pairs kept"
+    );
+}

@@ -35,7 +35,7 @@ Dữ liệu hán tự của Origa sắp theo trình độ JLPT, từ N5 đến N
 
 ## Bài kiểm tra đọc
 
-Trong một bài học, bạn có thể gặp dạng thẻ hiện một từ bị ẩn furigana và yêu cầu bạn đưa ra âm đọc. Nó kiểm tra bạn có đọc được từ đó không nhờ, một kỹ năng khác với nhận diện nghĩa.
+Trong một bài học, bạn có thể gặp dạng thẻ hiện một từ bị ẩn furigana và yêu cầu bạn đưa ra âm đọc. Nó kiểm tra liệu bạn đọc được từ đó mà không cần trợ giúp, một kỹ năng khác với nhận diện nghĩa.
 
 ## Hán tự vào bộ sưu tập theo đường nào
 
