@@ -6033,6 +6033,17 @@ rt {
     flex-shrink: 0;
 }
 
+/* === Studied Today Cards — compact rhythm === */
+/* The home "studied today" cards stack a JP word and its translation;
+   the default .markdown-text p margins (0.5em top and bottom) inflated
+   the padding-to-content gap and doubled the word-translation spacing
+   (owner report). Scoped zeroing — both markdown blocks (JP line and
+   description) compact uniformly; spacing is carried by the layout
+   utilities in the component (mt-0.5 / mt-1). */
+.recent-study-card .markdown-text p {
+    margin: 0;
+}
+
 /* === FSRS Metrics Component === */
 
 /* Container compact — stacked vertically */
