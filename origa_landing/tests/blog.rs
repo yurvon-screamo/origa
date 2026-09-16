@@ -305,15 +305,18 @@ async fn vi_articles_do_not_contain_kanji() {
     // English article, where "kanji" is the correct term — they are skipped
     // via the `noindex` robots marker only fallback pages carry.
     //
-    // The substring "kanji" is matched case-insensitively. Two proper nouns
-    // that contain the substring are subtracted from the count because they
-    // are product names, not the conceptual term:
-    //   - "KanjiSnap" — iOS OCR app
-    //   - "WaniKani"  — does NOT contain "kanji" (substring is "kani"); listed
-    //     here for documentation only, no subtraction needed.
+    // The substring "kanji" is matched case-insensitively. Two classes of
+    // legitimate matches are subtracted from the raw count:
+    //   - proper nouns that are product names, not the conceptual term:
+    //     "KanjiSnap" (iOS OCR app). "WaniKani" does NOT contain "kanji"
+    //     (substring is "kani"); listed for documentation only.
+    //   - hrefs of internal links to the /vi/docs/kanji page: URL slugs are
+    //     not translated, so the anchor target legitimately contains "kanji"
+    //     even when the link text says "hán tự".
     // If a future article cites another `<…>Kanji<…>` proper noun, add it to
     // `PROPER_NOUNS_WITH_KANJI_SUBSTRING` rather than weakening the assertion.
     const PROPER_NOUNS_WITH_KANJI_SUBSTRING: &[&str] = &["kanjisnap"];
+    const KANJI_DOC_SLUG_HREF: &str = r#"href="/vi/docs/kanji""#;
 
     for slug in ALL_SLUGS {
         let (_, body) = get(&format!("/vi/blog/{slug}")).await;
@@ -334,11 +337,13 @@ async fn vi_articles_do_not_contain_kanji() {
             .iter()
             .map(|s| lower.matches(s).count())
             .sum::<usize>();
-        let kanji_count = raw_count - proper_noun_count;
+        let slug_href_count = lower.matches(KANJI_DOC_SLUG_HREF).count();
+        let kanji_count = raw_count - proper_noun_count - slug_href_count;
         assert_eq!(
             kanji_count, 0,
             "VI article {slug} must use 'hán tự' instead of 'kanji' per SEO strategy; \
-             found {kanji_count} conceptual occurrence(s) (raw {raw_count} - proper-noun {proper_noun_count})"
+             found {kanji_count} conceptual occurrence(s) \
+             (raw {raw_count} - proper-noun {proper_noun_count} - slug-href {slug_href_count})"
         );
     }
 }
