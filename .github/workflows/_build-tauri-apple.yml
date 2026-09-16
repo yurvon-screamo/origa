@@ -324,6 +324,18 @@ jobs:
                     > /tmp/resign/profile.mobileprovision
                   cp /tmp/resign/profile.mobileprovision "$APP_PATH/embedded.mobileprovision"
 
+                  # Give every uploaded build a unique, monotonically
+                  # increasing build number: all prereleases of a train
+                  # share CFBundleShortVersionString (0.7.20-rc1/rc2/stable
+                  # all bundle as 0.7.20 — Apple allows only three
+                  # dot-separated integers), so uniqueness must come from
+                  # CFBundleVersion. github.run_number is chronological:
+                  # rc1 < rc2 < stable, and ASC dedupes per (train, build),
+                  # letting RCs flow to TestFlight without colliding with
+                  # the later stable upload.
+                  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" \
+                    "$APP_PATH/Info.plist"
+
                   # Merge applesignin into the binary's CURRENT entitlements
                   # instead of replacing them (guarded so a future tauri-cli
                   # that embeds the entitlement degrades to a no-op).
@@ -410,15 +422,14 @@ jobs:
 
             - name: Upload to App Store Connect
               id: upload
-              # Stable-only, mirroring the macOS job: prerelease tags share
-              # version_base (v0.7.20-rc1/rc2/alpha all bundle as 0.7.20),
-              # so a non-stable upload poisons the ASC version slot and the
-              # later stable upload is rejected as a duplicate (-19232).
-              # ASC gets exactly one build per version, from the stable tag;
-              # prerelease iOS builds stay a CI artifact (no sideload
-              # channel on iOS). force_apple dispatch runs validate
-              # build+sign+gate but never upload.
-              if: inputs.version_type == 'stable' && inputs.skip_appstore_upload != true
+              # Stable + prerelease only: RCs go to TestFlight with a unique
+              # CFBundleVersion (set in the re-sign step from
+              # github.run_number), so they never collide with each other or
+              # with the later stable upload of the same train — the
+              # -19232 "build number must be higher" trap that a shared
+              # version_base otherwise causes. Dev/alpha runs (force_apple
+              # dispatch) validate build+sign+gate but never upload.
+              if: (inputs.version_type == 'stable' || inputs.version_type == 'prerelease') && inputs.skip_appstore_upload != true
               env:
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
                   APPLE_API_KEY: ${{ secrets.apple-api-key }}
