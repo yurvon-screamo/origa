@@ -356,19 +356,9 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                         test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
                     >
                         {t!(i18n, lesson.show_answer)}
-                        // На аудио-фронте Space занят повтором аудио —
-                        // раскрытие подсказываем Enter'ом. Чтение
-                        // TRACKED: подсказка перерисовывается при смене
-                        // монеты, а не только при перемонтировании Show.
-                        <span class="kbd-hint">
-                            {move || {
-                                if ctx_stored.get_value().audio_front.get() {
-                                    t!(i18n, lesson.enter_key).into_any()
-                                } else {
-                                    t!(i18n, lesson.space_key).into_any()
-                                }
-                            }}
-                        </span>
+                        // Space = «Показать ответ» на любом фронте
+                        // (единый паттерн урока); повтор аудио — Enter.
+                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                     </Button>
                 </div>
             </Show>

@@ -231,7 +231,8 @@ fn handle_yesno_key(
 }
 
 /// AudioRecall hotkeys before the reveal, resolved from the key name:
-/// Space = replay the audio, Enter = show the answer («Показать»).
+/// Space = show the answer (the universal reveal pattern shared with every
+/// other card type), Enter = replay the audio.
 /// Replay is NOT muted: it is an explicit user action, and a textless
 /// card without sound would be unanswerable.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -242,8 +243,8 @@ pub(crate) enum AudioRecallPreRevealKey {
 
 pub(crate) fn resolve_audio_recall_key(key: &str) -> Option<AudioRecallPreRevealKey> {
     match key {
-        " " => Some(AudioRecallPreRevealKey::Replay),
-        "Enter" => Some(AudioRecallPreRevealKey::Reveal),
+        " " => Some(AudioRecallPreRevealKey::Reveal),
+        "Enter" => Some(AudioRecallPreRevealKey::Replay),
         _ => None,
     }
 }
@@ -377,14 +378,14 @@ mod tests {
     // documented at the branch.
 
     #[test]
-    fn audio_recall_before_reveal_resolves_space_replay_and_enter_reveal() {
+    fn audio_recall_before_reveal_resolves_space_reveal_and_enter_replay() {
         assert_eq!(
             resolve_audio_recall_key(" "),
-            Some(AudioRecallPreRevealKey::Replay)
+            Some(AudioRecallPreRevealKey::Reveal)
         );
         assert_eq!(
             resolve_audio_recall_key("Enter"),
-            Some(AudioRecallPreRevealKey::Reveal)
+            Some(AudioRecallPreRevealKey::Replay)
         );
     }
 

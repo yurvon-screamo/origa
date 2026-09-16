@@ -114,7 +114,7 @@ pub fn AudioRecallCardView(
                             {t!(i18n, lesson.listen_word)}
                         </Text>
                         <Text size=TextSize::Small variant=TypographyVariant::Muted class="mt-1">
-                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
+                            <span class="kbd-hint">{t!(i18n, lesson.enter_key)}</span>
                         </Text>
                     </div>
 
@@ -128,9 +128,10 @@ pub fn AudioRecallCardView(
                             test_id=Signal::derive(|| "audio-recall-reveal-btn".to_string())
                         >
                             {t!(i18n, lesson.show_answer)}
-                            // Space is taken by the audio replay on this
-                            // side — the reveal is hinted with Enter.
-                            <span class="kbd-hint">{t!(i18n, lesson.enter_key)}</span>
+                            // Space follows the universal reveal pattern
+                            // shared with every other card type — the
+                            // replay moved to Enter.
+                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                         </Button>
                     </div>
                 </Show>

@@ -3151,7 +3151,7 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
 }
 
 #[wasm_bindgen_test]
-async fn audio_recall_space_hint_is_keyboard_only_affordance() {
+async fn audio_recall_enter_hint_is_keyboard_only_affordance() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         view! {
@@ -3169,7 +3169,7 @@ async fn audio_recall_space_hint_is_keyboard_only_affordance() {
     });
     tick().await;
 
-    // The [Space] replay hint must be a keyboard-only affordance: wrapped
+    // The [Enter] replay hint must be a keyboard-only affordance: wrapped
     // in .kbd-hint it disappears on touch-primary devices (pointer:
     // coarse), exactly like the [1]/[2] hints on the rating buttons. The
     // wasm runner is a fine-pointer environment, so only the wrapper's
@@ -3181,8 +3181,8 @@ async fn audio_recall_space_hint_is_keyboard_only_affordance() {
         .and_then(|el| el.text_content())
         .unwrap_or_default();
     assert!(
-        hint.trim() == "[Пробел]" || hint.trim() == "[Space]",
-        "the space hint must be the kbd-hint element; got: {hint:?}"
+        hint.trim() == "[Enter]",
+        "the enter replay hint must be the kbd-hint element; got: {hint:?}"
     );
 }
 
