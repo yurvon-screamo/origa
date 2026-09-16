@@ -3426,7 +3426,9 @@ rt {
     font-weight: 300;
     font-size: clamp(1.75rem, 6vw, 3rem);
     line-height: 1.2;
-    word-break: break-words;
+    /* `word-break: break-words` is an invalid keyword — the declaration
+       was silently dropped and long words overflowed the card. */
+    overflow-wrap: anywhere;
     letter-spacing: -0.02em;
 }
 
@@ -3435,7 +3437,7 @@ rt {
     font-weight: 400;
     font-size: var(--heading-h2-size);
     line-height: 1.2;
-    word-break: break-words;
+    overflow-wrap: anywhere;
 }
 
 .heading-h3 {
@@ -3479,7 +3481,7 @@ rt {
     font-weight: 300;
     font-size: clamp(1.5rem, 5vw, 2.25rem);
     line-height: 1.2;
-    word-break: break-words;
+    overflow-wrap: anywhere;
     color: var(--fg-black);
 }
 
@@ -3690,19 +3692,6 @@ rt {
     padding: 4px 8px;
     background: var(--bg-aged);
     font-size: var(--text-body);
-}
-
-/* Acquaintance training answer: the card body is centered, so reading
-   groups sit on the card's centerline instead of hugging the left edge
-   like on the kanji-detail page (user report: centered kanji/meaning,
-   left-aligned readings). Scoped to the answer wrapper — the detail
-   page keeps its two-column left alignment. */
-.answer-readings .reading-group {
-    justify-content: center;
-}
-
-.answer-readings .reading-main {
-    flex: 0 1 auto;
 }
 
 /* Rare reading: visually de-emphasised (transparent bg, muted fg) but still
@@ -6031,6 +6020,17 @@ rt {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+}
+
+/* === Studied Today Cards — compact rhythm === */
+/* The home "studied today" cards stack a JP word and its translation;
+   the default .markdown-text p margins (0.5em top and bottom) inflated
+   the padding-to-content gap and doubled the word-translation spacing
+   (owner report). Scoped zeroing — both markdown blocks (JP line and
+   description) compact uniformly; spacing is carried by the layout
+   utilities in the component (mt-0.5 / mt-1). */
+.recent-study-card .markdown-text p {
+    margin: 0;
 }
 
 /* === FSRS Metrics Component === */

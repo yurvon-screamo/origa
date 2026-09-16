@@ -25,6 +25,18 @@ pub enum QuizVariant {
     Grammar,
 }
 
+/// Reading-quiz selections speak the chosen option (owner request):
+/// interactive audio feedback for the reading the user picked. Other
+/// variants stay silent — meaning/grammar options are native text, not
+/// pronunciations. Muted lessons never speak.
+fn should_speak_reading_selection(
+    variant: QuizVariant,
+    is_muted: bool,
+    speech_supported: bool,
+) -> bool {
+    variant == QuizVariant::Reading && !is_muted && speech_supported
+}
+
 #[component]
 pub fn QuizCardView(
     quiz_card: QuizCard,
@@ -121,6 +133,39 @@ pub fn QuizCardView(
     let lesson_ctx = use_context::<super::lesson_state::LessonContext>();
     let question_text = question.get_value();
 
+    // Reading selections speak the picked option: single-select clicks,
+    // multi-select toggles and keyboard [1..n] all funnel through the
+    // wrapped callbacks below.
+    let speak_selected_reading = {
+        let lesson_ctx = lesson_ctx.clone();
+        Callback::new(move |index: usize| {
+            let is_muted = lesson_ctx
+                .as_ref()
+                .map(|ctx| ctx.is_muted.get_untracked())
+                .unwrap_or(false);
+            if !should_speak_reading_selection(quiz_variant, is_muted, is_speech_supported()) {
+                return;
+            }
+            if let Some(option) = options.get_value().get(index) {
+                speak_word(option.text(), 1.0);
+            }
+        })
+    };
+    let on_select_with_speech = {
+        let speak = speak_selected_reading;
+        Callback::new(move |index: usize| {
+            speak.run(index);
+            on_select_option.run(index);
+        })
+    };
+    let on_toggle_with_speech = {
+        let speak = speak_selected_reading;
+        Callback::new(move |index: usize| {
+            speak.run(index);
+            on_toggle.run(index);
+        })
+    };
+
     Effect::new(move |_| {
         let is_muted = lesson_ctx
             .as_ref()
@@ -216,7 +261,7 @@ pub fn QuizCardView(
                         show_result=show_result
                         multi_submitted=multi_submitted
                         multi_result=multi_result_stored.get_value()
-                        on_toggle=on_toggle
+                        on_toggle=on_toggle_with_speech
                         on_submit=on_submit
                         on_dont_know=on_dont_know
                         dont_know_selected=dont_know_selected
@@ -253,7 +298,7 @@ pub fn QuizCardView(
                             selected_option=selected_option
                             show_result=show_result
                             quiz_result=quiz_result()
-                            on_select_option=on_select_option
+                            on_select_option=on_select_with_speech
                             on_dont_know=on_dont_know
                             dont_know_selected=dont_know_selected
                             known_kanji=known_kanji
@@ -288,5 +333,28 @@ pub fn QuizCardView(
             </div>
         </Card>
         </div>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[rstest::rstest]
+    #[case::reading_unmuted_supported(QuizVariant::Reading, false, true, true)]
+    #[case::muted_lesson_never_speaks(QuizVariant::Reading, true, true, false)]
+    #[case::no_tts_environment(QuizVariant::Reading, false, false, false)]
+    #[case::meaning_variant_stays_silent(QuizVariant::Meaning, false, true, false)]
+    #[case::grammar_variant_stays_silent(QuizVariant::Grammar, false, true, false)]
+    fn reading_selection_speaks_only_for_reading_quizzes_in_unmuted_tts_env(
+        #[case] variant: QuizVariant,
+        #[case] is_muted: bool,
+        #[case] speech_supported: bool,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(
+            should_speak_reading_selection(variant, is_muted, speech_supported),
+            expected
+        );
     }
 }

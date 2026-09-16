@@ -66,10 +66,11 @@ pub fn should_autoplay_word_audio(is_muted: bool, speech_supported: bool) -> boo
 }
 
 /// Видимость кнопки озвучки в шапке руки: кнопка озвучивает японскую
-/// сторону слова — она доступна, только когда JP на экране. Reverse-фронт
-/// показывает перевод (JP скрыта) — кнопка спрятана, чтобы не подсказывать
-/// ответ голосом. Аудио-фронт Forward-подфазы тоже прячет JP — повтор
-/// доступен кнопкой в теле фронта. Несловесные карты озвучивать нечем.
+/// сторону слова — она доступна, только когда JP не подсказывает ответ.
+/// Reverse-фронт показывает перевод (JP скрыта) — кнопка появляется
+/// только на ответе. Аудио-фронт Forward-подфазы прячет JP до раскрытия;
+/// на стороне ответа слово уже на экране — кнопка видна, повтор из тела
+/// фронта убран (дубль афордансов). Несловесные карты озвучивать нечем.
 pub fn audio_button_visible(
     stage: AcquaintanceStage,
     subphase: Option<AcquaintanceSubphase>,
@@ -84,7 +85,7 @@ pub fn audio_button_visible(
         AcquaintanceStage::Presentation => true,
         AcquaintanceStage::Training => match subphase {
             Some(AcquaintanceSubphase::Reverse) => showing_answer,
-            Some(AcquaintanceSubphase::Forward) => !audio_front,
+            Some(AcquaintanceSubphase::Forward) => !audio_front || showing_answer,
             // Рука без подфаз не содержит слов: ветка недостижима при
             // is_word = true, значение сохранено из прежней логики.
             None => true,
@@ -274,7 +275,12 @@ mod audio_button_visible_tests {
     #[case::forward_text_front(true, Some(AcquaintanceSubphase::Forward), false, false)]
     #[case::forward_text_answer(true, Some(AcquaintanceSubphase::Forward), false, true)]
     #[case::forward_audio_front_hidden(false, Some(AcquaintanceSubphase::Forward), true, false)]
-    #[case::forward_audio_answer_hidden(false, Some(AcquaintanceSubphase::Forward), true, true)]
+    #[case::forward_audio_answer_shows_button(
+        true,
+        Some(AcquaintanceSubphase::Forward),
+        true,
+        true
+    )]
     #[case::reverse_front_hidden(false, Some(AcquaintanceSubphase::Reverse), false, false)]
     #[case::reverse_answer(true, Some(AcquaintanceSubphase::Reverse), false, true)]
     #[case::reverse_ignores_audio_front(false, Some(AcquaintanceSubphase::Reverse), true, false)]

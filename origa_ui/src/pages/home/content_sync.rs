@@ -61,13 +61,22 @@ pub fn show_sync_error_toast(
         .sync_error()
         .inner()
         .to_string();
-    toasts.update(|t| t.retain(|toast| toast.id != SYNC_TOAST_ID));
+    // The raw error goes to the log (and on to Sentry through the
+    // console-error capture integration); the user sees a readable
+    // message instead of an OrigaError dump.
+    let message = i18n
+        .get_keys_untracked()
+        .home()
+        .sync_error_message()
+        .inner()
+        .to_string();
     toasts.update(|t| {
+        t.retain(|toast| toast.id != SYNC_TOAST_ID);
         t.push(ToastData {
             id: t.len(),
             toast_type: ToastType::Error,
             title,
-            message: error.to_string(),
+            message,
             duration_ms: None,
             closable: true,
         });

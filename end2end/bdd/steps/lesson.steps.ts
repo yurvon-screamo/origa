@@ -362,25 +362,15 @@ When('нажимает клавишу Пробел', async ({ page }) => {
     await page.keyboard.press(" ");
 });
 
-// --- Клавиатура в тренировке: J-итерация, монета 50/50 аудио/текст на
-// фронте яп→рус. На аудио-фронте Space занят повтором аудио, раскрытие
-// подсказывается Enter'ом (acquaintance_keyboard.rs). Шаг сам выбирает
-// клавишу по фактическому фронту: сценарий не флейкует на случайном
-// исходе монеты. ---
+// --- Клавиатура в тренировке: Space до раскрытия = «Показать ответ» на
+// любом фронте — текстовом и аудио (единый паттерн урока,
+// acquaintance_keyboard.rs). Повтор аудио на аудио-фронте — Enter. ---
 
 When('нажимает клавишу Пробел в тренировке', async ({ page }) => {
     await expect(page.getByTestId("acquaintance-training")).toBeVisible({
         timeout: 10_000,
     });
-    const audioFront = page.getByTestId("acquaintance-audio-front-play");
-    let isAudioFront = false;
-    try {
-        await expect(audioFront).toBeVisible({ timeout: 1_000 });
-        isAudioFront = true;
-    } catch {
-        isAudioFront = false;
-    }
-    await page.keyboard.press(isAudioFront ? "Enter" : " ");
+    await page.keyboard.press(" ");
 });
 
 // --- Клавиатура в тренировке: Пробел до раскрытия = «Показать ответ»

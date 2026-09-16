@@ -4,17 +4,16 @@ use super::acquaintance_keyboard::{
 use super::acquaintance_state::{
     AcquaintanceContext, AcquaintanceSlideData, resolve_audio_front, should_autoplay_word_audio,
 };
-use super::grammar_example::{first_example_markdown, grammar_example_front};
 use super::keyboard_handler::is_typing_target;
+use super::training_answer::TrainingAnswerSlide;
+use super::training_front::TrainingFrontSlide;
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, FuriganaText, MarkdownText, MarkdownVariant, ReadingGroup,
-    is_speech_supported, speak_word, word_audio_available,
+    Button, ButtonVariant, is_speech_supported, speak_word, word_audio_available,
 };
 use leptos::prelude::*;
-use leptos_icons::Icon;
 use leptos_use::use_event_listener;
-use origa::domain::{AcquaintanceSubphase, AnswerOutcome, NativeLanguage};
+use origa::domain::{AcquaintanceSubphase, AnswerOutcome};
 use ulid::Ulid;
 
 /// Раскрытие ответа: и кнопка, и Space ведут себя одинаково.
@@ -356,19 +355,9 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                         test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
                     >
                         {t!(i18n, lesson.show_answer)}
-                        // На аудио-фронте Space занят повтором аудио —
-                        // раскрытие подсказываем Enter'ом. Чтение
-                        // TRACKED: подсказка перерисовывается при смене
-                        // монеты, а не только при перемонтировании Show.
-                        <span class="kbd-hint">
-                            {move || {
-                                if ctx_stored.get_value().audio_front.get() {
-                                    t!(i18n, lesson.enter_key).into_any()
-                                } else {
-                                    t!(i18n, lesson.space_key).into_any()
-                                }
-                            }}
-                        </span>
+                        // Space = «Показать ответ» на любом фронте
+                        // (единый паттерн урока); повтор аудио — Enter.
+                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                     </Button>
                 </div>
             </Show>
@@ -562,257 +551,6 @@ fn finish_answer(
 fn speak_if_supported(word: &str) {
     if is_speech_supported() {
         speak_word(word, 1.0);
-    }
-}
-
-/// Forward-фронт слова в тренировке: чистый рендер — автозвук живёт в
-/// `TrainingBody` одним Effect'ом по Memo текущей карты (дедуп: один
-/// звук на смену карты, а не на каждое перемонтирование фронта).
-#[component]
-fn WordTrainingFront(
-    word: String,
-    known_kanji: std::collections::HashSet<char>,
-    native_language: NativeLanguage,
-) -> impl IntoView {
-    view! {
-        <p class="font-serif text-5xl text-[var(--fg-black)] break-words">
-            <FuriganaText
-                text=word
-                known_kanji
-                native_language=native_language
-                with_kanji_tooltip=true
-            />
-        </p>
-    }
-}
-
-/// Фронт тренировки: японская сторона (Forward; монета может показать
-/// аудио-фронт — слово только звучит, иконка + повтор) или перевод
-/// (Reverse, только слова — всегда текст, монеты там нет). Кандзи
-/// показывают только знак — значение является ответом; грамматика —
-/// японскую строку примера без перевода (смысл тоже ответ, спека
-/// §Тренировка).
-#[component]
-fn TrainingFrontSlide(
-    ctx: AcquaintanceContext,
-    card_id: Ulid,
-    reverse: bool,
-    #[prop(default = false)] audio_front: bool,
-) -> impl IntoView {
-    let known_kanji = ctx.known_kanji;
-    let i18n = use_i18n();
-    // Повтор аудио — явное действие: безтекстовый фронт без звука
-    // нерешаем, мьют его не гейтит.
-    let replay_word = ctx
-        .slides
-        .get_untracked()
-        .iter()
-        .find(|s| s.card_id() == card_id)
-        .and_then(|slide| slide.word().map(str::to_string));
-    // Отступы фронта зависят от фазы: пока юзер думает — воздух вокруг
-    // вопроса; после раскрытия ответа вопрос сжимается в шапку ответа
-    // (баг-репорт: огромные отступы съедали место на стороне ответа).
-    let front_class = move || {
-        if ctx.showing_answer.get() {
-            "text-center py-1"
-        } else {
-            "text-center pt-8 pb-12 sm:pt-10 sm:pb-16"
-        }
-    };
-    view! {
-        <div class=front_class data-testid="acquaintance-training-front">
-            {move || {
-                let Some(slide) = ctx
-                    .slides
-                    .get()
-                    .iter()
-                    .find(|s| s.card_id() == card_id)
-                    .cloned()
-                else {
-                    return ().into_any();
-                };
-                match slide {
-                    AcquaintanceSlideData::Vocabulary { word, translations, .. } => {
-                        if audio_front {
-                            // Аудио-фронт достижим только на Forward
-                            // (инвариант resolve_audio_front): звучит
-                            // слово, текст спрятан — вспомнить перевод.
-                            let replay_word = replay_word.clone();
-                            view! {
-                                <div class="flex flex-col items-center gap-4">
-                                    <button
-                                        data-testid="acquaintance-audio-front-play"
-                                        class="audio-player-btn p-3 sm:p-4 rounded-full border transition-all cursor-pointer hover:bg-[var(--bg-hover)]"
-                                        on:click=move |_| {
-                                            if let Some(word) = replay_word.as_deref() {
-                                                speak_word(word, 1.0);
-                                            }
-                                        }
-                                    >
-                                        <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
-                                    </button>
-                                    <p class="font-mono text-lg text-[var(--fg-muted)]">
-                                        {t!(i18n, lesson.listen_word)}
-                                    </p>
-                                </div>
-                            }
-                                .into_any()
-                        } else if reverse {
-                            view! {
-                                <p class="font-mono text-3xl text-[var(--fg-black)]">
-                                    {translations.join(", ")}
-                                </p>
-                            }
-                                .into_any()
-                        } else {
-                            view! {
-                                <WordTrainingFront
-                                    word=word
-                                    known_kanji=known_kanji.get_untracked()
-                                    native_language=ctx.native_language.get_untracked()
-                                />
-                            }
-                                .into_any()
-                        }
-                    },
-                    // Только знак: значение и чтения — ответ.
-                    AcquaintanceSlideData::Kanji { kanji, .. } => view! {
-                        <p class="font-serif text-6xl text-[var(--fg-black)]">{kanji}</p>
-                    }
-                        .into_any(),
-                    AcquaintanceSlideData::Grammar { title, examples, .. } => {
-                        // Пустые examples — фронт вырождается в заголовок
-                        // конструкции («знак» правила, не смысл).
-                        let front =
-                            grammar_example_front(&examples).unwrap_or_else(|| title.clone());
-                        view! {
-                            <p class="font-serif text-3xl text-[var(--fg-black)] leading-relaxed">
-                                {front}
-                            </p>
-                        }
-                            .into_any()
-                    },
-                }
-            }}
-        </div>
-    }
-}
-
-/// Ответ тренировки: противоположная фронту сторона. Для слов Reverse —
-/// слово с фуриганой и повтор аудио (спека §8.2); кандзи раскрывают
-/// значения и частотные чтения; грамматика — смысл с полным примером.
-#[component]
-fn TrainingAnswerSlide(ctx: AcquaintanceContext, card_id: Ulid, reverse: bool) -> impl IntoView {
-    let known_kanji = ctx.known_kanji;
-    let i18n = use_i18n();
-    view! {
-        <div class="text-center space-y-3" data-testid="acquaintance-training-answer">
-            {move || {
-                let Some(slide) = ctx
-                    .slides
-                    .get()
-                    .iter()
-                    .find(|s| s.card_id() == card_id)
-                    .cloned()
-                else {
-                    return ().into_any();
-                };
-                match slide {
-                    AcquaintanceSlideData::Vocabulary { word, translations, .. } => {
-                        if reverse {
-                            view! {
-                                <p class="font-serif text-5xl text-[var(--fg-black)] break-words">
-                                    <FuriganaText
-                                        text=word
-                                        known_kanji=known_kanji.get_untracked()
-                                        native_language=ctx.native_language.get_untracked()
-                                        with_kanji_tooltip=true
-                                    />
-                                </p>
-                            }
-                                .into_any()
-                        } else {
-                            view! {
-                                <p class="font-mono text-2xl text-[var(--fg-black)]">
-                                    {translations.join(", ")}
-                                </p>
-                            }
-                                .into_any()
-                        }
-                    },
-                    AcquaintanceSlideData::Kanji {
-                        name,
-                        on_readings,
-                        kun_readings,
-                        ..
-                    } => {
-                        let has_on = on_readings.is_some();
-                        let has_kun = kun_readings.is_some();
-                        let on = StoredValue::new(on_readings);
-                        let kun = StoredValue::new(kun_readings);
-                        // Знак уже смотрит на юзера сжатым вопросом над
-                        // divider — ответ его не повторяет (баг-репорт о
-                        // дубле): главным текстом идёт значение, под ним
-                        // частотные чтения по центральной оси карточки.
-                        view! {
-                            <p class="font-serif text-3xl text-[var(--fg-black)]">{name}</p>
-                            <div class="answer-readings pt-2 space-y-2">
-                                {has_on.then(|| {
-                                    view! {
-                                        <ReadingGroup
-                                            label=Signal::derive(move || {
-                                                i18n.get_keys().lesson().on_yomi().inner().to_string()
-                                            })
-                                            readings=on
-                                        />
-                                    }
-                                })}
-                                {has_kun.then(|| {
-                                    view! {
-                                        <ReadingGroup
-                                            label=Signal::derive(move || {
-                                                i18n.get_keys().lesson().kun_yomi().inner().to_string()
-                                            })
-                                            readings=kun
-                                        />
-                                    }
-                                })}
-                            </div>
-                        }
-                            .into_any()
-                    },
-                    AcquaintanceSlideData::Grammar {
-                        title,
-                        short_description,
-                        examples,
-                        ..
-                    } => {
-                        // Фронт — JP-пример; при пустых examples фронт был
-                        // заголовком конструкции, и ответ не дублирует его.
-                        let example = first_example_markdown(&examples);
-                        let front_was_title = example.is_none();
-                        let examples_stored = StoredValue::new(example.unwrap_or_default());
-                        let title_stored = StoredValue::new(title);
-                        view! {
-                            <Show when=move || !front_was_title>
-                                <h2 class="font-serif text-2xl text-[var(--fg-black)]">
-                                    {title_stored.get_value()}
-                                </h2>
-                            </Show>
-                            <p class="font-mono text-sm">{short_description}</p>
-                            <Show when=move || !front_was_title>
-                                <MarkdownText
-                                    content=Signal::derive(move || examples_stored.get_value())
-                                    known_kanji=known_kanji.get_untracked()
-                                    variant=Signal::derive(|| MarkdownVariant::Compact)
-                                />
-                            </Show>
-                        }
-                            .into_any()
-                    },
-                }
-            }}
-        </div>
     }
 }
 

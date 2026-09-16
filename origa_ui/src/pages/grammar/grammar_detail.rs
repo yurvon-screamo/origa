@@ -13,7 +13,7 @@ use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, LoadingOverlay, MarkdownText,
-    TabItem, Tabs, Tag, Text, TextSize, TypographyVariant,
+    TabItem, Tabs, Tag, Text, TextSize, TypographyVariant, example_fences_to_paragraphs,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -310,7 +310,12 @@ pub fn GrammarDetail() -> impl IntoView {
                         grammar_rule.map(|r| r.content(&native_lang.get()).how_to_form().to_string())
                     });
                     let examples = Memo::new(move |_| {
-                        grammar_rule.map(|r| r.content(&native_lang.get()).examples().to_string())
+                        grammar_rule.map(|r| {
+                            // Example fences carry inline emphasis that a
+                            // code-block render would keep raw — convert
+                            // them to paragraphs before rendering.
+                            example_fences_to_paragraphs(r.content(&native_lang.get()).examples())
+                        })
                     });
                     let nuances = Memo::new(move |_| {
                         grammar_rule.map(|r| r.content(&native_lang.get()).nuances().clone())

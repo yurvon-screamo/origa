@@ -1,5 +1,6 @@
 use crate::i18n::*;
 use crate::ui_components::MarkdownText;
+use crate::ui_components::example_fences_to_paragraphs;
 use leptos::prelude::*;
 use origa::dictionary::grammar::get_rule_by_id;
 use std::collections::HashSet;
@@ -93,7 +94,7 @@ pub fn GrammarDetailsExpand(
                                     />
                                     <GrammarSection
                                         title=examples_title.get()
-                                        content=content.examples().to_string()
+                                        content=example_fences_to_paragraphs(content.examples())
                                         known_kanji=known_kanji_stored.get_value()
                                     />
                                     <div>

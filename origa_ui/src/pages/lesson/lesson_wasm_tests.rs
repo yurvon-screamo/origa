@@ -1756,6 +1756,99 @@ mod acquaintance_training {
         );
     }
 
+    /// Ответ аудио-фронта показывает слово + перевод (слова на вопросе не
+    /// было — только звук); повтор — кнопкой в шапке: кнопка шапки видна
+    /// на ответе, кнопка повтора в теле фронта скрыта (дубль афордансов
+    /// убран).
+    #[wasm_bindgen_test]
+    async fn training_audio_front_answer_shows_word_translation_and_header_replay() {
+        // Arrange: рука из одного слова в Forward-подфазе
+        let ctx = acq_context(AcquaintanceStage::Training);
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Vocabulary,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "読む".to_string(),
+            pos_label: None,
+            translations: vec!["читать".to_string()],
+        }]);
+
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Аудио-фронт выставляется руками: случайный бросок монеты в
+        // тесте не участвует (Effect монеты триггерится только сменой
+        // показа — reveal её не перебрасывает).
+        ctx.audio_front.set(true);
+        tick().await;
+
+        // Фронт: кнопки шапки нет (JP скрыта), в теле — кнопка повтора.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_none(),
+            "аудио-фронт: кнопка шапки скрыта до раскрытия"
+        );
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_some(),
+            "аудио-фронт: кнопка повтора в теле до раскрытия"
+        );
+
+        // Act: раскрыть ответ (кнопка и Space делят хендлер do_reveal).
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        // Assert: ответ — слово и перевод.
+        let answer = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-answer\"]")
+            .unwrap()
+            .expect("answer side renders after reveal");
+        let text = answer.text_content().unwrap();
+        assert!(
+            text.contains("読む") && text.contains("читать"),
+            "ответ аудио-фронта = слово + перевод; got: {text}"
+        );
+
+        // Повтор — только кнопкой шапки: она видна, кнопка тела скрыта.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "ответ аудио-фронта: кнопка озвучки шапки видна"
+        );
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-front-play\"]")
+                .unwrap()
+                .is_none(),
+            "ответ аудио-фронта: кнопка повтора в теле скрыта"
+        );
+    }
+
     #[wasm_bindgen_test]
     async fn training_reveals_answer_and_rating_buttons_with_hints() {
         let ctx = acq_context(AcquaintanceStage::Training);
@@ -2051,6 +2144,48 @@ mod acquaintance_training_fronts {
     use crate::ui_components::ReadingItem;
     use ulid::Ulid;
 
+    /// The grammar front renders through TranslatorText, whose async
+    /// pipeline hits the network-backed tokenizer path in a bare test
+    /// environment. Installing a precomputed entry for the exact front
+    /// string routes the component through its offline branch (#521
+    /// precompute contract) — no CDN dictionary fetch — and the text
+    /// settles after a tick. Poll bounded for robustness.
+    async fn translated_front_text(wrapper: &web_sys::Element) -> String {
+        let front = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-front\"]")
+            .unwrap()
+            .expect("training front renders");
+        for _ in 0..10 {
+            crate::utils::yield_to_browser().await;
+            tick().await;
+            let loader = front.query_selector("[data-testid=\"translator-dict-loading\"]");
+            if loader.is_ok_and(|l| l.is_none()) {
+                return front.text_content().unwrap_or_default();
+            }
+        }
+        front.text_content().unwrap_or_default()
+    }
+
+    /// Offline tokenizer entry for one exact JP string (surface kept
+    /// verbatim so the front projection matches the input).
+    fn install_front_precompute(text: &str) {
+        use origa::domain::{
+            PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+        };
+        install_precomputed_entry(
+            text,
+            PrecomputedEntry {
+                furigana_spans: vec![],
+                tokens: vec![PrecomputedToken {
+                    surface: text.to_string(),
+                    base: text.to_string(),
+                    reading: text.to_string(),
+                    pos: PartOfSpeech::Noun,
+                }],
+            },
+        );
+    }
+
     fn acq_context() -> AcquaintanceContext {
         let state = RwSignal::new(AcquaintanceState::default());
         state.update(|s| s.stage = AcquaintanceStage::Training);
@@ -2202,14 +2337,11 @@ mod acquaintance_training_fronts {
 
         // Act
         let wrapper = mount_training(&ctx);
+        install_front_precompute("私は学生です。");
         tick().await;
 
         // Assert: фронт — японская строка примера; ни перевод, ни смысл
-        let front = wrapper
-            .query_selector("[data-testid=\"acquaintance-training-front\"]")
-            .unwrap()
-            .unwrap();
-        let text = front.text_content().unwrap();
+        let text = translated_front_text(&wrapper).await;
         assert!(
             text.contains("私は学生です。"),
             "японский пример во фронте, got: {text}"
@@ -2298,14 +2430,11 @@ mod acquaintance_training_fronts {
 
         // Act
         let wrapper = mount_training(&ctx);
+        install_front_precompute("～たことがある");
         tick().await;
 
         // Assert: фронт — заголовок конструкции; смысл скрыт до раскрытия
-        let front = wrapper
-            .query_selector("[data-testid=\"acquaintance-training-front\"]")
-            .unwrap()
-            .unwrap();
-        let text = front.text_content().unwrap();
+        let text = translated_front_text(&wrapper).await;
         assert!(
             text.contains("～たことがある"),
             "фолбэк на заголовок, got: {text}"
@@ -3151,7 +3280,7 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
 }
 
 #[wasm_bindgen_test]
-async fn audio_recall_space_hint_is_keyboard_only_affordance() {
+async fn audio_recall_enter_hint_is_keyboard_only_affordance() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         view! {
@@ -3169,7 +3298,7 @@ async fn audio_recall_space_hint_is_keyboard_only_affordance() {
     });
     tick().await;
 
-    // The [Space] replay hint must be a keyboard-only affordance: wrapped
+    // The [Enter] replay hint must be a keyboard-only affordance: wrapped
     // in .kbd-hint it disappears on touch-primary devices (pointer:
     // coarse), exactly like the [1]/[2] hints on the rating buttons. The
     // wasm runner is a fine-pointer environment, so only the wrapper's
@@ -3181,8 +3310,8 @@ async fn audio_recall_space_hint_is_keyboard_only_affordance() {
         .and_then(|el| el.text_content())
         .unwrap_or_default();
     assert!(
-        hint.trim() == "[Пробел]" || hint.trim() == "[Space]",
-        "the space hint must be the kbd-hint element; got: {hint:?}"
+        hint.trim() == "[Enter]",
+        "the enter replay hint must be the kbd-hint element; got: {hint:?}"
     );
 }
 

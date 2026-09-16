@@ -12,7 +12,8 @@ use super::training_view::TrainingBody;
 use crate::i18n::*;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, ConfirmModal, FuriganaText, KanjiAnimation,
-    MarkdownText, MarkdownVariant, ReadingItem, Tag, is_speech_supported, speak_word,
+    MarkdownText, MarkdownVariant, ReadingItem, Tag, example_fences_to_paragraphs,
+    is_speech_supported, speak_word,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -127,9 +128,10 @@ pub fn AcquaintanceView() -> impl IntoView {
         })
     });
 
-    // Кнопка озвучки видна, когда японская сторона слова на экране
-    // (Reverse-фронт и аудио-фронт Forward прячет её — кнопка не дублирует
-    // повтор в теле аудио-фронта и не подсказывает ответ голосом).
+    // Кнопка озвучки видна, когда японская сторона слова не подсказывает
+    // ответ: Reverse-фронт и аудио-фронт Forward (до раскрытия) прячут её;
+    // на стороне ответа аудио-фронта слово уже на экране — кнопка видна
+    // (повтор в теле фронта на ответе убран, дубля нет).
     let audio_visible = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
@@ -669,7 +671,9 @@ fn GrammarSlide(
             <Show when=move || !stored_examples.get_value().is_empty()>
                 <div data-testid="acquaintance-grammar-examples">
                     <MarkdownText
-                        content=Signal::derive(move || stored_examples.get_value())
+                        content=Signal::derive(move || {
+                            example_fences_to_paragraphs(&stored_examples.get_value())
+                        })
                         known_kanji=kk_for_examples.clone()
                         variant=Signal::derive(|| MarkdownVariant::Default)
                     />
