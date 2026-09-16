@@ -78,7 +78,7 @@
 | Платформа | Статус | Формат |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Готово | [установщик `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Готово | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ Готово | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
 | **Android** | ✅ Готово | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Скоро | Mac App Store |
 

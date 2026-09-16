@@ -74,7 +74,7 @@ Direct links (latest stable release):
 | Platform | Status | Format |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Ready | [`.AppImage`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.AppImage), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ Ready | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
 | **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Coming soon | Mac App Store |
 
