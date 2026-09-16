@@ -410,6 +410,15 @@ jobs:
 
             - name: Upload to App Store Connect
               id: upload
+              # Stable-only, mirroring the macOS job: prerelease tags share
+              # version_base (v0.7.20-rc1/rc2/alpha all bundle as 0.7.20),
+              # so a non-stable upload poisons the ASC version slot and the
+              # later stable upload is rejected as a duplicate (-19232).
+              # ASC gets exactly one build per version, from the stable tag;
+              # prerelease iOS builds stay a CI artifact (no sideload
+              # channel on iOS). force_apple dispatch runs validate
+              # build+sign+gate but never upload.
+              if: inputs.version_type == 'stable' && inputs.skip_appstore_upload != true
               env:
                   APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
                   APPLE_API_KEY: ${{ secrets.apple-api-key }}
@@ -443,6 +452,9 @@ jobs:
                   if [ "${{ steps.upload.outcome }}" = "success" ]; then
                     echo "status=success" >> "$GITHUB_OUTPUT"
                     echo "✅ iOS build uploaded to App Store Connect"
+                  elif [ "${{ steps.upload.outcome }}" = "skipped" ]; then
+                    echo "status=skipped" >> "$GITHUB_OUTPUT"
+                    echo "ℹ️ App Store upload skipped (non-release run)"
                   else
                     echo "status=failure" >> "$GITHUB_OUTPUT"
                     echo "::warning::xcrun altool upload failed. Download the ios-build artifact and upload manually via Transporter.app (https://apps.apple.com/us/app/transporter/id1450874784)"
