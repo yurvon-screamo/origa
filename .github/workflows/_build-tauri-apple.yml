@@ -341,6 +341,12 @@ jobs:
                   unzip -q "$IPA_PATH" -d /tmp/ios_ent
                   APP_PATH=$(find /tmp/ios_ent -name "*.app" -type d | head -1)
 
+                  echo "--- Embedded provisioning profile identity ---"
+                  security cms -D -i "$APP_PATH/embedded.mobileprovision" \
+                    2>/dev/null > /tmp/ios_ent/pp_full.plist
+                  /usr/libexec/PlistBuddy -c "Print :Name" -c "Print :UUID" \
+                    /tmp/ios_ent/pp_full.plist || echo "profile decode failed"
+
                   echo "--- Binary entitlements ---"
                   codesign -d --entitlements - "$APP_PATH" 2>&1 | tee /tmp/ios_ent/binary.txt
                   echo "--- Provisioning profile grants ---"
