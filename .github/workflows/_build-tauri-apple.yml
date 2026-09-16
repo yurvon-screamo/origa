@@ -254,12 +254,16 @@ jobs:
                   security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
                   PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
                   # NOTE: this step runs with working-directory: tauri.
+                  # Fragility (ADR-056): the sed below matches the pbxproj
+                  # STRING FORMAT produced by xcodegen (installed unpinned via
+                  # brew) — if a future xcodegen changes the layout, this fails
+                  # loudly here rather than silently.
                   PBXPROJ=gen/apple/origa-app.xcodeproj/project.pbxproj
                   sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
                               PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" "$PBXPROJ"
-                  grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBXPROJ" > /tmp/spec_count
-                  if [ "$(cat /tmp/spec_count)" != "2" ]; then
-                    echo "::error::PROVISIONING_PROFILE_SPECIFIER injection failed (count $(cat /tmp/spec_count), expected 2)"
+                  SPEC_COUNT=$(grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBXPROJ" || true)
+                  if [ "$SPEC_COUNT" != "2" ]; then
+                    echo "::error::PROVISIONING_PROFILE_SPECIFIER injection failed (got ${SPEC_COUNT:-0} matches, expected 2). If the count is 0, the pbxproj format likely changed — check the xcodegen version (brew, unpinned) against ADR-056"
                     exit 1
                   fi
                   cargo tauri ios build \
@@ -350,6 +354,15 @@ jobs:
                   (cd /tmp/resign && zip -qry "$GITHUB_WORKSPACE/$IPA_PATH" Payload)
                   ls -la "$IPA_PATH"
                   security delete-keychain "$KEYCHAIN"
+
+            - name: Clean up resign keychain material
+              # Failure-path hygiene: the re-sign step deletes its keychain
+              # only on success. The runner is ephemeral, but keep the same
+              # standard as the macOS job's always() cleanup.
+              if: always()
+              run: |
+                  security delete-keychain "$RUNNER_TEMP/resign.keychain-db" 2>/dev/null || true
+                  rm -f "$RUNNER_TEMP/resign.p12" || true
 
             - name: Upload .ipa artifact
               uses: actions/upload-artifact@v7
