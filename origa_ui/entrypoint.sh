@@ -19,4 +19,18 @@ mkdir -p /app/traildepot/wasm
 cp -f /opt/trailbase/wasm/trailbase_auth_ui_component.wasm \
   /app/traildepot/wasm/ 2>/dev/null || echo "[entrypoint] wasm auth-ui sync failed"
 
+# THP_DISABLE=1 (also true/yes): launch trail through the static THP-disable
+# launcher. The prctl flag survives execve and stops the host's THP=always
+# policy from inflating the cgroup memory accounting of trail's mimalloc
+# arenas. Opt-in + fail-open: without the variable (or the binary) behavior
+# is unchanged from the plain exec below.
+case "${THP_DISABLE:-0}" in
+1 | true | yes)
+    if [ -x /app/thp_off ]; then
+        exec /app/thp_off "$@"
+    fi
+    echo "[entrypoint] thp_off binary missing, starting without THP disable"
+    ;;
+esac
+
 exec "$@"
