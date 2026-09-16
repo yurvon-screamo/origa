@@ -88,9 +88,12 @@ async fn welcome_card_button_responds_to_locale() {
         .unwrap()
         .text_content()
         .unwrap();
+    // The label is the localized home.lesson key; CSS `uppercase` styles
+    // the display but does not mutate textContent.
+    let trimmed = text.trim();
     assert!(
-        text.contains("УРОК") || text.contains("LESSON"),
-        "button label must be localised; got: {text}"
+        ["Lesson", "Урок", "수업", "Bài học"].contains(&trimmed),
+        "button label must be the localized home.lesson key; got: {trimmed:?}"
     );
 }
 

@@ -324,6 +324,11 @@
   },
   "home": {
     "loading": "불러오는 중...",
+    "greeting_morning": "좋은 아침이에요",
+    "greeting_afternoon": "안녕하세요",
+    "greeting_evening": "좋은 저녁이에요",
+    "greeting_night": "좋은 밤 되세요",
+    "welcome_subline": "공부할 준비 되었나요?",
     "home_tab": "홈",
     "lesson": "수업",
     "words": "단어",

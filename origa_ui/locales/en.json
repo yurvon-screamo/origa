@@ -324,6 +324,11 @@
   },
   "home": {
     "loading": "Loading...",
+    "greeting_morning": "Good morning",
+    "greeting_afternoon": "Good afternoon",
+    "greeting_evening": "Good evening",
+    "greeting_night": "Good night",
+    "welcome_subline": "Ready to study?",
     "home_tab": "Home",
     "lesson": "Lesson",
     "words": "Words",

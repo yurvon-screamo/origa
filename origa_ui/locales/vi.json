@@ -324,6 +324,11 @@
   },
   "home": {
     "loading": "Đang tải...",
+    "greeting_morning": "Chào buổi sáng",
+    "greeting_afternoon": "Chào buổi chiều",
+    "greeting_evening": "Chào buổi tối",
+    "greeting_night": "Chúc ngủ ngon",
+    "welcome_subline": "Sẵn sàng học chưa?",
     "home_tab": "Trang chủ",
     "lesson": "Bài học",
     "words": "Từ vựng",

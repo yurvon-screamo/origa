@@ -324,6 +324,11 @@
   },
   "home": {
     "loading": "Загрузка...",
+    "greeting_morning": "Доброе утро",
+    "greeting_afternoon": "Добрый день",
+    "greeting_evening": "Добрый вечер",
+    "greeting_night": "Доброй ночи",
+    "welcome_subline": "Готовы к занятию?",
     "home_tab": "Главная",
     "lesson": "Урок",
     "words": "Слова",
