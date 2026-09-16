@@ -356,6 +356,7 @@
     "sync_data": "Syncing data with server...",
     "sync_success": "Data synced successfully",
     "sync_error": "Sync error",
+    "sync_error_message": "Your data is safe locally, but the server sync failed. Check your connection and try again later.",
     "today_overview": "Overview",
     "new_status": "New",
     "learned_status": "Learned",

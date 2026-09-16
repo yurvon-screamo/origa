@@ -356,6 +356,7 @@
     "sync_data": "Đang đồng bộ dữ liệu với máy chủ...",
     "sync_success": "Đã đồng bộ dữ liệu thành công",
     "sync_error": "Lỗi đồng bộ",
+    "sync_error_message": "Dữ liệu của bạn vẫn an toàn trên máy, nhưng đồng bộ với máy chủ đã thất bại. Kiểm tra kết nối và thử lại sau.",
     "today_overview": "Tổng quan",
     "new_status": "Mới",
     "learned_status": "Đã học",

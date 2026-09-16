@@ -356,6 +356,7 @@
     "sync_data": "서버와 데이터 동기화 중...",
     "sync_success": "데이터가 동기화되었습니다",
     "sync_error": "동기화 오류",
+    "sync_error_message": "데이터는 기기에 안전하게 저장되었지만 서버 동기화에 실패했습니다. 연결을 확인하고 나중에 다시 시도하세요.",
     "today_overview": "개요",
     "new_status": "새 항목",
     "learned_status": "학습됨",
