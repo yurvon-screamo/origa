@@ -1,4 +1,4 @@
-use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
+use crate::ui_components::FuriganaText;
 use leptos::prelude::*;
 use origa::dictionary::grammar::GrammarRule;
 use origa::domain::NativeLanguage;
@@ -42,10 +42,12 @@ pub fn RuleItem(
             data-testid=move || test_id.get()
             on:click=on_click
         >
-            <div class="font-bold text-sm font-mono"><FuriganaText text=title known_kanji=known_kanji.clone()/></div>
-            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+            <div class="font-serif font-bold text-sm text-[var(--fg-black)]">
                 {short_description}
-            </Text>
+            </div>
+            <div class="font-mono text-sm text-[var(--fg-muted)]">
+                <FuriganaText text=title known_kanji=known_kanji.clone()/>
+            </div>
         </div>
     }
 }
