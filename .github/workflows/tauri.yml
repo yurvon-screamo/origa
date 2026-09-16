@@ -187,6 +187,9 @@ jobs:
             apple-api-key: ${{ secrets.APPLE_API_KEY }}
             apple-api-key-content: ${{ secrets.APPLE_API_KEY_CONTENT }}
             apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
+            apple-ios-certificate: ${{ secrets.APPLE_IOS_CERTIFICATE }}
+            apple-ios-certificate-password: ${{ secrets.APPLE_IOS_CERTIFICATE_PASSWORD }}
+            apple-ios-mobile-provision: ${{ secrets.APPLE_IOS_MOBILE_PROVISION }}
             apple-mac-app-cert-p12: ${{ secrets.APPLE_MAC_APP_CERT_P12 }}
             apple-mac-installer-cert-p12: ${{ secrets.APPLE_MAC_INSTALLER_CERT_P12 }}
             apple-mac-cert-password: ${{ secrets.APPLE_MAC_CERT_PASSWORD }}
