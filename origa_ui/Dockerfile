@@ -125,8 +125,12 @@ RUN gcc -O2 -Wall -Wextra -s -static -o /tmp/thp_off /tmp/thp_off.c
 # Runtime: official TrailBase release artifacts + SPA static files.
 # TrailBase publishes no official Docker image, so the runtime stage
 # assembles the official release artifacts on alpine (same layout as
-# upstream's own image): static musl `trail` binary + the auth-UI wasm
-# component, which the binary loads from /app/traildepot/wasm at boot.
+# upstream's own image): static musl `trail` binary.
+# NOTE: the upstream auth-UI WASM component is intentionally NOT shipped.
+# Origa serves its own SPA (public-dir) and talks to the core API; the
+# component costs ~250 MB of resident memory (wasmtime engine + JIT
+# compilation on every boot) and is only needed for TrailBase's own
+# admin/auth UI, which this deployment does not expose.
 FROM alpine:3.23
 
 ARG TRAILBASE_VERSION=v0.33.16
@@ -138,15 +142,12 @@ WORKDIR /app
 RUN apk add --no-cache tini curl sqlite aws-cli ca-certificates unzip
 
 ADD https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_x86_64_linux.zip /tmp/trail.zip
-ADD https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_wasm_auth_ui.zip /tmp/auth_ui.zip
 
 RUN unzip -o /tmp/trail.zip -d /app \
- && mkdir -p /app/traildepot/wasm /opt/trailbase/wasm \
- && unzip -o /tmp/auth_ui.zip -d /opt/trailbase/wasm \
- && rm -f /app/CHANGELOG.md /app/LICENSE /tmp/trail.zip /tmp/auth_ui.zip \
+ && rm -f /app/CHANGELOG.md /app/LICENSE /tmp/trail.zip \
  && chmod +x /app/trail \
  && adduser -D trailbase \
- && chown -R trailbase:trailbase /app /opt/trailbase
+ && chown -R trailbase:trailbase /app
 
 ARG ORIGA_CDN_BASE_URL
 ENV ORIGA_CDN_BASE_URL=${ORIGA_CDN_BASE_URL}
