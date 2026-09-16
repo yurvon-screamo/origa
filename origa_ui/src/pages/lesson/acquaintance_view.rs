@@ -12,7 +12,8 @@ use super::training_view::TrainingBody;
 use crate::i18n::*;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, ConfirmModal, FuriganaText, KanjiAnimation,
-    MarkdownText, MarkdownVariant, ReadingItem, Tag, is_speech_supported, speak_word,
+    MarkdownText, MarkdownVariant, ReadingItem, Tag, example_fences_to_paragraphs,
+    is_speech_supported, speak_word,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -671,9 +672,7 @@ fn GrammarSlide(
                 <div data-testid="acquaintance-grammar-examples">
                     <MarkdownText
                         content=Signal::derive(move || {
-                            crate::ui_components::example_fences_to_paragraphs(
-                                &stored_examples.get_value(),
-                            )
+                            example_fences_to_paragraphs(&stored_examples.get_value())
                         })
                         known_kanji=kk_for_examples.clone()
                         variant=Signal::derive(|| MarkdownVariant::Default)

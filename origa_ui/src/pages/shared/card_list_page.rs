@@ -375,10 +375,10 @@ where
                                     }
                                 }
                             />
-                            // «Без уровня» — невозможное состояние для
-                            // JLPT-контента (каждая карта кандзи/грамматики
-                            // имеет уровень); чип рендерится только если
-                            // реально есть карты без уровня.
+                            // "No level" is an impossible state for
+                            // JLPT-indexed content (every kanji/grammar
+                            // card has a level); the chip renders only
+                            // when levelless cards actually exist.
                             <Show when=move || { jlpt_counts.get().other > 0 }>
                                 <JlptFilterBtn
                                     filter=JlptFilter::Other

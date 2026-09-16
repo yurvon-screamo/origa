@@ -6,14 +6,14 @@ use leptos_router::components::A;
 /// Time-of-day band that selects the greeting key. Boundaries: 5–11
 /// morning, 12–17 afternoon, 18–22 evening, otherwise night.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub(crate) enum DayPeriod {
+enum DayPeriod {
     Morning,
     Afternoon,
     Evening,
     Night,
 }
 
-pub(crate) fn day_period(hours: u8) -> DayPeriod {
+fn day_period(hours: u8) -> DayPeriod {
     match hours {
         5..=11 => DayPeriod::Morning,
         12..=17 => DayPeriod::Afternoon,
@@ -24,7 +24,7 @@ pub(crate) fn day_period(hours: u8) -> DayPeriod {
 
 /// Locale-resolved greeting: every locale ships its own key, so Korean
 /// and Vietnamese no longer fall through to the English string.
-pub(crate) fn greeting_text(locale: Locale, period: DayPeriod) -> String {
+fn greeting_text(locale: Locale, period: DayPeriod) -> String {
     match period {
         DayPeriod::Morning => td_string!(locale, home.greeting_morning),
         DayPeriod::Afternoon => td_string!(locale, home.greeting_afternoon),

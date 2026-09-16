@@ -1,7 +1,9 @@
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceSlideData};
 use super::grammar_example::first_example_markdown;
 use super::kanji_card_details::KanjiCardDetails;
-use crate::ui_components::{FuriganaText, MarkdownText, MarkdownVariant};
+use crate::ui_components::{
+    FuriganaText, MarkdownText, MarkdownVariant, example_fences_to_paragraphs,
+};
 use leptos::prelude::*;
 use std::collections::HashSet;
 use ulid::Ulid;
@@ -120,7 +122,7 @@ pub(super) fn TrainingAnswerSlide(
                             <Show when=move || !front_was_title>
                                 <MarkdownText
                                     content=Signal::derive(move || {
-                                        crate::ui_components::example_fences_to_paragraphs(
+                                        example_fences_to_paragraphs(
                                             &examples_stored.get_value(),
                                         )
                                     })
