@@ -253,6 +253,7 @@ jobs:
                   PROFILE_PLIST=$(mktemp)
                   security cms -D -i "$PROFILE_DECODED" > "$PROFILE_PLIST"
                   PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
+                  PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$PROFILE_PLIST")
                   # NOTE: this step runs with working-directory: tauri.
                   PBXPROJ=gen/apple/origa-app.xcodeproj/project.pbxproj
                   sed -i '' "/CODE_SIGN_ENTITLEMENTS = /s/;/;\\
@@ -264,9 +265,16 @@ jobs:
                   fi
                   # Same for the export step: tauri-cli merges its generated
                   # options OVER this file, so keys it does not set survive.
+                  # provisioningProfiles values must be the profile NAME
+                  # (UUIDs are ignored by -exportArchive profile selection —
+                  # without this Xcode auto-picks a stale cached profile and
+                  # strips entitlements it does not grant, applesignin
+                  # included).
                   /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" \
-                    -c "Add :provisioningProfiles:net.uwuwu.origa string $PROFILE_UUID" \
-                    gen/apple/ExportOptions.plist 2>/dev/null || true
+                    -c "Add :provisioningProfiles:net.uwuwu.origa string $PROFILE_NAME" \
+                    gen/apple/ExportOptions.plist
+                  echo "--- ExportOptions.plist after injection ---"
+                  cat gen/apple/ExportOptions.plist
                   cargo tauri ios build \
                     --export-method app-store-connect \
                     --config "$APP_STORE_CONFIG"
