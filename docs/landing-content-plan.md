@@ -360,31 +360,67 @@ Legal text pages. Minimal styling. No complex layout.
 
 ## 12. Keyword Map
 
+### Keyword Map (data-driven, обновлено 2026-09-16)
+
+> Основа: [`keyword-research-report-2026-09.md`](keyword-research-report-2026-09.md) — полные данные спроса (Suggest-частоты, 4 рынка) и конкуренции (SERP-состав). Приоритет = спрос × виннабельность. Difficulty: EN/RU — Google/Яндекс-прокси, KO/VI — Bing-прокси (2026-09-16).
+
 ### EN Keywords
 
-| Keyword | Intent | Target Page |
-| --- | --- | --- |
-| learn Japanese app | Transactional | / |
-| Japanese learning app | Transactional | / |
-| JLPT preparation app | Transactional | /, /features |
-| offline Japanese app | Transactional | / |
-| Anki alternative | Comparison | /compare |
-| WaniKani alternative | Comparison | /compare |
-| learn Japanese in your own language | USP (unique) | / |
-| all in one Japanese learning | USP (unique) | / |
-| Japanese kanji study | Informational | /features |
-| Japanese grammar app | Transactional | /features |
+| Keyword | Intent | Спрос-сигнал | Difficulty | Target Page |
+| --- | --- | --- | --- | --- |
+| learn Japanese app | Transactional | head-term | MED | / |
+| Japanese learning app | Transactional | head-term | MED | / |
+| best Japanese learning app | Transactional | high | LOW | /blog/best-japanese-learning-app |
+| Japanese learning app free | Transactional | модификатор 9% | MED | / |
+| learn Japanese offline | Transactional | модификатор 3% | LOW-MED | /blog/best-japanese-learning-app-offline |
+| Japanese learning app for pc free | Transactional | **freq 6 — гэп** | LOW (exp.) | **новый пост** (десктоп) |
+| Japanese learning app better than Duolingo | Comparison | **freq 5 — гэп** | LOW (exp.) | **новый пост** /compare-сиблинг |
+| is kanji hard to learn | Informational | **freq 5 — гэп** | LOW | **новый пост** → /features |
+| Anki alternative | Comparison | stable | LOW | /blog/anki-alternative-japanese |
+| Japanese AI tutor | Commercial | растущий | LOW | /blog/japanese-ai-tutor |
+| Japanese OCR app | Commercial | ниша | LOW | /blog/japanese-ocr-app |
+| JLPT preparation app | Transactional | jlpt-кластер | MED | /, /features |
 
 ### RU Keywords
 
-| Keyword | Intent | Target Page |
-| --- | --- | --- |
-| приложение для изучения японского | Transactional | / |
-| учить японский язык | Transactional | / |
-| подготовка к JLPT | Transactional | /, /features |
-| аналог Anki | Comparison | /compare |
-| японский язык без английского | USP (unique) | / |
-| японские иероглифы учить | Transactional | /features |
+| Keyword | Intent | Спрос-сигнал | Difficulty (Яндекс) | Target Page |
+| --- | --- | --- | --- | --- |
+| приложение для изучения японского | Transactional | head-term | LOW | /ru/ |
+| приложение для изучения японского на русском | Transactional | «на русском» 3% (Яндекс-специфика) | LOW | /ru/ |
+| учить японский язык с нуля бесплатно (+ приложение) | Transactional | **freq 4 — гэп; «с нуля» 16%** | LOW | **новый пост** |
+| японский язык с нуля | Informational | супердоминанта RU | LOW | /ru/blog/yaponskiy-s-nulya |
+| кандзи н5 (список/тест/учить) | Informational | **кластер-гэп (4 фразы × freq 2)** | LOW | **новый пост** → JLPT-фичи |
+| японский язык с нуля самоучитель | Informational | учебниковая культура 8% | LOW | **новый пост** |
+| японская грамматика n5 | Informational | jlpt 10% | LOW | /ru/features |
+| аналог Anki / Anki японский | Comparison | stable | LOW | /ru/blog/anki-alternative-japanese |
+| подготовка к JLPT | Transactional | jlpt-кластер | LOW | /ru/, /ru/blog/jlpt-n5-preparation |
+
+### KO Keywords
+
+| Keyword | Intent | Спрос-сигнал | Difficulty | Target Page |
+| --- | --- | --- | --- | --- |
+| 일본어 공부 앱 추천 | Transactional | 추천 11% | LOW | /ko/blog/best-japanese-learning-app |
+| 일본어 한자 공부법/공부방/사이트 | Informational | **한자 32% — кластер-гэп** | LOW | **новый пост** → кандзи-фичи |
+| 일본어 문법 총정리 pdf | Informational | pdf 6% — гэп | LOW | **новый пост** + PDF-лид-магнит |
+| 일본어 단어 앱 (앱/어플) | Transactional | app 17% (обе формы) | MED | /ko/features |
+| jlpt n5 단어 | Informational | jlpt-кластер | LOW | **новый пост** → JLPT-фичи |
+| 무료 일본어 공부 앱 추천 | Transactional | 무료 2% (слабее EN/VI) | MED | /ko/blog/best-japanese-learning-app-offline |
+
+### VI Keywords
+
+| Keyword | Intent | Спрос-сигнал | Difficulty | Target Page |
+| --- | --- | --- | --- | --- |
+| app học tiếng nhật | Transactional | head-term; app 20% | LOW | /vi/ |
+| app học tiếng nhật miễn phí | Transactional | miễn phí 11% | LOW | /vi/blog/best-japanese-learning-app |
+| app học tiếng nhật cho người mới bắt đầu | Transactional | **freq 4 — гэп** | LOW | **новый пост** |
+| app học tiếng nhật n5 miễn phí | Transactional | **freq 4 — гэп** | LOW | **новый пост** → JLPT |
+| app học tiếng nhật miễn phí trên máy tính | Transactional | **freq 5 — десктоп-гэп** | LOW | **новый пост** (десктоп) |
+| hán tự n5 (+ pdf) | Informational | hán tự 18%; **pdf-гэп** | LOW | **новый пост** N5-списки |
+| học tiếng nhật cho người mới bắt đầu | Informational | 6% | LOW | /vi/blog/yaponskiy-s-nulya |
+| học tiếng nhật qua anime/manga | Informational | 2% | LOW | /vi/blog/learn-japanese-from-manga |
+| thay thế Anki tiếng Nhật | Comparison | — | LOW | /vi/blog/anki-alternative-japanese |
+
+**Кросс-рыночные паттерны** (детали — research-отчёт §10–12): RU «с нуля» = VI «người mới bắt đầu» (самоидентификация новичка); RU «кандзи н5» = VI «hán tự n5» (N5-списки — общий гэп); RU «для русских» = VI «cho người việt» (натив-языковой модификатор); десктоп-гэп в EN + VI; офлайн-модификатор только EN/VI (RU/KO = 0%).
 
 ---
 

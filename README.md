@@ -23,7 +23,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition. A
 * **Privacy:** all AI models run locally on your device. Your photos, audio, and study activity are processed on-device and never uploaded.
 * **Offline-first:** full functionality without internet after the initial setup.
 * **Cross-platform:** Web, Windows, Linux, macOS, Android.
-* **Learn in your language:** interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned).
+* **Learn in your language:** interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned; Thai and Burmese under research).
 * **JLPT analytics:** track your current level and forecast your progress.
 
 ![Origa overview](origa_landing/public/images/en.all_in_one.png)
@@ -99,6 +99,7 @@ A [web version](https://app.origa.uwuwu.net) is also available.
 | :--- | :--- |
 | **Russian, English, Korean, Vietnamese** | ✅ Available |
 | **Indonesian, Spanish** | 📋 Planned |
+| **Thai, Burmese** | 🔭 Researching (top-2 JLPT markets by test-takers) |
 
 ---
 
@@ -118,7 +119,7 @@ The project is built on a modern stack that delivers native app performance with
 * Mobile platforms: iOS release.
 * Social features: competitions between users.
 * New exercise types: reading texts, manga, contextual sentences, audio, video.
-* Localization: add Indonesian and Spanish.
+* Localization: add Indonesian and Spanish; research Thai and Burmese (top JLPT markets).
 
 ---
 
