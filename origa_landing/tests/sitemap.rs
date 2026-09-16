@@ -4,7 +4,7 @@
 //! substituting `{{LASTMOD}}` with per-URL dates (see `build.rs`). These tests
 //! read the generated file (produced at compile time, before tests run) and
 //! assert the sitemaps.org 0.9 contract holds:
-//!   - one `<lastmod>` per `<url>` (92 URLs as of 2026-09),
+//!   - one `<lastmod>` per `<url>` (114 URLs as of 2026-09),
 //!   - each `<lastmod>` is an ISO-8601 date,
 //!   - `<lastmod>` follows `<loc>` (the schema-required element order),
 //!   - no unresolved `{{...}}` placeholder leaks into the output.
@@ -53,24 +53,24 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // Each <url> element carries exactly one <lastmod>. As of 2026-09-16 the
+    // Each <url> element carries exactly one <lastmod>. As of 2026-09-17 the
     // count is: 7 static page groups × 4 locales (28) + 4 blog index URLs
     // + 7 full articles × 4 locales (28) + 5 EN+RU articles × 2 locales (10)
-    // + docs (2 index + 10 article pairs × 2 locales = 22) = 92 <url> entries.
-    // The count assertion catches drift in either direction — a missing
-    // locale variant or a duplicate entry.
+    // + docs (2 index + 10 article pairs × 4 locales = 44) = 114 <url>
+    // entries. The count assertion catches drift in either direction — a
+    // missing locale variant or a duplicate entry.
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 92, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 114, "expected one <lastmod> per <url>");
 }
 
 #[test]
 fn every_url_block_has_full_hreflang_alternate_set() {
     // Every URL carries the hreflang set for its locale coverage:
-    // - Blog and static pages with all 4 locales: 5 entries (en/ru/ko/vi +
-    //   x-default).
-    // - Docs pages and the EN+RU-only blog cluster (2026-08): 3 entries
-    //   (en/ru + x-default) — alternates must point only at translations
-    //   that exist (see the partial-coverage cases in tests/blog.rs).
+    // - Pages with all 4 locales (static, blog core, docs): 5 entries
+    //   (en/ru/ko/vi + x-default).
+    // - The EN+RU-only blog cluster (2026-08): 3 entries (en/ru + x-default)
+    //   — alternates must point only at translations that exist (see the
+    //   partial-coverage cases in tests/blog.rs).
     const PARTIAL_COVERAGE_PATHS: &[&str] = &[
         "/blog/learn-hiragana-katakana",
         "/blog/jlpt-n5-preparation",
@@ -82,10 +82,8 @@ fn every_url_block_has_full_hreflang_alternate_set() {
     for block in xml.split("<url>").skip(1) {
         let url_block = block.split("</url>").next().unwrap_or(block);
         let alternate_count = url_block.matches("<xhtml:link rel=\"alternate\"").count();
-        let is_docs = url_block.contains("/docs");
-        let is_partial_blog =
-            !is_docs && PARTIAL_COVERAGE_PATHS.iter().any(|p| url_block.contains(p));
-        let expected = if is_docs || is_partial_blog { 3 } else { 5 };
+        let is_partial = PARTIAL_COVERAGE_PATHS.iter().any(|p| url_block.contains(p));
+        let expected = if is_partial { 3 } else { 5 };
         assert_eq!(
             alternate_count, expected,
             "expected {expected} hreflang alternates for this URL; got {alternate_count} in:\n{url_block}"
@@ -186,6 +184,11 @@ fn article_urls_carry_frontmatter_lastmod() {
         lastmod_for_url(&xml, "https://origa.uwuwu.net/ru/docs/fsrs"),
         "2026-08-19",
         "RU fsrs doc must use its frontmatter lastmod"
+    );
+    assert_eq!(
+        lastmod_for_url(&xml, "https://origa.uwuwu.net/ko/docs/fsrs"),
+        "2026-08-19",
+        "KO fsrs doc must use its frontmatter lastmod"
     );
     assert_eq!(
         lastmod_for_url(&xml, "https://origa.uwuwu.net/blog/how-many-kanji-to-learn"),
