@@ -111,6 +111,17 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     --mount=type=cache,target=/root/.cache/trunk,sharing=locked \
     trunk build --release --dist dist
 
+# Stage: static THP-disable launcher, built separately so Rust/WASM rebuilds
+# don't invalidate it (see origa_ui/thp_off.c for the rationale).
+FROM alpine:3.23 AS thp_off
+
+# hadolint ignore=DL3018
+RUN apk add --no-cache gcc musl-dev
+
+COPY origa_ui/thp_off.c /tmp/thp_off.c
+
+RUN gcc -O2 -Wall -Wextra -s -static -o /tmp/thp_off /tmp/thp_off.c
+
 # Runtime: official TrailBase release artifacts + SPA static files.
 # TrailBase publishes no official Docker image, so the runtime stage
 # assembles the official release artifacts on alpine (same layout as
@@ -142,15 +153,18 @@ ENV ORIGA_CDN_BASE_URL=${ORIGA_CDN_BASE_URL}
 
 COPY --from=builder /app/origa_ui/dist /app/public
 
+# THP-disable launcher (activated by THP_DISABLE=1, see entrypoint.sh)
+COPY --from=thp_off /tmp/thp_off /app/thp_off
+
 # Backup machinery: GFS-rotation script, custom entrypoint (crond + trail), crontab
 # GeoIP provisioning for log geo enrichment (see geoip.sh)
 COPY origa_ui/backup.sh     /app/backup.sh
 COPY origa_ui/geoip.sh      /app/geoip.sh
 COPY origa_ui/entrypoint.sh /app/entrypoint.sh
 COPY origa_ui/crontab       /app/crontab
-RUN chmod +x /app/backup.sh /app/entrypoint.sh /app/geoip.sh \
+RUN chmod +x /app/backup.sh /app/entrypoint.sh /app/geoip.sh /app/thp_off \
  && chmod 600 /app/crontab \
- && chown trailbase:trailbase /app/backup.sh /app/entrypoint.sh /app/geoip.sh /app/crontab
+ && chown trailbase:trailbase /app/backup.sh /app/entrypoint.sh /app/geoip.sh /app/crontab /app/thp_off
 
 USER trailbase
 
