@@ -2,7 +2,7 @@
 title: "최고의 일본어 학습 앱: 2026년에 어떻게 선택할까"
 slug: /ko/blog/best-japanese-learning-app
 locale: ko
-meta_title: "최고의 일본어 학습 앱 (2026)"
+meta_title: "일본어 학습 앱 추천: 어떻게 고를까 (2026)"
 meta_description: "단일 '최고'의 일본어 앱은 없습니다. 목표에 맞는 최고의 세트가 있을 뿐입니다. 카테고리별 분석: 어휘, 한자, 문법, 청취, JLPT."
 target_keywords: ["일본어 학습 앱 추천", "최고의 일본어 앱", "일본어 앱 비교", "일본어 학습 앱 선택"]
 lastmod: 2026-09-10

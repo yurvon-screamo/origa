@@ -2,7 +2,7 @@
 title: "Gia sư AI tiếng Nhật: giỏi cái gì (và không giỏi cái gì)"
 slug: /vi/blog/japanese-ai-tutor
 locale: vi
-meta_title: "So sánh gia sư AI tiếng Nhật (2026): Đánh giá trung thực"
+meta_title: "App gia sư AI tiếng Nhật: so sánh trung thực (2026)"
 meta_description: "Gia sư AI giỏi giải thích ngữ pháp và sửa câu. Chúng không lên lịch ôn tập hay giúp bạn nhớ. Phân tích thực tế về nơi AI phù hợp trong học tiếng Nhật."
 target_keywords: ["ai gia sư tiếng nhật", "ai luyện giao tiếp tiếng nhật", "app ai học tiếng nhật", "ai tutor tiếng nhật miễn phí"]
 lastmod: 2026-07-21

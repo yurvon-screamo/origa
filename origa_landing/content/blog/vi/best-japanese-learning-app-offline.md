@@ -2,8 +2,8 @@
 title: "Ứng dụng tốt nhất học tiếng Nhật ngoại tuyến: 'ngoại tuyến' thực sự có nghĩa gì"
 slug: /vi/blog/best-japanese-learning-app-offline
 locale: vi
-meta_title: "Ứng dụng học tiếng Nhật tốt nhất hoạt động ngoại tuyến (2026)"
-meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau: ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. Phân tích thực tế ứng dụng học tiếng Nhật nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
+meta_title: "App học tiếng Nhật offline: 'ngoại tuyến' nghĩa là gì (2026)"
+meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau: ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. App học tiếng Nhật miễn phí offline nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
 target_keywords: ["học tiếng nhật ngoại tuyến", "app học tiếng nhật offline", "app học tiếng nhật miễn phí offline", "app flashcard tiếng nhật offline"]
 lastmod: 2026-09-10
 published: 2026-07-21
