@@ -33,7 +33,6 @@
 .landing-header__logo-img {
     width: 36px;
     height: 36px;
-    image-rendering: pixelated;
 }
 
 .landing-header__logo-name {
@@ -793,6 +792,33 @@
     text-transform: uppercase;
     color: var(--fg-light);
     font-style: italic;
+}
+
+.download-terminal {
+    margin-top: var(--space-md);
+}
+
+.download-terminal__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.download-terminal__cmd {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    line-height: 1.6;
+    background: var(--bg-aged);
+    border: 1px solid var(--border-light);
+    padding: var(--space-xs) var(--space-sm);
+    overflow-wrap: anywhere;
+    text-align: left;
+    color: var(--fg-black);
+    user-select: all;
 }
 
 /* ========================================

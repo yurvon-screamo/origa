@@ -78,6 +78,12 @@ Direct links (latest stable release):
 | **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Coming soon | Mac App Store |
 
+Linux (flatpak) in one command — the GNOME runtime is pulled automatically:
+
+```sh
+flatpak install --user https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak
+```
+
 > All versions support offline mode.
 
 All builds and release notes: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).

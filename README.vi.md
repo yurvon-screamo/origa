@@ -78,6 +78,12 @@ Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 | **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Sắp ra mắt | Mac App Store |
 
+Linux (flatpak) chỉ với một lệnh — runtime GNOME sẽ được tải tự động:
+
+```sh
+flatpak install --user https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak
+```
+
 > Tất cả các phiên bản đều hỗ trợ chế độ ngoại tuyến.
 
 Tất cả bản dựng và ghi chú phát hành: [GitHub Releases](https://github.com/yurvon-screamo/origa/releases/latest).
