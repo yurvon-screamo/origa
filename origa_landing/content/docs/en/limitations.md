@@ -5,7 +5,7 @@ locale: en
 meta_title: "Known Limitations of Origa — Honest Boundaries"
 meta_description: "Where Origa falls short: STT format limits, OCR accuracy on stylized text, no guest mode, sync requires internet, and other current boundaries."
 target_keywords: ["origa limitations", "japanese learning app limits", "japanese ocr limits", "japanese stt wav only"]
-lastmod: 2026-08-30
+lastmod: 2026-09-17
 status: ready
 ---
 
@@ -45,9 +45,9 @@ The kanji writing feature shows the correct stroke order as an animation you fol
 
 The rating after each card is binary: **Don't know** or **Know** in a regular review, **Remember** or **Don't remember** in acquaintance training. There are no intermediate options (no "hard" or "easy" grades). The FSRS scheduler uses these two signals to set intervals.
 
-## Documentation and legal texts are English/Russian only
+## Legal texts are English/Russian only
 
-The interface and the learning content (vocabulary, phrases, grammar, kanji) are available in English, Russian, Korean and Vietnamese. These documentation pages and the legal texts (privacy policy, terms of use) are currently available in English and Russian only.
+The interface and the learning content (vocabulary, phrases, grammar, kanji) are available in English, Russian, Korean and Vietnamese. So are these documentation pages. The legal texts (privacy policy, terms of use) are currently available in English and Russian only.
 
 ## Related
 

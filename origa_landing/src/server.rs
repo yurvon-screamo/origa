@@ -364,7 +364,22 @@ async fn negotiate_locale(
     };
 
     let location = match uri.query() {
-        Some(query) if !query.is_empty() => format!("{}?{query}", locale.path_prefix()),
+        Some(query) if !query.is_empty() => {
+            // In this branch every `lang=` pair is invalid — a valid one is
+            // captured by `query_locale_param` above — so drop those pairs
+            // instead of leaking a bogus parameter into the redirect target
+            // (`invalid_lang_param_ignored`). Other query pairs are kept
+            // (`redirect_preserves_query_string`).
+            let kept: Vec<&str> = query
+                .split('&')
+                .filter(|pair| !pair.starts_with("lang="))
+                .collect();
+            if kept.is_empty() {
+                locale.path_prefix().to_string()
+            } else {
+                format!("{}?{}", locale.path_prefix(), kept.join("&"))
+            }
+        },
         _ => locale.path_prefix().to_string(),
     };
     let mut response = Redirect::temporary(&location).into_response();
