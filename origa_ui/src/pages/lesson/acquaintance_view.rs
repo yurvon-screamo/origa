@@ -640,9 +640,11 @@ fn GrammarSlide(
     view! {
         <div class="space-y-4" data-testid="acquaintance-grammar-slide">
             <h2 class="font-serif text-3xl text-[var(--fg-black)]">
-                {stored_title.get_value()}
+                {stored_short.get_value()}
             </h2>
-            <p class="font-mono text-sm">{stored_short.get_value()}</p>
+            <p class="font-mono text-sm text-[var(--fg-muted)]">
+                {stored_title.get_value()}
+            </p>
             // Определение (explanation) идёт сразу за коротким описанием:
             // таблицы образования и примеры до объяснения не давали
             // понять, что за конструкция (юзер-репорт). Порядок блоков —

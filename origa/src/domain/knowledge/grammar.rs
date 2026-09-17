@@ -329,6 +329,9 @@ mod tests {
 
             // Fixture: the ～の pair disambiguated in the title pass — its
             // qualifiers are localized, so full titles legitimately differ.
+            // (The #503 UX content pass strips glosses only from long
+            // patterns; ～の is short, so its qualifier stays REQUIRED by
+            // the title convention.)
             let rule_id = Ulid::from_string("01G00000000000000018000000").expect("Invalid ULID");
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
