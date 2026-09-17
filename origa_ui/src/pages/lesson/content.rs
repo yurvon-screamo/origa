@@ -8,6 +8,7 @@ use super::empty_state_view::LessonEmptyState;
 use super::header::LessonHeader;
 use super::lesson_card_container::LessonCardContainer;
 use super::lesson_state::{LessonContext, LessonMode, LessonState};
+use super::phrase_cleanup;
 use crate::i18n::*;
 use crate::loaders::phrase_data_loader::load_phrase_details_batch;
 use crate::repository::HybridUserRepository;
@@ -295,19 +296,12 @@ pub fn LessonContent() -> impl IntoView {
 
                     if !phrase_ids.is_empty() {
                         let results = load_phrase_details_batch(&phrase_ids).await;
-
-                        let failed_phrase_ids: Vec<Ulid> = phrase_ids
-                            .iter()
-                            .zip(results.iter())
-                            .filter_map(|(id, result)| result.as_ref().err().map(|_| *id))
-                            .collect();
+                        let failed_phrase_ids =
+                            phrase_cleanup::failed_phrase_ids(&phrase_ids, &results);
 
                         if !failed_phrase_ids.is_empty() {
                             let (permanent, _transient) =
                                 classify_orphaned_phrases(&failed_phrase_ids);
-
-                            let failed_set: HashSet<Ulid> = failed_phrase_ids.into_iter().collect();
-                            let mut cards_to_delete: Vec<Ulid> = Vec::new();
 
                             // Only PERMANENT losses drop the phrase from the
                             // lesson. Transient failures (chunk not loaded
@@ -316,19 +310,10 @@ pub fn LessonContent() -> impl IntoView {
                             // falls back until the details land, which is
                             // strictly better than silently shrinking the
                             // lesson for the rest of the session.
-                            lesson_data.cards.retain(|(card_id, lc)| {
-                                if let Card::Phrase(pc) = lc.view().card() {
-                                    let phrase_id = pc.phrase_id();
-                                    if failed_set.contains(phrase_id) {
-                                        if permanent.contains(phrase_id) {
-                                            cards_to_delete.push(*card_id);
-                                            return false;
-                                        }
-                                        return true;
-                                    }
-                                }
-                                true
-                            });
+                            let cards_to_delete = phrase_cleanup::retain_loaded_phrases(
+                                &mut lesson_data.cards,
+                                &permanent,
+                            );
 
                             if !cards_to_delete.is_empty() {
                                 if let Ok(Some(mut user)) = repo.get_current_user().await {
@@ -349,7 +334,7 @@ pub fn LessonContent() -> impl IntoView {
                                 );
                             } else {
                                 tracing::warn!(
-                                    count = failed_set.len(),
+                                    count = failed_phrase_ids.len(),
                                     "Kept transient-failed phrases in the lesson (details still arriving; nothing deleted)"
                                 );
                             }
@@ -513,5 +498,57 @@ pub fn LessonContent() -> impl IntoView {
                 <LessonCardContainer />
             </div>
         </Show>
+    }
+}
+
+#[cfg(all(test, feature = "grammar_practice_lesson_mode"))]
+mod grammar_practice_query_tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[test]
+    fn parse_grammar_practice_query_full_mode_and_id_yields_grammar_practice_mode() {
+        // Arrange
+        let query = "?mode=grammar_practice&grammar_id=01ARZ3NDEKTSV4RRFFQ69G5FAV";
+        let expected = Ulid::from_string("01ARZ3NDEKTSV4RRFFQ69G5FAV").unwrap();
+
+        // Act
+        let parsed = parse_grammar_practice_query(query);
+
+        // Assert
+        assert_eq!(
+            parsed,
+            Some(LessonMode::GrammarPractice {
+                grammar_rule_id: expected
+            })
+        );
+    }
+
+    #[rstest]
+    #[case::missing_mode("?grammar_id=01ARZ3NDEKTSV4RRFFQ69G5FAV")]
+    #[case::wrong_mode("?mode=vocabulary&grammar_id=01ARZ3NDEKTSV4RRFFQ69G5FAV")]
+    #[case::missing_grammar_id("?mode=grammar_practice")]
+    #[case::invalid_ulid("?mode=grammar_practice&grammar_id=not-a-ulid")]
+    #[case::empty_query("")]
+    fn parse_grammar_practice_query_incomplete_input_returns_none(#[case] query: &str) {
+        assert_eq!(parse_grammar_practice_query(query), None);
+    }
+
+    #[test]
+    fn parse_grammar_practice_query_ignores_unrelated_params() {
+        // Arrange
+        let query = "?foo=1&mode=grammar_practice&bar=2&grammar_id=01ARZ3NDEKTSV4RRFFQ69G5FAV";
+        let expected = Ulid::from_string("01ARZ3NDEKTSV4RRFFQ69G5FAV").unwrap();
+
+        // Act
+        let parsed = parse_grammar_practice_query(query);
+
+        // Assert
+        assert_eq!(
+            parsed,
+            Some(LessonMode::GrammarPractice {
+                grammar_rule_id: expected
+            })
+        );
     }
 }
