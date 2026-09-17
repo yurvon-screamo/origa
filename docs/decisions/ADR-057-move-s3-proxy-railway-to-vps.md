@@ -89,7 +89,12 @@ Key implementation facts (all verified in production 2026-09-17):
    `phrases/data_bundle_5.json`) match the manifest through the new chain;
    `whisper/onnx/decoder_model.onnx` (not manifest-covered) matches a direct boto3
    download from Tigris. check-host.net: 24/25 nodes 200 (single India timeout,
-   non-RU), RU node `ru3` 200 in 0.8 s.
+   non-RU). **Deviation from the plan's "≥2 RU nodes" criterion, accepted:** the
+   check-host sample contained a single RU node (`ru3`, 200 in 0.8 s); the second
+   RU vantage was the operator's machine behind MGTS — the most aggressive TSPU
+   point observed in ADR-049 — which returned 200 on every check. The
+   client→Caddy leg (DNS, IP, TLS, Caddy itself) was not touched by the cutover,
+   so RU reachability risk was inherently minimal.
 9. **Caddy change**: the `s3.origa.uwuwu.net` site block no longer uses the
    `uwuwu_site` snippet — it is a direct `reverse_proxy 127.0.0.1:8081` with
    `lb_try_duration 5s` / `lb_try_interval 250ms`. No `header_up Host` /
@@ -147,11 +152,24 @@ bind, chmod 600 env file, and the fact that the VPS is already in the trust boun
    (service `a3f10cf6-2d4f-42cf-a176-8ebb4253d734`), then remove the
    `_railway-verify.s3.origa` TXT at Aeza (fresh zone dump first, record ID verified
    against the live API, not the old dump). Then finalize egress numbers in this ADR.
-2. Optional hardening: Caddy cache-handler for edge caching of immutable assets
+2. **e2e suite**: not run as part of this migration (docs-only changes; the CI
+   path-filter skips such PRs entirely; the local run needs the full app toolchain).
+   Decision: explicit skip instead of a local run. Compensating coverage at cutover:
+   full header diff against the pre-cutover baseline + SHA256 of four assets
+   (incl. an 118 MB model against a direct Tigris download) through the production
+   URL. The e2e suite downloads CDN blobs from prod (`end2end/cdn-manifest.txt`) and
+   will exercise the new chain on the next code PR — treat a green e2e there as the
+   formal closure of this item, before the Railway decommission window closes.
+3. **Cache-semantics note for the finalization pass**: conditional GET through
+   pottava returns 200, not 304 (fact 7) — client `must-revalidate` JSON therefore
+   costs a full re-download on every revalidation, and this was equally true through
+   the old chain. Reflect it next to the egress numbers when finalizing this ADR so
+   nobody expects 304s from this chain.
+4. Optional hardening: Caddy cache-handler for edge caching of immutable assets
    (reduces Tigris→VPS fetches; traffic is free, so this is latency polish only).
-3. Open strategic option: direct public Tigris without any proxy (true anycast edge
+5. Open strategic option: direct public Tigris without any proxy (true anycast edge
    for the world) — requires its own ADR with RF DPI testing of `storageapi.dev`
    (the ADR-037 failure was Cloudflare-routed user-Tigris, not the Railway bucket
    endpoint; conclusions do not transfer automatically).
-4. The removed-in-2026-09 monitoring (`uwuwu-check.sh`) is not restored here; external
+6. The removed-in-2026-09 monitoring (`uwuwu-check.sh`) is not restored here; external
    checks are manual per the README runbook.
