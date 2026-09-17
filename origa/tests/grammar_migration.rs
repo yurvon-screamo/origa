@@ -199,13 +199,7 @@ fn merge_twins_match_the_shipped_v3_corpus() {
         .map(|r| r["rule_id"].as_str().expect("rule_id").to_string())
         .collect();
 
-    let twins: &[(&str, &str)] = &[
-        ("01KV2C1TJN7FZ34PB80VBFCXFD", "01KV2BRAW30ESEMGXK3N2PTAF4"),
-        ("01KV2BV4G2TVKG953YH43902ZH", "01KV2C1TJN7FZ34PB80VBFCXFM"),
-        ("01KV2C1TJN7FZ34PB80VBFCXFE", "01KV2BRAW30ESEMGXK3N2PTAF5"),
-        ("01KV2BV4G2TVKG953YH43902ZK", "01KV2C1TJN7FZ34PB80VBFCXEC"),
-        ("01KV2BV49PQW2NZ6JX06ZRX0FB", "01KV2BRAW30ESEMGXK3N2PTAEA"),
-    ];
+    let twins: &[(&str, &str)] = &origa::dictionary::grammar_migration::MERGE_TWINS;
     for (deleted, successor) in twins {
         assert!(
             !live.contains(*deleted),

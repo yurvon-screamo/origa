@@ -17,7 +17,8 @@
 use ulid::Ulid;
 
 /// (deleted twin rule_id, surviving successor rule_id) — merge pairs only.
-const MERGE_TWINS: [(&str, &str); 5] = [
+/// Public for the corpus-consistency invariant test: one source of truth.
+pub const MERGE_TWINS: [(&str, &str); 5] = [
     ("01KV2C1TJN7FZ34PB80VBFCXFD", "01KV2BRAW30ESEMGXK3N2PTAF4"),
     ("01KV2BV4G2TVKG953YH43902ZH", "01KV2C1TJN7FZ34PB80VBFCXFM"),
     ("01KV2C1TJN7FZ34PB80VBFCXFE", "01KV2BRAW30ESEMGXK3N2PTAF5"),
