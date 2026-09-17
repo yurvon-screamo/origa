@@ -39,61 +39,6 @@ pub fn init_grammar(data: GrammarData) -> Result<(), OrigaError> {
         })
 }
 
-/// Fold a KO/VI overlay (`{rule_id: {"Korean": content, "Vietnamese":
-/// content}}`) into the base corpus JSON.
-///
-/// The overlay ships as a separate CDN file so that already-released
-/// clients — whose `NativeLanguage` enum only knows English/Russian and
-/// would fail to parse Korean/Vietnamese content-map keys — keep reading
-/// the untouched `grammar_v2.json`. Unknown overlay rule ids are ignored
-/// (a stale overlay must not block a newer base corpus).
-pub fn merge_grammar_overlay(base_json: &str, overlay_json: &str) -> Result<String, OrigaError> {
-    let mut base: serde_json::Value =
-        serde_json::from_str(base_json).map_err(|e| OrigaError::GrammarParseError {
-            reason: format!("Failed to parse grammar.json: {}", e),
-        })?;
-    let overlay: serde_json::Value =
-        serde_json::from_str(overlay_json).map_err(|e| OrigaError::GrammarParseError {
-            reason: format!("Failed to parse grammar overlay: {}", e),
-        })?;
-
-    let Some(rules) = base.get_mut("grammar").and_then(|g| g.as_array_mut()) else {
-        return Err(OrigaError::GrammarParseError {
-            reason: "grammar.json has no grammar array".to_string(),
-        });
-    };
-    let Some(entries) = overlay.as_object() else {
-        return Err(OrigaError::GrammarParseError {
-            reason: "grammar overlay must be an object keyed by rule_id".to_string(),
-        });
-    };
-
-    let mut merged = 0_usize;
-    for rule in rules.iter_mut() {
-        let Some(rule_id) = rule.get("rule_id").and_then(|v| v.as_str()) else {
-            continue;
-        };
-        let Some(patch) = entries.get(rule_id) else {
-            continue;
-        };
-        let Some(languages) = patch.as_object() else {
-            continue;
-        };
-        let Some(content) = rule.get_mut("content").and_then(|c| c.as_object_mut()) else {
-            continue;
-        };
-        for (lang, value) in languages {
-            content.insert(lang.clone(), value.clone());
-            merged += 1;
-        }
-    }
-    tracing::debug!("Grammar overlay merged: {merged} language entries");
-
-    serde_json::to_string(&base).map_err(|e| OrigaError::GrammarParseError {
-        reason: format!("Failed to serialize merged grammar: {}", e),
-    })
-}
-
 pub fn is_grammar_loaded() -> bool {
     GRAMMAR_RULES.get().is_some()
 }
@@ -590,17 +535,12 @@ impl GrammarRule {
     }
 
     pub fn content(&self, lang: &NativeLanguage) -> &GrammarRuleContent {
-        // KO/VI (and any future language) have no grammar content on the CDN
-        // yet, and even EN is not structurally guaranteed by the schema —
-        // index panics are unacceptable in WASM. Resolve the requested
-        // language, then fall back to English, then to whatever content
-        // exists (never panics; callers surface empty text as
-        // `GrammarContentNotFound`).
-        self.content
-            .get(lang)
-            .or_else(|| self.content.get(&NativeLanguage::English))
-            .or_else(|| self.content.values().next())
-            .unwrap_or(&EMPTY_GRAMMAR_CONTENT)
+        // The v3 corpus ships all four supported languages for every rule.
+        // A missing locale is a data bug, not something to paper over with
+        // a silent English substitution: resolve the requested language
+        // directly and let the empty terminal surface as
+        // `GrammarContentNotFound` to the caller.
+        self.content.get(lang).unwrap_or(&EMPTY_GRAMMAR_CONTENT)
     }
 
     pub fn apply_to(&self) -> Vec<PartOfSpeech> {
@@ -994,86 +934,14 @@ mod tests_language_fallback {
     }
 
     #[test]
-    fn korean_resolves_to_english_content() {
+    fn locale_without_content_resolves_to_empty_terminal() {
         let rule = rule_with_content();
-        // Legacy data ships only {English, Russian}: KO/VI must resolve to
-        // the English projection instead of panicking on HashMap indexing.
-        assert_eq!(rule.content(&NativeLanguage::Korean).title(), "title-en");
-        assert_eq!(
-            rule.content(&NativeLanguage::Vietnamese).title(),
-            "title-en"
-        );
+        // The v3 corpus ships all four locales; a missing one is a data
+        // bug surfaced as empty content (GrammarContentNotFound upstream),
+        // never a silent English substitution.
+        assert_eq!(rule.content(&NativeLanguage::Korean).title(), "");
+        assert_eq!(rule.content(&NativeLanguage::Vietnamese).title(), "");
         assert_eq!(rule.content(&NativeLanguage::Russian).title(), "заголовок");
-    }
-
-    #[test]
-    fn merge_grammar_overlay_folds_languages_into_base() {
-        let base = r#"{"grammar": [{
-            "rule_id": "01J9TESTTESTTESTTESTTESTTE",
-            "level": "N5",
-            "content": {
-                "English": {
-                    "title": "title-en",
-                    "short_description": "short-en",
-                    "explanation": "explanation-en",
-                    "how_to_form": "form-en",
-                    "examples": "[]",
-                    "nuances": {},
-                    "pro_tip": ""
-                }
-            }
-        }]}"#;
-        let overlay = r#"{"01J9TESTTESTTESTTESTTESTTE": {
-            "Korean": {
-                "title": "제목",
-                "short_description": "요약",
-                "explanation": "설명",
-                "how_to_form": "형성",
-                "examples": "[]",
-                "nuances": {},
-                "pro_tip": ""
-            },
-            "Vietnamese": {
-                "title": "tiêu đề",
-                "short_description": "tóm tắt",
-                "explanation": "giải thích",
-                "how_to_form": "cách tạo",
-                "examples": "[]",
-                "nuances": {},
-                "pro_tip": ""
-            }
-        }}"#;
-        let merged = merge_grammar_overlay(base, overlay).expect("merge must succeed");
-        let rule: GrammarRule = serde_json::from_str(
-            &serde_json::from_str::<serde_json::Value>(&merged).unwrap()["grammar"][0].to_string(),
-        )
-        .expect("merged rule must parse");
-        assert_eq!(rule.content(&NativeLanguage::Korean).title(), "제목");
-        assert_eq!(rule.content(&NativeLanguage::Vietnamese).title(), "tiêu đề");
-        assert_eq!(rule.content(&NativeLanguage::English).title(), "title-en");
-    }
-
-    #[test]
-    fn merge_grammar_overlay_ignores_unknown_rule_ids() {
-        let base = r#"{"grammar": [{
-            "rule_id": "01J9TESTTESTTESTTESTTESTTE",
-            "level": "N5",
-            "content": {"English": {"title": "t"}}
-        }]}"#;
-        let overlay = r#"{"GHOST000000000000000000000": {"Korean": {"title": "x"}}}"#;
-        let merged = merge_grammar_overlay(base, overlay).expect("merge must succeed");
-        let doc: serde_json::Value = serde_json::from_str(&merged).unwrap();
-        let content = &doc["grammar"][0]["content"];
-        assert!(content.get("Korean").is_none());
-        assert!(content.get("GHOST").is_none());
-    }
-
-    #[test]
-    fn merge_grammar_overlay_rejects_malformed_overlay() {
-        let base = r#"{"grammar": []}"#;
-        assert!(merge_grammar_overlay(base, "not json").is_err());
-        assert!(merge_grammar_overlay(base, r#"[]"#).is_err());
-        assert!(merge_grammar_overlay("{}", r#"{}"#).is_err());
     }
 
     #[test]
@@ -1117,30 +985,6 @@ mod tests_language_fallback {
         assert_eq!(rule.content(&NativeLanguage::Korean).title(), "제목");
         assert_eq!(rule.content(&NativeLanguage::Vietnamese).title(), "tiêu đề");
         assert_eq!(rule.content(&NativeLanguage::English).title(), "title-en");
-    }
-
-    #[test]
-    fn rule_without_english_resolves_to_any_content() {
-        let json = r#"{
-            "rule_id": "01J9TESTTESTTESTTESTTESTTF",
-            "level": "N5",
-            "content": {
-                "Russian": {
-                    "title": "только-русский",
-                    "short_description": "",
-                    "explanation": "",
-                    "how_to_form": "",
-                    "examples": "",
-                    "nuances": {},
-                    "pro_tip": ""
-                }
-            }
-        }"#;
-        let rule: GrammarRule = serde_json::from_str(json).expect("valid rule json");
-        assert_eq!(
-            rule.content(&NativeLanguage::Korean).title(),
-            "только-русский"
-        );
     }
 
     #[test]

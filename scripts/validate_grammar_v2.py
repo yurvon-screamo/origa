@@ -380,8 +380,8 @@ def main() -> int:
         return 1
 
     report = Report()
-    if data.get("schema") != 2:
-        report.error("corpus", f"schema marker must be 2, got {data.get('schema')!r}")
+    if data.get("schema") not in (2, 3):
+        report.error("corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}")
     validate_corpus(data, report)
 
     rules = data.get("grammar") or []

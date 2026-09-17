@@ -1,6 +1,6 @@
 //! Offline builder for the grammar tokenization precompute blob (#521).
 //!
-//! Walks every string of `grammar_v2.json` + `grammar_ko_vi.json` and
+//! Walks every string of `grammar_v3.json` and
 //! derives precompute entries for the exact strings the grammar pages
 //! render:
 //!
@@ -35,10 +35,9 @@ use super::precompute_common::{
 };
 use crate::dictionary::load_dictionary;
 
-const GRAMMAR_SOURCE: &str = "grammar/grammar_v2.json";
-const GRAMMAR_OVERLAY_SOURCE: &str = "grammar/grammar_ko_vi.json";
+const GRAMMAR_SOURCE: &str = "grammar/grammar_v3.json";
 const FURIGANA_SOURCE: &str = "dictionaries/JmdictFurigana.txt";
-const GRAMMAR_PRECOMPUTE_BLOB: &str = "grammar/grammar_precompute.rkyv";
+const GRAMMAR_PRECOMPUTE_BLOB: &str = "grammar/grammar_precompute_v3.rkyv";
 
 /// Fields the grammar pages render through `MarkdownText`. Everything
 /// else reaches the screen as a plain string (often via `FuriganaText`).
@@ -139,22 +138,16 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
     let dictionary_ingredients =
         init_furigana_and_dictionary_ingredients(&cdn_dir.join(FURIGANA_SOURCE))?;
 
-    let grammar_v2 =
+    let grammar_v3 =
         fs::read(cdn_dir.join(GRAMMAR_SOURCE)).map_err(|e| OrigaError::RepositoryError {
             reason: format!("failed to read {GRAMMAR_SOURCE}: {e}"),
         })?;
-    let overlay = fs::read(cdn_dir.join(GRAMMAR_OVERLAY_SOURCE)).map_err(|e| {
-        OrigaError::RepositoryError {
-            reason: format!("failed to read {GRAMMAR_OVERLAY_SOURCE}: {e}"),
-        }
-    })?;
 
-    // Freshness binds to both grammar sources plus the tokenizer inputs —
+    // Freshness binds to the grammar source plus the tokenizer inputs —
     // a dictionary bump regenerates the blob even though the grammar
-    // files are unchanged.
+    // file is unchanged.
     let mut source_with_ingredients = Vec::new();
-    source_with_ingredients.extend_from_slice(&grammar_v2);
-    source_with_ingredients.extend_from_slice(&overlay);
+    source_with_ingredients.extend_from_slice(&grammar_v3);
     source_with_ingredients.extend_from_slice(&dictionary_ingredients);
 
     let existing = fs::read(cdn_dir.join(GRAMMAR_PRECOMPUTE_BLOB))
@@ -169,13 +162,11 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
     }
 
     let mut keys = BTreeMap::new();
-    for source in [&grammar_v2, &overlay] {
-        let value: serde_json::Value =
-            serde_json::from_slice(source).map_err(|e| OrigaError::RepositoryError {
-                reason: format!("failed to parse grammar source: {e}"),
-            })?;
-        collect_value_keys(&value, "", &mut keys);
-    }
+    let grammar: serde_json::Value =
+        serde_json::from_slice(&grammar_v3).map_err(|e| OrigaError::RepositoryError {
+            reason: format!("failed to parse grammar source: {e}"),
+        })?;
+    collect_value_keys(&grammar, "", &mut keys);
 
     let started = std::time::Instant::now();
     let mut entries = BTreeMap::new();
@@ -196,12 +187,9 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
         }
     })?;
 
-    // Guard covers the manifest-visible sources (both grammar JSONs) in
-    // path order — clients with a fetched manifest can verify it.
-    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[
-        &sha256_hex(&grammar_v2),
-        &sha256_hex(&overlay),
-    ]);
+    // Guard covers the manifest-visible source (the v3 grammar JSON) —
+    // clients with a fetched manifest can verify it.
+    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&grammar_v3)]);
     let header = BlobHeader {
         schema_version: SCHEMA_VERSION,
         source_sha256: sha256_raw(&source_with_ingredients),

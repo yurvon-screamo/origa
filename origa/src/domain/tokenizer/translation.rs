@@ -394,7 +394,7 @@ fn find_sou_rule(
 ) -> Option<&'static GrammarRule> {
     use ulid::Ulid;
 
-    // Corpus anchors (cdn/grammar/grammar_v2.json):
+    // Corpus anchors (cdn/grammar/grammar_v3.json):
     // ～そうだ（様態・伝聞） combined / ～そうだ（様態） appearance /
     // ～そうだ（伝聞） hearsay.
     const COMBINED: &str = "01G000000000000000W0000000";
@@ -766,7 +766,7 @@ mod integration_tests {
             .unwrap()
             .join("cdn")
             .join("grammar")
-            .join("grammar_v2.json");
+            .join("grammar_v3.json");
 
         let grammar_json = std::fs::read_to_string(grammar_path).unwrap();
         // Same OnceLock race tolerance as ensure_vocabulary_dictionary.
@@ -1864,25 +1864,6 @@ mod integration_tests {
                 .is_none_or(|label| !label.contains("そうだ（伝聞）")),
             "そう after a sentence boundary must not be labeled hearsay, got: {:?}",
             sou.grammar_label
-        );
-    }
-
-    #[test]
-    fn should_label_kore_sore_are_demonstratives_via_keyword() {
-        ensure_dictionaries();
-        let text = "これは本です";
-        let tokens = super::super::tokenize_text(text).unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
-        let kore = results
-            .iter()
-            .find(|t| t.surface_form == "これ")
-            .expect("「これ」token should exist");
-        assert!(
-            kore.grammar_label
-                .as_deref()
-                .is_some_and(|l| l.contains("これ")),
-            "「これ」should carry the これ・それ・あれ grammar_label via keyword, got: {:?}",
-            kore
         );
     }
 

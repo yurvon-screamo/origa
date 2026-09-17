@@ -133,7 +133,7 @@ mod tests {
     static INIT: Once = Once::new();
 
     // Single source of truth for the test grammar corpus location:
-    // <workspace_root>/cdn/grammar/grammar_v2.json (schema v2)
+    // <workspace_root>/cdn/grammar/grammar_v3.json (schema v2)
     fn grammar_json_path() -> Option<std::path::PathBuf> {
         let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").ok()?;
         Some(
@@ -141,7 +141,7 @@ mod tests {
                 .parent()?
                 .join("cdn")
                 .join("grammar")
-                .join("grammar_v2.json"),
+                .join("grammar_v3.json"),
         )
     }
 

@@ -56,6 +56,8 @@ pub enum OrigaError {
     GrammarFormatError { reason: String },
     #[error("Grammar parse error: {reason}")]
     GrammarParseError { reason: String },
+    #[error("Grammar store is not loaded")]
+    GrammarNotLoaded,
     #[error("Well-known set parse error: {reason}")]
     WellKnownSetParseError { reason: String },
     #[error("Well-known set '{set_id}' not found")]
@@ -115,6 +117,7 @@ impl OrigaError {
             | Self::TokenizerError { .. }
             | Self::GrammarFormatError { .. }
             | Self::GrammarParseError { .. }
+            | Self::GrammarNotLoaded
             | Self::WellKnownSetParseError { .. }
             | Self::WellKnownSetNotFound { .. }
             | Self::SessionExpired
