@@ -2,11 +2,11 @@
 
 ## Status
 
-**Cutover in progress** (2026-08-02 — infrastructure built, 2026-08-03 —
-DNS record updated in Aeza DB, waiting on Aeza NS propagation up to 2 days).
-Production unaffected: `s3.origa.uwuwu.net` continues routing through Railway
-s3-proxy until NS propagates; Tigris bucket serves shadow-migration traffic
-on direct `origa-cdn.t3.storageapi.dev` URL in parallel.
+**ROLLED BACK** (revert completed in #372, 2026-08 — RF DPI throttling on the
+Cloudflare-routed user-Tigris path; the orphaned `origa-cdn` bucket/resources await
+cleanup). Historical reference only — do not execute this runbook. Current CDN
+topology: ADR-049 (VPS reverse proxy chain) and **ADR-057** (s3-proxy docker container
+on the VPS, Railway hop removed).
 
 ## Date
 
