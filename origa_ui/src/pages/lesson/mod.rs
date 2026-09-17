@@ -35,6 +35,7 @@ mod on_quiz_toggle;
 mod on_rate;
 mod on_yesno_select;
 pub(crate) mod phrase_card;
+mod phrase_cleanup;
 pub(crate) mod phrase_rating_buttons;
 pub(crate) mod pos_label;
 mod quiz_card;
