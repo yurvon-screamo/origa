@@ -2,11 +2,13 @@
 //! compile-time-embedded markdown sources.
 //!
 //! Mirrors [`crate::blog::registry`] in structure but covers the `/docs`
-//! section. Docs ship in EN and RU only (unlike blog which has 4 locales);
-//! KO/VI requests fall back to the EN content at the page level with
-//! `noindex, follow`. The frontmatter parser ([`crate::blog::frontmatter`])
-//! and markdown renderer ([`crate::blog::render`]) are reused verbatim — the
-//! frontmatter shape is identical.
+//! section. Docs ship in all four locales (EN, RU, KO, VI); the EN fallback
+//! in [`crate::pages::docs`] stays as graceful degradation for future pages
+//! that land in fewer locales first (the blog already relies on that pattern
+//! for its EN+RU cluster). The frontmatter parser
+//! ([`crate::blog::frontmatter`]) and markdown renderer
+//! ([`crate::blog::render`]) are reused verbatim — the frontmatter shape is
+//! identical.
 
 use std::sync::OnceLock;
 
@@ -40,6 +42,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "index",
         include_str!("../../content/docs/ru/index.md"),
     ),
+    (
+        Locale::Ko,
+        "index",
+        include_str!("../../content/docs/ko/index.md"),
+    ),
+    (
+        Locale::Vi,
+        "index",
+        include_str!("../../content/docs/vi/index.md"),
+    ),
     // getting-started
     (
         Locale::En,
@@ -50,6 +62,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "getting-started",
         include_str!("../../content/docs/ru/getting-started.md"),
+    ),
+    (
+        Locale::Ko,
+        "getting-started",
+        include_str!("../../content/docs/ko/getting-started.md"),
+    ),
+    (
+        Locale::Vi,
+        "getting-started",
+        include_str!("../../content/docs/vi/getting-started.md"),
     ),
     // lesson
     (
@@ -62,6 +84,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "lesson",
         include_str!("../../content/docs/ru/lesson.md"),
     ),
+    (
+        Locale::Ko,
+        "lesson",
+        include_str!("../../content/docs/ko/lesson.md"),
+    ),
+    (
+        Locale::Vi,
+        "lesson",
+        include_str!("../../content/docs/vi/lesson.md"),
+    ),
     // fsrs
     (
         Locale::En,
@@ -72,6 +104,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "fsrs",
         include_str!("../../content/docs/ru/fsrs.md"),
+    ),
+    (
+        Locale::Ko,
+        "fsrs",
+        include_str!("../../content/docs/ko/fsrs.md"),
+    ),
+    (
+        Locale::Vi,
+        "fsrs",
+        include_str!("../../content/docs/vi/fsrs.md"),
     ),
     // vocabulary
     (
@@ -84,6 +126,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "vocabulary",
         include_str!("../../content/docs/ru/vocabulary.md"),
     ),
+    (
+        Locale::Ko,
+        "vocabulary",
+        include_str!("../../content/docs/ko/vocabulary.md"),
+    ),
+    (
+        Locale::Vi,
+        "vocabulary",
+        include_str!("../../content/docs/vi/vocabulary.md"),
+    ),
     // kanji
     (
         Locale::En,
@@ -94,6 +146,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "kanji",
         include_str!("../../content/docs/ru/kanji.md"),
+    ),
+    (
+        Locale::Ko,
+        "kanji",
+        include_str!("../../content/docs/ko/kanji.md"),
+    ),
+    (
+        Locale::Vi,
+        "kanji",
+        include_str!("../../content/docs/vi/kanji.md"),
     ),
     // grammar
     (
@@ -106,6 +168,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "grammar",
         include_str!("../../content/docs/ru/grammar.md"),
     ),
+    (
+        Locale::Ko,
+        "grammar",
+        include_str!("../../content/docs/ko/grammar.md"),
+    ),
+    (
+        Locale::Vi,
+        "grammar",
+        include_str!("../../content/docs/vi/grammar.md"),
+    ),
     // phrases
     (
         Locale::En,
@@ -116,6 +188,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "phrases",
         include_str!("../../content/docs/ru/phrases.md"),
+    ),
+    (
+        Locale::Ko,
+        "phrases",
+        include_str!("../../content/docs/ko/phrases.md"),
+    ),
+    (
+        Locale::Vi,
+        "phrases",
+        include_str!("../../content/docs/vi/phrases.md"),
     ),
     // capture
     (
@@ -128,6 +210,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "capture",
         include_str!("../../content/docs/ru/capture.md"),
     ),
+    (
+        Locale::Ko,
+        "capture",
+        include_str!("../../content/docs/ko/capture.md"),
+    ),
+    (
+        Locale::Vi,
+        "capture",
+        include_str!("../../content/docs/vi/capture.md"),
+    ),
     // limitations
     (
         Locale::En,
@@ -138,6 +230,16 @@ const DOCS: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "limitations",
         include_str!("../../content/docs/ru/limitations.md"),
+    ),
+    (
+        Locale::Ko,
+        "limitations",
+        include_str!("../../content/docs/ko/limitations.md"),
+    ),
+    (
+        Locale::Vi,
+        "limitations",
+        include_str!("../../content/docs/vi/limitations.md"),
     ),
     // data-sources
     (
@@ -150,11 +252,21 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "data-sources",
         include_str!("../../content/docs/ru/data-sources.md"),
     ),
+    (
+        Locale::Ko,
+        "data-sources",
+        include_str!("../../content/docs/ko/data-sources.md"),
+    ),
+    (
+        Locale::Vi,
+        "data-sources",
+        include_str!("../../content/docs/vi/data-sources.md"),
+    ),
 ];
 
 /// Sidebar navigation order. The `index` page is excluded (it is the docs
 /// landing, not a sidebar entry). Every slug listed here must exist in `DOCS`
-/// for both EN and RU — the build_registry assertion guarantees this.
+/// for all four locales — the build_registry assertion guarantees this.
 pub const SIDEBAR_SLUGS: &[&str] = &[
     "getting-started",
     "lesson",
@@ -205,8 +317,8 @@ pub fn all() -> &'static [DocPage] {
 }
 
 /// Find a doc page by `(locale, slug)`. Returns `None` if no page exists for
-/// that exact pair — callers handling locale fallback (e.g. serving the EN
-/// page on `/ko/docs/<slug>`) must do the fallback themselves.
+/// that exact pair — callers handling locale fallback (serving the EN page
+/// when a future doc ships in fewer locales) must do the fallback themselves.
 pub fn find(locale: Locale, slug: &str) -> Option<&'static DocPage> {
     all()
         .iter()
@@ -215,8 +327,8 @@ pub fn find(locale: Locale, slug: &str) -> Option<&'static DocPage> {
 
 /// Locales that have a published translation of `slug`. Used to emit correct
 /// `hreflang` alternates: a page should only point at translations that
-/// actually exist. Docs ship in EN and RU, so this returns a subset of
-/// `[En, Ru]`.
+/// actually exist. Docs ship in all four locales, so this returns a subset of
+/// `[En, Ru, Ko, Vi]`.
 pub fn locales_for_slug(slug: &str) -> Vec<Locale> {
     all()
         .iter()
@@ -237,8 +349,8 @@ pub fn list_by_locale(locale: Locale) -> Vec<&'static DocPage> {
 
 /// Sidebar entries for `locale` — all pages listed in [`SIDEBAR_SLUGS`] order.
 /// Falls back to EN titles when a page is not translated in the requested
-/// locale, so the sidebar is always complete even on KO/VI (which serve EN
-/// docs content).
+/// locale, so the sidebar stays complete for future pages that ship in fewer
+/// locales first.
 pub fn sidebar_entries(locale: Locale) -> Vec<(&'static str, String, String)> {
     SIDEBAR_SLUGS
         .iter()
@@ -302,11 +414,13 @@ mod tests {
     }
 
     #[test]
-    fn locales_for_slug_returns_en_and_ru() {
+    fn locales_for_slug_returns_all_four_locales() {
         let locales = locales_for_slug("getting-started");
         assert!(locales.contains(&Locale::En), "missing EN: {locales:?}");
         assert!(locales.contains(&Locale::Ru), "missing RU: {locales:?}");
-        assert_eq!(locales.len(), 2, "docs ship in EN+RU only: {locales:?}");
+        assert!(locales.contains(&Locale::Ko), "missing KO: {locales:?}");
+        assert!(locales.contains(&Locale::Vi), "missing VI: {locales:?}");
+        assert_eq!(locales.len(), 4, "docs ship in all 4 locales: {locales:?}");
     }
 
     #[test]
@@ -324,21 +438,33 @@ mod tests {
     }
 
     #[test]
-    fn every_sidebar_slug_exists_in_both_locales() {
+    fn every_sidebar_slug_exists_in_all_four_locales() {
         for slug in SIDEBAR_SLUGS {
             assert!(find(Locale::En, slug).is_some(), "EN {slug} missing");
             assert!(find(Locale::Ru, slug).is_some(), "RU {slug} missing");
+            assert!(find(Locale::Ko, slug).is_some(), "KO {slug} missing");
+            assert!(find(Locale::Vi, slug).is_some(), "VI {slug} missing");
         }
     }
 
     #[test]
-    fn sidebar_entries_falls_back_to_en_for_ko() {
+    fn sidebar_entries_are_native_for_ko() {
         let entries = sidebar_entries(Locale::Ko);
         assert_eq!(entries.len(), SIDEBAR_SLUGS.len());
-        assert!(
-            !entries.is_empty(),
-            "KO sidebar must show EN-fallback titles, not be empty"
-        );
+        for (slug, _, href) in &entries {
+            assert!(
+                href.starts_with("/ko/docs/"),
+                "KO sidebar entry {slug} must link at the native KO page, got {href}"
+            );
+        }
+    }
+
+    #[test]
+    fn ko_pages_render_korean_titles() {
+        // The KO translation must actually be served (not the EN fallback):
+        // the getting-started title is Korean text.
+        let page = find(Locale::Ko, "getting-started").expect("KO page present");
+        assert_eq!(page.frontmatter.title, "Origa 시작하기");
     }
 
     #[test]
