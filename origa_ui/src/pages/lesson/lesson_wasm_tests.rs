@@ -3079,7 +3079,7 @@ mod acquaintance_presentation {
             .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "ぜひ".to_string(),
+            pattern: "ぜひ".to_string(),
             short_description: "наречие".to_string(),
             how_to_form: String::new(),
             examples: String::new(),
