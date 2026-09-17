@@ -113,7 +113,7 @@ cargo fmt --check && cargo fmt
 
 ## CDN / S3
 
-Tigris object storage (S3-compatible, endpoint `t3.storageapi.dev`) под Railway — bucket `adaptable-foodbox-ucep7wx`, раздача через Railway s3-proxy + edge caching: URL `https://s3.origa.uwuwu.net` вшивается через `build.rs`. Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`. Миграция на user-owned Tigris (ADR-037) была откачена в #372 (DPI-throttle на Cloudflare-роутинге для РФ); orphaned-ресурсы той миграции (user-Tigris bucket `origa-cdn` ~4 GB, R2, Worker) ждут cleanup.
+Tigris object storage (S3-compatible, endpoint `t3.storageapi.dev`) под Railway — bucket `adaptable-foodbox-ucep7wx`, раздача через s3-proxy (docker-контейнер `pottava/s3-proxy` на Aeza VPS за Caddy, ADR-057) напрямую в Tigris; Railway-хоп из цепочки убран (ADR-049 — проксирование всех хостов uwuwu.net через VPS): URL `https://s3.origa.uwuwu.net` вшивается через `build.rs`. Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`. Миграция на user-owned Tigris (ADR-037) была откачена в #372 (DPI-throttle на Cloudflare-роутинге для РФ); orphaned-ресурсы той миграции (user-Tigris bucket `origa-cdn` ~4 GB, R2, Worker) ждут cleanup.
 
 Профиль `~/.aws/credentials [origa]` — для `deploy_cdn.py` / `refresh_cache_control.py`. Контракт кредов: env `AWS_ACCESS_KEY_ID` при наличии приоритетнее профиля — CI передаёт scoped-ключи через env.
 
