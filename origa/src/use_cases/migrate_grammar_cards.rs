@@ -114,21 +114,27 @@ pub fn migrate_user_cards(user: &mut User) -> Result<MigrationReport, OrigaError
         if live_grammar_ids.contains(&rule_id) {
             continue;
         }
-        match migration_successor(&rule_id) {
+        // One broken card must not block the rest of the pass forever:
+        // skip with a warning; the next run retries only the stragglers.
+        let outcome = match migration_successor(&rule_id) {
             Some(successor) if existing_rule_ids.contains(&successor) => {
-                user.delete_card(card_id)?;
-                report.dropped_duplicates += 1;
+                user.delete_card(card_id).map(|_| {
+                    report.dropped_duplicates += 1;
+                })
             },
             Some(successor) => {
                 let replacement = Card::Grammar(GrammarRuleCard::new(successor)?);
-                user.update_card_content(card_id, replacement)?;
-                existing_rule_ids.insert(successor);
-                report.transferred += 1;
+                user.update_card_content(card_id, replacement).map(|_| {
+                    existing_rule_ids.insert(successor);
+                    report.transferred += 1;
+                })
             },
-            None => {
-                user.delete_card(card_id)?;
+            None => user.delete_card(card_id).map(|_| {
                 report.dropped_deleted += 1;
-            },
+            }),
+        };
+        if let Err(e) = outcome {
+            tracing::warn!(card_id = %card_id, error = %e, "grammar card migration: card skipped");
         }
     }
     Ok(report)

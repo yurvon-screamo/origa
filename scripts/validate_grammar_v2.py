@@ -38,6 +38,10 @@ import _grammar_title
 LEVELS = {"N5", "N4", "N3", "N2", "N1"}
 LANGS = {"English", "Russian", "Korean", "Vietnamese"}
 REQUIRED_LANGS = {"English", "Russian"}
+# v3 mandates all four locales: the client's locale fallback was removed
+# (#503 content pass), so a missing Korean/Vietnamese section would ship
+# an empty terminal to those users instead of the old English projection.
+REQUIRED_LANGS_V3 = {"English", "Russian", "Korean", "Vietnamese"}
 REQUIRED_TEXT_FIELDS = (
     "title",
     "short_description",
@@ -96,7 +100,9 @@ class Report:
         self.warnings.append(f"WARN  {where}: {message}")
 
 
-def validate_rule(rule: dict, idx: int, rule_ids: set[str], report: Report) -> None:
+def validate_rule(
+    rule: dict, idx: int, rule_ids: set[str], report: Report, required_langs: set[str]
+) -> None:
     where = f"rule[{idx}]"
     rule_id = rule.get("rule_id")
     if not isinstance(rule_id, str) or not re.fullmatch(r"[0-9A-HJKMNP-TV-Z]{26}", rule_id):
@@ -122,7 +128,7 @@ def validate_rule(rule: dict, idx: int, rule_ids: set[str], report: Report) -> N
     if not isinstance(content, dict) or not content:
         report.error(where, f"content must be a non-empty object, got {content!r}")
         return
-    missing = REQUIRED_LANGS - set(content.keys())
+    missing = required_langs - set(content.keys())
     unknown = set(content.keys()) - LANGS
     if missing:
         report.error(where, f"content is missing required {sorted(missing)}")
@@ -290,7 +296,7 @@ def is_cjk_ideograph(ch: str) -> bool:
     )
 
 
-def validate_corpus(data: dict, report: Report) -> None:
+def validate_corpus(data: dict, report: Report, required_langs: set[str]) -> None:
     rules = data.get("grammar")
     if not isinstance(rules, list) or not rules:
         report.error("corpus", "grammar must be a non-empty array")
@@ -301,7 +307,7 @@ def validate_corpus(data: dict, report: Report) -> None:
         if not isinstance(rule, dict):
             report.error(f"rule[{idx}]", "not an object")
             continue
-        validate_rule(rule, idx, rule_ids, report)
+        validate_rule(rule, idx, rule_ids, report, required_langs)
 
     # Referential integrity for related_patterns (needs the full id set),
     # per-language title uniqueness and short_description distinctness.
@@ -382,7 +388,8 @@ def main() -> int:
     report = Report()
     if data.get("schema") not in (2, 3):
         report.error("corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}")
-    validate_corpus(data, report)
+    required_langs = REQUIRED_LANGS_V3 if data.get("schema") == 3 else REQUIRED_LANGS
+    validate_corpus(data, report, required_langs)
 
     rules = data.get("grammar") or []
     if as_json:

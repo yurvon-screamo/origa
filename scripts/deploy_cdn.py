@@ -248,7 +248,10 @@ def validate_grammar_if_changed(changed: list[str]) -> None:
     for target in grammar_targets:
         print(f"\nStep 3.5: Validating {target}...")
         result = subprocess.run(
-            [sys.executable, str(script), target], capture_output=True, text=True, check=False
+            [sys.executable, str(script), str(Path("cdn") / target)],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         for line in result.stdout.strip().splitlines():
             print(f"  {line}")

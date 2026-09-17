@@ -175,3 +175,46 @@ fn second_pass_is_a_noop() {
     assert_eq!(report.total(), 0);
     assert_eq!(grammar_rule_ids(&user), vec![LIVE_RULE.to_string()]);
 }
+
+/// The merge map must stay consistent with the SHIPPED corpus: every
+/// successor alive, every deleted twin gone. A future corpus cleanup that
+/// drops a successor would silently break the migration (transfers turn
+/// into endless errors) — this test fails loudly instead. Graceful-skips
+/// when the gitignored v3 corpus is absent (fresh clone / CI cache miss).
+#[test]
+fn merge_twins_match_the_shipped_v3_corpus() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("cdn/grammar/grammar_v3.json");
+    let Ok(raw) = std::fs::read_to_string(&path) else {
+        eprintln!("grammar_v3.json not present — skipping");
+        return;
+    };
+    let corpus: serde_json::Value = serde_json::from_str(&raw).expect("v3 corpus parses");
+    let live: std::collections::HashSet<String> = corpus["grammar"]
+        .as_array()
+        .expect("grammar array")
+        .iter()
+        .map(|r| r["rule_id"].as_str().expect("rule_id").to_string())
+        .collect();
+
+    let twins: &[(&str, &str)] = &[
+        ("01KV2C1TJN7FZ34PB80VBFCXFD", "01KV2BRAW30ESEMGXK3N2PTAF4"),
+        ("01KV2BV4G2TVKG953YH43902ZH", "01KV2C1TJN7FZ34PB80VBFCXFM"),
+        ("01KV2C1TJN7FZ34PB80VBFCXFE", "01KV2BRAW30ESEMGXK3N2PTAF5"),
+        ("01KV2BV4G2TVKG953YH43902ZK", "01KV2C1TJN7FZ34PB80VBFCXEC"),
+        ("01KV2BV49PQW2NZ6JX06ZRX0FB", "01KV2BRAW30ESEMGXK3N2PTAEA"),
+    ];
+    for (deleted, successor) in twins {
+        assert!(
+            !live.contains(*deleted),
+            "twin {deleted} must be absent from the v3 corpus"
+        );
+        assert!(
+            live.contains(*successor),
+            "successor {successor} must stay alive in the v3 corpus — \
+             the migration map (dictionary/grammar_migration.rs) is stale"
+        );
+    }
+}
