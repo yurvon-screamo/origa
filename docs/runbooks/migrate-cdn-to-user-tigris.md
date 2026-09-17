@@ -1,6 +1,11 @@
 # Migrate CDN bucket to user-owned Tigris, deprecate Railway s3-proxy
 
-**Status:** CUTOVER IN PROGRESS — DNS record updated in Aeza DB (2026-08-03 14:51 UTC), **waiting on Aeza authoritative NS propagation** (up to 2 days, normal for Aeza). Production unaffected: `s3.origa.uwuwu.net` still routes through Railway s3-proxy while NS propagates.
+**Status:** ROLLED BACK — the cutover was reverted in #372 (RF DPI throttling on the
+Cloudflare-routed user-Tigris path). This runbook is historical reference only; do not
+execute it. Current CDN topology: ADR-049 (VPS reverse proxy chain) and ADR-057
+(s3-proxy docker container on the VPS). The stale "CUTOVER IN PROGRESS" note below is
+kept verbatim for the record.
+
 **Date:** 2026-08-02 (Slice 0–1), 2026-08-03 (Slice 2 cutover initiated).
 **ADR:** [ADR-037](../decisions/ADR-037-migrate-cdn-to-user-tigris-deprecate-s3-proxy.md).
 
