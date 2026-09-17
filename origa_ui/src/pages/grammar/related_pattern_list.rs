@@ -35,7 +35,7 @@ pub fn RelatedPatternList(
                         );
                         return view! { <span></span> }.into_any();
                     };
-                    let title = rule.content(&native_language).title().to_string();
+                    let title = rule.content(&native_language).pattern().to_string();
                     let meaning = rule
                         .content(&native_language)
                         .short_description()

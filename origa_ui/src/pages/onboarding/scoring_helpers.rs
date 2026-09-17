@@ -66,7 +66,7 @@ pub(super) fn extract_card_data(
         DomainCard::Grammar(g) => ScoringCard {
             card_id,
             question: g
-                .title(lang)
+                .pattern(lang)
                 .ok()
                 .map(|q| q.text().to_string())
                 .unwrap_or_default(),

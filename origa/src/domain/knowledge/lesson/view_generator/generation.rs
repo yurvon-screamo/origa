@@ -407,7 +407,7 @@ pub(crate) fn generate_grammar_quiz(
     let quiz = QuizCard::new(original_card.clone(), options, QuizMode::Single);
 
     let grammar_title = grammar_rule_card
-        .title(lang)
+        .pattern(lang)
         .map(|q| q.text().to_string())
         .unwrap_or_else(|_| grammar_rule_card.rule_id().to_string());
     let grammar_desc = grammar_rule_card

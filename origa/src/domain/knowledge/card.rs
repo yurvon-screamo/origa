@@ -153,7 +153,7 @@ impl Card {
         match self {
             Card::Vocabulary(card) => Ok(card.word().clone()),
             Card::Kanji(card) => Ok(card.kanji().clone()),
-            Card::Grammar(card) => card.title(lang),
+            Card::Grammar(card) => card.pattern(lang),
             Card::Phrase(card) => {
                 let text = card.question().ok_or(OrigaError::PhraseNotFound {
                     phrase_id: *card.phrase_id(),

@@ -218,7 +218,7 @@ mod generate_grammar_quiz_tests {
             panic!("Expected GrammarQuiz, got {:?}", view);
         };
         assert_eq!(gq.word_text(), "食べる");
-        assert_eq!(gq.grammar_info().title(), "～ます");
+        assert_eq!(gq.grammar_info().pattern(), "～ます");
         assert!(!gq.grammar_info().description().is_empty());
         // The inner quiz card intentionally keeps the bare rule title as its
         // question — the word travels via word_text(), which the container

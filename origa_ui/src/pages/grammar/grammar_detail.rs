@@ -287,7 +287,7 @@ pub fn GrammarDetail() -> impl IntoView {
                     let title_text = match card.card() {
                         DomainCard::Grammar(grammar) => {
                             let lang = native_lang.get();
-                            grammar.title(&lang).ok().map(|t| t.text().to_string()).unwrap_or_default()
+                            grammar.pattern(&lang).ok().map(|t| t.text().to_string()).unwrap_or_default()
                         },
                         _ => "?".to_string(),
                     };

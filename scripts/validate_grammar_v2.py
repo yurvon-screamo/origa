@@ -158,6 +158,21 @@ def validate_rule(rule: dict, idx: int, rule_ids: set[str], report: Report) -> N
                 else:
                     report.warn(loc, f"title: {message}")
 
+        # `pattern` (schema #503 UX): when present it must be the title
+        # with exactly the trailing qualifier groups removed — the two
+        # fields must not drift apart.
+        pattern = c.get("pattern")
+        if isinstance(pattern, str):
+            if not pattern.strip():
+                report.error(loc, "empty pattern")
+            elif isinstance(title, str) and title.strip():
+                expected = _grammar_title.strip_trailing_qualifiers(title)
+                if pattern != expected:
+                    report.error(
+                        loc,
+                        f"pattern {pattern!r} != title minus trailing qualifiers {expected!r}",
+                    )
+
         validate_nuances(c.get("nuances"), loc, report)
         validate_warnings(c.get("warnings"), loc, report)
         validate_related_patterns(c.get("related_patterns"), loc, report)

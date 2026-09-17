@@ -29,7 +29,7 @@ pub(crate) fn apply_grammar_mutated<R: Rng>(
                     Some(r) => match vocab.with_grammar_rule(r, lang) {
                         Ok((mutated, grammar_description)) => {
                             let grammar_title = grammar_card
-                                .title(lang)
+                                .pattern(lang)
                                 .map(|q| q.text().to_string())
                                 .unwrap_or_else(|_| grammar_card.rule_id().to_string());
                             let grammar_info = GrammarInfo::new(

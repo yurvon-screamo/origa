@@ -109,13 +109,6 @@ pub fn get_rule_by_id(rule_id: &Ulid) -> Option<&'static GrammarRule> {
     GRAMMAR_RULES.get()?.iter().find(|x| x.rule_id() == rule_id)
 }
 
-pub fn get_rule_by_title(title: &str) -> Option<&'static GrammarRule> {
-    GRAMMAR_RULES
-        .get()?
-        .iter()
-        .find(|x| x.content.values().any(|c| c.title() == title))
-}
-
 pub fn iter_grammar_rules() -> impl Iterator<Item = &'static GrammarRule> {
     GRAMMAR_RULES
         .get()
@@ -274,7 +267,15 @@ impl RelatedPattern {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrammarRuleContent {
+    /// Legacy fused form: `pattern（qualifier）`. Kept for already-released
+    /// clients reading the grammar store; new code must use [`Self::pattern`].
     title: String,
+    /// The bare Japanese pattern without the qualifier parentheses
+    /// (`～も`, not `～も（тоже・даже）`). Migrated into the store by
+    /// `scripts/add_grammar_pattern.py`; falls back to splitting `title`
+    /// for stores predating the migration.
+    #[serde(default)]
+    pattern: String,
     short_description: String,
     explanation: String,
     how_to_form: String,
@@ -287,12 +288,58 @@ pub struct GrammarRuleContent {
     related_patterns: Vec<RelatedPattern>,
 }
 
+impl GrammarRuleContent {
+    /// The bare Japanese pattern (`～も`), with the legacy qualifier
+    /// parentheses stripped. Prefers the migrated `pattern` field and
+    /// falls back to splitting the legacy `title` for old stores.
+    pub fn pattern(&self) -> &str {
+        if self.pattern.is_empty() {
+            split_legacy_title_pattern(&self.title)
+        } else {
+            &self.pattern
+        }
+    }
+}
+
+/// Runtime twin of the deploy validator's trailing-qualifier rule: strips
+/// TRAILING parenthetical groups of either width from a legacy fused
+/// title. Inner groups (`（よ）` optionality) stay — they are part of the
+/// pattern, not glosses. Returns a prefix slice of `title`.
+fn split_legacy_title_pattern(title: &str) -> &str {
+    let mut pattern = title;
+    loop {
+        let Some(stripped) = strip_trailing_group(pattern.trim_end()) else {
+            return pattern.trim_end();
+        };
+        if stripped.trim_end().is_empty() {
+            return title; // a group ate everything: not a qualifier, bail out
+        }
+        pattern = stripped.trim_end();
+    }
+}
+
+/// Prefix of `s` without its trailing parenthetical group, full-width or
+/// ASCII. `None` when the string does not end with a closed group.
+fn strip_trailing_group(s: &str) -> Option<&str> {
+    let (closer, opener) = if s.ends_with('）') {
+        ('）', '（')
+    } else if s.ends_with(')') {
+        (')', '(')
+    } else {
+        return None;
+    };
+    let body = &s[..s.len() - closer.len_utf8()];
+    let open = body.rfind(opener)?;
+    Some(&s[..open])
+}
+
 /// Terminal fallback for [`GrammarRule::content`]: a rule whose content map
 /// is completely empty resolves here instead of panicking. All accessors
 /// return empty strings/sets, which callers translate into
 /// `GrammarContentNotFound` errors.
 static EMPTY_GRAMMAR_CONTENT: GrammarRuleContent = GrammarRuleContent {
     title: String::new(),
+    pattern: String::new(),
     short_description: String::new(),
     explanation: String::new(),
     how_to_form: String::new(),
@@ -594,6 +641,7 @@ impl GrammarRuleContent {
         related_patterns: Vec<RelatedPattern>,
     ) -> Self {
         Self {
+            pattern: split_legacy_title_pattern(&title).to_string(),
             title,
             short_description,
             explanation,
@@ -650,6 +698,96 @@ mod tests {
     #[test]
     fn grammar_rules_should_not_be_loaded_before_init() {
         assert!(!is_grammar_loaded());
+    }
+
+    #[test]
+    fn pattern_field_wins_over_legacy_title_split() {
+        let content = GrammarRuleContent::new(
+            "～も（тоже・даже）".to_string(),
+            "тоже, также, даже".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            Nuances::EMPTY,
+            String::new(),
+            Vec::new(),
+        );
+        assert_eq!(content.pattern(), "～も");
+    }
+
+    #[test]
+    fn pattern_falls_back_to_splitting_legacy_title() {
+        let mut content = GrammarRuleContent::new(
+            "～の（номинализация）".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            Nuances::EMPTY,
+            String::new(),
+            Vec::new(),
+        );
+        content.pattern = String::new(); // store predating the migration
+        assert_eq!(content.pattern(), "～の");
+    }
+
+    #[test]
+    fn pattern_without_qualifier_is_the_title_itself() {
+        let content = GrammarRuleContent::new(
+            "～は～です".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            Nuances::EMPTY,
+            String::new(),
+            Vec::new(),
+        );
+        assert_eq!(content.pattern(), "～は～です");
+    }
+
+    #[test]
+    fn pattern_fallback_handles_ascii_parens_and_unclosed_groups() {
+        let mut content = GrammarRuleContent::new(
+            "～たら(if…then)".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            Nuances::EMPTY,
+            String::new(),
+            Vec::new(),
+        );
+        content.pattern = String::new();
+        assert_eq!(content.pattern(), "～たら");
+
+        let mut unclosed = content.clone();
+        unclosed.title = "～（よ）うにも～ない".to_string();
+        unclosed.pattern = String::new();
+        // Trailing group must be last AND closed; here the paren is inner,
+        // so nothing is stripped.
+        assert_eq!(unclosed.pattern(), "～（よ）うにも～ない");
+    }
+
+    #[test]
+    fn pattern_fallback_keeps_degenerate_paren_only_title_intact() {
+        // Divergence from the Python validator twin is intentional: a
+        // degenerate title that is ONLY a qualifier group yields an empty
+        // pattern, which the deploy validator rejects at upload time
+        // (fail-loud for data); the runtime fallback bails out and keeps
+        // the full title so a legacy store still renders something.
+        let mut content = GrammarRuleContent::new(
+            "（тоже）".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            Nuances::EMPTY,
+            String::new(),
+            Vec::new(),
+        );
+        content.pattern = String::new();
+        assert_eq!(content.pattern(), "（тоже）");
     }
 }
 

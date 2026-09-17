@@ -101,7 +101,7 @@ pub(super) fn TrainingAnswerSlide(
                             .into_any()
                     },
                     AcquaintanceSlideData::Grammar {
-                        title,
+                        pattern,
                         short_description,
                         examples,
                         ..
@@ -114,14 +114,14 @@ pub(super) fn TrainingAnswerSlide(
                         let example = first_example_markdown(&examples);
                         let front_was_pattern = example.is_none();
                         let examples_stored = StoredValue::new(example.unwrap_or_default());
-                        let title_stored = StoredValue::new(title);
+                        let pattern_stored = StoredValue::new(pattern);
                         view! {
                             <h2 class="font-serif text-2xl text-[var(--fg-black)]">
                                 {short_description.clone()}
                             </h2>
                             <Show when=move || !front_was_pattern>
                                 <p class="font-mono text-sm text-[var(--fg-muted)]">
-                                    {title_stored.get_value()}
+                                    {pattern_stored.get_value()}
                                 </p>
                             </Show>
                             <Show when=move || !front_was_pattern>

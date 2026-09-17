@@ -39,7 +39,7 @@ pub fn GrammarCardItem(
         let lang = native_language.get();
         match study_card_for_title.card() {
             DomainCard::Grammar(grammar) => grammar
-                .title(&lang)
+                .pattern(&lang)
                 .ok()
                 .map(|t| t.text().to_string())
                 .unwrap_or_default(),
