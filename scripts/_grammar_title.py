@@ -40,6 +40,8 @@ SHORT_PATTERN_MAX_CHARS = 2
 
 _FULLWIDTH_PARENS_RE = re.compile(r"（([^（]*)）")
 _ASCII_PARENS_RE = re.compile(r"\(([^()]*)\)")
+# A qualifier group must END the title (full-width or ASCII parens).
+_TRAILING_QUALIFIER_RE = re.compile(r"(?:（[^）]*）|\([^()]*\))\s*$")
 _PATTERN_LEADING_TILDE_RE = re.compile(r"^[～〜\s]+")
 _PATTERN_INNER_TILDE_RE = re.compile(r"[～〜・]")
 _PATTERN_DECOR_RE = re.compile(r"[\s/／]")
@@ -61,6 +63,22 @@ def split_title(title: str) -> tuple[str, str]:
         return title, ""
     last = max(matches, key=lambda m: m.start())
     return title[: last.start()] + title[last.end() :], last.group(1)
+
+
+def strip_trailing_qualifiers(title: str) -> str:
+    """The title with its TRAILING parenthetical groups removed.
+
+    Inner groups (`（よ）` optionality, `（さ）` partial forms) are part of
+    the grammar pattern and stay. This is the canonical rule behind the
+    `pattern` field (#503 UX schema) — the migration script and the deploy
+    validator both delegate here.
+    """
+    pattern = title
+    while True:
+        match = _TRAILING_QUALIFIER_RE.search(pattern)
+        if not match:
+            return pattern
+        pattern = pattern[: match.start()].rstrip()
 
 
 def normalize_pattern(pattern: str) -> str:

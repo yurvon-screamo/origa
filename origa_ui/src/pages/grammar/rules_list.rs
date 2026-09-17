@@ -26,7 +26,7 @@ pub fn RulesList(
             .iter()
             .filter(|rule| {
                 let content = rule.content(&native_language);
-                content.title().to_lowercase().contains(&query)
+                content.pattern().to_lowercase().contains(&query)
                     || content.short_description().to_lowercase().contains(&query)
             })
             .copied()

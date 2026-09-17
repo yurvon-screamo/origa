@@ -267,6 +267,26 @@ pub fn start_dictionary_loading(
             return;
         }
 
+        // One-time v3 grammar card migration (#503 content pass): the
+        // corpus swap deletes rules that released clients may still hold
+        // cards for. Transfer merge twins onto their survivors, drop the
+        // rest — idempotent, so a re-run after any reload is a no-op.
+        spawn_local({
+            let repository = repository.clone();
+            async move {
+                match origa::use_cases::MigrateGrammarCardsUseCase::new()
+                    .execute(&repository)
+                    .await
+                {
+                    Ok(report) if report.total() > 0 => {
+                        tracing::info!(?report, "Grammar v3 card migration")
+                    },
+                    Ok(_) => {},
+                    Err(e) => tracing::warn!("Grammar card migration failed: {e}"),
+                }
+            }
+        });
+
         // Background tokenizer warmup (#521): the dictionary left the
         // overlay, but content-creation flows (add word, set imports)
         // still need it — so the warmup starts HERE, in parallel with the

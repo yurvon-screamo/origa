@@ -488,7 +488,7 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
             }
             .into_any(),
             AcquaintanceSlideData::Grammar {
-                title,
+                pattern,
                 short_description,
                 how_to_form,
                 examples,
@@ -497,7 +497,7 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                 ..
             } => view! {
                 <GrammarSlide
-                    title=title.clone()
+                    pattern=pattern.clone()
                     short_description=short_description.clone()
                     how_to_form=how_to_form.clone()
                     examples=examples.clone()
@@ -618,7 +618,7 @@ fn KanjiSlide(
 #[component]
 #[allow(clippy::too_many_arguments)]
 fn GrammarSlide(
-    title: String,
+    pattern: String,
     short_description: String,
     how_to_form: String,
     examples: String,
@@ -626,7 +626,7 @@ fn GrammarSlide(
     nuances: String,
     known_kanji: RwSignal<HashSet<char>>,
 ) -> impl IntoView {
-    let stored_title = StoredValue::new(title);
+    let stored_pattern = StoredValue::new(pattern);
     let stored_short = StoredValue::new(short_description);
     let stored_how_to = StoredValue::new(how_to_form);
     let stored_examples = StoredValue::new(examples);
@@ -643,7 +643,7 @@ fn GrammarSlide(
                 {stored_short.get_value()}
             </h2>
             <p class="font-mono text-sm text-[var(--fg-muted)]">
-                {stored_title.get_value()}
+                {stored_pattern.get_value()}
             </p>
             // Определение (explanation) идёт сразу за коротким описанием:
             // таблицы образования и примеры до объяснения не давали

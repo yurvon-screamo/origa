@@ -145,7 +145,7 @@ impl ModalState {
             .filter(|rule| {
                 let content = rule.content(&lang);
                 query.is_empty()
-                    || content.title().to_lowercase().contains(&query)
+                    || content.pattern().to_lowercase().contains(&query)
                     || content.short_description().to_lowercase().contains(&query)
             })
             .map(|rule| *rule.rule_id())

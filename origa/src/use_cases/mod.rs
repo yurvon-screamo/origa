@@ -12,6 +12,7 @@ mod extract_text_from_image;
 mod import_anki_pack;
 mod import_onboarding_sets;
 mod mark_card_as_known;
+mod migrate_grammar_cards;
 mod rate_card;
 mod rate_card_with_side_effects;
 mod seed_ready_phrases;
@@ -47,6 +48,7 @@ pub use import_anki_pack::{
 };
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
+pub use migrate_grammar_cards::{MigrateGrammarCardsUseCase, MigrationReport, migrate_user_cards};
 pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;

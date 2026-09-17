@@ -66,7 +66,7 @@ pub fn LessonCardTags(
                         .map(|info| {
                             view! {
                                 <GrammarInfoBadge
-                                    pattern=info.title().to_string()
+                                    pattern=info.pattern().to_string()
                                     meaning=info.description().to_string()
                                 />
                             }

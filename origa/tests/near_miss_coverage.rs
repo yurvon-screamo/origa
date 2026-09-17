@@ -1,6 +1,6 @@
 //! Corpus coverage for grammar quiz distractors (#503).
 //!
-//! Walks every quiz-capable chain in `cdn/grammar/grammar_v2.json` and
+//! Walks every quiz-capable chain in `cdn/grammar/grammar_v3.json` and
 //! asserts that [`origa::domain::generate_grammar_distractors`] fields
 //! three near-miss options. The only rules allowed to lose quizzes are
 //! the pinned na-adjective pair, whose kanji stems have no kana to break.
@@ -31,7 +31,7 @@ fn ensure_corpus_loaded() -> bool {
             .expect("workspace root is parent of the origa crate manifest")
             .join("cdn")
             .join("grammar")
-            .join("grammar_v2.json");
+            .join("grammar_v3.json");
         let Ok(grammar_json) = std::fs::read_to_string(&path) else {
             return;
         };

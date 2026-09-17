@@ -255,15 +255,19 @@ fn split_legacy_statement_text(joined: &str) -> (String, String) {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GrammarInfo {
     rule_id: Option<Ulid>,
-    title: String,
+    /// Bare Japanese pattern. View-only runtime structure — it is never
+    /// persisted, but `alias` keeps old serialized records with the
+    /// pre-rename `title` key parseable should that ever change.
+    #[serde(alias = "title")]
+    pattern: String,
     description: String,
 }
 
 impl GrammarInfo {
-    pub fn new(rule_id: Option<Ulid>, title: String, description: String) -> Self {
+    pub fn new(rule_id: Option<Ulid>, pattern: String, description: String) -> Self {
         Self {
             rule_id,
-            title,
+            pattern,
             description,
         }
     }
@@ -272,8 +276,8 @@ impl GrammarInfo {
         self.rule_id
     }
 
-    pub fn title(&self) -> &str {
-        &self.title
+    pub fn pattern(&self) -> &str {
+        &self.pattern
     }
 
     pub fn description(&self) -> &str {

@@ -128,7 +128,7 @@ pub(super) fn TrainingFrontSlide(
                         <p class="font-serif text-6xl text-[var(--fg-black)]">{kanji}</p>
                     }
                         .into_any(),
-                    AcquaintanceSlideData::Grammar { title, examples, .. } => {
+                    AcquaintanceSlideData::Grammar { pattern, examples, .. } => {
                         // Пустые examples — фронт вырождается в заголовок
                         // конструкции («знак» правила, не смысл).
                         // TranslatorText — тот же компонент, что во фразах:
@@ -137,7 +137,7 @@ pub(super) fn TrainingFrontSlide(
                         // фронта их не рендерит).
                         let front = grammar_example_front(&examples)
                             .map(|line| strip_emphasis_markers(&line))
-                            .unwrap_or_else(|| title.clone());
+                            .unwrap_or_else(|| pattern.clone());
                         let native_lang: Signal<NativeLanguage> = ctx.native_language.into();
                         let front_class = "font-serif text-3xl text-[var(--fg-black)] leading-relaxed";
                         view! {

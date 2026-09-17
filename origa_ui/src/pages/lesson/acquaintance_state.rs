@@ -148,7 +148,7 @@ pub enum AcquaintanceSlideData {
     },
     Grammar {
         card_id: Ulid,
-        title: String,
+        pattern: String,
         short_description: String,
         how_to_form: String,
         examples: String,

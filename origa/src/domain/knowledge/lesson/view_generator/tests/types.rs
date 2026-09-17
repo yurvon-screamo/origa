@@ -7,7 +7,7 @@ use ulid::Ulid;
 #[test]
 fn grammar_info_new_creates_instance() {
     let info = GrammarInfo::new(None, "Title".to_string(), "Description".to_string());
-    assert_eq!(info.title(), "Title");
+    assert_eq!(info.pattern(), "Title");
     assert_eq!(info.description(), "Description");
 }
 
@@ -35,7 +35,7 @@ fn grammar_info_returns_correct_data() {
         "て-form".to_string(),
         "Форма для соединения глаголов".to_string(),
     );
-    assert_eq!(info.title(), "て-form");
+    assert_eq!(info.pattern(), "て-form");
     assert_eq!(info.description(), "Форма для соединения глаголов");
 }
 
@@ -150,7 +150,7 @@ mod lesson_card_view_accessors {
         };
         let result = view.grammar_info().unwrap();
         assert_eq!(result.rule_id(), Some(rule_id));
-        assert_eq!(result.title(), "Title");
+        assert_eq!(result.pattern(), "Title");
         assert_eq!(result.description(), "Desc");
     }
 

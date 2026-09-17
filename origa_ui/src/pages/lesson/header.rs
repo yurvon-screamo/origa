@@ -180,10 +180,10 @@ fn acquaintance_slide_subject(
         } => (word.clone(), translations.join(", ")),
         AcquaintanceSlideData::Kanji { kanji, name, .. } => (kanji.clone(), name.clone()),
         AcquaintanceSlideData::Grammar {
-            title,
+            pattern,
             short_description,
             ..
-        } => (title.clone(), short_description.clone()),
+        } => (pattern.clone(), short_description.clone()),
     };
     Some(FeedbackSubject {
         surface,

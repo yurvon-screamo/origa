@@ -42,8 +42,10 @@ impl GrammarRuleCard {
         &self.rule_id
     }
 
-    pub fn title(&self, lang: &NativeLanguage) -> Result<Question, OrigaError> {
-        get_content!(self, lang, title, Question::new)
+    /// The bare Japanese pattern (`～も` without the qualifier gloss) — the
+    /// card's question surface, i.e. the "sign" of the rule.
+    pub fn pattern(&self, lang: &NativeLanguage) -> Result<Question, OrigaError> {
+        get_content!(self, lang, pattern, Question::new)
     }
 
     pub fn description(&self, lang: &NativeLanguage) -> Result<CardAnswer, OrigaError> {
@@ -131,7 +133,7 @@ mod tests {
     static INIT: Once = Once::new();
 
     // Single source of truth for the test grammar corpus location:
-    // <workspace_root>/cdn/grammar/grammar_v2.json (schema v2)
+    // <workspace_root>/cdn/grammar/grammar_v3.json (schema v2)
     fn grammar_json_path() -> Option<std::path::PathBuf> {
         let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").ok()?;
         Some(
@@ -139,7 +141,7 @@ mod tests {
                 .parent()?
                 .join("cdn")
                 .join("grammar")
-                .join("grammar_v2.json"),
+                .join("grammar_v3.json"),
         )
     }
 
@@ -275,10 +277,10 @@ mod tests {
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
-            let title = card.title(&NativeLanguage::Russian);
+            let pattern = card.pattern(&NativeLanguage::Russian);
 
-            assert!(title.is_ok());
-            assert!(!title.unwrap().text().is_empty());
+            assert!(pattern.is_ok());
+            assert!(!pattern.unwrap().text().is_empty());
         }
 
         #[test]
@@ -288,62 +290,52 @@ mod tests {
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
-            let title = card.title(&NativeLanguage::English);
+            let pattern = card.pattern(&NativeLanguage::English);
 
-            assert!(title.is_ok());
-            assert!(!title.unwrap().text().is_empty());
-        }
-
-        /// Strips the （qualifier） part of a title, keeping the pattern.
-        /// Manual split — the `regex` crate is forbidden in this workspace.
-        fn title_pattern(title: &str) -> &str {
-            if let Some(start) = title.find('（').or_else(|| title.find('(')) {
-                &title[..start]
-            } else {
-                title
-            }
+            assert!(pattern.is_ok());
+            assert!(!pattern.unwrap().text().is_empty());
         }
 
         /// Title convention (grammar title pass, #501): the pattern part of
-        /// a title is identical across locales; only the （qualifier） is
-        /// localized (EN: `～の（nominalizer）`, RU: `～の（номинализация）`).
+        /// a title is identical across locales. The `pattern` field makes
+        /// that contract direct — no manual split needed.
         #[test]
-        fn title_pattern_equal_across_languages() {
+        fn pattern_equal_across_languages() {
             init_test_grammar();
 
             for rule in iter_grammar_rules() {
-                let english = rule.content(&NativeLanguage::English).title();
-                let russian = rule.content(&NativeLanguage::Russian).title();
+                let english = rule.content(&NativeLanguage::English).pattern();
+                let russian = rule.content(&NativeLanguage::Russian).pattern();
                 assert_eq!(
-                    title_pattern(english),
-                    title_pattern(russian),
-                    "title pattern must match across locales for rule {}",
+                    english,
+                    russian,
+                    "pattern must match across locales for rule {}",
                     rule.rule_id()
                 );
             }
         }
 
         #[test]
-        fn title_qualifier_localized_across_languages() {
+        fn pattern_is_bare_while_sd_disambiguates() {
             init_test_grammar();
 
-            // Fixture: the ～の pair disambiguated in the title pass — its
-            // qualifiers are localized, so full titles legitimately differ.
-            // (The #503 UX content pass strips glosses only from long
-            // patterns; ～の is short, so its qualifier stays REQUIRED by
-            // the title convention.)
+            // Fixture: the ～の pair. The legacy title still carries its
+            // localized qualifiers (short pattern → qualifier required by
+            // the #501 convention), but the `pattern` field is the bare
+            // locale-independent form and short_description carries the
+            // disambiguation.
             let rule_id = Ulid::from_string("01G00000000000000018000000").expect("Invalid ULID");
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
 
-            let russian_title = card.title(&NativeLanguage::Russian).unwrap();
-            let english_title = card.title(&NativeLanguage::English).unwrap();
+            let russian_pattern = card.pattern(&NativeLanguage::Russian).unwrap();
+            let english_pattern = card.pattern(&NativeLanguage::English).unwrap();
 
-            assert_eq!(title_pattern(russian_title.text()), "～の");
-            assert_eq!(title_pattern(english_title.text()), "～の");
+            assert_eq!(russian_pattern.text(), "～の");
+            assert_eq!(english_pattern.text(), "～の");
             assert_ne!(
-                russian_title.text(),
-                english_title.text(),
-                "localized qualifiers must differ for the disambiguated ～の rule"
+                card.short_description(&NativeLanguage::Russian).unwrap(),
+                card.short_description(&NativeLanguage::English).unwrap(),
+                "short_description carries the localization now"
             );
         }
     }

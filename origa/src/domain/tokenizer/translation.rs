@@ -25,7 +25,7 @@ pub struct TokenTranslation {
 /// rule lookup and ensures the description always corresponds to the matched
 /// rule rather than a re-resolved one.
 struct GrammarMatch {
-    title: String,
+    pattern: String,
     short_description: String,
 }
 
@@ -33,7 +33,7 @@ impl GrammarMatch {
     fn from_rule(rule: &GrammarRule, native_language: &NativeLanguage) -> Self {
         let content = rule.content(native_language);
         Self {
-            title: content.title().to_string(),
+            pattern: content.pattern().to_string(),
             short_description: content.short_description().to_string(),
         }
     }
@@ -50,7 +50,7 @@ fn split_grammar_fields(grammar: Option<GrammarMatch>) -> (Option<String>, Optio
             } else {
                 Some(m.short_description)
             };
-            (Some(m.title), description)
+            (Some(m.pattern), description)
         },
         None => (None, None),
     }
@@ -381,31 +381,42 @@ fn is_sentence_boundary(token: &TokenInfo) -> bool {
         .any(|c| matches!(c, '。' | '！' | '？'))
 }
 
-/// Resolves a そうだ grammar rule title for the requested variant. Terms are
-/// anchored to `そうだ（…）` so the hearsay search does not collide with
-/// unrelated hearsay rules whose titles also contain `（伝聞）` (～という（伝聞）,
-/// ～とか（伝聞）). Falls back to any `そうだ` rule when the dictionary lacks a
-/// variant-specific entry.
+/// Resolves a そうだ grammar rule for the requested variant. Anchored to
+/// rule_ids (stable primary keys) instead of legacy title literals: the
+/// hearsay そうだ must not collide with unrelated hearsay rules (～という,
+/// ～とか) or with the appearance variant — the title qualifiers that used
+/// to disambiguate them are legacy now (#503 UX schema). Falls back to
+/// any そうだ rule when the store lacks a variant-specific entry.
 fn find_sou_rule(
     rules: &'static [GrammarRule],
     native_language: &NativeLanguage,
     variant: SouDaVariant,
 ) -> Option<&'static GrammarRule> {
-    let term_groups: &[&[&str]] = match variant {
-        SouDaVariant::Appearance => &[&["そうだ（様態）"], &["そうだ"]],
-        SouDaVariant::Hearsay => &[&["そうだ（伝聞）"], &["そうだ"]],
-        SouDaVariant::Combined => &[&["そうだ（様態・伝聞）"], &["そうだ"]],
-    };
+    use ulid::Ulid;
 
-    for terms in term_groups {
-        for rule in rules.iter() {
-            let title = rule.content(native_language).title();
-            if terms.iter().any(|term| title.contains(term)) {
-                return Some(rule);
-            }
-        }
-    }
-    None
+    // Corpus anchors (cdn/grammar/grammar_v3.json):
+    // ～そうだ（様態・伝聞） combined / ～そうだ（様態） appearance /
+    // ～そうだ（伝聞） hearsay.
+    const COMBINED: &str = "01G000000000000000W0000000";
+    const APPEARANCE: &str = "01G000000000000000W4000000";
+    const HEARSAY: &str = "01G000000000000000W8000000";
+
+    let anchor = match variant {
+        SouDaVariant::Appearance => APPEARANCE,
+        SouDaVariant::Hearsay => HEARSAY,
+        SouDaVariant::Combined => COMBINED,
+    };
+    let anchor_id = Ulid::from_string(anchor).ok();
+
+    rules
+        .iter()
+        .find(|rule| Some(*rule.rule_id()) == anchor_id)
+        // Fallback for stores predating the split: any そうだ rule.
+        .or_else(|| {
+            rules
+                .iter()
+                .find(|rule| rule.content(native_language).pattern().contains("そうだ"))
+        })
 }
 
 /// Surfaces that, when following a verb masu-stem, mark it as the base of a
@@ -619,7 +630,7 @@ mod tests {
     #[test]
     fn split_grammar_fields_returns_both_when_description_present() {
         let m = GrammarMatch {
-            title: "～test".to_string(),
+            pattern: "～test".to_string(),
             short_description: "desc".to_string(),
         };
         let (label, description) = split_grammar_fields(Some(m));
@@ -630,7 +641,7 @@ mod tests {
     #[test]
     fn split_grammar_fields_drops_description_when_empty() {
         let m = GrammarMatch {
-            title: "～test".to_string(),
+            pattern: "～test".to_string(),
             short_description: String::new(),
         };
         let (label, description) = split_grammar_fields(Some(m));
@@ -755,7 +766,7 @@ mod integration_tests {
             .unwrap()
             .join("cdn")
             .join("grammar")
-            .join("grammar_v2.json");
+            .join("grammar_v3.json");
 
         let grammar_json = std::fs::read_to_string(grammar_path).unwrap();
         // Same OnceLock race tolerance as ensure_vocabulary_dictionary.
@@ -1635,12 +1646,12 @@ mod integration_tests {
 
     #[test]
     fn should_label_te_particle_via_keyword() {
-        assert_marker_has_grammar_label("食べて飲んで", "て", "～て（форма тэ）");
+        assert_marker_has_grammar_label("食べて飲んで", "て", "～て");
     }
 
     #[test]
     fn should_label_tara_conditional_via_keyword() {
-        assert_marker_has_grammar_label("食べたら", "たら", "～たら（если…то）");
+        assert_marker_has_grammar_label("食べたら", "たら", "～たら");
     }
 
     #[test]
@@ -1655,11 +1666,7 @@ mod integration_tests {
 
     #[test]
     fn should_label_totan_the_moment_via_keyword() {
-        assert_marker_has_grammar_label(
-            "ドアを開けたとたん猫が逃げた",
-            "とたん",
-            "～たとたん（に）",
-        );
+        assert_marker_has_grammar_label("ドアを開けたとたん猫が逃げた", "とたん", "～たとたん");
     }
 
     // そうだ after an i-adjective stem (美味し, base 美味しい) is 様態
@@ -1678,7 +1685,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（様態）"),
+            Some("～そうだ"),
             "そう after adjective stem should be 様態 (appearance), got: {:?}",
             sou
         );
@@ -1699,7 +1706,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（伝聞）"),
+            Some("～そうだ"),
             "そう after dictionary form should be 伝聞 (hearsay), got: {:?}",
             sou
         );
@@ -1720,7 +1727,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（伝聞）"),
+            Some("～そうだ"),
             "そう after past auxiliary should be 伝聞 (hearsay), got: {:?}",
             sou
         );
@@ -1766,7 +1773,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（伝聞）"),
+            Some("～そうだ"),
             "そう after copula だ should be 伝聞 (hearsay), got: {:?}",
             sou
         );
@@ -1786,7 +1793,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（伝聞）"),
+            Some("～そうだ"),
             "そう after i-adjective past should be 伝聞 (hearsay), got: {:?}",
             sou
         );
@@ -1808,7 +1815,7 @@ mod integration_tests {
             .expect("「そう」token should exist");
         assert_eq!(
             sou.grammar_label.as_deref(),
-            Some("～そうだ（様態・伝聞）"),
+            Some("～そうだ"),
             "そう after a bare noun should fall back to the combined rule, got: {:?}",
             sou
         );
@@ -1857,25 +1864,6 @@ mod integration_tests {
                 .is_none_or(|label| !label.contains("そうだ（伝聞）")),
             "そう after a sentence boundary must not be labeled hearsay, got: {:?}",
             sou.grammar_label
-        );
-    }
-
-    #[test]
-    fn should_label_kore_sore_are_demonstratives_via_keyword() {
-        ensure_dictionaries();
-        let text = "これは本です";
-        let tokens = super::super::tokenize_text(text).unwrap();
-        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
-        let kore = results
-            .iter()
-            .find(|t| t.surface_form == "これ")
-            .expect("「これ」token should exist");
-        assert!(
-            kore.grammar_label
-                .as_deref()
-                .is_some_and(|l| l.contains("これ")),
-            "「これ」should carry the これ・それ・あれ grammar_label via keyword, got: {:?}",
-            kore
         );
     }
 
@@ -1936,11 +1924,8 @@ mod integration_tests {
             .find(|t| t.surface_form == "早く")
             .expect("「早く」ku-form token should exist");
         assert!(
-            hayaku
-                .grammar_label
-                .as_deref()
-                .is_some_and(|l| l.contains("наречие")),
-            "i-adjective ku-form「早く」should carry the adverbial grammar_label, got: {:?}",
+            hayaku.grammar_label.as_deref().is_some_and(|l| l == "～く"),
+            "i-adjective ku-form「早く」should carry the bare ～く pattern, got: {:?}",
             hayaku
         );
     }

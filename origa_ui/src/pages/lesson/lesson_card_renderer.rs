@@ -26,7 +26,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 Card::Grammar(grc) => {
                     let lang = native_language.get();
                     let title = grc
-                        .title(&lang)
+                        .pattern(&lang)
                         .ok()
                         .map(|q| q.text().to_string())
                         .unwrap_or_default();

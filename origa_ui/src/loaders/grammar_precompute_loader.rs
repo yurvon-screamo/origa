@@ -10,7 +10,7 @@ use origa::traits::CdnProvider;
 use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
 
-pub const GRAMMAR_PRECOMPUTE_PATH: &str = "grammar/grammar_precompute.rkyv";
+pub const GRAMMAR_PRECOMPUTE_PATH: &str = "grammar/grammar_precompute_v3.rkyv";
 const GRAMMAR_SOURCES: [&str; 2] = ["grammar/grammar_v2.json", "grammar/grammar_ko_vi.json"];
 
 pub async fn load_grammar_precompute() -> Result<(), OrigaError> {

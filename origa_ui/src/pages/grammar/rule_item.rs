@@ -16,7 +16,7 @@ pub fn RuleItem(
     let rule_id = *rule.rule_id();
     let is_selected = move || selected_ids.get().contains(&rule_id);
     let content = rule.content(&native_language);
-    let title = content.title().to_string();
+    let title = content.pattern().to_string();
     let short_description = content.short_description().to_string();
 
     let on_click = move |_| {

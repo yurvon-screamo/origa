@@ -2343,7 +2343,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "～は～です".to_string(),
+            pattern: "～は～です".to_string(),
             short_description: "утверждение с です".to_string(),
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
@@ -2384,7 +2384,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "～は～です".to_string(),
+            pattern: "～は～です".to_string(),
             short_description: "утверждение с です".to_string(),
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
@@ -2436,7 +2436,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "～たことがある".to_string(),
+            pattern: "～たことがある".to_string(),
             short_description: "опыт".to_string(),
             how_to_form: String::new(),
             examples: String::new(),
@@ -3079,7 +3079,7 @@ mod acquaintance_presentation {
             .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "ぜひ".to_string(),
+            pattern: "ぜひ".to_string(),
             short_description: "наречие".to_string(),
             how_to_form: String::new(),
             examples: String::new(),
@@ -3130,7 +3130,7 @@ mod acquaintance_presentation {
             .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
-            title: "～は～です".to_string(),
+            pattern: "～は～です".to_string(),
             short_description: "Базовый паттерн".to_string(),
             how_to_form: "| Элемент |".to_string(),
             examples: "```\n私は学生です。\n```".to_string(),
