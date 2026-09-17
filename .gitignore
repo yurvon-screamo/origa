@@ -102,3 +102,5 @@ packaging/flatpak/flatpak-manifest.generated.yml
 
 # desloper --setup vendor scanners (AI-slop audit tooling, not shipped)
 /vendors/
+
+*.flatpak

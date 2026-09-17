@@ -106,20 +106,25 @@ pub(super) fn TrainingAnswerSlide(
                         examples,
                         ..
                     } => {
-                        // Фронт — JP-пример; при пустых examples фронт был
-                        // заголовком конструкции, и ответ не дублирует его.
+                        // Фронт — JP-пример; при пустых examples фронт —
+                        // паттерн («знак правила», training_front), и ответ
+                        // не дублирует его. Заголовок ответа — локализованное
+                        // описание (sd), паттерн — вторичная mono-строка
+                        // (#503 UX иерархия).
                         let example = first_example_markdown(&examples);
-                        let front_was_title = example.is_none();
+                        let front_was_pattern = example.is_none();
                         let examples_stored = StoredValue::new(example.unwrap_or_default());
                         let title_stored = StoredValue::new(title);
                         view! {
-                            <Show when=move || !front_was_title>
-                                <h2 class="font-serif text-2xl text-[var(--fg-black)]">
+                            <h2 class="font-serif text-2xl text-[var(--fg-black)]">
+                                {short_description.clone()}
+                            </h2>
+                            <Show when=move || !front_was_pattern>
+                                <p class="font-mono text-sm text-[var(--fg-muted)]">
                                     {title_stored.get_value()}
-                                </h2>
+                                </p>
                             </Show>
-                            <p class="font-mono text-sm">{short_description}</p>
-                            <Show when=move || !front_was_title>
+                            <Show when=move || !front_was_pattern>
                                 <MarkdownText
                                     content=Signal::derive(move || {
                                         example_fences_to_paragraphs(

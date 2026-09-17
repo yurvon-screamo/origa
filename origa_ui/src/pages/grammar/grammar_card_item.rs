@@ -71,14 +71,14 @@ pub fn GrammarCardItem(
                 </Tag>
             </div>
             <A href=format!("/grammar/{}", card_id) attr:class="grammar-card-link">
+                <Show when=move || !short_description.get().is_empty()>
+                    <div class="grammar-card-content">
+                        <p class="grammar-card-heading">{move || short_description.get()}</p>
+                    </div>
+                </Show>
                 <div class="grammar-card-rule-box">
                     <FuriganaText text=title.get_untracked() known_kanji=known_kanji/>
                 </div>
-                <Show when=move || !short_description.get().is_empty()>
-                    <div class="grammar-card-content">
-                        <p class="grammar-card-short-desc">{move || short_description.get()}</p>
-                    </div>
-                </Show>
             </A>
             <div class="grammar-card-divider"></div>
             <div class="grammar-card-footer">

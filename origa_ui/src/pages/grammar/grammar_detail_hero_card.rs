@@ -15,15 +15,17 @@ pub fn GrammarDetailHeroCard(
     view! {
         <div class="grammar-detail-hero-card">
             <div class="grammar-detail-hero-header">
+                <Show when=move || !short_description.get().is_empty()>
+                    <div class="grammar-detail-hero-meaning">
+                        {move || short_description.get()}
+                    </div>
+                </Show>
                 <div class="grammar-detail-hero-form">
                     <FuriganaText
                         text=title_stored.get_value()
                         known_kanji=known_kanji_stored.get_value()
                     />
                 </div>
-                <Show when=move || !short_description.get().is_empty()>
-                    <div class="grammar-detail-hero-meaning">{short_description}</div>
-                </Show>
                 <div class="grammar-detail-hero-badge">
                     <Tag variant=tag_variant>{tag_label}</Tag>
                 </div>
