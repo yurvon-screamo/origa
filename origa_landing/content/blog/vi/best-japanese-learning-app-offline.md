@@ -5,7 +5,7 @@ locale: vi
 meta_title: "App học tiếng Nhật offline: 'ngoại tuyến' nghĩa là gì (2026)"
 meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau: ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. App học tiếng Nhật miễn phí offline nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
 target_keywords: ["học tiếng nhật ngoại tuyến", "app học tiếng nhật offline", "app học tiếng nhật miễn phí offline", "app flashcard tiếng nhật offline"]
-lastmod: 2026-09-10
+lastmod: 2026-09-18
 published: 2026-07-21
 status: ready
 ---
@@ -82,6 +82,21 @@ Các ứng dụng này gửi từ điển trên thiết bị. Tra cứu làm vi�
 Origa được dựng để chạy ngoại tuyến đầu cuối. SRS hoạt động ngoại tuyến (lớp 1). Từ điển song ngữ trên thiết bị (lớp 2). Tạo thẻ từ ảnh hoặc ảnh chụp màn hình hoạt động ngoại tuyến (lớp 3) vì OCR (NDLOCR-Lite) chạy cục bộ (lớp 4). Speech-to-text để thêm thẻ từ âm thanh cũng chạy cục bộ. Không có cuộc gọi máy chủ trong luồng học bình thường.
 
 Nói cách khác: nếu bạn muốn học tiếng Nhật trên chuyến bay 12 tiếng không trả tiền wifi, toàn bộ tính năng của Origa hoạt động. Cái bẫy nằm trong các hạn chế dưới đây.
+
+## Bảng điểm ngoại tuyến
+
+Bốn lớp ở trên, áp dụng vào các ứng dụng trong hướng dẫn này:
+
+| Ứng dụng | 1. Ôn tập | 2. Tra cứu | 3. Thẻ mới ngoại tuyến | 4. AI trên máy |
+| --- | --- | --- | --- | --- |
+| Anki / AnkiDroid | Có | Cần add-on | Chỉ nhập tay | Không |
+| AnkiMobile | Có | Cần add-on | Chỉ nhập tay | Không |
+| Duolingo | Bài đã tải | Không | Không | Không |
+| WaniKani / Bunpro | Không (chỉ online) | Không | Không | Không |
+| Akebi / Imiwa / Shirabe Jisho | Danh sách đánh dấu, không SRS | Có | Không | Một phần |
+| Origa | Có | Có | Có, kể cả quét OCR | Có |
+
+Bảng điểm là toàn bộ câu hỏi "ứng dụng ngoại tuyến tốt nhất" trong một cái nhìn: các dòng khác nhau ít ở ngôn ngữ quảng cáo hơn là ở chỗ chúng dừng ở lớp nào.
 
 ## Bạn đánh đổi gì cho ngoại tuyến
 
