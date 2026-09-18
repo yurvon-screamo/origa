@@ -44,7 +44,7 @@ pub static CONTENT: Content = Content {
     home_faq_wanikani_question: "Origa có đồng bộ với WaniKani không?",
     home_faq_wanikani_answer: "Không trực tiếp — không có tích hợp trực tiếp. Cầu nối khả dụng là xuất dữ liệu: chuyển tiến độ WaniKani thành bộ bài Anki và nhập vào Origa. Nhiều người học giữ WaniKani cho thứ tự kanji cố định của nó và dùng Origa cho từ vựng khai thác từ những gì họ thực sự đọc.",
     home_faq_kanji_start_question: "Bắt đầu học hán tự từ đâu?",
-    home_faq_kanji_start_answer: "Từ bộ N5, xếp theo tần suất sử dụng thực của mỗi chữ, và luôn trong từ chứ không phải ký hiệu rời rạc. Blog có bảng hán tự N5 đầy đủ và danh sách PDF in được cho mọi cấp JLPT.",
+    home_faq_kanji_start_answer: "Từ bộ N5, xếp theo tần suất sử dụng thực của mỗi chữ, và luôn trong từ chứ không phải ký hiệu rời rạc. Blog có bảng hán tự N5 và danh sách PDF in được cho mọi cấp JLPT.",
     home_problem_h2: "Không phải ai cũng học qua tiếng Anh",
     home_problem_text: "Hầu hết công cụ học tiếng Nhật đều được tạo cho người nói tiếng Anh. Những người nói tiếng Việt phải dịch qua ngôn ngữ thứ hai. Origa thay đổi điều đó. Mọi từ điển, mọi giải thích ngữ pháp, mọi thành phần giao diện đều bằng ngôn ngữ của bạn ngay từ ngày đầu tiên.",
     home_features_h2: "Tất cả những gì bạn cần. Không có gì thừa.",

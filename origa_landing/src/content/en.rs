@@ -44,7 +44,7 @@ pub static CONTENT: Content = Content {
     home_faq_wanikani_question: "Does Origa sync with WaniKani?",
     home_faq_wanikani_answer: "Not directly — there is no live integration. The working bridge is export: turn your WaniKani progress into an Anki deck and import it into Origa. Many learners keep WaniKani for its fixed kanji order and use Origa for vocabulary mined from what they actually read.",
     home_faq_kanji_start_question: "Where do I start with kanji?",
-    home_faq_kanji_start_answer: "With the N5 set, ordered by how often each character is actually used, and always inside words rather than as isolated symbols. The blog has the full N5 kanji table plus printable PDF lists for every JLPT level.",
+    home_faq_kanji_start_answer: "With the N5 set, ordered by how often each character is actually used, and always inside words rather than as isolated symbols. The blog has the N5 kanji table plus printable PDF lists for every JLPT level.",
     home_problem_h2: "Five apps for one language",
     home_problem_text: "Vocabulary in Anki. Kanji in WaniKani. Grammar in Bunpro. Listening on YouTube. You stitch together five subscriptions and hope they somehow connect. Origa is one app: vocabulary, kanji, grammar, listening and 200,000+ phrases, built to work together from day one.",
     home_features_h2: "Everything you need. Nothing you don't.",
