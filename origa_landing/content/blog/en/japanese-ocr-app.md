@@ -5,7 +5,7 @@ locale: en
 meta_title: "Japanese OCR Apps Compared (2026): What Actually Works"
 meta_description: "OCR turns a photo into text, but learning Japanese from that text is a different problem. A practical comparison of general-purpose, manga-specific, and learning-integrated OCR apps."
 target_keywords: ["japanese ocr app", "japanese ocr android", "japanese ocr best", "ocr japanese to english app"]
-lastmod: 2026-07-21
+lastmod: 2026-09-18
 published: 2026-07-21
 status: ready
 ---
@@ -52,6 +52,8 @@ Most apps are built for use case 1. A smaller number handle 2. Almost none handl
 
 **Strength:** tuned for the specific problem of manga. The open-source `manga-ocr` model handles vertical text, multi-line speech bubbles, and stylized fonts better than general-purpose engines. Desktop wrappers (Poricom, YomiNinja) and browser extensions (Manga OCR for Chrome, Namida-OCR) integrate the recognition into the reading flow: select a panel, get the text.
 
+A different route through the same problem is **mokuro**: instead of recognizing panels one at a time, it preprocesses whole manga volumes into HTML pages where the text becomes selectable and hoverable. You read the result in a browser with Yomitan doing the pop-up dictionary work. It is a batch pipeline rather than an app — fiddlier to set up, but powerful for mining. **Yomu** takes the opposite approach: an iOS reading app with OCR and lookup built in, aimed at reading manga and physical pages without assembling a toolchain.
+
 **Weakness:** narrow. They work on manga, not on textbook scans or photos of real-world text. And the same retention gap applies: the OCR feeds a lookup, not an SRS, unless you've piped it into Anki via Yomitan + AnkiConnect. The manga-mining power users typically run that three-app stack. For how such a pipeline fits into actual study, see [the manga learning guide](/blog/learn-japanese-from-manga).
 
 **Use case:** manga-reading support for learners willing to configure a multi-tool pipeline. Use case 2.
@@ -61,6 +63,25 @@ Most apps are built for use case 1. A smaller number handle 2. Almost none handl
 Origa is built for use case 3: vocabulary mining. The OCR is the entry point to a card-creation pipeline: scan a photo, paste a screenshot, or photograph a textbook page. The OCR runs locally (NDLOCR-Lite on the device, no upload), extracts the words, and each one becomes a flashcard with reading, translation, audio, and the sentence it appeared in. (See [how Origa handles OCR, furigana, and vocabulary linkage](/docs/capture).)
 
 The trade-off is explicit: Origa is not a translation tool and not a dictionary lookup app. If you only want to know what a sign says once, Google Lens is faster. Origa is for the learner whose goal is to never need to look that word up again.
+
+## The tools at a glance
+
+The checklist question that separates all of these is "where does the OCR result go." Collected in one table:
+
+| Tool | Category | Where the OCR result goes |
+| --- | --- | --- |
+| Google Lens | General-purpose | Translated overlay — read once, nothing kept |
+| Apple Live Text | General-purpose | Selectable text — you carry it to another app yourself |
+| Imiwa, Nihongo | Dictionary + OCR | Dictionary entry; starred-word list at best |
+| KanjiSnap | Dictionary + OCR | Dictionary entry (recognition via Live Text) |
+| manga-ocr (model) | Manga-specific | Recognized text, for lookup and mining pipelines |
+| Poricom, YomiNinja | Manga-specific (desktop) | Panel text → lookup while reading |
+| Namida-OCR | Manga-specific (browser) | Panel text → lookup in the browser |
+| mokuro | Manga preprocessing | Whole volumes as pages with selectable text; read with Yomitan |
+| Yomu | Reading app + OCR | Manga/photo reading with built-in lookup |
+| Origa | Learning-integrated | OCR → dictionary → flashcards reviewed on an FSRS schedule |
+
+The first nine rows hand you text or a lookup. The last row is the only one where scanning feeds a review pipeline by default.
 
 ## What to look for in a Japanese OCR app
 

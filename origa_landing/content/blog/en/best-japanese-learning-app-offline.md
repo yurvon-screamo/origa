@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning Apps That Work Offline (2026)"
 meta_description: "'Offline' means different things in different apps: offline review, offline lookup, offline AI. A practical breakdown of which Japanese learning apps actually work without internet, and what you trade."
 target_keywords: ["learn japanese offline", "best app to learn japanese offline", "japanese learning app free offline", "offline japanese flashcards app"]
-lastmod: 2026-07-21
+lastmod: 2026-09-18
 published: 2026-07-21
 status: ready
 ---
@@ -81,7 +81,22 @@ These apps ship their dictionary on-device. Lookup works without a connection. M
 
 Origa was built to run offline end-to-end. The SRS works offline (layer 1). The bilingual dictionary is on-device (layer 2). Card creation from a photo or screenshot works offline (layer 3) because the OCR (NDLOCR-Lite) runs locally (layer 4). Speech-to-text for adding cards from audio also runs locally. There's no server call in the normal study flow.
 
-If you want to study Japanese on a 12-hour flight without paying for wifi, Origa's whole feature set works. The catch is in the limitations below.
+If you want to study Japanese on a 12-hour flight without paying for wifi, all of Origa works there. The catch is in the limitations below.
+
+## The offline scorecard
+
+The four layers from above, applied to the apps in this guide:
+
+| App | 1. Review | 2. Lookup | 3. New cards offline | 4. AI on device |
+| --- | --- | --- | --- | --- |
+| Anki / AnkiDroid | Yes | With add-ons | Manual entry only | No |
+| AnkiMobile | Yes | With add-ons | Manual entry only | No |
+| Duolingo | Downloaded lessons only | No | No | No |
+| WaniKani / Bunpro | No (online-only) | No | No | No |
+| Akebi / Imiwa / Shirabe Jisho | Starred list, no SRS | Yes | No | Partly |
+| Origa | Yes | Yes | Yes, incl. OCR capture | Yes |
+
+The scorecard is the whole "best offline app" question in one view: rows differ less in marketing language than in which layer they stop at.
 
 ## What you trade for offline
 

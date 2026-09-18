@@ -5,7 +5,7 @@ locale: vi
 meta_title: "So sánh ứng dụng OCR tiếng Nhật (2026): Cái nào thực sự hoạt động"
 meta_description: "OCR biến ảnh thành văn bản, nhưng học tiếng Nhật từ văn bản đó là một vấn đề khác. So sánh thực tế OCR đa năng, OCR chuyên manga, và OCR tích hợp học tập."
 target_keywords: ["ocr tiếng nhật", "app ocr tiếng nhật", "ocr nhật văn android", "nhận dạng chữ hán tự"]
-lastmod: 2026-07-21
+lastmod: 2026-09-18
 published: 2026-07-21
 status: ready
 ---
@@ -52,6 +52,8 @@ Có ba trường hợp sử dụng thực, và chúng kéo theo các hướng kh
 
 **Điểm mạnh:** chỉnh cho vấn đề cụ thể của manga. Mô hình mã nguồn mở `manga-ocr` xử lý văn bản dọc, bong bóng thoại nhiều dòng, và phông cách điệu tốt hơn các engine đa năng. Các trình bao desktop (Poricom, YomiNinja) và tiện ích trình duyệt (Manga OCR cho Chrome, Namida-OCR) tích hợp nhận dạng vào luồng đọc: chọn khung hình, nhận văn bản.
 
+Một lối khác qua cùng vấn đề là **mokuro**: thay vì nhận dạng từng khung hình một, nó tiền xử lý cả các tập manga thành trang HTML nơi văn bản trở nên chọn được. Bạn đọc kết quả trong trình duyệt, còn Yomitan đảm nhiệm từ điển pop-up. Đây là đường ống theo lô chứ không phải ứng dụng — thiết lập cầu kỳ hơn, nhưng mạnh cho việc khai thác từ. Chiều ngược lại là **Yomu**: ứng dụng đọc trên iOS có sẵn OCR và tra cứu, để đọc manga và trang giấy mà không phải tự lắp công cụ.
+
 **Điểm yếu:** hẹp. Chúng hoạt động trên manga, không trên ảnh chụp sách giáo khoa hoặc văn bản đời thực. Và cùng khoảng trống ghi nhớ áp dụng: OCR nạp tra cứu, không nạp SRS, trừ khi bạn đã dẫn nó vào Anki qua Yomitan + AnkiConnect. Những người dùng mạnh thường chạy stack ba ứng dụng đó. Cách pipeline này khớp vào việc học thật sự; xem [hướng dẫn học tiếng Nhật qua manga](/vi/blog/learn-japanese-from-manga).
 
 **Trường hợp:** hỗ trợ đọc manga cho người học sẵn sàng cấu hình đường ống đa công cụ. Trường hợp 2.
@@ -61,6 +63,25 @@ Có ba trường hợp sử dụng thực, và chúng kéo theo các hướng kh
 Origa được dựng cho trường hợp 3: khai thác từ vựng. OCR là điểm vào của đường ống tạo thẻ: quét một ảnh, dán ảnh chụp màn hình, hoặc chụp trang sách giáo khoa. OCR chạy cục bộ (NDLOCR-Lite trên thiết bị, không tải lên), trích xuất các từ, và mỗi từ trở thành một thẻ với âm đọc, dịch, âm thanh, và câu nó xuất hiện. ([Xem Origa xử lý OCR, furigana, và liên kết từ vựng thế nào](/vi/docs/capture).)
 
 Sự đánh đổi được nêu rõ: Origa không phải công cụ dịch và không phải ứng dụng tra cứu từ điển. Nếu bạn chỉ muốn biết một biển hiệu nói gì một lần, Google Lens nhanh hơn. Origa dành cho người học mục tiêu là không bao giờ phải tra từ đó lại nữa.
+
+## Các công cụ nhìn nhanh
+
+Câu hỏi checklist phân tách tất cả những công cụ này là "kết quả OCR đi về đâu." Gom lại một bảng:
+
+| Công cụ | Danh mục | Kết quả OCR đi về đâu |
+| --- | --- | --- |
+| Google Lens | Đa năng | Lớp phủ dịch — đọc một lần, không giữ lại gì |
+| Apple Live Text | Đa năng | Văn bản chọn được — bạn tự mang nó sang ứng dụng khác |
+| Imiwa, Nihongo | Từ điển + OCR | Mục từ điển; nhiều lắm là danh sách từ đánh dấu |
+| KanjiSnap | Từ điển + OCR | Mục từ điển (nhận dạng dựa trên Live Text) |
+| manga-ocr (mô hình) | Chuyên manga | Văn bản đã nhận dạng, cho pipeline tra cứu và khai thác |
+| Poricom, YomiNinja | Chuyên manga (desktop) | Văn bản khung hình → tra cứu trong lúc đọc |
+| Namida-OCR | Chuyên manga (trình duyệt) | Văn bản khung hình → tra cứu trong trình duyệt |
+| mokuro | Tiền xử lý manga | Cả tập thành trang với văn bản chọn được; đọc cùng Yomitan |
+| Yomu | Ứng dụng đọc + OCR | Đọc manga/ảnh với tra cứu tích hợp sẵn |
+| Origa | Tích hợp học tập | OCR → từ điển → thẻ ghi nhớ ôn theo lịch FSRS |
+
+Chín dòng đầu đưa bạn văn bản hoặc một lần tra cứu. Dòng cuối là dòng duy nhất nơi việc quét mặc định nạp vào đường ống ôn tập.
 
 ## Cần tìm gì trong ứng dụng OCR tiếng Nhật
 

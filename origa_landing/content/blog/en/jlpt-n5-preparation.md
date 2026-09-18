@@ -83,7 +83,7 @@ A readiness test: describe your typical day aloud in simple sentences. If "wake 
 
 **Untimed practice.** Without time pressure, practice tests always go fine. The real exam doesn't.
 
-**Late registration.** The exam runs once or twice a year (July and December; not all countries host both), seats are limited, registration opens months ahead. Check your local center's terms early.
+**Late registration.** The exam runs once or twice a year (July and December; not all countries host both), seats are limited, registration opens months ahead. Check your local center's terms early. [The 2026 dates and per-country windows](/blog/jlpt-2026-dates) are collected separately and updated each cycle.
 
 ## Limitations of Origa
 

@@ -247,6 +247,27 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "learn-japanese-from-anime",
         include_str!("../../content/blog/ru/learn-japanese-from-anime.md"),
     ),
+    // Article 13: "JLPT 2026 Dates" — all 4 locales under one slug.
+    (
+        Locale::En,
+        "jlpt-2026-dates",
+        include_str!("../../content/blog/en/jlpt-2026-dates.md"),
+    ),
+    (
+        Locale::Ru,
+        "jlpt-2026-dates",
+        include_str!("../../content/blog/ru/jlpt-2026-dates.md"),
+    ),
+    (
+        Locale::Ko,
+        "jlpt-2026-dates",
+        include_str!("../../content/blog/ko/jlpt-2026-dates.md"),
+    ),
+    (
+        Locale::Vi,
+        "jlpt-2026-dates",
+        include_str!("../../content/blog/vi/jlpt-2026-dates.md"),
+    ),
 ];
 
 static REGISTRY: OnceLock<Vec<BlogPost>> = OnceLock::new();

@@ -181,6 +181,14 @@ fn render_article(
 ) -> impl IntoView {
     let meta = ArticleMeta::compute(requested_locale, post, is_fallback);
     let article_json = article_schema(meta.canonical_locale, post, &meta.canonical);
+    // OG `article:*` times mirror the Article JSON-LD contract: the optional
+    // `published` frontmatter date (falling back to `lastmod`) for first
+    // publication, `lastmod` verbatim for the most recent edit.
+    let date_published = post
+        .frontmatter
+        .published
+        .as_deref()
+        .unwrap_or(&post.frontmatter.lastmod);
     let c = meta.canonical_locale.content();
     let breadcrumb_path = format!("/blog/{}", post.slug);
     let breadcrumb_json = breadcrumb_schema(
@@ -218,6 +226,8 @@ fn render_article(
         <Meta property="og:title" content=post.frontmatter.meta_title.clone()/>
         <Meta property="og:description" content=post.frontmatter.meta_description.clone()/>
         <Meta property="og:type" content="article"/>
+        <Meta property="article:published_time" content=date_published/>
+        <Meta property="article:modified_time" content=post.frontmatter.lastmod.clone()/>
         <Meta property="og:image" content=meta.og_image.clone()/>
         <Meta property="og:url" content=meta.canonical.clone()/>
         <Meta property="og:locale" content=meta.og_locale/>
