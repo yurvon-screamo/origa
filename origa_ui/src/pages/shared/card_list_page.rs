@@ -2,10 +2,11 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use super::{
-    CardCounts, CardStatus, DeleteRequest, Filter, FilterBtn, GroupedGrid, JlptCounts, JlptFilter,
-    JlptFilterBtn, LevelIndex, ListGrouping, LoadMoreButton, create_delete_callback,
-    create_mark_as_known_callback, create_toggle_favorite_callback, jlpt_level_idx,
-    order_cards_by_group,
+    CardCounts, CardStatus, DEFAULT_VISIBLE_COUNT, DeleteRequest, Filter, FilterBtn, FirstRunGuard,
+    GroupedGrid, JlptCounts, JlptFilter, JlptFilterBtn, LevelIndex, ListGrouping, ListPage,
+    ListUiStore, LoadMoreButton, create_delete_callback, create_mark_as_known_callback,
+    create_toggle_favorite_callback, jlpt_level_idx, order_cards_by_group,
+    restore_scroll_when_ready, track_scroll_while_authenticated,
 };
 use crate::i18n::use_i18n;
 use crate::loaders::get_jlpt_content;
@@ -149,12 +150,21 @@ pub fn create_card_list_context(
     }
 }
 
+/// Presentation config of a list view: the test-id prefix the page's
+/// hooks are keyed by, the localized empty-state message and an optional
+/// grid class override (flat pages pass their grid, grouped pages may
+/// rely on the default).
+pub struct CardListViewConfig {
+    pub test_id_prefix: &'static str,
+    pub empty_message: Signal<String>,
+    pub grid_classes: Option<&'static str>,
+}
+
 pub fn card_list_view<F>(
     ctx: CardListContext,
+    page: ListPage,
     grouping: ListGrouping,
-    test_id_prefix: &'static str,
-    empty_message: Signal<String>,
-    grid_classes: Option<&'static str>,
+    config: CardListViewConfig,
     extras: CardListExtras,
     render_card: F,
 ) -> AnyView
@@ -166,16 +176,22 @@ where
     let all_cards = ctx.all_cards;
     let native_lang = ctx.native_lang;
     let toasts = ctx.toasts;
+    let CardListViewConfig {
+        test_id_prefix,
+        empty_message,
+        grid_classes,
+    } = config;
 
-    let search = extras
-        .search
-        .unwrap_or_else(|| RwSignal::new(String::new()));
-    let filter = RwSignal::new(Filter::All);
-    // JLPT axis — only meaningful for `ListGrouping::ByJlptLevel`. For Flat
-    // pages (`/words`, `/phrases`) the row is not rendered and the filter
-    // stays at `All`, so it never affects `filtered_cards`.
-    let jlpt_filter = RwSignal::new(JlptFilter::All);
-    let visible_count: RwSignal<usize> = RwSignal::new(50);
+    // Filter/pagination signals come from the session store: they survive
+    // navigating to a detail page and back, so the list reopens exactly as
+    // the user left it. `extras.search` stays as the page-provided override
+    // (phrases injects its own signal to observe queries).
+    let list_ui = use_context::<ListUiStore>().expect("ListUiStore not provided");
+    let slot = list_ui.slot(page);
+    let search = extras.search.unwrap_or(slot.search);
+    let filter = slot.status;
+    let jlpt_filter = slot.jlpt;
+    let visible_count = slot.visible_count;
 
     // Build the card_id -> JLPT level lookup once when grouping is enabled.
     // Computed only when `all_cards` changes — NOT on every filter/search tick.
@@ -274,11 +290,18 @@ where
         counts
     });
 
+    // A filter/search change restarts the rendered slice from the first
+    // page — but not on mount: the effect always runs once on creation,
+    // and that first run would clobber the visible_count restored from
+    // the store right after remounting the page.
+    let visible_count_reset = FirstRunGuard::new();
     Effect::new(move |_| {
         let _ = search.get();
         let _ = filter.get();
         let _ = jlpt_filter.get();
-        visible_count.set(50);
+        if visible_count_reset.should_run() {
+            visible_count.set(DEFAULT_VISIBLE_COUNT);
+        }
     });
 
     let visible_cards = Memo::new(move |_| {
@@ -288,6 +311,14 @@ where
             .take(visible_count.get())
             .collect::<Vec<_>>()
     });
+
+    // Scroll persistence: track the position as the user scrolls (saving on
+    // unmount is unreliable — the browser clamps the scroll the moment the
+    // old page's DOM is detached), restore it once per mount after the
+    // rendered slice is on screen. The restored visible_count above makes
+    // the document tall enough for the saved position to land on.
+    track_scroll_while_authenticated(&slot);
+    restore_scroll_when_ready(&slot, is_loading, move || !visible_cards.get().is_empty());
 
     // Lazy-load hook (#540-В1): notify the page whenever the rendered
     // slice changes (first render, "load more", filter/search switches).

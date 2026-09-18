@@ -277,3 +277,65 @@ Then('отображается только группа грамматики у
         }
     }
 });
+
+// ─── List state persistence (filters / pagination / scroll across navigation)
+
+When('пользователь открывает детали видимой грамматической карточки', async ({ page }) => {
+    // A regular locator click would auto-scroll the target into view (often
+    // the list top), destroying the scroll position the scenario is saving.
+    // Find a card that is already FULLY inside the viewport and click it —
+    // no auto-scrolling happens for an element that is on screen.
+    const cards = page.getByTestId("grammar-card-item");
+    const total = await cards.count();
+    const viewport = page.viewportSize() ?? { width: 1280, height: 720 };
+    for (let i = 0; i < total; i++) {
+        const box = await cards.nth(i).boundingBox();
+        if (
+            box &&
+            box.y >= 0 &&
+            box.x >= 0 &&
+            box.y + box.height <= viewport.height &&
+            box.x + box.width <= viewport.width
+        ) {
+            await cards.nth(i).locator("a").first().click();
+            await page.waitForURL(/\/grammar\//, { timeout: 10_000 });
+            return;
+        }
+    }
+    throw new Error("no fully visible grammar card found in the viewport");
+});
+
+When('прокручивает список грамматики до позиции {int}', async ({ page }, y: number) => {
+    await page.evaluate((target) => window.scrollTo(0, target), y);
+    await expect
+        .poll(async () => page.evaluate(() => window.scrollY), { timeout: 5_000 })
+        .toBeGreaterThanOrEqual(y);
+});
+
+Then('позиция прокрутки грамматики восстановлена до {int}', async ({ page }, y: number) => {
+    const tolerance = 150;
+    // Two-sided tolerance: an undershoot means no restore, an overshoot
+    // past the tolerance means the native browser restoration or a height
+    // drift moved the user elsewhere — both are regressions.
+    await expect
+        .poll(
+            async () => {
+                const current = await page.evaluate(() => window.scrollY);
+                return Math.abs(current - y) <= tolerance;
+            },
+            { timeout: 10_000 },
+        )
+        .toBe(true);
+});
+
+Then('в сетке грамматики отображается более {int} карточек', async ({ page }, count: number) => {
+    await expect
+        .poll(async () => page.getByTestId("grammar-card-item").count(), { timeout: 10_000 })
+        .toBeGreaterThan(count);
+});
+
+Then('в сетке грамматики отображается ровно {int} карточек', async ({ page }, count: number) => {
+    // Falsifies a broken visible-count reset: a stale count of 100 would
+    // never shrink back to the default 50 rendered cards.
+    await expect(page.getByTestId("grammar-card-item")).toHaveCount(count, { timeout: 10_000 });
+});

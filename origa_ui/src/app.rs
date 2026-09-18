@@ -7,6 +7,7 @@ use crate::core::updater;
 use crate::feedback::FeedbackContext;
 use crate::i18n::{native_language_to_locale, use_i18n};
 use crate::pages::login::oauth_listeners::{check_url_oauth_callback, setup_oauth_listener};
+use crate::pages::shared::ListUiStore;
 use crate::repository::migrate_session_to_store_if_needed;
 use crate::routes::AppRoutes;
 use crate::store::auth_store::AuthStore;
@@ -33,6 +34,21 @@ pub fn App() -> impl IntoView {
     provide_context(offline_bundle_store);
     // Feedback channel (ADR-055): modal state + Sentry transport.
     provide_context(FeedbackContext::new());
+    // Session-scoped card list UI state (filters, pagination, scroll).
+    let list_ui_store = ListUiStore::new();
+    provide_context(list_ui_store.clone());
+
+    // Session boundary for the list UI state: when authentication ends,
+    // every list page returns to defaults. The scroll tracker is guarded by
+    // the same flag, so the previous user's position cannot be written back
+    // here. Harmless on the very first run (session not yet restored, store
+    // is already at defaults; reset is idempotent).
+    let is_authenticated = auth_store.is_authenticated();
+    Effect::new(move |_| {
+        if !is_authenticated.get() {
+            list_ui_store.reset();
+        }
+    });
 
     let i18n = use_i18n();
     let navigate = use_navigate();

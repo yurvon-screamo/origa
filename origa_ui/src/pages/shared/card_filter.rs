@@ -4,7 +4,7 @@ use crate::ui_components::{Tag, TagVariant};
 use leptos::prelude::*;
 use leptos_i18n::I18nContext;
 
-#[derive(Clone, Copy, PartialEq, Default)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum Filter {
     #[default]
     All,

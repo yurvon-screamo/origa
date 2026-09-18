@@ -2,7 +2,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use super::super::shared::{
-    CardListExtras, CardsLoadedCallback, ListGrouping, card_list_view, create_card_list_context,
+    CardListExtras, CardListViewConfig, CardsLoadedCallback, ListGrouping, ListPage, ListUiStore,
+    card_list_view, create_card_list_context,
 };
 use super::lazy_details::{load_and_refresh, missing_details, phrase_ids_of};
 use super::phrase_card_item::PhraseCardItem;
@@ -22,7 +23,13 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     // #540-В1: the page is data-lazy. The full id list is only recorded
     // (for the search-driven backfill); details load per visible slice.
     let all_phrase_ids: RwSignal<Vec<Ulid>> = RwSignal::new(Vec::new());
-    let search: RwSignal<String> = RwSignal::new(String::new());
+    // The search box lives in the session store (same slot `card_list_view`
+    // reads), so a query survives navigating away and back. The backfill
+    // effect below observes it through this signal.
+    let search = use_context::<ListUiStore>()
+        .expect("ListUiStore not provided")
+        .slot(ListPage::Phrases)
+        .search;
     let search_backfill_loading: RwSignal<bool> = RwSignal::new(false);
     let backfill_done: RwSignal<bool> = RwSignal::new(false);
 
@@ -127,14 +134,18 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let partial_note =
         move || td_string!(i18n.get_locale(), phrases.search_in_progress).to_string();
 
-    let list = card_list_view(
-        ctx,
-        ListGrouping::Flat,
-        "phrases",
+    let config = CardListViewConfig {
+        test_id_prefix: "phrases",
         empty_message,
-        Some(
+        grid_classes: Some(
             "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start",
         ),
+    };
+    let list = card_list_view(
+        ctx,
+        ListPage::Phrases,
+        ListGrouping::Flat,
+        config,
         CardListExtras {
             search: Some(search),
             on_visible_cards: Some(on_visible_cards),
