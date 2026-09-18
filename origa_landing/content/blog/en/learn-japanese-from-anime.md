@@ -16,9 +16,9 @@ status: ready
 
 "I'll learn Japanese from anime": the second most popular illusion after "I'll be fluent in a month." Meanwhile anime itself is one of the best materials available to a learner with foundations. The contradiction resolves simply: anime works as listening practice and motivation, and fails as your only textbook.
 
-Let's break down what anime actually trains, what it never provides, and what a viewing routine looks like when it grows your language instead of your episode counter.
+Here is what anime actually trains, what it never provides, and what a viewing routine looks like when it grows your language instead of your episode counter.
 
-## What Anime Genuinely Provides
+## What Anime Provides
 
 **Real-speed listening.** Textbook dialogues are slow and crisp; speech in shows runs at native pace with reductions textbooks never demonstrate. After months of watching, even fast speech stops being noise.
 
@@ -51,6 +51,8 @@ Prerequisite: an N5–N4 base (kana, ~300 words). See [the start plan](/blog/yap
 5. **Re-watch a key scene without subtitles** and verify you now hear those exact words.
 
 15–30 minutes a day is enough. One episode in this mode beats five passive ones.
+
+The same loop runs on games. Text-heavy games — visual novels, story-driven JRPGs, anything with a dialogue log you can re-read — are closer to manga than to anime: the text sits still, so capture is easier, and a screenshot of a dialogue box feeds straight into OCR. Games with heavy voice acting add the audio channel on top. What carries over unchanged from the workflow above: mine fewer words than you meet, review them the same day, and prefer everyday-life settings over fantasy slang for your first hundred hours. For the text-first variant of this approach, see [the manga guide](/blog/learn-japanese-from-manga) and [the OCR tool comparison](/blog/japanese-ocr-app).
 
 ## Which Subtitles to Choose
 

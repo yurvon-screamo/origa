@@ -18,14 +18,23 @@ pub fn HomePage() -> impl IntoView {
     let features_href = format!("{prefix}/features");
     let download_href = format!("{prefix}/download");
 
-    // Mini-FAQ: the "free?" pair is homepage-specific; the other two reuse
-    // the features-page strings so the same answer never diverges between
-    // pages. Visible Q&A mirrors the FAQPage JSON-LD 1:1 (same contract as
+    // Mini-FAQ: the "free?", WaniKani and kanji-start pairs are
+    // homepage-specific long-tails; the rest reuse the features-page
+    // strings so the same answer never diverges between pages. Visible
+    // Q&A mirrors the FAQPage JSON-LD 1:1 (same contract as
     // `features.rs`).
     let faq_pairs = [
         (c.home_faq_free_question, c.home_faq_free_answer),
+        (c.faq_q1, c.faq_a1),
+        (c.faq_q2, c.faq_a2),
         (c.faq_q3, c.faq_a3),
+        (c.faq_q4, c.faq_a4),
         (c.faq_q5, c.faq_a5),
+        (c.home_faq_wanikani_question, c.home_faq_wanikani_answer),
+        (
+            c.home_faq_kanji_start_question,
+            c.home_faq_kanji_start_answer,
+        ),
     ];
     let faq_json = faq_schema(locale, &faq_pairs);
 

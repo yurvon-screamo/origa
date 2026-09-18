@@ -959,3 +959,70 @@ async fn article_has_keywords_meta_from_frontmatter(#[case] slug: &str, #[case] 
         "EN article {slug} must expose target_keyword `{keyword}` in meta"
     );
 }
+
+// =========================================================================
+// Outbound internal links — every href in an article body must resolve
+// =========================================================================
+
+/// Collect site-relative hrefs (`href="/..."`) from an article body slice.
+/// External URLs, protocol-relative URLs, mailto and pure fragments are out
+/// of scope; only links the landing itself must serve are validated.
+fn internal_hrefs(article_html: &str) -> Vec<String> {
+    let mut hrefs = Vec::new();
+    let mut rest = article_html;
+    while let Some(idx) = rest.find("href=\"") {
+        let after = &rest[idx + "href=\"".len()..];
+        let Some(end) = after.find('"') else { break };
+        let href = &after[..end];
+        if href.starts_with('/') && !href.starts_with("//") && href != "/" && !href.starts_with('#')
+        {
+            hrefs.push(href.to_string());
+        }
+        rest = &after[end..];
+    }
+    hrefs
+}
+
+#[tokio::test]
+async fn all_internal_links_in_article_bodies_resolve() {
+    // Regression guard for the "diacritics-in-slug" class of bug: a link
+    // like `/vi/blog/how-many-hán-tự-to-learn` renders fine and is invisible
+    // to every other test — `all_article_urls_return_200` only walks the
+    // registered slugs, never the links articles emit. This test collects
+    // every site-relative href from every article body in every locale
+    // (including EN-fallback renders) and asserts the router serves each
+    // one without a 404. Static assets under /jlpt/ are included when
+    // present: they are article-reachable downloads.
+    let mut checked = std::collections::BTreeSet::new();
+    let mut failures: Vec<String> = Vec::new();
+    for slug in ALL_SLUGS {
+        for prefix in ["", "/ru", "/ko", "/vi"] {
+            let uri = format!("{prefix}/blog/{slug}");
+            let (_, body) = get(&uri).await;
+            let Some(start) = body.find("<div class=\"blog-post__body\"") else {
+                continue;
+            };
+            let end = body[start..]
+                .find("</article>")
+                .map(|offset| start + offset)
+                .unwrap_or(body.len());
+            for href in internal_hrefs(&body[start..end]) {
+                if checked.insert(href.clone()) {
+                    let (status, _) = get(&href).await;
+                    if status == StatusCode::NOT_FOUND {
+                        failures.push(format!("{uri} -> {href}"));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "article bodies contain dead internal links (linked from -> href):\n{}",
+        failures.join("\n")
+    );
+    assert!(
+        !checked.is_empty(),
+        "link collector unexpectedly found no links; the extractor is broken"
+    );
+}
