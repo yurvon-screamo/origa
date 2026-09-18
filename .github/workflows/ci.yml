@@ -1059,7 +1059,11 @@ jobs:
                   gate "e2e-report" "${{ needs.e2e-report.result }}" "${{ needs.changes.outputs.run_e2e }}"
                   gate "android-smoke" "${{ needs.android-smoke.result }}" "${{ needs.changes.outputs.run_android_smoke }}"
                   gate "build-tauri" "${{ needs.build-tauri.result }}" "${{ needs.changes.outputs.run_build_tauri }}"
-                  gate "build-macos" "${{ needs.build-macos.result }}" "${{ needs.changes.outputs.run_build_macos }}"
+                  # build-macos legs are actor-filtered inside the reusable
+                  # Apple workflow (dependabot[bot] never builds macOS), so
+                  # for dependabot PRs the whole job is intentionally skipped
+                  # — mirror that filter here to keep the skip legal.
+                  gate "build-macos" "${{ needs.build-macos.result }}" "${{ needs.changes.outputs.run_build_macos == 'true' && github.actor != 'dependabot[bot]' }}"
                   gate "docker-build-landing" "${{ needs.docker-build-landing.result }}" "${{ needs.changes.outputs.run_docker_landing }}"
                   gate "docker-build-ui" "${{ needs.docker-build-ui.result }}" "${{ needs.changes.outputs.run_docker_ui }}"
 
