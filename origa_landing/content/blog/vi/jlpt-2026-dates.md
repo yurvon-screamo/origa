@@ -23,7 +23,7 @@ JLPT được tổ chức cùng một ngày trên toàn thế giới: năm 2026,
 | Vòng 1 (tháng 7) | Chủ nhật 5/7/2026 | Đã thi; điểm từ cuối tháng 8 |
 | Vòng 2 (tháng 12) | Chủ nhật 6/12/2026 | Đăng ký gần hết hạn; vài nước còn mở |
 
-Ngày thi là chung trên toàn cầu, nhưng mỗi năm có mấy vòng và thành phố nào tổ chức thì tùy từng nơi. Tại Việt Nam, JLPT được tổ chức ở Hà Nội, TP.HCM, Đà Nẵng và Huế, mỗi nơi một đơn vị chủ quản và thời hạn nhận hồ sơ riêng. Nguồn chính thức là danh sách thành phố thi ở nước ngoài trên jlpt.jp; mọi bảng tóm tắt khác đều là thông tin thứ cấp.
+Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng nơi. Tại Việt Nam, JLPT được tổ chức ở Hà Nội, TP.HCM, Đà Nẵng và Huế với đầy đủ các cấp độ từ N5 đến N1; mỗi nơi một đơn vị chủ quản, một thời hạn nhận hồ sơ riêng. Nguồn chính thức là danh sách thành phố thi ở nước ngoài trên jlpt.jp; mọi bảng tóm tắt khác đều là thông tin thứ cấp.
 
 ## Thời gian đăng ký theo từng nước
 

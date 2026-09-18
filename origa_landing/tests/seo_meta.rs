@@ -579,20 +579,49 @@ async fn terms_page_renders_breadcrumb_and_h1() {
     );
 }
 
+/// Pull a scalar frontmatter field (`key: value` line) from the raw
+/// markdown source of a blog article. Used by the OG article-time tests so
+/// they assert against the live frontmatter values instead of hardcoded
+/// dates — `lastmod` of a maintained post changes with every content
+/// drill-down, and a hardcoded expectation would break on the next edit.
+fn frontmatter_field(src: &str, key: &str) -> String {
+    let line = src
+        .lines()
+        .find(|l| l.starts_with(&format!("{key}:")))
+        .unwrap_or_else(|| panic!("frontmatter key `{key}` not found"));
+    line.split_once(':')
+        .unwrap_or_else(|| panic!("malformed frontmatter line: {line}"))
+        .1
+        .trim()
+        .to_string()
+}
+
+const OCR_POST_SRC: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/content/blog/en/japanese-ocr-app.md"
+));
+
 #[tokio::test]
 async fn blog_post_has_og_article_published_and_modified_times() {
-    // `japanese-ocr-app` carries `published: 2026-07-21` and a later
-    // `lastmod: 2026-09-18` — the divergence makes both OG times observable
-    // independently (a same-date post could pass with swapped values).
+    // `japanese-ocr-app` carries a `published` date and a later `lastmod`
+    // (bumped by content drill-downs) — the divergence makes both OG times
+    // observable independently (a same-date post could pass with swapped
+    // values). Expected values come straight from the article frontmatter.
+    let published = frontmatter_field(OCR_POST_SRC, "published");
+    let lastmod = frontmatter_field(OCR_POST_SRC, "lastmod");
     let body = get_body("/blog/japanese-ocr-app").await;
     assert!(
-        body.contains(r#"property="article:published_time" content="2026-07-21""#),
-        "article:published_time must mirror the `published` frontmatter date; got first 800 chars: {}",
+        body.contains(&format!(
+            r#"property="article:published_time" content="{published}""#
+        )),
+        "article:published_time must mirror the `published` frontmatter date ({published}); got first 800 chars: {}",
         body.chars().take(800).collect::<String>()
     );
     assert!(
-        body.contains(r#"property="article:modified_time" content="2026-09-18""#),
-        "article:modified_time must mirror the `lastmod` frontmatter date"
+        body.contains(&format!(
+            r#"property="article:modified_time" content="{lastmod}""#
+        )),
+        "article:modified_time must mirror the `lastmod` frontmatter date ({lastmod})"
     );
 }
 
@@ -601,14 +630,16 @@ async fn blog_article_jsonld_dates_match_og_times() {
     // The OG `article:*` metas and the Article JSON-LD must not drift apart:
     // both are sourced from the same frontmatter, so their date values must
     // be identical in the rendered page.
+    let published = frontmatter_field(OCR_POST_SRC, "published");
+    let lastmod = frontmatter_field(OCR_POST_SRC, "lastmod");
     let body = get_body("/blog/japanese-ocr-app").await;
     let json = find_jsonld_block_by_type(&body, "Article");
     assert!(
-        json.contains(r#""datePublished":"2026-07-21""#),
-        "Article JSON-LD datePublished must match the frontmatter `published`: {json}"
+        json.contains(&format!(r#""datePublished":"{published}""#)),
+        "Article JSON-LD datePublished must match the frontmatter `published` ({published}): {json}"
     );
     assert!(
-        json.contains(r#""dateModified":"2026-09-18""#),
-        "Article JSON-LD dateModified must match the frontmatter `lastmod`: {json}"
+        json.contains(&format!(r#""dateModified":"{lastmod}""#)),
+        "Article JSON-LD dateModified must match the frontmatter `lastmod` ({lastmod}): {json}"
     );
 }
