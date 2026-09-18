@@ -1,10 +1,11 @@
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
+use chrono::{DateTime, Utc};
 use rand::seq::SliceRandom;
 use ulid::Ulid;
 
-use super::lesson::{LessonCard, LessonCardView, LessonData, LessonViewGenerator};
+use super::lesson::{LessonCard, LessonData, LessonViewGenerator};
 use super::{Card, CardType, KnowledgeSet, StudyCard};
 use crate::domain::{JapaneseLevel, JlptContent, NativeLanguage};
 
@@ -17,8 +18,9 @@ pub const MAX_LESSON_SIZE: usize = 22;
 
 // Разбиение билдера урока на этапы пайплайна; фасад (паблик-функции ниже)
 // сохраняет прежние пути `lesson_builder::...` для внешних callers.
+// Дубль-механизм (multi-show expansion) удалён: закрепление провалов
+// переехало в добивания (docs/plans/ghost-relearning.md §3.5).
 mod drop_new_cards;
-mod expansion;
 mod interleave;
 mod phrases;
 mod policy;
@@ -27,7 +29,6 @@ mod slots;
 mod spacing;
 
 pub(crate) use drop_new_cards::drop_new_cards;
-pub(crate) use expansion::expand_repeated_views;
 pub(crate) use interleave::interleave_core_by_type;
 pub(crate) use phrases::add_phrases;
 pub use policy::NewCardPolicy;

@@ -59,9 +59,11 @@ pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_
 pub use crate::dictionary::kanji::RARE_READING_MAX_FREQ;
 
 pub(crate) use knowledge::collect_known_vocabulary_words;
-pub use memory::{CardState, Difficulty, MemoryHistory, MemoryState, Rating, Stability};
+pub use memory::{
+    CardState, Difficulty, GhostRung, GhostState, MemoryHistory, MemoryState, Rating, Stability,
+};
 pub use score_content::ScoreContentResult;
-pub use srs::RateMode;
+pub use srs::{RateMode, RatingContext};
 pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, TokenInfo,

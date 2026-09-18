@@ -1,6 +1,4 @@
-use crate::domain::OrigaError;
-use crate::domain::RateMode;
-use crate::domain::Rating;
+use crate::domain::{OrigaError, RateMode, Rating, RatingContext};
 use crate::traits::UserRepository;
 use tracing::{debug, info};
 use ulid::Ulid;
@@ -20,6 +18,7 @@ impl<'a, R: UserRepository> RateCardUseCase<'a, R> {
         card_id: Ulid,
         mode: RateMode,
         rating: Rating,
+        context: RatingContext,
     ) -> Result<(), OrigaError> {
         debug!(
             card_id = %card_id,
@@ -34,7 +33,7 @@ impl<'a, R: UserRepository> RateCardUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist)?;
 
-        user.rate_card(card_id, rating, mode)?;
+        user.rate_card(card_id, rating, mode, context)?;
 
         self.repository.save(&user).await?;
 

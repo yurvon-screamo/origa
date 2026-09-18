@@ -70,7 +70,7 @@ mod tests {
     use crate::domain::knowledge::PhraseCard;
     use crate::domain::memory::Rating;
     use crate::domain::value_objects::Question;
-    use crate::domain::{Card, KnowledgeSet, RateMode, VocabularyCard};
+    use crate::domain::{Card, KnowledgeSet, RateMode, RatingContext, VocabularyCard};
 
     fn vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -91,8 +91,13 @@ mod tests {
             .take(limit)
             .collect();
         for id in card_ids {
-            ks.rate_card(id, Rating::Good, RateMode::StandardLesson)
-                .expect("rate card");
+            ks.rate_card(
+                id,
+                Rating::Good,
+                RateMode::StandardLesson,
+                RatingContext::Explicit,
+            )
+            .expect("rate card");
         }
     }
 

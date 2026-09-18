@@ -1,4 +1,5 @@
 use super::*;
+use crate::domain::RatingContext;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::value_objects::NativeLanguage;
@@ -126,10 +127,20 @@ mod generate_grammar_quiz_tests {
         ));
         let study_card = ks.create_card(card).unwrap();
         let id = *study_card.card_id();
-        ks.rate_card(id, Rating::Easy, RateMode::StandardLesson)
-            .unwrap();
-        ks.rate_card(id, Rating::Easy, RateMode::StandardLesson)
-            .unwrap();
+        ks.rate_card(
+            id,
+            Rating::Easy,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+        ks.rate_card(
+            id,
+            Rating::Easy,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
         ks
     }
 

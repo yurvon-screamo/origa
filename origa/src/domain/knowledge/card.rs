@@ -70,8 +70,26 @@ impl StudyCard {
         self.favorite_changed_at = ts;
     }
 
+    /// Прямой доступ к истории памяти в тестах: установка добивания
+    /// (time-travel лестницы) и предспавнового счётчика.
+    #[cfg(test)]
+    pub(crate) fn memory_history_mut_for_test(&mut self) -> &mut MemoryHistory {
+        &mut self.memory_history
+    }
+
     pub(crate) fn apply_review(&mut self, memory_state: MemoryState, rating: Rating) {
         self.memory_history.apply_review(memory_state, rating);
+    }
+
+    /// Шаг добивания [GhostState] после явного показа (RatingContext::Explicit).
+    /// Время инжектится здесь: машина состояний остаётся чистой для тестов.
+    pub(crate) fn apply_ghost_transition(&mut self, rating: Rating, was_new_before_rating: bool) {
+        self.memory_history.apply_ghost_transition(
+            rating,
+            Utc::now(),
+            was_new_before_rating,
+            &self.card_id,
+        );
     }
 
     /// Создаёт начальное состояние памяти без семантики ревью

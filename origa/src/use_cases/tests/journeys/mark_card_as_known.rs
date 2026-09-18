@@ -1,6 +1,6 @@
 use ulid::Ulid;
 
-use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, User};
+use crate::domain::{NativeLanguage, OrigaError, RateMode, Rating, RatingContext, User};
 use crate::traits::UserRepository;
 use crate::use_cases::MarkCardAsKnownUseCase;
 use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_test_vocab_card};
@@ -49,8 +49,13 @@ async fn in_progress_card_gets_marked_as_known() {
     let card = create_test_vocab_card("猫");
     let study_card = user.create_card(card).unwrap();
     let card_id = *study_card.card_id();
-    user.rate_card(card_id, Rating::Good, RateMode::StandardLesson)
-        .unwrap();
+    user.rate_card(
+        card_id,
+        Rating::Good,
+        RateMode::StandardLesson,
+        RatingContext::Explicit,
+    )
+    .unwrap();
 
     let repo = InMemoryUserRepository::with_user(user);
     let use_case = MarkCardAsKnownUseCase::new(&repo);

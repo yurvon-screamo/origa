@@ -1,5 +1,5 @@
 use super::*;
-use origa::domain::{Card, PhraseCard, RateMode, Rating};
+use origa::domain::{Card, PhraseCard, RateMode, Rating, RatingContext};
 use ulid::Ulid;
 
 fn fixture_user() -> User {
@@ -15,6 +15,7 @@ fn fixture_user() -> User {
         *study_card.card_id(),
         Rating::Good,
         RateMode::StandardLesson,
+        RatingContext::Explicit,
     )
     .expect("rate_card");
     user

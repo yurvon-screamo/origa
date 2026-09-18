@@ -63,8 +63,13 @@ fn build_fixture(n_cards: usize, reviews_per_card: usize) -> User {
         let card_id = *study_card.card_id();
         for r in 0..reviews_per_card {
             let rating = ratings[r % ratings.len()];
-            user.rate_card(card_id, rating, RateMode::StandardLesson)
-                .expect("rate_card");
+            user.rate_card(
+                card_id,
+                rating,
+                RateMode::StandardLesson,
+                origa::domain::RatingContext::Explicit,
+            )
+            .expect("rate_card");
         }
     }
     user

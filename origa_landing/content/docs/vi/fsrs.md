@@ -39,7 +39,7 @@ Một mẻ thẻ mới lớn hôm nay biến thành nhiều lượt ôn hơn nhi
 
 Số thẻ mới mỗi ngày do tốc độ trong thiết lập hồ sơ quyết định: sáu mức, từ một nhóm thẻ mới nhỏ mỗi ngày đến một lượng dồn dập. Thẻ mới phát theo nhóm đủ bảy (nhóm làm quen, xem [cách bài học hoạt động](/vi/docs/lesson)), nên mỗi tốc độ là một số nguyên nhóm mỗi ngày.
 
-Một bài học được dựng từ thẻ mới trong ngày và các lượt ôn đã đến hạn, tối đa 22 thẻ. Khi cả thẻ mới lẫn lượt ôn đều cạn, Origa nói "Không còn thẻ để học." Đó không phải lỗi và không phải giới hạn tài khoản: mai FSRS sẽ lên lịch ôn mới, và bài học lại xuất hiện.
+Một bài học được dựng từ thẻ mới trong ngày và các lượt ôn đã đến hạn, tối đa 22 thẻ. Khi cả thẻ mới lẫn lượt ôn đều cạn, Origa nói "Không còn thẻ để học." Đó không phải lỗi và không phải giới hạn tài khoản: mai FSRS sẽ lên lịch ôn mới, và bài học lại xuất hiện. Nội dung bạn cứ sai mãi sẽ quay lại trước: một thẻ bạn trượt đi trượt lại sẽ xuất hiện trong những bài học gần nhất cho tới khi ghi nhớ được — ôn lại cái đã xem luôn ưu tiên hơn nội dung mới.
 
 ## Liên quan
 

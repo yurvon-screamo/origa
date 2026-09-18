@@ -533,23 +533,6 @@ impl IntoIterator for LessonData {
 }
 
 #[cfg(test)]
-impl LessonData {
-    /// Returns every lesson card whose underlying `card_id` (the
-    /// multi-show identity) matches. Only used in tests to count how
-    /// many showings one logical card produced. Declared `pub(crate)`
-    /// and gated behind `#[cfg(test)]` so it never ships as part of the
-    /// public API: production code addresses cards by slot id (`get`)
-    /// and never by the multi-show `card_id`.
-    pub(crate) fn find_by_card_id(&self, card_id: Ulid) -> Vec<&LessonCard> {
-        self.cards
-            .iter()
-            .filter(|(_, lc)| lc.card_id() == card_id)
-            .map(|(_, lc)| lc)
-            .collect()
-    }
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use crate::domain::Card;

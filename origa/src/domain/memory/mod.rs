@@ -2,6 +2,10 @@ mod value;
 
 pub use value::{CardState, Difficulty, MemoryState, Rating, Stability};
 
+mod ghost;
+
+pub use ghost::{GhostRung, GhostState};
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +46,15 @@ pub struct MemoryHistory {
     last_review_date: Option<DateTime<Utc>>,
     #[serde(default)]
     last_rating: Option<Rating>,
+    /// Предспавновый счётчик подряд-провалов [consecutive_again]:
+    /// два подряд `Again` на не-новой карте порождают добивание.
+    /// Мержится по `max()` (принятая неточность при дивергенции).
+    #[serde(default)]
+    consecutive_again: u8,
+    /// Добивание [GhostState] — параллельная FSRS механика закрепления.
+    /// Мержится LWW по моменту последнего шага.
+    #[serde(default)]
+    ghost: Option<GhostState>,
 }
 
 impl Default for MemoryHistory {
@@ -60,7 +73,17 @@ impl MemoryHistory {
             good_count: 0,
             last_review_date: None,
             last_rating: None,
+            consecutive_again: 0,
+            ghost: None,
         }
+    }
+
+    pub fn ghost(&self) -> Option<&GhostState> {
+        self.ghost.as_ref()
+    }
+
+    pub fn consecutive_again(&self) -> u8 {
+        self.consecutive_again
     }
 
     pub fn memory_state(&self) -> Option<&MemoryState> {
@@ -173,10 +196,30 @@ impl MemoryHistory {
         // divergence this may undercount by ±N relative to a G-Set union.
         // FSRS impact: reps feeds only the fuzz seed (±5% interval jitter),
         // lapses/easy_count/good_count feed display heuristics only.
+        // consecutive_again feeds the ghost spawn gate; a diverged max()
+        // can at worst spawn a ghost one failed series early.
         self.reps = self.reps.max(other.reps);
         self.lapses = self.lapses.max(other.lapses);
         self.easy_count = self.easy_count.max(other.easy_count);
         self.good_count = self.good_count.max(other.good_count);
+        self.consecutive_again = self.consecutive_again.max(other.consecutive_again);
+
+        // Ghost merges LWW by the moment of its last step; terminal
+        // markers (Resolved/Expired) carry their own timestamp, so a
+        // resolution reached on one device is not resurrected by a stale
+        // Active from another.
+        self.ghost = match (self.ghost.clone(), other.ghost.clone()) {
+            (Some(left), Some(right)) => {
+                if right.last_transition_at() >= left.last_transition_at() {
+                    Some(right)
+                } else {
+                    Some(left)
+                }
+            },
+            (Some(left), None) => Some(left),
+            (None, Some(right)) => Some(right),
+            (None, None) => None,
+        };
 
         // last_review_date + last_rating: take from whichever side is newer.
         match (self.last_review_date, other.last_review_date) {
@@ -541,5 +584,122 @@ mod tests {
         history_a.merge(&history_b);
 
         assert_eq!(history_a.last_rating(), Some(Rating::Easy));
+    }
+
+    // --- добивания: независимость FSRS, мерж, back-compat ---
+
+    #[test]
+    fn rating_moves_fsrs_and_ghost_independently() {
+        // Arrange: apply_review (FSRS-путь) не трогает добивание
+        let mut history = MemoryHistory::new();
+        history.apply_review(make_state(), Rating::Again);
+        history.apply_review(make_state(), Rating::Again);
+
+        // Assert: состояние памяти обновилось, добивания нет
+        assert!(history.memory_state().is_some());
+        assert_eq!(history.ghost(), None);
+        assert_eq!(history.consecutive_again(), 0);
+    }
+
+    #[test]
+    fn seed_from_acquaintance_spawns_no_ghost() {
+        // Arrange: сидирование знакомства не является ревью
+        let mut history = MemoryHistory::new();
+        history.seed(make_state());
+
+        // Assert: состояние появилось, счётчики и добивание нетронуты
+        assert!(history.memory_state().is_some());
+        assert_eq!(history.ghost(), None);
+        assert_eq!(history.consecutive_again(), 0);
+    }
+
+    #[test]
+    fn merge_takes_ghost_counters_via_max_and_state_via_lww() {
+        // Arrange: дивергенция — разные счётчики, разные шаги лестницы
+        let now = Utc::now();
+        let mut left = MemoryHistory::new();
+        left.consecutive_again = 3;
+        left.ghost = Some(GhostState::Active {
+            rung: GhostRung::First,
+            due_at: now,
+            last_transition_at: now - Duration::days(2),
+        });
+
+        let mut right = MemoryHistory::new();
+        right.consecutive_again = 1;
+        right.ghost = Some(GhostState::Active {
+            rung: GhostRung::Third,
+            due_at: now,
+            last_transition_at: now,
+        });
+
+        // Act
+        left.merge(&right);
+
+        // Assert: счётчик по max, состояние по более позднему шагу
+        assert_eq!(left.consecutive_again(), 3);
+        let GhostState::Active { rung, .. } = left.ghost().unwrap() else {
+            panic!("ghost must stay active");
+        };
+        assert_eq!(*rung, GhostRung::Third);
+    }
+
+    #[test]
+    fn merge_preserves_ghost_when_other_side_has_none() {
+        // Arrange: одна сторона не знала о добивании
+        let now = Utc::now();
+        let mut left = MemoryHistory::new();
+        left.ghost = Some(GhostState::Resolved { at: now });
+        let right = MemoryHistory::new();
+
+        // Act
+        left.merge(&right);
+
+        // Assert
+        assert!(matches!(left.ghost(), Some(GhostState::Resolved { .. })));
+    }
+
+    #[test]
+    fn merge_terminal_marker_wins_over_stale_active() {
+        // Arrange: устройство A закрыло добивание позже, чем B сделало шаг
+        let now = Utc::now();
+        let mut resolved_side = MemoryHistory::new();
+        resolved_side.ghost = Some(GhostState::Resolved {
+            at: now - Duration::days(1),
+        });
+        let mut stale_active_side = MemoryHistory::new();
+        stale_active_side.ghost = Some(GhostState::Active {
+            rung: GhostRung::Second,
+            due_at: now - Duration::days(4),
+            last_transition_at: now - Duration::days(3),
+        });
+
+        // Act
+        stale_active_side.merge(&resolved_side);
+
+        // Assert: резолв не воскрес старым Active
+        assert!(matches!(
+            stale_active_side.ghost(),
+            Some(GhostState::Resolved { .. })
+        ));
+    }
+
+    #[test]
+    fn legacy_serialized_history_deserializes_with_default_ghost_fields() {
+        // Arrange: формат данных до добиваний — без ghost/consecutive_again
+        let json = r#"{
+            "current_state": null,
+            "reps": 2,
+            "lapses": 1
+        }"#;
+
+        // Act
+        let history: MemoryHistory = serde_json::from_str(json).unwrap();
+
+        // Assert
+        assert_eq!(history.reps(), 2);
+        assert_eq!(history.lapses(), 1);
+        assert_eq!(history.ghost(), None);
+        assert_eq!(history.consecutive_again(), 0);
     }
 }

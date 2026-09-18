@@ -2,6 +2,7 @@ use std::sync::OnceLock;
 use ulid::Ulid;
 
 use crate::dictionary::phrase::{cache_phrase_details, init_phrase_index};
+use crate::domain::RatingContext;
 use crate::domain::{
     Card, GrammarRuleCard, NativeLanguage, OrigaError, PhraseCard, RateMode, Rating, StudyCard,
     User,
@@ -260,6 +261,7 @@ fn create_user_with_known_words(words: &[&str]) -> User {
             *study_card.card_id(),
             Rating::Easy,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .expect("Failed to rate card");
         user.knowledge_set_mut()
@@ -324,6 +326,7 @@ async fn seed_ready_phrases_finds_new_phrases_after_more_known_words() {
                 *study_card.card_id(),
                 Rating::Easy,
                 RateMode::StandardLesson,
+                RatingContext::Explicit,
             )
             .expect("Failed to rate");
         saved

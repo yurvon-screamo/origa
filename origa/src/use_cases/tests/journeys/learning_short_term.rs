@@ -1,5 +1,6 @@
 use ulid::Ulid;
 
+use crate::domain::RatingContext;
 use crate::domain::{
     JlptContent, NativeLanguage, NewCardPolicy, OrigaError, RateMode, Rating, User,
 };
@@ -16,8 +17,13 @@ fn create_user_with_rated_cards(count: usize) -> (User, Vec<Ulid>) {
     }
 
     for card_id in &card_ids {
-        user.rate_card(*card_id, Rating::Again, RateMode::StandardLesson)
-            .unwrap();
+        user.rate_card(
+            *card_id,
+            Rating::Again,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
     }
 
     (user, card_ids)
@@ -76,7 +82,12 @@ async fn rate_card_short_term_again_updates_memory() {
     let card_id = card_ids[0];
 
     use_case
-        .execute(card_id, RateMode::ShortTerm, Rating::Again)
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            Rating::Again,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -92,7 +103,12 @@ async fn rate_card_short_term_good_updates_memory() {
     let card_id = card_ids[0];
 
     use_case
-        .execute(card_id, RateMode::ShortTerm, Rating::Good)
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -113,7 +129,12 @@ async fn full_short_term_cycle_processes_all_cards() {
         .unwrap();
     for (_, lc) in cards {
         rate_use_case
-            .execute(lc.card_id(), RateMode::ShortTerm, Rating::Good)
+            .execute(
+                lc.card_id(),
+                RateMode::ShortTerm,
+                Rating::Good,
+                RatingContext::Explicit,
+            )
             .await
             .unwrap();
     }
@@ -133,7 +154,12 @@ async fn rate_card_short_term_nonexistent_returns_error() {
     let non_existent_card_id = Ulid::new();
 
     let result = use_case
-        .execute(non_existent_card_id, RateMode::ShortTerm, Rating::Good)
+        .execute(
+            non_existent_card_id,
+            RateMode::ShortTerm,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
@@ -146,16 +172,31 @@ async fn padding_cards_are_marked_as_short_term() {
 
     // 3 карты оцениваем Again → selected (due + high_difficulty)
     for card_id in &card_ids[..3] {
-        user.rate_card(*card_id, Rating::Again, RateMode::StandardLesson)
-            .unwrap();
+        user.rate_card(
+            *card_id,
+            Rating::Again,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
     }
 
     // 12 карт: Again затем Hard → остаются high_difficulty, но next_review в будущем → padding
     for card_id in &card_ids[3..15] {
-        user.rate_card(*card_id, Rating::Again, RateMode::StandardLesson)
-            .unwrap();
-        user.rate_card(*card_id, Rating::Hard, RateMode::StandardLesson)
-            .unwrap();
+        user.rate_card(
+            *card_id,
+            Rating::Again,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+        user.rate_card(
+            *card_id,
+            Rating::Hard,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
     }
 
     let repo = InMemoryUserRepository::with_user(user);

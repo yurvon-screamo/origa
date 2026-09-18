@@ -1,5 +1,5 @@
 use super::*;
-use origa::domain::{Card, NativeLanguage, PhraseCard, RateMode, Rating, User};
+use origa::domain::{Card, NativeLanguage, PhraseCard, RateMode, Rating, RatingContext, User};
 use rstest::rstest;
 use ulid::Ulid;
 
@@ -19,6 +19,7 @@ fn fixture_knowledge_set() -> KnowledgeSet {
             card_id,
             ratings[i % ratings.len()],
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .expect("rate_card");
     }

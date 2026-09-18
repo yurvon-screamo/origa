@@ -1,6 +1,7 @@
 use rstest::rstest;
 
 use crate::domain::NewCardPolicy;
+use crate::domain::RatingContext;
 use crate::domain::User;
 use crate::domain::value_objects::Question;
 use crate::domain::{
@@ -82,7 +83,12 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
     // Рейтинг карточки
     let rate_use_case = RateCardUseCase::new(&repo);
     rate_use_case
-        .execute(*card_id, RateMode::StandardLesson, rating)
+        .execute(
+            *card_id,
+            RateMode::StandardLesson,
+            rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -137,7 +143,12 @@ async fn yesno_journey_wrong_answer_results_in_again_rating() {
     // Рейтинг карточки
     let rate_use_case = RateCardUseCase::new(&repo);
     rate_use_case
-        .execute(*card_id, RateMode::StandardLesson, rating)
+        .execute(
+            *card_id,
+            RateMode::StandardLesson,
+            rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -236,7 +247,12 @@ async fn yesno_journey_transition_to_next_card_after_rating() {
     // Act: Отвечаем на первую карточку
     let rate_use_case = RateCardUseCase::new(&repo);
     rate_use_case
-        .execute(first_card_id, RateMode::StandardLesson, Rating::Good)
+        .execute(
+            first_card_id,
+            RateMode::StandardLesson,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -298,7 +314,12 @@ async fn yesno_journey_all_rating_cases(
     // Рейтинг карточки
     let rate_use_case = RateCardUseCase::new(&repo);
     rate_use_case
-        .execute(*card_id, RateMode::StandardLesson, actual_rating)
+        .execute(
+            *card_id,
+            RateMode::StandardLesson,
+            actual_rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 

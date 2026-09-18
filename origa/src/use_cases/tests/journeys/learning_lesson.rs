@@ -1,6 +1,7 @@
 use rstest::rstest;
 use ulid::Ulid;
 
+use crate::domain::RatingContext;
 use crate::domain::{
     JlptContent, NativeLanguage, NewCardPolicy, OrigaError, RateMode, Rating, User,
 };
@@ -53,7 +54,12 @@ async fn rate_card_updates_memory(#[case] rating: Rating) {
     let use_case = RateCardUseCase::new(&repo);
 
     use_case
-        .execute(card_id, RateMode::StandardLesson, rating)
+        .execute(
+            card_id,
+            RateMode::StandardLesson,
+            rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -76,7 +82,12 @@ async fn full_lesson_cycle_updates_history() {
         .unwrap();
     for (_, lc) in cards {
         rate_use_case
-            .execute(lc.card_id(), RateMode::StandardLesson, Rating::Good)
+            .execute(
+                lc.card_id(),
+                RateMode::StandardLesson,
+                Rating::Good,
+                RatingContext::Explicit,
+            )
             .await
             .unwrap();
     }
@@ -96,7 +107,12 @@ async fn rate_card_nonexistent_returns_error() {
     let non_existent_card_id = Ulid::new();
 
     let result = use_case
-        .execute(non_existent_card_id, RateMode::StandardLesson, Rating::Good)
+        .execute(
+            non_existent_card_id,
+            RateMode::StandardLesson,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await;
 
     assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
@@ -111,7 +127,12 @@ async fn rate_card_with_short_term_mode_updates_memory() {
     let use_case = RateCardUseCase::new(&repo);
 
     use_case
-        .execute(card_id, RateMode::ShortTerm, Rating::Good)
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -133,7 +154,14 @@ async fn rate_card_short_term_mode_all_ratings(#[case] rating: Rating) {
     let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
     let use_case = RateCardUseCase::new(&repo);
 
-    let result = use_case.execute(card_id, RateMode::ShortTerm, rating).await;
+    let result = use_case
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            rating,
+            RatingContext::Explicit,
+        )
+        .await;
 
     assert!(result.is_ok());
 }
@@ -147,11 +175,21 @@ async fn rate_card_twice_in_short_term_mode_updates_state() {
     let use_case = RateCardUseCase::new(&repo);
 
     use_case
-        .execute(card_id, RateMode::ShortTerm, Rating::Good)
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            Rating::Good,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
     use_case
-        .execute(card_id, RateMode::ShortTerm, Rating::Easy)
+        .execute(
+            card_id,
+            RateMode::ShortTerm,
+            Rating::Easy,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -184,7 +222,12 @@ async fn rate_card_and_create_and_rate_grammar_card_dual_rating(#[case] rating: 
 
     let rate_use_case = RateCardUseCase::new(&repo);
     rate_use_case
-        .execute(vocab_card_id, RateMode::StandardLesson, rating)
+        .execute(
+            vocab_card_id,
+            RateMode::StandardLesson,
+            rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
@@ -201,7 +244,12 @@ async fn rate_card_and_create_and_rate_grammar_card_dual_rating(#[case] rating: 
         .card_id();
 
     rate_use_case
-        .execute(grammar_card_id, RateMode::StandardLesson, rating)
+        .execute(
+            grammar_card_id,
+            RateMode::StandardLesson,
+            rating,
+            RatingContext::Explicit,
+        )
         .await
         .unwrap();
 
