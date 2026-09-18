@@ -930,8 +930,7 @@ fn new_cards_interleave_across_jlpt_levels() {
     assert_eq!(
         distinct_card_ids.len(),
         4,
-        "Should select exactly 4 underlying cards (limit=4); \
-         multi-show expansion may add extra showings of those 4 card ids"
+        "Should select exactly 4 underlying cards (limit=4)"
     );
 
     let n5_words: HashSet<&str> = ["n5w1", "n5w2", "n5w3"].into_iter().collect();
