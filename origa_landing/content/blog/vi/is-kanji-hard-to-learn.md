@@ -22,7 +22,7 @@ Câu trả lời trung thực có ba phần: hán tự thực sự là gì (ít 
 
 Bỏ lớp huyền bí đi, hán tự là hệ thống chữ nơi ký tự đại diện cho một hình vị, một đơn vị nghĩa, chứ không phải một âm. Ba hệ quả theo sau, và không cái nào là "bất khả thi":
 
-- **Kho chữ lớn nhưng hữu hạn.** Một người đọc có học cần khoảng 2.000 chữ (bộ Jōyō), và văn bản thường ngày dựa nặng vào vài trăm chữ trong đó. [Cần bao nhiêu hán tự theo mục tiêu](/vi/blog/how-many-hán tự-to-learn) phân tích con số.
+- **Kho chữ lớn nhưng hữu hạn.** Một người đọc có học cần khoảng 2.000 chữ (bộ Jōyō), và văn bản thường ngày dựa nặng vào vài trăm chữ trong đó. [Cần bao nhiêu hán tự theo mục tiêu](/vi/blog/how-many-kanji-to-learn) phân tích con số.
 - **Chữ mang gợi ý, không phải mã.** Đa số hán tự gồm một thành phần nghĩa ước và một thành phần âm ước. 火 (lửa) xuất hiện trong các từ liên quan đến cháy; 生 (sống) nằm trong từ đọc sei hoặc shō. Gợi ý không chính xác, nhưng vẫn là gợi ý.
 - **Người biết tiếng Hán đã đọc một hệ hình vị rồi.** Với người biết chữ Hán, câu hỏi đảo ngược: hán tự Nhật phần lớn là chữ quen với ranh giới từ lạ. Độ khó dời sang ngữ pháp và từ vựng, không phải chữ viết.
 

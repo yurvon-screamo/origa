@@ -3,7 +3,7 @@ title: "JLPT N5 Kanji List, With a Printable PDF"
 slug: /blog/jlpt-n5-kanji-list
 locale: en
 meta_title: "JLPT N5 Kanji List + Printable PDF (All 80 Kanji)"
-meta_description: "The full N5 kanji table from Origa's dictionary: character, on and kun readings, meaning, common words. Ordered by frequency. Free printable PDF in four languages, plus why some lists say 80 and others 103."
+meta_description: "The N5 kanji table from Origa's dictionary: character, on and kun readings, meaning, common words. Ordered by frequency. Free printable PDF in four languages, plus why some lists say 80 and others 103."
 target_keywords: ["jlpt n5 kanji list", "n5 kanji", "jlpt n5 kanji pdf", "kanji n5 list"]
 lastmod: 2026-09-18
 published: 2026-09-18

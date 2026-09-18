@@ -82,14 +82,14 @@ I18N = {
         "독음과 뜻은 Origa 기준이며, 시험에서는 교재와 함께 확인하세요.",
     },
     "vi": {
-        "title": "Danh sách Kanji JLPT {level}",
-        "subtitle": "{count} kanji từ từ điển của Origa, xếp theo tần suất sử dụng",
-        "col_kanji": "Kanji",
+        "title": "Danh sách Hán tự JLPT {level}",
+        "subtitle": "{count} hán tự từ từ điển của Origa, xếp theo tần suất sử dụng",
+        "col_kanji": "Hán tự",
         "col_on": "Âm On",
         "col_kun": "Âm Kun",
         "col_meaning": "Nghĩa",
         "col_words": "Từ thông dụng",
-        "footer": "Tạo ngày {date} từ dữ liệu kanji mở của Origa (cdn/dictionary/kanji.json). "
+        "footer": "Tạo ngày {date} từ dữ liệu hán tự mở của Origa (cdn/dictionary/kanji.json). "
         "Cách đọc và nghĩa do Origa chọn; hãy đối chiếu giáo trình khi dùng cho kỳ thi.",
     },
 }
@@ -149,6 +149,7 @@ POST_MARKER_BEGIN = "<!-- jlpt-kanji-table:{level}:begin -->"
 POST_MARKER_END = "<!-- jlpt-kanji-table:{level}:end -->"
 POST_MARKER_LEGACY = "<!-- jlpt-kanji-table:{level} -->"
 POST_DIR = REPO_ROOT / "origa_landing" / "content" / "blog"
+POST_FILENAME = "jlpt-n5-kanji-list.md"
 
 
 def esc(text: str) -> str:
@@ -213,23 +214,30 @@ def markdown_table(level: str, locale: str, entries: list[dict]) -> str:
     )
     lines = [
         "| {} | {} | {} | {} | {} |".format(
-            e["kanji"],
-            "、".join(e.get("on_readings", [])),
-            "、".join(e.get("kun_readings", [])),
-            entry_meaning(e, locale),
-            "、".join(e.get("popular_words", [])[:3]),
+            md_cell(e["kanji"]),
+            md_cell("、".join(e.get("on_readings", []))),
+            md_cell("、".join(e.get("kun_readings", []))),
+            md_cell(entry_meaning(e, locale)),
+            md_cell("、".join(e.get("popular_words", [])[:3])),
         )
         for e in entries
     ]
     return head + "\n".join(lines)
 
 
+def md_cell(text: str) -> str:
+    # A literal `|` in data would split the GFM cell; escape it.
+    return text.replace("|", "\\|")
+
+
 def inject_post_tables(by_level: dict[str, list[dict]], dry_run: bool) -> None:
     for locale in LOCALES:
-        post = POST_DIR / locale / "jlpt-n5-kanji-list.md"
+        post = POST_DIR / locale / POST_FILENAME
         if not post.exists():
             continue
         src = post.read_text(encoding="utf-8")
+        injected_any = False
+        has_any_marker = False
         for level in LEVELS:
             begin = POST_MARKER_BEGIN.format(level=level)
             end = POST_MARKER_END.format(level=level)
@@ -239,13 +247,53 @@ def inject_post_tables(by_level: dict[str, list[dict]], dry_run: bool) -> None:
                 head, _, rest = src.partition(begin)
                 _, _, tail = rest.partition(end)
                 src = f"{head}{begin}\n{table}\n{end}{tail}"
+                has_any_marker = True
             elif legacy in src:
                 src = src.replace(legacy, f"{begin}\n{table}\n{end}")
+                has_any_marker = True
             else:
+                # Not every post embeds every level — a post chooses which
+                # tables it carries. Only a fully markerless post is the
+                # fail-loud case (see below); absent-level silence is fine.
                 continue
-            print(f"table injected: {post.relative_to(REPO_ROOT)} [{level}]")
-        if not dry_run:
+            injected_any = True
+            print(f"table injected: {post.relative_to(POST_DIR)} [{level}]")
+        if not has_any_marker:
+            # Fail loud, not silent: a post that exists but carries no
+            # marker at all means the generated tables have no anchor and
+            # would silently drift from the PDF data on the next change.
+            print(
+                f"warning: {post.relative_to(POST_DIR)} has no kanji-table "
+                f"markers; skipping injection (add a "
+                f"{POST_MARKER_BEGIN.format(level='N5')} block)",
+                file=sys.stderr,
+            )
+            continue
+        if not dry_run and injected_any:
             post.write_text(src, encoding="utf-8")
+
+
+def source_data_epoch() -> int:
+    """Machine-independent "when the data last changed" instant.
+
+    git commit time of the last change to kanji.json is stable across
+    checkouts (unlike filesystem mtime, which resets on every clone and
+    would silently dirty all 20 PDFs via the footer date). Falls back to
+    mtime when git is unavailable (e.g. an exported tree).
+    """
+    import subprocess
+
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "--", str(KANJI_JSON)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return int(out.stdout.strip())
+    except (OSError, ValueError, subprocess.CalledProcessError):
+        return int(KANJI_JSON.stat().st_mtime)
 
 
 def main() -> int:
@@ -253,12 +301,12 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="report planned files only")
     args = parser.parse_args()
 
-    # Binary determinism: pin the PDF creation metadata to the mtime of the
-    # source data, so a re-run on unchanged kanji.json is byte-identical and
-    # `git diff` stays empty (the rkyv-blob contract). The visible footer
-    # date is derived from the same instant: it reports the data, not the
-    # moment someone happened to run the script.
-    source_epoch = int(KANJI_JSON.stat().st_mtime)
+    # Binary determinism: pin the PDF creation metadata to the last git
+    # commit touching the source data, so a re-run on unchanged kanji.json
+    # is byte-identical on any machine and `git diff` stays empty (the
+    # rkyv-blob contract). The visible footer date is derived from the same
+    # instant: it reports the data, not the moment someone ran the script.
+    source_epoch = source_data_epoch()
     os.environ.setdefault("SOURCE_DATE_EPOCH", str(source_epoch))
     date = dt.datetime.fromtimestamp(source_epoch, dt.timezone.utc).strftime(
         "%Y-%m-%d"
