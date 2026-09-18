@@ -1,11 +1,32 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
-import { PhrasesPage } from "../../pages";
+import { HomePage, PhrasesPage } from "../../pages";
 
 When('пользователь открывает страницу фраз', async ({ page }) => {
     const phrasesPage = new PhrasesPage(page);
     await phrasesPage.goto();
     await phrasesPage.expectPhrasesVisible();
+});
+
+When('ищет фразу {string} на странице фраз', async ({ page }, query: string) => {
+    const phrasesPage = new PhrasesPage(page);
+    await phrasesPage.searchInput.fill(query);
+});
+
+When('нажимает навигацию к фразам', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.sidebarPhrases.click();
+    await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+});
+
+Then('страница фраз отображается', async ({ page }) => {
+    const phrasesPage = new PhrasesPage(page);
+    await expect(phrasesPage.phrasesPage).toBeVisible({ timeout: 15_000 });
+});
+
+Then('поле поиска фраз содержит {string}', async ({ page }, query: string) => {
+    const phrasesPage = new PhrasesPage(page);
+    await expect(phrasesPage.searchInput).toHaveValue(query, { timeout: 10_000 });
 });
 
 Then('на странице фраз отображается пустое состояние', async ({ page }) => {

@@ -6,7 +6,7 @@ use origa::domain::JapaneseLevel;
 
 /// Orthogonal axis to [`super::Filter`]: filters cards by their JLPT level.
 /// Composes with status filter and search through AND in `card_list_view`.
-#[derive(Clone, Copy, PartialEq, Default)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum JlptFilter {
     #[default]
     All,

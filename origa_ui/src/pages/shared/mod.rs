@@ -9,6 +9,10 @@ mod delete_callback;
 mod grouped_grid;
 mod grouping;
 mod jlpt_filter;
+mod list_scroll;
+mod list_ui_state;
+#[cfg(test)]
+mod list_ui_state_tests;
 mod load_error_screen;
 mod mark_as_known_button;
 mod mark_known_callback;
@@ -22,7 +26,8 @@ pub use card_answer_helper::{format_answer_parts, format_answer_text};
 pub use card_counts::CardCounts;
 pub use card_filter::{Filter, FilterBtn};
 pub use card_list_page::{
-    CardListExtras, CardsLoadedCallback, card_list_view, create_card_list_context,
+    CardListExtras, CardListViewConfig, CardsLoadedCallback, card_list_view,
+    create_card_list_context,
 };
 pub use card_status::CardStatus;
 pub use daily_load_list::DailyLoadList;
@@ -31,6 +36,8 @@ pub use delete_callback::{DeleteRequest, create_delete_callback};
 pub use grouped_grid::GroupedGrid;
 pub use grouping::{LevelIndex, ListGrouping, order_cards_by_group};
 pub use jlpt_filter::{JlptCounts, JlptFilter, JlptFilterBtn, jlpt_level_idx};
+pub use list_scroll::{restore_scroll_when_ready, track_scroll_while_authenticated};
+pub use list_ui_state::{DEFAULT_VISIBLE_COUNT, FirstRunGuard, ListPage, ListUiSlot, ListUiStore};
 pub use load_error_screen::LoadErrorScreen;
 pub use mark_as_known_button::MarkAsKnownButton;
 pub use mark_known_callback::create_mark_as_known_callback;
