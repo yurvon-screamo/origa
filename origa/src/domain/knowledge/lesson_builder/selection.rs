@@ -45,10 +45,10 @@ pub(crate) fn build_lesson_core(
             &all_cards,
             &mut selected_cards,
             &favorite_ids,
-            knowledge_set.new_cards_studied_today(),
-            daily_new_limit,
+            daily_new_limit.saturating_sub(knowledge_set.new_cards_studied_today()),
             jlpt_content,
             &mut rng,
+            now,
         );
     }
     fill_core_due_known(&all_cards, &mut selected_cards, &favorite_ids, now);
@@ -132,24 +132,21 @@ pub(super) fn collect_core_new_cards<'a, R: rand::Rng>(
     all_cards: &[(&'a Ulid, &'a StudyCard)],
     selected_cards: &mut Vec<(&'a Ulid, &'a StudyCard)>,
     favorite_ids: &HashSet<Ulid>,
-    new_cards_studied_today: usize,
-    daily_new_limit: usize,
+    daily_new_remaining: usize,
     jlpt_content: &JlptContent,
     rng: &mut R,
+    now: DateTime<Utc>,
 ) {
     // Compute `allowed` BEFORE distribute so the per-type slot allocator
     // knows the actual quota (otherwise it would build an unbounded list
     // and we'd slice the tail off, defeating the proportional split).
-    let now = Utc::now();
     let available = MAX_LESSON_SIZE.saturating_sub(selected_cards.len() + favorite_ids.len());
-    let daily_remaining = daily_new_limit
-        .saturating_sub(new_cards_studied_today)
-        .saturating_sub(
-            selected_cards
-                .iter()
-                .filter(|(_, c)| c.memory().is_new())
-                .count(),
-        );
+    let daily_remaining = daily_new_remaining.saturating_sub(
+        selected_cards
+            .iter()
+            .filter(|(_, c)| c.memory().is_new())
+            .count(),
+    );
     let allowed = daily_remaining.min(available);
 
     if allowed == 0 {

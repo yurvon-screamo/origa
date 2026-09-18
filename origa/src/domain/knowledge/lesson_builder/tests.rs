@@ -1394,61 +1394,6 @@ fn anchorless_phrases_are_distributed_not_clustered_at_end() {
     );
 }
 
-#[test]
-fn constraint_survives_multi_show_expansion() {
-    ensure_test_phrase_index();
-
-    let mut ks = KnowledgeSet::new();
-    // Anchor word rated hard → multi-show expansion will repeat it. The
-    // phrase anchored to it must still land after the FIRST showing.
-    let anchor_sc = ks.create_card(vocab_card("test")).expect("create anchor");
-    for _ in 0..3 {
-        ks.rate_card(
-            *anchor_sc.card_id(),
-            Rating::Again,
-            RateMode::ShortTerm,
-            RatingContext::Explicit,
-        )
-        .expect("rate anchor hard");
-    }
-    for w in ["hello", "bye", "fill1", "fill2", "fill3"] {
-        ks.create_card(vocab_card(w)).expect("create vocab");
-    }
-    ks.create_card(phrase_card(phrase_id_hello()))
-        .expect("create phrase"); // tokens [test, hello]
-
-    let lesson = ks.cards_to_lesson(
-        DailyBudget::with_daily_cards(5),
-        &JlptContent::new(),
-        JapaneseLevel::N5,
-        NativeLanguage::Russian,
-    );
-
-    let anchor_id = *anchor_sc.card_id();
-    let anchor_showings: Vec<usize> = lesson
-        .cards
-        .iter()
-        .enumerate()
-        .filter(|(_, (_, lc))| lc.card_id() == anchor_id)
-        .map(|(i, _)| i)
-        .collect();
-    let first_anchor = anchor_showings.first().copied();
-    let phrase_pos = lesson
-        .cards
-        .iter()
-        .enumerate()
-        .find(|(_, (_, lc))| lesson_phrase_id(lc) == Some(phrase_id_hello()))
-        .map(|(i, _)| i);
-
-    if let (Some(first), Some(php)) = (first_anchor, phrase_pos) {
-        assert!(
-            php > first,
-            "phrase must follow the first showing of its anchor even after expansion: \
-                 first={first}, phrase={php}"
-        );
-    }
-}
-
 // --- deal_by_card_id unit contract (Symptom 1, layout primitive) ---
 //
 // Pins the spacing invariant of the layout primitive directly, at the
@@ -2293,7 +2238,7 @@ fn ghost_card_shows_via_standard_generator_not_short_term() {
 }
 
 #[test]
-fn ghost_phrase_card_places_via_hand_respecting_phrase_after_word() {
+fn ghost_phrase_card_places_after_content_words() {
     // Arrange: фраза-добивание + слова в core
     ensure_test_phrase_index();
     let mut ks = KnowledgeSet::new();

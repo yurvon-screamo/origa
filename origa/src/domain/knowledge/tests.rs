@@ -1199,13 +1199,9 @@ fn limited_types_still_respect_daily_limit() {
     );
 
     // daily_new_limit bounds the count of distinct NEW cards introduced per
-    // day. Multi-show expansion (`expand_repeated_views`) may add extra slots
-    // showing the same card_id twice — those are not new cards, so the limit
-    // must be checked against distinct card_ids, not against `result.len()`.
-    // Before the proportional-slot fix distribute returned only Vocabulary
-    // (so kanji never reached the multi-show pipeline) and the looser check
-    // happened to hold; with the fix kanji enters the lesson and exercises
-    // the multi-show path, exposing the original assertion's intent bug.
+    // day. Each card shows at most once per lesson (the multi-show
+    // expansion is gone), so the limit is checked against distinct
+    // card_ids, which here equals the raw slot count of new cards.
     let distinct_new_count: usize = result
         .values()
         .map(|lc| lc.card_id())
@@ -1276,9 +1272,8 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         NativeLanguage::Russian,
     );
 
-    // Multi-show copies sit on top of the MAX_LESSON_SIZE primary cards
-    // (at most one extra showing per high-difficulty card), so the cap
-    // invariant is on DISTINCT cards, not raw slots.
+    // Every card shows at most once per lesson, so the lesson cap holds
+    // both for distinct cards and for raw slots.
     let distinct_cards: std::collections::HashSet<Ulid> =
         result.values().map(|lc| lc.card_id()).collect();
 
@@ -1288,8 +1283,8 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         distinct_cards.len()
     );
     assert!(
-        result.len() <= MAX_LESSON_SIZE * 2,
-        "Slot count with multi-show copies must stay within one copy per card, got {}",
+        result.len() <= MAX_LESSON_SIZE,
+        "Lesson slot count must stay within MAX_LESSON_SIZE, got {}",
         result.len()
     );
 }
