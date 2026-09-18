@@ -138,6 +138,10 @@ pub struct Content {
     // FAQ strings (offline + interface languages) so copy stays in sync.
     pub home_faq_free_question: &'static str,
     pub home_faq_free_answer: &'static str,
+    pub home_faq_wanikani_question: &'static str,
+    pub home_faq_wanikani_answer: &'static str,
+    pub home_faq_kanji_start_question: &'static str,
+    pub home_faq_kanji_start_answer: &'static str,
     pub home_problem_h2: &'static str,
     pub home_problem_text: &'static str,
     pub home_features_h2: &'static str,

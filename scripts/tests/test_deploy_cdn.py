@@ -167,6 +167,10 @@ def _sources_with_content(tmp_path: Path, furigana: bytes, chunk: bytes) -> None
     (tmp_path / "dictionaries/JmdictFurigana.txt").write_bytes(furigana)
     for index in range(1, 12):
         (tmp_path / f"dictionary/chunk_{index:02d}.json").write_bytes(chunk)
+    (tmp_path / "phrases").mkdir(exist_ok=True)
+    (tmp_path / "phrases/phrase_index.json").write_bytes(PHRASE_INDEX_CONTENT)
+    (tmp_path / "pitch").mkdir(exist_ok=True)
+    (tmp_path / "pitch/index.json").write_bytes(PITCH_INDEX_CONTENT)
 
 
 def _concatenated_source_digest(furigana: bytes, chunk: bytes) -> bytes:
@@ -178,6 +182,8 @@ def _concatenated_source_digest(furigana: bytes, chunk: bytes) -> bytes:
 
 FURIGANA_CONTENT = b"\xe6\x8c\x87|yubi|0:yubi\n"
 CHUNK_CONTENT = b'{"word": {}}'
+PHRASE_INDEX_CONTENT = b'{"phrases": []}'
+PITCH_INDEX_CONTENT = b'{"pitch": []}'
 
 
 def test_fresh_blobs_produce_no_problems(tmp_path: Path):
@@ -189,6 +195,16 @@ def test_fresh_blobs_produce_no_problems(tmp_path: Path):
         tmp_path / "dictionary/vocabulary.rkyv",
         RKYV_SCHEMA_VERSION,
         _concatenated_source_digest(FURIGANA_CONTENT, CHUNK_CONTENT),
+    )
+    _write_blob(
+        tmp_path / "phrases/phrase_index.rkyv",
+        RKYV_SCHEMA_VERSION,
+        hashlib.sha256(PHRASE_INDEX_CONTENT).digest(),
+    )
+    _write_blob(
+        tmp_path / "pitch/index.rkyv",
+        RKYV_SCHEMA_VERSION,
+        hashlib.sha256(PITCH_INDEX_CONTENT).digest(),
     )
 
     # Act
@@ -211,7 +227,7 @@ def test_missing_blob_is_reported(tmp_path: Path):
 
 
 def _write_fresh_blobs(tmp_path: Path) -> None:
-    """Write both blobs with headers matching the on-disk sources."""
+    """Write every rkyv blob with headers matching the on-disk sources."""
     _write_blob(
         tmp_path / "dictionaries/JmdictFurigana.rkyv",
         RKYV_SCHEMA_VERSION,
@@ -221,6 +237,16 @@ def _write_fresh_blobs(tmp_path: Path) -> None:
         tmp_path / "dictionary/vocabulary.rkyv",
         RKYV_SCHEMA_VERSION,
         _concatenated_source_digest(FURIGANA_CONTENT, CHUNK_CONTENT),
+    )
+    _write_blob(
+        tmp_path / "phrases/phrase_index.rkyv",
+        RKYV_SCHEMA_VERSION,
+        hashlib.sha256(PHRASE_INDEX_CONTENT).digest(),
+    )
+    _write_blob(
+        tmp_path / "pitch/index.rkyv",
+        RKYV_SCHEMA_VERSION,
+        hashlib.sha256(PITCH_INDEX_CONTENT).digest(),
     )
 
 
