@@ -3,7 +3,7 @@
 > **Статус:** Черновик → HUMAN GATE
 > **Дата:** 2026-07-18
 > **Автор:** @marketer (автономный прогон, пользователь отсутствовал — ожидает ревью)
-> **Источники:** `marketing/research/2026-07-18-*.md` (4 сырых research-отчёта)
+> **Источники:** 4 sentiment-ресерча 2026-07-18 (git-история)
 > **Охват:** Sentiment-ресерч + Origa-специфичный плейбук для обработки возражений на запуск
 > **Стадия жизненного цикла:** Pre-launch. Origa — BSL 1.1, 4 локали (EN/RU/KO/VI), Rust + Leptos 0.8 + Tauri v2, FSRS, локальные NDLOCR + Whisper, offline-first
 
@@ -37,10 +37,10 @@
 - **Источники:** Tavily web search (`site:reddit.com` + `site:apps.apple.com` + `site:play.google.com`), WaniKani Community, Bunpro Community, Trustpilot, отзывы App Store/Google Play, треды Hacker News, GitHub issues/reviews
 - **Reddit `.json` эндпоинты НЕ использовались** — мертвы с мая 2026
 - **Сырые research-файлы:**
-  - `marketing/research/2026-07-18-fsrs-srs-ecosystem.md` — Anki FSRS transition, Mochi.cards, RemNote
-  - `marketing/research/2026-07-18-jp-learning-competitors.md` — Bunpro, WaniKani, Migii, ReWord, Anki, Duolingo
-  - `marketing/research/2026-07-18-young-edtech-startups.md` — глубокий разбор Migaku, jpdb.io, Kitsun, MaruMori, Torii
-  - `marketing/research/2026-07-18-adjacent-tools-cross-themes.md` — Yomitan, восприятие OCR/STT, BSL/Tauri/Leptos, паттерны Show HN
+  - (удалён, git-история) — Anki FSRS transition, Mochi.cards, RemNote
+  - (удалён, git-история) — Bunpro, WaniKani, Migii, ReWord, Anki, Duolingo
+  - (удалён, git-история) — глубокий разбор Migaku, jpdb.io, Kitsun, MaruMori, Torii
+  - (удалён, git-история) — Yomitan, восприятие OCR/STT, BSL/Tauri/Leptos, паттерны Show HN
 
 **Ограничения:**
 
@@ -86,7 +86,7 @@
 > "BSL breaks that guarantee. And the reaction has been fierce."
 > URL: блог VictoriaMetrics (освещён в ресерче)
 
-**Статус Origa:** Пробел (текущий). `marketing/product-hunt.md:41` говорит «free and open-source» — **фактически неверно для BSL 1.1**. README корректно указывает BSL. Это несоответствие — немедленный удар по доверию.
+**Статус Origa:** Пробел (текущий). `docs/marketing/product-hunt.md:41` говорит «free and open-source» — **фактически неверно для BSL 1.1**. README корректно указывает BSL. Это несоответствие — немедленный удар по доверию.
 
 **Ответ (Builder-Architect, честный):**
 > Origa использует BSL 1.1 — source-available, но не OSI-approved open source. Выбор осознанный: BSL не даёт форку отрезать гарантии приватности и перепродать Origa с добавленной телеметрией. Код на GitHub, можно прочитать каждую строку, собрать самостоятельно и свободно использовать для личных целей. После change-date, определённой в лицензии, она конвертируется в пермиссивную.
@@ -367,11 +367,11 @@
 
 ### 🔴 БЛОКЕРЫ (высокий риск для доверия, если не починить)
 
-**B1. `marketing/product-hunt.md:41` говорит «free and open-source» — фактически неверно для BSL 1.1.**
+**B1. `docs/marketing/product-hunt.md:41` говорит «free and open-source» — фактически неверно для BSL 1.1.**
 
 - **Действие:** Заменить на «free for personal use, source-available under BSL 1.1» или похожее.
 - **Почему:** Любой комментатор на HN/Reddit, открывший LICENSE, зафиксирует удар по доверию на лету. Это риск #1, который можно избежать.
-- **Охват:** `marketing/product-hunt.md` Maker Comment строка 41. Также прогрепать `marketing/README.md` и `marketing/blog/*` на похожие формулировки.
+- **Охват:** `docs/marketing/product-hunt.md` Maker Comment строка 41. Также прогрепать `docs/marketing/README.md` и `docs/marketing/blog/*` на похожие формулировки.
 
 **B2. Модель монетизации не решена — возражение #15 нельзя ответить.**
 
@@ -407,7 +407,7 @@
 
 **I5. Аудит формулировок лицензии во всех маркетинговых материалах.**
 
-- **Действие:** Прогрепать «open source», «OSS», «free» в `marketing/` и `origa_landing/` контент-файлах. Выровнять с реальностью BSL 1.1.
+- **Действие:** Прогрепать «open source», «OSS», «free» в `docs/marketing/` и `origa_landing/` контент-файлах. Выровнять с реальностью BSL 1.1.
 - **Почему:** То же, что B1 — консистентность предотвращает удар «они соврали про OSS».
 
 ### 🟢 ЖЕЛАТЕЛЬНО (улучшает приём, не блокирует)
@@ -526,7 +526,7 @@
 
 ## 7. Статус фактчекинга
 
-См. `marketing/playbooks/.factcheck.json` для верификации по каждому утверждению. Сводка:
+См. `docs/marketing/playbooks/.factcheck.json` для верификации по каждому утверждению. Сводка:
 
 - **Утверждения о Origa** (лицензия, стек, локали): **верифицированы** против README + исходников репо.
 - **Утверждения о конкурентах** (таймлайн цен Migaku, кап 10K jpdb.io, maintenance mode Leptos, бенчмарки NDLOCR, CER Whisper): **верифицированы** против цитируемых URL в сырых research-файлах.

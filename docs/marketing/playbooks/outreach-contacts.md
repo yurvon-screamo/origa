@@ -2,7 +2,7 @@
 
 > **Статус:** Черновик → HUMAN GATE
 > **Дата:** 2026-07-21
-> **Связанный документ:** `marketing/strategies/origa-distribution-platforms.md` (стратегия верхнего уровня)
+> **Связанный документ:** `docs/marketing/strategies/origa-distribution-platforms.md` (стратегия верхнего уровня)
 > **Назначение:** Operational слой — куда писать, какой процесс, что работает / не работает для каждой Tier 1 площадки. Стратегический документ даёт «куда», этот playbook даёт «как именно».
 > **Источники:** web research 2026-07-21, `objections-handling.md`, `reddit-strategy.md`, `origa-seo.md`
 
@@ -639,7 +639,7 @@ Naver Cafes требуют **длительного onboarding'а** (недел�
 
 ## 16. Outreach tracker — структура
 
-Создать `marketing/playbooks/outreach-tracker.md` после HUMAN GATE. Колонки:
+Создать `docs/marketing/playbooks/outreach-tracker.md` после HUMAN GATE. Колонки:
 
 | Площадка | Контакт | Формат | Язык | Дата отправки | Статус | Followup #1 | Финал | Заметки |
 |---|---|---|---|---|---|---|---|---|

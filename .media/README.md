@@ -7,7 +7,7 @@
 | Путь | Содержимое | В git | Кто использует |
 | --- | --- | --- | --- |
 | `.media/` | Скрины приложений, стор-ассеты, баннеры, бренд-графика | да | `docs/landing-content-plan.md` (указатель на карту); стор- и маркетинг-материалы по конвенциям ниже |
-| `marketing/` | Стратегии, исследования, блог-черновики, визитка `ru.page.png`, арт маскота в `draft_img/` | да | `docs/decisions/*`, `.qlty/qlty.toml` (secrets-scan excludes) |
+| `docs/marketing/` | Стратегии, исследования, блог-черновики, визитка `ru.page.png`, арт маскота в `draft_img/` | да | `docs/decisions/*`, `.qlty/qlty.toml` (secrets-scan excludes) |
 | `origa_landing/public/` | Деплой-ассеты лендинга: page images, og-image, favicon | да | `origa_landing/src` (`home.rs`, `features.rs`, `seo.rs`, `integrations.rs`), корневые README |
 | `origa_ui/public/` | Лого приложения (1024/128/32) + `external_icons/` — лого конкурентов | да | `origa_ui` (лого); favicon лендинга — байт-в-байт копия `logo-32.png` |
 | `tauri/icons/`, `tauri/gen/**`, `tauri/msix/Assets/` | Иконки приложений — генерённые | да | сборка Tauri; руками не править |
@@ -56,7 +56,7 @@ Feature graphics (PNG 1024×500, требование Play): `banners/feature_gr
 1. Новые десктоп-скрины: `.media/screenshots/{platform}/{lang}/{screen}.png`, platform — `macos|windows|linux`, lang — `en|ru`, screen — snake_case, один экран — один файл.
 2. Новые стор-скрины: `.media/store/{lang}/N_topic.png` (1024×1536); device-версии — в `store/device/` (ru) и `store/device_en/` (en), 1284×2778.
 3. Лендинг-изображения создаются только в `origa_landing/public/images/` (`{lang}.{name}.png`), копии в `.media/` не делаются.
-4. Корневые `README.md`, `README.ru.md` и `marketing/product-hunt.md` ссылаются на `origa_landing/public/images/` относительными путями из корня репо. Переименовывая или удаляя файлы там, обновляй корневые README в том же PR.
+4. Корневые `README.md`, `README.ru.md` и `docs/marketing/product-hunt.md` ссылаются на `origa_landing/public/images/` относительными путями из корня репо. Переименовывая или удаляя файлы там, обновляй корневые README в том же PR.
 5. `tauri/icons*` и `tauri/gen/**` — генерённые (tauri icon, platform gen). Ручная правка теряется при следующей регенерации; источник — исходник лого.
 6. `origa_ui/public/external_icons/` — товарные знаки сторонних продуктов (Anki, Duolingo, Irodori, Migii, Minna no Nihongo) для страницы сравнения. Вне этого контекста не использовать.
 

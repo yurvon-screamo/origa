@@ -98,7 +98,7 @@ Public-resolver propagation was partial at verification time (Cloudflare DoH upd
 ## Open Questions (not resolved by this ADR)
 
 1. **Did this actually fix Yandex indexing?** Not yet known. Requires Yandex Webmaster re-crawl request + 1–2 weeks of observation. ADR to be updated with outcome.
-2. **Google "Discovered — currently not indexed"** is unchanged by this ADR — it is an algorithmic decision unrelated to DNS. Resolution requires backlinks and time, not infrastructure changes. See `marketing/strategies/origa-seo.md` (status: 0 backlinks, 1 GitHub star).
+2. **Google "Discovered — currently not indexed"** is unchanged by this ADR — it is an algorithmic decision unrelated to DNS. Resolution requires backlinks and time, not infrastructure changes. See `docs/marketing/strategies/origa-seo.md` (status: 0 backlinks, 1 GitHub star).
 
 ## References
 

@@ -124,7 +124,7 @@ Body (~400-600 слов, story-format):
 Для будущего **read-only мониторинга** болей (концепция Codex First Customer Finder, но без авто-постинга) — нужен Reddit script-app:
 
 1. Создать script-app на <https://www.reddit.com/prefs/apps> (type: `script`, redirect `http://localhost:8080`).
-2. Сохранить `client_id` + `client_secret` + `user_agent` в `marketing/.env` (через @tool-accessor, значения не покидают .env).
+2. Сохранить `client_id` + `client_secret` + `user_agent` в `docs/marketing/.env` (через @tool-accessor, значения не покидают .env).
 3. Read-only мониторинг через PRAW: поиск «anki alternative», «japanese learning app», болей — для тем полезных ответов.
 
 Это **не блокер Фазы 1**. Фазу 1 можно начинать руками прямо сейчас — просто открывать r/LearnJapanese и отвечать на вопросы.
@@ -138,4 +138,4 @@ Body (~400-600 слов, story-format):
 - [ ] Хотя бы 2–3 ответа с 20+ upvotes (значит тон заходит)
 - [ ] Аккаунту ≥ 3–4 недели (не «появился и сразу promo»)
 - [ ] Launch-post draft прошел HUMAN GATE
-- [ ] Factcheck на claims в посте (особенно competitor claims и FSRS framing — см. `marketing/blog/.factcheck.json`)
+- [ ] Factcheck на claims в посте (особенно competitor claims и FSRS framing — см. `docs/marketing/blog/.factcheck.json`)
