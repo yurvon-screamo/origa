@@ -28,7 +28,7 @@ utils/       — CLI утилиты
 packaging/   — Flatpak-упаковка Linux-дистрибуции (ADR-056)
 cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
 scripts/     — Python скрипты обработки данных
-docs/        — документация (decisions/)
+docs/        — документация (decisions/, marketing/)
 models/      — ML модели
 ```
 
@@ -197,6 +197,10 @@ Linux-каналы: Flatpak (universal, WebKit из GNOME runtime) + `.deb` (Deb
 - `println!` / `console.log` в production / удаление тестов
 - Sans-serif шрифты (только Cormorant Garamond + DM Mono)
 - `border-radius` на основных UI / `box-shadow` с blur (только жёсткие offset-тени)
+
+## Маркетинг и SEO (`docs/marketing/`)
+
+Вся маркетинговая/SEO-документация собрана в `docs/marketing/` (вход: `docs/marketing/README.md` — карта документов). Ключевое: спрос по 4 локалям — `docs/marketing/research/2026-09-16-keyword-research.md` (§15 — практическая валидация Wordstat/Trends/Bing API/GSC); мастер-стратегия — `docs/marketing/strategies/origa-seo.md`; исполнение контент-конвейера — issue #576. Конвенции: ресёрчи `YYYY-MM-DD-тема.md`, устаревшее не удаляется (баннер `⚠️ Superseded` + ссылка на преемника), ключи/креды в репо не хранить (ключ Bing Webmaster — в uwuwu-вики).
 
 ## Документация лендинга (`/docs/*`)
 

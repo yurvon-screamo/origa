@@ -6,7 +6,7 @@
 > **Охват:** 4 рынка (EN / RU / VI / KO)
 > **Лицензия:** BSL 1.1 — учитывается для OSS-leaning площадок
 > **Ограничение scope:** только **бесплатные** каналы публикации (review / guest post / listing / community mention). Платные sponsor slots, podcast advertising, paid placements — out of scope.
-> **Источники:** `marketing/research/2026-07-18-*.md` (4 research-файла), `marketing/playbooks/objections-handling.md`, `marketing/strategies/origa-seo.md`, `marketing/reddit-strategy.md`, `marketing/product-hunt.md`, `marketing/koharu.md`, web research 2026-07-21
+> **Источники:** `docs/marketing/research/2026-07-18-*.md` (4 research-файла), `docs/marketing/playbooks/objections-handling.md`, `docs/marketing/strategies/origa-seo.md`, `docs/marketing/reddit-strategy.md`, `docs/marketing/product-hunt.md`, `koharu.md` *(файл не сохранён в репо)*, web research 2026-07-21
 
 ---
 
@@ -39,7 +39,7 @@ Outreach-ready: playbook в §6 даёт paste-ready шаблоны и cadence-�
 | `reddit-strategy.md` | Reputation-building + launch на Reddit | Всё вне Reddit: блоги, community, aggregators, niche-сообщества |
 | `product-hunt.md` | Запуск на Product Hunt | Всё вне PH и Reddit |
 | `objections-handling.md` | Talking points для 15 launch-возражений | Язык outreach-запросов наследует этот brand voice |
-| `koharu.md` | Precedent: traction Rust-проекта через r/rust + r/LocalLLaMA + Discord + независимые дайджесты | Подтверждает ценность независимых дайджестов как канала |
+| `koharu.md` *(файл не сохранён в репо)* | Precedent: traction Rust-проекта через r/rust + r/LocalLLaMA + Discord + независимые дайджесты | Подтверждает ценность независимых дайджестов как канала |
 
 Стратегия не заменяет ни один из этих артефактов. Она работает параллельно и фидит в launch-последовательность из `reddit-strategy.md` §2.
 
@@ -160,7 +160,7 @@ Outreach-ready: playbook в §6 даёт paste-ready шаблоны и cadence-�
 
 **Конкретные действия:**
 
-1. Построить outreach-tracker (таблица в `marketing/playbooks/outreach-tracker.md`). Колонки: Площадка, Контакт, Формат, Дата отправки, Статус, Дата followup, Заметки.
+1. Построить outreach-tracker (таблица в `docs/marketing/playbooks/outreach-tracker.md`). Колонки: Площадка, Контакт, Формат, Дата отправки, Статус, Дата followup, Заметки.
 2. Персонализировать Tier 1 EN-pitch'и, используя talking points из `objections-handling.md`. Отправить в Tofugu, skerritt.blog, MariaTheMillennial.
 3. Идентифицировать владельцев Naver Cafes (KO) — Naver cafes требуют join + наработку репутации перед pitch. Начать цикл join + lurk.
 4. Изучить культуру DC Inside JLPT gallery — прочитать pinned-треды, понять модерационные нормы. DC Inside славится прямотой; плохо поданный промо будет ratio'нут.
@@ -389,7 +389,7 @@ BSL 1.1 — самый предсказуемый friction-point этой стр
 
 ### 7.4 Внутренняя consistency-проверка
 
-Перед любым pitch'ем прогрепать `marketing/` и `origa_landing/` на: `open source`, `OSS`, `free software`, `libre`. Каждое вхождение должно либо (a) относиться к стороннему продукту, который реально OSI, либо (b) быть переформулировано в «source-available» / «free for personal use» / «BSL 1.1». Это action items B1 / I5 из `objections-handling.md`.
+Перед любым pitch'ем прогрепать `docs/marketing/` и `origa_landing/` на: `open source`, `OSS`, `free software`, `libre`. Каждое вхождение должно либо (a) относиться к стороннему продукту, который реально OSI, либо (b) быть переформулировано в «source-available» / «free for personal use» / «BSL 1.1». Это action items B1 / I5 из `objections-handling.md`.
 
 ---
 
@@ -417,7 +417,7 @@ BSL 1.1 — самый предсказуемый friction-point этой стр
 - **Paid sponsor slots** (YouTube, podcasts, influencer networks) — out of scope. Добавить отдельный документ если появится бюджет.
 - **Конференции / meetup talks** — возможный будущий трек, не сейчас
 - **Influencer-агентства** — прямой контакт предпочтительнее; агентства добавляют markup без пропорциональной ценности на этой стадии
-- **Discord community building** — отдельная задача; см. `koharu.md` для precedent'а
+- **Discord community building** — отдельная задача; см. koharu.md *(файл не сохранён)* *(файл не сохранён в репо)* для precedent'а
 - **Блоги конкурентов** (Migaku blog, Kanjijo, Shinobi Japanese) — бесплатно не опубликуют, исключены
 - **YouTube sponsor slots** — все платные, исключены
 - **Podcast advertising** — платное, исключено
@@ -428,7 +428,7 @@ BSL 1.1 — самый предсказуемый friction-point этой стр
 
 ### Milestone 1 — Outreach-tracker построен (1 день)
 
-Создать `marketing/playbooks/outreach-tracker.md`. Предзаполнить Tier 1 + Tier 2 из §3.
+Создать `docs/marketing/playbooks/outreach-tracker.md`. Предзаполнить Tier 1 + Tier 2 из §3.
 
 ### Milestone 2 — Tier 1 long-lead pitch'и отправлены (1 неделя)
 
@@ -456,7 +456,7 @@ Re-pitch в annual roundups. Добавить новые обнаруженны�
 
 Claims в этом документе берутся из:
 
-- `marketing/research/2026-07-18-*.md` (4 research-файла — упоминания конкурентов, blog references, паттерны комьюнити)
+- `docs/marketing/research/2026-07-18-*.md` (4 research-файла — упоминания конкурентов, blog references, паттерны комьюнити)
 - Web research 2026-07-21 (liveness площадок, размеры аудиторий)
 - `objections-handling.md` (talking points, brand voice)
 

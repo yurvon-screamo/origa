@@ -2,7 +2,7 @@
 
 > **Source:** official JLPT overseas report, December 2025 session — <https://www.jlpt.jp/statistics/pdf/2025_2_9.pdf>
 > **Saved:** 2026-09-16 (market-priority research for localization roadmap)
-> **Use:** demand proxy per language market; feeds keyword research (see `keyword-research-report-2026-09.md`).
+> **Use:** demand proxy per language market; feeds keyword research (see `docs/marketing/research/2026-09-16-keyword-research.md`).
 
 ## Методика
 

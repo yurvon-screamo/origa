@@ -1,4 +1,5 @@
 # Origa — Keyword Research Report (Pre-Launch, Free Tools Only)
+> ⚠️ **Superseded 2026-09-16:** актуальный отчёт — [`2026-09-16-keyword-research.md`](2026-09-16-keyword-research.md). Сохранён как pre-launch базлайн (нулевое состояние домена).
 
 <!-- markdownlint-disable-file MD024 -->
 <!-- Intentional duplicate headings: per-market repeated report sections (EN/RU/VI/KO). -->

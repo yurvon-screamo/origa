@@ -1,10 +1,11 @@
+> ✅ **ИСПОЛНЕН 2026-09-18:** P0 (IndexNow), P1 (headers), P2 (llms.txt), P3 (browserconfig), P4 (keywords) верифицированы на проде. Остаток P5 (FAQPage/LearningResource/sameAs/свежесть) → issue #576 Волна 1.
 # SEO Phase 2 — Technical Gaps vs kana-dojo (Tech Lead Brief)
 
 > **From:** marketing (SEO strategy)
 > **To:** Tech Lead
 > **Date:** 2026-06-26
-> **Context:** Phase 1 (content-level SEO) landed — keyword-targeted meta ×4 locales, VI «Kanji»→«Hán tự» sweep, README sync. See `marketing/strategies/origa-seo.md`. Technical SEO infra (ADR-007/011, JSON-LD, hreflang, sitemap) is already production-grade.
-> **Scope:** This brief covers the **technical gaps** vs competitor `lingdojo/kana-dojo` (2.7k★, Vercel-backed) identified in `marketing/kana-report.md` + the kana-dojo deep-dive. These are backend/infra features, not copy — they need engineering.
+> **Context:** Phase 1 (content-level SEO) landed — keyword-targeted meta ×4 locales, VI «Kanji»→«Hán tự» sweep, README sync. See `docs/marketing/strategies/origa-seo.md`. Technical SEO infra (ADR-007/011, JSON-LD, hreflang, sitemap) is already production-grade.
+> **Scope:** This brief covers the **technical gaps** vs competitor `lingdojo/kana-dojo` (2.7k★, Vercel-backed) identified in `docs/marketing/research/2026-06-kana-dojo-promotion.md` + the kana-dojo deep-dive. These are backend/infra features, not copy — they need engineering.
 > **Severity rationale:** Pre-launch, zero domain authority, 1 GitHub star. Bing/Yandex indexing was a multi-week fight (ADR-007/011). Anything that speeds indexing or broadens rich-results eligibility is high-value.
 
 ---
@@ -73,7 +74,7 @@
 
 **What to build:**
 
-1. `origa_landing/public/llms.txt` — concise markdown: what Origa is, the 4-locale native-language wedge, key features, JLPT/FSRS/offline/OCR, link to landing + GitHub. Keep it factual, brand-voice (see `marketing/strategies/origa-seo.md` §10 brand rules; `free` is now permitted, `open source`/`license`/`BSL` are not).
+1. `origa_landing/public/llms.txt` — concise markdown: what Origa is, the 4-locale native-language wedge, key features, JLPT/FSRS/offline/OCR, link to landing + GitHub. Keep it factual, brand-voice (see `docs/marketing/strategies/origa-seo.md` §10 brand rules; `free` is now permitted, `open source`/`license`/`BSL` are not).
 2. Add AI-crawler courtesy note to `robots.txt` (kana-dojo added an "AI-friendly content reference" block). Decide: do we ALLOW AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended)? **Recommend allow** — GEO is the upside; the ADR-011 Cloudflare "AI Audit"/"Pay Per Crawl" runbook already notes this is controlled at the CF layer, so confirm it's disabled there.
 
 **Reference:** kana-dojo `llms.txt`, `public/robots.txt` AI block, `/docs/SEO_HEALTH_CHECK_PLAN.md`.
@@ -96,16 +97,16 @@
 
 ### P4 — Meta keywords (Bing-specific, per-locale)
 
-**Why:** Google ignores `<meta name="keywords">`; **Bing still reads it** as a weak signal. Harmless for Google. With our VI/RU/KO markets on Bing/Yandex/Naver, worth the small effort. This needs **per-locale keyword data** — already collected in `docs/keyword-research-report.md`.
+**Why:** Google ignores `<meta name="keywords">`; **Bing still reads it** as a weak signal. Harmless for Google. With our VI/RU/KO markets on Bing/Yandex/Naver, worth the small effort. This needs **per-locale keyword data** — already collected in `docs/marketing/research/2026-06-26-keyword-research-v1.md`.
 
 **What to build:**
 
 1. Add a `keywords: &'static str` field to the `Content` struct in `origa_landing/src/content/mod.rs`.
-2. Populate per-locale (en/ru/ko/vi.rs) using `docs/keyword-research-report.md` — ~10-15 keywords each, comma-separated, localized to the market's actual search terms (e.g. VI must include `hán tự`, RU `кандзи`/`на русском`, KO `일본어 공부`/`입문`).
+2. Populate per-locale (en/ru/ko/vi.rs) using `docs/marketing/research/2026-06-26-keyword-research-v1.md` — ~10-15 keywords each, comma-separated, localized to the market's actual search terms (e.g. VI must include `hán tự`, RU `кандзи`/`на русском`, KO `일본어 공부`/`입문`).
 3. Add `<Meta name="keywords" content=c.keywords/>` to `PageMeta` in `components/seo.rs`. (Optional: per-page keywords — start with a single site-level set per locale, refine later.)
 4. Add a test in `tests/seo_meta.rs` asserting keywords meta is present and localized (mirror the existing locale-assertion pattern).
 
-**Reference:** kana-dojo `core/i18n/locales/*/metadata.json` (40+ keywords/page). Source data: `docs/keyword-research-report.md`.
+**Reference:** kana-dojo `core/i18n/locales/*/metadata.json` (40+ keywords/page). Source data: `docs/marketing/research/2026-06-26-keyword-research-v1.md`.
 
 **Acceptance:** Every page has localized `<meta name="keywords">`; test passes; no English keywords leaking into VI/KO/RU sets.
 
@@ -127,7 +128,7 @@
 
 **Reference:** kana-dojo schemas: `CourseSchema`, `AuthorSchema`, `LearningResourceSchema`, `VideoSchema`, `FAQSchema`, `BreadcrumbSchema` (see `SEO_IMPROVEMENTS_SUMMARY.md` Phase 2).
 
-**Acceptance:** Each schema validates in Google Rich Results Test (`search.google.com/test/rich-results`). No warnings about missing required fields. FAQ Q&A is localized and answers real search queries (cross-check `docs/keyword-research-report.md` long-tails).
+**Acceptance:** Each schema validates in Google Rich Results Test (`search.google.com/test/rich-results`). No warnings about missing required fields. FAQ Q&A is localized and answers real search queries (cross-check `docs/marketing/research/2026-06-26-keyword-research-v1.md` long-tails).
 
 ---
 
@@ -165,9 +166,9 @@
 
 ## References
 
-- Strategy: `marketing/strategies/origa-seo.md`
-- Keyword data: `docs/keyword-research-report.md`
-- Competitor research: `marketing/kana-report.md` + kana-dojo `SEO_IMPROVEMENTS_SUMMARY.md`
+- Strategy: `docs/marketing/strategies/origa-seo.md`
+- Keyword data: `docs/marketing/research/2026-06-26-keyword-research-v1.md`
+- Competitor research: `docs/marketing/research/2026-06-kana-dojo-promotion.md` + kana-dojo `SEO_IMPROVEMENTS_SUMMARY.md`
 - Prior SEO decisions: `docs/decisions/ADR-007` (DNS), `ADR-011` (canonicalization), `ADR-013` (favicon), `ADR-014` (sitemap lastmod)
 - IndexNow spec: <https://www.indexnow.org/>
 - llms.txt spec: <https://llmstxt.org/>

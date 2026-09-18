@@ -362,7 +362,7 @@ Legal text pages. Minimal styling. No complex layout.
 
 ### Keyword Map (data-driven, обновлено 2026-09-16)
 
-> Основа: [`keyword-research-report-2026-09.md`](keyword-research-report-2026-09.md) — полные данные спроса (Suggest-частоты, 4 рынка) и конкуренции (SERP-состав). Приоритет = спрос × виннабельность. Difficulty: EN/RU — Google/Яндекс-прокси, KO/VI — Bing-прокси (2026-09-16).
+> Основа: [`docs/marketing/research/2026-09-16-keyword-research.md`](marketing/research/2026-09-16-keyword-research.md) — полные данные спроса (Suggest-частоты, 4 рынка) и конкуренции (SERP-состав). Приоритет = спрос × виннабельность. Difficulty: EN/RU — Google/Яндекс-прокси, KO/VI — Bing-прокси (2026-09-16).
 
 ### EN Keywords
 
