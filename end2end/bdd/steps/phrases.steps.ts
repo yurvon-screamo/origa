@@ -40,6 +40,13 @@ Then('карточки фраз имеют непустой текст', async (
     expect(text?.trim().length ?? 0).toBeGreaterThan(0);
 });
 
+// Main CJK ideograph block only — a deliberate subset of the
+// translator's has_kanji ranges (Ext-A/compat omitted): any card this
+// filter picks is guaranteed to grow a ruby, which is the direction
+// the assertion needs. No need to sync this regex with the translator
+// gate if the gate ever widens.
+const KANJI_RE = /[\u4E00-\u9FFF]/;
+
 Then('текст фраз содержит фуригану', async ({ page }) => {
     // Furigana arrives either from the precompute blob (#521 fast path)
     // or from the background tokenizer warmup — generous timeout covers
@@ -47,11 +54,23 @@ Then('текст фраз содержит фуригану', async ({ page }) =
     // Anchored to the card (not the translator span): the translator's
     // no-language fallback branch renders plain text without inner
     // test ids, and the card is the stable container either way.
-    const first = page.getByTestId("phrases-card-item").first();
-    await expect(first).toBeVisible({ timeout: 30_000 });
+    //
+    // The card is picked by kanji presence, NOT by list position (#584):
+    // the first card may legitimately be an all-kana phrase — the
+    // translator gates ruby on has_kanji (translator.rs), so it renders
+    // no ruby by design — and the fresh-user card order floats (Ulid
+    // sort), which made ruby-in-first-card a data gamble that flaked
+    // this scenario. A kanji-bearing card must always grow a ruby once
+    // its tokens render; that invariant is the furigana contract this
+    // step pins.
+    const kanjiCard = page
+        .getByTestId("phrases-card-item")
+        .filter({ hasText: KANJI_RE })
+        .first();
+    await expect(kanjiCard).toBeVisible({ timeout: 30_000 });
     await expect(
-        first.locator(".furigana-ruby").first(),
-        "phrase text must render kanji with furigana ruby",
+        kanjiCard.locator(".furigana-ruby").first(),
+        "kanji-bearing phrase card must render furigana ruby",
     ).toBeVisible({ timeout: 120_000 });
 });
 
