@@ -41,6 +41,9 @@ const ALL_SLUGS: &[&str] = &[
     "how-many-kanji-to-learn",
     "learn-japanese-from-anime",
     "jlpt-2026-dates",
+    "jlpt-n5-kanji-list",
+    "is-kanji-hard-to-learn",
+    "how-to-learn-japanese-by-yourself",
 ];
 
 // =========================================================================
@@ -318,6 +321,14 @@ async fn vi_articles_do_not_contain_kanji() {
     // `PROPER_NOUNS_WITH_KANJI_SUBSTRING` rather than weakening the assertion.
     const PROPER_NOUNS_WITH_KANJI_SUBSTRING: &[&str] = &["kanjisnap"];
     const KANJI_DOC_SLUG_HREF: &str = r#"href="/vi/docs/kanji""#;
+    // Internal links keep the untranslated shared slug in their href; the
+    // anchor text is localised to "hán tự". Same rationale as the doc-slug
+    // href above: URL slugs are not content. Extend this list when a new
+    // article links another slug containing "kanji".
+    const KANJI_POST_SLUG_HREFS: &[&str] = &[
+        r#"href="/vi/blog/jlpt-n5-kanji-list""#,
+        r#"href="/vi/blog/how-many-kanji-to-learn""#,
+    ];
 
     for slug in ALL_SLUGS {
         let (_, body) = get(&format!("/vi/blog/{slug}")).await;
@@ -339,12 +350,17 @@ async fn vi_articles_do_not_contain_kanji() {
             .map(|s| lower.matches(s).count())
             .sum::<usize>();
         let slug_href_count = lower.matches(KANJI_DOC_SLUG_HREF).count();
-        let kanji_count = raw_count - proper_noun_count - slug_href_count;
+        let post_slug_href_count: usize = KANJI_POST_SLUG_HREFS
+            .iter()
+            .map(|h| lower.matches(h).count())
+            .sum();
+        let kanji_count = raw_count - proper_noun_count - slug_href_count - post_slug_href_count;
         assert_eq!(
             kanji_count, 0,
             "VI article {slug} must use 'hán tự' instead of 'kanji' per SEO strategy; \
              found {kanji_count} conceptual occurrence(s) \
-             (raw {raw_count} - proper-noun {proper_noun_count} - slug-href {slug_href_count})"
+             (raw {raw_count} - proper-noun {proper_noun_count} - slug-href {slug_href_count} \
+             - post-slug-href {post_slug_href_count})"
         );
     }
 }
