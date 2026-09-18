@@ -10,6 +10,11 @@ manually/via the script's own totals.
 
 from __future__ import annotations
 
+import hashlib
+import json
+from datetime import datetime as _dt
+import datetime as dt
+
 import build_jlpt_pdf as gen
 
 ENTRIES = [
@@ -53,6 +58,39 @@ class TestMarkdownTable:
         table = gen.markdown_table("N5", "vi", ENTRIES)
         assert table.startswith("| Hán tự |")
         assert "kanji" not in table.splitlines()[0]
+
+
+class TestResolveSourceEpoch:
+    def test_matching_sha_reuses_manifest_date(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
+        sha = hashlib.sha256(gen.KANJI_JSON.read_bytes()).hexdigest()
+        (tmp_path / "MANIFEST.json").write_text(
+            json.dumps({"kanji_sha256": sha, "generated_from": "2020-01-01"}),
+            encoding="utf-8",
+        )
+        epoch, changed = gen.resolve_source_epoch()
+        assert not changed
+        assert dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime(
+            "%Y-%m-%d"
+        ) == "2020-01-01"
+
+    def test_changed_sha_moves_date_to_today(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
+        (tmp_path / "MANIFEST.json").write_text(
+            json.dumps({"kanji_sha256": "stale", "generated_from": "2020-01-01"}),
+            encoding="utf-8",
+        )
+        epoch, changed = gen.resolve_source_epoch()
+        today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+        assert changed
+        assert dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime(
+            "%Y-%m-%d"
+        ) == today
+
+    def test_missing_manifest_is_first_render(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
+        _, changed = gen.resolve_source_epoch()
+        assert changed
 
 
 class TestInjectPostTables:

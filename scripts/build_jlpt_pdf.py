@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import sys
@@ -41,6 +42,11 @@ from weasyprint import HTML
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KANJI_JSON = REPO_ROOT / "cdn" / "dictionary" / "kanji.json"
 OUT_ROOT = REPO_ROOT / "origa_landing" / "public" / "jlpt"
+# Tracked sidecar anchoring the rendered artefacts to the data content:
+# sha256 of kanji.json + the date that content was first rendered. cdn/
+# is gitignored, so this manifest is the only machine-independent date
+# anchor the repo has for the PDFs.
+MANIFEST_PATH = OUT_ROOT / "MANIFEST.json"
 
 LEVELS = ["N5", "N4", "N3", "N2", "N1"]
 LOCALES = ["en", "ru", "ko", "vi"]
@@ -273,27 +279,43 @@ def inject_post_tables(by_level: dict[str, list[dict]], dry_run: bool) -> None:
             post.write_text(src, encoding="utf-8")
 
 
-def source_data_epoch() -> int:
-    """Machine-independent "when the data last changed" instant.
+def resolve_source_epoch() -> tuple[int, bool]:
+    """Machine-independent "when the data last changed" anchor.
 
-    git commit time of the last change to kanji.json is stable across
-    checkouts (unlike filesystem mtime, which resets on every clone and
-    would silently dirty all 20 PDFs via the footer date). Falls back to
-    mtime when git is unavailable (e.g. an exported tree).
+    ``cdn/`` is gitignored, so neither git history nor a tracked file can
+    date the source. The anchor lives in a *tracked* sidecar manifest,
+    ``origa_landing/public/jlpt/MANIFEST.json``: the sha256 of
+    ``kanji.json`` plus the date that content was first rendered. When the
+    sha matches, the manifest date is reused, so any machine holding the
+    same commit renders byte-identical PDFs (same footer date, same
+    SOURCE_DATE_EPOCH). When the sha differs, the data has changed: the
+    date becomes today and the manifest is rewritten alongside the PDFs.
+
+    Returns ``(epoch_seconds, manifest_changed)``.
     """
-    import subprocess
+    import hashlib
 
-    try:
-        out = subprocess.run(
-            ["git", "log", "-1", "--format=%ct", "--", str(KANJI_JSON)],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return int(out.stdout.strip())
-    except (OSError, ValueError, subprocess.CalledProcessError):
-        return int(KANJI_JSON.stat().st_mtime)
+    sha = hashlib.sha256(KANJI_JSON.read_bytes()).hexdigest()
+    if MANIFEST_PATH.exists():
+        try:
+            manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        except ValueError:
+            manifest = {}
+        if manifest.get("kanji_sha256") == sha:
+            date = manifest["generated_from"]
+            epoch = int(
+                dt.datetime.strptime(date, "%Y-%m-%d")
+                .replace(tzinfo=dt.timezone.utc)
+                .timestamp()
+            )
+            return epoch, False
+    date = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    epoch = int(
+        dt.datetime.strptime(date, "%Y-%m-%d")
+        .replace(tzinfo=dt.timezone.utc)
+        .timestamp()
+    )
+    return epoch, True
 
 
 def main() -> int:
@@ -301,12 +323,12 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="report planned files only")
     args = parser.parse_args()
 
-    # Binary determinism: pin the PDF creation metadata to the last git
-    # commit touching the source data, so a re-run on unchanged kanji.json
-    # is byte-identical on any machine and `git diff` stays empty (the
-    # rkyv-blob contract). The visible footer date is derived from the same
-    # instant: it reports the data, not the moment someone ran the script.
-    source_epoch = source_data_epoch()
+    # Binary determinism: anchor the PDF metadata (and the visible footer
+    # date) to the tracked MANIFEST sidecar — sha256 of kanji.json plus the
+    # date that content was first rendered. A re-run on unchanged data is
+    # byte-identical on any machine holding the same commit; changed data
+    # moves the date and rewrites the manifest alongside the PDFs.
+    source_epoch, manifest_changed = resolve_source_epoch()
     os.environ.setdefault("SOURCE_DATE_EPOCH", str(source_epoch))
     date = dt.datetime.fromtimestamp(source_epoch, dt.timezone.utc).strftime(
         "%Y-%m-%d"
@@ -334,6 +356,17 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
+        if manifest_changed:
+            # Rewritten only when the data content moved; unchanged data
+            # keeps the committed manifest (and the footer dates) as-is.
+            manifest = {
+                "kanji_sha256": hashlib.sha256(KANJI_JSON.read_bytes()).hexdigest(),
+                "generated_from": date,
+            }
+            MANIFEST_PATH.write_text(
+                json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+            )
+            print(f"data anchor: kanji.json content changed -> generated_from {date}")
         inject_post_tables(by_level, args.dry_run)
     return 0
 
