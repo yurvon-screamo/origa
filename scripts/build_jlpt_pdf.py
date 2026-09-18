@@ -293,8 +293,6 @@ def resolve_source_epoch() -> tuple[int, bool]:
 
     Returns ``(epoch_seconds, manifest_changed)``.
     """
-    import hashlib
-
     sha = hashlib.sha256(KANJI_JSON.read_bytes()).hexdigest()
     if MANIFEST_PATH.exists():
         try:
