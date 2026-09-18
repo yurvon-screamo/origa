@@ -578,3 +578,37 @@ async fn terms_page_renders_breadcrumb_and_h1() {
         "/terms must render an h1 with the page title"
     );
 }
+
+#[tokio::test]
+async fn blog_post_has_og_article_published_and_modified_times() {
+    // `japanese-ocr-app` carries `published: 2026-07-21` and a later
+    // `lastmod: 2026-09-18` — the divergence makes both OG times observable
+    // independently (a same-date post could pass with swapped values).
+    let body = get_body("/blog/japanese-ocr-app").await;
+    assert!(
+        body.contains(r#"property="article:published_time" content="2026-07-21""#),
+        "article:published_time must mirror the `published` frontmatter date; got first 800 chars: {}",
+        body.chars().take(800).collect::<String>()
+    );
+    assert!(
+        body.contains(r#"property="article:modified_time" content="2026-09-18""#),
+        "article:modified_time must mirror the `lastmod` frontmatter date"
+    );
+}
+
+#[tokio::test]
+async fn blog_article_jsonld_dates_match_og_times() {
+    // The OG `article:*` metas and the Article JSON-LD must not drift apart:
+    // both are sourced from the same frontmatter, so their date values must
+    // be identical in the rendered page.
+    let body = get_body("/blog/japanese-ocr-app").await;
+    let json = find_jsonld_block_by_type(&body, "Article");
+    assert!(
+        json.contains(r#""datePublished":"2026-07-21""#),
+        "Article JSON-LD datePublished must match the frontmatter `published`: {json}"
+    );
+    assert!(
+        json.contains(r#""dateModified":"2026-09-18""#),
+        "Article JSON-LD dateModified must match the frontmatter `lastmod`: {json}"
+    );
+}
