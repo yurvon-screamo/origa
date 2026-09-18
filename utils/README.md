@@ -22,6 +22,10 @@ The CLI provides the following commands, grouped by purpose:
 - **Kanji dictionary**: `dedup-kanji-readings`, `patch-kanji-readings`
 - **CDN precompute**: `build-cdn-rkyv`, `build-grammar-precompute`, `build-phrase-precompute`
 
+`generate-grammar-prompt` exists in `--help` but is intentionally
+undocumented here: it is a deferred candidate for removal alongside
+`generate-grammar` (decide after the #503 content pipeline lands).
+
 ### `tokenize` - Tokenize Japanese Text
 
 Tokenizes Japanese text and extracts vocabulary words.
@@ -414,7 +418,8 @@ format, built by `scripts/build_sudachidict.py`; readable by the lindera 6.x
 runtime). The CLI resolves it in the
 following locations:
 
-1. the directory passed via `--dictionary-dir` (if it exists)
+1. the directory passed via `--dictionary-dir` — only
+   `enrich-phrases-with-grammar` exposes this flag
 2. `cdn/dictionaries/sudachidict-20260723/` (versioned)
 3. `target/cdn-cache/` (downloaded CDN copy)
 
@@ -448,7 +453,7 @@ utils ndlocr -i document.png > output.txt
 ### Update well-known sets with tokenized vocabulary
 
 ```bash
-utils tokenize-well-known ../origa_ui/public/well_known/
+utils tokenize-well-known cdn/well_known_set/
 ```
 
 ### Find and translate missing vocabulary
