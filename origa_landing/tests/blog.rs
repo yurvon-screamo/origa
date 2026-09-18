@@ -40,6 +40,7 @@ const ALL_SLUGS: &[&str] = &[
     "japanese-textbooks-beginners",
     "how-many-kanji-to-learn",
     "learn-japanese-from-anime",
+    "jlpt-2026-dates",
 ];
 
 // =========================================================================
