@@ -4,7 +4,7 @@
 > **Date:** 2026-06-26
 > **Stage:** Pre-launch, zero domain authority, foundational SEO
 > **Scope:** 4 markets (EN / RU / VI / KO), repo + README + landing content
-> **Sources:** `docs/marketing/research/2026-09-16-keyword-research.md`, `docs/marketing/research/2026-06-kana-dojo-promotion.md`, kana-dojo deep-dive, ADR-007/011/013/014, `docs/landing-content-plan.md`, landing source (`origa_landing/`)
+> **Sources:** `docs/marketing/research/2026-09-16-keyword-research.md`,, kana-dojo deep-dive, ADR-007/011/013/014, `docs/landing-content-plan.md`, landing source (`origa_landing/`)
 
 ---
 
@@ -271,7 +271,7 @@ From `docs/landing-content-plan.md` §10 + DESIGN.md + AGENTS.md:
 
 ## 12. Factcheck status
 
-Claims in this doc are verified against: repo source (`content/*.rs`, `components/seo.rs`, `tests/`), ADR-007/011, `docs/landing-content-plan.md`, `docs/marketing/research/2026-09-16-keyword-research.md`, `docs/marketing/research/2026-06-kana-dojo-promotion.md`, and the kana-dojo GitHub API data. Detailed per-claim confidence in `.factcheck.json` (generated after content rewrites land).
+Claims in this doc are verified against: repo source (`content/*.rs`, `components/seo.rs`, `tests/`), ADR-007/011, `docs/landing-content-plan.md`, `docs/marketing/research/2026-09-16-keyword-research.md`,, and the kana-dojo GitHub API data. Detailed per-claim confidence in `.factcheck.json` (generated after content rewrites land).
 
 External/unverified signals (marked, not asserted as fact):
 

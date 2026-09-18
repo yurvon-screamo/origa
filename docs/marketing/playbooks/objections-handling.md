@@ -3,7 +3,7 @@
 > **Статус:** Черновик → HUMAN GATE
 > **Дата:** 2026-07-18
 > **Автор:** @marketer (автономный прогон, пользователь отсутствовал — ожидает ревью)
-> **Источники:** `docs/marketing/research/2026-07-18-*.md` (4 сырых research-отчёта)
+> **Источники:** 4 sentiment-ресерча 2026-07-18 (git-история)
 > **Охват:** Sentiment-ресерч + Origa-специфичный плейбук для обработки возражений на запуск
 > **Стадия жизненного цикла:** Pre-launch. Origa — BSL 1.1, 4 локали (EN/RU/KO/VI), Rust + Leptos 0.8 + Tauri v2, FSRS, локальные NDLOCR + Whisper, offline-first
 
@@ -37,10 +37,10 @@
 - **Источники:** Tavily web search (`site:reddit.com` + `site:apps.apple.com` + `site:play.google.com`), WaniKani Community, Bunpro Community, Trustpilot, отзывы App Store/Google Play, треды Hacker News, GitHub issues/reviews
 - **Reddit `.json` эндпоинты НЕ использовались** — мертвы с мая 2026
 - **Сырые research-файлы:**
-  - `docs/marketing/research/2026-07-18-fsrs-srs-ecosystem.md` — Anki FSRS transition, Mochi.cards, RemNote
-  - `docs/marketing/research/2026-07-18-jp-learning-competitors.md` — Bunpro, WaniKani, Migii, ReWord, Anki, Duolingo
-  - `docs/marketing/research/2026-07-18-young-edtech-startups.md` — глубокий разбор Migaku, jpdb.io, Kitsun, MaruMori, Torii
-  - `docs/marketing/research/2026-07-18-adjacent-tools-cross-themes.md` — Yomitan, восприятие OCR/STT, BSL/Tauri/Leptos, паттерны Show HN
+  - (удалён, git-история) — Anki FSRS transition, Mochi.cards, RemNote
+  - (удалён, git-история) — Bunpro, WaniKani, Migii, ReWord, Anki, Duolingo
+  - (удалён, git-история) — глубокий разбор Migaku, jpdb.io, Kitsun, MaruMori, Torii
+  - (удалён, git-история) — Yomitan, восприятие OCR/STT, BSL/Tauri/Leptos, паттерны Show HN
 
 **Ограничения:**
 

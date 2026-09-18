@@ -6,7 +6,7 @@
 > **Охват:** 4 рынка (EN / RU / VI / KO)
 > **Лицензия:** BSL 1.1 — учитывается для OSS-leaning площадок
 > **Ограничение scope:** только **бесплатные** каналы публикации (review / guest post / listing / community mention). Платные sponsor slots, podcast advertising, paid placements — out of scope.
-> **Источники:** `docs/marketing/research/2026-07-18-*.md` (4 research-файла), `docs/marketing/playbooks/objections-handling.md`, `docs/marketing/strategies/origa-seo.md`, `docs/marketing/reddit-strategy.md`, `docs/marketing/product-hunt.md`, `koharu.md` *(файл не сохранён в репо)*, web research 2026-07-21
+> **Источники:** 4 sentiment-ресерча 2026-07-18 (удалены при чистке 2026-09-18, см. git-историю `marketing/research/`), `docs/marketing/playbooks/objections-handling.md`, `docs/marketing/strategies/origa-seo.md`, `docs/marketing/reddit-strategy.md`, product-hunt (удалён, тэглайны в Приложении ниже), `koharu.md` *(файл не сохранён в репо)*, web research 2026-07-21
 
 ---
 
@@ -37,7 +37,7 @@ Outreach-ready: playbook в §6 даёт paste-ready шаблоны и cadence-�
 |---|---|---|
 | `origa-seo.md` | SEO собственного домена (лендинг, repo, README, тех.инфра) | Внешние authority-площадки, где Origa обозревается/листится третьими сторонами |
 | `reddit-strategy.md` | Reputation-building + launch на Reddit | Всё вне Reddit: блоги, community, aggregators, niche-сообщества |
-| `product-hunt.md` | Запуск на Product Hunt | Всё вне PH и Reddit |
+| ~~product-hunt.md~~ | Удалён 2026-09-18, заготовки в Приложении внизу | Всё вне PH и Reddit |
 | `objections-handling.md` | Talking points для 15 launch-возражений | Язык outreach-запросов наследует этот brand voice |
 | `koharu.md` *(файл не сохранён в репо)* | Precedent: traction Rust-проекта через r/rust + r/LocalLLaMA + Discord + независимые дайджесты | Подтверждает ценность независимых дайджестов как канала |
 
@@ -411,7 +411,7 @@ BSL 1.1 — самый предсказуемый friction-point этой стр
 Эта стратегия явно **не** покрывает:
 
 - **Reddit** — см. `reddit-strategy.md` (отдельная дорожка, идёт параллельно)
-- **Product Hunt** — см. `product-hunt.md`
+- **Product Hunt** — тэглайны в Приложении внизу
 - **App Store / Google Play / RuStore ASO** — отдельная дисциплина (покрыта tasks `android-release-cicd` и `ios-appstore-deployment`)
 - **Платная реклама** (Google Ads, Meta Ads, и т.д.) — out of scope
 - **Paid sponsor slots** (YouTube, podcasts, influencer networks) — out of scope. Добавить отдельный документ если появится бюджет.
@@ -456,7 +456,7 @@ Re-pitch в annual roundups. Добавить новые обнаруженны�
 
 Claims в этом документе берутся из:
 
-- `docs/marketing/research/2026-07-18-*.md` (4 research-файла — упоминания конкурентов, blog references, паттерны комьюнити)
+- (4 research-файла удалены 2026-09-18, git-история; research-файла — упоминания конкурентов, blog references, паттерны комьюнити)
 - Web research 2026-07-21 (liveness площадок, размеры аудиторий)
 - `objections-handling.md` (talking points, brand voice)
 
@@ -475,3 +475,7 @@ Claims в этом документе берутся из:
 - Telegram-подписки — с публичных страниц каналов, могут не отражать active readership
 
 **Детальный per-claim confidence:** `.factcheck.json` (генерируется после HUMAN GATE, до отправки любого pitch'а).
+
+## Приложение: заготовки Product Hunt (сжато из удалённого product-hunt.md, 2026-07)
+
+Тэглайн-варианты: «Anki + Bunpro + WaniKani in your own language» (43) · «All Japanese learning tools in your native language» (47) · «Learn Japanese in your own language» (36). Статус на момент сжатия: Draft, не готов к запуску — материалы пересобрать при подготовке PH-запуска. Полный исходник — git-история (marketing/product-hunt.md до 2026-09-18).
