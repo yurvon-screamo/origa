@@ -20,9 +20,11 @@ pub fn ComparePage() -> impl IntoView {
 
         // Section 1: Hero
         <section class="cmp-hero">
-            <h1 class="cmp-hero__title">{c.compare_h1}</h1>
-            <p class="cmp-hero__subtitle">{c.compare_subtitle}</p>
-            <hr class="cmp-hero__rule"/>
+            <div class="cmp-hero__inner">
+                <h1 class="cmp-hero__title">{c.compare_h1}</h1>
+                <p class="cmp-hero__subtitle">{c.compare_subtitle}</p>
+                <hr class="cmp-hero__rule"/>
+            </div>
         </section>
 
         // Section 2: Scoreboard

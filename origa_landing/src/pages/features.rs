@@ -69,11 +69,11 @@ pub fn FeaturesPage() -> impl IntoView {
                 <h2 class="feat-vocab__title">{c.features_vocab_h2}</h2>
 
                 <div class="feat-pipeline">
-                    <VocabStep number="01" text=c.features_vocab_step1 />
+                    <VocabStep text=c.features_vocab_step1 />
                     <div class="feat-pipeline__arrow"></div>
-                    <VocabStep number="02" text=c.features_vocab_step2 />
+                    <VocabStep text=c.features_vocab_step2 />
                     <div class="feat-pipeline__arrow"></div>
-                    <VocabStep number="03" text=c.features_vocab_step3 />
+                    <VocabStep text=c.features_vocab_step3 />
                 </div>
 
                 <div class="feat-tag-bar">
@@ -169,10 +169,9 @@ pub fn FeaturesPage() -> impl IntoView {
 }
 
 #[component]
-fn VocabStep(number: &'static str, text: &'static str) -> impl IntoView {
+fn VocabStep(text: &'static str) -> impl IntoView {
     view! {
         <div class="feat-step">
-            <p class="feat-step__number">{number}</p>
             <p class="feat-step__text">{text}</p>
         </div>
     }

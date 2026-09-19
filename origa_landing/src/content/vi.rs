@@ -37,7 +37,6 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "Từ vựng, hán tự và ngữ pháp N5–N1, nghe và hơn 200.000 câu bản ngữ, tất cả trong một ứng dụng. Không cần tiếng Anh.",
     home_cta_primary: "Tải xuống",
     home_cta_secondary: "Mở ứng dụng web",
-    home_hero_tagline: "Đa nền tảng · Ngoại tuyến · Bảo mật",
     home_stats_line: "200.000+ câu có audio · Ngữ pháp & hán tự N5–N1 · Windows · Linux · macOS · Android · Web · Ngoại tuyến",
     home_faq_free_question: "Origa có miễn phí không?",
     home_faq_free_answer: "Có. Ứng dụng trên mọi nền tảng và phiên bản web đều miễn phí.",

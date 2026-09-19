@@ -62,7 +62,6 @@ pub fn HomePage() -> impl IntoView {
                         {c.home_cta_secondary}
                     </a>
                 </div>
-                <p class="home-hero__tagline">{c.home_hero_tagline}</p>
             </div>
             <div class="home-hero__decor">
                 <div
@@ -124,13 +123,11 @@ pub fn HomePage() -> impl IntoView {
             <h2 class="home-features__title">{c.home_features_h2}</h2>
             <div class="home-features__grid home-features__grid--top">
                 <HomeFeatureCard
-                    number="01"
                     title=c.home_feature_vocab_title
                     text=c.home_feature_vocab_text
                     href=features_href.clone()
                 />
                 <HomeFeatureCard
-                    number="02"
                     title=c.home_feature_kanji_title
                     text=c.home_feature_kanji_text
                     href=features_href.clone()
@@ -141,13 +138,11 @@ pub fn HomePage() -> impl IntoView {
                 style="margin-top: var(--space-lg)"
             >
                 <HomeFeatureCard
-                    number="03"
                     title=c.home_feature_grammar_title
                     text=c.home_feature_grammar_text
                     href=features_href.clone()
                 />
                 <HomeFeatureCard
-                    number="04"
                     title=c.home_feature_listening_title
                     text=c.home_feature_listening_text
                     href=features_href
@@ -182,15 +177,9 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
-fn HomeFeatureCard(
-    number: &'static str,
-    title: &'static str,
-    text: &'static str,
-    href: String,
-) -> impl IntoView {
+fn HomeFeatureCard(title: &'static str, text: &'static str, href: String) -> impl IntoView {
     view! {
         <div class="home-feature-card">
-            <span class="home-feature-card__number">{number}</span>
             <h3 class="home-feature-card__title">{title}</h3>
             <p class="home-feature-card__text">{text}</p>
             <A href=href attr:class="landing-feature-card__link">{title}</A>

@@ -131,7 +131,6 @@ pub struct Content {
     pub home_hero_subtitle: &'static str,
     pub home_cta_primary: &'static str,
     pub home_cta_secondary: &'static str,
-    pub home_hero_tagline: &'static str,
     // Single-line stat strip under the hero (platforms, corpus size, levels)
     pub home_stats_line: &'static str,
     // Homepage mini-FAQ "free?" pair; the other two pairs reuse the features
