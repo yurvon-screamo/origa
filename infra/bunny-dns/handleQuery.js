@@ -1,22 +1,22 @@
 /**
  * Geo-steering for Origa (.net zone):
- *  - RF clients   -> Aeza VPS (Caddy proxies to Tigris / Railway)
- *  - everyone else -> CloudFront distributions (edge cache worldwide)
- * Health-gated: if the VPS is down, RF falls back to CloudFront as well.
+ *  - RF clients    -> Aeza VPS (Caddy proxies Tigris / Railway)
+ *  - everyone else -> direct origins: Railway edge (API/landing),
+ *                     Tigris bucket custom domain (CDN content)
  */
 export default function handleQuery(query) {
-  var aezaOnline = false;
-  try { aezaOnline = Monitoring.getStatus("85.192.63.249").isOnline === true; } catch (e) { aezaOnline = false; }
-
-  var cloudfront = "dsl8eedfp23ee.cloudfront.net"; // s3.origa (CDN content)
   var h = query.request.hostname || "";
-  if (h.indexOf("origa.uwuwu.net") === 0) {
-    cloudfront = "d3o6p7y31je36k.cloudfront.net"; // landing
+  var world;
+  if (h.indexOf("app.origa.uwuwu.net") === 0) {
+    world = new CnameRecord("9v15a3ov.up.railway.app", 300);   // TrailBase API
+  } else if (h.indexOf("origa.uwuwu.net") === 0) {
+    world = new CnameRecord("vl080mt6.up.railway.app", 300);   // landing
+  } else {
+    world = new CnameRecord("origa.t3.tigrisbucket.io", 300);  // s3: Tigris custom domain
   }
-
   var geo = query.request.geoLocation;
-  if (geo && geo.country === "RU" && aezaOnline) {
+  if (geo && geo.country === "RU") {
     return new ARecord("85.192.63.249", 60);
   }
-  return new CNameRecord(cloudfront, 300);
+  return world;
 }
