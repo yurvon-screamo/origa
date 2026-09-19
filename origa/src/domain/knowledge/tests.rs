@@ -114,11 +114,21 @@ fn cards_to_lesson_includes_high_difficulty_cards() {
     let study2 = knowledge_set.create_card(card2).unwrap();
 
     knowledge_set
-        .rate_card(*study1.card_id(), Rating::Again, RateMode::ShortTerm)
+        .rate_card(
+            *study1.card_id(),
+            Rating::Again,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     knowledge_set
-        .rate_card(*study2.card_id(), Rating::Easy, RateMode::StandardLesson)
+        .rate_card(
+            *study2.card_id(),
+            Rating::Easy,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     let result = knowledge_set.cards_to_lesson(
@@ -393,6 +403,7 @@ fn rate_card_increments_lessons_completed() {
             *study_card.card_id(),
             Rating::Good,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
 
@@ -413,7 +424,12 @@ fn merge_study_cards_updates_existing() {
 
     let mut remote = local.clone();
     remote
-        .rate_card(card_id, Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     local.merge(&remote);
@@ -430,10 +446,20 @@ fn merge_lessons_completed_takes_max() {
     let mut local = KnowledgeSet::new();
     let card1 = local.create_card(create_vocab_card("猫")).unwrap();
     local
-        .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card1.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
     local
-        .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card1.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     let history_item = &local.lesson_history()[0];
@@ -442,13 +468,28 @@ fn merge_lessons_completed_takes_max() {
     let mut remote = KnowledgeSet::new();
     let card2 = remote.create_card(create_vocab_card("犬")).unwrap();
     remote
-        .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card2.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
     remote
-        .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card2.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
     remote
-        .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card2.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     let remote_history_item = &remote.lesson_history()[0];
@@ -506,7 +547,12 @@ fn recalculate_daily_stats_preserves_new_cards_on_create_card() {
 
     for id in studied_ids {
         knowledge_set
-            .rate_card(id, Rating::Good, RateMode::StandardLesson)
+            .rate_card(
+                id,
+                Rating::Good,
+                RateMode::StandardLesson,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -553,10 +599,20 @@ fn recalculate_daily_stats_preserves_new_cards_on_delete_card() {
     knowledge_set.create_card(create_vocab_card("c")).unwrap();
 
     knowledge_set
-        .rate_card(*card1.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card1.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
     knowledge_set
-        .rate_card(*card2.card_id(), Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            *card2.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     assert_eq!(knowledge_set.new_cards_studied_today(), 2);
@@ -678,7 +734,12 @@ fn new_cards_jlpt_sort_does_not_affect_other_categories() {
         .unwrap();
 
     knowledge_set
-        .rate_card(*study_taberu.card_id(), Rating::Again, RateMode::ShortTerm)
+        .rate_card(
+            *study_taberu.card_id(),
+            Rating::Again,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
         .unwrap();
     knowledge_set
         .toggle_favorite(*study_nichi.card_id())
@@ -869,8 +930,7 @@ fn new_cards_interleave_across_jlpt_levels() {
     assert_eq!(
         distinct_card_ids.len(),
         4,
-        "Should select exactly 4 underlying cards (limit=4); \
-         multi-show expansion may add extra showings of those 4 card ids"
+        "Should select exactly 4 underlying cards (limit=4)"
     );
 
     let n5_words: HashSet<&str> = ["n5w1", "n5w2", "n5w3"].into_iter().collect();
@@ -1022,7 +1082,12 @@ fn phrase_does_not_increment_new_cards_studied() {
 
     for id in phrase_ids {
         knowledge_set
-            .rate_card(id, Rating::Good, RateMode::StandardLesson)
+            .rate_card(
+                id,
+                Rating::Good,
+                RateMode::StandardLesson,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -1086,6 +1151,7 @@ fn phrase_excluded_from_stats() {
             *phrase_study.card_id(),
             Rating::Good,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
     knowledge_set
@@ -1093,6 +1159,7 @@ fn phrase_excluded_from_stats() {
             *vocab_study.card_id(),
             Rating::Good,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
 
@@ -1131,13 +1198,9 @@ fn limited_types_still_respect_daily_limit() {
     );
 
     // daily_new_limit bounds the count of distinct NEW cards introduced per
-    // day. Multi-show expansion (`expand_repeated_views`) may add extra slots
-    // showing the same card_id twice — those are not new cards, so the limit
-    // must be checked against distinct card_ids, not against `result.len()`.
-    // Before the proportional-slot fix distribute returned only Vocabulary
-    // (so kanji never reached the multi-show pipeline) and the looser check
-    // happened to hold; with the fix kanji enters the lesson and exercises
-    // the multi-show path, exposing the original assertion's intent bug.
+    // day. Each card shows at most once per lesson (the multi-show
+    // expansion is gone), so the limit is checked against distinct
+    // card_ids, which here equals the raw slot count of new cards.
     let distinct_new_count: usize = result
         .values()
         .map(|lc| lc.card_id())
@@ -1163,6 +1226,7 @@ fn lesson_size_respects_max_limit() {
                 *study_card.card_id(),
                 Rating::Easy,
                 RateMode::StandardLesson,
+                RatingContext::Explicit,
             )
             .unwrap();
     }
@@ -1191,7 +1255,12 @@ fn high_difficulty_cards_respect_max_lesson_size() {
             .create_card(create_vocab_card(&format!("hard{i}")))
             .unwrap();
         knowledge_set
-            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Again,
+                RateMode::ShortTerm,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -1202,9 +1271,8 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         NativeLanguage::Russian,
     );
 
-    // Multi-show copies sit on top of the MAX_LESSON_SIZE primary cards
-    // (at most one extra showing per high-difficulty card), so the cap
-    // invariant is on DISTINCT cards, not raw slots.
+    // Every card shows at most once per lesson, so the lesson cap holds
+    // both for distinct cards and for raw slots.
     let distinct_cards: std::collections::HashSet<Ulid> =
         result.values().map(|lc| lc.card_id()).collect();
 
@@ -1214,8 +1282,8 @@ fn high_difficulty_cards_respect_max_lesson_size() {
         distinct_cards.len()
     );
     assert!(
-        result.len() <= MAX_LESSON_SIZE * 2,
-        "Slot count with multi-show copies must stay within one copy per card, got {}",
+        result.len() <= MAX_LESSON_SIZE,
+        "Lesson slot count must stay within MAX_LESSON_SIZE, got {}",
         result.len()
     );
 }
@@ -1229,7 +1297,12 @@ fn phrases_added_after_core_cards_learning() {
             .create_card(create_vocab_card(&format!("core{i}")))
             .unwrap();
         knowledge_set
-            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Again,
+                RateMode::ShortTerm,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -1239,7 +1312,12 @@ fn phrases_added_after_core_cards_learning() {
             .create_card(Card::Phrase(PhraseCard::new_test_with_id(phrase_id)))
             .unwrap();
         knowledge_set
-            .rate_card(*study_card.card_id(), Rating::Again, RateMode::ShortTerm)
+            .rate_card(
+                *study_card.card_id(),
+                Rating::Again,
+                RateMode::ShortTerm,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -1329,7 +1407,12 @@ fn onboarding_scoring_does_not_consume_daily_limit() {
 
     for id in &all_ids[..13] {
         knowledge_set
-            .rate_card(*id, Rating::Easy, RateMode::OnboardingScoring)
+            .rate_card(
+                *id,
+                Rating::Easy,
+                RateMode::OnboardingScoring,
+                RatingContext::Explicit,
+            )
             .unwrap();
     }
 
@@ -1365,7 +1448,12 @@ fn favorite_card_appears_once_when_due_high_difficulty() {
     let card_id = *study_card.card_id();
 
     knowledge_set
-        .rate_card(card_id, Rating::Again, RateMode::ShortTerm)
+        .rate_card(
+            card_id,
+            Rating::Again,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     knowledge_set.toggle_favorite(card_id).unwrap();
@@ -1430,7 +1518,12 @@ fn favorite_card_appears_once_when_due_known() {
     let card_id = *study_card.card_id();
 
     knowledge_set
-        .rate_card(card_id, Rating::Good, RateMode::StandardLesson)
+        .rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
         .unwrap();
 
     knowledge_set.toggle_favorite(card_id).unwrap();
@@ -1667,8 +1760,13 @@ mod deleted_companion_words {
     fn serde_roundtrip_preserves_blocklist_and_stats() {
         let mut ks = KnowledgeSet::new();
         let foo = ks.create_card(create_vocab_card("foo")).unwrap();
-        ks.rate_card(*foo.card_id(), Rating::Good, RateMode::StandardLesson)
-            .unwrap();
+        ks.rate_card(
+            *foo.card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
         let bar = ks.create_card(create_vocab_card("bar")).unwrap();
         ks.delete_card(*bar.card_id()).unwrap();
 
@@ -1765,7 +1863,12 @@ fn bulk_import_after_same_day_reviews_preserves_counters_and_ratings() {
             .create_card(create_vocab_card("base"))
             .unwrap();
         knowledge_set
-            .rate_card(*base.card_id(), Rating::Good, RateMode::StandardLesson)
+            .rate_card(
+                *base.card_id(),
+                Rating::Good,
+                RateMode::StandardLesson,
+                RatingContext::Explicit,
+            )
             .unwrap();
         knowledge_set
     };

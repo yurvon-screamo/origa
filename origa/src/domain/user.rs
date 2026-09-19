@@ -7,7 +7,8 @@ use ulid::Ulid;
 use crate::dictionary::vocabulary::get_translation;
 use crate::domain::{
     Card, CardType, DailyLoad, JapaneseLevel, JlptContent, JlptProgress, KnowledgeSet,
-    NativeLanguage, OrigaError, RateMode, Rating, ScoreContentResult, StudyCard, score_content,
+    NativeLanguage, OrigaError, RateMode, Rating, RatingContext, ScoreContentResult, StudyCard,
+    score_content,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -309,8 +310,9 @@ impl User {
         card_id: Ulid,
         rating: Rating,
         mode: RateMode,
+        context: RatingContext,
     ) -> Result<(), OrigaError> {
-        self.knowledge_set.rate_card(card_id, rating, mode)
+        self.knowledge_set.rate_card(card_id, rating, mode, context)
     }
 
     pub fn mark_card_as_known(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
@@ -515,6 +517,7 @@ mod tests {
             *study_card1.card_id(),
             Rating::Easy,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
         user.knowledge_set_mut()
@@ -570,6 +573,7 @@ mod tests {
             *study_card.card_id(),
             Rating::Easy,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
 
@@ -612,6 +616,7 @@ mod tests {
             *in_progress_id.card_id(),
             Rating::Good,
             RateMode::StandardLesson,
+            RatingContext::Explicit,
         )
         .unwrap();
 
@@ -898,7 +903,12 @@ mod tests {
         let nonexistent_id = Ulid::new();
 
         // Act
-        let result = user.rate_card(nonexistent_id, Rating::Good, RateMode::StandardLesson);
+        let result = user.rate_card(
+            nonexistent_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        );
 
         // Assert
         assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
@@ -985,7 +995,12 @@ mod tests {
 
         // Act
         user.delete_card(card_id).unwrap();
-        let result = user.rate_card(card_id, Rating::Good, RateMode::StandardLesson);
+        let result = user.rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        );
 
         // Assert
         assert!(matches!(result, Err(OrigaError::CardNotFound { .. })));
@@ -1015,8 +1030,13 @@ mod tests {
         assert_eq!(n5.words.total, 1);
 
         // Rate and mark as known
-        user.rate_card(card_id, Rating::Easy, RateMode::StandardLesson)
-            .unwrap();
+        user.rate_card(
+            card_id,
+            Rating::Easy,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
         user.knowledge_set_mut()
             .mark_card_as_known(card_id)
             .unwrap();

@@ -23,6 +23,17 @@ pub enum RateMode {
     KanjiReview,
 }
 
+/// Контекст рейтинга [RatingContext] — происхождение рейтинга.
+/// `Explicit` — явный показ карточки пользователю (двигает добивание);
+/// `Implicit` — неявный рейтинг (двойной рейтинг грамматики, «уже знаю»,
+/// сидирование знакомства) — добивания не трогает. Отдельная ось от
+/// `RateMode`: dual rating использует тот же режим, что и явный показ.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum RatingContext {
+    Explicit,
+    Implicit,
+}
+
 const ALL_RATE_MODES: [RateMode; 6] = [
     RateMode::ShortTerm,
     RateMode::StandardLesson,

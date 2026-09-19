@@ -1,6 +1,7 @@
 //! Journeys режима знакомства (docs/acquaintance-mode.md): закрытие руки,
 //! прерывание, «Уже знаю» и учёт дневного лимита.
 
+use crate::domain::RatingContext;
 use crate::domain::{
     Card, DailyBudget, JlptContent, NativeLanguage, NewCardPolicy, OrigaError, RateMode, Rating,
     User,
@@ -133,8 +134,13 @@ async fn small_daily_remainder_still_takes_full_hand_then_stops() {
         .take(12)
         .collect();
     for card_id in studied_ids {
-        user.rate_card(card_id, Rating::Good, RateMode::StandardLesson)
-            .unwrap();
+        user.rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
     }
     assert_eq!(user.knowledge_set().new_cards_studied_today(), 12);
     let repo = InMemoryUserRepository::with_user(user);
@@ -482,8 +488,13 @@ async fn rating_a_seeded_card_tomorrow_keeps_fsrs_evolution_normal() {
         .stability()
         .unwrap()
         .value();
-    user.rate_card(card_id, Rating::Good, RateMode::StandardLesson)
-        .unwrap();
+    user.rate_card(
+        card_id,
+        Rating::Good,
+        RateMode::StandardLesson,
+        RatingContext::Explicit,
+    )
+    .unwrap();
 
     // Assert: штатная эволюция без деградации в learning-минуты
     let stability_after = user

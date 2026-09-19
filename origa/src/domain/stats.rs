@@ -99,7 +99,8 @@ pub fn compute_rating_ratio(history: &[DailyHistoryItem]) -> Option<RatingRatio>
 mod tests {
     use super::*;
     use crate::domain::{
-        Card, KnowledgeSet, RateMode, Rating, VocabularyCard, value_objects::Question,
+        Card, KnowledgeSet, RateMode, Rating, RatingContext, VocabularyCard,
+        value_objects::Question,
     };
 
     fn create_vocab_card(word: &str) -> Card {
@@ -152,10 +153,20 @@ mod tests {
         let card1 = ks.create_card(create_vocab_card("猫")).unwrap();
         let card2 = ks.create_card(create_vocab_card("犬")).unwrap();
 
-        ks.rate_card(*card1.card_id(), Rating::Good, RateMode::ShortTerm)
-            .unwrap();
-        ks.rate_card(*card2.card_id(), Rating::Again, RateMode::ShortTerm)
-            .unwrap();
+        ks.rate_card(
+            *card1.card_id(),
+            Rating::Good,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+        ks.rate_card(
+            *card2.card_id(),
+            Rating::Again,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
+        .unwrap();
 
         let result = compute_rating_ratio(ks.lesson_history());
 

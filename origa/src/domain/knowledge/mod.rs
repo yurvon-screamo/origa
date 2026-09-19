@@ -36,7 +36,7 @@ use ulid::Ulid;
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::{
     DailyBudget, JapaneseLevel, JlptContent, NativeLanguage, OrigaError, RateMode, Rating,
-    srs::rate_memory,
+    RatingContext, srs::rate_memory,
 };
 
 pub(crate) const MAX_COMPANION_WORDS: usize = 3;
@@ -392,7 +392,7 @@ impl KnowledgeSet {
         native_language: NativeLanguage,
         new_card_policy: NewCardPolicy,
     ) -> LessonData {
-        let (core, primary_card_ids) = lesson_builder::build_lesson_core(
+        let core = lesson_builder::build_lesson_core(
             self,
             budget.new_cards_per_day(),
             jlpt_content,
@@ -414,13 +414,7 @@ impl KnowledgeSet {
         let mut phrase_new_budget = budget.new_phrases_per_lesson();
         let with_phrases =
             lesson_builder::add_phrases(interleaved, self, native_language, &mut phrase_new_budget);
-        let expanded = lesson_builder::expand_repeated_views(
-            with_phrases,
-            self,
-            native_language,
-            &primary_card_ids,
-        );
-        lesson_builder::redistribute_core_for_spacing(expanded)
+        lesson_builder::redistribute_core_for_spacing(with_phrases)
     }
 
     pub(crate) fn rate_card(
@@ -428,6 +422,7 @@ impl KnowledgeSet {
         card_id: Ulid,
         rating: Rating,
         mode: RateMode,
+        context: RatingContext,
     ) -> Result<(), OrigaError> {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let was_new = card.memory().is_new();
@@ -445,6 +440,9 @@ impl KnowledgeSet {
             let memory_state = rate_memory(effective_mode, rating, card.memory())?;
             card.apply_review(memory_state, rating);
             card.handle_favorite_rating(rating);
+            if context == RatingContext::Explicit {
+                card.apply_ghost_transition(rating, was_new);
+            }
             self.update_history(rating, was_new, is_phrase, mode);
             Ok(())
         } else {

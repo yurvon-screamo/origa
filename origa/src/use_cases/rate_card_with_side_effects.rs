@@ -1,4 +1,4 @@
-use crate::domain::{Card, OrigaError, RateMode, Rating};
+use crate::domain::{Card, OrigaError, RateMode, Rating, RatingContext};
 use crate::traits::UserRepository;
 use crate::use_cases::RateCardUseCase;
 use tracing::warn;
@@ -21,7 +21,7 @@ impl<'a, R: UserRepository> RateCardWithSideEffectsUseCase<'a, R> {
         grammar_rule_id: Option<Ulid>,
     ) -> Result<(), OrigaError> {
         RateCardUseCase::new(self.repository)
-            .execute(card_id, rate_mode, rating)
+            .execute(card_id, rate_mode, rating, RatingContext::Explicit)
             .await?;
 
         if let Some(grammar_rule_id) = grammar_rule_id {
@@ -69,7 +69,12 @@ impl<'a, R: UserRepository> RateCardWithSideEffectsUseCase<'a, R> {
         };
 
         if let Err(e) = RateCardUseCase::new(self.repository)
-            .execute(card_id, RateMode::GrammarReview, rating)
+            .execute(
+                card_id,
+                RateMode::GrammarReview,
+                rating,
+                RatingContext::Implicit,
+            )
             .await
         {
             warn!(error = ?e, "Failed to rate grammar card during dual rating");
@@ -80,7 +85,9 @@ impl<'a, R: UserRepository> RateCardWithSideEffectsUseCase<'a, R> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::{Card, GrammarRuleCard, NativeLanguage, Question, User, VocabularyCard};
+    use crate::domain::{
+        Card, GrammarRuleCard, NativeLanguage, Question, RatingContext, User, VocabularyCard,
+    };
     use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 
     fn create_test_user_with_vocab() -> User {
@@ -209,8 +216,13 @@ mod tests {
             .create_card(Card::Grammar(grammar_card))
             .unwrap()
             .card_id();
-        user.rate_card(grammar_id, Rating::Good, RateMode::GrammarReview)
-            .unwrap();
+        user.rate_card(
+            grammar_id,
+            Rating::Good,
+            RateMode::GrammarReview,
+            RatingContext::Explicit,
+        )
+        .unwrap();
         assert!(!user.knowledge_set().get_card(grammar_id).unwrap().is_new());
         let reps_before = user
             .knowledge_set()
@@ -256,8 +268,13 @@ mod tests {
             .create_card(Card::Grammar(grammar_card))
             .unwrap()
             .card_id();
-        user.rate_card(grammar_id, Rating::Good, RateMode::GrammarReview)
-            .unwrap();
+        user.rate_card(
+            grammar_id,
+            Rating::Good,
+            RateMode::GrammarReview,
+            RatingContext::Explicit,
+        )
+        .unwrap();
         let reps_before = user
             .knowledge_set()
             .get_card(grammar_id)

@@ -1,17 +1,20 @@
-use super::expansion::MIN_REPEAT_SPACING;
 use super::phrases::{INTERLEAVING_GAP, place_phrases_constraint_aware};
 use super::*;
 
-/// Final layout pass: reorders the core section so consecutive showings of the
-/// same `card_id` are maximally separated, removing the back-to-back
-/// clustering that `expand_repeated_views` leaves when a multi-show anchor
-/// sits near the end of a short core. Content (vocab/kanji/grammar, including
-/// multi-show copies) is re-dealt via `deal_by_card_id`; phrases are then
-/// re-placed through the existing constraint-aware placer so the
-/// phrase-after-word invariant (PR #203) is re-derived from the new content
-/// order. `core_count` and the tail section are preserved: the dealt core has
-/// the same length, and inserting phrases between content cards only widens
-/// the gaps between them.
+/// Минимальный зазор между последовательными показами одного `card_id`.
+/// Исторически принадлежал удалённому дубль-механизму (multi-show
+/// expansion); после удаления дублей единственный источник повторов —
+/// добивания, и карта показывается в уроке один раз, но константа
+/// остаётся контрактом layout-примитива `deal_by_card_id`.
+pub(super) const MIN_REPEAT_SPACING: usize = 3;
+
+/// Final layout pass: reorders the core section so consecutive showings of
+/// the same `card_id` are maximally separated. After the multi-show
+/// expansion removal the core holds unique card_ids, so in practice this
+/// pass re-places phrases through the existing constraint-aware placer so
+/// the phrase-after-word invariant (PR #203) is re-derived from the content
+/// order; `deal_by_card_id` remains the generic layout primitive for any
+/// future repeat source. `core_count` and the tail section are preserved.
 pub(crate) fn redistribute_core_for_spacing(mut lesson_data: LessonData) -> LessonData {
     let core_count = lesson_data.core_count;
     if core_count <= 1 {
