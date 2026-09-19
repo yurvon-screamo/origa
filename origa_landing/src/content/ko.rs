@@ -38,6 +38,13 @@ pub static CONTENT: Content = Content {
     home_cta_primary: "다운로드",
     home_cta_secondary: "웹 앱 열기",
     home_shot_main_label: "메인 화면",
+    home_carousel_labels: &[
+        "메인 화면",
+        "레슨",
+        "문법 참조",
+        "한자 쓰기",
+        "네이티브 구문",
+    ],
     home_stats_line: "오디오 포함 20만+ 문장 · N5–N1 문법·한자 · Windows · Linux · macOS · Android · Web · 오프라인",
     home_faq_free_question: "Origa는 무료인가요?",
     home_faq_free_answer: "네. 모든 플랫폼용 앱과 웹 버전을 무료로 이용할 수 있습니다.",

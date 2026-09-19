@@ -38,6 +38,13 @@ pub static CONTENT: Content = Content {
     home_cta_primary: "Скачать",
     home_cta_secondary: "Открыть в браузере",
     home_shot_main_label: "Главный экран",
+    home_carousel_labels: &[
+        "Главный экран",
+        "Уроки",
+        "Справочник грамматики",
+        "Пропись кандзи",
+        "Живые фразы",
+    ],
     home_stats_line: "200 000+ фраз с озвучкой · Грамматика и кандзи N5–N1 · Windows · Linux · macOS · Android · Web · Офлайн",
     home_faq_free_question: "Origa бесплатная?",
     home_faq_free_answer: "Да. Приложение для всех платформ и веб-версия доступны бесплатно.",
