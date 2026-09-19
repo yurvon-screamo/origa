@@ -8,17 +8,17 @@
  *                  when the console accepts the domain.
  */
 export default function handleQuery(query) {
-  var h = query.request.hostname || "";
+  var h = (query.request.hostname || "").replace(/\.$/, ""); // strip FQDN trailing dot
   var geo = query.request.geoLocation;
   var isRF = geo && geo.country === "RU";
 
-  if (h.indexOf("s3.origa.uwuwu.net") === 0 && !isRF) {
+  if (h === "s3.origa.uwuwu.net" && !isRF) {
     return new CnameRecord("origa.t3.tigrisbucket.io", 300);
   }
-  if (h.indexOf("app.origa.uwuwu.net") === 0 && !isRF) {
+  if (h === "app.origa.uwuwu.net" && !isRF) {
     return new CnameRecord("9v15a3ov.up.railway.app", 300);
   }
-  if (h.indexOf("origa.uwuwu.net") === 0 && !isRF) {
+  if (h === "origa.uwuwu.net" && !isRF) {
     return new CnameRecord("vl080mt6.up.railway.app", 300);
   }
   return new ARecord("85.192.63.249", 60);
