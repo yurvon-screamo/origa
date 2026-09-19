@@ -18,6 +18,7 @@ use oauth_buttons::DEBUG_OAUTH_ENABLED;
 use password_section::PasswordSection;
 
 use crate::i18n::*;
+use crate::repository::LoginFailure;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::{
     Alert, AlertType, CardLayout, CardLayoutSize, Divider, DividerVariant, PageLayout,
@@ -25,6 +26,24 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+
+/// Maps a login failure to its user-facing message. InvalidCredentials is
+/// the only failure that may read as wrong credentials — network stalls
+/// and profile-sync failures after a successful login must offer a retry
+/// instead (App Review 2026-09 hit exactly that masking).
+pub(crate) fn login_failure_message(i18n: &I18nContext<Locale>, failure: LoginFailure) -> String {
+    match failure {
+        LoginFailure::InvalidCredentials => {
+            i18n.get_keys().login().login_failed().inner().to_string()
+        },
+        LoginFailure::Network | LoginFailure::ProfileSync => i18n
+            .get_keys()
+            .login()
+            .login_retry_error()
+            .inner()
+            .to_string(),
+    }
+}
 
 #[component]
 pub fn Login() -> impl IntoView {
@@ -74,10 +93,8 @@ pub fn Login() -> impl IntoView {
                     // Server-answered rejections (wrong password) are logged
                     // at info level inside AuthStore::login; transport
                     // failures are logged at error level there as well.
-                    tracing::debug!(error = %e, "Login finished with error");
-                    server_error.set(Some(
-                        i18n.get_keys().login().login_failed().inner().to_string(),
-                    ));
+                    tracing::debug!(failure = ?e, "Login finished with error");
+                    server_error.set(Some(login_failure_message(&i18n, e)));
                 }
             });
         }

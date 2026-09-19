@@ -7,8 +7,9 @@ use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::get_or_create_profile;
 
 use crate::repository::{
-    AuthError, HybridUserRepository, TrailBaseClient, clear_session, clear_session_async,
-    get_session_async, set_session_async,
+    AuthError, HybridUserRepository, LoginFailure, OAuthFailure, TrailBaseClient,
+    classify_login_failure, clear_session, clear_session_async, get_session_async,
+    set_session_async,
     trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
 };
 
@@ -298,19 +299,17 @@ impl AuthStore {
         email: &str,
         password: &str,
         i18n: &I18nContext<Locale>,
-    ) -> Result<(), OrigaError> {
+    ) -> Result<(), LoginFailure> {
         self.is_syncing.set(true);
 
         let result = self.client.login_with_email_password(email, password).await;
 
         match result {
             Ok(_) => {
-                let session =
-                    get_session_async()
-                        .await
-                        .ok_or_else(|| OrigaError::RepositoryError {
-                            reason: "Session not found after login".to_string(),
-                        })?;
+                let session = get_session_async().await.ok_or_else(|| {
+                    tracing::error!("Session not found after successful login");
+                    LoginFailure::Network
+                })?;
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
@@ -325,10 +324,7 @@ impl AuthStore {
                             "Profile load failed after successful login"
                         );
                         self.is_syncing.set(false);
-                        Err(OrigaError::NetworkError {
-                            url: "/api/auth/v1/login".to_string(),
-                            reason: e,
-                        })
+                        Err(LoginFailure::ProfileSync)
                     },
                 }
             },
@@ -339,7 +335,7 @@ impl AuthStore {
                 // server-answered auth rejections (wrong credentials — an
                 // expected user-input path, not an incident). The transport
                 // layer already logs raw network failures per-request; this
-                // catch-all keeps login-specific context.
+                // classification keeps login-specific context.
                 match &e {
                     AuthError::NetworkError(_) => {
                         tracing::error!(error = %e, "Login network failure");
@@ -348,10 +344,7 @@ impl AuthStore {
                         tracing::info!(error = %e, "Login rejected by server");
                     },
                 }
-                Err(OrigaError::NetworkError {
-                    url: "/api/auth/v1/login".to_string(),
-                    reason: e.to_string(),
-                })
+                Err(classify_login_failure(&e))
             },
         }
     }
@@ -362,7 +355,7 @@ impl AuthStore {
         code: &str,
         pkce_verifier: &str,
         i18n: &I18nContext<Locale>,
-    ) -> Result<(), OrigaError> {
+    ) -> Result<(), OAuthFailure> {
         if self.user.with(|u| u.is_some()) {
             self.is_oauth_loading.set(false);
             return Ok(());
@@ -378,10 +371,13 @@ impl AuthStore {
             Ok(session) => {
                 if session.email.is_empty() {
                     self.is_oauth_loading.set(false);
-                    return Err(OrigaError::NetworkError {
-                        url: "/api/auth/v1/token".to_string(),
-                        reason: "Email not found in OAuth token".to_string(),
-                    });
+                    return Err(OAuthFailure::Message(
+                        i18n.get_keys_untracked()
+                            .login()
+                            .email_not_in_token()
+                            .inner()
+                            .to_string(),
+                    ));
                 }
 
                 match get_or_create_profile(self, &session.email, i18n).await {
@@ -391,18 +387,26 @@ impl AuthStore {
                         self.is_oauth_loading.set(false);
                         Ok(())
                     },
+                    // The profile bootstrap error is already a localized,
+                    // user-facing message produced by get_or_create_profile.
                     Err(e) => {
                         self.is_oauth_loading.set(false);
-                        Err(OrigaError::InvalidValues { reason: e })
+                        Err(OAuthFailure::Message(e))
                     },
                 }
             },
             Err(e) => {
                 self.is_oauth_loading.set(false);
-                Err(OrigaError::NetworkError {
-                    url: "/api/auth/v1/token".to_string(),
-                    reason: e.to_string(),
-                })
+                match &e {
+                    AuthError::NetworkError(_) => {
+                        tracing::error!(error = %e, "OAuth token exchange network failure");
+                        Err(OAuthFailure::Network)
+                    },
+                    _ => {
+                        tracing::error!(error = %e, "OAuth token exchange failed");
+                        Err(OAuthFailure::Message(e.to_string()))
+                    },
+                }
             },
         }
     }

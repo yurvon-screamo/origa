@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 use thiserror::Error;
 
-use crate::utils::net_timeout::{DEFAULT_IDLE_TIMEOUT_MS, send_request_idle};
+use crate::utils::net_timeout::{AUTH_IDLE_TIMEOUT_MS, send_request_idle};
 
 pub use crate::repository::trailbase_auth::OAuthProvider;
 pub type TrailBaseRecordApi = RecordApi<TrailBaseClient>;
@@ -22,6 +22,8 @@ pub type TrailBaseRecordApi = RecordApi<TrailBaseClient>;
 pub enum AuthError {
     #[error("Session expired, please login again")]
     SessionExpired,
+    #[error("Invalid email or password")]
+    InvalidCredentials,
     #[error("Network error: {0}")]
     NetworkError(String),
     #[error("API error: {0}")]
@@ -33,9 +35,12 @@ pub enum AuthError {
 /// `MissingEmail` is separate from the generic API error because it needs a
 /// dedicated user-facing message: Apple only shares the email on the first
 /// authorization, and a 424 means no account exists yet to match by Apple ID.
+/// `Network` is separate so the login UI can show a retry hint instead of
+/// raw transport diagnostics (App Review 2026-09).
 #[derive(Debug)]
 pub enum AppleNativeLoginError {
     MissingEmail,
+    Network(String),
     Api(String),
 }
 
@@ -43,6 +48,7 @@ impl std::fmt::Display for AppleNativeLoginError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             AppleNativeLoginError::MissingEmail => write!(f, "missing email address"),
+            AppleNativeLoginError::Network(message) => write!(f, "Network error: {message}"),
             AppleNativeLoginError::Api(message) => write!(f, "API error: {message}"),
         }
     }
@@ -73,10 +79,16 @@ pub struct TrailBaseClient {
 }
 
 impl TrailBaseClient {
+    /// Builds the AUTH transport: login, OAuth token exchange, native Sign
+    /// in with Apple, session refresh. Carries [`AUTH_IDLE_TIMEOUT_MS`] by
+    /// default — see the constant's docs for why POST auth endpoints need
+    /// a larger window than the CDN default. Non-auth transport instances
+    /// (the sync repository) override the budget explicitly via
+    /// [`Self::with_idle_timeout_ms`].
     pub fn new() -> Self {
         Self {
             base_url: trailbase_url().to_string(),
-            idle_timeout_ms: DEFAULT_IDLE_TIMEOUT_MS,
+            idle_timeout_ms: AUTH_IDLE_TIMEOUT_MS,
         }
     }
 
@@ -155,8 +167,9 @@ impl TrailBaseClient {
         // Idle-deadline transport (ADR-053): gloo_net exposes no
         // AbortSignal, so the request goes through the shared primitive —
         // a dead API server surfaces as an error instead of hanging the
-        // flow. The budget is per-instance: the sync repository raises it
-        // (see `with_idle_timeout_ms`), auth/login keep the default.
+        // flow. The budget is per-instance: auth flows carry
+        // AUTH_IDLE_TIMEOUT_MS, the sync repository raises it to the sync
+        // budget (see `with_idle_timeout_ms`).
         let sent = send_request_idle(&url, &init, self.idle_timeout_ms)
             .await
             .map_err(|e| {
@@ -230,6 +243,15 @@ impl TrailBaseClient {
             .await?;
 
         if !response.ok() {
+            // TrailBase login contract: 401 = wrong credentials (the
+            // expected user-input path); 403 = login succeeded but MFA is
+            // needed (not used by this app); anything else is a
+            // server-side failure. Only 401 may surface as invalid
+            // credentials — mapping outages into it would reproduce the
+            // masking bug this variant exists to fix.
+            if response.status() == 401 {
+                return Err(AuthError::InvalidCredentials);
+            }
             return Err(AuthError::ApiError(format!(
                 "Login failed: {}",
                 response.status_text()
@@ -370,7 +392,7 @@ impl TrailBaseClient {
             nonce: &'a str,
         }
 
-        let response = self
+        let response = match self
             .fetch(
                 // Upstream TrailBase v0.33.16+ native Sign in with Apple
                 // (auth.apple_native_client_id server config).
@@ -383,7 +405,15 @@ impl TrailBaseClient {
                 None,
             )
             .await
-            .map_err(|e| AppleNativeLoginError::Api(e.to_string()))?;
+        {
+            Ok(response) => response,
+            Err(AuthError::NetworkError(message)) => {
+                // Transport-level failure — retryable, not a credential
+                // rejection; the UI shows a retry hint for this variant.
+                return Err(AppleNativeLoginError::Network(message));
+            },
+            Err(other) => return Err(AppleNativeLoginError::Api(other.to_string())),
+        };
 
         if !response.ok() {
             return Err(if response.status() == 424 {
@@ -446,21 +476,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn new_client_carries_the_default_idle_budget() {
+    fn new_client_carries_the_auth_idle_budget() {
         // Arrange / Act
         let client = TrailBaseClient::new();
 
         // Assert
-        assert_eq!(client.idle_timeout_ms(), DEFAULT_IDLE_TIMEOUT_MS);
+        assert_eq!(client.idle_timeout_ms(), AUTH_IDLE_TIMEOUT_MS);
     }
 
     #[test]
-    fn default_client_carries_the_default_idle_budget() {
+    fn default_client_carries_the_auth_idle_budget() {
         // Arrange / Act
         let client = TrailBaseClient::default();
 
         // Assert
-        assert_eq!(client.idle_timeout_ms(), DEFAULT_IDLE_TIMEOUT_MS);
+        assert_eq!(client.idle_timeout_ms(), AUTH_IDLE_TIMEOUT_MS);
     }
 
     #[test]

@@ -88,6 +88,12 @@ pub(crate) trait RemoteUserSource {
 fn map_auth_error(e: AuthError) -> OrigaError {
     match e {
         AuthError::SessionExpired => OrigaError::SessionExpired,
+        // Never produced by the sync endpoints themselves (the variant is
+        // only returned by the login endpoint); mapped explicitly so a
+        // future producer cannot silently degrade into a generic message.
+        AuthError::InvalidCredentials => OrigaError::RepositoryError {
+            reason: "Server rejected the stored credentials".to_string(),
+        },
         AuthError::NetworkError(msg) => OrigaError::RepositoryError {
             reason: format!("Network error: {}", msg),
         },

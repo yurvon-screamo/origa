@@ -1,7 +1,7 @@
 use crate::core::tauri;
 use crate::i18n::{I18nContext, Locale};
 use crate::pages::login::auth_handlers::{handle_oauth_callback, handle_oauth_callback_desktop};
-use crate::repository::take_pkce_verifier_async;
+use crate::repository::{OAuthFailure, take_pkce_verifier_async};
 use crate::store::auth_store::AuthStore;
 use gloo_timers::future::TimeoutFuture;
 use leptos::prelude::*;
@@ -348,7 +348,15 @@ async fn process_oauth_flow(
         Err(e) => {
             is_oauth_loading.set(false);
             error!(?e, "OAuth flow failed");
-            auth_store.oauth_error.set(Some(e.to_string()));
+            auth_store.oauth_error.set(Some(match e {
+                OAuthFailure::Network => i18n
+                    .get_keys_untracked()
+                    .login()
+                    .login_retry_error()
+                    .inner()
+                    .to_string(),
+                OAuthFailure::Message(message) => message,
+            }));
         },
     }
 }

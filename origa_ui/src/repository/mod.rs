@@ -8,6 +8,7 @@ mod hybrid_repository;
 mod idb_sync_wasm_tests;
 mod knowledge_set_codec;
 pub(crate) mod legacy_migration;
+pub mod login_failure;
 #[cfg(test)]
 pub(crate) mod session;
 #[cfg(not(test))]
@@ -28,6 +29,7 @@ pub use dictionary_cache::{
     get_cached_vocabulary_rkyv, save_dictionary_file_to_cache, save_vocabulary_to_cache_rkyv,
 };
 pub use hybrid_repository::HybridUserRepository;
+pub use login_failure::{LoginFailure, OAuthFailure, classify_login_failure};
 pub use session::{
     clear_session, clear_session_async, get_session, get_session_async,
     migrate_session_to_store_if_needed, set_last_sync_time, set_pkce_verifier_async,
