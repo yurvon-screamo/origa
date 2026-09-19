@@ -37,7 +37,6 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "Лексика, кандзи и грамматика от N5 до N1, аудирование и более 200 000 фраз с оригинальной озвучкой — в одном приложении. Без английского посредника.",
     home_cta_primary: "Скачать",
     home_cta_secondary: "Открыть в браузере",
-    home_shot_main_label: "Главный экран",
     home_carousel_labels: &[
         "Главный экран",
         "Уроки",

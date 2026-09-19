@@ -37,7 +37,6 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "Từ vựng, hán tự và ngữ pháp N5–N1, nghe và hơn 200.000 câu bản ngữ, tất cả trong một ứng dụng. Không cần tiếng Anh.",
     home_cta_primary: "Tải xuống",
     home_cta_secondary: "Mở ứng dụng web",
-    home_shot_main_label: "Màn hình chính",
     home_carousel_labels: &[
         "Màn hình chính",
         "Bài học",

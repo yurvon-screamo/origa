@@ -37,7 +37,6 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "어휘, N5–N1 한자·문법, 듣기, 20만 개 이상의 원어민 문장이 모두 하나의 앱에. 영어 없이도 학습할 수 있습니다.",
     home_cta_primary: "다운로드",
     home_cta_secondary: "웹 앱 열기",
-    home_shot_main_label: "메인 화면",
     home_carousel_labels: &[
         "메인 화면",
         "레슨",

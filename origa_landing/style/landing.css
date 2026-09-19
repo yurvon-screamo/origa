@@ -2585,3 +2585,9 @@
     padding: var(--space-sm) 0;
     border-top: 1px solid var(--border-light);
 }
+
+.feat-hero__art {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+}
