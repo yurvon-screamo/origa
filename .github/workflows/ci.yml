@@ -248,6 +248,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v7
 
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
@@ -331,6 +333,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v7
 
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
@@ -377,6 +381,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v7
 
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
@@ -418,6 +424,8 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v7
 
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
@@ -491,6 +499,8 @@ jobs:
             # Android target: only protobuf-compiler is required from the
             # system (the heavy webkit/speechd set is for desktop targets;
             # see lint/e2e-build if an android build ever needs more).
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
