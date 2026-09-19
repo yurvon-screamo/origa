@@ -277,15 +277,15 @@ async fn features_hero_decor_has_aria_hidden() {
     // positive) while browsers ignore the resulting invalid attribute.
     let body = get_body("/features").await;
     let class_idx = body
-        .find("feat-hero__shot")
-        .expect("feat-hero__shot figure must be rendered");
+        .find("feat-hero__art")
+        .expect("feat-hero__art image must be rendered");
     let tag_start = body[..class_idx]
         .rfind('<')
-        .expect("opening '<' must precede feat-hero__shot");
+        .expect("opening '<' must precede feat-hero__art");
     let tag_end = body[class_idx..]
         .find('>')
         .map(|offset| class_idx + offset)
-        .expect("shot figure opening tag must close");
+        .expect("art img opening tag must close");
     let decor_open_tag = &body[tag_start..=tag_end];
     assert!(
         !decor_open_tag.contains("attr:aria-hidden"),
@@ -293,7 +293,7 @@ async fn features_hero_decor_has_aria_hidden() {
     );
     assert!(
         decor_open_tag.contains(r#"aria-hidden="true""#),
-        "decorative screenshot figure must carry aria-hidden; got: {decor_open_tag}"
+        "decorative hero art must carry aria-hidden; got: {decor_open_tag}"
     );
 }
 

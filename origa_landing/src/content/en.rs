@@ -37,7 +37,6 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "Vocabulary, kanji and grammar from N5 to N1, listening and 200,000+ native phrases, all in one app. No English required.",
     home_cta_primary: "Download",
     home_cta_secondary: "Open web app",
-    home_shot_main_label: "Main screen",
     home_carousel_labels: &[
         "Main screen",
         "Lessons",
