@@ -203,7 +203,17 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "learn-hiragana-katakana",
         include_str!("../../content/blog/ru/learn-hiragana-katakana.md"),
     ),
-    // Article 9: "JLPT N5 Preparation".
+    (
+        Locale::Ko,
+        "learn-hiragana-katakana",
+        include_str!("../../content/blog/ko/learn-hiragana-katakana.md"),
+    ),
+    (
+        Locale::Vi,
+        "learn-hiragana-katakana",
+        include_str!("../../content/blog/vi/learn-hiragana-katakana.md"),
+    ),
+    // Article 9: "JLPT N5 Preparation" — all 4 locales.
     (
         Locale::En,
         "jlpt-n5-preparation",
@@ -213,6 +223,16 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "jlpt-n5-preparation",
         include_str!("../../content/blog/ru/jlpt-n5-preparation.md"),
+    ),
+    (
+        Locale::Ko,
+        "jlpt-n5-preparation",
+        include_str!("../../content/blog/ko/jlpt-n5-preparation.md"),
+    ),
+    (
+        Locale::Vi,
+        "jlpt-n5-preparation",
+        include_str!("../../content/blog/vi/jlpt-n5-preparation.md"),
     ),
     // Article 10: "Japanese Textbooks for Beginners".
     (
@@ -225,6 +245,16 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "japanese-textbooks-beginners",
         include_str!("../../content/blog/ru/japanese-textbooks-beginners.md"),
     ),
+    (
+        Locale::Ko,
+        "japanese-textbooks-beginners",
+        include_str!("../../content/blog/ko/japanese-textbooks-beginners.md"),
+    ),
+    (
+        Locale::Vi,
+        "japanese-textbooks-beginners",
+        include_str!("../../content/blog/vi/japanese-textbooks-beginners.md"),
+    ),
     // Article 11: "How Many Kanji Do You Need".
     (
         Locale::En,
@@ -236,6 +266,16 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "how-many-kanji-to-learn",
         include_str!("../../content/blog/ru/how-many-kanji-to-learn.md"),
     ),
+    (
+        Locale::Ko,
+        "how-many-kanji-to-learn",
+        include_str!("../../content/blog/ko/how-many-kanji-to-learn.md"),
+    ),
+    (
+        Locale::Vi,
+        "how-many-kanji-to-learn",
+        include_str!("../../content/blog/vi/how-many-kanji-to-learn.md"),
+    ),
     // Article 12: "Learning Japanese Through Anime".
     (
         Locale::En,
@@ -246,6 +286,16 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         Locale::Ru,
         "learn-japanese-from-anime",
         include_str!("../../content/blog/ru/learn-japanese-from-anime.md"),
+    ),
+    (
+        Locale::Ko,
+        "learn-japanese-from-anime",
+        include_str!("../../content/blog/ko/learn-japanese-from-anime.md"),
+    ),
+    (
+        Locale::Vi,
+        "learn-japanese-from-anime",
+        include_str!("../../content/blog/vi/learn-japanese-from-anime.md"),
     ),
     // Article 13: "JLPT 2026 Dates" — all 4 locales under one slug.
     (
