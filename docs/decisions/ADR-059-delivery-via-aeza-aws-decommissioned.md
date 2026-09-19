@@ -56,11 +56,16 @@ out-of-scope for now").
    users/policies removed. The account holds no Origa resources.
 4. **DNS stays on Bunny** (instant publication, API, free); `uwuwu.ru` hosts
    the brand 301-redirects via the same Caddy.
-5. **Deferred**: RF/world geo-split (RF→Aeza, world→direct Railway/Tigris).
-   The Bunny SCR script is written and sandbox-validated (`infra/bunny-dns/`),
-   blocked only on the platform A-query bug. When Bunny fixes it, the split
-   is an evening: attach SCR records, add the Tigris custom domain for
-   `s3.origa`, done. No client changes either way.
+5. **Geo-split is LIVE** (same night, after Bunny support pointed out the
+   attach-argument mistake — there was no platform bug): SCR records answer
+   `s3.origa` / `app.origa` / `origa` with an A-record (Aeza) for RF clients
+   and a CNAME for the world (`origa.t3.tigrisbucket.io` for `s3.origa` —
+   Tigris custom domain, cert auto-issued by Tigris; `*.up.railway.app` for
+   API/landing). No client changes.
+   NOTE the CLI footgun: `bunny dns scripts attach <zoneId> <name>` creates
+   the record under `<name>` **inside the zone** (i.e. `attach 873317 _probe`
+   serves `_probe.uwuwu.net`, NOT `_probe.origa.uwuwu.net`). Verifying the
+   wrong hostname cost hours and a false platform-bug conclusion.
 
 ## Consequences
 
