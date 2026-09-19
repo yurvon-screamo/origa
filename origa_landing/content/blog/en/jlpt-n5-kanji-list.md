@@ -42,7 +42,7 @@ N5 asks for roughly 80 kanji by the modern Jōyō-frequency split: the character
 | 本 | ホン | もと | book | 本、本当 |
 | 書 | ショ | かく、がき | write | 辞書、書く、図書 |
 | 小 | ショウ | ちいさい、こ、お、さ | small | 小説、小さい、小さな |
-| 電 | デン |  | electricity | 電気 |
+| 電 | デン | — | electricity | 電気 |
 | 時 | ジ | とき、どき | time | 時間、時、時々 |
 | 高 | コウ | たかい、たか、だか、たかまる、たかめる | expensive; tall / high | 最高、高い、高校 |
 | 見 | ケン | みる、みえる、みせる | see | 発見、見る、見せる |
@@ -69,14 +69,14 @@ N5 asks for roughly 80 kanji by the modern Jōyō-frequency split: the character
 | 話 | ワ | はなす、はなし | talk | 会話、話す、話 |
 | 十 | ジュウ、ジッ、ジュッ | とお、と | ten | 十分、二十、二十歳 |
 | 半 | ハン | なかば | half | 半分、半ば |
-| 何 |  | なに、なん | what | 何、何れ |
+| 何 | — | なに、なん | what | 何、何れ |
 | 四 | シ | よ、よつ、よっつ、よん | four | 四、四つ角、四季 |
 | 万 | マン、バン | よろず | 10,000 | 万、万一、万歳 |
 | 五 | ゴ | いつ、いつつ | five | 五、五入、五十 |
 | 八 | ハチ | や、やつ、やっつ | eight | 八、八百屋、御八つ |
 | 読 | ドク、トク、トウ | よむ、よみ | read | 読書、読む、読み |
 | 千 | セン | ち | thousand | 千 |
-| 校 | コウ |  | school | 学校、校長 |
+| 校 | コウ | — | school | 学校、校長 |
 | 東 | トウ | ひがし | east | 東、東洋 |
 | 母 | ボ | はは、も | mother | 母親、伯母、母 |
 | 雨 | ウ | あめ、あま | rain | 雨天、雨、梅雨 |
@@ -87,7 +87,7 @@ N5 asks for roughly 80 kanji by the modern Jōyō-frequency split: the character
 | 百 | ヒャク | もも | hundred | 八百屋、百、百花 |
 | 円 | エン | まるい、まる | circle; yen | 円、円周、楕円 |
 | 休 | キュウ | やすむ、やすまる、やすめる | rest | 休み、休む、夏休み |
-| 北 |  | きた | north | 北 |
+| 北 | — | きた | north | 北 |
 | 六 | ロク | む、むつ、むっつ、むい | six | 六 |
 | 七 | シチ | なな、ななつ、なの | seven | 七 |
 | 今 | コン | いま | now | 今日、今、今年 |
@@ -97,8 +97,8 @@ N5 asks for roughly 80 kanji by the modern Jōyō-frequency split: the character
 | 友 | ユウ | とも | friend | 友達、友 |
 | 右 | ウ、ユウ | みぎ | right | 右、左右 |
 | 九 | キュウ、ク | ここの、ここのつ | nine | 九 |
-| 毎 | マイ |  | every | 毎日、毎年、毎晩 |
-| 午 | ゴ |  | noon | 午後、午前 |
+| 毎 | マイ | ごと | every | 毎日、毎年、毎晩 |
+| 午 | ゴ | うま | noon | 午後、午前 |
 <!-- jlpt-kanji-table:N5:end -->
 
 ## Why some lists say 80 and others 103
@@ -111,18 +111,16 @@ Practically: if you learn the 80 below and then continue into [the N4 range](/jl
 
 ## The printable PDFs
 
-Every list is generated from the same data as the table above, so the character set cannot drift between the page and the file. Each PDF has one row per kanji (readings, meaning, common words) in landscape A4:
+**N5 in English:** [PDF (80 kanji)](/jlpt/n5/en.pdf)
 
-| Level | EN | RU | KO | VI |
-| --- | --- | --- | --- | --- |
-| N5 | [PDF](/jlpt/n5/en.pdf) | [PDF](/jlpt/n5/ru.pdf) | [PDF](/jlpt/n5/ko.pdf) | [PDF](/jlpt/n5/vi.pdf) |
-| N4 | [PDF](/jlpt/n4/en.pdf) | [PDF](/jlpt/n4/ru.pdf) | [PDF](/jlpt/n4/ko.pdf) | [PDF](/jlpt/n4/vi.pdf) |
-| N3 | [PDF](/jlpt/n3/en.pdf) | [PDF](/jlpt/n3/ru.pdf) | [PDF](/jlpt/n3/ko.pdf) | [PDF](/jlpt/n3/vi.pdf) |
-| N2 | [PDF](/jlpt/n2/en.pdf) | [PDF](/jlpt/n2/ru.pdf) | [PDF](/jlpt/n2/ko.pdf) | [PDF](/jlpt/n2/vi.pdf) |
-| N1 | [PDF](/jlpt/n1/en.pdf) | [PDF](/jlpt/n1/ru.pdf) | [PDF](/jlpt/n1/ko.pdf) | [PDF](/jlpt/n1/vi.pdf) |
+The levels above, in the same layout:
 
-A printout is a checklist, not a study method. On its own, a paper list does nothing for retention; that part needs sentences and review scheduling.
+- [N4 (~170 kanji)](/jlpt/n4/en.pdf)
+- [N3 (~370 kanji)](/jlpt/n3/en.pdf)
+- [N2 (~380 kanji)](/jlpt/n2/en.pdf)
+- [N1 (~1,135 kanji)](/jlpt/n1/en.pdf)
 
+Every list is also rendered in Russian, Korean and Vietnamese — swap `en` in the URL for `ru`, `ko` or `vi`.
 ## How to learn a kanji list without wasting it
 
 Three rules that hold for any list size:

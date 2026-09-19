@@ -191,8 +191,8 @@ def build_html(level: str, locale: str, entries: list[dict], date: str) -> str:
         rows.append(
             ROW.format(
                 kanji=esc(e["kanji"]),
-                on=esc("、".join(e.get("on_readings", []))),
-                kun=esc("、".join(e.get("kun_readings", []))),
+                on=esc(fmt_readings(e.get("on_readings", []))),
+                kun=esc(fmt_readings(e.get("kun_readings", []))),
                 meaning=esc(entry_meaning(e, locale)),
                 words=esc("、".join(e.get("popular_words", []))),
             )
@@ -221,14 +221,20 @@ def markdown_table(level: str, locale: str, entries: list[dict]) -> str:
     lines = [
         "| {} | {} | {} | {} | {} |".format(
             md_cell(e["kanji"]),
-            md_cell("、".join(e.get("on_readings", []))),
-            md_cell("、".join(e.get("kun_readings", []))),
+            md_cell(fmt_readings(e.get("on_readings", []))),
+            md_cell(fmt_readings(e.get("kun_readings", []))),
             md_cell(entry_meaning(e, locale)),
             md_cell("、".join(e.get("popular_words", [])[:3])),
         )
         for e in entries
     ]
     return head + "\n".join(lines)
+
+
+def fmt_readings(readings: list[str]) -> str:
+    # Kanji with no kun (or no on) readings are valid data; an empty table
+    # cell is not — render an explicit dash instead.
+    return "、".join(readings) if readings else "—"
 
 
 def md_cell(text: str) -> str:
