@@ -26,6 +26,11 @@ pub enum AuthError {
     InvalidCredentials,
     #[error("Network error: {0}")]
     NetworkError(String),
+    /// Server-answered failure that is not the caller's fault (5xx, 429
+    /// rate limit): retrying is meaningful, so the login UI treats it like
+    /// a transport failure instead of showing raw status diagnostics.
+    #[error("Server error: {0}")]
+    ServerError(String),
     #[error("API error: {0}")]
     ApiError(String),
 }
@@ -243,14 +248,21 @@ impl TrailBaseClient {
             .await?;
 
         if !response.ok() {
-            // TrailBase login contract: 401 = wrong credentials (the
-            // expected user-input path); 403 = login succeeded but MFA is
-            // needed (not used by this app); anything else is a
-            // server-side failure. Only 401 may surface as invalid
-            // credentials — mapping outages into it would reproduce the
-            // masking bug this variant exists to fix.
+            // TrailBase login contract (trailbase.io OpenAPI,
+            // login_handler): 401 Unauthorized = wrong credentials (the
+            // expected user-input path); 403 Forbidden = "login succeeded
+            // but MFA is needed" (MFA is not used by this app); anything
+            // else is a server-side failure. Only 401 may surface as
+            // invalid credentials — mapping outages into it would
+            // reproduce the masking bug this variant exists to fix.
             if response.status() == 401 {
                 return Err(AuthError::InvalidCredentials);
+            }
+            if response.status() >= 500 || response.status() == 429 {
+                return Err(AuthError::ServerError(format!(
+                    "Login failed: {}",
+                    response.status_text()
+                )));
             }
             return Err(AuthError::ApiError(format!(
                 "Login failed: {}",
@@ -305,6 +317,16 @@ impl TrailBaseClient {
             .await?;
 
         if !response.ok() {
+            // 5xx / 429 are the server's or the route's failure, not the
+            // grant's: classified as retryable (ServerError) so the UI
+            // offers a retry instead of raw status diagnostics (App
+            // Review 2026-09 path).
+            if response.status() >= 500 || response.status() == 429 {
+                return Err(AuthError::ServerError(format!(
+                    "Token exchange failed: {}",
+                    response.status_text()
+                )));
+            }
             return Err(AuthError::ApiError(format!(
                 "Token exchange failed: {}",
                 response.status_text()
@@ -412,12 +434,24 @@ impl TrailBaseClient {
                 // rejection; the UI shows a retry hint for this variant.
                 return Err(AppleNativeLoginError::Network(message));
             },
+            Err(AuthError::ServerError(message)) => {
+                // 5xx / 429: the endpoint itself failed (proxy, overload,
+                // rate limit) — retryable just like a transport failure.
+                return Err(AppleNativeLoginError::Network(message));
+            },
             Err(other) => return Err(AppleNativeLoginError::Api(other.to_string())),
         };
 
         if !response.ok() {
             return Err(if response.status() == 424 {
                 AppleNativeLoginError::MissingEmail
+            } else if response.status() >= 500 || response.status() == 429 {
+                // The endpoint (or a proxy on the route) failed — retryable,
+                // same UI treatment as a transport failure.
+                AppleNativeLoginError::Network(format!(
+                    "Apple native login failed: {}",
+                    response.status_text()
+                ))
             } else {
                 AppleNativeLoginError::Api(format!(
                     "Apple native login failed: {}",
@@ -491,6 +525,14 @@ mod tests {
 
         // Assert
         assert_eq!(client.idle_timeout_ms(), AUTH_IDLE_TIMEOUT_MS);
+    }
+
+    #[test]
+    fn auth_idle_budget_is_pinned_at_sixty_seconds() {
+        // Pins the literal value: a silent drift of the constant (e.g.
+        // back to 10 s) must fail CI even though the client tests only
+        // compare the constructor against the constant itself.
+        assert_eq!(crate::utils::net_timeout::AUTH_IDLE_TIMEOUT_MS, 60_000);
     }
 
     #[test]

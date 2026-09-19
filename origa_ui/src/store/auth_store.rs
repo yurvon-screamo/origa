@@ -337,7 +337,7 @@ impl AuthStore {
                 // layer already logs raw network failures per-request; this
                 // classification keeps login-specific context.
                 match &e {
-                    AuthError::NetworkError(_) => {
+                    AuthError::NetworkError(_) | AuthError::ServerError(_) => {
                         tracing::error!(error = %e, "Login network failure");
                     },
                     _ => {
@@ -398,8 +398,8 @@ impl AuthStore {
             Err(e) => {
                 self.is_oauth_loading.set(false);
                 match &e {
-                    AuthError::NetworkError(_) => {
-                        tracing::error!(error = %e, "OAuth token exchange network failure");
+                    AuthError::NetworkError(_) | AuthError::ServerError(_) => {
+                        tracing::error!(error = %e, "OAuth token exchange failure");
                         Err(OAuthFailure::Network)
                     },
                     _ => {

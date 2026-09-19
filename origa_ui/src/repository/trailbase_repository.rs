@@ -97,6 +97,9 @@ fn map_auth_error(e: AuthError) -> OrigaError {
         AuthError::NetworkError(msg) => OrigaError::RepositoryError {
             reason: format!("Network error: {}", msg),
         },
+        AuthError::ServerError(msg) => OrigaError::RepositoryError {
+            reason: format!("Server error: {}", msg),
+        },
         AuthError::ApiError(msg) => OrigaError::RepositoryError {
             reason: format!("API error: {}", msg),
         },

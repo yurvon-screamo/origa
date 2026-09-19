@@ -239,12 +239,13 @@ pub async fn handle_oauth_callback_desktop(
     {
         Ok(session) => session,
         Err(e) => {
-            // A transport failure must not read as token corruption: this
-            // is the reviewer-visible path (App Review 2026-09) that
-            // surfaced raw "Network error: … idle timeout…" diagnostics.
+            // Transport and server outages must not read as token
+            // corruption: this is the reviewer-visible path (App Review
+            // 2026-09) that surfaced raw "Network error: … idle
+            // timeout…" diagnostics.
             match e {
-                AuthError::NetworkError(_) => {
-                    tracing::error!(error = %e, "OAuth token exchange network failure");
+                AuthError::NetworkError(_) | AuthError::ServerError(_) => {
+                    tracing::error!(error = %e, "OAuth token exchange failure");
                     return Err(i18n
                         .get_keys_untracked()
                         .login()

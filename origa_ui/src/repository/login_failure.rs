@@ -13,8 +13,11 @@ use super::trailbase_client::AuthError;
 pub enum LoginFailure {
     /// The server answered 401: the credentials are actually wrong.
     InvalidCredentials,
-    /// Transport-level failure (timeout, DNS, offline) or a non-401 server
-    /// failure: retrying is meaningful, the credentials are not implicated.
+    /// Retryable failure where the credentials are not implicated: a
+    /// transport fault (timeout, DNS, offline), a server-side outage
+    /// (5xx, 429) — or, as an accepted compromise, a rare local storage
+    /// fault losing the just-established session ("session not found").
+    /// The retry hint remains the correct user action in all three cases.
     Network,
     /// The session was established but the profile bootstrap afterwards
     /// failed; the user is signed in and a retry resumes cleanly.
@@ -27,9 +30,10 @@ pub enum LoginFailure {
 pub fn classify_login_failure(error: &AuthError) -> LoginFailure {
     match error {
         AuthError::InvalidCredentials => LoginFailure::InvalidCredentials,
-        AuthError::SessionExpired | AuthError::NetworkError(_) | AuthError::ApiError(_) => {
-            LoginFailure::Network
-        },
+        AuthError::SessionExpired
+        | AuthError::NetworkError(_)
+        | AuthError::ServerError(_)
+        | AuthError::ApiError(_) => LoginFailure::Network,
     }
 }
 
@@ -52,6 +56,10 @@ mod tests {
     #[case(AuthError::SessionExpired, LoginFailure::Network)]
     #[case(
         AuthError::NetworkError("idle timeout after 10000 ms without data".to_string()),
+        LoginFailure::Network
+    )]
+    #[case(
+        AuthError::ServerError("Login failed: Bad Gateway".to_string()),
         LoginFailure::Network
     )]
     #[case(
