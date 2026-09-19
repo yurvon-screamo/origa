@@ -389,88 +389,19 @@
 
 .home-hero__decor {
     position: relative;
-    min-height: clamp(320px, 40vw, 560px);
     display: flex;
-    align-items: center;
-    padding-bottom: var(--space-lg);
+    flex-direction: column;
+    gap: var(--space-md);
+    min-width: 0;
 }
 
-.home-hero__shot-desktop {
-    width: 100%;
-    transform: rotate(-1deg);
-    margin-left: var(--space-md);
-}
-
-.home-hero__shot-phone {
-    position: absolute;
-    right: var(--space-md);
-    bottom: calc(-1 * var(--space-md));
-    width: 32%;
-    min-width: 130px;
-    transform: rotate(1.5deg);
-    z-index: 2;
-}
-
-@media (max-width: 640px) {
-    .home-hero__decor {
-        min-height: 0;
-        margin-top: var(--space-lg);
-    }
-
-    .home-hero__shot-desktop {
-        margin-left: 0;
-        transform: none;
-    }
-
-    /* narrow screen: the phone overlay crowds the desktop sheet */
-    .home-hero__shot-phone {
-        display: none;
-    }
-}
-
-/* === Shot: real app screenshot in a minimal window === */
-
+/* Shot: a real screenshot with the double-sheet frame. The window
+   chrome experiment (dots bar) is retired — straight and quiet. */
 .shot {
     margin: 0;
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
-    box-shadow: 8px 8px 0 var(--bg-aged), 8px 8px 0 1px var(--border-light);
-}
-
-.shot__bar {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--bg-cream);
-}
-
-.shot__dot {
-    width: 7px;
-    height: 7px;
-    border: 1px solid var(--border-dark);
-}
-
-.shot__dot--a {
-    background: var(--accent-terracotta);
-}
-
-.shot__dot--b {
-    background: var(--accent-gold);
-}
-
-.shot__dot--c {
-    background: var(--accent-sage);
-}
-
-.shot__bar-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-left: var(--space-xs);
+    box-shadow: 10px 10px 0 var(--bg-aged), 10px 10px 0 1px var(--border-light);
 }
 
 .shot__img {
@@ -479,13 +410,67 @@
     height: auto;
 }
 
-.shot--phone .shot__bar {
-    padding: 4px 8px;
+/* One phone capture at a time, large enough to read. Scroll-snap gives
+   free swipe; the inline script drives dots and the auto-advance. */
+.hero-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    box-shadow: 10px 10px 0 var(--bg-aged), 10px 10px 0 1px var(--border-light);
 }
 
-.shot--phone .shot__dot {
-    width: 5px;
-    height: 5px;
+.hero-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-carousel__slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero-carousel__slide img {
+    display: block;
+    height: clamp(460px, 40vw, 600px);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.hero-carousel__caption {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    text-align: center;
+    padding: var(--space-sm) 0;
+    border-top: 1px solid var(--border-light);
+}
+
+.hero-carousel__dots {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.hero-carousel__dot {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--border-dark);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.hero-carousel__dot.is-active {
+    background: var(--accent-terracotta);
 }
 
 .home-stats {
@@ -2568,4 +2553,15 @@
     .feat-split__shot {
         max-width: 640px;
     }
+}
+
+.shot__caption {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    text-align: center;
+    padding: var(--space-sm) 0;
+    border-top: 1px solid var(--border-light);
 }

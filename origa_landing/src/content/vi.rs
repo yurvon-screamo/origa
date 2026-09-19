@@ -38,6 +38,13 @@ pub static CONTENT: Content = Content {
     home_cta_primary: "Tải xuống",
     home_cta_secondary: "Mở ứng dụng web",
     home_shot_main_label: "Màn hình chính",
+    home_carousel_labels: &[
+        "Màn hình chính",
+        "Bài học",
+        "Tham khảo ngữ pháp",
+        "Luyện viết hán tự",
+        "Cụm từ bản xứ",
+    ],
     home_stats_line: "200.000+ câu có audio · Ngữ pháp & hán tự N5–N1 · Windows · Linux · macOS · Android · Web · Ngoại tuyến",
     home_faq_free_question: "Origa có miễn phí không?",
     home_faq_free_answer: "Có. Ứng dụng trên mọi nền tảng và phiên bản web đều miễn phí.",

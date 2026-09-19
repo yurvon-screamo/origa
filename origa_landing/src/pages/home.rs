@@ -1,7 +1,6 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
-use crate::components::Shot;
 use crate::components::cta::CtaSection;
 use crate::components::seo::{
     PageMeta, SchemaOrg, faq_schema, organization_schema, software_application_schema,
@@ -18,6 +17,18 @@ pub fn HomePage() -> impl IntoView {
 
     let features_href = format!("{prefix}/features");
     let download_href = format!("{prefix}/download");
+
+    // Real app screens, one per slide: the fastest way for a visitor to
+    // see what the product actually is. Phone captures only — their big
+    // elements stay legible at hero scale. KO/VI fall back to EN via
+    // `image_prefix()` until the app ships those interface locales.
+    let carousel: &[(&str, &str)] = &[
+        ("main", c.home_carousel_labels[0]),
+        ("lesson", c.home_carousel_labels[1]),
+        ("grammar", c.home_carousel_labels[2]),
+        ("writing", c.home_carousel_labels[3]),
+        ("phrases", c.home_carousel_labels[4]),
+    ];
 
     // Mini-FAQ: the "free?", WaniKani and kanji-start pairs are
     // homepage-specific long-tails; the rest reuse the features-page
@@ -65,17 +76,26 @@ pub fn HomePage() -> impl IntoView {
                 </div>
             </div>
             <div class="home-hero__decor">
-                <Shot
-                    src=format!("/images/app/{lang}.home.webp")
-                    label=c.home_shot_main_label.to_string()
-                    variant="shot--desktop home-hero__shot-desktop".to_string()
-                />
-                <Shot
-                    src=format!("/images/app/{lang}.phone.hero.webp")
-                    variant="shot--phone home-hero__shot-phone".to_string()
-                />
+                <div class="hero-carousel" id="hero-carousel">
+                    {carousel.iter().enumerate().map(|(i, (img, label))| {
+                        view! {
+                            <figure class="hero-carousel__slide">
+                                <img
+                                    src=format!("/images/app/{lang}.car.{img}.webp")
+                                    alt=label.to_string()
+                                    loading=if i == 0 { "eager" } else { "lazy" }
+                                />
+                                <figcaption class="hero-carousel__caption">
+                                    {label.to_string()}
+                                </figcaption>
+                            </figure>
+                        }
+                    }).collect_view()}
+                </div>
+                <div class="hero-carousel__dots" id="hero-carousel-dots"></div>
             </div>
         </section>
+        <script inner_html=carousel_inline_script() />
 
         <hr class="divider-full" />
 
@@ -190,4 +210,53 @@ fn HomeFeatureCard(title: &'static str, text: &'static str, href: String) -> imp
             <A href=href attr:class="landing-feature-card__link">{title}</A>
         </div>
     }
+}
+
+/// Carousel behaviour: auto-advance with pause on hover/focus, dot
+/// navigation, native swipe (scroll-snap does the panning; JS only
+/// syncs the dots and drives the timer). No dependencies, mirrors the
+/// header script pattern.
+fn carousel_inline_script() -> String {
+    r#"
+    (function() {
+        var track = document.getElementById('hero-carousel');
+        var dots = document.getElementById('hero-carousel-dots');
+        if (!track || !dots) return;
+        var slides = track.children.length;
+        for (var i = 0; i < slides; i++) {
+            var d = document.createElement('button');
+            d.type = 'button';
+            d.className = 'hero-carousel__dot';
+            d.setAttribute('aria-label', 'Slide ' + (i + 1));
+            (function(idx) {
+                d.addEventListener('click', function() {
+                    track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+                });
+            })(i);
+            dots.appendChild(d);
+        }
+        function current() {
+            return Math.round(track.scrollLeft / track.clientWidth);
+        }
+        function sync() {
+            var cur = current();
+            var ds = dots.children;
+            for (var j = 0; j < ds.length; j++) {
+                ds[j].classList.toggle('is-active', j === cur);
+            }
+        }
+        track.addEventListener('scroll', function() {
+            clearTimeout(track._t);
+            track._t = setTimeout(sync, 80);
+        });
+        var timer = setInterval(function() {
+            if (track.matches(':hover')) return;
+            var next = (current() + 1) % slides;
+            track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+        }, 4000);
+        track.addEventListener('pointerdown', function() { clearInterval(timer); });
+        sync();
+    })();
+    "#
+    .to_string()
 }
