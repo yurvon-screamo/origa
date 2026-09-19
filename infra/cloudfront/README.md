@@ -39,3 +39,5 @@ Live configuration of the three production distributions (account
 - `HttpVersion` is `http2` (not `http2and3`): TSPU blocks QUIC/UDP-443 in RF and
   Chrome fails with `ERR_QUIC_PROTOCOL_ERROR` without falling back fast. curl
   never catches this (no HTTP/3 support) — browser-only symptom.
+- `IsIPV6Enabled: false`: RF users on providers with broken/throttled v6 hang on
+  AAAA-preferring connections; v4-only DNS sidesteps it (2026-09-19 hotfix #2).
