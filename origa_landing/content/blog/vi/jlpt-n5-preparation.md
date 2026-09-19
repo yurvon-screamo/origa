@@ -119,4 +119,4 @@ Tự nó thì chưa. Nhà tuyển dụng kỳ vọng tối thiểu N3–N2. Như
 
 ### Sau N5 là gì?
 
-N4: cùng cấu trúc, nửa sau giáo trình, từ vựng lên ~1.500, hán tự lên ~300. Khác biệt là khối lượng và lời nói nhanh hơn ở phần nghe.
+N4: cùng cấu trúc, nửa sau giáo trình, từ vựng lên ~1.500, thêm ~170 hán tự mới (~250 cộng dồn). Khác biệt là khối lượng và lời nói nhanh hơn ở phần nghe.

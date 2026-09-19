@@ -120,6 +120,8 @@ The levels above, in the same layout:
 - [N2 (~380 kanji)](/jlpt/n2/en.pdf)
 - [N1 (~1,135 kanji)](/jlpt/n1/en.pdf)
 
+A printout is a checklist, not a study method: a paper list does nothing for retention on its own. That part needs words in context and a review schedule — the loop described below.
+
 Every list is also rendered in Russian, Korean and Vietnamese — swap `en` in the URL for `ru`, `ko` or `vi`.
 ## How to learn a kanji list without wasting it
 

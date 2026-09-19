@@ -24,7 +24,7 @@ An honest caveat first: the organizers (the Japan Foundation together with JEES)
 
 By those estimates, N5 covers:
 
-- **~100 kanji**, high-frequency characters: 数字， 時間， 人， 行く；
+- **~80 kanji**, high-frequency characters: 数字， 時間， 人， 行く；
 - **~800 words**, basic everyday vocabulary: family, numbers, time, motion verbs;
 - **basic grammar**: polite ます/です forms, particles は、が、を、に、で、へ， simple verb and adjective conjugations, counter suffixes.
 
@@ -79,7 +79,7 @@ A readiness test: describe your typical day aloud in simple sentences. If "wake 
 
 **Postponing listening until the last month.** Comprehension builds over months, not weeks. Self-learners most often fail the section minimum in Listening.
 
-**Grinding kanji as isolated lists.** The 100 N5 characters learned bare decay to 30 recognized within a month. Kanji stick inside words.
+**Grinding kanji as isolated lists.** The 80 N5 characters learned bare decay to 30 recognized within a month. Kanji stick inside words.
 
 **Untimed practice.** Without time pressure, practice tests always go fine. The real exam doesn't.
 
@@ -95,7 +95,7 @@ Origa helps with the content side of preparation, within clear bounds:
 
 ## Bottom Line
 
-N5 is an achievable goal for the first 6–8 months of self-study: ~100 kanji, ~800 words, basic grammar, and mandatory daily listening. The passing threshold is forgiving (80 of 180), but per-section minimums punish lopsided preparation.
+N5 is an achievable goal for the first 6–8 months of self-study: ~80 kanji, ~800 words, basic grammar, and mandatory daily listening. The passing threshold is forgiving (80 of 180), but per-section minimums punish lopsided preparation.
 
 After N5 comes N4, same approach, doubled volume. Starting from zero? Begin with [the zero-to-start plan](/blog/yaponskiy-s-nulya) and pick tools in [the full comparison](/compare).
 
@@ -119,4 +119,4 @@ On its own, no. Employers expect N3–N2 at minimum. But N5 works well as an int
 
 ### What comes after N5?
 
-N4: same scheme, second halves of the textbooks, vocabulary up to ~1500 words, kanji up to ~300. The difference is volume plus faster speech in the listening section.
+N4: same scheme, second halves of the textbooks, vocabulary up to ~1500 words, ~170 new kanji (~250 cumulative). The difference is volume plus faster speech in the listening section.

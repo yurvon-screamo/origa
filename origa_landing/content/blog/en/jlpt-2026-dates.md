@@ -36,7 +36,7 @@ Registration for the December session opened in August across most countries and
 | Vietnam | Varies by city (Hanoi, Ho Chi Minh City, Da Nang, Hue) | Ho Chi Minh City's window (Jul 28 – Aug 28) has closed; check your local host institution |
 | United States | Opens early September | Often open into the fall, but popular sites sell out, so register immediately |
 | United Kingdom | From early/mid-August | Each test centre closes when it fills; most are full by now |
-| Russia | From around early August | December-only in most cities; check your local host university |
+| Russia | From around early August | Both sittings in Moscow, Saint Petersburg, Vladivostok and several other cities; December-only elsewhere — the full venue list is on jlpt.jp |
 
 Two rules survive any table of dates. First, application periods end without notice when a site fills. The JLPT in Japan and the Philippines both closed their windows early this year. Second, the official jlpt.jp overseas list is the only source for who runs the test in your country and when; local centres publish their own deadlines, which is what actually binds you.
 
