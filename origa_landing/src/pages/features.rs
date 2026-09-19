@@ -54,10 +54,11 @@ pub fn FeaturesPage() -> impl IntoView {
                 <hr class="feat-hero__rule" />
             </div>
             <div class="feat-hero__decor">
-                <Shot
-                    src=format!("/images/app/{lang}.home.webp")
-                    label=c.home_shot_main_label.to_string()
-                    variant="shot--desktop feat-hero__shot".to_string()
+                <img
+                    src="/images/app/feat-art.webp"
+                    alt=""
+                    class="feat-hero__art"
+                    aria-hidden="true"
                 />
             </div>
         </section>
