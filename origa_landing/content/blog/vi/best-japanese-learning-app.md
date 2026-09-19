@@ -83,6 +83,8 @@ Nếu bạn học tiếng Nhật qua tiếng Nga (hoặc tiếng Việt, hoặc 
 
 Tìm kiếm "ứng dụng học tiếng Nhật bằng [tiếng mẹ đẻ]" gần như không gặp đối thủ mạnh. Thị trường chưa được phục vụ đầy đủ. Origa được xây dựng cho việc này từ ngày đầu: giao diện, từ điển và giải thích ngữ pháp bằng tiếng Nga, tiếng Hàn và tiếng Việt (tiếng Anh cũng vậy), không phải là một lớp bản địa hóa dịch từ tiếng Anh, mà là ngôn ngữ giao diện gốc.
 
+Gợi ý kết hợp phổ biến ở Việt Nam: học theo Minna no Nihongo — bộ giáo trình đã quen thuộc với hầu hết lớp học tiếng Nhật tại Việt Nam — và dùng Origa để giữ từ vựng từ các bài học đó. Bạn nhập từ của bài vào Origa (hoặc quét luôn trang sách), phần đọc từ và lặp lại ngắt quãng do ứng dụng lo; chương trình luyện tập bên sách giáo trình vẫn là của Minna.
+
 ## Cách chọn
 
 1. **Xác định điểm nghẽn.** Cái gì trong thiết lập hiện tại của bạn ngốn nhiều thời gian nhất: tạo thẻ, tìm hán tự, ngữ pháp, nghe? Đó là thứ cần được giải quyết.
