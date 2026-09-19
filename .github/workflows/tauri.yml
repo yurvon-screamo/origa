@@ -78,6 +78,8 @@ jobs:
               with:
                   version: ${{ needs.version.outputs.version }}
 
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             - name: Cache APT packages
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
