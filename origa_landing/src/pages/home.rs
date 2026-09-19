@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
 
+use crate::components::Shot;
 use crate::components::cta::CtaSection;
 use crate::components::seo::{
     PageMeta, SchemaOrg, faq_schema, organization_schema, software_application_schema,
@@ -64,11 +65,15 @@ pub fn HomePage() -> impl IntoView {
                 </div>
             </div>
             <div class="home-hero__decor">
-                <div
-                    class="home-hero__decor-img"
-                    aria-hidden="true"
-                    style=format!("background-image: url(/images/{lang}.hero.png)")
-                ></div>
+                <Shot
+                    src=format!("/images/app/{lang}.home.webp")
+                    label=c.home_shot_main_label.to_string()
+                    variant="shot--desktop home-hero__shot-desktop".to_string()
+                />
+                <Shot
+                    src=format!("/images/app/{lang}.phone.hero.webp")
+                    variant="shot--phone home-hero__shot-phone".to_string()
+                />
             </div>
         </section>
 

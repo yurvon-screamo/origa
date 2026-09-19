@@ -132,6 +132,7 @@ pub struct Content {
     pub home_cta_primary: &'static str,
     pub home_cta_secondary: &'static str,
     // Single-line stat strip under the hero (platforms, corpus size, levels)
+    pub home_shot_main_label: &'static str,
     pub home_stats_line: &'static str,
     // Homepage mini-FAQ "free?" pair; the other two pairs reuse the features
     // FAQ strings (offline + interface languages) so copy stays in sync.

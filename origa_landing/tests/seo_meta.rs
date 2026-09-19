@@ -260,30 +260,32 @@ async fn default_title_is_descriptive() {
 
 #[tokio::test]
 async fn features_hero_decor_has_aria_hidden() {
-    // Decorative background-image elements must not be exposed to assistive
-    // tech — the visible <h1> already conveys the section's purpose.
+    // Decorative screenshot compositions must not be exposed to assistive
+    // tech — the visible <h1> already conveys the section's purpose. The
+    // hero now renders a `Shot` (window-chromed real screenshot) whose
+    // <figure> carries aria-hidden.
     //
     // The assertion is attribute-order independent: Leptos SSR does not
-    // guarantee that `aria-hidden` follows `class`/`style` in the rendered
-    // tag, so we locate the entire enclosing `<div ...>` opening tag (from the
+    // guarantee that `aria-hidden` follows `class` in the rendered tag, so
+    // we locate the entire enclosing `<figure ...>` opening tag (from the
     // nearest preceding `<` to the next `>`) and check it carries the
     // attribute anywhere within.
     //
     // Two complementary checks guard against a regression where the RSX
-    // `attr:aria-hidden` form leaks the `attr:` prefix into SSR HTML: the prefix
-    // would satisfy a naive `contains("aria-hidden")` (false positive) while
-    // browsers ignore the resulting invalid attribute.
+    // `attr:aria-hidden` form leaks the `attr:` prefix into SSR HTML: the
+    // prefix would satisfy a naive `contains("aria-hidden")` (false
+    // positive) while browsers ignore the resulting invalid attribute.
     let body = get_body("/features").await;
     let class_idx = body
-        .find("feat-hero__decor-img")
-        .expect("feat-hero__decor-img must be rendered");
+        .find("feat-hero__shot")
+        .expect("feat-hero__shot figure must be rendered");
     let tag_start = body[..class_idx]
         .rfind('<')
-        .expect("opening '<' must precede feat-hero__decor-img");
+        .expect("opening '<' must precede feat-hero__shot");
     let tag_end = body[class_idx..]
         .find('>')
         .map(|offset| class_idx + offset)
-        .expect("decor div opening tag must close");
+        .expect("shot figure opening tag must close");
     let decor_open_tag = &body[tag_start..=tag_end];
     assert!(
         !decor_open_tag.contains("attr:aria-hidden"),
@@ -291,7 +293,7 @@ async fn features_hero_decor_has_aria_hidden() {
     );
     assert!(
         decor_open_tag.contains(r#"aria-hidden="true""#),
-        "decorative background-image div must carry aria-hidden; got: {decor_open_tag}"
+        "decorative screenshot figure must carry aria-hidden; got: {decor_open_tag}"
     );
 }
 
