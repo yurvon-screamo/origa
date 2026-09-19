@@ -76,6 +76,29 @@ pub fn HomePage() -> impl IntoView {
                 </div>
             </div>
             <div class="home-hero__decor">
+                <img
+                    src="/images/app/hero-art.webp"
+                    alt=""
+                    class="home-hero__art"
+                    aria-hidden="true"
+                />
+            </div>
+        </section>
+        <script inner_html=carousel_inline_script() />
+
+        <hr class="divider-full" />
+
+        // Section 1b: stat strip — concrete, scannable facts under the hero
+        <section class="home-stats">
+            <p class="home-stats__line">{c.home_stats_line}</p>
+        </section>
+
+        <hr class="divider-full" />
+
+        // Section 1c: app screens carousel — what the product actually
+        // looks like, one legible phone capture at a time
+        <section class="home-shots">
+            <div class="home-shots__inner">
                 <div class="hero-carousel" id="hero-carousel">
                     {carousel.iter().enumerate().map(|(i, (img, label))| {
                         view! {
@@ -94,14 +117,6 @@ pub fn HomePage() -> impl IntoView {
                 </div>
                 <div class="hero-carousel__dots" id="hero-carousel-dots"></div>
             </div>
-        </section>
-        <script inner_html=carousel_inline_script() />
-
-        <hr class="divider-full" />
-
-        // Section 1b: stat strip — concrete, scannable facts under the hero
-        <section class="home-stats">
-            <p class="home-stats__line">{c.home_stats_line}</p>
         </section>
 
         <hr class="divider-full" />

@@ -390,9 +390,15 @@
 .home-hero__decor {
     position: relative;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    align-items: center;
+    justify-content: center;
     min-width: 0;
+}
+
+.home-hero__art {
+    width: 100%;
+    max-width: 640px;
+    height: auto;
 }
 
 /* Shot: a real screenshot with the double-sheet frame. The window
@@ -408,6 +414,20 @@
     display: block;
     width: 100%;
     height: auto;
+}
+
+.home-shots {
+    padding: var(--space-xxl) var(--space-lg);
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+.home-shots__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    max-width: 420px;
+    margin: 0 auto;
 }
 
 /* One phone capture at a time, large enough to read. Scroll-snap gives
