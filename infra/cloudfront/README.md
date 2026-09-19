@@ -33,3 +33,9 @@ Live configuration of the three production distributions (account
   `s3.origa.uwuwu.net` (wildcard matches one level) — the live cert is
   `*.origa.uwuwu.net` + `origa.uwuwu.net`.
 - Origin read timeout max is 60s.
+
+## 2026-09-19 hotfix
+
+- `HttpVersion` is `http2` (not `http2and3`): TSPU blocks QUIC/UDP-443 in RF and
+  Chrome fails with `ERR_QUIC_PROTOCOL_ERROR` without falling back fast. curl
+  never catches this (no HTTP/3 support) — browser-only symptom.
