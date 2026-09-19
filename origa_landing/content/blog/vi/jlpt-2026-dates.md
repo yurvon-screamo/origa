@@ -31,9 +31,9 @@ Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng
 
 | Nước | Thời gian nhận hồ sơ | Ghi chú |
 | --- | --- | --- |
-| Hàn Quốc | **1/9 – 20/9** | Còn mở; đợt bổ sung 28/9 – 4/10, phụ phí 10% |
+| Việt Nam | **Tùy thành phố, đa số đóng trong tháng 9** | TP.HCM (28/7 – 28/8) đã đóng; Hà Nội, Đà Nẵng, Huế theo thông báo của đơn vị chủ quản — hỏi trực tiếp, hồ sơ thường đóng khi đủ chỉ tiêu |
+| Hàn Quốc | 1/9 – 20/9 | Còn mở; đợt bổ sung 28/9 – 4/10, phụ phí 10% |
 | Nhật Bản | 24/8 – 7/9 | Đã đóng, và đóng sớm (3/9) do quá tải |
-| Việt Nam | Tùy thành phố | TP.HCM (28/7 – 28/8) đã đóng; Hà Nội, Đà Nẵng, Huế theo thông báo của đơn vị chủ quản |
 | Mỹ | Từ đầu tháng 9 | Thường mở đến mùa thu, nhưng điểm thi phổ biến chớ đóng sớm |
 | Anh | Từ đầu/giữa tháng 8 | Mỗi điểm thi đóng khi đủ chỉ tiêu |
 | Nga | Từ khoảng đầu tháng 8 | Phần lớn thành phố chỉ có kỳ tháng 12 |
@@ -49,9 +49,9 @@ Cả năm trình độ N1–N5 thi cùng một ngày, chia hai khối:
 - **N1 và N2** thi buổi sáng. Đóng cửa vào khoảng 9:40.
 - **N3–N5** thi buổi chiều. Đóng cửa vào khoảng 13:40.
 
-Đến sớm: trễ phút cuối là không được vào, và ôn giỏi đến mấy cũng không cứu được cánh cửa đã đóng. Mang theo giấy dự thi in ra và giấy tờ tùy thân đúng loại mà đơn vị chủ quản yêu cầu — tại Hàn Quốc, ví dụ, chỉ các loại giấy tờ theo quy định mới được chấp nhận, không có ngoại lệ tại chỗ.
+Đến sớm: trễ phút cuối là không được vào, và ôn giỏi đến mấy cũng không cứu được cánh cửa đã đóng. Mang theo giấy dự thi in ra và giấy tờ tùy thân đúng loại mà đơn vị chủ quản yêu cầu — ở Việt Nam thường là CMND/CCCD; loại giấy tờ chấp nhận và quy định từng điểm thi nằm trong thông báo của đơn vị chủ quản.
 
-Lệ phí tùy nước. Mốc tham khảo 2026: 7.500 yên ở Nhật, 75.000 won (N1–N3) / 60.000 won (N4–N5) ở Hàn Quốc, $135 ở Mỹ, khoảng 710.000 đồng ở Việt Nam. Trong cùng một nước, trình độ hầu như không đổi lệ phí (thang hai mức của Hàn Quốc là ngoại lệ).
+Lệ phí tùy nước. Ở Việt Nam khoảng 710.000 đồng cho mọi trình độ. Để đối chiếu: 7.500 yên ở Nhật, 75.000 won (N1–N3) / 60.000 won (N4–N5) ở Hàn Quốc, $135 ở Mỹ.
 
 ## Khi nào có kết quả
 
@@ -77,11 +77,11 @@ Chủ nhật 6/12/2026, trên toàn thế giới. N1–N2 thi buổi sáng, N3�
 
 ### Còn đăng ký được kỳ JLPT tháng 12/2026 không?
 
-Tùy nước. Hàn Quốc nhận hồ sơ đến 20/9 và đợt bổ sung đến 4/10. Nhật Bản, Philippines và phần lớn điểm thi châu Âu đã đóng. Mỹ thường mở đến mùa thu. Hỏi trực tiếp đơn vị chủ quản của bạn.
+Tùy nước. Tại Việt Nam, hồ sơ ở TP.HCM đã đóng; Hà Nội, Đà Nẵng và Huế nhận theo thông báo riêng của từng đơn vị — hỏi trực tiếp và hỏi sớm. Hàn Quốc nhận hồ sơ đến 20/9 và đợt bổ sung đến 4/10. Nhật Bản và phần lớn điểm thi châu Âu đã đóng; Mỹ thường mở đến mùa thu.
 
 ### Lệ phí JLPT là bao nhiêu?
 
-Tùy nước: 7.500 yên ở Nhật, 60.000–75.000 won ở Hàn Quốc, $135 ở Mỹ, khoảng 710.000 đồng ở Việt Nam. Đợt bổ sung, nơi có, đắt hơn khoảng 10%.
+Tùy nước: ở Việt Nam khoảng 710.000 đồng cho mọi trình độ. Để đối chiếu: 7.500 yên ở Nhật, 60.000–75.000 won ở Hàn Quốc, $135 ở Mỹ. Đợt bổ sung, nơi có, đắt hơn khoảng 10%.
 
 ### Khi nào có kết quả kỳ tháng 12?
 

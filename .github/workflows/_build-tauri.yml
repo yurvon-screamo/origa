@@ -230,7 +230,7 @@ jobs:
                   packages:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
-                  version: 1.0
+                  version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
 
             - name: Install mold linker
               uses: rui314/setup-mold@v1

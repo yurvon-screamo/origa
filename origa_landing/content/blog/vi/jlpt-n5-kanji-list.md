@@ -42,7 +42,7 @@ N5 đòi hỏi khoảng 80 hán tự theo cách phân bổ tần suất Jōyō h
 | 本 | ホン | もと | sách | 本、本当 |
 | 書 | ショ | かく、がき | viết | 辞書、書く、図書 |
 | 小 | ショウ | ちいさい、こ、お、さ | nhỏ | 小説、小さい、小さな |
-| 電 | デン |  | điện | 電気 |
+| 電 | デン | — | điện | 電気 |
 | 時 | ジ | とき、どき | thời gian | 時間、時、時々 |
 | 高 | コウ | たかい、たか、だか、たかまる、たかめる | đắt; cao | 最高、高い、高校 |
 | 見 | ケン | みる、みえる、みせる | thấy | 発見、見る、見せる |
@@ -69,14 +69,14 @@ N5 đòi hỏi khoảng 80 hán tự theo cách phân bổ tần suất Jōyō h
 | 話 | ワ | はなす、はなし | nói chuyện | 会話、話す、話 |
 | 十 | ジュウ、ジッ、ジュッ | とお、と | mười | 十分、二十、二十歳 |
 | 半 | ハン | なかば | một nửa | 半分、半ば |
-| 何 |  | なに、なん | gì | 何、何れ |
+| 何 | — | なに、なん | gì | 何、何れ |
 | 四 | シ | よ、よつ、よっつ、よん | bốn | 四、四つ角、四季 |
 | 万 | マン、バン | よろず | mười nghìn | 万、万一、万歳 |
 | 五 | ゴ | いつ、いつつ | năm | 五、五入、五十 |
 | 八 | ハチ | や、やつ、やっつ | tám | 八、八百屋、御八つ |
 | 読 | ドク、トク、トウ | よむ、よみ | đọc | 読書、読む、読み |
 | 千 | セン | ち | một nghìn | 千 |
-| 校 | コウ |  | trường học | 学校、校長 |
+| 校 | コウ | — | trường học | 学校、校長 |
 | 東 | トウ | ひがし | phía đông | 東、東洋 |
 | 母 | ボ | はは、も | mẹ | 母親、伯母、母 |
 | 雨 | ウ | あめ、あま | mưa | 雨天、雨、梅雨 |
@@ -87,7 +87,7 @@ N5 đòi hỏi khoảng 80 hán tự theo cách phân bổ tần suất Jōyō h
 | 百 | ヒャク | もも | một trăm | 八百屋、百、百花 |
 | 円 | エン | まるい、まる | vòng tròn; đồng yên | 円、円周、楕円 |
 | 休 | キュウ | やすむ、やすまる、やすめる | nghỉ ngơi | 休み、休む、夏休み |
-| 北 |  | きた | phía bắc | 北 |
+| 北 | — | きた | phía bắc | 北 |
 | 六 | ロク | む、むつ、むっつ、むい | sáu | 六 |
 | 七 | シチ | なな、ななつ、なの | bảy | 七 |
 | 今 | コン | いま | bây giờ | 今日、今、今年 |
@@ -97,8 +97,8 @@ N5 đòi hỏi khoảng 80 hán tự theo cách phân bổ tần suất Jōyō h
 | 友 | ユウ | とも | bạn | 友達、友 |
 | 右 | ウ、ユウ | みぎ | bên phải | 右、左右 |
 | 九 | キュウ、ク | ここの、ここのつ | chín | 九 |
-| 毎 | マイ |  | mọi | 毎日、毎年、毎晩 |
-| 午 | ゴ |  | buổi trưa | 午後、午前 |
+| 毎 | マイ | ごと | mọi | 毎日、毎年、毎晩 |
+| 午 | ゴ | うま | buổi trưa | 午後、午前 |
 <!-- jlpt-kanji-table:N5:end -->
 
 ## Vì sao có danh sách nói 80, có danh sách nói 103
@@ -111,18 +111,18 @@ Kết luận thực tế: học 80 chữ dưới đây rồi tiếp [vùng N4](/
 
 ## Các bản PDF in
 
-Mỗi danh sách được sinh từ cùng dữ liệu với bảng trên; tập chữ không thể lệch nhau giữa trang và tệp. Mỗi PDF có một dòng mỗi hán tự (âm đọc, nghĩa, từ thông dụng), khổ A4 ngang:
+**N5 bản tiếng Việt:** [PDF (80 hán tự)](/jlpt/n5/vi.pdf)
 
-| Cấp | EN | RU | KO | VI |
-| --- | --- | --- | --- | --- |
-| N5 | [PDF](/jlpt/n5/en.pdf) | [PDF](/jlpt/n5/ru.pdf) | [PDF](/jlpt/n5/ko.pdf) | [PDF](/jlpt/n5/vi.pdf) |
-| N4 | [PDF](/jlpt/n4/en.pdf) | [PDF](/jlpt/n4/ru.pdf) | [PDF](/jlpt/n4/ko.pdf) | [PDF](/jlpt/n4/vi.pdf) |
-| N3 | [PDF](/jlpt/n3/en.pdf) | [PDF](/jlpt/n3/ru.pdf) | [PDF](/jlpt/n3/ko.pdf) | [PDF](/jlpt/n3/vi.pdf) |
-| N2 | [PDF](/jlpt/n2/en.pdf) | [PDF](/jlpt/n2/ru.pdf) | [PDF](/jlpt/n2/ko.pdf) | [PDF](/jlpt/n2/vi.pdf) |
-| N1 | [PDF](/jlpt/n1/en.pdf) | [PDF](/jlpt/n1/ru.pdf) | [PDF](/jlpt/n1/ko.pdf) | [PDF](/jlpt/n1/vi.pdf) |
+Các cấp trên, cùng bố cục, bản tiếng Việt:
 
-Bản in là danh sách kiểm, không phải phương pháp học. Tự thân một tờ giấy không giúp ghi nhớ gì cả; phần đó cần câu hội và lịch ôn tập.
+- [N4 (~170 hán tự)](/jlpt/n4/vi.pdf)
+- [N3 (~370 hán tự)](/jlpt/n3/vi.pdf)
+- [N2 (~380 hán tự)](/jlpt/n2/vi.pdf)
+- [N1 (~1.135 hán tự)](/jlpt/n1/vi.pdf)
 
+Bản in là danh sách kiểm tra, không phải phương pháp học: tờ giấy tự nó không làm gì cho trí nhớ. Phần đó cần từ trong ngữ cảnh và lịch ôn tập — vòng lặp ở mục dưới.
+
+Mọi danh sách cũng có bản tiếng Anh, tiếng Nga và tiếng Hàn — thay `vi` trong đường dẫn bằng `en`, `ru` hoặc `ko`.
 ## Học một danh sách hán tự mà không phí nó
 
 Ba quy tắc đúng với mọi độ dài danh sách:

@@ -115,4 +115,4 @@ status: ready
 
 ### Работает офлайн?
 
-Да. Подробнее — в [статье про оффлайн-режим](/ru/blog/best-japanese-learning-app-offline).
+Да. Подробнее — в [статье про офлайн-режим](/ru/blog/best-japanese-learning-app-offline).

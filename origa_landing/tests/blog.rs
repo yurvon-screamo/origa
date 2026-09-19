@@ -45,7 +45,6 @@ const ALL_SLUGS: &[&str] = &[
     "is-kanji-hard-to-learn",
     "how-to-learn-japanese-by-yourself",
 ];
-
 // =========================================================================
 // Article pages — native rendering across all 4 locales
 // =========================================================================
@@ -833,8 +832,9 @@ async fn article_returns_200_with_h1(#[case] slug: &str, #[case] locale: &str) {
 #[case("how-many-kanji-to-learn", "ru")]
 #[case("learn-japanese-from-anime", "en")]
 #[case("learn-japanese-from-anime", "ru")]
-// EN+RU-only cluster: KO/VI prefixes serve the EN fallback (covered by
-// `all_article_urls_return_200`), so native-render cases stop at RU.
+// Native-render smoke for the previously EN+RU-only cluster (now full
+// coverage): en/ru cases predate the KO/VI translations and stay as the
+// minimal smoke; full coverage is asserted by the hreflang test below.
 #[tokio::test]
 async fn partial_coverage_article_returns_200_with_h1(#[case] slug: &str, #[case] locale: &str) {
     let uri = format!("{}/blog/{slug}", locale_prefix(locale));
@@ -857,11 +857,11 @@ async fn partial_coverage_article_returns_200_with_h1(#[case] slug: &str, #[case
 #[case("best-japanese-learning-app-offline", &["en", "ru", "ko", "vi"])]
 #[case("japanese-ai-tutor", &["en", "ru", "ko", "vi"])]
 #[case("yaponskiy-s-nulya", &["en", "ru", "ko", "vi"])]
-#[case("learn-hiragana-katakana", &["en", "ru"])]
-#[case("jlpt-n5-preparation", &["en", "ru"])]
-#[case("japanese-textbooks-beginners", &["en", "ru"])]
-#[case("how-many-kanji-to-learn", &["en", "ru"])]
-#[case("learn-japanese-from-anime", &["en", "ru"])]
+#[case("learn-hiragana-katakana", &["en", "ru", "ko", "vi"])]
+#[case("jlpt-n5-preparation", &["en", "ru", "ko", "vi"])]
+#[case("japanese-textbooks-beginners", &["en", "ru", "ko", "vi"])]
+#[case("how-many-kanji-to-learn", &["en", "ru", "ko", "vi"])]
+#[case("learn-japanese-from-anime", &["en", "ru", "ko", "vi"])]
 #[tokio::test]
 async fn article_hreflang_lists_exactly_its_translations(
     #[case] slug: &str,
