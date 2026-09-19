@@ -403,7 +403,8 @@
     "apple_email_missing": "Apple did not share your email address for this account. Please sign in via Google, Yandex or email instead.",
     "oauth_session_error": "Could not open the sign-in window: {}",
     "unsupported_callback": "Unsupported callback URL format",
-    "login_failed": "Invalid email or password"
+    "login_failed": "Invalid email or password",
+    "login_retry_error": "Network problem. Check your connection and try again."
   },
   "words": {
     "add_words": "Add words",

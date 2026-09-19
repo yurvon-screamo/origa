@@ -28,7 +28,10 @@ pub fn EmailPasswordForm(
     };
 
     let handle_submit = move || {
-        let email_val = email.get();
+        // iOS autocorrect/autofill appends trailing spaces to the email
+        // field; validation trims internally but the raw value must not
+        // reach the server (it would fail there as unknown credentials).
+        let email_val = email.get().trim().to_string();
         let password_val = password.get();
 
         if let Some(ref se) = server_error {

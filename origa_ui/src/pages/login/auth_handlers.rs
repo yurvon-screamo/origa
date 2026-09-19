@@ -1,6 +1,7 @@
 use crate::i18n::{I18nContext, Locale, locale_to_native_language};
 use crate::repository::{
-    TrailBaseClient, get_session, set_session_async, take_pkce_verifier_async, uuid_to_ulid,
+    AuthError, TrailBaseClient, get_session, set_session_async, take_pkce_verifier_async,
+    uuid_to_ulid,
 };
 use crate::store::auth_store::AuthStore;
 use crate::utils::display_name::default_username_for_email;
@@ -232,16 +233,37 @@ pub async fn handle_oauth_callback_desktop(
     };
 
     let client = TrailBaseClient::new();
-    let session = client
+    let session = match client
         .exchange_auth_code_for_session(&code, &verifier)
         .await
-        .map_err(|e| {
-            i18n.get_keys_untracked()
-                .login()
-                .token_exchange_error()
-                .inner()
-                .replace("{}", &e.to_string())
-        })?;
+    {
+        Ok(session) => session,
+        Err(e) => {
+            // Transport and server outages must not read as token
+            // corruption: this is the reviewer-visible path (App Review
+            // 2026-09) that surfaced raw "Network error: … idle
+            // timeout…" diagnostics.
+            match e {
+                AuthError::NetworkError(_) | AuthError::ServerError(_) => {
+                    tracing::error!(error = %e, "OAuth token exchange failure");
+                    return Err(i18n
+                        .get_keys_untracked()
+                        .login()
+                        .login_retry_error()
+                        .inner()
+                        .to_string());
+                },
+                other => {
+                    return Err(i18n
+                        .get_keys_untracked()
+                        .login()
+                        .token_exchange_error()
+                        .inner()
+                        .replace("{}", &other.to_string()));
+                },
+            }
+        },
+    };
 
     set_session_async(&session).await.map_err(|e| {
         i18n.get_keys_untracked()

@@ -536,6 +536,18 @@ async fn native_apple_sign_in(
                 .inner()
                 .to_string());
         },
+        Err(crate::repository::trailbase_client::AppleNativeLoginError::Network(message)) => {
+            // Transport failure (timeout, DNS, offline) — the credentials
+            // were not implicated; a retry hint beats raw diagnostics
+            // (App Review 2026-09 saw "idle timeout after 10000 ms" here).
+            report_debug!(debug_sink, "apple native login network failure: {message}");
+            return Err(i18n
+                .get_keys_untracked()
+                .login()
+                .login_retry_error()
+                .inner()
+                .to_string());
+        },
         Err(e) => {
             report_debug!(debug_sink, "apple native login exchange failed: {e}");
             return Err(i18n

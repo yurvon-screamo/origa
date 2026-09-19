@@ -9,6 +9,7 @@ use leptos::task::tick;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
+use crate::repository::LoginFailure;
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router, shared_cell};
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -254,6 +255,54 @@ async fn login_validation_accepts_well_formed_email() {
     assert!(
         validation_probe("rin@example.com").is_some_and(|r| r.is_ok()),
         "well-formed email must pass"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Login: failure → message mapping
+// ═══════════════════════════════════════════════════════════════════════
+
+fn failure_message_probe(failure: LoginFailure) -> Option<String> {
+    let wrapper = create_wrapper();
+    let out = std::rc::Rc::new(std::cell::RefCell::new(None));
+    let sink = out.clone();
+    mount_with_i18n(&wrapper, move || {
+        *sink.borrow_mut() = Some(crate::pages::login::login_failure_message(
+            &crate::i18n::use_i18n(),
+            failure,
+        ));
+        view! { <div></div> }.into_any()
+    });
+    out.borrow().clone()
+}
+
+#[wasm_bindgen_test]
+async fn invalid_credentials_map_to_the_login_failed_message() {
+    let message = failure_message_probe(LoginFailure::InvalidCredentials)
+        .expect("probe must produce a message");
+    assert!(
+        message.contains("Invalid email or password"),
+        "wrong credentials must surface the dedicated message, got: {message}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn network_failures_map_to_the_retry_message() {
+    let message =
+        failure_message_probe(LoginFailure::Network).expect("probe must produce a message");
+    assert!(
+        message.contains("Network problem"),
+        "a network failure must offer a retry, got: {message}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn profile_sync_failures_map_to_the_retry_message() {
+    let message =
+        failure_message_probe(LoginFailure::ProfileSync).expect("probe must produce a message");
+    assert!(
+        message.contains("Network problem"),
+        "a post-login sync failure must offer a retry, not blame credentials, got: {message}"
     );
 }
 
