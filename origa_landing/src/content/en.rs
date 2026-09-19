@@ -37,7 +37,7 @@ pub static CONTENT: Content = Content {
     home_hero_subtitle: "Vocabulary, kanji and grammar from N5 to N1, listening and 200,000+ native phrases, all in one app. No English required.",
     home_cta_primary: "Download",
     home_cta_secondary: "Open web app",
-    home_hero_tagline: "Cross-platform · Offline-first · Privacy-first",
+    home_shot_main_label: "Main screen",
     home_stats_line: "200,000+ native phrases with audio · N5–N1 grammar & kanji · Windows · Linux · macOS · Android · Web · Offline",
     home_faq_free_question: "Is Origa free?",
     home_faq_free_answer: "Yes. The apps for every platform and the web version are free.",
