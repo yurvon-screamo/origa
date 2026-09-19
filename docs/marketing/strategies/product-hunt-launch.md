@@ -108,10 +108,10 @@ YouTube-ссылка, 45 секунд, автоплей без звука — п
 >
 > Origa is my answer to both:
 >
-> - **Everything in one app** — 200,000+ native phrases with audio, N5–N1 kanji and grammar, OCR capture (point your camera at manga or a textbook page and it becomes cards), speech recognition, FSRS scheduling
-> - **Your language, natively** — the interface is English, Russian, Korean or Vietnamese, not a translation layer over an English app
+> - **Everything in one app:** 200,000+ native phrases with audio, N5-N1 kanji and grammar, OCR capture (point your camera at manga or a textbook page and it becomes cards), speech recognition, FSRS scheduling
+> - **Your language, natively:** the interface is English, Russian, Korean or Vietnamese, not a translation layer over an English app
 >
-> It's free, offline-first, open source, and runs on Windows, Linux, macOS, Android and the web. The honest gap: **no iOS yet** — it's next on the roadmap, and I'd genuinely like to hear whether that blocks you.
+> It's free, offline-first, open source, and runs on Windows, Linux, macOS, Android and the web. The honest gap: **no iOS yet.** It's next on the roadmap, and I'd like to hear whether that blocks you.
 >
 > Two things I'd love feedback on: does the "no English required" angle make sense to you, and what would an iOS release need to have before you'd switch from your current stack?
 
