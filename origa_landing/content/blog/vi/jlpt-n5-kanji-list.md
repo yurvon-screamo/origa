@@ -120,7 +120,7 @@ Các cấp trên, cùng bố cục, bản tiếng Việt:
 - [N2 (~380 hán tự)](/jlpt/n2/vi.pdf)
 - [N1 (~1.135 hán tự)](/jlpt/n1/vi.pdf)
 
-Bản in là danh sách kiểm, không phải phương pháp học: tờ giấy tự nó không làm gì cho trí nhớ. Phần đó cần từ trong ngữ cảnh và lịch ôn tập — vòng lặp ở mục dưới.
+Bản in là danh sách kiểm tra, không phải phương pháp học: tờ giấy tự nó không làm gì cho trí nhớ. Phần đó cần từ trong ngữ cảnh và lịch ôn tập — vòng lặp ở mục dưới.
 
 Mọi danh sách cũng có bản tiếng Anh, tiếng Nga và tiếng Hàn — thay `vi` trong đường dẫn bằng `en`, `ru` hoặc `ko`.
 ## Học một danh sách hán tự mà không phí nó
