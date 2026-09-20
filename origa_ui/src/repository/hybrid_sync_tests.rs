@@ -492,13 +492,17 @@ impl YieldOnceRemote {
 
 /// Yields to the executor exactly once (pending on the first poll, ready on
 /// the second) so the first gated merge parks mid-pass deterministically.
+/// The pending branch MUST schedule its own wake — a `Pending` without
+/// `wake_by_ref` is never polled again, deadlocking `block_on` (the first
+/// CI run hung three hours on exactly this).
 fn yield_once() -> impl Future<Output = ()> {
     let mut yielded = false;
-    poll_fn(move |_| {
+    poll_fn(move |cx| {
         if yielded {
             std::task::Poll::Ready(())
         } else {
             yielded = true;
+            cx.waker().wake_by_ref();
             std::task::Poll::Pending
         }
     })
