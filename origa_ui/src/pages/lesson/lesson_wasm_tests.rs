@@ -4052,7 +4052,24 @@ mod know_confirm_dispose {
         use origa::traits::UserRepository;
 
         let repo = HybridUserRepository::new();
-        let previous_user: Option<User> = repo.get_current_user().await.ok().flatten();
+
+        // get_current_user returns the FIRST user by ULID key order, and
+        // leftover users from other tests always sort earlier (their ULID
+        // timestamps precede this test's). The mark-known use case targets
+        // that first user — so the seeded user must be the ONLY one: purge
+        // whatever is present (recording it for the restore below).
+        let mut purged_users: Vec<User> = Vec::new();
+        // Bounded: a store glitch must not hang the suite.
+        for _ in 0..16 {
+            match repo.get_current_user().await {
+                Ok(Some(existing)) => {
+                    let existing_id = existing.id();
+                    purged_users.push(existing);
+                    repo.delete(existing_id).await.expect("purge leftover user");
+                },
+                _ => break,
+            }
+        }
 
         let mut user = test_user("knowconfirm");
         let study = user
@@ -4114,18 +4131,14 @@ mod know_confirm_dispose {
         // Record-level cleanup BEFORE the assert: the store is global
         // (stateless repository instances share it), so a failing test
         // must not leave the seeded knowconfirm user polluting whatever
-        // test reads the current user next. Restore the previous current
-        // user (or drop the seeded one).
-        match previous_user {
-            Some(previous) => {
-                repo_for_asserts
-                    .save(&previous)
-                    .await
-                    .expect("previous user restored");
-            },
-            None => {
-                let _ = repo_for_asserts.delete(user.id()).await;
-            },
+        // test reads the current user next. Drop the seeded user and put
+        // back everything the purge removed.
+        let _ = repo_for_asserts.delete(user.id()).await;
+        for purged in purged_users {
+            repo_for_asserts
+                .save(&purged)
+                .await
+                .expect("purged user restored");
         }
 
         assert!(

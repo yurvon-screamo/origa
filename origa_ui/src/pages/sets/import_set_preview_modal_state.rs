@@ -4,7 +4,7 @@ use crate::pages::sets::types::PreviewWord;
 use crate::repository::HybridUserRepository;
 use crate::utils::yield_to_browser;
 use leptos::prelude::*;
-use leptos::task::spawn_local_scoped_with_cancellation;
+use leptos::task::spawn_local;
 use origa::domain::{User, WordImportOutcome, WordImportPreview};
 use origa::traits::UserRepository;
 use origa::use_cases::{
@@ -64,11 +64,12 @@ impl ImportPreviewModalState {
         selected_words.set(HashSet::new());
         is_loading_preview.set(true);
         error.set(None);
-        // Scoped (disposed-signal fix): the success paths below read
-        // `set_ids`/`set_titles` after the tokenizer and set-load awaits —
-        // the existing `disposed` guards cover only the error branches.
-        // A dead modal needs no preview; the task dies with its owner.
-        spawn_local_scoped_with_cancellation(async move {
+        // Unscoped with disposed guards (NOT scoped): scoping tied the
+        // preview to the ambient (modal-remount) owner. The existing
+        // guards covered only error branches — the success paths below
+        // read set_ids/set_titles after the tokenizer and set-load
+        // awaits; both windows are fenced now (disposed-signal fix).
+        spawn_local(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
                     Some(u) => u,
@@ -100,6 +101,9 @@ impl ImportPreviewModalState {
                     return;
                 },
             };
+            if disposed.is_disposed() {
+                return;
+            }
             let set_title = set_ids
                 .get()
                 .first()
@@ -142,9 +146,9 @@ impl ImportPreviewModalState {
         error.set(None);
         set_titles.set(set_titles_input);
         state_set_ids.set(set_ids.clone());
-        // Scoped — same disposed-signal reasoning as the single-set
-        // preview above (success path reads `set_titles` after awaits).
-        spawn_local_scoped_with_cancellation(async move {
+        // Unscoped with disposed guards — same reasoning as the
+        // single-set preview above.
+        spawn_local(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
                     Some(u) => u,
@@ -174,6 +178,9 @@ impl ImportPreviewModalState {
                     return;
                 },
             };
+            if disposed.is_disposed() {
+                return;
+            }
             let titles = set_titles.get();
             // Classify ONE concatenated word list so lemma duplicates
             // across sets share one seen-lemmas state with the import.

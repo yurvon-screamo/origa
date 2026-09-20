@@ -11,7 +11,6 @@ use crate::i18n::{td_string, use_i18n};
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::domain::{Card, StudyCard};
 use ulid::Ulid;
 
@@ -45,6 +44,9 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let visible_ids: RwSignal<Vec<Ulid>> = RwSignal::new(Vec::new());
     let visible_load_running = Arc::new(AtomicBool::new(false));
     let visible_load_rerun = Arc::new(AtomicBool::new(false));
+    // Dispose-сентинел страницы фраз: останавливает visible-loop
+    // на верху следующего прохода после смерти owner'а.
+    let visible_load_disposed = StoredValue::new(());
     let on_visible_cards = {
         let refresh = refresh_trigger;
         let running = visible_load_running.clone();
@@ -68,17 +70,19 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             }
             let running = running.clone();
             let rerun = rerun.clone();
-            // Scoped (disposed-signal fix): loop-top reads `visible_ids`
-            // on every rerun iteration — i.e. after an await — and an
-            // unscoped task kept reading the disposed signal when the
-            // phrases page unmounted mid-load. A snapshot would defeat
-            // the rerun flag (each pass must read the fresh ids), so the
-            // whole loop dies with the page owner instead. The Arc
-            // running/rerun flags die with it too — a stale
-            // `running = false` write is unreachable and unneeded on a
-            // dead page.
-            spawn_local_scoped_with_cancellation(async move {
+            // Unscoped with a disposed guard (NOT scoped): the ambient
+            // owner here is whatever inner effect invokes the Arc
+            // callback — scoping tied the loop's life to the wrong owner.
+            // The loop-top reads `visible_ids` on every rerun pass (i.e.
+            // after an await); the sentinel fence below stops the task at
+            // the top of the next pass once the phrases page is disposed
+            // (disposed-signal fix). A snapshot would defeat the rerun
+            // flag — each pass must read the fresh ids.
+            spawn_local(async move {
                 loop {
+                    if visible_load_disposed.is_disposed() {
+                        return;
+                    }
                     let ids = visible_ids.get_untracked();
                     if !ids.is_empty() {
                         load_and_refresh(ids, refresh).await;

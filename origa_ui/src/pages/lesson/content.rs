@@ -16,7 +16,6 @@ use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::domain::{Card, LessonEmptyDiagnosis, diagnose_empty_lesson};
 use origa::traits::UserRepository;
 use origa::use_cases::SelectAcquaintanceHandUseCase;
@@ -197,15 +196,14 @@ pub fn LessonContent() -> impl IntoView {
         }
 
         let repo = repository.clone();
-        // Scoped: this task builds the lesson for the CURRENT page mount
-        // and reads page signals (native_language, resolved_mode) after
-        // awaits. Scoped to the effect's run owner it is cancelled on
-        // unmount AND on effect rerun — a stale in-flight reload can no
-        // longer race a fresh one or read disposed signals. The
-        // is_disposed guards below stay as belt-and-suspenders; the
-        // phrase-cleanup save is idempotent and re-runs on the next
-        // lesson load, so cancelling it is safe.
-        spawn_local_scoped_with_cancellation(async move {
+        // Unscoped with disposed guards (NOT scoped): the ambient owner
+        // here is the effect's RUN owner — scoping would cancel an
+        // in-flight reload whenever the effect reruns (dictionary-loading
+        // flips), stalling the lesson. The task must span effect runs, so
+        // it stays unscoped and every post-await signal read is fenced by
+        // the is_disposed sentinel instead (disposed-signal fix: reads of
+        // disposed signals panic; writes are silent no-ops).
+        spawn_local(async move {
             if is_disposed.is_disposed() {
                 return;
             }
@@ -255,6 +253,11 @@ pub fn LessonContent() -> impl IntoView {
             };
 
             if !hand_order.is_empty() {
+                // Hand build reads native_language after the selection
+                // awaits — fence the disposed window.
+                if is_disposed.is_disposed() {
+                    return;
+                }
                 if let Some(user) = &hand_user_snapshot {
                     let pairs: Vec<(Ulid, origa::domain::CardType)> = hand_order
                         .iter()
@@ -348,6 +351,12 @@ pub fn LessonContent() -> impl IntoView {
                                 );
                             }
                         }
+                    }
+
+                    // The phrase-cleanup awaits above precede the
+                    // resolved_mode reads below — fence the window.
+                    if is_disposed.is_disposed() {
+                        return;
                     }
 
                     let card_ids = lesson_data.card_ids();

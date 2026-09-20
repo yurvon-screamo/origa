@@ -6,7 +6,7 @@ use crate::loaders::ModelLoader;
 use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::ui_components::{OcrLoadingStage, OcrLoadingState, ProgressInfo};
 use leptos::prelude::*;
-use leptos::task::spawn_local_scoped_with_cancellation;
+use leptos::task::spawn_local;
 use origa::ocr::{JapaneseOCRModel, ModelConfig};
 use origa::use_cases::ExtractTextFromImageUseCase;
 use std::cell::{Cell, RefCell};
@@ -98,6 +98,12 @@ async fn run_ocr_on_data_url(
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state, &i18n).await;
 
+    // Fence the disposed window before the cancel-flag read and the
+    // result handling below (both touch page signals / i18n).
+    if ctx.disposed.is_disposed() {
+        return;
+    }
+
     if ctx.ocr_loading_state.cancel_requested.get_untracked() {
         return;
     }
@@ -142,13 +148,12 @@ pub(super) fn process_file(
         return;
     }
 
-    // Scoped (disposed-signal fix): `run_ocr_on_data_url` reads the
-    // cancel flag and then `handle_ocr_result` touches ctx signals after
-    // the yield and inference awaits — an unscoped task panicked on
-    // those reads when the words page was disposed mid-OCR. Cancellation
-    // at dispose matches the existing manual `cancel_requested` skip:
-    // the JS-side inference finishes, the continuation is dropped.
-    spawn_local_scoped_with_cancellation(async move {
+    // Unscoped with a disposed guard (NOT scoped): the ambient owner here
+    // is the image stage component — scoping cancelled the OCR whenever
+    // the stage remounted (tab switches), breaking recognition. The task
+    // must outlive the stage; only the post-inference continuation is
+    // fenced (disposed-signal fix).
+    spawn_local(async move {
         ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {

@@ -6,7 +6,7 @@
 //! `Error` (retry, draft preserved) | `Unavailable` (info: compiled-out DSN).
 
 use leptos::prelude::*;
-use leptos::task::spawn_local_scoped_with_cancellation;
+use leptos::task::spawn_local;
 
 use crate::feedback::{
     FEEDBACK_MESSAGE_MAX_CHARS, FeedbackContext, FeedbackReport, FeedbackSubmitError,
@@ -85,6 +85,8 @@ pub fn FeedbackModal() -> impl IntoView {
         state.set(FormState::Sending);
         let submit_fn = feedback.submit.clone();
         let feedback_for_cooldown = feedback.clone();
+        // Dispose-сентинел сабмит-задачи (паттерн on_yes_know).
+        let submit_disposed = StoredValue::new(());
         let report = FeedbackReport {
             category: current_draft.category,
             source: current_draft.source,
@@ -93,18 +95,19 @@ pub fn FeedbackModal() -> impl IntoView {
             environment: current_draft.environment.clone(),
         };
 
-        // Scoped (disposed-signal fix): the continuation reads `state`
-        // after the send and the close-timeout awaits — an unscoped task
-        // panicked on that read in the wasm tests when the modal was
-        // disposed mid-send (in production the modal is app-mounted, so
-        // the window only exists under test mounts and page-level
-        // remounts). The Sentry submission is handed to the JS SDK before
-        // the first await; cancelling the task drops the Rust-side
-        // continuation only (state updates, submission cooldown note and
-        // the auto-close).
-        spawn_local_scoped_with_cancellation(async move {
+        // Unscoped with a disposed guard (NOT scoped): scoping tied the
+        // submit to the ambient owner and cancelled it under test mounts.
+        // The Sentry submission is handed to the JS SDK before the first
+        // await and completes regardless; the guard fences the post-send
+        // state reads (disposed-signal fix). In production the modal is
+        // app-mounted, so the window only exists under test mounts and
+        // page-level remounts.
+        spawn_local(async move {
             match (submit_fn)(&report).await {
                 Ok(()) => {
+                    if submit_disposed.is_disposed() {
+                        return;
+                    }
                     feedback_for_cooldown.note_submission();
                     state.set(FormState::Success);
                     // Auto-close after the check-draw animation had its time.
