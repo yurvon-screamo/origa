@@ -666,6 +666,7 @@ fn checkpoint_push_survives_one_transient_failure() {
     let user = fixture_user("new@yandex.ru");
 
     let attempts = Arc::new(Mutex::new(0usize));
+    let attempts_for_assert = Arc::clone(&attempts);
     let fail_first = Arc::new(Mutex::new(true));
     let push = move || {
         let attempts = Arc::clone(&attempts);
@@ -691,6 +692,11 @@ fn checkpoint_push_survives_one_transient_failure() {
     assert!(
         result.is_ok(),
         "one transient push failure must be retried away: {result:?}"
+    );
+    assert_eq!(
+        *attempts_for_assert.lock().unwrap(),
+        2,
+        "exactly one retry after the first failure"
     );
     assert_eq!(local.save_count(), 1, "the local write stays authoritative");
     let stored = futures::executor::block_on(meta.load()).expect("meta");

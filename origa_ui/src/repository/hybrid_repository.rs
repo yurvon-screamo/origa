@@ -364,11 +364,15 @@ impl UserRepository for HybridUserRepository {
     // succeeded. Surfacing after the retry still holds.
     async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
         tracing::info!("save_sync: Starting save for user {}", user.id());
+        // The push closure must own its data (FnMut -> owned futures), and
+        // `User` can carry a multi-MB knowledge set — so ONE deep clone
+        // behind an Arc, and every attempt only bumps the refcount. The
+        // repository itself is cheap to clone (String + client handle).
         let remote = self.remote.clone();
-        let pushed = user.clone();
+        let pushed = Arc::new(user.clone());
         let result = save_sync_core(&self.local, &self.meta, user, move || {
             let remote = remote.clone();
-            let pushed = pushed.clone();
+            let pushed = Arc::clone(&pushed);
             async move { remote.save(&pushed).await }
         })
         .await;

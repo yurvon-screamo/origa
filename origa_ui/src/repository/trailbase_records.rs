@@ -236,11 +236,11 @@ mod tests {
         let rendered = error.to_string();
         assert!(
             !rendered.contains("Failed to parse response"),
-            "the status must be classified before body parsing, got: {rendered}"
+            "a non-2xx answer must be classified by status before body parsing, got: {rendered}"
         );
         assert!(
             !rendered.contains("expected value at line 1 column 1"),
-            "the raw serde internals must never surface, got: {rendered}"
+            "serde internals must never surface for a non-2xx answer, got: {rendered}"
         );
         assert!(
             matches!(error, AuthError::ServerError(ref message) if message.contains("502")),
