@@ -9,15 +9,103 @@ use super::{
 };
 use crate::i18n::use_i18n;
 use crate::loaders::recalculate_user_jlpt_progress;
-use crate::repository::{HybridUserRepository, set_last_sync_time};
+use crate::repository::{HybridUserRepository, get_last_sync_time, set_last_sync_time};
 use crate::store::ConnectivityStore;
+use crate::store::lesson_handoff::{
+    POLL_DEADLINE_MS, POLL_STEP_MS, clear_handoff, has_handoff, take_handoff,
+};
 use crate::ui_components::{ToastContainer, ToastData};
 use crate::utils::display_name::display_name_for;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::JlptProgress;
 use origa::traits::UserRepository;
+
 use std::collections::HashSet;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_sync_fresh_within_window_is_true() {
+        assert!(is_sync_fresh(Some(0)));
+        assert!(is_sync_fresh(Some(SYNC_FRESH_WINDOW_MS - 1)));
+    }
+
+    #[test]
+    fn is_sync_fresh_at_or_past_window_is_false() {
+        assert!(!is_sync_fresh(Some(SYNC_FRESH_WINDOW_MS)));
+        assert!(!is_sync_fresh(Some(SYNC_FRESH_WINDOW_MS + 60_000)));
+    }
+
+    #[test]
+    fn is_sync_fresh_without_a_previous_sync_is_false() {
+        assert!(!is_sync_fresh(None), "no stamp must never suppress a sync");
+    }
+
+    #[test]
+    fn init_paint_is_blocked_only_by_a_sync_paint() {
+        assert!(init_should_apply(StatsPainter::None));
+        assert!(init_should_apply(StatsPainter::Init));
+        assert!(
+            !init_should_apply(StatsPainter::Sync),
+            "a late init read must not overwrite fresher sync-painted stats"
+        );
+    }
+}
+
+/// A sync that succeeded less than this window ago suppresses the home
+/// mount's sync entirely (zero requests): the lesson-complete screen (or a
+/// previous mount) just finished one. A local change inside the window is
+/// not lost — the dirty flag defers its push to the next sync trigger
+/// outside the window (next mount, connectivity flip, lesson end).
+pub(crate) const SYNC_FRESH_WINDOW_MS: u64 = 30_000;
+
+/// Whether a completed sync is recent enough to skip the home mount's own.
+/// Pure decision core of the freshness gate.
+fn is_sync_fresh(ms_since_last_sync: Option<u64>) -> bool {
+    ms_since_last_sync.is_some_and(|ago| ago < SYNC_FRESH_WINDOW_MS)
+}
+
+/// Which component painted the home stats most recently. A sync-passed
+/// snapshot is strictly fresher than an init-passed one (it is read after
+/// the merge), so a slow init read finishing late must not overwrite it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum StatsPainter {
+    None,
+    Init,
+    Sync,
+}
+
+/// Init may paint only when the sync has not painted yet. `Init` re-applies
+/// (impossible in practice — init runs once per mount) stays allowed.
+fn init_should_apply(painted_by: StatsPainter) -> bool {
+    !matches!(painted_by, StatsPainter::Sync)
+}
+
+/// Consumes the lesson-exit handoff with a bounded wait: the lesson screen's
+/// parallel read usually lands within milliseconds, so the stats paint on
+/// the first home render instead of after a second full read. Empty handoff
+/// takes the fast path immediately (the common mount). On timeout the
+/// handoff is cleared — no residue may paint stale stats on a later mount —
+/// and the caller falls back to its own read.
+async fn take_handoff_bounded() -> Option<origa::domain::User> {
+    if !has_handoff() {
+        return None;
+    }
+    let deadline = js_sys::Date::now() as u64 + POLL_DEADLINE_MS;
+    loop {
+        if let Some(user) = take_handoff() {
+            return Some(user);
+        }
+        if js_sys::Date::now() as u64 >= deadline {
+            clear_handoff();
+            return None;
+        }
+        gloo_timers::future::TimeoutFuture::new(POLL_STEP_MS as u32).await;
+    }
+}
 
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
@@ -41,6 +129,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let is_loading = RwSignal::new(true);
     let user_name: RwSignal<String> = RwSignal::new(String::new());
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+    let stats_painter = StoredValue::new(StatsPainter::None);
     let disposed = StoredValue::new(());
 
     let persist_user = move |repo: HybridUserRepository, user: origa::domain::User| {
@@ -58,7 +147,15 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     Effect::new(move |_| {
         let repo = repo_for_init.clone();
         spawn_local(async move {
-            match repo.get_current_user().await {
+            // The lesson-exit handoff wins when it is ready: its snapshot was
+            // read in parallel with the navigation, so the stats paint on the
+            // first render. Timeout/absent → the usual local read.
+            let (read, from_handoff) = match take_handoff_bounded().await {
+                Some(user) => (Ok(Some(user)), true),
+                None => (repo.get_current_user().await, false),
+            };
+
+            match read {
                 Ok(Some(mut user)) => {
                     if disposed.is_disposed() {
                         return;
@@ -67,22 +164,37 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     recalculate_user_jlpt_progress(&mut user);
                     user_name.set(display_name_for(user.username(), user.email()));
 
-                    let ks = user.knowledge_set();
-                    jlpt_progress.set(user.jlpt_progress().clone());
-                    known_kanji.set(ks.get_known_kanji());
+                    // Diagnostics for the "stats stale until sync" report:
+                    // which snapshot painted, how old it is, how many cards
+                    // it carried.
+                    tracing::info!(
+                        source = if from_handoff { "lesson_handoff" } else { "local_read" },
+                        updated_at = %user.updated_at(),
+                        study_cards = user.knowledge_set().study_cards().len(),
+                        "Home init stats snapshot"
+                    );
 
-                    today_overview.set(compute_today_overview(ks, ks.lesson_history()));
-                    recent_studied.set(compute_studied_today(ks, user.native_language()));
-                    chart_data.set(compute_30day_chart_data(
-                        ks.lesson_history(),
-                        user.native_language(),
-                    ));
-                    rating_ratio.set(compute_rating_ratio(ks.lesson_history()));
-                    forecast.set(compute_completion_forecast(
-                        ks,
-                        ks.lesson_history(),
-                        user.native_language(),
-                    ));
+                    if init_should_apply(stats_painter.get_value()) {
+                        let ks = user.knowledge_set();
+                        jlpt_progress.set(user.jlpt_progress().clone());
+                        known_kanji.set(ks.get_known_kanji());
+
+                        today_overview.set(compute_today_overview(ks, ks.lesson_history()));
+                        recent_studied.set(compute_studied_today(ks, user.native_language()));
+                        chart_data.set(compute_30day_chart_data(
+                            ks.lesson_history(),
+                            user.native_language(),
+                        ));
+                        rating_ratio.set(compute_rating_ratio(ks.lesson_history()));
+                        forecast.set(compute_completion_forecast(
+                            ks,
+                            ks.lesson_history(),
+                            user.native_language(),
+                        ));
+                        stats_painter.set_value(StatsPainter::Init);
+                    } else {
+                        tracing::debug!("Home init skipped stats paint: sync already painted");
+                    }
 
                     is_loading.set(false);
 
@@ -96,17 +208,21 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         persist_user(repo.clone(), user);
                     }
                 },
-                Ok(None) => {
+                Ok(None) | Err(_) => {
                     if disposed.is_disposed() {
                         return;
                     }
-                    is_loading.set(false);
-                },
-                Err(e) => {
-                    if disposed.is_disposed() {
-                        return;
+                    // Diagnostics for the "stats stale until sync" report:
+                    // the init read must not degrade silently — both paths
+                    // leave the defaults on screen.
+                    match &read {
+                        Ok(None) => tracing::error!(
+                            "Home init: no local user record (stats stay defaults); \
+                             expecting the post-login restore or a login redirect"
+                        ),
+                        Err(e) => tracing::error!("Home init: local read failed: {e:?}"),
+                        Ok(Some(_)) => unreachable!("matched above"),
                     }
-                    tracing::error!("Home: get_current_user error: {:?}", e);
                     is_loading.set(false);
                 },
             }
@@ -124,6 +240,18 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
             .map(|c| c.is_online.get())
             .unwrap_or(true);
         if !is_online {
+            return;
+        }
+        // Freshness gate: a sync that just succeeded (lesson-complete
+        // screen, a previous mount) makes this pass redundant — zero
+        // requests, zero toasts. A local change inside the window defers
+        // its push to the next trigger outside it (dirty flag keeps it
+        // safe). The stored stamp is in seconds (see set_last_sync_time).
+        let now_ms = js_sys::Date::now() as u64;
+        let ms_since_last_sync =
+            get_last_sync_time().map(|t| now_ms.saturating_sub(t.saturating_mul(1000)));
+        if is_sync_fresh(ms_since_last_sync) {
+            tracing::debug!("Home sync skipped: a sync succeeded within the freshness window");
             return;
         }
         spawn_local(async move {
@@ -155,6 +283,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         ks.lesson_history(),
                         user.native_language(),
                     ));
+                    stats_painter.set_value(StatsPainter::Sync);
                     show_sync_success_toast(toasts, i18n);
                     set_last_sync_time(js_sys::Date::now() as u64 / 1000);
 

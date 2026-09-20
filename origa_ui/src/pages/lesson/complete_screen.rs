@@ -12,6 +12,26 @@ use leptos_use::use_event_listener;
 
 const SYNC_TOAST_ID: usize = usize::MAX;
 
+/// Parks the post-lesson user snapshot for the home page: starts the local
+/// read in parallel with the navigation so the home stats paint on the
+/// first render instead of after a second IndexedDB read (the background
+/// merge repaints once it lands). Called from every "leave to home" exit.
+fn park_home_handoff(repo: &crate::repository::HybridUserRepository) {
+    use origa::traits::UserRepository;
+
+    let repo = repo.clone();
+    spawn_local(async move {
+        match repo.get_current_user().await {
+            Ok(Some(user)) => crate::store::lesson_handoff::store_handoff(user),
+            // The home init falls back to its own read; a warn-level trace
+            // keeps the missed-instant-paint path diagnosable (its timing
+            // is exactly what the handoff exists for).
+            Ok(None) => tracing::warn!("Home handoff read found no local user"),
+            Err(e) => tracing::warn!("Home handoff read failed: {e:?}"),
+        }
+    });
+}
+
 #[component]
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
     let i18n = use_i18n();
@@ -57,7 +77,12 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             let repo = lesson_ctx.repository.clone();
             let toasts = toasts;
             spawn_local(async move {
-                match repo.merge_current_user().await {
+                match crate::repository::sync_retry::with_sync_retry(move || {
+                    let repo = repo.clone();
+                    async move { repo.merge_current_user().await }
+                })
+                .await
+                {
                     Ok(()) => {
                         if is_disposed.is_disposed() {
                             return;
@@ -131,9 +156,11 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
     let go_home = {
         let navigate = navigate.clone();
         let sync_with_server = sync_with_server.clone();
+        let handoff_repo = lesson_ctx.repository.clone();
         Callback::new(move |_: ()| {
             stop_current_audio();
             sync_with_server();
+            park_home_handoff(&handoff_repo);
             navigate("/home", Default::default());
         })
     };
@@ -141,6 +168,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
     let kb_lesson_ctx = lesson_ctx.clone();
     let kb_navigate = navigate;
     let kb_sync = sync_with_server.clone();
+    let kb_handoff_repo = lesson_ctx.repository.clone();
     let _ = use_event_listener(document(), leptos::ev::keydown, move |ev| {
         if !is_completed.get() {
             return;
@@ -159,6 +187,7 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             "Escape" => {
                 stop_current_audio();
                 kb_sync();
+                park_home_handoff(&kb_handoff_repo);
                 kb_navigate("/home", Default::default());
             },
             _ => {},

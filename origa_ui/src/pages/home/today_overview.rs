@@ -103,7 +103,7 @@ pub fn TodayOverviewCard(
     view! {
         <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
             <div class="flex flex-col h-full">
-                <div class="flex items-center">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <Text
                         size=TextSize::Small
                         variant=TypographyVariant::Muted
@@ -123,7 +123,7 @@ pub fn TodayOverviewCard(
 
                     <div class="ml-auto">
                         <Show when=move || forecast.get().days_remaining.is_some()>
-                            <span class="font-mono text-[12px] text-[var(--fg-muted)]">
+                            <span class="font-mono text-[12px] text-[var(--fg-muted)] whitespace-nowrap shrink-0">
                                 {move || {
                                     let fc = forecast.get();
                                     let days = fc.days_remaining.unwrap_or(0);

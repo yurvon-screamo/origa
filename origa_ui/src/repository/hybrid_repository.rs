@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use futures::lock::Mutex;
 use ulid::Ulid;
 
 use origa::{
@@ -14,11 +17,20 @@ use crate::repository::trailbase_repository::{RemoteUserSource, TrailBaseUserRep
 #[path = "hybrid_sync_tests.rs"]
 mod sync_tests;
 
+/// Shared in-flight gate serializing `merge_current_user` passes. Clones of
+/// the repository share one gate, so the lesson-complete screen's sync and
+/// the home mount's sync never run as two concurrent full merges (each a
+/// multi-MB GET + PATCH + GET competing for the same uplink) — the second
+/// caller waits, then runs its own pass, which takes the cheap skip path
+/// when nothing changed since.
+pub(crate) type SyncGate = Arc<Mutex<()>>;
+
 #[derive(Clone)]
 pub struct HybridUserRepository {
     local: FileSystemUserRepository,
     remote: TrailBaseUserRepository,
     meta: IdbSyncMetaStore,
+    sync_gate: SyncGate,
 }
 
 impl HybridUserRepository {
@@ -27,11 +39,12 @@ impl HybridUserRepository {
             local: FileSystemUserRepository::new(),
             remote: TrailBaseUserRepository::new(),
             meta: IdbSyncMetaStore,
+            sync_gate: Arc::new(Mutex::new(())),
         }
     }
 
     pub async fn merge_current_user(&self) -> Result<(), OrigaError> {
-        sync_merge(&self.local, &self.remote, &self.meta).await
+        sync_merge_gated(&self.local, &self.remote, &self.meta, &self.sync_gate).await
     }
 
     /// Definitive remote-miss probe: does the server hold a user record for
@@ -180,6 +193,29 @@ pub(crate) async fn sync_merge(
             full_sync_cycle(local, remote, meta_store, local_user, record_id).await
         },
     }
+}
+
+/// [`sync_merge`] under the shared in-flight gate. Concurrent callers
+/// (lesson-complete sync vs home mount sync, auth bootstrap vs home mount)
+/// serialize: the loser waits for the winner's pass, then runs its own —
+/// a clean meta plus matching fingerprint collapses it to the cheap skip
+/// path, a fresh local save (dirty flag) still forces the full path.
+pub(crate) async fn sync_merge_gated(
+    local: &(impl UserRepository + LocalUserPresence),
+    remote: &impl RemoteUserSource,
+    meta_store: &impl SyncMetaStore,
+    gate: &SyncGate,
+) -> Result<(), OrigaError> {
+    let _permit = gate.lock().await;
+    // RESIDUAL RACE (pre-existing ADR-045 limitation, documented — not
+    // fixed here): a local save whose `mark_dirty` lands inside the window
+    // between this sync's `local.get_current_user()` and its own
+    // `mark_dirty` loses the CAS epoch — the sync pushes a snapshot taken
+    // before that save, overwrites the local record with it, and clears
+    // the dirty flag, deferring the save to the next unrelated mutation.
+    // The gate narrows this window (no concurrent sync can interleave its
+    // meta writes) but cannot close it for user-action saves.
+    sync_merge(local, remote, meta_store).await
 }
 
 /// The full path: mark dirty (crash-safety), write local, push remote, then
