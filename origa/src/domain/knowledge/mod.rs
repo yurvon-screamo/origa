@@ -313,8 +313,8 @@ impl KnowledgeSet {
     /// daily stats once for the whole batch. The recalc is a pure function
     /// of the final card set plus the day's preserved counters, so it lands
     /// on the same today-item the per-card recalcs would have (the only
-    /// divergence is a batch spanning UTC midnight, where the per-card path
-    /// would additionally snapshot the previous day).
+    /// divergence is a batch spanning local midnight, where the per-card
+    /// path would additionally snapshot the previous day).
     pub(crate) fn end_bulk_import(&mut self) {
         self.import_dedup_index = None;
         self.recalculate_daily_stats();

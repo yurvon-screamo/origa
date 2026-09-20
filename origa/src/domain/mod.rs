@@ -8,6 +8,7 @@ mod japanese;
 mod jlpt_content;
 mod jlpt_progress;
 mod knowledge;
+mod local_day;
 mod memory;
 mod score_content;
 mod serde_utils;

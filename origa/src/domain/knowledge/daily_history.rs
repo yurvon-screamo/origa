@@ -1,6 +1,7 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::domain::local_day;
 use crate::domain::memory::Rating;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -202,12 +203,12 @@ pub fn estimate_completion_date(
         return None;
     }
 
-    let today = Utc::now().date_naive();
+    let today_start = local_day::today_start();
 
     let studied: Vec<&DailyHistoryItem> = history
         .iter()
         .rev()
-        .filter(|item| item.timestamp().date_naive() != today)
+        .filter(|item| item.timestamp() < today_start)
         .take(10)
         .filter(|item| item.new_cards_studied_today() > 0)
         .collect();
