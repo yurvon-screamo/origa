@@ -14,6 +14,7 @@ pub(crate) mod session;
 #[cfg(not(test))]
 mod session;
 mod sync_meta_store;
+pub(crate) mod sync_retry;
 pub mod trailbase_auth;
 pub mod trailbase_client;
 pub(crate) mod trailbase_id;
@@ -31,7 +32,7 @@ pub use dictionary_cache::{
 pub use hybrid_repository::HybridUserRepository;
 pub use login_failure::{LoginFailure, OAuthFailure, classify_login_failure};
 pub use session::{
-    clear_session, clear_session_async, get_session, get_session_async,
+    clear_session, clear_session_async, get_last_sync_time, get_session, get_session_async,
     migrate_session_to_store_if_needed, set_last_sync_time, set_pkce_verifier_async,
     set_session_async, take_pkce_verifier_async,
 };

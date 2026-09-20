@@ -313,6 +313,7 @@ impl AuthStore {
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
+                        crate::store::lesson_handoff::clear_handoff();
                         install_user_card_precompute(&user);
                         self.user.set(Some(user));
                         self.is_syncing.set(false);
@@ -382,6 +383,7 @@ impl AuthStore {
 
                 match get_or_create_profile(self, &session.email, i18n).await {
                     Ok(user) => {
+                        crate::store::lesson_handoff::clear_handoff();
                         install_user_card_precompute(&user);
                         self.user.set(Some(user));
                         self.is_oauth_loading.set(false);
@@ -490,6 +492,8 @@ impl AuthStore {
     /// Internal: Clear all authentication-related state
     async fn clear_auth_state(&self) {
         clear_session_async().await;
+        // The lesson-exit stats handoff must never cross accounts.
+        crate::store::lesson_handoff::clear_handoff();
 
         if let Some(user) = self.user.get() {
             let _ = self.repository.delete(user.id()).await;

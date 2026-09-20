@@ -84,6 +84,25 @@ pub fn show_sync_error_toast(
 }
 
 pub async fn run_sync(repo: HybridUserRepository) -> Result<Option<User>, OrigaError> {
-    repo.merge_current_user().await?;
-    repo.get_current_user().await
+    // One-shot retry: the Railway edge intermittently answers
+    // "upstream error" without reaching the container (usually around
+    // redeploys); a second attempt lands after the hiccup.
+    crate::repository::sync_retry::with_sync_retry(move || {
+        let repo = repo.clone();
+        async move {
+            repo.merge_current_user().await.map_err(|e| {
+                tracing::error!(stage = "merge", error = %e, "User data sync failed");
+                e
+            })?;
+            repo.get_current_user().await.map_err(|e| {
+                tracing::error!(
+                    stage = "post_sync_fetch",
+                    error = %e,
+                    "User data sync failed"
+                );
+                e
+            })
+        }
+    })
+    .await
 }

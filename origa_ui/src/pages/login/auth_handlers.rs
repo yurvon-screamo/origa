@@ -15,17 +15,18 @@ pub async fn get_or_create_profile(
     email: &str,
     i18n: &I18nContext<Locale>,
 ) -> Result<User, String> {
-    auth_store
-        .repository()
-        .merge_current_user()
-        .await
-        .map_err(|e| {
-            i18n.get_keys_untracked()
-                .login()
-                .sync_profile_error()
-                .inner()
-                .replace("{}", &e.to_string())
-        })?;
+    crate::repository::sync_retry::with_sync_retry(move || {
+        let repo = auth_store.repository().clone();
+        async move { repo.merge_current_user().await }
+    })
+    .await
+    .map_err(|e| {
+        i18n.get_keys_untracked()
+            .login()
+            .sync_profile_error()
+            .inner()
+            .replace("{}", &e.to_string())
+    })?;
 
     match auth_store.repository().get_current_user().await {
         Ok(Some(user)) => Ok(user),

@@ -264,6 +264,10 @@ pub fn set_last_sync_time(timestamp: u64) {
     }
 }
 
+pub fn get_last_sync_time() -> Option<u64> {
+    LocalStorage::get(LAST_SYNC_KEY).ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -6,14 +6,16 @@
 //! pushed row (and may "normalize" it — e.g. add columns — to prove the
 //! recorded fingerprint is server-authoritative).
 
+use std::future::Future;
 use std::sync::{Arc, Mutex};
 
+use futures::future::poll_fn;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
 use serde_json::{Value, json};
 use ulid::Ulid;
 
-use super::sync_merge;
+use super::{SyncGate, sync_merge, sync_merge_gated};
 use crate::repository::hybrid_repository::LocalUserPresence;
 use crate::repository::sync_meta_store::{InMemorySyncMetaStore, SyncMetaStore};
 use crate::repository::trailbase_repository::{
@@ -462,4 +464,172 @@ fn restore_from_remote_does_not_push_back() {
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
     assert_eq!(*remote.fetches.lock().unwrap(), fetches + 1);
     assert!(remote.pushes.lock().unwrap().is_empty());
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// In-flight gate (concurrent merge dedup)
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Wraps a remote spy so its first `find_current_raw` yields once before
+/// answering: the first gated merge parks mid-pass, letting the
+/// single-threaded executor poll the second caller, which then hits the
+/// contended mutex and waits. Without this, the first merge would run to
+/// completion inside its first poll and the waiting branch would go
+/// untested.
+struct YieldOnceRemote {
+    inner: SpyRemote,
+    yielded: Mutex<bool>,
+}
+
+impl YieldOnceRemote {
+    fn new(inner: SpyRemote) -> Self {
+        Self {
+            inner,
+            yielded: Mutex::new(false),
+        }
+    }
+}
+
+/// Yields to the executor exactly once (pending on the first poll, ready on
+/// the second) so the first gated merge parks mid-pass deterministically.
+/// The pending branch MUST schedule its own wake — a `Pending` without
+/// `wake_by_ref` is never polled again, deadlocking `block_on` (the first
+/// CI run hung three hours on exactly this).
+fn yield_once() -> impl Future<Output = ()> {
+    let mut yielded = false;
+    poll_fn(move |cx| {
+        if yielded {
+            std::task::Poll::Ready(())
+        } else {
+            yielded = true;
+            cx.waker().wake_by_ref();
+            std::task::Poll::Pending
+        }
+    })
+}
+
+impl RemoteUserSource for YieldOnceRemote {
+    async fn find_current_raw(&self) -> Result<Option<RemoteRow>, OrigaError> {
+        if !*self.yielded.lock().unwrap() {
+            *self.yielded.lock().unwrap() = true;
+            yield_once().await;
+        }
+        self.inner.find_current_raw().await
+    }
+
+    async fn save_with_record_id(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {
+        self.inner.save_with_record_id(record_id, user).await
+    }
+
+    async fn create(&self, user: &User) -> Result<i64, OrigaError> {
+        self.inner.create(user).await
+    }
+}
+
+#[test]
+fn gated_concurrent_merges_collapse_into_a_single_push() {
+    // Both callers observe a dirty local (a lesson just ended) and intend
+    // the full path. The gate serializes them: the winner pushes, the
+    // waiter re-runs afterwards, finds a clean meta with a matching
+    // fingerprint, and collapses to the skip path — the duplicate
+    // PATCH upload disappears.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(async {
+        let mut m = meta.load().await.unwrap();
+        m.mark_dirty();
+        meta.store(&m).await.unwrap();
+    });
+
+    let pushes = Arc::clone(&remote.pushes);
+    let yield_remote = YieldOnceRemote::new(remote);
+    let gate: SyncGate = Arc::new(futures::lock::Mutex::new(()));
+
+    let (first, second) = futures::executor::block_on(async {
+        let a = sync_merge_gated(&local, &yield_remote, &meta, &gate);
+        let b = sync_merge_gated(&local, &yield_remote, &meta, &gate);
+        futures::join!(a, b)
+    });
+    first.expect("first merge");
+    second.expect("second merge");
+
+    assert_eq!(
+        pushes.lock().unwrap().len(),
+        1,
+        "the gate must collapse concurrent dirty merges into a single push"
+    );
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(!stored.dirty, "both passes settled the sync state");
+}
+
+#[test]
+fn gated_merge_after_a_fresh_local_save_takes_the_full_path() {
+    // The waiter must not blindly skip: a save that landed while it waited
+    // (dirty flag) forces its own full pass through the same gate.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    let gate: SyncGate = Arc::new(futures::lock::Mutex::new(()));
+    futures::executor::block_on(sync_merge_gated(&local, &remote, &meta, &gate))
+        .expect("first pass skips");
+
+    // A user action (card rated) lands right after the first pass.
+    meta.mark_dirty_direct();
+    let pushes_before = remote.pushes.lock().unwrap().len();
+    futures::executor::block_on(sync_merge_gated(&local, &remote, &meta, &gate))
+        .expect("second pass");
+
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        pushes_before + 1,
+        "the dirty pass behind the gate must push, not skip"
+    );
+}
+
+#[test]
+fn gated_waiter_pushes_a_save_that_lands_while_it_waits() {
+    // The genuinely concurrent shape: caller B is parked on the gate while
+    // caller A's pass is in flight, and a user save (mark_dirty) lands
+    // inside A's push window. A's record_sync CAS observes the newer epoch
+    // and leaves the flag set, so B — after acquiring the gate — must take
+    // its own full path instead of skipping the just-synced state.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let mut remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+
+    // Fires once — inside A's push window — simulating exactly one user
+    // save landing while B is parked on the gate (B's own push must not
+    // re-fire it, or the state could never settle).
+    let fired = Arc::new(Mutex::new(false));
+    let meta_for_hook = meta.clone();
+    remote.on_push = Some(Box::new(move || {
+        let mut fired = fired.lock().unwrap();
+        if !*fired {
+            *fired = true;
+            meta_for_hook.mark_dirty_direct();
+        }
+    }));
+
+    let pushes = Arc::clone(&remote.pushes);
+    let yield_remote = YieldOnceRemote::new(remote);
+    let gate: SyncGate = Arc::new(futures::lock::Mutex::new(()));
+
+    let (first, second) = futures::executor::block_on(async {
+        let a = sync_merge_gated(&local, &yield_remote, &meta, &gate);
+        let b = sync_merge_gated(&local, &yield_remote, &meta, &gate);
+        futures::join!(a, b)
+    });
+    first.expect("first merge");
+    second.expect("second merge");
+
+    assert_eq!(
+        pushes.lock().unwrap().len(),
+        2,
+        "the waiter must push the save that landed while it was parked on the gate"
+    );
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(!stored.dirty, "the waiter's push settles the state");
 }
