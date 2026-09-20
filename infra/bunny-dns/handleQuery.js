@@ -9,14 +9,21 @@
  */
 export default function handleQuery(query) {
   var h = (query.request.hostname || "").replace(/\.$/, ""); // strip FQDN trailing dot
+  // content.origa: diagnostic/validation name for the Tigris custom-domain
+  // certificate (everyone gets the CNAME — no RF branch needed).
+  if (h === "content.origa.uwuwu.net") {
+    return new CnameRecord("origa.t3.tigrisbucket.io", 300);
+  }
   var geo = query.request.geoLocation;
   var isRF = geo && geo.country === "RU";
 
-  // s3.origa world branch: PARKED on Aeza until the Tigris custom-domain
-  // certificate actually lands on their edge (2026-09-20: UI flipped back
-  // to "Processing Certificate"; edge serves TLS alert 80). Flip to
-  // CnameRecord("origa.t3.tigrisbucket.io") once https://s3.origa.uwuwu.net
-  // answers from Tigris directly.
+  // s3.origa world branch: PARKED on Aeza. Tigris UI claims the certificate
+  // is "completed" (valid till 2026-12-18, issuer YE1) but their edge still
+  // serves TLS alert 80 on the SNI — verified 2026-09-20 by a real client
+  // path (curl via live CNAME to 130.61.20.236 fails with 000) AND direct
+  // openssl probes on multiple edge IPs. Flip back to
+  // CnameRecord("origa.t3.tigrisbucket.io") only after a real-client test
+  // returns 200 from a Tigris edge IP.
   if (h === "app.origa.uwuwu.net" && !isRF) {
     return new CnameRecord("9v15a3ov.up.railway.app", 300);
   }
