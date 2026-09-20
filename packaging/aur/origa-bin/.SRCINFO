@@ -1,0 +1,14 @@
+pkgbase = origa-bin
+	pkgdesc = Japanese learning app — kanji, vocabulary and grammar with FSRS spaced repetition
+	pkgver = 0.7.26
+	pkgrel = 1
+	url = https://origa.uwuwu.net
+	arch = x86_64
+	license = LicenseRef-BSL-1.1
+	depends = webkit2gtk-4.1
+	depends = gtk3
+	provides = origa
+	conflicts = origa
+	source = Origa_0.7.26.deb::https://github.com/yurvon-screamo/origa/releases/download/v0.7.26/Origa_amd64.deb
+	sha256sums = b56b7e904b2e62bb8827cd04fe62b2ed7bef9620857b010b31b8d7f750fc41e4
+pkgname = origa-bin
