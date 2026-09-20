@@ -108,6 +108,10 @@ SYNC_DIRS = [
     # Tokenization precompute blobs (#521): cache-busted by the phrase
     # index hash exactly like the data chunks they mirror.
     "phrases/precomputed",
+    # Pitch-accent audio (hash-named .opus, 111k files): referenced by
+    # pitch/index.json; missing from SYNC_DIRS during the 2026-09-19 bucket
+    # migration, which left word audio prefetch 404-ing on the new origin.
+    "pitch/audio",
     "whisper",
     "fonts",
     "well_known_set/duolingo",
