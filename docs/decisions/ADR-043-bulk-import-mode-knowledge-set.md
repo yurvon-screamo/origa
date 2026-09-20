@@ -99,6 +99,9 @@ dedup, so the use case would have to replicate domain dedup logic — leaky.
 - Only divergence from the per-card recalc sequence: a batch spanning
   UTC midnight loses the previous-day snapshot item the per-card path
   would have written (window ≈ 140 ms; accepted).
+  > ⚠️ Note (2026-09-20): since #628 the day boundary is the user's local
+  > midnight, not UTC — the reasoning above is historical, kept as the
+  > record of the decision at the time.
 - Regression guard: `import_cost_grows_linearly_with_card_count`
   (journeys) runs the real production sets from `cdn/` best-of-3 per
   scenario and asserts per-card cost ratio N2/N5 < 2.0 (quadratic code

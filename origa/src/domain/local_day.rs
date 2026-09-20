@@ -4,11 +4,12 @@
 //! днях пользователя: полночь границы — локальная, не UTC. Компромисс с
 //! Clean Architecture (первое вхождение `chrono::Local` в crate): Origa —
 //! single-user клиент, локальная полночь — продуктовое требование.
-//! Ambient-зона изолирована в [`local_offset`]: граничные тесты не зависят
-//! от ambient (явные `FixedOffset`/`today_start`), инвариант-тесты
+//! Ambient-зона изолирована в этом модуле ([`local_offset`],
+//! [`local_date`], [`today_start`]): граничные тесты не зависят от
+//! ambient (явные `FixedOffset`/`today_start`), инвариант-тесты
 //! согласованы с прод-кодом через общий ambient-источник.
 
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, FixedOffset, NaiveDate, Utc};
 
 /// UTC-инстант полуночи локальных суток, содержащих `now`, в зоне `offset`.
 /// Чистая функция: детерминирована, тестируема с фиксированным офсетом.
@@ -37,6 +38,12 @@ pub fn local_offset() -> FixedOffset {
 pub fn today_start() -> DateTime<Utc> {
     let local_now = chrono::Local::now();
     start_of_day(*local_now.offset(), local_now.with_timezone(&Utc))
+}
+
+/// Локальная календарная дата инстанта в зоне процесса. Ключ объединения
+/// дневных айтемов при кросс-девайсном merge.
+pub fn local_date(ts: DateTime<Utc>) -> NaiveDate {
+    ts.with_timezone(&chrono::Local).date_naive()
 }
 
 #[cfg(test)]
