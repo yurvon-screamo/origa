@@ -37,9 +37,12 @@ sandboxed runtime that is kept current by its upstream.
    with `cargo build --release --offline -p origa-app --features
    tauri/custom-protocol` (no tauri-cli in the sandbox; `-p` keeps the
    `origa` core crate — and with it ort/onnxruntime — out of the build).
-   Crates are vendored via `packaging/flatpak/cargo-sources.json`
-   (flatpak-cargo-generator, covers the rev-pinned git deps). Build is
-   fully offline: every source is declared and pinned.
+   Crates are vendored via `packaging/flatpak/cargo-sources.json`,
+   regenerated from Cargo.lock at build time by the CI job
+   (`scripts/flatpak-cargo-generator.py`, covers the rev-pinned git
+   deps) — the manifest is not committed, so it can never go stale on a
+   dependency bump. Build is fully offline: every source is declared
+   and pinned.
 2. **The frontend is built OUTSIDE the sandbox** by the existing
    `build-frontend` job (rustup + trunk + wasm32 — the same pipeline the
    .deb/.exe bundles use) and handed to the flatpak module as a source
@@ -111,8 +114,8 @@ sandboxed runtime that is kept current by its upstream.
 ## Consequences
 
 - The Flatpak sandbox build is fully offline: sources are declared and
-  pinned (Debian pool + crates.io via cargo-sources.json); no build-time
-  network use.
+  pinned (Debian pool + crates.io via the build-time-generated
+  cargo-sources.json); no build-time network use inside the sandbox.
 - Linux users have no in-app updater by design: updates = install the new
   bundle from the release (or Flathub once published). The Windows updater
   (latest.json, windows-x86_64 entry) is unaffected.

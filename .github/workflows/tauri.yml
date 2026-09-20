@@ -212,6 +212,21 @@ jobs:
                   sudo apt-get install -y flatpak flatpak-builder
                   flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
+            - name: Generate flatpak cargo vendor manifest
+              # cargo-sources.json is NOT committed — it is derived 1:1
+              # from Cargo.lock and regenerated here on every tag build.
+              # A committed copy kept going stale on dependency bumps
+              # (#602, twice on 2026-09-20) and killed tag builds with
+              # "failed to select a version ... (locked to X)". Pinned
+              # copy of flatpak/flatpak-builder-tools' generator (MIT);
+              # local flatpak builds run the same command.
+              run: |
+                  python3 -m pip install --user aiohttp tomlkit pyyaml
+                  python3 scripts/flatpak-cargo-generator.py \
+                      -o packaging/flatpak/cargo-sources.json \
+                      Cargo.lock
+                  test -s packaging/flatpak/cargo-sources.json
+
             - name: Build flatpak
               # The release metadata (SENTRY_DSN/SENTRY_ENVIRONMENT via job
               # env, ORIGA_APP_STORE) is templated into a copy of the
