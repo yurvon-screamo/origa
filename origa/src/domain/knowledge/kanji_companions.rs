@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use chrono::{DateTime, Utc};
 use ulid::Ulid;
 
 use super::lesson::{LessonCard, LessonData, LessonViewGenerator};
@@ -16,6 +17,7 @@ pub(crate) fn add_kanji_companions(
     knowledge_set: &KnowledgeSet,
     user_level: JapaneseLevel,
     native_language: NativeLanguage,
+    now: DateTime<Utc>,
 ) -> LessonData {
     let already_in_lesson: HashSet<Ulid> = lesson_data.cards.iter().map(|(id, _)| *id).collect();
 
@@ -24,6 +26,7 @@ pub(crate) fn add_kanji_companions(
         knowledge_set,
         already_in_lesson,
         native_language,
+        now,
     );
 
     add_reverse_companions(
@@ -32,6 +35,7 @@ pub(crate) fn add_kanji_companions(
         user_level,
         &already_in_lesson,
         native_language,
+        now,
     )
 }
 
@@ -40,13 +44,14 @@ fn add_forward_companions(
     knowledge_set: &KnowledgeSet,
     mut already_in_lesson: HashSet<Ulid>,
     native_language: NativeLanguage,
+    now: DateTime<Utc>,
 ) -> (LessonData, HashSet<Ulid>) {
     let kanji_ids = collect_kanji_ids(&lesson_data, knowledge_set);
     if kanji_ids.is_empty() {
         return (lesson_data, already_in_lesson);
     }
 
-    let companions = find_companion_cards(&kanji_ids, knowledge_set, &already_in_lesson);
+    let companions = find_companion_cards(&kanji_ids, knowledge_set, &already_in_lesson, now);
     if companions.is_empty() {
         return (lesson_data, already_in_lesson);
     }
@@ -67,6 +72,7 @@ fn add_reverse_companions(
     user_level: JapaneseLevel,
     already_in_lesson: &HashSet<Ulid>,
     native_language: NativeLanguage,
+    now: DateTime<Utc>,
 ) -> LessonData {
     let kanji_index: HashMap<char, (&Ulid, &super::StudyCard)> = knowledge_set
         .study_cards()
@@ -89,6 +95,7 @@ fn add_reverse_companions(
         &kanji_index,
         already_in_lesson,
         user_level,
+        now,
     );
     if candidates.is_empty() {
         return lesson_data;
@@ -131,6 +138,7 @@ fn find_reverse_companions<'a>(
     kanji_index: &HashMap<char, (&'a Ulid, &'a super::StudyCard)>,
     already_in_lesson: &HashSet<Ulid>,
     user_level: JapaneseLevel,
+    now: DateTime<Utc>,
 ) -> Vec<(Ulid, &'a super::StudyCard)> {
     let mut companions = Vec::new();
 
@@ -141,6 +149,12 @@ fn find_reverse_companions<'a>(
         };
 
         if already_in_lesson.contains(card_id) {
+            continue;
+        }
+
+        // Отметка «знаю» сегодняшнего дня гасит карту в канале компаньонов
+        // до конца дня (решение владельца: семантика «только сегодня»).
+        if study_card.memory().marked_known_today(now) {
             continue;
         }
 
@@ -173,6 +187,7 @@ fn find_companion_cards<'a>(
     kanji_ids: &[Ulid],
     knowledge_set: &'a KnowledgeSet,
     already_in_lesson: &HashSet<Ulid>,
+    now: DateTime<Utc>,
 ) -> Vec<(Ulid, &'a super::StudyCard)> {
     let mut companions = Vec::new();
     let mut seen_companion_ids: HashSet<Ulid> = HashSet::new();
@@ -203,7 +218,13 @@ fn find_companion_cards<'a>(
             }
 
             if let Some((card_id, matching_sc)) = find_vocab_card(knowledge_set, word) {
-                if !already_in_lesson.contains(card_id) && !seen_companion_ids.contains(card_id) {
+                // Отметка «знаю» сегодняшнего дня гасит слово-кандидата:
+                // слот потребляется без замещения из глубины списка —
+                // семантика как у already_in_lesson (тише для юзера).
+                if !already_in_lesson.contains(card_id)
+                    && !seen_companion_ids.contains(card_id)
+                    && !matching_sc.memory().marked_known_today(now)
+                {
                     seen_companion_ids.insert(*card_id);
                     companions.push((*card_id, matching_sc));
                 }
@@ -255,6 +276,7 @@ mod tests {
     use crate::domain::knowledge::{KanjiCard, VocabularyCard};
     use crate::domain::value_objects::Question;
     use crate::use_cases::init_real_dictionaries;
+    use chrono::Utc;
 
     fn create_vocab_card(word: &str) -> Card {
         Card::Vocabulary(VocabularyCard::new(
@@ -295,7 +317,13 @@ mod tests {
         let vocab_sc = ks.create_card(create_vocab_card(&first_popular)).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*kanji_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         assert!(
             result.contains_key(vocab_sc.card_id()),
@@ -345,7 +373,13 @@ mod tests {
         );
 
         let lesson = build_empty_lesson_with_cards(&ks, &lesson_card_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         let companion_count = result.len() - lesson_card_ids.len();
         assert!(
@@ -376,6 +410,7 @@ mod tests {
             &ks,
             JapaneseLevel::N5,
             NativeLanguage::Russian,
+            Utc::now(),
         );
 
         let count = result
@@ -402,6 +437,7 @@ mod tests {
             &ks,
             JapaneseLevel::N5,
             NativeLanguage::Russian,
+            Utc::now(),
         );
 
         assert_eq!(
@@ -427,7 +463,13 @@ mod tests {
         let kanji_hon_sc = ks.create_card(create_kanji_card("本")).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -471,7 +513,8 @@ mod tests {
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
 
         let user_level = nichi_level;
-        let result = add_kanji_companions(lesson, &ks, user_level, NativeLanguage::Russian);
+        let result =
+            add_kanji_companions(lesson, &ks, user_level, NativeLanguage::Russian, Utc::now());
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -493,7 +536,13 @@ mod tests {
 
         let lesson =
             build_empty_lesson_with_cards(&ks, &[*kanji_nichi_sc.card_id(), *vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         let count = result
             .cards
@@ -515,7 +564,13 @@ mod tests {
         let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*vocab_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         assert!(
             result.contains_key(kanji_nichi_sc.card_id()),
@@ -546,7 +601,13 @@ mod tests {
             &ks,
             &[*vocab_nihon_sc.card_id(), *vocab_nichiyoubi_sc.card_id()],
         );
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         let count = result
             .cards
@@ -579,7 +640,13 @@ mod tests {
         vocab_ids.push(*vocab_sc.card_id());
 
         let lesson = build_empty_lesson_with_cards(&ks, &vocab_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         let reverse_count = result.cards.len() - vocab_ids.len();
         assert!(
@@ -624,7 +691,13 @@ mod tests {
         );
 
         let lesson = build_empty_lesson_with_cards(&ks, &lesson_card_ids);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N1, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N1,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         let reverse_count = result.cards.len() - lesson_card_ids.len();
         assert_eq!(
@@ -661,11 +734,202 @@ mod tests {
         let _vocab_sc = ks.create_card(create_vocab_card(&popular_word)).unwrap();
 
         let lesson = build_empty_lesson_with_cards(&ks, &[*kanji_nichi_sc.card_id()]);
-        let result = add_kanji_companions(lesson, &ks, JapaneseLevel::N5, NativeLanguage::Russian);
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
 
         assert!(
             result.contains_key(extra_kanji_sc.card_id()),
             "Kanji {extra_kanji} should be added via reverse from forward companion vocab '{popular_word}'"
+        );
+    }
+
+    // --- Отметка «знаю» [marked_known_at] в канале компаньонов ---
+
+    fn set_known_mark(ks: &mut KnowledgeSet, card_id: &Ulid, ts: Option<DateTime<Utc>>) {
+        ks.study_cards_mut_for_test()
+            .get_mut(card_id)
+            .unwrap()
+            .memory_history_mut_for_test()
+            .set_marked_known_at_for_test(ts);
+    }
+
+    fn seed_known_memory(ks: &mut KnowledgeSet, card_id: &Ulid) {
+        ks.study_cards_mut_for_test()
+            .get_mut(card_id)
+            .unwrap()
+            .seed_first_review(crate::domain::memory::MemoryState::new(
+                crate::domain::memory::Stability::new(
+                    crate::domain::memory::KNOWN_CARD_STABILITY_THRESHOLD + 1.0,
+                )
+                .unwrap(),
+                crate::domain::memory::Difficulty::new(3.0).unwrap(),
+                Utc::now() - chrono::Duration::days(1),
+            ));
+    }
+
+    #[test]
+    fn reverse_skips_kanji_marked_known_today() {
+        init_real_dictionaries();
+
+        // Arrange: слово 日本 тянет кандзи 日 и 本; 日 отмечен «Знаю» сегодня
+        let mut ks = KnowledgeSet::new();
+        let vocab_sc = ks.create_card(create_vocab_card("日本")).unwrap();
+        let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
+        let kanji_hon_sc = ks.create_card(create_kanji_card("本")).unwrap();
+        set_known_mark(&mut ks, kanji_nichi_sc.card_id(), Some(Utc::now()));
+
+        // Act
+        let lesson = build_empty_lesson_with_cards(&ks, [*vocab_sc.card_id()].as_slice());
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
+
+        // Assert: отмеченный кандзи заглушен до конца дня, сосед вошёл
+        assert!(
+            !result.contains_key(kanji_nichi_sc.card_id()),
+            "kanji marked known today must not enter as a reverse companion"
+        );
+        assert!(
+            result.contains_key(kanji_hon_sc.card_id()),
+            "unmarked kanji of the same word must still enter"
+        );
+    }
+
+    #[test]
+    fn reverse_includes_kanji_marked_known_yesterday() {
+        init_real_dictionaries();
+
+        // Arrange: отметка «Знаю» вчерашняя — семантика «только сегодня»
+        let mut ks = KnowledgeSet::new();
+        let vocab_sc = ks.create_card(create_vocab_card("日本")).unwrap();
+        let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
+        set_known_mark(
+            &mut ks,
+            kanji_nichi_sc.card_id(),
+            Some(Utc::now() - chrono::Duration::hours(25)),
+        );
+
+        // Act
+        let lesson = build_empty_lesson_with_cards(&ks, [*vocab_sc.card_id()].as_slice());
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
+
+        // Assert: назавтра канал компаньонов снова открыт
+        assert!(
+            result.contains_key(kanji_nichi_sc.card_id()),
+            "yesterday's mark must not silence the companion channel today"
+        );
+    }
+
+    #[test]
+    fn forward_skips_word_marked_known_today() {
+        init_real_dictionaries();
+
+        // Arrange: кандзи 日 в уроке, его первое популярное слово отмечено сегодня
+        let mut ks = KnowledgeSet::new();
+        let kanji_sc = ks.create_card(create_kanji_card("日")).unwrap();
+        let kanji_info = get_kanji_info("日").unwrap();
+        let first_popular = kanji_info.popular_words().first().unwrap().clone();
+        let vocab_sc = ks.create_card(create_vocab_card(&first_popular)).unwrap();
+        set_known_mark(&mut ks, vocab_sc.card_id(), Some(Utc::now()));
+
+        // Act
+        let lesson = build_empty_lesson_with_cards(&ks, [*kanji_sc.card_id()].as_slice());
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
+
+        // Assert: слово-компаньон заглушено, слот не замещается глубиной списка
+        assert!(
+            !result.contains_key(vocab_sc.card_id()),
+            "word marked known today must not attach as a forward companion"
+        );
+        assert_eq!(
+            result.core_count, 1,
+            "silenced candidate consumes its slot without substitution"
+        );
+    }
+
+    #[test]
+    fn forward_words_of_known_source_kanji_still_attach() {
+        init_real_dictionaries();
+
+        // Arrange: ИЗВЕСТНЫЙ кандзи 日 в уроке (законное core-ревью),
+        // его популярное слово чисто — решение владельца №2: источник
+        // не фильтруется
+        let mut ks = KnowledgeSet::new();
+        let kanji_sc = ks.create_card(create_kanji_card("日")).unwrap();
+        seed_known_memory(&mut ks, kanji_sc.card_id());
+        let kanji_info = get_kanji_info("日").unwrap();
+        let first_popular = kanji_info.popular_words().first().unwrap().clone();
+        let vocab_sc = ks.create_card(create_vocab_card(&first_popular)).unwrap();
+
+        // Act
+        let lesson = build_empty_lesson_with_cards(&ks, [*kanji_sc.card_id()].as_slice());
+        let result = add_kanji_companions(
+            lesson,
+            &ks,
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            Utc::now(),
+        );
+
+        // Assert: слова известного источника притягиваются как раньше
+        assert!(
+            result.contains_key(vocab_sc.card_id()),
+            "known source kanji in core must keep attaching its popular words"
+        );
+    }
+
+    #[test]
+    fn marked_today_due_card_still_enters_core() {
+        init_real_dictionaries();
+
+        // Arrange: due-карта с сегодняшней отметкой — фильтр живёт только
+        // в канале компаньонов, core-отбор её не видит
+        let mut ks = KnowledgeSet::new();
+        let due_sc = ks.create_card(create_vocab_card("期限")).unwrap();
+        ks.study_cards_mut_for_test()
+            .get_mut(due_sc.card_id())
+            .unwrap()
+            .seed_first_review(crate::domain::memory::MemoryState::new(
+                crate::domain::memory::Stability::new(5.0).unwrap(),
+                crate::domain::memory::Difficulty::new(5.0).unwrap(),
+                Utc::now() - chrono::Duration::days(2),
+            ));
+        set_known_mark(&mut ks, due_sc.card_id(), Some(Utc::now()));
+
+        // Act
+        let result = ks.cards_to_lesson_with_policy(
+            crate::domain::DailyBudget::with_daily_cards(5),
+            &crate::domain::JlptContent::new(),
+            JapaneseLevel::N5,
+            NativeLanguage::Russian,
+            crate::domain::NewCardPolicy::Exclude,
+        );
+
+        // Assert
+        assert!(
+            result.contains_key(due_sc.card_id()),
+            "due card marked known today must still enter the lesson core"
         );
     }
 }

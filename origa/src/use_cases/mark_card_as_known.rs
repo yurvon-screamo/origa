@@ -1,6 +1,6 @@
 use crate::domain::OrigaError;
 use crate::traits::UserRepository;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 use ulid::Ulid;
 
 #[derive(Clone)]
@@ -22,13 +22,9 @@ impl<'a, R: UserRepository> MarkCardAsKnownUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist)?;
 
-        if let Some(study_card) = user.knowledge_set().get_card(card_id) {
-            if study_card.memory().is_known_card() {
-                warn!(card_id = %card_id, "Card already learned, skip mark as known");
-                return Ok(());
-            }
-        }
-
+        // Повторное «Знаю» на известной карте легитимно: домен обновляет
+        // только отметку [marked_known_at] (память нетронута) — гашение
+        // компаньонского канала продлевается на текущий день.
         user.mark_card_as_known(card_id)?;
 
         self.repository.save(&user).await?;
