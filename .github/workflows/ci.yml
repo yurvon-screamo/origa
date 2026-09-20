@@ -405,7 +405,12 @@ jobs:
                   path: cdn/
 
             - name: Install wasm-pack
+              # Pinned: with no `version` input the action installs whatever
+              # is "latest", and a fresh wasm-pack release (v0.9.1, 2026-09-20)
+              # broke `wasm-pack test --features`, failing every open PR.
               uses: jetli/wasm-pack-action@v0.4.0
+              with:
+                  version: "0.15.0"
 
             - name: Run WASM component tests
               run: wasm-pack test --headless --chrome origa_ui --features csr
