@@ -16,7 +16,7 @@ use origa::use_cases::PROBE_SKIP_FULL_CHECK_INTERVAL;
 use serde_json::{Value, json};
 use ulid::Ulid;
 
-use super::{SyncGate, sync_merge, sync_merge_gated};
+use super::{SyncGate, save_sync_core_with_delay, sync_merge, sync_merge_gated};
 use crate::repository::hybrid_repository::LocalUserPresence;
 use crate::repository::sync_meta_store::{InMemorySyncMetaStore, SyncMetaStore};
 use crate::repository::trailbase_repository::{
@@ -34,6 +34,7 @@ type MetaStore = InMemorySyncMetaStore;
 struct SpyLocal {
     state: Arc<Mutex<Option<User>>>,
     saves: Arc<Mutex<Vec<Ulid>>>,
+    fail_saves: bool,
 }
 
 impl SpyLocal {
@@ -41,7 +42,14 @@ impl SpyLocal {
         Self {
             state: Arc::new(Mutex::new(Some(user))),
             saves: Arc::new(Mutex::new(Vec::new())),
+            fail_saves: false,
         }
+    }
+
+    /// Every `save` fails — simulates a broken local store.
+    fn with_failing_saves(mut self) -> Self {
+        self.fail_saves = true;
+        self
     }
 
     fn save_count(&self) -> usize {
@@ -55,6 +63,11 @@ impl UserRepository for SpyLocal {
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
+        if self.fail_saves {
+            return Err(OrigaError::RepositoryError {
+                reason: "simulated local save failure".to_string(),
+            });
+        }
         self.saves.lock().unwrap().push(user.id());
         *self.state.lock().unwrap() = Some(user.clone());
         Ok(())
@@ -947,4 +960,158 @@ fn gated_waiter_pushes_a_save_that_lands_while_it_waits() {
     );
     let stored = futures::executor::block_on(meta.load()).expect("meta");
     assert!(!stored.dirty, "the waiter's push settles the state");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// save_sync core: the explicit checkpoint push under the single retry
+// ═══════════════════════════════════════════════════════════════════════
+
+/// The registration killer (Yandex OAuth, reported 2026-09-20): the login
+/// bootstrap's remote push (`save_sync`) ran bare — no retry, unlike the
+/// merge right before it — so ONE transient edge flap (a mangled
+/// empty-body proxy answer surfacing as `API error: Failed to parse
+/// response: … expected value at line 1 column 1`) failed the whole
+/// registration, while the identical manual retry minutes later
+/// succeeded. The checkpoint push must survive one such failure through
+/// the shared sync retry.
+#[test]
+fn checkpoint_push_survives_one_transient_failure() {
+    let local = SpyLocal::with_user(fixture_user("new@yandex.ru"));
+    let meta = MetaStore::default();
+    let user = fixture_user("new@yandex.ru");
+
+    let attempts = Arc::new(Mutex::new(0usize));
+    let attempts_for_assert = Arc::clone(&attempts);
+    let fail_first = Arc::new(Mutex::new(true));
+    let push = move || {
+        let attempts = Arc::clone(&attempts);
+        let fail_first = Arc::clone(&fail_first);
+        let error = OrigaError::RepositoryError {
+            reason: "API error: Failed to parse response: Repository error: expected value at line 1 column 1"
+                .to_string(),
+        };
+        async move {
+            *attempts.lock().unwrap() += 1;
+            let mut fail = fail_first.lock().unwrap();
+            if *fail {
+                *fail = false;
+                return Err(error);
+            }
+            Ok(())
+        }
+    };
+
+    let result =
+        futures::executor::block_on(save_sync_core_with_delay(0, &local, &meta, &user, push));
+
+    assert!(
+        result.is_ok(),
+        "one transient push failure must be retried away: {result:?}"
+    );
+    assert_eq!(
+        *attempts_for_assert.lock().unwrap(),
+        2,
+        "exactly one retry after the first failure"
+    );
+    assert_eq!(local.save_count(), 1, "the local write stays authoritative");
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(
+        stored.dirty,
+        "the checkpoint records no fingerprint — the next merge takes the full path"
+    );
+}
+
+/// A dead session is not transient: the retry gate must refuse a second
+/// roundtrip (re-login is the only path), and the local write stays.
+#[test]
+fn expired_session_push_is_never_retried() {
+    let local = SpyLocal::with_user(fixture_user("new@yandex.ru"));
+    let meta = MetaStore::default();
+    let user = fixture_user("new@yandex.ru");
+
+    let attempts = Arc::new(Mutex::new(0usize));
+    let attempts_for_assert = Arc::clone(&attempts);
+    let push = move || {
+        let attempts = Arc::clone(&attempts);
+        async move {
+            *attempts.lock().unwrap() += 1;
+            Err(OrigaError::SessionExpired)
+        }
+    };
+
+    let result =
+        futures::executor::block_on(save_sync_core_with_delay(0, &local, &meta, &user, push));
+
+    assert!(result.is_err(), "an expired session must surface");
+    assert_eq!(
+        *attempts_for_assert.lock().unwrap(),
+        1,
+        "a second roundtrip cannot fix an expired session"
+    );
+    assert_eq!(local.save_count(), 1, "offline-first: the local write ran");
+}
+
+/// The local write comes first and gates the push: a broken local store
+/// must not ship the user to the server at all (the local record is what
+/// the next merge merges against).
+#[test]
+fn local_save_failure_never_reaches_the_push() {
+    let local = SpyLocal::with_user(fixture_user("new@yandex.ru")).with_failing_saves();
+    let meta = MetaStore::default();
+    let user = fixture_user("new@yandex.ru");
+
+    let attempts = Arc::new(Mutex::new(0usize));
+    let attempts_for_assert = Arc::clone(&attempts);
+    let push = move || {
+        let attempts = Arc::clone(&attempts);
+        async move {
+            *attempts.lock().unwrap() += 1;
+            Ok(())
+        }
+    };
+
+    let result =
+        futures::executor::block_on(save_sync_core_with_delay(0, &local, &meta, &user, push));
+
+    assert!(result.is_err(), "the local failure must surface");
+    assert_eq!(
+        *attempts_for_assert.lock().unwrap(),
+        0,
+        "a failed local write must not push anywhere"
+    );
+}
+
+/// Healthy path: one push, no retry, checkpoint settled dirty (the
+/// fingerprint is deliberately left to the next merge).
+#[test]
+fn healthy_checkpoint_pushes_once_and_stays_dirty() {
+    let local = SpyLocal::default();
+    let meta = MetaStore::default();
+    let user = fixture_user("new@yandex.ru");
+
+    let attempts = Arc::new(Mutex::new(0usize));
+    let attempts_for_assert = Arc::clone(&attempts);
+    let push = move || {
+        let attempts = Arc::clone(&attempts);
+        async move {
+            *attempts.lock().unwrap() += 1;
+            Ok(())
+        }
+    };
+
+    let result =
+        futures::executor::block_on(save_sync_core_with_delay(0, &local, &meta, &user, push));
+
+    assert!(result.is_ok());
+    assert_eq!(
+        *attempts_for_assert.lock().unwrap(),
+        1,
+        "no retry on success"
+    );
+    assert_eq!(local.save_count(), 1);
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(
+        stored.dirty,
+        "the fingerprint recording belongs to the merge"
+    );
 }

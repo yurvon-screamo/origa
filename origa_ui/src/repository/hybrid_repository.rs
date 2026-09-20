@@ -111,6 +111,59 @@ pub(crate) trait LocalUserPresence {
     fn has_any_user(&self) -> impl Future<Output = Result<bool, OrigaError>>;
 }
 
+/// The explicit-checkpoint push core (ADR-045), generic so it runs
+/// against in-memory spies in native tests: mark dirty (crash safety),
+/// write local, then push remote.
+pub(crate) async fn save_sync_core<F, Fut>(
+    local: &impl UserRepository,
+    meta_store: &impl SyncMetaStore,
+    user: &User,
+    push: F,
+) -> Result<(), OrigaError>
+where
+    F: FnMut() -> Fut,
+    Fut: Future<Output = Result<(), OrigaError>>,
+{
+    save_sync_core_with_delay(
+        crate::repository::sync_retry::SYNC_RETRY_DELAY_MS as u32,
+        local,
+        meta_store,
+        user,
+        push,
+    )
+    .await
+}
+
+/// [`save_sync_core`] with the retry delay injectable for tests (the
+/// native harness blocks the thread on the backoff sleep).
+async fn save_sync_core_with_delay<F, Fut>(
+    delay_ms: u32,
+    local: &impl UserRepository,
+    meta_store: &impl SyncMetaStore,
+    user: &User,
+    push: F,
+) -> Result<(), OrigaError>
+where
+    F: FnMut() -> Fut,
+    Fut: Future<Output = Result<(), OrigaError>>,
+{
+    // Dirty BEFORE the local write, and it stays set across the whole
+    // remote push: the push takes seconds for a large knowledge set
+    // (serialization + deflate + upload) — exactly the jetsam window
+    // this ADR exists for — and a crash there must not leave a clean
+    // meta that skips the next sync (ADR-045).
+    if let Err(e) = mark_dirty(meta_store).await {
+        tracing::warn!("Failed to persist sync dirty flag: {e:?}");
+    }
+    local.save(user).await?;
+    // The single shared sync retry (see `should_retry_sync_error`): one
+    // transient edge flap must not fail the checkpoint. Idempotent by
+    // construction — the push re-resolves the row before creating, so a
+    // retried push PATCHes the row the first attempt landed instead of
+    // duplicating it.
+    crate::repository::sync_retry::with_sync_retry_delay(delay_ms, push).await
+}
+
 /// The sync orchestration core (ADR-045), generic over the repositories so
 /// it runs against in-memory spies in native tests.
 ///
@@ -400,32 +453,44 @@ impl UserRepository for HybridUserRepository {
     // split-progress bug, because the initial profile create would log a remote
     // error and return `Ok`, so the user moved on without a canonical remote
     // record and the next device's login found nothing to merge against.
+    //
+    // The remote push goes through the single sync retry (`save_sync_core`):
+    // a bare push here is what let one transient proxy flap kill a whole
+    // Yandex registration (2026-09-20) while the manual retry minutes later
+    // succeeded. Surfacing after the retry still holds.
     async fn save_sync(&self, user: &User) -> Result<(), OrigaError> {
         tracing::info!("save_sync: Starting save for user {}", user.id());
-        // Dirty BEFORE the local write, and it stays set across the whole
-        // remote push: the push takes seconds for a large knowledge set
-        // (serialization + deflate + upload) — exactly the jetsam window
-        // this ADR exists for — and a crash there must not leave a clean
-        // meta that skips the next sync (ADR-045).
-        self.mark_local_dirty().await;
-        self.local.save(user).await?;
-        tracing::info!("save_sync: Local save completed for user {}", user.id());
+        // The push closure must own its data (FnMut -> owned futures), and
+        // `User` can carry a multi-MB knowledge set — so ONE deep clone
+        // behind an Arc, and every attempt only bumps the refcount. The
+        // repository itself is cheap to clone (String + client handle).
+        let remote = self.remote.clone();
+        let pushed = Arc::new(user.clone());
+        let result = save_sync_core(&self.local, &self.meta, user, move || {
+            let remote = remote.clone();
+            let pushed = Arc::clone(&pushed);
+            async move { remote.save(&pushed).await }
+        })
+        .await;
 
-        if let Err(e) = self.remote.save(user).await {
-            tracing::error!(
-                "save_sync: Remote save failed for user {}: {:?}. Local save kept; surfacing error to caller.",
-                user.id(),
-                e
-            );
-            return Err(e);
+        match result {
+            Ok(()) => {
+                tracing::info!("save_sync: Remote save completed for user {}", user.id());
+                // The push succeeded but its fingerprint is not recorded here: the
+                // next `merge_current_user` takes the full path (dirty) and records
+                // the server-authoritative fingerprint — one fewer raw fetch per
+                // checkpoint than recording inline (ADR-045).
+                Ok(())
+            },
+            Err(e) => {
+                tracing::error!(
+                    "save_sync: Remote save failed for user {}: {:?}. Local save kept; surfacing error to caller.",
+                    user.id(),
+                    e
+                );
+                Err(e)
+            },
         }
-
-        tracing::info!("save_sync: Remote save completed for user {}", user.id());
-        // The push succeeded but its fingerprint is not recorded here: the
-        // next `merge_current_user` takes the full path (dirty) and records
-        // the server-authoritative fingerprint — one fewer raw fetch per
-        // checkpoint than recording inline (ADR-045).
-        Ok(())
     }
 
     async fn delete(&self, user_id: Ulid) -> Result<(), OrigaError> {
