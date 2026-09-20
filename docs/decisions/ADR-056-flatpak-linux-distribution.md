@@ -126,3 +126,29 @@ sandboxed runtime that is kept current by its upstream.
 - Users migrating from the retired AppImage follow the copy commands above
   (release notes embed the copy commands); their progress/auth are
    preserved.
+
+## Addendum (2026-09-20): .deb channel is updater-enabled
+
+Decision 4 above (dropping the `linux-x86_64` entry so no client would
+chase a stale signature/URL into `TargetNotFound`) remains historically
+correct for the AppImage it described. The `.deb` channel now provides
+what AppImage no longer could:
+
+- `tauri-plugin-updater` 2.10.0 (pinned in `Cargo.lock`) ships
+  `install_deb` with a privilege ladder: `pkexec` → `zenity`/`kdialog`
+  graphical sudo. Machines without a polkit agent (headless, minimal
+  installs) cannot complete the in-app upgrade and fall back to manual
+  bundle installation.
+- `tauri-cli` (≥ 2.2.0) emits the `.deb.sig` updater signature because
+  `bundle.createUpdaterArtifacts` is `true` — no config change was needed.
+- `_build-tauri.yml` re-exposes the `linux-signature` output and
+  `generate-latest-json` publishes `linux-x86_64` → the fixed-name
+  `Origa_amd64.deb` asset (content-based Minisign signature survives the
+  versioned → alias rename, same as the Windows channel). A fail-loud
+  guard rejects a manifest with an empty signature for either platform.
+
+Flatpak keeps the managed-channel posture described above: no
+self-updater (`ORIGA_APP_STORE=1`), updates arrive from the Flatpak
+repository once published. The Consequences bullet "Linux users have no
+in-app updater by design" is hereby superseded for the `.deb` channel
+only.
