@@ -4,7 +4,7 @@ use crate::pages::sets::types::PreviewWord;
 use crate::repository::HybridUserRepository;
 use crate::utils::yield_to_browser;
 use leptos::prelude::*;
-use leptos::task::spawn_local;
+use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::domain::{User, WordImportOutcome, WordImportPreview};
 use origa::traits::UserRepository;
 use origa::use_cases::{
@@ -64,7 +64,11 @@ impl ImportPreviewModalState {
         selected_words.set(HashSet::new());
         is_loading_preview.set(true);
         error.set(None);
-        spawn_local(async move {
+        // Scoped (disposed-signal fix): the success paths below read
+        // `set_ids`/`set_titles` after the tokenizer and set-load awaits —
+        // the existing `disposed` guards cover only the error branches.
+        // A dead modal needs no preview; the task dies with its owner.
+        spawn_local_scoped_with_cancellation(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
                     Some(u) => u,
@@ -138,7 +142,9 @@ impl ImportPreviewModalState {
         error.set(None);
         set_titles.set(set_titles_input);
         state_set_ids.set(set_ids.clone());
-        spawn_local(async move {
+        // Scoped — same disposed-signal reasoning as the single-set
+        // preview above (success path reads `set_titles` after awaits).
+        spawn_local_scoped_with_cancellation(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
                     Some(u) => u,

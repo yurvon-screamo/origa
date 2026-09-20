@@ -11,6 +11,7 @@ use crate::i18n::{td_string, use_i18n};
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::domain::{Card, StudyCard};
 use ulid::Ulid;
 
@@ -67,7 +68,16 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             }
             let running = running.clone();
             let rerun = rerun.clone();
-            spawn_local(async move {
+            // Scoped (disposed-signal fix): loop-top reads `visible_ids`
+            // on every rerun iteration — i.e. after an await — and an
+            // unscoped task kept reading the disposed signal when the
+            // phrases page unmounted mid-load. A snapshot would defeat
+            // the rerun flag (each pass must read the fresh ids), so the
+            // whole loop dies with the page owner instead. The Arc
+            // running/rerun flags die with it too — a stale
+            // `running = false` write is unreachable and unneeded on a
+            // dead page.
+            spawn_local_scoped_with_cancellation(async move {
                 loop {
                     let ids = visible_ids.get_untracked();
                     if !ids.is_empty() {

@@ -6,7 +6,7 @@ use crate::loaders::ModelLoader;
 use crate::loaders::ocr_model_loader::ProgressCallback;
 use crate::ui_components::{OcrLoadingStage, OcrLoadingState, ProgressInfo};
 use leptos::prelude::*;
-use leptos::task::spawn_local;
+use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::ocr::{JapaneseOCRModel, ModelConfig};
 use origa::use_cases::ExtractTextFromImageUseCase;
 use std::cell::{Cell, RefCell};
@@ -142,7 +142,13 @@ pub(super) fn process_file(
         return;
     }
 
-    spawn_local(async move {
+    // Scoped (disposed-signal fix): `run_ocr_on_data_url` reads the
+    // cancel flag and then `handle_ocr_result` touches ctx signals after
+    // the yield and inference awaits — an unscoped task panicked on
+    // those reads when the words page was disposed mid-OCR. Cancellation
+    // at dispose matches the existing manual `cancel_requested` skip:
+    // the JS-side inference finishes, the continuation is dropped.
+    spawn_local_scoped_with_cancellation(async move {
         ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {
             Ok(data_url) => {

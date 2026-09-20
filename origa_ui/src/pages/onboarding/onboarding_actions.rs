@@ -66,6 +66,11 @@ where
     Callback::new(move |_: ()| {
         let repo = repository.clone();
         let nav = navigate.clone();
+        // Snapshot before the spawn: the async chain below must not read
+        // page signals after its awaits — the task stays unscoped because
+        // the save_sync checkpoint is user intent and has to commit even
+        // if the page is disposed mid-save (pattern: save_intro_username).
+        let daily_load = state.get_untracked().daily_load;
 
         spawn_local(async move {
             let Ok(Some(mut user)) = repo.get_current_user().await else {
@@ -73,7 +78,7 @@ where
                 return;
             };
 
-            user.set_daily_load(state.get_untracked().daily_load);
+            user.set_daily_load(daily_load);
             user.mark_set_as_imported(origa::domain::ONBOARDING_SKIPPED_KEY.to_string());
             recalculate_user_jlpt_progress(&mut user);
 
@@ -106,6 +111,13 @@ pub(super) fn create_on_start_import_callback(
         let cdn = cdn_provider();
         let disposed = disposed;
         is_importing.set(true);
+        // Snapshot before the spawn (disposed-signal fix): both branches
+        // below used to read `state` after awaits — a page disposed
+        // mid-import panicked on the disposed read. The task stays
+        // unscoped: the save_sync checkpoints are user intent and must
+        // commit regardless of the page's lifetime.
+        let daily_load = state.get_untracked().daily_load;
+        let target_level = state.get_untracked().target_level();
 
         spawn_local(async move {
             let set_ids = state.get().get_final_sets();
@@ -128,7 +140,7 @@ pub(super) fn create_on_start_import_callback(
                     return;
                 };
 
-                user.set_daily_load(state.get_untracked().daily_load);
+                user.set_daily_load(daily_load);
                 recalculate_user_jlpt_progress(&mut user);
 
                 // Hard block on remote failure: this save commits the daily
@@ -176,11 +188,10 @@ pub(super) fn create_on_start_import_callback(
             // CDN singleton), so it cannot move into origa/. Applied here so
             // the single save_sync inside execute persists both it and the
             // imported cards together.
-            user.set_daily_load(state.get_untracked().daily_load);
+            user.set_daily_load(daily_load);
             recalculate_user_jlpt_progress(&mut user);
 
             let use_case = ImportOnboardingSetsUseCase::new(&repo, cdn);
-            let target_level = state.get_untracked().target_level();
             let result = use_case.execute(user, set_ids, target_level).await;
 
             if disposed.is_disposed() {

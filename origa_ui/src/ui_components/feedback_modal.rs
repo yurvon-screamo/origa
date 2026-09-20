@@ -6,7 +6,7 @@
 //! `Error` (retry, draft preserved) | `Unavailable` (info: compiled-out DSN).
 
 use leptos::prelude::*;
-use leptos::task::spawn_local;
+use leptos::task::spawn_local_scoped_with_cancellation;
 
 use crate::feedback::{
     FEEDBACK_MESSAGE_MAX_CHARS, FeedbackContext, FeedbackReport, FeedbackSubmitError,
@@ -93,7 +93,13 @@ pub fn FeedbackModal() -> impl IntoView {
             environment: current_draft.environment.clone(),
         };
 
-        spawn_local(async move {
+        // Scoped (disposed-signal fix): the continuation reads `state`
+        // after the send and the close-timeout awaits — an unscoped task
+        // panicked on that read when the modal's page was disposed
+        // mid-send. The Sentry submission is a JS call already handed to
+        // the SDK before the first await; cancelling the task only drops
+        // the UI state updates and the auto-close.
+        spawn_local_scoped_with_cancellation(async move {
             match (submit_fn)(&report).await {
                 Ok(()) => {
                     feedback_for_cooldown.note_submission();
