@@ -55,6 +55,11 @@ pub struct MemoryHistory {
     /// Мержится LWW по моменту последнего шага.
     #[serde(default)]
     ghost: Option<GhostState>,
+    /// Отметка «знаю» [marked_known_at]: таймстемп последнего нажатия
+    /// «Знаю». Карта с отметкой текущего календарного дня (UTC) молчит
+    /// в канале компаньонов до конца дня. Мержится LWW по таймстемпу.
+    #[serde(default)]
+    marked_known_at: Option<DateTime<Utc>>,
 }
 
 impl Default for MemoryHistory {
@@ -75,6 +80,7 @@ impl MemoryHistory {
             last_rating: None,
             consecutive_again: 0,
             ghost: None,
+            marked_known_at: None,
         }
     }
 
@@ -84,6 +90,30 @@ impl MemoryHistory {
 
     pub fn consecutive_again(&self) -> u8 {
         self.consecutive_again
+    }
+
+    pub fn marked_known_at(&self) -> Option<DateTime<Utc>> {
+        self.marked_known_at
+    }
+
+    /// Отметка «знаю» в том же календарном дне, что `now`. День по UTC —
+    /// тот же паттерн, что у `stats_tracker` (дневные лимиты).
+    pub fn marked_known_today(&self, now: DateTime<Utc>) -> bool {
+        self.marked_known_at
+            .is_some_and(|ts| ts.date_naive() == now.date_naive())
+    }
+
+    /// Штампует отметку «знаю» [marked_known_at] моментом `ts`
+    /// (вызывается `KnowledgeSet::mark_card_as_known`).
+    pub(crate) fn set_marked_known_at(&mut self, ts: DateTime<Utc>) {
+        self.marked_known_at = Some(ts);
+    }
+
+    /// Установка отметки «знаю» напрямую: time-travel («вчера/сегодня»)
+    /// и сборка состояний отбора в тестах.
+    #[cfg(test)]
+    pub(crate) fn set_marked_known_at_for_test(&mut self, ts: Option<DateTime<Utc>>) {
+        self.marked_known_at = ts;
     }
 
     pub fn memory_state(&self) -> Option<&MemoryState> {
@@ -221,6 +251,15 @@ impl MemoryHistory {
             (None, None) => None,
         };
 
+        // Отметка «знаю»: LWW по таймстемпу — позднейшее нажатие
+        // побеждает (тай — правая, паттерн ghost).
+        self.marked_known_at = match (self.marked_known_at, other.marked_known_at) {
+            (Some(left), Some(right)) => Some(left.max(right)),
+            (Some(left), None) => Some(left),
+            (None, Some(right)) => Some(right),
+            (None, None) => None,
+        };
+
         // last_review_date + last_rating: take from whichever side is newer.
         match (self.last_review_date, other.last_review_date) {
             (Some(self_ts), Some(other_ts)) => {
@@ -267,6 +306,7 @@ fn select_later_state(
 mod tests {
     use super::*;
     use chrono::Duration;
+    use rstest::rstest;
 
     fn make_state() -> MemoryState {
         MemoryState::new(
@@ -701,5 +741,84 @@ mod tests {
         assert_eq!(history.lapses(), 1);
         assert_eq!(history.ghost(), None);
         assert_eq!(history.consecutive_again(), 0);
+        assert_eq!(history.marked_known_at(), None);
+    }
+
+    // --- Отметка «знаю» [marked_known_at] ---
+
+    fn today_midnight_from(now: DateTime<Utc>) -> DateTime<Utc> {
+        use chrono::{Datelike, TimeZone};
+        let date = now.date_naive();
+        Utc.with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
+            .unwrap()
+    }
+
+    /// Кейсы-константы: штампы строятся в теле от единого `now`, чтобы
+    /// тест не зависел от перехода UTC-полуночи между атрибутом и телом.
+    #[derive(Clone, Copy)]
+    enum StampCase {
+        Today,
+        MidnightToday,
+        Yesterday,
+        None,
+    }
+
+    #[rstest]
+    #[case::same_day_stamp(StampCase::Today, true)]
+    #[case::midnight_edge_same_day(StampCase::MidnightToday, true)]
+    #[case::previous_day_stamp(StampCase::Yesterday, false)]
+    #[case::no_stamp(StampCase::None, false)]
+    fn marked_known_today_matches_only_same_utc_day(
+        #[case] case: StampCase,
+        #[case] expected: bool,
+    ) {
+        // Arrange
+        let now = Utc::now();
+        let stamp = match case {
+            StampCase::Today => Some(now),
+            StampCase::MidnightToday => Some(today_midnight_from(now)),
+            StampCase::Yesterday => Some(now - Duration::hours(25)),
+            StampCase::None => None,
+        };
+        let mut history = MemoryHistory::new();
+        history.set_marked_known_at_for_test(stamp);
+
+        // Act
+        let is_today = history.marked_known_today(now);
+
+        // Assert
+        assert_eq!(is_today, expected);
+    }
+
+    #[test]
+    fn merge_marked_known_at_takes_later_timestamp() {
+        // Arrange
+        let later = Utc::now();
+        let earlier = later - Duration::hours(2);
+        let mut left = MemoryHistory::new();
+        left.set_marked_known_at_for_test(Some(earlier));
+        let mut right = MemoryHistory::new();
+        right.set_marked_known_at_for_test(Some(later));
+
+        // Act
+        left.merge(&right);
+
+        // Assert
+        assert_eq!(left.marked_known_at(), Some(later));
+    }
+
+    #[test]
+    fn merge_marked_known_at_propagates_from_other_side() {
+        // Arrange
+        let stamp = Utc::now() - Duration::hours(1);
+        let mut left = MemoryHistory::new();
+        let mut right = MemoryHistory::new();
+        right.set_marked_known_at_for_test(Some(stamp));
+
+        // Act
+        left.merge(&right);
+
+        // Assert
+        assert_eq!(left.marked_known_at(), Some(stamp));
     }
 }

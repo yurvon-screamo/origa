@@ -81,6 +81,11 @@ impl StudyCard {
         self.memory_history.apply_review(memory_state, rating);
     }
 
+    /// Штампует отметку «знаю» [marked_known_at] моментом `now`.
+    pub(crate) fn stamp_marked_known(&mut self, now: DateTime<Utc>) {
+        self.memory_history.set_marked_known_at(now);
+    }
+
     /// Шаг добивания [GhostState] после явного показа (RatingContext::Explicit).
     /// Время инжектится здесь: машина состояний остаётся чистой для тестов.
     pub(crate) fn apply_ghost_transition(&mut self, rating: Rating, was_new_before_rating: bool) {

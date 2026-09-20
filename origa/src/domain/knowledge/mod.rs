@@ -399,8 +399,13 @@ impl KnowledgeSet {
             native_language,
             new_card_policy,
         );
-        let with_companions =
-            kanji_companions::add_kanji_companions(core, self, user_level, native_language);
+        let with_companions = kanji_companions::add_kanji_companions(
+            core,
+            self,
+            user_level,
+            native_language,
+            chrono::Utc::now(),
+        );
         let with_companions = match new_card_policy {
             NewCardPolicy::Inject => with_companions,
             NewCardPolicy::Exclude => {
@@ -527,6 +532,13 @@ impl KnowledgeSet {
         use chrono::{Duration, Utc};
 
         if let Some(card) = self.study_cards.get_mut(&card_id) {
+            // Известная карта: повторное «Знаю» обновляет только отметку —
+            // память не трогаем (без раздувания reps и сброса стабильности).
+            if card.memory().is_known_card() {
+                card.stamp_marked_known(Utc::now());
+                return Ok(());
+            }
+
             let stability = KNOWN_CARD_STABILITY_THRESHOLD + 1.0;
             let memory = MemoryState::new(
                 Stability::new(stability).unwrap(),
@@ -535,6 +547,7 @@ impl KnowledgeSet {
             );
             card.apply_review(memory, Rating::Easy);
             card.handle_favorite_rating(Rating::Easy);
+            card.stamp_marked_known(Utc::now());
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })

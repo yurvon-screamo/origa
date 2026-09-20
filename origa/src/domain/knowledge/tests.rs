@@ -2070,3 +2070,98 @@ fn bulk_import_merge_drops_index_but_still_rejects_duplicates() {
         "duplicate of a merged-in card must still be rejected"
     );
 }
+
+// --- Отметка «знаю» [marked_known_at]: ветвление домена mark_as_known ---
+
+#[test]
+fn mark_card_as_known_seeds_memory_and_stamps() {
+    // Arrange
+    let mut knowledge_set = KnowledgeSet::new();
+    let study = knowledge_set.create_card(create_vocab_card("知")).unwrap();
+
+    // Act
+    knowledge_set.mark_card_as_known(*study.card_id()).unwrap();
+
+    // Assert
+    let marked = knowledge_set.get_card(*study.card_id()).unwrap();
+    assert!(marked.memory().is_known_card(), "seed branch must run");
+    assert!(
+        marked.memory().marked_known_at().is_some(),
+        "fresh mark must stamp marked_known_at"
+    );
+}
+
+#[test]
+fn mark_card_as_known_on_known_card_refreshes_stamp_only() {
+    // Arrange: карта уже известна, отметка — вчера
+    let mut knowledge_set = KnowledgeSet::new();
+    let study = knowledge_set.create_card(create_vocab_card("既")).unwrap();
+    let card_id = *study.card_id();
+    knowledge_set
+        .study_cards_mut_for_test()
+        .get_mut(&card_id)
+        .unwrap()
+        .seed_first_review(create_known_memory_state());
+    let yesterday = chrono::Utc::now() - chrono::Duration::hours(25);
+    knowledge_set
+        .study_cards_mut_for_test()
+        .get_mut(&card_id)
+        .unwrap()
+        .memory_history_mut_for_test()
+        .set_marked_known_at_for_test(Some(yesterday));
+    let before = knowledge_set.get_card(card_id).unwrap().memory().clone();
+
+    // Act
+    knowledge_set.mark_card_as_known(card_id).unwrap();
+
+    // Assert: штамп обновлён, память нетронута (без повторного ревью)
+    let after = knowledge_set.get_card(card_id).unwrap().memory().clone();
+    assert!(
+        after.marked_known_at().unwrap() > yesterday,
+        "repeat mark must refresh the stamp"
+    );
+    assert_eq!(after.reps(), before.reps(), "no extra review on repeat");
+    assert_eq!(
+        after.stability(),
+        before.stability(),
+        "stability must not be reset"
+    );
+}
+
+#[test]
+fn mark_card_as_known_leaves_active_ghost_intact() {
+    // Arrange: изучаемая карта с активным добиванием (окно закрыто)
+    let mut knowledge_set = KnowledgeSet::new();
+    let study = knowledge_set.create_card(create_vocab_card("幽")).unwrap();
+    let card_id = *study.card_id();
+    knowledge_set
+        .study_cards_mut_for_test()
+        .get_mut(&card_id)
+        .unwrap()
+        .seed_first_review(MemoryState::new(
+            crate::domain::memory::Stability::new(5.0).unwrap(),
+            crate::domain::memory::Difficulty::new(5.0).unwrap(),
+            chrono::Utc::now() - chrono::Duration::days(1),
+        ));
+    let now = chrono::Utc::now();
+    let ghost_before = crate::domain::memory::GhostState::active(
+        crate::domain::memory::GhostRung::Second,
+        now + chrono::Duration::days(1),
+        now - chrono::Duration::hours(2),
+    );
+    knowledge_set
+        .study_cards_mut_for_test()
+        .get_mut(&card_id)
+        .unwrap()
+        .memory_history_mut_for_test()
+        .set_ghost_for_test(Some(ghost_before.clone()));
+
+    // Act
+    knowledge_set.mark_card_as_known(card_id).unwrap();
+
+    // Assert: память засижена известностью, добивание не тронуто —
+    // «Знаю» не шагает лестницу и не списывает её
+    let after = knowledge_set.get_card(card_id).unwrap().memory();
+    assert!(after.is_known_card(), "seed branch must run");
+    assert_eq!(after.ghost(), Some(&ghost_before));
+}
