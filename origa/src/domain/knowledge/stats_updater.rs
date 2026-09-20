@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use ulid::Ulid;
 
 use super::daily_history::DailyStatsUpdate;
@@ -84,17 +84,20 @@ pub(crate) fn update_history(
     was_new: bool,
     is_phrase: bool,
     mode: RateMode,
+    today_start: DateTime<Utc>,
 ) {
     let stats = match ComputedStats::compute(study_cards) {
         Some(s) => s,
         None => return,
     };
 
-    let today = Utc::now().date_naive();
-
+    // Бакет дня — последний айтем текущих локальных суток (канонизация
+    // симметрично читающим путям: при легаси-дублях инкременты попадают
+    // в тот же айтем, что читают лимиты).
     if let Some(existing_item) = lesson_history
         .iter_mut()
-        .find(|item| item.timestamp().date_naive() == today)
+        .rev()
+        .find(|item| item.timestamp() >= today_start)
     {
         if was_new && !is_phrase && mode != RateMode::OnboardingScoring {
             existing_item.increment_new_cards_studied();
@@ -149,15 +152,16 @@ pub(crate) fn register_new_cards_without_rating(
     study_cards: &HashMap<Ulid, StudyCard>,
     lesson_history: &mut Vec<DailyHistoryItem>,
     count: usize,
+    today_start: DateTime<Utc>,
 ) {
     let Some(stats) = ComputedStats::compute(study_cards) else {
         return;
     };
 
-    let today = Utc::now().date_naive();
     if let Some(existing_item) = lesson_history
         .iter_mut()
-        .find(|item| item.timestamp().date_naive() == today)
+        .rev()
+        .find(|item| item.timestamp() >= today_start)
     {
         for _ in 0..count {
             existing_item.increment_new_cards_studied();
@@ -184,13 +188,13 @@ pub(crate) fn register_new_cards_without_rating(
 pub(crate) fn recalculate_daily_stats(
     study_cards: &HashMap<Ulid, StudyCard>,
     lesson_history: &mut Vec<DailyHistoryItem>,
+    today_start: DateTime<Utc>,
 ) {
     let stats = match ComputedStats::compute(study_cards) {
         Some(s) => s,
         None => return,
     };
 
-    let today = Utc::now().date_naive();
     // Ratings are recomputed from each card's last_rating when it was reviewed
     // today, rather than iterating an array of individual review logs (which
     // no longer exists after the MemoryHistory denormalization). This is exact
@@ -204,7 +208,7 @@ pub(crate) fn recalculate_daily_stats(
         .filter(|card| {
             card.memory()
                 .last_review_date()
-                .is_some_and(|d| d.date_naive() == today)
+                .is_some_and(|d| d >= today_start)
         })
         .fold((0usize, 0usize, 0usize), |(pos, neg, tot), card| {
             let rating = card.memory().last_rating();
@@ -218,14 +222,14 @@ pub(crate) fn recalculate_daily_stats(
     let preserved_new_cards = lesson_history
         .iter()
         .rev()
-        .find(|item| item.timestamp().date_naive() == today)
+        .find(|item| item.timestamp() >= today_start)
         .map(|item| item.new_cards_studied_today())
         .unwrap_or(0);
 
     let preserved_phrase_cards = lesson_history
         .iter()
         .rev()
-        .find(|item| item.timestamp().date_naive() == today)
+        .find(|item| item.timestamp() >= today_start)
         .map(|item| item.phrase_cards_studied_today())
         .unwrap_or(0);
 
@@ -239,7 +243,8 @@ pub(crate) fn recalculate_daily_stats(
 
     if let Some(existing_item) = lesson_history
         .iter_mut()
-        .find(|item| item.timestamp().date_naive() == today)
+        .rev()
+        .find(|item| item.timestamp() >= today_start)
     {
         existing_item.update_stats(update);
     } else {

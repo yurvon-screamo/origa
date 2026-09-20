@@ -32,7 +32,9 @@ fn get_current_date() -> String {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        chrono::Utc::now().format("%Y%m%d").to_string()
+        // Local date, symmetric with the WASM branch: both describe the
+        // user's calendar day (cache key only — never part of the URL).
+        chrono::Local::now().format("%Y%m%d").to_string()
     }
 }
 

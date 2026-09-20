@@ -56,7 +56,7 @@ pub struct MemoryHistory {
     #[serde(default)]
     ghost: Option<GhostState>,
     /// Отметка «знаю» [marked_known_at]: таймстемп последнего нажатия
-    /// «Знаю». Карта с отметкой текущего календарного дня (UTC) молчит
+    /// «Знаю». Карта с отметкой текущих локальных суток молчит
     /// в канале компаньонов до конца дня. Мержится LWW по таймстемпу.
     #[serde(default)]
     marked_known_at: Option<DateTime<Utc>>,
@@ -96,11 +96,13 @@ impl MemoryHistory {
         self.marked_known_at
     }
 
-    /// Отметка «знаю» в том же календарном дне, что `now`. День по UTC —
-    /// тот же паттерн, что у `stats_tracker` (дневные лимиты).
+    /// Отметка «знаю» в тех же локальных сутках, что `now` (граница суток —
+    /// локальная полночь, как у `stats_tracker`/дневных лимитов; зона —
+    /// ambient процесса).
     pub fn marked_known_today(&self, now: DateTime<Utc>) -> bool {
-        self.marked_known_at
-            .is_some_and(|ts| ts.date_naive() == now.date_naive())
+        let today_start =
+            crate::domain::local_day::start_of_day(crate::domain::local_day::local_offset(), now);
+        self.marked_known_at.is_some_and(|ts| ts >= today_start)
     }
 
     /// Штампует отметку «знаю» [marked_known_at] моментом `ts`
@@ -746,15 +748,13 @@ mod tests {
 
     // --- Отметка «знаю» [marked_known_at] ---
 
-    fn today_midnight_from(now: DateTime<Utc>) -> DateTime<Utc> {
-        use chrono::{Datelike, TimeZone};
-        let date = now.date_naive();
-        Utc.with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
-            .unwrap()
+    fn local_midnight_from(now: DateTime<Utc>) -> DateTime<Utc> {
+        crate::domain::local_day::start_of_day(crate::domain::local_day::local_offset(), now)
     }
 
     /// Кейсы-константы: штампы строятся в теле от единого `now`, чтобы
-    /// тест не зависел от перехода UTC-полуночи между атрибутом и телом.
+    /// тест не зависел от перехода локальной полуночи между атрибутом
+    /// и телом.
     #[derive(Clone, Copy)]
     enum StampCase {
         Today,
@@ -763,12 +763,15 @@ mod tests {
         None,
     }
 
+    /// `midnight_edge_same_day` guard'ит операторную границу `>=`: штамп
+    /// ровно на локальной полуночи всё ещё «сегодня». Само вычисление
+    /// полуночи верифицируется точными ожиданиями в тестах `local_day`.
     #[rstest]
     #[case::same_day_stamp(StampCase::Today, true)]
     #[case::midnight_edge_same_day(StampCase::MidnightToday, true)]
     #[case::previous_day_stamp(StampCase::Yesterday, false)]
     #[case::no_stamp(StampCase::None, false)]
-    fn marked_known_today_matches_only_same_utc_day(
+    fn marked_known_today_matches_only_same_local_day(
         #[case] case: StampCase,
         #[case] expected: bool,
     ) {
@@ -776,7 +779,7 @@ mod tests {
         let now = Utc::now();
         let stamp = match case {
             StampCase::Today => Some(now),
-            StampCase::MidnightToday => Some(today_midnight_from(now)),
+            StampCase::MidnightToday => Some(local_midnight_from(now)),
             StampCase::Yesterday => Some(now - Duration::hours(25)),
             StampCase::None => None,
         };

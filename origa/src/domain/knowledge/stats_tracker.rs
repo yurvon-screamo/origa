@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
 use super::{DailyHistoryItem, StudyCard};
+use crate::domain::local_day;
 use crate::domain::{RateMode, Rating};
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
@@ -24,21 +24,21 @@ impl StatsTracker {
     }
 
     pub fn new_cards_studied_today(&self) -> usize {
-        let today = Utc::now().date_naive();
+        let today_start = local_day::today_start();
         self.lesson_history
             .iter()
             .rev()
-            .find(|item| item.timestamp().date_naive() == today)
+            .find(|item| item.timestamp() >= today_start)
             .map(|item| item.new_cards_studied_today() as usize)
             .unwrap_or(0)
     }
 
     pub fn phrase_cards_studied_today(&self) -> usize {
-        let today = Utc::now().date_naive();
+        let today_start = local_day::today_start();
         self.lesson_history
             .iter()
             .rev()
-            .find(|item| item.timestamp().date_naive() == today)
+            .find(|item| item.timestamp() >= today_start)
             .map(|item| item.phrase_cards_studied_today() as usize)
             .unwrap_or(0)
     }
@@ -58,6 +58,7 @@ impl StatsTracker {
             was_new,
             is_phrase,
             mode,
+            local_day::today_start(),
         );
     }
 
@@ -72,20 +73,29 @@ impl StatsTracker {
             study_cards,
             &mut self.lesson_history,
             count,
+            local_day::today_start(),
         );
     }
 
     pub fn recalculate(&mut self, study_cards: &HashMap<Ulid, StudyCard>) {
-        super::stats_updater::recalculate_daily_stats(study_cards, &mut self.lesson_history);
+        super::stats_updater::recalculate_daily_stats(
+            study_cards,
+            &mut self.lesson_history,
+            local_day::today_start(),
+        );
     }
 
     pub fn merge(&mut self, other: &StatsTracker) {
         for item in &other.lesson_history {
-            let date = item.timestamp().date_naive();
+            // Ключ слияния — локальная календарная дата: одна зона на
+            // устройство юзера, инстанты одного локального дня сливаются
+            // в один айтем.
+            let date = item.timestamp().with_timezone(&chrono::Local).date_naive();
             if let Some(existing_item) = self
                 .lesson_history
                 .iter_mut()
-                .find(|h| h.timestamp().date_naive() == date)
+                .rev()
+                .find(|h| h.timestamp().with_timezone(&chrono::Local).date_naive() == date)
             {
                 existing_item.merge_with(item);
             } else {
@@ -101,7 +111,9 @@ impl StatsTracker {
 mod stats_tracker_tests {
     use super::*;
     use crate::domain::knowledge::daily_history::DailyStatsUpdate;
-    use chrono::Duration;
+    use crate::domain::knowledge::stats_updater;
+    use crate::domain::{Card, Question, VocabularyCard};
+    use chrono::{Duration, TimeZone, Utc};
 
     fn create_test_history_item(
         timestamp: chrono::DateTime<Utc>,
@@ -244,5 +256,116 @@ mod stats_tracker_tests {
 
         assert!(ks.lesson_history().is_empty());
         assert!(ks.study_cards().is_empty());
+    }
+
+    fn single_vocab_study_cards() -> HashMap<Ulid, StudyCard> {
+        let mut cards = HashMap::new();
+        cards.insert(
+            Ulid::new(),
+            StudyCard::new(Card::Vocabulary(VocabularyCard::new(
+                Question::new("猫".to_string()).unwrap(),
+            ))),
+        );
+        cards
+    }
+
+    #[test]
+    fn update_history_stamp_on_day_boundary_lands_in_new_bucket() {
+        // Arrange
+        let today_start = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
+        let study_cards = single_vocab_study_cards();
+        let mut lesson_history = vec![create_test_history_item(
+            today_start - Duration::seconds(1),
+            5,
+            0,
+        )];
+
+        // Act
+        stats_updater::update_history(
+            &study_cards,
+            &mut lesson_history,
+            Rating::Good,
+            true,
+            false,
+            RateMode::StandardLesson,
+            today_start,
+        );
+
+        // Assert
+        assert_eq!(
+            lesson_history.len(),
+            2,
+            "rating on the boundary must not land in the pre-boundary bucket"
+        );
+        assert_eq!(
+            lesson_history[0].new_cards_studied_today(),
+            5,
+            "pre-boundary bucket keeps its counter"
+        );
+        assert_eq!(
+            lesson_history[1].new_cards_studied_today(),
+            1,
+            "new bucket starts with the rated new card"
+        );
+    }
+
+    #[test]
+    fn update_history_increments_last_matching_bucket_when_duplicates_exist() {
+        // Arrange: legacy UTC-split duplicate — two items of the same local day
+        let today_start = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
+        let study_cards = single_vocab_study_cards();
+        let mut lesson_history = vec![
+            create_test_history_item(today_start + Duration::minutes(30), 5, 0),
+            create_test_history_item(today_start + Duration::hours(10), 2, 0),
+        ];
+
+        // Act
+        stats_updater::update_history(
+            &study_cards,
+            &mut lesson_history,
+            Rating::Good,
+            true,
+            false,
+            RateMode::StandardLesson,
+            today_start,
+        );
+
+        // Assert
+        assert_eq!(
+            lesson_history.len(),
+            2,
+            "existing matching bucket must be reused, not duplicated further"
+        );
+        assert_eq!(
+            lesson_history[0].new_cards_studied_today(),
+            5,
+            "first (inert) duplicate stays untouched"
+        );
+        assert_eq!(
+            lesson_history[1].new_cards_studied_today(),
+            3,
+            "last matching bucket takes the increment, symmetric with reads"
+        );
+    }
+
+    #[test]
+    fn new_cards_studied_today_takes_last_bucket_when_duplicates_exist() {
+        // Arrange: both items fall into the current local day ("now" is
+        // inside today in any zone), mimicking a legacy split duplicate
+        let now = Utc::now();
+        let mut tracker = StatsTracker::new();
+        tracker
+            .lesson_history
+            .push(create_test_history_item(now - Duration::seconds(1), 5, 0));
+        tracker
+            .lesson_history
+            .push(create_test_history_item(now, 2, 0));
+
+        // Act & Assert
+        assert_eq!(
+            tracker.new_cards_studied_today(),
+            2,
+            "read must take the last bucket of the day, same one writes target"
+        );
     }
 }
