@@ -6,12 +6,14 @@ use ulid::Ulid;
 use origa::{
     domain::{OrigaError, User},
     traits::UserRepository,
-    use_cases::SyncMeta,
+    use_cases::{PROBE_SKIP_FULL_CHECK_INTERVAL, SyncMeta},
 };
 
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::sync_meta_store::{IdbSyncMetaStore, SyncMetaStore};
-use crate::repository::trailbase_repository::{RemoteUserSource, TrailBaseUserRepository};
+use crate::repository::trailbase_repository::{
+    RemoteRow, RemoteUserSource, TrailBaseUserRepository,
+};
 
 #[cfg(test)]
 #[path = "hybrid_sync_tests.rs"]
@@ -123,7 +125,66 @@ pub(crate) async fn sync_merge(
     remote: &impl RemoteUserSource,
     meta_store: &impl SyncMetaStore,
 ) -> Result<(), OrigaError> {
-    let raw = remote.find_current_raw().await?;
+    // Local bookkeeping first (ordering note: a broken local meta-store now
+    // surfaces before any network error in the logs).
+    let meta = meta_store.load().await?;
+    let local_exists = local.has_any_user().await?;
+
+    // Delta probe (ADR-045 Future work): when the state is clean and the
+    // probe fields are known, ask the server about the exact row instead
+    // of downloading it. Fail-open on any probe error — behaviour falls
+    // back to today's full fetch. The target is materialized owned: the
+    // probe answer travels across awaits and the meta must stay free for
+    // the skip-counter write below.
+    let probe_target = meta
+        .probe_target()
+        .map(|(record_id, stamp)| (record_id, stamp.to_string()));
+    let mut probed_row: Option<RemoteRow> = None;
+    if let Some((record_id, seen_updated_at)) = probe_target {
+        if local_exists {
+            match remote.fetch_if_changed(record_id, &seen_updated_at).await {
+                Ok(None) => {
+                    // Unchanged. The periodic valve: after enough
+                    // consecutive skips one full check runs anyway — the
+                    // bounded answer to every false-negative class the
+                    // probe can have (clock skew, timestamp collisions,
+                    // format drift, server-side row deletion).
+                    if meta.probe_skips_since_full < PROBE_SKIP_FULL_CHECK_INTERVAL {
+                        let mut meta = meta;
+                        meta.probe_skips_since_full += 1;
+                        meta_store.store(&meta).await?;
+                        tracing::debug!(
+                            skips = meta.probe_skips_since_full,
+                            "Sync skipped by delta probe: row unchanged"
+                        );
+                        return Ok(());
+                    }
+                    tracing::debug!(
+                        skips = meta.probe_skips_since_full,
+                        "Delta-probe valve: running the full check"
+                    );
+                },
+                Ok(Some(row)) => {
+                    // The row itself — either genuinely changed or a false
+                    // alarm (stamp bumped, content identical); the
+                    // fingerprint comparison below decides, and the skip
+                    // branch heals the stamp either way.
+                    probed_row = Some(row);
+                },
+                Err(e) => {
+                    tracing::debug!(error = %e, "Delta probe failed; falling back to full fetch");
+                },
+            }
+        }
+    }
+
+    // The create/restore branches are reachable only through this fetch:
+    // the probe answers empty for both "unchanged" and "row gone" and
+    // never observes a missing row.
+    let raw = match probed_row {
+        Some(row) => Some(row),
+        None => remote.find_current_raw().await?,
+    };
 
     let Some(remote_row) = raw else {
         // No remote record: seed the server from local (fresh install or a
@@ -139,23 +200,35 @@ pub(crate) async fn sync_merge(
         return Ok(());
     };
 
+    let record_id = remote_row.record_id;
+    // Captured before `into_user` consumes the row: the restore branch
+    // below records the fetched fingerprint without a redundant push, and
+    // every branch records the probe bookkeeping from these two values.
+    let remote_fingerprint = remote_row.fingerprint.clone();
+    let remote_updated_at = remote_row.updated_at_rfc3339();
+
     // The skip requires a present local record: when the local store has
     // no user key, the merge below is the recovery path that re-seeds it
     // from the remote row, and skipping it would strand the user with a
     // clean fingerprint and no local data (ADR-045). The probe is a keyed
     // count — a corrupted-but-present record is NOT detected here (see the
     // ADR threat model for the residual risk).
-    let meta = meta_store.load().await?;
-    let local_exists = local.has_any_user().await?;
-    if meta.should_skip(&remote_row.fingerprint) && local_exists {
+    if meta.should_skip(&remote_fingerprint) && local_exists {
         tracing::debug!("Sync skipped: remote unchanged since last sync");
+        // Heal the probe bookkeeping from the row already in hand: a
+        // false probe alarm (stamp bumped, content identical) settles
+        // here, so the next trigger is a single cheap probe again.
+        if meta.last_synced_record_id != Some(record_id)
+            || meta.last_seen_updated_at.as_deref() != Some(remote_updated_at.as_str())
+            || meta.probe_skips_since_full != 0
+        {
+            let mut meta = meta;
+            meta.record_probe_row(record_id, remote_updated_at);
+            meta_store.store(&meta).await?;
+        }
         return Ok(());
     }
 
-    let record_id = remote_row.record_id;
-    // Captured before `into_user` consumes the row: the restore branch
-    // below records the fetched fingerprint without a redundant push.
-    let remote_fingerprint = remote_row.fingerprint.clone();
     let remote_user = remote_row.into_user()?;
 
     match local.get_current_user().await? {
@@ -181,6 +254,7 @@ pub(crate) async fn sync_merge(
             let observed_epoch = meta.dirty_epoch;
             tracing::info!("Restore: settling sync meta before the heavy user write");
             meta.record_sync(remote_fingerprint, observed_epoch);
+            meta.record_probe_row(record_id, remote_updated_at);
             meta_store.store(&meta).await?;
             tracing::info!("Restore: sync meta stored, saving local user…");
             local.save(&remote_user).await?;
@@ -251,7 +325,11 @@ async fn record_sync_fingerprint(
     let mut meta = meta_store.load().await?;
     match remote.find_current_raw().await? {
         Some(fresh) => {
-            meta.record_sync(fresh.fingerprint, observed_epoch);
+            let fingerprint = fresh.fingerprint.clone();
+            let record_id = fresh.record_id;
+            let updated_at = fresh.updated_at_rfc3339();
+            meta.record_sync(fingerprint, observed_epoch);
+            meta.record_probe_row(record_id, updated_at);
             meta_store.store(&meta).await?;
         },
         None => tracing::warn!("Remote row vanished after push; sync meta left dirty"),

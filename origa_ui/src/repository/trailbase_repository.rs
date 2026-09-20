@@ -46,6 +46,15 @@ impl RemoteRow {
         }
         Ok(user)
     }
+
+    /// The row's `updated_at` as the server stores it (RFC3339). Feeds the
+    /// delta-probe bookkeeping — the probe compares against exactly this
+    /// rendering, and every push writes the same renderer's output (see
+    /// `user_to_json`), so the lexicographic `$gt` comparison is
+    /// consistent across the fleet.
+    pub(crate) fn updated_at_rfc3339(&self) -> String {
+        self.row.updated_at.to_rfc3339()
+    }
 }
 
 /// Builds a [`RemoteRow`] from a raw wire row. A row without a numeric
@@ -83,6 +92,18 @@ pub(crate) trait RemoteUserSource {
     ) -> impl Future<Output = Result<(), OrigaError>>;
 
     fn create(&self, user: &User) -> impl Future<Output = Result<i64, OrigaError>>;
+
+    /// The delta probe: re-fetches the exact row `record_id` only when its
+    /// `updated_at` moved past `seen_updated_at`. `Ok(None)` — unchanged
+    /// (the common steady state, ~20 bytes of wire). `Ok(Some(row))` — the
+    /// row itself, ready for the merge path (no second fetch needed).
+    /// Auth errors map like every other sync request so `SessionExpired`
+    /// reaches the retry filter.
+    fn fetch_if_changed(
+        &self,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> impl Future<Output = Result<Option<RemoteRow>, OrigaError>>;
 }
 
 fn map_auth_error(e: AuthError) -> OrigaError {
@@ -179,6 +200,46 @@ impl TrailBaseUserRepository {
             },
             None => Ok(None),
         }
+    }
+
+    /// Builds the delta-probe path: the exact row, only when newer.
+    /// Percent-encoding matters — `+00:00` must travel as `%2B00%3A00`,
+    /// otherwise the qs parser decodes the raw `+` into a space and the
+    /// probe silently degrades to the safety valve.
+    pub(crate) fn fetch_if_changed_path(
+        table_name: &str,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> String {
+        format!(
+            "/api/records/v1/{}?filter[id][$eq]={}&filter[updated_at][$gt]={}&limit=1",
+            table_name,
+            urlencoding::encode(&record_id.to_string()),
+            urlencoding::encode(seen_updated_at),
+        )
+    }
+
+    /// The delta probe (ADR-045 Future work): one tiny filtered GET instead
+    /// of the multi-megabyte row download on the skip path.
+    pub(crate) async fn fetch_if_changed(
+        &self,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> Result<Option<RemoteRow>, OrigaError> {
+        let _session = self.require_session()?;
+
+        let path = Self::fetch_if_changed_path(&self.table_name, record_id, seen_updated_at);
+        let api = self.client.records(&self.table_name);
+        let rows: Vec<serde_json::Value> = api.list_by_path(&path).await.map_err(map_auth_error)?;
+
+        // The filters target the exact row; an empty answer means no
+        // change. A row deleted server-side also answers empty — that
+        // difference is detected by the periodic full check (the valve),
+        // same class of bounded freshness as clock skew.
+        let Some(row) = rows.into_iter().next() else {
+            return Ok(None);
+        };
+        remote_row_from_value(row).map(Some)
     }
 }
 
@@ -281,7 +342,14 @@ pub(crate) fn user_to_json(
         "jlpt_progress": jlpt_progress_json,
         "telegram_user_id": user.telegram_user_id().copied().map(|id| id as i64),
         "knowledge_set": knowledge_set_wire,
-        "updated_at": user.updated_at().to_rfc3339(),
+        // Wire-bump: every push carries a fresh stamp — the delta probe's
+        // invariant is "content changed ⟹ updated_at changed", and the
+        // domain mutators (rate_card et al.) do NOT touch updated_at.
+        // Pushing by definition means content changed, so the stamp is set
+        // here, at the wire boundary, once for every mutator. The wire
+        // fingerprint deliberately excludes this column (see
+        // `wire_fingerprint`), so skip matching is unaffected.
+        "updated_at": chrono::Utc::now().to_rfc3339(),
         "imported_sets": imported_sets_json,
         "daily_load": i32::from(*user.daily_load()),
         "known_vocab_hash": user.known_vocab_hash() as i32,
@@ -331,6 +399,14 @@ impl UserRepository for TrailBaseUserRepository {
 impl RemoteUserSource for TrailBaseUserRepository {
     async fn find_current_raw(&self) -> Result<Option<RemoteRow>, OrigaError> {
         TrailBaseUserRepository::find_current_raw(self).await
+    }
+
+    async fn fetch_if_changed(
+        &self,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> Result<Option<RemoteRow>, OrigaError> {
+        TrailBaseUserRepository::fetch_if_changed(self, record_id, seen_updated_at).await
     }
 
     async fn save_with_record_id(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {

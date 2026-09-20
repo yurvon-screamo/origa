@@ -12,6 +12,7 @@ use std::sync::{Arc, Mutex};
 use futures::future::poll_fn;
 use origa::domain::{OrigaError, User};
 use origa::traits::UserRepository;
+use origa::use_cases::PROBE_SKIP_FULL_CHECK_INTERVAL;
 use serde_json::{Value, json};
 use ulid::Ulid;
 
@@ -79,6 +80,11 @@ struct SpyRemote {
     fetches: Arc<Mutex<usize>>,
     pushes: Arc<Mutex<Vec<i64>>>,
     creates: Arc<Mutex<Vec<Ulid>>>,
+    probes: Arc<Mutex<usize>>,
+    /// Programmed delta-probe verdict for the NEXT probe call; `None`
+    /// derives the answer from the stored rows (id match + `$gt` on
+    /// `updated_at`, mirroring the server-side filter).
+    probe_answer: Mutex<Option<Result<bool, OrigaError>>>,
     normalize_on_save: bool,
     fail_pushes: bool,
     /// Hook executed right after a push lands — used to simulate a
@@ -93,10 +99,27 @@ impl SpyRemote {
             fetches: Arc::new(Mutex::new(0)),
             pushes: Arc::new(Mutex::new(Vec::new())),
             creates: Arc::new(Mutex::new(Vec::new())),
+            probes: Arc::new(Mutex::new(0)),
+            probe_answer: Mutex::new(None),
             normalize_on_save: false,
             fail_pushes: false,
             on_push: None,
         }
+    }
+
+    /// The row a probe for `record_id` with `seen_updated_at` would answer,
+    /// derived from the stored rows exactly like the server-side filter:
+    /// the row with that id whose `updated_at` sorts past the stamp.
+    fn probe_row(&self, record_id: i64, seen_updated_at: &str) -> Option<Value> {
+        let rows = self.rows.lock().unwrap();
+        rows.iter()
+            .find(|row| row.get("id").and_then(Value::as_i64) == Some(record_id))
+            .filter(|row| {
+                row.get("updated_at")
+                    .and_then(Value::as_str)
+                    .is_some_and(|ts| ts > seen_updated_at)
+            })
+            .cloned()
     }
 
     fn row_for_fetch(&self) -> Result<Option<RemoteRow>, OrigaError> {
@@ -158,6 +181,32 @@ impl RemoteUserSource for SpyRemote {
         self.creates.lock().unwrap().push(user.id());
         Ok(record_id)
     }
+
+    async fn fetch_if_changed(
+        &self,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> Result<Option<RemoteRow>, OrigaError> {
+        *self.probes.lock().unwrap() += 1;
+        let verdict = self
+            .probe_answer
+            .lock()
+            .unwrap()
+            .clone()
+            .unwrap_or_else(|| Ok(self.probe_row(record_id, seen_updated_at).is_some()));
+        match verdict {
+            Err(e) => Err(e),
+            Ok(false) => Ok(None),
+            Ok(true) => {
+                let row = self.probe_row(record_id, seen_updated_at).ok_or_else(|| {
+                    OrigaError::RepositoryError {
+                        reason: "programmed probe-fire but no matching row".to_string(),
+                    }
+                })?;
+                remote_row_from_value(row).map(Some)
+            },
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -204,7 +253,7 @@ async fn prime_synced_state(
 // ═══════════════════════════════════════════════════════════════════════
 
 #[test]
-fn unchanged_state_performs_no_writes_and_single_fetch() {
+fn unchanged_state_skips_by_delta_probe_without_the_full_download() {
     let local = SpyLocal::with_user(fixture_user("a@example.com"));
     let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
     let meta = MetaStore::default();
@@ -217,8 +266,13 @@ fn unchanged_state_performs_no_writes_and_single_fetch() {
     let saves_before = local.save_count();
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("steady-state sync");
 
-    // Assert: one raw fetch, zero local saves, zero pushes.
-    assert_eq!(*remote.fetches.lock().unwrap(), fetches_before + 1);
+    // Assert: one delta probe, ZERO full fetches, zero writes anywhere.
+    assert_eq!(*remote.probes.lock().unwrap(), 1, "exactly one probe");
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before,
+        "the steady state must not download the row"
+    );
     assert_eq!(
         remote.pushes.lock().unwrap().len(),
         pushes_before,
@@ -230,6 +284,8 @@ fn unchanged_state_performs_no_writes_and_single_fetch() {
         "steady state must not write the local user"
     );
     assert!(remote.creates.lock().unwrap().is_empty());
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert_eq!(stored.probe_skips_since_full, 1, "the skip is counted");
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -249,14 +305,15 @@ fn first_sync_is_full_and_records_server_fingerprint() {
     assert!(stored.last_synced_fingerprint.is_some());
 
     // The recorded fingerprint must match what the server currently holds:
-    // a follow-up sync with no changes skips.
+    // a follow-up sync skips via the probe without any full fetch.
     let fetches = *remote.fetches.lock().unwrap();
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
     assert_eq!(
         *remote.fetches.lock().unwrap(),
-        fetches + 1,
-        "second sync must only fetch (skip), not push"
+        fetches,
+        "second sync must only probe (empty answer), not fetch"
     );
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
 }
 
 #[test]
@@ -290,10 +347,12 @@ fn remote_change_takes_full_path() {
     let meta = MetaStore::default();
     futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
 
-    // Another device changes the remote row's content.
+    // Another device changes the remote row's content — a compliant writer
+    // bumps the `updated_at` stamp with it (the wire bump in user_to_json).
     {
         let mut rows = remote.rows.lock().unwrap();
         rows[0]["username"] = json!("changed-elsewhere");
+        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
     }
 
     let pushes_before = remote.pushes.lock().unwrap().len();
@@ -313,10 +372,12 @@ fn no_remote_row_creates_from_local_and_records_fingerprint() {
     let stored = futures::executor::block_on(meta.load()).expect("meta");
     assert!(stored.last_synced_fingerprint.is_some());
 
-    // Second sync: remote now matches the last sync → skip.
+    // Second sync: remote now matches the last sync → the probe answers
+    // empty and no full fetch runs.
     let fetches = *remote.fetches.lock().unwrap();
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
-    assert_eq!(*remote.fetches.lock().unwrap(), fetches + 1);
+    assert_eq!(*remote.fetches.lock().unwrap(), fetches);
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
     assert_eq!(remote.pushes.lock().unwrap().len(), 0);
 }
 
@@ -410,12 +471,13 @@ fn duplicate_server_rows_resolve_to_smallest_id() {
     assert_eq!(*remote.pushes.lock().unwrap(), vec![3]);
 
     // Settle: after the min-id push the recorded fingerprint matches the
-    // min-id row, so a second sync skips instead of flapping between the
-    // duplicate rows.
+    // min-id row, so a second sync probes once and skips instead of
+    // flapping between the duplicate rows.
     let fetches = *remote.fetches.lock().unwrap();
     let pushes = remote.pushes.lock().unwrap().len();
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
-    assert_eq!(*remote.fetches.lock().unwrap(), fetches + 1);
+    assert_eq!(*remote.fetches.lock().unwrap(), fetches);
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
     assert_eq!(remote.pushes.lock().unwrap().len(), pushes);
 }
 
@@ -459,11 +521,205 @@ fn restore_from_remote_does_not_push_back() {
     assert!(remote.creates.lock().unwrap().is_empty());
     assert_eq!(local.save_count(), 1);
 
-    // And it settles: a second sync skips.
+    // And it settles: the restore recorded the probe fields, so a second
+    // sync is a single cheap probe — no fetch, no push.
     let fetches = *remote.fetches.lock().unwrap();
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
-    assert_eq!(*remote.fetches.lock().unwrap(), fetches + 1);
+    assert_eq!(*remote.fetches.lock().unwrap(), fetches);
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
     assert!(remote.pushes.lock().unwrap().is_empty());
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(
+        stored.probe_target().is_some(),
+        "restore must record the probe fields"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Delta probe (ADR-045 Future work)
+// ═══════════════════════════════════════════════════════════════════════
+
+#[test]
+fn changed_remote_row_costs_the_probe_and_one_refetch_not_two_downloads() {
+    // A compliant writer changed content AND bumped the stamp: the probe
+    // fires and RETURNS the row — sync_merge must use it directly. The
+    // only additional full fetch is the post-push fingerprint re-fetch
+    // (server-authoritative by ADR-045), i.e. the changed path costs the
+    // same as before the probe existed.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    {
+        let mut rows = remote.rows.lock().unwrap();
+        rows[0]["username"] = json!("changed-elsewhere");
+        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
+    }
+
+    let fetches_before = *remote.fetches.lock().unwrap();
+    let pushes_before = remote.pushes.lock().unwrap().len();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("full sync");
+
+    assert_eq!(*remote.probes.lock().unwrap(), 1, "one probe");
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before + 1,
+        "probe-returned row + post-push fingerprint re-fetch only"
+    );
+    assert!(remote.pushes.lock().unwrap().len() > pushes_before);
+}
+
+#[test]
+fn false_probe_alarm_self_heals_via_the_skip_branch() {
+    // Stamp bumped, content identical (fingerprint still matches): the
+    // probe fires, the skip branch runs, heals `last_seen_updated_at` from
+    // the row in hand — the NEXT trigger is a single cheap probe again
+    // instead of a permanent alarm loop.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    // Only the stamp moves; the fingerprint-relevant content does not.
+    {
+        let mut rows = remote.rows.lock().unwrap();
+        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
+    }
+
+    let fetches_before = *remote.fetches.lock().unwrap();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("alarm sync");
+    assert_eq!(*remote.probes.lock().unwrap(), 1, "the alarm fired");
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before,
+        "skip branch: the probe already carried the row, no fetch needed"
+    );
+    let healed = futures::executor::block_on(meta.load()).expect("meta");
+    assert_eq!(
+        healed.last_seen_updated_at.as_deref(),
+        Some("2026-09-21T10:00:00+00:00"),
+        "the stamp must be healed from the row"
+    );
+
+    // Next trigger: back to the cheap probe skip.
+    let probes = *remote.probes.lock().unwrap();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("settled sync");
+    assert_eq!(*remote.probes.lock().unwrap(), probes + 1);
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before,
+        "no full fetch after healing"
+    );
+}
+
+#[test]
+fn probe_error_fails_open_to_the_full_fetch() {
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    *remote.probe_answer.lock().unwrap() = Some(Err(OrigaError::NetworkError {
+        url: "https://app.example.net".to_string(),
+        reason: "simulated probe transport failure".to_string(),
+    }));
+
+    let fetches_before = *remote.fetches.lock().unwrap();
+    let pushes_before = remote.pushes.lock().unwrap().len();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("fail-open sync");
+
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before + 1,
+        "a failed probe must fall back to the full fetch"
+    );
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        pushes_before,
+        "nothing changed → fingerprint skip, no push"
+    );
+}
+
+#[test]
+fn probe_valve_forces_a_full_check_after_the_interval() {
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    // Exhaust the valve: PROBE_SKIP_FULL_CHECK_INTERVAL cheap skips.
+    for _ in 0..PROBE_SKIP_FULL_CHECK_INTERVAL {
+        futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("cheap skip");
+    }
+    let fetches_before = *remote.fetches.lock().unwrap();
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert_eq!(
+        stored.probe_skips_since_full, PROBE_SKIP_FULL_CHECK_INTERVAL,
+        "the counter reaches the valve"
+    );
+
+    // The next trigger ignores the probe's empty answer and runs the full
+    // check; recording the row resets the counter.
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("valve sync");
+    assert!(
+        *remote.fetches.lock().unwrap() > fetches_before,
+        "the valve must force the full fetch path"
+    );
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert_eq!(stored.probe_skips_since_full, 0, "the valve resets");
+}
+
+#[test]
+fn a_newer_stale_duplicate_row_does_not_fire_the_probe() {
+    // Duplicate rows are a documented production pathology (legacy
+    // create-races). The probe targets the exact min-id row it synced
+    // with; a stale duplicate carrying a NEWER stamp must not keep the
+    // probe firing forever.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let mut canonical = fixture_row("a@example.com");
+    canonical["id"] = json!(3);
+    let mut stale_dup = fixture_row("a@example.com");
+    stale_dup["id"] = json!(9);
+    stale_dup["username"] = json!("dup-legacy");
+    stale_dup["updated_at"] = json!("2027-01-01T00:00:00+00:00"); // far newer
+    let remote = SpyRemote::new(vec![canonical, stale_dup]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+    assert_eq!(*remote.pushes.lock().unwrap(), vec![3], "primed on min-id");
+
+    let fetches_before = *remote.fetches.lock().unwrap();
+    let pushes_before = remote.pushes.lock().unwrap().len();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("steady sync");
+
+    assert_eq!(*remote.probes.lock().unwrap(), 1);
+    assert_eq!(
+        *remote.fetches.lock().unwrap(),
+        fetches_before,
+        "the newer duplicate must not trigger any full fetch"
+    );
+    assert_eq!(remote.pushes.lock().unwrap().len(), pushes_before);
+}
+
+#[test]
+fn dirty_meta_never_probes() {
+    // A dirty local must take the full path directly — probing would be
+    // wasted work, the outcome is a push regardless.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+    meta.mark_dirty_direct();
+
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("full sync");
+
+    assert_eq!(
+        *remote.probes.lock().unwrap(),
+        0,
+        "dirty state must skip the probe entirely"
+    );
+    assert!(!remote.pushes.lock().unwrap().is_empty());
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -523,6 +779,16 @@ impl RemoteUserSource for YieldOnceRemote {
 
     async fn create(&self, user: &User) -> Result<i64, OrigaError> {
         self.inner.create(user).await
+    }
+
+    async fn fetch_if_changed(
+        &self,
+        record_id: i64,
+        seen_updated_at: &str,
+    ) -> Result<Option<RemoteRow>, OrigaError> {
+        self.inner
+            .fetch_if_changed(record_id, seen_updated_at)
+            .await
     }
 }
 

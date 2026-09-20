@@ -25,9 +25,15 @@ impl<C: AuthRequestClient> RecordApi<C> {
             urlencoding::encode(column),
             urlencoding::encode(value)
         );
+        self.list_by_path(&path).await
+    }
+
+    /// Lists records by a fully-built filter path (used by the delta
+    /// probe, which targets one row by id + updated_at).
+    pub async fn list_by_path<T: DeserializeOwned>(&self, path: &str) -> Result<Vec<T>, AuthError> {
         let response = self
             .client
-            .request_with_auth(&path, Method::GET, None::<&()>)
+            .request_with_auth(path, Method::GET, None::<&()>)
             .await?;
 
         #[derive(Deserialize)]

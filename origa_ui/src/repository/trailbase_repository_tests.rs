@@ -143,3 +143,46 @@ fn sync_repository_client_carries_the_sync_idle_budget() {
         crate::utils::net_timeout::SYNC_IDLE_TIMEOUT_MS
     );
 }
+
+#[test]
+fn probe_path_targets_the_exact_row_with_percent_encoded_stamp() {
+    // The `+00:00` timezone suffix MUST travel percent-encoded: the qs
+    // parser turns a raw `+` into a space, the server would compare
+    // against a mangled stamp, and the probe would silently degrade to
+    // the safety valve (a false alarm every single sync).
+    let path = TrailBaseUserRepository::fetch_if_changed_path(
+        "domain_user",
+        7,
+        "2026-09-20T10:00:00+00:00",
+    );
+
+    assert!(path.starts_with("/api/records/v1/domain_user?"));
+    assert!(path.contains("filter[id][$eq]=7"));
+    assert!(path.contains("limit=1"));
+    assert!(
+        path.contains("filter[updated_at][$gt]=2026-09-20T10%3A00%3A00%2B00%3A00"),
+        "the stamp must be percent-encoded (+ → %2B, : → %3A), got: {path}"
+    );
+    assert!(
+        !path.contains("+00:00"),
+        "no raw plus may survive in the query string"
+    );
+}
+
+#[test]
+fn user_to_json_bumps_updated_at_on_the_wire() {
+    // The delta probe's invariant: pushing means content changed, so the
+    // wire stamp is always fresh — the domain mutators (rate_card et al.)
+    // do not touch updated_at, the bump happens here, once, for all of
+    // them.
+    let user = fixture_user();
+
+    let body = user_to_json(&user, "00000000-0000-0000-0000-000000000005").expect("user_to_json");
+    let wire_stamp = body["updated_at"].as_str().expect("wire updated_at");
+    let parsed = chrono::DateTime::parse_from_rfc3339(wire_stamp).expect("RFC3339 stamp");
+
+    assert!(
+        parsed > chrono::Utc::now() - chrono::Duration::seconds(5),
+        "the wire stamp must be the push moment, got: {wire_stamp}"
+    );
+}

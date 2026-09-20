@@ -23,12 +23,35 @@ use serde::{Deserialize, Serialize};
 /// - `last_synced_fingerprint` is computed from the **server-authoritative**
 ///   row bytes re-fetched after a successful push, never from the request
 ///   body: server-side normalization would otherwise break skip matching.
+/// - `last_synced_record_id` + `last_seen_updated_at` identify the exact
+///   server row the fingerprint belongs to, enabling the delta probe (a
+///   skip-path without the multi-megabyte download). Both are recorded
+///   from server-authoritative rows only. The new fields carry
+///   `#[serde(default)]`: records persisted before this feature upgrade
+///   transparently, and older readers ignore unknown fields (downgrade
+///   safe — do not add `deny_unknown_fields`).
+/// - `probe_skips_since_full` counts consecutive delta-probe skips; every
+///   [`PROBE_SKIP_FULL_CHECK_INTERVAL`]th skip forces one full check — the
+///   bounded safety valve for every false-negative class the probe can
+///   have (cross-device clock skew, timestamp collisions, format drift,
+///   server-side row deletion).
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SyncMeta {
     pub last_synced_fingerprint: Option<String>,
     pub dirty: bool,
     pub dirty_epoch: u64,
+    #[serde(default)]
+    pub last_synced_record_id: Option<i64>,
+    #[serde(default)]
+    pub last_seen_updated_at: Option<String>,
+    #[serde(default)]
+    pub probe_skips_since_full: u32,
 }
+
+/// Consecutive delta-probe skips after which one full check runs anyway.
+/// Bounds the staleness of every probe false-negative class to this many
+/// sync triggers, without injecting a clock into the orchestration.
+pub const PROBE_SKIP_FULL_CHECK_INTERVAL: u32 = 20;
 
 impl SyncMeta {
     /// Initial state for a fresh install or a pre-sync-feature upgrade:
@@ -39,6 +62,7 @@ impl SyncMeta {
             last_synced_fingerprint: None,
             dirty: true,
             dirty_epoch: 0,
+            ..Default::default()
         }
     }
 
@@ -46,6 +70,24 @@ impl SyncMeta {
     /// remote row with `remote_fingerprint`.
     pub fn should_skip(&self, remote_fingerprint: &str) -> bool {
         !self.dirty && self.last_synced_fingerprint.as_deref() == Some(remote_fingerprint)
+    }
+
+    /// The delta-probe target: the exact server row to re-check, when the
+    /// state is clean and both probe fields are known. `None` disables the
+    /// probe — fresh installs and pre-upgrade records take the full path
+    /// until the first full sync records the fields (fail-closed on the
+    /// new mechanics).
+    pub fn probe_target(&self) -> Option<(i64, &str)> {
+        if self.dirty {
+            return None;
+        }
+        match (
+            self.last_synced_record_id,
+            self.last_seen_updated_at.as_deref(),
+        ) {
+            (Some(record_id), Some(updated_at)) => Some((record_id, updated_at)),
+            _ => None,
+        }
     }
 
     /// Records a local mutation: the next sync must take the full path.
@@ -70,6 +112,17 @@ impl SyncMeta {
             self.dirty = false;
         }
     }
+
+    /// Records the delta-probe bookkeeping from a server-authoritative
+    /// row: the exact row the fingerprint belongs to and its `updated_at`
+    /// stamp. Called on every path that has seen a full row (the
+    /// fingerprint-skip branch included — that is what makes a false probe
+    /// alarm self-healing) and resets the skip counter.
+    pub fn record_probe_row(&mut self, record_id: i64, updated_at: String) {
+        self.last_synced_record_id = Some(record_id);
+        self.last_seen_updated_at = Some(updated_at);
+        self.probe_skips_since_full = 0;
+    }
 }
 
 #[cfg(test)]
@@ -81,6 +134,7 @@ mod tests {
             last_synced_fingerprint: Some(fingerprint.to_string()),
             dirty: false,
             dirty_epoch: 3,
+            ..Default::default()
         }
     }
 
@@ -168,5 +222,58 @@ mod tests {
         meta.mark_dirty();
         meta.mark_dirty();
         assert_eq!(meta.dirty_epoch, before + 2);
+    }
+
+    #[test]
+    fn pre_probe_meta_json_upgrades_transparently() {
+        // A record persisted before the delta probe existed decodes with
+        // the probe fields defaulted: the probe stays off until the first
+        // full sync records them (fail-closed on the new mechanics).
+        let legacy = r#"{
+            "last_synced_fingerprint": "fp1",
+            "dirty": false,
+            "dirty_epoch": 3
+        }"#;
+        let meta: SyncMeta = serde_json::from_str(legacy).expect("legacy meta decodes");
+        assert_eq!(meta.last_synced_fingerprint.as_deref(), Some("fp1"));
+        assert!(!meta.dirty);
+        assert_eq!(meta.probe_target(), None, "no probe fields → no probe");
+        assert_eq!(meta.probe_skips_since_full, 0);
+    }
+
+    #[test]
+    fn probe_target_requires_clean_state_and_both_fields() {
+        let mut meta = synced_meta("fp1");
+        assert_eq!(meta.probe_target(), None, "no probe fields yet");
+
+        meta.record_probe_row(7, "2026-09-20T10:00:00+00:00".to_string());
+        assert_eq!(
+            meta.probe_target(),
+            Some((7, "2026-09-20T10:00:00+00:00")),
+            "clean meta with both fields probes"
+        );
+
+        meta.mark_dirty();
+        assert_eq!(meta.probe_target(), None, "dirty meta never probes");
+    }
+
+    #[test]
+    fn record_probe_row_resets_the_skip_counter() {
+        let mut meta = synced_meta("fp1");
+        meta.probe_skips_since_full = 19;
+        meta.record_probe_row(7, "2026-09-20T10:00:00+00:00".to_string());
+        assert_eq!(meta.probe_skips_since_full, 0);
+    }
+
+    #[test]
+    fn new_fields_are_downgrade_safe() {
+        // Older readers must be able to ignore the probe fields — the
+        // serialized form keeps working if this ever needs asserting in a
+        // cross-version test. Here: roundtrip preserves everything.
+        let mut meta = synced_meta("fp1");
+        meta.record_probe_row(42, "2026-09-20T10:00:00+00:00".to_string());
+        let json = serde_json::to_string(&meta).expect("serialize");
+        let back: SyncMeta = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(meta, back);
     }
 }
