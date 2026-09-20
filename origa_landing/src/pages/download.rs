@@ -14,12 +14,15 @@ use crate::content::Locale;
 // is live; no direct-download link is published.
 const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
-const DOWNLOAD_LINUX_FLATPAK: &str =
-    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak";
-// One-liner shown on the Linux card: the bundle carries a runtime-repo
-// reference, so flatpak pulls the GNOME runtime automatically (ADR-056).
+const DOWNLOAD_LINUX_DEB: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb";
+const DOWNLOAD_LINUX_RPM: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm";
+const DOWNLOAD_AUR: &str = "https://aur.archlinux.org/packages/origa-bin";
+// Fedora one-liner shown on the Linux card's terminal chip: the rpm channel
+// keeps the in-app updater, dnf covers the initial install (ADR-058).
 fn download_linux_terminal_cmd() -> String {
-    format!("curl -LO {DOWNLOAD_LINUX_FLATPAK} && flatpak install --user ./Origa_amd64.flatpak")
+    format!("sudo dnf install {DOWNLOAD_LINUX_RPM}")
 }
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
@@ -100,11 +103,22 @@ pub fn DownloadPage() -> impl IntoView {
                     icon=view! { <IconLinux /> }.into_any()
                     name=c.download_linux
                     formats=c.download_linux_formats
-                    href=DOWNLOAD_LINUX_FLATPAK
+                    href=DOWNLOAD_LINUX_DEB
                     button_text=c.download_button
                     umami_event="download_linux"
                     terminal_label=c.download_linux_terminal
                     terminal_cmd=download_linux_terminal_cmd()
+                />
+                // Arch — the AUR helper is the update channel (ADR-058): the
+                // in-app updater skips systems without dpkg/rpm, so the card
+                // links the AUR package instead of a binary asset.
+                <DownloadCard
+                    icon=view! { <IconLinux /> }.into_any()
+                    name=c.download_linux_aur
+                    formats=c.download_linux_aur_formats
+                    href=DOWNLOAD_AUR
+                    button_text=c.download_button
+                    umami_event="download_linux_aur"
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
@@ -138,7 +152,7 @@ fn DownloadCard(
     // with a real download button; "coming soon" cards have nothing to track.
     #[prop(optional)] umami_event: Option<&'static str>,
     // Optional terminal one-liner rendered as a copyable code chip under the
-    // button (used by the Linux flatpak card, ADR-056).
+    // button (used by the Linux card: Fedora dnf one-liner, ADR-058).
     #[prop(optional)] terminal_label: Option<&'static str>,
     #[prop(optional)] terminal_cmd: Option<String>,
 ) -> impl IntoView {

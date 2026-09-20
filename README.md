@@ -74,15 +74,14 @@ Direct links (latest stable release):
 | Platform | Status | Format |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Ready | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ Ready | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR](https://aur.archlinux.org/packages/origa-bin) |
 | **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Coming soon | Mac App Store |
 
-Linux (flatpak) — download and install (the GNOME runtime is pulled automatically):
+Linux — `.deb` and `.rpm` update in-app; Arch users install from the AUR (`yay -S origa-bin`). Fedora one-liner:
 
 ```sh
-curl -LO https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak
-flatpak install --user ./Origa_amd64.flatpak
+sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm
 ```
 
 > All versions support offline mode.

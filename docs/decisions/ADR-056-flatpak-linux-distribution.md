@@ -1,8 +1,12 @@
 # ADR-056: Flatpak for Linux distribution, AppImage retired
 
+> ⚠️ **Superseded (2026-09-20):** the Flatpak channel is retired — see
+> ADR-058. The AppImage retirement decision below remains historical
+> context and is not reversed.
+
 ## Status
 
-Accepted (2026-09-16)
+Accepted (2026-09-16); Flatpak channel superseded by ADR-058 (2026-09-20)
 
 ## Context
 

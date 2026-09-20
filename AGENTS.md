@@ -25,7 +25,7 @@ origa_landing/  — SSR landing site (Leptos 0.8 + Axum)
 tauri/          — Tauri v2 desktop app
 end2end/     — Playwright E2E тесты
 utils/       — CLI утилиты
-packaging/   — Flatpak-упаковка Linux-дистрибуции (ADR-056)
+packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-058)
 cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
 scripts/     — Python скрипты обработки данных
 docs/        — документация (decisions/, marketing/)
@@ -167,7 +167,7 @@ Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
 CI: lint + test + e2e + docker build (2 images: landing + ui).
 CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
-Linux-каналы: Flatpak (universal, WebKit из GNOME runtime) + `.deb` (Debian/Ubuntu); AppImage убран (ADR-056), Flatpak-сборка без self-updater (`ORIGA_APP_STORE=1`, ADR-042/056).
+Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-058, supersedes ADR-056), AppImage убран (ADR-056).
 
 **Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
 
