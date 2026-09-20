@@ -50,8 +50,12 @@ on:
         outputs:
             windows-signature:
                 value: ${{ jobs.build-windows.outputs.signature }}
-            # linux-signature removed with the AppImage channel (ADR-056): the
-            # updater manifest no longer carries a linux-x86_64 entry.
+            # linux-signature is back (ADR-056 addendum, deb channel): the
+            # updater manifest carries a linux-x86_64 entry pointing at the
+            # fixed-name Origa_amd64.deb asset. tauri-plugin-updater 2.10.0
+            # installs .deb updates via pkexec (graphical sudo fallback).
+            linux-signature:
+                value: ${{ jobs.build-linux.outputs.signature }}
 
 env:
     CARGO_TERM_COLOR: always
@@ -193,6 +197,8 @@ jobs:
         name: Build Linux
         if: contains(inputs.platforms, 'linux')
         runs-on: ubuntu-24.04
+        outputs:
+            signature: ${{ steps.signature.outputs.signature }}
         permissions:
             contents: read
         env:
@@ -274,8 +280,27 @@ jobs:
                   # name for the landing page's /releases/latest/download/
                   # <fixed> links. Single-name (no versioned copy) per ADR-025
                   # addendum. (AppImage aliases removed with the channel —
-                  # ADR-056.)
+                  # ADR-056.) The .deb.sig updater signature rides along:
+                  # Minisign signatures are content-based, so the rename does
+                  # not invalidate them. Guard matches the Windows pattern —
+                  # Dependabot builds run --no-sign and emit no .sig at all.
                   mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
+                  [ -f "deb/Origa_${VERSION}_amd64.deb.sig" ] && mv "deb/Origa_${VERSION}_amd64.deb.sig" "deb/Origa_amd64.deb.sig" || true
+
+            # Runs AFTER the alias rename (mirrors the Windows job: alias →
+            # extract). Reads from the repo root; the glob matches the deb
+            # bundle dir for the pinned --target triple.
+            - name: Extract signature
+              id: signature
+              shell: bash
+              run: |
+                  SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/deb/*.sig 2>/dev/null | head -1 || true)
+                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                    SIG_CONTENT=$(cat "$SIG_FILE")
+                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                  else
+                    echo "signature=" >> $GITHUB_OUTPUT
+                  fi
 
             - name: Upload Linux artifacts
               uses: actions/upload-artifact@v7
@@ -283,6 +308,7 @@ jobs:
                   name: linux-build
                   path: |
                       **/bundle/deb/*.deb
+                      **/bundle/deb/*.sig
                   retention-days: 7
 
     build-android:
