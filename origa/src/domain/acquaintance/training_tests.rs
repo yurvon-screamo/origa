@@ -311,24 +311,59 @@ fn subphase_advances_only_at_rotation_boundary() {
     vec![(CardType::Kanji, 3, 0), (CardType::Vocabulary, 3, 0)],
     true
 )]
-fn advance_subphase_requires_every_active_word_closed_in_forward(
-    #[case] words: Vec<(CardType, u8, u8)>,
+#[case::open_kanji_blocks_advance(
+    vec![(CardType::Kanji, 2, 0), (CardType::Vocabulary, 3, 0)],
+    false
+)]
+#[case::open_grammar_blocks_advance(
+    vec![(CardType::Vocabulary, 3, 0), (CardType::Grammar, 1, 0)],
+    false
+)]
+fn advance_subphase_requires_every_active_entry_closed(
+    #[case] entries: Vec<(CardType, u8, u8)>,
     #[case] expected: bool,
 ) {
     // Arrange
-    let ids: Vec<Ulid> = (0..words.len()).map(|_| Ulid::new()).collect();
-    let entries: Vec<(Ulid, CardType, u8, u8)> = ids
+    let ids: Vec<Ulid> = (0..entries.len()).map(|_| Ulid::new()).collect();
+    let hand_entries: Vec<(Ulid, CardType, u8, u8)> = ids
         .iter()
-        .zip(words)
+        .zip(entries)
         .map(|(id, (card_type, forward, reverse))| (*id, card_type, forward, reverse))
         .collect();
-    let mut hand = AcquaintanceHand::new_test(entries, Some(AcquaintanceSubphase::Forward));
+    let mut hand = AcquaintanceHand::new_test(hand_entries, Some(AcquaintanceSubphase::Forward));
 
     // Act
     let advanced = hand.advance_subphase_if_words_done();
 
-    // Assert
+    // Assert: слова — по forward-критерию, несловесные карты (кандзи,
+    // грамматика) — по общему; Reverse-витки состоят только из слов, так
+    // что смена подфазы ждёт и их закрытия (K-итерация).
     assert_eq!(advanced, expected);
+}
+
+/// Несловесная карта, добирающая критерий последней, сама открывает
+/// Reverse: смена подфазы происходит на её закрывающем ответе (K-итерация —
+/// Reverse-витки только из слов, но вход в неё не ждет лишнего витка).
+#[test]
+fn advance_subphase_triggers_on_closing_nonword_answer() {
+    // Arrange: слово закрыто, кандзи остался один успех до критерия
+    let [word, kanji] = ids();
+    let mut hand = AcquaintanceHand::new_test(
+        vec![
+            (word, CardType::Vocabulary, 3, 0),
+            (kanji, CardType::Kanji, 2, 0),
+        ],
+        Some(AcquaintanceSubphase::Forward),
+    );
+    assert!(!hand.advance_subphase_if_words_done());
+
+    // Act: закрывающий успех кандзи
+    let outcome = hand.record_answer(kanji, true).unwrap();
+
+    // Assert: смена доступна сразу на этом ответе, отдельный виток не нужен
+    assert_eq!(outcome, AnswerOutcome::Counted { progress: 3 });
+    assert!(hand.advance_subphase_if_words_done());
+    assert_eq!(hand.subphase(), Some(AcquaintanceSubphase::Reverse));
 }
 
 #[test]

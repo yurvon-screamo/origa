@@ -77,9 +77,13 @@ pub fn create_keyboard_handler(
         let is_yesno = current_card
             .map(|c| matches!(c.view(), LessonCardView::YesNo(_)))
             .unwrap_or(false);
+        // Live phrase-listen card only: a muted one (mode sampled false)
+        // degrades to the Normal phrase card and keeps the Normal keyboard
+        // semantics below — the same freeze contract as AudioRecall.
         let is_phrase_listen = current_card
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
-            .unwrap_or(false);
+            .unwrap_or(false)
+            && lesson_ctx.audio_mode_active.get();
         // Live AudioRecall card only: a degraded one (mode sampled false)
         // keeps the Normal keyboard semantics below.
         let is_audio_recall_active = current_card

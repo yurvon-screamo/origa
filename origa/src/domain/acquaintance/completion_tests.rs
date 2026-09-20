@@ -55,9 +55,10 @@ fn nonword_card_is_independent_of_word_subphases() {
     );
 }
 #[test]
-fn nonword_accumulates_progress_across_subphase_advance() {
-    // Arrange: кандзи с 1 успехом в Forward, слово с 2 — сценарий
-    // «несловесные копят единый счётчик во всех витках обеих подфаз»
+fn nonword_must_close_criterion_before_subphase_advance() {
+    // Arrange: кандзи с 1 успехом в Forward, слово с 2 — K-итерация:
+    // Reverse-витки состоят только из слов, поэтому несловесная карта
+    // закрывает свой единый счётчик ДО смены направления
     let [kanji, word] = ids();
     let mut hand = AcquaintanceHand::new_test(
         vec![
@@ -67,15 +68,18 @@ fn nonword_accumulates_progress_across_subphase_advance() {
         Some(AcquaintanceSubphase::Forward),
     );
 
-    // Act: слово закрывает Forward за всех; смена направления — на границе
+    // Act: слово закрывает Forward, но кандзи ещё открыт
     assert_eq!(
         hand.record_answer(word, true).unwrap(),
         AnswerOutcome::Counted { progress: 3 }
     );
-    assert!(hand.advance_subphase_if_words_done());
+    assert!(
+        !hand.advance_subphase_if_words_done(),
+        "открытый кандзи держит подфазу — иначе он завис бы без ротации"
+    );
 
-    // Act / Assert: успехи по кандзи в Reverse продолжают тот же счётчик
-    // и завершают его критерий; дальше — заморозка
+    // Act / Assert: кандзи добирает единый счётчик теми же ответами —
+    // закрывающий успех открывает смену, счётчик замораживается дальше
     assert_eq!(
         hand.record_answer(kanji, true).unwrap(),
         AnswerOutcome::Counted { progress: 2 }
@@ -88,6 +92,8 @@ fn nonword_accumulates_progress_across_subphase_advance() {
         hand.record_answer(kanji, true).unwrap(),
         AnswerOutcome::ProgressFrozen
     );
+    assert!(hand.advance_subphase_if_words_done());
+    assert_eq!(hand.subphase(), Some(AcquaintanceSubphase::Reverse));
 }
 
 #[test]

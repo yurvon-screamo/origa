@@ -9,6 +9,10 @@ struct LessonCardParams {
     card: Card,
     is_reversed: bool,
     grammar_info: Option<GrammarInfo>,
+    /// Grammar badge in the tags row — false for mutated word cards: the
+    /// mutation rule already leads the answer body, a tag duplicate is
+    /// noise (owner request).
+    show_grammar_badge: bool,
 }
 
 pub(in crate::pages::lesson) fn render_lesson_card(
@@ -38,12 +42,14 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 card,
                 is_reversed: false,
                 grammar_info,
+                show_grammar_badge: true,
             }
         },
         LessonCardView::Reversed(card) => LessonCardParams {
             card,
             is_reversed: true,
             grammar_info: None,
+            show_grammar_badge: true,
         },
         // AudioRecall degrades to the Normal rendering path when audio is
         // unavailable (the container decides via `audio_mode_active`); the
@@ -53,16 +59,28 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             card,
             is_reversed: false,
             grammar_info: None,
+            show_grammar_badge: true,
+        },
+        // Muted PhraseListen degrades the same way (the container gates it
+        // via `audio_mode_active`): the base phrase card renders as Normal
+        // — translations + rating buttons. The quiz fields (audio_file,
+        // options) are dropped; the Normal path builds its own phrase
+        // audio path from the phrase id.
+        LessonCardView::PhraseListen { card, .. } => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: None,
+            show_grammar_badge: true,
         },
         LessonCardView::GrammarMutated { card, grammar_info } => LessonCardParams {
             card,
             is_reversed: false,
             grammar_info: Some(grammar_info),
+            show_grammar_badge: false,
         },
         LessonCardView::Quiz(_)
         | LessonCardView::Writing(_)
         | LessonCardView::YesNo(_)
-        | LessonCardView::PhraseListen { .. }
         | LessonCardView::KanjiReadingQuiz(_)
         | LessonCardView::GrammarQuiz(_) => {
             return ().into_any();
@@ -87,6 +105,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 native_language=native_language.get()
                 known_kanji=known_kanji
                 audio_path=phrase_audio_path
+                show_grammar_badge=params.show_grammar_badge
             />
 
             <Show when=move || show_answer.get()>
@@ -109,6 +128,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
                 native_language=native_language.get()
                 known_kanji=known_kanji
                 audio_path=None
+                show_grammar_badge=params.show_grammar_badge
             />
 
             <Show when=move || show_answer.get()>

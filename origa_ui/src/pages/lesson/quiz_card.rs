@@ -213,7 +213,10 @@ pub fn QuizCardView(
                             quiz_variant == QuizVariant::Grammar
                                 && base_word_stored.get_value().is_some_and(|s| !s.is_empty())
                         }>
-                            <div class="mb-4" data-testid="lesson-grammar-base-word">
+                            <div
+                                class="mb-4 font-serif text-2xl text-[var(--fg-black)]"
+                                data-testid="lesson-grammar-base-word"
+                            >
                                 <FuriganaText
                                     text=base_word_stored.get_value().unwrap_or_default()
                                     known_kanji=known_kanji.get()

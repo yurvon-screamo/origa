@@ -167,7 +167,7 @@ Then('отображается рука знакомства с карточко
         timeout: 15_000,
     });
     await expect(page.getByTestId("acquaintance-phase-tag")).toContainText(
-        /PRESENTATION|ПОКАЗ/i,
+        /ACQUAINTANCE|ЗНАКОМСТВО/i,
     );
 });
 

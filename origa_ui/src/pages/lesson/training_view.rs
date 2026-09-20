@@ -23,6 +23,7 @@ fn do_reveal(
     ctx_stored: &StoredValue<AcquaintanceContext>,
     current_id: &Memo<Ulid>,
     showing_answer: &RwSignal<bool>,
+    muted: bool,
 ) {
     let ctx = ctx_stored.get_value();
     if ctx.state.with_untracked(|state| state.hand_finishing) {
@@ -30,7 +31,12 @@ fn do_reveal(
     }
     showing_answer.set(true);
     let card_id = current_id.get_untracked();
-    if !card_id.is_nil() {
+    // Автозвук ответа Reverse подчиняется тому же предикату, что и автозвук
+    // слова: мьют урока глушит его (баг-репорт: в мьют-режиме ответ
+    // озвучивался). Повтор остаётся доступен кнопкой озвучки в шапке.
+    if !card_id.is_nil()
+        && super::acquaintance_state::should_autoplay_word_audio(muted, is_speech_supported())
+    {
         speak_reverse_answer(&ctx, card_id);
     }
 }
@@ -80,6 +86,24 @@ fn shuffled_order(mut cards: Vec<Ulid>) -> Vec<Ulid> {
     cards
 }
 
+/// Кандидаты витка тренировки: активные карты руки; в Reverse-подфазе —
+/// только слова. K-итерация: последняя фаза РУ→ЯП не показывает кандзи и
+/// грамматику — их критерий закрыт до смены подфазы (см.
+/// `AcquaintanceHand::advance_subphase_if_words_done`), словесной ротации
+/// они не касаются.
+fn rotation_candidates(hand: &origa::domain::AcquaintanceHand) -> Vec<Ulid> {
+    let words_only = hand.subphase() == Some(AcquaintanceSubphase::Reverse);
+    hand.presentation_order()
+        .into_iter()
+        .filter(|id| {
+            hand.entry(*id).is_some_and(|entry| {
+                !entry.is_retired()
+                    && (!words_only || entry.card_type() == origa::domain::CardType::Vocabulary)
+            })
+        })
+        .collect()
+}
+
 /// Витковый порядок тренировки: presentation_order минус выведенные карты,
 /// перемешанный на каждый виток и каждую смену подфазы.
 fn build_rotation_order(ctx: &AcquaintanceContext) -> Vec<Ulid> {
@@ -89,12 +113,7 @@ fn build_rotation_order(ctx: &AcquaintanceContext) -> Vec<Ulid> {
         let Some(hand) = state.hand.as_ref() else {
             return Vec::new();
         };
-        let active: Vec<Ulid> = hand
-            .presentation_order()
-            .into_iter()
-            .filter(|id| hand.entry(*id).is_some_and(|e| !e.is_retired()))
-            .collect();
-        shuffled_order(active)
+        shuffled_order(rotation_candidates(hand))
     })
 }
 
@@ -230,9 +249,16 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
 
     // Клавиатура: те же хендлы, что у кнопок (спека §8.3). Гейты окна
     // финиша — внутри do_reveal/do_rate.
+    let muted_now = move || {
+        is_muted
+            .as_ref()
+            .map(|signal| signal.get_untracked())
+            .unwrap_or(false)
+    };
     let handle_keydown = {
         let c = ctx_stored;
         let audio_front_probe = ctx_stored.get_value().audio_front;
+        let muted_for_keys = muted_now;
         create_acquaintance_keyboard_handler(
             c.get_value(),
             showing_answer,
@@ -240,7 +266,7 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                 // Advance разрешён только в показе; в тренировке — Reveal/Rate.
                 on_advance: Box::new(|| {}),
                 on_reveal: Box::new(move || {
-                    do_reveal(&c, &current_id, &showing_answer);
+                    do_reveal(&c, &current_id, &showing_answer, muted_for_keys());
                 }),
                 on_rate: Box::new(move |remembered: bool| {
                     do_rate(
@@ -309,18 +335,31 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                     let reverse = ctx_stored.get_value().state.with(|state| {
                         state.hand.as_ref().and_then(|h| h.subphase())
                     }) == Some(AcquaintanceSubphase::Reverse);
-                    // Вопрос остаётся на стороне ответа — уменьшенным и
-                    // приглушённым сверху, под ним divider и ответ
-                    // (паттерн обычного урока, lesson_card_answer).
-                    // Приглушение — семантический класс front-dimmed, не
-                    // tailwind opacity-60: голая opacity каскадировала в
-                    // тултип кандзи и делала его полупрозрачным.
+                    // Приглушение фронта на стороне ответа — только для слов
+                    // и кандзи. Фронт грамматики — японский пример, который
+                    // и есть носитель правила: мут/прозрачность сверху
+                    // мешают сверяться с ним, пока внизу раскрыт смысл
+                    // (юзер-репорт). Приглушение — семантический класс
+                    // front-dimmed, не tailwind opacity-60: голая opacity
+                    // каскадировала в тултип кандзи и делала его
+                    // полупрозрачным.
+                    let front_is_grammar = ctx_stored
+                        .get_value()
+                        .slides
+                        .get_untracked()
+                        .iter()
+                        .any(|slide| {
+                            slide.card_id() == card_id
+                                && matches!(slide, AcquaintanceSlideData::Grammar { .. })
+                        });
                     view! {
                         <div
-                            class=move || if showing_answer.get() {
-                                "pt-1 pb-2 scale-90 origin-top front-dimmed"
-                            } else {
-                                ""
+                            class=move || {
+                                if showing_answer.get() && !front_is_grammar {
+                                    "pt-1 pb-2 scale-90 origin-top front-dimmed"
+                                } else {
+                                    ""
+                                }
                             }
                         >
                             <TrainingFrontSlide
@@ -350,7 +389,7 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                     <Button
                         variant=Signal::derive(|| ButtonVariant::Filled)
                         on_click=Callback::new(move |_| {
-                            do_reveal(&ctx_stored, &current_id, &showing_answer);
+                            do_reveal(&ctx_stored, &current_id, &showing_answer, muted_now());
                         })
                         test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
                     >
@@ -523,16 +562,23 @@ fn finish_answer(
     });
     match action {
         AfterAnswerAction::SwitchedSubphase => {
-            // Сторона сменилась в момент заполнения полосы: новый круг
-            // с нуля в перемешанном порядке. Сброс rotation_index —
-            // триггер переролла монеты: аудио-фронт в новой подфазе не
-            // достижим (Reverse всегда текстовый), бросок будет свежим
-            // при возврате в Forward следующей руки.
+            // Сторона сменилась в момент заполнения полосы: новый круг с
+            // нуля в перемешанном порядке. Порядок ПЕРЕСТРАИВАЕТСЯ из
+            // кандидатов новой подфазы (K-итерация: Reverse-витки — только
+            // слова), иначе ротация тащила бы кандзи/грамматику из
+            // Forward-порядка. Сброс rotation_index — триггер переролла
+            // монеты: аудио-фронт в новой подфазе не достижим (Reverse
+            // всегда текстовый), бросок будет свежим при возврате в
+            // Forward следующей руки.
             rotation_index.set(0);
-            training_order.set(reshuffle_avoiding_repeat(
-                prev_last,
-                training_order.get_untracked(),
-            ));
+            let candidates = ctx.state.with_untracked(|state| {
+                state
+                    .hand
+                    .as_ref()
+                    .map(rotation_candidates)
+                    .unwrap_or_default()
+            });
+            training_order.set(reshuffle_avoiding_repeat(prev_last, candidates));
         },
         AfterAnswerAction::NextCard { reshuffled } => {
             rotation_index.set(rotation_index.get_untracked() + 1);
@@ -568,6 +614,56 @@ mod rotation_tests {
         ])
         .unwrap();
         (hand, a, b)
+    }
+
+    /// K-итерация: Reverse-подфаза — только слова. Несловесные карты (кандзи,
+    /// грамматика) в кандидатов последней фазы не попадают; retired-карты
+    /// исключены из ротации в любой подфазе.
+    #[rstest::rstest]
+    #[case::reverse_excludes_kanji(CardType::Kanji)]
+    #[case::reverse_excludes_grammar(CardType::Grammar)]
+    fn rotation_candidates_in_reverse_keep_words_only(#[case] nonword_type: CardType) {
+        // Arrange: слово + несловесная карта, обе закрывают критерий
+        let word = Ulid::new();
+        let nonword = Ulid::new();
+        let mut hand = origa::domain::AcquaintanceHand::new(vec![
+            (word, CardType::Vocabulary),
+            (nonword, nonword_type),
+        ])
+        .unwrap();
+        for _ in 0..3 {
+            hand.record_answer(word, true).unwrap();
+            hand.record_answer(nonword, true).unwrap();
+        }
+
+        // Act / Assert: Forward — обе активные карты
+        let forward = rotation_candidates(&hand);
+        assert!(forward.contains(&word) && forward.contains(&nonword));
+
+        // Reverse — только слово (несловесные закрыты до смены, их в
+        // последней фазе нет)
+        assert!(hand.advance_subphase_if_words_done());
+        let reverse = rotation_candidates(&hand);
+        assert_eq!(reverse, vec![word], "Reverse-витки состоят только из слов");
+    }
+
+    #[test]
+    fn rotation_candidates_exclude_retired_cards() {
+        // Arrange: два слова, одно выведено
+        let a = Ulid::new();
+        let b = Ulid::new();
+        let mut hand = origa::domain::AcquaintanceHand::new(vec![
+            (a, CardType::Vocabulary),
+            (b, CardType::Vocabulary),
+        ])
+        .unwrap();
+        hand.retire_card(b);
+
+        // Act
+        let candidates = rotation_candidates(&hand);
+
+        // Assert
+        assert_eq!(candidates, vec![a], "retired карта не отвечает в ротации");
     }
 
     /// Полный цикл двух слов: пока не все закрыли forward — следующая

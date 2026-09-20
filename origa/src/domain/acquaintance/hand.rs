@@ -3,9 +3,11 @@
 //! Правила поведения — docs/acquaintance-mode.md, правило «Тренировка»:
 //! полные ротации случайного порядка (порядок витка принадлежит UI),
 //! критерий `CRITERION_SUCCESSSES` успехов на карту; подфазы яп→рус → рус→яп
-//! относятся только к словам, несловесные карты копят единый счётчик сквозь
-//! обе подфазы. Закрывшие критерий продолжают отвечаться: успехи заморожены,
-//! провал переоткрывает карту (шкала подфазы — в ноль).
+//! относятся только к словам. Несловесные карты копят единый счётчик и
+//! закрывают его ДО смены подфазы: Reverse-витки состоят только из слов
+//! (K-итерация), поэтому смена подфазы гейтится и их критерием тоже. Закрывшие
+//! критерий продолжают отвечаться: успехи заморожены, провал переоткрывает
+//! карту (шкала подфазы — в ноль).
 
 use crate::domain::{CardType, OrigaError};
 use ulid::Ulid;
@@ -166,27 +168,38 @@ impl AcquaintanceHand {
         })
     }
 
-    /// Смена направления слов на границе витка: переключает подфазу, если
-    /// в руке есть активные (не выведенные) слова и каждое из них закрыло
-    /// критерий Forward. Третьего направления нет, поэтому в Reverse (и в
-    /// руках без слов) всегда `false`.
+    /// Смена направления слов: переключает подфазу, если в руке есть
+    /// активные (не выведенные) слова, каждое из них закрыло критерий
+    /// Forward, И все активные несловесные карты (кандзи, грамматика)
+    /// закрыли свой единый критерий. Третьего направления нет, поэтому в
+    /// Reverse (и в руках без слов) всегда `false`.
     ///
-    /// Вызывает вызывающий (UI) ровно один раз — после последней карты
-    /// витка, вместе с перемешиванием порядка следующего витка.
+    /// Почему несловесные тоже гейтят смену: Reverse-витки состоят только
+    /// из слов (K-итерация), несловесная карта, не закрывшая критерий до
+    /// смены, больше не попадает в ротацию — а `HandCompleted` ждёт её
+    /// критерия. Без гейта рука зависала бы навсегда.
+    ///
+    /// Вызывается UI после каждого успешного ответа; переключение
+    /// происходит на ответе, закрывшем последний из открытых критериев
+    /// (слово Forward или несловесная карта) — вместе с перемешиванием
+    /// порядка следующего витка.
     pub fn advance_subphase_if_words_done(&mut self) -> bool {
         let Some(AcquaintanceSubphase::Forward) = self.subphase else {
             return false;
         };
-        let active_words: Vec<&AcquaintanceEntry> = self
-            .entries
-            .iter()
-            .filter(|entry| entry.is_word() && !entry.is_retired())
-            .collect();
-        let all_closed_forward = !active_words.is_empty()
-            && active_words.iter().all(|word| {
-                word.progress_in(Some(AcquaintanceSubphase::Forward)) >= CRITERION_SUCCESSSES
-            });
-        if all_closed_forward {
+        let mut has_active_words = false;
+        let mut criteria_open = false;
+        for entry in self.entries.iter().filter(|entry| !entry.is_retired()) {
+            if entry.is_word() {
+                has_active_words = true;
+                if entry.progress_in(Some(AcquaintanceSubphase::Forward)) < CRITERION_SUCCESSSES {
+                    criteria_open = true;
+                }
+            } else if entry.progress_in(None) < CRITERION_SUCCESSSES {
+                criteria_open = true;
+            }
+        }
+        if has_active_words && !criteria_open {
             self.subphase = Some(AcquaintanceSubphase::Reverse);
             return true;
         }

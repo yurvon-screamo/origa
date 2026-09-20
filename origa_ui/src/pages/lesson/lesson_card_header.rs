@@ -33,6 +33,11 @@ pub fn LessonCardTags(
     grammar_info: Option<GrammarInfo>,
     show_answer: Signal<bool>,
     card: Card,
+    /// Grammar badge visibility: a mutated word card shows the mutation
+    /// rule in the ANSWER body already — the tag duplicate is noise
+    /// (owner request). Normal grammar cards keep the badge.
+    #[prop(default = true)]
+    show_grammar_badge: bool,
     #[prop(optional, into)] audio: Signal<Option<CardHeaderAudio>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -59,7 +64,7 @@ pub fn LessonCardTags(
                         })
                 }}
             </Show>
-            <Show when=move || show_answer.get() && grammar_info.get_value().is_some()>
+            <Show when=move || show_answer.get() && show_grammar_badge && grammar_info.get_value().is_some()>
                 {move || {
                     grammar_info
                         .get_value()

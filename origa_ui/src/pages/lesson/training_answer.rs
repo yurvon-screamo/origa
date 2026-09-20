@@ -1,4 +1,5 @@
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceSlideData};
+use super::grammar_details_expand::GrammarDetailsExpand;
 use super::grammar_example::first_example_markdown;
 use super::kanji_card_details::KanjiCardDetails;
 use crate::ui_components::{
@@ -101,6 +102,7 @@ pub(super) fn TrainingAnswerSlide(
                             .into_any()
                     },
                     AcquaintanceSlideData::Grammar {
+                        rule_id,
                         pattern,
                         short_description,
                         examples,
@@ -115,6 +117,14 @@ pub(super) fn TrainingAnswerSlide(
                         let front_was_pattern = example.is_none();
                         let examples_stored = StoredValue::new(example.unwrap_or_default());
                         let pattern_stored = StoredValue::new(pattern);
+                        // «Подробнее» — тот же компонент, что в обычном уроке
+                        // (lesson_card_answer): полный разбор правила по
+                        // rule_id. Кнопка живёт независимо от loaded-стиля
+                        // словаря; тело раскрывается по клику (K-итерация:
+                        // раньше деталь правила была недоступна вовсе).
+                        let is_grammar_expanded = RwSignal::new(false);
+                        let kk_for_details = known_kanji.get_untracked();
+                        let native_for_details = ctx.native_language.get_untracked();
                         view! {
                             <h2 class="font-serif text-2xl text-[var(--fg-black)]">
                                 {short_description.clone()}
@@ -135,6 +145,17 @@ pub(super) fn TrainingAnswerSlide(
                                     variant=Signal::derive(|| MarkdownVariant::Compact)
                                 />
                             </Show>
+                            <div class="text-left">
+                                <GrammarDetailsExpand
+                                    rule_id
+                                    is_expanded=is_grammar_expanded
+                                    known_kanji=kk_for_details
+                                    native_language=native_for_details
+                                    test_id=Signal::derive(|| {
+                                        "acquaintance-grammar-details".to_string()
+                                    })
+                                />
+                            </div>
                         }
                             .into_any()
                     },
