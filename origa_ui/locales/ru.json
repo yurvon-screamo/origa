@@ -224,8 +224,8 @@
     }
   },
   "acquaintance": {
-    "phase_presentation": "ЗНАКОМСТВО · ПОКАЗ",
-    "phase_training": "ЗНАКОМСТВО · ТРЕНИРОВКА",
+    "phase_presentation": "ЗНАКОМСТВО",
+    "phase_training": "ЗНАКОМСТВО",
     "already_know": "Уже знаю",
     "confirm_known": "Отметить известной?",
     "confirm_known_message": "Карта сразу войдёт в ревью, без тренировки",

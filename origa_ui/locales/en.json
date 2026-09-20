@@ -224,8 +224,8 @@
     }
   },
   "acquaintance": {
-    "phase_presentation": "ACQUAINTANCE · PRESENTATION",
-    "phase_training": "ACQUAINTANCE · TRAINING",
+    "phase_presentation": "ACQUAINTANCE",
+    "phase_training": "ACQUAINTANCE",
     "already_know": "Already know",
     "confirm_known": "Mark as known?",
     "confirm_known_message": "The card goes straight to review, without training",

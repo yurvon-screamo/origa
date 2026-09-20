@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use leptos::task::spawn_local;
@@ -22,6 +22,19 @@ struct ActiveAudio {
 
 thread_local! {
     static CURRENT_AUDIO: RefCell<Option<ActiveAudio>> = const { RefCell::new(None) };
+
+    /// Monotonic generation of the newest audio request. Every
+    /// `stop_current_audio()` bumps it, so a superseded in-flight prefetch
+    /// task can detect it is stale and drop out instead of registering and
+    /// playing over the newer audio (bug report: on quick card transitions
+    /// the previous card's word was still audible, sometimes twice).
+    ///
+    /// INVARIANT: every audio registration path MUST call
+    /// `stop_current_audio()` (the generation bump) BEFORE `register_audio`.
+    /// A direct `register_audio` without the stop resurrects the supersede
+    /// race. All current call sites comply: `audio_player`, `audio_buttons`,
+    /// `word_audio`, and the phrase playback in `pages/lesson/lesson_card`.
+    static AUDIO_GENERATION: Cell<u64> = const { Cell::new(0) };
 }
 
 /// Detach handlers and pause a superseded or stopped audio element.
@@ -41,11 +54,24 @@ fn teardown_active_audio(active: ActiveAudio) {
 }
 
 pub fn stop_current_audio() {
+    AUDIO_GENERATION.with(|cell| cell.set(cell.get().wrapping_add(1)));
     let prev = CURRENT_AUDIO.with(|cell| cell.borrow_mut().take());
     if let Some(active) = prev {
         teardown_active_audio(active);
     }
     let _ = stop_speech();
+}
+
+/// Generation of the newest audio request at the moment of capture. An
+/// audio task holds the value from its spawn time and compares it with
+/// [`audio_generation_is_current`] after every await point: a mismatch
+/// means a newer request (or an explicit stop) superseded this task.
+pub fn current_audio_generation() -> u64 {
+    AUDIO_GENERATION.with(|cell| cell.get())
+}
+
+pub fn audio_generation_is_current(generation: u64) -> bool {
+    AUDIO_GENERATION.with(|cell| cell.get() == generation)
 }
 
 pub fn register_audio(
@@ -125,17 +151,28 @@ where
     let word_owned = word.to_string();
     let on_end_rc: Rc<RefCell<Option<F>>> = Rc::new(RefCell::new(on_end));
     // Stop synchronously before the async prefetch so a previously-playing word
-    // does not overlap the new one during the network round-trip.
+    // does not overlap the new one during the network round-trip. The stop
+    // also bumps the audio generation, arming the staleness checks below: a
+    // task that loses the race to a newer request must not register or play.
     stop_current_audio();
+    let generation = current_audio_generation();
     spawn_local(async move {
         let blob_url = match prefetch_blob_url(&path).await {
             Ok(u) => u,
             Err(e) => {
                 warn!(word = %word_owned, error = ?e, "CDN audio prefetch failed, falling back to TTS");
-                fallback_to_tts(&word_owned, rate, &on_end_rc);
+                if audio_generation_is_current(generation) {
+                    fallback_to_tts(&word_owned, rate, &on_end_rc);
+                } else {
+                    release_superseded_on_end(&on_end_rc);
+                }
                 return;
             },
         };
+        if !audio_generation_is_current(generation) {
+            release_superseded_on_end(&on_end_rc);
+            return;
+        }
 
         let Some(audio) = web_sys::HtmlAudioElement::new().ok() else {
             fallback_to_tts(&word_owned, rate, &on_end_rc);
@@ -177,10 +214,26 @@ where
         if let Ok(promise) = audio.play() {
             if JsFuture::from(promise).await.is_err() {
                 warn!(word = %word_owned, "audio.play() rejected, falling back to TTS");
-                fallback_to_tts(&word_owned, rate, &on_end_rc);
+                if audio_generation_is_current(generation) {
+                    fallback_to_tts(&word_owned, rate, &on_end_rc);
+                } else {
+                    release_superseded_on_end(&on_end_rc);
+                }
             }
         }
     });
+}
+
+/// A superseded audio task still owes its `on_end` callback: the only
+/// consumer (`AudioButtons`) keeps its button disabled until `on_end`
+/// fires, so a silent drop would disable the button forever.
+fn release_superseded_on_end<F>(on_end: &Rc<RefCell<Option<F>>>)
+where
+    F: FnMut() + 'static,
+{
+    if let Some(mut cb) = on_end.borrow_mut().take() {
+        cb();
+    }
 }
 
 /// Drain the optional on-end callback and trigger the TTS fallback chain.

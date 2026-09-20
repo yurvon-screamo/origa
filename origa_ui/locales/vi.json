@@ -224,8 +224,8 @@
     }
   },
   "acquaintance": {
-    "phase_presentation": "LÀM QUEN · TRÌNH BÀY",
-    "phase_training": "LÀM QUEN · LUYỆN TẬP",
+    "phase_presentation": "LÀM QUEN",
+    "phase_training": "LÀM QUEN",
     "already_know": "Đã biết",
     "confirm_known": "Đánh dấu là đã biết?",
     "confirm_known_message": "Thẻ chuyển thẳng sang ôn tập, không qua luyện tập",

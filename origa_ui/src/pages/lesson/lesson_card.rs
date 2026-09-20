@@ -36,6 +36,10 @@ pub fn LessonCard(
     /// `cdn_provider::resolve_audio_url` for the gzip-on-CDN root cause.
     #[prop(into)]
     audio_path: Option<String>,
+    /// Grammar badge in the tags row: hidden for mutated word cards (the
+    /// mutation rule lives in the answer body); default keeps it.
+    #[prop(default = true)]
+    show_grammar_badge: bool,
 ) -> impl IntoView {
     let card_type = CardType::from(&card);
     let is_phrase = card_type == CardType::Phrase;
@@ -310,6 +314,7 @@ pub fn LessonCard(
                 grammar_info=grammar_info.clone()
                 show_answer=show_answer
                 card=card.clone()
+                show_grammar_badge
                 audio=audio_props
             />
             <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="lesson-card-root">
@@ -362,15 +367,25 @@ async fn play_phrase_in_lesson(path: &str, question_text: &str) {
     // Shared single-shot TTS fallback used by the drain-pattern below.
     type TtsFallback = Rc<RefCell<Option<Box<dyn FnMut()>>>>;
 
+    // Supersede guard (see word_audio::AUDIO_GENERATION): the caller stops
+    // current audio before spawning this task; a newer audio request that
+    // landed while the prefetch was in flight must stay the only voice.
+    let generation = crate::ui_components::current_audio_generation();
+
     let blob_url = match prefetch_blob_url(path).await {
         Ok(u) => u,
         Err(e) => {
             tracing::warn!(path = %path, error = ?e, "CDN phrase audio prefetch failed, falling back to TTS");
-            let reading = get_reading_from_text(question_text);
-            let _ = speak_tts_text(&reading, 1.0);
+            if crate::ui_components::audio_generation_is_current(generation) {
+                let reading = get_reading_from_text(question_text);
+                let _ = speak_tts_text(&reading, 1.0);
+            }
             return;
         },
     };
+    if !crate::ui_components::audio_generation_is_current(generation) {
+        return;
+    }
 
     let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(&blob_url) else {
         let reading = get_reading_from_text(question_text);
@@ -412,6 +427,9 @@ async fn play_phrase_in_lesson(path: &str, question_text: &str) {
     if let Ok(promise) = audio.play() {
         if JsFuture::from(promise).await.is_err() {
             tracing::warn!(path = %path, "audio.play() rejected, falling back to TTS");
+            if !crate::ui_components::audio_generation_is_current(generation) {
+                return;
+            }
             if let Some(mut cb) = tts_fallback.borrow_mut().take() {
                 cb();
             }

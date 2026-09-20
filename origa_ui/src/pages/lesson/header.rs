@@ -37,8 +37,14 @@ pub fn LessonHeader() -> impl IntoView {
             .unwrap_or(true)
     };
 
+    // Muting is an explicit user intent for silence: whatever audio is
+    // playing right now (registered element or an in-flight prefetch)
+    // stops immediately instead of finishing the current word.
     let toggle_mute = move || {
         is_muted.update(|m| *m = !*m);
+        if is_muted.get_untracked() {
+            crate::ui_components::stop_current_audio();
+        }
     };
 
     let current = Signal::derive(move || lesson_state.get().current_index + 1);

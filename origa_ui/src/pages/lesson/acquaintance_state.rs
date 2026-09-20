@@ -148,6 +148,9 @@ pub enum AcquaintanceSlideData {
     },
     Grammar {
         card_id: Ulid,
+        /// Правило грамматики: раскрывает «Подробнее» на ответе тренировки
+        /// (полное explanation/how-to-form/examples/nuances).
+        rule_id: Ulid,
         pattern: String,
         short_description: String,
         how_to_form: String,

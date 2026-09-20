@@ -111,6 +111,7 @@ pub(crate) fn build_acquaintance_slides(
                 },
                 Card::Grammar(rule) => Some(AcquaintanceSlideData::Grammar {
                     card_id: *card_id,
+                    rule_id: *rule.rule_id(),
                     pattern: rule
                         .pattern(&native_language)
                         .map(|question| question.text().to_string())

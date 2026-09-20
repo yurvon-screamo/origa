@@ -197,6 +197,7 @@ pub fn LessonCardAnswer(
                                     rule_id
                                     is_expanded=is_grammar_expanded
                                     known_kanji=known_kanji.get()
+                                    native_language=native_language
                                 />
                             }
                         })

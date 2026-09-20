@@ -639,11 +639,15 @@ fn GrammarSlide(
     let kk_for_nuances = kk.clone();
     view! {
         <div class="space-y-4" data-testid="acquaintance-grammar-slide">
-            <h2 class="font-serif text-3xl text-[var(--fg-black)]">
-                {stored_short.get_value()}
-            </h2>
-            <p class="font-mono text-sm text-[var(--fg-muted)]">
+            // Паттерн — визуальный якорь слайда (тот же вес, что слово на
+            // WordSlide): крупный serif. Локализованное описание — вторичная
+            // mono-строка (K-итерация: раньше заголовок-описание был
+            // text-3xl, а японский знак под ним — неразборным text-sm).
+            <p class="font-serif text-4xl text-[var(--fg-black)] leading-snug break-words">
                 {stored_pattern.get_value()}
+            </p>
+            <p class="font-mono text-lg text-[var(--fg-muted)]">
+                {stored_short.get_value()}
             </p>
             // Определение (explanation) идёт сразу за коротким описанием:
             // таблицы образования и примеры до объяснения не давали

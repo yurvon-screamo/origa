@@ -224,8 +224,8 @@
     }
   },
   "acquaintance": {
-    "phase_presentation": "첫만남 · 프레젠테이션",
-    "phase_training": "첫만남 · 훈련",
+    "phase_presentation": "첫만남",
+    "phase_training": "첫만남",
     "already_know": "이미 앎",
     "confirm_known": "아는 것으로 표시할까요?",
     "confirm_known_message": "훈련 없이 카드가 바로 복습으로 넘어갑니다",

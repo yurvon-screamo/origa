@@ -141,10 +141,16 @@ pub fn LessonCardContainer() -> impl IntoView {
     });
 
     let is_phrase_listen_mode = Memo::new(move |_| {
+        // Live phrase-listen quiz only: a muted showing (mode sampled
+        // false) falls through to the default branch, where the renderer
+        // maps it to the Normal phrase card — the same degradation
+        // contract as AudioRecall (mute applies to the NEXT card, never
+        // mid-answer).
         current_lesson_card
             .get()
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
             .unwrap_or(false)
+            && audio_mode_active.get()
     });
 
     let is_kanji_reading_quiz_mode = Memo::new(move |_| {

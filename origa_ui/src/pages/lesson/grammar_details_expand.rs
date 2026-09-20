@@ -3,10 +3,10 @@ use crate::ui_components::MarkdownText;
 use crate::ui_components::example_fences_to_paragraphs;
 use leptos::prelude::*;
 use origa::dictionary::grammar::get_rule_by_id;
+use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 use ulid::Ulid;
 
-use super::lesson_state::LessonContext;
 use crate::pages::grammar::grammar_warnings::GrammarWarnings;
 use crate::pages::grammar::nuances_section::NuancesSection;
 
@@ -15,11 +15,10 @@ pub fn GrammarDetailsExpand(
     rule_id: Ulid,
     is_expanded: RwSignal<bool>,
     known_kanji: HashSet<char>,
+    native_language: NativeLanguage,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let lesson_ctx = use_context::<LessonContext>().expect("LessonContext");
-    let native_lang = lesson_ctx.native_language;
     let known_kanji_stored = StoredValue::new(known_kanji);
 
     let rule = StoredValue::new(get_rule_by_id(&rule_id));
@@ -68,8 +67,7 @@ pub fn GrammarDetailsExpand(
                 {move || {
                     match rule.get_value() {
                         Some(r) => {
-                            let lang = native_lang.get();
-                            let content = r.content(&lang);
+                            let content = r.content(&native_language);
 
                             view! {
                                 <div class="mt-3 space-y-3 text-left">

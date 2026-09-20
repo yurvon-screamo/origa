@@ -94,7 +94,8 @@ pub fn LessonContent() -> impl IntoView {
         native_language.set(crate::i18n::locale_to_native_language(&i18n.get_locale()));
     });
 
-    // AudioRecall mode of the CURRENT showing, sampled once per card (see
+    // Audio-driven mode of the CURRENT showing (AudioRecall with playable
+    // audio, or an un-muted PhraseListen quiz), sampled once per card (see
     // LessonContext::audio_mode_active for the freeze rationale).
     let audio_mode_active = super::lesson_state::create_audio_mode_active(
         lesson_state,

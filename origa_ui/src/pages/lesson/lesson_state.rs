@@ -90,18 +90,21 @@ pub struct LessonContext {
     pub known_kanji: RwSignal<HashSet<char>>,
     pub native_language: RwSignal<NativeLanguage>,
     pub core_count: RwSignal<usize>,
-    /// Whether the CURRENT showing is a live AudioRecall card (view says
-    /// AudioRecall AND audio is available). Sampled once per showing with
-    /// untracked reads of mute/pitch-loader state, so those flips never
-    /// change the mode of a card mid-answer (they apply to the next card);
-    /// when `false` the card renders and behaves as `Normal` everywhere
-    /// (render, keyboard, rating) — a single source of truth, no split-brain.
+    /// Whether the CURRENT showing is a live audio-driven card (an
+    /// AudioRecall view with audio available, or a PhraseListen quiz) —
+    /// the view says audio AND the mode was sampled available for this
+    /// showing. Sampled once per showing with untracked reads of
+    /// mute/pitch-loader state, so those flips never change the mode of a
+    /// card mid-answer (they apply to the next card); when `false` the
+    /// card renders and behaves as its base view everywhere (render,
+    /// keyboard, rating) — a single source of truth, no split-brain.
     pub audio_mode_active: Memo<bool>,
 }
 
-/// Builds the per-showing AudioRecall mode signal (see
-/// `LessonContext::audio_mode_active`). Extracted as a free function so
-/// the freeze semantics are unit-testable without mounting the lesson page.
+/// Builds the per-showing audio-mode signal (see
+/// `LessonContext::audio_mode_active`): a live AudioRecall OR a live
+/// PhraseListen quiz. Extracted as a free function so the freeze semantics
+/// are unit-testable without mounting the lesson page.
 ///
 /// Reactivity contract: the outer memo depends ONLY on the showing identity
 /// (`showing_slot` = lesson generation + current index). Mute and
@@ -109,6 +112,10 @@ pub struct LessonContext {
 /// recomputes the memo, so a live card keeps its mode until the user
 /// advances (mode changes apply to the NEXT card, protecting the ADR-051
 /// rating state machine from double-rating/stuck states).
+///
+/// Per-variant availability: AudioRecall needs pitch audio OR platform TTS
+/// for the word (the audio front must be playable); PhraseListen plays a
+/// dedicated CDN phrase file, so only the lesson mute gates it.
 pub fn create_audio_mode_active(
     lesson_state: RwSignal<LessonState>,
     reload_trigger: RwSignal<u32>,
@@ -133,19 +140,22 @@ pub fn create_audio_mode_active(
         let Some(lesson_card) = state.cards.get(&slot_id) else {
             return false;
         };
-        if !matches!(
-            lesson_card.view(),
-            origa::domain::LessonCardView::AudioRecall(_)
-        ) {
-            return false;
+        match lesson_card.view() {
+            origa::domain::LessonCardView::AudioRecall(_) => {
+                let word = lesson_card
+                    .card()
+                    .question(&native_language.get_untracked())
+                    .map(|q| q.text().to_string())
+                    .unwrap_or_default();
+                !is_muted.get_untracked()
+                    && pitch_audio_ready.get_untracked()
+                    && crate::ui_components::word_audio_available(&word)
+            },
+            // The audio quiz must leave a muted lesson: the card degrades
+            // to the normal phrase rendering (translations + rating), the
+            // same contract AudioRecall follows (owner request, 2026-09).
+            origa::domain::LessonCardView::PhraseListen { .. } => !is_muted.get_untracked(),
+            _ => false,
         }
-        let word = lesson_card
-            .card()
-            .question(&native_language.get_untracked())
-            .map(|q| q.text().to_string())
-            .unwrap_or_default();
-        !is_muted.get_untracked()
-            && pitch_audio_ready.get_untracked()
-            && crate::ui_components::word_audio_available(&word)
     })
 }

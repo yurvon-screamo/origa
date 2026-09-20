@@ -2343,6 +2343,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
+            rule_id: Ulid::new(),
             pattern: "～は～です".to_string(),
             short_description: "утверждение с です".to_string(),
             how_to_form: String::new(),
@@ -2384,6 +2385,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
+            rule_id: Ulid::new(),
             pattern: "～は～です".to_string(),
             short_description: "утверждение с です".to_string(),
             how_to_form: String::new(),
@@ -2436,6 +2438,7 @@ mod acquaintance_training_fronts {
         });
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
+            rule_id: Ulid::new(),
             pattern: "～たことがある".to_string(),
             short_description: "опыт".to_string(),
             how_to_form: String::new(),
@@ -2456,6 +2459,119 @@ mod acquaintance_training_fronts {
             "фолбэк на заголовок, got: {text}"
         );
         assert!(!text.contains("опыт"), "смысл не утекает, got: {text}");
+    }
+
+    /// Грамматика не приглушается на стороне ответа: её фронт — японский
+    /// пример, носитель правила, а не вопрос-подсказка (K-итерация).
+    #[wasm_bindgen_test]
+    async fn grammar_answer_keeps_front_undimmed() {
+        // Arrange
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Grammar,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～は～です".to_string(),
+            short_description: "утверждение с です".to_string(),
+            how_to_form: String::new(),
+            examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
+            explanation: String::new(),
+            nuances: String::new(),
+        }]);
+
+        // Act
+        let wrapper = mount_training(&ctx);
+        install_front_precompute("私は学生です。");
+        tick().await;
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        // Assert: обёртка фронта без front-dimmed — пример читается в
+        // полную силу рядом с раскрытым смыслом
+        assert!(
+            wrapper.query_selector(".front-dimmed").unwrap().is_none(),
+            "фронт грамматики не приглушается на стороне ответа"
+        );
+    }
+
+    /// Ответ грамматики предлагает раскрыть полное правило — та же кнопка
+    /// «Подробнее», что в обычном уроке (K-итерация). Тело раскрывается по
+    /// клику; в wasm-окружении словарь грамматики не загружен, поэтому
+    /// проверяется аффорданс (кнопка видима и кликается без паники),
+    /// полнота контента — e2e.
+    #[wasm_bindgen_test]
+    async fn grammar_answer_offers_rule_details_expand() {
+        // Arrange
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Grammar,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～は～です".to_string(),
+            short_description: "утверждение с です".to_string(),
+            how_to_form: String::new(),
+            examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
+            explanation: String::new(),
+            nuances: String::new(),
+        }]);
+
+        // Act: раскрыть ответ, затем нажать «Подробнее»
+        let wrapper = mount_training(&ctx);
+        install_front_precompute("私は学生です。");
+        tick().await;
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+        let details = wrapper
+            .query_selector("[data-testid=\"acquaintance-grammar-details\"]")
+            .unwrap()
+            .expect("блок «Подробнее» на ответе грамматики");
+        let expand_btn = details
+            .query_selector("button")
+            .unwrap()
+            .expect("кнопка раскрытия правила");
+        expand_btn
+            .clone()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        // Assert: аффорданс есть и переживает клик (без паники на
+        // отсутствующем словаре)
+        assert!(
+            !expand_btn.text_content().unwrap().is_empty(),
+            "кнопка «Подробнее» жива после клика"
+        );
     }
 
     /// Диспетч клавиши на document: глобальный слушатель TrainingBody —
@@ -2574,6 +2690,104 @@ mod acquaintance_training_fronts {
                 .is_some(),
             "Space на текстовом фронте кандзи раскрывает ответ"
         );
+    }
+
+    /// K-итерация: смена подфазы на живом пути `finish_answer` — после
+    /// SwitchedSubphase ротация перестраивается из кандидатов НОВОЙ
+    /// подфазы, и кандзи в Reverse-показах больше не встречается.
+    /// Ловит именно баг «фильтр только при маунте»: рука стартует в
+    /// Forward, смена происходит по ходу ответов.
+    #[wasm_bindgen_test]
+    async fn reverse_rotation_after_subphase_switch_drops_nonword_cards() {
+        // Arrange: смешанная рука — слово + кандзи; оба закроют критерий
+        // успешными ответами через производственный UI
+        let ctx = acq_context();
+        let word_id = Ulid::new();
+        let kanji_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![
+                    (word_id, origa::domain::CardType::Vocabulary),
+                    (kanji_id, origa::domain::CardType::Kanji),
+                ])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![
+            AcquaintanceSlideData::Vocabulary {
+                card_id: word_id,
+                word: "読む".to_string(),
+                pos_label: None,
+                translations: vec!["читать".to_string()],
+            },
+            AcquaintanceSlideData::Kanji {
+                card_id: kanji_id,
+                kanji: "明".to_string(),
+                name: "свет".to_string(),
+                radicals: None,
+                example_words: None,
+                on_readings: None,
+                kun_readings: None,
+            },
+        ]);
+
+        // Act: гоним цикл reveal → «Помню», собирая показы Reverse-фазы
+        let wrapper = mount_training(&ctx);
+        tick().await;
+        let mut reverse_showings: Vec<String> = Vec::new();
+        for _ in 0..60 {
+            let subphase = ctx.state.get().hand.as_ref().and_then(|h| h.subphase());
+            let word_closed = ctx
+                .state
+                .get()
+                .hand
+                .as_ref()
+                .and_then(|h| h.entry(word_id))
+                .is_some_and(|entry| {
+                    entry.progress_in(Some(origa::domain::AcquaintanceSubphase::Reverse)) >= 3
+                });
+            if subphase == Some(origa::domain::AcquaintanceSubphase::Reverse) {
+                if word_closed {
+                    break;
+                }
+                if let Some(id) = current_training_card_id(&wrapper) {
+                    reverse_showings.push(id);
+                }
+            }
+
+            if let Some(btn) = wrapper
+                .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+                .unwrap()
+            {
+                btn.dyn_into::<web_sys::HtmlElement>().unwrap().click();
+                tick().await;
+            }
+            if let Some(btn) = wrapper
+                .query_selector("[data-testid=\"acquaintance-rating-remember\"]")
+                .unwrap()
+            {
+                btn.dyn_into::<web_sys::HtmlElement>().unwrap().click();
+                tick().await;
+            }
+        }
+
+        // Assert: Reverse-показы были и все — только слово
+        assert!(
+            !reverse_showings.is_empty(),
+            "Reverse-фаза достигнута и показы собраны"
+        );
+        assert!(
+            reverse_showings.iter().all(|id| id == &word_id.to_string()),
+            "после смены подфазы кандзи не показывается; got: {reverse_showings:?}"
+        );
+    }
+
+    fn current_training_card_id(wrapper: &web_sys::Element) -> Option<String> {
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-training\"]")
+            .unwrap()?
+            .get_attribute("data-card-id")
+            .filter(|id| !id.is_empty())
     }
 
     /// Детерминированная проверка audio-ветки рендера: сигнал пишется
@@ -3079,6 +3293,7 @@ mod acquaintance_presentation {
             .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
+            rule_id: Ulid::new(),
             pattern: "ぜひ".to_string(),
             short_description: "наречие".to_string(),
             how_to_form: String::new(),
@@ -3130,6 +3345,7 @@ mod acquaintance_presentation {
             .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
         ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
             card_id,
+            rule_id: Ulid::new(),
             pattern: "～は～です".to_string(),
             short_description: "Базовый паттерн".to_string(),
             how_to_form: "| Элемент |".to_string(),
@@ -3497,6 +3713,76 @@ async fn container_degrades_audio_recall_to_normal_when_mode_inactive() {
     );
 }
 
+fn lesson_state_with_phrase_listen_card()
+-> RwSignal<crate::pages::lesson::lesson_state::LessonState> {
+    use crate::pages::lesson::lesson_state::LessonState;
+    use origa::domain::{Card, LessonCard, LessonCardView, PhraseCard};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    let slot_id = Ulid::new();
+    let lesson_card = LessonCard::new(
+        slot_id,
+        LessonCardView::PhraseListen {
+            card: Card::Phrase(PhraseCard::new(Ulid::new())),
+            audio_file: "none.opus".to_string(),
+            options: vec![origa::domain::QuizOption::new(
+                "phropt1".to_string(),
+                true,
+                None,
+            )],
+        },
+        false,
+    );
+    let mut cards = HashMap::new();
+    cards.insert(slot_id, lesson_card);
+    RwSignal::new(LessonState {
+        card_ids: vec![slot_id],
+        cards,
+        ..LessonState::default()
+    })
+}
+
+/// Muted lesson: the phrase audio quiz must degrade to the normal phrase
+/// card instead of showing an unanswerable audio player (owner request).
+#[wasm_bindgen_test]
+async fn container_degrades_phrase_listen_to_normal_when_mode_inactive() {
+    let wrapper = create_wrapper();
+    let lesson_state = lesson_state_with_phrase_listen_card();
+    let ctx = lesson_context_with_audio_mode(lesson_state, false);
+    let _mount = mount_container_disposable(&wrapper, move || {
+        provide_context(ctx.clone());
+        provide_context(StoredValue::new(()));
+        view! { <super::lesson_card_container::LessonCardContainer /> }.into_any()
+    });
+    tick().await;
+
+    // The degraded phrase renders through the Normal path — the card slot
+    // is never empty, and neither the audio player nor the quiz options
+    // of the listen-quiz branch appear.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"lesson-card-root\"]")
+            .unwrap()
+            .is_some(),
+        "muted PhraseListen must render the Normal phrase card, not an empty slot"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"phrase-audio-player\"]")
+            .unwrap()
+            .is_none(),
+        "audio player must NOT render for a muted phrase listen card"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"quiz-option-0\"]")
+            .unwrap()
+            .is_none(),
+        "quiz options must NOT render for a muted phrase listen card"
+    );
+}
+
 // Freeze semantics (mode sampled once per showing): flipping the mute or
 // the pitch-loader signal must NOT recompute the mode of the CURRENT card —
 // only advancing to another showing resamples. Guards the lesson rating
@@ -3572,6 +3858,88 @@ async fn audio_mode_freezes_for_current_showing_and_resamples_on_advance() {
     assert!(
         audio_mode.get_untracked(),
         "returning to the audio card after unmute must resample it as live"
+    );
+}
+
+/// PhraseListen samples the same per-showing freeze contract: the quiz is
+/// live while unmuted, degrades when the NEXT showing is already muted,
+/// and a mid-card mute flip never changes the mode of the live card.
+#[wasm_bindgen_test]
+async fn phrase_listen_mode_degrades_when_muted_and_freezes_for_current_showing() {
+    use crate::pages::lesson::lesson_state::LessonState;
+    use origa::domain::{Card, LessonCard, LessonCardView, PhraseCard};
+    use std::collections::HashMap;
+    use ulid::Ulid;
+
+    let phrase_slot = Ulid::new();
+    let normal_slot = Ulid::new();
+    let mut cards = HashMap::new();
+    cards.insert(
+        phrase_slot,
+        LessonCard::new(
+            phrase_slot,
+            LessonCardView::PhraseListen {
+                card: Card::Phrase(PhraseCard::new(Ulid::new())),
+                audio_file: "none.opus".to_string(),
+                options: vec![origa::domain::QuizOption::new(
+                    "opt".to_string(),
+                    true,
+                    None,
+                )],
+            },
+            false,
+        ),
+    );
+    cards.insert(
+        normal_slot,
+        LessonCard::new(
+            normal_slot,
+            LessonCardView::Normal(vocab_card_fixture("猫")),
+            false,
+        ),
+    );
+    let lesson_state = RwSignal::new(LessonState {
+        card_ids: vec![phrase_slot, normal_slot],
+        cards,
+        ..LessonState::default()
+    });
+    let is_muted = RwSignal::new(false);
+    let audio_mode = super::lesson_state::create_audio_mode_active(
+        lesson_state,
+        RwSignal::new(0u32),
+        is_muted,
+        RwSignal::new(true),
+        RwSignal::new(origa::domain::NativeLanguage::Russian),
+    );
+
+    // Unmuted showing: the listen quiz is live.
+    assert!(
+        audio_mode.get_untracked(),
+        "unmuted PhraseListen must sample live"
+    );
+
+    // Mid-card mute: the live card keeps its mode until the advance.
+    is_muted.set(true);
+    assert!(
+        audio_mode.get_untracked(),
+        "muting after the showing must not degrade the live phrase quiz"
+    );
+
+    // The next showing is sampled with the mute: degraded.
+    lesson_state.update(|state| state.current_index = 1);
+    assert!(
+        !audio_mode.get_untracked(),
+        "the next card must be sampled with the new mute state"
+    );
+
+    // Discriminating case for the PhraseListen mute branch: a FRESH
+    // showing of the same phrase quiz under mute must sample degraded —
+    // proves the `!is_muted` leg of the predicate, not just the
+    // non-phrase-view fallback.
+    lesson_state.update(|state| state.current_index = 0);
+    assert!(
+        !audio_mode.get_untracked(),
+        "a resampled phrase quiz under mute must degrade to the normal card"
     );
 }
 
