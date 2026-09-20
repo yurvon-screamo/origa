@@ -3886,3 +3886,262 @@ async fn lesson_container_reveal_advance_cycle_covers_all_card_branches() {
     let completed = wait_until(|| is_completed.get_untracked(), 20, 10).await;
     assert!(completed, "the last card rating must complete the lesson");
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// «Уже знаю» confirm: dispose-mid-flight regression (disposed-signal fix)
+// ═══════════════════════════════════════════════════════════════════════
+
+mod know_confirm_dispose {
+    use super::*;
+    use crate::i18n::I18nContextProvider;
+    use crate::pages::lesson::acquaintance_state::{
+        AcquaintanceContext, AcquaintanceSlideData, AcquaintanceStage,
+    };
+    use crate::pages::lesson::acquaintance_view::AcquaintanceView;
+    use crate::repository::HybridUserRepository;
+    use crate::test_support::mount_disposable;
+    use std::cell::{Cell, RefCell};
+    use std::rc::Rc;
+    use ulid::Ulid;
+
+    thread_local! {
+        /// Set by a chained panic hook: proves a panic escaped into a
+        /// spawned task even when the test runner itself does not fail
+        /// the test on it (dev profile uses unwinding).
+        static TASK_PANIC_SEEN: Cell<bool> = const { Cell::new(false) };
+    }
+
+    fn arm_task_panic_detector() {
+        TASK_PANIC_SEEN.with(|flag| flag.set(false));
+        static INSTALL: std::sync::Once = std::sync::Once::new();
+        INSTALL.call_once(|| {
+            let previous = std::panic::take_hook();
+            std::panic::set_hook(Box::new(move |info| {
+                TASK_PANIC_SEEN.with(|flag| flag.set(true));
+                previous(info);
+            }));
+        });
+    }
+
+    fn assert_no_task_panic(context: &str) {
+        assert!(
+            !TASK_PANIC_SEEN.with(Cell::get),
+            "a panic escaped into a spawned task ({context})"
+        );
+    }
+
+    /// Presentation-slide fixture shared by the modal tests.
+    fn presentation_slide(card_id: Ulid) -> AcquaintanceSlideData {
+        AcquaintanceSlideData::Vocabulary {
+            card_id,
+            word: "私".to_string(),
+            pos_label: None,
+            translations: vec!["я".to_string()],
+        }
+    }
+
+    /// Builds the acquaintance context for a one-card presentation hand.
+    /// Must be called INSIDE the mount closure: the signals then belong
+    /// to the mounted owner, so dropping the mount handle disposes them
+    /// exactly like leaving the lesson page does.
+    fn presentation_context(card_id: Ulid, repo: HybridUserRepository) -> AcquaintanceContext {
+        let state =
+            RwSignal::new(crate::pages::lesson::acquaintance_state::AcquaintanceState::default());
+        state.update(|s| {
+            s.stage = AcquaintanceStage::Presentation;
+            s.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Vocabulary,
+                )])
+                .unwrap(),
+            );
+        });
+        AcquaintanceContext {
+            repository: repo,
+            state,
+            slides: RwSignal::new(vec![presentation_slide(card_id)]),
+            known_kanji: RwSignal::new(HashSet::new()),
+            native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
+            current_card: RwSignal::new(None),
+            showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
+        }
+    }
+
+    /// Opens the confirm modal from the know button (regression for the
+    /// user report "the modal stopped opening").
+    #[wasm_bindgen_test]
+    async fn know_confirm_modal_opens_on_button_click() {
+        let card_id = Ulid::new();
+        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
+        let ctx_cell = ctx_out.clone();
+        let wrapper = create_wrapper();
+        let handle = mount_disposable(&wrapper, move || {
+            let ctx = presentation_context(card_id, HybridUserRepository::new());
+            ctx_cell.replace(Some(ctx.clone()));
+            provide_context(ctx);
+            view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
+        });
+        let _ = handle;
+        tick().await;
+
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-know-btn\"]")
+            .unwrap()
+            .expect("know btn mounted")
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        let modal_open = wrapper
+            .query_selector("[data-testid=\"acquaintance-know-confirm\"]")
+            .unwrap()
+            .is_some();
+        assert!(modal_open, "confirm modal must open on know-btn click");
+    }
+
+    /// Disposing the page mid-confirm must not panic: the confirm task
+    /// used to read disposed signals (state/native_language) after its
+    /// awaits. The panic detector fails the test on ANY panic escaping
+    /// into a spawned task — that fail-loud behavior is intentional.
+    #[wasm_bindgen_test]
+    async fn know_confirm_survives_page_disposal_without_panic() {
+        arm_task_panic_detector();
+        let card_id = Ulid::new();
+        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
+        let ctx_cell = ctx_out.clone();
+        let wrapper = create_wrapper();
+        let handle = mount_disposable(&wrapper, move || {
+            let ctx = presentation_context(card_id, HybridUserRepository::new());
+            ctx_cell.replace(Some(ctx.clone()));
+            provide_context(ctx);
+            view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
+        });
+        let _ctx = ctx_out.borrow().clone().expect("context captured");
+        tick().await;
+
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-know-btn\"]")
+            .unwrap()
+            .expect("know btn mounted")
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-know-confirm-confirm\"]")
+            .unwrap()
+            .expect("confirm btn mounted")
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+
+        // Leave the lesson while the mark-known/replacement task is
+        // suspended at its first await.
+        drop(handle);
+
+        // Let the spawned task resume through its awaits.
+        for _ in 0..50 {
+            tick().await;
+            gloo_timers::future::TimeoutFuture::new(10).await;
+        }
+
+        assert_no_task_panic("know-confirm continuation after page dispose");
+    }
+
+    /// Persistence contract: the mark-known commit initiated by the
+    /// confirm click lands in the repository even when the page is
+    /// disposed immediately after — the confirm task deliberately stays
+    /// unscoped for exactly this reason.
+    #[wasm_bindgen_test]
+    async fn know_confirm_commits_mark_known_despite_page_disposal() {
+        use crate::test_support::test_user;
+        use origa::domain::{Card, Question, User, VocabularyCard};
+        use origa::traits::UserRepository;
+
+        let repo = HybridUserRepository::new();
+        let previous_user: Option<User> = repo.get_current_user().await.ok().flatten();
+
+        let mut user = test_user("knowconfirm");
+        let study = user
+            .create_card(Card::Vocabulary(VocabularyCard::new_with_pos(
+                Question::new("私".to_string()).unwrap(),
+                None,
+                None,
+            )))
+            .expect("study card created");
+        let card_id = *study.card_id();
+        repo.save(&user).await.expect("user seeded");
+        // The mount closure moves the repo in — keep a clone for the
+        // post-dispose repository assertions below.
+        let repo_for_asserts = repo.clone();
+
+        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
+        let ctx_cell = ctx_out.clone();
+        let wrapper = create_wrapper();
+        let handle = mount_disposable(&wrapper, move || {
+            let ctx = presentation_context(card_id, repo.clone());
+            ctx_cell.replace(Some(ctx.clone()));
+            provide_context(ctx);
+            view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
+        });
+        let _ctx = ctx_out.borrow().clone().expect("context captured");
+        tick().await;
+
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-know-btn\"]")
+            .unwrap()
+            .expect("know btn mounted")
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-know-confirm-confirm\"]")
+            .unwrap()
+            .expect("confirm btn mounted")
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        drop(handle);
+
+        // Async poll: the repository read is itself async, so the shared
+        // sync wait_until cannot drive it — poll manually with bounded
+        // attempts.
+        let mut known = false;
+        for _ in 0..100 {
+            tick().await;
+            gloo_timers::future::TimeoutFuture::new(20).await;
+            if let Ok(Some(current)) = repo_for_asserts.get_current_user().await {
+                if current
+                    .knowledge_set()
+                    .get_card(card_id)
+                    .is_some_and(|card| card.memory().is_known_card())
+                {
+                    known = true;
+                    break;
+                }
+            }
+        }
+        assert!(
+            known,
+            "mark-known must commit although the page was disposed mid-confirm"
+        );
+
+        // Record-level cleanup: restore the previous current user (or
+        // drop the seeded one) so other tests see the store as it was.
+        match previous_user {
+            Some(previous) => {
+                repo_for_asserts
+                    .save(&previous)
+                    .await
+                    .expect("previous user restored");
+            },
+            None => {
+                let _ = repo_for_asserts.delete(user.id()).await;
+            },
+        }
+    }
+}

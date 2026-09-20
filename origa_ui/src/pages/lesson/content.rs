@@ -16,6 +16,7 @@ use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos::task::spawn_local_scoped_with_cancellation;
 use origa::domain::{Card, LessonEmptyDiagnosis, diagnose_empty_lesson};
 use origa::traits::UserRepository;
 use origa::use_cases::SelectAcquaintanceHandUseCase;
@@ -196,7 +197,15 @@ pub fn LessonContent() -> impl IntoView {
         }
 
         let repo = repository.clone();
-        spawn_local(async move {
+        // Scoped: this task builds the lesson for the CURRENT page mount
+        // and reads page signals (native_language, resolved_mode) after
+        // awaits. Scoped to the effect's run owner it is cancelled on
+        // unmount AND on effect rerun — a stale in-flight reload can no
+        // longer race a fresh one or read disposed signals. The
+        // is_disposed guards below stay as belt-and-suspenders; the
+        // phrase-cleanup save is idempotent and re-runs on the next
+        // lesson load, so cancelling it is safe.
+        spawn_local_scoped_with_cancellation(async move {
             if is_disposed.is_disposed() {
                 return;
             }
