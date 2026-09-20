@@ -181,6 +181,7 @@ mod tests {
             last_synced_fingerprint: Some("fp".to_string()),
             dirty: false,
             dirty_epoch: 4,
+            ..Default::default()
         };
         futures::executor::block_on(store.store(&meta)).expect("store");
         let loaded = futures::executor::block_on(store.load()).expect("load");

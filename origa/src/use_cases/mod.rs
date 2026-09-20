@@ -56,7 +56,7 @@ pub use seed_ready_phrases::collect_known_grammar_rules;
 pub use seed_ready_phrases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};
 pub use select_acquaintance_hand::SelectAcquaintanceHandUseCase;
 pub use select_cards_to_lesson::SelectCardsToLessonUseCase;
-pub use sync::SyncMeta;
+pub use sync::{PROBE_SKIP_FULL_CHECK_INTERVAL, SyncMeta};
 pub use take_acquaintance_replacement::TakeAcquaintanceReplacementUseCase;
 pub use toggle_favorite::ToggleFavoriteUseCase;
 pub use transcribe_audio::TranscribeAudioUseCase;

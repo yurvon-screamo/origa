@@ -57,6 +57,7 @@ async fn sync_meta_roundtrip_and_missing_fallback() {
         last_synced_fingerprint: Some("abc123".to_string()),
         dirty: false,
         dirty_epoch: 7,
+        ..Default::default()
     };
     store.store(&meta).await.expect("store");
     assert_eq!(store.load().await.expect("load stored"), meta);
@@ -81,6 +82,7 @@ async fn sync_meta_key_stays_out_of_user_listings() {
             last_synced_fingerprint: Some("fp".to_string()),
             dirty: false,
             dirty_epoch: 1,
+            ..Default::default()
         })
         .await
         .expect("meta stored");
