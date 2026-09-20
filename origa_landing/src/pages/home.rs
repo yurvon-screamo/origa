@@ -18,6 +18,18 @@ pub fn HomePage() -> impl IntoView {
     let features_href = format!("{prefix}/features");
     let download_href = format!("{prefix}/download");
 
+    // Real app screens, one per slide: the fastest way for a visitor to
+    // see what the product actually is. Phone captures only — their big
+    // elements stay legible at hero scale. KO/VI fall back to EN via
+    // `image_prefix()` until the app ships those interface locales.
+    let carousel: &[(&str, &str)] = &[
+        ("main", c.home_carousel_labels[0]),
+        ("lesson", c.home_carousel_labels[1]),
+        ("grammar", c.home_carousel_labels[2]),
+        ("writing", c.home_carousel_labels[3]),
+        ("phrases", c.home_carousel_labels[4]),
+    ];
+
     // Mini-FAQ: the "free?", WaniKani and kanji-start pairs are
     // homepage-specific long-tails; the rest reuse the features-page
     // strings so the same answer never diverges between pages. Visible
@@ -62,22 +74,49 @@ pub fn HomePage() -> impl IntoView {
                         {c.home_cta_secondary}
                     </a>
                 </div>
-                <p class="home-hero__tagline">{c.home_hero_tagline}</p>
             </div>
             <div class="home-hero__decor">
-                <div
-                    class="home-hero__decor-img"
+                <img
+                    src="/images/app/hero-art.webp"
+                    alt=""
+                    class="home-hero__art"
                     aria-hidden="true"
-                    style=format!("background-image: url(/images/{lang}.hero.png)")
-                ></div>
+                />
             </div>
         </section>
+        <script inner_html=carousel_inline_script() />
 
         <hr class="divider-full" />
 
         // Section 1b: stat strip — concrete, scannable facts under the hero
         <section class="home-stats">
             <p class="home-stats__line">{c.home_stats_line}</p>
+        </section>
+
+        <hr class="divider-full" />
+
+        // Section 1c: app screens carousel — what the product actually
+        // looks like, one legible phone capture at a time
+        <section class="home-shots">
+            <div class="home-shots__inner">
+                <div class="hero-carousel" id="hero-carousel">
+                    {carousel.iter().enumerate().map(|(i, (img, label))| {
+                        view! {
+                            <figure class="hero-carousel__slide">
+                                <img
+                                    src=format!("/images/app/{lang}.car.{img}.webp")
+                                    alt=label.to_string()
+                                    loading=if i == 0 { "eager" } else { "lazy" }
+                                />
+                                <figcaption class="hero-carousel__caption">
+                                    {label.to_string()}
+                                </figcaption>
+                            </figure>
+                        }
+                    }).collect_view()}
+                </div>
+                <div class="hero-carousel__dots" id="hero-carousel-dots"></div>
+            </div>
         </section>
 
         <hr class="divider-full" />
@@ -124,13 +163,11 @@ pub fn HomePage() -> impl IntoView {
             <h2 class="home-features__title">{c.home_features_h2}</h2>
             <div class="home-features__grid home-features__grid--top">
                 <HomeFeatureCard
-                    number="01"
                     title=c.home_feature_vocab_title
                     text=c.home_feature_vocab_text
                     href=features_href.clone()
                 />
                 <HomeFeatureCard
-                    number="02"
                     title=c.home_feature_kanji_title
                     text=c.home_feature_kanji_text
                     href=features_href.clone()
@@ -141,13 +178,11 @@ pub fn HomePage() -> impl IntoView {
                 style="margin-top: var(--space-lg)"
             >
                 <HomeFeatureCard
-                    number="03"
                     title=c.home_feature_grammar_title
                     text=c.home_feature_grammar_text
                     href=features_href.clone()
                 />
                 <HomeFeatureCard
-                    number="04"
                     title=c.home_feature_listening_title
                     text=c.home_feature_listening_text
                     href=features_href
@@ -182,18 +217,61 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
-fn HomeFeatureCard(
-    number: &'static str,
-    title: &'static str,
-    text: &'static str,
-    href: String,
-) -> impl IntoView {
+fn HomeFeatureCard(title: &'static str, text: &'static str, href: String) -> impl IntoView {
     view! {
         <div class="home-feature-card">
-            <span class="home-feature-card__number">{number}</span>
             <h3 class="home-feature-card__title">{title}</h3>
             <p class="home-feature-card__text">{text}</p>
             <A href=href attr:class="landing-feature-card__link">{title}</A>
         </div>
     }
+}
+
+/// Carousel behaviour: auto-advance with pause on hover/focus, dot
+/// navigation, native swipe (scroll-snap does the panning; JS only
+/// syncs the dots and drives the timer). No dependencies, mirrors the
+/// header script pattern.
+fn carousel_inline_script() -> String {
+    r#"
+    (function() {
+        var track = document.getElementById('hero-carousel');
+        var dots = document.getElementById('hero-carousel-dots');
+        if (!track || !dots) return;
+        var slides = track.children.length;
+        for (var i = 0; i < slides; i++) {
+            var d = document.createElement('button');
+            d.type = 'button';
+            d.className = 'hero-carousel__dot';
+            d.setAttribute('aria-label', 'Slide ' + (i + 1));
+            (function(idx) {
+                d.addEventListener('click', function() {
+                    track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+                });
+            })(i);
+            dots.appendChild(d);
+        }
+        function current() {
+            return Math.round(track.scrollLeft / track.clientWidth);
+        }
+        function sync() {
+            var cur = current();
+            var ds = dots.children;
+            for (var j = 0; j < ds.length; j++) {
+                ds[j].classList.toggle('is-active', j === cur);
+            }
+        }
+        track.addEventListener('scroll', function() {
+            clearTimeout(track._t);
+            track._t = setTimeout(sync, 80);
+        });
+        var timer = setInterval(function() {
+            if (track.matches(':hover')) return;
+            var next = (current() + 1) % slides;
+            track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+        }, 4000);
+        track.addEventListener('pointerdown', function() { clearInterval(timer); });
+        sync();
+    })();
+    "#
+    .to_string()
 }

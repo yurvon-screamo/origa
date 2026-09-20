@@ -152,7 +152,9 @@ fn NavLink(
 ) -> impl IntoView {
     let target = make_href(prefix, href);
     view! {
-        <A href=target attr:class=class>{children()}</A>
+        <A href=target attr:class=class>
+            {children()}
+        </A>
     }
 }
 

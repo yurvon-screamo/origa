@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 
+use crate::components::Shot;
 use crate::components::cta::CtaSection;
 use crate::components::seo::{
     PageMeta, SchemaOrg, breadcrumb_schema, faq_schema, how_to_schema, learning_resource_schema,
@@ -11,10 +12,9 @@ pub fn FeaturesPage() -> impl IntoView {
     let locale = use_context::<Locale>().expect("Locale context missing");
     let c = locale.content();
     let prefix = locale.path_prefix();
-    let lang = locale.as_str();
+    let lang = locale.image_prefix();
 
     let download_href = format!("{prefix}/download");
-    let all_in_one_image = format!("/images/{lang}.all_in_one.png");
 
     let vocab_steps = [
         c.features_vocab_step1,
@@ -54,11 +54,12 @@ pub fn FeaturesPage() -> impl IntoView {
                 <hr class="feat-hero__rule" />
             </div>
             <div class="feat-hero__decor">
-                <div
-                    class="feat-hero__decor-img"
+                <img
+                    src="/images/app/feat-art.webp"
+                    alt=""
+                    class="feat-hero__art"
                     aria-hidden="true"
-                    style=format!("background-image: url({all_in_one_image})")
-                ></div>
+                />
             </div>
         </section>
 
@@ -69,11 +70,11 @@ pub fn FeaturesPage() -> impl IntoView {
                 <h2 class="feat-vocab__title">{c.features_vocab_h2}</h2>
 
                 <div class="feat-pipeline">
-                    <VocabStep number="01" text=c.features_vocab_step1 />
+                    <VocabStep text=c.features_vocab_step1 />
                     <div class="feat-pipeline__arrow"></div>
-                    <VocabStep number="02" text=c.features_vocab_step2 />
+                    <VocabStep text=c.features_vocab_step2 />
                     <div class="feat-pipeline__arrow"></div>
-                    <VocabStep number="03" text=c.features_vocab_step3 />
+                    <VocabStep text=c.features_vocab_step3 />
                 </div>
 
                 <div class="feat-tag-bar">
@@ -95,9 +96,9 @@ pub fn FeaturesPage() -> impl IntoView {
             </div>
         </section>
 
-        // Section 2: Kanji (no image)
+        // Section 2: Kanji
         <section class="feat-kanji">
-            <div class="feat-kanji__inner">
+            <div class="feat-kanji__inner feat-split">
                 <div class="feat-kanji__content">
                     <h2>{c.features_kanji_h2}</h2>
                     <p class="feat-kanji__subtitle">{c.features_kanji_subtitle}</p>
@@ -111,41 +112,57 @@ pub fn FeaturesPage() -> impl IntoView {
 
                     <FeatEditorialNote text=c.features_kanji_insight />
                 </div>
+                <Shot
+                    src=format!("/images/app/{lang}.writing.webp")
+                    variant="shot--desktop feat-split__shot".to_string()
+                />
             </div>
         </section>
 
-        // Section 3: Grammar (no bg image)
+        // Section 3: Grammar
         <section class="feat-grammar">
-            <div class="feat-grammar__inner">
-                <h2>{c.features_grammar_h2}</h2>
-                <p class="feat-grammar__subtitle">{c.features_grammar_subtitle}</p>
+            <div class="feat-grammar__inner feat-split">
+                <div class="feat-grammar__content">
+                    <h2>{c.features_grammar_h2}</h2>
+                    <p class="feat-grammar__subtitle">{c.features_grammar_subtitle}</p>
 
-                <div class="feat-capabilities">
-                    <FeatCapability title=c.features_grammar_jlpt desc=c.features_grammar_jlpt_desc />
-                    <FeatCapability title=c.features_grammar_context desc=c.features_grammar_context_desc />
-                    <FeatCapability title=c.features_grammar_tests desc=c.features_grammar_tests_desc />
-                    <FeatCapability title=c.features_grammar_search desc=c.features_grammar_search_desc />
+                    <div class="feat-capabilities">
+                        <FeatCapability title=c.features_grammar_jlpt desc=c.features_grammar_jlpt_desc />
+                        <FeatCapability title=c.features_grammar_context desc=c.features_grammar_context_desc />
+                        <FeatCapability title=c.features_grammar_tests desc=c.features_grammar_tests_desc />
+                        <FeatCapability title=c.features_grammar_search desc=c.features_grammar_search_desc />
+                    </div>
+
+                    <FeatEditorialNote text=c.features_grammar_insight />
                 </div>
-
-                <FeatEditorialNote text=c.features_grammar_insight />
+                <Shot
+                    src=format!("/images/app/{lang}.grammar.webp")
+                    variant="shot--desktop feat-split__shot".to_string()
+                />
             </div>
         </section>
 
-        // Section 4: Listening (no bg image)
+        // Section 4: Listening
         <section class="feat-listening">
-            <div class="feat-listening__inner">
-                <h2>{c.features_listening_h2}</h2>
-                <p class="feat-listening__subtitle">{c.features_listening_subtitle}</p>
+            <div class="feat-listening__inner feat-split">
+                <div class="feat-listening__content">
+                    <h2>{c.features_listening_h2}</h2>
+                    <p class="feat-listening__subtitle">{c.features_listening_subtitle}</p>
 
-                <div class="feat-listening__band">
-                    <div class="feat-capabilities">
-                        <FeatCapability title=c.features_listening_n1 desc=c.features_listening_n1_desc />
-                        <FeatCapability title=c.features_listening_audio desc=c.features_listening_audio_desc />
-                        <FeatCapability title=c.features_listening_comp desc=c.features_listening_comp_desc />
-                        <FeatCapability title=c.features_listening_everyday desc=c.features_listening_everyday_desc />
+                    <div class="feat-listening__band">
+                        <div class="feat-capabilities">
+                            <FeatCapability title=c.features_listening_n1 desc=c.features_listening_n1_desc />
+                            <FeatCapability title=c.features_listening_audio desc=c.features_listening_audio_desc />
+                            <FeatCapability title=c.features_listening_comp desc=c.features_listening_comp_desc />
+                            <FeatCapability title=c.features_listening_everyday desc=c.features_listening_everyday_desc />
+                        </div>
+                        <FeatEditorialNote text=c.features_listening_insight />
                     </div>
-                    <FeatEditorialNote text=c.features_listening_insight />
                 </div>
+                <Shot
+                    src=format!("/images/app/{lang}.phrase.webp")
+                    variant="shot--desktop feat-split__shot".to_string()
+                />
             </div>
         </section>
 
@@ -169,10 +186,9 @@ pub fn FeaturesPage() -> impl IntoView {
 }
 
 #[component]
-fn VocabStep(number: &'static str, text: &'static str) -> impl IntoView {
+fn VocabStep(text: &'static str) -> impl IntoView {
     view! {
         <div class="feat-step">
-            <p class="feat-step__number">{number}</p>
             <p class="feat-step__text">{text}</p>
         </div>
     }

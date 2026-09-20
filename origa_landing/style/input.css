@@ -98,9 +98,13 @@
     --bg-warm: #f0ebe1;
     --fg-black: #1a1915;
     --fg-muted: #6b665a;
-    --fg-light: #9a9590;
+    /* AA on cream/paper (4.5:1+); the old #9a9590 measured 2.7:1 */
+    --fg-light: #75705f;
     --accent-olive: #3d4535;
     --accent-terracotta: #a65d3f;
+    /* Ink variant for terracotta TEXT: passes AA on every background,
+       including aged; the base terracotta stays for decorative rules */
+    --accent-terracotta-ink: #8f4e33;
     --accent-gold: #8b7355;
     --accent-sage: #6b7b5e;
     --border-light: #d4cfc3;

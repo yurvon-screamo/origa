@@ -33,9 +33,9 @@ if TYPE_CHECKING:
     from boto3.s3.transfer import TransferConfig
     from botocore.client import BaseClient
 
-S3_BUCKET = "adaptable-foodbox-ucep7wx"
-S3_PROFILE = "origa"
-S3_ENDPOINT = "https://t3.storageapi.dev"
+S3_BUCKET = "origa"
+S3_PROFILE = "origa-t3"
+S3_ENDPOINT = "https://t3.storage.dev"
 
 # copy-object caps at 5 GiB; surfaced so callers can skip oversize objects with
 # a clear message instead of an opaque T3 error mid-walk.
@@ -312,7 +312,7 @@ def copy_object_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
 
 # Tigris (T3 Storage) single-PUT body limit ~24KB. Files above this must
 # use multipart upload. 16KB threshold/chunk size verified to pass.
-MULTIPART_THRESHOLD_BYTES = 16 * 1024
+MULTIPART_THRESHOLD_BYTES = 8 * 1024 * 1024  # single-PUT verified on t3.storage.dev (200KB/2MB probes, 2026-09-19); the legacy 24KB single-PUT limit of t3.storageapi.dev is gone
 
 # Explicit pins for extensions whose canonical type matters and that mimetypes
 # either cannot guess (woff/woff2) or resolves inconsistently across minimal
@@ -395,7 +395,10 @@ def _transfer_config(chunk_size: int = MULTIPART_THRESHOLD_BYTES) -> TransferCon
         config = TransferConfig(
             multipart_threshold=chunk_size,
             multipart_chunksize=chunk_size,
-            max_concurrency=1,
+            # 157k+ small files (kanji SVGs) upload serially at ~5 files/s,
+            # which is an 8+ hour deploy; 32 parallel PUTs cut it further.
+            # Raise back down if the S3 endpoint starts throttling (429).
+            max_concurrency=32,
         )
         _transfer_configs[chunk_size] = config
     return config
@@ -574,11 +577,12 @@ def sync_directory(
         if p.is_file() and p.name != "README.md"
     ]
     total = len(all_files)
-    uploaded = 0
-    skipped = 0
     start = _time.time()
 
-    for i, local_path in enumerate(all_files, 1):
+    # Diff pass (cheap, local + in-memory remote listing)
+    to_upload: list[tuple[Path, str]] = []
+    skipped = 0
+    for local_path in all_files:
         key = base_prefix + local_path.relative_to(local_dir).as_posix()
         stat_result = local_path.stat()
         info = remote.get(key)
@@ -593,15 +597,32 @@ def sync_directory(
         ):
             skipped += 1
         else:
-            upload_file(local_path, key, cache_control, dry_run)
-            uploaded += 1
+            to_upload.append((local_path, key))
 
-        if i % 200 == 0 or i == total:
-            elapsed = _time.time() - start
-            rate = i / elapsed if elapsed > 0 else 0
-            pct = i * 100 // total
-            print(
-                f"    [{i}/{total}] {pct}%  up={uploaded} skip={skipped}  "
-                f"{rate:.0f} files/s  {elapsed:.0f}s",
-                flush=True,
-            )
+    # Upload pass: files in parallel. Sequential upload_file calls capped at
+    # ~6 files/s on a 250ms-RTT link (one request per file); 24 workers push
+    # the small-file fleet (157k kanji SVGs) through at 50+ files/s.
+    from concurrent.futures import ThreadPoolExecutor
+
+    uploaded = 0
+    lock = __import__("threading").Lock()
+
+    def _upload_one(item: tuple[Path, str]) -> None:
+        nonlocal uploaded
+        local_path, key = item
+        upload_file(local_path, key, cache_control, dry_run=False)
+        with lock:
+            uploaded += 1
+            done = uploaded
+            if done % 500 == 0 or done == len(to_upload):
+                elapsed = _time.time() - start
+                rate = (skipped + done) / elapsed if elapsed > 0 else 0
+                print(
+                    f"    [up {done}/{len(to_upload)}] skip={skipped}  "
+                    f"{rate:.0f} files/s  {elapsed:.0f}s",
+                    flush=True,
+                )
+
+    if to_upload:
+        with ThreadPoolExecutor(max_workers=24) as pool:
+            list(pool.map(_upload_one, to_upload))

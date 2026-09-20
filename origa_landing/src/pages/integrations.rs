@@ -36,7 +36,7 @@ pub fn IntegrationsPage() -> impl IntoView {
         // ── Section 1: Exam Preparation ──
         <section class="intg-section intg-section--cream">
             <div class="intg-section__inner">
-                <IntgSectionHeader number="01" title=c.integrations_section_exams/>
+                <IntgSectionHeader title=c.integrations_section_exams/>
                 <IntgJlptCard
                     tag=c.integrations_tag_exam
                     name=c.integrations_jlpt_name
@@ -49,7 +49,7 @@ pub fn IntegrationsPage() -> impl IntoView {
         // ── Section 2: Textbooks ──
         <section class="intg-section intg-section--aged">
             <div class="intg-section__inner">
-                <IntgSectionHeader number="02" title=c.integrations_section_textbooks/>
+                <IntgSectionHeader title=c.integrations_section_textbooks/>
                 <div class="intg-grid-2">
                     <IntgCard
                         tag=c.integrations_tag_textbook
@@ -70,7 +70,7 @@ pub fn IntegrationsPage() -> impl IntoView {
         // ── Section 3: Apps & Content ──
         <section class="intg-section intg-section--paper">
             <div class="intg-section__inner">
-                <IntgSectionHeader number="03" title=c.integrations_section_apps/>
+                <IntgSectionHeader title=c.integrations_section_apps/>
                 <div class="intg-grid-stagger">
                     <div class="intg-grid-stagger__row intg-grid-stagger__row--3-2">
                         <IntgCard
@@ -111,11 +111,9 @@ pub fn IntegrationsPage() -> impl IntoView {
 }
 
 #[component]
-fn IntgSectionHeader(number: &'static str, title: &'static str) -> impl IntoView {
+fn IntgSectionHeader(title: &'static str) -> impl IntoView {
     view! {
         <div class="intg-section__header">
-            <span class="intg-section__number">{number}</span>
-            " — "
             {title}
         </div>
     }

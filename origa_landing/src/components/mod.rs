@@ -1,9 +1,11 @@
 mod layout;
 mod not_found;
 pub mod seo;
+pub(crate) mod shot;
 
 pub(crate) mod cta;
 
 pub use layout::Layout;
 pub use not_found::NotFound;
 pub use seo::{PageMeta, SchemaOrg};
+pub use shot::Shot;

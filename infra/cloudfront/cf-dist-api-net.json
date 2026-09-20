@@ -1,0 +1,91 @@
+{
+ "CallerReference": "origa-api-net-2026-09-19",
+ "Comment": "Origa TrailBase API: app.origa.uwuwu.net -> Railway, no cache, Host-forward",
+ "Aliases": {
+  "Quantity": 1,
+  "Items": [
+   "app.origa.uwuwu.net"
+  ]
+ },
+ "DefaultRootObject": "",
+ "Origins": {
+  "Quantity": 1,
+  "Items": [
+   {
+    "Id": "railway-trailbase",
+    "DomainName": "9fmm6y4e.up.railway.app",
+    "OriginPath": "",
+    "CustomHeaders": {
+     "Quantity": 0
+    },
+    "ConnectionAttempts": 3,
+    "ConnectionTimeout": 10,
+    "CustomOriginConfig": {
+     "HTTPPort": 80,
+     "HTTPSPort": 443,
+     "OriginKeepaliveTimeout": 60,
+     "OriginProtocolPolicy": "https-only",
+     "OriginReadTimeout": 60,
+     "OriginSslProtocols": {
+      "Quantity": 1,
+      "Items": [
+       "TLSv1.2"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "OriginGroups": {
+  "Quantity": 0
+ },
+ "DefaultCacheBehavior": {
+  "TargetOriginId": "railway-trailbase",
+  "ViewerProtocolPolicy": "redirect-to-https",
+  "AllowedMethods": {
+   "Quantity": 7,
+   "Items": [
+    "GET",
+    "HEAD",
+    "PUT",
+    "POST",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+   ],
+   "CachedMethods": {
+    "Quantity": 2,
+    "Items": [
+     "GET",
+     "HEAD"
+    ]
+   }
+  },
+  "SmoothStreaming": false,
+  "Compress": false,
+  "CachePolicyId": "87c6b7bc-79dd-4aae-aabe-c2645659ff20",
+  "OriginRequestPolicyId": "b2abc271-2c2f-4d18-866a-2be80778061f"
+ },
+ "CacheBehaviors": {
+  "Quantity": 0
+ },
+ "CustomErrorResponses": {
+  "Quantity": 0
+ },
+ "Logging": {
+  "Enabled": false,
+  "IncludeCookies": false,
+  "Bucket": "",
+  "Prefix": ""
+ },
+ "PriceClass": "PriceClass_All",
+ "Enabled": true,
+ "ViewerCertificate": {
+  "CloudFrontDefaultCertificate": false,
+  "ACMCertificateArn": "arn:aws:acm:us-east-1:310356785854:certificate/16239823-50ab-4e57-a8d2-8a7eaac12654",
+  "SSLSupportMethod": "sni-only",
+  "MinimumProtocolVersion": "TLSv1.2_2021"
+ },
+ "HttpVersion": "http2",
+ "IsIPV6Enabled": false
+}
