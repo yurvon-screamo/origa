@@ -144,25 +144,37 @@ pub(crate) async fn sync_merge(
         if local_exists {
             match remote.fetch_if_changed(record_id, &seen_updated_at).await {
                 Ok(None) => {
-                    // Unchanged. The periodic valve: after enough
-                    // consecutive skips one full check runs anyway — the
-                    // bounded answer to every false-negative class the
-                    // probe can have (clock skew, timestamp collisions,
-                    // format drift, server-side row deletion).
-                    if meta.probe_skips_since_full < PROBE_SKIP_FULL_CHECK_INTERVAL {
-                        let mut meta = meta;
-                        meta.probe_skips_since_full += 1;
-                        meta_store.store(&meta).await?;
+                    // Unchanged. RELOAD the meta first: a parallel `save()`
+                    // (which does not take the sync gate) may have dirtied
+                    // it while the probe was in flight — the pre-await
+                    // snapshot must never be written back, or the dirty
+                    // flag is silently lost (ADR-045's CAS discipline).
+                    let fresh = meta_store.load().await?;
+                    if fresh.dirty {
+                        tracing::debug!("Local save landed during the probe; taking the full path");
+                        // Fall through: the dirty local must merge and push
+                        // regardless of the remote verdict.
+                    } else if fresh.probe_skips_since_full < PROBE_SKIP_FULL_CHECK_INTERVAL {
+                        // The periodic valve: after enough consecutive
+                        // skips one full check runs anyway — the bounded
+                        // answer to every false-negative class the probe
+                        // can have (clock skew, timestamp collisions,
+                        // format drift, server-side row deletion).
+                        let mut counted = fresh;
+                        counted.probe_skips_since_full += 1;
+                        meta_store.store(&counted).await?;
                         tracing::debug!(
-                            skips = meta.probe_skips_since_full,
+                            skips = counted.probe_skips_since_full,
                             "Sync skipped by delta probe: row unchanged"
                         );
                         return Ok(());
+                    } else {
+                        tracing::debug!(
+                            skips = fresh.probe_skips_since_full,
+                            "Delta-probe valve: running the full check"
+                        );
+                        // Fall through to the full path.
                     }
-                    tracing::debug!(
-                        skips = meta.probe_skips_since_full,
-                        "Delta-probe valve: running the full check"
-                    );
                 },
                 Ok(Some(row)) => {
                     // The row itself — either genuinely changed or a false
@@ -213,19 +225,25 @@ pub(crate) async fn sync_merge(
     // clean fingerprint and no local data (ADR-045). The probe is a keyed
     // count — a corrupted-but-present record is NOT detected here (see the
     // ADR threat model for the residual risk).
-    if meta.should_skip(&remote_fingerprint) && local_exists {
+    //
+    // The decision runs on a RE-LOADED meta: a parallel save may have
+    // dirtied it since the pre-fetch snapshot, and a dirty local must
+    // always take the merge path regardless of the remote verdict.
+    let current = meta_store.load().await?;
+    if !current.should_skip(&remote_fingerprint) || !local_exists {
+        // Fall through to the merge path (restore or full). Both re-load
+        // the meta internally via `mark_dirty`, so the stale outer
+        // snapshot is not consulted again.
+    } else {
         tracing::debug!("Sync skipped: remote unchanged since last sync");
-        // Heal the probe bookkeeping from the row already in hand: a
-        // false probe alarm (stamp bumped, content identical) settles
-        // here, so the next trigger is a single cheap probe again.
-        if meta.last_synced_record_id != Some(record_id)
-            || meta.last_seen_updated_at.as_deref() != Some(remote_updated_at.as_str())
-            || meta.probe_skips_since_full != 0
-        {
-            let mut meta = meta;
-            meta.record_probe_row(record_id, remote_updated_at);
-            meta_store.store(&meta).await?;
-        }
+        // Heal the probe bookkeeping from the row already in hand,
+        // applying ONLY the probe delta to the fresh snapshot: a false
+        // probe alarm (stamp bumped, content identical) settles here, so
+        // the next trigger is a single cheap probe again. `record_probe_row`
+        // touches neither the dirty flag nor the epoch.
+        let mut healed = current;
+        healed.record_probe_row(record_id, remote_updated_at);
+        meta_store.store(&healed).await?;
         return Ok(());
     }
 

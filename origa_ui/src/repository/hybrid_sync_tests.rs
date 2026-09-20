@@ -85,6 +85,10 @@ struct SpyRemote {
     /// derives the answer from the stored rows (id match + `$gt` on
     /// `updated_at`, mirroring the server-side filter).
     probe_answer: Mutex<Option<Result<bool, OrigaError>>>,
+    /// Hook executed right before a probe answers — simulates a parallel
+    /// user action (card rated → `save()` → `mark_dirty`) landing inside
+    /// the probe's in-flight window.
+    on_probe: Option<Box<dyn Fn() + Send + Sync>>,
     normalize_on_save: bool,
     fail_pushes: bool,
     /// Hook executed right after a push lands — used to simulate a
@@ -104,6 +108,7 @@ impl SpyRemote {
             normalize_on_save: false,
             fail_pushes: false,
             on_push: None,
+            on_probe: None,
         }
     }
 
@@ -188,6 +193,9 @@ impl RemoteUserSource for SpyRemote {
         seen_updated_at: &str,
     ) -> Result<Option<RemoteRow>, OrigaError> {
         *self.probes.lock().unwrap() += 1;
+        if let Some(hook) = &self.on_probe {
+            hook();
+        }
         let verdict = self
             .probe_answer
             .lock()
@@ -720,6 +728,47 @@ fn dirty_meta_never_probes() {
         "dirty state must skip the probe entirely"
     );
     assert!(!remote.pushes.lock().unwrap().is_empty());
+}
+
+#[test]
+fn save_landing_during_the_probe_survives_and_pushes_immediately() {
+    // The regression the write-back reload guards: a card rated while the
+    // probe is in flight (`save()` → `mark_dirty`, no sync gate) must NOT
+    // be clobbered by the skip bookkeeping. Writing the pre-await meta
+    // snapshot back would clear the dirty flag while the rating sits in
+    // the local store — the probe would then answer "unchanged" forever
+    // and the push would never happen. Expected behaviour: the reloaded
+    // dirty state routes the sync into the full path, which pushes the
+    // rating right away.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let mut remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+    futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
+
+    let meta_for_hook = meta.clone();
+    remote.on_probe = Some(Box::new(move || {
+        meta_for_hook.mark_dirty_direct();
+    }));
+
+    let pushes_before = remote.pushes.lock().unwrap().len();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta))
+        .expect("full path after the in-flight save");
+
+    assert_eq!(*remote.probes.lock().unwrap(), 1, "the probe ran");
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        pushes_before + 1,
+        "the in-flight save must be pushed by THIS sync, not deferred"
+    );
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert!(!stored.dirty, "the push settles the state");
+
+    // And the next trigger is back to the cheap probe skip.
+    remote.on_probe = None;
+    let probes = *remote.probes.lock().unwrap();
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("settled sync");
+    assert_eq!(*remote.probes.lock().unwrap(), probes + 1);
+    assert_eq!(remote.pushes.lock().unwrap().len(), pushes_before + 1);
 }
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -30,8 +30,9 @@ use serde::{Deserialize, Serialize};
 ///   `#[serde(default)]`: records persisted before this feature upgrade
 ///   transparently, and older readers ignore unknown fields (downgrade
 ///   safe — do not add `deny_unknown_fields`).
-/// - `probe_skips_since_full` counts consecutive delta-probe skips; every
-///   [`PROBE_SKIP_FULL_CHECK_INTERVAL`]th skip forces one full check — the
+/// - `probe_skips_since_full` counts consecutive delta-probe skips; once
+///   the count reaches [`PROBE_SKIP_FULL_CHECK_INTERVAL`], the next sync
+///   trigger ignores the probe's verdict and runs one full check — the
 ///   bounded safety valve for every false-negative class the probe can
 ///   have (cross-device clock skew, timestamp collisions, format drift,
 ///   server-side row deletion).
