@@ -4059,7 +4059,11 @@ mod know_confirm_dispose {
         // that first user — so the seeded user must be the ONLY one: purge
         // whatever is present (recording it for the restore below).
         let mut purged_users: Vec<User> = Vec::new();
-        // Bounded: a store glitch must not hang the suite.
+        // Bounded: a store glitch must not hang the suite. Known fail
+        // mode: a panic between this purge and the restore below skips
+        // the restore — later tests that read the current user without
+        // seeding their own would see an empty store (worse diagnostics,
+        // never a false green).
         for _ in 0..16 {
             match repo.get_current_user().await {
                 Ok(Some(existing)) => {

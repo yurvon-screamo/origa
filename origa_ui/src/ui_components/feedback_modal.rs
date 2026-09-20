@@ -95,12 +95,12 @@ pub fn FeedbackModal() -> impl IntoView {
             environment: current_draft.environment.clone(),
         };
 
-        // Unscoped with a disposed guard (NOT scoped): scoping tied the
+        // Unscoped with disposed guards (NOT scoped): scoping tied the
         // submit to the ambient owner and cancelled it under test mounts.
         // The Sentry submission is handed to the JS SDK before the first
-        // await and completes regardless; the guard fences the post-send
-        // state reads (disposed-signal fix). In production the modal is
-        // app-mounted, so the window only exists under test mounts and
+        // await and completes regardless; guards fence the state reads
+        // after EACH await (disposed-signal fix). In production the modal
+        // is app-mounted, so the windows only exist under test mounts and
         // page-level remounts.
         spawn_local(async move {
             match (submit_fn)(&report).await {
@@ -112,6 +112,9 @@ pub fn FeedbackModal() -> impl IntoView {
                     state.set(FormState::Success);
                     // Auto-close after the check-draw animation had its time.
                     gloo_timers::future::TimeoutFuture::new(1500).await;
+                    if submit_disposed.is_disposed() {
+                        return;
+                    }
                     if state.get_untracked() == FormState::Success {
                         close.run(());
                     }
