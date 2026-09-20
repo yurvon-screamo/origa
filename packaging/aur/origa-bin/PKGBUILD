@@ -1,0 +1,34 @@
+# Maintainer: yurvon-screamo <yurvon@ya.ru>
+# Origa Linux distribution channels: .deb (Debian/Ubuntu), .rpm
+# (RHEL/Fedora), AUR (Arch) — see docs/decisions/ADR-058.
+# In-app self-updater is intentionally disabled on Arch: this package is
+# updated via the AUR helper (`yay -Syu`); the app skips the update check
+# on systems without dpkg/rpm.
+
+pkgname=origa-bin
+pkgver=0.7.26
+pkgrel=1
+pkgdesc="Japanese learning app — kanji, vocabulary and grammar with FSRS spaced repetition"
+arch=('x86_64')
+url="https://origa.uwuwu.net"
+license=('LicenseRef-BSL-1.1')
+depends=('webkit2gtk-4.1' 'gtk3')
+provides=('origa')
+conflicts=('origa')
+options=('!strip')
+source=("Origa_${pkgver}.deb::https://github.com/yurvon-screamo/origa/releases/download/v${pkgver}/Origa_amd64.deb")
+sha256sums=('b56b7e904b2e62bb8827cd04fe62b2ed7bef9620857b010b31b8d7f750fc41e4')
+
+# Release checklist (every release):
+#   1. pkgver=<new version>  (strip the leading "v" from the git tag)
+#   2. sha256sums=<sha256 of the released Origa_amd64.deb>
+#   3. updpkgsums (or manual edit), then regenerate .SRCINFO:
+#        makepkg --printsrcinfo > .SRCINFO
+#   4. Commit and push to ssh://aur@aur.archlinux.org/origa-bin.git
+
+package() {
+    # The .deb packs everything under usr/ (binary, resources, desktop
+    # entry, hicolor icons); it unpacks 1:1 into /usr. data.tar compression
+    # (gz/xz/zstd) is left to bsdtar's autodetection via the glob.
+    bsdtar -xOf "${srcdir}/Origa_${pkgver}.deb" data.tar.* | bsdtar -x -C "${pkgdir}"
+}

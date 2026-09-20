@@ -532,4 +532,76 @@ fn check_for_update_gates_endpoint_check_behind_is_dev() {
     );
 }
 
+/// Regression guard for the AUR heuristic (ADR-058): on systems with neither
+/// dpkg nor rpm (Arch & co., where the app arrives via AUR and is updated by
+/// the AUR helper), `check_for_update` must skip the endpoint check — the
+/// subsequent install would be guaranteed to fail (`pkexec dpkg`/`rpm -U`
+/// cannot run), so the banner would be a dead end.
+///
+/// Structural guard, same ceiling as the is_dev test above: asserts that
+/// (a) the probe call sits inside `check_for_update` BEFORE `.updater()`, and
+/// (b) the probe helper fns are Linux-only. Point (c) — the Windows path has
+/// no reference to the probe at all — is enforced by CI: the windows job in
+/// the same build compiles `check_for_update` without the linux cfg, so an
+/// ungated probe call would fail compilation there.
+#[test]
+fn check_for_update_skips_endpoint_without_system_package_tool() {
+    let updater_commands = include_str!("../src/updater_commands.rs");
+
+    let body_start = updater_commands
+        .find("pub async fn check_for_update")
+        .expect("check_for_update missing from updater_commands.rs");
+    let body_end = updater_commands[body_start..]
+        .find("pub async fn install_update")
+        .map(|offset| body_start + offset)
+        .unwrap_or(updater_commands.len());
+
+    let body = &updater_commands[body_start..body_end];
+
+    let probe_call_pos = body
+        .find("system_package_tool_available()")
+        .expect("check_for_update must consult system_package_tool_available()");
+    let endpoint_call_pos = body
+        .find(".updater()")
+        .expect("check_for_update must call app.updater()");
+    assert!(
+        probe_call_pos < endpoint_call_pos,
+        "the dpkg/rpm probe must run BEFORE the .updater() endpoint check"
+    );
+
+    // cfg-gate: the probe helpers must not compile into the Windows binary.
+    let probe_fn_pos = updater_commands
+        .find("fn system_package_tool_available()")
+        .expect("system_package_tool_available missing from updater_commands.rs");
+    let cfg_prefix = &updater_commands[..probe_fn_pos];
+    let linux_cfg_pos = cfg_prefix
+        .rfind("#[cfg(target_os = \"linux\")]")
+        .expect("system_package_tool_available must be gated to #[cfg(target_os = \"linux\")]");
+
+    // The cfg attribute must belong to the probe fn: no other item boundary
+    // (documented by an empty line + non-attribute line) between them.
+    let between = &updater_commands[linux_cfg_pos..probe_fn_pos];
+    assert!(
+        between.lines().all(|line| {
+            let trimmed = line.trim();
+            trimmed.is_empty() || trimmed.starts_with("//") || trimmed.starts_with("#[cfg(")
+        }),
+        "the #[cfg(target_os = \"linux\")] attribute must directly precede system_package_tool_available"
+    );
+
+    // The whole probe block (probe fn + tool_runs) is inside the cfg-gated
+    // section: the file must not reference the probe outside linux-cfg'd
+    // helper definitions other than the gated call site in check_for_update.
+    let tool_runs_fn_pos = updater_commands
+        .find("fn tool_runs(")
+        .expect("tool_runs missing from updater_commands.rs");
+    let tool_runs_cfg = &updater_commands[..tool_runs_fn_pos];
+    assert!(
+        tool_runs_cfg
+            .rfind("#[cfg(target_os = \"linux\")]")
+            .is_some(),
+        "tool_runs must be gated to #[cfg(target_os = \"linux\")]"
+    );
+}
+
 const NOT_APP_STORE_GATE: &str = "#[cfg(all(any(windows, target_os = \"linux\"), not(app_store)))]";

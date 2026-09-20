@@ -78,15 +78,14 @@
 | Платформа | Статус | Формат |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Готово | [установщик `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Готово | [`.flatpak`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak), [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb) |
+| **Linux** | ✅ Готово | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Готово | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Скоро | Mac App Store |
 
-Linux (flatpak) — скачайте и установите (GNOME runtime подтянется автоматически):
+Linux — `.deb` и `.rpm` обновляются из приложения; для Arch — установка из [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) через `makepkg -si` (пакет в AUR скоро). Fedora одной командой:
 
 ```sh
-curl -LO https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak
-flatpak install --user ./Origa_amd64.flatpak
+sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm
 ```
 
 > Все версии поддерживают оффлайн-режим работы.

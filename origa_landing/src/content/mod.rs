@@ -292,6 +292,8 @@ pub struct Content {
     pub download_windows_formats: &'static str,
     pub download_linux: &'static str,
     pub download_linux_formats: &'static str,
+    pub download_linux_aur: &'static str,
+    pub download_linux_aur_formats: &'static str,
     pub download_linux_terminal: &'static str,
     pub download_macos: &'static str,
     pub download_macos_formats: &'static str,

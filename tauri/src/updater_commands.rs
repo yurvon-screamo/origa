@@ -81,6 +81,16 @@ pub async fn check_for_update(
         return Ok(None);
     }
 
+    // The updater installs updates with the system package manager
+    // (pkexec dpkg/rpm). On distributions with neither (e.g. Arch, where the
+    // app is installed from AUR and updated via `yay -Syu`), the check would
+    // only surface a banner whose install is guaranteed to fail — skip it.
+    #[cfg(target_os = "linux")]
+    if !system_package_tool_available() {
+        tracing::debug!("updater: skipping check, no dpkg/rpm on this system");
+        return Ok(None);
+    }
+
     let update = app
         .updater()
         .map_err(|e| e.to_string())?
@@ -98,6 +108,45 @@ pub async fn check_for_update(
     *pending.0.lock().unwrap_or_else(|e| e.into_inner()) = update;
 
     Ok(metadata)
+}
+
+/// Pure decision function for [`system_package_tool_available`]: at least one
+/// of the two package managers the updater drives must be present. Injected
+/// flags keep this unit-testable without spawning real processes.
+fn has_system_package_tool(dpkg_available: bool, rpm_available: bool) -> bool {
+    dpkg_available || rpm_available
+}
+
+/// Detects whether this system can install updates at all (Linux only; the
+/// Windows NSIS path never reaches the caller). Probed once per process —
+/// the answer cannot change while the app runs.
+#[cfg(target_os = "linux")]
+fn system_package_tool_available() -> bool {
+    use std::sync::OnceLock;
+
+    static PROBE: OnceLock<bool> = OnceLock::new();
+    *PROBE.get_or_init(|| {
+        let dpkg_ok = tool_runs("dpkg");
+        let rpm_ok = tool_runs("rpm");
+        let available = has_system_package_tool(dpkg_ok, rpm_ok);
+        tracing::debug!(
+            dpkg_ok,
+            rpm_ok,
+            "system package tool probe: available={available}"
+        );
+        available
+    })
+}
+
+/// Cheap liveness check for a package-manager binary on PATH.
+#[cfg(target_os = "linux")]
+fn tool_runs(tool: &str) -> bool {
+    std::process::Command::new(tool)
+        .arg("--version")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
 }
 
 /// Downloads and installs the update previously stashed by `check_for_update`.
@@ -144,6 +193,15 @@ pub async fn install_update(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The dpkg/rpm probe decision: at least one tool must be present.
+    #[test]
+    fn has_system_package_tool_requires_any_tool() {
+        assert!(has_system_package_tool(true, true));
+        assert!(has_system_package_tool(true, false));
+        assert!(has_system_package_tool(false, true));
+        assert!(!has_system_package_tool(false, false));
+    }
 
     /// Wire-format contract: the WASM side (`origa_ui/src/core/updater.rs`)
     /// mirrors `DownloadEvent` with the same serde tags and per-variant
