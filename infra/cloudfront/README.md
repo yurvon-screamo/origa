@@ -7,7 +7,7 @@ Live configuration of the three production distributions (account
 
 | File | Distribution ID | CNAME | Origin |
 |---|---|---|---|
-| `cf-dist-cdn-net.json` | E21MVKWQP036OX | `s3.origa.uwuwu.net` | `origa.t3.tigrisfiles.io` (Tigris bucket `origa`, public) |
+| `cf-dist-cdn-net.json` | E2PA2EEZKABSOK | `s3.origa.uwuwu.net` | `origa.t3.tigrisfiles.io` (Tigris bucket `origa`, public) |
 | `cf-dist-api-net.json` | E246LJ2I68OZBT | `app.origa.uwuwu.net` | `9fmm6y4e.up.railway.app` (TrailBase) |
 | `cf-dist-landing-net.json` | E1PUUG8XMRV8EV | `origa.uwuwu.net` | `c2qj368z.up.railway.app` (landing) |
 
@@ -41,3 +41,12 @@ Live configuration of the three production distributions (account
   never catches this (no HTTP/3 support) — browser-only symptom.
 - `IsIPV6Enabled: false`: RF users on providers with broken/throttled v6 hang on
   AAAA-preferring connections; v4-only DNS sidesteps it (2026-09-19 hotfix #2).
+
+## 2026-09-20: re-created as the WORLD-only branch
+
+After the AWS decommission (ADR-059) the world rode the single Aeza VPS; the
+Tigris custom-domain certificate stalled ("completed" in UI, TLS alert 80 on
+every edge), so the free-tier CloudFront distribution is back — but only for
+non-RF clients (Bunny geo-steering sends RF to the VPS). Same config as
+before: http2, IPv6 off, CachingOptimized + no-cache manifest, origin = the
+public tigrisfiles.io domain (no Tigris custom domain needed).
