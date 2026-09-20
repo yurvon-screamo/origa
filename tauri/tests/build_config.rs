@@ -539,10 +539,11 @@ fn check_for_update_gates_endpoint_check_behind_is_dev() {
 /// cannot run), so the banner would be a dead end.
 ///
 /// Structural guard, same ceiling as the is_dev test above: asserts that
-/// (a) the probe call sits inside `check_for_update` BEFORE `.updater()`,
-/// (b) the probe machinery is Linux-only — a cfg-less probe would silently
-/// kill the Windows channel (dpkg/rpm never exist there), and (c) the
-/// Windows path has no reference to the probe at all.
+/// (a) the probe call sits inside `check_for_update` BEFORE `.updater()`, and
+/// (b) the probe helper fns are Linux-only. Point (c) — the Windows path has
+/// no reference to the probe at all — is enforced by CI: the windows job in
+/// the same build compiles `check_for_update` without the linux cfg, so an
+/// ungated probe call would fail compilation there.
 #[test]
 fn check_for_update_skips_endpoint_without_system_package_tool() {
     let updater_commands = include_str!("../src/updater_commands.rs");
