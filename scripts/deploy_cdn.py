@@ -28,7 +28,6 @@ VERSIONED_FILES: list[str] = [
     # directories on every deploy; root path (not inside kanji_frames/)
     # so the immutable directory rule never applies to it.
     "kanji_art_manifest.json",
-    "dictionary/kanji_audit_report.json",
     "dictionary/chunk_01.json",
     "dictionary/chunk_02.json",
     "dictionary/chunk_03.json",

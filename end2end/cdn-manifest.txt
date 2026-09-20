@@ -21,7 +21,6 @@ dictionary/chunk_09.json
 dictionary/chunk_10.json
 dictionary/chunk_11.json
 dictionary/kanji.json
-dictionary/kanji_audit_report.json
 dictionary/radicals.json
 dictionary/vocabulary.rkyv
 fonts/cormorant-garamond-188e64d1.woff2
