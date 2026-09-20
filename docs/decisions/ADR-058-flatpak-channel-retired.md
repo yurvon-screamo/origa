@@ -64,6 +64,12 @@ users had no auto-update at all.
   `packaging/aur/origa-bin/PKGBUILD`, regenerate `.SRCINFO`, and push the
   AUR package before or together with the stable tag (the AUR package is
   not automated in release CI yet — follow-up).
+- AUR registration is paused as of 2026-09-20 (automated-account wave,
+  no manual queue). Until the `origa-bin` listing is live, the landing
+  download card links the in-repo PKGBUILD (`makepkg -si`) instead of the
+  AUR page; switch it to https://aur.archlinux.org/packages/origa-bin in
+  a follow-up commit right after publishing. Watch aur-general / Arch
+  news for the reopening.
 - Fedora post-release checkpoint: install the .rpm from tag N-1 in a
   Fedora environment, run the in-app update to N, verify the version
   bumped and the desktop entry/icons survived the `rpm -U` path.

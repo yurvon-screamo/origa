@@ -74,11 +74,11 @@ Direct links (latest stable release):
 | Platform | Status | Format |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Ready | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR](https://aur.archlinux.org/packages/origa-bin) |
+| **Linux** | ✅ Ready | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Coming soon | Mac App Store |
 
-Linux — `.deb` and `.rpm` update in-app; Arch users install from the AUR (`yay -S origa-bin`). Fedora one-liner:
+Linux — `.deb` and `.rpm` update in-app; Arch users: install from [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) with `makepkg -si` (AUR listing coming soon). Fedora one-liner:
 
 ```sh
 sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm

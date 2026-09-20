@@ -74,11 +74,11 @@ Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 | Nền tảng | Trạng thái | Định dạng |
 | :--- | :--- | :--- |
 | **Windows** | ✅ Sẵn sàng | [trình cài đặt `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
-| **Linux** | ✅ Sẵn sàng | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR](https://aur.archlinux.org/packages/origa-bin) |
+| **Linux** | ✅ Sẵn sàng | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ⏳ Sắp ra mắt | Mac App Store |
 
-Linux — `.deb` và `.rpm` cập nhật ngay trong ứng dụng; người dùng Arch cài từ AUR (`yay -S origa-bin`). Cài Fedora một dòng:
+Linux — `.deb` và `.rpm` cập nhật ngay trong ứng dụng; người dùng Arch: cài từ [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) bằng `makepkg -si` (gói AUR sắp có). Cài Fedora một dòng:
 
 ```sh
 sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm

@@ -18,7 +18,12 @@ const DOWNLOAD_LINUX_DEB: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb";
 const DOWNLOAD_LINUX_RPM: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm";
-const DOWNLOAD_AUR: &str = "https://aur.archlinux.org/packages/origa-bin";
+// AUR registration is paused (2026-09-20), so until the origa-bin package is
+// published the card links the in-repo PKGBUILD (`makepkg -si`). Switch this
+// to https://aur.archlinux.org/packages/origa-bin in a follow-up commit once
+// the package is live (ADR-058 checklist).
+const DOWNLOAD_LINUX_ARCH: &str =
+    "https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin";
 // Fedora one-liner shown on the Linux card's terminal chip: the rpm channel
 // keeps the in-app updater, dnf covers the initial install (ADR-058).
 fn download_linux_terminal_cmd() -> String {
@@ -111,12 +116,12 @@ pub fn DownloadPage() -> impl IntoView {
                 />
                 // Arch — the AUR helper is the update channel (ADR-058): the
                 // in-app updater skips systems without dpkg/rpm, so the card
-                // links the AUR package instead of a binary asset.
+                // links the packaged PKGBUILD until the AUR listing is live.
                 <DownloadCard
                     icon=view! { <IconLinux /> }.into_any()
                     name=c.download_linux_aur
                     formats=c.download_linux_aur_formats
-                    href=DOWNLOAD_AUR
+                    href=DOWNLOAD_LINUX_ARCH
                     button_text=c.download_button
                     umami_event="download_linux_aur"
                 />

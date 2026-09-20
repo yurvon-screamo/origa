@@ -195,7 +195,7 @@ pub static CONTENT: Content = Content {
     download_linux: "Linux",
     download_linux_formats: ".deb, .rpm, AUR (yay -S origa-bin)",
     download_linux_aur: "Linux (Arch / AUR)",
-    download_linux_aur_formats: ".deb для Debian/Ubuntu, .rpm для RHEL/Fedora",
+    download_linux_aur_formats: "Установка из PKGBUILD в репозитории (пакет в AUR скоро)",
     download_linux_terminal: "или установите через терминал:",
     download_macos: "macOS",
     download_macos_formats: "Mac",
