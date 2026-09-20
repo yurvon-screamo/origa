@@ -95,10 +95,13 @@ pub fn FeedbackModal() -> impl IntoView {
 
         // Scoped (disposed-signal fix): the continuation reads `state`
         // after the send and the close-timeout awaits — an unscoped task
-        // panicked on that read when the modal's page was disposed
-        // mid-send. The Sentry submission is a JS call already handed to
-        // the SDK before the first await; cancelling the task only drops
-        // the UI state updates and the auto-close.
+        // panicked on that read in the wasm tests when the modal was
+        // disposed mid-send (in production the modal is app-mounted, so
+        // the window only exists under test mounts and page-level
+        // remounts). The Sentry submission is handed to the JS SDK before
+        // the first await; cancelling the task drops the Rust-side
+        // continuation only (state updates, submission cooldown note and
+        // the auto-close).
         spawn_local_scoped_with_cancellation(async move {
             match (submit_fn)(&report).await {
                 Ok(()) => {

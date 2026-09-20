@@ -3900,8 +3900,7 @@ mod know_confirm_dispose {
     use crate::pages::lesson::acquaintance_view::AcquaintanceView;
     use crate::repository::HybridUserRepository;
     use crate::test_support::mount_disposable;
-    use std::cell::{Cell, RefCell};
-    use std::rc::Rc;
+    use std::cell::Cell;
     use ulid::Ulid;
 
     thread_local! {
@@ -3974,13 +3973,9 @@ mod know_confirm_dispose {
     #[wasm_bindgen_test]
     async fn know_confirm_modal_opens_on_button_click() {
         let card_id = Ulid::new();
-        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
-        let ctx_cell = ctx_out.clone();
         let wrapper = create_wrapper();
         let handle = mount_disposable(&wrapper, move || {
-            let ctx = presentation_context(card_id, HybridUserRepository::new());
-            ctx_cell.replace(Some(ctx.clone()));
-            provide_context(ctx);
+            provide_context(presentation_context(card_id, HybridUserRepository::new()));
             view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
         });
         let _ = handle;
@@ -4010,16 +4005,11 @@ mod know_confirm_dispose {
     async fn know_confirm_survives_page_disposal_without_panic() {
         arm_task_panic_detector();
         let card_id = Ulid::new();
-        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
-        let ctx_cell = ctx_out.clone();
         let wrapper = create_wrapper();
         let handle = mount_disposable(&wrapper, move || {
-            let ctx = presentation_context(card_id, HybridUserRepository::new());
-            ctx_cell.replace(Some(ctx.clone()));
-            provide_context(ctx);
+            provide_context(presentation_context(card_id, HybridUserRepository::new()));
             view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
         });
-        let _ctx = ctx_out.borrow().clone().expect("context captured");
         tick().await;
 
         wrapper
@@ -4078,16 +4068,11 @@ mod know_confirm_dispose {
         // post-dispose repository assertions below.
         let repo_for_asserts = repo.clone();
 
-        let ctx_out = Rc::new(RefCell::new(None::<AcquaintanceContext>));
-        let ctx_cell = ctx_out.clone();
         let wrapper = create_wrapper();
         let handle = mount_disposable(&wrapper, move || {
-            let ctx = presentation_context(card_id, repo.clone());
-            ctx_cell.replace(Some(ctx.clone()));
-            provide_context(ctx);
+            provide_context(presentation_context(card_id, repo.clone()));
             view! { <I18nContextProvider><AcquaintanceView /></I18nContextProvider> }
         });
-        let _ctx = ctx_out.borrow().clone().expect("context captured");
         tick().await;
 
         wrapper
@@ -4125,13 +4110,12 @@ mod know_confirm_dispose {
                 }
             }
         }
-        assert!(
-            known,
-            "mark-known must commit although the page was disposed mid-confirm"
-        );
 
-        // Record-level cleanup: restore the previous current user (or
-        // drop the seeded one) so other tests see the store as it was.
+        // Record-level cleanup BEFORE the assert: the store is global
+        // (stateless repository instances share it), so a failing test
+        // must not leave the seeded knowconfirm user polluting whatever
+        // test reads the current user next. Restore the previous current
+        // user (or drop the seeded one).
         match previous_user {
             Some(previous) => {
                 repo_for_asserts
@@ -4143,5 +4127,10 @@ mod know_confirm_dispose {
                 let _ = repo_for_asserts.delete(user.id()).await;
             },
         }
+
+        assert!(
+            known,
+            "mark-known must commit although the page was disposed mid-confirm"
+        );
     }
 }

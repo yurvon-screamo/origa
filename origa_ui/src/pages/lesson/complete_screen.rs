@@ -58,9 +58,9 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             let toasts = toasts;
             // Unscoped on purpose: the merge must complete even if the
             // user leaves the lesson screen while it is in flight. Safe
-            // because the task only writes after its await (toasts are
-            // app-level, writes to disposed signals are silent no-ops)
-            // and every UI update sits behind the is_disposed guard.
+            // because after its await the task only writes (writes to
+            // disposed signals are silent no-ops) and every UI update
+            // sits behind the is_disposed guard.
             spawn_local(async move {
                 match repo.merge_current_user().await {
                     Ok(()) => {
