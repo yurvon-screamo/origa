@@ -249,6 +249,11 @@ impl AcquaintanceContext {
         }
         let repo = self.repository.clone();
         let state = self.state;
+        // Unscoped on purpose: the persistence below must survive the
+        // user leaving the lesson mid-save (#462). Reactive safety: the
+        // task never reads signals after its await — the only signal
+        // access is the final `update`, and writes to a disposed signal
+        // are silent no-ops in reactive_graph.
         spawn_local(async move {
             // Сидирование выполняет CompleteAcquaintanceHandUseCase (S2):
             // первый ревью назавтра всем картам руки + лимит одной операцией.

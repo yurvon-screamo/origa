@@ -746,6 +746,9 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
     let repo_stored = StoredValue::new(ctx.repository.clone());
     // Защита от двойного клика «Да, знаю» на время асинхронной записи.
     let known_in_flight = RwSignal::new(false);
+    // Dispose-сентинел ActionBar: true после смерти owner'а этого монтирования
+    // (паттерн content.rs / ocr ctx.disposed).
+    let disposed = StoredValue::new(());
     let on_yes_know = {
         let ctx_for_replace = ctx.clone();
         let i18n_for_replace = i18n;
@@ -764,11 +767,25 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
             };
             known_in_flight.set(true);
             let repo = repo_stored.get_value();
+            // Split-lifetime task (disposed-signal fix): the mark-known
+            // use case is user intent and must commit even if the user
+            // leaves the lesson mid-save — so the task stays unscoped.
+            // Everything after the first await is UI for THIS mount only;
+            // each `disposed` guard below fences the post-await signal
+            // reads (state/native_language) that used to panic with
+            // "Tried to access a reactive value that has already been
+            // disposed" when the task outlived the page.
             spawn_local(async move {
                 // «Уже знаю» идёт существующим механизмом mark-as-known и не
                 // тратит дневной лимит (docs/acquaintance-mode.md §4).
                 if let Err(e) = MarkCardAsKnownUseCase::new(&repo).execute(card_id).await {
                     tracing::error!("Mark-as-known failed for {card_id}: {e}");
+                }
+
+                // Дальше — только UI этого монтирования: замена карты в руке
+                // и пересборка слайдов. Страница умерла — выходим до чтений.
+                if disposed.is_disposed() {
+                    return;
                 }
 
                 // Замена: слот выбывшей карты занимает новая карта из пула —
@@ -793,6 +810,10 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
                         None
                     },
                 };
+
+                if disposed.is_disposed() {
+                    return;
+                }
 
                 let Some((new_id, new_type)) = replacement else {
                     // Пул пуст: прежнее поведение — карта выбывает, рука
@@ -829,6 +850,9 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
                 // Слайд новой карты — на месте выбывшей: юзер остаётся на
                 // позиции и знакомится с новой картой сразу.
                 if let Ok(Some(user)) = repo.get_current_user().await {
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     let order = ctx_for_replace
                         .state
                         .get_untracked()

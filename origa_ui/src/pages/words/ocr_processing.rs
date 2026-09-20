@@ -98,6 +98,12 @@ async fn run_ocr_on_data_url(
 
     let result = process_image_with_ocr(data_url, &ctx.ocr_loading_state, &i18n).await;
 
+    // Fence the disposed window before the cancel-flag read and the
+    // result handling below (both touch page signals / i18n).
+    if ctx.disposed.is_disposed() {
+        return;
+    }
+
     if ctx.ocr_loading_state.cancel_requested.get_untracked() {
         return;
     }
@@ -142,6 +148,11 @@ pub(super) fn process_file(
         return;
     }
 
+    // Unscoped with a disposed guard (NOT scoped): the ambient owner here
+    // is the image stage component — scoping cancelled the OCR whenever
+    // the stage remounted (tab switches), breaking recognition. The task
+    // must outlive the stage; only the post-inference continuation is
+    // fenced (disposed-signal fix).
     spawn_local(async move {
         ctx.ocr_loading_state.cancel_requested.set(false);
         match read_file_as_data_url(&file).await {

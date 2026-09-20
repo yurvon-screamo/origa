@@ -64,6 +64,11 @@ impl ImportPreviewModalState {
         selected_words.set(HashSet::new());
         is_loading_preview.set(true);
         error.set(None);
+        // Unscoped with disposed guards (NOT scoped): scoping tied the
+        // preview to the ambient (modal-remount) owner. The existing
+        // guards covered only error branches — the success paths below
+        // read set_ids/set_titles after the tokenizer and set-load
+        // awaits; both windows are fenced now (disposed-signal fix).
         spawn_local(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
@@ -96,6 +101,9 @@ impl ImportPreviewModalState {
                     return;
                 },
             };
+            if disposed.is_disposed() {
+                return;
+            }
             let set_title = set_ids
                 .get()
                 .first()
@@ -138,6 +146,8 @@ impl ImportPreviewModalState {
         error.set(None);
         set_titles.set(set_titles_input);
         state_set_ids.set(set_ids.clone());
+        // Unscoped with disposed guards — same reasoning as the
+        // single-set preview above.
         spawn_local(async move {
             let user =
                 match load_current_user(repository, error, is_loading_preview, disposed).await {
@@ -168,6 +178,9 @@ impl ImportPreviewModalState {
                     return;
                 },
             };
+            if disposed.is_disposed() {
+                return;
+            }
             let titles = set_titles.get();
             // Classify ONE concatenated word list so lemma duplicates
             // across sets share one seen-lemmas state with the import.

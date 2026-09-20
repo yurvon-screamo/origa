@@ -85,6 +85,8 @@ pub fn FeedbackModal() -> impl IntoView {
         state.set(FormState::Sending);
         let submit_fn = feedback.submit.clone();
         let feedback_for_cooldown = feedback.clone();
+        // Dispose-сентинел сабмит-задачи (паттерн on_yes_know).
+        let submit_disposed = StoredValue::new(());
         let report = FeedbackReport {
             category: current_draft.category,
             source: current_draft.source,
@@ -93,13 +95,26 @@ pub fn FeedbackModal() -> impl IntoView {
             environment: current_draft.environment.clone(),
         };
 
+        // Unscoped with disposed guards (NOT scoped): scoping tied the
+        // submit to the ambient owner and cancelled it under test mounts.
+        // The Sentry submission is handed to the JS SDK before the first
+        // await and completes regardless; guards fence the state reads
+        // after EACH await (disposed-signal fix). In production the modal
+        // is app-mounted, so the windows only exist under test mounts and
+        // page-level remounts.
         spawn_local(async move {
             match (submit_fn)(&report).await {
                 Ok(()) => {
+                    if submit_disposed.is_disposed() {
+                        return;
+                    }
                     feedback_for_cooldown.note_submission();
                     state.set(FormState::Success);
                     // Auto-close after the check-draw animation had its time.
                     gloo_timers::future::TimeoutFuture::new(1500).await;
+                    if submit_disposed.is_disposed() {
+                        return;
+                    }
                     if state.get_untracked() == FormState::Success {
                         close.run(());
                     }
