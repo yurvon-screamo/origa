@@ -56,6 +56,11 @@ on:
             # installs .deb updates via pkexec (graphical sudo fallback).
             linux-signature:
                 value: ${{ jobs.build-linux.outputs.signature }}
+            # linux-rpm-signature (ADR-058): rpm channel (RHEL/Fedora) — the
+            # manifest also carries linux-x86_64-rpm → Origa_x86_64.rpm;
+            # the plugin installs rpm updates via pkexec rpm -U.
+            linux-rpm-signature:
+                value: ${{ jobs.build-linux.outputs.rpm_signature }}
 
 env:
     CARGO_TERM_COLOR: always
@@ -199,6 +204,7 @@ jobs:
         runs-on: ubuntu-24.04
         outputs:
             signature: ${{ steps.signature.outputs.signature }}
+            rpm_signature: ${{ steps.signature.outputs.rpm_signature }}
         permissions:
             contents: read
         env:
@@ -259,19 +265,26 @@ jobs:
             - name: Build Tauri app for Linux
               working-directory: tauri
               # --no-sign for Dependabot — see build-windows for the rationale.
-              # ADR-056: deb-only bundles. The AppImage channel is retired —
+              # Linux bundles: deb + rpm (ADR-058). AppImage is retired —
               # its bundled Ubuntu WebKitGTK breaks on rolling distributions
-              # (ADR-056 for the incident) — Linux distribution is Flatpak +
-              # .deb. `targets: "all"` in tauri.conf.json would also build an
-              # AppImage here, so the deb target is pinned explicitly.
+              # (ADR-056 for the incident); Flatpak is retired too (ADR-058).
+              # `targets: "all"` in tauri.conf.json would also build an
+              # AppImage here, so both targets are pinned explicitly.
               run: |
                   EXTRA_FLAGS=""
                   if [ "$GITHUB_ACTOR" = "dependabot[bot]" ]; then
                       EXTRA_FLAGS="--no-sign"
                   fi
-                  cargo tauri build --target x86_64-unknown-linux-gnu --config '{"bundle":{"targets":["deb"]}}' $EXTRA_FLAGS
+                  # deb + rpm in ONE bundler run: tauri-bundler patches
+                  # __TAURI_BUNDLE_TYPE into the binary per-bundle, so the
+                  # deb-installed client reports bundle_type=Deb and the
+                  # rpm-installed one bundle_type=Rpm — the updater plugin
+                  # uses that to pick the linux-x86_64-deb / linux-x86_64-rpm
+                  # manifest keys. Both bundles get minisign .sig files
+                  # (tauri-cli sign_updaters covers Deb and Rpm).
+                  cargo tauri build --target x86_64-unknown-linux-gnu --config '{"bundle":{"targets":["deb","rpm"]}}' $EXTRA_FLAGS
 
-            - name: Create fixed-name alias
+            - name: Create fixed-name aliases
               working-directory: target/x86_64-unknown-linux-gnu/release/bundle
               env:
                   VERSION: ${{ inputs.version }}
@@ -280,27 +293,39 @@ jobs:
                   # name for the landing page's /releases/latest/download/
                   # <fixed> links. Single-name (no versioned copy) per ADR-025
                   # addendum. (AppImage aliases removed with the channel —
-                  # ADR-056.) The .deb.sig updater signature rides along:
+                  # ADR-056.) The .sig updater signatures ride along:
                   # Minisign signatures are content-based, so the rename does
-                  # not invalidate them. Guard matches the Windows pattern —
+                  # not invalidate them. Guards match the Windows pattern —
                   # Dependabot builds run --no-sign and emit no .sig at all.
                   mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
                   [ -f "deb/Origa_${VERSION}_amd64.deb.sig" ] && mv "deb/Origa_${VERSION}_amd64.deb.sig" "deb/Origa_amd64.deb.sig" || true
+                  # RPM name carries a release suffix (Origa_<version>-1_<arch>.rpm),
+                  # so the alias is taken by glob, not by version expansion.
+                  RPM_FILE=$(ls rpm/*.rpm 2>/dev/null | head -1 || true)
+                  if [ -n "$RPM_FILE" ]; then
+                    mv "$RPM_FILE" "rpm/Origa_x86_64.rpm"
+                    [ -f "${RPM_FILE}.sig" ] && mv "${RPM_FILE}.sig" "rpm/Origa_x86_64.rpm.sig" || true
+                  fi
 
             # Runs AFTER the alias rename (mirrors the Windows job: alias →
-            # extract). Reads from the repo root; the glob matches the deb
-            # bundle dir for the pinned --target triple.
-            - name: Extract signature
+            # extract). Reads from the repo root; the globs match the deb/rpm
+            # bundle dirs for the pinned --target triple.
+            - name: Extract signatures
               id: signature
               shell: bash
               run: |
-                  SIG_FILE=$(ls target/x86_64-unknown-linux-gnu/release/bundle/deb/*.sig 2>/dev/null | head -1 || true)
-                  if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
-                    SIG_CONTENT=$(cat "$SIG_FILE")
-                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
-                  else
-                    echo "signature=" >> $GITHUB_OUTPUT
-                  fi
+                  extract_one() {
+                    local dir="$1"
+                    local SIG_FILE
+                    SIG_FILE=$(ls "target/x86_64-unknown-linux-gnu/release/bundle/${dir}"/*.sig 2>/dev/null | head -1 || true)
+                    if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
+                      cat "$SIG_FILE"
+                    fi
+                  }
+                  {
+                    echo "signature=$(extract_one deb)"
+                    echo "rpm_signature=$(extract_one rpm)"
+                  } >> "$GITHUB_OUTPUT"
 
             - name: Upload Linux artifacts
               uses: actions/upload-artifact@v7
@@ -309,6 +334,8 @@ jobs:
                   path: |
                       **/bundle/deb/*.deb
                       **/bundle/deb/*.sig
+                      **/bundle/rpm/*.rpm
+                      **/bundle/rpm/*.sig
                   retention-days: 7
 
     build-android:
