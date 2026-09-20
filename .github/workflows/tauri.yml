@@ -311,6 +311,7 @@ jobs:
                   VERSION: ${{ needs.version.outputs.version }}
                   GIT_TAG: ${{ github.ref_name }}
                   WIN_SIG: ${{ needs.build-tauri.outputs.windows-signature }}
+                  LINUX_SIG: ${{ needs.build-tauri.outputs.linux-signature }}
               run: |
                   # Stable-only: prereleases deliberately do NOT refresh the
                   # updater manifest, so users on the stable channel never get
@@ -318,25 +319,33 @@ jobs:
                   # tag (v-prefixed, e.g. v1.0.0) — it MUST match the release's
                   # tag_name (github.ref_name), not the stripped version. The
                   # asset filename segment is the fixed-name alias
-                  # (Origa_x64-setup.exe) — single-naming per ADR-025 addendum;
-                  # only the alias asset exists in the release. The manifest's
-                  # `version` field is the bare version (1.0.0) the updater
-                  # compares against. Signature is content-based (Minisign),
-                  # so it stays valid after the versioned → alias rename in
-                  # _build-tauri.yml.
+                  # (Origa_x64-setup.exe / Origa_amd64.deb) — single-naming per
+                  # ADR-025 addendum; only the alias asset exists in the
+                  # release. The manifest's `version` field is the bare version
+                  # (1.0.0) the updater compares against. Signature is
+                  # content-based (Minisign), so it stays valid after the
+                  # versioned → alias rename in _build-tauri.yml.
                   #
-                  # Linux has NO updater entry since ADR-056: the AppImage
-                  # channel was retired and Linux distribution is Flatpak +
-                  # .deb (updated by re-install / the flatpak repository once
-                  # published). A linux-x86_64 entry with a stale signature
-                  # and URL would make the updater fail with TargetNotFound
-                  # instead of silently skipping.
+                  # Linux updater entry is BACK (ADR-056 addendum, deb channel):
+                  # the manifest carries linux-x86_64 → Origa_amd64.deb.
+                  # tauri-plugin-updater 2.10.0 installs .deb updates via
+                  # pkexec (zenity/kdialog graphical sudo fallback); Flatpak
+                  # remains a managed channel without a self-updater. Fail loud
+                  # on a missing signature for either platform — a silently
+                  # empty signature field would publish a manifest the updater
+                  # rejects on every client.
+                  if [ -z "$WIN_SIG" ] || [ -z "$LINUX_SIG" ]; then
+                    echo "::error::updater signature missing (win or linux): tauri-cli too old, --no-sign build, or createUpdaterArtifacts disabled"
+                    exit 1
+                  fi
                   jq -n \
                     --arg version "$VERSION" \
                     --arg notes "Release $VERSION" \
                     --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     --arg win_sig "$WIN_SIG" \
                     --arg win_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_x64-setup.exe" \
+                    --arg linux_sig "$LINUX_SIG" \
+                    --arg linux_url "https://github.com/yurvon-screamo/origa/releases/download/${GIT_TAG}/Origa_amd64.deb" \
                     '{
                       version: $version,
                       notes: $notes,
@@ -345,6 +354,10 @@ jobs:
                         "windows-x86_64": {
                           signature: $win_sig,
                           url: $win_url
+                        },
+                        "linux-x86_64": {
+                          signature: $linux_sig,
+                          url: $linux_url
                         }
                       }
                     }' > latest.json
@@ -431,7 +444,9 @@ jobs:
                       - `Origa_amd64.flatpak` — Flatpak (any distribution; requires flatpak).
                         Install:
                         `curl -LO https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.flatpak && flatpak install --user ./Origa_amd64.flatpak`
-                      - `Origa_amd64.deb` — Debian/Ubuntu
+                      - `Origa_amd64.deb` — Debian/Ubuntu (in-app auto-update;
+                        the upgrade step requires pkexec or a graphical sudo
+                        prompt — zenity/kdialog)
 
                       ### Migrating from the retired AppImage (ADR-056)
                       The AppImage channel was removed — its bundled webview
