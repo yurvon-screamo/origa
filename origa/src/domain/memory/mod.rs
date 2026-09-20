@@ -746,24 +746,40 @@ mod tests {
 
     // --- Отметка «знаю» [marked_known_at] ---
 
-    fn today_midnight_utc() -> DateTime<Utc> {
+    fn today_midnight_from(now: DateTime<Utc>) -> DateTime<Utc> {
         use chrono::{Datelike, TimeZone};
-        let date = Utc::now().date_naive();
+        let date = now.date_naive();
         Utc.with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
             .unwrap()
     }
 
+    /// Кейсы-константы: штампы строятся в теле от единого `now`, чтобы
+    /// тест не зависел от перехода UTC-полуночи между атрибутом и телом.
+    #[derive(Clone, Copy)]
+    enum StampCase {
+        Today,
+        MidnightToday,
+        Yesterday,
+        None,
+    }
+
     #[rstest]
-    #[case::same_day_stamp(Some(Utc::now()), true)]
-    #[case::midnight_edge_same_day(Some(today_midnight_utc()), true)]
-    #[case::previous_day_stamp(Some(Utc::now() - Duration::hours(25)), false)]
-    #[case::no_stamp(None, false)]
+    #[case::same_day_stamp(StampCase::Today, true)]
+    #[case::midnight_edge_same_day(StampCase::MidnightToday, true)]
+    #[case::previous_day_stamp(StampCase::Yesterday, false)]
+    #[case::no_stamp(StampCase::None, false)]
     fn marked_known_today_matches_only_same_utc_day(
-        #[case] stamp: Option<DateTime<Utc>>,
+        #[case] case: StampCase,
         #[case] expected: bool,
     ) {
         // Arrange
         let now = Utc::now();
+        let stamp = match case {
+            StampCase::Today => Some(now),
+            StampCase::MidnightToday => Some(today_midnight_from(now)),
+            StampCase::Yesterday => Some(now - Duration::hours(25)),
+            StampCase::None => None,
+        };
         let mut history = MemoryHistory::new();
         history.set_marked_known_at_for_test(stamp);
 

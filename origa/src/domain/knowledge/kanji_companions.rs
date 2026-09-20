@@ -221,10 +221,13 @@ fn find_companion_cards<'a>(
                 // Отметка «знаю» сегодняшнего дня гасит слово-кандидата:
                 // слот потребляется без замещения из глубины списка —
                 // семантика как у already_in_lesson (тише для юзера).
-                if !already_in_lesson.contains(card_id)
-                    && !seen_companion_ids.contains(card_id)
-                    && !matching_sc.memory().marked_known_today(now)
-                {
+                if is_forward_candidate(
+                    card_id,
+                    matching_sc,
+                    already_in_lesson,
+                    &seen_companion_ids,
+                    now,
+                ) {
                     seen_companion_ids.insert(*card_id);
                     companions.push((*card_id, matching_sc));
                 }
@@ -233,6 +236,20 @@ fn find_companion_cards<'a>(
     }
 
     companions
+}
+
+/// Кандидат forward-компаньона: не в уроке, не добавлен ранее и не заглушен
+/// отметкой «знаю» текущего дня.
+fn is_forward_candidate(
+    card_id: &Ulid,
+    study_card: &super::StudyCard,
+    already_in_lesson: &HashSet<Ulid>,
+    seen_companion_ids: &HashSet<Ulid>,
+    now: DateTime<Utc>,
+) -> bool {
+    !already_in_lesson.contains(card_id)
+        && !seen_companion_ids.contains(card_id)
+        && !study_card.memory().marked_known_today(now)
 }
 
 fn find_vocab_card<'a>(
