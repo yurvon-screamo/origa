@@ -2560,6 +2560,7 @@ mod acquaintance_training_fronts {
             .unwrap()
             .expect("кнопка раскрытия правила");
         expand_btn
+            .clone()
             .dyn_into::<web_sys::HtmlElement>()
             .unwrap()
             .click();
