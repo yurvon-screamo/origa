@@ -422,21 +422,72 @@
     margin: 0 auto;
 }
 
+/* Split: text column frames the phone; the two stack below 900px. */
 .home-shots__inner {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-xxl);
+    align-items: center;
+}
+
+.home-shots__text {
     max-width: 420px;
-    margin: 0 auto;
+}
+
+.home-shots__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--accent-terracotta-ink);
+    margin-bottom: var(--space-md);
+}
+
+.home-shots__rule {
+    width: 40px;
+    height: 1px;
+    background: var(--accent-terracotta);
+    border: none;
+    margin: 0 0 var(--space-md);
+}
+
+.home-shots__desc {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    line-height: 1.8;
+    color: var(--fg-muted);
+}
+
+.home-shots__phone {
+    justify-self: center;
+}
+
+@media (max-width: 900px) {
+    .home-shots__inner {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+        justify-items: center;
+    }
+
+    .home-shots__text {
+        max-width: 420px;
+        text-align: center;
+    }
+
+    .home-shots__rule {
+        margin: 0 auto var(--space-md);
+    }
 }
 
 /* One phone capture at a time, large enough to read. Scroll-snap gives
-   free swipe; the inline script drives dots and the auto-advance. */
+   free swipe; the inline script drives dots and the auto-advance. The
+   track hugs the capture: image fills the width, height follows. */
 .hero-carousel {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    width: min(340px, 86vw);
     border: 1px solid var(--border-dark);
     background: var(--bg-paper);
     box-shadow: 10px 10px 0 var(--bg-aged), 10px 10px 0 1px var(--border-light);
@@ -457,9 +508,8 @@
 
 .hero-carousel__slide img {
     display: block;
-    height: clamp(460px, 40vw, 600px);
-    width: auto;
-    max-width: 100%;
+    width: 100%;
+    height: auto;
     object-fit: contain;
 }
 

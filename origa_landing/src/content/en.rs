@@ -44,6 +44,8 @@ pub static CONTENT: Content = Content {
         "Kanji writing",
         "Native phrases",
     ],
+    home_shots_title: "Real screens, not renders",
+    home_shots_text: "Captures from the phone build: a lesson card, the grammar reference, kanji writing with stroke order, native phrases. The same screens run on Windows, Linux, macOS and in the browser.",
     home_stats_line: "200,000+ native phrases with audio · N5–N1 grammar & kanji · Windows · Linux · macOS · Android · Web · Offline",
     home_faq_free_question: "Is Origa free?",
     home_faq_free_answer: "Yes. The apps for every platform and the web version are free.",

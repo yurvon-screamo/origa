@@ -44,6 +44,8 @@ pub static CONTENT: Content = Content {
         "Luyện viết hán tự",
         "Cụm từ bản xứ",
     ],
+    home_shots_title: "Màn hình thật, không phải ảnh dựng",
+    home_shots_text: "Ảnh chụp từ bản điện thoại: thẻ bài học, tham khảo ngữ pháp, luyện viết hán tự theo thứ tự nét, cụm từ bản xứ. Cùng các màn hình đó chạy trên Windows, Linux, macOS và trên trình duyệt.",
     home_stats_line: "200.000+ câu có audio · Ngữ pháp & hán tự N5–N1 · Windows · Linux · macOS · Android · Web · Ngoại tuyến",
     home_faq_free_question: "Origa có miễn phí không?",
     home_faq_free_answer: "Có. Ứng dụng trên mọi nền tảng và phiên bản web đều miễn phí.",
