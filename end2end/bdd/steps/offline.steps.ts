@@ -23,6 +23,16 @@ Before('@slow-startup', () => {
 const CDN_URL = "http://localhost:8080/**";
 const APP_ORIGIN = "http://localhost:1420";
 
+/** Same-origin path used to "freeze" the page before the profile-store
+ * wipe: the SPA fallback serves index.html for ANY path, so the freeze
+ * works by aborting the app bundle requests — the document stays on the
+ * app origin (IndexedDB accessible) but the WASM app never boots and
+ * cannot race the wipe with its own writes. */
+const FREEZE_PATH = "/__e2e-freeze__";
+
+/** Trunk's hashed bundle names: `origa_ui-<hash>.js` / `origa_ui-<hash>_bg.wasm`. */
+const APP_BUNDLE_PATTERN = /origa_ui-.*\.(js|wasm)/;
+
 /** Cache API stores owned by the dictionary layer (cdn_provider.rs,
  * dictionary_cache.rs). localStorage/IndexedDB hold the session and the
  * user record — those must survive a dictionary-cache wipe. */
@@ -66,7 +76,7 @@ async function waitForAppBoot(page: Page): Promise<void> {
 }
 
 function isAppUrl(page: Page): boolean {
-    return page.url().startsWith(APP_ORIGIN);
+    return page.url().startsWith(APP_ORIGIN) && !page.url().includes(FREEZE_PATH);
 }
 
 // ── Given ────────────────────────────────────────────────────────────
@@ -118,6 +128,16 @@ Given('кэш словаря слов очищен полностью', async ({
 });
 
 Given('локальный профиль пользователя отсутствует', async ({ page }) => {
+    // Freeze the app BEFORE wiping: a live page keeps writing to the
+    // store (the onboarding language effect's save_sync resurrected the
+    // user right after the clear, corrupting the scenario — a device's
+    // DB is never wiped under a running app). Aborting the bundle keeps
+    // the document same-origin (IndexedDB works) with zero app JS; the
+    // "пользователь открывает приложение" step unrouts and navigates
+    // back to the real app.
+    await page.route(APP_BUNDLE_PATTERN, (route) => route.abort());
+    await page.goto(`${APP_ORIGIN}${FREEZE_PATH}`);
+
     // Surgical wipe: clear only the `users` object store of the app DB
     // (names mirror DB_NAME/STORE_NAME in file_repository.rs — keep them
     // in sync). The TrailBase session lives in localStorage and must
@@ -149,6 +169,9 @@ Given('интернет недоступен', async ({ page }) => {
 // ── When ─────────────────────────────────────────────────────────────
 
 When('пользователь открывает приложение', async ({ page, offlineNetLog }) => {
+    // Undo the wipe step's bundle freeze (no-op when it was never set).
+    await page.unroute(APP_BUNDLE_PATTERN);
+
     page.on("request", (request) => {
         if (request.url().startsWith("http://localhost:8080")) {
             offlineNetLog.requests.push(request.url());
