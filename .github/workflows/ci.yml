@@ -55,6 +55,7 @@ jobs:
             contents: read
             pull-requests: read
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         outputs:
             run_lint: >-
               ${{ github.event_name != 'pull_request' ||
@@ -174,6 +175,7 @@ jobs:
         permissions:
             contents: read
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         outputs:
             version: ${{ steps.version.outputs.version }}
             version_base: ${{ steps.version.outputs.version_base }}
@@ -204,6 +206,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_macos_check == 'true'
         runs-on: macos-15
+        timeout-minutes: 30
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
@@ -239,6 +242,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_lint == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
@@ -300,6 +304,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_cdn_download == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 20
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -324,6 +329,7 @@ jobs:
         needs: [changes, cdn-download]
         if: needs.changes.outputs.run_test == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 60
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
             ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
@@ -375,6 +381,7 @@ jobs:
         needs: [changes, cdn-download]
         if: needs.changes.outputs.run_wasm_test == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
         steps:
@@ -424,6 +431,7 @@ jobs:
         needs: [changes, cdn-download]
         if: needs.changes.outputs.run_e2e_build == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         env:
             ORIGA_CDN_BASE_URL: http://localhost:8080
             TRAILBASE_URL: http://localhost:4000
@@ -684,6 +692,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_e2e_matrix_guard == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 10
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -708,6 +717,7 @@ jobs:
         needs: [changes, e2e-build, e2e-matrix-guard]
         if: needs.changes.outputs.run_e2e == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         strategy:
             fail-fast: false
             matrix:
@@ -854,6 +864,7 @@ jobs:
         # with a path-skipped e2e. Asserted in the gate via run_e2e.
         if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
         runs-on: ubuntu-24.04
+        timeout-minutes: 10
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -910,6 +921,7 @@ jobs:
         needs: [changes, version, e2e-build]
         if: needs.changes.outputs.run_build_tauri == 'true'
         uses: ./.github/workflows/_build-tauri.yml
+        timeout-minutes: 60
         with:
             version: ${{ needs.version.outputs.version }}
             version_base: ${{ needs.version.outputs.version_base }}
@@ -943,6 +955,7 @@ jobs:
         needs: [changes, version, e2e-build]
         if: needs.changes.outputs.run_build_macos == 'true'
         uses: ./.github/workflows/_build-tauri-apple.yml
+        timeout-minutes: 60
         with:
             version: ${{ needs.version.outputs.version }}
             version_base: ${{ needs.version.outputs.version_base }}
@@ -968,6 +981,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_docker_landing == 'true'
         runs-on: ubuntu-latest
+        timeout-minutes: 45
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -993,6 +1007,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_docker_ui == 'true'
         runs-on: ubuntu-latest
+        timeout-minutes: 45
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -1040,6 +1055,7 @@ jobs:
             ]
         if: always()
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         steps:
             - name: Verify all jobs passed
               run: |
