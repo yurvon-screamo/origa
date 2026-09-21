@@ -10,7 +10,7 @@ use crate::repository::{
     AuthError, HybridUserRepository, LoginFailure, OAuthFailure, TrailBaseClient,
     classify_login_failure, clear_session, clear_session_async, get_session_async,
     set_session_async,
-    trailbase_session::{is_refresh_in_progress, set_refresh_in_progress, should_refresh_session},
+    trailbase_session::{is_refresh_in_progress, should_refresh_session},
 };
 
 /// Installs the loaded user's card-token precompute (#521): word and
@@ -244,9 +244,11 @@ impl AuthStore {
                             }
 
                             tracing::debug!("Background session refresh started");
-                            set_refresh_in_progress(true);
 
-                            match client_bg.refresh_session(&session.refresh_token).await {
+                            // Gated: a request-path refresh may already be
+                            // in flight (this direct call previously raced
+                            // it into the refresh-token rotation 401).
+                            match client_bg.refresh_session_gated().await {
                                 Ok(new_session) => {
                                     tracing::info!("Background session refresh succeeded");
                                     if let Err(e) = set_session_async(&new_session).await {
@@ -270,8 +272,6 @@ impl AuthStore {
                                     );
                                 },
                             }
-
-                            set_refresh_in_progress(false);
                         });
                     }
                 },
