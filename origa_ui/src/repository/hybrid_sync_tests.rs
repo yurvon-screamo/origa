@@ -3,8 +3,8 @@
 //! The spies mirror the contracts of the real repositories without any
 //! JavaScript: `SpyLocal` implements `UserRepository`, `SpyRemote`
 //! implements `RemoteUserSource` while simulating a server that stores the
-//! pushed row (and may "normalize" it — e.g. add columns — to prove the
-//! recorded fingerprint is server-authoritative).
+//! pushed row verbatim (and may "normalize" it — e.g. add columns — to
+//! exercise the post-push reconstruction divergence paths of ADR-060).
 
 use std::future::Future;
 use std::sync::{Arc, Mutex};
@@ -20,7 +20,7 @@ use super::{SyncGate, save_sync_core_with_delay, sync_merge, sync_merge_gated};
 use crate::repository::hybrid_repository::LocalUserPresence;
 use crate::repository::sync_meta_store::{InMemorySyncMetaStore, SyncMetaStore};
 use crate::repository::trailbase_repository::{
-    RemoteRow, RemoteUserSource, remote_row_from_value, user_to_json,
+    RemoteRow, RemoteUserSource, SavedWireRow, remote_row_from_value, user_to_json,
 };
 
 /// Alias kept short for the fixtures below.
@@ -157,20 +157,31 @@ impl SpyRemote {
         }
     }
 
-    fn store_pushed_user(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {
+    fn store_pushed_user(&self, record_id: i64, user: &User) -> Result<SavedWireRow, OrigaError> {
         let trailbase_id = TRAILBASE_ID
             .with(|id| id.borrow().clone())
             .unwrap_or_else(|| "00000000-0000-0000-0000-000000000001".to_string());
-        let mut body = user_to_json(user, &trailbase_id)?;
-        body["id"] = json!(record_id);
+        // The pushed payload — exactly what the client sent. The real
+        // repository's wire carries no id (it travels in the URL) and no
+        // server-side columns; the reconstruction must derive from THIS
+        // shape, not from the stored row.
+        let pushed = user_to_json(user, &trailbase_id)?;
+
+        // The stored server row: pushed payload + id + simulated
+        // server-side normalization (columns the client never sends).
+        let mut row = pushed.clone();
+        row["id"] = json!(record_id);
         if self.normalize_on_save {
-            body["server_generated_field"] = json!("normalized");
+            row["server_generated_field"] = json!("normalized");
         }
 
         let mut rows = self.rows.lock().unwrap();
-        rows.retain(|row| row.get("id").and_then(Value::as_i64) != Some(record_id));
-        rows.push(body);
-        Ok(())
+        rows.retain(|r| r.get("id").and_then(Value::as_i64) != Some(record_id));
+        rows.push(row);
+        Ok(SavedWireRow {
+            record_id,
+            wire: pushed,
+        })
     }
 }
 
@@ -179,25 +190,29 @@ impl RemoteUserSource for SpyRemote {
         self.row_for_fetch()
     }
 
-    async fn save_with_record_id(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {
+    async fn save_with_record_id(
+        &self,
+        record_id: i64,
+        user: &User,
+    ) -> Result<SavedWireRow, OrigaError> {
         if self.fail_pushes {
             return Err(OrigaError::RepositoryError {
                 reason: "simulated push failure".to_string(),
             });
         }
-        self.store_pushed_user(record_id, user)?;
+        let saved = self.store_pushed_user(record_id, user)?;
         self.pushes.lock().unwrap().push(record_id);
         if let Some(hook) = &self.on_push {
             hook();
         }
-        Ok(())
+        Ok(saved)
     }
 
-    async fn create(&self, user: &User) -> Result<i64, OrigaError> {
+    async fn create(&self, user: &User) -> Result<SavedWireRow, OrigaError> {
         let record_id = 42;
-        self.store_pushed_user(record_id, user)?;
+        let saved = self.store_pushed_user(record_id, user)?;
         self.creates.lock().unwrap().push(user.id());
-        Ok(record_id)
+        Ok(saved)
     }
 
     async fn fetch_if_changed(
@@ -256,6 +271,16 @@ fn fixture_row(email: &str) -> Value {
         "knowledge_set": "{\"study_cards\":{},\"lesson_history\":[]}",
         "updated_at": "2026-09-02T18:00:00Z"
     })
+}
+
+/// Minimal [`SavedWireRow`] for checkpoint-push tests: the bookkeeping
+/// only reads `record_id` and the wire-bumped `updated_at` (far-future
+/// stamp — the discipline this PR reinstated after the 2026-09-21 bombs).
+fn saved_wire_row(record_id: i64) -> SavedWireRow {
+    SavedWireRow {
+        record_id,
+        wire: json!({ "updated_at": "2027-01-01T00:00:00+00:00" }),
+    }
 }
 
 /// Syncs once so the meta records the current server fingerprint, then
@@ -370,10 +395,12 @@ fn remote_change_takes_full_path() {
 
     // Another device changes the remote row's content — a compliant writer
     // bumps the `updated_at` stamp with it (the wire bump in user_to_json).
+    // The bumped stamp is far-future: it must sort past the priming push's
+    // own stamp (the test would silently degrade after that date).
     {
         let mut rows = remote.rows.lock().unwrap();
         rows[0]["username"] = json!("changed-elsewhere");
-        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
+        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
     }
 
     let pushes_before = remote.pushes.lock().unwrap().len();
@@ -418,24 +445,87 @@ fn no_users_anywhere_is_a_noop() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[test]
-fn recorded_fingerprint_is_server_authoritative_not_request_body() {
+fn recorded_fingerprint_matches_the_server_read_back() {
+    // Echo fidelity (ADR-060): the post-push fingerprint is reconstructed
+    // from the pushed payload (skeleton ∪ wire ∪ id) instead of a
+    // re-fetch. A stamp-only change (false probe alarm) must run the full
+    // check and SKIP on the fingerprint — proving the reconstruction
+    // hashes exactly what the server returns.
+    let local = SpyLocal::with_user(fixture_user("a@example.com"));
+    let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
+    let meta = MetaStore::default();
+
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("first sync");
+    let pushes_after_first = remote.pushes.lock().unwrap().len();
+
+    // Stamp-only bump: content identical, probe fires, fingerprint must
+    // match the stored (echoed) row.
+    {
+        let mut rows = remote.rows.lock().unwrap();
+        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
+    }
+
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        pushes_after_first,
+        "a stamp-only change must skip on the matching reconstructed fingerprint"
+    );
+
+    // The skip branch heals the probe stamp from the fetched row.
+    let stored = futures::executor::block_on(meta.load()).expect("meta");
+    assert_eq!(
+        stored.last_seen_updated_at.as_deref(),
+        Some("2027-01-01T00:00:00+00:00")
+    );
+}
+
+#[test]
+fn server_side_normalization_settles_through_the_valve() {
     // The server "normalizes" pushes by adding a column the client never
-    // sends. If the fingerprint were derived from the request body, the
-    // next sync would take the full path forever; being derived from the
-    // re-fetched server bytes, the state settles into skip.
+    // sends. The post-push reconstruction misses it (the pushed payload is
+    // the only source), so the valve's periodic full check detects the
+    // divergence, merges, re-pushes — and the SKELETON from that fetched
+    // row carries the extra column, settling the next full check into a
+    // skip. One extra full cycle, once, instead of a permanent loop.
     let local = SpyLocal::with_user(fixture_user("a@example.com"));
     let mut remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
     remote.normalize_on_save = true;
     let meta = MetaStore::default();
 
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("first sync");
+    assert_eq!(remote.pushes.lock().unwrap().len(), 1);
 
-    let pushes = remote.pushes.lock().unwrap().len();
-    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
+    // PROBE_SKIP_FULL_CHECK_INTERVAL probe-skips, then the valve fires.
+    for _ in 0..PROBE_SKIP_FULL_CHECK_INTERVAL {
+        futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("probe-skip sync");
+    }
     assert_eq!(
         remote.pushes.lock().unwrap().len(),
-        pushes,
-        "second sync must skip despite server-side normalization"
+        1,
+        "probe skips must not push"
+    );
+
+    // The valve full check: fingerprint diverges (server_generated_field
+    // is in the server row but not in the reconstruction) → merge + push.
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("valve sync");
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        2,
+        "the valve full check re-pushes once against the normalized row"
+    );
+
+    // The re-push's skeleton came from the fetched (normalized) row, so
+    // the valve settles: another interval of skips, then a full check
+    // that now SKIPS.
+    for _ in 0..PROBE_SKIP_FULL_CHECK_INTERVAL {
+        futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("probe-skip sync");
+    }
+    futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("settled valve");
+    assert_eq!(
+        remote.pushes.lock().unwrap().len(),
+        2,
+        "after the skeleton carries the normalized column, the full check skips"
     );
 }
 
@@ -561,12 +651,12 @@ fn restore_from_remote_does_not_push_back() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[test]
-fn changed_remote_row_costs_the_probe_and_one_refetch_not_two_downloads() {
+fn changed_remote_row_costs_one_probe_and_no_post_push_refetch() {
     // A compliant writer changed content AND bumped the stamp: the probe
-    // fires and RETURNS the row — sync_merge must use it directly. The
-    // only additional full fetch is the post-push fingerprint re-fetch
-    // (server-authoritative by ADR-045), i.e. the changed path costs the
-    // same as before the probe existed.
+    // fires and RETURNS the row — sync_merge uses it directly, merges,
+    // pushes, and records the bookkeeping from the pushed payload. The
+    // post-push fingerprint re-fetch is gone (ADR-060): the changed path
+    // now costs strictly less than before the probe existed.
     let local = SpyLocal::with_user(fixture_user("a@example.com"));
     let remote = SpyRemote::new(vec![fixture_row("a@example.com")]);
     let meta = MetaStore::default();
@@ -575,7 +665,7 @@ fn changed_remote_row_costs_the_probe_and_one_refetch_not_two_downloads() {
     {
         let mut rows = remote.rows.lock().unwrap();
         rows[0]["username"] = json!("changed-elsewhere");
-        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
+        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
     }
 
     let fetches_before = *remote.fetches.lock().unwrap();
@@ -585,8 +675,8 @@ fn changed_remote_row_costs_the_probe_and_one_refetch_not_two_downloads() {
     assert_eq!(*remote.probes.lock().unwrap(), 1, "one probe");
     assert_eq!(
         *remote.fetches.lock().unwrap(),
-        fetches_before + 1,
-        "probe-returned row + post-push fingerprint re-fetch only"
+        fetches_before,
+        "the probe-returned row is the only download — no post-push re-fetch"
     );
     assert!(remote.pushes.lock().unwrap().len() > pushes_before);
 }
@@ -603,9 +693,10 @@ fn false_probe_alarm_self_heals_via_the_skip_branch() {
     futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
 
     // Only the stamp moves; the fingerprint-relevant content does not.
+    // Far-future stamp: must sort past the priming push's own stamp.
     {
         let mut rows = remote.rows.lock().unwrap();
-        rows[0]["updated_at"] = json!("2026-09-21T10:00:00+00:00");
+        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
     }
 
     let fetches_before = *remote.fetches.lock().unwrap();
@@ -619,7 +710,7 @@ fn false_probe_alarm_self_heals_via_the_skip_branch() {
     let healed = futures::executor::block_on(meta.load()).expect("meta");
     assert_eq!(
         healed.last_seen_updated_at.as_deref(),
-        Some("2026-09-21T10:00:00+00:00"),
+        Some("2027-01-01T00:00:00+00:00"),
         "the stamp must be healed from the row"
     );
 
@@ -835,11 +926,15 @@ impl RemoteUserSource for YieldOnceRemote {
         self.inner.find_current_raw().await
     }
 
-    async fn save_with_record_id(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {
+    async fn save_with_record_id(
+        &self,
+        record_id: i64,
+        user: &User,
+    ) -> Result<SavedWireRow, OrigaError> {
         self.inner.save_with_record_id(record_id, user).await
     }
 
-    async fn create(&self, user: &User) -> Result<i64, OrigaError> {
+    async fn create(&self, user: &User) -> Result<SavedWireRow, OrigaError> {
         self.inner.create(user).await
     }
 
@@ -997,7 +1092,7 @@ fn checkpoint_push_survives_one_transient_failure() {
                 *fail = false;
                 return Err(error);
             }
-            Ok(())
+            Ok(saved_wire_row(7))
         }
     };
 
@@ -1016,9 +1111,10 @@ fn checkpoint_push_survives_one_transient_failure() {
     assert_eq!(local.save_count(), 1, "the local write stays authoritative");
     let stored = futures::executor::block_on(meta.load()).expect("meta");
     assert!(
-        stored.dirty,
-        "the checkpoint records no fingerprint — the next merge takes the full path"
+        !stored.dirty,
+        "the checkpoint records its fingerprint inline from the pushed payload (ADR-060)"
     );
+    assert!(stored.last_synced_fingerprint.is_some());
 }
 
 /// A dead session is not transient: the retry gate must refuse a second
@@ -1035,7 +1131,7 @@ fn expired_session_push_is_never_retried() {
         let attempts = Arc::clone(&attempts);
         async move {
             *attempts.lock().unwrap() += 1;
-            Err(OrigaError::SessionExpired)
+            Err::<SavedWireRow, _>(OrigaError::SessionExpired)
         }
     };
 
@@ -1066,7 +1162,7 @@ fn local_save_failure_never_reaches_the_push() {
         let attempts = Arc::clone(&attempts);
         async move {
             *attempts.lock().unwrap() += 1;
-            Ok(())
+            Ok(saved_wire_row(7))
         }
     };
 
@@ -1081,10 +1177,10 @@ fn local_save_failure_never_reaches_the_push() {
     );
 }
 
-/// Healthy path: one push, no retry, checkpoint settled dirty (the
-/// fingerprint is deliberately left to the next merge).
+/// Healthy path: one push, no retry, and the bookkeeping settles inline —
+/// the next merge collapses to the cheap delta probe (ADR-060).
 #[test]
-fn healthy_checkpoint_pushes_once_and_stays_dirty() {
+fn healthy_checkpoint_pushes_once_and_records_inline() {
     let local = SpyLocal::default();
     let meta = MetaStore::default();
     let user = fixture_user("new@yandex.ru");
@@ -1095,7 +1191,7 @@ fn healthy_checkpoint_pushes_once_and_stays_dirty() {
         let attempts = Arc::clone(&attempts);
         async move {
             *attempts.lock().unwrap() += 1;
-            Ok(())
+            Ok(saved_wire_row(42))
         }
     };
 
@@ -1111,7 +1207,9 @@ fn healthy_checkpoint_pushes_once_and_stays_dirty() {
     assert_eq!(local.save_count(), 1);
     let stored = futures::executor::block_on(meta.load()).expect("meta");
     assert!(
-        stored.dirty,
-        "the fingerprint recording belongs to the merge"
+        !stored.dirty,
+        "the fingerprint is recorded from the pushed payload"
     );
+    assert!(stored.last_synced_fingerprint.is_some());
+    assert!(stored.last_synced_record_id.is_some());
 }

@@ -29,6 +29,12 @@ pub struct TrailBaseUserRepository {
 pub(crate) struct RemoteRow {
     pub record_id: i64,
     pub fingerprint: String,
+    /// Lightweight copy of the fetched row (every column except the fat
+    /// string blobs) kept for the post-push fingerprint reconstruction:
+    /// columns the client does not push survive into the server's row via
+    /// PATCH-partial semantics, so the reconstruction base must remember
+    /// them. ~1 KB instead of the megabyte-scale full row.
+    pub wire_skeleton: serde_json::Value,
     row: UserRow,
 }
 
@@ -57,6 +63,12 @@ impl RemoteRow {
     }
 }
 
+/// Columns whose values dominate the row size (hundreds of KB to MB as
+/// JSON strings) and are FULLY overwritten by every push — the
+/// [`RemoteRow::wire_skeleton`] drops them because the pushed payload
+/// always re-supplies their final values.
+const SKELETON_DROPPED_COLUMNS: [&str; 3] = ["knowledge_set", "jlpt_progress", "imported_sets"];
+
 /// Builds a [`RemoteRow`] from a raw wire row. A row without a numeric
 /// record id is an explicit error — silently skipping it would make the
 /// sync fall through to `create` and duplicate the row (ADR-045).
@@ -68,6 +80,7 @@ pub(crate) fn remote_row_from_value(row: serde_json::Value) -> Result<RemoteRow,
     };
 
     let fingerprint = wire_row_fingerprint(&row);
+    let wire_skeleton = skeleton_from_value(&row);
     let parsed: UserRow = serde_json::from_value(row).map_err(|e| OrigaError::RepositoryError {
         reason: format!("Failed to parse remote user row: {e}"),
     })?;
@@ -75,8 +88,35 @@ pub(crate) fn remote_row_from_value(row: serde_json::Value) -> Result<RemoteRow,
     Ok(RemoteRow {
         record_id,
         fingerprint,
+        wire_skeleton,
         row: parsed,
     })
+}
+
+/// Copies the row minus the fat blob columns (see
+/// [`SKELETON_DROPPED_COLUMNS`]). A non-object row yields an empty
+/// object — the fingerprint hash treats both shapes deterministically.
+fn skeleton_from_value(row: &serde_json::Value) -> serde_json::Value {
+    let serde_json::Value::Object(map) = row else {
+        return serde_json::json!({});
+    };
+    serde_json::Value::Object(
+        map.iter()
+            .filter(|(key, _)| !SKELETON_DROPPED_COLUMNS.contains(&key.as_str()))
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect(),
+    )
+}
+
+/// The result of a landed remote write: the record the server actually
+/// holds afterwards (the id can differ from the requested one — the
+/// update path re-resolves, the failure path falls through to `create`)
+/// plus the exact wire payload that was pushed. The post-push sync
+/// bookkeeping (fingerprint + probe stamp) is derived from this payload
+/// instead of a full re-fetch (ADR-060).
+pub(crate) struct SavedWireRow {
+    pub record_id: i64,
+    pub wire: serde_json::Value,
 }
 
 /// The remote half of the sync orchestration (ADR-045). Split from
@@ -85,13 +125,15 @@ pub(crate) fn remote_row_from_value(row: serde_json::Value) -> Result<RemoteRow,
 pub(crate) trait RemoteUserSource {
     fn find_current_raw(&self) -> impl Future<Output = Result<Option<RemoteRow>, OrigaError>>;
 
+    /// Pushes the user, returning the actual record id and the wire
+    /// payload that landed (see [`SavedWireRow`]).
     fn save_with_record_id(
         &self,
         record_id: i64,
         user: &User,
-    ) -> impl Future<Output = Result<(), OrigaError>>;
+    ) -> impl Future<Output = Result<SavedWireRow, OrigaError>>;
 
-    fn create(&self, user: &User) -> impl Future<Output = Result<i64, OrigaError>>;
+    fn create(&self, user: &User) -> impl Future<Output = Result<SavedWireRow, OrigaError>>;
 
     /// The delta probe: re-fetches the exact row `record_id` only when its
     /// `updated_at` moved past `seen_updated_at`. `Ok(None)` — unchanged
@@ -199,6 +241,28 @@ impl TrailBaseUserRepository {
                 Ok(Some((raw.into_user()?, record_id)))
             },
             None => Ok(None),
+        }
+    }
+
+    /// Resolves the target row and pushes, reporting what actually landed
+    /// (the record id + the pushed wire payload) so the caller can record
+    /// the sync bookkeeping without a re-fetch (ADR-060). This is the
+    /// reporting form of [`UserRepository::save`].
+    pub(crate) async fn save_and_report(&self, user: &User) -> Result<SavedWireRow, OrigaError> {
+        let session = self.require_session()?;
+
+        // Fast path: the record id discovered by a previous sync or create
+        // is cached in the session, so a save costs one PATCH — no lookup
+        // fetch (ADR-045 1c).
+        if let Some(record_id) = session.record_id {
+            return self.save_with_record_id(record_id, user).await;
+        }
+
+        match self.find_current_raw().await? {
+            // The session's record id was missing (legacy sessions predate
+            // the cache): look the row up without decoding it and update.
+            Some(raw) => self.save_with_record_id(raw.record_id, user).await,
+            None => self.create(user).await,
         }
     }
 
@@ -364,21 +428,7 @@ impl UserRepository for TrailBaseUserRepository {
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {
-        let session = self.require_session()?;
-
-        // Fast path: the record id discovered by a previous sync or create
-        // is cached in the session, so a save costs one PATCH — no lookup
-        // fetch (ADR-045 1c).
-        if let Some(record_id) = session.record_id {
-            return self.save_with_record_id(record_id, user).await;
-        }
-
-        match self.find_current_raw().await? {
-            // The session's record id was missing (legacy sessions predate
-            // the cache): look the row up without decoding it and update.
-            Some(raw) => self.save_with_record_id(raw.record_id, user).await,
-            None => self.create(user).await.map(|_| ()),
-        }
+        self.save_and_report(user).await.map(|_| ())
     }
 
     async fn delete(&self, _user_id: Ulid) -> Result<(), OrigaError> {
@@ -409,7 +459,11 @@ impl RemoteUserSource for TrailBaseUserRepository {
         TrailBaseUserRepository::fetch_if_changed(self, record_id, seen_updated_at).await
     }
 
-    async fn save_with_record_id(&self, record_id: i64, user: &User) -> Result<(), OrigaError> {
+    async fn save_with_record_id(
+        &self,
+        record_id: i64,
+        user: &User,
+    ) -> Result<SavedWireRow, OrigaError> {
         let session = self.require_session()?;
 
         let api = self.client.records(&self.table_name);
@@ -430,7 +484,10 @@ impl RemoteUserSource for TrailBaseUserRepository {
                             reason: format!("Failed to update session: {e}"),
                         })?;
                 }
-                Ok(())
+                Ok(SavedWireRow {
+                    record_id,
+                    wire: body,
+                })
             },
             // A failed update re-resolves the row: a live record (whatever
             // its id) retries the update and PROPAGATES on a second
@@ -457,15 +514,18 @@ impl RemoteUserSource for TrailBaseUserRepository {
                                 }
                             })?;
                         }
-                        Ok(())
+                        Ok(SavedWireRow {
+                            record_id: raw.record_id,
+                            wire: body,
+                        })
                     },
-                    None => self.create(user).await.map(|_| ()),
+                    None => self.create(user).await,
                 }
             },
         }
     }
 
-    async fn create(&self, user: &User) -> Result<i64, OrigaError> {
+    async fn create(&self, user: &User) -> Result<SavedWireRow, OrigaError> {
         let session = self.require_session()?;
 
         let api = self.client.records(&self.table_name);
@@ -488,6 +548,9 @@ impl RemoteUserSource for TrailBaseUserRepository {
                 reason: format!("Failed to update session: {e}"),
             })?;
 
-        Ok(record_id)
+        Ok(SavedWireRow {
+            record_id,
+            wire: body,
+        })
     }
 }

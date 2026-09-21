@@ -20,13 +20,15 @@ use serde::{Deserialize, Serialize};
 ///   passes the captured value to [`SyncMeta::record_sync`], which refuses
 ///   to clear the flag when any further mutation happened in the sync
 ///   window (lost-update protection).
-/// - `last_synced_fingerprint` is computed from the **server-authoritative**
-///   row bytes re-fetched after a successful push, never from the request
-///   body: server-side normalization would otherwise break skip matching.
+/// - `last_synced_fingerprint` is computed from the server's read-back row
+///   shape: after a push it is reconstructed from the pushed payload
+///   (skeleton ∪ wire ∪ id — ADR-060; the server stores the pushed JSON
+///   verbatim and `updated_at` is the client's own wire-bump), and on any
+///   full check it comes from the fetched row bytes. The delta-probe
+///   valve bounds any reconstruction drift.
 /// - `last_synced_record_id` + `last_seen_updated_at` identify the exact
 ///   server row the fingerprint belongs to, enabling the delta probe (a
-///   skip-path without the multi-megabyte download). Both are recorded
-///   from server-authoritative rows only. The new fields carry
+///   skip-path without the multi-megabyte download). The new fields carry
 ///   `#[serde(default)]`: records persisted before this feature upgrade
 ///   transparently, and older readers ignore unknown fields (downgrade
 ///   safe — do not add `deny_unknown_fields`).
@@ -35,7 +37,8 @@ use serde::{Deserialize, Serialize};
 ///   trigger ignores the probe's verdict and runs one full check — the
 ///   bounded safety valve for every false-negative class the probe can
 ///   have (cross-device clock skew, timestamp collisions, format drift,
-///   server-side row deletion).
+///   server-side row deletion, post-push reconstruction drift — see
+///   ADR-060).
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SyncMeta {
     pub last_synced_fingerprint: Option<String>,
@@ -114,11 +117,13 @@ impl SyncMeta {
         }
     }
 
-    /// Records the delta-probe bookkeeping from a server-authoritative
-    /// row: the exact row the fingerprint belongs to and its `updated_at`
-    /// stamp. Called on every path that has seen a full row (the
-    /// fingerprint-skip branch included — that is what makes a false probe
-    /// alarm self-healing) and resets the skip counter.
+    /// Records the delta-probe bookkeeping: the exact row the fingerprint
+    /// belongs to and its `updated_at` stamp. Called on every path that
+    /// has seen a full row (the fingerprint-skip branch included — that is
+    /// what makes a false probe alarm self-healing) and after a push (the
+    /// stamp is the pushed wire-bump, passed through verbatim so the
+    /// probe's lexicographic `$gt` compares the exact stored bytes —
+    /// ADR-060). Resets the skip counter.
     pub fn record_probe_row(&mut self, record_id: i64, updated_at: String) {
         self.last_synced_record_id = Some(record_id);
         self.last_seen_updated_at = Some(updated_at);

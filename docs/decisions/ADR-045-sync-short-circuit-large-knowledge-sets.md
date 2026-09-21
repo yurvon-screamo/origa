@@ -2,7 +2,13 @@
 
 ## Status
 
-Accepted
+Accepted (2026-09-02)
+
+Amended by ADR-060 (2026-09-21): the post-push "re-fetch the
+server-authoritative fingerprint" clause is superseded — the bookkeeping
+is now derived from the pushed payload itself. Everything else here
+(the orchestration, the dirty-flag CAS discipline, the delta probe)
+stands.
 
 ## Date
 

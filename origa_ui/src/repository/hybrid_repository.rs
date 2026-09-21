@@ -12,8 +12,9 @@ use origa::{
 use crate::repository::file_repository::FileSystemUserRepository;
 use crate::repository::sync_meta_store::{IdbSyncMetaStore, SyncMetaStore};
 use crate::repository::trailbase_repository::{
-    RemoteRow, RemoteUserSource, TrailBaseUserRepository,
+    RemoteRow, RemoteUserSource, SavedWireRow, TrailBaseUserRepository,
 };
+use crate::repository::wire_fingerprint::wire_row_fingerprint;
 
 #[cfg(test)]
 #[path = "hybrid_sync_tests.rs"]
@@ -122,7 +123,7 @@ pub(crate) async fn save_sync_core<F, Fut>(
 ) -> Result<(), OrigaError>
 where
     F: FnMut() -> Fut,
-    Fut: Future<Output = Result<(), OrigaError>>,
+    Fut: Future<Output = Result<SavedWireRow, OrigaError>>,
 {
     save_sync_core_with_delay(
         crate::repository::sync_retry::SYNC_RETRY_DELAY_MS as u32,
@@ -145,34 +146,55 @@ async fn save_sync_core_with_delay<F, Fut>(
 ) -> Result<(), OrigaError>
 where
     F: FnMut() -> Fut,
-    Fut: Future<Output = Result<(), OrigaError>>,
+    Fut: Future<Output = Result<SavedWireRow, OrigaError>>,
 {
     // Dirty BEFORE the local write, and it stays set across the whole
     // remote push: the push takes seconds for a large knowledge set
     // (serialization + deflate + upload) — exactly the jetsam window
     // this ADR exists for — and a crash there must not leave a clean
     // meta that skips the next sync (ADR-045).
-    if let Err(e) = mark_dirty(meta_store).await {
-        tracing::warn!("Failed to persist sync dirty flag: {e:?}");
-    }
+    let observed_epoch = match mark_dirty(meta_store).await {
+        Ok(meta) => Some(meta.dirty_epoch),
+        Err(e) => {
+            tracing::warn!("Failed to persist sync dirty flag: {e:?}");
+            None
+        },
+    };
     local.save(user).await?;
     // The single shared sync retry (see `should_retry_sync_error`): one
     // transient edge flap must not fail the checkpoint. Idempotent by
     // construction — the push re-resolves the row before creating, so a
     // retried push PATCHes the row the first attempt landed instead of
     // duplicating it.
-    crate::repository::sync_retry::with_sync_retry_delay(delay_ms, push).await
+    let saved = crate::repository::sync_retry::with_sync_retry_delay(delay_ms, push).await?;
+    // The push landed: record the bookkeeping from the pushed payload
+    // (ADR-060) — no re-fetch. No pre-push row is in hand on this path
+    // (the checkpoint push does not fetch first), so the reconstruction
+    // runs without a skeleton; columns outside the pushed payload keep
+    // their prior values server-side and the first valve full check
+    // settles the authoritative fingerprint if they diverge.
+    match observed_epoch {
+        Some(epoch) => record_pushed_fingerprint(None, &saved, meta_store, epoch).await,
+        None => {
+            // The dirty flag never persisted: recording a fingerprint that
+            // clears it would be wrong — leave the meta untouched (the
+            // next sync takes the full path and settles).
+            tracing::warn!("Skipping post-push bookkeeping: dirty flag was not persisted");
+            Ok(())
+        },
+    }
 }
 
 /// The sync orchestration core (ADR-045), generic over the repositories so
 /// it runs against in-memory spies in native tests.
 ///
 /// Steady state (nothing changed since the last successful sync) costs one
-/// raw remote fetch plus a fingerprint comparison — the multi-megabyte
-/// inflate/parse/serialize cycle of a large knowledge set never runs. Any
-/// difference takes the full path: decode the remote row, merge into the
-/// local user, push, then record the **server-authoritative** fingerprint
-/// re-fetched after the push.
+/// tiny delta probe — the multi-megabyte inflate/parse/serialize cycle of
+/// a large knowledge set never runs. Any difference takes the full path:
+/// decode the remote row, merge into the local user, push, then record the
+/// post-push bookkeeping derived from the pushed payload itself (ADR-060:
+/// no re-fetch — the server stores the pushed JSON verbatim and the
+/// `updated_at` stamp is the client's own wire-bump).
 pub(crate) async fn sync_merge(
     local: &(impl UserRepository + LocalUserPresence),
     remote: &impl RemoteUserSource,
@@ -257,8 +279,8 @@ pub(crate) async fn sync_merge(
         match local.get_current_user().await? {
             Some(local_user) => {
                 tracing::info!("Creating remote user from local");
-                remote.create(&local_user).await?;
-                record_post_create_fingerprint(remote, meta_store).await?;
+                let saved = remote.create(&local_user).await?;
+                record_post_create_fingerprint(&saved, meta_store).await?;
             },
             None => tracing::warn!("No user found locally or remotely"),
         }
@@ -271,6 +293,7 @@ pub(crate) async fn sync_merge(
     // every branch records the probe bookkeeping from these two values.
     let remote_fingerprint = remote_row.fingerprint.clone();
     let remote_updated_at = remote_row.updated_at_rfc3339();
+    let wire_skeleton = remote_row.wire_skeleton.clone();
 
     // The skip requires a present local record: when the local store has
     // no user key, the merge below is the recovery path that re-seeds it
@@ -283,6 +306,22 @@ pub(crate) async fn sync_merge(
     // dirtied it since the pre-fetch snapshot, and a dirty local must
     // always take the merge path regardless of the remote verdict.
     let current = meta_store.load().await?;
+    // Divergence canary (ADR-060): the pushed stamp is client-owned, so an
+    // unchanged `updated_at` alongside a mismatching recorded fingerprint
+    // means nobody wrote since our push — the mismatch is reconstruction
+    // drift, not a legitimate remote change. Regular cross-device edits
+    // bump the stamp and never reach this warning.
+    if let Some(recorded) = current.last_synced_fingerprint.as_ref() {
+        if current.last_seen_updated_at.as_deref() == Some(remote_updated_at.as_str())
+            && recorded != &remote_fingerprint
+        {
+            tracing::warn!(
+                recorded_fingerprint = %recorded,
+                server_fingerprint = %remote_fingerprint,
+                "Post-push fingerprint divergence: row unchanged since our push yet hashes differently — reconstruction drift (ADR-060 canary)"
+            );
+        }
+    }
     if !current.should_skip(&remote_fingerprint) || !local_exists {
         // Fall through to the merge path (restore or full). Both re-load
         // the meta internally via `mark_dirty`, so the stale outer
@@ -335,7 +374,15 @@ pub(crate) async fn sync_merge(
         Some(mut local_user) => {
             tracing::info!("Merging remote into local user");
             local_user.merge(&remote_user);
-            full_sync_cycle(local, remote, meta_store, local_user, record_id).await
+            full_sync_cycle(
+                local,
+                remote,
+                meta_store,
+                local_user,
+                record_id,
+                &wire_skeleton,
+            )
+            .await
         },
     }
 }
@@ -364,14 +411,16 @@ pub(crate) async fn sync_merge_gated(
 }
 
 /// The full path: mark dirty (crash-safety), write local, push remote, then
-/// record the server-authoritative fingerprint with the epoch captured
-/// after the own `mark_dirty` (concurrent mutations keep the flag set).
+/// record the post-push bookkeeping from the pushed payload with the epoch
+/// captured after the own `mark_dirty` (concurrent mutations keep the flag
+/// set).
 async fn full_sync_cycle(
     local: &impl UserRepository,
     remote: &impl RemoteUserSource,
     meta_store: &impl SyncMetaStore,
     user: User,
     record_id: i64,
+    pre_push_skeleton: &serde_json::Value,
 ) -> Result<(), OrigaError> {
     // Dirty BEFORE the local write: a crash between the local save and the
     // remote push must leave the flag set so the next sync re-pushes.
@@ -379,43 +428,76 @@ async fn full_sync_cycle(
     let observed_epoch = meta.dirty_epoch;
 
     local.save(&user).await?;
-    remote.save_with_record_id(record_id, &user).await?;
+    let saved = remote.save_with_record_id(record_id, &user).await?;
 
-    record_sync_fingerprint(remote, meta_store, observed_epoch).await
+    record_pushed_fingerprint(Some(pre_push_skeleton), &saved, meta_store, observed_epoch).await
 }
 
-/// Re-fetches the raw row and records its fingerprint. The fingerprint is
-/// server-authoritative on purpose: deriving it from the request body would
-/// silently break skip matching whenever the server normalizes anything on
-/// storage.
-async fn record_sync_fingerprint(
-    remote: &impl RemoteUserSource,
+/// Overlays `wire` onto the skeleton (wire wins on key collisions) and
+/// pins the record id. This reconstructs the server's read-back row: the
+/// server stores the pushed JSON verbatim (STRICT TEXT columns) and keeps
+/// unpushed columns from the pre-push row (PATCH-partial semantics).
+fn reconstructed_wire_row(
+    skeleton: Option<&serde_json::Value>,
+    saved: &SavedWireRow,
+) -> serde_json::Value {
+    let mut merged = match skeleton {
+        Some(serde_json::Value::Object(map)) => map.clone(),
+        _ => serde_json::Map::new(),
+    };
+    if let serde_json::Value::Object(wire) = &saved.wire {
+        for (key, value) in wire {
+            merged.insert(key.clone(), value.clone());
+        }
+    }
+    merged.insert("id".to_string(), serde_json::json!(saved.record_id));
+    serde_json::Value::Object(merged)
+}
+
+/// Records the post-push sync bookkeeping from the pushed payload itself —
+/// no re-fetch (ADR-060). Empirical basis: TrailBase's PATCH response
+/// body is empty, `updated_at` is the client's own wire-bump
+/// (`user_to_json`), and the server stores the pushed JSON verbatim, so
+/// the fingerprint (over skeleton ∪ wire ∪ id, `updated_at` excluded by
+/// the hash) and the probe stamp (the pushed `updated_at` verbatim — the
+/// same renderer the probe compares against) are derivable client-side.
+/// The multi-megabyte GET this replaces was the longest abort window on
+/// iOS backgrounding (the false "sync failed" reports of 2026-09).
+async fn record_pushed_fingerprint(
+    skeleton: Option<&serde_json::Value>,
+    saved: &SavedWireRow,
     meta_store: &impl SyncMetaStore,
     observed_epoch: u64,
 ) -> Result<(), OrigaError> {
+    let Some(stamp) = saved
+        .wire
+        .get("updated_at")
+        .and_then(serde_json::Value::as_str)
+    else {
+        return Err(OrigaError::RepositoryError {
+            reason: "Pushed wire payload is missing its updated_at wire-bump".to_string(),
+        });
+    };
+
+    let fingerprint = wire_row_fingerprint(&reconstructed_wire_row(skeleton, saved));
+
     let mut meta = meta_store.load().await?;
-    match remote.find_current_raw().await? {
-        Some(fresh) => {
-            let fingerprint = fresh.fingerprint.clone();
-            let record_id = fresh.record_id;
-            let updated_at = fresh.updated_at_rfc3339();
-            meta.record_sync(fingerprint, observed_epoch);
-            meta.record_probe_row(record_id, updated_at);
-            meta_store.store(&meta).await?;
-        },
-        None => tracing::warn!("Remote row vanished after push; sync meta left dirty"),
-    }
-    Ok(())
+    meta.record_sync(fingerprint, observed_epoch);
+    meta.record_probe_row(saved.record_id, stamp.to_string());
+    meta_store.store(&meta).await
 }
 
 /// Post-create variant: identical epoch semantics, but no local write —
-/// the local user already exists by construction.
+/// the local user already exists by construction — and no skeleton (no
+/// pre-push row exists on the create path; a server holding extra
+/// columns diverges until the first valve full check settles it — the
+/// documented one-time cost of ADR-060).
 async fn record_post_create_fingerprint(
-    remote: &impl RemoteUserSource,
+    saved: &SavedWireRow,
     meta_store: &impl SyncMetaStore,
 ) -> Result<(), OrigaError> {
     let meta = mark_dirty(meta_store).await?;
-    record_sync_fingerprint(remote, meta_store, meta.dirty_epoch).await
+    record_pushed_fingerprint(None, saved, meta_store, meta.dirty_epoch).await
 }
 
 impl UserRepository for HybridUserRepository {
@@ -469,17 +551,17 @@ impl UserRepository for HybridUserRepository {
         let result = save_sync_core(&self.local, &self.meta, user, move || {
             let remote = remote.clone();
             let pushed = Arc::clone(&pushed);
-            async move { remote.save(&pushed).await }
+            async move { remote.save_and_report(&pushed).await }
         })
         .await;
 
         match result {
             Ok(()) => {
                 tracing::info!("save_sync: Remote save completed for user {}", user.id());
-                // The push succeeded but its fingerprint is not recorded here: the
-                // next `merge_current_user` takes the full path (dirty) and records
-                // the server-authoritative fingerprint — one fewer raw fetch per
-                // checkpoint than recording inline (ADR-045).
+                // The post-push bookkeeping was recorded inline from the
+                // pushed payload (ADR-060) — the next `merge_current_user`
+                // collapses to the cheap delta probe instead of a full
+                // multi-MB fetch.
                 Ok(())
             },
             Err(e) => {
