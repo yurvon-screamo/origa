@@ -44,6 +44,8 @@ pub static CONTENT: Content = Content {
         "한자 쓰기",
         "네이티브 구문",
     ],
+    home_shots_title: "렌더링이 아닌 실제 화면",
+    home_shots_text: "폰 빌드에서 캡처한 화면입니다: 레슨 카드, 문법 참조, 획순 연습이 포함된 한자 쓰기, 원어민 구문. 같은 화면이 Windows, Linux, macOS와 브라우저에서도 실행됩니다.",
     home_stats_line: "오디오 포함 20만+ 문장 · N5–N1 문법·한자 · Windows · Linux · macOS · Android · Web · 오프라인",
     home_faq_free_question: "Origa는 무료인가요?",
     home_faq_free_answer: "네. 모든 플랫폼용 앱과 웹 버전을 무료로 이용할 수 있습니다.",

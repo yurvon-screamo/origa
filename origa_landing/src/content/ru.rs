@@ -44,6 +44,8 @@ pub static CONTENT: Content = Content {
         "Пропись кандзи",
         "Живые фразы",
     ],
+    home_shots_title: "Настоящие экраны, не рендеры",
+    home_shots_text: "Снимки телефонной сборки: карточка урока, справочник грамматики, пропись кандзи с порядком черт, живые фразы. Те же экраны работают на Windows, Linux, macOS и в браузере.",
     home_stats_line: "200 000+ фраз с озвучкой · Грамматика и кандзи N5–N1 · Windows · Linux · macOS · Android · Web · Офлайн",
     home_faq_free_question: "Origa бесплатная?",
     home_faq_free_answer: "Да. Приложение для всех платформ и веб-версия доступны бесплатно.",

@@ -96,26 +96,34 @@ pub fn HomePage() -> impl IntoView {
         <hr class="divider-full" />
 
         // Section 1c: app screens carousel — what the product actually
-        // looks like, one legible phone capture at a time
+        // looks like, one legible phone capture at a time. Text column
+        // frames the phone on wide viewports; the two stack on mobile.
         <section class="home-shots">
             <div class="home-shots__inner">
-                <div class="hero-carousel" id="hero-carousel">
-                    {carousel.iter().enumerate().map(|(i, (img, label))| {
-                        view! {
-                            <figure class="hero-carousel__slide">
-                                <img
-                                    src=format!("/images/app/{lang}.car.{img}.webp")
-                                    alt=label.to_string()
-                                    loading=if i == 0 { "eager" } else { "lazy" }
-                                />
-                                <figcaption class="hero-carousel__caption">
-                                    {label.to_string()}
-                                </figcaption>
-                            </figure>
-                        }
-                    }).collect_view()}
+                <div class="home-shots__text">
+                    <h2 class="home-shots__title">{c.home_shots_title}</h2>
+                    <hr class="home-shots__rule" />
+                    <p class="home-shots__desc">{c.home_shots_text}</p>
                 </div>
-                <div class="hero-carousel__dots" id="hero-carousel-dots"></div>
+                <div class="home-shots__phone">
+                    <div class="hero-carousel" id="hero-carousel">
+                        {carousel.iter().enumerate().map(|(i, (img, label))| {
+                            view! {
+                                <figure class="hero-carousel__slide">
+                                    <img
+                                        src=format!("/images/app/{lang}.car.{img}.webp")
+                                        alt=label.to_string()
+                                        loading=if i == 0 { "eager" } else { "lazy" }
+                                    />
+                                    <figcaption class="hero-carousel__caption">
+                                        {label.to_string()}
+                                    </figcaption>
+                                </figure>
+                            }
+                        }).collect_view()}
+                    </div>
+                    <div class="hero-carousel__dots" id="hero-carousel-dots"></div>
+                </div>
             </div>
         </section>
 
