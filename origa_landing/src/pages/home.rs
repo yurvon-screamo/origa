@@ -231,46 +231,59 @@ fn HomeFeatureCard(title: &'static str, text: &'static str, href: String) -> imp
 /// navigation, native swipe (scroll-snap does the panning; JS only
 /// syncs the dots and drives the timer). No dependencies, mirrors the
 /// header script pattern.
+///
+/// Initialization is deferred to DOMContentLoaded: the script tag sits
+/// above the carousel markup in the SSR output, and a synchronous run
+/// would find no `#hero-carousel` (the bd061bc5 regression). Deferring
+/// also makes the script's position in the markup irrelevant; the
+/// `dots.children` guard keeps a duplicated script tag from double-init.
 fn carousel_inline_script() -> String {
     r#"
     (function() {
-        var track = document.getElementById('hero-carousel');
-        var dots = document.getElementById('hero-carousel-dots');
-        if (!track || !dots) return;
-        var slides = track.children.length;
-        for (var i = 0; i < slides; i++) {
-            var d = document.createElement('button');
-            d.type = 'button';
-            d.className = 'hero-carousel__dot';
-            d.setAttribute('aria-label', 'Slide ' + (i + 1));
-            (function(idx) {
-                d.addEventListener('click', function() {
-                    track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
-                });
-            })(i);
-            dots.appendChild(d);
-        }
-        function current() {
-            return Math.round(track.scrollLeft / track.clientWidth);
-        }
-        function sync() {
-            var cur = current();
-            var ds = dots.children;
-            for (var j = 0; j < ds.length; j++) {
-                ds[j].classList.toggle('is-active', j === cur);
+        function init() {
+            var track = document.getElementById('hero-carousel');
+            var dots = document.getElementById('hero-carousel-dots');
+            if (!track || !dots || dots.children.length) return;
+            var slides = track.children.length;
+            for (var i = 0; i < slides; i++) {
+                var d = document.createElement('button');
+                d.type = 'button';
+                d.className = 'hero-carousel__dot';
+                d.setAttribute('aria-label', 'Slide ' + (i + 1));
+                (function(idx) {
+                    d.addEventListener('click', function() {
+                        track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+                    });
+                })(i);
+                dots.appendChild(d);
             }
+            function current() {
+                return Math.round(track.scrollLeft / track.clientWidth);
+            }
+            function sync() {
+                var cur = current();
+                var ds = dots.children;
+                for (var j = 0; j < ds.length; j++) {
+                    ds[j].classList.toggle('is-active', j === cur);
+                }
+            }
+            track.addEventListener('scroll', function() {
+                clearTimeout(track._t);
+                track._t = setTimeout(sync, 80);
+            });
+            var timer = setInterval(function() {
+                if (track.matches(':hover')) return;
+                var next = (current() + 1) % slides;
+                track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+            }, 4000);
+            track.addEventListener('pointerdown', function() { clearInterval(timer); });
+            sync();
         }
-        track.addEventListener('scroll', function() {
-            clearTimeout(track._t);
-            track._t = setTimeout(sync, 80);
-        });
-        var timer = setInterval(function() {
-            if (track.matches(':hover')) return;
-            var next = (current() + 1) % slides;
-            track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
-        }, 4000);
-        track.addEventListener('pointerdown', function() { clearInterval(timer); });
-        sync();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     })();
     "#
     .to_string()
