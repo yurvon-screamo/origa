@@ -85,8 +85,38 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
     //    'CaptureConsole')`, which prevents `Sentry.init` from running at
     //    all. The loader script serves the latest SDK, so we must use the
     //    v8 functional API. See Sentry v7-to-v8 migration guide.
+    //
+    //    Background flush: iOS/Android suspend the WebView on
+    //    backgrounding, freezing the SDK's async transport — queued
+    //    events die unflushed (the exact blind spot that hid the
+    //    2026-09 sync-error reports from RC builds). The listeners are
+    //    registered immediately (NOT inside `sentryOnLoad`): before the
+    //    loader finishes, `window.Sentry` is undefined and the flush is a
+    //    no-op; once loaded, `visibilitychange → hidden` and `pagehide`
+    //    both push the queue out while the page is still alive.
     let init_js = format!(
         r#"(function() {{
+            if (window.__sentryFlushInstalled) {{
+                return;
+            }}
+            window.__sentryFlushInstalled = true;
+            var flushPending = function() {{
+                // Own attempt counter: hermetic for tests (the loader from a
+                // prior init can replace `window.Sentry` with the real SDK
+                // at any async point) and a cheap breadcrumb for debugging.
+                window.__sentryFlushAttempts = (window.__sentryFlushAttempts || 0) + 1;
+                try {{
+                    if (window.Sentry && typeof window.Sentry.flush === 'function') {{
+                        window.Sentry.flush(2000);
+                    }}
+                }} catch (e) {{ /* never throw from a lifecycle handler */ }}
+            }};
+            document.addEventListener('visibilitychange', function() {{
+                if (document.visibilityState === 'hidden') {{
+                    flushPending();
+                }}
+            }});
+            window.addEventListener('pagehide', flushPending);
             window.sentryOnLoad = function() {{
                 // captureConsoleIntegration routes tracing-wasm's console.error
                 // output (which is where all WASM tracing::error! calls land via
@@ -354,5 +384,77 @@ mod wasm_tests {
         let last = nodes.item(nodes.length() - 1)?;
         let el = last.dyn_ref::<web_sys::Element>()?;
         el.get_attribute("data-lazy")
+    }
+
+    /// Reads the listener's own flush-attempt counter (set by
+    /// `flushPending` in the injected init script).
+    fn flush_attempts() -> u32 {
+        js_sys::eval("window.__sentryFlushAttempts || 0")
+            .ok()
+            .and_then(|v| v.as_f64())
+            .map(|v| v as u32)
+            .unwrap_or(0)
+    }
+
+    fn dispatch_event(target: &str, event_type: &str) {
+        let js = format!(
+            "(function() {{ var e = new Event('{event_type}'); \
+               ({target}).dispatchEvent(e); }})();"
+        );
+        js_sys::eval(&js).expect("event dispatch eval");
+    }
+
+    /// `pagehide` (iOS termination path) must reach `Sentry.flush` on the
+    /// live `window.Sentry`. Asserts both the listener's own attempt
+    /// counter (hermetic — unaffected by any SDK replacement) and the
+    /// stubbed flush call itself (the loader URL uses a fake key, so no
+    /// real SDK ever replaces the stub in the test browser).
+    #[wasm_bindgen_test]
+    fn background_flush_fires_on_pagehide() {
+        init_with(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        js_sys::eval(
+            "window.__stubFlushCount = 0; \
+             window.Sentry = { flush: function() { window.__stubFlushCount++; } };",
+        )
+        .expect("flush stub eval");
+        let before = flush_attempts();
+
+        dispatch_event("window", "pagehide");
+
+        assert_eq!(
+            flush_attempts(),
+            before + 1,
+            "pagehide must run the background flush"
+        );
+        let stub_calls = js_sys::eval("window.__stubFlushCount || 0")
+            .ok()
+            .and_then(|v| v.as_f64())
+            .map(|v| v as u32)
+            .unwrap_or(0);
+        assert_eq!(stub_calls, 1, "the flush must call window.Sentry.flush");
+    }
+
+    /// `visibilitychange` while the document is still visible must NOT
+    /// flush — the handler gates on `document.visibilityState === 'hidden'`.
+    #[wasm_bindgen_test]
+    fn background_flush_skips_while_visible() {
+        init_with(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        let before = flush_attempts();
+
+        dispatch_event("document", "visibilitychange");
+
+        assert_eq!(
+            flush_attempts(),
+            before,
+            "visibilitychange while visible must not flush"
+        );
     }
 }
