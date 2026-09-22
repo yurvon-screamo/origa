@@ -44,8 +44,28 @@ pub static CONTENT: Content = Content {
         "Kanji writing",
         "Native phrases",
     ],
-    home_shots_title: "Real screens, not renders",
-    home_shots_text: "Captures from the phone build: a lesson card, the grammar reference, kanji writing with stroke order, native phrases. The same screens run on Windows, Linux, macOS and in the browser.",
+    home_shots: &[
+        (
+            "Your progress at a glance",
+            "Open the app and see where you stand before the first tap: cards due, JLPT progress, a 30-day chart. The lesson button already knows what's next today.",
+        ),
+        (
+            "Grade and move on",
+            "Grading a card is one tap. FSRS picks the next review for the moment you're about to forget — you never plan the schedule yourself.",
+        ),
+        (
+            "Grammar in your language",
+            "Look up any pattern and read the explanation in Russian, English, Korean or Vietnamese, with real examples from the built-in dictionaries.",
+        ),
+        (
+            "Write kanji by hand",
+            "Writing practice shows the next stroke and counts them with you. You learn the motion of a character, not just its shape.",
+        ),
+        (
+            "Hear real Japanese",
+            "200,000+ native phrases with audio, from everyday talk to set expressions. Listen, repeat, and pick up how Japanese is actually spoken.",
+        ),
+    ],
     home_stats_line: "200,000+ native phrases with audio · N5–N1 grammar & kanji · Windows · Linux · macOS · Android · Web · Offline",
     home_faq_free_question: "Is Origa free?",
     home_faq_free_answer: "Yes. The apps for every platform and the web version are free.",
