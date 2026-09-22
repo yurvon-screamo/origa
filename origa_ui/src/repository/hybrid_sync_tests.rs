@@ -273,13 +273,22 @@ fn fixture_row(email: &str) -> Value {
     })
 }
 
+/// A stamp that is always in the future relative to any push a test can
+/// make (`user_to_json` stamps with `Utc::now()`): the probe's `$gt` is a
+/// lexicographic string comparison, so a bumped stamp must sort past
+/// whatever the priming push wrote. Replaces far-future literals — a
+/// hardcoded "tomorrow" is a date bomb that silently degrades the test
+/// after it passes (the 2026-09-21 incident).
+fn future_stamp() -> String {
+    (chrono::Utc::now() + chrono::Duration::days(365)).to_rfc3339()
+}
+
 /// Minimal [`SavedWireRow`] for checkpoint-push tests: the bookkeeping
-/// only reads `record_id` and the wire-bumped `updated_at` (far-future
-/// stamp — the discipline this PR reinstated after the 2026-09-21 bombs).
+/// only reads `record_id` and the wire-bumped `updated_at`.
 fn saved_wire_row(record_id: i64) -> SavedWireRow {
     SavedWireRow {
         record_id,
-        wire: json!({ "updated_at": "2027-01-01T00:00:00+00:00" }),
+        wire: json!({ "updated_at": future_stamp() }),
     }
 }
 
@@ -395,12 +404,12 @@ fn remote_change_takes_full_path() {
 
     // Another device changes the remote row's content — a compliant writer
     // bumps the `updated_at` stamp with it (the wire bump in user_to_json).
-    // The bumped stamp is far-future: it must sort past the priming push's
-    // own stamp (the test would silently degrade after that date).
+    // The bumped stamp is generated a year out: it must sort past the
+    // priming push's own stamp no matter when the test runs.
     {
         let mut rows = remote.rows.lock().unwrap();
         rows[0]["username"] = json!("changed-elsewhere");
-        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
+        rows[0]["updated_at"] = json!(future_stamp());
     }
 
     let pushes_before = remote.pushes.lock().unwrap().len();
@@ -460,9 +469,10 @@ fn recorded_fingerprint_matches_the_server_read_back() {
 
     // Stamp-only bump: content identical, probe fires, fingerprint must
     // match the stored (echoed) row.
+    let bumped_stamp = future_stamp();
     {
         let mut rows = remote.rows.lock().unwrap();
-        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
+        rows[0]["updated_at"] = json!(bumped_stamp.clone());
     }
 
     futures::executor::block_on(sync_merge(&local, &remote, &meta)).expect("second sync");
@@ -476,7 +486,7 @@ fn recorded_fingerprint_matches_the_server_read_back() {
     let stored = futures::executor::block_on(meta.load()).expect("meta");
     assert_eq!(
         stored.last_seen_updated_at.as_deref(),
-        Some("2027-01-01T00:00:00+00:00")
+        Some(bumped_stamp.as_str())
     );
 }
 
@@ -665,7 +675,7 @@ fn changed_remote_row_costs_one_probe_and_no_post_push_refetch() {
     {
         let mut rows = remote.rows.lock().unwrap();
         rows[0]["username"] = json!("changed-elsewhere");
-        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
+        rows[0]["updated_at"] = json!(future_stamp());
     }
 
     let fetches_before = *remote.fetches.lock().unwrap();
@@ -693,10 +703,12 @@ fn false_probe_alarm_self_heals_via_the_skip_branch() {
     futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
 
     // Only the stamp moves; the fingerprint-relevant content does not.
-    // Far-future stamp: must sort past the priming push's own stamp.
+    // The bumped stamp is generated a year out: it must sort past the
+    // priming push's own stamp no matter when the test runs.
+    let bumped_stamp = future_stamp();
     {
         let mut rows = remote.rows.lock().unwrap();
-        rows[0]["updated_at"] = json!("2027-01-01T00:00:00+00:00");
+        rows[0]["updated_at"] = json!(bumped_stamp.clone());
     }
 
     let fetches_before = *remote.fetches.lock().unwrap();
@@ -710,7 +722,7 @@ fn false_probe_alarm_self_heals_via_the_skip_branch() {
     let healed = futures::executor::block_on(meta.load()).expect("meta");
     assert_eq!(
         healed.last_seen_updated_at.as_deref(),
-        Some("2027-01-01T00:00:00+00:00"),
+        Some(bumped_stamp.as_str()),
         "the stamp must be healed from the row"
     );
 
@@ -795,7 +807,7 @@ fn a_newer_stale_duplicate_row_does_not_fire_the_probe() {
     let mut stale_dup = fixture_row("a@example.com");
     stale_dup["id"] = json!(9);
     stale_dup["username"] = json!("dup-legacy");
-    stale_dup["updated_at"] = json!("2027-01-01T00:00:00+00:00"); // far newer
+    stale_dup["updated_at"] = json!(future_stamp()); // must sort past any push
     let remote = SpyRemote::new(vec![canonical, stale_dup]);
     let meta = MetaStore::default();
     futures::executor::block_on(prime_synced_state(&local, &remote, &meta));
