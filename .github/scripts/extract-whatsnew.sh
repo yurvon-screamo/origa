@@ -14,8 +14,9 @@
 #   - body: lines until the next "##" section header or EOF
 #   - duplicate sections for one version are an authoring error → fail
 #   - bullets start with "- " or "* "; links / inline code / nested headers
-#     are forbidden by the format contract and NOT stripped here
-#   - limit: 500 characters of the final text — the RuStore whatsNew field cap
+#     are forbidden by the format contract (nested headers FAIL the job)
+#   - limit: 500 characters of the final text including newlines — the
+#     RuStore whatsNew field cap
 set -euo pipefail
 
 if [[ $# -ne 3 ]]; then
@@ -34,10 +35,11 @@ fi
 
 # Count section headers with the same semantics the extractor uses below:
 # "## <version>" with trailing whitespace allowed, no prefix matching.
-# Dots are regex-escaped so "## 0.7.3" cannot match "## 0.7.32".
+# All ERE metacharacters are escaped so an odd version string cannot widen
+# the match ("## 0.7.3" must not match "## 0.7.32").
 # Guarded grep: under set -e an unguarded failing grep (0 matches) would
 # exit 1 and swallow the actionable message below.
-VERSION_RE="${VERSION//./\\.}"
+VERSION_RE=$(printf '%s' "$VERSION" | sed -E 's/[][\\.^$*+?(){}|]/\\&/g')
 matches=$(grep -cE "^## ${VERSION_RE}[[:space:]]*$" "$CHANGELOG" || true)
 if [[ "$matches" -eq 0 ]]; then
     echo "error: no '## ${VERSION}' section in ${CHANGELOG} — add it before tagging (format: see the CHANGELOG.md header)" >&2
@@ -50,11 +52,13 @@ fi
 
 # Body extraction: exact header match (trailing whitespace trimmed), stop at
 # the next "##" section header or EOF (section-last-in-file is valid).
+# A "##" header INSIDE the section is a format violation (nested headers are
+# forbidden) — fail loudly instead of silently truncating the tail.
 # \r is stripped defensively in case the file was edited outside the git
 # cycle (.gitattributes enforces LF, but that does not cover stray editors).
 header="## ${VERSION}"
 body=$(awk -v header="$header" '
-    BEGIN { in_section = 0 }
+    BEGIN { in_section = 0; body_lines = 0 }
     {
         line = $0
         sub(/\r$/, "", line)
@@ -64,9 +68,26 @@ body=$(awk -v header="$header" '
             if (trimmed == header) in_section = 1
             next
         }
-        if (trimmed ~ /^##/) exit
+        if (trimmed ~ /^##/) {
+            # A version-formatted header ("## X.Y.Z") is the start of the next
+            # section — a clean end of the current one (duplicates are already
+            # caught by the grep counter; an empty body is caught below).
+            # Any OTHER "##"-line is a nested header, forbidden by the format:
+            # after content lines it FAILS loudly instead of silently
+            # truncating the tail; before any content it is just the end of
+            # an empty section, reported by the dedicated "is empty" check.
+            if (trimmed !~ /^## [0-9]+\.[0-9]+\.[0-9]+[[:space:]]*$/ && body_lines > 0) {
+                printf "error: nested header \x27%s\x27 inside the section — nested headers are forbidden (CHANGELOG.md header)\n", trimmed > "/dev/stderr"
+                exit 3
+            }
+            exit 0
+        }
         print line
-    }' "$CHANGELOG")
+        if (line !~ /^[[:space:]]*$/) body_lines++
+    }' "$CHANGELOG") || {
+    # awk already printed the diagnostic to stderr (exit 3 = nested header)
+    exit 1
+}
 
 # Strip bullet markers, trailing whitespace, and drop empty lines.
 cleaned=$(printf '%s\n' "$body" \
