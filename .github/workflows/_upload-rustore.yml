@@ -7,6 +7,9 @@ name: Upload to RuStore
 # inputs.version_type == 'stable'.
 #
 # Flow:
+#   0. Checkout + extract whatsNew from CHANGELOG.md — fails the job before
+#      any API call or artifact download if the version section is missing,
+#      empty, or over the 500-char RuStore limit
 #   1. POST /public/auth/ — exchange signed keyId+timestamp for JWE token (15 min TTL)
 #   2. POST /public/v1/application/{pkg}/version — create draft, returns versionId
 #   3. POST /public/v1/application/{pkg}/version/{id}/aab — multipart upload
@@ -53,6 +56,24 @@ jobs:
             PACKAGE_NAME: net.uwuwu.origa
             RUSTORE_API: https://public-api.rustore.ru
         steps:
+            - name: Check out repository
+              uses: actions/checkout@v7
+
+            - name: Extract whatsNew from CHANGELOG.md
+              env:
+                  VERSION: ${{ inputs.version }}
+              run: |
+                  set -e
+                  # The RuStore listing text comes from the curated CHANGELOG.md
+                  # section for this exact version. Extraction runs BEFORE any
+                  # RuStore API call and before the AAB download, so a missing/
+                  # empty/oversized section fails the job without creating a
+                  # stub draft (the failure mode that got 0.7.28+ rejected by
+                  # moderation). Output file `.whatsnew` lives in the workspace
+                  # for the "Create version draft" step; nothing else writes to
+                  # this path (the AAB artifact lands in aab/).
+                  .github/scripts/extract-whatsnew.sh "$VERSION" CHANGELOG.md .whatsnew
+
             - name: Download AAB artifact
               uses: actions/download-artifact@v8
               with:
@@ -135,13 +156,14 @@ jobs:
                   echo "JWE_TOKEN=$JWE" >> "$GITHUB_ENV"
 
             - name: Create version draft
-              env:
-                  VERSION: ${{ inputs.version }}
               run: |
                   set -e
-                  # whatsNew max 500 chars — release version + commit ref is enough
-                  # for automated CI uploads; full changelog goes to GitHub Release.
-                  WHATS_NEW="Release $VERSION (automated CI upload)"
+                  # whatsNew was extracted from CHANGELOG.md and validated
+                  # (section exists, non-empty, ≤500 chars) by the extraction
+                  # step. Multiline-safe transfer via file — NOT GITHUB_ENV,
+                  # which breaks on embedded newlines; jq --arg escapes them
+                  # into JSON correctly.
+                  WHATS_NEW=$(cat .whatsnew)
 
                   BODY_FILE=$(mktemp)
                   trap 'rm -f "$BODY_FILE"' EXIT
