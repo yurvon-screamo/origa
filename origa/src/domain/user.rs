@@ -315,6 +315,18 @@ impl User {
         self.knowledge_set.rate_card(card_id, rating, mode, context)
     }
 
+    /// Мини-оценка связки счётного суффикса (issue #415): только память
+    /// ячейки, мимо `rate_card`.
+    pub fn rate_counter_binding(
+        &mut self,
+        card_id: Ulid,
+        number: u8,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        self.knowledge_set
+            .rate_counter_binding(card_id, number, rating)
+    }
+
     pub fn mark_card_as_known(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         self.knowledge_set.mark_card_as_known(card_id)
     }
@@ -401,6 +413,9 @@ impl User {
                 Card::Kanji(_) => (&mut learned.kanji, &mut projected.kanji),
                 Card::Vocabulary(_) | Card::Phrase(_) => (&mut learned.words, &mut projected.words),
                 Card::Grammar(_) => (&mut learned.grammar, &mut projected.grammar),
+                // Счётные суффиксы докладываются в грамматический бюджет
+                // прогресса: объём мал, отдельного блока на дашборде нет.
+                Card::Counter(_) => (&mut learned.grammar, &mut projected.grammar),
             };
 
             if is_learned {

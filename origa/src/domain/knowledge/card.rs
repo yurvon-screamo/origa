@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError, PartOfSpeech, Rating,
-    knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
+    knowledge::{CounterCard, GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{CardAnswer, NativeLanguage, Question},
 };
@@ -39,6 +39,13 @@ impl StudyCard {
 
     pub fn card(&self) -> &Card {
         &self.card
+    }
+
+    /// Мутабельный доступ к полезной нагрузке карты. Существующий
+    /// `replace_card` меняет карту целиком; связки счётного суффикса
+    /// требуют точечной мутации памятей (`rate_counter_binding`).
+    pub(crate) fn card_mut(&mut self) -> &mut Card {
+        &mut self.card
     }
 
     pub(crate) fn replace_card(&mut self, new_card: Card) {
@@ -135,6 +142,12 @@ impl StudyCard {
     pub fn merge(&mut self, other: &StudyCard) {
         self.memory_history.merge(&other.memory_history);
 
+        // Связки счётного суффикса мержатся попарно по числу; контент не
+        // мержится — он резолвится из реестра (issue #415).
+        if let (Card::Counter(mine), Card::Counter(theirs)) = (&mut self.card, &other.card) {
+            mine.merge_bindings(theirs);
+        }
+
         match (self.favorite_changed_at, other.favorite_changed_at) {
             (Some(self_ts), Some(other_ts)) => {
                 if other_ts > self_ts {
@@ -169,6 +182,7 @@ pub enum Card {
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
     Phrase(PhraseCard),
+    Counter(CounterCard),
 }
 
 impl Card {
@@ -185,6 +199,7 @@ impl Card {
                     reason: e.to_string(),
                 })
             },
+            Card::Counter(card) => card.question(),
         }
     }
 
@@ -201,6 +216,7 @@ impl Card {
                     reason: e.to_string(),
                 })
             },
+            Card::Counter(card) => card.answer(lang),
         }
     }
 
@@ -210,6 +226,7 @@ impl Card {
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
             Card::Phrase(card) => card.phrase_id().to_string(),
+            Card::Counter(card) => card.suffix().to_string(),
         }
     }
 
@@ -227,6 +244,7 @@ pub enum CardType {
     Kanji,
     Grammar,
     Phrase,
+    Counter,
 }
 
 /// Uniqueness identity of a card for bulk-import deduplication: card type
@@ -255,6 +273,7 @@ impl From<&Card> for CardType {
             Card::Kanji(_) => CardType::Kanji,
             Card::Grammar(_) => CardType::Grammar,
             Card::Phrase(_) => CardType::Phrase,
+            Card::Counter(_) => CardType::Counter,
         }
     }
 }

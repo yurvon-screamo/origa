@@ -59,7 +59,7 @@ async fn hand_type_counts(repo: &InMemoryUserRepository, hand: &[Ulid]) -> (usiz
             Card::Vocabulary(_) => counts.0 += 1,
             Card::Kanji(_) => counts.1 += 1,
             Card::Grammar(_) => counts.2 += 1,
-            Card::Phrase(_) => {},
+            Card::Phrase(_) | Card::Counter(_) => {},
         }
     }
     counts

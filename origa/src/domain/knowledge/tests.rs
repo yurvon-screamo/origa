@@ -953,6 +953,7 @@ fn new_cards_interleave_across_jlpt_levels() {
             },
             Card::Grammar(_) => panic!("No grammar cards in this test"),
             Card::Phrase(_) => panic!("No phrase cards in this test"),
+            Card::Counter(_) => panic!("No counter cards in this test"),
         }
     }
 
