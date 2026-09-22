@@ -4890,7 +4890,9 @@ rt {
 
 .grammar-detail-hero-meaning {
     font-family: var(--font-serif);
-    font-size: 32px;
+    /* Same role as .kanji-detail-hero-meaning — the two detail heroes
+       must not drift apart in size (32px drowned long RU rule titles). */
+    font-size: var(--text-lg, 18px);
     color: var(--fg-black);
     line-height: 1.2;
 }
