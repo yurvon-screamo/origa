@@ -982,32 +982,18 @@ fn CounterSlide(
     meaning: String,
     table: Vec<(String, String, bool)>,
 ) -> impl IntoView {
-    let stored_suffix = StoredValue::new(suffix);
-    let stored_meaning = StoredValue::new(meaning);
-    let table_rows: Vec<_> = table
-        .iter()
-        .map(|(label, reading, irregular)| {
-            let highlight = if *irregular {
-                "bg-[var(--accent-warm)]"
-            } else {
-                ""
-            };
-            let label = label.clone();
-            let reading = reading.clone();
-            let suffix = stored_suffix.get_value();
-            view! {
-                <div class=format!(
-                    "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0 {}",
-                    highlight
-                )>
-                    <span class="font-mono text-[var(--fg-black)]">
-                        {label}{"×"}{suffix}
-                    </span>
-                    <span class="font-serif text-[var(--fg-black)]">{reading}</span>
-                </div>
-            }
+    use super::counter_bindings_card::{CounterReadingRow, CounterReadingsTable};
+    let rows: Vec<CounterReadingRow> = table
+        .into_iter()
+        .map(|(number_label, reading, irregular)| CounterReadingRow {
+            number: 0, // в таблице показа подсветки строк нет — число не нужно
+            number_label,
+            reading,
+            irregular,
         })
         .collect();
+    let stored_suffix = StoredValue::new(suffix);
+    let stored_meaning = StoredValue::new(meaning);
     view! {
         <div class="space-y-4" data-testid="acquaintance-counter-slide">
             <p class="font-serif text-6xl text-center text-[var(--fg-black)]">
@@ -1016,10 +1002,11 @@ fn CounterSlide(
             <p class="font-mono text-lg text-[var(--fg-muted)] text-center">
                 {stored_meaning.get_value()}
             </p>
-            <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
-                 data-testid="acquaintance-counter-slide-table">
-                {table_rows}
-            </div>
+            <CounterReadingsTable
+                rows=rows
+                suffix=stored_suffix.get_value()
+                test_id=Signal::derive(|| "acquaintance-counter-slide-table".to_string())
+            />
         </div>
     }
 }

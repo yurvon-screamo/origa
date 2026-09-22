@@ -428,7 +428,13 @@ impl User {
         let total = CategoryCounts {
             kanji: Self::build_totals(&content.kanji_by_level),
             words: Self::build_totals(&content.words_by_level),
-            grammar: Self::build_totals(&content.grammar_by_level),
+            // Счётные суффиксы докладываются в числитель грамматики —
+            // знаменатель обязан включать их же, иначе процент категории
+            // у юзера с выученными счётчиками уходит за 100%.
+            grammar: Self::build_totals_merged(&[
+                &content.grammar_by_level,
+                &content.counters_by_level,
+            ]),
         };
 
         self.jlpt_progress.recalculate(ProgressUpdate {
@@ -444,6 +450,23 @@ impl User {
         content
             .iter()
             .map(|(level, set)| (*level, set.len()))
+            .collect()
+    }
+
+    /// Знаменатель из нескольких контент-индексов одной категории
+    /// (грамматика + счётные суффиксы): объединение множеств по уровням.
+    fn build_totals_merged(
+        contents: &[&HashMap<JapaneseLevel, std::collections::HashSet<String>>],
+    ) -> HashMap<JapaneseLevel, usize> {
+        let mut merged: HashMap<JapaneseLevel, std::collections::HashSet<&String>> = HashMap::new();
+        for content in contents {
+            for (level, set) in content.iter() {
+                merged.entry(*level).or_default().extend(set.iter());
+            }
+        }
+        merged
+            .into_iter()
+            .map(|(level, set)| (level, set.len()))
             .collect()
     }
 }

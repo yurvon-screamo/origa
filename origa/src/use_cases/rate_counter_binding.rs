@@ -48,20 +48,23 @@ mod tests {
     use crate::domain::{Card, CardType, NativeLanguage, User};
     use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 
-    async fn user_with_hon(repo: &InMemoryUserRepository) -> Ulid {
+    fn repo_with(user: User) -> InMemoryUserRepository {
+        InMemoryUserRepository::with_user(user)
+    }
+
+    async fn hon_repo() -> (InMemoryUserRepository, Ulid) {
         let mut user = User::new("t@e.st".to_string(), NativeLanguage::Russian, None);
         crate::dictionary::counters::tests::init_test_counters();
         let mut counter = CounterCard::new(crate::dictionary::counters::tests::TEST_HON);
         counter.ensure_registry_bindings();
         let card = user.create_card(Card::Counter(counter)).unwrap();
-        repo.save_sync(&user).await.unwrap();
-        *card.card_id()
+        let repo = repo_with(user);
+        (repo, *card.card_id())
     }
 
     #[tokio::test]
     async fn binding_rating_touches_only_that_binding_memory() {
-        let repo = InMemoryUserRepository::new();
-        let card_id = user_with_hon(&repo).await;
+        let (repo, card_id) = hon_repo().await;
         let use_case = RateCounterBindingUseCase::new(&repo);
 
         use_case.execute(card_id, 3, Rating::Good).await.unwrap();
@@ -81,8 +84,7 @@ mod tests {
 
     #[tokio::test]
     async fn binding_rating_leaves_semantic_memory_untouched() {
-        let repo = InMemoryUserRepository::new();
-        let card_id = user_with_hon(&repo).await;
+        let (repo, card_id) = hon_repo().await;
         let use_case = RateCounterBindingUseCase::new(&repo);
 
         use_case.execute(card_id, 1, Rating::Good).await.unwrap();
@@ -98,8 +100,7 @@ mod tests {
 
     #[tokio::test]
     async fn unknown_binding_number_is_a_domain_error() {
-        let repo = InMemoryUserRepository::new();
-        let card_id = user_with_hon(&repo).await;
+        let (repo, card_id) = hon_repo().await;
         let use_case = RateCounterBindingUseCase::new(&repo);
 
         let err = use_case
@@ -111,7 +112,6 @@ mod tests {
 
     #[tokio::test]
     async fn non_counter_card_rejects_binding_rating() {
-        let repo = InMemoryUserRepository::new();
         let mut user = User::new("t@e.st".to_string(), NativeLanguage::Russian, None);
         let vocab = user
             .create_card(Card::Vocabulary(crate::domain::VocabularyCard::new(
@@ -119,7 +119,7 @@ mod tests {
             )))
             .unwrap();
         let vocab_id = *vocab.card_id();
-        repo.save_sync(&user).await.unwrap();
+        let repo = repo_with(user);
 
         let err = RateCounterBindingUseCase::new(&repo)
             .execute(vocab_id, 3, Rating::Good)

@@ -160,35 +160,24 @@ pub(super) fn TrainingAnswerSlide(
                             .into_any()
                     },
                     // Счётный суффикс: ответ = значение + таблица чтений
-                    // (issue #415). Таблица — статический фрагмент: контент
-                    // реестра в сессии не меняется.
+                    // (issue #415). Таблица — общий компонент
+                    // CounterReadingsTable (как в показе и композитном слоте).
                     AcquaintanceSlideData::Counter {
                         suffix,
                         meaning,
                         table,
                         ..
                     } => {
-                        let table_rows: Vec<_> = table
-                            .iter()
-                            .map(|(label, reading, irregular)| {
-                                let highlight = if *irregular {
-                                    "bg-[var(--accent-warm)]"
-                                } else {
-                                    ""
-                                };
-                                view! {
-                                    <div class=format!(
-                                        "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0 {}",
-                                        highlight
-                                    )>
-                                        <span class="font-mono text-[var(--fg-black)]">
-                                            {label.clone()}{"×"}{suffix.clone()}
-                                        </span>
-                                        <span class="font-serif text-[var(--fg-black)]">
-                                            {reading.clone()}
-                                        </span>
-                                    </div>
-                                }
+                        use super::counter_bindings_card::{
+                            CounterReadingRow, CounterReadingsTable,
+                        };
+                        let rows: Vec<CounterReadingRow> = table
+                            .into_iter()
+                            .map(|(number_label, reading, irregular)| CounterReadingRow {
+                                number: 0,
+                                number_label,
+                                reading,
+                                irregular,
                             })
                             .collect();
                         view! {
@@ -196,10 +185,11 @@ pub(super) fn TrainingAnswerSlide(
                                 <p class="font-mono text-lg text-[var(--fg-muted)] text-center">
                                     {meaning}
                                 </p>
-                                <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
-                                     data-testid="acquaintance-counter-table">
-                                    {table_rows}
-                                </div>
+                                <CounterReadingsTable
+                                    rows=rows
+                                    suffix=suffix
+                                    test_id=Signal::derive(|| "acquaintance-counter-table".to_string())
+                                />
                             </div>
                         }
                             .into_any()

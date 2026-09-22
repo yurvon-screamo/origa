@@ -76,9 +76,7 @@ mod tests {
         user
     }
 
-    #[tokio::test]
-    async fn session_aggregate_moves_semantic_memory_and_spends_one_new_budget() {
-        let repo = InMemoryUserRepository::new();
+    async fn session_repo() -> (InMemoryUserRepository, Ulid) {
         let user = seeded_hon_user();
         let card_id = *user
             .knowledge_set()
@@ -87,7 +85,12 @@ mod tests {
             .next()
             .unwrap()
             .card_id();
-        repo.save_sync(&user).await.unwrap();
+        (InMemoryUserRepository::with_user(user), card_id)
+    }
+
+    #[tokio::test]
+    async fn session_aggregate_moves_semantic_memory_and_spends_one_new_budget() {
+        let (repo, card_id) = session_repo().await;
 
         // Мини-оценки связок — мимо рейтингового пути.
         let binding = RateCounterBindingUseCase::new(&repo);
@@ -116,16 +119,7 @@ mod tests {
 
     #[tokio::test]
     async fn any_binding_failure_aggregates_to_again() {
-        let repo = InMemoryUserRepository::new();
-        let user = seeded_hon_user();
-        let card_id = *user
-            .knowledge_set()
-            .study_cards()
-            .values()
-            .next()
-            .unwrap()
-            .card_id();
-        repo.save_sync(&user).await.unwrap();
+        let (repo, card_id) = session_repo().await;
 
         RecordCounterSessionUseCase::new(&repo)
             .execute(card_id, false)
@@ -141,16 +135,7 @@ mod tests {
 
     #[tokio::test]
     async fn second_session_does_not_double_the_new_budget() {
-        let repo = InMemoryUserRepository::new();
-        let user = seeded_hon_user();
-        let card_id = *user
-            .knowledge_set()
-            .study_cards()
-            .values()
-            .next()
-            .unwrap()
-            .card_id();
-        repo.save_sync(&user).await.unwrap();
+        let (repo, card_id) = session_repo().await;
 
         let session = RecordCounterSessionUseCase::new(&repo);
         session.execute(card_id, true).await.unwrap();

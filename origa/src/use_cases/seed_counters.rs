@@ -15,34 +15,31 @@ pub struct SeedCountersUseCase<'a, R: UserRepository> {
     repository: &'a R,
 }
 
+/// Создаёт недостающие counter-карты уровней ≤ `level`.
+/// Работает по уже загруженному пользователю (внутри bulk-брекета
+/// онбординг-импорта); сохранение — ответственность вызывающего.
+/// Свободная функция: путь онбординга не нуждается в репозитории.
+pub fn seed_counters_into_user(user: &mut User, level: JapaneseLevel) -> Result<usize, OrigaError> {
+    if !is_counters_loaded() {
+        warn!("Counters registry not loaded, seeding is a no-op");
+        return Ok(0);
+    }
+    let mut created = 0usize;
+    for entry in counters_up_to_level(level) {
+        let mut counter = CounterCard::new(entry.suffix());
+        counter.ensure_registry_bindings();
+        // create_card дедуплицирует по suffix (DuplicateCard) —
+        // повторный сид для существующих карт пропускаем молча.
+        if user.create_card(Card::Counter(counter)).is_ok() {
+            created += 1;
+        }
+    }
+    Ok(created)
+}
+
 impl<'a, R: UserRepository> SeedCountersUseCase<'a, R> {
     pub fn new(repository: &'a R) -> Self {
         Self { repository }
-    }
-
-    /// Создаёт недостающие counter-карты уровней ≤ `level`.
-    /// Работает по уже загруженному пользователю (внутри bulk-брекета
-    /// онбординг-импорта); сохранение — ответственность вызывающего.
-    pub fn seed_into_user(
-        &self,
-        user: &mut User,
-        level: JapaneseLevel,
-    ) -> Result<usize, OrigaError> {
-        if !is_counters_loaded() {
-            warn!("Counters registry not loaded, seeding is a no-op");
-            return Ok(0);
-        }
-        let mut created = 0usize;
-        for entry in counters_up_to_level(level) {
-            let mut counter = CounterCard::new(entry.suffix());
-            counter.ensure_registry_bindings();
-            // create_card дедуплицирует по suffix (DuplicateCard) —
-            // повторный сид для существующих карт пропускаем молча.
-            if user.create_card(Card::Counter(counter)).is_ok() {
-                created += 1;
-            }
-        }
-        Ok(created)
     }
 
     /// Автономный путь: загрузить юзера, засидить, сохранить.
@@ -52,7 +49,7 @@ impl<'a, R: UserRepository> SeedCountersUseCase<'a, R> {
             .get_current_user()
             .await?
             .ok_or(OrigaError::CurrentUserNotExist)?;
-        let created = self.seed_into_user(&mut user, level)?;
+        let created = seed_counters_into_user(&mut user, level)?;
         if created > 0 {
             self.repository.save(&user).await?;
         }
@@ -82,7 +79,11 @@ mod tests {
     #[tokio::test]
     async fn seeding_creates_registry_counters_up_to_level() {
         init_test_counters();
-        let repo = InMemoryUserRepository::new();
+        let repo = InMemoryUserRepository::with_user(User::new(
+            "t@e.st".to_string(),
+            NativeLanguage::Russian,
+            None,
+        ));
         let created = SeedCountersUseCase::new(&repo)
             .execute(JapaneseLevel::N5)
             .await
@@ -110,7 +111,7 @@ mod tests {
         assert_eq!(second, 0);
 
         let user = repo.get_current_user().await.unwrap().unwrap();
-        assert_eq!(counter_suffixes(&user).len(), 2);
+        assert_eq!(counter_suffixes(&user).len(), 3);
     }
 
     #[tokio::test]

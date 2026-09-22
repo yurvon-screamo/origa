@@ -274,7 +274,8 @@ mod tests {
         init_test_counters();
         let mut card = seeded_card(TEST_NIN);
 
-        // 3×人 и 4×人 становятся due раньше 7×人; 4 нерегулярная (よにん)
+        // 3×人 и 4×人 просрочены сильнее 7×人 (прошлые даты — будущие not due);
+        // одинаковый срок: нерегулярная 4 (よにん) выше
         let now = chrono::Utc::now();
         fn make_due(card: &mut CounterCard, number: u8, date: chrono::DateTime<chrono::Utc>) {
             let memory = card.binding_memory_mut(number).unwrap();
@@ -286,9 +287,9 @@ mod tests {
             );
             memory.seed(state);
         }
-        make_due(&mut card, 3, now + chrono::Duration::hours(1));
-        make_due(&mut card, 7, now + chrono::Duration::hours(2));
-        make_due(&mut card, 4, now + chrono::Duration::hours(1));
+        make_due(&mut card, 3, now - chrono::Duration::hours(2));
+        make_due(&mut card, 7, now - chrono::Duration::hours(1));
+        make_due(&mut card, 4, now - chrono::Duration::hours(2));
 
         let showcase = card.binding_showcase();
         // Одинаковый срок: нерегулярная 4 (よにん) стоит раньше 3 (さんにん)
