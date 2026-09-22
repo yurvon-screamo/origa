@@ -95,15 +95,26 @@ pub fn HomePage() -> impl IntoView {
 
         <hr class="divider-full" />
 
-        // Section 1c: app screens carousel — what the product actually
-        // looks like, one legible phone capture at a time. Text column
-        // frames the phone on wide viewports; the two stack on mobile.
+        // Section 1c: app screens carousel — one legible phone capture at
+        // a time. The copy column mirrors the active slide (the inline
+        // script toggles the items together with the dots); the two stack
+        // on mobile.
         <section class="home-shots">
             <div class="home-shots__inner">
                 <div class="home-shots__text">
-                    <h2 class="home-shots__title">{c.home_shots_title}</h2>
-                    <hr class="home-shots__rule" />
-                    <p class="home-shots__desc">{c.home_shots_text}</p>
+                    <div class="home-shots__copy" id="hero-carousel-copy">
+                        {c.home_shots.iter().map(|(title, desc)| {
+                            let title = *title;
+                            let desc = *desc;
+                            view! {
+                                <div class="home-shots__item">
+                                    <h2 class="home-shots__title">{title}</h2>
+                                    <hr class="home-shots__rule" />
+                                    <p class="home-shots__desc">{desc}</p>
+                                </div>
+                            }
+                        }).collect_view()}
+                    </div>
                 </div>
                 <div class="home-shots__phone">
                     <div class="hero-carousel" id="hero-carousel">
@@ -115,9 +126,6 @@ pub fn HomePage() -> impl IntoView {
                                         alt=label.to_string()
                                         loading=if i == 0 { "eager" } else { "lazy" }
                                     />
-                                    <figcaption class="hero-carousel__caption">
-                                        {label.to_string()}
-                                    </figcaption>
                                 </figure>
                             }
                         }).collect_view()}
@@ -251,6 +259,7 @@ fn carousel_inline_script() -> String {
         function init() {
             var track = document.getElementById('hero-carousel');
             var dots = document.getElementById('hero-carousel-dots');
+            var copy = document.getElementById('hero-carousel-copy');
             if (!track || !dots || dots.children.length) return;
             var slides = track.children.length;
             for (var i = 0; i < slides; i++) {
@@ -274,6 +283,12 @@ fn carousel_inline_script() -> String {
                 for (var j = 0; j < ds.length; j++) {
                     ds[j].classList.toggle('is-active', j === cur);
                 }
+                if (copy) {
+                    var items = copy.children;
+                    for (var k = 0; k < items.length; k++) {
+                        items[k].classList.toggle('is-active', k === cur);
+                    }
+                }
             }
             track.addEventListener('scroll', function() {
                 clearTimeout(track._t);
@@ -285,6 +300,7 @@ fn carousel_inline_script() -> String {
                 track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
             }, 4000);
             track.addEventListener('pointerdown', function() { clearInterval(timer); });
+            if (copy) copy.classList.add('js');
             sync();
         }
         if (document.readyState === 'loading') {

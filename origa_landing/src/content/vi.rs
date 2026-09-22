@@ -44,8 +44,28 @@ pub static CONTENT: Content = Content {
         "Luyện viết hán tự",
         "Cụm từ bản xứ",
     ],
-    home_shots_title: "Màn hình thật, không phải ảnh dựng",
-    home_shots_text: "Ảnh chụp từ bản điện thoại: thẻ bài học, tham khảo ngữ pháp, luyện viết hán tự theo thứ tự nét, cụm từ bản xứ. Cùng các màn hình đó chạy trên Windows, Linux, macOS và trên trình duyệt.",
+    home_shots: &[
+        (
+            "Tiến độ trong tầm mắt",
+            "Mở ứng dụng là thấy ngay trước cả chạm đầu tiên: thẻ đến hạn, tiến độ JLPT, biểu đồ 30 ngày. Nút bài học biết hôm nay bạn cần học gì.",
+        ),
+        (
+            "Chấm và tiếp tục",
+            "Chấm thẻ chỉ mất một chạm. FSRS tự đặt lần ôn tiếp vào đúng lúc bạn sắp quên — bạn không cần lên lịch.",
+        ),
+        (
+            "Ngữ pháp bằng tiếng của bạn",
+            "Tra mẫu câu nào cũng có giải thích bằng tiếng Việt, Nga, Anh, Hàn kèm ví dụ thật từ từ điển tích hợp.",
+        ),
+        (
+            "Viết hán tự bằng tay",
+            "Luyện viết hiện nét kế tiếp và đếm nét cùng bạn. Bạn nhớ chuyển động của chữ, không chỉ hình dạng.",
+        ),
+        (
+            "Nghe tiếng Nhật thật",
+            "Hơn 200.000 câu bản ngữ có audio, từ hội thoại thường ngày đến thành ngữ. Nghe, nói theo và bắt cách người Nhật thực sự nói.",
+        ),
+    ],
     home_stats_line: "200.000+ câu có audio · Ngữ pháp & hán tự N5–N1 · Windows · Linux · macOS · Android · Web · Ngoại tuyến",
     home_faq_free_question: "Origa có miễn phí không?",
     home_faq_free_answer: "Có. Ứng dụng trên mọi nền tảng và phiên bản web đều miễn phí.",

@@ -434,6 +434,21 @@
     max-width: 420px;
 }
 
+/* The copy column mirrors the active slide. Without JS the first item
+   stays visible (it matches the initial slide); with JS the script
+   toggles .is-active together with the dots. */
+.home-shots__item {
+    display: none;
+}
+
+.home-shots__copy:not(.js) .home-shots__item:first-child {
+    display: block;
+}
+
+.home-shots__item.is-active {
+    display: block;
+}
+
 .home-shots__title {
     font-family: var(--font-serif);
     font-size: clamp(1.5rem, 3vw, 2rem);
@@ -496,6 +511,7 @@
     flex: 0 0 100%;
     scroll-snap-align: start;
     margin: 0;
+    padding: var(--space-md);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -506,17 +522,6 @@
     width: 100%;
     height: auto;
     object-fit: contain;
-}
-
-.hero-carousel__caption {
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    text-align: center;
-    padding: var(--space-sm) 0;
-    border-top: 1px solid var(--border-light);
 }
 
 .hero-carousel__dots {
