@@ -77,7 +77,7 @@ body=$(awk -v header="$header" '
             # truncating the tail; before any content it is just the end of
             # an empty section, reported by the dedicated "is empty" check.
             if (trimmed !~ /^## [0-9]+\.[0-9]+\.[0-9]+[[:space:]]*$/ && body_lines > 0) {
-                printf "error: nested header \x27%s\x27 inside the section — nested headers are forbidden (CHANGELOG.md header)\n", trimmed > "/dev/stderr"
+                printf "error: nested header [%s] inside the section — nested headers are forbidden (CHANGELOG.md header)\n", trimmed > "/dev/stderr"
                 exit 3
             }
             exit 0
