@@ -202,7 +202,8 @@
         "grammar": "Ngữ pháp",
         "kanji": "Chữ Kanji",
         "vocabulary": "Từ vựng",
-        "phrase": "Mẫu câu"
+        "phrase": "Mẫu câu",
+        "counter": "Từ đếm"
       },
       "reading_on": "Âm On",
       "reading_kun": "Âm Kun",
@@ -324,7 +325,9 @@
     "pos_symbol": "ký hiệu",
     "pos_whitespace": "khoảng trắng",
     "pos_auxiliary_symbol": "ký hiệu phụ trợ",
-    "listen_word": "Nghe từ này"
+    "listen_word": "Nghe từ này",
+    "counter_correct": "đúng",
+    "counter": "Từ đếm"
   },
   "home": {
     "loading": "Đang tải...",

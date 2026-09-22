@@ -57,6 +57,13 @@ async fn load_content() -> Result<JlptContent, OrigaError> {
     load_words(&mut content).await?;
     tracing::info!("JLPT: words loaded ({:.2}s)", (now_ms() - start) / 1000.0);
 
+    let start = now_ms();
+    build_counters_index(&mut content);
+    tracing::info!(
+        "JLPT: counters indexed ({:.2}s)",
+        (now_ms() - start) / 1000.0
+    );
+
     Ok(content)
 }
 
@@ -107,6 +114,30 @@ fn build_grammar_index(content: &mut JlptContent) {
             .map(|s| s.len())
             .sum::<usize>()
     );
+}
+
+fn build_counters_index(content: &mut JlptContent) {
+    let counters = origa::dictionary::counters::COUNTERS.get();
+    match counters {
+        Some(entries) if !entries.is_empty() => {
+            for entry in entries {
+                content
+                    .counters_by_level
+                    .entry(entry.level())
+                    .or_default()
+                    .insert(entry.suffix().to_string());
+            }
+            tracing::info!(
+                "JLPT counters indexed ({} entries)",
+                content
+                    .counters_by_level
+                    .values()
+                    .map(|s| s.len())
+                    .sum::<usize>()
+            );
+        },
+        _ => tracing::warn!("JLPT: counters registry not loaded, skipping counter index"),
+    }
 }
 
 async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {

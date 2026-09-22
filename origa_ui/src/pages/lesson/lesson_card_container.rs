@@ -17,8 +17,9 @@ use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use crate::ui_components::stop_current_audio;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
-use origa::domain::{CardAnswer, LessonCardView, Rating};
+use origa::domain::{Card, CardAnswer, LessonCardView, Rating};
 use ulid::Ulid;
 
 #[component]
@@ -91,6 +92,8 @@ pub fn LessonCardContainer() -> impl IntoView {
         on_rate_callback.run(rating);
     });
 
+    let counter_repository = lesson_ctx.repository.clone();
+
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
         is_rating,
@@ -109,6 +112,25 @@ pub fn LessonCardContainer() -> impl IntoView {
             on_next_card,
         },
     );
+
+    // Мини-рейтинг связок (issue #415): Callback до view! — Fn-замыкания
+    // Show клонируют только Callback; суффикс приходит параметром.
+    let on_rate_counter_binding =
+        Callback::new(move |(suffix, number, rating): (String, u8, Rating)| {
+            let repository = counter_repository.clone();
+            spawn_local(async move {
+                if let Err(e) = super::counter_bindings_card::rate_binding_by_suffix(
+                    &repository,
+                    &suffix,
+                    number,
+                    rating,
+                )
+                .await
+                {
+                    tracing::warn!(error = ?e, "Counter binding rating failed");
+                }
+            });
+        });
 
     let current_lesson_card = Memo::new(move |_| {
         let state = lesson_state.get();
@@ -151,6 +173,13 @@ pub fn LessonCardContainer() -> impl IntoView {
             .map(|c| matches!(c.view(), LessonCardView::PhraseListen { .. }))
             .unwrap_or(false)
             && audio_mode_active.get()
+    });
+
+    let is_counter_bindings_mode = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::CounterBindings { .. }))
+            .unwrap_or(false)
     });
 
     let is_kanji_reading_quiz_mode = Memo::new(move |_| {
@@ -205,7 +234,7 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     view! {
         <Show when=move || current_lesson_card.get().is_some()>
-            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_audio_recall_active.get()>
+            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_audio_recall_active.get() && !is_counter_bindings_mode.get()>
                 {move || {
                     current_lesson_card.get().map(|lesson_card| {
                         render_lesson_card(
@@ -240,6 +269,36 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     known_kanji=known_kanji_sig
                                     waiting_for_next=waiting_for_next_sig
                                     on_next_card=on_next_card
+                                />
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                }}
+            </Show>
+
+                        <Show when=move || is_counter_bindings_mode.get()>
+                {move || {
+                    current_lesson_card.get().and_then(|lesson_card| {
+                        if let LessonCardView::CounterBindings { card, items } = lesson_card.into_view() {
+                            let suffix = match &card {
+                                Card::Counter(counter) => counter.suffix().to_string(),
+                                _ => String::new(),
+                            };
+                            let on_rate_binding = {
+                                                                let suffix = suffix.clone();
+                                Callback::new(move |(number, rating): (u8, Rating)| {
+                                    on_rate_counter_binding.run((suffix.clone(), number, rating));
+                                })
+                            };
+                            Some(view! {
+                                <super::counter_bindings_card::CounterBindingsCard
+                                    card=card
+                                    items=items
+                                    on_rate_binding=on_rate_binding
+                                    on_rate=on_rate_callback
+                                    test_id=Signal::derive(|| "counter-bindings-card".to_string())
                                 />
                             })
                         } else {

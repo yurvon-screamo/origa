@@ -16,6 +16,7 @@ pub struct ImportOnboardingResult {
     pub created_vocabulary: usize,
     pub created_kanji: usize,
     pub created_grammar: usize,
+    pub created_counters: usize,
     pub skipped_duplicates: usize,
     pub skipped_no_translation: usize,
 }
@@ -48,6 +49,7 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             created_vocabulary: 0,
             created_kanji: 0,
             created_grammar: 0,
+            created_counters: 0,
             skipped_duplicates: 0,
             skipped_no_translation: 0,
         };
@@ -84,6 +86,13 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             &mut result,
             &mut created_kanji_chars,
         );
+
+        // Счётные суффиксы ≤ целевого уровня (issue #415): сидируются
+        // внутри bulk-брекета, чтобы скоринг сразу их показывал.
+        result.created_counters =
+            crate::use_cases::SeedCountersUseCase::new(self.repository)
+                .seed_into_user(&mut user, target_level)
+                .unwrap_or(0);
 
         user.end_bulk_import();
 
