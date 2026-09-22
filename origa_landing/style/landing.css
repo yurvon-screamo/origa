@@ -458,10 +458,6 @@
     color: var(--fg-muted);
 }
 
-.home-shots__phone {
-    justify-self: center;
-}
-
 @media (max-width: 900px) {
     .home-shots__inner {
         grid-template-columns: 1fr;
@@ -470,7 +466,6 @@
     }
 
     .home-shots__text {
-        max-width: 420px;
         text-align: center;
     }
 
