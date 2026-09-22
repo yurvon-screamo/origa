@@ -73,8 +73,10 @@ pub(super) fn TrainingFrontSlide(
                             // слово, текст спрятан — вспомнить перевод.
                             // Повтор — явное действие: безтекстовый фронт
                             // без звука нерешаем, мьют его не гейтит. На
-                            // стороне ответа кнопка скрыта: слово уже на
-                            // экране, повтор — кнопкой в шапке.
+                            // стороне ответа и кнопка, и хинт скрыты
+                            // целиком: слово уже на экране, повтор —
+                            // кнопкой в шапке (юзер-репорт: хинт
+                            // «Прослушайте слово» оставался в ответе).
                             let ctx_for_replay = ctx.clone();
                             view! {
                                 <div class="flex flex-col items-center gap-4">
@@ -98,10 +100,10 @@ pub(super) fn TrainingFrontSlide(
                                         >
                                             <Icon icon=icondata::LuVolume2 width="1.5em" height="1.5em" />
                                         </button>
+                                        <p class="font-mono text-lg text-[var(--fg-muted)]">
+                                            {t!(i18n, lesson.listen_word)}
+                                        </p>
                                     </Show>
-                                    <p class="font-mono text-lg text-[var(--fg-muted)]">
-                                        {t!(i18n, lesson.listen_word)}
-                                    </p>
                                 </div>
                             }
                                 .into_any()
