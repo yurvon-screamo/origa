@@ -57,6 +57,10 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
 
 _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
     {
+        # Counter-word registry (issue #415): regenerated from
+        # scripts/data/counters/ on content changes — release-updated,
+        # never immutable.
+        "counters/",
         "dictionary/",
         "grammar/",
         "phrases/data/",
