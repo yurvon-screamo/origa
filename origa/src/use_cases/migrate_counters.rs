@@ -84,11 +84,14 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
 
         let level = user.current_japanese_level();
         let mut created = 0usize;
+        let mut detected_suffixes: Vec<&str> = Vec::new();
         for entry in counters_up_to_level(level) {
             let suffix = entry.suffix();
             if existing.contains(suffix) {
                 continue;
             }
+            // Детект — только диагностика (какие суффиксы юзер уже встречал
+            // в вокабе): охват миграции — ВСЕ уровни ≤ уровня юзера.
             let detected = words.iter().any(|sc| {
                 let word = match sc.card() {
                     Card::Vocabulary(v) => v.word().text(),
@@ -96,14 +99,20 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
                 };
                 suffix_detected_in_word(word, suffix) || tokens_detect_counter(sc, suffix)
             });
-            if !detected {
-                continue;
+            if detected {
+                detected_suffixes.push(suffix);
             }
             let mut counter = CounterCard::new(suffix);
             counter.ensure_registry_bindings();
             if user.create_card(Card::Counter(counter)).is_ok() {
                 created += 1;
             }
+        }
+        if !detected_suffixes.is_empty() {
+            info!(
+                detected = detected_suffixes.join(","),
+                "counters already met in the user's vocabulary"
+            );
         }
 
         if created > 0 {
@@ -136,20 +145,18 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn migration_detects_numeral_adjacent_suffixes_only() {
+    async fn migration_covers_every_suffix_up_to_user_level() {
         init_test_counters();
-        // 一本 детектит 本; 日本 — нет (числительного рядом нет);
-        // 人 ничем не задетекчен — не создаётся (только детект).
+        // Охват — детектченные И остальные ≤ уровня (решение владельца):
+        // обе N5-фикстуры заводятся, детект только логируется.
         let repo = InMemoryUserRepository::with_user(user_with_words(&["一本", "日本"]));
         let created = MigrateCountersForExistingUsersUseCase::new(&repo)
             .execute()
             .await
             .unwrap();
-        // 本 детектится через 一本; 人 — ничем, но ≤ уровня юзера
-        // детектченные только: создан только 本.
-        assert_eq!(created, 1);
+        assert_eq!(created, 3, "все суффиксы ≤ уровня юзера (本/人/日)");
         let user = repo.get_current_user().await.unwrap().unwrap();
-        let suffixes: Vec<String> = user
+        let mut suffixes: Vec<String> = user
             .knowledge_set()
             .study_cards()
             .values()
@@ -158,7 +165,11 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(suffixes, vec![TEST_HON.to_string()]);
+        suffixes.sort();
+        assert_eq!(
+            suffixes,
+            vec!["人".to_string(), "日".to_string(), "本".to_string()]
+        );
     }
 
     #[tokio::test]

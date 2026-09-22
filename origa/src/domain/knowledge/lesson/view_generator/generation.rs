@@ -438,7 +438,10 @@ pub(crate) fn generate_grammar_quiz(
 /// нерегулярные выше, новички после due), дистракторы — другие чтения
 /// того же суффикса (локальные, прецедент QuizCard). Реестр пуст или
 /// связок нет — пустая пачка: показ деградирует до семантики.
-pub(crate) fn generate_counter_binding_prompts(card: &Card) -> Vec<CounterBindingPrompt> {
+pub(crate) fn generate_counter_binding_prompts<R: Rng>(
+    card: &Card,
+    rng: &mut R,
+) -> Vec<CounterBindingPrompt> {
     let counter = match card {
         Card::Counter(counter) => counter,
         _ => return Vec::new(),
@@ -452,6 +455,8 @@ pub(crate) fn generate_counter_binding_prompts(card: &Card) -> Vec<CounterBindin
         .into_iter()
         .filter_map(|number| {
             let correct = entry.reading_for(number)?.to_string();
+            // Дистракторы — случайная выборка из других чтений суффикса
+            // (детерминированный «первые три» делал пачки одинаковыми).
             let mut distractors: Vec<String> = entry
                 .readings()
                 .iter()
@@ -460,6 +465,7 @@ pub(crate) fn generate_counter_binding_prompts(card: &Card) -> Vec<CounterBindin
                 .collect();
             distractors.sort();
             distractors.dedup();
+            distractors.partial_shuffle(rng, QUIZ_OPTIONS_COUNT - 1);
             distractors.truncate(QUIZ_OPTIONS_COUNT - 1);
 
             let mut options: Vec<QuizOption> = distractors
@@ -467,7 +473,7 @@ pub(crate) fn generate_counter_binding_prompts(card: &Card) -> Vec<CounterBindin
                 .map(|d| QuizOption::new_simple(d.clone(), false))
                 .collect();
             options.push(QuizOption::new_simple(correct.clone(), true));
-            options.shuffle(&mut rand::rng());
+            options.shuffle(rng);
 
             Some(CounterBindingPrompt::new(number, options, correct))
         })

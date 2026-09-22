@@ -4533,3 +4533,189 @@ mod know_confirm_dispose {
         );
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Счётный суффикс (issue #415): композитный слот и слайд показа
+// ═══════════════════════════════════════════════════════════════════════
+
+fn counter_registry_json() -> String {
+    let readings = (1..=10)
+        .map(|n| {
+            format!(
+                "{{\"number\":{n},\"reading\":\"r{n}\",\"irregular\":{}}}",
+                n % 3 == 1
+            )
+        })
+        .chain(std::iter::once(
+            "{\"number\":0,\"reading\":\"nan\",\"irregular\":false}".to_string(),
+        ))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!(
+        "{{\"counters\":[{{\"suffix\":\"本\",\"level\":\"N5\",\"glosses\":{{\"Russian\":\"длинные предметы\",\"English\":\"long objects\",\"Korean\":\"자루\",\"Vietnamese\":\"cây\"}},\"readings\":[{readings}]}}]}}"
+    )
+}
+
+fn two_prompts() -> Vec<origa::domain::CounterBindingPrompt> {
+    use origa::domain::{CounterBindingPrompt, QuizOption};
+    vec![
+        CounterBindingPrompt::new(
+            1,
+            vec![
+                QuizOption::new_simple("いっぽん".to_string(), true),
+                QuizOption::new_simple("にほん".to_string(), false),
+                QuizOption::new_simple("さんぼん".to_string(), false),
+                QuizOption::new_simple("よんほん".to_string(), false),
+            ],
+            "いっぽん".to_string(),
+        ),
+        CounterBindingPrompt::new(
+            3,
+            vec![
+                QuizOption::new_simple("さんぼん".to_string(), true),
+                QuizOption::new_simple("にほん".to_string(), false),
+                QuizOption::new_simple("いっぽん".to_string(), false),
+                QuizOption::new_simple("よんほん".to_string(), false),
+            ],
+            "さんぼん".to_string(),
+        ),
+    ]
+}
+
+/// Композитный слот: верный ответ ровно один в вариантах; клик по нему
+/// открывает «Дальше»; прохождение пачки завершается агрегатом Good.
+#[wasm_bindgen_test]
+async fn counter_bindings_card_aggregates_after_the_pack() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let mut counter = origa::domain::CounterCard::new("本");
+    counter.ensure_registry_bindings();
+    let card = origa::domain::Card::Counter(counter);
+
+    let wrapper = create_wrapper();
+    let (set_rated, get_rated) = shared_cell::<String>();
+    let (set_binding, get_binding) = shared_cell::<String>();
+    mount_with_i18n(&wrapper, move || {
+        let on_rate = {
+            let set_rated = set_rated.clone();
+            Callback::new(move |rating: origa::domain::Rating| {
+                set_rated.set(Some(format!("{rating:?}")));
+            })
+        };
+        let on_rate_binding = {
+            let set_binding = set_binding.clone();
+            Callback::new(move |(number, rating): (u8, origa::domain::Rating)| {
+                set_binding.set(Some(format!("{number}:{rating:?}")));
+            })
+        };
+        let card = card.clone();
+        let items = two_prompts();
+        view! {
+            <crate::pages::lesson::counter_bindings_card::CounterBindingsCard
+                card=card
+                items=items
+                on_rate_binding=on_rate_binding
+                on_rate=on_rate
+                test_id=Signal::derive(|| "counter-bindings-card".to_string())
+            />
+        }
+    });
+
+    // Один верный ответ в первой пачке (correct-опция существует и уникальна).
+    let correct_first = wrapper
+        .query_selector("[data-testid=\"counter-binding-option-0\"]")
+        .unwrap();
+    assert!(correct_first.is_some());
+
+    // Клик по верному варианту №1 -> «Дальше» появляется, связка 1 оценена Good.
+    correct_first
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    wait_until(move || {
+        wrapper
+            .query_selector("[data-testid=\"counter-binding-next\"]")
+            .unwrap()
+            .is_some()
+    })
+    .await;
+    assert_eq!(get_binding.get().unwrap(), "1:Good");
+
+    // Дальше -> вопрос 3 -> верный вариант снова первый -> финал: Good.
+    wrapper
+        .query_selector("[data-testid=\"counter-binding-next\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    wait_until(move || {
+        wrapper
+            .query_selector("[data-testid=\"counter-binding-question\"]")
+            .unwrap()
+            .is_some()
+    })
+    .await;
+    wrapper
+        .query_selector("[data-testid=\"counter-binding-option-0\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    wait_until(move || get_rated.get().is_some()).await;
+    assert_eq!(
+        get_rated.get().unwrap(),
+        "Good",
+        "пачка без ошибок агрегируется Good"
+    );
+}
+
+/// Таблица чтений: строки по возрастанию числа, 何 последней.
+#[wasm_bindgen_test]
+async fn counter_readings_table_orders_numbers_what_last() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        use crate::pages::lesson::counter_bindings_card::{
+            CounterReadingRow, CounterReadingsTable,
+        };
+        let rows = vec![
+            CounterReadingRow {
+                number: 0,
+                number_label: "何".into(),
+                reading: "nan".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 2,
+                number_label: "2".into(),
+                reading: "r2".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 1,
+                number_label: "1".into(),
+                reading: "r1".into(),
+                irregular: true,
+            },
+        ];
+        view! {
+            <CounterReadingsTable
+                rows=rows
+                suffix="本".to_string()
+                test_id=Signal::derive(|| "t".to_string())
+            />
+        }
+    });
+    let rows: Vec<String> = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap()
+        .to_vec()
+        .into_iter()
+        .map(|el| el.text_content().unwrap_or_default())
+        .collect();
+    assert_eq!(rows.len(), 3);
+    assert!(rows[0].contains('1'), "ascending numbers first: {:?}", rows);
+    assert!(rows[2].contains("何"), "何 comes last: {:?}", rows);
+}

@@ -89,10 +89,10 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
 
         // Счётные суффиксы ≤ целевого уровня (issue #415): сидируются
         // внутри bulk-брекета, чтобы скоринг сразу их показывал.
-        result.created_counters =
-            crate::use_cases::SeedCountersUseCase::new(self.repository)
-                .seed_into_user(&mut user, target_level)
-                .unwrap_or(0);
+        match crate::use_cases::seed_counters_into_user(&mut user, target_level) {
+            Ok(n) => result.created_counters = n,
+            Err(e) => warn!(error = ?e, "Counter seeding failed during onboarding import"),
+        }
 
         user.end_bulk_import();
 

@@ -95,6 +95,43 @@ impl CounterEntry {
 /// Локализованная метка типа для попапа транслейтера и UI-тегов.
 /// Константный map в домене: крейт `origa` не видит leptos_i18n —
 /// прецедент контентных строк `GrammarMatch::from_rule`.
+/// Минимальный публичный реестр для межкрейтовых тестов (origa_ui):
+/// 本 N5 с 4 чтениями. Одноразовый OnceLock — первый вызов фиксирует.
+pub fn init_minimal_counters() {
+    let mut glosses = HashMap::new();
+    glosses.insert(NativeLanguage::Russian, "длинные предметы".to_string());
+    glosses.insert(NativeLanguage::English, "long objects".to_string());
+    glosses.insert(NativeLanguage::Korean, "자루".to_string());
+    glosses.insert(NativeLanguage::Vietnamese, "cây".to_string());
+    let _ = COUNTERS.set(vec![CounterEntry {
+        suffix: "本".to_string(),
+        level: JapaneseLevel::N5,
+        glosses,
+        readings: vec![
+            ReadingEntry {
+                number: 1,
+                reading: "いっぽん".into(),
+                irregular: true,
+            },
+            ReadingEntry {
+                number: 2,
+                reading: "にほん".into(),
+                irregular: false,
+            },
+            ReadingEntry {
+                number: 3,
+                reading: "さんぼん".into(),
+                irregular: true,
+            },
+            ReadingEntry {
+                number: 0,
+                reading: "なんぼん".into(),
+                irregular: false,
+            },
+        ],
+    }]);
+}
+
 pub fn counter_label(lang: NativeLanguage) -> &'static str {
     match lang {
         NativeLanguage::Russian => "Счётный суффикс",
@@ -153,12 +190,13 @@ pub fn get_counter(suffix: &str) -> Option<&'static CounterEntry> {
     COUNTERS.get()?.iter().find(|entry| entry.suffix == suffix)
 }
 
-/// Все записи уровней ≤ `level` (порядок реестра: N5 первыми).
+/// Все записи уровней ≤ `level` (Ord: N5 < N4 < … < N1 — фильтр `<=`,
+/// порядок реестра: N5 первыми).
 pub fn counters_up_to_level(level: JapaneseLevel) -> Vec<&'static CounterEntry> {
     match COUNTERS.get() {
         Some(counters) => counters
             .iter()
-            .filter(|entry| entry.level >= level)
+            .filter(|entry| entry.level <= level)
             .collect(),
         None => Vec::new(),
     }
@@ -282,11 +320,55 @@ pub mod tests {
         }
     }
 
-    /// Тестовый реестр: 本 (11 ячеек) + 人 (11 ячеек), оба N5.
+    fn nichi_entry() -> CounterEntry {
+        // 日-контракт плана: 1..=10 + 何 + лексикализованные 14/20/24 —
+        // первый показ 日 это 14 мини-вопросов (issue #415).
+        let mut glosses = HashMap::new();
+        glosses.insert(NativeLanguage::Russian, "дни месяца".to_string());
+        glosses.insert(NativeLanguage::English, "days".to_string());
+        glosses.insert(NativeLanguage::Korean, "일".to_string());
+        glosses.insert(NativeLanguage::Vietnamese, "ngày".to_string());
+        let mut readings = readings_onbin(&[
+            "なんにち",
+            "ついたち",
+            "ふつか",
+            "みっか",
+            "よっか",
+            "いつか",
+            "むいか",
+            "なのか",
+            "ようか",
+            "ここのか",
+            "とおか",
+        ]);
+        readings.push(ReadingEntry {
+            number: 14,
+            reading: "じゅうよっか".into(),
+            irregular: true,
+        });
+        readings.push(ReadingEntry {
+            number: 20,
+            reading: "はつか".into(),
+            irregular: true,
+        });
+        readings.push(ReadingEntry {
+            number: 24,
+            reading: "にじゅうよっか".into(),
+            irregular: true,
+        });
+        CounterEntry {
+            suffix: "日".to_string(),
+            level: JapaneseLevel::N5,
+            glosses,
+            readings,
+        }
+    }
+
+    /// Тестовый реестр: 本/人 (11 ячеек) + 日 (14 ячеек), все N5.
     /// Идемпотентен: повторные вызовы делят уже установленный реестр.
     pub fn init_test_counters() {
         let _guard = TEST_LOCK.lock();
-        let _ = COUNTERS.set(vec![hon_entry(), nin_entry()]);
+        let _ = COUNTERS.set(vec![hon_entry(), nin_entry(), nichi_entry()]);
     }
 
     #[test]
@@ -337,7 +419,7 @@ pub mod tests {
         // Реестр уже установлен другим тестом или этим — вызов с любым
         // JSON возвращает размер существующего, ничего не ломая.
         let len = init_counters("{\"counters\":[]}").unwrap();
-        assert_eq!(len, 2);
+        assert_eq!(len, 3);
     }
 
     #[test]
@@ -365,14 +447,15 @@ pub mod tests {
     }
 
     #[test]
-    fn get_counter_resolves_and_up_to_level_filters() {
+    fn get_counter_resolves_and_up_to_level_includes_lower_levels() {
         init_test_counters();
         assert_eq!(get_counter(TEST_HON).unwrap().suffix(), TEST_HON);
         assert!(get_counter("虚").is_none());
 
-        let up = counters_up_to_level(JapaneseLevel::N5);
-        assert_eq!(up.len(), 2);
-        assert!(counters_up_to_level(JapaneseLevel::N3).is_empty());
+        // Фикстуры — N5: «≤ уровня» включает их для N4 и N1.
+        assert_eq!(counters_up_to_level(JapaneseLevel::N5).len(), 3);
+        assert_eq!(counters_up_to_level(JapaneseLevel::N4).len(), 3);
+        assert_eq!(counters_up_to_level(JapaneseLevel::N1).len(), 3);
     }
 
     #[test]
@@ -386,6 +469,15 @@ pub mod tests {
             "числительного рядом нет"
         );
         assert!(!suffix_detected_in_word("本棚", "本"));
+    }
+
+    #[test]
+    fn nichi_first_showcase_is_fourteen_bindings() {
+        init_test_counters();
+        let mut card = crate::domain::CounterCard::new("日");
+        card.ensure_registry_bindings();
+        assert_eq!(card.bindings().len(), 14, "1..=10 + 何 + 14/20/24");
+        assert_eq!(card.binding_showcase().len(), 14);
     }
 
     #[test]

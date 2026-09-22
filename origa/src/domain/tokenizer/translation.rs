@@ -125,8 +125,11 @@ pub fn lookup_tokens_translations(
                 && let Some(entry) =
                     crate::dictionary::counters::get_counter(token.orthographic_surface_form())
             {
-                grammar_label = Some(crate::dictionary::counters::counter_label(*native_language).to_string());
-                grammar_description = Some(crate::dictionary::counters::gloss_for(entry, *native_language).to_string());
+                grammar_label =
+                    Some(crate::dictionary::counters::counter_label(*native_language).to_string());
+                grammar_description = Some(
+                    crate::dictionary::counters::gloss_for(entry, *native_language).to_string(),
+                );
             }
 
             TokenTranslation {
@@ -893,7 +896,10 @@ mod integration_tests {
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "三本");
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].grammar_label.as_deref(), Some("Счётный суффикс"));
-        assert_eq!(results[0].grammar_description.as_deref(), Some("длинные предметы"));
+        assert_eq!(
+            results[0].grammar_description.as_deref(),
+            Some("длинные предметы")
+        );
     }
 
     #[test]
@@ -925,7 +931,10 @@ mod integration_tests {
         // частичном реестре: проверяем через English-локаль напрямую.
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, "三本");
         assert_eq!(results[0].grammar_label.as_deref(), Some("Counter"));
-        assert_eq!(results[0].grammar_description.as_deref(), Some("long objects"));
+        assert_eq!(
+            results[0].grammar_description.as_deref(),
+            Some("long objects")
+        );
     }
 
     #[test]

@@ -2263,3 +2263,93 @@ fn ghost_phrase_card_places_after_content_words() {
         .expect("ghost phrase must enter the lesson");
     assert!(position > 0, "phrase must be placed after content words");
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Счётные суффиксы (issue #415): руки знакомства и интерлив
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Состав руки знакомства включает counter-карты: пул только из
+/// счётчиков N5 распределяется полностью (weights fallback добирает
+/// минорные типы) — один тест закрывает weights+distribute+slots.
+#[test]
+fn counter_cards_enter_the_acquaintance_distribution() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut user = crate::domain::User::new(
+        "c@e.st".to_string(),
+        crate::domain::NativeLanguage::Russian,
+        None,
+    );
+    for suffix in ["本", "人", "日"] {
+        let mut counter = crate::domain::CounterCard::new(suffix);
+        counter.ensure_registry_bindings();
+        user.create_card(crate::domain::Card::Counter(counter))
+            .unwrap();
+    }
+    let mut content = crate::domain::JlptContent::new();
+    content
+        .counters_by_level
+        .entry(crate::domain::JapaneseLevel::N5)
+        .or_default()
+        .extend(["本".to_string(), "人".to_string(), "日".to_string()]);
+
+    let pool: Vec<(&ulid::Ulid, &crate::domain::StudyCard)> =
+        user.knowledge_set().study_cards().iter().collect();
+    let mut rng = rand::rng();
+    let selected = super::distribute_new_cards(pool, &content, 3, &mut rng);
+
+    assert_eq!(selected.len(), 3, "все counter-карты распределены в руку");
+    for (_, sc) in &selected {
+        assert!(matches!(sc.card(), crate::domain::Card::Counter(_)));
+    }
+}
+
+/// Интерлив: counter-карты разнесены round-robin в vocab-промежутки
+/// (собственная ветка, не хвостовой `other` как у фраз).
+#[test]
+fn interleave_spreads_counter_cards_across_vocab_gaps() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut data = LessonData {
+        cards: Vec::new(),
+        core_count: 0,
+    };
+    let vocab_ids: Vec<ulid::Ulid> = (0..2).map(|_| ulid::Ulid::new()).collect();
+    let counter_id = ulid::Ulid::new();
+    let vocab_view = |id| {
+        (
+            id,
+            crate::domain::LessonCard::new(
+                id,
+                crate::domain::LessonCardView::Normal(crate::domain::Card::Vocabulary(
+                    crate::domain::VocabularyCard::new(
+                        crate::domain::value_objects::Question::new("た".to_string()).unwrap(),
+                    ),
+                )),
+                false,
+            ),
+        )
+    };
+    let mut counter = crate::domain::CounterCard::new("本");
+    counter.ensure_registry_bindings();
+    data.cards.push(vocab_view(vocab_ids[0]));
+    data.cards.push((
+        counter_id,
+        crate::domain::LessonCard::new(
+            counter_id,
+            crate::domain::LessonCardView::Normal(crate::domain::Card::Counter(counter)),
+            false,
+        ),
+    ));
+    data.cards.push(vocab_view(vocab_ids[1]));
+    data.core_count = data.cards.len();
+
+    let interleaved = super::interleave_core_by_type(data);
+    let counter_pos = interleaved
+        .cards
+        .iter()
+        .position(|(id, _)| *id == counter_id)
+        .expect("counter card survived interleaving");
+    assert_eq!(
+        counter_pos, 1,
+        "counter lands in a vocab gap, not at the tail (phrase `other` lane)"
+    );
+}

@@ -147,13 +147,22 @@ impl<'a> LessonViewGenerator<'a> {
             CardType::Counter if is_new => LessonCardView::Normal(card.clone()),
             CardType::Counter => {
                 let rand_val = rng.random::<f32>();
-                if rand_val < PROB_COUNTER_BINDINGS {
+                // Пустая пачка (нет due и нет новичков — штатно после
+                // успешной сессии, либо суффикс исчез из реестра)
+                // деградирует в семантический показ: «слот 1/0 без кнопки
+                // дальше» застопорил бы урок.
+                let items = if rand_val < PROB_COUNTER_BINDINGS {
+                    generation::generate_counter_binding_prompts(card, rng)
+                } else {
+                    Vec::new()
+                };
+                if items.is_empty() {
+                    LessonCardView::Normal(card.clone())
+                } else {
                     LessonCardView::CounterBindings {
                         card: card.clone(),
-                        items: generation::generate_counter_binding_prompts(card),
+                        items,
                     }
-                } else {
-                    LessonCardView::Normal(card.clone())
                 }
             },
         }

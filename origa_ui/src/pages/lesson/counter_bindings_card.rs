@@ -14,10 +14,12 @@ use origa::domain::{Card, CounterBindingPrompt, Rating};
 use origa::traits::UserRepository;
 
 /// Строка таблицы мутаций для рендера: контент резолвится из реестра.
-struct MutationRow {
-    number_label: String,
-    reading: String,
-    irregular: bool,
+#[derive(Clone)]
+pub(in crate::pages::lesson) struct CounterReadingRow {
+    pub number: u8,
+    pub number_label: String,
+    pub reading: String,
+    pub irregular: bool,
 }
 
 fn number_label(number: u8) -> String {
@@ -27,12 +29,22 @@ fn number_label(number: u8) -> String {
     }
 }
 
-fn mutation_rows(card: &Card) -> Vec<MutationRow> {
+/// Порядок таблицы: числа по возрастанию, лексикализованные исключения
+/// >10 за десяткой, вопросительное 何 последним (инвариант датасета).
+fn reading_sort_key(number: u8) -> (u8, u8) {
+    match number {
+        0 => (2, 0),
+        n if (1..=10).contains(&n) => (0, n),
+        n => (1, n),
+    }
+}
+
+pub(in crate::pages::lesson) fn counter_reading_rows(card: &Card) -> Vec<CounterReadingRow> {
     let Card::Counter(counter) = card else {
         return Vec::new();
     };
     let entry = origa::dictionary::counters::get_counter(counter.suffix());
-    counter
+    let mut rows: Vec<CounterReadingRow> = counter
         .bindings()
         .iter()
         .filter_map(|binding| {
@@ -43,13 +55,64 @@ fn mutation_rows(card: &Card) -> Vec<MutationRow> {
             let irregular = entry
                 .map(|e| e.irregular_for(binding.number()))
                 .unwrap_or(false);
-            (!reading.is_empty()).then_some(MutationRow {
+            (!reading.is_empty()).then_some(CounterReadingRow {
+                number: binding.number(),
                 number_label: number_label(binding.number()),
                 reading,
                 irregular,
             })
         })
-        .collect()
+        .collect();
+    rows.sort_by_key(|row| reading_sort_key(row.number));
+    rows
+}
+
+/// Таблица чтений суффикса — единый рендер трёх поверхностей
+/// (композитный слот, слайд показа, ответ тренировки). Числа по
+/// возрастанию, 何 последней, нерегулярные строки подсвечены;
+/// `highlight` акцентирует строку только что отвеченной связки.
+#[component]
+pub(in crate::pages::lesson) fn CounterReadingsTable(
+    rows: Vec<CounterReadingRow>,
+    suffix: String,
+    #[prop(into)] test_id: Signal<String>,
+    #[prop(optional)] highlight: Option<RwSignal<u8>>,
+) -> impl IntoView {
+    let suffix = StoredValue::new(suffix);
+    let rows = StoredValue::new(rows);
+    let rows_vec = rows.with_value(|rows| rows.to_vec());
+    view! {
+        <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
+             data-testid=test_id>
+            {rows_vec
+                .into_iter()
+                .map(|row| {
+                    let number = row.number;
+                    let base = "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0";
+                    view! {
+                        <div class=move || {
+                            let mut class = base.to_string();
+                            if row.irregular {
+                                class.push_str(" bg-[var(--accent-warm)]");
+                            }
+                            if highlight
+                                .is_some_and(|h| h.get_untracked() == number)
+                            {
+                                class.push_str(" ring-2 ring-inset ring-[var(--accent-olive)]");
+                            }
+                            class
+                        }
+                             data-testid="counter-mutations-row">
+                            <span class="font-mono text-[var(--fg-black)]">
+                                {row.number_label.clone()}{"×"}{suffix.with_value(String::clone)}
+                            </span>
+                            <span class="font-serif text-[var(--fg-black)]">{row.reading.clone()}</span>
+                        </div>
+                    }
+                })
+                .collect::<Vec<_>>()}
+        </div>
+    }
 }
 
 #[component]
@@ -79,29 +142,9 @@ pub fn CounterBindingsCard(
         Card::Counter(counter) => counter.suffix().to_string(),
         _ => String::new(),
     });
-    let rows_local = mutation_rows(&card);
-    let mutations_table = {
-        let suffix = suffix.with_value(String::clone);
-        rows_local
-            .iter()
-            .map(|row| {
-                let highlight = if row.irregular {
-                    "bg-[var(--accent-warm)]"
-                } else {
-                    ""
-                };
-                view! {
-                    <div class=format!("flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0 {}", highlight)
-                         data-testid="counter-mutations-row">
-                        <span class="font-mono text-[var(--fg-black)]">
-                            {row.number_label.clone()}{"×"}{suffix.clone()}
-                        </span>
-                        <span class="font-serif text-[var(--fg-black)]">{row.reading.clone()}</span>
-                    </div>
-                }
-            })
-            .collect::<Vec<_>>()
-    };
+    // Акцент строки текущего мини-вопроса: таблица мутаций после ответа
+    // подсвечивает отвеченную связку (u8::MAX — вне диапазона чисел).
+    let highlighted_number = RwSignal::new(u8::MAX);
 
     let on_select = move |answer: String| {
         if answered.get_untracked() {
@@ -114,6 +157,7 @@ pub fn CounterBindingsCard(
         let correct = prompt.check_answer(&answer);
         selected.set(Some(answer));
         answered.set(true);
+        highlighted_number.set(prompt.number());
         if correct {
             correct_count.update(|n| *n += 1);
         } else {
@@ -140,6 +184,38 @@ pub fn CounterBindingsCard(
             answered.set(false);
         }
     };
+
+    // Клавиатура композитной сессии (единый паттерн урока): [1..4] —
+    // выбор варианта, Space — «Дальше» после ответа. Живёт в компоненте
+    // (use_event_listener с авто-cleanup на смене слота).
+    {
+        use leptos_use::use_event_listener;
+        let items_kb = items;
+        let on_select_kb = { Callback::new(move |answer: String| on_select(answer)) };
+        let advance_kb = { Callback::new(move |()| advance()) };
+        let _ = use_event_listener(
+            document(),
+            leptos::ev::keydown,
+            move |ev: leptos::ev::KeyboardEvent| {
+                let answered_now = answered.get_untracked();
+                let key = ev.key();
+                if !answered_now && (key == "1" || key == "2" || key == "3" || key == "4") {
+                    let index: usize = key.parse().unwrap_or(1) - 1;
+                    if let Some(answer) = items_kb.with_value(|items| {
+                        items.get(current.get_untracked()).and_then(|prompt| {
+                            prompt.options().get(index).map(|o| o.text().to_string())
+                        })
+                    }) {
+                        ev.prevent_default();
+                        on_select_kb.run(answer);
+                    }
+                } else if answered_now && (key == " " || key == "Spacebar") {
+                    ev.prevent_default();
+                    advance_kb.run(());
+                }
+            },
+        );
+    }
 
     view! {
         <div class="flex flex-col gap-4 w-full" data-testid=test_id>
@@ -222,9 +298,13 @@ pub fn CounterBindingsCard(
             </Show>
 
             // Таблица мутаций: числа по возрастанию, 何 последней,
-            // нерегулярные строки подсвечены. Контент реестра в сессии
-            // не меняется — фрагмент собирается один раз.
-            {mutations_table.clone()}
+            // нерегулярные строки подсвечены, отвеченная — акцентирована.
+            <CounterReadingsTable
+                rows=counter_reading_rows(&card)
+                suffix=suffix.with_value(String::clone)
+                highlight=highlighted_number
+                test_id=Signal::derive(|| "counter-mutations-table".to_string())
+            />
             <div class="text-center text-xs font-mono text-[var(--fg-muted)]">
                 {move || {
                     let label = td_string!(i18n.get_locale(), lesson.counter_correct);

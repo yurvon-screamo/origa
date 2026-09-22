@@ -168,6 +168,28 @@ pub fn create_on_rate_callback(
 
 #[cfg(test)]
 mod tests {
+    use super::determine_rate_mode;
+    use origa::domain::{CounterCard, LessonCard, RateMode};
+
+    fn counter_lesson_card() -> LessonCard {
+        origa::dictionary::counters::init_minimal_counters();
+        let counter = CounterCard::new("本");
+        LessonCard::new(
+            ulid::Ulid::new(),
+            LessonCardView::Normal(origa::domain::Card::Counter(counter)),
+            false,
+        )
+    }
+
+    /// Семантический показ счётного суффикса рейтится StandardLesson:
+    /// CounterReview к памяти семантики не доходит (связки — мимо
+    /// rate_card), effective_mode пробрасывает Counter без ремапа.
+    #[test]
+    fn counter_semantic_showing_rates_in_standard_lesson() {
+        let card = counter_lesson_card();
+        assert_eq!(determine_rate_mode(&card), RateMode::StandardLesson);
+    }
+
     use super::*;
     use origa::domain::{LessonCardView, PhraseCard};
 

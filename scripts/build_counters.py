@@ -21,8 +21,6 @@ ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "scripts" / "data" / "counters" / "counters.manual.json"
 ARTIFACT = ROOT / "cdn" / "counters" / "counters.json"
 
-NUMERAL_READINGS: dict[str, str] = {}
-
 
 def die(msg: str) -> None:
     print(f"build_counters: {msg}", file=sys.stderr)
@@ -50,8 +48,11 @@ def expand(manual: dict) -> dict:
                     die(f"{suffix}: kun-series counter missing irregular[{key}]")
             ordered = [str(n) for n in range(1, 11)] + ["0"]
             for key in ordered:
+                # Кун-серия (つ): вся таблица «нерегулярна» относительно
+                # он-конкатенации — подсветка каждой строки не информирует,
+                # все ячейки идут без флага.
                 readings.append(
-                    {"number": int(key), "reading": irregular[key], "irregular": True}
+                    {"number": int(key), "reading": irregular[key], "irregular": False}
                 )
         else:
             ordered = [str(n) for n in range(1, 11)] + ["0"]

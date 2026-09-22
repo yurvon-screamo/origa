@@ -58,7 +58,7 @@ pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use rate_counter_binding::RateCounterBindingUseCase;
 pub use record_counter_session::RecordCounterSessionUseCase;
-pub use seed_counters::SeedCountersUseCase;
+pub use seed_counters::{SeedCountersUseCase, seed_counters_into_user};
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use seed_ready_phrases::collect_known_grammar_rules;
 pub use seed_ready_phrases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};
