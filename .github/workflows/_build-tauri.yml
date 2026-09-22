@@ -73,6 +73,7 @@ jobs:
         name: Build Windows
         if: contains(inputs.platforms, 'windows')
         runs-on: ubuntu-latest
+        timeout-minutes: 60
         container:
             image: ghcr.io/rust-cross/cargo-zigbuild
         permissions:
@@ -202,6 +203,7 @@ jobs:
         name: Build Linux
         if: contains(inputs.platforms, 'linux')
         runs-on: ubuntu-24.04
+        timeout-minutes: 60
         outputs:
             signature: ${{ steps.signature.outputs.signature }}
             rpm_signature: ${{ steps.signature.outputs.rpm_signature }}
@@ -347,6 +349,7 @@ jobs:
         # build-windows for the broader signing-secret rationale.
         if: contains(inputs.platforms, 'android') && inputs.skip_android != true && github.actor != 'dependabot[bot]'
         runs-on: ubuntu-24.04
+        timeout-minutes: 60
         permissions:
             contents: read
         env:

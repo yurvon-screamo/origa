@@ -918,10 +918,13 @@ jobs:
 
     build-tauri:
         name: Build Tauri
+        # Caller jobs cannot carry timeout-minutes (GitHub Actions schema
+        # rejects the key and the whole workflow fails to start, leaving
+        # required checks unreported): ceilings live inside the reusable
+        # workflows themselves.
         needs: [changes, version, e2e-build]
         if: needs.changes.outputs.run_build_tauri == 'true'
         uses: ./.github/workflows/_build-tauri.yml
-        timeout-minutes: 60
         with:
             version: ${{ needs.version.outputs.version }}
             version_base: ${{ needs.version.outputs.version_base }}
@@ -954,8 +957,9 @@ jobs:
         # single uploader; CI only validates the build path.
         needs: [changes, version, e2e-build]
         if: needs.changes.outputs.run_build_macos == 'true'
+        # Same as build-tauri: caller jobs cannot carry timeout-minutes,
+        # the ceiling lives in the reusable workflow itself.
         uses: ./.github/workflows/_build-tauri-apple.yml
-        timeout-minutes: 60
         with:
             version: ${{ needs.version.outputs.version }}
             version_base: ${{ needs.version.outputs.version_base }}
