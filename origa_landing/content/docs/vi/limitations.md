@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Các giới hạn đã biết của Origa — Ranh giới nói thẳng"
 meta_description: "Origa còn thiếu ở đâu: STT chỉ nhận WAV, OCR chưa chính xác trên chữ trang trí, không có chế độ khách, đồng bộ cần mạng, và các ranh giới hiện tại khác."
 target_keywords: ["giới hạn origa", "giới hạn ứng dụng học tiếng nhật", "giới hạn ocr tiếng nhật", "stt tiếng nhật chỉ wav"]
-lastmod: 2026-09-17
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -44,6 +44,10 @@ Tính năng viết hán tự trình bày thứ tự nét đúng dưới dạng a
 ## Đánh giá hai nút
 
 Đánh giá sau mỗi thẻ là nhị phân: **Không biết** hoặc **Biết** trong lượt ôn thường, **Nhớ** hoặc **Không nhớ** lúc luyện làm quen. Không có lựa chọn trung gian (không có mức "khó" hay "dễ"). Bộ lập lịch FSRS dùng hai tín hiệu này để đặt khoảng cách.
+
+## Từ đếm: chưa có trang danh sách, lô đầu tiên dài
+
+Từ đếm (本, 枚, 匹 …) được luyện như thẻ, và mỗi cái đến với bảng đọc đầy đủ trên slide trình bày. Chưa có trang riêng liệt kê mọi từ đếm trong bộ sưu tập. Lần ôn đầu của một từ đếm hỏi các kết hợp số trong một lô — với hậu tố có nhiều đọc bất quy tắc, điều này có thể thấy dài. Đánh dấu "đã biết" lúc thiết lập bỏ qua luyện nghĩa nhưng không bỏ drill kết hợp. Tài khoản tạo trước khi có từ đếm sẽ thấy chúng được thêm dần khi nhóm làm quen lần lượt đến.
 
 ## Văn bản pháp lý chỉ có tiếng Anh và tiếng Nga
 

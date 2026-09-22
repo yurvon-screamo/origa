@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Bài học trong Origa — Ôn tập, Thẻ, Lập lịch"
 meta_description: "Cấu trúc một bài học Origa: giai đoạn làm quen với thẻ mới (trình bày và luyện), các dạng thẻ, cách đánh giá, và lên lịch ôn tập."
 target_keywords: ["bài học origa", "cách học từ tiếng nhật mới", "lặp lại ngắt quãng tiếng nhật", "fsrs tiếng nhật", "hệ thống ôn tập tiếng nhật", "ôn thẻ tiếng nhật"]
-lastmod: 2026-09-14
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -19,7 +19,7 @@ Một bài học trong Origa là chuỗi thẻ được chọn cho phiên này. 
 
 Mỗi bài học kéo ba loại thẻ:
 
-- **Thẻ mới.** Rút từ vốn từ, hán tự, ngữ pháp hoặc kho câu đang hoạt động. Số lượng mỗi ngày do tốc độ bạn chọn lúc thiết lập (hoặc đổi sau trong hồ sơ) quyết định. Từ vựng, hán tự và ngữ pháp đi qua giai đoạn làm quen trước (mục kế); câu mới đi thẳng vào ôn tập.
+- **Thẻ mới.** Rút từ vốn từ, hán tự, ngữ pháp, từ đếm hoặc kho câu đang hoạt động. Số lượng mỗi ngày do tốc độ bạn chọn lúc thiết lập (hoặc đổi sau trong hồ sơ) quyết định. Từ vựng, hán tự, ngữ pháp và từ đếm đi qua giai đoạn làm quen trước (mục kế); câu mới đi thẳng vào ôn tập.
 - **Lượt ôn đến hạn.** Thẻ có khoảng cách cũ đã hết hạn. Chúng được ưu tiên hơn thẻ mới.
 - **Các dạng trộn.** Cùng một từ có thể xuất hiện ở các dạng khác nhau (nhận diện, gợi nhớ, nghe, viết), nên bạn gặp nó từ nhiều phía.
 
@@ -31,7 +31,7 @@ Một thẻ mới không xuất hiện trong bài học trộn lẫn với ôn t
 
 ### Trình bày
 
-Thẻ mới trong ngày được gom thành một nhóm nhỏ. Nhóm luôn đủ định mức (bảy thẻ) chừng nào hàng đợi thẻ mới còn; nó chỉ ngắn lại khi hàng đợi cạn. Bạn đi qua từng thẻ: một từ kèm furigana, nghĩa và âm thanh; một hán tự kèm nghĩa và âm đọc; ngữ pháp kèm ví dụ. Chưa có gì phải gợi nhớ. Rê chuột lên một hán tự trong từ sẽ mở phần mô tả ngắn về chữ đó.
+Thẻ mới trong ngày được gom thành một nhóm nhỏ. Nhóm luôn đủ định mức (bảy thẻ) chừng nào hàng đợi thẻ mới còn; nó chỉ ngắn lại khi hàng đợi cạn. Bạn đi qua từng thẻ: một từ kèm furigana, nghĩa và âm thanh; một hán tự kèm nghĩa và âm đọc; ngữ pháp kèm ví dụ; một hậu tố đếm kèm nghĩa và bảng đọc đầy đủ các số từ một đến mười. Chưa có gì phải gợi nhớ. Rê chuột lên một hán tự trong từ sẽ mở phần mô tả ngắn về chữ đó.
 
 Mỗi thẻ có hai thao tác: **Kế tiếp** (phím cách) và **Đã biết rồi**. "Đã biết rồi" đánh dấu thẻ là đã thuộc: nó vào thẳng ôn tập thường, và chỗ của nó trong nhóm được thẻ kế trong hàng đợi thế chỗ; nếu hàng đợi rỗng, nhóm chỉ ngắn đi thôi. Định mức thẻ mới hằng ngày không bị tiêu tốn.
 
@@ -61,8 +61,9 @@ Trong một bài học bạn sẽ gặp vài dạng:
 - **Viết.** Một hán tự hiện với animation thứ tự nét; bạn viết theo để học cách viết đúng.
 - **Đọc hán tự.** Bạn đọc một từ bị ẩn furigana và đưa ra cách đọc.
 - **Ngữ pháp.** Một mẫu ngữ pháp hiện trong văn cảnh; bạn hoàn thành hoặc nhận diện nó.
+- **Kết hợp từ đếm.** Thẻ hậu tố đếm (ví dụ 本) được hỏi về cách đọc kèm số: bạn thấy một số với hậu tố (三本) và chọn cách đọc đúng (さんぼん). Cả lô kết hợp đến hạn và mới chạy trong một khe, và bảng đọc hiện sau mỗi câu trả lời.
 
-Không phải thẻ nào cũng có mọi dạng. Thẻ từ vựng có thể nhận diện hoặc gợi nhớ; thẻ hán tự có thêm viết hoặc đọc; thẻ ngữ pháp có dạng riêng của ngữ pháp.
+Không phải thẻ nào cũng có mọi dạng. Thẻ từ vựng có thể nhận diện hoặc gợi nhớ; thẻ hán tự có thêm viết hoặc đọc; thẻ ngữ pháp có dạng riêng của ngữ pháp; thẻ từ đếm xen kẽ giữa "biết / không biết" về nghĩa và lô kết hợp.
 
 ## Đánh giá
 

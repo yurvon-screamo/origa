@@ -94,6 +94,27 @@ const DOCS: &[(Locale, &str, &str)] = &[
         "lesson",
         include_str!("../../content/docs/vi/lesson.md"),
     ),
+    // counters
+    (
+        Locale::En,
+        "counters",
+        include_str!("../../content/docs/en/counters.md"),
+    ),
+    (
+        Locale::Ru,
+        "counters",
+        include_str!("../../content/docs/ru/counters.md"),
+    ),
+    (
+        Locale::Ko,
+        "counters",
+        include_str!("../../content/docs/ko/counters.md"),
+    ),
+    (
+        Locale::Vi,
+        "counters",
+        include_str!("../../content/docs/vi/counters.md"),
+    ),
     // fsrs
     (
         Locale::En,
