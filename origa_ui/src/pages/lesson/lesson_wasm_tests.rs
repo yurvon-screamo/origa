@@ -1863,6 +1863,20 @@ mod acquaintance_training {
                 .is_none(),
             "ответ аудио-фронта: кнопка повтора в теле скрыта"
         );
+
+        // Хинт «Прослушайте слово» — часть вопроса, не ответа: фронт
+        // аудио-карты на стороне ответа пуст (юзер-репорт). Хинт —
+        // единственный текст аудио-фронта, поэтому проверка через
+        // пустоту текста локале-независима.
+        let front = wrapper
+            .query_selector("[data-testid=\"acquaintance-training-front\"]")
+            .unwrap()
+            .expect("front stays mounted (dimmed) on the answer side");
+        assert!(
+            front.text_content().unwrap().trim().is_empty(),
+            "ответ аудио-фронта: хинт «Прослушайте слово» скрыт; got: {:?}",
+            front.text_content()
+        );
     }
 
     #[wasm_bindgen_test]

@@ -113,10 +113,9 @@ pub fn TodayOverviewCard(
                         {move || {
                             let locale = i18n.get_locale();
                             format!(
-                                "{} {} {}",
+                                "{} {}",
                                 td_string!(locale, home.total_label),
-                                total.get(),
-                                td_string!(locale, home.cards_suffix)
+                                total.get()
                             )
                         }}
                     </Text>
