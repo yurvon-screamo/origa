@@ -21,6 +21,7 @@ pub enum RateMode {
     OnboardingScoring,
     GrammarReview,
     KanjiReview,
+    CounterReview,
 }
 
 /// Контекст рейтинга [RatingContext] — происхождение рейтинга.
@@ -34,13 +35,14 @@ pub enum RatingContext {
     Implicit,
 }
 
-const ALL_RATE_MODES: [RateMode; 6] = [
+const ALL_RATE_MODES: [RateMode; 7] = [
     RateMode::ShortTerm,
     RateMode::StandardLesson,
     RateMode::PhraseReview,
     RateMode::OnboardingScoring,
     RateMode::GrammarReview,
     RateMode::KanjiReview,
+    RateMode::CounterReview,
 ];
 
 struct SrsConfig {
@@ -75,6 +77,13 @@ impl SrsConfig {
             RateMode::KanjiReview => Self {
                 request_retention: 0.85,
                 maximum_interval: 90,
+                enable_fuzz: true,
+            },
+            // «В сторону лёгкости»: регулярные ячейки быстро вымываются
+            // из ротации (issue #415).
+            RateMode::CounterReview => Self {
+                request_retention: 0.75,
+                maximum_interval: 365,
                 enable_fuzz: true,
             },
         }
@@ -267,11 +276,37 @@ mod tests {
         assert!(*phrase.next_review_date() > *standard.next_review_date());
     }
 
+    #[test]
+    fn counter_review_easy_gives_longer_interval_than_standard() {
+        // «В сторону лёгкости»: связки счётного суффикса растут агрессивнее
+        // стандартного урока (issue #415, приёмка S1).
+        let memory_history = MemoryHistory::new();
+
+        let standard =
+            rate_memory(RateMode::StandardLesson, Rating::Easy, &memory_history).unwrap();
+        let counter = rate_memory(RateMode::CounterReview, Rating::Easy, &memory_history).unwrap();
+
+        assert!(*counter.next_review_date() > *standard.next_review_date());
+    }
+
+    #[test]
+    fn counter_review_again_returns_short_interval() {
+        let memory_history = MemoryHistory::new();
+        let before = Utc::now();
+
+        let result = rate_memory(RateMode::CounterReview, Rating::Again, &memory_history).unwrap();
+
+        let after = Utc::now();
+        let next_review = result.next_review_date();
+        assert!(*next_review >= before && *next_review <= after + Duration::minutes(1));
+    }
+
     #[rstest]
     #[case::phrase_review(RateMode::PhraseReview, "PhraseReview")]
     #[case::onboarding_scoring(RateMode::OnboardingScoring, "OnboardingScoring")]
     #[case::grammar_review(RateMode::GrammarReview, "GrammarReview")]
     #[case::kanji_review(RateMode::KanjiReview, "KanjiReview")]
+    #[case::counter_review(RateMode::CounterReview, "CounterReview")]
     #[case::short_term_backcompat(RateMode::ShortTerm, "FixationLesson")]
     fn rate_mode_serde_roundtrip_preserves_wire_format(
         #[case] mode: RateMode,

@@ -1,4 +1,5 @@
 mod card;
+mod counter;
 mod daily_history;
 mod empty_diagnosis;
 mod grammar;
@@ -15,13 +16,14 @@ pub mod vocabulary;
 
 use card::ImportDedupKey;
 pub use card::{Card, CardType, StudyCard};
+pub use counter::{CounterBindingMemory, CounterCard};
 pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData, LessonViewGenerator,
-    MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
+    CounterBindingPrompt, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
+    LessonViewGenerator, MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 pub use lesson_builder::{MAX_LESSON_SIZE, NewCardPolicy};
 pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
@@ -354,6 +356,9 @@ impl KnowledgeSet {
             (Card::Phrase(phrase_card), Card::Phrase(existing_phrase_card)) => {
                 phrase_card.phrase_id() == existing_phrase_card.phrase_id()
             },
+            (Card::Counter(counter_card), Card::Counter(existing_counter_card)) => {
+                counter_card.suffix() == existing_counter_card.suffix()
+            },
 
             _ => false,
         }) {
@@ -438,7 +443,10 @@ impl KnowledgeSet {
                     Card::Phrase(_) => RateMode::PhraseReview,
                     Card::Grammar(_) => RateMode::GrammarReview,
                     Card::Kanji(_) => RateMode::KanjiReview,
-                    Card::Vocabulary(_) => mode,
+                    // Семантика счётного суффикса живёт в StandardLesson;
+                    // режим CounterReview применяется только к памятьям
+                    // связок и сюда не доходит (мимо rate_card).
+                    Card::Vocabulary(_) | Card::Counter(_) => mode,
                 },
             };
 
@@ -460,6 +468,36 @@ impl KnowledgeSet {
             .get_mut(&card_id)
             .map(|card| card.toggle_favorite())
             .ok_or(OrigaError::CardNotFound { card_id })
+    }
+
+    /// Мини-оценка связки счётного суффикса: переоценивает ТОЛЬКО память
+    /// этой ячейки в режиме `CounterReview`, мимо `rate_card` — семантика
+    /// карты, другие связки и дневная статистика не затрагиваются.
+    /// Дневная запись и агрегат по семантике — `RecordCounterSessionUseCase`
+    /// при завершении композитного слота.
+    pub fn rate_counter_binding(
+        &mut self,
+        card_id: Ulid,
+        number: u8,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        let study_card = self
+            .study_cards
+            .get_mut(&card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+        let counter = match study_card.card_mut() {
+            Card::Counter(counter) => counter,
+            _ => {
+                return Err(OrigaError::CounterBindingNotFound {
+                    suffix: study_card.card().content_key(),
+                    number,
+                });
+            },
+        };
+        let memory = counter.binding_memory_mut(number)?;
+        let next = rate_memory(RateMode::CounterReview, rating, memory)?;
+        memory.apply_review(next, rating);
+        Ok(())
     }
 
     fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {

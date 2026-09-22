@@ -42,6 +42,10 @@ const PROB_REVIEW_PHRASE_NORMAL: f32 = 0.15;
 
 const PROB_GRAMMAR_QUIZ: f32 = 0.50;
 
+/// Доля композитных показов связок среди ревью счётного суффикса:
+/// остальное — семантический «знаю / не знаю» (issue #415).
+pub(crate) const PROB_COUNTER_BINDINGS: f32 = 0.50;
+
 const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const GOOD_REVIEWS_FOR_REVERSED: usize = 4;
 
@@ -137,6 +141,20 @@ impl<'a> LessonViewGenerator<'a> {
             CardType::Phrase => {
                 let same_type_cards = self.same_type_cards(&card_type);
                 self.select_phrase_view(card, same_type_cards, is_new, rng)
+            },
+            // Новая counter-карта — только через руку знакомства (Exclude);
+            // safe-default как у остальных типов.
+            CardType::Counter if is_new => LessonCardView::Normal(card.clone()),
+            CardType::Counter => {
+                let rand_val = rng.random::<f32>();
+                if rand_val < PROB_COUNTER_BINDINGS {
+                    LessonCardView::CounterBindings {
+                        card: card.clone(),
+                        items: generation::generate_counter_binding_prompts(card),
+                    }
+                } else {
+                    LessonCardView::Normal(card.clone())
+                }
             },
         }
     }
