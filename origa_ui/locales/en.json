@@ -198,7 +198,8 @@
         "grammar": "Grammar",
         "kanji": "Kanji",
         "vocabulary": "Vocabulary",
-        "phrase": "Phrases"
+        "phrase": "Phrases",
+        "counter": "Counters"
       },
       "reading_on": "On",
       "reading_kun": "Kun",
@@ -320,7 +321,9 @@
     "pos_symbol": "symbol",
     "pos_whitespace": "whitespace",
     "pos_auxiliary_symbol": "auxiliary symbol",
-    "listen_word": "Listen to the word"
+    "listen_word": "Listen to the word",
+    "counter_correct": "correct",
+    "counter": "Counter"
   },
   "home": {
     "loading": "Loading...",

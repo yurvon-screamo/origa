@@ -198,7 +198,8 @@
         "grammar": "문법",
         "kanji": "한자",
         "vocabulary": "어휘",
-        "phrase": "표현"
+        "phrase": "표현",
+        "counter": "조수사"
       },
       "reading_on": "음독",
       "reading_kun": "훈독",
@@ -320,7 +321,9 @@
     "pos_symbol": "기호",
     "pos_whitespace": "공백",
     "pos_auxiliary_symbol": "보조 기호",
-    "listen_word": "단어를 들어보세요"
+    "listen_word": "단어를 들어보세요",
+    "counter_correct": "정답",
+    "counter": "조수사"
   },
   "home": {
     "loading": "불러오는 중...",

@@ -198,7 +198,8 @@
         "grammar": "Грамматика",
         "kanji": "Кандзи",
         "vocabulary": "Слова",
-        "phrase": "Фразы"
+        "phrase": "Фразы",
+        "counter": "Счётные суффиксы"
       },
       "reading_on": "Он",
       "reading_kun": "Кун",
@@ -320,7 +321,9 @@
     "pos_symbol": "символ",
     "pos_whitespace": "пробел",
     "pos_auxiliary_symbol": "вспомогательный символ",
-    "listen_word": "Прослушайте слово"
+    "listen_word": "Прослушайте слово",
+    "counter_correct": "верно",
+    "counter": "Счётный суффикс"
   },
   "home": {
     "loading": "Загрузка...",

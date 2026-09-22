@@ -262,6 +262,27 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     Ok(())
 }
 
+pub async fn load_counters() -> Result<(), OrigaError> {
+    if origa::dictionary::counters::is_counters_loaded() {
+        tracing::debug!("🔢 Counters already loaded");
+        return Ok(());
+    }
+
+    let start = now_ms();
+    tracing::info!("🔢 Loading counters...");
+
+    let cdn = cdn_provider();
+    let json = cdn.fetch_text("counters/counters.json").await?;
+
+    yield_to_browser().await;
+    origa::dictionary::counters::init_counters(&json).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("counters registry: {e}"),
+    })?;
+
+    tracing::info!("🔢 Counters loaded ({:.2}s)", (now_ms() - start) / 1000.0);
+    Ok(())
+}
+
 pub async fn load_radicals() -> Result<(), OrigaError> {
     if is_radicals_loaded() {
         tracing::debug!("📖 Radicals already loaded");

@@ -159,6 +159,51 @@ pub(super) fn TrainingAnswerSlide(
                         }
                             .into_any()
                     },
+                    // Счётный суффикс: ответ = значение + таблица чтений
+                    // (issue #415). Таблица — статический фрагмент: контент
+                    // реестра в сессии не меняется.
+                    AcquaintanceSlideData::Counter {
+                        suffix,
+                        meaning,
+                        table,
+                        ..
+                    } => {
+                        let table_rows: Vec<_> = table
+                            .iter()
+                            .map(|(label, reading, irregular)| {
+                                let highlight = if *irregular {
+                                    "bg-[var(--accent-warm)]"
+                                } else {
+                                    ""
+                                };
+                                view! {
+                                    <div class=format!(
+                                        "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0 {}",
+                                        highlight
+                                    )>
+                                        <span class="font-mono text-[var(--fg-black)]">
+                                            {label.clone()}{"×"}{suffix.clone()}
+                                        </span>
+                                        <span class="font-serif text-[var(--fg-black)]">
+                                            {reading.clone()}
+                                        </span>
+                                    </div>
+                                }
+                            })
+                            .collect();
+                        view! {
+                            <div class="flex flex-col gap-4" data-testid="acquaintance-counter-answer">
+                                <p class="font-mono text-lg text-[var(--fg-muted)] text-center">
+                                    {meaning}
+                                </p>
+                                <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
+                                     data-testid="acquaintance-counter-table">
+                                    {table_rows}
+                                </div>
+                            </div>
+                        }
+                            .into_any()
+                    },
                 }
             }}
         </div>

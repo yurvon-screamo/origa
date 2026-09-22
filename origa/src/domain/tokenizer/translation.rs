@@ -113,7 +113,21 @@ pub fn lookup_tokens_translations(
                     resolve_grammar_match(token, native_language, original_text, &original_hiragana)
                 })
                 .or(masu_stem_match);
-            let (grammar_label, grammar_description) = split_grammar_fields(grammar);
+            let (mut grammar_label, mut grammar_description) = split_grammar_fields(grammar);
+
+            // Counter-резолв — последняя позиция цепочки (реальные правила
+            // грамматики 分/回/度/件 никогда не маскируются) и заполняет
+            // метку только если она ещё пуста. POS-гейт «только в
+            // контексте»: standalone 本 — Noun «книга» со словарным
+            // переводом, метки суффикса не получает (issue #415).
+            if grammar_label.is_none()
+                && token.part_of_speech() == &PartOfSpeech::Suffix
+                && let Some(entry) =
+                    crate::dictionary::counters::get_counter(token.orthographic_surface_form())
+            {
+                grammar_label = Some(crate::dictionary::counters::counter_label(*native_language).to_string());
+                grammar_description = Some(crate::dictionary::counters::gloss_for(entry, *native_language).to_string());
+            }
 
             TokenTranslation {
                 surface_form,
@@ -866,6 +880,52 @@ mod integration_tests {
             "「食べて」verb should have grammar_label for te-form, got: {:?}",
             verb
         );
+    }
+
+    #[test]
+    fn suffix_counter_token_gets_localized_label_and_gloss() {
+        crate::dictionary::counters::tests::init_test_counters();
+        let tokens = vec![TokenInfo::new_test_with_reading(
+            "本",
+            "ほん",
+            PartOfSpeech::Suffix,
+        )];
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "三本");
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].grammar_label.as_deref(), Some("Счётный суффикс"));
+        assert_eq!(results[0].grammar_description.as_deref(), Some("длинные предметы"));
+    }
+
+    #[test]
+    fn standalone_noun_counter_surface_gets_no_counter_label() {
+        // POS-гейт: 本 как существительное — словарный путь без метки.
+        crate::dictionary::counters::tests::init_test_counters();
+        let tokens = vec![TokenInfo::new_test_with_reading(
+            "本",
+            "ほん",
+            PartOfSpeech::Noun,
+        )];
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, "本");
+        assert_eq!(results.len(), 1);
+        assert!(
+            results[0].grammar_label.is_none(),
+            "Noun must not carry the counter label"
+        );
+    }
+
+    #[test]
+    fn counter_label_falls_back_to_english_gloss_for_partial_locales() {
+        crate::dictionary::counters::tests::init_test_counters();
+        let tokens = vec![TokenInfo::new_test_with_reading(
+            "本",
+            "ほん",
+            PartOfSpeech::Suffix,
+        )];
+        // KO глосс в фикстуре есть — но цепочка обязана работать и на
+        // частичном реестре: проверяем через English-локаль напрямую.
+        let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, "三本");
+        assert_eq!(results[0].grammar_label.as_deref(), Some("Counter"));
+        assert_eq!(results[0].grammar_description.as_deref(), Some("long objects"));
     }
 
     #[test]

@@ -1,5 +1,5 @@
 use crate::loaders::{
-    data_loader::{load_grammar, load_kanji, load_radicals, load_vocabulary},
+    data_loader::{load_counters, load_grammar, load_kanji, load_radicals, load_vocabulary},
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
     loading_message::{
@@ -232,7 +232,7 @@ pub fn start_dictionary_loading(
         let _ = (furigana_r, pitch_r);
 
         // Stage 2: light resources in parallel.
-        let (kanji_r, grammar_r, radicals_r) = futures::join!(
+        let (kanji_r, grammar_r, radicals_r, counters_r) = futures::join!(
             tracked(
                 "kanji",
                 auth_store.is_kanji_loaded,
@@ -251,7 +251,17 @@ pub fn start_dictionary_loading(
                 FailureSeverity::Error,
                 || load_with_retry(load_radicals, 1),
             ),
+            // Счётные суффиксы — Warn: сбой загрузки не роняет критический
+            // вердикт, приложение работает без counter-карт (issue #415).
+            tracked(
+                "counters",
+                auth_store.is_counters_loaded,
+                FailureSeverity::Warn,
+                || load_with_retry(load_counters, 1),
+            ),
         );
+        // Счётчики не входят в критический вердикт (см. FailureSeverity::Warn).
+        let _ = counters_r;
 
         // Full critical failure verdict (ADR-053): every critical
         // resource down and nothing cached to fall back on → the load
@@ -283,6 +293,27 @@ pub fn start_dictionary_loading(
                     },
                     Ok(_) => {},
                     Err(e) => tracing::warn!("Grammar card migration failed: {e}"),
+                }
+            }
+        });
+
+        // Миграция счётных суффиксов для существующих юзеров (issue #415,
+        // §8): детект из вокаба + докидывание ≤ уровня, все карты новые —
+        // пул руки знакомства. Идемпотентна: повторные старты — no-op.
+        spawn_local({
+            let repository = repository.clone();
+            async move {
+                if !origa::dictionary::counters::is_counters_loaded() {
+                    tracing::warn!("🔢 Counters registry not loaded — migration skipped");
+                    return;
+                }
+                match origa::use_cases::MigrateCountersForExistingUsersUseCase::new(&repository)
+                    .execute()
+                    .await
+                {
+                    Ok(0) => {},
+                    Ok(n) => tracing::info!(n, "🔢 Counter cards migrated for existing user"),
+                    Err(e) => tracing::warn!("Counter migration failed: {e}"),
                 }
             }
         });
