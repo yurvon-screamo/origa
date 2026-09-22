@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Tài liệu Origa — Cách Hoạt Động và Cách Dùng"
 meta_description: "Hướng dẫn cách Origa hoạt động: bắt đầu, bài học, từ vựng, hán tự, ngữ pháp, câu, chụp nhận diện, và các giới hạn hiện tại."
 target_keywords: ["tài liệu origa", "trợ giúp origa", "hướng dẫn origa", "origa hoạt động thế nào", "tài liệu ứng dụng học tiếng nhật"]
-lastmod: 2026-08-30
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -24,6 +24,7 @@ Nếu bạn mới đến, hãy bắt đầu từ đây. Hướng dẫn này gồ
 ## Theo từng tính năng
 
 - **[Bài học](/vi/docs/lesson):** một bài học gồm những gì, giai đoạn làm quen với thẻ mới, các dạng thẻ, cách đánh giá, và cách lặp lại ngắt quãng lên lịch ôn tập.
+- **[Từ đếm](/vi/docs/counters):** cách học hậu tố đếm (本, 枚, 匹): nghĩa và kết hợp số, một hậu tố là một thẻ.
 - **[Origa quyết định gì để hiển thị](/vi/docs/fsrs):** đường cong quên lãng, FSRS, tốc độ và giới hạn hằng ngày: vì sao thẻ hết và vì sao điều đó là bình thường.
 - **[Từ vựng](/vi/docs/vocabulary):** từ điển tích hợp, phát âm bằng âm thanh, bốn cách thêm thẻ, và các bộ từ đã soạn sẵn.
 - **[Hán tự](/vi/docs/kanji):** furigana tự động ẩn dần khi bạn học, luyện viết theo thứ tự nét, và hán tự bám theo JLPT.
