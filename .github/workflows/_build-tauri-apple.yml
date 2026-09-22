@@ -90,6 +90,7 @@ jobs:
         name: Build iOS
         if: github.actor != 'dependabot[bot]' && inputs.skip_apple != true && inputs.skip_ios != true
         runs-on: macos-15
+        timeout-minutes: 60
         permissions:
             contents: read
         outputs:
@@ -482,6 +483,7 @@ jobs:
         name: Build macOS (Universal Binary)
         if: github.actor != 'dependabot[bot]' && inputs.skip_apple != true
         runs-on: macos-15
+        timeout-minutes: 60
         permissions:
             contents: read
         outputs:
