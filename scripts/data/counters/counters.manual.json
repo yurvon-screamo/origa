@@ -1,0 +1,1403 @@
+{
+  "meta": {
+    "description": "Ручной источник данных счётных суффиксов (counter words, 助数詞). Единый источник истины для Slice 4 ишью #415. Полный cdn/counters/counters.json генерируется сборщиком: регулярная ячейка = number_readings[n] + repr_reading; ячейки из irregular (1–10 и 0=何) и beyond_ten (>10) переопределяют точечно. irregular = чтение ячейки отклоняется от регулярной конкатенации (мутация 音便, кун-числительное, уникальное исключение).",
+    "provenance": {
+      "oracle": "naclsn/josuushi (data/, 39 счётчиков) — использован ТОЛЬКО как справочный оракул для сверы чтений; репозиторий без явной лицензии, файлы не копируются, датасет написан с нуля (чтения — лингвистические факты).",
+      "checklists": "Tofugu «350 Japanese Counters» (tofu.com/japanese/japanese-counters-list/), Wikipedia «Japanese counter word» (таблицы 音便)",
+      "jlpt_grouping": "Редакторская, по консенсусу учебников (Minna no Nihongo / Genki / JLPT-подготовка): официального распределения счётных суффиксов по JLPT не существует. N5:19 / N4:14 / N3:18 / N2:16 / N1:9 = 76.",
+      "verified_marks": "поле verified: 'josuushi' — ячейки сверены с оракулом; 'tofugu'/'rule' — по чеклисту/правилам 音便; пометки вида 'josuushi:alt X' — альтернативное чтение у оракула, выбран канон."
+    },
+    "number_readings": {
+      "1": "いち",
+      "2": "に",
+      "3": "さん",
+      "4": "よん",
+      "5": "ご",
+      "6": "ろく",
+      "7": "なな",
+      "8": "はち",
+      "9": "きゅう",
+      "10": "じゅう",
+      "0": "なん"
+    },
+    "number_zero_meaning": "0 = вопросительное «何» (сколько); repr_reading = каноническое чтение суффикса; null — вся серия кун-нерегулярна (irregular обязан покрывать 1–10 и 0)."
+  },
+  "counters": [
+    {
+      "suffix": "つ",
+      "level": "N5",
+      "repr_reading": null,
+      "glosses": {
+        "ru": "штуки (универсальный счёт предметов)",
+        "en": "generic counter for things"
+      },
+      "irregular": {
+        "1": "ひとつ",
+        "2": "ふたつ",
+        "3": "みっつ",
+        "4": "よっつ",
+        "5": "いつつ",
+        "6": "むっつ",
+        "7": "ななつ",
+        "8": "やっつ",
+        "9": "ここのつ",
+        "10": "とお",
+        "0": "いくつ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi:箇"
+      ]
+    },
+    {
+      "suffix": "人",
+      "level": "N5",
+      "repr_reading": "にん",
+      "glosses": {
+        "ru": "люди",
+        "en": "people"
+      },
+      "irregular": {
+        "1": "ひとり",
+        "2": "ふたり",
+        "4": "よにん",
+        "7": "しちにん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "本",
+      "level": "N5",
+      "repr_reading": "ほん",
+      "glosses": {
+        "ru": "длинные предметы: карандаши, бутылки, деревья",
+        "en": "long cylindrical objects: pencils, bottles, trees"
+      },
+      "irregular": {
+        "1": "いっぽん",
+        "3": "さんぼん",
+        "6": "ろっぽん",
+        "8": "はっぽん",
+        "10": "じゅっぽん",
+        "0": "なんぼん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "rule:8 (h→p после っ, у оракула пропущено)"
+      ]
+    },
+    {
+      "suffix": "枚",
+      "level": "N5",
+      "repr_reading": "まい",
+      "glosses": {
+        "ru": "плоские предметы: листы, билеты, футболки",
+        "en": "thin flat objects: sheets, tickets, shirts"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "匹",
+      "level": "N5",
+      "repr_reading": "ひき",
+      "glosses": {
+        "ru": "небольшие животные: кошки, собаки, рыбы",
+        "en": "small animals: cats, dogs, fish"
+      },
+      "irregular": {
+        "1": "いっぴき",
+        "3": "さんびき",
+        "6": "ろっぴき",
+        "8": "はっぴき",
+        "10": "じゅっぴき",
+        "0": "なんびき"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "歳",
+      "level": "N5",
+      "repr_reading": "さい",
+      "glosses": {
+        "ru": "возраст (лет)",
+        "en": "years of age"
+      },
+      "irregular": {
+        "1": "いっさい",
+        "8": "はっさい",
+        "10": "じゅっさい"
+      },
+      "beyond_ten": {
+        "20": "はたち"
+      },
+      "verified": [
+        "josuushi",
+        "rule:20 はたち (у оракула пропущено)"
+      ]
+    },
+    {
+      "suffix": "個",
+      "level": "N5",
+      "repr_reading": "こ",
+      "glosses": {
+        "ru": "штуки компактных предметов: яблоки, конфеты, коробки",
+        "en": "small compact objects: apples, candies, boxes"
+      },
+      "irregular": {
+        "1": "いっこ",
+        "6": "ろっこ",
+        "8": "はっこ",
+        "10": "じゅっこ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "回",
+      "level": "N5",
+      "repr_reading": "かい",
+      "glosses": {
+        "ru": "разы, повторения",
+        "en": "occurrences, times"
+      },
+      "irregular": {
+        "1": "いっかい",
+        "6": "ろっかい",
+        "8": "はっかい",
+        "10": "じゅっかい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 8 はちかい"
+      ]
+    },
+    {
+      "suffix": "台",
+      "level": "N5",
+      "repr_reading": "だい",
+      "glosses": {
+        "ru": "техника, машины, станки",
+        "en": "machines, cars, equipment"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "杯",
+      "level": "N5",
+      "repr_reading": "はい",
+      "glosses": {
+        "ru": "напитки: чашки, стаканы",
+        "en": "cupfuls: cups of tea, drinks"
+      },
+      "irregular": {
+        "1": "いっぱい",
+        "3": "さんばい",
+        "6": "ろっぱい",
+        "8": "はっぱい",
+        "10": "じゅっぱい",
+        "0": "なんばい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "階",
+      "level": "N5",
+      "repr_reading": "かい",
+      "glosses": {
+        "ru": "этажи",
+        "en": "floors of a building"
+      },
+      "irregular": {
+        "1": "いっかい",
+        "3": "さんがい",
+        "6": "ろっかい",
+        "8": "はっかい",
+        "10": "じゅっかい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 3 さんかい / 8 はちかい"
+      ]
+    },
+    {
+      "suffix": "冊",
+      "level": "N5",
+      "repr_reading": "さつ",
+      "glosses": {
+        "ru": "книги, тетради, журналы",
+        "en": "books, notebooks, magazines"
+      },
+      "irregular": {
+        "1": "いっさつ",
+        "8": "はっさつ",
+        "10": "じゅっさつ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "日",
+      "level": "N5",
+      "repr_reading": "にち",
+      "glosses": {
+        "ru": "дни месяца; счёт дней",
+        "en": "days of the month; days"
+      },
+      "irregular": {
+        "1": "ついたち",
+        "2": "ふつか",
+        "3": "みっか",
+        "4": "よっか",
+        "5": "いつか",
+        "6": "むいか",
+        "7": "なのか",
+        "8": "ようか",
+        "9": "ここのか",
+        "10": "とおか"
+      },
+      "beyond_ten": {
+        "14": "じゅうよっか",
+        "20": "はつか",
+        "24": "にじゅうよっか"
+      },
+      "verified": [
+        "josuushi",
+        "josuushi:alt 1 いちにち (длительность), 14/20 にじゅうにち"
+      ]
+    },
+    {
+      "suffix": "ヶ月",
+      "level": "N5",
+      "repr_reading": "かげつ",
+      "glosses": {
+        "ru": "месяцы (длительность)",
+        "en": "months (duration)"
+      },
+      "irregular": {
+        "1": "いっかげつ",
+        "6": "ろっかげつ",
+        "8": "はっかげつ",
+        "10": "じゅっかげつ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "時",
+      "level": "N5",
+      "repr_reading": "じ",
+      "glosses": {
+        "ru": "часы (время)",
+        "en": "hours, o'clock"
+      },
+      "irregular": {
+        "4": "よじ",
+        "7": "しちじ",
+        "9": "くじ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "分",
+      "level": "N5",
+      "repr_reading": "ふん",
+      "glosses": {
+        "ru": "минуты",
+        "en": "minutes"
+      },
+      "irregular": {
+        "1": "いっぷん",
+        "3": "さんぷん",
+        "4": "よんぷん",
+        "6": "ろっぷん",
+        "8": "はっぷん",
+        "10": "じゅっぷん",
+        "0": "なんぷん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "canon:0 なんぷん (alt なんふん)"
+      ]
+    },
+    {
+      "suffix": "年",
+      "level": "N5",
+      "repr_reading": "ねん",
+      "glosses": {
+        "ru": "годы",
+        "en": "years"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "円",
+      "level": "N5",
+      "repr_reading": "えん",
+      "glosses": {
+        "ru": "иены, деньги",
+        "en": "yen, currency"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "週",
+      "level": "N5",
+      "repr_reading": "しゅう",
+      "glosses": {
+        "ru": "недели",
+        "en": "weeks"
+      },
+      "irregular": {
+        "1": "いっしゅう",
+        "8": "はっしゅう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "度",
+      "level": "N4",
+      "repr_reading": "ど",
+      "glosses": {
+        "ru": "разы; градусы",
+        "en": "times; degrees"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "足",
+      "level": "N4",
+      "repr_reading": "そく",
+      "glosses": {
+        "ru": "обувь, носки; пары",
+        "en": "pairs: shoes, socks"
+      },
+      "irregular": {
+        "1": "いっそく",
+        "3": "さんぞく",
+        "8": "はっそく",
+        "10": "じゅっそく",
+        "0": "なんぞく"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "通",
+      "level": "N4",
+      "repr_reading": "つう",
+      "glosses": {
+        "ru": "письма, документы",
+        "en": "letters, correspondence"
+      },
+      "irregular": {
+        "1": "いっつう",
+        "8": "はっつう",
+        "10": "じゅっつう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu",
+        "canon:6 ろくつう (alt ろっつう)"
+      ]
+    },
+    {
+      "suffix": "番",
+      "level": "N4",
+      "repr_reading": "ばん",
+      "glosses": {
+        "ru": "номера, порядок",
+        "en": "ordinal numbers, order"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "名",
+      "level": "N4",
+      "repr_reading": "めい",
+      "glosses": {
+        "ru": "люди (вежливо)",
+        "en": "people (polite)"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "軒",
+      "level": "N4",
+      "repr_reading": "けん",
+      "glosses": {
+        "ru": "дома, строения",
+        "en": "houses, buildings"
+      },
+      "irregular": {
+        "1": "いっけん",
+        "6": "ろっけん",
+        "8": "はっけん",
+        "10": "じゅっけん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "棟",
+      "level": "N4",
+      "repr_reading": "ぼう",
+      "glosses": {
+        "ru": "здания (счёт строений)",
+        "en": "buildings"
+      },
+      "irregular": {
+        "1": "ひとむね",
+        "2": "ふたむね"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu",
+        "josuushi:alt 1 ひとむね/いっけん нет — кун-серия 1–2, дальше он-reading ぼう"
+      ]
+    },
+    {
+      "suffix": "束",
+      "level": "N4",
+      "repr_reading": "たば",
+      "glosses": {
+        "ru": "связки, пучки",
+        "en": "bundles, bunches"
+      },
+      "irregular": {
+        "1": "ひとたば",
+        "2": "ふたたば"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "箱",
+      "level": "N4",
+      "repr_reading": "はこ",
+      "glosses": {
+        "ru": "коробки, ящики",
+        "en": "boxes"
+      },
+      "irregular": {
+        "1": "ひとはこ",
+        "2": "ふたはこ",
+        "3": "みはこ",
+        "0": "なんばこ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu",
+        "canon:0 なんばこ (rendaku; alt いくつ)"
+      ]
+    },
+    {
+      "suffix": "切れ",
+      "level": "N4",
+      "repr_reading": "きれ",
+      "glosses": {
+        "ru": "куски: хлеб, ткань, бумага",
+        "en": "slices, pieces: bread, cloth"
+      },
+      "irregular": {
+        "1": "ひときれ",
+        "2": "ふたきれ",
+        "3": "みきれ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "皿",
+      "level": "N4",
+      "repr_reading": "さら",
+      "glosses": {
+        "ru": "блюда, тарелки",
+        "en": "plates, dishes of food"
+      },
+      "irregular": {
+        "1": "ひとさら",
+        "2": "ふたさら"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 3 みさら"
+      ]
+    },
+    {
+      "suffix": "段",
+      "level": "N4",
+      "repr_reading": "だん",
+      "glosses": {
+        "ru": "ступени, уровни, даны",
+        "en": "steps, grades, ranks"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "畳",
+      "level": "N3",
+      "repr_reading": "じょう",
+      "glosses": {
+        "ru": "татами; площадь комнат",
+        "en": "tatami mats; room area"
+      },
+      "irregular": {
+        "4": "よじょう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "品",
+      "level": "N4",
+      "repr_reading": "ひん",
+      "glosses": {
+        "ru": "порядок блюд, заказы (в ресторане)",
+        "en": "dishes, courses, items ordered"
+      },
+      "irregular": {
+        "1": "いっぴん",
+        "3": "さんびん",
+        "6": "ろっぴん",
+        "8": "はっぴん",
+        "10": "じゅっぴん",
+        "0": "なんびん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "着",
+      "level": "N3",
+      "repr_reading": "ちゃく",
+      "glosses": {
+        "ru": "одежда, костюмы",
+        "en": "suits, outfits, clothes"
+      },
+      "irregular": {
+        "1": "いっちゃく",
+        "8": "はっちゃく",
+        "10": "じゅっちゃく"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "服",
+      "level": "N3",
+      "repr_reading": "ふく",
+      "glosses": {
+        "ru": "одежда (комплекты)",
+        "en": "sets of clothes"
+      },
+      "irregular": {
+        "1": "いっぷく",
+        "3": "さんぷく",
+        "6": "ろっぷく",
+        "8": "はっぷく",
+        "10": "じゅっぷく",
+        "0": "なんぷく"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "曲",
+      "level": "N3",
+      "repr_reading": "きょく",
+      "glosses": {
+        "ru": "музыкальные произведения",
+        "en": "songs, musical pieces"
+      },
+      "irregular": {
+        "1": "いっきょく",
+        "6": "ろっきょく",
+        "8": "はっきょく",
+        "10": "じゅっきょく"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi"
+      ]
+    },
+    {
+      "suffix": "課",
+      "level": "N3",
+      "repr_reading": "か",
+      "glosses": {
+        "ru": "уроки, главы",
+        "en": "lessons, chapters"
+      },
+      "irregular": {
+        "1": "いっか",
+        "6": "ろっか",
+        "8": "はっか",
+        "10": "じゅっか"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "校",
+      "level": "N3",
+      "repr_reading": "こう",
+      "glosses": {
+        "ru": "школы",
+        "en": "schools"
+      },
+      "irregular": {
+        "1": "いっこう",
+        "6": "ろっこう",
+        "8": "はっこう",
+        "10": "じゅっこう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "社",
+      "level": "N3",
+      "repr_reading": "しゃ",
+      "glosses": {
+        "ru": "компании, фирмы",
+        "en": "companies"
+      },
+      "irregular": {
+        "1": "いっしゃ",
+        "8": "はっしゃ",
+        "10": "じゅっしゃ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "局",
+      "level": "N3",
+      "repr_reading": "きょく",
+      "glosses": {
+        "ru": "организации, бюро, партии (шахматы)",
+        "en": "bureaus, organizations; chess moves"
+      },
+      "irregular": {
+        "1": "いっきょく",
+        "6": "ろっきょく",
+        "8": "はっきょく",
+        "10": "じゅっきょく"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "機",
+      "level": "N3",
+      "repr_reading": "き",
+      "glosses": {
+        "ru": "самолёты, машины, механизмы",
+        "en": "airplanes, machines"
+      },
+      "irregular": {
+        "1": "いっき",
+        "6": "ろっき",
+        "8": "はっき",
+        "10": "じゅっき"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "隻",
+      "level": "N3",
+      "repr_reading": "せき",
+      "glosses": {
+        "ru": "корабли, суда",
+        "en": "ships, vessels"
+      },
+      "irregular": {
+        "1": "いっせき",
+        "8": "はっせき",
+        "10": "じゅっせき"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "艘",
+      "level": "N3",
+      "repr_reading": "そう",
+      "glosses": {
+        "ru": "лодки, малые суда",
+        "en": "boats, small craft"
+      },
+      "irregular": {
+        "1": "いっそう",
+        "8": "はっそう",
+        "10": "じゅっそう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "尾",
+      "level": "N3",
+      "repr_reading": "び",
+      "glosses": {
+        "ru": "рыбы (в рыбалке)",
+        "en": "fish (caught)"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "羽",
+      "level": "N4",
+      "repr_reading": "わ",
+      "glosses": {
+        "ru": "птицы, кролики",
+        "en": "birds, rabbits"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 3 さんば / 10 じゅっぱ (разговорные ば-варианты не включены)"
+      ]
+    },
+    {
+      "suffix": "巻",
+      "level": "N3",
+      "repr_reading": "かん",
+      "glosses": {
+        "ru": "тома, свитки",
+        "en": "volumes, scrolls"
+      },
+      "irregular": {
+        "1": "いっかん",
+        "6": "ろっかん",
+        "8": "はっかん",
+        "10": "じゅっかん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 1 ひとかん"
+      ]
+    },
+    {
+      "suffix": "頭",
+      "level": "N3",
+      "repr_reading": "とう",
+      "glosses": {
+        "ru": "крупные животные: коровы, лошади",
+        "en": "large animals: cattle, horses"
+      },
+      "irregular": {
+        "1": "いっとう",
+        "8": "はっとう",
+        "10": "じゅっとう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "canon:8 はっとう (alt はちとう)"
+      ]
+    },
+    {
+      "suffix": "丁",
+      "level": "N3",
+      "repr_reading": "ちょう",
+      "glosses": {
+        "ru": "оружие, инструменты; кварталы, тофу",
+        "en": "guns, tools; city blocks, tofu"
+      },
+      "irregular": {
+        "1": "いっちょう",
+        "8": "はっちょう",
+        "10": "じゅっちょう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "錠",
+      "level": "N3",
+      "repr_reading": "じょう",
+      "glosses": {
+        "ru": "таблетки, капсулы",
+        "en": "pills, tablets"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "貼",
+      "level": "N3",
+      "repr_reading": "ちょう",
+      "glosses": {
+        "ru": "пластыри, компрессы",
+        "en": "patches, compresses"
+      },
+      "irregular": {
+        "1": "いっちょう",
+        "8": "はっちょう",
+        "10": "じゅっちょう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "袋",
+      "level": "N3",
+      "repr_reading": "ふくろ",
+      "glosses": {
+        "ru": "пакеты, мешки",
+        "en": "bags, sacks"
+      },
+      "irregular": {
+        "1": "ひとふくろ",
+        "2": "ふたふくろ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "組",
+      "level": "N2",
+      "repr_reading": "くみ",
+      "glosses": {
+        "ru": "группы, пары, наборы",
+        "en": "groups, pairs, sets"
+      },
+      "irregular": {
+        "1": "ひとくみ",
+        "2": "ふたくみ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "対",
+      "level": "N2",
+      "repr_reading": "つい",
+      "glosses": {
+        "ru": "пары (партнёрские)",
+        "en": "pairs, counterparts"
+      },
+      "irregular": {
+        "1": "いっつい",
+        "8": "はっつい",
+        "10": "じゅっつい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "式",
+      "level": "N2",
+      "repr_reading": "しき",
+      "glosses": {
+        "ru": "стили, методы, форматы",
+        "en": "styles, methods, formulas"
+      },
+      "irregular": {
+        "1": "いっしき",
+        "8": "はっしき",
+        "10": "じゅっしき"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "発",
+      "level": "N2",
+      "repr_reading": "はつ",
+      "glosses": {
+        "ru": "выстрелы, пуски",
+        "en": "shots, bursts, launches"
+      },
+      "irregular": {
+        "1": "いっぱつ",
+        "3": "さんぱつ",
+        "6": "ろっぱつ",
+        "8": "はっぱつ",
+        "10": "じゅっぱつ",
+        "0": "なんぱつ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 3/4/6/8/100 はつ-варианты"
+      ]
+    },
+    {
+      "suffix": "倍",
+      "level": "N2",
+      "repr_reading": "ばい",
+      "glosses": {
+        "ru": "кратности (во сколько раз)",
+        "en": "fold, multiples"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "基",
+      "level": "N2",
+      "repr_reading": "き",
+      "glosses": {
+        "ru": "постаменты, надгробия, фундаменты",
+        "en": "monuments, gravestones, pedestals"
+      },
+      "irregular": {
+        "1": "いっき",
+        "6": "ろっき",
+        "8": "はっき",
+        "10": "じゅっき"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "口",
+      "level": "N2",
+      "repr_reading": "くち",
+      "glosses": {
+        "ru": "порции, члены семьи; укусы",
+        "en": "family members, mouthfuls, bites"
+      },
+      "irregular": {
+        "1": "ひとくち",
+        "2": "ふたくち"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "手",
+      "level": "N2",
+      "repr_reading": "て",
+      "glosses": {
+        "ru": "актёры, музыканты, исполнители",
+        "en": "actors, musicians, performers"
+      },
+      "irregular": {
+        "1": "ひとて",
+        "2": "ふたて"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "店",
+      "level": "N2",
+      "repr_reading": "てん",
+      "glosses": {
+        "ru": "магазины, лавки",
+        "en": "shops, stores"
+      },
+      "irregular": {
+        "1": "いってん",
+        "8": "はってん",
+        "10": "じゅってん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "俵",
+      "level": "N2",
+      "repr_reading": "ひょう",
+      "glosses": {
+        "ru": "мешки (рис)",
+        "en": "bales, sacks of rice"
+      },
+      "irregular": {
+        "1": "いっぴょう",
+        "6": "ろっぴょう",
+        "8": "はっぴょう",
+        "10": "じゅっぴょう",
+        "0": "なんぴょう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "缶",
+      "level": "N2",
+      "repr_reading": "かん",
+      "glosses": {
+        "ru": "банки, жестяные банки",
+        "en": "cans, tins"
+      },
+      "irregular": {
+        "1": "いっかん",
+        "6": "ろっかん",
+        "8": "はっかん",
+        "10": "じゅっかん"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "josuushi",
+        "josuushi:alt 1 ひとかん / 2 ふたかん"
+      ]
+    },
+    {
+      "suffix": "桶",
+      "level": "N2",
+      "repr_reading": "おけ",
+      "glosses": {
+        "ru": "вёдра, бочки",
+        "en": "buckets, barrels"
+      },
+      "irregular": {
+        "1": "ひとおけ",
+        "2": "ふたおけ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "連",
+      "level": "N2",
+      "repr_reading": "れん",
+      "glosses": {
+        "ru": "вагоны, сцепки, серии",
+        "en": "train cars, rows, series"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "掛け",
+      "level": "N2",
+      "repr_reading": "かけ",
+      "glosses": {
+        "ru": "постройки через препятствие: мосты, гамаки",
+        "en": "structures spanning: bridges, hammocks"
+      },
+      "irregular": {
+        "1": "ひとかけ",
+        "2": "ふたかけ"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "重ね",
+      "level": "N2",
+      "repr_reading": "かさね",
+      "glosses": {
+        "ru": "слои одежды, стопки посуды",
+        "en": "layers of clothes, stacked bowls"
+      },
+      "irregular": {
+        "1": "ひとかさね",
+        "2": "ふたかさね"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "くくり",
+      "level": "N2",
+      "repr_reading": "くくり",
+      "glosses": {
+        "ru": "связки, узлы (счёт снопов)",
+        "en": "bundles, sheaves (tied)"
+      },
+      "irregular": {
+        "1": "ひとくくり",
+        "2": "ふたくくり"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "挺",
+      "level": "N1",
+      "repr_reading": "ちょう",
+      "glosses": {
+        "ru": "ружья, паланкины, рикши",
+        "en": "guns, palanquins, rickshaws"
+      },
+      "irregular": {
+        "1": "いっちょう",
+        "8": "はっちょう",
+        "10": "じゅっちょう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "柱",
+      "level": "N1",
+      "repr_reading": "はしら",
+      "glosses": {
+        "ru": "боги, статуи будд, высокородные",
+        "en": "gods, Buddha statues, nobles"
+      },
+      "irregular": {
+        "1": "ひとはしら",
+        "2": "ふたはしら",
+        "3": "みはしら",
+        "0": "なんばしら"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu",
+        "кун-тройка 1–3 как 箱/切れ; 4+ — regular よんはしら; 何 なんばしら (rendaku-канон)"
+      ]
+    },
+    {
+      "suffix": "拝",
+      "level": "N1",
+      "repr_reading": "はい",
+      "glosses": {
+        "ru": "храмы, синтоистские святыни",
+        "en": "shrines, Shinto sanctuaries"
+      },
+      "irregular": {
+        "1": "いっぱい",
+        "3": "さんぱい",
+        "6": "ろっぱい",
+        "8": "はっぱい",
+        "10": "じゅっぱい",
+        "0": "なんぱい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "層",
+      "level": "N1",
+      "repr_reading": "そう",
+      "glosses": {
+        "ru": "слои, ярусы (абстрактные)",
+        "en": "layers, strata"
+      },
+      "irregular": {
+        "1": "いっそう",
+        "8": "はっそう",
+        "10": "じゅっそう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "弾",
+      "level": "N1",
+      "repr_reading": "だん",
+      "glosses": {
+        "ru": "пули, снаряды",
+        "en": "bullets, shells"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "球",
+      "level": "N1",
+      "repr_reading": "きゅう",
+      "glosses": {
+        "ru": "мячи (бейсбол)",
+        "en": "baseballs, pitches"
+      },
+      "irregular": {
+        "1": "いっきゅう",
+        "6": "ろっきゅう",
+        "8": "はっきゅう",
+        "10": "じゅっきゅう"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "打",
+      "level": "N1",
+      "repr_reading": "だ",
+      "glosses": {
+        "ru": "удары, хиты (бейсбол)",
+        "en": "hits, at-bats (baseball)"
+      },
+      "irregular": {},
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "振り",
+      "level": "N1",
+      "repr_reading": "ふり",
+      "glosses": {
+        "ru": "взмахи, размахивания",
+        "en": "brandishings, swings"
+      },
+      "irregular": {
+        "1": "ひとふり",
+        "2": "ふたふり"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    },
+    {
+      "suffix": "揃い",
+      "level": "N1",
+      "repr_reading": "そろい",
+      "glosses": {
+        "ru": "комплекты, гарнитуры",
+        "en": "sets, matching ensembles"
+      },
+      "irregular": {
+        "1": "ひとそろい",
+        "2": "ふたそろい"
+      },
+      "beyond_ten": {},
+      "verified": [
+        "tofugu"
+      ]
+    }
+  ]
+}
