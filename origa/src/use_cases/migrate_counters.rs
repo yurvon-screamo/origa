@@ -68,6 +68,15 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
             return Ok(0);
         }
 
+        // Юзер в онбординге исключён ГОНКОЙ: стартовая миграция читает
+        // юзера до скипа и сейвит копию без флага завершения — скип
+        // затирался, ProtectedRoute гонял юзера по кругу на /onboarding
+        // (красный CI e2e, run 35892085689). Sentinel НЕ ставим: прогон
+        // повторится на старте после завершения онбординга.
+        if !user.is_onboarding_completed() {
+            return Ok(0);
+        }
+
         // Пред-проход: суффиксы существующих counter-карт. После первого
         // прогона миграция — дешёвый no-op без create_card-попыток.
         let existing: HashSet<String> = user
@@ -143,6 +152,9 @@ mod tests {
 
     fn user_with_words(words: &[&str]) -> crate::domain::User {
         let mut user = User::new("m@e.st".to_string(), NativeLanguage::Russian, None);
+        // Миграция гейтится завершённым онбордингом — фикстура игрока
+        // «после онбординга».
+        user.mark_set_as_imported(crate::domain::ONBOARDING_COMPLETED_KEY.to_string());
         for w in words {
             user.create_card(Card::Vocabulary(VocabularyCard::new(
                 Question::new(w.to_string()).unwrap(),
@@ -197,6 +209,32 @@ mod tests {
             use_case.execute().await.unwrap(),
             0,
             "sentinel suppresses reruns"
+        );
+    }
+
+    /// Юзер в онбординге не мигрируется и НЕ получает sentinel: стартовая
+    /// миграция сейвила бы копию юзера до скипа — гонка затирала флаг
+    /// завершения онбординга (красный e2e CI).
+    #[tokio::test]
+    async fn migration_waits_for_onboarding_completion() {
+        init_test_counters();
+        let mut user = User::new("m@e.st".to_string(), NativeLanguage::Russian, None);
+        user.create_card(Card::Vocabulary(VocabularyCard::new(
+            Question::new("一本".to_string()).unwrap(),
+        )))
+        .unwrap();
+        let repo = InMemoryUserRepository::with_user(user);
+        let use_case = MigrateCountersForExistingUsersUseCase::new(&repo);
+
+        assert_eq!(
+            use_case.execute().await.unwrap(),
+            0,
+            "onboarding user is skipped"
+        );
+        let stored = repo.get_current_user().await.unwrap().unwrap();
+        assert!(
+            !stored.is_counters_migrated_v1(),
+            "no sentinel until onboarding completes"
         );
     }
 

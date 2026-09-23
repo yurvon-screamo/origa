@@ -1,281 +1,315 @@
-//! Детальная карточка счётного суффикса (`/counters/:suffix`): знак, глосса,
-//! уровень, таблица чтений с состоянием каждой связки, заведение/лайк/удаление.
-
-use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant, Tag, TagVariant, Text, TextSize};
+use super::super::shared::{
+    CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
+    format_answer_text,
+};
+use crate::i18n::use_i18n;
+use crate::repository::HybridUserRepository;
+use crate::ui_components::{
+    CardActionBar, DeleteConfirmModal, FsrsMetrics, LoadingOverlay, Tag, Text, TextSize,
+    TypographyVariant,
+};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::hooks::use_params;
-use leptos_router::params::Params;
-use origa::domain::{Card, JapaneseLevel};
+use leptos_router::components::A;
+use leptos_router::hooks::{use_navigate, use_params_map};
+use origa::domain::{Card as DomainCard, StudyCard};
 use origa::traits::UserRepository;
-use origa::use_cases::{DeleteCardUseCase, MarkCardAsKnownUseCase, ToggleFavoriteUseCase};
+use origa::use_cases::ToggleFavoriteUseCase;
+use ulid::Ulid;
 
-#[derive(Params, PartialEq, Clone)]
-struct CounterParams {
-    suffix: String,
-}
-
-#[derive(Clone)]
-struct DetailState {
-    suffix: String,
-    gloss: String,
-    level: JapaneseLevel,
-    deck_card: Option<origa::domain::StudyCard>,
+fn load_study_card(
+    repository: HybridUserRepository,
+    card_id: Ulid,
+    result_signal: RwSignal<Option<StudyCard>>,
+    is_loading: RwSignal<bool>,
+) {
+    let disposed = StoredValue::new(());
+    spawn_local(async move {
+        match repository.get_current_user().await {
+            Ok(Some(user)) => {
+                if disposed.is_disposed() {
+                    return;
+                }
+                let found = user
+                    .knowledge_set()
+                    .study_cards()
+                    .iter()
+                    .find(|(id, _)| **id == card_id)
+                    .map(|(_, card)| card.clone());
+                result_signal.set(found);
+                is_loading.set(false);
+            },
+            Ok(None) => {
+                if disposed.is_disposed() {
+                    return;
+                }
+                tracing::warn!("CountersDetail: user not found");
+                is_loading.set(false);
+            },
+            Err(e) => {
+                if disposed.is_disposed() {
+                    return;
+                }
+                tracing::error!("CountersDetail: get_current_user error: {e:?}");
+                is_loading.set(false);
+            },
+        }
+    });
 }
 
 #[component]
 pub fn CountersDetail() -> impl IntoView {
     let i18n = use_i18n();
     let repository =
-        use_context::<crate::repository::HybridUserRepository>().expect("repository context");
-    let params = use_params::<CounterParams>();
-    let refresh = RwSignal::new(0u32);
-    let state = RwSignal::new(None::<DetailState>);
-    let not_found = RwSignal::new(false);
+        use_context::<HybridUserRepository>().expect("repository context not provided");
 
-    Effect::new({
-        let repository = repository.clone();
-        move |_| {
-            let _ = refresh.get();
-            let Ok(p) = params.get() else { return };
-            let suffix = p.suffix;
-            let repository = repository.clone();
-            let state = state;
-            let not_found = not_found;
-            spawn_local(async move {
-                let Some(entry) = origa::dictionary::counters::get_counter(&suffix) else {
-                    not_found.set(true);
-                    state.set(None);
-                    return;
-                };
-                not_found.set(false);
-                let user = repository.get_current_user().await.ok().flatten();
-                let lang = user
-                    .as_ref()
-                    .map(|u| *u.native_language())
-                    .unwrap_or(origa::domain::NativeLanguage::English);
-                let deck_card = user.as_ref().and_then(|u| {
-                    u.knowledge_set()
-                        .study_cards()
-                        .values()
-                        .find_map(|sc| match sc.card() {
-                            Card::Counter(c) if c.suffix() == suffix => Some(sc.clone()),
-                            _ => None,
-                        })
-                });
-                state.set(Some(DetailState {
-                    suffix: suffix.clone(),
-                    gloss: origa::dictionary::counters::gloss_for(entry, lang).to_string(),
-                    level: entry.level(),
-                    deck_card,
-                }));
-            });
+    let params = use_params_map();
+    let card_id_result: Memo<Option<Ulid>> = Memo::new(move |_| {
+        params
+            .read()
+            .get("id")
+            .and_then(|id| id.parse::<Ulid>().ok())
+    });
+
+    let study_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
+    let is_loading = RwSignal::new(true);
+    let refresh_trigger = RwSignal::new(0u32);
+
+    let repo_for_effect = repository.clone();
+    Effect::new(move |_| {
+        let _ = refresh_trigger.get();
+        let Some(card_id) = card_id_result.get() else {
+            is_loading.set(false);
+            return;
+        };
+        load_study_card(repo_for_effect.clone(), card_id, study_card, is_loading);
+    });
+
+    let is_favorite_signal: RwSignal<bool> = RwSignal::new(false);
+    Effect::new(move |_| {
+        if let Some(card) = study_card.get() {
+            is_favorite_signal.set(card.is_favorite());
         }
     });
 
-    let run = Callback::new({
-        let repository = repository.clone();
-        move |action: Action| {
-            let repository = repository.clone();
+    let favorite_pending = RwSignal::new(false);
+    let on_toggle_favorite = {
+        let repo = repository.clone();
+        let refresh = refresh_trigger;
+        let pending = favorite_pending;
+        Callback::new(move |card_id: Ulid| {
+            is_favorite_signal.update(|f| *f = !*f);
+            let repo = repo.clone();
             spawn_local(async move {
-                let result = match action {
-                    Action::Add(suffix) => super::content::add_counters(&repository, vec![suffix])
-                        .await
-                        .map(|_| ()),
-                    Action::Delete(card_id) => {
-                        DeleteCardUseCase::new(&repository).execute(card_id).await
-                    },
-                    Action::Favorite(card_id) => ToggleFavoriteUseCase::new(&repository)
-                        .execute(card_id)
-                        .await
-                        .map(|_| ()),
-                    Action::MarkKnown(card_id) => {
-                        MarkCardAsKnownUseCase::new(&repository)
-                            .execute(card_id)
-                            .await
-                    },
-                };
-                if let Err(e) = result {
-                    tracing::error!("Counters detail action failed: {e}");
+                pending.set(true);
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    refresh.update(|v| *v += 1);
+                } else {
+                    is_favorite_signal.update(|f| *f = !*f);
                 }
-                refresh.update(|t| *t += 1);
+                pending.set(false);
             });
-        }
-    });
+        })
+    };
+    let (on_mark_as_known, mark_known_pending) =
+        create_mark_as_known_callback(repository.clone(), refresh_trigger);
+    let toasts: RwSignal<Vec<crate::ui_components::ToastData>> = RwSignal::new(Vec::new());
+    let (is_deleting, on_delete) =
+        create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
-    let back = Callback::new(move |_: leptos::ev::MouseEvent| {
-        let nav = leptos_router::hooks::use_navigate();
-        nav("/counters", Default::default());
+    let native_lang =
+        Memo::new(move |_| crate::i18n::locale_to_native_language(&i18n.get_locale()));
+
+    let is_delete_modal_open = RwSignal::new(false);
+    let navigate = StoredValue::new(use_navigate());
+
+    let not_found_text =
+        Signal::derive(move || i18n.get_keys().counters().not_found().inner().to_string());
+    let loading_text =
+        Signal::derive(move || i18n.get_keys().common().loading().inner().to_string());
+
+    let breadcrumbs_label = Signal::derive(move || {
+        i18n.get_keys()
+            .counters()
+            .header()
+            .inner()
+            .to_string()
+            .to_uppercase()
     });
 
     view! {
-        <div class="space-y-4 max-w-2xl" data-testid="counters-detail">
-            <Show
-                when=move || !not_found.get()
-                fallback=move || {
-                    view! {
-                        <div class="space-y-4">
-                            <Text size=TextSize::Large>
-                                {move || td_string!(i18n.get_locale(), counters.not_found).to_string()}
-                            </Text>
-                            <Button variant=ButtonVariant::Ghost on_click=back test_id="counters-detail-back-error">
-                                {t!(i18n, counters.back)}
-                            </Button>
-                        </div>
-                    }
-                }
-            >
+        <div class="counter-detail-container" data-testid="counters-detail">
+            <Show when=move || is_loading.get()>
+                <LoadingOverlay message=loading_text />
+            </Show>
+
+            <Show when=move || !is_loading.get() && study_card.get().is_none()>
+                <div class="flex items-center justify-center py-16">
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                        {not_found_text}
+                    </Text>
+                </div>
+            </Show>
+
+            <Show when=move || study_card.get().is_some()>
                 {move || {
-                    let Some(st) = state.get() else {
-                        return ().into_any();
+                    let card = study_card.get()?;
+                    let card_id = *card.card_id();
+                    let memory = card.memory().clone();
+                    let status = CardStatus::from_study_card(&card);
+
+                    let (suffix, readings) = match card.card() {
+                        DomainCard::Counter(counter_card) => {
+                            // Чтения — реестр (истина датасета), статус
+                            // изученности — память связки карты юзера.
+                            let rows: Vec<(String, String, bool)> =
+                                origa::dictionary::counters::get_counter(counter_card.suffix())
+                                    .map(|entry| {
+                                        entry
+                                            .readings()
+                                            .iter()
+                                            .map(|r| {
+                                                (
+                                                    match r.number() {
+                                                        0 => "何".to_string(),
+                                                        n => n.to_string(),
+                                                    },
+                                                    r.reading().to_string(),
+                                                    counter_card
+                                                        .binding_memory(r.number())
+                                                        .is_some_and(|m| m.is_known_card()),
+                                                )
+                                            })
+                                            .collect()
+                                    })
+                                    .unwrap_or_default();
+                            (counter_card.suffix().to_string(), rows)
+                        },
+                        _ => return None,
                     };
-                    let rows = reading_rows(&st);
-                    let known_count = rows.iter().filter(|r| r.2).count();
-                    view! {
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <Button variant=ButtonVariant::Ghost on_click=back test_id="counters-detail-back">
-                                    {t!(i18n, counters.back)}
-                                </Button>
-                                <Tag variant=TagVariant::Olive>{st.level.to_string()}</Tag>
+
+                    let card_for_answer = card.clone();
+                    let answer_text = Memo::new(move |_| {
+                        let lang = native_lang.get();
+                        format_answer_text(card_for_answer.card(), &lang)
+                    });
+
+                    let known_count = readings.iter().filter(|r| r.2).count();
+                    let total = readings.len();
+                    let bindings_label = Signal::derive(move || {
+                        i18n.get_keys()
+                            .counters()
+                            .bindings_learned()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &format!("{known_count}/{total}"), 1)
+                    });
+
+                    let readings_title = Signal::derive(move || {
+                        i18n.get_keys().counters().readings_title().inner().to_string()
+                    });
+
+                    let card_id_for_delete = card_id;
+                    let confirm_delete = Callback::new(move |_| {
+                        on_delete.run(DeleteRequest {
+                            card_id: card_id_for_delete,
+                            on_success: Callback::new(move |_| {
+                                is_delete_modal_open.set(false);
+                                navigate.get_value()("/counters", Default::default());
+                            }),
+                        })
+                    });
+
+                    let card_id_for_known = card_id;
+                    let card_id_for_fav = card_id;
+                    let suffix_for_breadcrumbs = suffix.clone();
+
+                    Some(view! {
+                        // Breadcrumbs + Actions
+                        <div class="counter-detail-top-bar">
+                            <div class="counter-breadcrumbs">
+                                <A href="/counters">{breadcrumbs_label}</A>
+                                <span class="counter-breadcrumbs-separator">"/"</span>
+                                <span class="counter-breadcrumbs-current">
+                                    {suffix_for_breadcrumbs}
+                                </span>
                             </div>
+                            <FsrsMetrics
+                                difficulty=memory.difficulty().map(|d| d.value())
+                                stability=memory.stability().map(|s| s.value())
+                                test_id=Signal::derive(|| "counters-detail-fsrs".to_string())
+                            />
+                            <CardActionBar
+                                tag_variant=Signal::derive(move || status.tag_variant())
+                                tag_label=Signal::derive(move || status.label(&i18n))
+                                is_favorite=is_favorite_signal.into()
+                                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id_for_fav))
+                                favorite_pending=favorite_pending
+                                show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id_for_known))
+                                mark_known_pending=mark_known_pending
+                                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                                test_id=Signal::derive(|| "counters-detail-actions".to_string())
+                                show_tag=Signal::derive(|| false)
+                            />
+                        </div>
 
-                            <div class="text-center py-4" data-testid="counters-detail-head">
-                                <p class="font-serif text-7xl text-[var(--fg-black)]">{st.suffix.clone()}</p>
-                                <p class="font-mono text-[var(--fg-muted)] mt-2">{st.gloss.clone()}</p>
-                                {st.deck_card.is_some().then(|| {
-                                    let label = td_string!(i18n.get_locale(), counters.bindings_learned);
-                                    view! {
-                                        <p class="text-xs font-mono text-[var(--fg-muted)] mt-1"
-                                           data-testid="counters-detail-bindings">
-                                            {format!("{label}: {known_count}/{}", rows.len())}
-                                        </p>
-                                    }
-                                })}
+                        // Hero: знак + глосса + сводка связок
+                        <div class="counter-detail-hero-card" data-testid="counters-detail-hero">
+                            <div class="counter-detail-hero-header">
+                                <div class="counter-detail-hero-char-box">
+                                    <span class="counter-detail-hero-char">{suffix.clone()}</span>
+                                </div>
+                                <div class="counter-detail-hero-info">
+                                    <div class="counter-detail-hero-meaning">
+                                        {move || answer_text.get()}
+                                    </div>
+                                    <div class="counter-detail-hero-bindings" data-testid="counters-detail-bindings">
+                                        {move || bindings_label.get()}
+                                    </div>
+                                </div>
+                                <div class="counter-detail-hero-badge">
+                                    <Tag variant=Signal::derive(move || status.tag_variant())>
+                                        {move || status.label(&i18n)}
+                                    </Tag>
+                                </div>
                             </div>
+                        </div>
 
-                            {match &st.deck_card {
-                                None => {
-                                    view! {
-                                        <div class="flex justify-center">
-                                            <Button
-                                                variant=ButtonVariant::Filled
-                                                on_click=Callback::new({
-                                                    let run = run;
-                                                    let suffix = st.suffix.clone();
-                                                    move |_: leptos::ev::MouseEvent| run.run(Action::Add(suffix.clone()))
-                                                })
-                                                test_id="counters-detail-add"
-                                            >
-                                                {t!(i18n, counters.add)}
-                                            </Button>
-                                        </div>
-                                    }.into_any()
-                                },
-                                Some(sc) => {
-                                    let card_id = *sc.card_id();
-                                    let is_favorite = sc.is_favorite();
-                                    view! {
-                                        <div class="flex justify-center gap-2 flex-wrap" data-testid="counters-detail-actions">
-                                            <Button
-                                                variant=ButtonVariant::Ghost
-                                                on_click=Callback::new({
-                                                    let run = run;
-                                                    move |_: leptos::ev::MouseEvent| run.run(Action::MarkKnown(card_id))
-                                                })
-                                                test_id="counters-detail-known"
-                                            >
-                                                {t!(i18n, counters.mark_known)}
-                                            </Button>
-                                            <Button
-                                                variant=ButtonVariant::Ghost
-                                                on_click=Callback::new({
-                                                    let run = run;
-                                                    move |_: leptos::ev::MouseEvent| run.run(Action::Favorite(card_id))
-                                                })
-                                                test_id="counters-detail-favorite"
-                                            >
-                                                {if is_favorite { td_string!(i18n.get_locale(), counters.unfavorite) } else { td_string!(i18n.get_locale(), counters.favorite) }}
-                                            </Button>
-                                            <Button
-                                                variant=ButtonVariant::Ghost
-                                                on_click=Callback::new({
-                                                    let run = run;
-                                                    move |_: leptos::ev::MouseEvent| run.run(Action::Delete(card_id))
-                                                })
-                                                test_id="counters-detail-delete"
-                                            >
-                                                {t!(i18n, counters.delete)}
-                                            </Button>
-                                        </div>
-                                    }.into_any()
-                                },
-                            }}
-
-                            <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
-                                 data-testid="counters-detail-table">
-                                {rows
+                        // Таблица чтений с состоянием связок
+                        <div class="counter-detail-section-card" style="margin-top:16px" data-testid="counters-detail-table">
+                            <div class="counter-detail-section-title">{readings_title}</div>
+                            <div class="counter-readings-table">
+                                {readings
                                     .into_iter()
-                                    .map(|(label, reading, known)| {
+                                    .map(|(numeral, reading, known)| {
                                         view! {
                                             <div class=format!(
-                                                "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0 {}",
-                                                if known { "bg-[var(--accent-sage)]/30" } else { "" },
+                                                "counter-readings-row{}",
+                                                if known { " counter-readings-row--known" } else { "" },
                                             )>
-                                                <span class="font-mono text-[var(--fg-black)]">
-                                                    {label}{"×"}{st.suffix.clone()}
+                                                <span class="counter-readings-numeral">
+                                                    {numeral}{"×"}{suffix.clone()}
                                                 </span>
-                                                <span class="font-serif text-[var(--fg-black)]">{reading}</span>
+                                                <span class="counter-readings-reading">{reading}</span>
                                             </div>
                                         }
                                     })
                                     .collect::<Vec<_>>()}
                             </div>
                         </div>
-                    }
-                    .into_any()
+
+                        <DeleteConfirmModal
+                            test_id="counters-detail-delete-modal"
+                            is_open=is_delete_modal_open
+                            is_deleting=is_deleting.into()
+                            on_confirm=confirm_delete
+                            on_close=Callback::new(move |_| is_delete_modal_open.set(false))
+                        />
+                    }.into_any())
                 }}
             </Show>
         </div>
     }
-}
-
-/// Действия детальной карточки.
-#[derive(Clone)]
-enum Action {
-    Add(String),
-    Delete(ulid::Ulid),
-    Favorite(ulid::Ulid),
-    MarkKnown(ulid::Ulid),
-}
-
-/// Строки таблицы: (номер-лейбл, чтение, изучена). Контент — реестр,
-/// статус связок — из карты юзера.
-fn reading_rows(st: &DetailState) -> Vec<(String, String, bool)> {
-    let Some(entry) = origa::dictionary::counters::get_counter(&st.suffix) else {
-        return Vec::new();
-    };
-    let binding_known = |number: u8| -> bool {
-        st.deck_card.as_ref().is_some_and(|sc| match sc.card() {
-            Card::Counter(counter) => counter
-                .binding_memory(number)
-                .is_some_and(|m| m.is_known_card()),
-            _ => false,
-        })
-    };
-    entry
-        .readings()
-        .iter()
-        .map(|r| {
-            (
-                match r.number() {
-                    0 => "何".to_string(),
-                    n => n.to_string(),
-                },
-                r.reading().to_string(),
-                binding_known(r.number()),
-            )
-        })
-        .collect()
 }
