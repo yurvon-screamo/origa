@@ -61,6 +61,13 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
             .await?
             .ok_or(OrigaError::CurrentUserNotExist)?;
 
+        // Разовая накатка (решение владельца): прогнав миграцию один раз,
+        // больше не сканируем вокаб на каждом старте — новые счётчики
+        // заводятся кандидатом анализа текста сразу при добавлении слов.
+        if user.is_counters_migrated_v1() {
+            return Ok(0);
+        }
+
         // Пред-проход: суффиксы существующих counter-карт. После первого
         // прогона миграция — дешёвый no-op без create_card-попыток.
         let existing: HashSet<String> = user
@@ -116,9 +123,9 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
             );
         }
 
-        if created > 0 {
-            self.repository.save(&user).await?;
-        }
+        // Sentinel пишем и при нулевом охвате: «накатили» — факт свершившийся.
+        user.mark_counters_migrated_v1();
+        self.repository.save(&user).await?;
         info!(user_id = %user.id(), created, "Counters migrated for existing user");
         Ok(created)
     }
@@ -168,6 +175,29 @@ mod tests {
             })
             .collect();
         assert_eq!(suffixes, vec![TEST_HON.to_string()]);
+    }
+
+    /// Разовость: sentinel ставится первым прогоном (даже с нулевым
+    /// охватом) и гасит все последующие.
+    #[tokio::test]
+    async fn migration_runs_exactly_once_per_user() {
+        init_test_counters();
+        let repo = InMemoryUserRepository::with_user(user_with_words(&[]));
+        let use_case = MigrateCountersForExistingUsersUseCase::new(&repo);
+        // Пустой вокаб: 0 создано, но sentinel записан…
+        assert_eq!(use_case.execute().await.unwrap(), 0);
+        // …слово-связка появляется ПОСЛЕ накатки — повтор не заводит:
+        let mut user = repo.get_current_user().await.unwrap().unwrap();
+        user.create_card(Card::Vocabulary(VocabularyCard::new(
+            crate::domain::value_objects::Question::new("一本".to_string()).unwrap(),
+        )))
+        .unwrap();
+        repo.save(&user).await.unwrap();
+        assert_eq!(
+            use_case.execute().await.unwrap(),
+            0,
+            "sentinel suppresses reruns"
+        );
     }
 
     #[tokio::test]

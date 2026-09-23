@@ -210,6 +210,19 @@ const NUMERAL_CHARS: &[char] = &[
     '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '百', '千',
 ];
 
+/// Суффиксы реестра, чей счётный контекст виден в поверхности ОДНОЙ
+/// лексемы (числительное + суффикс внутри слова — склейки токенизатора
+/// вида 三本, которые не расщепляются в пары токенов).
+pub fn counters_detected_in_surface(word: &str) -> Vec<&'static CounterEntry> {
+    match COUNTERS.get() {
+        Some(entries) => entries
+            .iter()
+            .filter(|entry| suffix_detected_in_word(word, entry.suffix()))
+            .collect(),
+        None => Vec::new(),
+    }
+}
+
 pub fn suffix_detected_in_word(word: &str, suffix: &str) -> bool {
     // Standalone-совпадение НЕ детектим: изолированный 本 — существительное
     // («книга»), счётный суффикс проявляется только в числительных

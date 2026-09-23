@@ -10,6 +10,9 @@ pub fn CategoryProgressGrid(
     kanji_progress: Signal<CategoryProgress>,
     words_progress: Signal<CategoryProgress>,
     grammar_progress: Signal<CategoryProgress>,
+    /// Счётные суффиксы (issue #415): четвёртая полоса, ведёт на /counters.
+    #[prop(optional)]
+    counters_progress: Option<Signal<CategoryProgress>>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -20,7 +23,7 @@ pub fn CategoryProgressGrid(
     };
 
     view! {
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch" data-testid=grid_test_id>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch" data-testid=grid_test_id>
             <CategoryCard
                 href="/kanji"
                 icon=CategoryIcon::Kanji
@@ -48,6 +51,25 @@ pub fn CategoryProgressGrid(
                 icon_color_class="text-[var(--fg-black)]"
                 test_id=Signal::derive(move || format!("{}-grammar", test_id.get()))
             />
+            {move || {
+                let Some(counters_progress) = counters_progress else {
+                    return ().into_any();
+                };
+                view! {
+                    <CategoryCard
+                        href="/counters"
+                        icon=CategoryIcon::Counters
+                        label=Signal::derive(move || {
+                            td_string!(i18n.get_locale(), home.counters_label).to_string()
+                        })
+                        progress=counters_progress
+                        fill_class="bg-[var(--accent-olive)]"
+                        icon_color_class="text-[var(--accent-olive)]"
+                        test_id=Signal::derive(move || format!("{}-counters", test_id.get()))
+                    />
+                }
+                .into_any()
+            }}
         </div>
     }
 }
@@ -56,6 +78,7 @@ enum CategoryIcon {
     Kanji,
     Words,
     Grammar,
+    Counters,
 }
 
 #[component]
@@ -96,6 +119,12 @@ fn CategoryCard(
         CategoryIcon::Grammar => view! {
             <div class=move || icon_color_class.get().clone()>
                 <Icon icon=icondata::LuClipboardList width="32" height="32" />
+            </div>
+        }
+        .into_any(),
+        CategoryIcon::Counters => view! {
+            <div class=move || icon_color_class.get().clone()>
+                <Icon icon=icondata::LuHash width="32" height="32" />
             </div>
         }
         .into_any(),

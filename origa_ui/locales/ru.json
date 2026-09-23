@@ -379,7 +379,8 @@
     "badge_kanji": "Кандзи",
     "badge_words": "Слова",
     "badge_grammar": "Грамматика",
-    "rating_accuracy": "Точность"
+    "rating_accuracy": "Точность",
+    "counters_label": "Счётные суффиксы"
   },
   "login": {
     "or_login_with": "или войти/зарегистрироваться через",
@@ -487,7 +488,8 @@
     },
     "no_translation_found": "Нет перевода — не будет добавлено",
     "tooltip_no_translation": "Слово не найдено в наших словарях",
-    "already_added": "Добавлено"
+    "already_added": "Добавлено",
+    "counter_badge": "счётный суффикс"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",
@@ -695,5 +697,19 @@
       "completed_status": "Завершено",
       "recognition_error": "Ошибка распознавания"
     }
+  },
+  "counters": {
+    "title": "Счётные суффиксы",
+    "add": "Добавить суффиксы",
+    "add_title": "Добавить счётные суффиксы",
+    "add_confirm": "Добавить выбранные",
+    "in_deck": "в колоде",
+    "bindings_learned": "связки",
+    "back": "К списку",
+    "not_found": "Суффикс не найден",
+    "mark_known": "Уже знаю",
+    "favorite": "В избранное",
+    "unfavorite": "Убрать из избранного",
+    "delete": "Удалить"
   }
 }

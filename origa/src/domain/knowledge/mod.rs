@@ -572,6 +572,9 @@ impl KnowledgeSet {
                 Utc::now() - Duration::days(1),
             );
             card.apply_review(memory, Rating::Easy);
+            // Счётный суффикс: «знаю» распространяется на все связки —
+            // иначе первый композитный показ дриллил бы полную таблицу.
+            card.mark_all_counter_bindings_known();
             card.handle_favorite_rating(Rating::Easy);
             card.stamp_marked_known(Utc::now());
             Ok(())

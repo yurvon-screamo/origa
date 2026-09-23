@@ -54,6 +54,11 @@ pub struct LevelProgressDetail {
     pub kanji: CategoryProgress,
     pub words: CategoryProgress,
     pub grammar: CategoryProgress,
+    /// Счётные суффиксы (issue #415): отображаемая категория — в
+    /// `overall_percentage` и carry-chain уровня НЕ входит (76 позиций
+    /// исказили бы и общий процент, и вычисление уровня).
+    #[serde(default)]
+    pub counters: CategoryProgress,
 }
 
 impl LevelProgressDetail {
@@ -62,6 +67,7 @@ impl LevelProgressDetail {
             kanji: CategoryProgress::new(),
             words: CategoryProgress::new(),
             grammar: CategoryProgress::new(),
+            counters: CategoryProgress::new(),
         }
     }
 
@@ -93,6 +99,7 @@ pub struct CategoryCounts {
     pub kanji: HashMap<JapaneseLevel, usize>,
     pub words: HashMap<JapaneseLevel, usize>,
     pub grammar: HashMap<JapaneseLevel, usize>,
+    pub counters: HashMap<JapaneseLevel, usize>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -218,6 +225,11 @@ impl JlptProgress {
                     projected: *update.projected.grammar.get(&level).unwrap_or(&0),
                     total: *update.total.grammar.get(&level).unwrap_or(&0),
                 },
+                counters: CategoryProgress {
+                    learned: *update.learned.counters.get(&level).unwrap_or(&0),
+                    projected: *update.projected.counters.get(&level).unwrap_or(&0),
+                    total: *update.total.counters.get(&level).unwrap_or(&0),
+                },
             };
             self.levels.insert(level, detail);
         }
@@ -304,6 +316,7 @@ mod tests {
                 projected: 0,
                 total: 100,
             },
+            counters: CategoryProgress::new(),
         };
         assert!((detail.overall_percentage() - 50.0).abs() < 0.001);
 
@@ -330,6 +343,7 @@ mod tests {
                 projected: 0,
                 total: 100,
             },
+            counters: CategoryProgress::new(),
         };
 
         // Assert — projected layer adds (10+20+0)/3 = 10 on top of 50 learned average
@@ -361,6 +375,7 @@ mod tests {
                     kanji: category(kanji, index),
                     words: category(words, index),
                     grammar: category(grammar, index),
+                    counters: CategoryProgress::new(),
                 },
             );
         }
@@ -479,6 +494,7 @@ mod tests {
                         projected: 0,
                         total: grammar_total,
                     },
+                    counters: CategoryProgress::new(),
                 },
             );
         }
@@ -510,6 +526,7 @@ mod tests {
                 projected: 100,
                 total: 100,
             },
+            counters: CategoryProgress::new(),
         };
         progress.update_level(JapaneseLevel::N5, n5_only_projected);
 

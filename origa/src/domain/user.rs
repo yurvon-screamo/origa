@@ -24,6 +24,10 @@ pub struct WordKnowledge {
 /// `#[serde(default)]` and synced via `save_sync`.
 pub const ONBOARDING_COMPLETED_KEY: &str = "__onboarding_completed__";
 pub const ONBOARDING_SKIPPED_KEY: &str = "__onboarding_skipped__";
+/// Разовый прогон миграции счётных суффиксов (issue #415): накатка фичи
+/// на существующие колоды — событие одного запуска; новые счётчики после
+/// накатки заводит кандидат анализа текста, повторных сканов нет.
+pub const COUNTERS_MIGRATED_V1_KEY: &str = "__counters_migrated_v1__";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -254,6 +258,16 @@ impl User {
     /// Returns `true` when onboarding has reached a terminal state (either the
     /// user finished scoring or skipped it). Used as the single routing guard
     /// across `/home` and `/onboarding`.
+    /// Разовая миграция счётчиков уже прогнана (issue #415).
+    pub fn is_counters_migrated_v1(&self) -> bool {
+        self.imported_sets.contains(COUNTERS_MIGRATED_V1_KEY)
+    }
+
+    /// Отметить разовую миграцию счётчиков выполненной.
+    pub fn mark_counters_migrated_v1(&mut self) {
+        self.mark_set_as_imported(COUNTERS_MIGRATED_V1_KEY.to_string());
+    }
+
     pub fn is_onboarding_completed(&self) -> bool {
         self.imported_sets.contains(ONBOARDING_COMPLETED_KEY)
             || self.imported_sets.contains(ONBOARDING_SKIPPED_KEY)
@@ -413,9 +427,10 @@ impl User {
                 Card::Kanji(_) => (&mut learned.kanji, &mut projected.kanji),
                 Card::Vocabulary(_) | Card::Phrase(_) => (&mut learned.words, &mut projected.words),
                 Card::Grammar(_) => (&mut learned.grammar, &mut projected.grammar),
-                // Счётные суффиксы докладываются в грамматический бюджет
-                // прогресса: объём мал, отдельного блока на дашборде нет.
-                Card::Counter(_) => (&mut learned.grammar, &mut projected.grammar),
+                // Счётные суффиксы — собственная категория прогресса
+                // (issue #415): отдельная полоса на дашборде, вне общего
+                // процента и carry-chain уровня.
+                Card::Counter(_) => (&mut learned.counters, &mut projected.counters),
             };
 
             if is_learned {
@@ -428,13 +443,8 @@ impl User {
         let total = CategoryCounts {
             kanji: Self::build_totals(&content.kanji_by_level),
             words: Self::build_totals(&content.words_by_level),
-            // Счётные суффиксы докладываются в числитель грамматики —
-            // знаменатель обязан включать их же, иначе процент категории
-            // у юзера с выученными счётчиками уходит за 100%.
-            grammar: Self::build_totals_merged(&[
-                &content.grammar_by_level,
-                &content.counters_by_level,
-            ]),
+            grammar: Self::build_totals(&content.grammar_by_level),
+            counters: Self::build_totals(&content.counters_by_level),
         };
 
         self.jlpt_progress.recalculate(ProgressUpdate {
@@ -450,23 +460,6 @@ impl User {
         content
             .iter()
             .map(|(level, set)| (*level, set.len()))
-            .collect()
-    }
-
-    /// Знаменатель из нескольких контент-индексов одной категории
-    /// (грамматика + счётные суффиксы): объединение множеств по уровням.
-    fn build_totals_merged(
-        contents: &[&HashMap<JapaneseLevel, std::collections::HashSet<String>>],
-    ) -> HashMap<JapaneseLevel, usize> {
-        let mut merged: HashMap<JapaneseLevel, std::collections::HashSet<&String>> = HashMap::new();
-        for content in contents {
-            for (level, set) in content.iter() {
-                merged.entry(*level).or_default().extend(set.iter());
-            }
-        }
-        merged
-            .into_iter()
-            .map(|(level, set)| (level, set.len()))
             .collect()
     }
 }
@@ -532,6 +525,7 @@ mod tests {
                 projected: 0,
                 total: 100,
             },
+            counters: crate::domain::jlpt_progress::CategoryProgress::new(),
         };
 
         user.jlpt_progress.update_level(JapaneseLevel::N5, complete);
@@ -896,6 +890,7 @@ mod tests {
                 projected: 0,
                 total: 100,
             },
+            counters: crate::domain::jlpt_progress::CategoryProgress::new(),
         };
         user2
             .jlpt_progress

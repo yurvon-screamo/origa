@@ -379,7 +379,8 @@
     "badge_kanji": "Chữ Kanji",
     "badge_words": "Từ",
     "badge_grammar": "Ngữ pháp",
-    "rating_accuracy": "Độ chính xác"
+    "rating_accuracy": "Độ chính xác",
+    "counters_label": "Từ đếm"
   },
   "login": {
     "or_login_with": "hoặc đăng nhập / đăng ký bằng",
@@ -487,7 +488,8 @@
     },
     "no_translation_found": "Không tìm thấy bản dịch — sẽ không được thêm",
     "tooltip_no_translation": "Không tìm thấy từ này trong từ điển của chúng tôi",
-    "already_added": "Đã thêm"
+    "already_added": "Đã thêm",
+    "counter_badge": "từ đếm"
   },
   "grammar_page": {
     "add_grammar": "Thêm ngữ pháp",
@@ -695,5 +697,19 @@
       "completed_status": "Hoàn tất",
       "recognition_error": "Lỗi nhận dạng"
     }
+  },
+  "counters": {
+    "title": "Từ đếm",
+    "add": "Thêm từ đếm",
+    "add_title": "Thêm hậu tố đếm",
+    "add_confirm": "Thêm mục đã chọn",
+    "in_deck": "trong bộ",
+    "bindings_learned": "kết hợp",
+    "back": "Về danh sách",
+    "not_found": "Không tìm thấy hậu tố",
+    "mark_known": "Đã biết",
+    "favorite": "Yêu thích",
+    "unfavorite": "Bỏ yêu thích",
+    "delete": "Xóa"
   }
 }

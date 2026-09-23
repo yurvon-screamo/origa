@@ -1,3 +1,4 @@
+mod add_counter_cards;
 mod analyze_text_for_cards;
 mod backfill_card_tokens;
 mod complete_acquaintance_hand;
@@ -33,6 +34,7 @@ mod tests;
 #[cfg(test)]
 pub use tests::fixtures::{init_phrase_index_from_cdn, init_real_dictionaries};
 
+pub use add_counter_cards::AddCounterCardsUseCase;
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
 pub use backfill_card_tokens::BackfillCardTokensUseCase;
 pub use complete_acquaintance_hand::CompleteAcquaintanceHandUseCase;

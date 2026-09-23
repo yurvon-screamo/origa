@@ -379,7 +379,8 @@
     "badge_kanji": "Kanji",
     "badge_words": "Words",
     "badge_grammar": "Grammar",
-    "rating_accuracy": "Accuracy"
+    "rating_accuracy": "Accuracy",
+    "counters_label": "Counters"
   },
   "login": {
     "or_login_with": "or sign in / register with",
@@ -487,7 +488,8 @@
     },
     "no_translation_found": "No translation found — won't be added",
     "tooltip_no_translation": "Word not found in our dictionaries",
-    "already_added": "Added"
+    "already_added": "Added",
+    "counter_badge": "counter"
   },
   "grammar_page": {
     "add_grammar": "Add grammar",
@@ -695,5 +697,19 @@
       "completed_status": "Completed",
       "recognition_error": "Recognition error"
     }
+  },
+  "counters": {
+    "title": "Counter words",
+    "add": "Add counters",
+    "add_title": "Add counter suffixes",
+    "add_confirm": "Add selected",
+    "in_deck": "in deck",
+    "bindings_learned": "bindings",
+    "back": "Back to the list",
+    "not_found": "Suffix not found",
+    "mark_known": "Already know",
+    "favorite": "Favorite",
+    "unfavorite": "Unfavorite",
+    "delete": "Delete"
   }
 }

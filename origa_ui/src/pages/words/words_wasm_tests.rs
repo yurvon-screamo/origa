@@ -170,6 +170,7 @@ fn analyzed_word(known: bool, meaning: Option<String>) -> AnalyzedWord {
         part_of_speech: origa::domain::PartOfSpeech::Verb,
         is_known: known,
         meaning,
+        is_counter: false,
     }
 }
 
@@ -246,6 +247,36 @@ async fn analyzed_word_item_no_translation_word_ignores_clicks() {
     assert!(
         !toggled.get(),
         "no-translation word must ignore clicks (cannot be added)"
+    );
+}
+
+/// Счётный суффикс-кандидат (issue #415): строка помечается бейджем типа —
+/// юзер видит, что заведётся counter-карта, ещё до добавления.
+#[wasm_bindgen_test]
+async fn analyzed_word_item_counter_candidate_shows_type_badge() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        let selected: RwSignal<HashSet<String>> = RwSignal::new(HashSet::new());
+        let mut word = analyzed_word(false, Some("длинные предметы".to_string()));
+        word.is_counter = true;
+        word.base_form = "本".to_string();
+        word.part_of_speech = origa::domain::PartOfSpeech::Suffix;
+        view! {
+            <AnalyzedWordItem
+                analyzed_word=word
+                selected_words=selected
+                known_kanji=HashSet::new()
+                on_toggle=Callback::new(|_| {})
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let badge = wrapper.query_selector("[data-testid=\"analyzed-counter-badge\"]");
+    assert!(
+        badge.is_ok_and(|b| b.is_some()),
+        "the counter candidate must carry the type badge"
     );
 }
 

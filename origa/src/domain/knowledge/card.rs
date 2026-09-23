@@ -50,6 +50,14 @@ impl StudyCard {
     /// нагрузки карты живёт здесь, а не через открытый мутабельный доступ —
     /// контракт «семантика карты и чужие связки не затрагиваются» держит
     /// сигнатура.
+    /// «Уже знаю» для счётного суффикса гасит и все связки (см.
+    /// `CounterCard::mark_all_bindings_known`).
+    pub fn mark_all_counter_bindings_known(&mut self) {
+        if let Card::Counter(counter) = &mut self.card {
+            counter.mark_all_bindings_known();
+        }
+    }
+
     pub fn apply_counter_binding_review(
         &mut self,
         number: u8,
