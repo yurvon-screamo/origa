@@ -4582,8 +4582,8 @@ fn two_prompts() -> Vec<origa::domain::CounterBindingPrompt> {
     ]
 }
 
-/// Композитный слот: верный ответ ровно один в вариантах; клик по нему
-/// открывает «Дальше»; прохождение пачки завершается агрегатом Good.
+/// Композитный слот: клик по верному варианту открывает «Дальше»,
+/// связка рейтингуется; прохождение пачки завершается агрегатом Good.
 #[wasm_bindgen_test]
 async fn counter_bindings_card_aggregates_after_the_pack() {
     origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
@@ -4592,21 +4592,22 @@ async fn counter_bindings_card_aggregates_after_the_pack() {
     let card = origa::domain::Card::Counter(counter);
 
     let wrapper = create_wrapper();
-    let (set_rated, get_rated) = shared_cell::<String>();
-    let (set_binding, get_binding) = shared_cell::<String>();
+    // Сигналы создаются в mount-scope (SharedCell<RwSignal>, как rating-
+    // тестами): Callback требует Send+Sync, Rc<Cell> не проходит.
+    let (set_rated, get_rated) = shared_cell::<RwSignal<Option<String>>>();
+    let (set_binding, get_binding) = shared_cell::<RwSignal<Option<String>>>();
     mount_with_i18n(&wrapper, move || {
-        let on_rate = {
-            let set_rated = set_rated.clone();
-            Callback::new(move |rating: origa::domain::Rating| {
-                set_rated.set(Some(format!("{rating:?}")));
-            })
-        };
-        let on_rate_binding = {
-            let set_binding = set_binding.clone();
+        let rated = RwSignal::new(None);
+        set_rated.set(Some(rated));
+        let binding = RwSignal::new(None);
+        set_binding.set(Some(binding));
+        let on_rate = Callback::new(move |rating: origa::domain::Rating| {
+            rated.set(Some(format!("{rating:?}")));
+        });
+        let on_rate_binding =
             Callback::new(move |(number, rating): (u8, origa::domain::Rating)| {
-                set_binding.set(Some(format!("{number}:{rating:?}")));
-            })
-        };
+                binding.set(Some(format!("{number}:{rating:?}")));
+            });
         let card = card.clone();
         let items = two_prompts();
         view! {
@@ -4618,60 +4619,71 @@ async fn counter_bindings_card_aggregates_after_the_pack() {
                 test_id=Signal::derive(|| "counter-bindings-card".to_string())
             />
         }
+        .into_any()
     });
 
-    // Один верный ответ в первой пачке (correct-опция существует и уникальна).
-    let correct_first = wrapper
+    // Клик по первому (верному) варианту → «Дальше» появляется, связка 1 = Good.
+    wrapper
         .query_selector("[data-testid=\"counter-binding-option-0\"]")
-        .unwrap();
-    assert!(correct_first.is_some());
-
-    // Клик по верному варианту №1 -> «Дальше» появляется, связка 1 оценена Good.
-    correct_first
         .unwrap()
-        .dyn_into::<web_sys::HtmlElement>()
-        .unwrap()
+        .expect("option rendered")
+        .unchecked_into::<web_sys::HtmlElement>()
         .click();
-    wait_until(move || {
-        wrapper
-            .query_selector("[data-testid=\"counter-binding-next\"]")
-            .unwrap()
-            .is_some()
-    })
+    let wrapper_for_wait = wrapper.clone();
+    let appeared = wait_until(
+        move || {
+            wrapper_for_wait
+                .query_selector("[data-testid=\"counter-binding-next\"]")
+                .unwrap()
+                .is_some()
+        },
+        50,
+        20,
+    )
     .await;
-    assert_eq!(get_binding.get().unwrap(), "1:Good");
+    assert!(appeared, "next button appears after a correct answer");
+    assert_eq!(
+        get_binding.take().expect("captured").get_untracked(),
+        Some("1:Good".to_string())
+    );
 
-    // Дальше -> вопрос 3 -> верный вариант снова первый -> финал: Good.
+    // Дальше → вопрос 3 → снова верный первый → финал: агрегат Good.
     wrapper
         .query_selector("[data-testid=\"counter-binding-next\"]")
         .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::HtmlElement>()
-        .unwrap()
+        .expect("next rendered")
+        .unchecked_into::<web_sys::HtmlElement>()
         .click();
-    wait_until(move || {
-        wrapper
-            .query_selector("[data-testid=\"counter-binding-question\"]")
-            .unwrap()
-            .is_some()
-    })
+    let wrapper_for_question = wrapper.clone();
+    wait_until(
+        move || {
+            wrapper_for_question
+                .query_selector("[data-testid=\"counter-binding-question\"]")
+                .unwrap()
+                .is_some()
+        },
+        50,
+        20,
+    )
     .await;
     wrapper
         .query_selector("[data-testid=\"counter-binding-option-0\"]")
         .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::HtmlElement>()
-        .unwrap()
+        .expect("second option set")
+        .unchecked_into::<web_sys::HtmlElement>()
         .click();
-    wait_until(move || get_rated.get().is_some()).await;
+    let rated_signal = get_rated.take().expect("captured");
+    let rated = wait_until(move || rated_signal.get_untracked().is_some(), 50, 20).await;
+    assert!(rated, "pack completion triggers the aggregate rating");
     assert_eq!(
-        get_rated.get().unwrap(),
-        "Good",
-        "пачка без ошибок агрегируется Good"
+        rated_signal.get_untracked(),
+        Some("Good".to_string()),
+        "flawless pack aggregates to Good"
     );
 }
 
-/// Таблица чтений: строки по возрастанию числа, 何 последней.
+/// Таблица чтений: строки по возрастанию числа, 何 последней; ring-акцента
+/// до highlight нет.
 #[wasm_bindgen_test]
 async fn counter_readings_table_orders_numbers_what_last() {
     origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
@@ -4707,29 +4719,28 @@ async fn counter_readings_table_orders_numbers_what_last() {
                 test_id=Signal::derive(|| "t".to_string())
             />
         }
+        .into_any()
     });
-    let rows: Vec<String> = wrapper
+    let node_list = wrapper
         .query_selector_all("[data-testid=\"counter-mutations-row\"]")
-        .unwrap()
-        .to_vec()
-        .into_iter()
+        .unwrap();
+    let rows: Vec<String> = (0..node_list.length())
+        .filter_map(|index| node_list.get(index))
         .map(|el| el.text_content().unwrap_or_default())
         .collect();
     assert_eq!(rows.len(), 3);
     assert!(rows[0].contains('1'), "ascending numbers first: {:?}", rows);
     assert!(rows[2].contains("何"), "何 comes last: {:?}", rows);
 
-    // Реактивный акцент: highlight на числе 2 добавляет ring строке после
-    // первого рендера (get(), не get_untracked — подписка живая).
+    // Акцент требует highlight-сигнал: без него ring-класса нет.
     let first = wrapper
         .query_selector_all("[data-testid=\"counter-mutations-row\"]")
         .unwrap()
         .get(1)
         .unwrap()
-        .dyn_into::<web_sys::HtmlElement>()
-        .unwrap();
+        .unchecked_into::<web_sys::HtmlElement>();
     assert!(
         !first.class_list().contains("ring-inset"),
-        "no accent before highlight"
+        "no accent without a highlight signal"
     );
 }

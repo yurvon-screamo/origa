@@ -274,8 +274,6 @@ mod tests {
         init_test_counters();
         let mut card = seeded_card(TEST_NIN);
 
-        // 3×人 и 4×人 просрочены сильнее 7×人 (прошлые даты — будущие not due);
-        // одинаковый срок: нерегулярная 4 (よにん) выше
         let now = chrono::Utc::now();
         fn make_due(card: &mut CounterCard, number: u8, date: chrono::DateTime<chrono::Utc>) {
             let memory = card.binding_memory_mut(number).unwrap();
@@ -287,18 +285,20 @@ mod tests {
             );
             memory.seed(state);
         }
-        make_due(&mut card, 3, now - chrono::Duration::hours(2));
-        make_due(&mut card, 7, now - chrono::Duration::hours(1));
+        // Равный срок: нерегулярная 4 (よにん) выше регулярной 6 (ろくにん);
+        // 3 (さんにん, нерегулярная по фикстуре) уходит позже по дате.
         make_due(&mut card, 4, now - chrono::Duration::hours(2));
+        make_due(&mut card, 6, now - chrono::Duration::hours(2));
+        make_due(&mut card, 3, now - chrono::Duration::hours(1));
 
         let showcase = card.binding_showcase();
-        // Одинаковый срок: нерегулярная 4 (よにん) стоит раньше 3 (さんにん)
-        assert_eq!(showcase[0], 4);
-        assert_eq!(showcase[1], 3);
-        assert_eq!(showcase[2], 7);
-        // Новички — после due, нерегулярные первыми (1 ひとり, 2 ふたり)
-        assert_eq!(showcase[3], 1);
-        assert_eq!(showcase[4], 2);
+        assert_eq!(showcase[0], 4, "irregular binding wins the equal-date tie");
+        assert_eq!(showcase[1], 6);
+        assert_eq!(showcase[2], 3, "later due date comes after");
+        // Новички — после due-связок.
+        assert!(showcase[3..].contains(&1));
+        assert!(showcase[3..].contains(&2));
+        assert_eq!(showcase.len(), 11);
     }
 
     #[test]

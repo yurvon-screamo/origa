@@ -62,7 +62,7 @@ impl<'a, R: UserRepository> SeedCountersUseCase<'a, R> {
 mod tests {
     use super::*;
     use crate::dictionary::counters::tests::{TEST_HON, TEST_NIN, init_test_counters};
-    use crate::domain::{CardType, NativeLanguage};
+    use crate::domain::{Card, NativeLanguage, User};
     use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 
     fn counter_suffixes(user: &User) -> Vec<String> {
@@ -76,19 +76,19 @@ mod tests {
             .collect()
     }
 
+    fn empty_user() -> User {
+        User::new("t@e.st".to_string(), NativeLanguage::Russian, None)
+    }
+
     #[tokio::test]
     async fn seeding_creates_registry_counters_up_to_level() {
         init_test_counters();
-        let repo = InMemoryUserRepository::with_user(User::new(
-            "t@e.st".to_string(),
-            NativeLanguage::Russian,
-            None,
-        ));
+        let repo = InMemoryUserRepository::with_user(empty_user());
         let created = SeedCountersUseCase::new(&repo)
             .execute(JapaneseLevel::N5)
             .await
             .unwrap();
-        assert_eq!(created, 2);
+        assert_eq!(created, 3, "本/人/日 — все N5-фикстуры");
 
         let user = repo.get_current_user().await.unwrap().unwrap();
         let suffixes = counter_suffixes(&user);
@@ -104,7 +104,7 @@ mod tests {
     #[tokio::test]
     async fn reseeding_creates_no_duplicates() {
         init_test_counters();
-        let repo = InMemoryUserRepository::new();
+        let repo = InMemoryUserRepository::with_user(empty_user());
         let use_case = SeedCountersUseCase::new(&repo);
         use_case.execute(JapaneseLevel::N5).await.unwrap();
         let second = use_case.execute(JapaneseLevel::N5).await.unwrap();
@@ -115,16 +115,15 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn higher_level_seeding_skips_lower_priority_entries() {
+    async fn higher_level_seeding_includes_lower_levels() {
         init_test_counters();
-        let repo = InMemoryUserRepository::new();
-        // фикстуры — N5; запрос N3 ничего не создаёт
+        let repo = InMemoryUserRepository::with_user(empty_user());
+        // «≤ уровня»: N5-фикстуры входят в выборку любого более высокого
+        // уровня (Ord: N5 < N3).
         let created = SeedCountersUseCase::new(&repo)
             .execute(JapaneseLevel::N3)
             .await
             .unwrap();
-        assert_eq!(created, 0);
-        let _ = CardType::Counter;
-        let _ = NativeLanguage::Russian;
+        assert_eq!(created, 3, "lower-level entries are included");
     }
 }
