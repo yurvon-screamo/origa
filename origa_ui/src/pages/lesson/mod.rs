@@ -7,7 +7,7 @@ mod audio_recall_card;
 pub mod card_type;
 pub(crate) mod complete_screen;
 mod content;
-mod counter_bindings_card;
+mod counter_readings_table;
 mod empty_state_view;
 mod grammar_details_expand;
 mod grammar_example;

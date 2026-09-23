@@ -982,7 +982,7 @@ fn CounterSlide(
     meaning: String,
     table: Vec<(String, String, bool)>,
 ) -> impl IntoView {
-    use super::counter_bindings_card::{CounterReadingRow, CounterReadingsTable};
+    use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
     let rows: Vec<CounterReadingRow> = table
         .into_iter()
         .map(|(number_label, reading, irregular)| CounterReadingRow {

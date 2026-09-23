@@ -61,9 +61,9 @@ Trong một bài học bạn sẽ gặp vài dạng:
 - **Viết.** Một hán tự hiện với animation thứ tự nét; bạn viết theo để học cách viết đúng.
 - **Đọc hán tự.** Bạn đọc một từ bị ẩn furigana và đưa ra cách đọc.
 - **Ngữ pháp.** Một mẫu ngữ pháp hiện trong văn cảnh; bạn hoàn thành hoặc nhận diện nó.
-- **Kết hợp từ đếm.** Thẻ hậu tố đếm (ví dụ 本) được hỏi về cách đọc kèm số: bạn thấy một số với hậu tố (三本) và chọn cách đọc đúng (さんぼん). Cả lô kết hợp đến hạn và mới chạy trong một khe, và bảng đọc hiện sau mỗi câu trả lời.
+- **Từ đếm.** Thẻ hậu tố đếm (ví dụ 本) được ôn bằng nút biết / không biết cổ điển về nghĩa; bảng đọc kèm số (三本 → さんぼん) nằm trên slide làm quen và trang từ đếm.
 
-Không phải thẻ nào cũng có mọi dạng. Thẻ từ vựng có thể nhận diện hoặc gợi nhớ; thẻ hán tự có thêm viết hoặc đọc; thẻ ngữ pháp có dạng riêng của ngữ pháp; thẻ từ đếm xen kẽ giữa "biết / không biết" về nghĩa và lô kết hợp.
+Không phải thẻ nào cũng có mọi dạng. Thẻ từ vựng có thể nhận diện hoặc gợi nhớ; thẻ hán tự có thêm viết hoặc đọc; thẻ ngữ pháp có dạng riêng của ngữ pháp; thẻ từ đếm được ôn kiểu cổ điển về nghĩa.
 
 ## Đánh giá
 

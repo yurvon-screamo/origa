@@ -22,8 +22,8 @@ pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    CounterBindingPrompt, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
-    LessonViewGenerator, MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
+    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData, LessonViewGenerator,
+    MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 pub use lesson_builder::{MAX_LESSON_SIZE, NewCardPolicy};
 pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
@@ -457,9 +457,6 @@ impl KnowledgeSet {
                     Card::Phrase(_) => RateMode::PhraseReview,
                     Card::Grammar(_) => RateMode::GrammarReview,
                     Card::Kanji(_) => RateMode::KanjiReview,
-                    // Семантика счётного суффикса живёт в StandardLesson;
-                    // режим CounterReview применяется только к памятьям
-                    // связок и сюда не доходит (мимо rate_card).
                     Card::Vocabulary(_) | Card::Counter(_) => mode,
                 },
             };
@@ -482,24 +479,6 @@ impl KnowledgeSet {
             .get_mut(&card_id)
             .map(|card| card.toggle_favorite())
             .ok_or(OrigaError::CardNotFound { card_id })
-    }
-
-    /// Мини-оценка связки счётного суффикса: переоценивает ТОЛЬКО память
-    /// этой ячейки в режиме `CounterReview`, мимо `rate_card` — семантика
-    /// карты, другие связки и дневная статистика не затрагиваются.
-    /// Дневная запись и агрегат по семантике — `RecordCounterSessionUseCase`
-    /// при завершении композитного слота.
-    pub fn rate_counter_binding(
-        &mut self,
-        card_id: Ulid,
-        number: u8,
-        rating: Rating,
-    ) -> Result<(), OrigaError> {
-        let study_card = self
-            .study_cards
-            .get_mut(&card_id)
-            .ok_or(OrigaError::CardNotFound { card_id })?;
-        study_card.apply_counter_binding_review(number, rating)
     }
 
     fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {

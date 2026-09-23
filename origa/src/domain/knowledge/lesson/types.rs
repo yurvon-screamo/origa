@@ -344,48 +344,6 @@ pub enum LessonCardView {
     AudioRecall(Card),
     KanjiReadingQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
-    /// Композитный слот счётного суффикса: пачка мини-вопросов связок в
-    /// одном слоте урока (issue #415). Дистракторы генерируются в домене
-    /// при построении вью из реестра.
-    CounterBindings {
-        card: Card,
-        items: Vec<CounterBindingPrompt>,
-    },
-}
-
-/// Один мини-вопрос связки: число → выбор чтения.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CounterBindingPrompt {
-    number: u8,
-    options: Vec<QuizOption>,
-    correct: String,
-}
-
-impl CounterBindingPrompt {
-    pub fn new(number: u8, options: Vec<QuizOption>, correct: String) -> Self {
-        Self {
-            number,
-            options,
-            correct,
-        }
-    }
-
-    pub fn number(&self) -> u8 {
-        self.number
-    }
-
-    pub fn options(&self) -> &[QuizOption] {
-        &self.options
-    }
-
-    pub fn correct(&self) -> &str {
-        &self.correct
-    }
-
-    /// Проверка ответа по тексту варианта (мини-вопрос — выбор чтения).
-    pub fn check_answer(&self, answer: &str) -> bool {
-        answer == self.correct
-    }
 }
 
 impl LessonCardView {
@@ -401,7 +359,6 @@ impl LessonCardView {
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
             LessonCardView::GrammarQuiz(gq) => gq.card(),
-            LessonCardView::CounterBindings { card, .. } => card,
         }
     }
 
@@ -416,8 +373,7 @@ impl LessonCardView {
             | LessonCardView::Writing(_)
             | LessonCardView::PhraseListen { .. }
             | LessonCardView::AudioRecall(_)
-            | LessonCardView::KanjiReadingQuiz(_)
-            | LessonCardView::CounterBindings { .. } => None,
+            | LessonCardView::KanjiReadingQuiz(_) => None,
         }
     }
 }
@@ -580,7 +536,7 @@ impl IntoIterator for LessonData {
 mod tests {
     use super::*;
     use crate::domain::Card;
-    use crate::domain::knowledge::{CounterCard, PhraseCard, VocabularyCard};
+    use crate::domain::knowledge::{PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
 
     fn make_vocabulary_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
@@ -758,54 +714,6 @@ mod tests {
             json.contains("AudioRecall"),
             "wire shape must keep the variant tag: {json}"
         );
-    }
-
-    /// Wire contract для композитного слота счётного суффикса: вариант и
-    /// полезная нагрузка мини-вопросов переживают serde roundtrip
-    /// (приёмка S1, issue #415).
-    #[test]
-    fn counter_bindings_view_roundtrips_through_serde() {
-        use crate::dictionary::counters::tests::init_test_counters;
-        init_test_counters();
-        let mut counter = CounterCard::new(crate::dictionary::counters::tests::TEST_HON);
-        counter.ensure_registry_bindings();
-
-        let prompt = CounterBindingPrompt::new(
-            3,
-            vec![
-                QuizOption::new_simple("さんぼん".to_string(), true),
-                QuizOption::new_simple("さんほん".to_string(), false),
-            ],
-            "さんぼん".to_string(),
-        );
-        let view = LessonCardView::CounterBindings {
-            card: Card::Counter(counter),
-            items: vec![prompt],
-        };
-
-        let json = serde_json::to_string(&view).expect("serialize CounterBindings view");
-        let restored: LessonCardView =
-            serde_json::from_str(&json).expect("deserialize CounterBindings view");
-
-        assert_eq!(restored, view);
-        assert!(json.contains("CounterBindings"), "wire tag: {json}");
-        assert_eq!(view.card().content_key(), "本");
-    }
-
-    /// Мини-вопрос проверяет ответ по тексту варианта.
-    #[test]
-    fn counter_binding_prompt_checks_answer_by_text() {
-        let prompt = CounterBindingPrompt::new(
-            1,
-            vec![
-                QuizOption::new_simple("いっぽん".to_string(), true),
-                QuizOption::new_simple("いちほん".to_string(), false),
-            ],
-            "いっぽん".to_string(),
-        );
-        assert!(prompt.check_answer("いっぽん"));
-        assert!(!prompt.check_answer("いちほん"));
-        assert!(!prompt.check_answer("なんぼん"));
     }
 
     /// AudioRecall exposes the wrapped card and no grammar info — same

@@ -61,9 +61,9 @@ You will meet several shapes during a lesson:
 - **Writing.** A kanji is shown with its stroke order animated; you follow along to learn the correct writing.
 - **Kanji reading.** You read a word with hidden furigana and supply the pronunciation.
 - **Grammar.** A grammar pattern is shown in context; you complete or identify it.
-- **Counter bindings.** A counter suffix card (for example 本) is quizzed on its number readings: you see a number with the suffix (三本) and pick the correct reading (さんぼん). The whole batch of due and new bindings runs in one slot, and the table of readings is shown after each answer.
+- **Counter suffix.** A counter suffix card (for example 本) is reviewed with the classic know / don't-know buttons on its meaning; the table of number readings (三本 → さんぼん) stays on the presentation slide and the counters page.
 
-Not every card has every shape. A vocabulary card can be recognition or recall; a kanji card can also be writing or reading; a grammar card has grammar-specific shapes; a counter card alternates between "know / don't know" on its meaning and the counter-bindings batch.
+Not every card has every shape. A vocabulary card can be recognition or recall; a kanji card can also be writing or reading; a grammar card has grammar-specific shapes; a counter card is reviewed classically on its meaning.
 
 ## Rating
 
