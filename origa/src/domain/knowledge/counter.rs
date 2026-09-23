@@ -37,6 +37,15 @@ impl CounterBindingMemory {
         }
     }
 
+    /// Применить готовое состояние памяти к ячейке (сид «известности»).
+    pub(crate) fn apply_review_public(
+        &mut self,
+        memory_state: crate::domain::memory::MemoryState,
+        rating: crate::domain::memory::Rating,
+    ) {
+        self.memory.apply_review(memory_state, rating);
+    }
+
     pub fn number(&self) -> u8 {
         self.number
     }
@@ -110,6 +119,30 @@ impl CounterCard {
         )?;
         memory.apply_review(next, rating);
         Ok(())
+    }
+
+    /// «Уже знаю»/скоринг (issue #415): юзер, знающий суффикс, знает и
+    /// связки — каждая НОВАЯ ячейка получает известную память тем же
+    /// сидом, что семантика в `mark_card_as_known` (без раздувания reps у
+    /// уже выученных). Иначе первый композитный показ дриллил бы всю
+    /// таблицу даже «знающего» юзера.
+    pub fn mark_all_bindings_known(&mut self) {
+        use crate::domain::memory::{
+            Difficulty, KNOWN_CARD_STABILITY_THRESHOLD, MemoryState, Rating, Stability,
+        };
+        use chrono::{Duration, Utc};
+        for binding in &mut self.bindings {
+            if binding.memory().is_known_card() {
+                continue;
+            }
+            let memory = MemoryState::new(
+                Stability::new(KNOWN_CARD_STABILITY_THRESHOLD + 1.0)
+                    .unwrap_or_else(|_| Stability::new(1.0).expect("1.0 is valid")),
+                Difficulty::new(3.0).expect("3.0 is valid"),
+                Utc::now() - Duration::days(1),
+            );
+            binding.apply_review_public(memory, Rating::Easy);
+        }
     }
 
     pub fn binding_memory(&self, number: u8) -> Option<&MemoryHistory> {

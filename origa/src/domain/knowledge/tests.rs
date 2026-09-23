@@ -2073,6 +2073,31 @@ fn bulk_import_merge_drops_index_but_still_rejects_duplicates() {
 }
 
 // --- Отметка «знаю» [marked_known_at]: ветвление домена mark_as_known ---
+#[test]
+fn mark_card_as_known_seeds_counter_bindings_too() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut ks = KnowledgeSet::new();
+    let mut counter = crate::domain::CounterCard::new(crate::dictionary::counters::tests::TEST_HON);
+    counter.ensure_registry_bindings();
+    let sc = ks.create_card(Card::Counter(counter)).unwrap();
+    let card_id = *sc.card_id();
+
+    ks.mark_card_as_known(card_id).unwrap();
+
+    match ks.get_card(card_id).unwrap().card() {
+        Card::Counter(counter) => {
+            for binding in counter.bindings() {
+                assert!(
+                    !binding.memory().is_new(),
+                    "knowing the suffix must seed every binding (binding {})",
+                    binding.number()
+                );
+                assert!(binding.memory().is_known_card());
+            }
+        },
+        other => panic!("expected counter, got {other:?}"),
+    }
+}
 
 #[test]
 fn mark_card_as_known_seeds_memory_and_stamps() {

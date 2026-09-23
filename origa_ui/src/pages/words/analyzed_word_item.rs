@@ -49,6 +49,10 @@ pub fn AnalyzedWordItem(
     let status_icon_stored = StoredValue::new(status_icon);
     let icon_class_stored = StoredValue::new(icon_class);
 
+    // Бейдж типа: счётный суффикс заведётся counter-картой (issue #415) —
+    // юзер должен видеть разницу до добавления.
+    let is_counter = analyzed_word.is_counter;
+
     let is_disabled = analyzed_word.is_known || !has_meaning;
     let meaning_stored = StoredValue::new(analyzed_word.meaning.clone());
     let known_kanji_stored = StoredValue::new(known_kanji);
@@ -104,6 +108,14 @@ pub fn AnalyzedWordItem(
                         />
                         <span class="text-[var(--text-label-sm)] text-[var(--accent-sage)] uppercase tracking-[0.1em] font-mono">
                             {t!(i18n, words.already_added)}
+                        </span>
+                    </Show>
+                    <Show when=move || is_counter>
+                        <span
+                            class="text-[var(--text-label-sm)] text-[var(--accent-terracotta)] uppercase tracking-[0.1em] font-mono border border-[var(--accent-terracotta)] px-1.5 py-0.5"
+                            data-testid="analyzed-counter-badge"
+                        >
+                            {t!(i18n, words.counter_badge)}
                         </span>
                     </Show>
                 </div>

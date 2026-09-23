@@ -12,8 +12,8 @@ use crate::pages::shared::{
     LoadErrorScreen, ResourceDownloadConsent, is_resource_download_consented,
 };
 use crate::pages::{
-    Grammar, GrammarDetail, Home, Kanji, KanjiDetail, Lesson, Login, Onboarding, Phrases, Profile,
-    Sets, Words,
+    Counters, CountersDetail, Grammar, GrammarDetail, Home, Kanji, KanjiDetail, Lesson, Login,
+    Onboarding, Phrases, Profile, Sets, Words,
 };
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
@@ -693,6 +693,8 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("grammar/:id") view=|| view! { <ProtectedRoute><GrammarDetail/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("phrases") view=|| view! { <ProtectedRoute><Phrases/></ProtectedRoute> } />
+                <Route path=path!("counters/:suffix") view=|| view! { <ProtectedRoute><CountersDetail/></ProtectedRoute> } />
+                <Route path=path!("counters") view=|| view! { <ProtectedRoute><Counters/></ProtectedRoute> } />
                 <Route path=path!("kanji/:id") view=|| view! { <ProtectedRoute><KanjiDetail/></ProtectedRoute> } />
                 <Route path=path!("kanji") view=|| view! { <ProtectedRoute><Kanji/></ProtectedRoute> } />
                 <Route path=path!("lesson") view=|| view! { <ProtectedRoute><Lesson/></ProtectedRoute> } />

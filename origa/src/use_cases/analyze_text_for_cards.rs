@@ -12,6 +12,10 @@ pub struct AnalyzedWord {
     pub part_of_speech: PartOfSpeech,
     pub is_known: bool,
     pub meaning: Option<String>,
+    /// Кандидат — счётный суффикс (issue #415): заведётся counter-картой,
+    /// не словарным словом. UI маркирует строку бейджем типа.
+    #[serde(default)]
+    pub is_counter: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -118,17 +122,33 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
                 part_of_speech: token.part_of_speech().clone(),
                 is_known: knowledge.is_known,
                 meaning: knowledge.meaning,
+                is_counter: false,
             });
         }
 
-        // Счётные суффиксы из ТЕКСТА (issue #415): токенизатор режет
-        // «числительное + суффикс» на соседние токены (一本 → 一 | 本), и
-        // по одиночным словам такой контекст не восстановить — пары
-        // соседних токенов `Numeral → Suffix` единственный источник.
-        // Суффикс попадает в кандидаты со глоссой реестра и выбирается
-        // как обычное слово; POS Suffix доезжает до create и превращает
-        // его в counter-карту.
-        for (suffix, reading) in detected_counter_suffixes(&tokens) {
+        // Счётные суффиксы из ТЕКСТА (issue #415), два источника:
+        // 1) пары соседних токенов «числительное → суффикс» (一本 → 一 | 本);
+        // 2) склейки судачи — лексикализованные сочетания одним токеном
+        //    (三本 → ProperNoun 三本), парой не расщепляются, контекст
+        //    ловится по поверхности лексемы.
+        // Суффикс попадает в кандидаты со глоссой реестра; POS Suffix
+        // доезжает до create и превращает его в counter-карту.
+        let mut detected = detected_counter_suffixes(&tokens);
+        for token in &tokens {
+            for entry in crate::dictionary::counters::counters_detected_in_surface(
+                token.orthographic_surface_form(),
+            ) {
+                detected.push((
+                    entry.suffix().to_string(),
+                    token.phonological_surface_form().to_string(),
+                ));
+            }
+        }
+        let mut seen_suffixes = std::collections::HashSet::new();
+        for (suffix, reading) in detected {
+            if !seen_suffixes.insert(suffix.clone()) {
+                continue;
+            }
             let key = format!("counter:{suffix}");
             if seen_words.contains(&key) {
                 continue;
@@ -145,6 +165,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
                 part_of_speech: PartOfSpeech::Suffix,
                 is_known: user_knows_counter(&user, &suffix),
                 meaning: Some(meaning),
+                is_counter: true,
             });
         }
 
@@ -182,6 +203,28 @@ mod tests {
         let detected = detected_counter_suffixes(&tokens);
         assert_eq!(detected.len(), 1, "only the numeral-adjacent 本 registers");
         assert_eq!(detected[0].0, "本");
+    }
+
+    /// Склейки судачи (三本 одним ProperNoun-токеном) парой не
+    /// расщепляются — контекст ловится по поверхности лексемы в execute.
+    #[test]
+    fn glued_counter_compound_detected_via_surface() {
+        crate::dictionary::counters::tests::init_test_counters();
+        // пара не образуется: один токен Noun 三 + один ProperNoun 三本? —
+        // берём реальную форму: единственный токен-склейка 三本.
+        let tokens = vec![TokenInfo::new_test_with_reading(
+            "三本",
+            "さんぼん",
+            PartOfSpeech::ProperNoun,
+        )];
+        assert!(detected_counter_suffixes(&tokens).is_empty());
+        assert_eq!(
+            crate::dictionary::counters::counters_detected_in_surface("三本")
+                .iter()
+                .map(|e| e.suffix())
+                .collect::<Vec<_>>(),
+            vec!["本"]
+        );
     }
 
     /// Судачи помечает числительные в сочетаниях как Noun (一本 →
