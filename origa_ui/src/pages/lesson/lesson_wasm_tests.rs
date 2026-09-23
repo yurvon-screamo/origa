@@ -4654,18 +4654,21 @@ async fn counter_bindings_card_aggregates_after_the_pack() {
         .expect("next rendered")
         .unchecked_into::<web_sys::HtmlElement>()
         .click();
-    let wrapper_for_question = wrapper.clone();
-    wait_until(
+    // Дождаться именно ВТОРОГО вопроса: testid вопроса стабилен между
+    // мини-вопросами, гонка клика по старой пачке — источник флаков.
+    let wrapper_for_progress = wrapper.clone();
+    let second_shown = wait_until(
         move || {
-            wrapper_for_question
-                .query_selector("[data-testid=\"counter-binding-question\"]")
+            wrapper_for_progress
+                .query_selector("[data-testid=\"counter-bindings-progress\"]")
                 .unwrap()
-                .is_some()
+                .is_some_and(|el| el.text_content().unwrap_or_default().contains("2 / 2"))
         },
         50,
         20,
     )
     .await;
+    assert!(second_shown, "second mini-question is shown");
     wrapper
         .query_selector("[data-testid=\"counter-binding-option-0\"]")
         .unwrap()

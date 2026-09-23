@@ -87,11 +87,15 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             &mut created_kanji_chars,
         );
 
-        // Счётные суффиксы ≤ целевого уровня (issue #415): сидируются
-        // внутри bulk-брекета, чтобы скоринг сразу их показывал.
-        match crate::use_cases::seed_counters_into_user(&mut user, target_level) {
-            Ok(n) => result.created_counters = n,
-            Err(e) => warn!(error = ?e, "Counter seeding failed during onboarding import"),
+        // Счётные суффиксы ≤ целевого уровня (issue #415): сидируются при
+        // РЕАЛЬНОМ импорте сетов (план: «юзер завершил импорт сетов»), чтобы
+        // пустой импорт не менял контракт скоринга «ноль карт». Пропущенные
+        // при пустом импорте счётчики добирает миграция первого старта.
+        if !set_ids.is_empty() {
+            match crate::use_cases::seed_counters_into_user(&mut user, target_level) {
+                Ok(n) => result.created_counters = n,
+                Err(e) => warn!(error = ?e, "Counter seeding failed during onboarding import"),
+            }
         }
 
         user.end_bulk_import();
