@@ -1,28 +1,6 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
-import { HomePage, WordsPage } from "../../pages";
 import { awaitHandVisible } from "../../helpers/lesson";
-
-When('пользователь добавил слово-связку {string}', async ({ page }, text: string) => {
-	const diagnostics = attachPageDiagnostics(page, "add-word");
-	try {
-		const wordsPage = new WordsPage(page);
-		await wordsPage.goto();
-		await wordsPage.expectWordsVisible();
-		await wordsPage.openAddModal();
-		await wordsPage.enterText(text);
-		await wordsPage.analyzeText();
-		await wordsPage.selectFirstWord();
-		await wordsPage.addSelectedWords();
-		await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
-		console.info(`[counter-diagnostics:add-word-ok] url=${page.url()}`);
-	} catch (err) {
-		console.info(
-			`[counter-diagnostics:add-word-failure] url=${page.url()}\n${diagnostics()}`,
-		);
-		throw err;
-	}
-});
 
 When("пользователь открывает урок напрямую", async ({ page }) => {
 	// Транзит /words → /home редиректит в wizard (app-level, KNOWN_FIXME):
@@ -34,23 +12,6 @@ When("пользователь открывает урок напрямую", as
 	} catch (err) {
 		console.info(
 			`[counter-diagnostics:direct-lesson-failure] url=${page.url()}\n${diagnostics()}`,
-		);
-		throw err;
-	}
-});
-
-When("пользователь начинает урок со счётными суффиксами", async ({ page }) => {
-	// Диагностика day-1 (issue #415): слушатель ставится ДО перехода,
-	// чтобы поймать панику WASM на домашней странице — сценарии падают
-	// молчаливым таймаутом на home-welcome-lesson.
-	const diagnostics = attachPageDiagnostics(page, "start-lesson");
-	try {
-		const homePage = new HomePage(page);
-		await homePage.goto();
-		await homePage.startLesson();
-	} catch (err) {
-		console.info(
-			`[counter-diagnostics:start-lesson-failure] url=${page.url()}\n${diagnostics()}`,
 		);
 		throw err;
 	}
@@ -73,6 +34,28 @@ export function attachPageDiagnostics(page: import("@playwright/test").Page, lab
 /// Показ руки: жмём «Дальше», пока не встретим слайд счётного суффикса
 /// (issue #415: миграция заводит counter-карту из слова «一本»; в маленьком
 /// пуле рука содержит и слово, и счётчик — слайд гарантированно в показе).
+Then("в показе руки знакомства нет слайда счётного суффикса", async ({ page }) => {
+	await awaitHandVisible(page);
+	const counterSlide = page.getByTestId("acquaintance-counter-slide");
+	const nextBtn = page.getByTestId("acquaintance-next-btn");
+	// Проходим показ до конца: контр-слайда не должно встретиться ни на одном
+	// слайде (пул маленький — 1–2 слова, показ короткий).
+	for (let i = 0; i < 20; i++) {
+		expect(
+			await counterSlide.isVisible().catch(() => false),
+			"counter slide must not appear for prose words",
+		).toBe(false);
+		await nextBtn.click({ timeout: 3_000 }).catch(() => null);
+		const training = await page
+			.getByTestId("acquaintance-training")
+			.waitFor({ state: "visible", timeout: 500 })
+			.then(() => true)
+			.catch(() => false);
+		if (training) break;
+	}
+	expect(await counterSlide.isVisible().catch(() => false)).toBe(false);
+});
+
 Then(
 	"в показе руки знакомства появляется слайд счётного суффикса",
 	async ({ page }) => {
