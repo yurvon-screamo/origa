@@ -1,6 +1,22 @@
 import { expect } from "@playwright/test";
-import { Then } from "../fixtures";
+import { When, Then } from "../fixtures";
+import { HomePage } from "../../pages";
 import { awaitHandVisible } from "../../helpers/lesson";
+
+When("пользователь начинает урок со счётными суффиксами", async ({ page }) => {
+	// Диагностика day-1 (issue #415): слушатель ставится ДО перехода,
+	// чтобы поймать панику WASM на домашней странице — сценарии падают
+	// молчаливым таймаутом на home-welcome-lesson.
+	const diagnostics = attachPageDiagnostics(page, "start-lesson");
+	try {
+		const homePage = new HomePage(page);
+		await homePage.goto();
+		await homePage.startLesson();
+	} catch (err) {
+		console.info(`[counter-diagnostics:start-lesson-failure]\n${diagnostics()}`);
+		throw err;
+	}
+});
 
 /// Временная диагностика (issue #417, day-1 flake): собирает консоль и
 /// pageerror текущей страницы и прикладывает к отчёту — упавший сценарий
@@ -11,7 +27,6 @@ export function attachPageDiagnostics(page: import("@playwright/test").Page, lab
 	page.on("pageerror", (err) => logs.push(`[pageerror] ${err.message}`));
 	return () => {
 		const text = logs.join("\n") || "(no console output)";
-		// eslint-disable-next-line no-console -- diagnostic attachment
 		console.info(`[counter-diagnostics:${label}]\n${text}`);
 		return text;
 	};
