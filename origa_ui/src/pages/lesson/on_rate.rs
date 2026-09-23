@@ -19,8 +19,10 @@ fn determine_rate_mode(card: &LessonCard) -> RateMode {
     match CardType::from(card.card()) {
         CardType::Grammar => RateMode::GrammarReview,
         CardType::Kanji => RateMode::KanjiReview,
-        // Phrase cards are intercepted by the early return above, so the only
-        // remaining type reaching this arm is Vocabulary.
+        // Phrase cards are intercepted by the early return above. Counter
+        // cards fall through with the caller's mode: the semantic rating
+        // arrives as StandardLesson and CounterReview never reaches
+        // rate_card (binding ratings go through RateCounterBindingUseCase).
         _ => RateMode::StandardLesson,
     }
 }

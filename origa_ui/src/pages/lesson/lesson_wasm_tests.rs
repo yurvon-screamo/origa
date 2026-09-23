@@ -4718,4 +4718,18 @@ async fn counter_readings_table_orders_numbers_what_last() {
     assert_eq!(rows.len(), 3);
     assert!(rows[0].contains('1'), "ascending numbers first: {:?}", rows);
     assert!(rows[2].contains("何"), "何 comes last: {:?}", rows);
+
+    // Реактивный акцент: highlight на числе 2 добавляет ring строке после
+    // первого рендера (get(), не get_untracked — подписка живая).
+    let first = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap()
+        .get(1)
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    assert!(
+        !first.class_list().contains("ring-inset"),
+        "no accent before highlight"
+    );
 }
