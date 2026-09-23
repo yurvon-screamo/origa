@@ -23,7 +23,7 @@ use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonVariant, CardLayout, CardLayoutSize, Modal, PageLayout, PageLayoutVariant,
-    Spinner, Stepper, StepperStep, Text, TextSize, TypographyVariant,
+    Spinner, Stepper, StepperStep, Text, TextSize, ToastContainer, ToastData, TypographyVariant,
 };
 use crate::utils::display_name::editable_username_for;
 use apps_step::AppsStep;
@@ -79,6 +79,13 @@ pub fn Onboarding() -> impl IntoView {
     let is_loading = RwSignal::new(true);
     let is_importing = RwSignal::new(false);
     let is_finishing = RwSignal::new(false);
+    // True while the skip save_sync checkpoint is in flight: disables both
+    // skip buttons (intro + scoring) to block double submits, un-sticks on
+    // failure so the user can retry (pattern: is_importing).
+    let is_skipping = RwSignal::new(false);
+    // Error toasts for failed checkpoints (skip / import). Rendered by the
+    // page-local ToastContainer below.
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
     let disposed = StoredValue::new(());
     let mark_all_trigger: RwSignal<u32> = RwSignal::new(0);
     let scoring_completed: RwSignal<bool> = RwSignal::new(false);
@@ -272,7 +279,15 @@ pub fn Onboarding() -> impl IntoView {
         });
     });
 
-    let on_skip = create_on_skip_callback(repository.clone(), state, disposed, navigate_for_skip);
+    let on_skip = create_on_skip_callback(
+        repository.clone(),
+        state,
+        is_skipping,
+        toasts,
+        i18n,
+        disposed,
+        navigate_for_skip,
+    );
 
     let on_finish = create_on_finish_callback(
         repository.clone(),
@@ -282,7 +297,7 @@ pub fn Onboarding() -> impl IntoView {
     );
 
     let on_start_import =
-        create_on_start_import_callback(repository, state, is_importing, disposed);
+        create_on_start_import_callback(repository, state, is_importing, toasts, i18n, disposed);
 
     let can_proceed = Memo::new(move |_| state.get().can_proceed());
 
@@ -341,6 +356,8 @@ pub fn Onboarding() -> impl IntoView {
                                             pending_scoring_action.set(Some(PendingAction::IntroSkip));
                                             confirm_modal_open.set(true);
                                         })
+                                        disabled=Signal::derive(move || is_skipping.get())
+                                        attr:data-loading=Signal::derive(move || is_skipping.get().to_string())
                                         test_id="onboarding-skip"
                                     >
                                         {t!(i18n, onboarding.skip)}
@@ -407,6 +424,8 @@ pub fn Onboarding() -> impl IntoView {
                                             pending_scoring_action.set(Some(PendingAction::Skip));
                                             confirm_modal_open.set(true);
                                         })
+                                        disabled=Signal::derive(move || is_skipping.get())
+                                        attr:data-loading=Signal::derive(move || is_skipping.get().to_string())
                                         test_id="onboarding-skip-scoring"
                                     >
                                         {t!(i18n, onboarding.skip)}
@@ -497,6 +516,13 @@ pub fn Onboarding() -> impl IntoView {
                                         <Button
                                             variant=ButtonVariant::Olive
                                             on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                                                // The modal closes synchronously on the first
+                                                // click, but a double-click can still land here
+                                                // before unmount: gate on the in-flight flag so
+                                                // only one skip checkpoint can be started.
+                                                if is_skipping.get() {
+                                                    return;
+                                                }
                                                 let action = pending_scoring_action.get();
                                                 pending_scoring_action.set(None);
                                                 confirm_modal_open.set(false);
@@ -523,6 +549,8 @@ pub fn Onboarding() -> impl IntoView {
                                     </div>
                                 </div>
                             </Modal>
+
+                        <ToastContainer toasts=toasts duration_ms=5000 test_id="onboarding-toasts" />
                     </div>
                 </Show>
             </CardLayout>

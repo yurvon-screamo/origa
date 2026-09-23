@@ -70,6 +70,14 @@ export class OnboardingPage extends BasePage {
     readonly skipScoringBtn: Locator;
     readonly finishButton: Locator;
 
+    // Intro skip — exposed for enabled-state sync: the button re-enables
+    // exactly when a failed skip checkpoint finished un-sticking.
+    readonly skipButton: Locator;
+
+    // Error toast (at most one — a retried failure replaces the previous
+    // toast, so the count stays 1)
+    readonly saveErrorToast: Locator;
+
     constructor(page: Page) {
         super(page);
 
@@ -140,6 +148,14 @@ export class OnboardingPage extends BasePage {
         this.markAllKnownBtn = page.getByTestId("onboarding-mark-all-known");
         this.skipScoringBtn = page.getByTestId("onboarding-skip-scoring");
         this.finishButton = page.getByTestId("onboarding-finish");
+        this.skipButton = page.getByTestId("onboarding-skip");
+
+        // Error toast of the page-local ToastContainer. Located by the toast
+        // type class (same pattern as sets.page.ts) — the fixed toast id is
+        // irrelevant to assertions.
+        this.saveErrorToast = page
+            .getByTestId("onboarding-toasts")
+            .locator(".toast-error");
     }
 
     async goto(): Promise<void> {

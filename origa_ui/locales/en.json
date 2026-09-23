@@ -103,6 +103,10 @@
     "know_all": "Know all",
     "finish": "Finish",
     "completing": "Completing...",
+    "save_error": {
+      "title": "Something went wrong",
+      "message": "Check your internet connection and try again."
+    },
     "intro": {
       "title": "Let's set up your learning!",
       "subtitle": "Origa is a flashcard app for learning Japanese with spaced repetition.",
