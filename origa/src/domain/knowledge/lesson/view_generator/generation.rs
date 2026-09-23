@@ -25,8 +25,8 @@ pub(crate) fn generate_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
-        // Счётный суффикс не проходит словарные квиз-генераторы: его виды
-        // собирает generate_counter_binding_prompts.
+        // Счётный суффикс не попадает в квиз-генераторы: его показ —
+        // всегда Normal (ветка нужна только для exhaustiveness).
         Card::Counter(_) => {},
     }
 
@@ -116,8 +116,8 @@ pub(crate) fn generate_yesno(
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
-        // Счётный суффикс не проходит словарные квиз-генераторы: его виды
-        // собирает generate_counter_binding_prompts.
+        // Счётный суффикс не попадает в квиз-генераторы: его показ —
+        // всегда Normal (ветка нужна только для exhaustiveness).
         Card::Counter(_) => {},
     }
 

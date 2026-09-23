@@ -161,7 +161,7 @@ pub(super) fn TrainingAnswerSlide(
                     },
                     // Счётный суффикс: ответ = значение + таблица чтений
                     // (issue #415). Таблица — общий компонент
-                    // CounterReadingsTable (как в показе и композитном слоте).
+                    // CounterReadingsTable (как в показе руки).
                     AcquaintanceSlideData::Counter {
                         suffix,
                         meaning,

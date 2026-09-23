@@ -23,7 +23,7 @@ Thẻ hậu tố mang chính dấu — nó đếm cái gì — và các kết h�
 
 Nghĩa của hậu tố ("vật dài: bút chì, chai, cây") được ôn bằng nút **Biết / Không biết** cổ điển, như mọi thẻ khác. Bảng đọc số đầy đủ (三本 → さんぼん) nằm ở slide trình bày lúc gặp lần đầu, trong câu trả lời luyện tập, và trên trang từ đếm — các đọc bất quy tắc được làm nổi ở đó. Đánh dấu hậu tố là "đã biết" bỏ qua nghĩa và kết hợp cùng nhau.
 
-Sau khi bạn đánh giá một thẻ từ đếm, ứng dụng hiện bảng đọc của cả hậu tố. Đó là bảng bạn đã thấy lúc gặp lần đầu, giờ dùng làm phản hồi.
+Ôn tập thường chỉ hiện hậu tố và nghĩa của nó, không thêm gì nữa: cùng luồng biết / không biết như mọi thẻ khác, và bảng đọc không nằm trong đó.
 
 ## Từ đếm đến từ đâu
 
