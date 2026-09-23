@@ -95,9 +95,7 @@ pub(in crate::pages::lesson) fn CounterReadingsTable(
                             if row.irregular {
                                 class.push_str(" bg-[var(--accent-warm)]");
                             }
-                            if highlight
-                                .is_some_and(|h| h.get_untracked() == number)
-                            {
+                            if highlight.is_some_and(|h| h.get() == number) {
                                 class.push_str(" ring-2 ring-inset ring-[var(--accent-olive)]");
                             }
                             class
