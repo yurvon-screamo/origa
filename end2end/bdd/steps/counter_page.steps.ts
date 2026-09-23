@@ -3,116 +3,140 @@ import { When, Then } from "../fixtures";
 
 const COUNTERS_URL = "http://localhost:1420/counters";
 
-/// Суффикс-карточка в сетке: ссылка /counters/:suffix с тестидом
-/// counters-item-suffix внутри.
-function gridItem(page: import("@playwright/test").Page, suffix: string) {
-	return page
-		.locator("[data-testid=counters-grid] a", {
-			has: page.locator(`[data-testid=counters-item-suffix]`, {
-				hasText: suffix,
-			}),
-		})
-		.first();
-}
-
 When("пользователь открывает страницу счётчиков", async ({ page }) => {
 	await page.goto(COUNTERS_URL);
-	await page.getByTestId("counters-grid").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counters-card").waitFor({ timeout: 30_000 });
 });
 
-Then("на странице счётчиков видна сетка суффиксов", async ({ page }) => {
-	const items = page.locator("[data-testid=counters-item-suffix]");
-	const count = await items.count();
-	expect(count, "registry of 76 counters must render").toBeGreaterThanOrEqual(70);
+Then("страница счётчиков показывает пустое состояние", async ({ page }) => {
+	await expect(page.getByTestId("counters-empty-state")).toBeVisible({
+		timeout: 15_000,
+	});
 });
 
-When("пользователь открывает детальную карточку суффикса {string}", async ({ page }, suffix: string) => {
-	await gridItem(page, suffix).click();
-	await page.getByTestId("counters-detail").waitFor({ timeout: 15_000 });
-	await page.getByTestId("counters-detail-head").waitFor({ timeout: 15_000 });
+When(
+	"пользователь открывает дровер добавления суффиксов",
+	async ({ page }) => {
+		await page.getByTestId("counters-add-btn").click();
+		await page.getByTestId("counters-add-drawer").waitFor({ timeout: 15_000 });
+		await page.getByTestId("counters-drawer-item").first().waitFor({
+			state: "visible",
+			timeout: 30_000,
+		});
+	},
+);
+
+Then("в дровере доступны тайлы суффиксов", async ({ page }) => {
+	const tiles = page.getByTestId("counters-drawer-item");
+	const count = await tiles.count();
+	expect(count, "N5 registry tiles must render").toBeGreaterThanOrEqual(10);
 });
 
-Then("в детальной карточке видна таблица чтений суффикса", async ({ page }) => {
-	const table = page.getByTestId("counters-detail-table");
-	await expect(table).toBeVisible({ timeout: 10_000 });
-	const rows = table.locator("> div");
-	const count = await rows.count();
-	// 1..=10 + 何 — фиксированный инвариант датасета для любого суффикса.
-	expect(count).toBeGreaterThanOrEqual(11);
-	// 何 — последняя строка таблицы.
-	const last = await rows.last().textContent();
-	expect(last, "何 comes last").toContain("何");
+When(
+	"пользователь выбирает тайл суффикса {string}",
+	async ({ page }, suffix: string) => {
+		await page
+			.getByTestId("counters-drawer-item", { hasText: suffix })
+			.first()
+			.click();
+	},
+);
+
+When("пользователь подтверждает добавление из дровера", async ({ page }) => {
+	await page.getByTestId("counters-drawer-add-btn").click();
+	await page.getByTestId("counters-add-drawer").waitFor({
+		state: "hidden",
+		timeout: 30_000,
+	});
 });
 
-When("пользователь открывает модалку добавления суффиксов", async ({ page }) => {
-	await page.getByTestId("counters-add-open").click();
-	await page.getByTestId("counters-add-modal").waitFor({ timeout: 10_000 });
-	await page.getByTestId("counters-add-list").waitFor({ timeout: 10_000 });
+Then(
+	"в списке счётчиков появляется карточка суффикса {string}",
+	async ({ page }, suffix: string) => {
+		const card = page.getByTestId("counter-card-item", { hasText: suffix });
+		await expect(card).toBeVisible({ timeout: 15_000 });
+		await expect(card.getByTestId("counter-card-bindings")).toBeVisible();
+	},
+);
+
+When(
+	"пользователь открывает детальную карточку суффикса {string}",
+	async ({ page }, suffix: string) => {
+		await page
+			.getByTestId("counter-card-item", { hasText: suffix })
+			.first()
+			.click();
+		await page.getByTestId("counters-detail-hero").waitFor({
+			timeout: 15_000,
+		});
+	},
+);
+
+Then(
+	"в детальной карточке видна таблица чтений суффикса",
+	async ({ page }) => {
+		const table = page.getByTestId("counters-detail-table");
+		await expect(table).toBeVisible({ timeout: 10_000 });
+		const rows = table.locator(".counter-readings-row");
+		// 1..=10 + 何 — фиксированный инвариант датасета.
+		expect(await rows.count()).toBeGreaterThanOrEqual(11);
+	},
+);
+
+Then("breadcrumbs ведут назад к списку счётчиков", async ({ page }) => {
+	const link = page.locator(".counter-breadcrumbs a");
+	await expect(link).toBeVisible();
+	await expect(link).toHaveAttribute("href", "/counters");
 });
 
-When("пользователь выбирает суффикс {string} в модалке", async ({ page }, suffix: string) => {
-	const item = page
-		.locator("[data-testid=counters-add-list] button", { hasText: suffix })
-		.first();
-	await item.click();
+When(
+	"пользователь помечает суффикс известным из деталей",
+	async ({ page }) => {
+		await page.getByTestId("counters-detail-actions-mark-known-btn").click();
+	},
+);
+
+Then(
+	"все связки суффикса изучены в детальной карточке",
+	async ({ page }) => {
+		const summary = page.getByTestId("counters-detail-bindings");
+		await expect(summary).toBeVisible({ timeout: 20_000 });
+		await expect
+			.poll(async () => summary.textContent(), { timeout: 30_000 })
+			.toContain("11/11");
+	},
+);
+
+When(
+	"пользователь добавляет суффикс в избранное из карточки",
+	async ({ page }) => {
+		await page
+			.getByTestId("counter-card-item-favorite-btn")
+			.first()
+			.click();
+	},
+);
+
+Then("карточка суффикса в избранном", async ({ page }) => {
+	// Сердце меняет только SVG-fill — пользовательски значимый признак
+	// избранного: карточка видна под статус-фильтром «Избранные».
+	await page.getByTestId("counters-filter-favorite").click();
+	await expect(
+		page.getByTestId("counter-card-item").first(),
+	).toBeVisible({ timeout: 15_000 });
 });
 
-When("пользователь подтверждает добавление суффиксов", async ({ page }) => {
-	await page.getByTestId("counters-add-confirm").click();
-	// Модалка закрывается по завершении операции.
-	await page.getByTestId("counters-add-modal").waitFor({ state: "hidden", timeout: 20_000 });
+When("пользователь удаляет суффикс из карточки", async ({ page }) => {
+	await page.getByTestId("counter-card-item-delete-btn").first().click();
+	await page.getByTestId("counter-delete-modal").waitFor({
+		state: "visible",
+		timeout: 10_000,
+	});
+	await page.getByTestId("counter-delete-modal-confirm").click();
 });
 
-Then("суффикс {string} отмечен в колоде на странице счётчиков", async ({ page }, suffix: string) => {
-	const item = gridItem(page, suffix);
-	await expect(item).toBeVisible();
-	await expect(item.getByTestId("counters-item-in-deck")).toBeVisible({ timeout: 10_000 });
-	await expect(item.getByTestId("counters-item-bindings")).toBeVisible();
-});
-
-When("пользователь добавляет суффикс из детальной карточки", async ({ page }) => {
-	await page.getByTestId("counters-detail-add").click();
-	await page.getByTestId("counters-detail-actions").waitFor({ timeout: 20_000 });
-});
-
-When("пользователь помечает суффикс известным", async ({ page }) => {
-	await page.getByTestId("counters-detail-known").click();
-	// Все связки получают известную память: сводка доезжает N/N.
-	const summary = page.getByTestId("counters-detail-bindings");
-	await expect(summary).toBeVisible({ timeout: 20_000 });
-	await expect.poll(async () => summary.textContent(), { timeout: 30_000 }).toContain("/11");
-});
-
-Then("все связки суффикса изучены в детальной карточке", async ({ page }) => {
-	// «Уже знаю» сидирует каждую связку: сводка показывает полный охват,
-	// строки таблицы подсвечены как изученные.
-	const summary = page.getByTestId("counters-detail-bindings");
-	await expect(summary).toBeVisible();
-	const text = (await summary.textContent()) ?? "";
-	expect(text, `bindings summary must be full, got: ${text}`).toMatch(/11\s*\/\s*11/);
-});
-
-When("пользователь добавляет суффикс в избранное", async ({ page }) => {
-	await page.getByTestId("counters-detail-favorite").click();
-});
-
-Then("суффикс в избранном на детальной карточке", async ({ page }) => {
-	// Кнопка переключается в состояние «убрать из избранного».
-	await expect(page.getByTestId("counters-detail-favorite")).toBeVisible();
-	await expect
-		.poll(
-			async () => page.getByTestId("counters-detail-favorite").textContent(),
-			{ timeout: 20_000 },
-		)
-		.not.toContain("избранное");
-});
-
-When("пользователь удаляет суффикс", async ({ page }) => {
-	await page.getByTestId("counters-detail-delete").click();
-});
-
-Then("суффикс снова предлагается добавить в детальной карточке", async ({ page }) => {
-	await page.getByTestId("counters-detail-add").waitFor({ timeout: 20_000 });
-	// Карточка больше не в колоде: блок действий исчез.
-	await expect(page.getByTestId("counters-detail-actions")).toHaveCount(0);
+Then("страница счётчиков снова пуста", async ({ page }) => {
+	await expect(page.getByTestId("counters-empty-state")).toBeVisible({
+		timeout: 20_000,
+	});
 });

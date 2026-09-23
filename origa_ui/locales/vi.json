@@ -699,17 +699,15 @@
     }
   },
   "counters": {
-    "title": "Từ đếm",
+    "header": "Từ đếm",
+    "add_counters": "Thêm từ đếm",
+    "adding": "Đang thêm...",
     "add": "Thêm từ đếm",
-    "add_title": "Thêm hậu tố đếm",
-    "add_confirm": "Thêm mục đã chọn",
-    "in_deck": "trong bộ",
-    "bindings_learned": "kết hợp",
-    "back": "Về danh sách",
-    "not_found": "Không tìm thấy hậu tố",
-    "mark_known": "Đã biết",
-    "favorite": "Yêu thích",
-    "unfavorite": "Bỏ yêu thích",
-    "delete": "Xóa"
+    "available_counters": "Từ đếm khả dụng",
+    "searching_counters": "Đang tìm từ đếm...",
+    "no_counters_for_level": "Không có từ đếm cho mức đã chọn (hoặc đã học hết)",
+    "readings_title": "Cách đọc",
+    "bindings_learned": "Kết hợp: {}",
+    "not_found": "Không tìm thấy hậu tố"
   }
 }

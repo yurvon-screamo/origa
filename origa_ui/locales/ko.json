@@ -699,17 +699,15 @@
     }
   },
   "counters": {
-    "title": "조수사",
+    "header": "조수사",
+    "add_counters": "조수사 추가",
+    "adding": "추가 중...",
     "add": "조수사 추가",
-    "add_title": "조수사 추가",
-    "add_confirm": "선택 항목 추가",
-    "in_deck": "덱에 있음",
-    "bindings_learned": "결합형",
-    "back": "목록으로",
-    "not_found": "접미사를 찾을 수 없습니다",
-    "mark_known": "이미 압니다",
-    "favorite": "즐겨찾기",
-    "unfavorite": "즐겨찾기 해제",
-    "delete": "삭제"
+    "available_counters": "사용 가능한 조수사",
+    "searching_counters": "조수사 검색...",
+    "no_counters_for_level": "선택한 수준에 조수사가 없습니다 (또는 모두 학습됨)",
+    "readings_title": "읽기",
+    "bindings_learned": "결합형: {}",
+    "not_found": "접미사를 찾을 수 없습니다"
   }
 }

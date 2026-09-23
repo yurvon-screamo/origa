@@ -693,7 +693,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("grammar/:id") view=|| view! { <ProtectedRoute><GrammarDetail/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("phrases") view=|| view! { <ProtectedRoute><Phrases/></ProtectedRoute> } />
-                <Route path=path!("counters/:suffix") view=|| view! { <ProtectedRoute><CountersDetail/></ProtectedRoute> } />
+                <Route path=path!("counters/:id") view=|| view! { <ProtectedRoute><CountersDetail/></ProtectedRoute> } />
                 <Route path=path!("counters") view=|| view! { <ProtectedRoute><Counters/></ProtectedRoute> } />
                 <Route path=path!("kanji/:id") view=|| view! { <ProtectedRoute><KanjiDetail/></ProtectedRoute> } />
                 <Route path=path!("kanji") view=|| view! { <ProtectedRoute><Kanji/></ProtectedRoute> } />

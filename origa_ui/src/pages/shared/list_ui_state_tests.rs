@@ -48,6 +48,12 @@ mod tests {
             assert_ne!(words.status, kanji.status);
             assert_ne!(words.jlpt, kanji.jlpt);
             assert_ne!(words.visible_count, kanji.visible_count);
+
+            // Counters — отдельная страница (issue #415): слот независим.
+            let counters = store.slot(ListPage::Counters);
+            assert_ne!(kanji.search, counters.search);
+            assert_ne!(kanji.jlpt, counters.jlpt);
+            assert_ne!(kanji.visible_count, counters.visible_count);
         });
     }
 

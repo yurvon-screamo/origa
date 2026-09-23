@@ -75,12 +75,13 @@ impl NavRoute {
         ]
     }
 
-    pub const fn sidebar_routes() -> &'static [NavRoute; 5] {
+    pub const fn sidebar_routes() -> &'static [NavRoute; 6] {
         &[
             Self::Home,
             Self::Words,
             Self::Grammar,
             Self::Kanji,
+            Self::Counters,
             Self::Phrases,
         ]
     }
@@ -137,10 +138,10 @@ mod tests {
     }
 
     #[test]
-    fn all_contains_six_routes_sidebar_excludes_profile() {
-        assert_eq!(NavRoute::all().len(), 6);
+    fn all_contains_seven_routes_sidebar_excludes_profile() {
+        assert_eq!(NavRoute::all().len(), 7);
         assert!(!NavRoute::sidebar_routes().contains(&NavRoute::Profile));
-        assert_eq!(NavRoute::sidebar_routes().len(), 5);
+        assert_eq!(NavRoute::sidebar_routes().len(), 6);
     }
 
     #[test]

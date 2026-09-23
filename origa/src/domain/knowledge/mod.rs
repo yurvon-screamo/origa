@@ -219,6 +219,20 @@ impl KnowledgeSet {
             .collect()
     }
 
+    /// Известные счётные суффиксы (issue #415) — зеркало `get_known_kanji`
+    /// для пометок в дровере заведения.
+    pub fn get_known_counters(&self) -> HashSet<String> {
+        self.study_cards
+            .values()
+            .filter_map(|study_card| match study_card.card() {
+                Card::Counter(counter_card) if study_card.memory().is_known_card() => {
+                    Some(counter_card.suffix().to_string())
+                },
+                _ => None,
+            })
+            .collect()
+    }
+
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         let removed = self
             .study_cards

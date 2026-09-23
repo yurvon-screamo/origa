@@ -699,17 +699,15 @@
     }
   },
   "counters": {
-    "title": "Счётные суффиксы",
+    "header": "Счётные суффиксы",
+    "add_counters": "Добавить суффиксы",
+    "adding": "Добавление...",
     "add": "Добавить суффиксы",
-    "add_title": "Добавить счётные суффиксы",
-    "add_confirm": "Добавить выбранные",
-    "in_deck": "в колоде",
-    "bindings_learned": "связки",
-    "back": "К списку",
-    "not_found": "Суффикс не найден",
-    "mark_known": "Уже знаю",
-    "favorite": "В избранное",
-    "unfavorite": "Убрать из избранного",
-    "delete": "Удалить"
+    "available_counters": "Доступные суффиксы",
+    "searching_counters": "Поиск суффиксов...",
+    "no_counters_for_level": "Нет суффиксов для выбранного уровня (или все уже изучены)",
+    "readings_title": "Чтения",
+    "bindings_learned": "Связки: {}",
+    "not_found": "Суффикс не найден"
   }
 }

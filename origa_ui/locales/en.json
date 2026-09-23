@@ -699,17 +699,15 @@
     }
   },
   "counters": {
-    "title": "Counter words",
+    "header": "Counter words",
+    "add_counters": "Add counters",
+    "adding": "Adding...",
     "add": "Add counters",
-    "add_title": "Add counter suffixes",
-    "add_confirm": "Add selected",
-    "in_deck": "in deck",
-    "bindings_learned": "bindings",
-    "back": "Back to the list",
-    "not_found": "Suffix not found",
-    "mark_known": "Already know",
-    "favorite": "Favorite",
-    "unfavorite": "Unfavorite",
-    "delete": "Delete"
+    "available_counters": "Available counters",
+    "searching_counters": "Searching counters...",
+    "no_counters_for_level": "No counters for the selected level (or all are already studied)",
+    "readings_title": "Readings",
+    "bindings_learned": "Bindings: {}",
+    "not_found": "Suffix not found"
   }
 }

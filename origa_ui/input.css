@@ -5655,6 +5655,368 @@ rt {
     letter-spacing: 0.1em;
 }
 
+
+/* === Counter drawer grid (mirror of kanji-grid, issue #415) === */
+.counter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+}
+
+.counter-grid-tile {
+    position: relative;
+    border: 1px solid var(--border-dark);
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--bg-paper);
+    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.counter-grid-tile:hover {
+    background: var(--bg-aged);
+}
+
+.counter-grid-tile--selected {
+    border-color: var(--accent-olive);
+    background: var(--bg-warm);
+}
+
+.counter-grid-tile--known {
+    opacity: 0.45;
+}
+
+.counter-grid-tile-char {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    display: block;
+    line-height: 1.2;
+}
+
+.counter-grid-tile-meaning {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.counter-grid-tile-check {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 12px;
+    color: var(--accent-olive);
+    font-weight: bold;
+}
+
+/* === Counter Card Item (mirror of kanji-card, issue #415) === */
+.counter-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    position: relative;
+    transition: transform var(--anima-duration-normal) var(--anima-ease-paper);
+}
+
+.counter-card::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--shadow-offset-y));
+    right: calc(-1 * var(--shadow-offset-x));
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.counter-card:hover {
+    transform: translateY(-2px);
+}
+
+.counter-card-link {
+    display: flex;
+    flex: 1;
+    padding: 10px 20px;
+    gap: 16px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.counter-card-char-box {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.counter-card-char-box::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.counter-card-char {
+    font-family: var(--font-serif);
+    font-size: 40px;
+    line-height: 1;
+    color: var(--fg-black);
+}
+
+.counter-card-content {
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-self: flex-start;
+    gap: 4px;
+}
+
+.counter-card-answer {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.4;
+}
+
+.counter-card-bindings {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs, 14px);
+    color: var(--fg-muted);
+    line-height: 1.4;
+    letter-spacing: 0.05em;
+}
+
+.counter-card-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 20px;
+}
+
+.counter-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    gap: 12px;
+}
+
+.counter-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.counter-card-badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    z-index: 10;
+}
+
+.counter-card-badge .tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.1em;
+}
+
+/* === Counter Detail (mirror of kanji/grammar detail, issue #415) === */
+.counter-detail-container {
+    padding: 24px 32px;
+    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.counter-detail-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 16px;
+}
+
+.counter-breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+}
+
+.counter-breadcrumbs a {
+    color: var(--fg-muted);
+    text-decoration: none;
+}
+
+.counter-breadcrumbs a:hover {
+    color: var(--fg-black);
+    text-decoration: underline;
+}
+
+.counter-breadcrumbs-separator {
+    color: var(--fg-muted);
+}
+
+.counter-breadcrumbs-current {
+    color: var(--fg-black);
+}
+
+.counter-detail-hero-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 24px;
+    position: relative;
+}
+
+.counter-detail-hero-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.counter-detail-hero-char-box {
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-dark);
+    background: var(--bg-paper);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.counter-detail-hero-char-box::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-dark);
+    z-index: -1;
+    background: var(--bg-aged);
+}
+
+.counter-detail-hero-char {
+    font-family: var(--font-serif);
+    font-size: 56px;
+    line-height: 1;
+    color: var(--fg-black);
+}
+
+.counter-detail-hero-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.counter-detail-hero-meaning {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+    line-height: 1.4;
+}
+
+.counter-detail-hero-bindings {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs, 14px);
+    color: var(--fg-muted);
+    letter-spacing: 0.05em;
+}
+
+.counter-detail-hero-badge {
+    flex-shrink: 0;
+}
+
+.counter-detail-hero-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.counter-detail-section-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 24px;
+    position: relative;
+}
+
+.counter-detail-section-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 12px;
+}
+
+.counter-readings-table {
+    display: flex;
+    flex-direction: column;
+}
+
+.counter-readings-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.counter-readings-row:last-child {
+    border-bottom: none;
+}
+
+.counter-readings-row--known {
+    background: color-mix(in srgb, var(--accent-sage) 12%, transparent);
+}
+
+.counter-readings-numeral {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+}
+
+.counter-readings-reading {
+    font-family: var(--font-serif);
+    font-size: var(--text-sm, 16px);
+    color: var(--fg-black);
+}
+
 /* === Word Card Item — Redesigned === */
 .word-card {
     display: flex;
