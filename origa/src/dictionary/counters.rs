@@ -211,9 +211,11 @@ const NUMERAL_CHARS: &[char] = &[
 ];
 
 pub fn suffix_detected_in_word(word: &str, suffix: &str) -> bool {
-    if word == suffix {
-        return true;
-    }
+    // Standalone-совпадение НЕ детектим: изолированный 本 — существительное
+    // («книга»), счётный суффикс проявляется только в числительных
+    // сочетаниях (一本) — чужие колоды (слово 本 из прозы) не получают
+    // ложных counter-карт.
+
     let chars: Vec<char> = word.chars().collect();
     let suffix_chars: Vec<char> = suffix.chars().collect();
     if suffix_chars.is_empty() || chars.len() <= suffix_chars.len() {
@@ -463,7 +465,11 @@ pub mod tests {
         init_test_counters();
         assert!(suffix_detected_in_word("三日", "日"));
         assert!(suffix_detected_in_word("一本", "本"));
-        assert!(suffix_detected_in_word("本", "本"), "слово == суффикс");
+        // Standalone 本 — существительное, не счётный контекст.
+        assert!(
+            !suffix_detected_in_word("本", "本"),
+            "слово == суффикс не детектится"
+        );
         assert!(
             !suffix_detected_in_word("日本", "本"),
             "числительного рядом нет"

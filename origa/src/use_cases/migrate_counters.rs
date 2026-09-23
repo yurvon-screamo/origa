@@ -2,11 +2,13 @@
 //! вызывается лоадером на каждом старте сразу после загрузки реестра —
 //! прецедент `MigrateGrammarCardsUseCase` (идемпотентный повтор — no-op).
 //!
-//! Охват: детект из вокаба (surface-первичен: числительное рядом с
-//! суффиксом в написании слова — 三日 → 日; 日本 ↛ 本; бонус — пара
-//! `Numeral → Suffix` в многотокенных `card.tokens`) + остальные суффиксы
-//! ≤ уровня юзера. Все создаваемые карты новые — пул руки знакомства;
-//! дневной лимит тратится только закрытием руки.
+//! Охват: ТОЛЬКО детект из вокаба (surface-первичен: числительное рядом
+//! с суффиксом — 三日 → 日; 日本 ↛ 本; бонус — пара `Numeral → Suffix` в
+//! многотокенных `card.tokens`). Полное множество ≤ уровня приходит
+//! онбординг-импортом: миграция не засыпает counter-картами юзера, чей
+//! вокаб суффиксов не встречал (иначе пустые колоды и empty-state
+//! перестают существовать). Все создаваемые карты новые — пул руки
+//! знакомства; дневной лимит тратится только закрытием руки.
 
 use std::collections::HashSet;
 
@@ -90,8 +92,6 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
             if existing.contains(suffix) {
                 continue;
             }
-            // Детект — только диагностика (какие суффиксы юзер уже встречал
-            // в вокабе): охват миграции — ВСЕ уровни ≤ уровня юзера.
             let detected = words.iter().any(|sc| {
                 let word = match sc.card() {
                     Card::Vocabulary(v) => v.word().text(),
@@ -99,9 +99,10 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
                 };
                 suffix_detected_in_word(word, suffix) || tokens_detect_counter(sc, suffix)
             });
-            if detected {
-                detected_suffixes.push(suffix);
+            if !detected {
+                continue;
             }
+            detected_suffixes.push(suffix);
             let mut counter = CounterCard::new(suffix);
             counter.ensure_registry_bindings();
             if user.create_card(Card::Counter(counter)).is_ok() {
@@ -111,7 +112,7 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
         if !detected_suffixes.is_empty() {
             info!(
                 detected = detected_suffixes.join(","),
-                "counters already met in the user's vocabulary"
+                "counters met in the user's vocabulary — migrated"
             );
         }
 
@@ -145,18 +146,19 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn migration_covers_every_suffix_up_to_user_level() {
+    async fn migration_creates_only_detected_suffixes() {
         init_test_counters();
-        // Охват — детектченные И остальные ≤ уровня (решение владельца):
-        // обе N5-фикстуры заводятся, детект только логируется.
+        // Охват — только детект: 一本 приносит 本; 日本 — нет; 人/日 не
+        // задетекчены — не создаются (полное ≤ уровня приходит
+        // онбординг-импортом).
         let repo = InMemoryUserRepository::with_user(user_with_words(&["一本", "日本"]));
         let created = MigrateCountersForExistingUsersUseCase::new(&repo)
             .execute()
             .await
             .unwrap();
-        assert_eq!(created, 3, "все суффиксы ≤ уровня юзера (本/人/日)");
+        assert_eq!(created, 1);
         let user = repo.get_current_user().await.unwrap().unwrap();
-        let mut suffixes: Vec<String> = user
+        let suffixes: Vec<String> = user
             .knowledge_set()
             .study_cards()
             .values()
@@ -165,11 +167,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        suffixes.sort();
-        assert_eq!(
-            suffixes,
-            vec!["人".to_string(), "日".to_string(), "本".to_string()]
-        );
+        assert_eq!(suffixes, vec![TEST_HON.to_string()]);
     }
 
     #[tokio::test]
@@ -177,8 +175,8 @@ mod tests {
         init_test_counters();
         let repo = InMemoryUserRepository::with_user(user_with_words(&["一本"]));
         let use_case = MigrateCountersForExistingUsersUseCase::new(&repo);
-        // Полный охват ≤ уровня юзера (N5-фикстуры = 3 суффикса).
-        assert_eq!(use_case.execute().await.unwrap(), 3);
+        // Только детект: 一本 → 本, далее no-op.
+        assert_eq!(use_case.execute().await.unwrap(), 1);
         assert_eq!(use_case.execute().await.unwrap(), 0);
         assert_eq!(use_case.execute().await.unwrap(), 0);
     }
