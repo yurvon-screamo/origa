@@ -24,6 +24,21 @@ When('пользователь добавил слово-связку {string}',
 	}
 });
 
+When("пользователь открывает урок напрямую", async ({ page }) => {
+	// Транзит /words → /home редиректит в wizard (app-level, KNOWN_FIXME):
+	// страница /lesson сама собирает руку, поэтому входим напрямую.
+	const diagnostics = attachPageDiagnostics(page, "direct-lesson");
+	try {
+		await page.goto("/lesson");
+		await page.waitForLoadState("domcontentloaded");
+	} catch (err) {
+		console.info(
+			`[counter-diagnostics:direct-lesson-failure] url=${page.url()}\n${diagnostics()}`,
+		);
+		throw err;
+	}
+});
+
 When("пользователь начинает урок со счётными суффиксами", async ({ page }) => {
 	// Диагностика day-1 (issue #415): слушатель ставится ДО перехода,
 	// чтобы поймать панику WASM на домашней странице — сценарии падают
