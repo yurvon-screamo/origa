@@ -230,6 +230,22 @@ pub fn LessonContent() -> impl IntoView {
             let (hand_order, hand_user_snapshot) = if is_gated_practice_mode {
                 (Vec::new(), None)
             } else {
+                // Ленивая миграция счётчиков (issue #415): юзер мог добавить
+                // слово-связку (一本) уже после старта приложения — миграция
+                // первого старта её не видела. Идемпотентна и дешёвая после
+                // первого прогона (пред-проход по существующим картам).
+                if origa::dictionary::counters::is_counters_loaded() {
+                    match origa::use_cases::MigrateCountersForExistingUsersUseCase::new(&repo)
+                        .execute()
+                        .await
+                    {
+                        Ok(n) if n > 0 => {
+                            tracing::info!(n, "🔢 Counter cards migrated before hand selection")
+                        },
+                        Ok(_) => {},
+                        Err(e) => tracing::warn!("Counter migration before hand failed: {e}"),
+                    }
+                }
                 let select_hand = SelectAcquaintanceHandUseCase::new(&repo);
                 match select_hand.execute(jlpt_content).await {
                     Ok(Some(ids)) if !ids.is_empty() => match repo.get_current_user().await {
