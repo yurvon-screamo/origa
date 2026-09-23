@@ -53,17 +53,6 @@ const KNOWN_FIXME = new Set([
     // cleanly — suspected partial/failed IndexedDB local.save of the
     // multi-MB row. Tracked in #492.
     "n1_stress.feature|Синхронизация тяжёлого пользователя между устройствами",
-    // counter.feature / оба day-1 сценария: skip-onboarded юзер с добавленным
-    // словом при goto /home редиректится в wizard (URL /onboarding, домашняя
-    // кнопка не появляется) — onboarded-статус теряется между /words и /home.
-    // Воспроизводится только в этих новых сценариях (существующий паттерн
-    // «skip → add word → start lesson» с другим текстом проходит): подозрение
-    // на гонку session-restore/merge в гибридном репозитории, ВНЕ скоупа
-    // счётчиков. Детект-миграция покрыта доменными тестами
-    // (migration_creates_only_detected_suffixes), ленивый вызов перед рукой —
-    // routes/content инспекцией. Расследование app-бага — отдельная задача.
-    "counter.feature|Миграция заводит счётный суффикс из вокаба существующего юзера",
-    "counter.feature|Тренировка счётного суффикса отвечает знаком и значением",
 ]);
 
 // ---------------------------------------------------------------------------

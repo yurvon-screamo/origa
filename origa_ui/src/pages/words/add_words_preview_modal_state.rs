@@ -184,9 +184,19 @@ impl PreviewModalState {
         &self,
     ) -> impl Future<Output = Result<CreateCardsFromAnalysisResult, String>> {
         let selected_words = self.selected_words.get_untracked();
+        // POS из анализа: суффикс-кандидат едет в create как counter.
+        let pos_by_word: std::collections::HashMap<String, origa::domain::PartOfSpeech> = self
+            .analyzed_words
+            .get_untracked()
+            .into_iter()
+            .map(|w| (w.base_form.clone(), w.part_of_speech.clone()))
+            .collect();
         let words_to_create: Vec<WordToCreate> = selected_words
             .into_iter()
-            .map(|base_form| WordToCreate { base_form })
+            .map(|base_form| WordToCreate {
+                part_of_speech: pos_by_word.get(&base_form).cloned(),
+                base_form,
+            })
             .collect();
         let repository = self.repository.clone();
         let is_creating = self.is_creating;

@@ -41,15 +41,27 @@ impl StudyCard {
         &self.card
     }
 
-    /// Мутабельный доступ к полезной нагрузке карты. Существующий
-    /// `replace_card` меняет карту целиком; связки счётного суффикса
-    /// требуют точечной мутации памятей (`rate_counter_binding`).
-    pub(crate) fn card_mut(&mut self) -> &mut Card {
-        &mut self.card
-    }
-
     pub(crate) fn replace_card(&mut self, new_card: Card) {
         self.card = new_card;
+    }
+
+    /// Мини-оценка связки счётного суффикса (issue #415): делегирует
+    /// `CounterCard::apply_binding_review`. Точечная мутация полезной
+    /// нагрузки карты живёт здесь, а не через открытый мутабельный доступ —
+    /// контракт «семантика карты и чужие связки не затрагиваются» держит
+    /// сигнатура.
+    pub fn apply_counter_binding_review(
+        &mut self,
+        number: u8,
+        rating: crate::domain::memory::Rating,
+    ) -> Result<(), OrigaError> {
+        match &mut self.card {
+            Card::Counter(counter) => counter.apply_binding_review(number, rating),
+            other => Err(OrigaError::CounterBindingNotFound {
+                suffix: other.content_key(),
+                number,
+            }),
+        }
     }
 
     pub fn memory(&self) -> &MemoryHistory {

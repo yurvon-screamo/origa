@@ -29,7 +29,7 @@ Sau mỗi câu trả lời trong lô, ứng dụng hiện bảng đọc của c�
 
 Từ đếm đến cùng trình độ của bạn: quá trình nhập khi bắt đầu thêm các hậu tố của mức JLPT của bạn trở xuống, nên nhóm làm quen gặp chúng dần dần. Nếu đã biết một hậu tố, đánh dấu trong giai đoạn tự đánh giá — nghĩa bỏ qua luyện tập, còn drill kết hợp số vẫn giữ. Với tài khoản tạo trước khi có từ đếm, Origa dò hậu tố xuất hiện trong từ bạn đã thêm (từ 一本 kéo về 本) và tạo các thẻ đó cùng phần còn lại của mức.
 
-Bộ dữ liệu được duy trì trong kho và bao phủ các hậu tố mà giáo trình phổ biến dạy, nhóm theo mức JLPT bằng đồng thuận biên tập — không có danh sách JLPT chính thức cho từ đếm. Chú giải được duy trì bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt. Nguồn gốc xem trang [nguồn dữ liệu](/vi/docs/data-sources).
+Bộ dữ liệu được duy trì như một tệp dữ liệu và bao phủ các hậu tố mà giáo trình phổ biến dạy, nhóm theo mức JLPT bằng đồng thuận biên tập — không có danh sách JLPT chính thức cho từ đếm. Chú giải được duy trì bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt. Nguồn gốc xem trang [nguồn dữ liệu](/vi/docs/data-sources).
 
 ## Trang liên quan
 

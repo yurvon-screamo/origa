@@ -29,7 +29,7 @@ After each answer in a batch the app shows the table of readings for the whole s
 
 Counters arrive with your level: the onboarding import adds the suffixes for your JLPT level and below, so the acquaintance pool meets them gradually. If you already know a suffix, mark it during onboarding scoring: the meaning skips training, though the number bindings still get their drills. For accounts created before counters existed, Origa detects suffixes that appear in your added words (一本 in your vocabulary brings in 本) and adds those cards alongside the rest of your level.
 
-The dataset is maintained in the repository and covers the suffixes taught by common textbooks, grouped by JLPT level by editorial consensus: there is no official JLPT counter list. Glosses are maintained in English, Russian, Korean, and Vietnamese. See [data sources](/docs/data-sources) for provenance.
+The dataset is maintained as a data file and covers the suffixes taught by common textbooks, grouped by JLPT level by editorial consensus: there is no official JLPT counter list. Glosses are maintained in English, Russian, Korean, and Vietnamese. See [data sources](/docs/data-sources) for provenance.
 
 ## Related
 
