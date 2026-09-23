@@ -2,13 +2,30 @@ import { expect } from "@playwright/test";
 import { Then } from "../fixtures";
 import { awaitHandVisible } from "../../helpers/lesson";
 
+/// Временная диагностика (issue #417, day-1 flake): собирает консоль и
+/// pageerror текущей страницы и прикладывает к отчёту — упавший сценарий
+/// покажет WASM-панику вместо молчаливого таймаута.
+export function attachPageDiagnostics(page: import("@playwright/test").Page, label: string) {
+	const logs: string[] = [];
+	page.on("console", (msg) => logs.push(`[${msg.type()}] ${msg.text()}`));
+	page.on("pageerror", (err) => logs.push(`[pageerror] ${err.message}`));
+	return () => {
+		const text = logs.join("\n") || "(no console output)";
+		// eslint-disable-next-line no-console -- diagnostic attachment
+		console.info(`[counter-diagnostics:${label}]\n${text}`);
+		return text;
+	};
+}
+
 /// Показ руки: жмём «Дальше», пока не встретим слайд счётного суффикса
 /// (issue #415: миграция заводит counter-карту из слова «一本»; в маленьком
 /// пуле рука содержит и слово, и счётчик — слайд гарантированно в показе).
 Then(
 	"в показе руки знакомства появляется слайд счётного суффикса",
 	async ({ page }) => {
-		await awaitHandVisible(page);
+		const diagnostics = attachPageDiagnostics(page, "presentation");
+		try {
+			await awaitHandVisible(page);
 		const nextBtn = page.getByTestId("acquaintance-next-btn");
 		const counterSlide = page.getByTestId("acquaintance-counter-slide");
 		for (let i = 0; i < 20; i++) {
@@ -23,6 +40,10 @@ Then(
 			if (training) break;
 		}
 		await expect(counterSlide).toBeVisible({ timeout: 2_000 });
+		} catch (err) {
+			console.info(`[counter-diagnostics:presentation-failure]\n${diagnostics()}`);
+			throw err;
+		}
 	},
 );
 

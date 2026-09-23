@@ -214,11 +214,8 @@ mod tests {
             .execute()
             .await
             .unwrap();
-        // 本 и 人 уже есть; полный охват докидывает только недостающий 日.
-        assert_eq!(
-            created, 1,
-            "existing counters are never recreated, missing ones are added"
-        );
+        // 本 и 人 уже есть; детект по 一本 не пересоздаёт существующие.
+        assert_eq!(created, 0, "existing counters are never recreated");
         let _ = JapaneseLevel::N5;
     }
 }
