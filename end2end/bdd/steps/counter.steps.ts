@@ -13,7 +13,9 @@ When("пользователь начинает урок со счётными �
 		await homePage.goto();
 		await homePage.startLesson();
 	} catch (err) {
-		console.info(`[counter-diagnostics:start-lesson-failure]\n${diagnostics()}`);
+		console.info(
+			`[counter-diagnostics:start-lesson-failure] url=${page.url()}\n${diagnostics()}`,
+		);
 		throw err;
 	}
 });
