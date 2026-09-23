@@ -44,7 +44,7 @@ pub(in crate::pages::lesson) fn counter_reading_rows(card: &Card) -> Vec<Counter
         return Vec::new();
     };
     let entry = origa::dictionary::counters::get_counter(counter.suffix());
-    let mut rows: Vec<CounterReadingRow> = counter
+    counter
         .bindings()
         .iter()
         .filter_map(|binding| {
@@ -62,9 +62,7 @@ pub(in crate::pages::lesson) fn counter_reading_rows(card: &Card) -> Vec<Counter
                 irregular,
             })
         })
-        .collect();
-    rows.sort_by_key(|row| reading_sort_key(row.number));
-    rows
+        .collect()
 }
 
 /// Таблица чтений суффикса — единый рендер трёх поверхностей
@@ -79,7 +77,11 @@ pub(in crate::pages::lesson) fn CounterReadingsTable(
     #[prop(optional)] highlight: Option<RwSignal<u8>>,
 ) -> impl IntoView {
     let suffix = StoredValue::new(suffix);
-    let rows = StoredValue::new(rows);
+    // Сортировка — инвариант самого компонента (любой источник строк):
+    // числа по возрастанию, исключения >10 за десяткой, 何 последней.
+    let mut sorted_rows = rows;
+    sorted_rows.sort_by_key(|row| reading_sort_key(row.number));
+    let rows = StoredValue::new(sorted_rows);
     let rows_vec = rows.with_value(|rows| rows.to_vec());
     view! {
         <div class="border border-[var(--fg-black)] bg-[var(--bg-paper)] overflow-hidden"
