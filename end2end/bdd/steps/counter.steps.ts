@@ -31,6 +31,20 @@ export function attachPageDiagnostics(page: import("@playwright/test").Page, lab
 	};
 }
 
+When("пользователь начинает урок со счётными суффиксами", async ({ page }) => {
+	const diagnostics = attachPageDiagnostics(page, "start-lesson");
+	try {
+		const homePage = new (await import("../../pages")).HomePage(page);
+		await homePage.goto();
+		await homePage.startLesson();
+	} catch (err) {
+		console.info(
+			`[counter-diagnostics:start-lesson-failure] url=${page.url()}\n${diagnostics()}`,
+		);
+		throw err;
+	}
+});
+
 /// Показ руки: жмём «Дальше», пока не встретим слайд счётного суффикса
 /// (issue #415: миграция заводит counter-карту из слова «一本»; в маленьком
 /// пуле рука содержит и слово, и счётчик — слайд гарантированно в показе).

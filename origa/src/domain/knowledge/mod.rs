@@ -485,19 +485,7 @@ impl KnowledgeSet {
             .study_cards
             .get_mut(&card_id)
             .ok_or(OrigaError::CardNotFound { card_id })?;
-        let counter = match study_card.card_mut() {
-            Card::Counter(counter) => counter,
-            _ => {
-                return Err(OrigaError::CounterBindingNotFound {
-                    suffix: study_card.card().content_key(),
-                    number,
-                });
-            },
-        };
-        let memory = counter.binding_memory_mut(number)?;
-        let next = rate_memory(RateMode::CounterReview, rating, memory)?;
-        memory.apply_review(next, rating);
-        Ok(())
+        study_card.apply_counter_binding_review(number, rating)
     }
 
     fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {

@@ -94,6 +94,24 @@ impl CounterCard {
     }
 
     /// Память конкретной связки по числу.
+    /// Мини-оценка связки (issue #415): переоценивает ТОЛЬКО память этой
+    /// ячейки в `CounterReview`. Единственная точка мутации памятей связок —
+    /// инкапсуляция вместо открытого `card_mut`-доступа к полезной нагрузке.
+    pub fn apply_binding_review(
+        &mut self,
+        number: u8,
+        rating: crate::domain::memory::Rating,
+    ) -> Result<(), OrigaError> {
+        let memory = self.binding_memory_mut(number)?;
+        let next = crate::domain::srs::rate_memory(
+            crate::domain::RateMode::CounterReview,
+            rating,
+            memory,
+        )?;
+        memory.apply_review(next, rating);
+        Ok(())
+    }
+
     pub fn binding_memory(&self, number: u8) -> Option<&MemoryHistory> {
         self.bindings
             .iter()

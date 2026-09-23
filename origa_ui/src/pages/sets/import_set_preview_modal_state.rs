@@ -234,10 +234,8 @@ impl ImportPreviewModalState {
             .collect::<HashSet<_>>()
             .into_iter()
             .collect();
-        let words_to_create: Vec<WordToCreate> = selected_words
-            .into_iter()
-            .map(|base_form| WordToCreate { base_form })
-            .collect();
+        let words_to_create: Vec<WordToCreate> =
+            selected_words.into_iter().map(WordToCreate::word).collect();
         let repository = self.repository.clone();
         let is_importing = self.is_importing;
         let error = self.error_message;

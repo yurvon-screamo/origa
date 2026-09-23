@@ -766,32 +766,6 @@ def main() -> None:
     # clients stop probing missing files with 404s.
     generate_kanji_art_manifest(cdn_dir)
 
-    # Step 0.4: Expand the manual counters source (issue #415) into the
-    # registry artifact. Fail-loud: a stale counters.json would ship the
-    # previous dataset to every client.
-    print("Step 0.4: Building counters registry...")
-    build_counters = Path(__file__).resolve().parent / "build_counters.py"
-    result = subprocess.run(
-        [sys.executable, str(build_counters), "--check"],
-        capture_output=True, text=True, cwd=str(build_counters.parent),
-        check=False,
-    )
-    if result.returncode == 0:
-        for line in result.stdout.strip().splitlines():
-            print(f"  {line}")
-    else:
-        # Stale or missing: rebuild, then re-check.
-        result = subprocess.run(
-            [sys.executable, str(build_counters)],
-            capture_output=True, text=True, cwd=str(build_counters.parent),
-            check=False,
-        )
-        if result.returncode != 0:
-            print(f"  build_counters.py FAILED: {result.stderr}", file=sys.stderr)
-            sys.exit(1)
-        for line in result.stdout.strip().splitlines():
-            print(f"  {line}")
-
     # Step 0.5: Regenerate pre-parsed rkyv blobs and verify freshness
     # (BEFORE manifest: blob hashes must be computed from current bytes)
     print("Step 0.5: Regenerating rkyv blobs...")
