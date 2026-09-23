@@ -2348,8 +2348,16 @@ fn interleave_spreads_counter_cards_across_vocab_gaps() {
         .iter()
         .position(|(id, _)| *id == counter_id)
         .expect("counter card survived interleaving");
+    // Собственная очередь кладёт counter в gap[0] перед первым vocab —
+    // как кандзи и грамматика; доказательство не-`other`-полосы: не хвост.
     assert_eq!(
-        counter_pos, 1,
-        "counter lands in a vocab gap, not at the tail (phrase `other` lane)"
+        counter_pos, 0,
+        "counter uses its own lane (gap[0]), not the phrase `other` tail"
     );
+    let vocab_tail = interleaved
+        .cards
+        .iter()
+        .position(|(id, _)| *id == vocab_ids[1])
+        .expect("vocab survived");
+    assert_eq!(vocab_tail, 2, "layout: counter, vocab, vocab");
 }

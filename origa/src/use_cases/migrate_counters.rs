@@ -177,7 +177,8 @@ mod tests {
         init_test_counters();
         let repo = InMemoryUserRepository::with_user(user_with_words(&["一本"]));
         let use_case = MigrateCountersForExistingUsersUseCase::new(&repo);
-        assert_eq!(use_case.execute().await.unwrap(), 1);
+        // Полный охват ≤ уровня юзера (N5-фикстуры = 3 суффикса).
+        assert_eq!(use_case.execute().await.unwrap(), 3);
         assert_eq!(use_case.execute().await.unwrap(), 0);
         assert_eq!(use_case.execute().await.unwrap(), 0);
     }
@@ -215,7 +216,11 @@ mod tests {
             .execute()
             .await
             .unwrap();
-        assert_eq!(created, 0, "existing counter cards are never recreated");
+        // 本 и 人 уже есть; полный охват докидывает только недостающий 日.
+        assert_eq!(
+            created, 1,
+            "existing counters are never recreated, missing ones are added"
+        );
         let _ = JapaneseLevel::N5;
     }
 }
