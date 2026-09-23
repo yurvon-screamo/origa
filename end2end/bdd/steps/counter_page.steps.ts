@@ -36,7 +36,7 @@ When(
 	"пользователь выбирает тайл суффикса {string}",
 	async ({ page }, suffix: string) => {
 		await page
-			.getByTestId("counters-drawer-item", { hasText: suffix })
+			.locator('[data-testid="counters-drawer-item"]', { hasText: suffix })
 			.first()
 			.click();
 	},
@@ -53,7 +53,9 @@ When("пользователь подтверждает добавление и�
 Then(
 	"в списке счётчиков появляется карточка суффикса {string}",
 	async ({ page }, suffix: string) => {
-		const card = page.getByTestId("counter-card-item", { hasText: suffix });
+		const card = page.locator('[data-testid="counter-card-item"]', {
+			hasText: suffix,
+		});
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByTestId("counter-card-bindings")).toBeVisible();
 	},
@@ -63,7 +65,7 @@ When(
 	"пользователь открывает детальную карточку суффикса {string}",
 	async ({ page }, suffix: string) => {
 		await page
-			.getByTestId("counter-card-item", { hasText: suffix })
+			.locator('[data-testid="counter-card-item"]', { hasText: suffix })
 			.first()
 			.click();
 		await page.getByTestId("counters-detail-hero").waitFor({
