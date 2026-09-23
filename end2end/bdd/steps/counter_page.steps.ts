@@ -79,7 +79,7 @@ Then(
 	async ({ page }) => {
 		const table = page.getByTestId("counters-detail-table");
 		await expect(table).toBeVisible({ timeout: 10_000 });
-		const rows = table.locator(".counter-readings-row");
+		const rows = table.getByTestId("counter-readings-row");
 		// 1..=10 + 何 — фиксированный инвариант датасета.
 		expect(await rows.count()).toBeGreaterThanOrEqual(11);
 	},

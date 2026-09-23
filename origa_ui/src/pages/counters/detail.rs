@@ -285,10 +285,13 @@ pub fn CountersDetail() -> impl IntoView {
                                     .into_iter()
                                     .map(|(numeral, reading, known)| {
                                         view! {
-                                            <div class=format!(
-                                                "counter-readings-row{}",
-                                                if known { " counter-readings-row--known" } else { "" },
-                                            )>
+                                            <div
+                                                class=format!(
+                                                    "counter-readings-row{}",
+                                                    if known { " counter-readings-row--known" } else { "" },
+                                                )
+                                                data-testid="counter-readings-row"
+                                            >
                                                 <span class="counter-readings-numeral">
                                                     {numeral}{"×"}{suffix.clone()}
                                                 </span>

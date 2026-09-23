@@ -102,7 +102,7 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
 
         let level = user.current_japanese_level();
         let mut created = 0usize;
-        let mut detected_suffixes: Vec<&str> = Vec::new();
+        let mut created_suffixes: Vec<&str> = Vec::new();
         for entry in counters_up_to_level(level) {
             let suffix = entry.suffix();
             if existing.contains(suffix) {
@@ -118,24 +118,40 @@ impl<'a, R: UserRepository> MigrateCountersForExistingUsersUseCase<'a, R> {
             if !detected {
                 continue;
             }
-            detected_suffixes.push(suffix);
             let mut counter = CounterCard::new(suffix);
             counter.ensure_registry_bindings();
             if user.create_card(Card::Counter(counter)).is_ok() {
-                created += 1;
+                created_suffixes.push(suffix);
             }
         }
-        if !detected_suffixes.is_empty() {
+        if !created_suffixes.is_empty() {
             info!(
-                detected = detected_suffixes.join(","),
+                detected = created_suffixes.join(","),
                 "counters met in the user's vocabulary — migrated"
             );
         }
 
+        // Гонка с онбордингом (review Low): юзер мог завершить онбординг
+        // между первым чтением и save — слепое сохранение затёрло бы флаг.
+        // Перечитываем и применяем результат к свежей копии; юзер «ушёл»
+        // в онбординг — откладываемся (sentinel не ставится, прогон
+        // повторится после завершения).
+        let mut fresh = match self.repository.get_current_user().await? {
+            Some(u) if u.is_onboarding_completed() => u,
+            _ => return Ok(0),
+        };
+        for suffix in created_suffixes {
+            let mut counter = CounterCard::new(suffix);
+            counter.ensure_registry_bindings();
+            if fresh.create_card(Card::Counter(counter)).is_ok() {
+                created += 1;
+            }
+        }
+
         // Sentinel пишем и при нулевом охвате: «накатили» — факт свершившийся.
-        user.mark_counters_migrated_v1();
-        self.repository.save(&user).await?;
-        info!(user_id = %user.id(), created, "Counters migrated for existing user");
+        fresh.mark_counters_migrated_v1();
+        self.repository.save(&fresh).await?;
+        info!(user_id = %fresh.id(), created, "Counters migrated for existing user");
         Ok(created)
     }
 }
