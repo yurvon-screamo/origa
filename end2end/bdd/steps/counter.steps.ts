@@ -1,7 +1,28 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
-import { HomePage } from "../../pages";
+import { HomePage, WordsPage } from "../../pages";
 import { awaitHandVisible } from "../../helpers/lesson";
+
+When('пользователь добавил слово-связку {string}', async ({ page }, text: string) => {
+	const diagnostics = attachPageDiagnostics(page, "add-word");
+	try {
+		const wordsPage = new WordsPage(page);
+		await wordsPage.goto();
+		await wordsPage.expectWordsVisible();
+		await wordsPage.openAddModal();
+		await wordsPage.enterText(text);
+		await wordsPage.analyzeText();
+		await wordsPage.selectFirstWord();
+		await wordsPage.addSelectedWords();
+		await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+		console.info(`[counter-diagnostics:add-word-ok] url=${page.url()}`);
+	} catch (err) {
+		console.info(
+			`[counter-diagnostics:add-word-failure] url=${page.url()}\n${diagnostics()}`,
+		);
+		throw err;
+	}
+});
 
 When("пользователь начинает урок со счётными суффиксами", async ({ page }) => {
 	// Диагностика day-1 (issue #415): слушатель ставится ДО перехода,
