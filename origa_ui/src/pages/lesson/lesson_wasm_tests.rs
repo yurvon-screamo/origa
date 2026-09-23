@@ -4675,6 +4675,27 @@ async fn counter_bindings_card_aggregates_after_the_pack() {
         .expect("second option set")
         .unchecked_into::<web_sys::HtmlElement>()
         .click();
+    // Финальный ответ НЕ завершает пачку сам: агрегат идёт кнопкой
+    // «Дальше» (advance), как в реальном флоу.
+    let wrapper_for_final = wrapper.clone();
+    let next_ready = wait_until(
+        move || {
+            wrapper_for_final
+                .query_selector("[data-testid=\"counter-binding-next\"]")
+                .unwrap()
+                .is_some()
+        },
+        50,
+        20,
+    )
+    .await;
+    assert!(next_ready, "final next button is shown");
+    wrapper
+        .query_selector("[data-testid=\"counter-binding-next\"]")
+        .unwrap()
+        .expect("final next")
+        .unchecked_into::<web_sys::HtmlElement>()
+        .click();
     let rated_signal = get_rated.take().expect("captured");
     let rated = wait_until(move || rated_signal.get_untracked().is_some(), 50, 20).await;
     assert!(rated, "pack completion triggers the aggregate rating");
