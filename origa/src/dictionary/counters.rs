@@ -496,7 +496,6 @@ pub mod tests {
         let mut card = crate::domain::CounterCard::new("日");
         card.ensure_registry_bindings();
         assert_eq!(card.bindings().len(), 14, "1..=10 + 何 + 14/20/24");
-        assert_eq!(card.binding_showcase().len(), 14);
     }
 
     #[test]

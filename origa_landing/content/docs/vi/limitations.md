@@ -47,7 +47,7 @@ Tính năng viết hán tự trình bày thứ tự nét đúng dưới dạng a
 
 ## Từ đếm: chưa có trang danh sách, lô đầu tiên dài
 
-Từ đếm (本, 枚, 匹 …) được luyện như thẻ, với một trang từ đếm riêng liệt kê toàn bộ và thẻ chi tiết của từng hậu tố. Lần ôn đầu của một từ đếm hỏi các kết hợp số trong một lô — với hậu tố có nhiều đọc bất quy tắc, điều này có thể thấy dài. Đánh dấu "đã biết" bỏ qua cả luyện nghĩa lẫn drill kết hợp. Tài khoản tạo trước khi có từ đếm sẽ nhận chúng qua một migration một lần ở lần chạy đầu tiên sau khi cập nhật.
+Từ đếm (本, 枚, 匹 …) được luyện như thẻ, với một trang từ đếm riêng liệt kê toàn bộ và thẻ chi tiết của từng hậu tố. Ôn tập là kiểu "biết / không biết" cổ điển — bảng đọc đầy đủ nằm ở slide làm quen và trang từ đếm, không nằm trong lần ôn. Đánh dấu "đã biết" bỏ qua cả luyện nghĩa lẫn kết hợp. Tài khoản tạo trước khi có từ đếm sẽ nhận chúng qua một migration một lần ở lần chạy đầu tiên sau khi cập nhật.
 
 ## Văn bản pháp lý chỉ có tiếng Anh và tiếng Nga
 

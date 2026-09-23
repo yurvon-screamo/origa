@@ -45,9 +45,9 @@ The kanji writing feature shows the correct stroke order as an animation you fol
 
 The rating after each card is binary: **Don't know** or **Know** in a regular review, **Remember** or **Don't remember** in acquaintance training. There are no intermediate options (no "hard" or "easy" grades). The FSRS scheduler uses these two signals to set intervals.
 
-## Counters: first batch is long
+## Counters: classic review only
 
-Counter suffixes (本, 枚, 匹 …) are trained as cards, with a dedicated counters page listing every one and its detail card. The first review of a counter quizzes its number bindings in one batch, which can feel long for suffixes with many irregular readings. Marking a counter as known skips the meaning training and the binding drills together. For accounts created before counters shipped, a one-time migration adds the suffixes their vocabulary already met the first time the app starts after the update.
+Counter suffixes (本, 枚, 匹 …) are trained as cards, with a dedicated counters page listing every one and its detail card. Reviews use the classic know / don't-know buttons: the full reading table lives on the presentation slide and on the counters page, not inside the review. Marking a counter as known skips the meaning training and the bindings together. For accounts created before counters shipped, a one-time migration adds the suffixes their vocabulary already met the first time the app starts after the update.
 
 ## Legal texts are English/Russian only
 

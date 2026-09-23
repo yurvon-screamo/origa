@@ -240,7 +240,6 @@ fn base_lesson_card(view: &LessonCardView) -> Option<&Card> {
         LessonCardView::Quiz(quiz) | LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
         LessonCardView::YesNo(yesno) => yesno.card(),
         LessonCardView::GrammarQuiz(grammar_quiz) => grammar_quiz.card(),
-        LessonCardView::CounterBindings { card, .. } => card,
     })
 }
 

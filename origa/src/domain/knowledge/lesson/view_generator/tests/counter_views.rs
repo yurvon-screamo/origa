@@ -1,13 +1,18 @@
-//! Виды показа счётного суффикса (issue #415): монета ревью
-//! Normal/CounterBindings, safe-default новичка и деградация пустой пачки.
+//! Виды показа счётного суффикса (issue #415): ревью — классическое
+//! «знаю / не знаю» (решение владельца: композитный квиз связок из
+//! урока убран), новичок — только через руку знакомства.
 
 use super::super::LessonViewGenerator;
 use super::*;
-use crate::domain::LessonCardView;
+use crate::domain::knowledge::lesson::types::LessonCardView;
 use rand::{SeedableRng, rngs::StdRng};
 
 mod counter_view_tests {
     use super::*;
+
+    fn view_generator(ks: &KnowledgeSet) -> LessonViewGenerator<'_> {
+        LessonViewGenerator::new(ks, NativeLanguage::Russian)
+    }
 
     fn counter_card(suffix: &str) -> StudyCard {
         crate::dictionary::counters::tests::init_test_counters();
@@ -16,18 +21,13 @@ mod counter_view_tests {
         StudyCard::new(Card::Counter(counter))
     }
 
-    /// KnowledgeSet живёт в вызывающем тесте: генератор заимствует его.
-    fn generator(ks: &KnowledgeSet) -> LessonViewGenerator<'_> {
-        LessonViewGenerator::new(ks, NativeLanguage::Russian)
-    }
-
     /// Новая counter-карта — только через руку знакомства (Exclude):
-    /// случайный слот в ревью обязан деградировать в безопасный Normal.
+    /// случайный слот обязан деградировать в безопасный Normal.
     #[test]
     fn counter_new_card_always_normal() {
         let sc = counter_card("本");
         let ks = KnowledgeSet::new();
-        let mut view_gen = generator(&ks);
+        let mut view_gen = view_generator(&ks);
         for seed in 0u64..50 {
             let mut rng = StdRng::seed_from_u64(seed);
             assert!(
@@ -40,38 +40,13 @@ mod counter_view_tests {
         }
     }
 
-    /// Ревью-монета: оба вида достижимы, посторонних — нет. Пачка 本
-    /// непуста (11 связок в фикстуре), поэтому Bindings несёт items.
+    /// Ревью — всегда семантический Normal: никаких квиз-видов, хоткеи и
+    /// оценки — как у остальных карт (решение владельца).
     #[test]
-    fn counter_review_coin_yields_both_kinds_only() {
+    fn counter_review_always_normal() {
         let sc = counter_card("本");
         let ks = KnowledgeSet::new();
-        let mut view_gen = generator(&ks);
-        let mut saw_normal = false;
-        let mut saw_bindings = false;
-        for seed in 0u64..200 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            match view_gen.apply_view(&sc, false, &mut rng) {
-                LessonCardView::Normal(_) => saw_normal = true,
-                LessonCardView::CounterBindings { items, .. } => {
-                    saw_bindings = true;
-                    assert!(!items.is_empty(), "non-empty pack must carry prompts");
-                },
-                other => panic!("seed {seed}: unexpected view {other:?}"),
-            }
-        }
-        assert!(saw_normal, "coin must reach the semantic showing");
-        assert!(saw_bindings, "coin must reach the bindings session");
-    }
-
-    /// Пустая пачка (суффикс исчез из реестра → bindings не созданы)
-    /// деградирует в Normal: слот «1/0 без кнопки дальше» стопорил бы урок.
-    #[test]
-    fn counter_review_empty_pack_degrades_to_normal() {
-        crate::dictionary::counters::tests::init_test_counters();
-        let sc = StudyCard::new(Card::Counter(crate::domain::CounterCard::new("虚")));
-        let ks = KnowledgeSet::new();
-        let mut view_gen = generator(&ks);
+        let mut view_gen = view_generator(&ks);
         for seed in 0u64..50 {
             let mut rng = StdRng::seed_from_u64(seed);
             assert!(
@@ -79,8 +54,22 @@ mod counter_view_tests {
                     view_gen.apply_view(&sc, false, &mut rng),
                     LessonCardView::Normal(_)
                 ),
-                "seed {seed}: empty pack must degrade to Normal"
+                "seed {seed}: counter review must stay the classic know/don't-know"
             );
         }
+    }
+
+    /// Суффикс вне реестра (пустая таблица) — поведение то же: Normal.
+    #[test]
+    fn counter_review_unknown_suffix_still_normal() {
+        crate::dictionary::counters::tests::init_test_counters();
+        let sc = StudyCard::new(Card::Counter(crate::domain::CounterCard::new("虚")));
+        let ks = KnowledgeSet::new();
+        let mut view_gen = view_generator(&ks);
+        let mut rng = StdRng::seed_from_u64(7);
+        assert!(matches!(
+            view_gen.apply_view(&sc, false, &mut rng),
+            LessonCardView::Normal(_)
+        ));
     }
 }

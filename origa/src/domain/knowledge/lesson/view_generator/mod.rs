@@ -42,10 +42,6 @@ const PROB_REVIEW_PHRASE_NORMAL: f32 = 0.15;
 
 const PROB_GRAMMAR_QUIZ: f32 = 0.50;
 
-/// Доля композитных показов связок среди ревью счётного суффикса:
-/// остальное — семантический «знаю / не знаю» (issue #415).
-pub(crate) const PROB_COUNTER_BINDINGS: f32 = 0.50;
-
 const EASY_REVIEWS_FOR_REVERSED: usize = 2;
 const GOOD_REVIEWS_FOR_REVERSED: usize = 4;
 
@@ -143,28 +139,11 @@ impl<'a> LessonViewGenerator<'a> {
                 self.select_phrase_view(card, same_type_cards, is_new, rng)
             },
             // Новая counter-карта — только через руку знакомства (Exclude);
-            // safe-default как у остальных типов.
-            CardType::Counter if is_new => LessonCardView::Normal(card.clone()),
-            CardType::Counter => {
-                let rand_val = rng.random::<f32>();
-                // Пустая пачка (нет due и нет новичков — штатно после
-                // успешной сессии, либо суффикс исчез из реестра)
-                // деградирует в семантический показ: «слот 1/0 без кнопки
-                // дальше» застопорил бы урок.
-                let items = if rand_val < PROB_COUNTER_BINDINGS {
-                    generation::generate_counter_binding_prompts(card, rng)
-                } else {
-                    Vec::new()
-                };
-                if items.is_empty() {
-                    LessonCardView::Normal(card.clone())
-                } else {
-                    LessonCardView::CounterBindings {
-                        card: card.clone(),
-                        items,
-                    }
-                }
-            },
+            // safe-default как у остальных типов. Ревью — классическое
+            // «знаю / не знаю» (решение владельца: композитный квиз связок
+            // убран из урока; таблица чтений живёт на показе и странице
+            // счётчиков, связки гасятся «уже знаю»).
+            CardType::Counter => LessonCardView::Normal(card.clone()),
         }
     }
 

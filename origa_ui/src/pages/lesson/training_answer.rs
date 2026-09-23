@@ -168,7 +168,7 @@ pub(super) fn TrainingAnswerSlide(
                         table,
                         ..
                     } => {
-                        use super::counter_bindings_card::{
+                        use super::counter_readings_table::{
                             CounterReadingRow, CounterReadingsTable,
                         };
                         let rows: Vec<CounterReadingRow> = table

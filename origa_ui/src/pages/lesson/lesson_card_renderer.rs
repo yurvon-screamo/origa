@@ -82,8 +82,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
         | LessonCardView::Writing(_)
         | LessonCardView::YesNo(_)
         | LessonCardView::KanjiReadingQuiz(_)
-        | LessonCardView::GrammarQuiz(_)
-        | LessonCardView::CounterBindings { .. } => {
+        | LessonCardView::GrammarQuiz(_) => {
             return ().into_any();
         },
     };
