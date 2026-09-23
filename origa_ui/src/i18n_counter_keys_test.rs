@@ -1,5 +1,5 @@
 //! Паритет counter-ключей во всех четырёх локалях (issue #415):
-//! lesson.counter, lesson.counter_correct, onboarding.scoring.section.counter.
+//! lesson.counter, onboarding.scoring.section.counter.
 
 #[test]
 fn counter_i18n_keys_present_in_all_four_locales() {
@@ -12,9 +12,8 @@ fn counter_i18n_keys_present_in_all_four_locales() {
     for (locale, raw) in locales {
         let value: serde_json::Value =
             serde_json::from_str(raw).unwrap_or_else(|e| panic!("{locale}: {e}"));
-        let paths: [&[&str]; 3] = [
+        let paths: [&[&str]; 2] = [
             &["lesson", "counter"],
-            &["lesson", "counter_correct"],
             &["onboarding", "scoring", "section", "counter"],
         ];
         for path in paths {

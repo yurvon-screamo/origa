@@ -181,9 +181,8 @@ mod tests {
         )
     }
 
-    /// Семантический показ счётного суффикса рейтится StandardLesson:
-    /// CounterReview к памяти семантики не доходит (связки — мимо
-    /// rate_card), effective_mode пробрасывает Counter без ремапа.
+    /// Семантический показ счётного суффикса рейтится StandardLesson —
+    /// effective_mode пробрасывает Counter без ремапа, как и вокаб.
     #[test]
     fn counter_semantic_showing_rates_in_standard_lesson() {
         let card = counter_lesson_card();

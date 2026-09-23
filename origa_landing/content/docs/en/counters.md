@@ -23,7 +23,7 @@ A counter card carries the suffix itself (what it counts) and the number binding
 
 The meaning of a suffix ("long objects: pencils, bottles, trees") is reviewed with the classic **Know / Don't know** buttons, the same as every other card. The full table of number readings (三本 → さんぼん) lives on the presentation slide at the first meeting, in the training answer, and on the counters page, with irregular readings highlighted there. Marking a suffix as known skips the meaning and the bindings together.
 
-After you rate a counter card, the app shows the table of readings for the whole suffix. This is the same table you saw at the first meeting, now used as feedback.
+The regular review shows the suffix and its meaning, nothing else: it is the same know / don't-know flow as every other card, and the readings table stays out of it.
 
 ## Where the counters come from
 
