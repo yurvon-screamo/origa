@@ -1,14 +1,59 @@
+use crate::i18n::Locale;
 use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::cdn_provider;
+use crate::ui_components::{ToastData, ToastType};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_i18n::I18nContext;
 use leptos_router::NavigateOptions;
 use origa::traits::UserRepository;
 use origa::use_cases::{
     CompleteOnboardingScoringUseCase, ImportOnboardingSetsUseCase, USERNAME_MAX_CHARS,
 };
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::onboarding_state::OnboardingState;
+
+/// Sequence for save-error toast ids. Every push takes a fresh id: the
+/// `ToastContainer` renders through `<For key=toast.id>`, so reusing an id
+/// would leave the FIRST toast node (with its own auto-dismiss timer) in
+/// charge — a quick retry would get the leftover window instead of a fresh
+/// one. At most one error toast exists at a time regardless: the push
+/// retains out every previous error toast first.
+static SAVE_ERROR_TOAST_SEQ: AtomicUsize = AtomicUsize::new(0);
+
+/// Surfaces a failed sync checkpoint (skip / import) as an error toast. The
+/// save itself hard-blocked navigation, so the user stays on the step with
+/// the button re-enabled — the toast explains why nothing happened and the
+/// retry is a plain re-click.
+fn show_save_error_toast(toasts: RwSignal<Vec<ToastData>>, i18n: I18nContext<Locale>) {
+    toasts.update(|t| {
+        t.retain(|toast| toast.toast_type != ToastType::Error);
+        let id = SAVE_ERROR_TOAST_SEQ.fetch_add(1, Ordering::Relaxed);
+        t.push(ToastData {
+            id,
+            toast_type: ToastType::Error,
+            title: i18n
+                .get_keys_untracked()
+                .onboarding()
+                .save_error()
+                .title()
+                .inner()
+                .to_string(),
+            message: i18n
+                .get_keys_untracked()
+                .onboarding()
+                .save_error()
+                .message()
+                .inner()
+                .to_string(),
+            // None = inherit the ToastContainer's duration — a single source
+            // of truth for how long onboarding error toasts stay visible.
+            duration_ms: None,
+            closable: true,
+        });
+    });
+}
 
 /// Persists the display name entered on the intro step when the user moves on.
 ///
@@ -57,6 +102,9 @@ pub(super) fn create_save_intro_username_callback(
 pub(super) fn create_on_skip_callback<N>(
     repository: crate::repository::HybridUserRepository,
     state: RwSignal<OnboardingState>,
+    is_skipping: RwSignal<bool>,
+    toasts: RwSignal<Vec<ToastData>>,
+    i18n: I18nContext<Locale>,
     disposed: StoredValue<()>,
     navigate: N,
 ) -> Callback<()>
@@ -66,6 +114,7 @@ where
     Callback::new(move |_: ()| {
         let repo = repository.clone();
         let nav = navigate.clone();
+        is_skipping.set(true);
         // Snapshot before the spawn: the async chain below must not read
         // page signals after its awaits — the task stays unscoped because
         // the save_sync checkpoint is user intent and has to commit even
@@ -73,8 +122,15 @@ where
         let daily_load = state.get_untracked().daily_load;
 
         spawn_local(async move {
+            // get_current_user is a local-only read (IndexedDB); its failure
+            // is a storage anomaly no toast advice can fix — log-only by
+            // design. The flag reset just re-enables the button.
             let Ok(Some(mut user)) = repo.get_current_user().await else {
                 tracing::error!("Onboarding skip: get_current_user error");
+                if disposed.is_disposed() {
+                    return;
+                }
+                is_skipping.set(false);
                 return;
             };
 
@@ -86,9 +142,16 @@ where
             // checkpoint, so the user must not proceed to /home without a
             // canonical remote record. This differs from the import path
             // below, which logs and continues because the import itself has
-            // already committed locally by the time this save runs.
+            // already committed locally by the time this save runs. The
+            // failure is surfaced as an error toast and the button un-sticks
+            // so the user can retry with a plain re-click.
             if let Err(e) = repo.save_sync(&user).await {
                 tracing::error!("Onboarding skip: save error: {:?}", e);
+                if disposed.is_disposed() {
+                    return;
+                }
+                is_skipping.set(false);
+                show_save_error_toast(toasts, i18n);
                 return;
             }
 
@@ -104,6 +167,8 @@ pub(super) fn create_on_start_import_callback(
     repository: crate::repository::HybridUserRepository,
     state: RwSignal<OnboardingState>,
     is_importing: RwSignal<bool>,
+    toasts: RwSignal<Vec<ToastData>>,
+    i18n: I18nContext<Locale>,
     disposed: StoredValue<()>,
 ) -> Callback<()> {
     Callback::new(move |_: ()| {
@@ -127,15 +192,19 @@ pub(super) fn create_on_start_import_callback(
             // load, JLPT progress) through the same sync checkpoint as the
             // skip path, then advance to Scoring — with no imported sets the
             // scoring queue is empty and completes immediately, so onboarding
-            // finishes from there. Error branches below stay log-only by
-            // parity with the skip/import paths (surfacing errors in
-            // onboarding UI is a separate concern); the button un-sticks and
-            // the user can retry.
+            // finishes from there. Network-failure branches below surface an
+            // error toast (same checkpoint semantics as the skip path); the
+            // button un-sticks and the user can retry. The local-only
+            // get_current_user branches stay log-only: a storage anomaly has
+            // no actionable advice.
             if set_ids.is_empty() {
                 let Ok(Some(mut user)) = repo.get_current_user().await else {
                     tracing::error!(
                         "Onboarding empty import: get_current_user failed or no user record"
                     );
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     is_importing.set(false);
                     return;
                 };
@@ -148,7 +217,11 @@ pub(super) fn create_on_start_import_callback(
                 // silently drop the user's choice.
                 if let Err(e) = repo.save_sync(&user).await {
                     tracing::error!("Onboarding empty import: save error: {:?}", e);
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     is_importing.set(false);
+                    show_save_error_toast(toasts, i18n);
                     return;
                 }
 
@@ -172,15 +245,25 @@ pub(super) fn create_on_start_import_callback(
             // back (the lost-display-name bug).
             let Ok(Some(mut user)) = repo.get_current_user().await else {
                 tracing::error!("Onboarding import: get_current_user failed or no user record");
+                if disposed.is_disposed() {
+                    return;
+                }
                 is_importing.set(false);
                 return;
             };
 
             // Set import tokenizes the word lists (#521): the tokenizer
-            // left the startup overlay, so gate on its readiness here.
+            // left the startup overlay, so gate on its readiness here. A
+            // tokenizer miss means its CDN payload never arrived — same
+            // user-facing semantics as a network failure on the import
+            // itself, hence the same toast.
             if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
                 tracing::error!("tokenizer unavailable for onboarding import: {e:?}");
+                if disposed.is_disposed() {
+                    return;
+                }
                 is_importing.set(false);
+                show_save_error_toast(toasts, i18n);
                 return;
             }
 
@@ -215,6 +298,7 @@ pub(super) fn create_on_start_import_callback(
                 Err(e) => {
                     tracing::error!("Import failed: {:?}", e);
                     is_importing.set(false);
+                    show_save_error_toast(toasts, i18n);
                 },
             }
         });

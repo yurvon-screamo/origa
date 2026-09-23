@@ -103,6 +103,10 @@
     "know_all": "Biết tất cả",
     "finish": "Hoàn tất",
     "completing": "Đang hoàn tất...",
+    "save_error": {
+      "title": "Đã xảy ra lỗi",
+      "message": "Vui lòng kiểm tra kết nối internet và thử lại."
+    },
     "intro": {
       "title": "Cùng thiết lập việc học của bạn!",
       "subtitle": "Origa là ứng dụng thẻ ghi nhớ học tiếng Nhật với phương pháp lặp lại ngắt quãng.",

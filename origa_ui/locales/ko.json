@@ -103,6 +103,10 @@
     "know_all": "모두 앎",
     "finish": "완료",
     "completing": "완료하는 중...",
+    "save_error": {
+      "title": "문제가 발생했습니다",
+      "message": "인터넷 연결을 확인하고 다시 시도해 주세요."
+    },
     "intro": {
       "title": "학습을 설정해 봅시다!",
       "subtitle": "Origa는 간격 반복을 활용한 일본어 학습 플래시카드 앱입니다.",
