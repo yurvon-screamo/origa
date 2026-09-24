@@ -21,9 +21,9 @@ A counter card carries the suffix itself (what it counts) and the number binding
 
 ## Meaning and bindings age separately
 
-The meaning of a suffix ("long objects: pencils, bottles, trees") is reviewed with the classic **Know / Don't know** buttons, the same as every other card. The full table of number readings (三本 → さんぼん) lives on the presentation slide at the first meeting, in the training answer, and on the counters page, with irregular readings highlighted there. Marking a suffix as known skips the meaning and the bindings together.
+The meaning of a suffix ("long objects: pencils, bottles, trees") meets you in the acquaintance hand; the regular lesson never quizzes the bare suffix. Instead, the lesson deals the number bindings one by one: the front shows a number with the suffix (8本), you recall its reading, reveal the answer (はっぽん), and rate yourself with the classic **Know / Don't know** buttons, the same as every other card. After each answer the app shows the table of readings for the whole suffix, with the row you just answered accented and irregular readings highlighted. Every binding keeps its own memory, so irregular readings like いっぽん, さんぼん, ろっぽん come back more often than regular ones. Marking a suffix as known skips the meaning and the bindings together.
 
-The regular review shows the suffix and its meaning, nothing else: it is the same know / don't-know flow as every other card, and the readings table stays out of it.
+The regular review asks the number bindings one by one: a number with the suffix on the front, its reading after the reveal, and the classic know / don't-know rating.
 
 ## Where the counters come from
 

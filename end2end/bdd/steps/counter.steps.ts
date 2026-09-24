@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { When, Then } from "../fixtures";
+import { When, Then, Given } from "../fixtures";
 import { awaitHandVisible } from "../../helpers/lesson";
 
 When("пользователь открывает урок напрямую", async ({ page }) => {
@@ -134,3 +134,107 @@ Then(
 		expect(found, "счётный суффикс не встретился в тренировке").toBe(true);
 	},
 );
+
+/// Подготовка состояния «пачка готова»: сид руки с прошедшей датой
+/// (семантика due, связки-новички) — «следующий день» без перемотки часов.
+Given('связки счётного суффикса готовы к показу', async ({ page }) => {
+	await page.evaluate(async () => {
+		const past = "2020-01-01T00:00:00Z";
+		const state = {
+			stability: { value: 3.0 },
+			difficulty: { value: 5.0 },
+			next_review_date: past,
+			card_state: "Review",
+		};
+		const db = await new Promise<IDBDatabase>((res) => {
+			const r = indexedDB.open("origa");
+			r.onsuccess = () => res(r.result);
+		});
+		await new Promise<void>((res) => {
+			const tx = db.transaction("users", "readwrite");
+			const cur = tx.objectStore("users").openCursor();
+			cur.onsuccess = () => {
+				const c = cur.result;
+				if (!c) return;
+				const v = c.value;
+				if (typeof v === "string" && v.includes('"email"')) {
+					try {
+						const u = JSON.parse(v);
+						for (const card of Object.values(
+							u.knowledge_set?.study_cards ?? {},
+						) as Record<string, unknown>[]) {
+							if ((card as { card?: { Counter?: unknown } }).card?.Counter) {
+								card.memory_history = {
+									current_state: state,
+									reps: 1,
+									lapses: 0,
+									easy_count: 0,
+									good_count: 1,
+									last_review_date: past,
+									last_rating: "Good",
+									consecutive_again: 0,
+								};
+							}
+						}
+						c.update(JSON.stringify(u));
+					} catch { /* skip */ }
+				}
+				c.continue();
+			};
+			tx.oncomplete = () => { db.close(); res(); };
+		});
+	});
+});
+
+Then('в уроке показывается пачка связок счётного суффикса', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+});
+
+When('пользователь раскрывает ответ первой связки', async ({ page }) => {
+	await page.getByTestId("counter-binding-show-answer-btn").click();
+	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+});
+
+Then('в ответе видна таблица чтений с акцентом строки', async ({ page }) => {
+	const table = page.getByTestId("counter-binding-mutations-table");
+	await table.waitFor({ timeout: 10_000 });
+	const rows = table.getByTestId("counter-mutations-row");
+	expect(await rows.count()).toBeGreaterThanOrEqual(11);
+	// Акцент отвеченной строки — olive-ring.
+	const highlighted = table.locator(".ring-\\[var\\(--accent-olive\\)\\]");
+	expect(
+		await highlighted.count(),
+		"the answered row must be accented",
+	).toBeGreaterThanOrEqual(1);
+});
+
+When('пользователь отвечает {string} на связку', async ({ page }, answer: string) => {
+	await page.getByTestId("counter-binding-show-answer-btn").click().catch(() => null);
+	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+	const btn =
+		answer === "Знаю"
+			? page.getByTestId("lesson-rating-btn-good")
+			: page.getByTestId("lesson-rating-btn-again");
+	await btn.click();
+	await page.waitForTimeout(500);
+});
+
+Then('пачка переходит к следующей цифре', async ({ page }) => {
+	const progress = page.getByTestId("counter-bindings-progress");
+	await expect(progress).toHaveText("2 / 11", { timeout: 10_000 });
+});
+
+When('пользователь перезаходит в урок', async ({ page }) => {
+	await page.goto("http://localhost:1420/lesson");
+	await page.waitForTimeout(4000);
+});
+
+Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	const front = await page.getByTestId("counter-binding-front").textContent();
+	expect(front, "the rated-Good binding leaves the rotation").not.toContain("1×");
+	const progress = await page.getByTestId("counter-bindings-progress").textContent();
+	expect(progress).toContain("1 / 10");
+});

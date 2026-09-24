@@ -1,8 +1,8 @@
 use crate::i18n::{t, td_string, use_i18n};
 use crate::pages::icons::{CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON};
 use crate::ui_components::{
-    Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Text, TextSize, Tooltip,
-    TooltipPlacementMode, TypographyVariant,
+    Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
+    Tooltip, TooltipPlacementMode, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::use_cases::AnalyzedWord;
@@ -111,12 +111,11 @@ pub fn AnalyzedWordItem(
                         </span>
                     </Show>
                     <Show when=move || is_counter>
-                        <span
-                            class="text-[var(--text-label-sm)] text-[var(--accent-terracotta)] uppercase tracking-[0.1em] font-mono border border-[var(--accent-terracotta)] px-1.5 py-0.5"
-                            data-testid="analyzed-counter-badge"
-                        >
-                            {t!(i18n, words.counter_badge)}
-                        </span>
+                        <Tag variant=Signal::derive(|| TagVariant::Olive)>
+                            <span data-testid="analyzed-counter-badge">
+                                {t!(i18n, words.counter_badge)}
+                            </span>
+                        </Tag>
                     </Show>
                 </div>
 

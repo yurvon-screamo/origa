@@ -78,7 +78,10 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             grammar_info: Some(grammar_info),
             show_grammar_badge: false,
         },
-        LessonCardView::Quiz(_)
+        // Слот пачки связок рендерится контейнером отдельным режимом —
+        // сюда не доходит (exhaustiveness).
+        LessonCardView::CounterBindings { .. }
+        | LessonCardView::Quiz(_)
         | LessonCardView::Writing(_)
         | LessonCardView::YesNo(_)
         | LessonCardView::KanjiReadingQuiz(_)

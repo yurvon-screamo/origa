@@ -30,6 +30,9 @@ pub(in crate::pages::lesson) fn CounterReadingsTable(
     rows: Vec<CounterReadingRow>,
     suffix: String,
     #[prop(into)] test_id: Signal<String>,
+    /// Акцент строки текущей связки пачки (u8::MAX — вне диапазона).
+    #[prop(optional)]
+    highlight: Option<RwSignal<u8>>,
 ) -> impl IntoView {
     let suffix = StoredValue::new(suffix);
     // Сортировка — инвариант самого компонента (любой источник строк):
@@ -43,12 +46,16 @@ pub(in crate::pages::lesson) fn CounterReadingsTable(
             {rows_vec
                 .into_iter()
                 .map(|row| {
+                    let number = row.number;
                     let base = "flex justify-between px-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0";
                     view! {
                         <div class=move || {
                             let mut class = base.to_string();
                             if row.irregular {
                                 class.push_str(" bg-[var(--accent-warm)]");
+                            }
+                            if highlight.is_some_and(|h| h.get() == number) {
+                                class.push_str(" ring-2 ring-inset ring-[var(--accent-olive)]");
                             }
                             class
                         }

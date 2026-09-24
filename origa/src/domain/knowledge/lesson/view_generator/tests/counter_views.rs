@@ -1,6 +1,7 @@
-//! Виды показа счётного суффикса (issue #415): ревью — классическое
-//! «знаю / не знаю» (решение владельца: композитный квиз связок из
-//! урока убран), новичок — только через руку знакомства.
+//! Виды показа счётного суффикса (issue #415): новичок — только через
+//! руку знакомства; ревью — пачка связок «число × суффикс», каждая
+//! оценена классическим «знаю / не знаю»; пустая пачка деградирует в
+//! Normal (слот без показов застопорил бы урок).
 
 use super::super::LessonViewGenerator;
 use super::*;
@@ -40,28 +41,26 @@ mod counter_view_tests {
         }
     }
 
-    /// Ревью — всегда семантический Normal: никаких квиз-видов, хоткеи и
-    /// оценки — как у остальных карт (решение владельца).
+    /// Ревью — пачка связок: сиднутые новички-связки едут одной пачкой
+    /// (порядок — binding_showcase), никаких квиз-видов.
     #[test]
-    fn counter_review_always_normal() {
+    fn counter_review_is_the_bindings_pack() {
         let sc = counter_card("本");
         let ks = KnowledgeSet::new();
         let mut view_gen = view_generator(&ks);
-        for seed in 0u64..50 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            assert!(
-                matches!(
-                    view_gen.apply_view(&sc, false, &mut rng),
-                    LessonCardView::Normal(_)
-                ),
-                "seed {seed}: counter review must stay the classic know/don't-know"
-            );
+        let mut rng = StdRng::seed_from_u64(7);
+        match view_gen.apply_view(&sc, false, &mut rng) {
+            LessonCardView::CounterBindings { items, .. } => {
+                assert!(!items.is_empty(), "seeded pack carries every newcomer");
+                assert_eq!(items.len(), 11, "本 fixture: 1..=10 + 何");
+            },
+            other => panic!("expected the bindings pack, got {other:?}"),
         }
     }
 
-    /// Суффикс вне реестра (пустая таблица) — поведение то же: Normal.
+    /// Суффикс вне реестра (пустая таблица) — деградация в Normal.
     #[test]
-    fn counter_review_unknown_suffix_still_normal() {
+    fn counter_review_unknown_suffix_degrades_to_normal() {
         crate::dictionary::counters::tests::init_test_counters();
         let sc = StudyCard::new(Card::Counter(crate::domain::CounterCard::new("虚")));
         let ks = KnowledgeSet::new();
