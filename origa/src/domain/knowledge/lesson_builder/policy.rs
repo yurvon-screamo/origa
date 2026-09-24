@@ -28,6 +28,10 @@ mod policy_predicate_tests {
 
     #[rstest]
     #[case(CardType::Vocabulary, true, NewCardPolicy::Exclude, true)]
+    // Counter НЕ освобождён: незнакомые счётчики исключаются из ревью
+    // как и остальные не-фразы (ввод только через руку знакомства).
+    #[case(CardType::Counter, true, NewCardPolicy::Exclude, true)]
+    #[case(CardType::Counter, false, NewCardPolicy::Exclude, false)]
     #[case(CardType::Kanji, true, NewCardPolicy::Exclude, true)]
     #[case(CardType::Grammar, true, NewCardPolicy::Exclude, true)]
     #[case(CardType::Phrase, true, NewCardPolicy::Exclude, false)]

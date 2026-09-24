@@ -426,7 +426,6 @@ async fn full_sync_cycle(
     // remote push must leave the flag set so the next sync re-pushes.
     let meta = mark_dirty(meta_store).await?;
     let observed_epoch = meta.dirty_epoch;
-
     local.save(&user).await?;
     let saved = remote.save_with_record_id(record_id, &user).await?;
 

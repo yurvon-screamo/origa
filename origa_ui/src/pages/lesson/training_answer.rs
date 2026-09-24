@@ -159,6 +159,41 @@ pub(super) fn TrainingAnswerSlide(
                         }
                             .into_any()
                     },
+                    // Счётный суффикс: ответ = значение + таблица чтений
+                    // (issue #415). Таблица — общий компонент
+                    // CounterReadingsTable (как в показе руки).
+                    AcquaintanceSlideData::Counter {
+                        suffix,
+                        meaning,
+                        table,
+                        ..
+                    } => {
+                        use super::counter_readings_table::{
+                            CounterReadingRow, CounterReadingsTable,
+                        };
+                        let rows: Vec<CounterReadingRow> = table
+                            .into_iter()
+                            .map(|(number_label, reading, irregular)| CounterReadingRow {
+                                number: 0,
+                                number_label,
+                                reading,
+                                irregular,
+                            })
+                            .collect();
+                        view! {
+                            <div class="flex flex-col gap-4" data-testid="acquaintance-counter-answer">
+                                <p class="font-mono text-lg text-[var(--fg-muted)] text-center">
+                                    {meaning}
+                                </p>
+                                <CounterReadingsTable
+                                    rows=rows
+                                    suffix=suffix
+                                    test_id=Signal::derive(|| "acquaintance-counter-table".to_string())
+                                />
+                            </div>
+                        }
+                            .into_any()
+                    },
                 }
             }}
         </div>

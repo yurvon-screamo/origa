@@ -85,6 +85,7 @@ fn CategoryDetailSection(
     let kanji = Signal::derive(move || detail.get().map(|d| d.kanji.clone()));
     let words = Signal::derive(move || detail.get().map(|d| d.words.clone()));
     let grammar = Signal::derive(move || detail.get().map(|d| d.grammar.clone()));
+    let counters = Signal::derive(move || detail.get().map(|d| d.counters.clone()));
 
     let section_test_id = move || {
         let val = test_id.get();
@@ -122,6 +123,7 @@ fn CategoryDetailSection(
                         kanji_progress=Signal::derive(move || kanji.get().unwrap_or_default())
                         words_progress=Signal::derive(move || words.get().unwrap_or_default())
                         grammar_progress=Signal::derive(move || grammar.get().unwrap_or_default())
+                        counters_progress=Signal::derive(move || counters.get().unwrap_or_default())
                         test_id=Signal::derive(move || format!("{}-expanded", test_id.get()))
                     />
                 </div>

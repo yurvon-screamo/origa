@@ -44,11 +44,12 @@ pub use jlpt_progress::{
 };
 pub use knowledge::NewCardPolicy;
 pub use knowledge::{
-    Card, CardType, DailyHistoryItem, ExampleKanjiWord, GrammarInfo, GrammarQuizCard,
-    GrammarRuleCard, KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData,
-    LessonEmptyDiagnosis, LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard,
-    QuizCard, QuizMode, QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
-    estimate_completion_date, install_precompute_for_cards,
+    Card, CardType, CounterBindingItem, CounterBindingMemory, CounterCard, DailyHistoryItem,
+    ExampleKanjiWord, GrammarInfo, GrammarQuizCard, GrammarRuleCard, KanjiCard, KnowledgeSet,
+    LessonCard, LessonCardView, LessonData, LessonEmptyDiagnosis, LessonViewGenerator,
+    MAX_LESSON_SIZE, MultiQuizResult, PhraseCard, QuizCard, QuizMode, QuizOption, StudyCard,
+    VocabularyCard, YesNoCard, diagnose_empty_lesson, estimate_completion_date,
+    install_precompute_for_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
 

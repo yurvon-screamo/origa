@@ -21,7 +21,21 @@ runs:
 
         - name: Install tools via cargo-binstall
           shell: bash
-          run: cargo binstall ${{ inputs.tools }} --no-confirm --force
+          run: |
+              # Binary-first install; the source-build fallback goes through
+              # `cargo install --locked` — the registry broke trunk's
+              # unpinned deps before (cssparser 0.35 vs lightningcss alpha).
+              set +e
+              cargo binstall ${{ inputs.tools }} --no-confirm --force \
+                --disable-strategies compile
+              status=$?
+              set -e
+              if [ $status -ne 0 ]; then
+                echo "binstall binary unavailable — falling back to cargo install --locked"
+                for tool in ${{ inputs.tools }}; do
+                  cargo install "$tool" --locked --force
+                done
+              fi
 
         - name: Verify trunk installation
           if: contains(inputs.tools, 'trunk')

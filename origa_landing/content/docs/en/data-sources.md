@@ -5,7 +5,7 @@ locale: en
 meta_title: "Origa data sources — dictionaries, kanji, models"
 meta_description: "The open data and models behind Origa: the JMdict dictionary, KanjiVG animations, NDLOCR-Lite OCR, Whisper, SudachiDict, and Irodori word sets, with their licenses."
 target_keywords: ["jmdict license", "kanjivg license", "ndlocr lite", "whisper mit japanese", "sudachidict apache"]
-lastmod: 2026-08-21
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -18,6 +18,10 @@ Origa builds on open data and models. This page lists what the app uses and the 
 ## Dictionary and readings
 
 Dictionary entries, translations, and furigana come from [JMdict / EDRDG](https://www.edrdg.org/jmdict/edrdg_license.html) under CC BY-SA 4.0. The dictionary project is maintained by the Electronic Dictionary Research and Development Group.
+
+## Counter words
+
+The counter-suffix dataset (readings and number bindings) is a hand-maintained source file in the repository, cross-checked against the open [josuushi](https://github.com/naclsn/josuushi) reference data and the public Tofugu and Wikipedia counter lists. Glosses are maintained in English, Russian, Korean, and Vietnamese.
 
 ## Kanji animations
 

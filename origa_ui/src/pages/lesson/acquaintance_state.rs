@@ -158,6 +158,16 @@ pub enum AcquaintanceSlideData {
         explanation: String,
         nuances: String,
     },
+    /// Счётный суффикс (issue #415): показ — знак + глосс + вся таблица
+    /// чтений (нерегулярные подсвечены); тренировка — фронт знак, ответ
+    /// глосс + таблица. Несловесная карта: единый критерий, без подфаз.
+    Counter {
+        card_id: Ulid,
+        suffix: String,
+        meaning: String,
+        /// (число-лейбл, чтение, нерегулярная) — вся таблица реестра.
+        table: Vec<(String, String, bool)>,
+    },
 }
 
 impl AcquaintanceSlideData {
@@ -165,7 +175,8 @@ impl AcquaintanceSlideData {
         match self {
             Self::Vocabulary { card_id, .. }
             | Self::Kanji { card_id, .. }
-            | Self::Grammar { card_id, .. } => *card_id,
+            | Self::Grammar { card_id, .. }
+            | Self::Counter { card_id, .. } => *card_id,
         }
     }
 

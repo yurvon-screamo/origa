@@ -127,7 +127,11 @@ fn budget_new_cards_per_day(user: &crate::domain::User) -> usize {
 /// собственными пайплайнами, а известные («Уже знаю», стабильность
 /// выше порога) — осознанно просрочены и нагрузкой обучения не являются.
 fn is_due_debt(study_card: &StudyCard) -> bool {
-    !matches!(study_card.card(), Card::Phrase(_))
+    // Счётный суффикс не создаёт долга: его семантика не ревьюится
+    // (урок показывает только пачки связок), семантический срок
+    // заморожен сидом руки — иначе сиднутые счётчики копились бы
+    // вечным долгом и откладывали руку знакомства навсегда.
+    !matches!(study_card.card(), Card::Phrase(_) | Card::Counter(_))
         && !study_card.memory().is_new()
         && !study_card.memory().is_known_card()
         && study_card.memory().is_due()

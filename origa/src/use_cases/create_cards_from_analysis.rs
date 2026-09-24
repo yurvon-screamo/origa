@@ -5,6 +5,19 @@ use tracing::{debug, info, warn};
 #[derive(Debug, Clone)]
 pub struct WordToCreate {
     pub base_form: String,
+    /// POS из анализа текста: `Suffix` + суффикс в реестре счётчиков →
+    /// создаётся counter-карта, а не словарная (issue #415). `None` —
+    /// пути без анализа (импорт сетов): прежнее поведение.
+    pub part_of_speech: Option<crate::domain::PartOfSpeech>,
+}
+
+impl WordToCreate {
+    pub fn word(base_form: impl Into<String>) -> Self {
+        Self {
+            base_form: base_form.into(),
+            part_of_speech: None,
+        }
+    }
 }
 
 pub struct CreateCardsFromAnalysisResult {
@@ -80,6 +93,16 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
         user: &mut crate::domain::User,
         word: &WordToCreate,
     ) -> Result<StudyCard, OrigaError> {
+        // Счётный суффикс из текста (POS Suffix из анализа + реестр):
+        // словарная карта не нужна — контент живёт в реестре.
+        if word.part_of_speech == Some(crate::domain::PartOfSpeech::Suffix)
+            && crate::dictionary::counters::get_counter(&word.base_form).is_some()
+        {
+            let mut counter = crate::domain::CounterCard::new(&word.base_form);
+            counter.ensure_registry_bindings();
+            return user.create_card(Card::Counter(counter));
+        }
+
         let result = VocabularyCard::from_text(&word.base_form, user.native_language());
 
         for skipped in &result.skipped_no_translation {
@@ -97,5 +120,64 @@ impl<'a, R: UserRepository> CreateCardsFromAnalysisUseCase<'a, R> {
 
         let card = Card::Vocabulary(vocab_card);
         user.create_card(card)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::{Card, NativeLanguage, PartOfSpeech};
+    use crate::use_cases::tests::fixtures::InMemoryUserRepository;
+
+    fn user() -> crate::domain::User {
+        crate::domain::User::new("t@e.st".to_string(), NativeLanguage::Russian, None)
+    }
+
+    /// POS Suffix из анализа + суффикс в реестре → counter-карта
+    /// (контент из реестра, все связки на месте).
+    #[tokio::test]
+    async fn suffix_word_creates_a_counter_card() {
+        crate::dictionary::counters::tests::init_test_counters();
+        let repo = InMemoryUserRepository::with_user(user());
+        let result = CreateCardsFromAnalysisUseCase::new(&repo)
+            .execute(
+                vec![WordToCreate {
+                    base_form: "本".to_string(),
+                    part_of_speech: Some(PartOfSpeech::Suffix),
+                }],
+                None,
+            )
+            .await
+            .unwrap();
+        assert_eq!(result.created_cards.len(), 1);
+        match result.created_cards[0].card() {
+            Card::Counter(counter) => {
+                assert_eq!(counter.suffix(), "本");
+                assert!(!counter.bindings().is_empty());
+            },
+            other => panic!("expected a counter card, got {other:?}"),
+        }
+    }
+
+    /// POS Noun (standalone 本 — «книга») → обычная словарная карта:
+    /// омонимы не превращаются в счётчики без контекста из текста.
+    #[tokio::test]
+    async fn noun_homonym_stays_a_vocabulary_card() {
+        crate::dictionary::counters::tests::init_test_counters();
+        let repo = InMemoryUserRepository::with_user(user());
+        let result = CreateCardsFromAnalysisUseCase::new(&repo)
+            .execute(
+                vec![WordToCreate {
+                    base_form: "本".to_string(),
+                    part_of_speech: Some(PartOfSpeech::Noun),
+                }],
+                None,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            result.created_cards[0].card(),
+            Card::Vocabulary(_)
+        ));
     }
 }

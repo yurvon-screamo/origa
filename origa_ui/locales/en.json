@@ -202,7 +202,8 @@
         "grammar": "Grammar",
         "kanji": "Kanji",
         "vocabulary": "Vocabulary",
-        "phrase": "Phrases"
+        "phrase": "Phrases",
+        "counter": "Counters"
       },
       "reading_on": "On",
       "reading_kun": "Kun",
@@ -324,7 +325,8 @@
     "pos_symbol": "symbol",
     "pos_whitespace": "whitespace",
     "pos_auxiliary_symbol": "auxiliary symbol",
-    "listen_word": "Listen to the word"
+    "listen_word": "Listen to the word",
+    "counter": "Counter"
   },
   "home": {
     "loading": "Loading...",
@@ -380,7 +382,8 @@
     "badge_kanji": "Kanji",
     "badge_words": "Words",
     "badge_grammar": "Grammar",
-    "rating_accuracy": "Accuracy"
+    "rating_accuracy": "Accuracy",
+    "counters_label": "Counters"
   },
   "login": {
     "or_login_with": "or sign in / register with",
@@ -488,7 +491,8 @@
     },
     "no_translation_found": "No translation found — won't be added",
     "tooltip_no_translation": "Word not found in our dictionaries",
-    "already_added": "Added"
+    "already_added": "Added",
+    "counter_badge": "counter"
   },
   "grammar_page": {
     "add_grammar": "Add grammar",
@@ -696,5 +700,17 @@
       "completed_status": "Completed",
       "recognition_error": "Recognition error"
     }
+  },
+  "counters": {
+    "header": "Counter words",
+    "add_counters": "Add counters",
+    "adding": "Adding...",
+    "add": "Add counters",
+    "available_counters": "Available counters",
+    "searching_counters": "Searching counters...",
+    "no_counters_for_level": "No counters for the selected level (or all are already studied)",
+    "readings_title": "Readings",
+    "bindings_learned": "Bindings: {}",
+    "not_found": "Suffix not found"
   }
 }

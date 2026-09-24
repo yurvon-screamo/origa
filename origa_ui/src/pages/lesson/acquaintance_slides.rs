@@ -137,6 +137,42 @@ pub(crate) fn build_acquaintance_slides(
                         .map(&answer_text)
                         .unwrap_or_default(),
                 }),
+                Card::Counter(counter) => {
+                    // Один резолв реестра на слайд (не на каждую связь).
+                    let entry = origa::dictionary::counters::get_counter(counter.suffix());
+                    let meaning = entry
+                        .map(|entry| {
+                            origa::dictionary::counters::gloss_for(entry, native_language)
+                                .to_string()
+                        })
+                        .unwrap_or_default();
+                    let table = counter
+                        .bindings()
+                        .iter()
+                        .filter_map(|binding| {
+                            entry.map(|entry| {
+                                (
+                                    match binding.number() {
+                                        0 => "何".to_string(),
+                                        n => n.to_string(),
+                                    },
+                                    entry
+                                        .reading_for(binding.number())
+                                        .unwrap_or_default()
+                                        .to_string(),
+                                    entry.irregular_for(binding.number()),
+                                )
+                            })
+                        })
+                        .filter(|(_, reading, _)| !reading.is_empty())
+                        .collect();
+                    Some(AcquaintanceSlideData::Counter {
+                        card_id: *card_id,
+                        suffix: counter.suffix().to_string(),
+                        meaning,
+                        table,
+                    })
+                },
                 Card::Phrase(_) => None,
             }
         })

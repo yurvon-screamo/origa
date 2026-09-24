@@ -4,6 +4,7 @@ pub enum NavRoute {
     Words,
     Grammar,
     Kanji,
+    Counters,
     Phrases,
     Profile,
 }
@@ -15,6 +16,7 @@ impl NavRoute {
             Self::Words => "/words",
             Self::Grammar => "/grammar",
             Self::Kanji => "/kanji",
+            Self::Counters => "/counters",
             Self::Phrases => "/phrases",
             Self::Profile => "/profile",
         }
@@ -26,6 +28,7 @@ impl NavRoute {
             Self::Words => icondata::LuLanguages,
             Self::Grammar => icondata::LuPencilLine,
             Self::Kanji => icondata::LuBookOpen,
+            Self::Counters => icondata::LuHash,
             Self::Phrases => icondata::LuMessageSquare,
             Self::Profile => icondata::LuUser,
         }
@@ -42,6 +45,7 @@ impl NavRoute {
             Self::Words => keys.home().words().inner().to_string(),
             Self::Grammar => keys.home().grammar().inner().to_string(),
             Self::Kanji => keys.home().kanji().inner().to_string(),
+            Self::Counters => keys.home().counters_label().inner().to_string(),
             Self::Phrases => keys.home().phrases().inner().to_string(),
             Self::Profile => keys.home().profile().inner().to_string(),
         }
@@ -53,28 +57,31 @@ impl NavRoute {
             Self::Words => path.starts_with("/words") || path.starts_with("/sets"),
             Self::Grammar => path.starts_with("/grammar"),
             Self::Kanji => path.starts_with("/kanji"),
+            Self::Counters => path.starts_with("/counters"),
             Self::Phrases => path.starts_with("/phrases"),
             Self::Profile => path.starts_with("/profile"),
         }
     }
 
-    pub const fn all() -> &'static [NavRoute; 6] {
+    pub const fn all() -> &'static [NavRoute; 7] {
         &[
             Self::Home,
             Self::Words,
             Self::Grammar,
             Self::Kanji,
+            Self::Counters,
             Self::Phrases,
             Self::Profile,
         ]
     }
 
-    pub const fn sidebar_routes() -> &'static [NavRoute; 5] {
+    pub const fn sidebar_routes() -> &'static [NavRoute; 6] {
         &[
             Self::Home,
             Self::Words,
             Self::Grammar,
             Self::Kanji,
+            Self::Counters,
             Self::Phrases,
         ]
     }
@@ -85,6 +92,7 @@ impl NavRoute {
             Self::Words => "tab-words",
             Self::Grammar => "tab-grammar",
             Self::Kanji => "tab-kanji",
+            Self::Counters => "tab-counters",
             Self::Phrases => "tab-phrases",
             Self::Profile => "tab-profile",
         }
@@ -130,10 +138,10 @@ mod tests {
     }
 
     #[test]
-    fn all_contains_six_routes_sidebar_excludes_profile() {
-        assert_eq!(NavRoute::all().len(), 6);
+    fn all_contains_seven_routes_sidebar_excludes_profile() {
+        assert_eq!(NavRoute::all().len(), 7);
         assert!(!NavRoute::sidebar_routes().contains(&NavRoute::Profile));
-        assert_eq!(NavRoute::sidebar_routes().len(), 5);
+        assert_eq!(NavRoute::sidebar_routes().len(), 6);
     }
 
     #[test]

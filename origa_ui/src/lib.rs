@@ -71,3 +71,6 @@ pub fn init_tracing() {
 pub fn init_analytics() {
     core::analytics::inject_umami();
 }
+
+#[cfg(test)]
+mod i18n_counter_keys_test;

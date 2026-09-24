@@ -12,6 +12,7 @@ pub enum CardType {
     Kanji,
     Grammar,
     Phrase,
+    Counter,
 }
 
 impl CardType {
@@ -41,6 +42,12 @@ impl CardType {
                 .phrase()
                 .inner()
                 .to_string(),
+            CardType::Counter => i18n
+                .get_keys_untracked()
+                .lesson()
+                .counter()
+                .inner()
+                .to_string(),
         }
     }
 
@@ -50,6 +57,7 @@ impl CardType {
             CardType::Kanji => TagVariant::Olive,
             CardType::Grammar => TagVariant::Terracotta,
             CardType::Phrase => TagVariant::Sage,
+            CardType::Counter => TagVariant::Olive,
         }
     }
 
@@ -63,6 +71,9 @@ impl CardType {
             CardType::Kanji => 1,
             CardType::Vocabulary => 2,
             CardType::Phrase => 3,
+            // Счётные суффиксы — в конце ряда: существующие порядки
+            // стабильны (issue #415).
+            CardType::Counter => 4,
         }
     }
 }
@@ -73,6 +84,7 @@ impl From<&DomainCard> for CardType {
             DomainCard::Vocabulary(_) => CardType::Vocabulary,
             DomainCard::Kanji(_) => CardType::Kanji,
             DomainCard::Grammar(_) => CardType::Grammar,
+            DomainCard::Counter(_) => CardType::Counter,
             DomainCard::Phrase(_) => CardType::Phrase,
         }
     }

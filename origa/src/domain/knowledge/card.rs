@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError, PartOfSpeech, Rating,
-    knowledge::{GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
+    knowledge::{CounterCard, GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{CardAnswer, NativeLanguage, Question},
 };
@@ -43,6 +43,33 @@ impl StudyCard {
 
     pub(crate) fn replace_card(&mut self, new_card: Card) {
         self.card = new_card;
+    }
+
+    /// Мини-оценка связки счётного суффикса (issue #415): делегирует
+    /// `CounterCard::apply_binding_review`. Точечная мутация полезной
+    /// нагрузки карты живёт здесь, а не через открытый мутабельный доступ —
+    /// контракт «семантика карты и чужие связки не затрагиваются» держит
+    /// сигнатура.
+    /// «Уже знаю» для счётного суффикса гасит и все связки (см.
+    /// `CounterCard::mark_all_bindings_known`).
+    pub fn mark_all_counter_bindings_known(&mut self) {
+        if let Card::Counter(counter) = &mut self.card {
+            counter.mark_all_bindings_known();
+        }
+    }
+
+    pub fn apply_counter_binding_review(
+        &mut self,
+        number: u8,
+        rating: crate::domain::memory::Rating,
+    ) -> Result<(), OrigaError> {
+        match &mut self.card {
+            Card::Counter(counter) => counter.apply_binding_review(number, rating),
+            other => Err(OrigaError::CounterBindingNotFound {
+                suffix: other.content_key(),
+                number,
+            }),
+        }
     }
 
     pub fn memory(&self) -> &MemoryHistory {
@@ -135,6 +162,12 @@ impl StudyCard {
     pub fn merge(&mut self, other: &StudyCard) {
         self.memory_history.merge(&other.memory_history);
 
+        // Связки счётного суффикса мержатся попарно по числу; контент не
+        // мержится — он резолвится из реестра (issue #415).
+        if let (Card::Counter(mine), Card::Counter(theirs)) = (&mut self.card, &other.card) {
+            mine.merge_bindings(theirs);
+        }
+
         match (self.favorite_changed_at, other.favorite_changed_at) {
             (Some(self_ts), Some(other_ts)) => {
                 if other_ts > self_ts {
@@ -169,6 +202,7 @@ pub enum Card {
     Kanji(KanjiCard),
     Grammar(GrammarRuleCard),
     Phrase(PhraseCard),
+    Counter(CounterCard),
 }
 
 impl Card {
@@ -185,6 +219,7 @@ impl Card {
                     reason: e.to_string(),
                 })
             },
+            Card::Counter(card) => card.question(),
         }
     }
 
@@ -201,6 +236,7 @@ impl Card {
                     reason: e.to_string(),
                 })
             },
+            Card::Counter(card) => card.answer(lang),
         }
     }
 
@@ -210,6 +246,7 @@ impl Card {
             Card::Kanji(card) => card.kanji().text().to_string(),
             Card::Grammar(card) => card.rule_id().to_string(),
             Card::Phrase(card) => card.phrase_id().to_string(),
+            Card::Counter(card) => card.suffix().to_string(),
         }
     }
 
@@ -227,6 +264,7 @@ pub enum CardType {
     Kanji,
     Grammar,
     Phrase,
+    Counter,
 }
 
 /// Uniqueness identity of a card for bulk-import deduplication: card type
@@ -255,6 +293,7 @@ impl From<&Card> for CardType {
             Card::Kanji(_) => CardType::Kanji,
             Card::Grammar(_) => CardType::Grammar,
             Card::Phrase(_) => CardType::Phrase,
+            Card::Counter(_) => CardType::Counter,
         }
     }
 }

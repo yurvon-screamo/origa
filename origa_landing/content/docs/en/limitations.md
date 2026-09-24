@@ -5,7 +5,7 @@ locale: en
 meta_title: "Known Limitations of Origa — Honest Boundaries"
 meta_description: "Where Origa falls short: STT format limits, OCR accuracy on stylized text, no guest mode, sync requires internet, and other current boundaries."
 target_keywords: ["origa limitations", "japanese learning app limits", "japanese ocr limits", "japanese stt wav only"]
-lastmod: 2026-09-17
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -44,6 +44,10 @@ The kanji writing feature shows the correct stroke order as an animation you fol
 ## Two-button rating
 
 The rating after each card is binary: **Don't know** or **Know** in a regular review, **Remember** or **Don't remember** in acquaintance training. There are no intermediate options (no "hard" or "easy" grades). The FSRS scheduler uses these two signals to set intervals.
+
+## Counters: classic review only
+
+Counter suffixes (本, 枚, 匹 …) are trained as cards, with a dedicated counters page listing every one and its detail card. Reviews use the classic know / don't-know buttons: the full reading table lives on the presentation slide and on the counters page, not inside the review. Marking a counter as known skips the meaning training and the bindings together. For accounts created before counters shipped, a one-time migration adds the suffixes their vocabulary already met the first time the app starts after the update.
 
 ## Legal texts are English/Russian only
 

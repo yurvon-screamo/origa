@@ -202,7 +202,8 @@
         "grammar": "문법",
         "kanji": "한자",
         "vocabulary": "어휘",
-        "phrase": "표현"
+        "phrase": "표현",
+        "counter": "조수사"
       },
       "reading_on": "음독",
       "reading_kun": "훈독",
@@ -324,7 +325,8 @@
     "pos_symbol": "기호",
     "pos_whitespace": "공백",
     "pos_auxiliary_symbol": "보조 기호",
-    "listen_word": "단어를 들어보세요"
+    "listen_word": "단어를 들어보세요",
+    "counter": "조수사"
   },
   "home": {
     "loading": "불러오는 중...",
@@ -380,7 +382,8 @@
     "badge_kanji": "한자",
     "badge_words": "단어",
     "badge_grammar": "문법",
-    "rating_accuracy": "정확도"
+    "rating_accuracy": "정확도",
+    "counters_label": "조수사"
   },
   "login": {
     "or_login_with": "또는 다음으로 로그인 / 회원가입",
@@ -488,7 +491,8 @@
     },
     "no_translation_found": "번역을 찾을 수 없음 — 추가되지 않습니다",
     "tooltip_no_translation": "사전에서 단어를 찾을 수 없습니다",
-    "already_added": "추가됨"
+    "already_added": "추가됨",
+    "counter_badge": "조수사"
   },
   "grammar_page": {
     "add_grammar": "문법 추가",
@@ -696,5 +700,17 @@
       "completed_status": "완료됨",
       "recognition_error": "인식 오류"
     }
+  },
+  "counters": {
+    "header": "조수사",
+    "add_counters": "조수사 추가",
+    "adding": "추가 중...",
+    "add": "조수사 추가",
+    "available_counters": "사용 가능한 조수사",
+    "searching_counters": "조수사 검색...",
+    "no_counters_for_level": "선택한 수준에 조수사가 없습니다 (또는 모두 학습됨)",
+    "readings_title": "읽기",
+    "bindings_learned": "결합형: {}",
+    "not_found": "접미사를 찾을 수 없습니다"
   }
 }

@@ -18,6 +18,8 @@ pub enum OrigaError {
     CardNotFound { card_id: Ulid },
     #[error("Card with question '{question}' already exists")]
     DuplicateCard { question: String },
+    #[error("Counter binding {number}×{suffix} not found")]
+    CounterBindingNotFound { suffix: String, number: u8 },
     #[error("Invalid acquaintance hand: {reason}")]
     InvalidAcquaintanceHand { reason: String },
     #[error("Invalid question: {reason}")]
@@ -104,6 +106,7 @@ impl OrigaError {
             Self::CurrentUserNotExist
             | Self::CardNotFound { .. }
             | Self::DuplicateCard { .. }
+            | Self::CounterBindingNotFound { .. }
             | Self::InvalidAcquaintanceHand { .. }
             | Self::InvalidQuestion { .. }
             | Self::InvalidAnswer { .. }
