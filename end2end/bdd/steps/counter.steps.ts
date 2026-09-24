@@ -163,9 +163,12 @@ Given('связки счётного суффикса готовы к показ
 				if (typeof v === "string" && v.includes('"email"')) {
 					try {
 						const u = JSON.parse(v);
-						for (const card of Object.values(
+						// Оставляем ТОЛЬКО counter-карты: слово-новичок (一)
+						// открыл бы руку знакомства раньше основного урока.
+						const keep: Record<string, unknown> = {};
+						for (const [id, card] of Object.entries(
 							u.knowledge_set?.study_cards ?? {},
-						) as Record<string, unknown>[]) {
+						) as [string, Record<string, unknown>][]) {
 							if ((card as { card?: { Counter?: unknown } }).card?.Counter) {
 								card.memory_history = {
 									current_state: state,
@@ -177,8 +180,10 @@ Given('связки счётного суффикса готовы к показ
 									last_rating: "Good",
 									consecutive_again: 0,
 								};
+								keep[id] = card;
 							}
 						}
+						u.knowledge_set.study_cards = keep;
 						c.update(JSON.stringify(u));
 					} catch { /* skip */ }
 				}
