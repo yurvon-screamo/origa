@@ -58,6 +58,20 @@ impl StudyCard {
         }
     }
 
+    pub fn apply_counter_binding_review(
+        &mut self,
+        number: u8,
+        rating: crate::domain::memory::Rating,
+    ) -> Result<(), OrigaError> {
+        match &mut self.card {
+            Card::Counter(counter) => counter.apply_binding_review(number, rating),
+            other => Err(OrigaError::CounterBindingNotFound {
+                suffix: other.content_key(),
+                number,
+            }),
+        }
+    }
+
     pub fn memory(&self) -> &MemoryHistory {
         &self.memory_history
     }

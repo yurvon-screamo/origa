@@ -17,6 +17,7 @@ use super::yesno_card_view::YesNoCardView;
 use crate::pages::lesson::card_type::CardType;
 use crate::ui_components::stop_current_audio;
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 
 use leptos_use::use_event_listener;
 use origa::domain::{CardAnswer, LessonCardView, Rating};
@@ -91,6 +92,8 @@ pub fn LessonCardContainer() -> impl IntoView {
         let rating = state.pending_rating.unwrap_or(Rating::Again);
         on_rate_callback.run(rating);
     });
+
+    let counter_repository = lesson_ctx.repository.clone();
 
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
@@ -204,9 +207,31 @@ pub fn LessonCardContainer() -> impl IntoView {
         handle_keydown(ev);
     });
 
+    // Оценка связки пачки: только память ячейки (CounterReview), мимо
+    // rate_card — семантика и дневная статистика не затрагиваются.
+    let on_rate_counter_binding =
+        Callback::new(move |(card_id, number, rating): (ulid::Ulid, u8, Rating)| {
+            let repository = counter_repository.clone();
+            spawn_local(async move {
+                if let Err(e) = origa::use_cases::RateCounterBindingUseCase::new(&repository)
+                    .execute(card_id, number, rating)
+                    .await
+                {
+                    tracing::warn!(error = ?e, "Counter binding rating failed");
+                }
+            });
+        });
+
+    let is_counter_bindings_mode = Memo::new(move |_| {
+        current_lesson_card
+            .get()
+            .map(|c| matches!(c.view(), LessonCardView::CounterBindings { .. }))
+            .unwrap_or(false)
+    });
+
     view! {
         <Show when=move || current_lesson_card.get().is_some()>
-            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_audio_recall_active.get()>
+            <Show when=move || !is_quiz_mode.get() && !is_writing_mode.get() && !is_yesno_mode.get() && !is_phrase_listen_mode.get() && !is_kanji_reading_quiz_mode.get() && !is_grammar_quiz_mode.get() && !is_audio_recall_active.get() && !is_counter_bindings_mode.get()>
                 {move || {
                     current_lesson_card.get().map(|lesson_card| {
                         render_lesson_card(
@@ -250,6 +275,34 @@ pub fn LessonCardContainer() -> impl IntoView {
                 }}
             </Show>
 
+
+            <Show when=move || is_counter_bindings_mode.get()>
+                {move || {
+                    current_lesson_card.get().and_then(|lesson_card| {
+                        let card_id = lesson_card.card_id();
+                        if let LessonCardView::CounterBindings { card, items } =
+                            lesson_card.into_view()
+                        {
+                            let on_rate_binding = Callback::new(
+                                move |(number, rating): (u8, Rating)| {
+                                    on_rate_counter_binding.run((card_id, number, rating));
+                                },
+                            );
+                            Some(view! {
+                                <super::counter_bindings_session::CounterBindingsSession
+                                    card=card
+                                    items=items
+                                    on_rate_binding=on_rate_binding
+                                    on_next=Callback::new(move |_| on_next_card.run(()))
+                                    test_id=Signal::derive(|| "counter-bindings-card".to_string())
+                                />
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                }}
+            </Show>
 
             <Show when=move || is_writing_mode.get()>
                 {move || {

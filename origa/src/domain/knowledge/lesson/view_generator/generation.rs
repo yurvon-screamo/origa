@@ -10,7 +10,8 @@ use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 use std::collections::HashMap;
 
 use super::super::types::{
-    GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizMode, QuizOption, YesNoCard,
+    CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizMode,
+    QuizOption, YesNoCard,
 };
 use super::QUIZ_OPTIONS_COUNT;
 
@@ -430,4 +431,19 @@ pub(crate) fn generate_grammar_quiz(
     let grammar_quiz = GrammarQuizCard::new(original_card, grammar_info, word_text, quiz);
 
     Ok(LessonCardView::GrammarQuiz(grammar_quiz))
+}
+
+/// Состав пачки связок (issue #415): порядок — `CounterCard::binding_showcase`
+/// (due по возрастанию срока, нерегулярные выше, затем новички). Пустая
+/// пачка невозможна при правильной выборке (`is_review_due`); safe-default
+/// показа — семантический Normal.
+pub(crate) fn generate_counter_binding_items(card: &Card) -> Vec<CounterBindingItem> {
+    match card {
+        Card::Counter(counter) => counter
+            .binding_showcase()
+            .into_iter()
+            .map(CounterBindingItem::new)
+            .collect(),
+        _ => Vec::new(),
+    }
 }

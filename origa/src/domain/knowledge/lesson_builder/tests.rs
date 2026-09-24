@@ -2268,6 +2268,179 @@ fn ghost_phrase_card_places_after_content_words() {
 // Счётные суффиксы (issue #415): руки знакомства и интерлив
 // ═══════════════════════════════════════════════════════════════════════
 
+/// Счётчик в уроке — ТОЛЬКО пачкой связок и только когда связки готовы:
+/// в день сида руки (семантический срок — завтра) пачка не приходит;
+/// назавтра (семантика due, связки-новички) — приходит слотом пачки.
+#[test]
+fn counter_binds_slot_waits_for_the_seed_day_then_arrives() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let content = crate::domain::JlptContent::new();
+
+    let build = |seed_days_from_now: i64| {
+        let mut user = crate::domain::User::new(
+            format!("c{seed_days_from_now}@e.st"),
+            crate::domain::NativeLanguage::Russian,
+            None,
+        );
+        let mut counter = crate::domain::CounterCard::new("本");
+        counter.ensure_registry_bindings();
+        let sc = user
+            .create_card(crate::domain::Card::Counter(counter))
+            .unwrap();
+        user.complete_acquaintance_hand(
+            &[*sc.card_id()],
+            chrono::Utc::now() + chrono::Duration::days(seed_days_from_now),
+        )
+        .unwrap();
+        (user, sc)
+    };
+
+    let (user_today, _) = build(1);
+    let lesson_today = user_today.knowledge_set().cards_to_lesson_with_policy(
+        crate::domain::DailyBudget::with_daily_cards(10),
+        &content,
+        crate::domain::JapaneseLevel::N5,
+        crate::domain::NativeLanguage::Russian,
+        crate::domain::NewCardPolicy::Exclude,
+    );
+    assert!(
+        !lesson_today
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.card(), crate::domain::Card::Counter(_))),
+        "seed day: the bindings pack waits for tomorrow's semantic due"
+    );
+
+    let (user_tomorrow, sc) = build(-1);
+    let lesson_tomorrow = user_tomorrow.knowledge_set().cards_to_lesson_with_policy(
+        crate::domain::DailyBudget::with_daily_cards(10),
+        &content,
+        crate::domain::JapaneseLevel::N5,
+        crate::domain::NativeLanguage::Russian,
+        crate::domain::NewCardPolicy::Exclude,
+    );
+    assert!(
+        lesson_tomorrow
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.card(), crate::domain::Card::Counter(_))),
+        "next day: the counter must enter the lesson"
+    );
+
+    // Слот домена превращается в пачку новичков-связок.
+    let ks = user_tomorrow.knowledge_set();
+    let mut view_gen = crate::domain::knowledge::lesson::LessonViewGenerator::new(
+        ks,
+        crate::domain::NativeLanguage::Russian,
+    );
+    let mut rng = rand::rng();
+    match view_gen.apply_view(&sc, false, &mut rng) {
+        crate::domain::LessonCardView::CounterBindings { items, .. } => {
+            assert!(
+                !items.is_empty(),
+                "the pack must carry every newcomer binding"
+            );
+        },
+        other => panic!("expected the bindings pack, got {other:?}"),
+    }
+}
+
+/// Новый счётчик идёт через руку знакомства, а не в ревью-пул урока:
+/// семантическая новизна гейтится даже при готовых связках-новичках.
+#[test]
+fn new_counter_goes_to_the_hand_not_the_review_pool() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut user = crate::domain::User::new(
+        "n@e.st".to_string(),
+        crate::domain::NativeLanguage::Russian,
+        None,
+    );
+    let mut counter = crate::domain::CounterCard::new("本");
+    counter.ensure_registry_bindings();
+    user.create_card(crate::domain::Card::Counter(counter))
+        .unwrap();
+
+    let lesson = user.knowledge_set().cards_to_lesson_with_policy(
+        crate::domain::DailyBudget::with_daily_cards(10),
+        &crate::domain::JlptContent::new(),
+        crate::domain::JapaneseLevel::N5,
+        crate::domain::NativeLanguage::Russian,
+        crate::domain::NewCardPolicy::Exclude,
+    );
+    assert!(
+        !lesson
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.card(), crate::domain::Card::Counter(_))),
+        "a new counter must wait for the acquaintance hand"
+    );
+}
+
+/// «Уже знаю» гасит все связки — счётчик навсегда вне урока.
+#[test]
+fn known_counter_stays_out_of_the_lesson() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut user = crate::domain::User::new(
+        "k@e.st".to_string(),
+        crate::domain::NativeLanguage::Russian,
+        None,
+    );
+    let mut counter = crate::domain::CounterCard::new("本");
+    counter.ensure_registry_bindings();
+    let sc = user
+        .create_card(crate::domain::Card::Counter(counter))
+        .unwrap();
+    user.mark_card_as_known(*sc.card_id()).unwrap();
+
+    let lesson = user.knowledge_set().cards_to_lesson_with_policy(
+        crate::domain::DailyBudget::with_daily_cards(10),
+        &crate::domain::JlptContent::new(),
+        crate::domain::JapaneseLevel::N5,
+        crate::domain::NativeLanguage::Russian,
+        crate::domain::NewCardPolicy::Exclude,
+    );
+    assert!(
+        !lesson
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.card(), crate::domain::Card::Counter(_)))
+    );
+}
+
+/// Избранный счётчик без готовых связок не возвращается в урок
+/// семантическим показом (гейт favorites-ветки).
+#[test]
+fn favorite_known_counter_does_not_return_as_semantic_show() {
+    crate::dictionary::counters::tests::init_test_counters();
+    let mut user = crate::domain::User::new(
+        "f@e.st".to_string(),
+        crate::domain::NativeLanguage::Russian,
+        None,
+    );
+    let mut counter = crate::domain::CounterCard::new("本");
+    counter.ensure_registry_bindings();
+    let sc = user
+        .create_card(crate::domain::Card::Counter(counter))
+        .unwrap();
+    user.mark_card_as_known(*sc.card_id()).unwrap();
+    user.toggle_favorite(*sc.card_id()).unwrap();
+
+    let lesson = user.knowledge_set().cards_to_lesson_with_policy(
+        crate::domain::DailyBudget::with_daily_cards(10),
+        &crate::domain::JlptContent::new(),
+        crate::domain::JapaneseLevel::N5,
+        crate::domain::NativeLanguage::Russian,
+        crate::domain::NewCardPolicy::Exclude,
+    );
+    assert!(
+        !lesson
+            .cards
+            .iter()
+            .any(|(_, lc)| matches!(lc.card(), crate::domain::Card::Counter(_))),
+        "a favorited known counter must not come back as a semantic show"
+    );
+}
+
 /// Состав руки знакомства включает counter-карты: пул только из
 /// счётчиков N5 распределяется полностью (weights fallback добирает
 /// минорные типы) — один тест закрывает weights+distribute+slots.

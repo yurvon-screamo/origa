@@ -25,8 +25,14 @@ pub(crate) fn build_lesson_core(
     let favorite_cards: Vec<_> = all_cards
         .iter()
         .filter(|(_, card)| {
-            card.is_favorite()
-                && !excluded_by_new_card_policy(card.card().into(), card.memory().is_new(), policy)
+            if !card.is_favorite()
+                || excluded_by_new_card_policy(card.card().into(), card.memory().is_new(), policy)
+            {
+                return false;
+            }
+            // Избранный счётчик приходит в урок ТОЛЬКО пачкой связок:
+            // семантического показа общей карты больше нет.
+            !matches!(card.card(), Card::Counter(_)) || counter_is_review_due(card)
         })
         .copied()
         .collect();
@@ -75,6 +81,18 @@ pub(crate) fn build_lesson_core(
 /// via the interleaved/tail pipelines, not the core), nor a card with an
 /// active добивание (its only channel is the ghost hand; a favorite stays
 /// pinned — the showing counts toward the ladder when the window is open).
+/// Должен ли счётный суффикс попасть в урок: по СВЯЗКАМ, не по семантике
+/// (issue #415). Новички-связки ждут наступления семантического срока
+/// (сид руки ставит его на завтра — первый показ пачки на следующий
+/// день), due-связки показываются по своему ритму. Семантическая общая
+/// карта в уроке не показывается вовсе.
+fn counter_is_review_due(study_card: &StudyCard) -> bool {
+    match study_card.card() {
+        Card::Counter(counter) => counter.is_review_due(study_card.memory().is_due()),
+        _ => false,
+    }
+}
+
 pub(super) fn is_core_candidate(
     id: &Ulid,
     card: &StudyCard,
@@ -184,9 +202,18 @@ pub(super) fn fill_core_due_known<'a>(
     let due_known: Vec<_> = all_cards
         .iter()
         .filter(|(id, card)| {
-            is_core_candidate(id, card, favorite_ids, now)
-                && card.memory().is_due()
-                && (card.memory().is_in_progress() || card.memory().is_known_card())
+            if !is_core_candidate(id, card, favorite_ids, now) {
+                return false;
+            }
+            match card.card() {
+                // Счётчик: due по связкам; семантика должна быть просижена
+                // рукой (new-карта идёт в знакомство, не в ревью-пул).
+                Card::Counter(_) => !card.memory().is_new() && counter_is_review_due(card),
+                _ => {
+                    card.memory().is_due()
+                        && (card.memory().is_in_progress() || card.memory().is_known_card())
+                },
+            }
         })
         .take(remaining)
         .copied()
@@ -207,7 +234,9 @@ pub(super) fn collect_padding<'a>(
         .iter()
         .filter(|(id, card)| {
             !all_selected_ids.contains(id)
-                && !matches!(card.card(), Card::Phrase(_))
+                // Счётчик — не наполнитель: его семантическая дата
+                // заморожена сидом, сортировка padding по ней лгала бы.
+                && !matches!(card.card(), Card::Phrase(_) | Card::Counter(_))
                 && !card.memory().has_active_ghost(now)
                 && card.memory().is_high_difficulty()
         })

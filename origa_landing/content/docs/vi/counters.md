@@ -21,9 +21,9 @@ Thẻ hậu tố mang chính dấu — nó đếm cái gì — và các kết h�
 
 ## Nghĩa và kết hợp già đi riêng nhau
 
-Nghĩa của hậu tố ("vật dài: bút chì, chai, cây") được ôn bằng nút **Biết / Không biết** cổ điển, như mọi thẻ khác. Bảng đọc số đầy đủ (三本 → さんぼん) nằm ở slide trình bày lúc gặp lần đầu, trong câu trả lời luyện tập, và trên trang từ đếm — các đọc bất quy tắc được làm nổi ở đó. Đánh dấu hậu tố là "đã biết" bỏ qua nghĩa và kết hợp cùng nhau.
+Nghĩa của hậu tố ("vật dài: bút chì, chai, cây") gặp bạn ở giai đoạn làm quen; bài học thường không hỏi hậu tố trần. Thay vào đó, bài học phát các kết hợp số từng cái một: mặt trước là một số với hậu tố (8本), bạn nhớ lại cách đọc, mở đáp án (はっぽん) và tự đánh giá bằng nút **Biết / Không biết** cổ điển như mọi thẻ khác. Sau mỗi câu trả lời, ứng dụng hiện bảng đọc của cả hậu tố với hàng vừa trả lời được làm nổi và các đọc bất quy tắc được tô sáng. Mỗi kết hợp giữ ký ức riêng, nên các đọc bất quy tắc như いっぽん, さんぼん, ろっぽん quay lại thường hơn. Đánh dấu hậu tố là "đã biết" bỏ qua nghĩa và kết hợp cùng nhau.
 
-Ôn tập thường chỉ hiện hậu tố và nghĩa của nó, không thêm gì nữa: cùng luồng biết / không biết như mọi thẻ khác, và bảng đọc không nằm trong đó.
+Ôn tập thường hỏi các kết hợp số từng cái một: một số với hậu tố ở mặt trước, cách đọc sau khi mở, và đánh giá biết / không biết cổ điển.
 
 ## Từ đếm đến từ đâu
 

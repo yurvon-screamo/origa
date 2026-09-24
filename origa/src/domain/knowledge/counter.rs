@@ -95,6 +95,24 @@ impl CounterCard {
     }
 
     /// Память конкретной связки по числу.
+    /// Мини-оценка связки: переоценивает ТОЛЬКО память этой ячейки в
+    /// `CounterReview` — семантика карты и другие связки не затрагиваются
+    /// (issue #415, Gherkin «ответ меняет только её память»).
+    pub fn apply_binding_review(
+        &mut self,
+        number: u8,
+        rating: crate::domain::memory::Rating,
+    ) -> Result<(), OrigaError> {
+        let memory = self.binding_memory_mut(number)?;
+        let next = crate::domain::srs::rate_memory(
+            crate::domain::RateMode::CounterReview,
+            rating,
+            memory,
+        )?;
+        memory.apply_review(next, rating);
+        Ok(())
+    }
+
     /// «Уже знаю»/скоринг (issue #415): юзер, знающий суффикс, знает и
     /// связки — каждая НОВАЯ ячейка получает известную память тем же
     /// сидом, что семантика в `mark_card_as_known` (без раздувания reps у
@@ -131,6 +149,80 @@ impl CounterCard {
     /// вызывающий (см. `KnowledgeSet::counter_aggregate_is_new`).
     pub fn all_bindings_new(&self) -> bool {
         self.bindings.iter().all(|b| b.memory.is_new())
+    }
+
+    /// Мутируемая память связки; несуществующее число — доменная ошибка
+    /// (никакого молчаливого создания ячеек из рейтингового пути).
+    pub(crate) fn binding_memory_mut(
+        &mut self,
+        number: u8,
+    ) -> Result<&mut MemoryHistory, OrigaError> {
+        self.bindings
+            .iter_mut()
+            .find(|b| b.number == number)
+            .map(|b| &mut b.memory)
+            .ok_or(OrigaError::CounterBindingNotFound {
+                suffix: self.suffix.clone(),
+                number,
+            })
+    }
+
+    /// Состав и порядок пачки: due-связки по возрастанию срока следующего
+    /// показа (тай-брейк — нерегулярная выше), затем новички (нерегулярные
+    /// первыми). Числа без памяти (недосид) не показываются —
+    /// `ensure_registry_bindings` закрывает этот случай при сидировании.
+    pub fn binding_showcase(&self) -> Vec<u8> {
+        let Some(entry) = crate::dictionary::counters::get_counter(&self.suffix) else {
+            return Vec::new();
+        };
+        let irregular = |number: u8| {
+            entry
+                .readings()
+                .iter()
+                .find(|r| r.number() == number)
+                .is_some_and(|r| r.irregular())
+        };
+
+        let mut due: Vec<(u8, Option<&chrono::DateTime<chrono::Utc>>)> = self
+            .bindings
+            .iter()
+            .filter(|b| !b.memory.is_new() && b.memory.is_due() && !b.memory.is_known_card())
+            .map(|b| (b.number, b.memory.next_review_date()))
+            .collect();
+        due.sort_by(|a, b| {
+            let date_a = a.1.unwrap_or(&chrono::DateTime::<chrono::Utc>::MIN_UTC);
+            let date_b = b.1.unwrap_or(&chrono::DateTime::<chrono::Utc>::MIN_UTC);
+            date_a
+                .cmp(date_b)
+                .then_with(|| irregular(b.0).cmp(&irregular(a.0)))
+        });
+
+        let mut newcomers: Vec<u8> = self
+            .bindings
+            .iter()
+            .filter(|b| b.memory.is_new())
+            .map(|b| b.number)
+            .collect();
+        newcomers.sort_by_key(|&n| std::cmp::Reverse(irregular(n)));
+
+        due.into_iter().map(|(n, _)| n).chain(newcomers).collect()
+    }
+
+    /// Урок показывает счётчик, когда есть связки к показу: хотя бы одна
+    /// due-связка, ЛИБО новичок-связка при наступившем семантическом
+    /// сроке (сид руки ставит его на завтра — первый показ пачки не
+    /// раньше следующего дня, дальше связки живут своим ритмом).
+    /// Семантическая память сама по себе урок больше не драйвит.
+    /// Известные связки («уже знаю») вне ротации: их просрочка —
+    /// осознанная, нагрузкой обучения не является (тот же принцип,
+    /// что исключение известных карт из due-долга руки знакомства).
+    pub fn is_review_due(&self, semantic_is_due: bool) -> bool {
+        let has_due = self
+            .bindings
+            .iter()
+            .any(|b| !b.memory.is_new() && b.memory.is_due() && !b.memory.is_known_card());
+        let has_newcomer = self.bindings.iter().any(|b| b.memory.is_new());
+        has_due || (has_newcomer && semantic_is_due)
     }
 
     /// Попарный мерж памятей связок по числу (синхронизация устройств).
@@ -220,20 +312,52 @@ mod tests {
         assert!(card.binding_memory(99).is_some(), "orphan memory survives");
     }
 
-    /// Посев памяти отдельной связки для merge/serde-тестов (приватные
-    /// поля доступны внутри модуля; рейтингового пути связок больше нет).
-    fn seed_binding(card: &mut CounterCard, number: u8) {
+    /// Посев памяти отдельной связки для тестов (приватные поля доступны
+    /// внутри модуля). `date` задаётся вызывающим: сортировка пачки
+    /// чувствительна к микросекундной разнице сроков.
+    fn seed_binding_at(card: &mut CounterCard, number: u8, date: chrono::DateTime<chrono::Utc>) {
         for binding in &mut card.bindings {
             if binding.number == number {
                 let state = crate::domain::MemoryState::with_card_state(
                     crate::domain::Stability::new(10.0).unwrap(),
                     crate::domain::Difficulty::new(5.0).unwrap(),
-                    chrono::Utc::now() - chrono::Duration::days(1),
+                    date,
                     crate::domain::CardState::Review,
                 );
                 binding.memory.seed(state);
             }
         }
+    }
+
+    fn seed_binding(card: &mut CounterCard, number: u8) {
+        seed_binding_at(card, number, chrono::Utc::now() - chrono::Duration::days(1));
+    }
+
+    /// Порядок пачки: due-связки по возрастанию срока, при равном сроке
+    /// нерегулярная выше; новички — после due, нерегулярные первыми.
+    #[test]
+    fn showcase_orders_due_by_date_then_irregular_and_newcomers_last() {
+        init_test_counters();
+        let mut card = seeded_card(TEST_NIN);
+
+        // Равный срок (одна дата): нерегулярные 3 и 4 — выше регулярной 6
+        // (3 и 4 оба нерегулярные по фикстуре — между ними стабильный
+        // порядок следования), новички — после due-связок.
+        let equal_due = chrono::Utc::now() - chrono::Duration::days(1);
+        seed_binding_at(&mut card, 3, equal_due);
+        seed_binding_at(&mut card, 4, equal_due);
+        seed_binding_at(&mut card, 6, equal_due);
+
+        let showcase = card.binding_showcase();
+        assert_eq!(showcase.len(), 11, "due + every newcomer");
+        // Равные даты: нерегулярные 3 и 4 первыми (в порядке следования),
+        // регулярная 6 — после них.
+        assert_eq!(showcase[0], 3, "irregular bindings win the equal-date tie");
+        assert_eq!(showcase[1], 4);
+        assert_eq!(showcase[2], 6, "regular binding follows the irregular ones");
+        // Новички — после due-связок.
+        assert!(showcase[3..].contains(&1));
+        assert!(showcase[3..].contains(&2));
     }
 
     #[test]
