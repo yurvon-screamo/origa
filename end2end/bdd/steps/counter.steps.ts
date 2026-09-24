@@ -199,12 +199,9 @@ Then('в уроке показывается пачка связок счётн�
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
 });
 
-When('пользователь раскрывает ответ первой связки', async ({ page }) => {
-	await page.getByTestId("counter-binding-show-answer-btn").click();
+When('пользователь жмёт пробел и видит таблицу чтений с акцентом строки', async ({ page }) => {
+	await page.keyboard.press(" ");
 	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
-});
-
-Then('в ответе видна таблица чтений с акцентом строки', async ({ page }) => {
 	const table = page.getByTestId("counter-binding-mutations-table");
 	await table.waitFor({ timeout: 10_000 });
 	// Строки двух testid: обычная и акцентная (отвеченная) строка.
@@ -220,20 +217,44 @@ Then('в ответе видна таблица чтений с акцентом
 	).toBeGreaterThanOrEqual(1);
 });
 
-When('пользователь отвечает {string} на связку', async ({ page }, answer: string) => {
-	await page.getByTestId("counter-binding-show-answer-btn").click().catch(() => null);
-	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
-	const btn =
-		answer === "Знаю"
-			? page.getByTestId("lesson-rating-btn-good")
-			: page.getByTestId("lesson-rating-btn-again");
-	await btn.click();
-	await page.waitForTimeout(500);
+When('пользователь жмёт {string} отвечая {string}', async ({ page }, key: string, _answer: string) => {
+	// Рейтинг — ТОЛЬКО хоткей: у слота своя клавиатура, клики по кнопкам
+	// здесь не нужны (нет интерференции с общим обработчиком урока).
+	// Самодостаточность: дождаться слота (WASM-гидрация может длиться
+	// секунды), затем если ответ не раскрыт — сначала пробел.
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	const front = page.getByTestId("counter-binding-front");
+	if (await front.isVisible({ timeout: 5_000 }).catch(() => false)) {
+		await page.keyboard.press(" ");
+		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+	}
+	const progress = page.getByTestId("counter-bindings-progress");
+	const before = await progress
+		.textContent({ timeout: 2_000 })
+		.catch(() => null);
+	await page.keyboard.press(key);
+	// Пачка переходит локально мгновенно, а запись оценки асинхронна
+	// (spawn_local → save): дожидаемся перехода по прогрессу и флеша
+	// сохранения, иначе быстрый goto перезахода проигрывает запись.
+	// Последняя связка пачки завершает слот — прогресс исчезает.
+	if (before === null) {
+		return;
+	}
+	await expect
+		.poll(
+			async () =>
+				await progress.textContent({ timeout: 2_000 }).catch(() => null),
+			{ timeout: 10_000 },
+		)
+		.not.toBe(before);
+	await page.waitForTimeout(600);
 });
 
 Then('пачка переходит к следующей цифре', async ({ page }) => {
 	const progress = page.getByTestId("counter-bindings-progress");
-	await expect(progress).toHaveText("2 / 11", { timeout: 10_000 });
+	await expect
+		.poll(async () => progress.textContent(), { timeout: 15_000 })
+		.toContain("2 / 11");
 });
 
 When('пользователь перезаходит в урок', async ({ page }) => {
@@ -243,8 +264,9 @@ When('пользователь перезаходит в урок', async ({ pag
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
-	const front = await page.getByTestId("counter-binding-front").textContent();
-	expect(front, "the rated-Good binding leaves the rotation").not.toContain("1×");
+	await expect
+		.poll(async () => page.getByTestId("counter-binding-front").textContent(), { timeout: 15_000 })
+		.not.toContain("1×");
 	const progress = await page.getByTestId("counter-bindings-progress").textContent();
 	expect(progress).toContain("1 / 10");
 });
