@@ -207,7 +207,10 @@ When('пользователь раскрывает ответ первой св
 Then('в ответе видна таблица чтений с акцентом строки', async ({ page }) => {
 	const table = page.getByTestId("counter-binding-mutations-table");
 	await table.waitFor({ timeout: 10_000 });
-	const rows = table.getByTestId("counter-mutations-row");
+	// Строки двух testid: обычная и акцентная (отвеченная) строка.
+	const rows = table.locator(
+		'[data-testid="counter-mutations-row"], [data-testid="counter-readings-row-answered"]',
+	);
 	expect(await rows.count()).toBeGreaterThanOrEqual(11);
 	// Акцент отвеченной строки — data-атрибут (независим от стилей).
 	const highlighted = table.getByTestId("counter-readings-row-answered");
