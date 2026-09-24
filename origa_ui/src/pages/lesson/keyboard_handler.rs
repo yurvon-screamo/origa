@@ -58,6 +58,16 @@ pub fn create_keyboard_handler(
         let current_card_id = state.card_ids.get(state.current_index);
         let current_card = current_card_id.and_then(|id| state.cards.get(id));
 
+        // Слот пачки связок счётного суффикса несёт СВОЮ клавиатуру
+        // (Space — reveal, 1/2 — классический рейтинг связки, issue #415).
+        // Общий хендлер здесь обязан молчать: иначе 1/2 рейтят СЕМАНТИКУ
+        // карты (StandardLesson) и прыгают с карты в середине пачки —
+        // двойная обработка одного нажатия.
+        if current_card.is_some_and(|c| matches!(c.view(), LessonCardView::CounterBindings { .. }))
+        {
+            return;
+        }
+
         let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)

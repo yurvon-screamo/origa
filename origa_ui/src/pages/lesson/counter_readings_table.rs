@@ -59,7 +59,13 @@ pub(in crate::pages::lesson) fn CounterReadingsTable(
                             }
                             class
                         }
-                             data-testid="counter-mutations-row">
+                             data-testid=move || {
+                                 if highlight.is_some_and(|h| h.get() == number) {
+                                     "counter-readings-row-answered"
+                                 } else {
+                                     "counter-mutations-row"
+                                 }
+                             }>
                             <span class="font-mono text-[var(--fg-black)]">
                                 {row.number_label.clone()}{"×"}{suffix.with_value(String::clone)}
                             </span>

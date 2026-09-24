@@ -135,7 +135,10 @@ Then(
 	},
 );
 
-/// Подготовка состояния «пачка готова»: сид руки с прошедшей датой
+/// Подготовка состояния «пачка готова»: сид руки с прошедшей датой.
+/// КОНТРАКТ: инъекция завязана на persisted-схему HybridUserRepository
+/// (db=origa, store=users, вложенная JSON-строка) — при рефакторинге
+/// хранилища шаг требует синхронной правки.
 /// (семантика due, связки-новички) — «следующий день» без перемотки часов.
 Given('связки счётного суффикса готовы к показу', async ({ page }) => {
 	await page.evaluate(async () => {
@@ -201,8 +204,8 @@ Then('в ответе видна таблица чтений с акцентом
 	await table.waitFor({ timeout: 10_000 });
 	const rows = table.getByTestId("counter-mutations-row");
 	expect(await rows.count()).toBeGreaterThanOrEqual(11);
-	// Акцент отвеченной строки — olive-ring.
-	const highlighted = table.locator(".ring-\\[var\\(--accent-olive\\)\\]");
+	// Акцент отвеченной строки — data-атрибут (независим от стилей).
+	const highlighted = table.getByTestId("counter-readings-row-answered");
 	expect(
 		await highlighted.count(),
 		"the answered row must be accented",
@@ -227,7 +230,6 @@ Then('пачка переходит к следующей цифре', async ({ 
 
 When('пользователь перезаходит в урок', async ({ page }) => {
 	await page.goto("http://localhost:1420/lesson");
-	await page.waitForTimeout(4000);
 });
 
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
@@ -237,4 +239,15 @@ Then('отвеченная связка больше не показываетс
 	expect(front, "the rated-Good binding leaves the rotation").not.toContain("1×");
 	const progress = await page.getByTestId("counter-bindings-progress").textContent();
 	expect(progress).toContain("1 / 10");
+});
+
+When('пользователь жмёт пробел для ответа первой связки', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.keyboard.press(" ");
+	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+});
+
+When('пользователь жмёт клавишу {string} отвечая {string}', async ({ page }, key: string, _answer: string) => {
+	await page.keyboard.press(key);
+	await page.waitForTimeout(400);
 });
