@@ -18,6 +18,9 @@ Checks (ERROR = blocking):
   titles    : per-language uniqueness (dup_key preserves qualifiers — see
               _grammar_title), qualifier required for short bare patterns,
               identical short_description across rules sharing a pattern
+  anchors   : (schema v3 only) format_map chains must produce kana visible
+              in the rule's pattern — tripwire for anchor/content drift
+              from the v2→v3 migration (_format_map_check)
 
 Checks (WARN = non-blocking, tracked for cleanup):
   legacy format anomalies, title style lint (ASCII parens, space before
@@ -33,6 +36,7 @@ import sys
 import unicodedata
 from pathlib import Path
 
+import _format_map_check
 import _grammar_title
 
 LEVELS = {"N5", "N4", "N3", "N2", "N1"}
@@ -296,7 +300,9 @@ def is_cjk_ideograph(ch: str) -> bool:
     )
 
 
-def validate_corpus(data: dict, report: Report, required_langs: set[str]) -> None:
+def validate_corpus(
+    data: dict, report: Report, required_langs: set[str], check_anchors: bool = False
+) -> None:
     rules = data.get("grammar")
     if not isinstance(rules, list) or not rules:
         report.error("corpus", "grammar must be a non-empty array")
@@ -308,6 +314,8 @@ def validate_corpus(data: dict, report: Report, required_langs: set[str]) -> Non
             report.error(f"rule[{idx}]", "not an object")
             continue
         validate_rule(rule, idx, rule_ids, report, required_langs)
+        if check_anchors:
+            _format_map_check.check_rule_format_map(rule, report)
 
     # Referential integrity for related_patterns (needs the full id set),
     # per-language title uniqueness and short_description distinctness.
@@ -389,7 +397,11 @@ def main() -> int:
     if data.get("schema") not in (2, 3):
         report.error("corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}")
     required_langs = REQUIRED_LANGS_V3 if data.get("schema") == 3 else REQUIRED_LANGS
-    validate_corpus(data, report, required_langs)
+    # Anchor guard is v3-only: the legacy v2 corpus is frozen for released
+    # clients and its abstract titles (可能形, 尊敬語…) carry no surface
+    # kana the heuristic could match against.
+    check_anchors = data.get("schema") == 3
+    validate_corpus(data, report, required_langs, check_anchors)
 
     rules = data.get("grammar") or []
     if as_json:
