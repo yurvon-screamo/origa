@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Tiếng Nhật từ số 0: kế hoạch cho người mới bắt đầu (2026)"
 meta_description: "Bắt đầu học tiếng Nhật tự học như thế nào: không lòng vòng, không hứa 'thành thạo trong một tháng'. Trình tự thực tế từ hiragana đến N4, công cụ, và các lỗi gần như mọi người mới đều mắc."
 target_keywords: ["học tiếng nhật từ con số không", "học tiếng nhật tự học", "bắt đầu học tiếng nhật", "tiếng nhật cho người mới bắt đầu"]
-lastmod: 2026-07-21
+lastmod: 2026-09-26
 published: 2026-07-21
 status: ready
 ---
@@ -100,7 +100,6 @@ Logic của Origa là tiếp quản phần rườm rà kỹ thuật (tạo thẻ
 
 - **Nó không phải sách giáo khoa.** Origa không dẫn bạn qua bài ngữ pháp. Dùng Minna no Nihongo, Genki, hoặc Tae Kim, và dùng Origa để giữ từ vựng và hán tự từ các sách giáo khoa đó.
 - **Ứng dụng trẻ hơn Anki.** Anki có một thập kỷ tinh chỉnh và thư viện lớn các bộ bài dựng sẵn. Origa có ít nội dung dựng sẵn hơn, dù đang phát triển.
-- **Chưa có iOS.** iOS nằm trong roadmap nhưng chưa có.
 - **Parity desktop/mobile là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, kiểm tra bản dựng hiện tại cho nền tảng của bạn.
 
 ## Một kết luận thực tế

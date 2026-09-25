@@ -305,7 +305,7 @@ pub struct Content {
     pub download_web: &'static str,
     pub download_ios: &'static str,
     pub download_ios_formats: &'static str,
-    pub download_ios_coming_soon: &'static str,
+    pub download_app_store_badge_alt: &'static str,
     pub download_button: &'static str,
     pub download_subtitle: &'static str,
     pub download_try_web: &'static str,

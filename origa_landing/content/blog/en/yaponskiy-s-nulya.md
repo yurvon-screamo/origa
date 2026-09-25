@@ -5,7 +5,7 @@ locale: en
 meta_title: "Japanese from Zero: A Realistic Self-Starter Plan (2026)"
 meta_description: "Where to start learning Japanese on your own: no fluff, no 'fluency in a month' promises. A realistic sequence from hiragana to N4, tools, and the mistakes almost every beginner makes."
 target_keywords: ["japanese from zero", "learn japanese from scratch", "how to start learning japanese", "self study japanese beginner"]
-lastmod: 2026-07-21
+lastmod: 2026-09-26
 published: 2026-07-21
 status: ready
 ---
@@ -100,7 +100,6 @@ Origa's logic is to take over the technical routine (creating cards, configuring
 
 - **It is not a textbook.** Origa does not walk you grammar lesson by grammar lesson. Use Minna no Nihongo, Genki, or Tae Kim, and use Origa to retain the vocabulary and kanji from those textbooks.
 - **The app is younger than Anki.** Anki has a decade of refinement and a large library of ready-made decks. Origa has less prebuilt content, though it is growing.
-- **No iOS.** Origa runs on Windows, Linux, macOS, Android, and in the browser. iOS is planned but not yet available. If you study only on an iPhone, that's a blocker today.
 - **Desktop/mobile parity is good but not absolute.** Before fully switching, check the current build for your platform.
 
 ## A realistic bottom line

@@ -5,7 +5,7 @@ locale: vi
 meta_title: "App học tiếng Nhật offline: 'ngoại tuyến' nghĩa là gì (2026)"
 meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau: ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. App học tiếng Nhật miễn phí offline nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
 target_keywords: ["học tiếng nhật ngoại tuyến", "app học tiếng nhật offline", "app học tiếng nhật miễn phí offline", "app flashcard tiếng nhật offline"]
-lastmod: 2026-09-18
+lastmod: 2026-09-26
 published: 2026-07-21
 status: ready
 ---
@@ -126,7 +126,6 @@ Không có tính năng nào trong luồng bình thường của Origa đòi hỏ
 - **Kích thước ứng dụng.** Hàng trăm megabyte cho các mô hình AI. Nếu lưu trữ chật trên điện thoại của bạn, điều này quan trọng.
 - **Độ chính xác OCR trên phông cách điệu.** OCR cục bộ tốt trên văn bản tiêu chuẩn, yếu hơn trên lettering manga và phông trang trí. Đôi khi cần sửa tay.
 - **Pin khi sử dụng cường độ cao.** Quét nhiều trang trong một phiên sẽ xả pin nhanh hơn ôn chỉ văn bản.
-- **Chưa có iOS.** iOS nằm trong roadmap. Nếu bạn cần học ngoại tuyến trên iPhone hôm nay, AnkiMobile là tùy chọn thực tế.
 
 ## Chọn thế nào
 

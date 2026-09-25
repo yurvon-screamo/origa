@@ -5,7 +5,7 @@ locale: ko
 meta_title: "Origa 시작하기 — 일본어 학습 앱"
 meta_description: "Origa를 설치하고, 로그인하고, 페이스와 수준을 고르고, 어휘를 가져오고, 첫 레슨을 끝내세요. 첫 설정 이후에는 오프라인으로 작동합니다."
 target_keywords: ["일본어 학습 앱 시작하기", "origa 사용법", "일본어 앱 설정", "origa 첫 레슨", "일본어 앱 온보딩"]
-lastmod: 2026-08-30
+lastmod: 2026-09-26
 status: ready
 ---
 
@@ -19,11 +19,11 @@ Origa는 기기에서 작동하는 일본어 학습 앱입니다. 이 안내는 
 
 ## 1. 설치
 
-Origa는 Windows, Linux, macOS, Android에서 쓸 수 있습니다. 웹 버전도 브라우저에서 작동합니다.
+Origa는 iOS와 iPadOS(App Store), macOS(Mac App Store), Windows, Linux, Android에서 쓸 수 있습니다. 웹 버전도 브라우저에서 작동합니다.
 
 [다운로드 →](/ko/download)
 
-플랫폼에 맞는 패키지를 고르세요. 데스크톱에서는 설치 프로그램이 Origa를 응용 프로그램 폴더에 놓습니다. Android에서는 시스템이 물으면 설치를 허용하세요.
+플랫폼에 맞는 패키지를 고르세요. iPhone, iPad, Mac에서는 App Store에서 Origa를 설치하세요. 설치 프로그램이 필요 없습니다. Windows와 Linux에서는 설치 프로그램이 Origa를 응용 프로그램 폴더에 놓습니다. Android에서는 시스템이 물으면 설치를 허용하세요.
 
 ## 2. 로그인
 

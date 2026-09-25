@@ -5,7 +5,7 @@ locale: en
 meta_title: "Getting Started with Origa — Japanese Learning App"
 meta_description: "Install Origa, sign in, choose your pace and level, import vocabulary, and complete your first lesson. Works offline after first setup."
 target_keywords: ["japanese learning app getting started", "how to use origa", "japanese learning app setup", "origa first lesson", "japanese app onboarding"]
-lastmod: 2026-08-30
+lastmod: 2026-09-26
 status: ready
 ---
 
@@ -19,11 +19,11 @@ Most of the setup happens once. After the first load, Origa works offline.
 
 ## 1. Install
 
-Origa is available for Windows, Linux, macOS, and Android. A web version also runs in a browser.
+Origa is available for iOS and iPadOS (App Store), macOS (Mac App Store), Windows, Linux, and Android. A web version also runs in a browser.
 
 [Download →](/download)
 
-Pick the package for your platform. On desktop, the installer places Origa in your applications folder. On Android, allow the installer if the system prompts you.
+Pick the package for your platform. On iPhone, iPad, and Mac, install Origa from the App Store — no installer is involved. On Windows and Linux, the installer places Origa in your applications folder. On Android, allow the installer if the system prompts you.
 
 ## 2. Sign in
 

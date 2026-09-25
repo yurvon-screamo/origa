@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Bắt đầu với Origa — Ứng dụng học tiếng Nhật"
 meta_description: "Cài đặt Origa, đăng nhập, chọn tốc độ và trình độ, nhập từ vựng, và hoàn thành bài học đầu tiên. Hoạt động ngoại tuyến sau lần thiết lập đầu."
 target_keywords: ["ứng dụng học tiếng nhật bắt đầu", "cách dùng origa", "cài đặt ứng dụng học tiếng nhật", "bài học đầu tiên origa", "onboarding ứng dụng tiếng nhật"]
-lastmod: 2026-08-30
+lastmod: 2026-09-26
 status: ready
 ---
 
@@ -19,11 +19,11 @@ Phần lớn việc thiết lập chỉ xảy ra một lần. Sau lần tải đ
 
 ## 1. Cài đặt
 
-Origa có bản cho Windows, Linux, macOS và Android. Phiên bản web cũng chạy trong trình duyệt.
+Origa có bản cho iOS và iPadOS (App Store), macOS (Mac App Store), Windows, Linux và Android. Phiên bản web cũng chạy trong trình duyệt.
 
 [Tải xuống →](/vi/download)
 
-Chọn gói cho nền tảng của bạn. Trên máy tính, trình cài đặt đặt Origa vào thư mục ứng dụng. Trên Android, hãy cho phép trình cài đặt nếu hệ thống hỏi.
+Chọn gói cho nền tảng của bạn. Trên iPhone, iPad và Mac, hãy cài đặt Origa từ App Store — không cần trình cài đặt. Trên Windows và Linux, trình cài đặt đặt Origa vào thư mục ứng dụng. Trên Android, hãy cho phép trình cài đặt nếu hệ thống hỏi.
 
 ## 2. Đăng nhập
 

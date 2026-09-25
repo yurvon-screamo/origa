@@ -22,7 +22,7 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 * **Thuật toán thông minh:** hệ thống lặp lại ngắt quãng FSRS (giống Anki) tối ưu hóa khoảng cách ôn tập cho từng từ.
 * **Quyền riêng tư:** mọi mô hình AI chạy cục bộ trên thiết bị. Ảnh, âm thanh và hoạt động học được xử lý ngay trên máy, không tải lên dịch vụ bên ngoài.
 * **Ưu tiên ngoại tuyến:** đầy đủ chức năng không cần internet sau lần thiết lập đầu tiên.
-* **Đa nền tảng:** Web, Windows, Linux, macOS, Android.
+* **Đa nền tảng:** Web, Windows, Linux, macOS, Android, iOS.
 * **Học bằng tiếng mẹ đẻ:** giao diện và từ điển bằng tiếng Nga, tiếng Anh, tiếng Hàn và tiếng Việt (tiếng Indonesia và tiếng Tây Ban Nha trong kế hoạch).
 * **Phân tích JLPT:** theo dõi cấp độ hiện tại và dự báo tiến độ học.
 
@@ -69,6 +69,8 @@ Thuật toán lặp lại ngắt quãng (FSRS), OCR tích hợp, nhận dạng v
 
 Cách đơn giản nhất để cài đặt Origa là [trang tải xuống](https://origa.uwuwu.net/vi/download). Trang sẽ đề xuất bản dựng phù hợp với hệ thống của bạn.
 
+[![Tải xuống trên App Store](origa_landing/public/badges/app-store-vi.svg)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532)
+
 Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 
 | Nền tảng | Trạng thái | Định dạng |
@@ -76,7 +78,8 @@ Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 | **Windows** | ✅ Sẵn sàng | [trình cài đặt `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Sẵn sàng | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
-| **macOS** | ⏳ Sắp ra mắt | Mac App Store |
+| **macOS** | ✅ Sẵn sàng | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
+| **iOS / iPadOS** | ✅ Sẵn sàng | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 
 Linux — `.deb` và `.rpm` cập nhật ngay trong ứng dụng; người dùng Arch: cài từ [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) bằng `makepkg -si` (gói AUR sắp có). Cài Fedora một dòng:
 
@@ -108,13 +111,12 @@ Dự án được xây dựng trên nền tảng công nghệ hiện đại, man
 * **Lõi và backend**: an toàn và xử lý dữ liệu tốc độ cao với Rust.
 * **Lớp desktop**: ứng dụng native cho Windows, macOS và Linux với Tauri v2.
 * **Frontend**: framework UI phản ứng trên Rust (WebAssembly) cho phản hồi giao diện tức thì là Leptos.
-* **Di động**: bản build **Android** native qua Tauri Mobile.
+* **Di động**: bản build **Android** và **iOS** native qua Tauri Mobile.
 
 ---
 
 ## 🚀 Lộ trình
 
-* Nền tảng di động: phát hành iOS.
 * Tính năng xã hội: thi đua giữa người dùng.
 * Loại bài tập mới: đọc văn bản, manga, câu theo ngữ cảnh, âm thanh, video.
 * Bản địa hóa: thêm tiếng Indonesia và tiếng Tây Ban Nha.

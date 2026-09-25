@@ -22,7 +22,7 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition. A
 * **Smart algorithms:** FSRS spaced repetition system (like Anki) optimizes review intervals for each word.
 * **Privacy:** all AI models run locally on your device. Your photos, audio, and study activity are processed on-device and never uploaded.
 * **Offline-first:** full functionality without internet after the initial setup.
-* **Cross-platform:** Web, Windows, Linux, macOS, Android.
+* **Cross-platform:** Web, Windows, Linux, macOS, Android, iOS.
 * **Learn in your language:** interface and dictionaries in Russian, English, Korean and Vietnamese (Indonesian and Spanish planned; Thai and Burmese under research).
 * **JLPT analytics:** track your current level and forecast your progress.
 
@@ -69,6 +69,8 @@ Spaced repetition algorithms (FSRS), built-in OCR, text and audio recognition. A
 
 The easiest way to install Origa is the [download page](https://origa.uwuwu.net/download). It offers the right build for your system.
 
+[![Download on the App Store](origa_landing/public/badges/app-store-en.svg)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532)
+
 Direct links (latest stable release):
 
 | Platform | Status | Format |
@@ -76,7 +78,8 @@ Direct links (latest stable release):
 | **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Ready | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
-| **macOS** | ⏳ Coming soon | Mac App Store |
+| **macOS** | ✅ Ready | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
+| **iOS / iPadOS** | ✅ Ready | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 
 Linux — `.deb` and `.rpm` update in-app; Arch users: install from [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) with `makepkg -si` (AUR listing coming soon). Fedora one-liner:
 
@@ -109,13 +112,12 @@ The project is built on a modern stack that delivers native app performance with
 * **Core & backend**: **Rust** for safety and high-speed data processing.
 * **Desktop wrapper**: **Tauri v2** for native apps on Windows, macOS, and Linux.
 * **Frontend**: **Leptos**, a reactive UI framework in Rust (WebAssembly) for instant interface response.
-* **Mobile**: Native **Android** build via Tauri Mobile.
+* **Mobile**: Native **Android** and **iOS** builds via Tauri Mobile.
 
 ---
 
 ## 🚀 Roadmap
 
-* Mobile platforms: iOS release.
 * Social features: competitions between users.
 * New exercise types: reading texts, manga, contextual sentences, audio, video.
 * Localization: add Indonesian and Spanish; research Thai and Burmese (top JLPT markets).
