@@ -9,9 +9,13 @@ use crate::content::Locale;
 // direct-download platform links to its alias rather than the versioned
 // asset.
 //
-// macOS distribution is Mac App Store only (ADR-033). The macOS
-// DownloadCard uses the "coming soon" badge until the App Store listing
-// is live; no direct-download link is published.
+// macOS and iOS/iPadOS are distributed through the App Store (universal
+// listing, ADR-033): both cards carry the official unmodified Apple badge
+// linked to the storefront. Badge SVGs are self-hosted
+// (`/badges/app-store-<locale>.svg`) — Apple's badge host has moved before
+// (tools.* → toolbox.*), and the App Store Marketing Guidelines only require
+// the artwork to stay unmodified, not to hotlink it.
+const APP_STORE_URL: &str = "https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532";
 const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_DEB: &str =
@@ -102,7 +106,10 @@ pub fn DownloadPage() -> impl IntoView {
                     icon=view! { <IconApple /> }.into_any()
                     name=c.download_macos
                     formats=c.download_macos_formats
-                    badge=c.download_ios_coming_soon
+                    href=APP_STORE_URL
+                    badge_img=app_store_badge(locale)
+                    badge_alt=c.download_app_store_badge_alt
+                    umami_event="download_macos_appstore"
                 />
                 <DownloadCard
                     icon=view! { <IconLinux /> }.into_any()
@@ -133,15 +140,29 @@ pub fn DownloadPage() -> impl IntoView {
                     button_text=c.download_button
                     umami_event="download_android"
                 />
-                // iOS — coming soon (no download button)
                 <DownloadCard
                     icon=view! { <IconApple /> }.into_any()
                     name=c.download_ios
                     formats=c.download_ios_formats
-                    badge=c.download_ios_coming_soon
+                    href=APP_STORE_URL
+                    badge_img=app_store_badge(locale)
+                    badge_alt=c.download_app_store_badge_alt
+                    umami_event="download_ios_appstore"
                 />
             </div>
         </section>
+    }
+}
+
+// Self-hosted official App Store badge for the page locale. The artwork is
+// Apple's unmodified badge SVG (App Store Marketing Guidelines); only the
+// download language differs per landing locale.
+fn app_store_badge(locale: Locale) -> &'static str {
+    match locale {
+        Locale::En => "/badges/app-store-en.svg",
+        Locale::Ru => "/badges/app-store-ru.svg",
+        Locale::Ko => "/badges/app-store-ko.svg",
+        Locale::Vi => "/badges/app-store-vi.svg",
     }
 }
 
@@ -152,22 +173,38 @@ fn DownloadCard(
     formats: &'static str,
     #[prop(optional)] href: Option<&'static str>,
     #[prop(optional)] button_text: Option<&'static str>,
-    #[prop(optional)] badge: Option<&'static str>,
+    // App Store cards: instead of the text button, render the official
+    // (unmodified) Apple badge SVG linked to the storefront. The artwork
+    // keeps its built-in rounded corners — brand-asset exception to the
+    // landing's no-border-radius rule.
+    #[prop(optional)] badge_img: Option<&'static str>,
+    #[prop(optional)] badge_alt: Option<&'static str>,
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
-    // with a real download button; "coming soon" cards have nothing to track.
+    // with a real action; nothing to track otherwise.
     #[prop(optional)] umami_event: Option<&'static str>,
     // Optional terminal one-liner rendered as a copyable code chip under the
     // button (used by the Linux card: Fedora dnf one-liner, ADR-058).
     #[prop(optional)] terminal_label: Option<&'static str>,
     #[prop(optional)] terminal_cmd: Option<String>,
 ) -> impl IntoView {
-    let card_class = match badge {
-        Some(_) => "download-secondary__card download-secondary__card--soon",
-        None => "download-secondary__card",
+    let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
+        view! {
+            <a href=href class="btn" attr:data-umami-event=umami_event>{btn}" →"</a>
+        }
+        .into_any()
+    } else if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
+        view! {
+            <a href=href class="download-appstore" attr:data-umami-event=umami_event>
+                <img src=img alt=alt loading="lazy"/>
+            </a>
+        }
+        .into_any()
+    } else {
+        ().into_any()
     };
 
     view! {
-        <div class=card_class>
+        <div class="download-secondary__card">
             <div class="download-secondary__card-header">
                 <div class="download-icon download-icon--secondary" aria-hidden="true">
                     {icon}
@@ -177,20 +214,7 @@ fn DownloadCard(
                     <p class="download-platform__formats">{formats}</p>
                 </div>
             </div>
-            {match (badge, href, button_text, umami_event) {
-                (Some(badge_text), _, _, _) => view! {
-                    <p class="download-coming-soon-badge">{badge_text}</p>
-                }.into_any(),
-                (None, Some(href), Some(btn), event) => match event {
-                    Some(event) => view! {
-                        <a href=href class="btn" attr:data-umami-event=event>{btn}" →"</a>
-                    }.into_any(),
-                    None => view! {
-                        <a href=href class="btn">{btn}" →"</a>
-                    }.into_any(),
-                },
-                _ => ().into_any(),
-            }}
+            {action}
             {match (terminal_label, terminal_cmd) {
                 (Some(label), Some(cmd)) => view! {
                     <div class="download-terminal">

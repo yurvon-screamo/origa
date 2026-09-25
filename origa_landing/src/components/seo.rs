@@ -24,7 +24,7 @@ pub fn software_application_schema(locale: Locale) -> String {
         "@type": "SoftwareApplication",
         "name": "Origa",
         "applicationCategory": "EducationalApplication",
-        "operatingSystem": "Windows, Linux, macOS, Android, Web",
+        "operatingSystem": "iOS, iPadOS, Windows, Linux, macOS, Android, Web",
         "description": c.home_meta_description,
         "featureList": c.home_schema_feature_list,
         "inLanguage": locale.as_str()

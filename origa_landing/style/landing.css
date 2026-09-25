@@ -909,13 +909,19 @@
     letter-spacing: 0.05em;
 }
 
-.download-coming-soon-badge {
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-light);
-    font-style: italic;
+/* App Store badge action: the official Apple badge artwork (unmodified SVG).
+   The badge keeps its built-in rounded corners — brand-asset exception to
+   the landing's no-border-radius rule. Height fixed, width follows the
+   per-locale SVG aspect ratio. */
+.download-appstore {
+    display: inline-block;
+    line-height: 0;
+}
+
+.download-appstore img {
+    height: 40px;
+    width: auto;
+    display: block;
 }
 
 .download-terminal {
