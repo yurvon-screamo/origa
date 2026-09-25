@@ -22,7 +22,7 @@
 * **스마트한 알고리즘:** FSRS 간격 반복 시스템(Anki와 유사)이 단어마다 복습 간격을 최적화합니다.
 * **프라이버시:** 모든 AI 모델은 기기에서 로컬로 실행됩니다. 사진, 오디오, 학습 활동은 기기에서 처리되며 외부로 전송되지 않습니다.
 * **오프라인 우선:** 초기 설정 이후에는 인터넷 없이 모든 기능을 사용할 수 있습니다.
-* **크로스 플랫폼:** Web, Windows, Linux, macOS, Android.
+* **크로스 플랫폼:** Web, Windows, Linux, macOS, Android, iOS.
 * **모국어로 학습:** 인터페이스와 사전이 러시아어, 영어, 한국어, 베트남어를 지원합니다(인도네시아어와 스페인어는 계획 중).
 * **JLPT 분석:** 현재 레벨을 추적하고 학습 진행 상황을 예측합니다.
 
@@ -69,6 +69,8 @@
 
 Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://origa.uwuwu.net/ko/download)입니다. 시스템에 맞는 빌드를 제안합니다.
 
+[![App Store에서 다운로드](origa_landing/public/badges/app-store-ko.svg)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532)
+
 직접 링크 (최신 안정 릴리스):
 
 | 플랫폼 | 상태 | 형식 |
@@ -76,7 +78,8 @@ Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://o
 | **Windows** | ✅ 지원 | [`.exe` 설치 파일](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ 지원 | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ 지원 | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
-| **macOS** | ⏳ 준비 중 | Mac App Store |
+| **macOS** | ✅ 지원 | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
+| **iOS / iPadOS** | ✅ 지원 | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 
 Linux — `.deb`와 `.rpm`은 앱 내에서 업데이트됩니다. Arch 사용자: [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin)에서 `makepkg -si`로 설치 (AUR 등록 곧 제공). Fedora 한 줄 설치:
 
@@ -108,13 +111,12 @@ sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/downloa
 * **코어 및 백엔드**: 안전성과 고속 데이터 처리를 위한 **Rust**.
 * **데스크톱 래퍼**: Windows, macOS, Linux용 네이티브 앱인 **Tauri v2**.
 * **프론트엔드**: 즉각적인 인터페이스 반응성을 위한 Rust(WebAssembly) 기반 리액티브 UI 프레임워크인 **Leptos**.
-* **모바일**: Tauri Mobile을 통한 네이티브 **Android** 빌드.
+* **모바일**: Tauri Mobile을 통한 네이티브 **Android** 및 **iOS** 빌드.
 
 ---
 
 ## 🚀 로드맵
 
-* 모바일 플랫폼: iOS 출시.
 * 소셜 기능: 사용자 간 대결.
 * 새로운 연습 유형: 텍스트, 만화, 맥락 문장, 오디오, 비디오 읽기.
 * 현지화: 인도네시아어와 스페인어 추가.

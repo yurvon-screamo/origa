@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Thay thế Anki cho tiếng Nhật (2026)"
 meta_description: "Anki mạnh nhưng cấu hình ngốn thời gian học của bạn. Hướng dẫn thực chiến: khi nào Anki phù hợp cho tiếng Nhật, khi nào cần thay thế, và cần tìm gì."
 target_keywords: ["thay thế anki tiếng nhật", "app flashcard tiếng nhật", "app lặp lại ngắt quãng tiếng nhật miễn phí", "hán tự n5", "từ vựng tiếng nhật n5"]
-lastmod: 2026-09-10
+lastmod: 2026-09-26
 published: 2026-07-19
 status: ready
 ---
@@ -83,7 +83,6 @@ Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không 
 
 - **Origa không tùy biến sâu như Anki.** Nếu bạn sống trong mẫu thẻ HTML/CSS tùy chỉnh, Origa không thay thế được. Nó tối ưu cho mặc định ít ma sát hơn là kiểm soát tối đa.
 - **Nó mới hơn.** Anki có hơn một thập kỷ củng cố trường hợp biên và hệ sinh thái bộ bài lớn. Thư viện nội dung dựng sẵn của Origa đang phát triển nhưng nhỏ hơn.
-- **AnkiMobile trên iOS chưa có tương đương trên Origa.** Origa chạy trên Windows, Linux, macOS, Android và web; iOS nằm trong lộ trình nhưng chưa ra mắt. Nếu toàn bộ dòng học của bạn trên iPhone, đó là chướng ngại thực sự.
 - **Tính tương đương tính năng desktop/di động tốt nhưng không tuyệt đối.** Kiểm tra bản dựng hiện tại cho nền tảng của bạn trước khi cam kết hoàn toàn.
 
 Nếu bất kỳ điều nào phá vỡ quy trình của bạn, đó là lý do chính đáng để ở lại Anki hoặc chạy cả hai.
@@ -127,4 +126,4 @@ Có. Các mô hình OCR và nhận dạng giọng nói chạy cục bộ, vì v�
 
 ### Nếu tôi chỉ học trên iPhone thì sao?
 
-Chưa. Origa chạy trên Windows, Linux, macOS, Android và web. iOS đã lên kế hoạch nhưng chưa có sẵn hôm nay. Nếu iPhone là thiết bị duy nhất của bạn, hãy đợi bản phát hành iOS hoặc ở lại Anki.
+Có. Origa có trên App Store cho iPhone và iPad, và nhập bộ bài Anki cũng hoạt động ở đó. Tiến độ học đồng bộ với bản desktop và web.

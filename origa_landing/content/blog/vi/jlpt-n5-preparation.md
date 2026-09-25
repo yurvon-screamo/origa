@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Ôn JLPT N5: phạm vi, đề thi, lộ trình (2026)"
 meta_description: "JLPT N5 thực sự đòi hỏi gì: phạm vi từ vựng và hán tự, cấu trúc đề, điểm chuẩn, thời gian ôn thực tế. Kế hoạch ôn và những lỗi làm rớt phần nghe."
 target_keywords: ["jlpt n5", "ôn jlpt n5", "jlpt n5 học gì", "lộ trình jlpt n5"]
-lastmod: 2026-09-19
+lastmod: 2026-09-26
 published: 2026-09-19
 status: ready
 ---
@@ -91,7 +91,6 @@ Origa giúp phía nội dung của việc ôn, trong ranh giới rõ:
 
 - **Không phải trình mô phỏng đề.** Origa theo dõi cấp JLPT của bạn, buộc từ điển hán tự và tham khảo ngữ pháp vào N5–N1, hiển thị phân tích ôn, nhưng không luyện dạng đề có giờ. Đó là việc của Migii hoặc đề mẫu chính thức.
 - **Nghe trong ứng dụng** dùng các cụm từ âm thanh chọn theo cấp: rèn hiểu thật, không phải dạng phần Nghe.
-- **Không có iOS.** Nếu bạn học hoàn toàn trên iPhone, đó là vật cản; chi tiết ở [so sánh các lựa chọn thay thế](/vi/blog/anki-alternative-japanese).
 
 ## Kết luận
 

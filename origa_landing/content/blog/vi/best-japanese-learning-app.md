@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Ứng dụng học tiếng Nhật tốt nhất (2026)"
 meta_description: "Không có ứng dụng tiếng Nhật 'tốt nhất' duy nhất. Chỉ có bộ tốt nhất cho mục tiêu của bạn. Phân tích theo danh mục: từ vựng, hán tự, ngữ pháp, nghe, JLPT — hướng dẫn cho người mới bắt đầu học tiếng Nhật."
 target_keywords: ["ứng dụng học tiếng nhật tốt nhất", "app học tiếng nhật", "học tiếng nhật cho người mới bắt đầu", "app học tiếng nhật offline", "hán tự n5"]
-lastmod: 2026-09-10
+lastmod: 2026-09-26
 published: 2026-07-19
 status: ready
 ---
@@ -98,7 +98,6 @@ Trong hầu hết trường hợp, một bộ làm việc là một ứng dụng
 
 - **Không tùy biến sâu như Anki.** Nếu bạn sống trong các mẫu thẻ HTML/CSS tùy chỉnh, Origa sẽ không thay thế được. Ưu tiên là rào cản gia nhập thấp, không phải kiểm soát tối đa.
 - **Ứng dụng trẻ hơn.** Anki đã được củng cố trường hợp biên hơn một thập kỷ và có thư viện bộ bài dựng sẵn lớn. Thư viện nội dung dựng sẵn của Origa nhỏ hơn, dù đang phát triển.
-- **Không có iOS.** iOS đã lên kế hoạch nhưng chưa ra mắt.
 - **Tương đương tính năng desktop/di động là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, hãy kiểm tra bản dựng hiện tại cho nền tảng của bạn.
 
 ## FAQ
@@ -121,4 +120,4 @@ Có. Các mô hình OCR và nhận dạng giọng nói chạy cục bộ, do đ�
 
 ### Nếu tôi chỉ học trên iPhone thì sao?
 
-Chưa. Origa chạy trên Windows, Linux, macOS, Android và web. iOS đã lên kế hoạch. Nếu iPhone là thiết bị duy nhất, hãy đợi bản phát hành iOS hoặc ở lại Anki.
+Có. Origa có trên App Store cho iPhone và iPad. Tiến độ học đồng bộ với bản desktop và web qua cùng một tài khoản.

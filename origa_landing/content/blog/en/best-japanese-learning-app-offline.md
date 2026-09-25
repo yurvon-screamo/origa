@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning Apps That Work Offline (2026)"
 meta_description: "'Offline' means different things in different apps: offline review, offline lookup, offline AI. A practical breakdown of which Japanese learning apps actually work without internet, and what you trade."
 target_keywords: ["learn japanese offline", "best app to learn japanese offline", "japanese learning app free offline", "offline japanese flashcards app"]
-lastmod: 2026-09-18
+lastmod: 2026-09-26
 published: 2026-07-21
 status: ready
 ---
@@ -126,7 +126,6 @@ There is no feature in Origa's normal flow that requires an internet connection.
 - **App size.** Hundreds of megabytes for the AI models. If storage is tight on your phone, this matters.
 - **OCR accuracy on stylized fonts.** Local OCR is good on standard text, weaker on manga lettering and decorative fonts. Manual correction is sometimes needed.
 - **Battery on intensive use.** Scanning many pages in a session will drain battery faster than text-only review.
-- **No iOS yet.** Origa runs on Windows, Linux, macOS, Android, and web. iOS is on the roadmap. If you need offline study on an iPhone today, AnkiMobile or AnkiDroid-on-Android-via-emulator are the realistic options.
 
 ## How to choose
 

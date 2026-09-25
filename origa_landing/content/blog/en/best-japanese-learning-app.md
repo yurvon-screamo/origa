@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning App (2026)"
 meta_description: "There is no single 'best' Japanese app. There's the best set for your goal. A category-by-category breakdown: vocabulary, kanji, grammar, listening, JLPT."
 target_keywords: ["best japanese learning app", "japanese learning app review", "how to choose japanese app", "japanese learning app comparison"]
-lastmod: 2026-09-10
+lastmod: 2026-09-26
 published: 2026-07-19
 status: ready
 ---
@@ -96,7 +96,6 @@ In most cases a working set is one memorization app plus one or two specialized 
 
 - **Not as deep customization as Anki.** If you build your own HTML/CSS card templates, Origa won't replace that. The priority is a low entry barrier, not maximum control.
 - **The app is younger.** Anki has a decade of edge-case hardening and a large library of ready-made decks. Origa's prebuilt content library is smaller, though growing.
-- **No iOS.** Origa runs on Windows, Linux, macOS, Android, and in the browser; iOS is planned but not yet available. If you study only on an iPhone, that's a real blocker today.
 - **Desktop/mobile parity is good but not absolute.** Before fully switching, check the current build for your platform.
 
 ## FAQ
@@ -119,4 +118,4 @@ Yes. For what "offline" covers in each app category, see [the offline article](/
 
 ### What if I only study on iPhone?
 
-Not yet. Origa runs on Windows, Linux, macOS, Android, and the web. iOS is planned. If iPhone is your only device, wait for the iOS release or stay on Anki.
+Yes. Origa is on the App Store for iPhone and iPad. Progress syncs with the desktop and web versions through the same account.

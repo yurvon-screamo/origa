@@ -5,7 +5,7 @@ locale: en
 meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
-lastmod: 2026-07-20
+lastmod: 2026-09-26
 published: 2026-07-19
 status: ready
 ---
@@ -83,7 +83,6 @@ That last row matters if you're considering a switch: you don't have to throw aw
 
 - **Origa is not as customizable as Anki.** If you live in custom HTML/CSS card templates, Origa won't replace that. It optimizes for low-friction defaults over maximal control.
 - **It's newer.** Anki has a decade-plus of edge-case hardening and a large deck ecosystem. Origa's library of pre-built content is growing but smaller.
-- **AnkiMobile on iOS has no Origa equivalent yet.** Origa runs on Windows, Linux, macOS, Android, and the web; iOS is on the roadmap but not shipping today. If your entire study flow is on an iPhone, that's a real blocker.
 - **The desktop/mobile feature parity is good but not absolute.** Check the current build for your platform before committing.
 
 If any of those break your workflow, that's a legitimate reason to stay on Anki or run both.
@@ -127,4 +126,4 @@ Yes. The OCR and speech-to-text models run locally, so card creation and review 
 
 ### What if I only study on iPhone?
 
-Not yet. Origa runs on Windows, Linux, macOS, Android, and web. iOS is planned but not available today. If iPhone is your only device, wait for the iOS release or stay on Anki.
+Yes. Origa is on the App Store for iPhone and iPad, and Anki deck import works there too. Progress syncs with the desktop and web versions.

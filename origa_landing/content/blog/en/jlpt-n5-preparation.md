@@ -5,7 +5,7 @@ locale: en
 meta_title: "JLPT N5 Preparation: Scope, Format, Timeline (2026)"
 meta_description: "What JLPT N5 actually requires: vocabulary and kanji scope, exam structure, passing scores, realistic prep time. A preparation plan and the mistakes that sink the listening section."
 target_keywords: ["jlpt n5", "jlpt n5 preparation", "what to know for jlpt n5", "jlpt n5 study plan"]
-lastmod: 2026-08-23
+lastmod: 2026-09-26
 published: 2026-08-23
 status: ready
 ---
@@ -91,7 +91,6 @@ Origa helps with the content side of preparation, within clear bounds:
 
 - **Not an exam simulator.** Origa tracks your JLPT level, ties kanji dictionaries and the grammar reference to levels N5–N1, and shows review analytics, but it doesn't drill the timed test format. That's Migii's job, or official sample tests.
 - **In-app listening** uses audio phrases with level-based selection: real comprehension training, not the Listening section format itself.
-- **No iOS.** If you study exclusively on iPhone, that's a blocker; details in [the alternatives comparison](/blog/anki-alternative-japanese).
 
 ## Bottom Line
 

@@ -26,7 +26,7 @@
 * **Умные алгоритмы** — система интервального повторения FSRS (как в Anki) оптимизирует интервалы повторения для каждого слова.
 * **Конфиденциальность** — все ИИ-модели работают локально на вашем устройстве. Фотографии, аудио и история занятий обрабатываются на устройстве и не загружаются во внешние сервисы.
 * **Автономность** — полноценная работа без интернета после первичной настройки.
-* **Кросс-платформенность** — Web, Windows, Linux, macOS, Android.
+* **Кросс-платформенность** — Web, Windows, Linux, macOS, Android, iOS.
 * **Обучение на родном языке** — интерфейс и словари на русском, английском, корейском и вьетнамском (индонезийский и испанский в планах).
 * **Аналитика JLPT** — отслеживание текущего уровня и прогнозирование прогресса.
 
@@ -73,6 +73,8 @@
 
 Проще всего установить Origa со [страницы загрузки](https://origa.uwuwu.net/ru/download) — она предложит подходящую сборку для вашей системы.
 
+[![Скачать в App Store](origa_landing/public/badges/app-store-ru.svg)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532)
+
 Прямые ссылки (последний стабильный релиз):
 
 | Платформа | Статус | Формат |
@@ -80,7 +82,8 @@
 | **Windows** | ✅ Готово | [установщик `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Готово | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
 | **Android** | ✅ Готово | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
-| **macOS** | ⏳ Скоро | Mac App Store |
+| **macOS** | ✅ Готово | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
+| **iOS / iPadOS** | ✅ Готово | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 
 Linux — `.deb` и `.rpm` обновляются из приложения; для Arch — установка из [`packaging/aur/origa-bin`](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) через `makepkg -si` (пакет в AUR скоро). Fedora одной командой:
 
@@ -116,14 +119,13 @@ sudo dnf install https://github.com/yurvon-screamo/origa/releases/latest/downloa
   Windows, macOS и Linux.
 * **Фронтенд**: **Leptos** — реактивный UI-фреймворк на Rust
   (WebAssembly), обеспечивающий мгновенный отклик интерфейса.
-* **Мобильная версия**: Нативная сборка под **Android**
+* **Мобильная версия**: Нативная сборка под **Android** и **iOS**
   через Tauri Mobile.
 
 ---
 
 ## 🚀 Планы развития
 
-* Мобильные платформы: релиз для iOS.
 * Социальные функции: соревнования между пользователями.
 * Новые типы упражнений: чтение текстов, манги, контекстные предложения, аудио, видео.
 * Локализация: добавить индонезийский и испанский.
