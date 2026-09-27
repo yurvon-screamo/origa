@@ -113,7 +113,7 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
 
 # Stage: static THP-disable launcher, built separately so Rust/WASM rebuilds
 # don't invalidate it (see origa_ui/thp_off.c for the rationale).
-FROM alpine:3.23 AS thp_off
+FROM alpine:3.24 AS thp_off
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache gcc musl-dev
@@ -131,7 +131,7 @@ RUN gcc -O2 -Wall -Wextra -s -static -o /tmp/thp_off /tmp/thp_off.c
 # component costs ~250 MB of resident memory (wasmtime engine + JIT
 # compilation on every boot) and is only needed for TrailBase's own
 # admin/auth UI, which this deployment does not expose.
-FROM alpine:3.23
+FROM alpine:3.24
 
 ARG TRAILBASE_VERSION=v0.33.16
 
