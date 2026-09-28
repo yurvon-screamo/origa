@@ -66,16 +66,9 @@ pub async fn load_bundle(bundle_type: KanjiBundleType, jlpt: &str) -> Result<(),
         }
     }
 
-    // Fetch from CDN
+    // Fetch from CDN with parse-failure self-heal (see `fetch_bundle`).
     let path = format!("{}_{}.json", bundle_type.cdn_prefix(), level);
-    let cdn = crate::repository::cdn_provider();
-    let json = cdn.fetch_text(&path).await?;
-
-    // Parse
-    let bundle: HashMap<String, String> =
-        serde_json::from_str(&json).map_err(|e| OrigaError::RepositoryError {
-            reason: format!("Failed to parse kanji bundle {}: {}", path, e),
-        })?;
+    let bundle = fetch_bundle(&path).await?;
 
     let chunk_count = bundle.len();
 
@@ -96,6 +89,35 @@ pub async fn load_bundle(bundle_type: KanjiBundleType, jlpt: &str) -> Result<(),
     Ok(())
 }
 
+/// Fetches a bundle JSON with parse-failure self-heal: a cached body
+/// that no longer parses (transit-poisoned HTTP 200) would fail every
+/// session under the cache-first provider — purge and refetch once. The
+/// purge runs BEFORE the refetch so the poison leaves the cache even
+/// when the refetch fails offline. A second parse failure propagates as
+/// `Err` (the caller logs the warn); no retry loop.
+async fn fetch_bundle(path: &str) -> Result<HashMap<String, String>, OrigaError> {
+    let cdn = crate::repository::cdn_provider();
+    let json = cdn.fetch_text(path).await?;
+
+    if let Ok(bundle) = parse_bundle(path, &json) {
+        return Ok(bundle);
+    }
+
+    tracing::warn!(path = %path, "Kanji bundle body failed to parse — purging poisoned cache entry and refetching");
+    if let Err(e) = crate::repository::cdn_provider::purge_entry(path).await {
+        tracing::warn!(path = %path, error = ?e, "Failed to purge poisoned kanji bundle entry");
+    }
+
+    let json = cdn.fetch_text(path).await?;
+    parse_bundle(path, &json)
+}
+
+fn parse_bundle(path: &str, json: &str) -> Result<HashMap<String, String>, OrigaError> {
+    serde_json::from_str(json).map_err(|e| OrigaError::RepositoryError {
+        reason: format!("Failed to parse kanji bundle {path}: {e}"),
+    })
+}
+
 /// Check if both bundle types for a JLPT level are loaded.
 pub fn is_level_loaded(jlpt: &str) -> bool {
     let level = normalize_jlpt(jlpt).to_string();
@@ -109,7 +131,23 @@ pub fn is_level_loaded(jlpt: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
+
+    #[rstest]
+    #[case::valid_bundle(r#"{"医": "<svg/>"}"#, true)]
+    #[case::empty_object("{}", true)]
+    #[case::truncated_body(r#"{"医": "<svg"#, false)]
+    #[case::html_error_page("<html>502</html>", false)]
+    #[case::empty_body("", false)]
+    #[case::non_string_values(r#"{"医": 42}"#, false)]
+    fn parse_bundle_classifies_cached_bodies(#[case] body: &str, #[case] parseable: bool) {
+        assert_eq!(
+            parse_bundle("kanji_animations_n4.json", body).is_ok(),
+            parseable
+        );
+    }
 
     #[test]
     fn bundle_type_cdn_prefix() {

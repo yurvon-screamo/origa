@@ -320,6 +320,44 @@ impl CdnProvider for CacheFirstCdnProvider {
     }
 }
 
+/// Removes one entry from the CDN cache. Used by content-specific
+/// self-heal paths (kanji art / JLPT bundles): a poisoned cache body
+/// (HTTP 200 the origin never produced) never revalidates under the
+/// cache-first policy, so the healer purges the entry explicitly. The
+/// purge runs BEFORE the network refetch so the poison is gone from the
+/// cache even when the refetch fails offline — the next read is then an
+/// honest cache miss instead of the same garbage.
+pub async fn purge_entry(path: &str) -> Result<(), OrigaError> {
+    let cache = open_cache().await?;
+    JsFuture::from(cache.delete_with_str(&cdn_cache_url(path)))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to delete cache entry: {e:?}"),
+        })?;
+    Ok(())
+}
+
+/// Network-only text fetch that overwrites the cache entry with the
+/// fresh body — the refetch half of the self-heal pair above. The
+/// unreachable guard mirrors `FetchDecision::FailOffline`: a CDN proven
+/// unreachable must refuse instantly instead of hanging every healed
+/// kanji on the full idle deadline.
+pub async fn fetch_text_bypassing_cache(path: &str) -> Result<String, OrigaError> {
+    if is_cdn_unreachable() {
+        tracing::debug!(path = %path, "Bypass fetch refused — CDN unreachable");
+        return Err(cdn_unreachable_error(path));
+    }
+
+    let (response, text) = fetch_text_from_cdn(path).await?;
+
+    let cache = open_cache().await?;
+    if let Err(e) = save_response_to_cache(&cache, path, &response).await {
+        tracing::warn!(path = %path, error = ?e, "Failed to cache refreshed text response");
+    }
+
+    Ok(text)
+}
+
 pub fn get_cached_blob_url(path: &str) -> Option<String> {
     let key = ensure_leading_slash(path);
     let cache = blob_url_cache().lock().ok()?;
@@ -559,6 +597,32 @@ mod tests {
             reason: "HTTP 503".to_string(),
         };
         assert!(!CdnUnreachableError::is_match(&http));
+    }
+
+    #[tokio::test]
+    async fn bypass_refetch_refuses_instantly_when_cdn_unreachable() {
+        // The guard clears the global flag on ANY exit path, so a failing
+        // assert cannot leak the verdict into parallel/later tests.
+        struct UnreachableGuard;
+        impl Drop for UnreachableGuard {
+            fn drop(&mut self) {
+                clear_cdn_unreachable();
+            }
+        }
+        clear_cdn_unreachable();
+        mark_cdn_unreachable();
+        let _guard = UnreachableGuard;
+
+        let started = std::time::Instant::now();
+        let error = fetch_text_bypassing_cache("/heal-probe/never-cached.json")
+            .await
+            .expect_err("unreachable CDN must refuse the bypass fetch");
+
+        assert!(CdnUnreachableError::is_match(&error), "got: {error:?}");
+        assert!(
+            started.elapsed().as_millis() < 900,
+            "the refusal must be instant — no idle-deadline wait"
+        );
     }
 
     #[test]

@@ -160,6 +160,29 @@ pub fn kanji_art_exists(bundle_type: KanjiBundleType, kanji: char) -> Option<boo
         .and_then(|guard| guard.as_ref().map(|m| m.contains(bundle_type, kanji)))
 }
 
+/// A plausible kanji-art SVG body. Deliberately strict: S3/proxy error
+/// payloads are XML (`<?xml … ?><Error>…`) or HTML — neither starts with
+/// `<svg`, while every real art file does (animations `<svg xmlns=…`,
+/// frames `<svg width=…`). An XML prolog is therefore NOT accepted — it
+/// would let origin error pages through as "valid" art. The same
+/// invariant is asserted deploy-side (`deploy_cdn.py`), so a future art
+/// regeneration that adds a prolog fails the deploy instead of poisoning
+/// immutable CDN objects.
+fn is_plausible_svg(text: &str) -> bool {
+    // U+FEFF is not whitespace for `trim_start`, so it gets its own strip.
+    text.trim_start()
+        .trim_start_matches('\u{FEFF}')
+        .starts_with("<svg")
+}
+
+/// Bundle entries that fail the plausibility check are treated as
+/// absent: a transit-poisoned bundle (valid JSON, garbage SVG string)
+/// must not pin a kanji to garbage when the CDN has a healthy body one
+/// layer below.
+fn plausible_bundle_svg(bundle_svg: Option<String>) -> Option<String> {
+    bundle_svg.filter(|svg| is_plausible_svg(svg))
+}
+
 /// Fetches one kanji art SVG through the availability gates (#540) —
 /// the shared runtime path for `KanjiAnimation` and
 /// `KanjiDrawingPractice`:
@@ -178,9 +201,15 @@ pub async fn fetch_kanji_art_svg(
     kanji: &str,
     path: &str,
 ) -> Option<String> {
-    // 1. In-memory JLPT bundles (no CDN request at all).
+    tracing::debug!(bundle_type = ?bundle_type, kanji = %kanji, "kanji art fetch entry");
+    // 1. In-memory JLPT bundles (no CDN request at all). Implausible
+    //    entries count as absent — see `plausible_bundle_svg`.
     for level in ["n5", "n4", "n3", "n2", "n1"] {
-        if let Some(svg) = crate::loaders::kanji_bundle_store::get_svg(bundle_type, level, kanji) {
+        if let Some(svg) = plausible_bundle_svg(crate::loaders::kanji_bundle_store::get_svg(
+            bundle_type,
+            level,
+            kanji,
+        )) {
             return Some(svg);
         }
     }
@@ -201,18 +230,83 @@ pub async fn fetch_kanji_art_svg(
         }
     }
 
-    // 3. CDN fetch (cache-first); record the miss only when the network
-    // was reachable — an offline failure must stay retryable.
-    match crate::repository::cdn_provider().fetch_text(path).await {
-        Ok(text) => Some(text),
-        Err(e) => {
-            if !crate::repository::cdn_provider::CdnUnreachableError::is_match(&e)
-                && let Some(kanji_char) = single_kanji
-            {
+    // 3. CDN fetch (cache-first) with poisoning self-heal. The miss is
+    // recorded only when the failure is definitive — an offline failure
+    // must stay retryable (module contract).
+    let outcome = fetch_art_svg_from_cdn(path).await;
+    // The outcome variant is logged, not the payload: an `Svg` body is
+    // the whole art file (up to tens of KB per fetch).
+    let outcome_log = match &outcome {
+        FetchArtOutcome::Svg(text) => format!("Svg({} bytes)", text.len()),
+        FetchArtOutcome::DefinitiveMiss => "DefinitiveMiss".to_string(),
+        FetchArtOutcome::Offline => "Offline".to_string(),
+    };
+    tracing::debug!(bundle_type = ?bundle_type, kanji = %kanji, outcome = %outcome_log, "kanji art fetch outcome");
+    match outcome {
+        FetchArtOutcome::Svg(text) => Some(text),
+        FetchArtOutcome::DefinitiveMiss => {
+            if let Some(kanji_char) = single_kanji {
                 record_kanji_art_miss(bundle_type, kanji_char);
             }
             None
         },
+        FetchArtOutcome::Offline => None,
+    }
+}
+
+/// Outcome of the CDN art fetch after the poisoning self-heal: `Svg` is
+/// a plausible body; `DefinitiveMiss` is safe to negative-cache for the
+/// session; `Offline` must stay retryable (no negative caching).
+#[derive(Debug)]
+enum FetchArtOutcome {
+    Svg(String),
+    DefinitiveMiss,
+    Offline,
+}
+
+fn classify_art_fetch_error(error: &OrigaError) -> FetchArtOutcome {
+    if crate::repository::cdn_provider::CdnUnreachableError::is_match(error) {
+        FetchArtOutcome::Offline
+    } else {
+        FetchArtOutcome::DefinitiveMiss
+    }
+}
+
+/// The CDN leg of [`fetch_kanji_art_svg`]. A 200 body that is not an SVG
+/// is poisoning: the cache-first provider never revalidates, so the only
+/// way back to healthy art is purge + one network-only refetch.
+async fn fetch_art_svg_from_cdn(path: &str) -> FetchArtOutcome {
+    let provider = crate::repository::cdn_provider();
+
+    let text = match provider.fetch_text(path).await {
+        Ok(text) => text,
+        Err(e) => return classify_art_fetch_error(&e),
+    };
+    if is_plausible_svg(&text) {
+        return FetchArtOutcome::Svg(text);
+    }
+
+    // The purge runs BEFORE the refetch so the poisoned entry is gone
+    // from the cache even when the refetch fails (offline) — the next
+    // read is an honest cache miss, not the same garbage.
+    tracing::warn!(
+        path = %path,
+        bytes = text.len(),
+        "Implausible kanji art body — purging poisoned cache entry and refetching"
+    );
+    if let Err(e) = crate::repository::cdn_provider::purge_entry(path).await {
+        tracing::warn!(path = %path, error = ?e, "Failed to purge poisoned kanji art entry");
+    }
+
+    match crate::repository::cdn_provider::fetch_text_bypassing_cache(path).await {
+        Ok(refetched) if is_plausible_svg(&refetched) => FetchArtOutcome::Svg(refetched),
+        // The origin itself is broken (refetched garbage): definitive —
+        // recording the miss prevents a per-mount purge/refetch loop.
+        Ok(_) => {
+            tracing::warn!(path = %path, "Refetched kanji art body is still implausible");
+            FetchArtOutcome::DefinitiveMiss
+        },
+        Err(e) => classify_art_fetch_error(&e),
     }
 }
 
@@ -265,7 +359,64 @@ mod tests {
     use std::cell::RefCell;
     use std::future::Future;
 
+    use rstest::rstest;
+
     use super::*;
+
+    #[rstest]
+    #[case::plain_animation("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"109\">", true)]
+    #[case::plain_frames("<svg width=\"763\" height=\"109\">", true)]
+    #[case::leading_whitespace("  \n<svg xmlns=\"http://www.w3.org/2000/svg\">", true)]
+    #[case::bom_prefixed("\u{FEFF}<svg xmlns=\"http://www.w3.org/2000/svg\">", true)]
+    #[case::xml_prolog_is_rejected("<?xml version=\"1.0\"?><svg xmlns=\"x\">", false)]
+    #[case::s3_error_xml(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Error><Code>NoSuchKey</Code></Error>",
+        false
+    )]
+    #[case::html_error_page("<html><body>502 Bad Gateway</body></html>", false)]
+    #[case::empty_body("", false)]
+    #[case::whitespace_only("   \n\t", false)]
+    fn is_plausible_svg_classifies_art_bodies(#[case] body: &str, #[case] plausible: bool) {
+        assert_eq!(is_plausible_svg(body), plausible);
+    }
+
+    #[test]
+    fn fetch_errors_classify_into_offline_and_definitive_miss() {
+        // Mirrors cdn_provider's refusal marker: an unreachable-CDN
+        // refusal must stay retryable (no negative caching).
+        let refusal = OrigaError::NetworkError {
+            url: "kanji_animations/%E5%8C%BB.svg".to_string(),
+            reason: "cdn unreachable: skipping request after probe verdict".to_string(),
+        };
+        assert!(matches!(
+            classify_art_fetch_error(&refusal),
+            FetchArtOutcome::Offline
+        ));
+
+        // Any other failure (HTTP status, stall) is a definitive miss —
+        // safe to negative-cache for the session.
+        let http = OrigaError::NetworkError {
+            url: "kanji_animations/%E5%8C%BB.svg".to_string(),
+            reason: "HTTP 404".to_string(),
+        };
+        assert!(matches!(
+            classify_art_fetch_error(&http),
+            FetchArtOutcome::DefinitiveMiss
+        ));
+    }
+
+    #[test]
+    fn implausible_bundle_entries_are_treated_as_absent() {
+        assert_eq!(
+            plausible_bundle_svg(Some("<svg xmlns=\"x\"/>".to_string())).as_deref(),
+            Some("<svg xmlns=\"x\"/>")
+        );
+        assert_eq!(
+            plausible_bundle_svg(Some("<html>garbage</html>".to_string())),
+            None
+        );
+        assert_eq!(plausible_bundle_svg(None), None);
+    }
 
     /// Recording mock over the external CDN boundary (same pattern as
     /// grammar_precompute_loader tests).

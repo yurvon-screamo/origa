@@ -4,6 +4,8 @@ pub mod dictionary;
 pub mod furigana_dict_loader;
 pub mod grammar_precompute_loader;
 pub mod jlpt_content_loader;
+#[cfg(all(target_arch = "wasm32", test))]
+mod kanji_art_heal_wasm_tests;
 pub mod kanji_art_manifest;
 pub mod kanji_bundle_store;
 pub mod loading_message;
