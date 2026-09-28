@@ -23,6 +23,7 @@ use wasm_bindgen_test::*;
 use crate::loaders::kanji_art_manifest::{fetch_kanji_art_svg, reset_kanji_art_state};
 use crate::loaders::kanji_bundle_store::KanjiBundleType;
 use crate::repository::cdn_provider::{CDN_CACHE_NAME, cdn_cache_url};
+use origa::traits::CdnProvider;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -68,26 +69,49 @@ async fn poisoned_kanji_art_entry_is_purged_and_refetched() {
         .expect("cache.put resolved");
 
     // The shared art path: cache hit (poison) → purge → network refetch.
-    let svg = fetch_kanji_art_svg(KanjiBundleType::Animations, KANJI, ART_PATH)
-        .await
-        .expect("the heal must produce art from the network");
+    let healed = fetch_kanji_art_svg(KanjiBundleType::Animations, KANJI, ART_PATH).await;
 
+    // THE core guarantee, provable in every environment: the poison does
+    // not survive the read. Either the purged entry was overwritten with
+    // the healed body, or the refetch failed and the entry is gone —
+    // both leave the cache poison-free.
+    let cached = read_cache_text(&cache, ART_PATH).await;
     assert!(
-        svg.starts_with("<svg"),
-        "healed body must be an SVG, got: {:?}",
-        &svg[..svg.len().min(60)]
+        cached
+            .as_deref()
+            .map_or(true, |text| !text.contains("poisoned")),
+        "the poisoned entry must not survive the read, got: {:?}",
+        cached.as_deref().map(|text| &text[..text.len().min(60)])
     );
 
-    // The purged entry must have been overwritten with the healed body —
-    // the next read is a plausible cache hit, not the same garbage.
-    let cached = read_cache_text(&cache, ART_PATH)
-        .await
-        .expect("the healed entry must be cached");
-    assert!(
-        cached.starts_with("<svg"),
-        "cache entry must hold the healed body, got: {:?}",
-        &cached[..cached.len().min(60)]
-    );
+    match healed {
+        Some(svg) => {
+            assert!(
+                svg.starts_with("<svg"),
+                "healed body must be an SVG, got: {:?}",
+                &svg[..svg.len().min(60)]
+            );
+            let cached = cached.expect("the healed body must be cached");
+            assert!(cached.starts_with("<svg"));
+        },
+        None => {
+            // The refetch failed: acceptable only when this environment
+            // cannot reach the production CDN at all (CI runners vs the
+            // RU-hosted origin). If a direct fetch succeeds, the heal
+            // must have succeeded too — a None here is a regression.
+            let direct = crate::repository::cdn_provider().fetch_text(ART_PATH).await;
+            assert!(
+                direct.is_err(),
+                "the heal returned None while the CDN is reachable — regression"
+            );
+            web_sys::console::warn_1(
+                &format!(
+                    "production CDN unreachable in this environment, asserting purge only: {direct:?}"
+                )
+                .into(),
+            );
+        },
+    }
 
     reset_kanji_art_state();
 }
