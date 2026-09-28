@@ -629,6 +629,39 @@ def _force_all_deploy(dry_run: bool) -> None:
     print("\nForce-all deploy complete!", flush=True)
 
 
+def assert_kanji_art_plausible(cdn_dir: Path) -> None:
+    """Fail the deploy when a kanji art SVG has an implausible body.
+
+    The client-side self-heal (``origa_ui ... kanji_art_manifest.rs::
+    is_plausible_svg``) treats any 200 body that does not start with
+    ``<svg`` as a poisoned cache entry and purges it. A regenerated art
+    file with an XML prolog (or BOM+prolog) would therefore be rejected
+    by every client forever. Asserting the invariant here — at deploy
+    time, before anything is uploaded — turns that silent client-side
+    breakage into a loud deploy failure.
+    """
+    checked = 0
+    for folder in ("kanji_animations", "kanji_frames"):
+        dir_path = cdn_dir / folder
+        if not dir_path.is_dir():
+            continue
+        for svg_path in sorted(dir_path.glob("*.svg")):
+            checked += 1
+            head = svg_path.read_bytes()[:32]
+            head = head.lstrip().lstrip(b"\xef\xbb\xbf").lstrip()
+            if not head.startswith(b"<svg"):
+                print(
+                    f"ERROR: {svg_path}: implausible kanji art body "
+                    "(must start with '<svg'; see is_plausible_svg)",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+    if checked:
+        print(
+            f"  kanji art bodies plausible ({checked} files, <svg prolog invariant)"
+        )
+
+
 def generate_kanji_art_manifest(cdn_dir: Path) -> None:
     """Write kanji_art_manifest.json (#540): the kanji that actually have
     per-file SVG art on the CDN, per kind. Clients filter their download
@@ -761,6 +794,10 @@ def main() -> None:
                 print(f"  {line}")
         else:
             print(f"  {script} not found, skipping")
+
+    # Kanji art invariant: fail before anything is uploaded when a local
+    # art file would be rejected by the client-side plausibility check.
+    assert_kanji_art_plausible(cdn_dir)
 
     # Kanji art manifest (#540): list which kanji have per-file SVG art so
     # clients stop probing missing files with 404s.

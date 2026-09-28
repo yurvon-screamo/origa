@@ -368,6 +368,56 @@ class TestGenerateKanjiArtManifest:
         assert manifest == {"frames": [], "animations": []}
 
 
+class TestAssertKanjiArtPlausible:
+    """The client self-heal (is_plausible_svg) rejects any 200 art body
+    that does not start with '<svg' — including XML prologs. The deploy
+    must fail loudly instead of shipping such a file to immutable CDN
+    objects."""
+
+    def test_passes_for_svg_prolog_with_whitespace_and_bom(self, tmp_path):
+        from deploy_cdn import assert_kanji_art_plausible
+
+        animations = tmp_path / "kanji_animations"
+        animations.mkdir()
+        (animations / "日.svg").write_text("<svg xmlns=\"x\"/>", encoding="utf-8")
+        frames = tmp_path / "kanji_frames"
+        frames.mkdir()
+        (frames / "本.svg").write_bytes(b"\xef\xbb\xbf  <svg xmlns=\"x\"/>")
+
+        assert_kanji_art_plausible(tmp_path)  # must not raise
+
+    def test_fails_on_xml_prolog(self, tmp_path):
+        import pytest
+
+        from deploy_cdn import assert_kanji_art_plausible
+
+        art = tmp_path / "kanji_animations"
+        art.mkdir()
+        (art / "日.svg").write_text(
+            "<?xml version=\"1.0\"?><svg xmlns=\"x\"/>", encoding="utf-8"
+        )
+
+        with pytest.raises(SystemExit):
+            assert_kanji_art_plausible(tmp_path)
+
+    def test_fails_on_html_error_body(self, tmp_path):
+        import pytest
+
+        from deploy_cdn import assert_kanji_art_plausible
+
+        art = tmp_path / "kanji_animations"
+        art.mkdir()
+        (art / "日.svg").write_text("<html>502</html>", encoding="utf-8")
+
+        with pytest.raises(SystemExit):
+            assert_kanji_art_plausible(tmp_path)
+
+    def test_skips_missing_art_directories(self, tmp_path):
+        from deploy_cdn import assert_kanji_art_plausible
+
+        assert_kanji_art_plausible(tmp_path)  # no art dirs at all — no-op
+
+
 # ---------------------------------------------------------------------------
 # sync_directories — per-dir size-only change detection (#551)
 # ---------------------------------------------------------------------------
