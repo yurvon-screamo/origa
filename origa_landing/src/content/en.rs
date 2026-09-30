@@ -218,7 +218,6 @@ pub static CONTENT: Content = Content {
     download_linux_formats: ".deb, .rpm, AUR (yay -S origa-bin)",
     download_linux_aur: "Linux (Arch / AUR)",
     download_linux_aur_formats: "Install from the packaged PKGBUILD (AUR listing coming soon)",
-    download_linux_terminal: "or install via terminal:",
     download_macos: "macOS",
     download_macos_formats: "Mac",
     download_android: "Android",

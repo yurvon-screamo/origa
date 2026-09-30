@@ -218,7 +218,6 @@ pub static CONTENT: Content = Content {
     download_linux_formats: ".deb, .rpm, AUR (yay -S origa-bin)",
     download_linux_aur: "Linux (Arch / AUR)",
     download_linux_aur_formats: "Cài từ PKGBUILD trong repo (gói AUR sắp có)",
-    download_linux_terminal: "hoặc cài qua terminal:",
     download_macos: "macOS",
     download_macos_formats: "Mac",
     download_android: "Android",

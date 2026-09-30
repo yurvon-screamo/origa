@@ -924,31 +924,24 @@
     display: block;
 }
 
-.download-terminal {
-    margin-top: var(--space-md);
+/* Row of small action buttons (Linux card: .deb + .rpm side by side).
+   Declared after .btn so the smaller padding/size wins the cascade. */
+.download-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
 }
 
-.download-terminal__label {
-    font-family: var(--font-mono);
+.btn-sm {
+    padding: 8px 12px;
     font-size: var(--text-2xs);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-bottom: var(--space-xs);
 }
 
-.download-terminal__cmd {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    line-height: 1.6;
-    background: var(--bg-aged);
-    border: 1px solid var(--border-light);
-    padding: var(--space-xs) var(--space-sm);
-    overflow-wrap: anywhere;
-    text-align: left;
-    color: var(--fg-black);
-    user-select: all;
+@media (min-width: 640px) {
+    .btn-sm {
+        padding: 10px 16px;
+        font-size: var(--text-label-sm);
+    }
 }
 
 /* ========================================

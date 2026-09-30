@@ -28,11 +28,6 @@ const DOWNLOAD_LINUX_RPM: &str =
 // the package is live (ADR-058 checklist).
 const DOWNLOAD_LINUX_ARCH: &str =
     "https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin";
-// Fedora one-liner shown on the Linux card's terminal chip: the rpm channel
-// keeps the in-app updater, dnf covers the initial install (ADR-058).
-fn download_linux_terminal_cmd() -> String {
-    format!("sudo dnf install {DOWNLOAD_LINUX_RPM}")
-}
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
@@ -116,10 +111,11 @@ pub fn DownloadPage() -> impl IntoView {
                     name=c.download_linux
                     formats=c.download_linux_formats
                     href=DOWNLOAD_LINUX_DEB
-                    button_text=c.download_button
+                    button_text=".deb"
                     umami_event="download_linux"
-                    terminal_label=c.download_linux_terminal
-                    terminal_cmd=download_linux_terminal_cmd()
+                    secondary_href=DOWNLOAD_LINUX_RPM
+                    secondary_text=".rpm"
+                    secondary_event="download_linux_rpm"
                 />
                 // Arch — the AUR helper is the update channel (ADR-058): the
                 // in-app updater skips systems without dpkg/rpm, so the card
@@ -182,14 +178,28 @@ fn DownloadCard(
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
     // with a real action; nothing to track otherwise.
     #[prop(optional)] umami_event: Option<&'static str>,
-    // Optional terminal one-liner rendered as a copyable code chip under the
-    // button (used by the Linux card: Fedora dnf one-liner, ADR-058).
-    #[prop(optional)] terminal_label: Option<&'static str>,
-    #[prop(optional)] terminal_cmd: Option<String>,
+    // Optional second action rendered as a small button in the same row
+    // (Linux card: `.rpm` next to `.deb`).
+    #[prop(optional)] secondary_href: Option<&'static str>,
+    #[prop(optional)] secondary_text: Option<&'static str>,
+    #[prop(optional)] secondary_event: Option<&'static str>,
 ) -> impl IntoView {
+    let secondary: AnyView = match (secondary_href, secondary_text) {
+        (Some(href), Some(text)) => view! {
+            <a href=href class="btn btn-sm" attr:data-umami-event=secondary_event>
+                {text}" →"
+            </a>
+        }
+        .into_any(),
+        _ => ().into_any(),
+    };
+
     let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
         view! {
-            <a href=href class="btn" attr:data-umami-event=umami_event>{btn}" →"</a>
+            <div class="download-actions">
+                <a href=href class="btn btn-sm" attr:data-umami-event=umami_event>{btn}" →"</a>
+                {secondary}
+            </div>
         }
         .into_any()
     } else if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
@@ -215,15 +225,6 @@ fn DownloadCard(
                 </div>
             </div>
             {action}
-            {match (terminal_label, terminal_cmd) {
-                (Some(label), Some(cmd)) => view! {
-                    <div class="download-terminal">
-                        <p class="download-terminal__label">{label}</p>
-                        <code class="download-terminal__cmd">{cmd}</code>
-                    </div>
-                }.into_any(),
-                _ => ().into_any(),
-            }}
         </div>
     }
 }
