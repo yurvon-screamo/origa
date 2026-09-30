@@ -20,6 +20,8 @@ const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_DEB: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb";
+const DOWNLOAD_LINUX_RPM: &str =
+    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm";
 // AUR registration is paused (2026-09-20), so until the origa-bin package is
 // published the card links the in-repo PKGBUILD (`makepkg -si`). Switch this
 // to https://aur.archlinux.org/packages/origa-bin in a follow-up commit once
@@ -109,8 +111,11 @@ pub fn DownloadPage() -> impl IntoView {
                     name=c.download_linux
                     formats=c.download_linux_formats
                     href=DOWNLOAD_LINUX_DEB
-                    button_text=c.download_button
+                    button_text=".deb"
                     umami_event="download_linux"
+                    secondary_href=DOWNLOAD_LINUX_RPM
+                    secondary_text=".rpm"
+                    secondary_event="download_linux_rpm"
                 />
                 // Arch — the AUR helper is the update channel (ADR-058): the
                 // in-app updater skips systems without dpkg/rpm, so the card
@@ -173,10 +178,28 @@ fn DownloadCard(
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
     // with a real action; nothing to track otherwise.
     #[prop(optional)] umami_event: Option<&'static str>,
+    // Optional second action rendered as a small button in the same row
+    // (Linux card: `.rpm` next to `.deb`).
+    #[prop(optional)] secondary_href: Option<&'static str>,
+    #[prop(optional)] secondary_text: Option<&'static str>,
+    #[prop(optional)] secondary_event: Option<&'static str>,
 ) -> impl IntoView {
+    let secondary: AnyView = match (secondary_href, secondary_text) {
+        (Some(href), Some(text)) => view! {
+            <a href=href class="btn btn-sm" attr:data-umami-event=secondary_event>
+                {text}" →"
+            </a>
+        }
+        .into_any(),
+        _ => ().into_any(),
+    };
+
     let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
         view! {
-            <a href=href class="btn" attr:data-umami-event=umami_event>{btn}" →"</a>
+            <div class="download-actions">
+                <a href=href class="btn btn-sm" attr:data-umami-event=umami_event>{btn}" →"</a>
+                {secondary}
+            </div>
         }
         .into_any()
     } else if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
