@@ -226,6 +226,7 @@ pub static CONTENT: Content = Content {
     download_ios: "iOS",
     download_ios_formats: "iPhone, iPad",
     download_app_store_badge_alt: "Download on the App Store",
+    download_rustore_badge_alt: "Get it on RuStore",
     download_button: "Download",
     download_subtitle: "Download Origa to any device. Everything works offline.",
     download_try_web: "Open →",
