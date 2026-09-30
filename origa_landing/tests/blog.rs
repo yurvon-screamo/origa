@@ -436,26 +436,56 @@ async fn en_article_has_article_jsonld() {
 }
 
 #[tokio::test]
-async fn en_article_jsonld_has_distinct_dates() {
-    // The Article JSON-LD must carry distinct `datePublished` (original
-    // publication) and `dateModified` (last edit) values once the
-    // `published` frontmatter field is populated. Parsing the JSON-LD block
-    // (rather than substring-matching) protects the assertion from
-    // serde_json formatting drift.
+async fn en_article_jsonld_dates_follow_frontmatter() {
+    // The Article JSON-LD must mirror the article's frontmatter:
+    // `datePublished` ← `published`, `dateModified` ← `lastmod`, and the
+    // two must be distinct (original publication vs last edit). Dates are
+    // read from the content file rather than hardcoded — a `lastmod` bump
+    // must not require a test edit. Parsing the JSON-LD block (rather
+    // than substring-matching) protects the assertion from serde_json
+    // formatting drift.
     let (_, body) = get("/blog/anki-alternative-japanese").await;
     let block = find_jsonld_block_by_type(&body, "Article");
     let value: serde_json::Value =
         serde_json::from_str(&block).expect("Article JSON-LD must be valid JSON");
+    let (published, lastmod) = article_frontmatter_dates("anki-alternative-japanese");
     assert_eq!(
         value.get("datePublished").and_then(|v| v.as_str()),
-        Some("2026-07-19"),
+        Some(published.as_str()),
         "datePublished must come from the `published` frontmatter field; got block: {block}"
     );
     assert_eq!(
         value.get("dateModified").and_then(|v| v.as_str()),
-        Some("2026-07-20"),
+        Some(lastmod.as_str()),
         "dateModified must come from the `lastmod` frontmatter field; got block: {block}"
     );
+    assert_ne!(
+        published, lastmod,
+        "the fixture article must keep distinct publication and modification dates"
+    );
+}
+
+/// Read `published` and `lastmod` from an article's EN content file.
+/// Frontmatter dates are the source of truth for the Article JSON-LD, so
+/// the test compares rendered values against the file instead of literals
+/// (a `lastmod` bump must not require a test edit). Panics if the file or
+/// either field is missing — every published article carries both.
+fn article_frontmatter_dates(slug: &str) -> (String, String) {
+    let path = format!("{}/content/blog/en/{slug}.md", env!("CARGO_MANIFEST_DIR"));
+    let md = std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("article content file must exist at {path}: {e}"));
+    let frontmatter = md
+        .strip_prefix("---\n")
+        .and_then(|rest| rest.split("\n---").next())
+        .unwrap_or_else(|| panic!("article {path} must start with a frontmatter block"));
+    let field = |name: &str| {
+        frontmatter
+            .lines()
+            .find_map(|line| line.strip_prefix(&format!("{name}: ")))
+            .map(|value| value.trim().to_string())
+            .unwrap_or_else(|| panic!("frontmatter field `{name}` missing in {path}"))
+    };
+    (field("published"), field("lastmod"))
 }
 
 /// Find the first JSON-LD block whose `@type` matches `type_name`. Mirrors the

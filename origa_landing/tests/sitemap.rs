@@ -160,41 +160,59 @@ fn lastmod_for_url(xml: &str, url: &str) -> String {
     panic!("URL {url} not found in sitemap");
 }
 
+/// Read `lastmod` from a content file's frontmatter. Frontmatter dates are
+/// the source of truth for the sitemap (see `build.rs::apply_per_url_lastmod`),
+/// so the test compares rendered values against the files instead of literals
+/// (a content edit must not require a test update).
+fn frontmatter_lastmod(content_path: &str) -> String {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("content")
+        .join(content_path);
+    let md = std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("content file not found at {}: {e}", path.display()));
+    let frontmatter = md
+        .strip_prefix("---\n")
+        .and_then(|rest| rest.split("\n---").next())
+        .unwrap_or_else(|| panic!("{} must start with a frontmatter block", path.display()));
+    frontmatter
+        .lines()
+        .find_map(|line| line.strip_prefix("lastmod: "))
+        .map(|value| value.trim().to_string())
+        .unwrap_or_else(|| panic!("`lastmod` missing in {}", path.display()))
+}
+
 #[test]
 fn article_urls_carry_frontmatter_lastmod() {
     // The core freshness contract: article URLs must expose their own
-    // frontmatter dates, not the build date. Pins two known pairs so a
-    // regression in `build.rs::apply_per_url_lastmod` cannot pass silently.
-    // Update these expectations when the pinned articles are actually edited.
+    // frontmatter dates, not the build date. Each expectation is read from
+    // the content file itself (frontmatter is the source of truth — see
+    // `build.rs::apply_per_url_lastmod`), so a `lastmod` bump cannot pass
+    // silently — the sitemap must follow the file — yet never needs a test
+    // edit.
     let xml = sitemap_contents();
-    assert_eq!(
-        lastmod_for_url(&xml, "https://origa.uwuwu.net/ru/blog/yaponskiy-s-nulya"),
-        "2026-07-21",
-        "RU yaponskiy-s-nulya must use its frontmatter lastmod"
-    );
-    assert_eq!(
-        lastmod_for_url(
-            &xml,
-            "https://origa.uwuwu.net/blog/anki-alternative-japanese"
+    let cases = [
+        (
+            "blog/ru/yaponskiy-s-nulya.md",
+            "https://origa.uwuwu.net/ru/blog/yaponskiy-s-nulya",
         ),
-        "2026-07-20",
-        "EN anki-alternative must use its frontmatter lastmod"
-    );
-    assert_eq!(
-        lastmod_for_url(&xml, "https://origa.uwuwu.net/ru/docs/fsrs"),
-        "2026-08-19",
-        "RU fsrs doc must use its frontmatter lastmod"
-    );
-    assert_eq!(
-        lastmod_for_url(&xml, "https://origa.uwuwu.net/ko/docs/fsrs"),
-        "2026-08-19",
-        "KO fsrs doc must use its frontmatter lastmod"
-    );
-    assert_eq!(
-        lastmod_for_url(&xml, "https://origa.uwuwu.net/blog/how-many-kanji-to-learn"),
-        "2026-08-23",
-        "new-cluster article must use its frontmatter lastmod"
-    );
+        (
+            "blog/en/anki-alternative-japanese.md",
+            "https://origa.uwuwu.net/blog/anki-alternative-japanese",
+        ),
+        ("docs/ru/fsrs.md", "https://origa.uwuwu.net/ru/docs/fsrs"),
+        ("docs/ko/fsrs.md", "https://origa.uwuwu.net/ko/docs/fsrs"),
+        (
+            "blog/en/how-many-kanji-to-learn.md",
+            "https://origa.uwuwu.net/blog/how-many-kanji-to-learn",
+        ),
+    ];
+    for (content_path, url) in cases {
+        assert_eq!(
+            lastmod_for_url(&xml, url),
+            frontmatter_lastmod(content_path),
+            "{url} must use its frontmatter lastmod ({content_path})"
+        );
+    }
 }
 
 #[test]
