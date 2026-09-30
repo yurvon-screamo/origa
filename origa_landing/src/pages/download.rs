@@ -20,19 +20,12 @@ const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_DEB: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb";
-const DOWNLOAD_LINUX_RPM: &str =
-    "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm";
 // AUR registration is paused (2026-09-20), so until the origa-bin package is
 // published the card links the in-repo PKGBUILD (`makepkg -si`). Switch this
 // to https://aur.archlinux.org/packages/origa-bin in a follow-up commit once
 // the package is live (ADR-058 checklist).
 const DOWNLOAD_LINUX_ARCH: &str =
     "https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin";
-// Fedora one-liner shown on the Linux card's terminal chip: the rpm channel
-// keeps the in-app updater, dnf covers the initial install (ADR-058).
-fn download_linux_terminal_cmd() -> String {
-    format!("sudo dnf install {DOWNLOAD_LINUX_RPM}")
-}
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
@@ -118,8 +111,6 @@ pub fn DownloadPage() -> impl IntoView {
                     href=DOWNLOAD_LINUX_DEB
                     button_text=c.download_button
                     umami_event="download_linux"
-                    terminal_label=c.download_linux_terminal
-                    terminal_cmd=download_linux_terminal_cmd()
                 />
                 // Arch — the AUR helper is the update channel (ADR-058): the
                 // in-app updater skips systems without dpkg/rpm, so the card
@@ -182,10 +173,6 @@ fn DownloadCard(
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
     // with a real action; nothing to track otherwise.
     #[prop(optional)] umami_event: Option<&'static str>,
-    // Optional terminal one-liner rendered as a copyable code chip under the
-    // button (used by the Linux card: Fedora dnf one-liner, ADR-058).
-    #[prop(optional)] terminal_label: Option<&'static str>,
-    #[prop(optional)] terminal_cmd: Option<String>,
 ) -> impl IntoView {
     let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
         view! {
@@ -215,15 +202,6 @@ fn DownloadCard(
                 </div>
             </div>
             {action}
-            {match (terminal_label, terminal_cmd) {
-                (Some(label), Some(cmd)) => view! {
-                    <div class="download-terminal">
-                        <p class="download-terminal__label">{label}</p>
-                        <code class="download-terminal__cmd">{cmd}</code>
-                    </div>
-                }.into_any(),
-                _ => ().into_any(),
-            }}
         </div>
     }
 }
