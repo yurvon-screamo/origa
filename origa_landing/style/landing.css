@@ -924,12 +924,13 @@
     display: block;
 }
 
-/* Row of small action buttons (Linux card: .deb + .rpm side by side).
-   Declared after .btn so the smaller padding/size wins the cascade. */
+/* Row of small action buttons (Linux: .deb + .rpm; Android: RuStore badge
+   + .apk). Declared after .btn so the smaller padding/size wins the cascade. */
 .download-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
+    align-items: center;
 }
 
 .btn-sm {

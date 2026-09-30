@@ -16,6 +16,10 @@ use crate::content::Locale;
 // (tools.* → toolbox.*), and the App Store Marketing Guidelines only require
 // the artwork to stay unmodified, not to hotlink it.
 const APP_STORE_URL: &str = "https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532";
+const RUSTORE_URL: &str = "https://www.rustore.ru/catalog/app/net.uwuwu.origa";
+// Official RuStore badge SVG (the `coloredDark` variant served by RuStore's
+// button configurator, unmodified): dark background, brand-blue mark.
+const RUSTORE_BADGE: &str = "/badges/rustore-badge.svg";
 const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_DEB: &str =
@@ -132,9 +136,13 @@ pub fn DownloadPage() -> impl IntoView {
                     icon=view! { <IconAndroid /> }.into_any()
                     name=c.download_android
                     formats=c.download_android_formats
-                    href=DOWNLOAD_ANDROID
-                    button_text=c.download_button
-                    umami_event="download_android"
+                    href=RUSTORE_URL
+                    badge_img=RUSTORE_BADGE
+                    badge_alt=c.download_rustore_badge_alt
+                    umami_event="download_android_rustore"
+                    secondary_href=DOWNLOAD_ANDROID
+                    secondary_text=".apk"
+                    secondary_event="download_android"
                 />
                 <DownloadCard
                     icon=view! { <IconApple /> }.into_any()
@@ -169,10 +177,10 @@ fn DownloadCard(
     formats: &'static str,
     #[prop(optional)] href: Option<&'static str>,
     #[prop(optional)] button_text: Option<&'static str>,
-    // App Store cards: instead of the text button, render the official
-    // (unmodified) Apple badge SVG linked to the storefront. The artwork
-    // keeps its built-in rounded corners — brand-asset exception to the
-    // landing's no-border-radius rule.
+    // Store badges (App Store / RuStore): instead of text buttons, render the
+    // official (unmodified) store badge SVG linked to the storefront. The
+    // artwork keeps its built-in rounded corners — brand-asset exception to
+    // the landing's no-border-radius rule.
     #[prop(optional)] badge_img: Option<&'static str>,
     #[prop(optional)] badge_alt: Option<&'static str>,
     // Umami event name (`data-umami-event`, ADR-054) — only set for cards
@@ -194,19 +202,22 @@ fn DownloadCard(
         _ => ().into_any(),
     };
 
-    let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
+    let action: AnyView = if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
+        view! {
+            <div class="download-actions">
+                <a href=href class="download-appstore" attr:data-umami-event=umami_event>
+                    <img src=img alt=alt loading="lazy"/>
+                </a>
+                {secondary}
+            </div>
+        }
+        .into_any()
+    } else if let (Some(href), Some(btn)) = (href, button_text) {
         view! {
             <div class="download-actions">
                 <a href=href class="btn btn-sm" attr:data-umami-event=umami_event>{btn}" →"</a>
                 {secondary}
             </div>
-        }
-        .into_any()
-    } else if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
-        view! {
-            <a href=href class="download-appstore" attr:data-umami-event=umami_event>
-                <img src=img alt=alt loading="lazy"/>
-            </a>
         }
         .into_any()
     } else {

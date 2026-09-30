@@ -226,6 +226,7 @@ pub static CONTENT: Content = Content {
     download_ios: "iOS",
     download_ios_formats: "iPhone, iPad",
     download_app_store_badge_alt: "Tải xuống trên App Store",
+    download_rustore_badge_alt: "Cài đặt từ RuStore",
     download_button: "Tải xuống",
     download_subtitle: "Tải Origa xuống mọi thiết bị. Học tiếng Nhật ngoại tuyến.",
     download_try_web: "Mở →",

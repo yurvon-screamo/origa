@@ -77,7 +77,7 @@ Direct links (latest stable release):
 | :--- | :--- | :--- |
 | **Windows** | ✅ Ready | [`.exe` installer](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Ready | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
-| **Android** | ✅ Ready | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **Android** | ✅ Ready | [RuStore](https://www.rustore.ru/catalog/app/net.uwuwu.origa), [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ✅ Ready | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 | **iOS / iPadOS** | ✅ Ready | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 

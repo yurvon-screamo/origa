@@ -81,7 +81,7 @@
 | :--- | :--- | :--- |
 | **Windows** | ✅ Готово | [установщик `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Готово | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
-| **Android** | ✅ Готово | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **Android** | ✅ Готово | [RuStore](https://www.rustore.ru/catalog/app/net.uwuwu.origa), [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ✅ Готово | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 | **iOS / iPadOS** | ✅ Готово | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 

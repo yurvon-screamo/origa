@@ -77,7 +77,7 @@ Origa를 설치하는 가장 쉬운 방법은 [다운로드 페이지](https://o
 | :--- | :--- | :--- |
 | **Windows** | ✅ 지원 | [`.exe` 설치 파일](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ 지원 | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
-| **Android** | ✅ 지원 | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **Android** | ✅ 지원 | [RuStore](https://www.rustore.ru/catalog/app/net.uwuwu.origa), [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ✅ 지원 | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 | **iOS / iPadOS** | ✅ 지원 | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 
