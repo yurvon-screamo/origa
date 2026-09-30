@@ -10,7 +10,7 @@ use crate::content::Locale;
 // asset.
 //
 // macOS and iOS/iPadOS are distributed through the App Store (universal
-// listing, ADR-033): both cards carry the official unmodified Apple badge
+// listing, ADR-033): the Apple card carries the official unmodified badge
 // linked to the storefront. Badge SVGs are self-hosted
 // (`/badges/app-store-<locale>.svg`) — Apple's badge host has moved before
 // (tools.* → toolbox.*), and the App Store Marketing Guidelines only require
@@ -36,6 +36,14 @@ const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
 
+// One small button inside a card's action row.
+struct CardAction {
+    href: &'static str,
+    text: &'static str,
+    event: Option<&'static str>,
+    filled: bool,
+}
+
 #[component]
 pub fn DownloadPage() -> impl IntoView {
     let locale = use_context::<Locale>().expect("Locale context missing");
@@ -54,104 +62,86 @@ pub fn DownloadPage() -> impl IntoView {
             <p class="download-hero__subtitle">{c.download_subtitle}</p>
         </section>
 
-        // Primary: Windows + Web side by side
-        <section class="download-primary">
-            <div class="download-primary__grid">
-                // Windows card
-                <div class="download-primary__card">
-                    <div class="download-primary__header">
-                        <div class="download-icon download-icon--primary" aria-hidden="true">
-                            <IconWindows />
-                        </div>
-                        <div>
-                            <p class="download-platform__name">{c.download_windows}</p>
-                            <p class="download-platform__formats">{c.download_windows_formats}</p>
-                        </div>
-                    </div>
-                    <a
-                        href=DOWNLOAD_WINDOWS
-                        class="btn btn-filled btn-lg download-primary__btn"
-                        attr:data-umami-event="download_windows"
-                    >
-                        {c.download_button}
-                        " →"
-                    </a>
-                </div>
-                // Web card
-                <div class="download-primary__card">
-                    <div class="download-primary__header">
-                        <div class="download-icon download-icon--primary" aria-hidden="true">
-                            <IconGlobe />
-                        </div>
-                        <div>
-                            <p class="download-platform__name">{c.download_web}</p>
-                        </div>
-                    </div>
-                    <a
-                        href=WEB_APP_URL
-                        class="btn btn-filled btn-lg download-primary__btn"
-                        attr:data-umami-event="open_webapp"
-                    >
-                        {c.download_try_web}
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        // Secondary: macOS, Linux, Android, iOS
+        // One uniform grid: every card is icon + name + formats + a single
+        // action row. Apple platforms share one card and one badge — the
+        // storefront listing is universal (ADR-033).
         <section class="download-secondary">
             <div class="download-secondary__grid">
                 <DownloadCard
+                    icon=view! { <IconWindows /> }.into_any()
+                    name=c.download_windows
+                    formats=c.download_windows_formats
+                    actions=vec![CardAction {
+                        href: DOWNLOAD_WINDOWS,
+                        text: c.download_button,
+                        event: Some("download_windows"),
+                        filled: true,
+                    }]
+                />
+                <DownloadCard
                     icon=view! { <IconApple /> }.into_any()
-                    name=c.download_macos
-                    formats=c.download_macos_formats
-                    href=APP_STORE_URL
+                    name="iOS · iPadOS · macOS"
+                    formats=c.download_apple_formats
+                    badge_href=APP_STORE_URL
                     badge_img=app_store_badge(locale)
                     badge_alt=c.download_app_store_badge_alt
-                    umami_event="download_macos_appstore"
-                />
-                <DownloadCard
-                    icon=view! { <IconLinux /> }.into_any()
-                    name=c.download_linux
-                    formats=c.download_linux_formats
-                    href=DOWNLOAD_LINUX_DEB
-                    button_text=".deb"
-                    umami_event="download_linux"
-                    secondary_href=DOWNLOAD_LINUX_RPM
-                    secondary_text=".rpm"
-                    secondary_event="download_linux_rpm"
-                />
-                // Arch — the AUR helper is the update channel (ADR-058): the
-                // in-app updater skips systems without dpkg/rpm, so the card
-                // links the packaged PKGBUILD until the AUR listing is live.
-                <DownloadCard
-                    icon=view! { <IconLinux /> }.into_any()
-                    name=c.download_linux_aur
-                    formats=c.download_linux_aur_formats
-                    href=DOWNLOAD_LINUX_ARCH
-                    button_text=c.download_button
-                    umami_event="download_linux_aur"
+                    badge_event="download_appstore"
+                    actions=vec![]
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
                     name=c.download_android
                     formats=c.download_android_formats
-                    href=RUSTORE_URL
+                    badge_href=RUSTORE_URL
                     badge_img=RUSTORE_BADGE
                     badge_alt=c.download_rustore_badge_alt
-                    umami_event="download_android_rustore"
-                    secondary_href=DOWNLOAD_ANDROID
-                    secondary_text=".apk"
-                    secondary_event="download_android"
+                    badge_event="download_android_rustore"
+                    actions=vec![CardAction {
+                        href: DOWNLOAD_ANDROID,
+                        text: ".apk",
+                        event: Some("download_android"),
+                        filled: false,
+                    }]
                 />
                 <DownloadCard
-                    icon=view! { <IconApple /> }.into_any()
-                    name=c.download_ios
-                    formats=c.download_ios_formats
-                    href=APP_STORE_URL
-                    badge_img=app_store_badge(locale)
-                    badge_alt=c.download_app_store_badge_alt
-                    umami_event="download_ios_appstore"
+                    icon=view! { <IconLinux /> }.into_any()
+                    name=c.download_linux
+                    formats=c.download_linux_formats
+                    actions=vec![
+                        CardAction {
+                            href: DOWNLOAD_LINUX_DEB,
+                            text: ".deb",
+                            event: Some("download_linux"),
+                            filled: false,
+                        },
+                        CardAction {
+                            href: DOWNLOAD_LINUX_RPM,
+                            text: ".rpm",
+                            event: Some("download_linux_rpm"),
+                            filled: false,
+                        },
+                        // Arch — the AUR helper is the update channel
+                        // (ADR-058): the in-app updater skips systems without
+                        // dpkg/rpm, so the button links the in-repo PKGBUILD
+                        // until the AUR listing is live.
+                        CardAction {
+                            href: DOWNLOAD_LINUX_ARCH,
+                            text: "AUR",
+                            event: Some("download_linux_aur"),
+                            filled: false,
+                        },
+                    ]
+                />
+                <DownloadCard
+                    icon=view! { <IconGlobe /> }.into_any()
+                    name=c.download_web
+                    formats=c.download_web_formats
+                    actions=vec![CardAction {
+                        href: WEB_APP_URL,
+                        text: c.download_try_web,
+                        event: Some("open_webapp"),
+                        filled: true,
+                    }]
                 />
             </div>
         </section>
@@ -175,54 +165,43 @@ fn DownloadCard(
     #[prop(into)] icon: AnyView,
     name: &'static str,
     formats: &'static str,
-    #[prop(optional)] href: Option<&'static str>,
-    #[prop(optional)] button_text: Option<&'static str>,
-    // Store badges (App Store / RuStore): instead of text buttons, render the
-    // official (unmodified) store badge SVG linked to the storefront. The
+    // Store badge (App Store / RuStore): the official unmodified badge SVG
+    // linked to the storefront, rendered first in the action row. The
     // artwork keeps its built-in rounded corners — brand-asset exception to
     // the landing's no-border-radius rule.
+    #[prop(optional)] badge_href: Option<&'static str>,
     #[prop(optional)] badge_img: Option<&'static str>,
     #[prop(optional)] badge_alt: Option<&'static str>,
-    // Umami event name (`data-umami-event`, ADR-054) — only set for cards
-    // with a real action; nothing to track otherwise.
-    #[prop(optional)] umami_event: Option<&'static str>,
-    // Optional second action rendered as a small button in the same row
-    // (Linux card: `.rpm` next to `.deb`).
-    #[prop(optional)] secondary_href: Option<&'static str>,
-    #[prop(optional)] secondary_text: Option<&'static str>,
-    #[prop(optional)] secondary_event: Option<&'static str>,
+    #[prop(optional)] badge_event: Option<&'static str>,
+    // Small text buttons rendered after the badge (umami events per
+    // ADR-054; `None` = attribute omitted).
+    actions: Vec<CardAction>,
 ) -> impl IntoView {
-    let secondary: AnyView = match (secondary_href, secondary_text) {
-        (Some(href), Some(text)) => view! {
-            <a href=href class="btn btn-sm" attr:data-umami-event=secondary_event>
-                {text}" →"
+    let badge: AnyView = match (badge_href, badge_img, badge_alt) {
+        (Some(href), Some(img), Some(alt)) => view! {
+            <a href=href class="download-appstore" attr:data-umami-event=badge_event>
+                <img src=img alt=alt loading="lazy"/>
             </a>
         }
         .into_any(),
         _ => ().into_any(),
     };
 
-    let action: AnyView = if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
-        view! {
-            <div class="download-actions">
-                <a href=href class="download-appstore" attr:data-umami-event=umami_event>
-                    <img src=img alt=alt loading="lazy"/>
+    let buttons = actions
+        .into_iter()
+        .map(|action| {
+            let class = if action.filled {
+                "btn btn-sm btn-filled"
+            } else {
+                "btn btn-sm"
+            };
+            view! {
+                <a href=action.href class=class attr:data-umami-event=action.event>
+                    {action.text}" →"
                 </a>
-                {secondary}
-            </div>
-        }
-        .into_any()
-    } else if let (Some(href), Some(btn)) = (href, button_text) {
-        view! {
-            <div class="download-actions">
-                <a href=href class="btn btn-sm" attr:data-umami-event=umami_event>{btn}" →"</a>
-                {secondary}
-            </div>
-        }
-        .into_any()
-    } else {
-        ().into_any()
-    };
+            }
+        })
+        .collect_view();
 
     view! {
         <div class="download-secondary__card">
@@ -235,7 +214,10 @@ fn DownloadCard(
                     <p class="download-platform__formats">{formats}</p>
                 </div>
             </div>
-            {action}
+            <div class="download-actions">
+                {badge}
+                {buttons}
+            </div>
         </div>
     }
 }
