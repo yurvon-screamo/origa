@@ -524,6 +524,14 @@
     object-fit: contain;
 }
 
+/* 24px frame eats capture width on phones (track = 86vw there);
+   fall back to the tighter 16px frame below the desktop breakpoint. */
+@media (max-width: 640px) {
+    .hero-carousel__slide {
+        padding: var(--space-md);
+    }
+}
+
 .hero-carousel__dots {
     display: flex;
     gap: var(--space-sm);
