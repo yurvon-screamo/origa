@@ -95,7 +95,44 @@ pub fn HomePage() -> impl IntoView {
 
         <hr class="divider-full" />
 
-        // Section 1c: app screens carousel — one legible phone capture at
+        // Section 2: Problem + Principles (2-column)
+        <section class="home-dual">
+            <div class="home-dual__inner">
+                // Left: Problem
+                <div class="home-dual__problem">
+                    <h2 class="home-dual__problem-title">{c.home_problem_h2}</h2>
+                    <hr class="home-dual__problem-rule" />
+                    <p class="home-dual__problem-text">{c.home_problem_text}</p>
+                </div>
+                // Right: Principles (no heading)
+                <div class="home-dual__principles">
+                    <div class="home-dual__principle">
+                        <strong>{c.home_principle_content_title}</strong>
+                        " "
+                        {c.home_principle_content_text}
+                    </div>
+                    <div class="home-dual__principle">
+                        <strong>{c.home_principle_fsrs_title}</strong>
+                        " "
+                        {c.home_principle_fsrs_text}
+                    </div>
+                    <div class="home-dual__principle">
+                        <strong>{c.home_principle_local_title}</strong>
+                        " "
+                        {c.home_principle_local_text}
+                    </div>
+                    <div class="home-dual__principle">
+                        <strong>{c.home_principle_offline_title}</strong>
+                        " "
+                        {c.home_principle_offline_text}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider-full" />
+
+        // Section 3: app screens carousel — one legible phone capture at
         // a time. The copy column mirrors the active slide (the inline
         // script toggles the items together with the dots); the two stack
         // on mobile.
@@ -137,44 +174,7 @@ pub fn HomePage() -> impl IntoView {
 
         <hr class="divider-full" />
 
-        // Section 2: Problem + Principles (2-column)
-        <section class="home-dual">
-            <div class="home-dual__inner">
-                // Left: Problem
-                <div class="home-dual__problem">
-                    <h2 class="home-dual__problem-title">{c.home_problem_h2}</h2>
-                    <hr class="home-dual__problem-rule" />
-                    <p class="home-dual__problem-text">{c.home_problem_text}</p>
-                </div>
-                // Right: Principles (no heading)
-                <div class="home-dual__principles">
-                    <div class="home-dual__principle">
-                        <strong>{c.home_principle_content_title}</strong>
-                        " "
-                        {c.home_principle_content_text}
-                    </div>
-                    <div class="home-dual__principle">
-                        <strong>{c.home_principle_fsrs_title}</strong>
-                        " "
-                        {c.home_principle_fsrs_text}
-                    </div>
-                    <div class="home-dual__principle">
-                        <strong>{c.home_principle_local_title}</strong>
-                        " "
-                        {c.home_principle_local_text}
-                    </div>
-                    <div class="home-dual__principle">
-                        <strong>{c.home_principle_offline_title}</strong>
-                        " "
-                        {c.home_principle_offline_text}
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <hr class="divider-full" />
-
-        // Section 3: Features Preview (staggered grid)
+        // Section 4: Features Preview (staggered grid)
         <section class="home-features">
             <h2 class="home-features__title">{c.home_features_h2}</h2>
             <div class="home-features__grid home-features__grid--top">
@@ -208,7 +208,7 @@ pub fn HomePage() -> impl IntoView {
 
         <hr class="divider-full" />
 
-        // Section 4: Mini-FAQ (visible Q&A mirrors the FAQPage JSON-LD 1:1)
+        // Section 5: Mini-FAQ (visible Q&A mirrors the FAQPage JSON-LD 1:1)
         <section class="feat-faq">
             <div class="feat-faq__inner">
                 <h2>{c.features_faq_h2}</h2>
@@ -227,7 +227,7 @@ pub fn HomePage() -> impl IntoView {
 
         <hr class="divider-full" />
 
-        // Section 5: Final CTA (dark olive) with platforms
+        // Section 6: Final CTA (dark olive) with platforms
         <CtaSection title=c.home_cta_title button_text=c.home_cta_primary download_href=download_href />
     }
 }
