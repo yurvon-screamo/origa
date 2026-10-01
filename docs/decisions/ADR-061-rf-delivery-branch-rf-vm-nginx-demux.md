@@ -36,7 +36,7 @@ RF clients (Bunny SCR geo-branch) resolve `origa` / `app.origa` /
 `s3.origa.uwuwu.net` to `193.233.217.243` (A record, TTL 60). The VM fronts
 them with nginx; the world branch keeps its direct CNAMEs and is untouched.
 
-```
+```text
 RF user ──> Bunny SCR (geo=RU) ──> A 193.233.217.243 ──> nginx :443
             (stream, ssl_preread, PROXY protocol on every branch)
               ├─ SNI origa/app/s3 ──> http :8443 (TLS termination,
@@ -56,7 +56,7 @@ Key implementation facts (all verified in production):
    pre-existing xray VPN. `proxy_protocol on` is set on the public stream
    server so the http blocks recover the real client IP
    (`listen 127.0.0.1:8443 ssl proxy_protocol` + `set_real_ip_from 127.0.0.1`
-   + `real_ip_header proxy_protocol` → `$remote_addr` is the client, and
+   - `real_ip_header proxy_protocol` → `$remote_addr` is the client, and
    `proxy_set_header X-Forwarded-For $remote_addr` keeps the ADR-049 contract
    "client-supplied XFF never reaches the apps"). xray does not speak PROXY
    protocol, so its branch detours through a loopback bridge (:4432) that
