@@ -49,5 +49,11 @@ export default function handleQuery(query) {
   if (h === "app.origa.uwuwu.net") {
     return new CnameRecord("9v15a3ov.up.railway.app", 300);
   }
-  return new CnameRecord("vl080mt6.up.railway.app", 300); // origa.uwuwu.net
+  if (h === "origa.uwuwu.net") {
+    return new CnameRecord("vl080mt6.up.railway.app", 300);
+  }
+  // unreachable while the guard list above matches the branches; kept as a
+  // fail-loud terminal: a name added to the guard without a branch must get
+  // a grey answer, never another name's record.
+  return undefined;
 }

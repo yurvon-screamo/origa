@@ -12,7 +12,11 @@ attached (via NS records, TTL 60) to **four** names in the `uwuwu.net` zone
 `pass` is a plain A record (85.192.63.249, TTL 300) and is **not** attached to
 the script. The script answers only the four names above (hostname guard) and
 returns `undefined` for anything else — a newly attached name without a branch
-fails loudly instead of silently resolving to the RF IP.
+fails loudly instead of silently resolving to the RF IP. (Semantics note:
+Bunny treats a script answer of `undefined` as "no record" — grey answer.
+The terminal `return undefined` is unreachable today: every guarded name has
+a branch; it exists so a future branch-less addition cannot inherit another
+name's record.)
 
 There is **no health gating** in the script: RF always gets the RF VM IP,
 world always gets the direct CNAME. Fallback decisions are made by editing and

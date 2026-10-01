@@ -54,11 +54,14 @@ Key implementation facts (all verified in production):
 
 1. **nginx stream SNI-demultiplex** shares :443 between the proxy and the
    pre-existing xray VPN. `proxy_protocol on` is set on the public stream
-   server so the http blocks recover the real client IP
-   (`listen 127.0.0.1:8443 ssl proxy_protocol` + `set_real_ip_from 127.0.0.1`
-   - `real_ip_header proxy_protocol` → `$remote_addr` is the client, and
+   server so the http blocks recover the real client IP: the http listeners
+   use `listen 127.0.0.1:8443 ssl proxy_protocol` with
+   `set_real_ip_from 127.0.0.1` plus `real_ip_header proxy_protocol`, so
+   `$remote_addr` is the client, and
    `proxy_set_header X-Forwarded-For $remote_addr` keeps the ADR-049 contract
-   "client-supplied XFF never reaches the apps"). xray does not speak PROXY
+   "client-supplied XFF never reaches the apps". (PROXY protocol must be
+   enabled on the first, public stream server — a mid-chain hop only sees
+   the previous hop's address.) xray does not speak PROXY
    protocol, so its branch detours through a loopback bridge (:4432) that
    strips the header; VPN clients (SNI `www.samsung.com`) notice nothing.
 2. **Upstream TLS verification is ON** (`proxy_ssl_verify on` against the
@@ -89,12 +92,16 @@ Key implementation facts (all verified in production):
    (vl080mt6 / 9v15a3ov / d3gbi3wo8j4c2w), non-RU check-host nodes 200 via
    Railway/CloudFront; a check-host node that resolved the RF branch got 200
    from the nginx too. Hourly probe continues (`/root/rf-branch-tests/
-   probe.log`, cron) covering RF full chain + world CF.
-7. **IaC**: `~/rf-proxy-infra/` on the VM (git), offsite mirror
-   `~/rf-proxy-infra` on the operator laptop; `xray-config.json` snapshot
-   included. Old Aeza box keeps Caddy for `pass.uwuwu.net`, `uwuwu.ru`
-   redirects, searxng and the xray VPN inbound — its Caddyfile RF-site blocks
-   are now dead references (documented as legacy in the README).
+   probe.log`, cron) covering RF full chain + world CF. All probes are
+   datacenter vantage points — see the residential-ingress compromise below.
+7. **IaC**: `~/rf-proxy-infra/` on the VM (git, commit `a99f16f`) and an
+   offsite copy `~/rf-proxy-infra` on the operator laptop (commit `98c5e01`).
+   These are independent single-commit repos, not git-linked — after any
+   change, diff the files against `/etc/nginx/**` on the VM to rule out
+   drift. `xray-config.json` snapshot included. Old Aeza box keeps Caddy for
+   `pass.uwuwu.net`, `uwuwu.ru` redirects, searxng and the xray VPN inbound
+   — its Caddyfile RF-site blocks are now dead references (documented as
+   legacy in both `infra/aeza-caddy/README.md` and `infra/bunny-dns/README.md`).
 
 ## Compromises (accepted by the owner)
 
@@ -109,6 +116,11 @@ Key implementation facts (all verified in production):
   egress of AS216246 is not filtered like residential" is validated by the
   live probes and the evening window; it may break on a future TSPU rollout
   wave.
+- **Residential RF→VM ingress not yet verified**: all cutover probes are
+  datacenter vantage points (the VM itself, RU-resolver DNS answers,
+  check-host nodes colocated with the VM — 0.01 ms RTT). Whether residential
+  RF ISPs reach `193.233.217.243` cleanly must be confirmed by the first real
+  RF users; if a provider degrades the route, the plan-B chain applies.
 - **SPOF**: one small VM is the whole RF branch (world unaffected). Plan B —
   RF→EU chain (RF VM passthrough + new EU VM) — is ~30 minutes of work if
   the direct route dies.
@@ -131,7 +143,9 @@ Key implementation facts (all verified in production):
 
 ## Consequences
 
-- RF users are served again (~0.3 s API latency, tens of MB/s CDN from RF).
+- **RF users are served again** — verified from datacenter vantage points
+  (~0.3 s API latency, tens of MB/s CDN from RF); residential
+  RF→VM ingress is the one unverified leg, see Compromises.
 - The RF branch is now behind RF jurisdiction and RF hosting weather; the
   world branch is fully independent of the RF VM.
 - SSH:22 from outside RF degrades during evening TSPU windows (banner
