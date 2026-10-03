@@ -511,7 +511,7 @@
     flex: 0 0 100%;
     scroll-snap-align: start;
     margin: 0;
-    padding: var(--space-md);
+    padding: var(--space-lg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -522,6 +522,14 @@
     width: 100%;
     height: auto;
     object-fit: contain;
+}
+
+/* 24px frame eats capture width on phones (track = 86vw there);
+   fall back to the tighter 16px frame below the desktop breakpoint. */
+@media (max-width: 640px) {
+    .hero-carousel__slide {
+        padding: var(--space-md);
+    }
 }
 
 .hero-carousel__dots {
