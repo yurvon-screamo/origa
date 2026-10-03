@@ -4,6 +4,10 @@
 //! строки. Рейтинг уходит ТОЛЬКО в память этой связки
 //! (`RateCounterBindingUseCase`, CounterReview); после последней связки
 //! слот завершается штатным advance.
+//!
+//! testid-контракт: `counter-binding-answer` — заголовок-контейнер
+//! ответа («число×суффикс»); текст чтения —
+//! `counter-binding-answer-reading` (не читать чтение с заголовка).
 
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
 use super::rating_buttons_view::RatingButtonsView;
