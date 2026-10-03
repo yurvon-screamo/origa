@@ -1,6 +1,6 @@
 # Product Hunt — гайд по запуску Origa
 
-Дата: 2026-09-20. Источник механики: официальный Product Hunt Launch Guide + свежие разборы 2026 (favors.dev, phlaunchkit, launchpact). Все лимиты и тайминги выверены по текущим правилам платформы.
+Дата: 2026-09-20. **Обновлено 2026-10-03:** iOS вышел в App Store (id6795012532), Android — Google Play + RuStore (ADR-033); копия листинга и weak-points приведены к текущим фактам. Источник механики: официальный Product Hunt Launch Guide + свежие разборы 2026 (favors.dev, phlaunchkit, launchpact). Все лимиты и тайминги выверены по текущим правилам платформы.
 
 ## 0. Позиционирование (решено владельцем)
 
@@ -52,7 +52,7 @@ Everything for Japanese, in your own language
 ### Описание (лимит 260 символов, в доках PH расходится 260/500 — пишем под 260)
 
 ```
-Vocabulary, kanji, grammar, listening and OCR capture in one free app, with a native interface in English, Russian, Korean and Vietnamese. Windows, Linux, macOS, Android and web. Offline-first, open source.
+Vocabulary, kanji, grammar, listening and OCR capture in one free app, with a native interface in English, Russian, Korean and Vietnamese. iOS, Android, Windows, Linux, macOS and web. Offline-first, open source.
 ```
 (~210 символов)
 
@@ -65,6 +65,7 @@ Vocabulary, kanji, grammar, listening and OCR capture in one free app, with a na
 
 - Website: `https://origa.uwuwu.net/?utm_source=producthunt` (лендинг обязан соответствовать теглайну — наш H1 «The app to learn Japanese in your own language» совпадает дословно ✓)
 - Демо-путь: web-версия `https://app.origa.uwuwu.net` — реиграбельна без установки (решает требование «try it»)
+- Сторы: App Store (iOS + macOS): `https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532` · RuStore: `https://www.rustore.ru/catalog/app/net.uwuwu.origa` · Google Play — по ADR-033, URL листинга сверить перед сабмитом (в репо ссылки нет)
 - Соцсети: GitHub (важно для trust: открытый код)
 
 ## 3. Ассеты листинга
@@ -83,7 +84,7 @@ Vocabulary, kanji, grammar, listening and OCR capture in one free app, with a na
 
 **Слайд 4 — Capture loop.** Три скрина со стрелками: фото страницы → OCR распознал слова → карточка в повторении. Подпись «Point your camera at any Japanese text».
 
-**Слайд 5 — для кого.** «For learners who don't learn through English» + платформы (Win/Linux/macOS/Android/Web) + «Free · Offline-first · Open source».
+**Слайд 5 — для кого.** «For learners who don't learn through English» + платформы (iOS · Android · Windows · Linux · macOS · Web) + «Free · Offline-first · Open source».
 
 **Слайд 6 — CTA.** Атмосферный натюрморт (наш новый) + «Try the web app right now» + URL.
 
@@ -111,16 +112,17 @@ YouTube-ссылка, 45 секунд, автоплей без звука — п
 > - **Everything in one app:** 200,000+ native phrases with audio, N5-N1 kanji and grammar, OCR capture (point your camera at manga or a textbook page and it becomes cards), speech recognition, FSRS scheduling
 > - **Your language, natively:** the interface is English, Russian, Korean or Vietnamese, not a translation layer over an English app
 >
-> It's free, offline-first, open source, and runs on Windows, Linux, macOS, Android and the web. The honest gap: **no iOS yet.** It's next on the roadmap, and I'd like to hear whether that blocks you.
+> It's free, offline-first, open source, and runs on iOS, Android, Windows, Linux, macOS and the web. The iOS app just shipped, and feedback from iPhone users is especially welcome.
 >
-> Two things I'd love feedback on: does the "no English required" angle make sense to you, and what would an iOS release need to have before you'd switch from your current stack?
+> Two things I'd love feedback on: does the "no English required" angle make sense to you, and if you're on iPhone, what would it take for Origa to replace your current study stack?
 
-(≈200 слов; история → две фичи → честно про iOS → конкретный вопрос. Просьба про апвоуты отсутствует — и не должна появляться.)
+(≈200 слов; история → две фичи → свежий iOS-релиз как новостной крючок → конкретный вопрос. Никаких слов о сырости. Просьба про апвоуты отсутствует — и не должна появляться.)
 
 ## 5. Подготовка: T-4 недели → день X
 
 **T-4 недели**
 - Завести/прогреть аккаунт мейкера: апвоутить и комментить чужие лончи (свежий нулевой аккаунт = дисконт голосов и флаг «одноразовый промоутер»)
+- Выбор даты: в идеале — на ходу свежего iOS-релиза; PH-аудитория любит «just shipped»
 - Создать **Upcoming page**, собрать waitlist
 - Выбрать дату: вт–чт. Для ниши education конкуренция умеренная; избегать дней, когда очевидный гигант анонсирован (смотреть предстоящее на главной)
 
@@ -160,11 +162,11 @@ YouTube-ссылка, 45 секунд, автоплей без звука — п
 1. **Никогда не просить апвоуты** — ни в DM, ни в твитах («please upvote» = деранк/снятие). Формулировка всегда: «загляни, скажи что думаешь»
 2. Не координировать массовые заходы с новых аккаунтов
 3. Не отвечать маркетинг-шаблонами — алгоритм и сообщество едят только живое
-4. iOS-вопрос не замалчивать: «roadmap, вот что уже есть» — честность конвертирует лучше выкручивания
+4. iOS не оправдывать, а продавать: релиз свежий — «shipped just now, early feedback welcome» работает лучше любых оговорок
 
 ## 8. Слабые места и заготовки ответов
 
-- **«No iOS?»** — «Web app работает на iPad/iPhone прямо сейчас, нативный iOS в разработке. Скажи, чего не хватает в web-версии — это попадёт в приоритеты» 
+- **«iOS-версия только вышла?»** — «Да, недавно — и релизы идут часто. Фидбек с PH попадает в приоритеты следующих билдов» — темп релизов как сила, без единого слова о недостатках 
 - **«Чем лучше Anki/Duolingo?»** — без агрессии: «Anki — лучший SRS, мы его не заменяем, мы добавляем словарь/кандзи/грамматику/OCR вокруг расписания. Сравнение: origa.uwuwu.net/compare»
 - **«Где данные хранятся?»** — офлайн-фристайл: «локально у вас; аккаунт — только синхронизация»
 - **«Free? В чём подвох?»** — open source, репозиторий прилагается
