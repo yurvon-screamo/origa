@@ -781,56 +781,21 @@
     margin: 0 auto;
 }
 
-.download-primary {
-    padding: 0 var(--space-lg) var(--space-xl);
-    max-width: 1024px;
-    margin: 0 auto;
+.download-hero__web {
+    display: inline-block;
+    margin-top: calc(-1 * var(--space-sm));
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-dark);
+    padding-bottom: 1px;
 }
 
-.download-primary__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-lg);
-}
-
-@media (max-width: 640px) {
-    .download-primary__grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.download-primary__card {
-    background: var(--bg-paper);
-    border: 1px solid var(--border-dark);
-    padding: var(--space-xl) var(--space-lg);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-lg);
-}
-
-.download-primary__card::after {
-    content: "";
-    position: absolute;
-    bottom: -6px;
-    right: -6px;
-    width: 100%;
-    height: 100%;
-    border: 1px solid var(--border-dark);
-    background: var(--bg-aged);
-    z-index: -1;
-}
-
-.download-primary__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-lg);
-}
-
-.download-primary__card .download-primary__btn {
-    padding: 16px 32px;
+.download-hero__web:hover {
+    color: var(--fg-black);
 }
 
 .download-secondary {
@@ -843,7 +808,7 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-lg);
-    max-width: 720px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -858,6 +823,8 @@
     border: 1px solid var(--border-dark);
     padding: var(--space-lg);
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .download-secondary__card::after {
@@ -889,11 +856,6 @@
     background: var(--bg-paper);
     flex-shrink: 0;
     color: var(--fg-black);
-}
-
-.download-icon--primary {
-    width: 56px;
-    height: 56px;
 }
 
 .download-icon--secondary {
@@ -932,31 +894,23 @@
     display: block;
 }
 
-.download-terminal {
-    margin-top: var(--space-md);
+/* Row of action buttons (Windows; Linux .deb/.rpm/AUR; Android RuStore
+   badge + .apk). Scoped sizing: .download-actions .btn (specificity 0,2,0)
+   beats .btn's desktop media rule regardless of rule order, so every button
+   in the row is the same size. */
+.download-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-md);
 }
 
-.download-terminal__label {
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
+.download-actions .btn {
+    padding: 10px 16px;
+    font-size: var(--text-label-sm);
     letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-bottom: var(--space-xs);
-}
-
-.download-terminal__cmd {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    line-height: 1.6;
-    background: var(--bg-aged);
-    border: 1px solid var(--border-light);
-    padding: var(--space-xs) var(--space-sm);
-    overflow-wrap: anywhere;
-    text-align: left;
-    color: var(--fg-black);
-    user-select: all;
 }
 
 /* ========================================

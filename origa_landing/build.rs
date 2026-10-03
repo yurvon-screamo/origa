@@ -29,7 +29,25 @@ fn main() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
 
     build_css();
+    emit_css_cache_tag(&manifest_dir);
     generate_sitemap(&manifest_dir, &landing_base_url);
+}
+
+// FNV-1a cache tag over the BUILT stylesheet, exported as
+// `LANDING_CSS_VERSION`. app.rs appends it to the stylesheet URL
+// (`?v=<tag>`): the CSS route is served `max-age=31536000, immutable`, so a
+// content-derived tag is the only safe cache-busting contract — a manual
+// stamp inevitably goes stale and returning visitors keep old CSS.
+fn emit_css_cache_tag(manifest_dir: &str) {
+    println!("cargo:rerun-if-changed=style/landing.processed.css");
+    let path = std::path::Path::new(manifest_dir).join("style/landing.processed.css");
+    let bytes = std::fs::read(&path).unwrap_or_default();
+    let mut hash: u32 = 0x811c_9dc5;
+    for byte in &bytes {
+        hash ^= u32::from(*byte);
+        hash = hash.wrapping_mul(0x0100_0193);
+    }
+    println!("cargo:rustc-env=LANDING_CSS_VERSION={hash:08x}");
 }
 
 fn build_css() {

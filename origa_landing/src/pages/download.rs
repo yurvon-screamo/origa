@@ -10,12 +10,16 @@ use crate::content::Locale;
 // asset.
 //
 // macOS and iOS/iPadOS are distributed through the App Store (universal
-// listing, ADR-033): both cards carry the official unmodified Apple badge
+// listing, ADR-033): the Apple card carries the official unmodified badge
 // linked to the storefront. Badge SVGs are self-hosted
 // (`/badges/app-store-<locale>.svg`) — Apple's badge host has moved before
 // (tools.* → toolbox.*), and the App Store Marketing Guidelines only require
 // the artwork to stay unmodified, not to hotlink it.
 const APP_STORE_URL: &str = "https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532";
+const RUSTORE_URL: &str = "https://www.rustore.ru/catalog/app/net.uwuwu.origa";
+// Official RuStore badge SVG (the `coloredDark` variant served by RuStore's
+// button configurator, unmodified): dark background, brand-blue mark.
+const RUSTORE_BADGE: &str = "/badges/rustore-badge.svg";
 const DOWNLOAD_WINDOWS: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe";
 const DOWNLOAD_LINUX_DEB: &str =
@@ -28,14 +32,17 @@ const DOWNLOAD_LINUX_RPM: &str =
 // the package is live (ADR-058 checklist).
 const DOWNLOAD_LINUX_ARCH: &str =
     "https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin";
-// Fedora one-liner shown on the Linux card's terminal chip: the rpm channel
-// keeps the in-app updater, dnf covers the initial install (ADR-058).
-fn download_linux_terminal_cmd() -> String {
-    format!("sudo dnf install {DOWNLOAD_LINUX_RPM}")
-}
 const DOWNLOAD_ANDROID: &str =
     "https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk";
 const WEB_APP_URL: &str = env!("ORIGA_APP_BASE_URL");
+
+// One small button inside a card's action row.
+struct CardAction {
+    href: &'static str,
+    text: &'static str,
+    event: Option<&'static str>,
+    filled: bool,
+}
 
 #[component]
 pub fn DownloadPage() -> impl IntoView {
@@ -53,101 +60,82 @@ pub fn DownloadPage() -> impl IntoView {
         <section class="download-hero">
             <h1 class="download-hero__title">{c.download_h1}</h1>
             <p class="download-hero__subtitle">{c.download_subtitle}</p>
+            <a class="download-hero__web" href=WEB_APP_URL attr:data-umami-event="open_webapp">
+                {c.download_web_link}
+                " →"
+            </a>
         </section>
 
-        // Primary: Windows + Web side by side
-        <section class="download-primary">
-            <div class="download-primary__grid">
-                // Windows card
-                <div class="download-primary__card">
-                    <div class="download-primary__header">
-                        <div class="download-icon download-icon--primary" aria-hidden="true">
-                            <IconWindows />
-                        </div>
-                        <div>
-                            <p class="download-platform__name">{c.download_windows}</p>
-                            <p class="download-platform__formats">{c.download_windows_formats}</p>
-                        </div>
-                    </div>
-                    <a
-                        href=DOWNLOAD_WINDOWS
-                        class="btn btn-filled btn-lg download-primary__btn"
-                        attr:data-umami-event="download_windows"
-                    >
-                        {c.download_button}
-                        " →"
-                    </a>
-                </div>
-                // Web card
-                <div class="download-primary__card">
-                    <div class="download-primary__header">
-                        <div class="download-icon download-icon--primary" aria-hidden="true">
-                            <IconGlobe />
-                        </div>
-                        <div>
-                            <p class="download-platform__name">{c.download_web}</p>
-                        </div>
-                    </div>
-                    <a
-                        href=WEB_APP_URL
-                        class="btn btn-filled btn-lg download-primary__btn"
-                        attr:data-umami-event="open_webapp"
-                    >
-                        {c.download_try_web}
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        // Secondary: macOS, Linux, Android, iOS
+        // One uniform grid: every card is icon + name + formats + a single
+        // action row. Apple platforms share one card and one badge — the
+        // storefront listing is universal (ADR-033). Web lives in the hero
+        // link above, keeping the grid at an even 2×2.
         <section class="download-secondary">
             <div class="download-secondary__grid">
                 <DownloadCard
+                    icon=view! { <IconWindows /> }.into_any()
+                    name=c.download_windows
+                    formats=c.download_windows_formats
+                    actions=vec![CardAction {
+                        href: DOWNLOAD_WINDOWS,
+                        text: c.download_button,
+                        event: Some("download_windows"),
+                        filled: true,
+                    }]
+                />
+                <DownloadCard
                     icon=view! { <IconApple /> }.into_any()
-                    name=c.download_macos
-                    formats=c.download_macos_formats
-                    href=APP_STORE_URL
+                    name="iOS · iPadOS · macOS"
+                    formats=c.download_apple_formats
+                    badge_href=APP_STORE_URL
                     badge_img=app_store_badge(locale)
                     badge_alt=c.download_app_store_badge_alt
-                    umami_event="download_macos_appstore"
-                />
-                <DownloadCard
-                    icon=view! { <IconLinux /> }.into_any()
-                    name=c.download_linux
-                    formats=c.download_linux_formats
-                    href=DOWNLOAD_LINUX_DEB
-                    button_text=c.download_button
-                    umami_event="download_linux"
-                    terminal_label=c.download_linux_terminal
-                    terminal_cmd=download_linux_terminal_cmd()
-                />
-                // Arch — the AUR helper is the update channel (ADR-058): the
-                // in-app updater skips systems without dpkg/rpm, so the card
-                // links the packaged PKGBUILD until the AUR listing is live.
-                <DownloadCard
-                    icon=view! { <IconLinux /> }.into_any()
-                    name=c.download_linux_aur
-                    formats=c.download_linux_aur_formats
-                    href=DOWNLOAD_LINUX_ARCH
-                    button_text=c.download_button
-                    umami_event="download_linux_aur"
+                    badge_event="download_appstore"
+                    actions=vec![]
                 />
                 <DownloadCard
                     icon=view! { <IconAndroid /> }.into_any()
                     name=c.download_android
                     formats=c.download_android_formats
-                    href=DOWNLOAD_ANDROID
-                    button_text=c.download_button
-                    umami_event="download_android"
+                    badge_href=RUSTORE_URL
+                    badge_img=RUSTORE_BADGE
+                    badge_alt=c.download_rustore_badge_alt
+                    badge_event="download_android_rustore"
+                    actions=vec![CardAction {
+                        href: DOWNLOAD_ANDROID,
+                        text: ".apk",
+                        event: Some("download_android"),
+                        filled: false,
+                    }]
                 />
                 <DownloadCard
-                    icon=view! { <IconApple /> }.into_any()
-                    name=c.download_ios
-                    formats=c.download_ios_formats
-                    href=APP_STORE_URL
-                    badge_img=app_store_badge(locale)
-                    badge_alt=c.download_app_store_badge_alt
-                    umami_event="download_ios_appstore"
+                    icon=view! { <IconLinux /> }.into_any()
+                    name=c.download_linux
+                    formats=c.download_linux_formats
+                    actions=vec![
+                        CardAction {
+                            href: DOWNLOAD_LINUX_DEB,
+                            text: ".deb",
+                            event: Some("download_linux"),
+                            filled: false,
+                        },
+                        CardAction {
+                            href: DOWNLOAD_LINUX_RPM,
+                            text: ".rpm",
+                            event: Some("download_linux_rpm"),
+                            filled: false,
+                        },
+                        // Arch — the AUR helper is the update channel
+                        // (ADR-058): the in-app updater skips systems without
+                        // dpkg/rpm, so the button links the in-repo PKGBUILD
+                        // until the AUR listing is live.
+                        CardAction {
+                            href: DOWNLOAD_LINUX_ARCH,
+                            text: "AUR",
+                            event: Some("download_linux_aur"),
+                            filled: false,
+                        },
+                    ]
                 />
             </div>
         </section>
@@ -171,37 +159,43 @@ fn DownloadCard(
     #[prop(into)] icon: AnyView,
     name: &'static str,
     formats: &'static str,
-    #[prop(optional)] href: Option<&'static str>,
-    #[prop(optional)] button_text: Option<&'static str>,
-    // App Store cards: instead of the text button, render the official
-    // (unmodified) Apple badge SVG linked to the storefront. The artwork
-    // keeps its built-in rounded corners — brand-asset exception to the
-    // landing's no-border-radius rule.
+    // Store badge (App Store / RuStore): the official unmodified badge SVG
+    // linked to the storefront, rendered first in the action row. The
+    // artwork keeps its built-in rounded corners — brand-asset exception to
+    // the landing's no-border-radius rule.
+    #[prop(optional)] badge_href: Option<&'static str>,
     #[prop(optional)] badge_img: Option<&'static str>,
     #[prop(optional)] badge_alt: Option<&'static str>,
-    // Umami event name (`data-umami-event`, ADR-054) — only set for cards
-    // with a real action; nothing to track otherwise.
-    #[prop(optional)] umami_event: Option<&'static str>,
-    // Optional terminal one-liner rendered as a copyable code chip under the
-    // button (used by the Linux card: Fedora dnf one-liner, ADR-058).
-    #[prop(optional)] terminal_label: Option<&'static str>,
-    #[prop(optional)] terminal_cmd: Option<String>,
+    #[prop(optional)] badge_event: Option<&'static str>,
+    // Small text buttons rendered after the badge (umami events per
+    // ADR-054; `None` = attribute omitted).
+    actions: Vec<CardAction>,
 ) -> impl IntoView {
-    let action: AnyView = if let (Some(href), Some(btn)) = (href, button_text) {
-        view! {
-            <a href=href class="btn" attr:data-umami-event=umami_event>{btn}" →"</a>
-        }
-        .into_any()
-    } else if let (Some(href), Some(img), Some(alt)) = (href, badge_img, badge_alt) {
-        view! {
-            <a href=href class="download-appstore" attr:data-umami-event=umami_event>
+    let badge: AnyView = match (badge_href, badge_img, badge_alt) {
+        (Some(href), Some(img), Some(alt)) => view! {
+            <a href=href class="download-appstore" attr:data-umami-event=badge_event>
                 <img src=img alt=alt loading="lazy"/>
             </a>
         }
-        .into_any()
-    } else {
-        ().into_any()
+        .into_any(),
+        _ => ().into_any(),
     };
+
+    let buttons = actions
+        .into_iter()
+        .map(|action| {
+            let class = if action.filled {
+                "btn btn-filled"
+            } else {
+                "btn"
+            };
+            view! {
+                <a href=action.href class=class attr:data-umami-event=action.event>
+                    {action.text}" →"
+                </a>
+            }
+        })
+        .collect_view();
 
     view! {
         <div class="download-secondary__card">
@@ -214,16 +208,10 @@ fn DownloadCard(
                     <p class="download-platform__formats">{formats}</p>
                 </div>
             </div>
-            {action}
-            {match (terminal_label, terminal_cmd) {
-                (Some(label), Some(cmd)) => view! {
-                    <div class="download-terminal">
-                        <p class="download-terminal__label">{label}</p>
-                        <code class="download-terminal__cmd">{cmd}</code>
-                    </div>
-                }.into_any(),
-                _ => ().into_any(),
-            }}
+            <div class="download-actions">
+                {badge}
+                {buttons}
+            </div>
         </div>
     }
 }
@@ -260,15 +248,6 @@ fn IconAndroid() -> impl IntoView {
     view! {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
             <path d="M17.523 15.341a.997.997 0 0 0 0-1.994.997.997 0 0 0 0 1.994m-11.046 0a.997.997 0 0 0 0-1.994.997.997 0 0 0 0 1.994m11.405-6.02l1.997-3.46a.416.416 0 0 0-.152-.567.416.416 0 0 0-.567.152l-2.022 3.5A12.16 12.16 0 0 0 12 8.075a12.16 12.16 0 0 0-5.138 1.17L4.84 5.746a.416.416 0 0 0-.567-.152.416.416 0 0 0-.152.567l1.997 3.46C2.688 11.186.344 14.663 0 18.766h24c-.344-4.103-2.688-7.58-6.118-9.445" />
-        </svg>
-    }
-}
-
-#[component]
-fn IconGlobe() -> impl IntoView {
-    view! {
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
         </svg>
     }
 }

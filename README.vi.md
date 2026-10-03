@@ -77,7 +77,7 @@ Liên kết trực tiếp (bản phát hành ổn định mới nhất):
 | :--- | :--- | :--- |
 | **Windows** | ✅ Sẵn sàng | [trình cài đặt `.exe`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x64-setup.exe) |
 | **Linux** | ✅ Sẵn sàng | [`.deb`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_amd64.deb), [`.rpm`](https://github.com/yurvon-screamo/origa/releases/latest/download/Origa_x86_64.rpm), [AUR (PKGBUILD)](https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin) |
-| **Android** | ✅ Sẵn sàng | [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
+| **Android** | ✅ Sẵn sàng | [RuStore](https://www.rustore.ru/catalog/app/net.uwuwu.origa), [`.apk`](https://github.com/yurvon-screamo/origa/releases/latest/download/origa.apk) |
 | **macOS** | ✅ Sẵn sàng | [Mac App Store](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 | **iOS / iPadOS** | ✅ Sẵn sàng | [App Store (iPhone, iPad)](https://apps.apple.com/app/origa-jlpt-learn-japanese/id6795012532) |
 

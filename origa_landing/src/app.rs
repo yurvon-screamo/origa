@@ -68,14 +68,20 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
+    // Leaked once per process: the stylesheet URL is process-constant by
+    // design (see the cache contract comment below).
+    let css_href: &'static str = Box::leak(
+        format!("/landing.processed.css?v={}", env!("LANDING_CSS_VERSION")).into_boxed_str(),
+    );
+
     view! {
         // The `?v=` suffix is the immutable-cache contract for the stylesheet
         // (served with `max-age=31536000, immutable` in src/server.rs):
-        // browsers keep it for a year and never revalidate, so ANY change to
-        // landing.css MUST bump `v` here, or returning visitors keep the old
-        // CSS. Query strings are part of the browser/edge cache key, while
-        // the route in server.rs matches on path only.
-        <Stylesheet id="leptos" href="/landing.processed.css?v=20260915" />
+        // browsers keep it for a year and never revalidate. The tag is the
+        // FNV hash of the built stylesheet itself (build.rs →
+        // `LANDING_CSS_VERSION`), so every CSS change yields a new URL —
+        // returning visitors can never keep stale CSS.
+        <Stylesheet id="leptos" href=css_href />
         <Title text="Origa — Japanese Learning App" />
         <Router>
             <Routes fallback=NotFound>

@@ -260,11 +260,6 @@ input[type="submit"] {
     color: var(--fg-black);
 }
 
-.btn-lg {
-    padding: 20px 40px;
-    font-size: var(--text-label);
-}
-
 @media (max-width: 768px) {
     .btn {
         min-height: 44px;
