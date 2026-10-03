@@ -251,4 +251,3 @@ fn IconAndroid() -> impl IntoView {
         </svg>
     }
 }
-
