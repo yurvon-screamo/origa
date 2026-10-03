@@ -152,12 +152,15 @@ pub fn CounterBindingsSession(
             </p>
 
             <Show when=move || !revealed.get()>
-                <p class="font-serif text-6xl text-[var(--fg-black)]" data-testid="counter-binding-front">
-                    {move || {
-                        let number = items.with_value(|i| i.get(current.get()).map(|it| it.number())).unwrap_or(u8::MAX);
-                        format!("{}×{}", number_label(number), suffix.with_value(String::clone))
-                    }}
-                </p>
+                <div class="flex items-center justify-center gap-2" data-testid="counter-binding-front">
+                    <span class="font-mono text-5xl text-[var(--fg-black)]">
+                        {move || number_label(items.with_value(|i| i.get(current.get()).map(|it| it.number())).unwrap_or(u8::MAX))}
+                    </span>
+                    <span class="text-3xl text-[var(--fg-muted)]">{"×"}</span>
+                    <span class="font-serif text-7xl text-[var(--fg-black)]">
+                        {suffix.with_value(String::clone)}
+                    </span>
+                </div>
                 <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
                 <div class="flex justify-center">
                     <Button
@@ -178,7 +181,16 @@ pub fn CounterBindingsSession(
                         .with_value(|rs| rs.iter().find(|(n, _)| *n == number).map(|(_, r)| r.clone()))
                         .unwrap_or_default();
                     view! {
-                        <p class="font-serif text-6xl text-[var(--fg-black)]" data-testid="counter-binding-answer">
+                        <div class="flex items-center justify-center gap-2" data-testid="counter-binding-answer">
+                            <span class="font-mono text-5xl text-[var(--fg-black)]">
+                                {number_label(number)}
+                            </span>
+                            <span class="text-3xl text-[var(--fg-muted)]">{"×"}</span>
+                            <span class="font-serif text-7xl text-[var(--fg-black)]">
+                                {suffix.with_value(String::clone)}
+                            </span>
+                        </div>
+                        <p class="font-serif text-4xl text-[var(--fg-black)]" data-testid="counter-binding-answer-reading">
                             {reading}
                         </p>
                         <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
