@@ -202,7 +202,8 @@
         "grammar": "Грамматика",
         "kanji": "Кандзи",
         "vocabulary": "Слова",
-        "phrase": "Фразы"
+        "phrase": "Фразы",
+        "counter": "Счётные суффиксы"
       },
       "reading_on": "Он",
       "reading_kun": "Кун",
@@ -324,7 +325,8 @@
     "pos_symbol": "символ",
     "pos_whitespace": "пробел",
     "pos_auxiliary_symbol": "вспомогательный символ",
-    "listen_word": "Прослушайте слово"
+    "listen_word": "Прослушайте слово",
+    "counter": "Счётный суффикс"
   },
   "home": {
     "loading": "Загрузка...",
@@ -380,7 +382,8 @@
     "badge_kanji": "Кандзи",
     "badge_words": "Слова",
     "badge_grammar": "Грамматика",
-    "rating_accuracy": "Точность"
+    "rating_accuracy": "Точность",
+    "counters_label": "Счётные суффиксы"
   },
   "login": {
     "or_login_with": "или войти/зарегистрироваться через",
@@ -488,7 +491,8 @@
     },
     "no_translation_found": "Нет перевода — не будет добавлено",
     "tooltip_no_translation": "Слово не найдено в наших словарях",
-    "already_added": "Добавлено"
+    "already_added": "Добавлено",
+    "counter_badge": "счётный суффикс"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",
@@ -696,5 +700,17 @@
       "completed_status": "Завершено",
       "recognition_error": "Ошибка распознавания"
     }
+  },
+  "counters": {
+    "header": "Счётные суффиксы",
+    "add_counters": "Добавить суффиксы",
+    "adding": "Добавление...",
+    "add": "Добавить суффиксы",
+    "available_counters": "Доступные суффиксы",
+    "searching_counters": "Поиск суффиксов...",
+    "no_counters_for_level": "Нет суффиксов для выбранного уровня (или все уже изучены)",
+    "readings_title": "Чтения",
+    "bindings_learned": "Связки: {}",
+    "not_found": "Суффикс не найден"
   }
 }

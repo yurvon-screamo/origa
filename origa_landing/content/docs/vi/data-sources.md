@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Nguồn dữ liệu Origa — từ điển, hán tự, mô hình"
 meta_description: "Dữ liệu mở và mô hình đứng sau Origa: từ điển JMdict, animation KanjiVG, OCR NDLOCR-Lite, Whisper, SudachiDict, và bộ từ Irodori, kèm giấy phép."
 target_keywords: ["giấy phép jmdict", "giấy phép kanjivg", "ndlocr lite", "whisper mit tiếng nhật", "sudachidict apache"]
-lastmod: 2026-08-21
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -18,6 +18,10 @@ Origa dựng trên dữ liệu mở và các mô hình. Trang này liệt kê �
 ## Từ điển và âm đọc
 
 Mục từ điển, bản dịch và furigana đến từ [JMdict / EDRDG](https://www.edrdg.org/jmdict/edrdg_license.html) theo CC BY-SA 4.0. Dự án từ điển do Electronic Dictionary Research and Development Group duy trì.
+
+## Từ đếm
+
+Bộ dữ liệu từ đếm (cách đọc và kết hợp số) là tệp nguồn được bảo trì trực tiếp trong kho, đối chiếu với dữ liệu tham chiếu mở [josuushi](https://github.com/naclsn/josuushi) và các danh sách từ đếm công khai của Tofugu và Wikipedia. Chú giải được duy trì bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt.
 
 ## Animation hán tự
 

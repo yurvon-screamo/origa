@@ -4533,3 +4533,88 @@ mod know_confirm_dispose {
         );
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Счётный суффикс (issue #415): композитный слот и слайд показа
+// ═══════════════════════════════════════════════════════════════════════
+
+fn counter_registry_json() -> String {
+    let readings = (1..=10)
+        .map(|n| {
+            format!(
+                "{{\"number\":{n},\"reading\":\"r{n}\",\"irregular\":{}}}",
+                n % 3 == 1
+            )
+        })
+        .chain(std::iter::once(
+            "{\"number\":0,\"reading\":\"nan\",\"irregular\":false}".to_string(),
+        ))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!(
+        "{{\"counters\":[{{\"suffix\":\"本\",\"level\":\"N5\",\"glosses\":{{\"Russian\":\"длинные предметы\",\"English\":\"long objects\",\"Korean\":\"자루\",\"Vietnamese\":\"cây\"}},\"readings\":[{readings}]}}]}}"
+    )
+}
+
+/// Таблица чтений: строки по возрастанию числа, 何 последней; ring-акцента
+/// до highlight нет.
+#[wasm_bindgen_test]
+async fn counter_readings_table_orders_numbers_what_last() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        use crate::pages::lesson::counter_readings_table::{
+            CounterReadingRow, CounterReadingsTable,
+        };
+        let rows = vec![
+            CounterReadingRow {
+                number: 0,
+                number_label: "何".into(),
+                reading: "nan".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 2,
+                number_label: "2".into(),
+                reading: "r2".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 1,
+                number_label: "1".into(),
+                reading: "r1".into(),
+                irregular: true,
+            },
+        ];
+        view! {
+            <CounterReadingsTable
+                rows=rows
+                suffix="本".to_string()
+                test_id=Signal::derive(|| "t".to_string())
+            />
+        }
+        .into_any()
+    });
+    let node_list = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap();
+    let rows: Vec<String> = (0..node_list.length())
+        .filter_map(|index| node_list.get(index))
+        .map(|el| el.text_content().unwrap_or_default())
+        .collect();
+    assert_eq!(rows.len(), 3);
+    assert!(rows[0].contains('1'), "ascending numbers first: {:?}", rows);
+    assert!(rows[2].contains("何"), "何 comes last: {:?}", rows);
+
+    // Акцент требует highlight-сигнал: без него ring-класса нет.
+    let first = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap()
+        .get(1)
+        .unwrap()
+        .unchecked_into::<web_sys::HtmlElement>();
+    assert!(
+        !first.class_list().contains("ring-inset"),
+        "no accent without a highlight signal"
+    );
+}

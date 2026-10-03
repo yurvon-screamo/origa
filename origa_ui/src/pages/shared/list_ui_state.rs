@@ -21,6 +21,7 @@ pub enum ListPage {
     Kanji,
     Grammar,
     Phrases,
+    Counters,
 }
 
 /// Reactive state of one list page. Every field is `Copy` and shares the
@@ -44,6 +45,7 @@ pub struct ListUiStore {
     kanji: ListUiSlot,
     grammar: ListUiSlot,
     phrases: ListUiSlot,
+    counters: ListUiSlot,
 }
 
 impl Default for ListUiStore {
@@ -61,6 +63,7 @@ impl ListUiStore {
             kanji: Self::make_slot(),
             grammar: Self::make_slot(),
             phrases: Self::make_slot(),
+            counters: Self::make_slot(),
         }
     }
 
@@ -82,13 +85,20 @@ impl ListUiStore {
             ListPage::Kanji => self.kanji.clone(),
             ListPage::Grammar => self.grammar.clone(),
             ListPage::Phrases => self.phrases.clone(),
+            ListPage::Counters => self.counters.clone(),
         }
     }
 
     /// Returns every list page to its defaults. Called when the session
     /// ends (logout) so filters and scroll never cross users.
     pub fn reset(&self) {
-        for slot in [&self.words, &self.kanji, &self.grammar, &self.phrases] {
+        for slot in [
+            &self.words,
+            &self.kanji,
+            &self.grammar,
+            &self.phrases,
+            &self.counters,
+        ] {
             slot.search.set(String::new());
             slot.status.set(Filter::All);
             slot.jlpt.set(JlptFilter::All);

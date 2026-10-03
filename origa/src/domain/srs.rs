@@ -21,6 +21,7 @@ pub enum RateMode {
     OnboardingScoring,
     GrammarReview,
     KanjiReview,
+    CounterReview,
 }
 
 /// Контекст рейтинга [RatingContext] — происхождение рейтинга.
@@ -34,13 +35,14 @@ pub enum RatingContext {
     Implicit,
 }
 
-const ALL_RATE_MODES: [RateMode; 6] = [
+const ALL_RATE_MODES: [RateMode; 7] = [
     RateMode::ShortTerm,
     RateMode::StandardLesson,
     RateMode::PhraseReview,
     RateMode::OnboardingScoring,
     RateMode::GrammarReview,
     RateMode::KanjiReview,
+    RateMode::CounterReview,
 ];
 
 struct SrsConfig {
@@ -75,6 +77,13 @@ impl SrsConfig {
             RateMode::KanjiReview => Self {
                 request_retention: 0.85,
                 maximum_interval: 90,
+                enable_fuzz: true,
+            },
+            // «В сторону лёгкости» (issue #415): регулярные ячейки
+            // быстро вымываются из ротации, нерегулярные держатся в ней.
+            RateMode::CounterReview => Self {
+                request_retention: 0.75,
+                maximum_interval: 365,
                 enable_fuzz: true,
             },
         }
@@ -272,6 +281,7 @@ mod tests {
     #[case::onboarding_scoring(RateMode::OnboardingScoring, "OnboardingScoring")]
     #[case::grammar_review(RateMode::GrammarReview, "GrammarReview")]
     #[case::kanji_review(RateMode::KanjiReview, "KanjiReview")]
+    #[case::counter_review(RateMode::CounterReview, "CounterReview")]
     #[case::short_term_backcompat(RateMode::ShortTerm, "FixationLesson")]
     fn rate_mode_serde_roundtrip_preserves_wire_format(
         #[case] mode: RateMode,

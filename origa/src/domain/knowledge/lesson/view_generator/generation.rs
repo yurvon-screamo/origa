@@ -10,7 +10,8 @@ use rand::{Rng, prelude::IndexedRandom, seq::SliceRandom};
 use std::collections::HashMap;
 
 use super::super::types::{
-    GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizMode, QuizOption, YesNoCard,
+    CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCardView, QuizCard, QuizMode,
+    QuizOption, YesNoCard,
 };
 use super::QUIZ_OPTIONS_COUNT;
 
@@ -25,6 +26,9 @@ pub(crate) fn generate_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
+        // Счётный суффикс не попадает в квиз-генераторы: его показ —
+        // всегда Normal (ветка нужна только для exhaustiveness).
+        Card::Counter(_) => {},
     }
 
     let correct_answer = original_card.answer(lang)?;
@@ -113,6 +117,9 @@ pub(crate) fn generate_yesno(
 ) -> Result<LessonCardView, OrigaError> {
     match &original_card {
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
+        // Счётный суффикс не попадает в квиз-генераторы: его показ —
+        // всегда Normal (ветка нужна только для exhaustiveness).
+        Card::Counter(_) => {},
     }
 
     let question = original_card.question(lang)?;
@@ -155,7 +162,7 @@ pub(crate) fn generate_phrase_quiz(
 ) -> Option<LessonCardView> {
     let phrase_card = match &original_card {
         Card::Phrase(pc) => pc,
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => return None,
+        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Counter(_) => return None,
     };
 
     let audio_file = format!("{}.opus", phrase_card.phrase_id());
@@ -169,7 +176,7 @@ pub(crate) fn generate_phrase_quiz(
                 .ok()
                 .map(|a| answer_display_text(&a))
                 .filter(|text| text != &correct_text),
-            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) => None,
+            Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Counter(_) => None,
         })
         .collect();
 
@@ -204,7 +211,7 @@ pub(crate) fn generate_kanji_reading_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     let kanji_card = match &original_card {
         Card::Kanji(kc) => kc,
-        Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) => {
+        Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) | Card::Counter(_) => {
             return Ok(LessonCardView::Normal(original_card));
         },
     };
@@ -311,7 +318,7 @@ fn collect_distractors(
                 );
                 Some(readings)
             },
-            Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) => None,
+            Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) | Card::Counter(_) => None,
         })
         .flatten()
         .filter(|r| !target_readings.contains(r))
@@ -342,7 +349,7 @@ pub(crate) fn generate_grammar_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     let grammar_rule_card = match &original_card {
         Card::Grammar(grc) => grc,
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Phrase(_) => {
+        Card::Vocabulary(_) | Card::Kanji(_) | Card::Phrase(_) | Card::Counter(_) => {
             return Ok(LessonCardView::Normal(original_card));
         },
     };
@@ -424,4 +431,19 @@ pub(crate) fn generate_grammar_quiz(
     let grammar_quiz = GrammarQuizCard::new(original_card, grammar_info, word_text, quiz);
 
     Ok(LessonCardView::GrammarQuiz(grammar_quiz))
+}
+
+/// Состав пачки связок (issue #415): порядок — `CounterCard::binding_showcase`
+/// (due по возрастанию срока, нерегулярные выше, затем новички). Пустая
+/// пачка невозможна при правильной выборке (`is_review_due`); safe-default
+/// показа — семантический Normal.
+pub(crate) fn generate_counter_binding_items(card: &Card) -> Vec<CounterBindingItem> {
+    match card {
+        Card::Counter(counter) => counter
+            .binding_showcase()
+            .into_iter()
+            .map(CounterBindingItem::new)
+            .collect(),
+        _ => Vec::new(),
+    }
 }

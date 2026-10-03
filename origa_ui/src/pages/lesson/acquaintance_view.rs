@@ -32,6 +32,7 @@ fn ui_card_type(card_type: origa::domain::CardType) -> UiCardType {
         origa::domain::CardType::Kanji => UiCardType::Kanji,
         origa::domain::CardType::Grammar => UiCardType::Grammar,
         origa::domain::CardType::Phrase => UiCardType::Phrase,
+        origa::domain::CardType::Counter => UiCardType::Counter,
     }
 }
 
@@ -507,6 +508,19 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                 />
             }
             .into_any(),
+            AcquaintanceSlideData::Counter {
+                suffix,
+                meaning,
+                table,
+                ..
+            } => view! {
+                <CounterSlide
+                    suffix=suffix.clone()
+                    meaning=meaning.clone()
+                    table=table.clone()
+                />
+            }
+            .into_any(),
         }
     };
 
@@ -956,5 +970,43 @@ fn ActionBar(ctx: AcquaintanceContext) -> impl IntoView {
             on_confirm=on_yes_know
             on_close=Callback::new(move |_| confirm_open.set(false))
         />
+    }
+}
+
+/// Слайд показа счётного суффикса (issue #415): знак крупно, глосс, вся
+/// таблица чтений (нерегулярные подсвечены). Слайд скроллится — паттерн
+/// слайда грамматики (min-h, владелец выбрал полную таблицу на показе).
+#[component]
+fn CounterSlide(
+    suffix: String,
+    meaning: String,
+    table: Vec<(String, String, bool)>,
+) -> impl IntoView {
+    use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
+    let rows: Vec<CounterReadingRow> = table
+        .into_iter()
+        .map(|(number_label, reading, irregular)| CounterReadingRow {
+            number: 0, // в таблице показа подсветки строк нет — число не нужно
+            number_label,
+            reading,
+            irregular,
+        })
+        .collect();
+    let stored_suffix = StoredValue::new(suffix);
+    let stored_meaning = StoredValue::new(meaning);
+    view! {
+        <div class="space-y-4" data-testid="acquaintance-counter-slide">
+            <p class="font-serif text-6xl text-center text-[var(--fg-black)]">
+                {stored_suffix.get_value()}
+            </p>
+            <p class="font-mono text-lg text-[var(--fg-muted)] text-center">
+                {stored_meaning.get_value()}
+            </p>
+            <CounterReadingsTable
+                rows=rows
+                suffix=stored_suffix.get_value()
+                test_id=Signal::derive(|| "acquaintance-counter-slide-table".to_string())
+            />
+        </div>
     }
 }

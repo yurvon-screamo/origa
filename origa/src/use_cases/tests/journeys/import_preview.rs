@@ -48,9 +48,7 @@ async fn preview_word_imports_default_selection_matches_import_result() {
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
     let words: Vec<WordToCreate> = WORDS
         .iter()
-        .map(|w| WordToCreate {
-            base_form: w.to_string(),
-        })
+        .map(|w| WordToCreate::word(w.to_string()))
         .collect();
     let result = use_case.execute(words, None).await.unwrap();
 
@@ -132,12 +130,7 @@ async fn preview_word_imports_counts_a_word_duplicated_across_sets_once() {
     // The import would process it once and skip nothing.
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
     let result = use_case
-        .execute(
-            vec![WordToCreate {
-                base_form: "ねこ".to_string(),
-            }],
-            None,
-        )
+        .execute(vec![WordToCreate::word("ねこ".to_string())], None)
         .await
         .unwrap();
     assert_eq!(result.created_cards.len(), 1);

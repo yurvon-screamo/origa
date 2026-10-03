@@ -1,8 +1,8 @@
 use crate::i18n::{t, td_string, use_i18n};
 use crate::pages::icons::{CHECK_CIRCLE_ICON, ICON_CLASS_KNOWN, ICON_CLASS_NEW, PLUS_CIRCLE_ICON};
 use crate::ui_components::{
-    Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Text, TextSize, Tooltip,
-    TooltipPlacementMode, TypographyVariant,
+    Checkbox, FuriganaText, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
+    Tooltip, TooltipPlacementMode, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::use_cases::AnalyzedWord;
@@ -48,6 +48,10 @@ pub fn AnalyzedWordItem(
     let tooltip_stored = StoredValue::new(tooltip_text);
     let status_icon_stored = StoredValue::new(status_icon);
     let icon_class_stored = StoredValue::new(icon_class);
+
+    // Бейдж типа: счётный суффикс заведётся counter-картой (issue #415) —
+    // юзер должен видеть разницу до добавления.
+    let is_counter = analyzed_word.is_counter;
 
     let is_disabled = analyzed_word.is_known || !has_meaning;
     let meaning_stored = StoredValue::new(analyzed_word.meaning.clone());
@@ -105,6 +109,13 @@ pub fn AnalyzedWordItem(
                         <span class="text-[var(--text-label-sm)] text-[var(--accent-sage)] uppercase tracking-[0.1em] font-mono">
                             {t!(i18n, words.already_added)}
                         </span>
+                    </Show>
+                    <Show when=move || is_counter>
+                        <Tag variant=Signal::derive(|| TagVariant::Olive)>
+                            <span data-testid="analyzed-counter-badge">
+                                {t!(i18n, words.counter_badge)}
+                            </span>
+                        </Tag>
                     </Show>
                 </div>
 

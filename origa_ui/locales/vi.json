@@ -202,7 +202,8 @@
         "grammar": "Ngữ pháp",
         "kanji": "Chữ Kanji",
         "vocabulary": "Từ vựng",
-        "phrase": "Mẫu câu"
+        "phrase": "Mẫu câu",
+        "counter": "Từ đếm"
       },
       "reading_on": "Âm On",
       "reading_kun": "Âm Kun",
@@ -324,7 +325,8 @@
     "pos_symbol": "ký hiệu",
     "pos_whitespace": "khoảng trắng",
     "pos_auxiliary_symbol": "ký hiệu phụ trợ",
-    "listen_word": "Nghe từ này"
+    "listen_word": "Nghe từ này",
+    "counter": "Từ đếm"
   },
   "home": {
     "loading": "Đang tải...",
@@ -380,7 +382,8 @@
     "badge_kanji": "Chữ Kanji",
     "badge_words": "Từ",
     "badge_grammar": "Ngữ pháp",
-    "rating_accuracy": "Độ chính xác"
+    "rating_accuracy": "Độ chính xác",
+    "counters_label": "Từ đếm"
   },
   "login": {
     "or_login_with": "hoặc đăng nhập / đăng ký bằng",
@@ -488,7 +491,8 @@
     },
     "no_translation_found": "Không tìm thấy bản dịch — sẽ không được thêm",
     "tooltip_no_translation": "Không tìm thấy từ này trong từ điển của chúng tôi",
-    "already_added": "Đã thêm"
+    "already_added": "Đã thêm",
+    "counter_badge": "từ đếm"
   },
   "grammar_page": {
     "add_grammar": "Thêm ngữ pháp",
@@ -696,5 +700,17 @@
       "completed_status": "Hoàn tất",
       "recognition_error": "Lỗi nhận dạng"
     }
+  },
+  "counters": {
+    "header": "Từ đếm",
+    "add_counters": "Thêm từ đếm",
+    "adding": "Đang thêm...",
+    "add": "Thêm từ đếm",
+    "available_counters": "Từ đếm khả dụng",
+    "searching_counters": "Đang tìm từ đếm...",
+    "no_counters_for_level": "Không có từ đếm cho mức đã chọn (hoặc đã học hết)",
+    "readings_title": "Cách đọc",
+    "bindings_learned": "Kết hợp: {}",
+    "not_found": "Không tìm thấy hậu tố"
   }
 }
