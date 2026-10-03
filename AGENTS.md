@@ -82,11 +82,14 @@ cd tauri && cargo tauri dev
 - `ORIGA_APP_URI_PREFIX` — app subdomain prefix (e.g. `app` → `app.origa.uwuwu.net`)
 - Landing = base domain (no prefix)
 
-**DNS-зона `uwuwu.net`** (ADR-046, 2026-09-03): регистратор OnlineNIC (истекает 2026-11-23),
-NS = `a`/`b.aeza-dns.net` (Aeza, API v2 `X-API-Key`, domain ID 2776 — доступы в uwuwu access).
-Cloudflare NS запрещены для этой зоны: ТСПУ из РФ не достаёт до авторитативных NS Cloudflare
-(инцидент 08–09.2026) — не делегировать зону на CF без отдельного ADR. Zone-dump и runbook:
-`docs/backups/uwuwu.net.aeza.2026-09-03.zone`, `docs/runbooks/return-to-aeza-ns-2026-09.md`.
+**DNS-зона `uwuwu.net`** (ADR-046, 2026-09-03; NS → Bunny с 2026-09-19): регистратор OnlineNIC
+(истекает 2026-11-23 — продлить!), NS = `coco`/`kiki.bunny.net`, geo-split через Scriptable DNS
+(скрипт 91629 `infra/bunny-dns/`): RF-клиенты → A-ветка, мир → CNAME напрямую (Railway/CloudFront).
+RF-ветка (ADR-061, 2026-09-30): ВМ Aeza-RU СПб `193.233.217.243`, nginx stream SNI-demux →
+Railway/Tigris, конфиги `~/rf-proxy-infra` (ВМ) + `~/rf-proxy-infra` (ноут). Старый фронт
+Aeza Frankfurt `85.192.63.249` залочен РКН из РФ целиком (жив для мира: pass/uwuwu.ru/xray).
+Cloudflare для этой зоны запрещён: ТСПУ из РФ не достаёт до CF NS (инцидент 08–09.2026) —
+не делегировать зону на CF без отдельного ADR.
 
 **Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; cache policy is tiered, see CDN / S3 below)
 **Browserslist warning:** local trunk builds of `origa_ui` print `caniuse-lite is outdated` — harmless, the data is frozen inside trunk's standalone tailwindcss binary; `npx update-browserslist-db` is a no-op here. Fix and details: `origa_ui/AGENTS.md` → Development.
@@ -114,6 +117,8 @@ cargo fmt --check && cargo fmt
 ## CDN / S3
 
 Tigris object storage (S3-compatible, endpoint `t3.storageapi.dev`) под Railway — bucket `adaptable-foodbox-ucep7wx`, раздача через s3-proxy (docker-контейнер `pottava/s3-proxy` на Aeza VPS за Caddy, ADR-057) напрямую в Tigris; Railway-хоп из цепочки убран (ADR-049 — проксирование всех хостов uwuwu.net через VPS): URL `https://s3.origa.uwuwu.net` вшивается через `build.rs`. Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`. Миграция на user-owned Tigris (ADR-037) была откачена в #372 (DPI-throttle на Cloudflare-роутинге для РФ); orphaned-ресурсы той миграции (user-Tigris bucket `origa-cdn` ~4 GB, R2, Worker) ждут cleanup.
+
+**Доставка из РФ** (ADR-061, 2026-09-30): RF-ветка Bunny geo-split → ВМ Aeza-RU СПб `193.233.217.243` (nginx stream SNI-demux → Railway/Tigris, серты acme.sh DNS-01 Bunny, IaC `~/rf-proxy-infra`). Мир идёт напрямую: CNAME на Railway (origa/app) и CloudFront (s3). Старый Aeza-Frankfurt фронт залочен РКН из РФ целиком (ADR-059 superseded для RF-ветки); для мира pass/uwuwu.ru/xray остаются на нём. План Б при деградации прямого маршрута — цепочка РФ→EU (~30 мин на развёртывание).
 
 Профиль `~/.aws/credentials [origa]` — для `deploy_cdn.py` / `refresh_cache_control.py`. Контракт кредов: env `AWS_ACCESS_KEY_ID` при наличии приоритетнее профиля — CI передаёт scoped-ключи через env.
 

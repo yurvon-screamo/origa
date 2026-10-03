@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted (temporary mitigation; to be superseded by migration off Railway or unblocking)
+Accepted (temporary mitigation; to be superseded by migration off Railway or unblocking).
+**Superseded for RF delivery by ADR-061 (2026-09-30)**: the Frankfurt front
+described here is TSPU-blocked from RF entirely; the RF branch now runs on an
+RF VM. The Caddy→Railway implementation facts below (Host header, SNI,
+XFF) remain the reference for any reverse-proxy front.
 
 ## Date
 
@@ -53,7 +57,7 @@ the origin; rollback is a DNS change (TTL 300).
 
 Architecture:
 
-```
+```text
 RU user ──→ Caddy @ 85.192.63.249:443 (VPS, Frankfurt, LE certs) ──→ Railway edge (*.up.railway.app)
              L7 reverse_proxy                                    DE→DE leg, never crosses RF border
 ```

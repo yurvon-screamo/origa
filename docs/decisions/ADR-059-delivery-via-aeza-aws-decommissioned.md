@@ -2,7 +2,12 @@
 
 ## Status
 
-Accepted (cutover 2026-09-19; supersedes the delivery part of ADR-058)
+Accepted (cutover 2026-09-19; supersedes the delivery part of ADR-058).
+**Superseded for RF delivery by ADR-061 (2026-09-30)**: the single-box
+Aeza Frankfurt front was TSPU-blocked from RF entirely; the RF branch now
+runs on an RF VM (nginx SNI-demux), the world branch stays direct
+(Railway / CloudFront). The geo-split SCR mechanism described here remains
+live and is the delivery mechanism of ADR-061.
 
 ## Date
 

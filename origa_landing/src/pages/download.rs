@@ -60,11 +60,16 @@ pub fn DownloadPage() -> impl IntoView {
         <section class="download-hero">
             <h1 class="download-hero__title">{c.download_h1}</h1>
             <p class="download-hero__subtitle">{c.download_subtitle}</p>
+            <a class="download-hero__web" href=WEB_APP_URL attr:data-umami-event="open_webapp">
+                {c.download_web_link}
+                " →"
+            </a>
         </section>
 
         // One uniform grid: every card is icon + name + formats + a single
         // action row. Apple platforms share one card and one badge — the
-        // storefront listing is universal (ADR-033).
+        // storefront listing is universal (ADR-033). Web lives in the hero
+        // link above, keeping the grid at an even 2×2.
         <section class="download-secondary">
             <div class="download-secondary__grid">
                 <DownloadCard
@@ -132,17 +137,6 @@ pub fn DownloadPage() -> impl IntoView {
                         },
                     ]
                 />
-                <DownloadCard
-                    icon=view! { <IconGlobe /> }.into_any()
-                    name=c.download_web
-                    formats=c.download_web_formats
-                    actions=vec![CardAction {
-                        href: WEB_APP_URL,
-                        text: c.download_try_web,
-                        event: Some("open_webapp"),
-                        filled: true,
-                    }]
-                />
             </div>
         </section>
     }
@@ -191,9 +185,9 @@ fn DownloadCard(
         .into_iter()
         .map(|action| {
             let class = if action.filled {
-                "btn btn-sm btn-filled"
+                "btn btn-filled"
             } else {
-                "btn btn-sm"
+                "btn"
             };
             view! {
                 <a href=action.href class=class attr:data-umami-event=action.event>
@@ -254,15 +248,6 @@ fn IconAndroid() -> impl IntoView {
     view! {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
             <path d="M17.523 15.341a.997.997 0 0 0 0-1.994.997.997 0 0 0 0 1.994m-11.046 0a.997.997 0 0 0 0-1.994.997.997 0 0 0 0 1.994m11.405-6.02l1.997-3.46a.416.416 0 0 0-.152-.567.416.416 0 0 0-.567.152l-2.022 3.5A12.16 12.16 0 0 0 12 8.075a12.16 12.16 0 0 0-5.138 1.17L4.84 5.746a.416.416 0 0 0-.567-.152.416.416 0 0 0-.152.567l1.997 3.46C2.688 11.186.344 14.663 0 18.766h24c-.344-4.103-2.688-7.58-6.118-9.445" />
-        </svg>
-    }
-}
-
-#[component]
-fn IconGlobe() -> impl IntoView {
-    view! {
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
         </svg>
     }
 }

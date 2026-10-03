@@ -55,7 +55,7 @@ pub(crate) fn build_acquaintance_slides(
                 Card::Kanji(kanji) => {
                     let name = kanji
                         .description(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default();
                     let radicals = kanji.radicals_info().ok().map(|infos| {
                         infos
@@ -118,23 +118,23 @@ pub(crate) fn build_acquaintance_slides(
                         .unwrap_or_default(),
                     short_description: rule
                         .short_description(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default(),
                     how_to_form: rule
                         .how_to_form(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default(),
                     examples: rule
                         .examples(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default(),
                     explanation: rule
                         .explanation(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default(),
                     nuances: rule
                         .nuances(&native_language)
-                        .map(&answer_text)
+                        .map(answer_text)
                         .unwrap_or_default(),
                 }),
                 Card::Phrase(_) => None,

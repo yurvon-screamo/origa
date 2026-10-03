@@ -773,6 +773,23 @@
     margin: 0 auto;
 }
 
+.download-hero__web {
+    display: inline-block;
+    margin-top: calc(-1 * var(--space-sm));
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-dark);
+    padding-bottom: 1px;
+}
+
+.download-hero__web:hover {
+    color: var(--fg-black);
+}
+
 .download-secondary {
     padding: 0 var(--space-lg) var(--space-xl);
     max-width: 1024px;
@@ -783,7 +800,7 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-lg);
-    max-width: 720px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -798,6 +815,8 @@
     border: 1px solid var(--border-dark);
     padding: var(--space-lg);
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .download-secondary__card::after {
@@ -867,25 +886,23 @@
     display: block;
 }
 
-/* Row of small action buttons (Linux: .deb + .rpm; Android: RuStore badge
-   + .apk). Declared after .btn so the smaller padding/size wins the cascade. */
+/* Row of action buttons (Windows; Linux .deb/.rpm/AUR; Android RuStore
+   badge + .apk). Scoped sizing: .download-actions .btn (specificity 0,2,0)
+   beats .btn's desktop media rule regardless of rule order, so every button
+   in the row is the same size. */
 .download-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
     align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-md);
 }
 
-.btn-sm {
-    padding: 8px 12px;
-    font-size: var(--text-2xs);
-}
-
-@media (min-width: 640px) {
-    .btn-sm {
-        padding: 10px 16px;
-        font-size: var(--text-label-sm);
-    }
+.download-actions .btn {
+    padding: 10px 16px;
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.1em;
 }
 
 /* ========================================

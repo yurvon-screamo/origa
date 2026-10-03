@@ -1,47 +1,59 @@
 /**
- * Geo-steering for Origa (.net zone):
- *  - RF clients -> Aeza VPS (Caddy proxies Tigris / Railway)
- *  - world      -> direct: Railway edge (API/landing)
- *  - s3.origa   -> world temporarily also via Aeza until the Tigris
- *                  custom domain is validated (no broken-TLS window);
- *                  flip the world branch to CnameRecord("origa.t3.tigrisbucket.io")
- *                  when the console accepts the domain.
+ * Geo-steering for Origa (.net zone) — Bunny DNS script 91629 "origa-s3-geo".
+ *
+ * Attached via NS records (zone 873317, TTL 60): origa, app.origa,
+ * s3.origa, content.origa. Nothing else must reach this script: it answers
+ * ONLY the four names above and returns undefined for any other hostname —
+ * a newly attached name without a branch here must fail loudly (grey
+ * answer), not silently resolve to the RF IP.
+ *
+ * Current topology (ADR-061, cutover 2026-09-30):
+ *  - RF clients    -> A 193.233.217.243 (RF VM, nginx SNI-demux -> Railway/Tigris)
+ *  - world         -> direct: Railway edge (API/landing), CloudFront (CDN)
+ *  - content.origa -> CNAME Tigris custom domain (diagnostic name, no RF branch)
+ *
+ * s3.origa world branch: CloudFront (free tier) in front of the public
+ * Tigris bucket. The direct Tigris custom domain (origa.t3.tigrisbucket.io)
+ * is parked: the Tigris edge still serves TLS alert 80 on that SNI —
+ * verified 2026-09-20 by a real client path (curl via live CNAME fails with
+ * 000) AND direct openssl probes on multiple edge IPs. Flip the s3 world
+ * branch to CnameRecord("origa.t3.tigrisbucket.io") only after a real-client
+ * test returns 200 from a Tigris edge IP.
  */
 export default function handleQuery(query) {
   var h = (query.request.hostname || "").replace(/\.$/, ""); // strip FQDN trailing dot
-  // content.origa: diagnostic/validation name for the Tigris custom-domain
-  // certificate (everyone gets the CNAME — no RF branch needed).
+
+  // Guard: answer only the names attached to this script (see header).
+  if (
+    h !== "origa.uwuwu.net" &&
+    h !== "app.origa.uwuwu.net" &&
+    h !== "s3.origa.uwuwu.net" &&
+    h !== "content.origa.uwuwu.net"
+  ) {
+    return undefined; // not ours — do NOT fall through to the RF A-record
+  }
+
   if (h === "content.origa.uwuwu.net") {
     return new CnameRecord("origa.t3.tigrisbucket.io", 300);
   }
+
   var geo = query.request.geoLocation;
   var isRF = geo && geo.country === "RU";
+  if (isRF) {
+    return new ARecord("193.233.217.243", 60);
+  }
 
-  // s3.origa world branch: CloudFront (free tier) in front of the public
-  // Tigris bucket. RF stays on the VPS; the world rides CF edges.
-  if (h === "s3.origa.uwuwu.net" && !isRF) {
+  if (h === "s3.origa.uwuwu.net") {
     return new CnameRecord("d3gbi3wo8j4c2w.cloudfront.net", 300);
   }
-  // content.origa: diagnostic/validation name for the Tigris custom-domain
-  // certificate (everyone gets the CNAME — no RF branch needed).
-  if (h === "content.origa.uwuwu.net") {
-    return new CnameRecord("origa.t3.tigrisbucket.io", 300);
-  }
-  var geo = query.request.geoLocation;
-  var isRF = geo && geo.country === "RU";
-
-  // s3.origa world branch: PARKED on Aeza. Tigris UI claims the certificate
-  // is "completed" (valid till 2026-12-18, issuer YE1) but their edge still
-  // serves TLS alert 80 on the SNI — verified 2026-09-20 by a real client
-  // path (curl via live CNAME to 130.61.20.236 fails with 000) AND direct
-  // openssl probes on multiple edge IPs. Flip back to
-  // CnameRecord("origa.t3.tigrisbucket.io") only after a real-client test
-  // returns 200 from a Tigris edge IP.
-  if (h === "app.origa.uwuwu.net" && !isRF) {
+  if (h === "app.origa.uwuwu.net") {
     return new CnameRecord("9v15a3ov.up.railway.app", 300);
   }
-  if (h === "origa.uwuwu.net" && !isRF) {
+  if (h === "origa.uwuwu.net") {
     return new CnameRecord("vl080mt6.up.railway.app", 300);
   }
-  return new ARecord("85.192.63.249", 60);
+  // unreachable while the guard list above matches the branches; kept as a
+  // fail-loud terminal: a name added to the guard without a branch must get
+  // a grey answer, never another name's record.
+  return undefined;
 }
