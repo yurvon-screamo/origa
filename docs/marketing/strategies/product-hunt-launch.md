@@ -112,11 +112,11 @@ YouTube-ссылка, 45 секунд, автоплей без звука — п
 > - **Everything in one app:** 200,000+ native phrases with audio, N5-N1 kanji and grammar, OCR capture (point your camera at manga or a textbook page and it becomes cards), speech recognition, FSRS scheduling
 > - **Your language, natively:** the interface is English, Russian, Korean or Vietnamese, not a translation layer over an English app
 >
-> It's free, offline-first, open source, and runs on iOS, Android, Windows, Linux, macOS and the web. The iOS release is fresh out, so feedback from iPhone users is especially welcome.
+> It's free, offline-first, open source, and runs on iOS, Android, Windows, Linux, macOS and the web. The iOS app just shipped, and feedback from iPhone users is especially welcome.
 >
-> Two things I'd love feedback on: does the "no English required" angle make sense to you, and if you're on iPhone, what feels rough in the brand-new iOS build?
+> Two things I'd love feedback on: does the "no English required" angle make sense to you, and if you're on iPhone, what would it take for Origa to replace your current study stack?
 
-(≈200 слов; история → две фичи → свежий iOS-релиз как крючок вместо оправданий → конкретный вопрос. Просьба про апвоуты отсутствует — и не должна появляться.)
+(≈200 слов; история → две фичи → свежий iOS-релиз как новостной крючок → конкретный вопрос. Никаких слов о сырости. Просьба про апвоуты отсутствует — и не должна появляться.)
 
 ## 5. Подготовка: T-4 недели → день X
 
@@ -166,7 +166,7 @@ YouTube-ссылка, 45 секунд, автоплей без звука — п
 
 ## 8. Слабые места и заготовки ответов
 
-- **«iOS-версия сырая / только вышла?»** — «Да, свежий релиз. Ченджлог открыт, фидбек с PH идёт в приоритеты следующих билдов» — свежесть это крючок, а не слабость 
+- **«iOS-версия только вышла?»** — «Да, недавно — и релизы идут часто. Фидбек с PH попадает в приоритеты следующих билдов» — темп релизов как сила, без единого слова о недостатках 
 - **«Чем лучше Anki/Duolingo?»** — без агрессии: «Anki — лучший SRS, мы его не заменяем, мы добавляем словарь/кандзи/грамматику/OCR вокруг расписания. Сравнение: origa.uwuwu.net/compare»
 - **«Где данные хранятся?»** — офлайн-фристайл: «локально у вас; аккаунт — только синхронизация»
 - **«Free? В чём подвох?»** — open source, репозиторий прилагается
