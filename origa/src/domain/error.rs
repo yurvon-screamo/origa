@@ -94,6 +94,8 @@ pub enum OrigaError {
     NetworkError { url: String, reason: String },
     #[error("Phrase parse error: {reason}")]
     PhraseParseError { reason: String },
+    #[error("Example parse error: {reason}")]
+    ExampleParseError { reason: String },
     #[error("Phrase not found: {phrase_id}")]
     PhraseNotFound { phrase_id: Ulid },
     #[error("Pitch audio parse error: {reason}")]
@@ -131,6 +133,7 @@ impl OrigaError {
             | Self::GrammarContentNotFound { .. }
             | Self::TranslationNotFound { .. }
             | Self::PhraseParseError { .. }
+            | Self::ExampleParseError { .. }
             | Self::PhraseNotFound { .. }
             | Self::PitchAudioParseError { .. }
             | Self::AccountDeletionFailed { .. } => ErrorCategory::Domain,

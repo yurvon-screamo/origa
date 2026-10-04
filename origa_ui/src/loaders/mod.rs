@@ -1,6 +1,7 @@
 pub mod card_precache_loader;
 pub mod data_loader;
 pub mod dictionary;
+pub mod example_loader;
 pub mod furigana_dict_loader;
 pub mod grammar_precompute_loader;
 pub mod jlpt_content_loader;

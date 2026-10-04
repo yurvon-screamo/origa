@@ -6915,3 +6915,92 @@ rt {
 .lesson-report-btn:active {
     transform: translateY(1px);
 }
+
+/* ---------- Word detail (/words/:word, #528) ---------- */
+
+.word-detail {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.word-detail-hero-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 28px 24px;
+}
+
+.word-detail-hero-word {
+    font-size: 44px;
+    line-height: 1.15;
+    color: var(--text-primary);
+}
+
+.word-detail-hero-meaning {
+    margin-top: 10px;
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.word-detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.word-detail-section-title {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.word-detail-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.word-detail-example-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-detail-example-ja {
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.word-detail-example-highlight {
+    background: var(--accent-soft, rgba(160, 120, 60, 0.18));
+    border-bottom: 2px solid var(--accent, #a0783c);
+    padding: 0 2px;
+}
+
+.word-detail-example-translation {
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+/* Compact example on the vocabulary answer side (#528) */
+.word-example-line {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-dark);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.word-example-line-ja {
+    font-size: 17px;
+    line-height: 1.6;
+}

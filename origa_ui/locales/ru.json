@@ -492,7 +492,10 @@
     "no_translation_found": "Нет перевода — не будет добавлено",
     "tooltip_no_translation": "Слово не найдено в наших словарях",
     "already_added": "Добавлено",
-    "counter_badge": "счётный суффикс"
+    "counter_badge": "счётный суффикс",
+    "detail_examples_section": "Примеры",
+    "detail_examples_not_found": "Примеров пока нет",
+    "detail_back": "Назад"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",

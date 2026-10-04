@@ -25,4 +25,5 @@ pub use onboarding::Onboarding;
 pub use phrases::Phrases;
 pub use profile::Profile;
 pub use sets::Sets;
+pub use words::WordDetail;
 pub use words::Words;

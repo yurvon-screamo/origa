@@ -1,5 +1,6 @@
 use crate::loaders::{
     data_loader::{load_counters, load_grammar, load_kanji, load_radicals, load_vocabulary},
+    example_loader::load_examples,
     furigana_dict_loader::load_furigana_dict,
     jlpt_content_loader::load_jlpt_content,
     loading_message::{
@@ -13,7 +14,7 @@ use crate::pages::shared::{
 };
 use crate::pages::{
     Counters, CountersDetail, Grammar, GrammarDetail, Home, Kanji, KanjiDetail, Lesson, Login,
-    Onboarding, Phrases, Profile, Sets, Words,
+    Onboarding, Phrases, Profile, Sets, WordDetail, Words,
 };
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
@@ -372,6 +373,12 @@ pub fn start_dictionary_loading(
             tracing::warn!("Failed to seed ready phrases: {e}");
         }
 
+        // Phase D-2: examples index (#528, non-critical — the word page
+        // degrades to an empty state when it is missing).
+        if let Err(e) = load_examples().await {
+            tracing::warn!("Failed to load examples index: {e}");
+        }
+
         // Phase E: auto per-card pre-cache (background, only when online)
         if connectivity.is_online.get_untracked() {
             if let Some(user) = auth_store.user.get_untracked() {
@@ -690,6 +697,7 @@ pub fn AppRoutes() -> impl IntoView {
                 <Route path=path!("home") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("profile") view=|| view! { <ProtectedRoute><Profile/></ProtectedRoute> } />
                 <Route path=path!("words") view=|| view! { <ProtectedRoute><Words/></ProtectedRoute> } />
+                <Route path=path!("words/:word") view=|| view! { <ProtectedRoute><WordDetail/></ProtectedRoute> } />
                 <Route path=path!("grammar/:id") view=|| view! { <ProtectedRoute><GrammarDetail/></ProtectedRoute> } />
                 <Route path=path!("grammar") view=|| view! { <ProtectedRoute><Grammar/></ProtectedRoute> } />
                 <Route path=path!("phrases") view=|| view! { <ProtectedRoute><Phrases/></ProtectedRoute> } />

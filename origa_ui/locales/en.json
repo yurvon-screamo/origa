@@ -492,7 +492,10 @@
     "no_translation_found": "No translation found — won't be added",
     "tooltip_no_translation": "Word not found in our dictionaries",
     "already_added": "Added",
-    "counter_badge": "counter"
+    "counter_badge": "counter",
+    "detail_examples_section": "Examples",
+    "detail_examples_not_found": "No examples yet",
+    "detail_back": "Back"
   },
   "grammar_page": {
     "add_grammar": "Add grammar",

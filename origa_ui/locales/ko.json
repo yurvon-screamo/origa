@@ -492,7 +492,10 @@
     "no_translation_found": "번역을 찾을 수 없음 — 추가되지 않습니다",
     "tooltip_no_translation": "사전에서 단어를 찾을 수 없습니다",
     "already_added": "추가됨",
-    "counter_badge": "조수사"
+    "counter_badge": "조수사",
+    "detail_examples_section": "예문",
+    "detail_examples_not_found": "아직 예문이 없습니다",
+    "detail_back": "뒤로"
   },
   "grammar_page": {
     "add_grammar": "문법 추가",

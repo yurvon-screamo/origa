@@ -50,6 +50,7 @@ mod rating_buttons_view;
 mod training_answer;
 mod training_front;
 mod training_view;
+pub mod word_example_line;
 mod writing_card;
 mod yesno_card_view;
 
