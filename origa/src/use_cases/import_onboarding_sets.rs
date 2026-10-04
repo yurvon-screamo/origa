@@ -16,6 +16,7 @@ pub struct ImportOnboardingResult {
     pub created_vocabulary: usize,
     pub created_kanji: usize,
     pub created_grammar: usize,
+    pub created_counters: usize,
     pub skipped_duplicates: usize,
     pub skipped_no_translation: usize,
 }
@@ -48,6 +49,7 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             created_vocabulary: 0,
             created_kanji: 0,
             created_grammar: 0,
+            created_counters: 0,
             skipped_duplicates: 0,
             skipped_no_translation: 0,
         };
@@ -84,6 +86,17 @@ impl<'a, R: UserRepository, C: CdnProvider> ImportOnboardingSetsUseCase<'a, R, C
             &mut result,
             &mut created_kanji_chars,
         );
+
+        // Счётные суффиксы ≤ целевого уровня (issue #415): сидируются при
+        // РЕАЛЬНОМ импорте сетов (план: «юзер завершил импорт сетов»), чтобы
+        // пустой импорт не менял контракт скоринга «ноль карт». Пропущенные
+        // при пустом импорте счётчики добирает миграция первого старта.
+        if !set_ids.is_empty() {
+            match crate::use_cases::seed_counters_into_user(&mut user, target_level) {
+                Ok(n) => result.created_counters = n,
+                Err(e) => warn!(error = ?e, "Counter seeding failed during onboarding import"),
+            }
+        }
 
         user.end_bulk_import();
 

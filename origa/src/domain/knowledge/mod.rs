@@ -1,4 +1,5 @@
 mod card;
+mod counter;
 mod daily_history;
 mod empty_diagnosis;
 mod grammar;
@@ -15,13 +16,14 @@ pub mod vocabulary;
 
 use card::ImportDedupKey;
 pub use card::{Card, CardType, StudyCard};
+pub use counter::{CounterBindingMemory, CounterCard};
 pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
-    GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData, LessonViewGenerator,
-    MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
+    CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
+    LessonViewGenerator, MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
 pub use lesson_builder::{MAX_LESSON_SIZE, NewCardPolicy};
 pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
@@ -217,6 +219,20 @@ impl KnowledgeSet {
             .collect()
     }
 
+    /// Известные счётные суффиксы (issue #415) — зеркало `get_known_kanji`
+    /// для пометок в дровере заведения.
+    pub fn get_known_counters(&self) -> HashSet<String> {
+        self.study_cards
+            .values()
+            .filter_map(|study_card| match study_card.card() {
+                Card::Counter(counter_card) if study_card.memory().is_known_card() => {
+                    Some(counter_card.suffix().to_string())
+                },
+                _ => None,
+            })
+            .collect()
+    }
+
     pub fn delete_card(&mut self, card_id: Ulid) -> Result<(), OrigaError> {
         let removed = self
             .study_cards
@@ -354,6 +370,9 @@ impl KnowledgeSet {
             (Card::Phrase(phrase_card), Card::Phrase(existing_phrase_card)) => {
                 phrase_card.phrase_id() == existing_phrase_card.phrase_id()
             },
+            (Card::Counter(counter_card), Card::Counter(existing_counter_card)) => {
+                counter_card.suffix() == existing_counter_card.suffix()
+            },
 
             _ => false,
         }) {
@@ -438,7 +457,7 @@ impl KnowledgeSet {
                     Card::Phrase(_) => RateMode::PhraseReview,
                     Card::Grammar(_) => RateMode::GrammarReview,
                     Card::Kanji(_) => RateMode::KanjiReview,
-                    Card::Vocabulary(_) => mode,
+                    Card::Vocabulary(_) | Card::Counter(_) => mode,
                 },
             };
 
@@ -460,6 +479,22 @@ impl KnowledgeSet {
             .get_mut(&card_id)
             .map(|card| card.toggle_favorite())
             .ok_or(OrigaError::CardNotFound { card_id })
+    }
+
+    /// Мини-оценка связки счётного суффикса: переоценивает ТОЛЬКО память
+    /// этой ячейки в режиме `CounterReview`, мимо `rate_card` — семантика
+    /// карты, другие связки и дневная статистика не затрагиваются.
+    pub fn rate_counter_binding(
+        &mut self,
+        card_id: Ulid,
+        number: u8,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        let study_card = self
+            .study_cards
+            .get_mut(&card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+        study_card.apply_counter_binding_review(number, rating)
     }
 
     fn update_history(&mut self, rating: Rating, was_new: bool, is_phrase: bool, mode: RateMode) {
@@ -546,6 +581,9 @@ impl KnowledgeSet {
                 Utc::now() - Duration::days(1),
             );
             card.apply_review(memory, Rating::Easy);
+            // Счётный суффикс: «знаю» распространяется на все связки —
+            // иначе первый композитный показ дриллил бы полную таблицу.
+            card.mark_all_counter_bindings_known();
             card.handle_favorite_rating(Rating::Easy);
             card.stamp_marked_known(Utc::now());
             Ok(())

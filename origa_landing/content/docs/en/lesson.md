@@ -5,7 +5,7 @@ locale: en
 meta_title: "How Lessons Work in Origa — Reviews, Cards, Scheduling"
 meta_description: "The structure of an Origa lesson: the acquaintance stage for new cards (presentation and training), card types, rating, and review scheduling."
 target_keywords: ["origa lesson", "how to learn new japanese words", "spaced repetition japanese", "fsrs japanese", "japanese review system", "japanese flashcards review"]
-lastmod: 2026-09-14
+lastmod: 2026-09-23
 status: ready
 ---
 
@@ -19,7 +19,7 @@ A lesson in Origa is a sequence of cards chosen for this session. You answer eac
 
 Each lesson pulls three kinds of cards:
 
-- **New cards.** Drawn from your active vocabulary, kanji, grammar, or phrase sets. The number per day comes from the pace you chose during onboarding (or changed later in your profile). Vocabulary, kanji, and grammar first pass through the acquaintance stage (next section); new phrases go straight to reviews.
+- **New cards.** Drawn from your active vocabulary, kanji, grammar, counter, or phrase sets. The number per day comes from the pace you chose during onboarding (or changed later in your profile). Vocabulary, kanji, grammar, and counters first pass through the acquaintance stage (next section); new phrases go straight to reviews.
 - **Due reviews.** Cards whose previous interval has expired. These take priority over new cards.
 - **Mixed views.** The same word can appear in different shapes (recognition, recall, listening, writing), so you encounter it from multiple angles.
 
@@ -31,7 +31,7 @@ A new card does not appear in the lesson mixed in with reviews. It first goes th
 
 ### Presentation
 
-The day's new cards are gathered into a small group. The group always takes its full size (seven cards) while the queue of new cards lasts; it only shrinks when the queue runs out. You go through the cards one by one: a word with furigana, translation, and audio; a kanji with meanings and readings; grammar with examples. Nothing to recall yet. Hovering a kanji inside a word opens a brief description of the character.
+The day's new cards are gathered into a small group. The group always takes its full size (seven cards) while the queue of new cards lasts; it only shrinks when the queue runs out. You go through the cards one by one: a word with furigana, translation, and audio; a kanji with meanings and readings; grammar with examples; a counter suffix with its meaning and the full table of readings for the numbers one through ten. Nothing to recall yet. Hovering a kanji inside a word opens a brief description of the character.
 
 Each card has two actions: **Next** (space) and **Already know**. "Already know" marks the card as known: it goes straight into regular reviews, and its slot in the group is taken by the next card from the queue; if the queue is empty, the group simply gets smaller. The daily quota of new cards is not spent.
 
@@ -61,8 +61,9 @@ You will meet several shapes during a lesson:
 - **Writing.** A kanji is shown with its stroke order animated; you follow along to learn the correct writing.
 - **Kanji reading.** You read a word with hidden furigana and supply the pronunciation.
 - **Grammar.** A grammar pattern is shown in context; you complete or identify it.
+- **Counter bindings.** A counter suffix (for example 本) reviews its number bindings one by one: the front is a number with the suffix (8本), the answer is its reading, and the rating is the classic know / don't-know.
 
-Not every card has every shape. A vocabulary card can be recognition or recall; a kanji card can also be writing or reading; a grammar card has grammar-specific shapes.
+Not every card has every shape. A vocabulary card can be recognition or recall; a kanji card can also be writing or reading; a grammar card has grammar-specific shapes; a counter card is reviewed classically on its meaning.
 
 ## Rating
 

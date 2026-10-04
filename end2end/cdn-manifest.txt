@@ -34,6 +34,7 @@ grammar/grammar.json
 grammar/grammar_ko_vi.json
 grammar/grammar_v2.json
 grammar/grammar_v3.json
+counters/counters.json
 grammar/grammar_precompute.rkyv
 grammar/grammar_precompute_v3.rkyv
 kanji_art_manifest.json

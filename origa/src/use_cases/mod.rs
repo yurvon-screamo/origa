@@ -1,3 +1,4 @@
+mod add_counter_cards;
 mod analyze_text_for_cards;
 mod backfill_card_tokens;
 mod complete_acquaintance_hand;
@@ -12,9 +13,12 @@ mod extract_text_from_image;
 mod import_anki_pack;
 mod import_onboarding_sets;
 mod mark_card_as_known;
+mod migrate_counters;
 mod migrate_grammar_cards;
 mod rate_card;
 mod rate_card_with_side_effects;
+mod rate_counter_binding;
+mod seed_counters;
 mod seed_ready_phrases;
 mod select_acquaintance_hand;
 mod select_cards_to_lesson;
@@ -29,6 +33,7 @@ mod tests;
 #[cfg(test)]
 pub use tests::fixtures::{init_phrase_index_from_cdn, init_real_dictionaries};
 
+pub use add_counter_cards::AddCounterCardsUseCase;
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
 pub use backfill_card_tokens::BackfillCardTokensUseCase;
 pub use complete_acquaintance_hand::CompleteAcquaintanceHandUseCase;
@@ -48,9 +53,12 @@ pub use import_anki_pack::{
 };
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
+pub use migrate_counters::MigrateCountersForExistingUsersUseCase;
 pub use migrate_grammar_cards::{MigrateGrammarCardsUseCase, MigrationReport, migrate_user_cards};
 pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
+pub use rate_counter_binding::RateCounterBindingUseCase;
+pub use seed_counters::{SeedCountersUseCase, seed_counters_into_user};
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use seed_ready_phrases::collect_known_grammar_rules;
 pub use seed_ready_phrases::{classify_orphaned_phrases, delete_phrase_cards_by_phrase_ids};

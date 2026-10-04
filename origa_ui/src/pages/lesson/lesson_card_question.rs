@@ -12,6 +12,11 @@ pub fn LessonCardQuestion(
     question_text: String,
     kanji: Option<String>,
     is_reversed: bool,
+    /// Счётный суффикс: фуригана кандзи даёт СЛОВАРНОЕ чтение (本 → ほん),
+    /// чуждое счётному контексту (いっぽん/さんぼн) — вопрос рендерится
+    /// без фуриганы, чтения живут в таблице на ответе.
+    #[prop(optional, default = false)]
+    is_counter: bool,
     on_show_answer: Callback<()>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
     native_language: NativeLanguage,
@@ -39,12 +44,21 @@ pub fn LessonCardQuestion(
                             when=move || is_reversed
                             fallback=move || {
                                 view! {
-                                    <FuriganaText
-                                        text=question.get_value()
-                                        known_kanji=known_kanji.get()
-                                        native_language=native_language
-                                        with_kanji_tooltip=true
-                                    />
+                                    <Show
+                                        when=move || is_counter
+                                        fallback=move || {
+                                            view! {
+                                                <FuriganaText
+                                                    text=question.get_value()
+                                                    known_kanji=known_kanji.get()
+                                                    native_language=native_language
+                                                    with_kanji_tooltip=true
+                                                />
+                                            }
+                                        }
+                                    >
+                                        {question.get_value()}
+                                    </Show>
                                 }
                             }
                         >

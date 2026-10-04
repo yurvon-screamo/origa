@@ -138,6 +138,24 @@ impl<'a> LessonViewGenerator<'a> {
                 let same_type_cards = self.same_type_cards(&card_type);
                 self.select_phrase_view(card, same_type_cards, is_new, rng)
             },
+            // Новая counter-карта — только через руку знакомства (Exclude).
+            // Ревью — пачка связок «число × суффикс», каждая оценена
+            // классическим «знаю / не знаю» (issue #415); семантическая
+            // общая карта в основном уроке не показывается (решение
+            // владельца). Пустая пачка деградирует в Normal: слот без
+            // показов застопорил бы урок.
+            CardType::Counter if is_new => LessonCardView::Normal(card.clone()),
+            CardType::Counter => {
+                let items = generation::generate_counter_binding_items(card);
+                if items.is_empty() {
+                    LessonCardView::Normal(card.clone())
+                } else {
+                    LessonCardView::CounterBindings {
+                        card: card.clone(),
+                        items,
+                    }
+                }
+            },
         }
     }
 

@@ -1,3 +1,4 @@
+pub mod counters;
 pub mod grammar;
 pub mod home;
 pub mod icons;
@@ -12,6 +13,7 @@ pub mod sets;
 pub mod shared;
 pub mod words;
 
+pub use counters::{Counters, CountersDetail};
 pub use grammar::Grammar;
 pub use grammar::GrammarDetail;
 pub use home::Home;

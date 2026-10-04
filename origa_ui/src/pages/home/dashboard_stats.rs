@@ -68,6 +68,7 @@ pub fn compute_studied_today(
                     Card::Kanji(k) => k.kanji().text().to_string(),
                     Card::Grammar(g) => g.rule_id().to_string(),
                     Card::Phrase(p) => p.phrase_id().to_string(),
+                    Card::Counter(c) => c.suffix().to_string(),
                 });
 
             let meaning = format_answer_text(card, lang);
@@ -77,6 +78,7 @@ pub fn compute_studied_today(
                 CardType::Vocabulary => "vocabulary",
                 CardType::Grammar => "grammar",
                 CardType::Phrase => "vocabulary",
+                CardType::Counter => "counter",
             };
 
             let (reading, short_description) = match card {

@@ -26,13 +26,16 @@ pub(crate) fn interleave_core_by_type(mut lesson_data: LessonData) -> LessonData
         return lesson_data;
     }
 
-    let (mut vocab, mut kanji, mut grammar, mut other) =
-        (Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    let (mut vocab, mut kanji, mut grammar, mut counter, mut other) =
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new());
     for card in lesson_data.cards.drain(..core_count) {
         match CardType::from(card.1.card()) {
             CardType::Vocabulary => vocab.push(card),
             CardType::Kanji => kanji.push(card),
             CardType::Grammar => grammar.push(card),
+            // Собственная очередь: счётные суффиксы раздаются round-robin
+            // в vocab-промежутки, как кандзи и грамматика (issue #415).
+            CardType::Counter => counter.push(card),
             CardType::Phrase => other.push(card),
         }
     }
@@ -46,14 +49,20 @@ pub(crate) fn interleave_core_by_type(mut lesson_data: LessonData) -> LessonData
     for (i, card) in grammar.into_iter().enumerate() {
         gap_grammar[i % num_gaps].push(card);
     }
+    let mut gap_counter: Vec<Vec<(Ulid, LessonCard)>> = (0..num_gaps).map(|_| Vec::new()).collect();
+    for (i, card) in counter.into_iter().enumerate() {
+        gap_counter[i % num_gaps].push(card);
+    }
 
     let mut new_core: Vec<(Ulid, LessonCard)> = Vec::with_capacity(core_count);
     new_core.append(&mut gap_kanji[0]);
     new_core.append(&mut gap_grammar[0]);
+    new_core.append(&mut gap_counter[0]);
     for (i, vcard) in vocab.into_iter().enumerate() {
         new_core.push(vcard);
         new_core.append(&mut gap_kanji[i + 1]);
         new_core.append(&mut gap_grammar[i + 1]);
+        new_core.append(&mut gap_counter[i + 1]);
     }
     new_core.append(&mut other);
 
