@@ -21,7 +21,7 @@ Mục từ điển, bản dịch và furigana đến từ [JMdict / EDRDG](https
 
 ## Từ đếm
 
-Bộ dữ liệu từ đếm (cách đọc và kết hợp số) là tệp nguồn được bảo trì trực tiếp trong kho, đối chiếu với dữ liệu tham chiếu mở [josuushi](https://github.com/naclsn/josuushi) và các danh sách từ đếm công khai của Tofugu và Wikipedia. Chú giải được duy trì bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt.
+Bộ dữ liệu từ đếm (cách đọc, kết hợp số, mức JLPT) được duy trì như tệp dữ liệu và phân phối cùng tài nguyên ứng dụng qua CDN của dự án, đối chiếu với dữ liệu tham chiếu mở [josuushi](https://github.com/naclsn/josuushi) và các danh sách từ đếm công khai của Tofugu và Wikipedia. Chú giải được duy trì bằng tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt.
 
 ## Animation hán tự
 

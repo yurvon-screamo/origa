@@ -5967,6 +5967,10 @@ rt {
     margin-top: 16px;
 }
 
+.counter-detail-section-gap {
+    margin-top: 16px;
+}
+
 .counter-detail-section-card {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);

@@ -21,7 +21,7 @@ Dictionary entries, translations, and furigana come from [JMdict / EDRDG](https:
 
 ## Counter words
 
-The counter-suffix dataset (readings and number bindings) is a hand-maintained source file in the repository, cross-checked against the open [josuushi](https://github.com/naclsn/josuushi) reference data and the public Tofugu and Wikipedia counter lists. Glosses are maintained in English, Russian, Korean, and Vietnamese.
+The counter-suffix dataset (readings, number bindings, JLPT levels) is maintained as a data file delivered with the app assets from the project CDN, cross-checked against the open [josuushi](https://github.com/naclsn/josuushi) reference data and the public Tofugu and Wikipedia counter lists. Glosses are maintained in English, Russian, Korean, and Vietnamese.
 
 ## Kanji animations
 

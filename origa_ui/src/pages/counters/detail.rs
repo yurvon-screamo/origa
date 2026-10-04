@@ -299,7 +299,7 @@ pub fn CountersDetail() -> impl IntoView {
                         </div>
 
                         // Таблица чтений с состоянием связок
-                        <div class="counter-detail-section-card" style="margin-top:16px" data-testid="counters-detail-table">
+                        <div class="counter-detail-section-card counter-detail-section-gap" data-testid="counters-detail-table">
                             <div class="counter-detail-section-title">{readings_title}</div>
                             <div class="counter-readings-table">
                                 {readings
@@ -324,7 +324,7 @@ pub fn CountersDetail() -> impl IntoView {
                             </div>
 
                             <Show when=move || !examples.get().is_empty()>
-                                <div class="counter-detail-section-card" style="margin-top:16px"
+                                <div class="counter-detail-section-card counter-detail-section-gap"
                                      data-testid="counters-detail-examples">
                                     <div class="counter-detail-section-title">
                                         {examples_title}
