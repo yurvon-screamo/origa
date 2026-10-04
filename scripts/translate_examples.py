@@ -108,12 +108,12 @@ def gen_one(x: str, lang: str) -> tuple[str, bool, int]:
     return out, detect_language(out) == lang, retries
 
 
-def embed(texts: list[str], prefixed: bool = True) -> dict[str, np.ndarray]:
-    """e5b embeddings with query:/passage: prefixes (judge v3 recipe)."""
+def embed(texts: list[str], prefix: str) -> dict[str, np.ndarray]:
+    """e5b embeddings with the judge-v3 `query:`/`passage:` prefixes."""
     out: dict[str, np.ndarray] = {}
     for s in range(0, len(texts), 64):
         chunk = texts[s : s + 64]
-        payload = [(("passage: " + t)[:1000]) if prefixed else t[:1000] for t in chunk]
+        payload = [(prefix + t)[:1000] for t in chunk]
         r = requests.post(EMB_URL, json={"model": "e5b", "input": payload}, timeout=600)
         r.raise_for_status()
         for t, item in zip(chunk, r.json()["data"]):
@@ -169,16 +169,20 @@ def main() -> int:
             scores: dict[tuple[int, str], tuple[float, float]] = {}
             if judge_ok:
                 try:
-                    uniq = list({j[0]["x"] for j in block})
-                    uniq += [g for g, _, _ in gens]
-                    uniq += [j[0]["en"] for j in block]
-                    V = embed(list(dict.fromkeys(uniq)))
+                    queries = list(dict.fromkeys(j[0]["x"] for j in block))
+                    passages = list(
+                        dict.fromkeys(
+                            [g for g, _, _ in gens] + [j[0]["en"] for j in block]
+                        )
+                    )
+                    Vq = embed(queries, "query: ")
+                    Vp = embed(passages, "passage: ")
                     with torch.no_grad():
                         for (r, L), (gen, _, _) in zip(block, gens):
-                            q = torch.from_numpy(V[r["x"]]).unsqueeze(0)
+                            q = torch.from_numpy(Vq[r["x"]]).unsqueeze(0)
                             cands = torch.stack([
-                                torch.from_numpy(V[gen]),
-                                torch.from_numpy(V[r["en"]]),
+                                torch.from_numpy(Vp[gen]),
+                                torch.from_numpy(Vp[r["en"]]),
                             ])
                             sc = heads(q, cands)
                             scores[(r["i"], L)] = (float(sc[0]), float(sc[1]))
@@ -190,7 +194,7 @@ def main() -> int:
             elif not judge_ok and n_done >= judge_retry_at:
                 # embeddings server may have come up mid-run
                 try:
-                    embed(["テスト"], prefixed=False)
+                    embed(["テスト"], "query: ")
                     ck = torch.load(HEADS, map_location="cpu")
                     heads = Heads(ck["dim"])
                     heads.load_state_dict(ck["heads"])

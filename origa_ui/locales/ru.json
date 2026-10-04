@@ -494,8 +494,7 @@
     "already_added": "Добавлено",
     "counter_badge": "счётный суффикс",
     "detail_examples_section": "Примеры",
-    "detail_examples_not_found": "Примеров пока нет",
-    "detail_back": "Назад"
+    "detail_examples_not_found": "Примеров пока нет"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",

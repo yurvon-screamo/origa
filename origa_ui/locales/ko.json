@@ -494,8 +494,7 @@
     "already_added": "추가됨",
     "counter_badge": "조수사",
     "detail_examples_section": "예문",
-    "detail_examples_not_found": "아직 예문이 없습니다",
-    "detail_back": "뒤로"
+    "detail_examples_not_found": "아직 예문이 없습니다"
   },
   "grammar_page": {
     "add_grammar": "문법 추가",

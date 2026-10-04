@@ -33,7 +33,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 CDN = REPO / "cdn"
 EXAMPLES_URL = "https://www.edrdg.org/pub/Nihongo/examples.utf.gz"
-WORK = Path("/tmp/opencode")
+DEFAULT_WORK = Path("/tmp/opencode")
 
 MAX_SENT_CHARS = 60          # textbook register: short, self-contained
 MIN_SENT_CHARS = 6
@@ -61,7 +61,8 @@ def load_popular_words() -> dict[str, str]:
     for f in sorted((CDN / "well_known_set").rglob("*.json")):
         try:
             d = json.loads(f.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"WARN: skipping unreadable set {f}: {e}", file=sys.stderr)
             continue
         if isinstance(d, dict) and isinstance(d.get("words"), list):
             level = d.get("level", "")
@@ -99,6 +100,19 @@ def bline_forms(line: str) -> set[str]:
     return forms
 
 
+def bline_ruby(line: str) -> list[list[str]]:
+    """[kanji, reading] pairs from one B-line (UI ruby seed)."""
+    ruby: list[list[str]] = []
+    for tok in line.split():
+        base = RE_TOKEN_GROUPS.split(tok)[0]
+        if not base or not (KANA_RE.search(base) or KANJI_RE.search(base)):
+            continue
+        m = re.search(r"\(([^)]*)\)", tok)
+        if m:
+            ruby.append([base, m.group(1)])
+    return ruby
+
+
 def clean_en(en: str) -> str:
     en = RE_ID_TAG.sub("", en)
     en = RE_GENDER_TAG.sub("", en)
@@ -106,6 +120,7 @@ def clean_en(en: str) -> str:
 
 
 def ensure_examples_file(path: Path) -> None:
+    """Fetch the corpus into `path.parent` unless a fresh copy exists."""
     if path.exists() and path.stat().st_size > 1_000_000:
         return
     import gzip
@@ -113,13 +128,18 @@ def ensure_examples_file(path: Path) -> None:
     gz = WORK / "examples.utf.gz"
     if not gz.exists():
         print(f"downloading {EXAMPLES_URL} ...", flush=True)
-        urllib.request.urlretrieve(EXAMPLES_URL, gz)
+        req = urllib.request.Request(EXAMPLES_URL, headers={"User-Agent": "origa-build"})
+        with urllib.request.urlopen(req, timeout=60) as resp, gz.open("wb") as dst:
+            while chunk := resp.read(1 << 20):
+                dst.write(chunk)
     with gzip.open(gz, "rt", encoding="utf-8") as src, path.open("w", encoding="utf-8") as dst:
         while chunk := src.read(1 << 20):
             dst.write(chunk)
 
 
-def parse_and_match(words: dict[str, str], examples_path: Path):
+def parse_and_match(
+    words: dict[str, str], examples_path: Path
+) -> tuple[list[dict], dict[str, dict[int, list[int]]]]:
     """Parse examples.utf; return (sentences, matches).
 
     File layout: an A-line (sentence + English) is followed by its B-line
@@ -198,24 +218,18 @@ def parse_and_match(words: dict[str, str], examples_path: Path):
                 continue
             if raw.startswith("B: ") and pending is not None:
                 ja = sentences[pending]["x"]
-                forms = bline_forms(raw[3:])
-                ruby: list[list[str]] = []
-                for tok in raw[3:].split():
-                    base = RE_TOKEN_GROUPS.split(tok)[0]
-                    if not base or not (KANA_RE.search(base) or KANJI_RE.search(base)):
-                        continue
-                    m = re.search(r"\(([^)]*)\)", tok)
-                    if m:
-                        ruby.append([base, m.group(1)])
-                sentences[pending]["f"] = ruby
-                hit = match_sentence(pending, ja, forms)
-                holes -= hit
+                sentences[pending]["f"] = bline_ruby(raw[3:])
+                holes -= match_sentence(pending, ja, bline_forms(raw[3:]))
                 pending = None
 
     return sentences, matches
 
 
-def select_for_words(sentences, matches, words) -> dict[str, list[dict]]:
+def select_for_words(
+    sentences: list[dict],
+    matches: dict[str, dict[int, list[int]]],
+    words: dict[str, str],
+) -> dict[str, list[dict]]:
     """Pick up to MAX_PER_WORD sentences per word: shortest first (textbook register)."""
     sel: dict[str, list[dict]] = {}
     for w in sorted(words):
@@ -234,8 +248,21 @@ def select_for_words(sentences, matches, words) -> dict[str, list[dict]]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--examples", type=Path, default=WORK / "examples.utf")
+    ap.add_argument(
+        "--examples",
+        type=Path,
+        default=DEFAULT_WORK / "examples.utf",
+        help="path to the unpacked examples.utf (downloaded on demand)",
+    )
+    ap.add_argument(
+        "--work",
+        type=Path,
+        default=DEFAULT_WORK,
+        help="scratch dir for the downloaded corpus and the match cache",
+    )
     args = ap.parse_args()
+    global WORK
+    WORK = args.work
 
     WORK.mkdir(parents=True, exist_ok=True)
     ensure_examples_file(args.examples)

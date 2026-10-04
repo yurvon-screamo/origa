@@ -47,6 +47,10 @@ Origa строится на открытых данных и моделях. Н�
 
 Готовые наборы слов для импорта — [Irodori](https://www.irodori.jpf.go.jp/) от Japan Foundation.
 
+## Примеры предложений
+
+Учебные примеры-предложения для популярных слов — [Tanaka Corpus / WWWJDIC](https://www.edrdg.org/wiki/Tanaka_Corpus.html) и [Tatoeba](https://tatoeba.org) под лицензией CC BY 2.0 FR. Переводы на русский, корейский и вьетнамский сгенерированы моделью и проходят контент-пайплайн проверки.
+
 ## Шрифты
 
 - Cormorant Garamond — SIL Open Font License

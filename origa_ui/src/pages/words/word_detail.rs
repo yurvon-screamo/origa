@@ -38,7 +38,12 @@ pub fn WordDetail() -> impl IntoView {
 
     let native_lang = Memo::new(move |_| locale_to_native_language(&i18n.get_locale()));
 
-    let known_kanji = Memo::new(move |_| HashSet::new());
+    let known_kanji = Memo::new(move |_| {
+        // Dictionary-reference page: furigana for every kanji regardless of
+        // the reader's progress (known-kanji personalization belongs to the
+        // lesson views, not to a lookup page).
+        HashSet::new()
+    });
 
     let translations = Memo::new(move |_| {
         let w = word();
@@ -46,15 +51,38 @@ pub fn WordDetail() -> impl IntoView {
         origa::dictionary::vocabulary::get_translation(&w, &lang).unwrap_or_default()
     });
 
-    let examples = RwSignal::new(Vec::<WordExample>::new());
+    // Loaded examples for the CURRENT word. `None` = fetch in flight
+    // (render nothing: an empty state would flash a false "no examples").
+    let examples: RwSignal<Option<Vec<WordExample>>> = RwSignal::new(None);
+    let example_generation = StoredValue::new(0u64);
     Effect::new(move |_| {
         let w = word();
+        // The route reuses this component across /words/A -> /words/B:
+        // drop the previous word's list immediately and tag the in-flight
+        // fetch, so a slow stale response can never overwrite a newer one.
+        example_generation.update_value(|g| *g += 1);
+        let generation = example_generation.get_value();
+        examples.set(None);
         spawn_local(async move {
             let resolved: Vec<WordExample> =
                 load_word_examples(&w).await.into_iter().flatten().collect();
-            examples.set(resolved);
+            if example_generation.get_value() == generation {
+                examples.set(Some(resolved));
+            }
         });
     });
+
+    let hero_word = word;
+    let hero_view = move || {
+        // Re-rendered per word: the route component survives navigation
+        // between /words/A and /words/B, so a static snapshot would leave
+        // the previous word in the hero.
+        let w = hero_word();
+        view! {
+            <FuriganaText text=w known_kanji=known_kanji.get() test_id="word-detail-word-furi"/>
+        }
+        .into_any()
+    };
 
     let section_title =
         move || td_string!(i18n.get_locale(), words.detail_examples_section).to_string();
@@ -65,7 +93,7 @@ pub fn WordDetail() -> impl IntoView {
         <div class="word-detail" data-testid="word-detail">
             <div class="word-detail-hero-card">
                 <div class="word-detail-hero-word" data-testid="word-detail-word">
-                    <FuriganaText text=word() known_kanji=known_kanji.get() test_id="word-detail-word-furi"/>
+                    {hero_view}
                 </div>
                 <div class="word-detail-hero-meaning" data-testid="word-detail-translation">
                     {move || translations.get()}
@@ -76,6 +104,11 @@ pub fn WordDetail() -> impl IntoView {
                 <div class="word-detail-section-title">{section_title}</div>
                 {move || {
                     let details = examples.get();
+                    let Some(details) = details else {
+                        // Fetch in flight: render nothing instead of a false
+                        // "no examples yet" empty state.
+                        return ().into_any();
+                    };
                     if details.is_empty() {
                         view! {
                             <Text size=TextSize::Default variant=TypographyVariant::Muted>
@@ -146,7 +179,7 @@ fn ExampleCard(
                         <FuriganaText
                             text=mid
                             known_kanji=known_kanji.clone()
-                            class=String::from("word-detail-example-highlight")
+                            class=String::from("word-example-highlight")
                         />
                     }
                 })}

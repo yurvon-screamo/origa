@@ -2,6 +2,7 @@
 //! sentence data chunks lazily (mirrors `phrase_loader` + `phrase_data_loader`,
 //! JSON-only — the index is small enough not to need an rkyv twin yet).
 
+use futures::future::join_all;
 use origa::dictionary::example::{
     ExampleDetail, cache_example_details, chunk_id_for_sentence, get_cached_example_detail,
     get_word_example_refs, init_example_index, is_example_chunk_loaded, is_examples_loaded,
@@ -51,8 +52,9 @@ pub async fn load_examples_via<P: CdnProvider>(provider: &P) -> Result<(), Origa
     let json = provider.fetch_text(EXAMPLES_INDEX_PATH).await?;
     init_example_index(&json)?;
     tracing::info!(
-        "Examples index loaded: {} words",
-        origa::dictionary::example::example_word_count()
+        "Examples index loaded: {} words / {} sentences",
+        origa::dictionary::example::example_word_count(),
+        origa::dictionary::example::example_sentence_count()
     );
     Ok(())
 }
@@ -107,16 +109,18 @@ pub async fn load_word_examples_via<P: CdnProvider>(
     word: &str,
 ) -> Vec<Result<WordExample, OrigaError>> {
     let refs = get_word_example_refs(word);
-    let mut out = Vec::with_capacity(refs.len());
-    for r in refs {
-        let detail = load_example_detail_via(provider, r.sentence_id()).await;
-        out.push(detail.map(|detail| WordExample {
-            detail,
-            start: r.start(),
-            end: r.end(),
-        }));
-    }
-    out
+    // Parallel resolution (mirrors `phrase_data_loader::load_phrase_details_batch_via`):
+    // refs of one word often live in different chunks.
+    let jobs = refs.iter().map(|r| async move {
+        load_example_detail_via(provider, r.sentence_id())
+            .await
+            .map(|detail| WordExample {
+                detail,
+                start: r.start(),
+                end: r.end(),
+            })
+    });
+    join_all(jobs).await
 }
 
 #[cfg(test)]

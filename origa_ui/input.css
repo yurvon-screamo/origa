@@ -6978,7 +6978,7 @@ rt {
     color: var(--text-primary);
 }
 
-.word-detail-example-highlight {
+.word-example-highlight {
     background: var(--accent-soft, rgba(160, 120, 60, 0.18));
     border-bottom: 2px solid var(--accent, #a0783c);
     padding: 0 2px;

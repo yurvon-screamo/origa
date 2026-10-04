@@ -61,6 +61,8 @@ _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
         # (like grammar/) — release-updated, never immutable.
         "counters/",
         "dictionary/",
+        # Word examples (#528): content JSON rebuilt on every corpus refresh.
+        "examples/",
         "grammar/",
         "phrases/data/",
         "phrases/data_bundle",  # phrases/data_bundle_0.json etc

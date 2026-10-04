@@ -47,6 +47,10 @@ Các bản ghi luyện nghe đến từ kho ngữ liệu người bản xứ, g�
 
 Bộ từ soạn sẵn để nhập đến từ [Irodori](https://www.irodori.jpf.go.jp/) của Quỹ Giao lưu Quốc tế Nhật Bản.
 
+## Câu ví dụ
+
+Câu ví dụ giáo khoa cho các từ thông dụng — [Tanaka Corpus / WWWJDIC](https://www.edrdg.org/wiki/Tanaka_Corpus.html) và [Tatoeba](https://tatoeba.org), giấy phép CC BY 2.0 FR. Bản dịch tiếng Nga, tiếng Hàn và tiếng Việt được tạo bởi mô hình và kiểm định qua pipeline nội dung.
+
 ## Phông chữ
 
 - Cormorant Garamond: SIL Open Font License

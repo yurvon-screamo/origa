@@ -47,6 +47,10 @@ Listening practice recordings come from native-speaker corpora, including NHK ma
 
 Pre-built word sets for import come from [Irodori](https://www.irodori.jpf.go.jp/) by the Japan Foundation.
 
+## Example sentences
+
+Textbook example sentences for popular words — [Tanaka Corpus / WWWJDIC](https://www.edrdg.org/wiki/Tanaka_Corpus.html) and [Tatoeba](https://tatoeba.org), licensed CC BY 2.0 FR. Translations into Russian, Korean and Vietnamese are machine-generated and reviewed in the content pipeline.
+
 ## Fonts
 
 - Cormorant Garamond: SIL Open Font License

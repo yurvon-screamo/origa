@@ -316,3 +316,55 @@ async fn analyzed_word_item_known_word_ignores_clicks() {
         "known word must ignore clicks (already in the deck)"
     );
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// WordDetail (/words/:word, #528)
+// ═══════════════════════════════════════════════════════════════════════
+
+#[wasm_bindgen_test]
+async fn word_detail_renders_hero_and_examples_section() {
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router_and_stores(&wrapper, None, || {
+        view! { <crate::pages::words::WordDetail /> }.into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"word-detail-word\"]")
+            .ok()
+            .flatten()
+            .is_some(),
+        "word detail must render the hero word slot"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"word-detail-translation\"]")
+            .ok()
+            .flatten()
+            .is_some(),
+        "word detail must render the translation slot"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"word-detail\"] .word-detail-section-title")
+            .ok()
+            .flatten()
+            .is_some(),
+        "word detail must render the examples section title"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn word_detail_split_highlight_is_char_safe() {
+    use crate::pages::words::word_detail::split_highlight;
+
+    let (h, m, t) = split_highlight("こんにちは世界", 3, 5);
+    assert_eq!(h, "こんに");
+    assert_eq!(m, "ちは");
+    assert_eq!(t, "世界");
+
+    let (h, m, t) = split_highlight("短い", -1, -1);
+    assert_eq!(m, "");
+    assert_eq!(h + &m + &t, "短い");
+}

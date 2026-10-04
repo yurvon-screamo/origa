@@ -52,6 +52,25 @@ pub fn example_word_count() -> usize {
     }
 }
 
+/// Number of deduplicated sentences behind the index.
+pub fn example_sentence_count() -> u32 {
+    let Ok(guard) = store().read() else {
+        return 0;
+    };
+    match guard.as_ref() {
+        Some(index) => index.sentence_count(),
+        None => 0,
+    }
+}
+
+/// Test-only reset; keeps tests independent from global state (mirrors
+/// `phrase::detail::reset_phrase_data_for_test`).
+pub fn reset_example_index_for_test() {
+    if let Ok(mut guard) = store().write() {
+        *guard = None;
+    }
+}
+
 /// Sentence refs for one word, empty when the word has no examples.
 pub fn get_word_example_refs(word: &str) -> Vec<ExampleRef> {
     let Ok(guard) = store().read() else {
