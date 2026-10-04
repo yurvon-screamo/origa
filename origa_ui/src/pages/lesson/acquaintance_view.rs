@@ -9,6 +9,7 @@ use super::hand_progress_strip::{HandProgressStrip, presentation_fill};
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::keyboard_handler::is_typing_target;
 use super::training_view::TrainingBody;
+use super::word_example_line::WordExampleLine;
 use crate::i18n::*;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, ConfirmModal, FuriganaText, KanjiAnimation,
@@ -579,6 +580,11 @@ fn WordSlide(
                         .collect_view()
                 }}
             </ul>
+            <WordExampleLine
+                word=word_stored.get_value()
+                known_kanji=known_kanji.get_untracked()
+                native_language=native_language
+            />
         </div>
     }
 }
