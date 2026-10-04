@@ -88,18 +88,10 @@ fn with_cache<T>(f: impl FnOnce(&mut ExampleDataCache) -> T) -> Result<T, OrigaE
     let mut guard = cache().write().map_err(|_| OrigaError::ExampleParseError {
         reason: "example data lock poisoned".to_string(),
     })?;
-    let Some(c) = guard.as_mut() else {
-        // Entry is created below before use; a poisoned-then-recovered lock
-        // could theoretically expose None — degrade to an empty cache.
-        *guard = Some(ExampleDataCache::new());
-        let Some(c) = guard.as_mut() else {
-            return Err(OrigaError::ExampleParseError {
-                reason: "example data cache unavailable".to_string(),
-            });
-        };
-        return Ok(f(c));
-    };
-    Ok(f(c))
+    // get_or_insert_with initialises on the first call and returns the live
+    // entry on every subsequent one — no None case survives this line.
+    let entry = guard.get_or_insert_with(ExampleDataCache::new);
+    Ok(f(entry))
 }
 
 impl ExampleDataCache {

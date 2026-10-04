@@ -251,8 +251,8 @@ def main() -> int:
     ap.add_argument(
         "--examples",
         type=Path,
-        default=DEFAULT_WORK / "examples.utf",
-        help="path to the unpacked examples.utf (downloaded on demand)",
+        default=None,
+        help="path to the unpacked examples.utf (default: <work>/examples.utf)",
     )
     ap.add_argument(
         "--work",
@@ -263,6 +263,7 @@ def main() -> int:
     args = ap.parse_args()
     global WORK
     WORK = args.work
+    examples_path = args.examples or (WORK / "examples.utf")
 
     WORK.mkdir(parents=True, exist_ok=True)
     ensure_examples_file(args.examples)
@@ -270,7 +271,7 @@ def main() -> int:
     words = load_popular_words()
     print(f"popular words: {len(words)}", flush=True)
 
-    sentences, matches = parse_and_match(words, args.examples)
+    sentences, matches = parse_and_match(words, examples_path)
     print(f"sentences parsed: {len(sentences)}; words matched: {len(matches)}", flush=True)
 
     sel = select_for_words(sentences, matches, words)
