@@ -89,19 +89,19 @@ pub fn KanjiCardItem(
 
     view! {
         <div class="kanji-card anima-lift" data-testid="kanji-card-item">
-            <div class="kanji-card-badge">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {move || status.label(&i18n)}
-                </Tag>
-            </div>
             <A href=format!("/kanji/{}", card_id) attr:class="kanji-card-link">
                 <div class="kanji-card-kanji-box">
                     <span class="kanji-card-kanji-char">{kanji_char}</span>
                 </div>
                 <div class="kanji-card-content">
-                    <Show when=move || !answer_text.get().is_empty()>
-                        <span class="kanji-card-answer">{move || answer_text.get()}</span>
-                    </Show>
+                    <div class="flex items-start justify-between gap-2 w-full">
+                        <Show when=move || !answer_text.get().is_empty()>
+                            <span class="kanji-card-answer flex-1 min-w-0">{move || answer_text.get()}</span>
+                        </Show>
+                        <Tag variant=Signal::derive(move || status.tag_variant())>
+                            {move || status.label(&i18n)}
+                        </Tag>
+                    </div>
                     <Show when=move || !compact_readings_stored.get_value().is_empty()>
                         <span
                             class="kanji-card-compact-readings"
