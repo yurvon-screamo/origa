@@ -711,6 +711,7 @@
     "no_counters_for_level": "Нет суффиксов для выбранного уровня (или все уже изучены)",
     "readings_title": "Чтения",
     "bindings_learned": "Связки: {}",
-    "not_found": "Суффикс не найден"
+    "not_found": "Суффикс не найден",
+    "examples_title": "Примеры"
   }
 }

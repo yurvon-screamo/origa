@@ -5,8 +5,8 @@ use super::super::shared::{
 use crate::i18n::use_i18n;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    CardActionBar, DeleteConfirmModal, FsrsMetrics, LoadingOverlay, Tag, Text, TextSize,
-    TypographyVariant,
+    CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, LoadingOverlay, Tag, Text,
+    TextSize, TypographyVariant,
 };
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -15,6 +15,7 @@ use leptos_router::hooks::{use_navigate, use_params_map};
 use origa::domain::{Card as DomainCard, StudyCard};
 use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
+use std::collections::HashSet;
 use ulid::Ulid;
 
 fn load_study_card(
@@ -210,6 +211,26 @@ pub fn CountersDetail() -> impl IntoView {
                         i18n.get_keys().counters().readings_title().inner().to_string()
                     });
 
+                    // Примеры: частотные слова кандзи-суффикса из
+                    // кандзи-словаря (issue #415, секция «Примеры»).
+                    let suffix_for_examples = suffix.clone();
+                    let examples = Memo::new(move |_| {
+                        let lang = native_lang.get();
+                        origa::domain::KanjiCard::new(suffix_for_examples.clone())
+                            .map(|kanji_card| {
+                                kanji_card
+                                    .example_words(&lang)
+                                    .into_iter()
+                                    .take(6)
+                                    .map(|w| (w.word().to_string(), w.meaning().to_string()))
+                                    .collect::<Vec<_>>()
+                            })
+                            .unwrap_or_default()
+                    });
+                    let examples_title = Signal::derive(move || {
+                        i18n.get_keys().counters().examples_title().inner().to_string()
+                    });
+
                     let card_id_for_delete = card_id;
                     let confirm_delete = Callback::new(move |_| {
                         on_delete.run(DeleteRequest {
@@ -301,6 +322,34 @@ pub fn CountersDetail() -> impl IntoView {
                                     })
                                     .collect::<Vec<_>>()}
                             </div>
+
+                            <Show when=move || !examples.get().is_empty()>
+                                <div class="counter-detail-section-card" style="margin-top:16px"
+                                     data-testid="counters-detail-examples">
+                                    <div class="counter-detail-section-title">
+                                        {examples_title}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <For
+                                            each=move || examples.get()
+                                            key=|(word, _)| word.clone()
+                                            children=move |(word, meaning): (String, String)| {
+                                                view! {
+                                                    <div class="flex items-baseline justify-between gap-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0">
+                                                        <FuriganaText
+                                                            text=word.clone()
+                                                            known_kanji=HashSet::new()
+                                                        />
+                                                        <span class="font-mono text-[var(--fg-muted)] text-right">
+                                                            {meaning}
+                                                        </span>
+                                                    </div>
+                                                }
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            </Show>
                         </div>
 
                         <DeleteConfirmModal

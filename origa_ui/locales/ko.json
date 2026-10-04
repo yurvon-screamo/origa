@@ -711,6 +711,7 @@
     "no_counters_for_level": "선택한 수준에 조수사가 없습니다 (또는 모두 학습됨)",
     "readings_title": "읽기",
     "bindings_learned": "결합형: {}",
-    "not_found": "접미사를 찾을 수 없습니다"
+    "not_found": "접미사를 찾을 수 없습니다",
+    "examples_title": "예문"
   }
 }

@@ -711,6 +711,7 @@
     "no_counters_for_level": "Không có từ đếm cho mức đã chọn (hoặc đã học hết)",
     "readings_title": "Cách đọc",
     "bindings_learned": "Kết hợp: {}",
-    "not_found": "Không tìm thấy hậu tố"
+    "not_found": "Không tìm thấy hậu tố",
+    "examples_title": "Ví dụ"
   }
 }

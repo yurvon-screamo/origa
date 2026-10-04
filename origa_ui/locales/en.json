@@ -711,6 +711,7 @@
     "no_counters_for_level": "No counters for the selected level (or all are already studied)",
     "readings_title": "Readings",
     "bindings_learned": "Bindings: {}",
-    "not_found": "Suffix not found"
+    "not_found": "Suffix not found",
+    "examples_title": "Examples"
   }
 }
