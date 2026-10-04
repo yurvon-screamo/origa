@@ -67,19 +67,19 @@ pub fn CounterCardItem(
 
     view! {
         <div class="counter-card anima-lift" data-testid="counter-card-item">
-            <div class="counter-card-badge">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {move || status.label(&i18n)}
-                </Tag>
-            </div>
             <A href=format!("/counters/{card_id}") attr:class="counter-card-link">
                 <div class="counter-card-char-box">
                     <span class="counter-card-char">{suffix.clone()}</span>
                 </div>
                 <div class="counter-card-content">
-                    <Show when=move || !answer_text.get().is_empty()>
-                        <span class="counter-card-answer">{move || answer_text.get()}</span>
-                    </Show>
+                    <div class="flex items-start justify-between gap-2 w-full">
+                        <Show when=move || !answer_text.get().is_empty()>
+                            <span class="counter-card-answer flex-1 min-w-0">{move || answer_text.get()}</span>
+                        </Show>
+                        <Tag variant=Signal::derive(move || status.tag_variant())>
+                            {move || status.label(&i18n)}
+                        </Tag>
+                    </div>
                     <Show when=move || !bindings_summary.is_empty()>
                         <span class="counter-card-bindings" data-testid="counter-card-bindings">
                             {move || bindings_label.get()}
