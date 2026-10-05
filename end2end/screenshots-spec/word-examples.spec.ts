@@ -38,6 +38,9 @@ test("word detail screenshots", async ({ page }) => {
     let loggedIn = false;
     for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
         await page.goto("/", { waitUntil: "domcontentloaded" });
+        // Wipe any stale injected sessions (earlier manual debugging) so
+        // this attempt starts from a clean profile.
+        await page.evaluate(() => localStorage.clear());
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
