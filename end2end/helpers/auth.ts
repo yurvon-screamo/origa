@@ -136,6 +136,9 @@ export async function uiLogin(
       // waiting for the inputs.
       const passwordToggle = page.getByTestId("login-password-toggle");
       await passwordToggle.waitFor({ state: "visible", timeout: 60_000 });
+      // WASM cold load still streams after the toggle mounts; give the
+      // bundle a beat to finish binding handlers before clicking.
+      await page.waitForTimeout(2_000);
       // Explicit action timeouts: Playwright's default actionTimeout is
       // 0 (unbounded) — a stability-blocked click would hang the whole
       // test budget instead of feeding the retry loop below.
