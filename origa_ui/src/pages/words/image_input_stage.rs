@@ -12,7 +12,7 @@ use wasm_bindgen::JsCast;
 use web_sys::js_sys::Function;
 use web_sys::{ClipboardEvent, HtmlInputElement};
 
-fn stage_item_view(
+pub(super) fn stage_item_view(
     i18n: &leptos_i18n::I18nContext<crate::i18n::Locale>,
     stage: RwSignal<OcrLoadingStage>,
     stage_type: StageType,

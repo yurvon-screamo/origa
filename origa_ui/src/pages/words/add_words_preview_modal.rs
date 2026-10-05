@@ -6,11 +6,15 @@ use crate::pages::words::add_words_preview_modal_state::{
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::anki_import_stage::AnkiImportStage;
 use crate::pages::words::audio_input_stage::AudioInputStage;
+use crate::pages::words::audio_transcribe::{AudioState, cancel_whisper_loading};
 use crate::pages::words::image_input_stage::ImageInputStage;
+use crate::pages::words::inbox::{
+    InboxSeamGuard, InboxSignals, InboxStageView, register_inbox_seam,
+};
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
-    TypographyVariant,
+    ToastContainer, ToastData, TypographyVariant,
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -62,12 +66,26 @@ pub fn AddWordsPreviewModal(
     let active_tab = state.active_tab;
     let handlers = create_preview_modal_handlers(state.clone(), is_open);
 
+    let inbox = InboxSignals::new();
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+
     Effect::new({
         let state = state.clone();
         move |_| {
             if !is_open.get() {
                 state.reset();
+                inbox.reset();
             }
+        }
+    });
+
+    // The e2e seam registers once at mount and unregisters via its guard's
+    // Drop when the drawer component is disposed.
+    let seam_guard = StoredValue::new_local(None::<InboxSeamGuard>);
+    Effect::new({
+        let state = state.clone();
+        move |_| {
+            seam_guard.set_value(register_inbox_seam(state.clone(), is_open, inbox, toasts));
         }
     });
 
@@ -131,6 +149,25 @@ pub fn AddWordsPreviewModal(
         })
     };
 
+    // Inbox fallbacks: cancel aborts the zero-tap run and returns to the
+    // source tabs; open-manually does the same after a failure.
+    let on_inbox_cancel = {
+        Callback::new(move |_: ()| {
+            inbox.ocr_loading_state.cancel_requested.set(true);
+            inbox.audio_state.set(AudioState::Idle);
+            cancel_whisper_loading();
+            inbox.active.set(false);
+            inbox.error.set(None);
+        })
+    };
+
+    let on_inbox_open_manually = {
+        Callback::new(move |_: ()| {
+            inbox.active.set(false);
+            inbox.error.set(None);
+        })
+    };
+
     view! {
         <Drawer
             is_open=is_open
@@ -144,7 +181,9 @@ pub fn AddWordsPreviewModal(
                     match stage {
                         AnalysisStage::Analyzing => view! {
                             <div class="space-y-4">
-                                <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                <Show when=move || !inbox.active.get()>
+                                    <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                </Show>
                                 <div class="flex items-center justify-center py-8">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         {t!(i18n, words.analyzing)}
@@ -166,7 +205,8 @@ pub fn AddWordsPreviewModal(
                         AnalysisStage::Input => view! {
                             <div class="space-y-4">
                                 {move || {
-                                    if has_analyzed.get() && analyzed_words.get().is_empty() {
+                                    let no_words_after_analysis = has_analyzed.get() && analyzed_words.get().is_empty();
+                                    if no_words_after_analysis || inbox.empty_text.get() {
                                         Some(view! {
                                             <Alert
                                                 alert_type=Signal::derive(|| AlertType::Warning)
@@ -179,43 +219,57 @@ pub fn AddWordsPreviewModal(
                                         None
                                     }
                                 }}
-                                <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
                                 {move || {
-                                    let mode = input_mode.get();
-                                    match mode {
-                                        InputMode::Text => view! {
-                                            <InputStage
-                                                input_text=input_text
-                                                is_analyzing=is_analyzing
-                                                error_message=error_message
-                                                on_analyze=handlers.on_analyze
+                                    if inbox.active.get() {
+                                        view! {
+                                            <InboxStageView
+                                                inbox=inbox
+                                                on_cancel=on_inbox_cancel
+                                                on_open_manually=on_inbox_open_manually
                                             />
-                                        }.into_any(),
-                                        InputMode::Anki => {
-                                            view! {
-                                                <AnkiImportStage
-                                                    is_open=is_open
-                                                    refresh_trigger=refresh_trigger
-                                                    test_id=Signal::derive(|| "words-drawer-anki".to_string())
-                                                />
-                                            }.into_any()
-                                        },
-                                        InputMode::Image => view! {
-                                            <ImageInputStage
-                                                is_open=is_open
-                                                on_text_extracted=on_text_extracted
-                                                on_error=on_ocr_error
-                                                on_switch_to_text=on_switch_to_text
-                                            />
-                                        }.into_any(),
-                                        InputMode::Audio => view! {
-                                            <AudioInputStage
-                                                is_open=Signal::derive(move || is_open.get())
-                                                on_text_extracted=on_text_extracted
-                                                on_error=on_ocr_error
-                                                on_switch_to_text=on_switch_to_text
-                                            />
-                                        }.into_any(),
+                                        }.into_any()
+                                    } else {
+                                        view! {
+                                            <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                            {move || {
+                                                let mode = input_mode.get();
+                                                match mode {
+                                                    InputMode::Text => view! {
+                                                        <InputStage
+                                                            input_text=input_text
+                                                            is_analyzing=is_analyzing
+                                                            error_message=error_message
+                                                            on_analyze=handlers.on_analyze
+                                                        />
+                                                    }.into_any(),
+                                                    InputMode::Anki => {
+                                                        view! {
+                                                            <AnkiImportStage
+                                                                is_open=is_open
+                                                                refresh_trigger=refresh_trigger
+                                                                test_id=Signal::derive(|| "words-drawer-anki".to_string())
+                                                            />
+                                                        }.into_any()
+                                                    },
+                                                    InputMode::Image => view! {
+                                                        <ImageInputStage
+                                                            is_open=is_open
+                                                            on_text_extracted=on_text_extracted
+                                                            on_error=on_ocr_error
+                                                            on_switch_to_text=on_switch_to_text
+                                                        />
+                                                    }.into_any(),
+                                                    InputMode::Audio => view! {
+                                                        <AudioInputStage
+                                                            is_open=Signal::derive(move || is_open.get())
+                                                            on_text_extracted=on_text_extracted
+                                                            on_error=on_ocr_error
+                                                            on_switch_to_text=on_switch_to_text
+                                                        />
+                                                    }.into_any(),
+                                                }
+                                            }}
+                                        }.into_any()
                                     }
                                 }}
                             </div>
@@ -223,6 +277,7 @@ pub fn AddWordsPreviewModal(
                     }
                 }}
             </div>
+            <ToastContainer toasts=toasts duration_ms=4000 />
         </Drawer>
     }
 }

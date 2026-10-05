@@ -20,7 +20,7 @@ thread_local! {
     static MODEL_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(super) enum OcrState {
     #[default]
     Idle,

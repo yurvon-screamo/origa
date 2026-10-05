@@ -430,6 +430,15 @@
     "creating": "생성하는 중...",
     "add_selected": "선택 항목 추가",
     "error": "오류",
+    "inbox": {
+      "processing": "처리 중…",
+      "transcribing_audio": "오디오를 텍스트로 변환 중…",
+      "processing_failed": "콘텐츠 처리에 실패했습니다",
+      "unsupported_file": "지원되지 않는 파일 형식입니다: {}",
+      "open_manually": "직접 열기",
+      "busy": "이미 처리가 진행 중입니다. 완료될 때까지 기다려 주세요.",
+      "pending_input": "먼저 현재 입력을 완료하거나 지워 주세요."
+    },
     "image": {
       "preparing": "인식 준비 중",
       "downloading_models": "OCR 모델 다운로드 중",

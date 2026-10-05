@@ -430,6 +430,15 @@
     "creating": "Đang tạo...",
     "add_selected": "Thêm mục đã chọn",
     "error": "Lỗi",
+    "inbox": {
+      "processing": "Đang xử lý…",
+      "transcribing_audio": "Đang chuyển đổi âm thanh thành văn bản…",
+      "processing_failed": "Không thể xử lý nội dung",
+      "unsupported_file": "Định dạng tệp không được hỗ trợ: {}",
+      "open_manually": "Mở thủ công",
+      "busy": "Đang có quá trình xử lý khác. Vui lòng đợi hoàn tất.",
+      "pending_input": "Hãy hoàn tất hoặc xóa nội dung đang nhập trước."
+    },
     "image": {
       "preparing": "Đang chuẩn bị nhận dạng",
       "downloading_models": "Đang tải mô hình OCR",

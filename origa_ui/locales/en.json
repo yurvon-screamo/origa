@@ -430,6 +430,15 @@
     "creating": "Creating...",
     "add_selected": "Add selected",
     "error": "Error",
+    "inbox": {
+      "processing": "Processing…",
+      "transcribing_audio": "Transcribing audio…",
+      "processing_failed": "Content processing failed",
+      "unsupported_file": "File format is not supported: {}",
+      "open_manually": "Open manually",
+      "busy": "Another import is already running. Wait for it to finish.",
+      "pending_input": "Finish or clear your current input first."
+    },
     "image": {
       "preparing": "Preparing for recognition",
       "downloading_models": "Downloading OCR models",
