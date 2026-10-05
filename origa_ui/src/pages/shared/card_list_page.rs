@@ -359,7 +359,7 @@ where
     );
 
     view! {
-        <div class="space-y-4">
+        <div class="space-y-4 pb-24 lg:pb-0">
             <Show when=move || is_loading.get()>
                 <LoadingOverlay message=Signal::derive(move || i18n.get_keys().common().loading().inner().to_string()) />
             </Show>
