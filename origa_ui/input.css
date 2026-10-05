@@ -6918,9 +6918,15 @@ rt {
 
 /* ---------- Word detail (/words/:word, #528) ---------- */
 
-.word-detail {
-    max-width: 720px;
+.word-detail-container {
+    max-width: 760px;
     margin: 0 auto;
+    padding: 24px 32px;
+    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.word-detail {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -7003,4 +7009,15 @@ rt {
 .word-example-line-ja {
     font-size: 17px;
     line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+    .word-detail-container {
+        padding: 16px;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .word-detail-hero-word {
+        font-size: 36px;
+    }
 }

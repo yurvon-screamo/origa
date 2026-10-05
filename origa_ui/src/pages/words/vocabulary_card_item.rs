@@ -6,6 +6,7 @@ use crate::ui_components::{
     CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag, TagVariant, WordTranslations,
 };
 use leptos::prelude::*;
+use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
@@ -62,6 +63,7 @@ pub fn VocabularyCardItem(
     let show_mark_as_known = status != CardStatus::Learned;
 
     let known_kanji_for_furigana = known_kanji;
+    let word_for_link = word.clone();
 
     view! {
         <div class="word-card anima-lift" data-testid="words-card-item">
@@ -72,7 +74,9 @@ pub fn VocabularyCardItem(
             </div>
             <div class="word-card-body">
                 <div class="word-card-word-box">
-                    <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
+                    <A href={format!("/words/{}", word_for_link.clone())}>
+                        <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
+                    </A>
                 </div>
                 <div class="word-card-content">
                     <WordTranslations

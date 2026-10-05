@@ -1,17 +1,28 @@
 //! Word detail page (`/words/:word`): dictionary entry + textbook examples.
 //! The word is a plain string (any dictionary word, not just the user's
-//! cards), per the #528 boundary decision.
+//! cards), per the #528 boundary decision. When the user also has a study
+//! card for the word, the FSRS metrics and card actions render above.
 
 use std::collections::HashSet;
 
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::hooks::use_params_map;
+use leptos_router::components::A;
+use leptos_router::hooks::{use_navigate, use_params_map};
 
 use crate::i18n::{locale_to_native_language, td_string, use_i18n};
 use crate::loaders::example_loader::{WordExample, load_word_examples};
-use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
-use origa::domain::NativeLanguage;
+use crate::pages::shared::{
+    CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
+};
+use crate::repository::HybridUserRepository;
+use crate::ui_components::{
+    CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Text, TextSize, TypographyVariant,
+};
+use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
+use origa::traits::UserRepository;
+use origa::use_cases::ToggleFavoriteUseCase;
+use ulid::Ulid;
 
 /// Split a sentence at the highlighted word occurrence. Character offsets;
 /// negative offsets mean "unlocatable" — everything stays unhighlighted.
@@ -30,19 +41,59 @@ pub fn split_highlight(text: &str, start: i32, end: i32) -> (String, String, Str
     (head, mid, tail)
 }
 
+/// Find the user's vocabulary study card for a dictionary word.
+fn find_word_card(user: &User, word: &str) -> Option<(Ulid, StudyCard)> {
+    user.knowledge_set()
+        .study_cards()
+        .iter()
+        .find_map(|(id, card)| match card.card() {
+            DomainCard::Vocabulary(v) if v.word().text() == word => Some((*id, card.clone())),
+            _ => None,
+        })
+}
+
 #[component]
 pub fn WordDetail() -> impl IntoView {
     let i18n = use_i18n();
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
     let params = use_params_map();
     let word = move || params.get().get("word").unwrap_or_default();
+
+    let current_user: RwSignal<Option<User>> = RwSignal::new(None);
+    let study_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
+    let refresh_trigger = RwSignal::new(0u32);
+    let repo_for_effect = repository.clone();
+
+    // Resolve the user's card for this word (may legitimately be absent —
+    // the page is a dictionary reference for any word).
+    Effect::new(move |_| {
+        let _ = refresh_trigger.get();
+        let w = word();
+        let repo = repo_for_effect.clone();
+        spawn_local(async move {
+            match repo.get_current_user().await {
+                Ok(Some(user)) => {
+                    let found = find_word_card(&user, &w);
+                    study_card.set(found.map(|(_, card)| card));
+                    current_user.set(Some(user));
+                },
+                _ => {
+                    current_user.set(None);
+                    study_card.set(None);
+                },
+            }
+        });
+    });
 
     let native_lang = Memo::new(move |_| locale_to_native_language(&i18n.get_locale()));
 
     let known_kanji = Memo::new(move |_| {
-        // Dictionary-reference page: furigana for every kanji regardless of
-        // the reader's progress (known-kanji personalization belongs to the
-        // lesson views, not to a lookup page).
-        HashSet::new()
+        current_user
+            .get()
+            .map(|u| u.knowledge_set().get_known_kanji())
+            .unwrap_or_default()
     });
 
     let translations = Memo::new(move |_| {
@@ -72,25 +123,106 @@ pub fn WordDetail() -> impl IntoView {
         });
     });
 
+    let section_words_title = move || td_string!(i18n.get_locale(), words.header).to_string();
+    let examples_empty =
+        move || td_string!(i18n.get_locale(), words.detail_examples_not_found).to_string();
+    let breadcrumbs_label = section_words_title;
+
+    // ── Card actions (present only when the user studies this word) ──
+    let is_favorite_signal: RwSignal<bool> = RwSignal::new(false);
+    Effect::new(move |_| {
+        if let Some(card) = study_card.get() {
+            is_favorite_signal.set(card.is_favorite());
+        }
+    });
+    let favorite_pending = RwSignal::new(false);
+    let on_toggle_favorite = {
+        let repo = repository.clone();
+        let current_user_fav = current_user;
+        let refresh = refresh_trigger;
+        let pending = favorite_pending;
+        Callback::new(move |card_id: Ulid| {
+            is_favorite_signal.update(|f| *f = !*f);
+            let repo = repo.clone();
+            spawn_local(async move {
+                pending.set(true);
+                let use_case = ToggleFavoriteUseCase::new(&repo);
+                if use_case.execute(card_id).await.is_ok() {
+                    current_user_fav.update(|u| {
+                        if let Some(user) = u {
+                            let _ = user.toggle_favorite(card_id);
+                        }
+                    });
+                    refresh.update(|v| *v += 1);
+                } else {
+                    is_favorite_signal.update(|f| *f = !*f);
+                }
+                pending.set(false);
+            });
+        })
+    };
+    let (on_mark_as_known, mark_known_pending) = {
+        let repo = repository.clone();
+        create_mark_as_known_callback(repo, refresh_trigger)
+    };
+    let toasts: RwSignal<Vec<crate::ui_components::ToastData>> = RwSignal::new(Vec::new());
+    let (is_deleting, on_delete) =
+        create_delete_callback(repository.clone(), toasts, refresh_trigger);
+    let is_delete_modal_open = RwSignal::new(false);
+    let navigate = StoredValue::new(use_navigate());
+
     let hero_word = word;
+    let hero_known = known_kanji;
     let hero_view = move || {
         // Re-rendered per word: the route component survives navigation
         // between /words/A and /words/B, so a static snapshot would leave
         // the previous word in the hero.
         let w = hero_word();
         view! {
-            <FuriganaText text=w known_kanji=known_kanji.get() test_id="word-detail-word-furi"/>
+            <FuriganaText text=w known_kanji=hero_known.get() test_id="word-detail-word-furi"/>
         }
         .into_any()
     };
 
-    let section_title =
-        move || td_string!(i18n.get_locale(), words.detail_examples_section).to_string();
-    let examples_empty =
-        move || td_string!(i18n.get_locale(), words.detail_examples_not_found).to_string();
-
     view! {
-        <div class="word-detail" data-testid="word-detail">
+        <div class="word-detail-container" data-testid="word-detail">
+            // Breadcrumbs: Words / <word>
+            <div class="kanji-detail-top-bar">
+                <div class="kanji-breadcrumbs" data-testid="word-detail-breadcrumbs">
+                    <A href="/words">{breadcrumbs_label}</A>
+                    <span class="kanji-breadcrumbs-separator">"/"</span>
+                    <span class="kanji-breadcrumbs-current">{move || word()}</span>
+                </div>
+                <Show when=move || study_card.get().is_some()>
+                    {move || {
+                        let card = study_card.get().expect("checked by Show");
+                        let memory = card.memory().clone();
+                        let status = CardStatus::from_study_card(&card);
+                        let card_id = *card.card_id();
+                        view! {
+                            <FsrsMetrics
+                                difficulty=memory.difficulty().map(|d| d.value())
+                                stability=memory.stability().map(|s| s.value())
+                                test_id=Signal::derive(|| "word-detail-fsrs".to_string())
+                            />
+                            <CardActionBar
+                                tag_variant=Signal::derive(move || status.tag_variant())
+                                tag_label=Signal::derive(move || status.label(&i18n))
+                                is_favorite=is_favorite_signal.into()
+                                on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                                favorite_pending=favorite_pending
+                                show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
+                                on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(card_id))
+                                mark_known_pending=mark_known_pending
+                                on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
+                                test_id=Signal::derive(|| "word-detail-actions".to_string())
+                                show_tag=Signal::derive(|| false)
+                            />
+                        }
+                    }}
+                </Show>
+            </div>
+
             <div class="word-detail-hero-card">
                 <div class="word-detail-hero-word" data-testid="word-detail-word">
                     {hero_view}
@@ -101,7 +233,9 @@ pub fn WordDetail() -> impl IntoView {
             </div>
 
             <div class="word-detail-section">
-                <div class="word-detail-section-title">{section_title}</div>
+                <div class="word-detail-section-title">
+                    {move || td_string!(i18n.get_locale(), words.detail_examples_section).to_string()}
+                </div>
                 {move || {
                     let details = examples.get();
                     let Some(details) = details else {
@@ -137,6 +271,34 @@ pub fn WordDetail() -> impl IntoView {
                     }
                 }}
             </div>
+
+            <Show when=move || is_delete_modal_open.get() && study_card.get().is_some()>
+                {move || {
+                    let (card_id, _) = find_word_card(
+                        current_user.get().as_ref().expect("checked by Show"),
+                        &word(),
+                    )
+                    .expect("checked by Show");
+                    let confirm_delete = Callback::new(move |_| {
+                        on_delete.run(DeleteRequest {
+                            card_id,
+                            on_success: Callback::new(move |_| {
+                                is_delete_modal_open.set(false);
+                                navigate.get_value()("/words", Default::default());
+                            }),
+                        })
+                    });
+                    view! {
+                        <DeleteConfirmModal
+                            is_open=is_delete_modal_open
+                            is_deleting=is_deleting.into()
+                            on_confirm=confirm_delete
+                            on_close=Callback::new(move |_| is_delete_modal_open.set(false))
+                        />
+                    }
+                    .into_any()
+                }}
+            </Show>
         </div>
     }
 }
@@ -149,7 +311,8 @@ fn ExampleCard(
     native_lang: NativeLanguage,
 ) -> impl IntoView {
     let WordExample { detail, start, end } = example;
-    // Stored offsets win; when absent (kana variant), re-locate the surface.
+    // Stored offsets win; when absent (kana variant of a kanji word), the
+    // surface form is re-located in the sentence.
     let (head, mid, tail) = if start >= 0 && end >= 0 {
         split_highlight(&detail.text, start, end)
     } else {
@@ -173,17 +336,13 @@ fn ExampleCard(
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
             <div class="word-detail-example-ja">
-                <FuriganaText text=head known_kanji=known_kanji.clone()/>
-                {(!mid.is_empty()).then(|| {
-                    view! {
-                        <FuriganaText
-                            text=mid
-                            known_kanji=known_kanji.clone()
-                            class=String::from("word-example-highlight")
-                        />
-                    }
-                })}
-                <FuriganaText text=tail known_kanji=known_kanji/>
+                <FuriganaText text=head.clone() known_kanji=known_kanji.clone()/>
+                <FuriganaText
+                    text=mid.clone()
+                    known_kanji=known_kanji.clone()
+                    class=String::from("word-example-highlight")
+                />
+                <FuriganaText text=tail.clone() known_kanji=known_kanji/>
             </div>
             <div class="word-detail-example-translation" data-testid="word-detail-example-translation">
                 {translation}

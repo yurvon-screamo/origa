@@ -16,6 +16,17 @@ export default defineConfig({
     },
     webServer: [
         {
+            // trail --dev shuts down gracefully on stdin EOF: keep the
+            // stream open via `sleep infinity |` (playwright's own stdin
+            // modes both end up as EOF for the spawned server).
+            command: "trail run --dev --address 0.0.0.0:4000",
+            port: 4000,
+            reuseExistingServer: true,
+            timeout: 60_000,
+            stdin: "ignore",
+            env: { DEPOT: "./trailbase-fixture/traildepot" },
+        },
+        {
             command: "npx serve ../cdn -p 8080 --no-clipboard --cors",
             port: 8080,
             reuseExistingServer: true,

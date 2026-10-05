@@ -342,6 +342,20 @@ pub enum LessonCardView {
     /// word + translation. Audio availability is a render-time concern: the
     /// UI degrades this view to `Normal` when no audio source exists.
     AudioRecall(Card),
+    /// Textbook example recall (#528): the question side shows a sentence
+    /// using the word (no translation), the learner self-assesses
+    /// understood / didn't understand, the answer side reveals the phrase
+    /// translation with the word highlighted. The self-assessment is a
+    /// training signal only — it never feeds FSRS (see issue #528).
+    /// Sentence data (text/translations) is resolved by the UI through the
+    /// examples loader; the view degrades to `Normal` when the word has no
+    /// examples on the CDN.
+    Example {
+        card: Card,
+        sentence_id: u32,
+        start: i32,
+        end: i32,
+    },
     KanjiReadingQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
     /// Пачка связок счётного суффикса (issue #415): каждая цифра ×
@@ -378,7 +392,8 @@ impl LessonCardView {
             | LessonCardView::GrammarMutated { card, .. }
             | LessonCardView::Writing(card)
             | LessonCardView::PhraseListen { card, .. }
-            | LessonCardView::AudioRecall(card) => card,
+            | LessonCardView::AudioRecall(card)
+            | LessonCardView::Example { card, .. } => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
@@ -398,6 +413,7 @@ impl LessonCardView {
             | LessonCardView::Writing(_)
             | LessonCardView::PhraseListen { .. }
             | LessonCardView::AudioRecall(_)
+            | LessonCardView::Example { .. }
             | LessonCardView::KanjiReadingQuiz(_)
             | LessonCardView::CounterBindings { .. } => None,
         }

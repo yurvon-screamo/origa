@@ -61,6 +61,16 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             grammar_info: None,
             show_grammar_badge: true,
         },
+        // Example recall (#528) degrades to Normal the same way: the word
+        // card renders as usual and the compact example shows on the answer
+        // side (WordExampleLine). The dedicated full-screen reading-recall
+        // view lands with the lesson-view PR.
+        LessonCardView::Example { card, .. } => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: None,
+            show_grammar_badge: true,
+        },
         // Muted PhraseListen degrades the same way (the container gates it
         // via `audio_mode_active`): the base phrase card renders as Normal
         // — translations + rating buttons. The quiz fields (audio_file,
