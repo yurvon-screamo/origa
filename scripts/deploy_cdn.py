@@ -24,6 +24,9 @@ import _cdn_s3
 import _cdn_verify
 
 VERSIONED_FILES: list[str] = [
+    # Word examples (#528): the index is hash-tracked for client-side
+    # change detection; data chunks ship via the examples/ directory sync.
+    "examples/index.json",
     # Kanji art availability manifest (#540): regenerated with the art
     # directories on every deploy; root path (not inside kanji_frames/)
     # so the immutable directory rule never applies to it.
@@ -100,6 +103,8 @@ VERSIONED_FILES: list[str] = [
 ]
 
 SYNC_DIRS = [
+    # Word examples (#528): index + numbered data chunks, release-updated.
+    "examples",
     "kanji_animations",
     "kanji_frames",
     "ndlocr",

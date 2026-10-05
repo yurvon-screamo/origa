@@ -496,7 +496,8 @@
     "detail_examples_section": "Câu ví dụ",
     "detail_examples_not_found": "Chưa có câu ví dụ",
     "detail_example_understood": "Tôi hiểu rồi",
-    "detail_example_not_understood": "Chưa hiểu"
+    "detail_example_not_understood": "Chưa hiểu",
+    "detail_translation_section": "Bản dịch"
   },
   "grammar_page": {
     "add_grammar": "Thêm ngữ pháp",

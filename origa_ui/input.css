@@ -6940,14 +6940,26 @@ rt {
 
 .word-detail-hero-word {
     font-size: 44px;
-    line-height: 1.15;
+    line-height: 1.4;
     color: var(--text-primary);
 }
 
-.word-detail-hero-meaning {
-    margin-top: 10px;
-    font-size: 18px;
-    color: var(--text-secondary);
+.word-detail-translations-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-detail-translation-row + .word-detail-translation-row {
+    border-top: 1px solid var(--border-dark);
+    padding-top: 8px;
+}
+
+.word-detail-description {
+    padding-top: 6px;
 }
 
 .word-detail-section {

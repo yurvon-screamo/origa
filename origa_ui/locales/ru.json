@@ -496,7 +496,8 @@
     "detail_examples_section": "Примеры",
     "detail_examples_not_found": "Примеров пока нет",
     "detail_example_understood": "Понял",
-    "detail_example_not_understood": "Не понял"
+    "detail_example_not_understood": "Не понял",
+    "detail_translation_section": "Перевод"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",

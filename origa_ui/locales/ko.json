@@ -496,7 +496,8 @@
     "detail_examples_section": "예문",
     "detail_examples_not_found": "아직 예문이 없습니다",
     "detail_example_understood": "이해했어요",
-    "detail_example_not_understood": "이해 못했어요"
+    "detail_example_not_understood": "이해 못했어요",
+    "detail_translation_section": "번역"
   },
   "grammar_page": {
     "add_grammar": "문법 추가",

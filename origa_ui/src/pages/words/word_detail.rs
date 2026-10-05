@@ -103,10 +103,16 @@ pub fn WordDetail() -> impl IntoView {
             .unwrap_or_default()
     });
 
+    // All dictionary translations + description for the current word.
     let translations = Memo::new(move |_| {
         let w = word();
         let lang = native_lang.get();
-        origa::dictionary::vocabulary::get_translation(&w, &lang).unwrap_or_default()
+        origa::dictionary::vocabulary::get_translations(&w, &lang).unwrap_or_default()
+    });
+    let description = Memo::new(move |_| {
+        let w = word();
+        let lang = native_lang.get();
+        origa::dictionary::vocabulary::get_description(&w, &lang).filter(|s| !s.is_empty())
     });
 
     // Loaded examples for the CURRENT word. `None` = fetch in flight
@@ -233,8 +239,33 @@ pub fn WordDetail() -> impl IntoView {
                 <div class="word-detail-hero-word" data-testid="word-detail-word">
                     {hero_view}
                 </div>
-                <div class="word-detail-hero-meaning" data-testid="word-detail-translation">
-                    {move || translations.get()}
+            </div>
+
+            <div class="word-detail-section">
+                <div class="word-detail-section-title">
+                    {move || td_string!(i18n.get_locale(), words.detail_translation_section).to_string()}
+                </div>
+                <div class="word-detail-translations-card" data-testid="word-detail-translation">
+                    <For
+                        each=move || translations.get()
+                        key=|t: &String| t.clone()
+                        children=move |t: String| {
+                            view! {
+                                <div class="word-detail-translation-row">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Primary>
+                                        {t}
+                                    </Text>
+                                </div>
+                            }
+                        }
+                    />
+                    <Show when=move || description.get().is_some()>
+                        <div class="word-detail-description">
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                {move || description.get().unwrap_or_default()}
+                            </Text>
+                        </div>
+                    </Show>
                 </div>
             </div>
 
