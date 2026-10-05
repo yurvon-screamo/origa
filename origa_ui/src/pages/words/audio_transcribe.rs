@@ -48,6 +48,29 @@ pub(super) struct TranscribeContext {
     pub status_text: RwSignal<Option<String>>,
     pub error_message: RwSignal<Option<String>>,
     pub disposed: StoredValue<()>,
+    /// Run invalidation for surfaces that accept concurrent runs (the
+    /// inbox): when the counter moves past `run_id`, this run is stale and
+    /// every further state write and the final result are dropped. `None`
+    /// for single-run surfaces (the Audio tab) keeps their behavior
+    /// identical to the pre-extraction code.
+    pub stale_run: Option<StaleRun>,
+}
+
+/// Invalidation token pairing the shared generation counter with the run id
+/// this transcription was started under.
+#[derive(Clone, Copy)]
+pub(super) struct StaleRun {
+    pub generation: RwSignal<u32>,
+    pub run_id: u32,
+}
+
+impl TranscribeContext {
+    /// True once this run has been superseded by a newer one or cancelled.
+    pub fn is_stale(&self) -> bool {
+        self.stale_run
+            .as_ref()
+            .is_some_and(|token| token.generation.get_untracked() != token.run_id)
+    }
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -129,8 +152,10 @@ async fn transcribe_via_wasm(
 ) -> Result<String, String> {
     let bytes = read_file_as_bytes(file).await.map_err(|e| {
         error!(error = %e, "Audio file read failed");
-        ctx.audio_state.set(AudioState::Error);
-        ctx.error_message.set(Some(e.clone()));
+        if !ctx.is_stale() {
+            ctx.audio_state.set(AudioState::Error);
+            ctx.error_message.set(Some(e.clone()));
+        }
         e
     })?;
 
@@ -148,8 +173,10 @@ async fn transcribe_via_wasm(
         .await
         .map_err(|e| {
             error!(error = %e, "Whisper model load failed");
-            ctx.audio_state.set(AudioState::Error);
-            ctx.error_message.set(Some(e.clone()));
+            if !ctx.is_stale() {
+                ctx.audio_state.set(AudioState::Error);
+                ctx.error_message.set(Some(e.clone()));
+            }
             e
         })?;
 
@@ -164,9 +191,11 @@ async fn transcribe_via_wasm(
             .inner()
             .to_string()
     });
-    ctx.status_text
-        .set(Some(loading_label.replacen("{}", name, 1)));
-    ctx.audio_state.set(AudioState::Processing);
+    if !ctx.is_stale() {
+        ctx.status_text
+            .set(Some(loading_label.replacen("{}", name, 1)));
+        ctx.audio_state.set(AudioState::Processing);
+    }
 
     let use_case = origa::use_cases::TranscribeAudioUseCase::new();
     let infer_start = web_sys::js_sys::Date::now();
@@ -276,7 +305,9 @@ pub(super) fn transcribe_file(
     spawn_local(async move {
         let result = dispatch_transcription(i18n, file, name, ctx.clone()).await;
 
-        if ctx.disposed.is_disposed() {
+        // A superseded or cancelled run must touch neither the shared
+        // state nor the callbacks — its result belongs to no visible run.
+        if ctx.disposed.is_disposed() || ctx.is_stale() {
             return;
         }
 

@@ -63,7 +63,7 @@ pub(in crate::pages::words) fn InboxStageView(
             InboxViewStage::OcrProgress => {
                 let stage = inbox.ocr_loading_state.stage;
                 view! {
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-testid="words-inbox-ocr-progress">
                         <div class="space-y-3" role="list">
                             {stage_item_view(&i18n, stage, StageType::Deim, i18n.get_keys().words().image().segmentation().inner().to_string())}
                             {stage_item_view(&i18n, stage, StageType::Parseq, i18n.get_keys().words().image().recognition().inner().to_string())}

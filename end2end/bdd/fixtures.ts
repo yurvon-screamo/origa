@@ -57,11 +57,12 @@ export const test = base.extend<
             // alike. Production users never have the flag, so the seam stays
             // dormant there. Origin-guarded: init scripts also run on
             // about:blank where localStorage access is a SecurityError.
-            await context.addInitScript(() => {
-                if (window.location.origin === "http://localhost:1420") {
+            const { APP_BASE_URL } = await import("../playwright.config");
+            await context.addInitScript((origin) => {
+                if (window.location.origin === origin) {
                     window.localStorage.setItem("__origa_e2e_seam", "1");
                 }
-            });
+            }, APP_BASE_URL);
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
             try {

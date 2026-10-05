@@ -7,10 +7,9 @@
 
 use super::{
     AcceptDecision, InboxKind, InboxPayload, InboxRoute, InboxSignals, ProcessContext,
-    SEAM_TEXT_MAX_BYTES, SeamPayload, TranscribeContext, inbox_accept_policy, process_file,
-    route_payload, seam_enabled, transcribe_file,
+    SEAM_TEXT_MAX_BYTES, SeamPayload, StaleRun, TranscribeContext, inbox_accept_policy,
+    process_file, route_payload, seam_enabled, transcribe_file,
 };
-use crate::i18n::use_i18n;
 use crate::pages::words::add_words_preview_modal_state::PreviewModalState;
 use crate::ui_components::{ToastData, ToastType};
 use leptos::prelude::*;
@@ -19,7 +18,11 @@ use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::Closure;
 
 pub(super) const SEAM_PROPERTY: &str = "__ORIGA_TEST_INBOX__";
-const SEAM_FLAG_STORAGE_KEY: &str = "__origa_e2e_seam";
+pub(in crate::pages::words) const SEAM_FLAG_STORAGE_KEY: &str = "__origa_e2e_seam";
+
+/// Process-global toast id sequence: ids must never repeat within a session
+/// or the `<For>` keyed on them misbehaves after a toast is removed.
+static REJECT_TOAST_SEQ: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 /// Owns the registered seam closure; dropping the guard removes the window
 /// property so a disposed drawer cannot receive payloads.
@@ -40,22 +43,16 @@ fn read_seam_flag() -> Option<String> {
     storage.get_item(SEAM_FLAG_STORAGE_KEY).ok().flatten()
 }
 
-/// Registers the seam when (and only when) the opt-in flag is present.
-pub(in crate::pages::words) fn register_inbox_seam(
-    state: PreviewModalState,
-    is_open: RwSignal<bool>,
-    inbox: InboxSignals,
-    toasts: RwSignal<Vec<ToastData>>,
+/// The single registration path: gate on the opt-in flag, then attach the
+/// closure to `window`. Shared by the production seam and the wasm tests so
+/// the test exercises the real gate-and-attach code.
+pub(in crate::pages::words) fn register_inbox_seam_with(
+    closure: Closure<dyn Fn(JsValue)>,
 ) -> Option<InboxSeamGuard> {
     if !seam_enabled(read_seam_flag()) {
         return None;
     }
     let window = web_sys::window()?;
-    let i18n = use_i18n();
-
-    let closure = Closure::wrap(Box::new(move |payload: JsValue| {
-        handle_seam_payload(payload, &state, is_open, &inbox, toasts, i18n);
-    }) as Box<dyn Fn(JsValue)>);
 
     let window_value: JsValue = window.clone().into();
     if js_sys::Reflect::set(
@@ -73,6 +70,22 @@ pub(in crate::pages::words) fn register_inbox_seam(
         window,
         _closure: closure,
     })
+}
+
+/// Registers the seam when (and only when) the opt-in flag is present.
+/// Takes the i18n context as a parameter so testability does not depend on
+/// a mounted provider.
+pub(in crate::pages::words) fn register_inbox_seam(
+    state: PreviewModalState,
+    is_open: RwSignal<bool>,
+    inbox: InboxSignals,
+    toasts: RwSignal<Vec<ToastData>>,
+    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
+) -> Option<InboxSeamGuard> {
+    let closure = Closure::wrap(Box::new(move |payload: JsValue| {
+        handle_seam_payload(payload, &state, is_open, &inbox, toasts, i18n);
+    }) as Box<dyn Fn(JsValue)>);
+    register_inbox_seam_with(closure)
 }
 
 fn handle_seam_payload(
@@ -136,7 +149,7 @@ fn build_kind(parsed: SeamPayload) -> Option<InboxKind> {
         "file" => {
             let file_name = parsed.file_name?;
             let mime = parsed.mime.unwrap_or_default();
-            Some(InboxKind::File(construct_file(&file_name, &mime)))
+            Some(InboxKind::File(construct_file(&file_name, &mime)?))
         },
         other => {
             warn!(kind = other, "inbox seam: unknown payload kind");
@@ -148,13 +161,19 @@ fn build_kind(parsed: SeamPayload) -> Option<InboxKind> {
 /// Builds a small placeholder-backed `File` in the page context. Byte
 /// content is irrelevant for the classified routes: validation keys on the
 /// name and MIME type, and the audio rejection fires before any read.
-fn construct_file(file_name: &str, mime: &str) -> web_sys::File {
+/// Construction failure (a non-browser context) drops the payload.
+fn construct_file(file_name: &str, mime: &str) -> Option<web_sys::File> {
     let parts = js_sys::Array::new();
     parts.push(&js_sys::Uint8Array::new_with_length(1024).into());
     let bag = web_sys::FilePropertyBag::new();
     web_sys::FilePropertyBag::set_type(&bag, mime);
-    web_sys::File::new_with_str_sequence_and_options(&parts.into(), file_name, &bag)
-        .expect("seam File construction must succeed in a browser context")
+    match web_sys::File::new_with_str_sequence_and_options(&parts.into(), file_name, &bag) {
+        Ok(file) => Some(file),
+        Err(e) => {
+            warn!(error = ?e, "inbox seam: File construction failed");
+            None
+        },
+    }
 }
 
 /// Applies the routed pipeline entry point. Every accepted route opens the
@@ -169,6 +188,7 @@ pub(in crate::pages::words) fn execute_route(
 ) {
     inbox.reset();
     is_open.set(true);
+    let run_id = inbox.next_run();
 
     match route {
         InboxRoute::Analyze(text) => {
@@ -202,7 +222,7 @@ pub(in crate::pages::words) fn execute_route(
                 error_message: inbox.error,
                 disposed: state.disposed,
             };
-            let on_text_extracted = text_callback(state, *inbox);
+            let on_text_extracted = text_callback(state, *inbox, run_id);
             process_file(
                 i18n,
                 file,
@@ -218,8 +238,12 @@ pub(in crate::pages::words) fn execute_route(
                 status_text: inbox.audio_status_text,
                 error_message: inbox.error,
                 disposed: state.disposed,
+                stale_run: Some(StaleRun {
+                    generation: inbox.generation,
+                    run_id,
+                }),
             };
-            let on_text_extracted = text_callback(state, *inbox);
+            let on_text_extracted = text_callback(state, *inbox, run_id);
             transcribe_file(
                 i18n,
                 file,
@@ -231,13 +255,14 @@ pub(in crate::pages::words) fn execute_route(
     }
 }
 
-/// The shared late-arrival fence for extraction results: once the inbox run
-/// is cancelled or reset (`active` cleared), a result landing afterwards is
-/// dropped instead of yanking the user back into the flow.
-fn text_callback(state: &PreviewModalState, inbox: InboxSignals) -> Callback<String> {
+/// The shared late-arrival fence for extraction results: a result belongs
+/// to its run; once the counter moves past that run (new payload or
+/// cancel), the result is dropped instead of feeding the current one.
+fn text_callback(state: &PreviewModalState, inbox: InboxSignals, run_id: u32) -> Callback<String> {
     let state = state.clone();
     Callback::new(move |text: String| {
-        if !inbox.active.get_untracked() {
+        if inbox.generation.get_untracked() != run_id {
+            debug!(run_id, "inbox: stale extraction result dropped");
             return;
         }
         state.set_extracted_text(text);
@@ -273,7 +298,7 @@ fn push_reject_toast(
     };
     toasts.update(|list| {
         list.push(ToastData {
-            id: list.len(),
+            id: REJECT_TOAST_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             toast_type: ToastType::Info,
             title,
             message,

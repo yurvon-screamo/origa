@@ -14,11 +14,15 @@
 use crate::ui_components::OcrLoadingState;
 use leptos::prelude::*;
 
+#[cfg(all(target_arch = "wasm32", test))]
+mod inbox_wasm_tests;
 pub(super) mod seam;
 pub(super) mod view;
 
 // Sibling pipelines re-exported so seam/view use a single import root.
-pub(super) use super::audio_transcribe::{AudioState, TranscribeContext, transcribe_file};
+pub(super) use super::audio_transcribe::{
+    AudioState, StaleRun, TranscribeContext, transcribe_file,
+};
 pub(super) use super::image_input_stage::stage_item_view;
 pub(super) use super::ocr_processing::{OcrState, ProcessContext, process_file};
 pub(super) use seam::{InboxSeamGuard, register_inbox_seam};
@@ -40,6 +44,10 @@ pub(super) struct InboxSignals {
     pub ocr_loading_state: OcrLoadingState,
     pub audio_state: RwSignal<super::audio_transcribe::AudioState>,
     pub audio_status_text: RwSignal<Option<String>>,
+    /// Monotonic run counter. Each accepted route takes a run id; a result
+    /// landing after any bump (new payload or cancel) belongs to a stale run
+    /// and must be dropped instead of feeding the current one.
+    pub generation: RwSignal<u32>,
 }
 
 impl InboxSignals {
@@ -52,7 +60,14 @@ impl InboxSignals {
             ocr_loading_state: OcrLoadingState::new(),
             audio_state: RwSignal::new(super::audio_transcribe::AudioState::Idle),
             audio_status_text: RwSignal::new(None),
+            generation: RwSignal::new(0),
         }
+    }
+
+    /// Opens a new run: invalidates every previous one and returns its id.
+    pub fn next_run(&self) -> u32 {
+        self.generation.update(|g| *g = g.wrapping_add(1));
+        self.generation.get_untracked()
     }
 
     /// True while any extraction pipeline is mid-flight. Drives the accept
@@ -68,11 +83,13 @@ impl InboxSignals {
             )
     }
 
-    /// Clears the inbox back to the pre-payload state.
+    /// Clears the inbox back to the pre-payload state and invalidates any
+    /// in-flight run so its late result cannot touch the fresh state.
     pub fn reset(&self) {
         use super::audio_transcribe::AudioState;
         use super::ocr_processing::OcrState;
 
+        self.generation.update(|g| *g = g.wrapping_add(1));
         self.active.set(false);
         self.error.set(None);
         self.empty_text.set(false);
@@ -113,6 +130,7 @@ pub(super) enum FileClass {
 }
 
 /// Where a payload goes once accepted.
+#[derive(Debug)]
 pub(super) enum InboxRoute {
     Analyze(String),
     OcrFile(web_sys::File),
@@ -297,9 +315,6 @@ mod tests {
         assert_eq!(seam_enabled(stored_flag), expected);
     }
 
-    // route_payload's Text branches are pure string logic and stay testable
-    // without a browser; the File branches construct `web_sys::File`, which
-    // only exists in a WASM runtime, so they run via the wasm test suite.
     #[test]
     fn text_payload_routes_by_whitespace_only() {
         let meaningful = route_payload(InboxPayload {

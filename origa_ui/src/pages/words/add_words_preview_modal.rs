@@ -11,6 +11,7 @@ use crate::pages::words::image_input_stage::ImageInputStage;
 use crate::pages::words::inbox::{
     InboxSeamGuard, InboxSignals, InboxStageView, register_inbox_seam,
 };
+use crate::pages::words::ocr_processing::OcrState;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
@@ -85,7 +86,13 @@ pub fn AddWordsPreviewModal(
     Effect::new({
         let state = state.clone();
         move |_| {
-            seam_guard.set_value(register_inbox_seam(state.clone(), is_open, inbox, toasts));
+            seam_guard.set_value(register_inbox_seam(
+                state.clone(),
+                is_open,
+                inbox,
+                toasts,
+                i18n,
+            ));
         }
     });
 
@@ -150,10 +157,17 @@ pub fn AddWordsPreviewModal(
     };
 
     // Inbox fallbacks: cancel aborts the zero-tap run and returns to the
-    // source tabs; open-manually does the same after a failure.
+    // source tabs; open-manually does the same after a failure. Cancel must
+    // (a) invalidate the in-flight run — a late OCR/STT result would
+    // otherwise feed the next payload — and (b) clear the OCR state, whose
+    // cancelled pipeline never reaches its own completion branch and would
+    // otherwise report Processing forever, rejecting every next payload.
     let on_inbox_cancel = {
         Callback::new(move |_: ()| {
+            inbox.generation.update(|g| *g = g.wrapping_add(1));
             inbox.ocr_loading_state.cancel_requested.set(true);
+            inbox.ocr_state.set(OcrState::Idle);
+            inbox.ocr_loading_state.reset();
             inbox.audio_state.set(AudioState::Idle);
             cancel_whisper_loading();
             inbox.active.set(false);

@@ -55,6 +55,7 @@ pub(super) fn AudioInputStage(
                 status_text,
                 error_message,
                 disposed,
+                stale_run: None,
             },
             on_text_extracted,
             on_error,
