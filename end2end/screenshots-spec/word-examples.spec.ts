@@ -17,6 +17,15 @@ test("word detail screenshots", async ({ page }) => {
     const email = generateUniqueEmail();
     await createTestUser(token, csrfToken, email, DEFAULT_TEST_PASSWORD);
 
+    // Pre-approve the one-time resource download before any app script
+    // runs — otherwise the consent overlay intercepts every click on a
+    // fresh browser context (the 06:xx morning failures).
+    await page.context().addInitScript(() => {
+        if (window.location.origin === "http://localhost:1420") {
+            window.localStorage.setItem("origa_resource_download_consented", "true");
+        }
+    });
+
     const login = new LoginPage(page);
     const appConsole: string[] = [];
     page.on("console", (msg) => {
