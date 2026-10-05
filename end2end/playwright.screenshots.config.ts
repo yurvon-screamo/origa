@@ -13,6 +13,10 @@ export default defineConfig({
         trace: "off",
         screenshot: "off",
         ...devices["Desktop Chrome"],
+        // WASM + long onboarding flows: avoid tab crashes on /dev/shm
+        launchOptions: {
+            args: ["--disable-dev-shm-usage", "--disable-gpu"],
+        },
     },
     webServer: [
         {
@@ -23,7 +27,6 @@ export default defineConfig({
             port: 4000,
             reuseExistingServer: true,
             timeout: 60_000,
-            stdin: "ignore",
             env: { DEPOT: "./trailbase-fixture/traildepot" },
         },
         {

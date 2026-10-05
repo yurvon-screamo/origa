@@ -1,7 +1,8 @@
 /**
- * Lesson screenshots for #528 (admin-session variant): mint session is
- * injected into localStorage — the local profile is created by onboarding,
- * the records API is not needed for the local-only flow.
+ * Lesson screenshots for #528: fresh e2e user (admin-API creation), Skip
+ * onboarding assessment (cards stay new -> lesson becomes available), then
+ * acquaintance slide + answer-side screenshots with the word example.
+ * Requires .env with local TrailBase credentials (see playwright.config).
  */
 import { test, expect } from "@playwright/test";
 import { execSync } from "child_process";
