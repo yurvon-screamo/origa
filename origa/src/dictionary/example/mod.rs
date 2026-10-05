@@ -108,8 +108,15 @@ mod tests {
         }
     }"#;
 
+    fn lock() -> std::sync::MutexGuard<'static, ()> {
+        EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+    }
+
     #[test]
     fn init_is_idempotent() {
+        let _guard = lock();
         reset_example_index_for_test();
         init_example_index(INDEX_JSON).expect("first install");
         init_example_index(INDEX_JSON).expect("second install is a no-op");
@@ -119,6 +126,7 @@ mod tests {
 
     #[test]
     fn lookup_returns_refs_in_index_order() {
+        let _guard = lock();
         reset_example_index_for_test();
         init_example_index(INDEX_JSON).expect("install");
         let refs = get_word_example_refs("家族");
@@ -131,6 +139,7 @@ mod tests {
 
     #[test]
     fn unknown_word_is_empty() {
+        let _guard = lock();
         reset_example_index_for_test();
         init_example_index(INDEX_JSON).expect("install");
         assert!(get_word_example_refs("存在しない").is_empty());
@@ -138,6 +147,7 @@ mod tests {
 
     #[test]
     fn corrupt_json_is_an_error() {
+        let _guard = lock();
         reset_example_index_for_test();
         assert!(init_example_index("{not json").is_err());
     }

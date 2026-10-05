@@ -8,6 +8,11 @@ import { HomePage } from "../pages/home.page";
 import { LessonPage } from "../pages/lesson.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring } from "../helpers/onboarding";
+import {
+    completeAcquaintanceHandIfPresent,
+    completeTrainingUntilCriterion,
+    runAcquaintancePresentation,
+} from "../helpers/lesson";
 import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
 
 const WORD = process.env.SHOT_WORD || "あさ";
@@ -87,7 +92,7 @@ test("word detail screenshots", async ({ page }) => {
     await page.waitForTimeout(3000); // examples chunk fetch
     // Layout diagnostics: computed styles of the ruby annotation.
     const rubyStyles = await page.evaluate(() => {
-        const dump = (el) => {
+        const dump = (el: Element | null) => {
             if (!el) return null;
             const cs = getComputedStyle(el);
             return {
@@ -120,42 +125,59 @@ test("word detail screenshots", async ({ page }) => {
     await home.startLesson();
     await lesson.expectLessonVisible();
 
-    let lessonShot = false;
-    try {
+    // Acquaintance hand: slide shows the word — with our example block
+    // (WordExampleLine). Screenshot the slide BEFORE the know-all bypass.
+    const handSeen = await page
+        .getByTestId("acquaintance-view")
+        .waitFor({ state: "visible", timeout: 60_000 })
+        .then(() => true)
+        .catch(() => false);
+    if (handSeen) {
         await expect(page.getByTestId("acquaintance-word-slide")).toBeVisible({
-            timeout: 60_000,
-        });
-        await expect(page.getByTestId("lesson-word-example")).toBeVisible({
             timeout: 30_000,
         });
-        await page.waitForTimeout(1200);
+        await page.waitForTimeout(1500);
         await page.screenshot({ path: "screenshots/lesson-acquaintance-example.png" });
-        lessonShot = true;
-    } catch {
-        // Lesson schedule may start differently — walk answers below.
+        // Slide through the presentation to the training phase.
+        const nextBtn = page.getByTestId("acquaintance-next-btn");
+        for (let i = 0; i < 20; i++) {
+            const trainingVisible = await page
+                .getByTestId("acquaintance-training")
+                .isVisible({ timeout: 800 })
+                .catch(() => false);
+            if (trainingVisible) break;
+            await nextBtn.click({ timeout: 2_000 }).catch(() => undefined);
+        }
+        await completeTrainingUntilCriterion(page);
+        await completeAcquaintanceHandIfPresent(page);
     }
 
-    for (let i = 0; i < 10 && !lessonShot; i++) {
+    // Review part: reveal answers, screenshot the first one with the
+    // compact example; rate through the rest.
+    let answerShot = false;
+    for (let i = 0; i < 14 && !answerShot; i++) {
         try {
             await lesson.showAnswer();
             await page.waitForTimeout(900);
+            console.log("CARD", i, "example visible:",
+                await page.getByTestId("lesson-word-example").isVisible().catch(() => "err"));
             if (await page.getByTestId("lesson-word-example").isVisible({ timeout: 4_000 }).catch(() => false)) {
                 await page.screenshot({ path: "screenshots/lesson-answer-example.png" });
-                lessonShot = true;
+                answerShot = true;
             }
         } catch {
-            // not a word card
+            // not a reveal-able card
         }
-        if (lessonShot) break;
+        if (answerShot) break;
         try {
-            await lesson.clickNextCard();
+            await lesson.rate("good");
         } catch {
             try {
-                await lesson.rate("good");
+                await lesson.clickNextCard();
             } catch {
                 break;
             }
         }
     }
-    expect(lessonShot, "lesson example screenshot must be captured").toBe(true);
+    expect(answerShot, "answer-side example screenshot must be captured").toBe(true);
 });
