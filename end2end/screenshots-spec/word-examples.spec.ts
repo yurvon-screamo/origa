@@ -37,11 +37,6 @@ test("word detail screenshots", async ({ page }) => {
     await login.fillEmail(email);
     await login.fillPassword(DEFAULT_TEST_PASSWORD);
     await login.submit();
-    await page.waitForTimeout(12_000);
-    console.log(
-        "POST-LOGIN:",
-        JSON.stringify({ url: page.url(), logs: appConsole.slice(-14) }, null, 1),
-    );
     await page.waitForURL(/\/(home|onboarding)$/, { timeout: 120_000 });
     if (page.url().includes("onboarding")) {
         await completeOnboardingToScoring(page, { level: "N4" });

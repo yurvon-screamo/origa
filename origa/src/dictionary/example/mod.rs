@@ -71,6 +71,12 @@ pub fn reset_example_index_for_test() {
     }
 }
 
+/// Serializes tests across crates that install different index fixtures
+/// into the same process-global store (`dictionary::example::tests` and
+/// the lesson view-generator slot test).
+#[cfg(test)]
+pub(crate) static EXAMPLE_INDEX_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 /// Sentence refs for one word, empty when the word has no examples.
 pub fn get_word_example_refs(word: &str) -> Vec<ExampleRef> {
     let Ok(guard) = store().read() else {

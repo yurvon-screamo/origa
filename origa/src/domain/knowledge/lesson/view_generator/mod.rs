@@ -20,9 +20,9 @@ const QUIZ_OPTIONS_COUNT: usize = 4;
 // barely-known word coast into `is_known_card` on guessed recognition.
 // Only strict-recall formats remain: Normal, AudioRecall, Reversed,
 // GrammarMutated.
-/// #528: textbook-example recall slot (late reviews only, words with CDN
-/// examples). Drawn independently of the main ladder — the ladder
-/// probabilities stay untouched.
+/// #528: textbook-example recall slot for non-new vocabulary reviews with
+/// CDN examples. Drawn independently of the main ladder (a second RNG
+/// draw) — the ladder probabilities stay untouched.
 const PROB_VOCAB_EXAMPLE_VIEW: f32 = 0.10;
 const PROB_LATE_NORMAL_VIEW: f32 = 0.20;
 const PROB_LATE_AUDIO_VIEW: f32 = 0.50;

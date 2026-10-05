@@ -64,25 +64,32 @@ pub fn WordDetail() -> impl IntoView {
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);
     let study_card: RwSignal<Option<StudyCard>> = RwSignal::new(None);
     let refresh_trigger = RwSignal::new(0u32);
+    let is_delete_modal_open = RwSignal::new(false);
     let repo_for_effect = repository.clone();
+    let card_generation = StoredValue::new(0u64);
 
     // Resolve the user's card for this word (may legitimately be absent —
-    // the page is a dictionary reference for any word).
+    // the page is a dictionary reference for any word). Generation-guard
+    // mirrors the examples effect: fast navigation must not let word A's
+    // card render under word B.
     Effect::new(move |_| {
         let _ = refresh_trigger.get();
+        is_delete_modal_open.set(false);
         let w = word();
+        card_generation.update_value(|g| *g += 1);
+        let generation = card_generation.get_value();
         let repo = repo_for_effect.clone();
         spawn_local(async move {
-            match repo.get_current_user().await {
+            let outcome = match repo.get_current_user().await {
                 Ok(Some(user)) => {
                     let found = find_word_card(&user, &w);
-                    study_card.set(found.map(|(_, card)| card));
-                    current_user.set(Some(user));
+                    (Some(user), found.map(|(_, card)| card))
                 },
-                _ => {
-                    current_user.set(None);
-                    study_card.set(None);
-                },
+                _ => (None, None),
+            };
+            if card_generation.get_value() == generation {
+                current_user.set(outcome.0);
+                study_card.set(outcome.1);
             }
         });
     });
@@ -168,7 +175,6 @@ pub fn WordDetail() -> impl IntoView {
     let toasts: RwSignal<Vec<crate::ui_components::ToastData>> = RwSignal::new(Vec::new());
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
-    let is_delete_modal_open = RwSignal::new(false);
     let navigate = StoredValue::new(use_navigate());
 
     let hero_word = word;
@@ -274,11 +280,15 @@ pub fn WordDetail() -> impl IntoView {
 
             <Show when=move || is_delete_modal_open.get() && study_card.get().is_some()>
                 {move || {
-                    let (card_id, _) = find_word_card(
-                        current_user.get().as_ref().expect("checked by Show"),
-                        &word(),
-                    )
-                    .expect("checked by Show");
+                    // Single source of truth: the card comes from the same
+                    // signal the Show guard reads — no re-derivation from
+                    // the word param, which can mismatch mid-navigation
+                    // (a derived None here used to be a reachable WASM
+                    // panic).
+                    let Some(card) = study_card.get() else {
+                        return ().into_any();
+                    };
+                    let card_id = *card.card_id();
                     let confirm_delete = Callback::new(move |_| {
                         on_delete.run(DeleteRequest {
                             card_id,

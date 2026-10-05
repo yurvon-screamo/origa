@@ -742,6 +742,30 @@ mod tests {
     /// loadable. LessonData itself is never synced across clients, but the
     /// roundtrip still pins the enum's externally-tagged wire shape.
     #[test]
+    fn example_view_roundtrips_through_serde() {
+        let view = LessonCardView::Example {
+            card: Card::Vocabulary(VocabularyCard::new(
+                Question::new("家族".to_string()).expect("valid question"),
+            )),
+            sentence_id: 42,
+            start: 3,
+            end: 5,
+        };
+
+        let json = serde_json::to_string(&view).expect("serialize Example view");
+        let restored: LessonCardView =
+            serde_json::from_str(&json).expect("deserialize Example view");
+
+        assert_eq!(restored, view);
+        assert!(
+            json.contains("Example"),
+            "wire shape must keep the variant tag: {json}"
+        );
+    }
+
+    /// Wire-format contract for `LessonCardView::AudioRecall` (see the
+    /// Example test above for why the roundtrip is pinned).
+    #[test]
     fn audio_recall_view_roundtrips_through_serde() {
         let view = LessonCardView::AudioRecall(Card::Vocabulary(VocabularyCard::new(
             Question::new("温度".to_string()).expect("valid question"),
