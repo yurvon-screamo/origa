@@ -113,7 +113,6 @@ test("word detail screenshots", async ({ page }) => {
             exampleRt: dump(document.querySelector('.word-detail-example-ja .furigana-rt')),
         };
     });
-    console.log("RUBY-STYLES:", JSON.stringify(rubyStyles, null, 1));
     await page.screenshot({ path: "screenshots/word-detail-full.png", fullPage: true });
     await page.screenshot({ path: "screenshots/word-detail-viewport.png" });
 
