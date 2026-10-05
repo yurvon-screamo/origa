@@ -6,7 +6,6 @@ use crate::ui_components::{
     CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Tag, TagVariant, WordTranslations,
 };
 use leptos::prelude::*;
-use leptos_router::hooks::use_navigate;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
@@ -14,6 +13,7 @@ use ulid::Ulid;
 pub fn VocabularyCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
+    on_open_detail_cb: Callback<String>,
     known_kanji: HashSet<char>,
     on_toggle_favorite: Callback<Ulid>,
     on_mark_as_known: Callback<()>,
@@ -38,18 +38,9 @@ pub fn VocabularyCardItem(
         DomainCard::Vocabulary(vocab) => vocab.word().text().to_string(),
         _ => "?".to_string(),
     };
-    // Entry point to the #528 detail page: the whole card navigates on
-    // click (navigate-by-hook, like kanji/set cards — <A> would require a
-    // Router context that headless card tests do not mount).
-    let navigate = StoredValue::new(use_navigate());
     let word_for_link = word.clone();
-    let on_open_detail = move |_: leptos::ev::MouseEvent| {
-        navigate.get_value()(
-            &format!("/words/{}", word_for_link.clone()),
-            Default::default(),
-        );
-    };
-
+    // Entry point to the #528 detail page: the word box navigates on
+    // click; the callback (with the router) is injected by the parent.
     let study_card_for_meaning = study_card.clone();
     let answer_data = Memo::new(move |_| {
         let lang = native_language.get();
@@ -86,7 +77,7 @@ pub fn VocabularyCardItem(
                 <div
                     class="word-card-word-box cursor-pointer"
                     data-testid="words-card-word-link"
-                    on:click=on_open_detail
+                    on:click=move |_: leptos::ev::MouseEvent| on_open_detail_cb.run(word_for_link.clone())
                 >
                     <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
                 </div>

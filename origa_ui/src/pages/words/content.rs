@@ -6,6 +6,7 @@ use super::vocabulary_card_item::VocabularyCardItem;
 use crate::i18n::{td_string, use_i18n};
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
+use leptos_router::hooks::use_navigate;
 use origa::domain::Card;
 
 #[component]
@@ -44,6 +45,10 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             view! {
                 <VocabularyCardItem
                     study_card=card
+                    on_open_detail_cb=Callback::new(move |w: String| {
+                        let navigate = use_navigate();
+                        navigate(&format!("/words/{}", w), Default::default());
+                    })
                     native_language=ctx.native_lang
                     known_kanji=ctx.known_kanji.get()
                     on_toggle_favorite=ctx.on_toggle_favorite
