@@ -4,6 +4,8 @@
  */
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
+import { HomePage } from "../pages/home.page";
+import { LessonPage } from "../pages/lesson.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring } from "../helpers/onboarding";
 import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
@@ -109,4 +111,51 @@ test("word detail screenshots", async ({ page }) => {
     console.log("RUBY-STYLES:", JSON.stringify(rubyStyles, null, 1));
     await page.screenshot({ path: "screenshots/word-detail-full.png", fullPage: true });
     await page.screenshot({ path: "screenshots/word-detail-viewport.png" });
+
+    // ── Lesson: acquaintance slide + answer side with the example ──
+    const home = new HomePage(page);
+    const lesson = new LessonPage(page);
+    await page.goto("/home");
+    await expect(page.getByTestId("home-content")).toBeVisible({ timeout: 120_000 });
+    await home.startLesson();
+    await lesson.expectLessonVisible();
+
+    let lessonShot = false;
+    try {
+        await expect(page.getByTestId("acquaintance-word-slide")).toBeVisible({
+            timeout: 60_000,
+        });
+        await expect(page.getByTestId("lesson-word-example")).toBeVisible({
+            timeout: 30_000,
+        });
+        await page.waitForTimeout(1200);
+        await page.screenshot({ path: "screenshots/lesson-acquaintance-example.png" });
+        lessonShot = true;
+    } catch {
+        // Lesson schedule may start differently — walk answers below.
+    }
+
+    for (let i = 0; i < 10 && !lessonShot; i++) {
+        try {
+            await lesson.showAnswer();
+            await page.waitForTimeout(900);
+            if (await page.getByTestId("lesson-word-example").isVisible({ timeout: 4_000 }).catch(() => false)) {
+                await page.screenshot({ path: "screenshots/lesson-answer-example.png" });
+                lessonShot = true;
+            }
+        } catch {
+            // not a word card
+        }
+        if (lessonShot) break;
+        try {
+            await lesson.clickNextCard();
+        } catch {
+            try {
+                await lesson.rate("good");
+            } catch {
+                break;
+            }
+        }
+    }
+    expect(lessonShot, "lesson example screenshot must be captured").toBe(true);
 });
