@@ -7,7 +7,7 @@ use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_quiz_submit::create_on_quiz_submit;
 use super::on_quiz_toggle::create_on_quiz_toggle;
-use super::on_rate::create_on_rate_callback;
+use super::on_rate::{create_on_example_advance_callback, create_on_rate_callback};
 use super::on_yesno_select::create_on_yesno_select;
 use super::phrase_card::PhraseCardView;
 use super::quiz_card::QuizCardView;
@@ -39,6 +39,8 @@ pub fn LessonCardContainer() -> impl IntoView {
     };
 
     let on_rate_callback = create_on_rate_callback(lesson_state, lesson_ctx.clone(), is_rating);
+    let on_example_advance =
+        create_on_example_advance_callback(lesson_state, lesson_ctx.is_completed);
 
     let on_quiz_select = create_on_quiz_select(lesson_state);
 
@@ -239,6 +241,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                             show_answer_sig,
                             Callback::new(move |_| show_answer()),
                             on_rate_callback,
+            on_example_advance,
                             rating_disabled_sig,
                             known_kanji_sig,
                             native_language,

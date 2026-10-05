@@ -74,7 +74,7 @@ async fn check_and_create_ready_phrases<R: UserRepository>(
     }
 }
 
-fn advance_lesson_state(
+pub(crate) fn advance_lesson_state(
     lesson_state: RwSignal<super::lesson_state::LessonState>,
     is_completed: RwSignal<bool>,
 ) {
@@ -99,6 +99,24 @@ fn advance_lesson_state(
             state.multi_result = None;
         }
     });
+}
+
+/// #528: advance the lesson WITHOUT any FSRS rating — the example-recall
+/// self-assessment is a training signal only (see issue #528).
+pub fn create_on_example_advance_callback(
+    lesson_state: RwSignal<super::lesson_state::LessonState>,
+    is_completed: RwSignal<bool>,
+) -> Callback<()> {
+    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+        return Callback::new(move |_| {});
+    };
+
+    Callback::new(move |_: ()| {
+        if is_disposed.is_disposed() {
+            return;
+        }
+        advance_lesson_state(lesson_state, is_completed);
+    })
 }
 
 pub fn create_on_rate_callback(

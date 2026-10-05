@@ -7021,3 +7021,27 @@ rt {
         font-size: 36px;
     }
 }
+
+/* Example-recall view (#528): sentence question, self-assessment, reveal */
+.example-recall {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+}
+
+.example-recall-ja {
+    font-size: 26px;
+    line-height: 1.7;
+    color: var(--fg-black);
+}
+
+.example-recall-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.example-recall-translation {
+    padding-top: 6px;
+}

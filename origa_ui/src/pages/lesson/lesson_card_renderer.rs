@@ -1,3 +1,4 @@
+use super::example_recall_card::ExampleRecallCard;
 use super::lesson_card::LessonCard as LessonCardComponent;
 use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::rating_buttons_view::RatingButtonsView;
@@ -15,15 +16,38 @@ struct LessonCardParams {
     show_grammar_badge: bool,
 }
 
+// Same allowance as KanjiSlide (acquaintance_view): the renderer's
+// signature mirrors the container's callback set.
+#[allow(clippy::too_many_arguments)]
 pub(in crate::pages::lesson) fn render_lesson_card(
     lesson_card: LessonCard,
     show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
+    on_example_advance: Callback<()>,
     disabled: Signal<bool>,
     known_kanji: Signal<HashSet<char>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
+    // #528: the example-recall view owns its whole interaction flow
+    // (sentence question, understood/didn't-understand, translation reveal)
+    // and advances the lesson WITHOUT an FSRS rating.
+    if let LessonCardView::Example {
+        card, sentence_id, ..
+    } = lesson_card.clone().into_view()
+    {
+        return view! {
+            <ExampleRecallCard
+                card=card
+                sentence_id=sentence_id
+                on_advance=on_example_advance
+                known_kanji=known_kanji.get()
+                native_language=native_language.get()
+            />
+        }
+        .into_any();
+    }
+
     let params = match lesson_card.into_view() {
         LessonCardView::Normal(card) => {
             let grammar_info = match &card {

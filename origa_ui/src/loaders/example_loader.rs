@@ -44,6 +44,14 @@ pub async fn load_examples() -> Result<(), OrigaError> {
     load_examples_via(provider).await
 }
 
+/// Resolve one sentence: from cache, otherwise fetch+install its chunk.
+pub async fn load_example_detail(sentence_id: u32) -> Result<ExampleDetail, OrigaError> {
+    if let Some(detail) = get_cached_example_detail(sentence_id) {
+        return Ok(detail);
+    }
+    load_example_detail_via(cdn_provider(), sentence_id).await
+}
+
 /// Provider-parameterized index load (tests drive this with a mock).
 pub async fn load_examples_via<P: CdnProvider>(provider: &P) -> Result<(), OrigaError> {
     if is_examples_loaded() {

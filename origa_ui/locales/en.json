@@ -494,7 +494,9 @@
     "already_added": "Added",
     "counter_badge": "counter",
     "detail_examples_section": "Examples",
-    "detail_examples_not_found": "No examples yet"
+    "detail_examples_not_found": "No examples yet",
+    "detail_example_understood": "I understood it",
+    "detail_example_not_understood": "Didn't understand"
   },
   "grammar_page": {
     "add_grammar": "Add grammar",
