@@ -162,12 +162,15 @@ pub fn AddWordsPreviewModal(
     // otherwise feed the next payload — and (b) clear the OCR state, whose
     // cancelled pipeline never reaches its own completion branch and would
     // otherwise report Processing forever, rejecting every next payload.
+    // reset() goes first: it clears cancel_requested, and the flag is then
+    // re-raised so an orphaned OCR run aborted mid-model-download still
+    // stops at its next cancellation checkpoint.
     let on_inbox_cancel = {
         Callback::new(move |_: ()| {
             inbox.generation.update(|g| *g = g.wrapping_add(1));
+            inbox.ocr_loading_state.reset();
             inbox.ocr_loading_state.cancel_requested.set(true);
             inbox.ocr_state.set(OcrState::Idle);
-            inbox.ocr_loading_state.reset();
             inbox.audio_state.set(AudioState::Idle);
             cancel_whisper_loading();
             inbox.active.set(false);
