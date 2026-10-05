@@ -5817,7 +5817,9 @@ rt {
 /* === Counter Detail (mirror of kanji/grammar detail, issue #415) === */
 .counter-detail-container {
     padding: 24px 32px;
-    /* main уже даёт 80px под таббар; здесь без двойного запаса */
+    /* Нижний отступ под мобильный таббар: main pb-20 закрывается
+       скроллом контента страницы, контейнеру деталей нужен свой. */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 .counter-detail-top-bar {

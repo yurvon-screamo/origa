@@ -165,6 +165,21 @@ impl DailyHistoryItem {
     }
 
     #[cfg(test)]
+    /// Тестовый сеттер счётчиков слов (канон `set_timestamp_for_test`):
+    /// значения «всего/новых/изученных» нужны юнит-тестам дельт главной.
+    pub fn set_word_counts_for_test(
+        &mut self,
+        new_words: usize,
+        known_words: usize,
+        in_progress_words: usize,
+        high_difficulty_words: usize,
+    ) {
+        self.new_words = new_words;
+        self.known_words = known_words;
+        self.in_progress_words = in_progress_words;
+        self.high_difficulty_words = high_difficulty_words;
+    }
+
     pub fn set_timestamp_for_test(&mut self, ts: DateTime<Utc>) {
         self.timestamp = ts;
     }

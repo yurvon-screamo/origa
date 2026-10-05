@@ -58,14 +58,26 @@ pub fn compute_today_overview(
             .nth(1)
             .expect("second-to-last item exists");
 
-        overview.new_delta = Some((today.new_words() as i64 - yesterday.new_words() as i64) as i32);
-        overview.learned_delta =
-            Some((today.known_words() as i64 - yesterday.known_words() as i64) as i32);
-        overview.in_progress_delta =
-            Some((today.in_progress_words() as i64 - yesterday.in_progress_words() as i64) as i32);
-        overview.difficult_delta = Some(
-            (today.high_difficulty_words() as i64 - yesterday.high_difficulty_words() as i64)
-                as i32,
+        // Дельты осмысленны только для сегодняшней записи: если занятий
+        // сегодня не было, последняя запись осталась от прошлых дней —
+        // дельты показываются сброшенными в 0, а не тянут старые дни.
+        let today_is_today = today.timestamp().date_naive() == chrono::Utc::now().date_naive();
+        let delta = |current: i64, previous: i64| {
+            if today_is_today {
+                Some((current - previous) as i32)
+            } else {
+                Some(0)
+            }
+        };
+        overview.new_delta = delta(today.new_words() as i64, yesterday.new_words() as i64);
+        overview.learned_delta = delta(today.known_words() as i64, yesterday.known_words() as i64);
+        overview.in_progress_delta = delta(
+            today.in_progress_words() as i64,
+            yesterday.in_progress_words() as i64,
+        );
+        overview.difficult_delta = delta(
+            today.high_difficulty_words() as i64,
+            yesterday.high_difficulty_words() as i64,
         );
     }
 
@@ -147,6 +159,40 @@ mod tests {
     }
 
     #[test]
+    /// Занятий сегодня не было (последняя запись — вчера): дельты
+    /// «+/−» на главной показываются сброшенными в 0, а не тянут
+    /// значения прошлых дней.
+    #[test]
+    fn compute_today_overview_deltas_reset_when_no_lessons_today() {
+        let mut ks = KnowledgeSet::new();
+        let _card1 = ks.create_card(create_vocab_card("猫")).unwrap();
+        ks.rate_card(
+            *_card1.card_id(),
+            Rating::Good,
+            RateMode::ShortTerm,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+
+        // История: записи вчера и позавчера (сегодня занятий не было).
+        let yesterday = chrono::Utc::now() - chrono::Duration::days(1);
+        let day_before = chrono::Utc::now() - chrono::Duration::days(2);
+        let mut today_item = DailyHistoryItem::new();
+        today_item.set_timestamp_for_test(yesterday);
+        today_item.set_word_counts_for_test(3, 5, 0, 0);
+        let mut prev_item = DailyHistoryItem::new();
+        prev_item.set_timestamp_for_test(day_before);
+        prev_item.set_word_counts_for_test(1, 2, 0, 0);
+        let history = vec![prev_item, today_item];
+
+        let overview = compute_today_overview(&ks, &history);
+
+        assert_eq!(overview.new_delta, Some(0));
+        assert_eq!(overview.learned_delta, Some(0));
+        assert_eq!(overview.in_progress_delta, Some(0));
+        assert_eq!(overview.difficult_delta, Some(0));
+    }
+
     fn compute_rating_ratio_with_history() {
         let mut ks = KnowledgeSet::new();
 

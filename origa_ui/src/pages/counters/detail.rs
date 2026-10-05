@@ -322,35 +322,38 @@ pub fn CountersDetail() -> impl IntoView {
                                     })
                                     .collect::<Vec<_>>()}
                             </div>
-
-                            <Show when=move || !examples.get().is_empty()>
-                                <div class="counter-detail-section-card counter-detail-section-gap"
-                                     data-testid="counters-detail-examples">
-                                    <div class="counter-detail-section-title">
-                                        {examples_title}
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <For
-                                            each=move || examples.get()
-                                            key=|(word, _)| word.clone()
-                                            children=move |(word, meaning): (String, String)| {
-                                                view! {
-                                                    <div class="py-2 border-b border-[var(--fg-light)] last:border-b-0">
-                                                        <FuriganaText
-                                                            text=word.clone()
-                                                            known_kanji=HashSet::new()
-                                                        />
-                                                        <p class="mt-1 text-left font-mono text-[var(--fg-muted)]">
-                                                            {meaning}
-                                                        </p>
-                                                    </div>
-                                                }
-                                            }
-                                        />
-                                    </div>
-                                </div>
-                            </Show>
                         </div>
+
+                        // Самостоятельная секция «Примеры»: частотные слова
+                        // с кандзи-суффиксом (кандзи-словарь), фуригана +
+                        // перевод, до 6 записей.
+                        <Show when=move || !examples.get().is_empty()>
+                            <div class="counter-detail-section-card counter-detail-section-gap"
+                                 data-testid="counters-detail-examples">
+                                <div class="counter-detail-section-title">
+                                    {examples_title}
+                                </div>
+                                <div class="flex flex-col">
+                                    <For
+                                        each=move || examples.get()
+                                        key=|(word, _)| word.clone()
+                                        children=move |(word, meaning): (String, String)| {
+                                            view! {
+                                                <div class="py-2 border-b border-[var(--fg-light)] last:border-b-0">
+                                                    <FuriganaText
+                                                        text=word.clone()
+                                                        known_kanji=HashSet::new()
+                                                    />
+                                                    <p class="mt-1 text-left font-mono text-[var(--fg-muted)]">
+                                                        {meaning}
+                                                    </p>
+                                                </div>
+                                            }
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </Show>
 
                         <DeleteConfirmModal
                             test_id="counters-detail-delete-modal"
