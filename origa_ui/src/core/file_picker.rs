@@ -26,11 +26,13 @@ impl PickerKind {
         }
     }
 
-    /// MIME type for the constructed File; empty for unknown extensions
-    /// (consumers reject honestly via their own validation).
+    /// MIME type for the constructed `File`. Images get an empty type on
+    /// purpose: `is_image_file` accepts empty and the real bytes carry the
+    /// true type, which the OCR data-URL parser validates. Anki decks get
+    /// octet-stream (the Anki consumer has no MIME gate).
     pub fn mime(&self) -> &'static str {
         match self {
-            PickerKind::Image => "image/*",
+            PickerKind::Image => "",
             PickerKind::AnkiDeck => "application/octet-stream",
         }
     }
@@ -51,7 +53,8 @@ pub fn native_picker_available(
 
 /// Whether the native picker button should render on this runtime.
 pub fn is_available() -> bool {
-    if !is_tauri() {
+    let shell = is_tauri();
+    if !shell {
         return false;
     }
     let platform = crate::core::platform::platform_name();
@@ -59,7 +62,7 @@ pub fn is_available() -> bool {
         js_sys::Reflect::get(&obj, &wasm_bindgen::JsValue::from_str("dialog"))
             .is_ok_and(|v| !v.is_undefined() && !v.is_null())
     });
-    native_picker_available(true, &platform, dialog_bridge)
+    native_picker_available(shell, &platform, dialog_bridge)
 }
 
 /// Opens the native dialog and returns (file name, decoded bytes) for the

@@ -45,9 +45,9 @@ pub struct FilePayload {
 fn normalize_extensions(extensions: &[String]) -> Vec<String> {
     extensions
         .iter()
-        .take(MAX_FILTERS)
         .map(|ext| ext.trim().to_ascii_lowercase())
         .filter(|ext| !ext.is_empty() && ext.len() <= MAX_EXTENSION_LEN)
+        .take(MAX_FILTERS)
         .collect()
 }
 
@@ -60,8 +60,10 @@ pub async fn pick_and_read_file(
     if extensions.is_empty() {
         return Err("No file extensions supplied for the dialog filter".to_string());
     }
-    let filter_name = if args.filter_name.len() > MAX_FILTER_NAME_LEN {
-        args.filter_name[..MAX_FILTER_NAME_LEN].to_string()
+    // Char-boundary-safe truncation: byte slicing on a multibyte name
+    // would panic inside the trust-boundary command.
+    let filter_name = if args.filter_name.chars().count() > MAX_FILTER_NAME_LEN {
+        args.filter_name.chars().take(MAX_FILTER_NAME_LEN).collect()
     } else {
         args.filter_name
     };
@@ -112,28 +114,29 @@ mod tests {
     use super::normalize_extensions;
 
     #[test]
-    fn normalization_drops_empty_oversized_and_caps_the_list() {
+    fn normalization_trims_folds_then_caps() {
         let extensions: Vec<String> = [
-            "png",
-            "  ",
-            "",
-            "jpg",
-            "an-extension-that-is-way-too-long-for-a-filter",
-            "webp",
+            "PNG",                                            // folded to lowercase
+            "  jpg  ",                                        // trimmed
+            "",                                               // dropped
+            "WEBP",                                           // folded
+            "an-extension-that-is-way-too-long-for-a-filter", // dropped
             "gif",
             "bmp",
             "avif",
             "jxl",
+            "heif", // 8th valid entry
+            "tif",  // dropped by the cap (would be the 9th)
         ]
         .iter()
         .map(|ext| ext.to_string())
         .collect();
+        // Filter happens BEFORE the cap: garbage entries must not eat
+        // valid filter slots.
         let normalized = normalize_extensions(&extensions);
-        // Capped at MAX_FILTERS entries; empty/whitespace dropped; the
-        // oversized extension dropped; case folded.
         assert_eq!(
             normalized,
-            vec!["png", "jpg", "webp", "gif", "bmp", "avif", "jxl"]
+            vec!["png", "jpg", "webp", "gif", "bmp", "avif", "jxl", "heif"]
         );
     }
 

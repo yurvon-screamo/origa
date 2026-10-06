@@ -142,7 +142,8 @@ pub fn AnkiImportStage(
     let dd = use_drag_and_drop(on_drop_file.clone());
     let is_drag_over = dd.is_drag_over();
 
-    // Shared by the drop zone and the native picker button.
+    // Used only by the native picker button; the drop zone goes through
+    // the drag-and-drop wrapper over the same handler.
     let native_pick_handler = Callback::new(move |file: web_sys::File| on_drop_file(file));
     let dd_on_drag_over = dd.on_drag_over();
     let dd_on_drag_leave = dd.on_drag_leave();

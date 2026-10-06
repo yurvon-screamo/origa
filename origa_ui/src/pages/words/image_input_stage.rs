@@ -95,7 +95,8 @@ pub fn ImageInputStage(
     let dd_on_drag_leave = dd.on_drag_leave();
     let dd_on_drop = dd.on_drop();
 
-    // Shared by the drop zone and the native picker button.
+    // Used only by the native picker button; the drop zone goes through
+    // the drag-and-drop wrapper over the same handler.
     let native_pick_handler = Callback::new(move |file: web_sys::File| on_drop_file(file));
 
     let ocr_loading_state_for_file = ocr_loading_state;
@@ -297,7 +298,7 @@ pub fn ImageInputStage(
                                             <label class="cursor-pointer">
                                                 <input
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept="image/png,image/jpeg,image/webp"
                                                     capture="environment"
                                                     class="hidden"
                                                     on:change=on_file_change
