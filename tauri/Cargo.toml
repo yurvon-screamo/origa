@@ -115,6 +115,6 @@ tauri-plugin-aswebauth.workspace = true
 # android::init_with_env; a direct 0.22 dep (dependabot #455) breaks the
 # Android build with mismatched JNIEnv/JObject types.
 [target.'cfg(target_os = "android")'.dependencies]
-jni = "0.21"
+jni = "0.22"
 rustls-platform-verifier = "0.6"
 ndk-context = "0.1"
