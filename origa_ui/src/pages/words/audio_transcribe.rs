@@ -347,7 +347,7 @@ pub(super) fn transcribe_file(
 /// Returns the joined transcription, or `(fragment_number, reason)` when a
 /// chunk fails. Silent chunks are skipped; a cancelled run yields the
 /// accumulated text, which the caller discards via its own stale check.
-async fn run_chunk_loop<D, C, F, Fut, P>(
+pub(super) async fn run_chunk_loop<D, C, F, Fut, P>(
     mut next_chunk: D,
     is_cancelled: C,
     mut on_fragment: P,

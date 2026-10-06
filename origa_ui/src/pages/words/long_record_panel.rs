@@ -22,13 +22,13 @@ use wasm_bindgen::{JsCast, JsValue};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_futures::JsFuture;
 
-use super::audio_chunks::encode_wav_s16_mono;
-use super::audio_chunks::join_chunk_texts;
-use super::audio_transcribe::{AudioState, TranscribeContext, transcribe_wav_bytes};
+use super::audio_chunks::{WavChunk, encode_wav_s16_mono, join_chunk_texts};
+use super::audio_transcribe::{
+    AudioState, TranscribeContext, run_chunk_loop, transcribe_wav_bytes,
+};
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{Button, ButtonVariant, Text, TextSize, TypographyVariant};
-#[cfg(not(target_arch = "wasm32"))]
-use tracing::info;
+use std::rc::Rc;
 
 const CHUNK_SECONDS: f64 = 30.0;
 const TARGET_RATE: u32 = 16_000;
@@ -64,7 +64,9 @@ impl Drop for ActiveCapture {
         let tracks = self.stream.get_audio_tracks();
         for index in 0..tracks.length() {
             if let Ok(track) = tracks.get(index).dyn_into::<web_sys::MediaStreamTrack>() {
-                let _ = track.set_enabled(false);
+                // stop() releases the OS-level capture (enabled=false only
+                // mutes — the mic indicator would stay on).
+                track.stop();
             }
         }
     }
@@ -206,10 +208,10 @@ fn stop_recording() -> Vec<Vec<u8>> {
 
 async fn open_capture() -> Result<ActiveCapture, String> {
     let window = web_sys::window().ok_or("No window")?;
-    let media_devices = window
-        .navigator()
-        .media_devices()
-        .expect("media_devices must exist");
+    let media_devices = match window.navigator().media_devices() {
+        Ok(devices) => devices,
+        Err(_) => return Err("No media devices in this context".to_string()),
+    };
     let mut constraints = web_sys::MediaStreamConstraints::new();
     constraints.audio(&JsValue::from_bool(true));
     let promise = media_devices
@@ -224,33 +226,51 @@ async fn open_capture() -> Result<ActiveCapture, String> {
         &web_sys::AudioContextOptions::new().sample_rate(TARGET_RATE as f32),
     )
     .map_err(|e| format!("AudioContext failed: {e:?}"))?;
-    let source = context
-        .create_media_stream_source(&stream)
-        .map_err(|e| format!("Audio source failed: {e:?}"))?;
-    let processor = context
+    // Any failure from here on must release the mic tracks: ActiveCapture
+    // does not exist yet, so its Drop will not run.
+    let stop_tracks = |stream: &web_sys::MediaStream| {
+        let tracks = stream.get_audio_tracks();
+        for index in 0..tracks.length() {
+            if let Ok(track) = tracks.get(index).dyn_into::<web_sys::MediaStreamTrack>() {
+                track.stop();
+            }
+        }
+    };
+    let source = match context.create_media_stream_source(&stream) {
+        Ok(source) => source,
+        Err(e) => {
+            stop_tracks(&stream);
+            return Err(format!("Audio source failed: {e:?}"));
+        },
+    };
+    let processor = match context
         .create_script_processor_with_buffer_size_and_number_of_input_channels_and_number_of_output_channels(
             4096,
             1,
             1,
-        )
-        .map_err(|e| format!("Audio processor failed: {e:?}"))?;
+        ) {
+        Ok(processor) => processor,
+        Err(e) => {
+            stop_tracks(&stream);
+            return Err(format!("Audio processor failed: {e:?}"));
+        },
+    };
 
     // PCM accumulation + chunk pre-encoding for the whole capture lifetime.
     let listener = wasm_bindgen::closure::Closure::wrap(Box::new(
         move |event: web_sys::AudioProcessingEvent| {
-            let input = event
-                .input_buffer()
-                .expect("audio processing event carries a buffer");
-            let channels = input.number_of_channels();
-            let frame = input
-                .get_channel_data(0)
-                .expect("channel 0 must be present")
-                .to_vec();
+            // A failed buffer read skips this callback tick instead of
+            // trapping the whole app (panics in audio callbacks are fatal).
+            let Some(input) = event.input_buffer().ok() else {
+                return;
+            };
+            // The processor is mono (single input channel) — take channel 0.
+            let frame = input.get_channel_data(0).unwrap_or_default();
             CAPTURE_BUFFERS.with(|slot| {
                 let Some(buffers) = &mut *slot.borrow_mut() else {
                     return;
                 };
-                buffers.pcm.extend(mix_event_channels(&frame, channels));
+                buffers.pcm.extend_from_slice(&frame);
                 let chunk_samples = (CHUNK_SECONDS * f64::from(TARGET_RATE)).ceil() as usize;
                 while buffers.pcm.len() >= chunk_samples {
                     let chunk: Vec<f32> = buffers.pcm.drain(..chunk_samples).collect();
@@ -274,16 +294,6 @@ async fn open_capture() -> Result<ActiveCapture, String> {
     })
 }
 
-fn mix_event_channels(interleaved: &[f32], channels: u32) -> Vec<f32> {
-    match channels {
-        0 | 1 => interleaved.to_vec(),
-        n => interleaved
-            .chunks_exact(n as usize)
-            .map(|frame| frame.iter().sum::<f32>() / n as f32)
-            .collect(),
-    }
-}
-
 /// Seconds ticker for the recording status line.
 fn tick_seconds(secs: RwSignal<u32>, disposed: Callback<(), bool>) {
     spawn_local(async move {
@@ -298,7 +308,9 @@ fn tick_seconds(secs: RwSignal<u32>, disposed: Callback<(), bool>) {
 }
 
 /// Transcribes the recorded chunks and delivers the joined text to the
-/// transcript screen.
+/// transcript screen. Reuses the shared chunk loop — the same semantics as
+/// the file path (progress per fragment, silent chunks skipped, fail-fast
+/// with the fragment number).
 fn transcribe_recorded(
     i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     chunks: Vec<Vec<u8>>,
@@ -307,70 +319,72 @@ fn transcribe_recorded(
     on_text_extracted: Callback<String>,
     on_error: Callback<String>,
 ) {
-    let total = chunks.len();
-    ctx.audio_state.set(AudioState::Processing);
+    let mut chunk_queue = std::collections::VecDeque::from(chunks);
+    let ctx = Rc::new(ctx);
+    let ctx_for_cancel = ctx.clone();
+    let ctx_for_fragment = ctx.clone();
+    let ctx_for_recognize = ctx.clone();
     spawn_local(async move {
-        let mut texts: Vec<String> = Vec::new();
-        for (index, chunk) in chunks.into_iter().enumerate() {
-            if disposed.run(()) || ctx.is_stale() {
-                return;
-            }
-            let fragment = index as u32 + 1;
-            ctx.status_text.set(Some(
-                i18n.get_keys()
-                    .words()
-                    .audio()
-                    .fragment_progress()
-                    .inner()
-                    .to_string()
-                    .replacen("{}", &fragment.to_string(), 1)
-                    .replacen("{}", &total.to_string(), 1),
-            ));
-            match transcribe_wav_bytes(&chunk, &ctx).await {
-                Ok(text) if !text.trim().is_empty() => texts.push(text),
-                Ok(_) => {}, // silent chunk — skip
-                Err(reason) => {
-                    if disposed.run(()) {
-                        return;
-                    }
-                    let message = i18n
-                        .get_keys()
+        let next_chunk = move || {
+            chunk_queue
+                .pop_front()
+                .map(|wav_bytes| Ok(WavChunk { wav_bytes }))
+        };
+        let is_cancelled = move || disposed.run(()) || ctx_for_cancel.is_stale();
+        let on_fragment = move |fragment: u32| {
+            if !ctx_for_fragment.is_stale() {
+                ctx_for_fragment.status_text.set(Some(
+                    i18n.get_keys()
                         .words()
                         .audio()
-                        .interrupted_on_fragment()
+                        .fragment_progress()
                         .inner()
                         .to_string()
-                        .replacen("{}", &fragment.to_string(), 1)
-                        .replacen("{}", &reason, 1);
-                    ctx.error_message.set(Some(message.clone()));
-                    on_error.run(message);
-                    return;
-                },
+                        .replacen("{}", &fragment.to_string(), 1),
+                ));
             }
-        }
+        };
+        let recognize = move |wav_bytes: Vec<u8>| {
+            let ctx = ctx_for_recognize.clone();
+            async move { transcribe_wav_bytes(&wav_bytes, &ctx).await }
+        };
+
+        let result = run_chunk_loop(next_chunk, is_cancelled, on_fragment, recognize).await;
+
         if disposed.run(()) {
             return;
         }
-        if texts.is_empty() {
-            ctx.audio_state.set(AudioState::Error);
-            ctx.error_message.set(Some(
-                i18n.get_keys()
+        match result {
+            Ok(text) if text.trim().is_empty() => {
+                ctx.audio_state.set(AudioState::Error);
+                ctx.error_message.set(Some(
+                    i18n.get_keys()
+                        .words()
+                        .audio()
+                        .no_speech()
+                        .inner()
+                        .to_string(),
+                ));
+            },
+            Ok(text) => {
+                ctx.audio_state.set(AudioState::Ready);
+                ctx.status_text.set(None);
+                on_text_extracted.run(text);
+            },
+            Err((fragment, reason)) => {
+                let message = i18n
+                    .get_keys()
                     .words()
                     .audio()
-                    .no_speech()
+                    .interrupted_on_fragment()
                     .inner()
-                    .to_string(),
-            ));
-            return;
+                    .to_string()
+                    .replacen("{}", &fragment.to_string(), 1)
+                    .replacen("{}", &reason, 1);
+                ctx.audio_state.set(AudioState::Error);
+                ctx.error_message.set(Some(message.clone()));
+                on_error.run(message);
+            },
         }
-        let joined = join_chunk_texts(&texts);
-        ctx.audio_state.set(AudioState::Ready);
-        ctx.status_text.set(None);
-        on_text_extracted.run(joined);
     });
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-async fn open_capture() -> Result<ActiveCapture, String> {
-    Err("Microphone capture requires WASM runtime".to_string())
 }

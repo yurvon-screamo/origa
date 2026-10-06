@@ -338,6 +338,22 @@ mod tests {
     }
 
     #[test]
+    fn transcript_payloads_route_to_the_transcript_screen() {
+        let payload = route_payload(InboxPayload {
+            kind: InboxKind::TranscriptTexts(vec!["一つ目。".to_string(), "二つ目。".to_string()]),
+        });
+        assert!(matches!(payload, InboxRoute::TranscriptScreen(_)));
+    }
+
+    #[test]
+    fn transcript_kind_parses_from_the_seam_payload() {
+        let payload: SeamPayload =
+            serde_json::from_str(r#"{"kind":"transcript","sentences":["a"]}"#)
+                .expect("transcript seam payload must parse");
+        assert_eq!(payload.sentences.as_deref(), Some(&["a".to_string()][..]));
+    }
+
+    #[test]
     fn seam_payload_deserializes_from_camel_case() {
         let raw = r#"{"kind":"file","fileName":"a.mp3","mime":"audio/mpeg"}"#;
         let payload: SeamPayload = serde_json::from_str(raw).expect("seam payload must parse");

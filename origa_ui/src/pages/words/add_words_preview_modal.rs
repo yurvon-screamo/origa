@@ -314,6 +314,11 @@ pub fn AddWordsPreviewModal(
                                                 on_analyze_selected=on_analyze_selected_sentences
                                                 on_use_all=on_use_all_text
                                                 on_back=Callback::new(move |_: ()| {
+                                                    // Exit the whole zero-tap
+                                                    // run: otherwise the inbox
+                                                    // view shows an eternal
+                                                    // "processing" spinner.
+                                                    inbox.active.set(false);
                                                     transcript_sentences.set(None);
                                                     transcript_selected.set(HashSet::new());
                                                 })

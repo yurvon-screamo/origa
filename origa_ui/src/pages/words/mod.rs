@@ -21,7 +21,7 @@ mod native_file_button;
 mod ocr_device_ai;
 mod ocr_file_utils;
 mod ocr_processing;
-pub(crate) mod transcript;
+mod transcript;
 mod transcript_view;
 pub(crate) mod vocabulary_card_item;
 #[cfg(all(target_arch = "wasm32", test))]
