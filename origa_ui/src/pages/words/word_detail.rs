@@ -96,13 +96,6 @@ pub fn WordDetail() -> impl IntoView {
 
     let native_lang = Memo::new(move |_| locale_to_native_language(&i18n.get_locale()));
 
-    let known_kanji = Memo::new(move |_| {
-        current_user
-            .get()
-            .map(|u| u.knowledge_set().get_known_kanji())
-            .unwrap_or_default()
-    });
-
     // All dictionary translations + description for the current word.
     let translations = Memo::new(move |_| {
         let w = word();
@@ -184,14 +177,15 @@ pub fn WordDetail() -> impl IntoView {
     let navigate = StoredValue::new(use_navigate());
 
     let hero_word = word;
-    let hero_known = known_kanji;
     let hero_view = move || {
         // Re-rendered per word: the route component survives navigation
         // between /words/A and /words/B, so a static snapshot would leave
-        // the previous word in the hero.
+        // the previous word in the hero. The page is reference material:
+        // the reading shows over every kanji (empty known set), matching
+        // the examples below.
         let w = hero_word();
         view! {
-            <FuriganaText text=w known_kanji=hero_known.get() test_id="word-detail-word-furi"/>
+            <FuriganaText text=w known_kanji=HashSet::new() test_id="word-detail-word-furi"/>
         }
         .into_any()
     };

@@ -6936,9 +6936,6 @@ rt {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
     padding: 28px 24px;
-    /* Breathing room between the hero card and the section heading that
-       follows it (TRANSLATION was flush against the border). */
-    margin-bottom: 24px;
 }
 
 .word-detail-hero-word {
@@ -6969,6 +6966,9 @@ rt {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    /* Uniform breathing room before every section heading (TRANSLATION,
+       EXAMPLES) — the previous card/section was flush against it. */
+    margin-top: 24px;
 }
 
 .word-detail-section-title {
