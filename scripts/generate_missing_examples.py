@@ -43,13 +43,18 @@ def atomic_write(path: Path, payload: str) -> None:
 
 def word_offsets(ja: str, word: str) -> tuple[int, int]:
     """Char offsets of the word (or its dictionary-stem form for
-    conjugated usages) inside the sentence; (-1, -1) when unlocated."""
+    conjugated usages) inside the sentence; (-1, -1) when unlocated.
+    Python string indices are already code points, so `index` is the
+    char offset directly. Stem matching is restricted to stems of 2+
+    chars: a single-char stem (出, 買…) matches unrelated words (出る vs
+    出す) and would mislocate the highlight — such sentences are better
+    rejected by the gate."""
     if word and word in ja:
-        start = ja.count("", 0, ja.index(word)) - 1
+        start = ja.index(word)
         return start, start + len(word)
-    stem = word[:-1] if len(word) > 1 else ""
+    stem = word[:-1] if len(word) > 2 else ""
     if stem and stem in ja:
-        start = ja.count("", 0, ja.index(stem)) - 1
+        start = ja.index(stem)
         return start, start + len(stem)
     return -1, -1
 
