@@ -66,7 +66,9 @@ pub fn TranscriptStageView(
                                 <input
                                     type="checkbox"
                                     class="mt-1"
-                                    prop:checked=selected.with(|set| set.contains(&index))
+                                    prop:checked=move || {
+                                        selected.with(|set| set.contains(&index))
+                                    }
                                     on:change=move |_| on_toggle(index)
                                     data-testid="words-transcript-sentence"
                                 />

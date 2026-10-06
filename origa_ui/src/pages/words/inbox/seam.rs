@@ -249,7 +249,8 @@ pub(in crate::pages::words) fn execute_route(
             );
         },
         InboxRoute::TranscriptScreen(sentences) => {
-            // Non-empty sentences guarantee the screen (count > 1).
+            // The modal's audio fork shows the screen for >1 sentence; a
+            // single-sentence payload goes straight to analysis.
             inbox.active.set(true);
             on_audio_text.run(sentences.join(""));
         },

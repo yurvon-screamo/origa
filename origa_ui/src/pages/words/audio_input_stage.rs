@@ -129,7 +129,7 @@ pub(super) fn AudioInputStage(
                                 #[cfg(target_arch = "wasm32")]
                                 view! {
                                     <LongRecordPanel
-                                        disposed=Callback::new(move |_: ()| false)
+                                        disposed=Callback::new(move |_: ()| disposed.is_disposed())
                                         on_text_extracted=on_text_extracted
                                         on_error
                                         audio_state

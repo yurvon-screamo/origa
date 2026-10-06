@@ -15,14 +15,12 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use std::cell::RefCell;
-#[cfg(all(target_arch = "wasm32", feature = "wasm-test"))]
-use tracing::info;
 use tracing::warn;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_futures::JsFuture;
 
-use super::audio_chunks::{WavChunk, encode_wav_s16_mono, join_chunk_texts};
+use super::audio_chunks::{WavChunk, encode_wav_s16_mono};
 use super::audio_transcribe::{
     AudioState, TranscribeContext, run_chunk_loop, transcribe_wav_bytes,
 };
@@ -103,7 +101,7 @@ pub fn LongRecordPanel(
                 if recording.get() {
                     let stop_i18n = i18n;
                     let stop_ctx = ctx_for_stop.clone();
-                    let stop_disposed = disposed.clone();
+                    let stop_disposed = disposed;
                     view! {
                         <div class="flex items-center gap-3">
                             <span class="spinner spinner-sm"></span>
@@ -127,7 +125,7 @@ pub fn LongRecordPanel(
                                         stop_i18n,
                                         chunks,
                                         stop_ctx.clone(),
-                                        stop_disposed.clone(),
+                                        stop_disposed,
                                         on_text_extracted,
                                         on_error,
                                     );
@@ -140,7 +138,7 @@ pub fn LongRecordPanel(
                     }.into_any()
                 } else {
                     let start_i18n = i18n;
-                    let start_disposed = disposed.clone();
+                    let start_disposed = disposed;
                     view! {
                         <Button
                             variant=ButtonVariant::Ghost
@@ -150,7 +148,7 @@ pub fn LongRecordPanel(
                                     recording,
                                     error_message,
                                     secs,
-                                    start_disposed.clone(),
+                                    start_disposed,
                                 );
                             })
                             test_id="words-long-record-start-btn"
@@ -212,8 +210,8 @@ async fn open_capture() -> Result<ActiveCapture, String> {
         Ok(devices) => devices,
         Err(_) => return Err("No media devices in this context".to_string()),
     };
-    let mut constraints = web_sys::MediaStreamConstraints::new();
-    constraints.audio(&JsValue::from_bool(true));
+    let constraints = web_sys::MediaStreamConstraints::new();
+    constraints.set_audio_bool(true);
     let promise = media_devices
         .get_user_media_with_constraints(&constraints)
         .map_err(|e| format!("Microphone access failed: {e:?}"))?;
@@ -222,10 +220,6 @@ async fn open_capture() -> Result<ActiveCapture, String> {
         .map_err(|e| format!("Microphone access denied: {e:?}"))?
         .into();
 
-    let context = web_sys::AudioContext::new_with_context_options(
-        &web_sys::AudioContextOptions::new().sample_rate(TARGET_RATE as f32),
-    )
-    .map_err(|e| format!("AudioContext failed: {e:?}"))?;
     // Any failure from here on must release the mic tracks: ActiveCapture
     // does not exist yet, so its Drop will not run.
     let stop_tracks = |stream: &web_sys::MediaStream| {
@@ -236,6 +230,13 @@ async fn open_capture() -> Result<ActiveCapture, String> {
             }
         }
     };
+
+    let options = web_sys::AudioContextOptions::new();
+    options.set_sample_rate(TARGET_RATE as f32);
+    let context = web_sys::AudioContext::new_with_context_options(&options).map_err(|e| {
+        stop_tracks(&stream);
+        format!("AudioContext failed: {e:?}")
+    })?;
     let source = match context.create_media_stream_source(&stream) {
         Ok(source) => source,
         Err(e) => {
