@@ -2157,7 +2157,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4729,9 +4729,9 @@ dependencies = [
 
 [[package]]
 name = "lindera"
-version = "6.0.0"
+version = "6.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ba619c086410a8d3b82f0208e45a8d496d895a8b883fe8975713abd340957db"
+checksum = "acdfde95c0360c7214c7f97cbd52f293c41da5c7f215979b065b2b41772d199f"
 dependencies = [
  "anyhow",
  "lindera-dictionary",
@@ -4746,9 +4746,9 @@ dependencies = [
 
 [[package]]
 name = "lindera-dictionary"
-version = "6.0.0"
+version = "6.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c1b3280d38586314078049deb66f332f544765cc23b683c56c28e335cabcb20"
+checksum = "e68a62cebe5344df42b4458f603c973a4b2ad997af4a0d55d72a9def1ac47701"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -7444,7 +7444,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -7502,7 +7502,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -9090,7 +9090,7 @@ dependencies = [
  "getrandom 0.4.2",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -10515,7 +10515,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
