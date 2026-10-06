@@ -1,12 +1,13 @@
 //! Chunked audio decoding for long recordings.
 //!
-//! Symphonia (pure Rust, wasm32-compatible) streams any supported container
-//! (mp3/m4a/ogg/opus/flac/wav/webm) into mono samples at the source rate;
-//! full 30-second chunks are encoded as PCM WAV and handed to the caller
-//! one at a time so peak memory stays near `input bytes + one chunk` —
-//! never the whole decoded program. The existing transcription pipeline
-//! (`load_audio_bytes`) performs its own downmix/resample/trim, so chunks
-//! carry source-rate mono and no second resampler is needed here.
+//! Symphonia (pure Rust, wasm32-compatible) streams supported containers —
+//! mp3, m4a (aac-lc), ogg/vorbis, flac, wav — into mono samples at the
+//! source rate; full 30-second chunks are encoded as PCM WAV and handed to
+//! the caller one at a time so peak memory stays near `input bytes + one
+//! chunk` — never the whole decoded program. The existing transcription
+//! pipeline (`load_audio_bytes`) performs its own downmix/resample/trim, so
+//! chunks carry source-rate mono and no second resampler is needed here.
+//! Opus and webm are not supported: symphonia 0.5 has no opus decoder.
 
 use symphonia::core::audio::SampleBuffer;
 use symphonia::core::codecs::{CODEC_TYPE_NULL, DecoderOptions};

@@ -395,3 +395,136 @@ pub(super) fn file_from_change_event(ev: web_sys::Event) -> Option<web_sys::File
         None
     }
 }
+
+#[cfg(test)]
+mod chunk_loop_tests {
+    use super::*;
+    use std::cell::RefCell;
+
+    use rstest::rstest;
+
+    fn wav_chunk() -> WavChunk {
+        WavChunk {
+            wav_bytes: encode_wav_placeholder(),
+        }
+    }
+
+    /// Minimal stand-in payload: run_chunk_loop is agnostic to the bytes.
+    fn encode_wav_placeholder() -> Vec<u8> {
+        vec![0u8; 64]
+    }
+
+    /// Drives the loop with a scripted chunk source and a scripted
+    /// recognizer; returns (joined_text, fragments, recognized_payloads).
+    async fn run_scripted(
+        chunks: Vec<Result<WavChunk, String>>,
+        cancelled: bool,
+        recognize_results: Vec<Result<String, String>>,
+    ) -> (Result<String, (u32, String)>, Vec<u32>, Vec<Vec<u8>>) {
+        let queue = RefCell::new(chunks.into_iter());
+        let recognized = RefCell::new(recognize_results.into_iter());
+        let fragments = RefCell::new(Vec::new());
+        let payloads = RefCell::new(Vec::new());
+
+        let result = run_chunk_loop(
+            || queue.borrow_mut().next(),
+            || cancelled,
+            |fragment| fragments.borrow_mut().push(fragment),
+            |wav_bytes| {
+                payloads.borrow_mut().push(wav_bytes);
+                let next = recognized
+                    .borrow_mut()
+                    .next()
+                    .expect("scripted recognizer exhausted");
+                async move { next }
+            },
+        )
+        .await;
+        (result, fragments.into_inner(), payloads.into_inner())
+    }
+
+    #[tokio::test]
+    async fn multiple_chunks_join_in_order() {
+        let chunks = vec![Ok(wav_chunk()), Ok(wav_chunk()), Ok(wav_chunk())];
+        let results = vec![
+            Ok("私は".to_string()),
+            Ok("本を".to_string()),
+            Ok("読みます".to_string()),
+        ];
+        let (result, fragments, payloads) = run_scripted(chunks, false, results).await;
+        assert_eq!(result.expect("must succeed"), "私は本を読みます");
+        assert_eq!(fragments, vec![1, 2, 3]);
+        assert_eq!(payloads.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn silent_middle_chunk_is_skipped_without_failure() {
+        let chunks = vec![Ok(wav_chunk()), Ok(wav_chunk()), Ok(wav_chunk())];
+        let results = vec![
+            Ok("私は".to_string()),
+            Ok("   ".to_string()), // silence/music — skipped
+            Ok("読みます".to_string()),
+        ];
+        let (result, fragments, payloads) = run_scripted(chunks, false, results).await;
+        assert_eq!(result.expect("must succeed"), "私は読みます");
+        assert_eq!(fragments, vec![1, 2, 3]); // fragment counted, text skipped
+        assert_eq!(payloads.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn recognize_failure_aborts_with_the_fragment_number() {
+        let chunks = vec![Ok(wav_chunk()), Ok(wav_chunk()), Ok(wav_chunk())];
+        let results = vec![
+            Ok("私は".to_string()),
+            Err("inference blew up".to_string()),
+            Ok("unreachable".to_string()),
+        ];
+        let (result, fragments, payloads) = run_scripted(chunks, false, results).await;
+        assert_eq!(
+            result.expect_err("must fail fast"),
+            (2, "inference blew up".to_string())
+        );
+        assert_eq!(fragments, vec![1, 2]);
+        assert_eq!(payloads.len(), 2); // fail-fast: chunk 3 never recognized
+    }
+
+    #[tokio::test]
+    async fn decode_failure_reports_the_incoming_fragment() {
+        let chunks = vec![
+            Ok(wav_chunk()),
+            Err("corrupt container".to_string()),
+            Ok(wav_chunk()),
+        ];
+        let results = vec![Ok("私は".to_string())];
+        let (result, fragments, payloads) = run_scripted(chunks, false, results).await;
+        // The failed chunk is the one about to be transcribed (fragment 2).
+        assert_eq!(
+            result.expect_err("must fail fast"),
+            (2, "corrupt container".to_string())
+        );
+        assert_eq!(fragments, vec![1]);
+        assert_eq!(payloads.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn cancellation_yields_accumulated_text_for_the_caller_to_discard() {
+        let chunks = vec![Ok(wav_chunk()), Ok(wav_chunk())];
+        let results = vec![Ok("私は".to_string()), Ok("本を".to_string())];
+        let (result, fragments, _payloads) = run_scripted(chunks, true, results).await;
+        // The caller drops this via its own stale check — the contract is
+        // "no error, no state writes", not "nothing returned".
+        assert_eq!(result.expect("cancel is not an error"), "");
+        assert!(fragments.is_empty());
+    }
+
+    #[rstest]
+    #[case::all_silent(vec!["", "  "], "")]
+    #[case::single_chunk(vec!["本"], "本")]
+    fn joined_text_rules_hold_for_edge_inputs(
+        #[case] recognized: Vec<&str>,
+        #[case] expected: &str,
+    ) {
+        let texts: Vec<String> = recognized.into_iter().map(String::from).collect();
+        assert_eq!(join_chunk_texts(&texts), expected);
+    }
+}
