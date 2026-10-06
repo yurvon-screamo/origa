@@ -89,6 +89,7 @@ async fn vocabulary_card_item_renders_word_and_answer() {
                 study_card=card
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
                 known_kanji=HashSet::new()
+                on_open_detail_cb=Callback::new(|_| ())
                 on_toggle_favorite=Callback::new(|_| ())
                 on_mark_as_known=Callback::new(|_| ())
                 on_delete=Callback::new(|_| ())
@@ -130,6 +131,7 @@ async fn vocabulary_card_item_delete_opens_confirm_modal() {
                 study_card=card
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
                 known_kanji=HashSet::new()
+                on_open_detail_cb=Callback::new(|_| ())
                 on_toggle_favorite=Callback::new(|_| ())
                 on_mark_as_known=Callback::new(|_| ())
                 on_delete=Callback::new(|_| ())
