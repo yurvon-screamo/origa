@@ -329,7 +329,8 @@
         "counter": "Счётный суффикс",
         "example_recall_understood": "Понял",
         "example_recall_not_understood": "Не понял",
-        "example_unavailable": "Пример недоступен — перейдите к следующей карточке"
+        "example_unavailable": "Пример недоступен — перейдите к следующей карточке",
+        "example_reveal_translation": "Показать перевод"
     },
     "home": {
         "loading": "Загрузка...",

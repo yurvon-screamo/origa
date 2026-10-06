@@ -6985,6 +6985,20 @@ rt {
     font-size: 24px;
 }
 
+.word-detail-example-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.word-example-line-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 @media (max-width: 640px) {
     .word-detail-container {
         padding: 16px;
@@ -7002,6 +7016,18 @@ rt {
     flex-direction: column;
     gap: 18px;
     text-align: center;
+    flex: 1;
+    justify-content: center;
+}
+
+/* Translation + self-assessment live in the footer: the answer is
+   revealed first, the understood / didn't-understand choice comes after
+   it (the same order as every other card's reveal → rating pipeline). */
+.example-recall-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
 }
 
 .example-recall-ja {

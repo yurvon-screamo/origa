@@ -329,7 +329,8 @@
         "counter": "Từ đếm",
         "example_recall_understood": "Tôi hiểu rồi",
         "example_recall_not_understood": "Chưa hiểu",
-        "example_unavailable": "Ví dụ hiện không khả dụng — hãy tiếp tục với thẻ tiếp theo"
+        "example_unavailable": "Ví dụ hiện không khả dụng — hãy tiếp tục với thẻ tiếp theo",
+        "example_reveal_translation": "Hiện bản dịch"
     },
     "home": {
         "loading": "Đang tải...",

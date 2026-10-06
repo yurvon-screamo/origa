@@ -17,7 +17,8 @@ use crate::pages::shared::{
 };
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
-    CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Text, TextSize, TypographyVariant,
+    AudioButtons, CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Text, TextSize,
+    TypographyVariant,
 };
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
@@ -390,8 +391,18 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
                     }
                 }}
             </div>
-            <div class="word-detail-example-translation" data-testid="word-detail-example-translation">
-                {translation}
+            <div class="word-detail-example-meta">
+                <div
+                    class="word-detail-example-translation"
+                    data-testid="word-detail-example-translation"
+                >
+                    {translation}
+                </div>
+                <AudioButtons
+                    text=detail.text
+                    audio_path=None
+                    test_id=Signal::derive(|| "word-detail-example-audio".to_string())
+                />
             </div>
         </div>
     }
