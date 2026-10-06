@@ -89,6 +89,7 @@ async fn vocabulary_card_item_renders_word_and_answer() {
                 study_card=card
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
                 known_kanji=HashSet::new()
+                on_open_detail_cb=Callback::new(|_| ())
                 on_toggle_favorite=Callback::new(|_| ())
                 on_mark_as_known=Callback::new(|_| ())
                 on_delete=Callback::new(|_| ())
@@ -130,6 +131,7 @@ async fn vocabulary_card_item_delete_opens_confirm_modal() {
                 study_card=card
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
                 known_kanji=HashSet::new()
+                on_open_detail_cb=Callback::new(|_| ())
                 on_toggle_favorite=Callback::new(|_| ())
                 on_mark_as_known=Callback::new(|_| ())
                 on_delete=Callback::new(|_| ())
@@ -314,5 +316,72 @@ async fn analyzed_word_item_known_word_ignores_clicks() {
     assert!(
         !toggled.get(),
         "known word must ignore clicks (already in the deck)"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// VocabularyCardItem: /words/:word entry point (#528)
+// ═══════════════════════════════════════════════════════════════════════
+
+#[wasm_bindgen_test]
+async fn word_card_link_is_a_real_anchor_and_opens_detail() {
+    let wrapper = create_wrapper();
+    let (set_opened, get_opened) = shared_cell::<RwSignal<Option<String>>>();
+    mount_with_i18n(&wrapper, move || {
+        let opened = RwSignal::new(None::<String>);
+        set_opened.set(Some(opened));
+        let on_open = Callback::new(move |w: String| opened.set(Some(w)));
+        // reversed_study_card keeps "translation" as the word surface; the
+        // link test needs a real Japanese word (serde fixture, same as the
+        // lesson tests) so the encoded href is meaningful.
+        let card = origa::domain::StudyCard::new(
+            serde_json::from_str(
+                r#"{"Vocabulary":{"word":{"text":"ねこ"},"reverse_side":null,"pos":null}}"#,
+            )
+            .expect("deserialize vocab card fixture"),
+        );
+        view! {
+            <VocabularyCardItem
+                study_card=card
+                native_language=Signal::from(origa::domain::NativeLanguage::Russian)
+                on_open_detail_cb=on_open
+                known_kanji=HashSet::new()
+                on_toggle_favorite=Callback::new(|_| ())
+                on_mark_as_known=Callback::new(|_| ())
+                on_delete=Callback::new(|_| ())
+                is_deleting=Signal::from(false)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let link = wrapper
+        .query_selector("[data-testid=\"words-card-word-link\"]")
+        .unwrap()
+        .expect("word link rendered")
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    // Native link semantics for a11y/middle-click: a real <a> with an
+    // encoded href (not a click-only div).
+    assert_eq!(
+        link.tag_name().to_ascii_lowercase(),
+        "a",
+        "entry point must be an anchor"
+    );
+    assert_eq!(
+        link.get_attribute("href").unwrap_or_default(),
+        "/words/%E3%81%AD%E3%81%93",
+        "href carries the URL-encoded word"
+    );
+
+    // A plain click upgrades to in-SPA navigation via the injected
+    // callback (the router lives in the parent).
+    link.click();
+    tick().await;
+    assert_eq!(
+        get_opened.get().expect("captured").get(),
+        Some("ねこ".to_string()),
+        "plain click runs the SPA navigation callback"
     );
 }

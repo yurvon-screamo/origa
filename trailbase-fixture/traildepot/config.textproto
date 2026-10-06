@@ -1,0 +1,13 @@
+# Auto-generated `config.Config` textproto.
+#
+# Schema: https://github.com/trailbaseio/trailbase/blob/main/crates/core/proto/config.proto
+email {}
+server {
+  application_name: "TrailBase"
+  logs_retention_sec: 604800
+}
+auth {
+  auth_token_ttl_sec: 3600
+  refresh_token_ttl_sec: 2592000
+}
+jobs {}

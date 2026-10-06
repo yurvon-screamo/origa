@@ -14,11 +14,13 @@ mod ocr_device_ai;
 mod ocr_file_utils;
 mod ocr_processing;
 pub(crate) mod vocabulary_card_item;
+mod word_detail;
 #[cfg(all(target_arch = "wasm32", test))]
 mod words_wasm_tests;
 
 pub use content::WordsContent;
 pub use header::WordsHeader;
+pub use word_detail::{WordDetail, split_highlight};
 
 use crate::ui_components::{CardLayout, CardLayoutSize, PageLayout, PageLayoutVariant};
 use leptos::prelude::*;

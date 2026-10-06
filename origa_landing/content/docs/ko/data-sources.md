@@ -47,6 +47,10 @@ Origa는 공개 데이터와 모델 위에 세워져 있습니다. 이 문서는
 
 가져오기용 미리 구성된 단어 세트는 국제교류기금의 [Irodori](https://www.irodori.jpf.go.jp/)에서 옵니다.
 
+## 예문
+
+자주 쓰이는 단어의 교과서 예문 — [Tanaka Corpus / WWWJDIC](https://www.edrdg.org/wiki/Tanaka_Corpus.html) 및 [Tatoeba](https://tatoeba.org), CC BY 2.0 FR 라이선스. 러시아어·한국어·베트남어 번역은 기계 생성 후 콘텐츠 파이프라인에서 검증됩니다.
+
 ## 글꼴
 
 - Cormorant Garamond: SIL Open Font License

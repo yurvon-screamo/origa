@@ -10,6 +10,7 @@ mod content;
 mod counter_bindings_session;
 mod counter_readings_table;
 mod empty_state_view;
+mod example_recall_card;
 mod grammar_details_expand;
 mod grammar_example;
 mod grammar_info_badge;
@@ -50,6 +51,7 @@ mod rating_buttons_view;
 mod training_answer;
 mod training_front;
 mod training_view;
+pub mod word_example_line;
 mod writing_card;
 mod yesno_card_view;
 

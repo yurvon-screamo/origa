@@ -6050,6 +6050,7 @@ dependencies = [
  "lexical-sort",
  "lindera-dictionary",
  "origa",
+ "percent-encoding",
  "pulldown-cmark",
  "rand 0.9.5",
  "rstest",

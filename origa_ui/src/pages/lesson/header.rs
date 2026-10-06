@@ -235,6 +235,7 @@ fn base_lesson_card(view: &LessonCardView) -> Option<&Card> {
         | LessonCardView::Reversed(card)
         | LessonCardView::Writing(card)
         | LessonCardView::AudioRecall(card)
+        | LessonCardView::Example { card, .. }
         | LessonCardView::GrammarMutated { card, .. }
         | LessonCardView::PhraseListen { card, .. } => card,
         LessonCardView::Quiz(quiz) | LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),

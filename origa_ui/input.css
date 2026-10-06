@@ -6864,3 +6864,158 @@ rt {
 .lesson-report-btn:active {
     transform: translateY(1px);
 }
+
+/* ---------- Word detail (/words/:word, #528) ---------- */
+
+.word-detail-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.word-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.word-detail-hero-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 28px 24px;
+}
+
+.word-detail-hero-word {
+    font-size: 44px;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.word-detail-translations-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-detail-translation-row + .word-detail-translation-row {
+    border-top: 1px solid var(--border-dark);
+    padding-top: 8px;
+}
+
+.word-detail-description {
+    padding-top: 6px;
+}
+
+.word-detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Uniform breathing room before every section heading (TRANSLATION,
+       EXAMPLES) — the previous card/section was flush against it. */
+    margin-top: 24px;
+}
+
+.word-detail-section-title {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.word-detail-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.word-detail-example-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-dark);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-detail-example-ja {
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.word-example-highlight {
+    background: var(--accent-soft, rgba(160, 120, 60, 0.18));
+    border-bottom: 2px solid var(--accent, #a0783c);
+    padding: 0 2px;
+}
+
+.word-detail-example-translation {
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+/* Compact example on the vocabulary answer side (#528) */
+.word-example-line {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-dark);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.word-example-line-ja {
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+/* Acquaintance-slide presentation (#528): the example sits under the
+   centered word — center it and size it up to match the slide scale. */
+.word-example-line-prominent {
+    text-align: center;
+}
+
+.word-example-line-prominent .word-example-line-ja {
+    font-size: 24px;
+}
+
+@media (max-width: 640px) {
+    .word-detail-container {
+        padding: 16px;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .word-detail-hero-word {
+        font-size: 36px;
+    }
+}
+
+/* Example-recall view (#528): sentence question, self-assessment, reveal */
+.example-recall {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+}
+
+.example-recall-ja {
+    font-size: 26px;
+    line-height: 1.7;
+    color: var(--fg-black);
+}
+
+.example-recall-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.example-recall-translation {
+    padding-top: 6px;
+}

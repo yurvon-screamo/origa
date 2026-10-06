@@ -1,5 +1,6 @@
 use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
+use super::word_example_line::WordExampleLine;
 use crate::i18n::*;
 use crate::ui_components::{
     Button, ButtonVariant, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant,
@@ -146,6 +147,13 @@ pub fn LessonCardAnswer(
                                                         translations=Signal::derive(move || trans.clone())
                                                         description=Signal::derive(move || desc.clone())
                                                     />
+                                                    <Show when=move || !is_reversed>
+                                                        <WordExampleLine
+                                                            word=answer.get_value()
+                                                            known_kanji=known_kanji.get()
+                                                            native_language=native_language
+                                                        />
+                                                    </Show>
                                                 </div>
                                             }
                                         }}

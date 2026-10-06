@@ -9,3 +9,11 @@ dist/
 .cdn.pid
 .features-gen/
 traildepot/
+
+# minted session tokens / local env variants
+.env.session
+.env.*
+!.env.example
+
+# local e2e env (creds/URLs are machine-specific)
+.env
