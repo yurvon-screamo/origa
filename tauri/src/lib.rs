@@ -17,6 +17,7 @@ mod android_context;
 // back to Whisper WASM.
 #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
 mod device_ai_commands;
+mod file_commands;
 // Auto-updater is Windows/Linux-only and is additionally compiled OUT of
 // app-store builds (`ORIGA_APP_STORE=1`): Microsoft Store policy 10.2.5
 // (and Mac App Store 2.4.5(vii)) forbid self-update outside the respective
@@ -148,6 +149,7 @@ pub fn run() {
 
     builder = builder
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build());
 
@@ -201,7 +203,8 @@ pub fn run() {
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
             install_update,
             #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
-            device_ai_commands::device_ai_recognize_file
+            device_ai_commands::device_ai_recognize_file,
+            file_commands::pick_and_read_file
         ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");

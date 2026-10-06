@@ -38,6 +38,9 @@ serde_json.workspace = true
 [dependencies]
 tauri.workspace = true
 tauri-plugin-opener.workspace = true
+tauri-plugin-dialog.workspace = true
+# base64 for the desktop file-pick command and the macOS device-ai command.
+base64.workspace = true
 tauri-plugin-tts.workspace = true
 tauri-plugin-deep-link.workspace = true
 tauri-plugin-store.workspace = true
@@ -77,10 +80,6 @@ tts.workspace = true
 [target.'cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))'.dependencies]
 tauri-plugin-device-ai-apis.workspace = true
 device-ai.workspace = true
-
-# base64 decode for the device-ai file-recognition command (audio payload).
-[target.'cfg(target_os = "macos")'.dependencies]
-base64.workspace = true
 
 # Mobile-only plugins — desktop compilation excludes them via target cfg.
 # Per Tauri plugin docs: haptics supports only Android/iOS (no desktop stubs

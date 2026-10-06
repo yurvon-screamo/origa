@@ -1,4 +1,7 @@
+use super::native_file_button::NativeFilePickerButton;
 use super::ocr_processing::{OcrState, ProcessContext, process_file};
+use crate::core::file_picker::PickerKind;
+use crate::core::platform::platform_name;
 use crate::i18n::{t, use_i18n};
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, LoadingStageItem, OcrLoadingStage, OcrLoadingState,
@@ -86,11 +89,14 @@ pub fn ImageInputStage(
             );
         });
 
-    let dd = use_drag_and_drop(on_drop_file);
+    let dd = use_drag_and_drop(on_drop_file.clone());
     let is_drag_over = dd.is_drag_over();
     let dd_on_drag_over = dd.on_drag_over();
     let dd_on_drag_leave = dd.on_drag_leave();
     let dd_on_drop = dd.on_drop();
+
+    // Shared by the drop zone and the native picker button.
+    let native_pick_handler = Callback::new(move |file: web_sys::File| on_drop_file(file));
 
     let ocr_loading_state_for_file = ocr_loading_state;
     let disposed_for_file = disposed;
@@ -276,6 +282,45 @@ pub fn ImageInputStage(
                                         }}
                                     </div>
                                 </label>
+                            </div>
+
+                            <div class="flex gap-2 justify-center">
+                                {move || {
+                                    // The OS camera opens only on mobile
+                                    // WebViews (capture attribute); on
+                                    // desktop this input is hidden.
+                                    if matches!(
+                                        platform_name().as_str(),
+                                        "android" | "ios"
+                                    ) {
+                                        Some(view! {
+                                            <label class="cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    capture="environment"
+                                                    class="hidden"
+                                                    on:change=on_file_change
+                                                    data-testid="image-camera-input"
+                                                />
+                                                <Button
+                                                    variant=ButtonVariant::Ghost
+                                                    test_id="image-camera-btn"
+                                                >
+                                                    {t!(i18n, words.image.take_photo)}
+                                                </Button>
+                                            </label>
+                                        }.into_any())
+                                    } else {
+                                        None
+                                    }
+                                }}
+                                <NativeFilePickerButton
+                                    kind=PickerKind::Image
+                                    disposed=Callback::new(move |_: ()| disposed.is_disposed())
+                                    on_file=native_pick_handler
+                                    test_id="image-native-picker-btn"
+                                />
                             </div>
 
                             {move || {

@@ -13,6 +13,7 @@ mod content;
 mod header;
 mod image_input_stage;
 mod inbox;
+mod native_file_button;
 mod ocr_device_ai;
 mod ocr_file_utils;
 mod ocr_processing;

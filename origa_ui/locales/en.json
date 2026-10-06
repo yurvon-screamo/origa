@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Cancel",
+    "choose_file": "Choose file",
     "back": "Back",
     "next": "Next",
     "loading": "Loading...",
@@ -459,7 +460,8 @@
       "file_too_large": "File too large ({:.1} MB). Maximum size: {:.0} MB",
       "model_loading": "OCR model is already loading, please wait",
       "operation_canceled": "Operation canceled",
-      "text_not_recognized": "Failed to recognize text in the image."
+      "text_not_recognized": "Failed to recognize text in the image.",
+      "take_photo": "Take a photo"
     },
     "anki_import": {
       "drop_zone": "Drag .apkg file or click to select",

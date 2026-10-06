@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Hủy",
+    "choose_file": "Chọn tệp",
     "back": "Quay lại",
     "next": "Tiếp theo",
     "loading": "Đang tải...",
@@ -459,7 +460,8 @@
       "file_too_large": "Tệp quá lớn ({:.1} MB). Kích thước tối đa: {:.0} MB",
       "model_loading": "Mô hình OCR đang tải, vui lòng đợi",
       "operation_canceled": "Đã hủy thao tác",
-      "text_not_recognized": "Không nhận dạng được văn bản trong hình ảnh."
+      "text_not_recognized": "Không nhận dạng được văn bản trong hình ảnh.",
+      "take_photo": "Chụp ảnh"
     },
     "anki_import": {
       "drop_zone": "Kéo thả tệp .apkg hoặc bấm để chọn",

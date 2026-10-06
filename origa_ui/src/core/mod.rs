@@ -3,6 +3,7 @@ pub mod analytics;
 mod analytics_wasm_tests;
 pub mod config;
 pub mod device_ai;
+pub mod file_picker;
 pub mod haptics;
 pub mod platform;
 pub mod tauri;
