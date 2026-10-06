@@ -1,3 +1,4 @@
+use super::example_recall_card::ExampleRecallCard;
 use super::lesson_card::LessonCard as LessonCardComponent;
 use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::rating_buttons_view::RatingButtonsView;
@@ -15,15 +16,45 @@ struct LessonCardParams {
     show_grammar_badge: bool,
 }
 
+// Same allowance as KanjiSlide (acquaintance_view): the renderer's
+// signature mirrors the container's callback set.
+#[allow(clippy::too_many_arguments)]
 pub(in crate::pages::lesson) fn render_lesson_card(
     lesson_card: LessonCard,
     show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_rate_callback: Callback<Rating>,
+    on_example_advance: Callback<()>,
     disabled: Signal<bool>,
     known_kanji: Signal<HashSet<char>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
+    // #528: the example-recall view owns its whole interaction flow
+    // (sentence question, understood/didn't-understand, translation reveal)
+    // and advances the lesson WITHOUT an FSRS rating. The stored char
+    // offsets from the CDN index locate the word highlight; the view
+    // falls back to a surface find only when they are unlocated (-1).
+    if let LessonCardView::Example {
+        card,
+        sentence_id,
+        start,
+        end,
+    } = lesson_card.clone().into_view()
+    {
+        return view! {
+            <ExampleRecallCard
+                card=card
+                sentence_id=sentence_id
+                start=start
+                end=end
+                on_advance=on_example_advance
+                known_kanji=known_kanji
+                native_language=native_language.into()
+            />
+        }
+        .into_any();
+    }
+
     let params = match lesson_card.into_view() {
         LessonCardView::Normal(card) => {
             let grammar_info = match &card {
@@ -61,6 +92,16 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             grammar_info: None,
             show_grammar_badge: true,
         },
+        // Example recall (#528) degrades to Normal the same way: the word
+        // card renders as usual and the compact example shows on the answer
+        // side (WordExampleLine). The dedicated full-screen reading-recall
+        // view lands with the lesson-view PR.
+        LessonCardView::Example { card, .. } => LessonCardParams {
+            card,
+            is_reversed: false,
+            grammar_info: None,
+            show_grammar_badge: true,
+        },
         // Muted PhraseListen degrades the same way (the container gates it
         // via `audio_mode_active`): the base phrase card renders as Normal
         // — translations + rating buttons. The quiz fields (audio_file,
@@ -78,7 +119,10 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             grammar_info: Some(grammar_info),
             show_grammar_badge: false,
         },
-        LessonCardView::Quiz(_)
+        // Слот пачки связок рендерится контейнером отдельным режимом —
+        // сюда не доходит (exhaustiveness).
+        LessonCardView::CounterBindings { .. }
+        | LessonCardView::Quiz(_)
         | LessonCardView::Writing(_)
         | LessonCardView::YesNo(_)
         | LessonCardView::KanjiReadingQuiz(_)

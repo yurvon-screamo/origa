@@ -190,6 +190,9 @@ fn acquaintance_slide_subject(
             short_description,
             ..
         } => (pattern.clone(), short_description.clone()),
+        AcquaintanceSlideData::Counter {
+            suffix, meaning, ..
+        } => (suffix.clone(), meaning.clone()),
     };
     Some(FeedbackSubject {
         surface,
@@ -232,11 +235,13 @@ fn base_lesson_card(view: &LessonCardView) -> Option<&Card> {
         | LessonCardView::Reversed(card)
         | LessonCardView::Writing(card)
         | LessonCardView::AudioRecall(card)
+        | LessonCardView::Example { card, .. }
         | LessonCardView::GrammarMutated { card, .. }
         | LessonCardView::PhraseListen { card, .. } => card,
         LessonCardView::Quiz(quiz) | LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
         LessonCardView::YesNo(yesno) => yesno.card(),
         LessonCardView::GrammarQuiz(grammar_quiz) => grammar_quiz.card(),
+        LessonCardView::CounterBindings { card, .. } => card,
     })
 }
 

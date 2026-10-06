@@ -792,7 +792,7 @@ async fn bottom_tab_bar_authenticated_renders_six_tabs() {
         .query_selector_all("[data-testid=\"btb1\"] .bottom-tab-item")
         .unwrap()
         .length();
-    assert_eq!(items, 6, "six nav routes must render; got {items}");
+    assert_eq!(items, 7, "seven nav routes must render; got {items}");
 }
 
 #[wasm_bindgen_test]

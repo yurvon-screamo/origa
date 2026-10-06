@@ -19,6 +19,7 @@ async fn create_cards_from_analysis_creates_vocabulary_cards() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
 
     let result = use_case.execute(words, None).await.unwrap();
@@ -40,9 +41,11 @@ async fn create_cards_from_analysis_creates_multiple_cards() {
     let words = vec![
         WordToCreate {
             base_form: "あい変わらず".to_string(),
+            part_of_speech: None,
         },
         WordToCreate {
             base_form: "あい昧".to_string(),
+            part_of_speech: None,
         },
     ];
 
@@ -59,6 +62,7 @@ async fn create_cards_from_analysis_returns_error_when_user_not_found() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
 
     let result = use_case.execute(words, None).await;
@@ -74,6 +78,7 @@ async fn create_cards_from_analysis_skips_duplicates() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
 
     let first = use_case.execute(words.clone(), None).await.unwrap();
@@ -95,9 +100,11 @@ async fn create_cards_from_analysis_handles_failed_words() {
     let words = vec![
         WordToCreate {
             base_form: "あい変わらず".to_string(),
+            part_of_speech: None,
         },
         WordToCreate {
             base_form: "not_japanese".to_string(),
+            part_of_speech: None,
         },
     ];
 
@@ -116,6 +123,7 @@ async fn create_cards_from_analysis_marks_set_as_imported() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
     let set_id = "test-set-123".to_string();
 
@@ -137,6 +145,7 @@ async fn create_cards_from_analysis_marks_multiple_sets_as_imported() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
     let set_ids = vec![
         "set-1".to_string(),
@@ -183,6 +192,7 @@ async fn create_cards_from_analysis_persists_cards_in_repository() {
 
     let words = vec![WordToCreate {
         base_form: "あい変わらず".to_string(),
+        part_of_speech: None,
     }];
 
     use_case.execute(words, None).await.unwrap();
@@ -200,9 +210,11 @@ async fn create_cards_from_analysis_mixed_results() {
     let words = vec![
         WordToCreate {
             base_form: "あい変わらず".to_string(),
+            part_of_speech: None,
         },
         WordToCreate {
             base_form: "invalid".to_string(),
+            part_of_speech: None,
         },
     ];
 

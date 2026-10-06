@@ -11,7 +11,11 @@ pub(crate) fn apply_reversed(card: &Card, lang: &NativeLanguage) -> LessonCardVi
             Ok(reverted) => LessonCardView::Reversed(Card::Vocabulary(reverted)),
             Err(_) => LessonCardView::Normal(card.clone()),
         },
-        Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => LessonCardView::Normal(card.clone()),
+        // Обратный ход для несловесных карт (включая счётный суффикс)
+        // вырождается в прямой показ: вопрос и так минимальный.
+        Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) | Card::Counter(_) => {
+            LessonCardView::Normal(card.clone())
+        },
     }
 }
 
@@ -49,7 +53,9 @@ pub(crate) fn apply_grammar_mutated<R: Rng>(
             },
             None => LessonCardView::Normal(card.clone()),
         },
-        Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => LessonCardView::Normal(card.clone()),
+        Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) | Card::Counter(_) => {
+            LessonCardView::Normal(card.clone())
+        },
     }
 }
 

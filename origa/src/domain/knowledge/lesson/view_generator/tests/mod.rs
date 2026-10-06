@@ -7,6 +7,7 @@ use chrono::Utc;
 use ulid::Ulid;
 
 mod card_views;
+mod counter_views;
 mod filtering;
 mod kanji_reading_quiz;
 mod quiz;

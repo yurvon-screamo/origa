@@ -4533,3 +4533,234 @@ mod know_confirm_dispose {
         );
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Счётный суффикс (issue #415): композитный слот и слайд показа
+// ═══════════════════════════════════════════════════════════════════════
+
+fn counter_registry_json() -> String {
+    let readings = (1..=10)
+        .map(|n| {
+            format!(
+                "{{\"number\":{n},\"reading\":\"r{n}\",\"irregular\":{}}}",
+                n % 3 == 1
+            )
+        })
+        .chain(std::iter::once(
+            "{\"number\":0,\"reading\":\"nan\",\"irregular\":false}".to_string(),
+        ))
+        .collect::<Vec<_>>()
+        .join(",");
+    format!(
+        "{{\"counters\":[{{\"suffix\":\"本\",\"level\":\"N5\",\"glosses\":{{\"Russian\":\"длинные предметы\",\"English\":\"long objects\",\"Korean\":\"자루\",\"Vietnamese\":\"cây\"}},\"readings\":[{readings}]}}]}}"
+    )
+}
+
+/// Таблица чтений: строки по возрастанию числа, 何 последней; ring-акцента
+/// до highlight нет.
+#[wasm_bindgen_test]
+async fn counter_readings_table_orders_numbers_what_last() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        use crate::pages::lesson::counter_readings_table::{
+            CounterReadingRow, CounterReadingsTable,
+        };
+        let rows = vec![
+            CounterReadingRow {
+                number: 0,
+                number_label: "何".into(),
+                reading: "nan".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 2,
+                number_label: "2".into(),
+                reading: "r2".into(),
+                irregular: false,
+            },
+            CounterReadingRow {
+                number: 1,
+                number_label: "1".into(),
+                reading: "r1".into(),
+                irregular: true,
+            },
+        ];
+        view! {
+            <CounterReadingsTable
+                rows=rows
+                suffix="本".to_string()
+                test_id=Signal::derive(|| "t".to_string())
+            />
+        }
+        .into_any()
+    });
+    let node_list = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap();
+    let rows: Vec<String> = (0..node_list.length())
+        .filter_map(|index| node_list.get(index))
+        .map(|el| el.text_content().unwrap_or_default())
+        .collect();
+    assert_eq!(rows.len(), 3);
+    assert!(rows[0].contains('1'), "ascending numbers first: {:?}", rows);
+    assert!(rows[2].contains("何"), "何 comes last: {:?}", rows);
+
+    // Акцент требует highlight-сигнал: без него ring-класса нет.
+    let first = wrapper
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap()
+        .get(1)
+        .unwrap()
+        .unchecked_into::<web_sys::HtmlElement>();
+    assert!(
+        !first.class_list().contains("ring-inset"),
+        "no accent without a highlight signal"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ExampleRecallCard (#528)
+// ═══════════════════════════════════════════════════════════════════════
+
+#[wasm_bindgen_test]
+async fn example_view_swallows_shared_keyboard() {
+    use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
+    use ulid::Ulid;
+
+    // The example-recall view owns its self-assessment flow and advances
+    // WITHOUT an FSRS rating (#528 invariant). The shared keyboard must
+    // stay silent on it: Space must not force-show an answer side and
+    // 1-4 must not push a rating through on_rate.
+    let ctx = lesson_context();
+    ctx.is_completed.set(false);
+    let rated = RwSignal::new(0u32);
+    let shown = RwSignal::new(0u32);
+
+    let card_id = Ulid::new();
+    let example_view = origa::domain::LessonCardView::Example {
+        card: vocab_card_fixture("たべる"),
+        sentence_id: 0,
+        start: -1,
+        end: -1,
+    };
+    ctx.lesson_state.update(|state| {
+        state.cards.insert(
+            card_id,
+            origa::domain::LessonCard::new(card_id, example_view, false),
+        );
+        state.card_ids = vec![card_id];
+    });
+
+    // The show_answer callback mirrors the container's real one: it must
+    // ALSO flip state.showing_answer — the rating branch below is gated
+    // on it (the control half of the test relies on the real pipeline).
+    let lesson_state_for_show = ctx.lesson_state;
+    let handler = create_keyboard_handler(
+        ctx.clone(),
+        RwSignal::new(None::<Ulid>),
+        ctx.lesson_state,
+        KeyboardActions {
+            on_rate: Callback::new(move |_| rated.update(|n| *n += 1)),
+            on_quiz_select: Callback::new(|_| ()),
+            on_yesno_select: Callback::new(|_| ()),
+            on_quiz_dont_know: Callback::new(|_| ()),
+            on_yesno_dont_know: Callback::new(|_| ()),
+            on_quiz_toggle: Callback::new(|_| ()),
+            on_quiz_submit: Callback::new(|_| ()),
+            on_audio_answer: Callback::new(|_| ()),
+            on_replay_audio: Callback::new(|_| ()),
+            show_answer: Box::new(move || {
+                shown.update(|n| *n += 1);
+                lesson_state_for_show.update(|state| state.showing_answer = true);
+            }),
+            on_next_card: Callback::new(|_| ()),
+        },
+    );
+
+    let press = |key: &str| {
+        let init = web_sys::KeyboardEventInit::new();
+        init.set_key(key);
+        let ev = web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init)
+            .expect("keydown event");
+        handler(ev);
+    };
+
+    press(" ");
+    press("1");
+    press("4");
+    assert_eq!(shown.get(), 0, "Space must not force-show the answer");
+    assert_eq!(rated.get(), 0, "digits must not push an FSRS rating");
+
+    // Control (the test is not a vacuum): the same keys on a Normal card
+    // DO reveal and rate — the swallow is example-view-specific.
+    let normal = origa::domain::LessonCardView::Normal(vocab_card_fixture("ねこ"));
+    ctx.lesson_state.update(|state| {
+        state.cards.insert(
+            card_id,
+            origa::domain::LessonCard::new(card_id, normal, false),
+        );
+        state.showing_answer = false;
+    });
+    press(" ");
+    assert_eq!(shown.get(), 1, "control: Normal reveals on Space");
+    press("1");
+    assert_eq!(rated.get(), 1, "control: Normal rates on 1");
+}
+
+#[wasm_bindgen_test]
+async fn example_recall_failed_load_is_not_a_dead_end() {
+    // A chunk that does not exist (huge sentence id → missing chunk file)
+    // makes the loader fail: the card must render the explicit
+    // «unavailable» notice WITH the advance button — the lesson always
+    // has a way forward, never a silent dead end.
+    let wrapper = create_wrapper();
+    let (set_advanced, get_advanced) = shared_cell::<RwSignal<bool>>();
+    mount_with_i18n(&wrapper, move || {
+        let advanced = RwSignal::new(false);
+        set_advanced.set(Some(advanced));
+        let on_advance = Callback::new(move |_: ()| advanced.set(true));
+        view! {
+            <super::example_recall_card::ExampleRecallCard
+                card=vocab_card_fixture("たべる")
+                sentence_id=u32::MAX - 7
+                start=-1
+                end=-1
+                on_advance=on_advance
+                known_kanji=Signal::derive(|| HashSet::new())
+                native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let notice_shown = wait_until(
+        || {
+            wrapper
+                .query_selector("[data-testid=\"lesson-example-unavailable\"]")
+                .unwrap()
+                .is_some()
+        },
+        40,
+        250,
+    )
+    .await;
+    assert!(
+        notice_shown,
+        "unavailable notice renders on chunk load failure"
+    );
+
+    wrapper
+        .query_selector("[data-testid=\"lesson-example-next\"]")
+        .unwrap()
+        .expect("advance button present alongside the notice")
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    tick().await;
+    assert!(
+        get_advanced.get().expect("captured").get(),
+        "advance fires on click — no dead end"
+    );
+}

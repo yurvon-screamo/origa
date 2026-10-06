@@ -85,6 +85,19 @@ pub(super) fn extract_card_data(
             readings: None,
             card_type: CardType::Phrase,
         },
+        // Счётный суффикс (issue #415): вопрос — знак, ответ — глосс
+        // реестра в локали юзера (fallback EN).
+        DomainCard::Counter(c) => ScoringCard {
+            card_id,
+            question: c.suffix().to_string(),
+            answer: match c.answer(lang).ok() {
+                Some(CardAnswer::Vocabulary { translations, .. }) => translations.join(", "),
+                Some(other) => other.text_projection(),
+                None => no_translation(),
+            },
+            readings: None,
+            card_type: CardType::Counter,
+        },
     }
 }
 

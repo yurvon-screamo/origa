@@ -19,8 +19,8 @@ fn determine_rate_mode(card: &LessonCard) -> RateMode {
     match CardType::from(card.card()) {
         CardType::Grammar => RateMode::GrammarReview,
         CardType::Kanji => RateMode::KanjiReview,
-        // Phrase cards are intercepted by the early return above, so the only
-        // remaining type reaching this arm is Vocabulary.
+        // Phrase cards are intercepted by the early return above. Counter
+        // cards rate as the classic know/don't-know semantic review.
         _ => RateMode::StandardLesson,
     }
 }
@@ -74,7 +74,7 @@ async fn check_and_create_ready_phrases<R: UserRepository>(
     }
 }
 
-fn advance_lesson_state(
+pub(crate) fn advance_lesson_state(
     lesson_state: RwSignal<super::lesson_state::LessonState>,
     is_completed: RwSignal<bool>,
 ) {
@@ -99,6 +99,24 @@ fn advance_lesson_state(
             state.multi_result = None;
         }
     });
+}
+
+/// #528: advance the lesson WITHOUT any FSRS rating — the example-recall
+/// self-assessment is a training signal only (see issue #528).
+pub fn create_on_example_advance_callback(
+    lesson_state: RwSignal<super::lesson_state::LessonState>,
+    is_completed: RwSignal<bool>,
+) -> Callback<()> {
+    let Some(is_disposed) = use_context::<StoredValue<()>>() else {
+        return Callback::new(move |_| {});
+    };
+
+    Callback::new(move |_: ()| {
+        if is_disposed.is_disposed() {
+            return;
+        }
+        advance_lesson_state(lesson_state, is_completed);
+    })
 }
 
 pub fn create_on_rate_callback(
@@ -168,6 +186,27 @@ pub fn create_on_rate_callback(
 
 #[cfg(test)]
 mod tests {
+    use super::determine_rate_mode;
+    use origa::domain::{CounterCard, LessonCard, RateMode};
+
+    fn counter_lesson_card() -> LessonCard {
+        origa::dictionary::counters::init_minimal_counters();
+        let counter = CounterCard::new("本");
+        LessonCard::new(
+            ulid::Ulid::new(),
+            LessonCardView::Normal(origa::domain::Card::Counter(counter)),
+            false,
+        )
+    }
+
+    /// Семантический показ счётного суффикса рейтится StandardLesson —
+    /// effective_mode пробрасывает Counter без ремапа, как и вокаб.
+    #[test]
+    fn counter_semantic_showing_rates_in_standard_lesson() {
+        let card = counter_lesson_card();
+        assert_eq!(determine_rate_mode(&card), RateMode::StandardLesson);
+    }
+
     use super::*;
     use origa::domain::{LessonCardView, PhraseCard};
 

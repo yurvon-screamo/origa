@@ -3,12 +3,15 @@ use super::*;
 /// Приоритет карточек без определённого JLPT уровня — ниже всех известных уровней (N1=1)
 pub(super) const UNKNOWN_JLPT_PRIORITY: u8 = 0;
 
-/// Веса типов карточек для interleaving: Vocab:Kanji:Grammar ≈ 80:10:10.
+/// Веса типов карточек для interleaving и состава руки знакомства:
+/// Vocab:Kanji:Grammar:Counter ≈ 80:10:10:10 (issue #415 — Counter
+/// добавлен четвёртым типом; доля слов при полном пуле ~72.7%).
 /// При добавлении нового варианта в CardType — обновить эту константу.
-pub(super) const CARD_TYPE_WEIGHTS: [(CardType, usize); 3] = [
+pub(super) const CARD_TYPE_WEIGHTS: [(CardType, usize); 4] = [
     (CardType::Vocabulary, 8),
     (CardType::Kanji, 1),
     (CardType::Grammar, 1),
+    (CardType::Counter, 1),
 ];
 
 pub(super) fn resolve_jlpt_level(card: &Card, jlpt_content: &JlptContent) -> Option<JapaneseLevel> {
@@ -221,7 +224,12 @@ pub(crate) fn distribute_new_cards<'a, R: rand::Rng>(
             "compute_type_slots must allocate exactly `take` slots"
         );
 
-        for card_type in [CardType::Vocabulary, CardType::Kanji, CardType::Grammar] {
+        for card_type in [
+            CardType::Vocabulary,
+            CardType::Kanji,
+            CardType::Grammar,
+            CardType::Counter,
+        ] {
             if let Some(queue) = by_type.get(&card_type) {
                 let n = slots.get(&card_type).copied().unwrap_or(0);
                 for card in queue.iter().take(n) {

@@ -8,6 +8,7 @@ use chrono::Utc;
 use rand::{SeedableRng, rngs::StdRng};
 
 use super::super::LessonViewGenerator;
+use crate::dictionary::example::{EXAMPLE_INDEX_TEST_LOCK, reset_example_index_for_test};
 
 mod grammar_card_view_tests {
     use super::*;
@@ -245,6 +246,7 @@ mod review_vocab_strict_recall_tests {
                 LessonCardView::Reversed(_) => "reversed",
                 LessonCardView::GrammarMutated { .. } => "mutated",
                 LessonCardView::AudioRecall(_) => "audio",
+                LessonCardView::Example { .. } => "example",
                 other => panic!("unexpected view for review vocab: {other:?}"),
             };
             *counts.entry(key).or_default() += 1;
@@ -254,6 +256,13 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn in_progress_vocab_never_gets_quiz_or_yesno() {
+        // Parallel sibling tests install an examples index into the shared
+        // global store: isolate this test from it (empty index = no
+        // example-view slots in the ladder).
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test();
         let ks = make_review_vocab_ks();
         let study_card = make_late_stage_card("食べる");
         assert!(study_card.memory().is_in_progress());
@@ -273,6 +282,13 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn known_vocab_never_gets_quiz_or_yesno() {
+        // Parallel sibling tests install an examples index into the shared
+        // global store: isolate this test from it (empty index = no
+        // example-view slots in the ladder).
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test();
         let ks = make_review_vocab_ks();
         let study_card = make_known_card("食べる");
         assert!(study_card.memory().is_known_card());
@@ -292,6 +308,13 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn late_stage_vocab_produces_all_strict_recall_forms() {
+        // Parallel sibling tests install an examples index into the shared
+        // global store: isolate this test from it (empty index = no
+        // example-view slots in the ladder).
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test();
         let ks = make_review_vocab_ks();
         let study_card = make_late_stage_card("食べる");
 
@@ -306,6 +329,13 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn high_difficulty_vocab_produces_all_five_forms() {
+        // Parallel sibling tests install an examples index into the shared
+        // global store: isolate this test from it (empty index = no
+        // example-view slots in the ladder).
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test();
         let ks = make_review_vocab_ks();
         let study_card = make_high_difficulty_card("食べる");
 
@@ -321,5 +351,76 @@ mod review_vocab_strict_recall_tests {
             0,
             "high-difficulty vocab is not eligible for GrammarMutated"
         );
+    }
+}
+
+// ═══════════════════ #528 example-recall slot ═══════════════════
+
+mod example_slot_tests {
+    use super::*;
+    use crate::dictionary::example::{
+        EXAMPLE_INDEX_TEST_LOCK, init_example_index, reset_example_index_for_test,
+    };
+
+    fn make_late_stage_card(word: &str) -> StudyCard {
+        create_study_card_with_memory(word, 5.0, 3.0, Rating::Good)
+    }
+
+    const EXAMPLE_INDEX_JSON: &str = r#"{
+        "v": 1, "h": "t", "s": 1,
+        "words": { "食べる": {"refs": [[0, 0, 3]]} }
+    }"#;
+
+    #[test]
+    fn late_stage_vocab_with_cdn_examples_can_get_example_view() {
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test();
+        init_example_index(EXAMPLE_INDEX_JSON).expect("fixture index");
+
+        let ks = make_review_vocab_ks();
+        let study_card = make_late_stage_card("食べる");
+
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
+        let mut example_views = 0;
+        for seed in 0..200u64 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            if matches!(
+                generator.apply_view(&study_card, false, &mut rng),
+                LessonCardView::Example { .. }
+            ) {
+                example_views += 1;
+            }
+        }
+        reset_example_index_for_test();
+        assert!(
+            example_views > 0,
+            "words with CDN examples must occasionally get the example view"
+        );
+    }
+
+    #[test]
+    fn words_without_examples_never_get_the_example_view() {
+        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_example_index_for_test(); // empty index: no word has examples
+
+        let ks = make_review_vocab_ks();
+        let study_card = make_late_stage_card("食べる");
+
+        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
+        for seed in 0..200u64 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            assert!(
+                !matches!(
+                    generator.apply_view(&study_card, false, &mut rng),
+                    LessonCardView::Example { .. }
+                ),
+                "empty examples index must never produce the example view"
+            );
+        }
+        reset_example_index_for_test();
     }
 }

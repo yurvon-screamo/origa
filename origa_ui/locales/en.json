@@ -1,7 +1,6 @@
 {
   "common": {
     "cancel": "Cancel",
-    "choose_file": "Choose file",
     "back": "Back",
     "next": "Next",
     "loading": "Loading...",
@@ -28,7 +27,8 @@
     "tooltip_new": "New word",
     "language_aria_label": "Select language",
     "more_details": "More details",
-    "username_placeholder": "How should we call you?"
+    "username_placeholder": "How should we call you?",
+    "choose_file": "Choose file"
   },
   "app": {
     "logging_in": "Logging in..."
@@ -203,7 +203,8 @@
         "grammar": "Grammar",
         "kanji": "Kanji",
         "vocabulary": "Vocabulary",
-        "phrase": "Phrases"
+        "phrase": "Phrases",
+        "counter": "Counters"
       },
       "reading_on": "On",
       "reading_kun": "Kun",
@@ -325,7 +326,12 @@
     "pos_symbol": "symbol",
     "pos_whitespace": "whitespace",
     "pos_auxiliary_symbol": "auxiliary symbol",
-    "listen_word": "Listen to the word"
+    "listen_word": "Listen to the word",
+    "counter": "Counter",
+    "example_recall_understood": "I understood it",
+    "example_recall_not_understood": "Didn't understand",
+    "example_unavailable": "Example unavailable — continue with the next card",
+    "example_reveal_translation": "Reveal translation"
   },
   "home": {
     "loading": "Loading...",
@@ -381,7 +387,8 @@
     "badge_kanji": "Kanji",
     "badge_words": "Words",
     "badge_grammar": "Grammar",
-    "rating_accuracy": "Accuracy"
+    "rating_accuracy": "Accuracy",
+    "counters_label": "Counters"
   },
   "login": {
     "or_login_with": "or sign in / register with",
@@ -431,15 +438,6 @@
     "creating": "Creating...",
     "add_selected": "Add selected",
     "error": "Error",
-    "inbox": {
-      "processing": "Processing…",
-      "transcribing_audio": "Transcribing audio…",
-      "processing_failed": "Content processing failed",
-      "unsupported_file": "File format is not supported: {}",
-      "open_manually": "Open manually",
-      "busy": "Another import is already running. Wait for it to finish.",
-      "pending_input": "Finish or clear your current input first."
-    },
     "image": {
       "preparing": "Preparing for recognition",
       "downloading_models": "Downloading OCR models",
@@ -484,31 +482,46 @@
       "drop_zone": "Click or drag to upload audio",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — any length up to 200 MB",
       "model_download_notice": "First use downloads the speech-recognition model (~150 MB). The data is cached for reuse.",
-      "long_record_hint": "Record a lesson or podcast — the transcript is split into sentences afterwards.",
-      "record_start": "Record",
-      "recording_secs": "Recording… {}s",
       "processing": "Processing audio...",
-      "fragment_progress": "Fragment {}…",
-      "interrupted_on_fragment": "Transcription interrupted at fragment {}: {}",
       "cancel": "Cancel",
       "transcription_failed": "Transcription failed",
       "enter_manually": "Enter text manually",
+      "wav_only": "Only WAV format is supported for speech recognition.",
       "file_too_large": "Audio file is too large. Maximum size is {} MB.",
       "no_speech": "No speech detected in the audio.",
       "loading_model": "Loading model for {}...",
+      "unsupported_format": "Unsupported audio format. Please use WAV, MP3, WebM, M4A, or OGG.",
       "record": "Record from microphone",
       "recording": "Listening — speak now",
       "live_unavailable": "Live microphone recognition is not available on this device.",
+      "long_record_hint": "Record a lesson or podcast — the transcript is split into sentences afterwards.",
+      "record_start": "Record",
+      "recording_secs": "Recording… {}s",
+      "fragment_progress": "Fragment {}…",
+      "interrupted_on_fragment": "Transcription interrupted at fragment {}: {}",
       "record_stop": "Stop"
+    },
+    "no_translation_found": "No translation found — won't be added",
+    "tooltip_no_translation": "Word not found in our dictionaries",
+    "already_added": "Added",
+    "counter_badge": "counter",
+    "detail_examples_section": "Examples",
+    "detail_examples_not_found": "No examples yet",
+    "detail_translation_section": "Translation",
+    "inbox": {
+      "processing": "Processing…",
+      "transcribing_audio": "Transcribing audio…",
+      "processing_failed": "Content processing failed",
+      "unsupported_file": "File format is not supported: {}",
+      "open_manually": "Open manually",
+      "busy": "Another import is already running. Wait for it to finish.",
+      "pending_input": "Finish or clear your current input first."
     },
     "transcript": {
       "selected_count": "Selected: {}",
       "analyze_selected": "Analyze selected",
       "use_all_text": "Use all text"
-    },
-    "no_translation_found": "No translation found — won't be added",
-    "tooltip_no_translation": "Word not found in our dictionaries",
-    "already_added": "Added"
+    }
   },
   "grammar_page": {
     "add_grammar": "Add grammar",
@@ -716,5 +729,18 @@
       "completed_status": "Completed",
       "recognition_error": "Recognition error"
     }
+  },
+  "counters": {
+    "header": "Counter words",
+    "add_counters": "Add counters",
+    "adding": "Adding...",
+    "add": "Add counters",
+    "available_counters": "Available counters",
+    "searching_counters": "Searching counters...",
+    "no_counters_for_level": "No counters for the selected level (or all are already studied)",
+    "readings_title": "Readings",
+    "bindings_learned": "Bindings: {}",
+    "not_found": "Suffix not found",
+    "examples_title": "Examples"
   }
 }

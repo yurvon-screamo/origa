@@ -1,7 +1,6 @@
 {
   "common": {
     "cancel": "Отмена",
-    "choose_file": "Выбрать файл",
     "back": "Назад",
     "next": "Далее",
     "loading": "Загрузка...",
@@ -28,7 +27,8 @@
     "tooltip_new": "Новое слово",
     "language_aria_label": "Выберите язык",
     "more_details": "Подробнее",
-    "username_placeholder": "Как вас зовут?"
+    "username_placeholder": "Как вас зовут?",
+    "choose_file": "Выбрать файл"
   },
   "app": {
     "logging_in": "Вход..."
@@ -203,7 +203,8 @@
         "grammar": "Грамматика",
         "kanji": "Кандзи",
         "vocabulary": "Слова",
-        "phrase": "Фразы"
+        "phrase": "Фразы",
+        "counter": "Счётные суффиксы"
       },
       "reading_on": "Он",
       "reading_kun": "Кун",
@@ -325,7 +326,12 @@
     "pos_symbol": "символ",
     "pos_whitespace": "пробел",
     "pos_auxiliary_symbol": "вспомогательный символ",
-    "listen_word": "Прослушайте слово"
+    "listen_word": "Прослушайте слово",
+    "counter": "Счётный суффикс",
+    "example_recall_understood": "Понял",
+    "example_recall_not_understood": "Не понял",
+    "example_unavailable": "Пример недоступен — перейдите к следующей карточке",
+    "example_reveal_translation": "Показать перевод"
   },
   "home": {
     "loading": "Загрузка...",
@@ -381,7 +387,8 @@
     "badge_kanji": "Кандзи",
     "badge_words": "Слова",
     "badge_grammar": "Грамматика",
-    "rating_accuracy": "Точность"
+    "rating_accuracy": "Точность",
+    "counters_label": "Счётные суффиксы"
   },
   "login": {
     "or_login_with": "или войти/зарегистрироваться через",
@@ -431,15 +438,6 @@
     "creating": "Создание...",
     "add_selected": "Добавить выбранные",
     "error": "Ошибка",
-    "inbox": {
-      "processing": "Обработка…",
-      "transcribing_audio": "Транскрибируем аудио…",
-      "processing_failed": "Не удалось обработать содержимое",
-      "unsupported_file": "Формат файла не поддерживается: {}",
-      "open_manually": "Открыть вручную",
-      "busy": "Уже идёт обработка. Дождитесь завершения.",
-      "pending_input": "Сначала завершите или очистите текущий ввод."
-    },
     "image": {
       "preparing": "Подготовка к распознаванию",
       "downloading_models": "Скачивание моделей OCR",
@@ -484,31 +482,46 @@
       "drop_zone": "Нажмите или перетащите аудиофайл",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — любой длины до 200 МБ",
       "model_download_notice": "При первом использовании скачивается модель распознавания речи (~150 МБ). Данные кэшируются для повторного использования.",
-      "long_record_hint": "Запишите урок или подкаст — транскрипт потом разобьётся на предложения.",
-      "record_start": "Записать",
-      "recording_secs": "Запись… {}с",
       "processing": "Обработка аудио...",
-      "fragment_progress": "Фрагмент {}…",
-      "interrupted_on_fragment": "Транскрибация прервана на фрагменте {}: {}",
       "cancel": "Отмена",
       "transcription_failed": "Не удалось распознать речь",
       "enter_manually": "Ввести текст вручную",
+      "wav_only": "Для распознавания речи поддерживается только формат WAV.",
       "file_too_large": "Аудиофайл слишком большой. Максимальный размер: {} MB.",
       "no_speech": "Речь в аудио не обнаружена.",
       "loading_model": "Загрузка модели для {}...",
+      "unsupported_format": "Неподдерживаемый формат аудио. Используйте WAV, MP3, WebM, M4A или OGG.",
       "record": "Записать с микрофона",
       "recording": "Слушаю — говорите сейчас",
       "live_unavailable": "Распознавание с микрофона недоступно на этом устройстве.",
+      "long_record_hint": "Запишите урок или подкаст — транскрипт потом разобьётся на предложения.",
+      "record_start": "Записать",
+      "recording_secs": "Запись… {}с",
+      "fragment_progress": "Фрагмент {}…",
+      "interrupted_on_fragment": "Транскрибация прервана на фрагменте {}: {}",
       "record_stop": "Остановить"
+    },
+    "no_translation_found": "Нет перевода — не будет добавлено",
+    "tooltip_no_translation": "Слово не найдено в наших словарях",
+    "already_added": "Добавлено",
+    "counter_badge": "счётный суффикс",
+    "detail_examples_section": "Примеры",
+    "detail_examples_not_found": "Примеров пока нет",
+    "detail_translation_section": "Перевод",
+    "inbox": {
+      "processing": "Обработка…",
+      "transcribing_audio": "Транскрибируем аудио…",
+      "processing_failed": "Не удалось обработать содержимое",
+      "unsupported_file": "Формат файла не поддерживается: {}",
+      "open_manually": "Открыть вручную",
+      "busy": "Уже идёт обработка. Дождитесь завершения.",
+      "pending_input": "Сначала завершите или очистите текущий ввод."
     },
     "transcript": {
       "selected_count": "Выбрано: {}",
       "analyze_selected": "Анализировать выбранное",
       "use_all_text": "Весь текст"
-    },
-    "no_translation_found": "Нет перевода — не будет добавлено",
-    "tooltip_no_translation": "Слово не найдено в наших словарях",
-    "already_added": "Добавлено"
+    }
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",
@@ -716,5 +729,18 @@
       "completed_status": "Завершено",
       "recognition_error": "Ошибка распознавания"
     }
+  },
+  "counters": {
+    "header": "Счётные суффиксы",
+    "add_counters": "Добавить суффиксы",
+    "adding": "Добавление...",
+    "add": "Добавить суффиксы",
+    "available_counters": "Доступные суффиксы",
+    "searching_counters": "Поиск суффиксов...",
+    "no_counters_for_level": "Нет суффиксов для выбранного уровня (или все уже изучены)",
+    "readings_title": "Чтения",
+    "bindings_learned": "Связки: {}",
+    "not_found": "Суффикс не найден",
+    "examples_title": "Примеры"
   }
 }

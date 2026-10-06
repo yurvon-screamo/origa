@@ -151,6 +151,16 @@ pub(super) fn TrainingFrontSlide(
                         }
                             .into_any()
                     },
+                    // Счётный суффикс: несловесная карта — фронт знак,
+                    // значение является ответом (issue #415).
+                    AcquaintanceSlideData::Counter { suffix, .. } => {
+                        view! {
+                            <p class="font-serif text-6xl text-center text-[var(--fg-black)]">
+                                {suffix}
+                            </p>
+                        }
+                            .into_any()
+                    },
                 }
             }}
         </div>

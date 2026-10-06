@@ -19,6 +19,7 @@
 //! half of the heal runs against the real CDN in local development
 //! (same test body, flag cleared).
 
+use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use wasm_bindgen_test::*;
@@ -34,6 +35,19 @@ wasm_bindgen_test_configure!(run_in_browser);
 const KANJI: &str = "医";
 const ART_PATH: &str = "kanji_animations/%E5%8C%BB.svg";
 const POISON: &str = "<html>poisoned art body</html>";
+
+/// `fetch_kanji_art_svg` дергает `leptos::task::spawn_local` (detached
+/// загрузчик), а глобальный Leptos-исполнитель инициализируется
+/// монтированием. Тест ничего не монтирует — зависимость от порядка
+/// параллельных тестов в документе деградировала во флак: монтируем
+/// пустой компонент явно, исполнитель инициализируется на глазах у
+/// рантайма, spawn_local в проверяемом пути становится легальным.
+fn init_leptos_executor() {
+    let wrapper = crate::test_support::create_wrapper();
+    crate::test_support::mount_to_wrapper(&wrapper, move || {
+        view! { <div data-testid="kanji-art-test-mount"></div> }.into_any()
+    });
+}
 
 async fn open_cache() -> web_sys::Cache {
     let window = web_sys::window().expect("no window");
@@ -61,6 +75,7 @@ async fn read_cache_text(cache: &web_sys::Cache, path: &str) -> Option<String> {
 
 #[wasm_bindgen_test]
 async fn poisoned_kanji_art_entry_is_detected_and_purged() {
+    init_leptos_executor();
     reset_kanji_art_state();
     let cache = open_cache().await;
 

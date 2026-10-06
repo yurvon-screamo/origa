@@ -62,6 +62,9 @@ pub struct AuthStore {
     pub is_kanji_loaded: RwSignal<bool>,
     pub is_grammar_loaded: RwSignal<bool>,
     pub is_radicals_loaded: RwSignal<bool>,
+    /// Счётные суффиксы (issue #415): не критический ресурс — при сбое
+    /// загрузки приложение работает без counter-карт (деградация).
+    pub is_counters_loaded: RwSignal<bool>,
     pub is_phrases_loaded: RwSignal<bool>,
     pub is_pitch_audio_loaded: RwSignal<bool>,
     /// Dictionary tokenizer (SudachiDict) loaded
@@ -104,6 +107,7 @@ impl AuthStore {
             is_kanji_loaded: RwSignal::new(false),
             is_grammar_loaded: RwSignal::new(false),
             is_radicals_loaded: RwSignal::new(false),
+            is_counters_loaded: RwSignal::new(false),
             is_phrases_loaded: RwSignal::new(false),
             is_pitch_audio_loaded: RwSignal::new(false),
             is_dictionary_loaded: RwSignal::new(false),

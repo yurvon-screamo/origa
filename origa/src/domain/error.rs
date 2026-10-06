@@ -18,6 +18,8 @@ pub enum OrigaError {
     CardNotFound { card_id: Ulid },
     #[error("Card with question '{question}' already exists")]
     DuplicateCard { question: String },
+    #[error("Counter binding {number}×{suffix} not found")]
+    CounterBindingNotFound { suffix: String, number: u8 },
     #[error("Invalid acquaintance hand: {reason}")]
     InvalidAcquaintanceHand { reason: String },
     #[error("Invalid question: {reason}")]
@@ -92,6 +94,8 @@ pub enum OrigaError {
     NetworkError { url: String, reason: String },
     #[error("Phrase parse error: {reason}")]
     PhraseParseError { reason: String },
+    #[error("Example parse error: {reason}")]
+    ExampleParseError { reason: String },
     #[error("Phrase not found: {phrase_id}")]
     PhraseNotFound { phrase_id: Ulid },
     #[error("Pitch audio parse error: {reason}")]
@@ -104,6 +108,7 @@ impl OrigaError {
             Self::CurrentUserNotExist
             | Self::CardNotFound { .. }
             | Self::DuplicateCard { .. }
+            | Self::CounterBindingNotFound { .. }
             | Self::InvalidAcquaintanceHand { .. }
             | Self::InvalidQuestion { .. }
             | Self::InvalidAnswer { .. }
@@ -128,6 +133,7 @@ impl OrigaError {
             | Self::GrammarContentNotFound { .. }
             | Self::TranslationNotFound { .. }
             | Self::PhraseParseError { .. }
+            | Self::ExampleParseError { .. }
             | Self::PhraseNotFound { .. }
             | Self::PitchAudioParseError { .. }
             | Self::AccountDeletionFailed { .. } => ErrorCategory::Domain,

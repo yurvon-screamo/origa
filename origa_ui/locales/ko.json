@@ -1,7 +1,6 @@
 {
   "common": {
     "cancel": "취소",
-    "choose_file": "파일 선택",
     "back": "뒤로",
     "next": "다음",
     "loading": "불러오는 중...",
@@ -28,7 +27,8 @@
     "tooltip_new": "새 단어",
     "language_aria_label": "언어 선택",
     "more_details": "자세히 보기",
-    "username_placeholder": "어떻게 불러드릴까요?"
+    "username_placeholder": "어떻게 불러드릴까요?",
+    "choose_file": "파일 선택"
   },
   "app": {
     "logging_in": "로그인하는 중..."
@@ -203,7 +203,8 @@
         "grammar": "문법",
         "kanji": "한자",
         "vocabulary": "어휘",
-        "phrase": "표현"
+        "phrase": "표현",
+        "counter": "조수사"
       },
       "reading_on": "음독",
       "reading_kun": "훈독",
@@ -325,7 +326,12 @@
     "pos_symbol": "기호",
     "pos_whitespace": "공백",
     "pos_auxiliary_symbol": "보조 기호",
-    "listen_word": "단어를 들어보세요"
+    "listen_word": "단어를 들어보세요",
+    "counter": "조수사",
+    "example_recall_understood": "이해했어요",
+    "example_recall_not_understood": "이해 못했어요",
+    "example_unavailable": "예문을 사용할 수 없습니다 — 다음 카드로 계속하세요",
+    "example_reveal_translation": "번역 보기"
   },
   "home": {
     "loading": "불러오는 중...",
@@ -381,7 +387,8 @@
     "badge_kanji": "한자",
     "badge_words": "단어",
     "badge_grammar": "문법",
-    "rating_accuracy": "정확도"
+    "rating_accuracy": "정확도",
+    "counters_label": "조수사"
   },
   "login": {
     "or_login_with": "또는 다음으로 로그인 / 회원가입",
@@ -431,15 +438,6 @@
     "creating": "생성하는 중...",
     "add_selected": "선택 항목 추가",
     "error": "오류",
-    "inbox": {
-      "processing": "처리 중…",
-      "transcribing_audio": "오디오를 텍스트로 변환 중…",
-      "processing_failed": "콘텐츠 처리에 실패했습니다",
-      "unsupported_file": "지원되지 않는 파일 형식입니다: {}",
-      "open_manually": "직접 열기",
-      "busy": "이미 처리가 진행 중입니다. 완료될 때까지 기다려 주세요.",
-      "pending_input": "먼저 현재 입력을 완료하거나 지워 주세요."
-    },
     "image": {
       "preparing": "인식 준비 중",
       "downloading_models": "OCR 모델 다운로드 중",
@@ -484,31 +482,46 @@
       "drop_zone": "클릭하거나 오디오를 끌어다 놓아 업로드하세요",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — 최대 200 MB",
       "model_download_notice": "처음 사용 시 음성 인식 모델(~150 MB)을 다운로드합니다. 데이터는 재사용을 위해 캐시됩니다.",
-      "long_record_hint": "수업이나 팟캐스트를 녹음하세요 — 나중에 전사본이 문장으로 나뉩니다.",
-      "record_start": "녹음",
-      "recording_secs": "녹음 중… {}초",
       "processing": "오디오 처리 중...",
-      "fragment_progress": "조각 {}…",
-      "interrupted_on_fragment": "{}번째 조각에서 변환이 중단되었습니다: {}",
       "cancel": "취소",
       "transcription_failed": "전사에 실패했습니다",
       "enter_manually": "텍스트 직접 입력",
+      "wav_only": "음성 인식은 WAV 형식만 지원합니다.",
       "file_too_large": "오디오 파일이 너무 큽니다. 최대 크기는 {} MB입니다.",
       "no_speech": "오디오에서 음성이 감지되지 않았습니다.",
       "loading_model": "{} 모델 불러오는 중...",
+      "unsupported_format": "지원하지 않는 오디오 형식입니다. WAV, MP3, WebM, M4A 또는 OGG를 사용하세요.",
       "record": "마이크로 녹음",
       "recording": "듣고 있습니다 — 말씀하세요",
       "live_unavailable": "이 기기에서는 실시간 마이크 인식을 사용할 수 없습니다.",
+      "long_record_hint": "수업이나 팟캐스트를 녹음하세요 — 나중에 전사본이 문장으로 나뉩니다.",
+      "record_start": "녹음",
+      "recording_secs": "녹음 중… {}초",
+      "fragment_progress": "조각 {}…",
+      "interrupted_on_fragment": "{}번째 조각에서 변환이 중단되었습니다: {}",
       "record_stop": "정지"
+    },
+    "no_translation_found": "번역을 찾을 수 없음 — 추가되지 않습니다",
+    "tooltip_no_translation": "사전에서 단어를 찾을 수 없습니다",
+    "already_added": "추가됨",
+    "counter_badge": "조수사",
+    "detail_examples_section": "예문",
+    "detail_examples_not_found": "아직 예문이 없습니다",
+    "detail_translation_section": "번역",
+    "inbox": {
+      "processing": "처리 중…",
+      "transcribing_audio": "오디오를 텍스트로 변환 중…",
+      "processing_failed": "콘텐츠 처리에 실패했습니다",
+      "unsupported_file": "지원되지 않는 파일 형식입니다: {}",
+      "open_manually": "직접 열기",
+      "busy": "이미 처리가 진행 중입니다. 완료될 때까지 기다려 주세요.",
+      "pending_input": "먼저 현재 입력을 완료하거나 지워 주세요."
     },
     "transcript": {
       "selected_count": "선택됨: {}",
       "analyze_selected": "선택한 항목 분석",
       "use_all_text": "전체 텍스트 사용"
-    },
-    "no_translation_found": "번역을 찾을 수 없음 — 추가되지 않습니다",
-    "tooltip_no_translation": "사전에서 단어를 찾을 수 없습니다",
-    "already_added": "추가됨"
+    }
   },
   "grammar_page": {
     "add_grammar": "문법 추가",
@@ -716,5 +729,18 @@
       "completed_status": "완료됨",
       "recognition_error": "인식 오류"
     }
+  },
+  "counters": {
+    "header": "조수사",
+    "add_counters": "조수사 추가",
+    "adding": "추가 중...",
+    "add": "조수사 추가",
+    "available_counters": "사용 가능한 조수사",
+    "searching_counters": "조수사 검색...",
+    "no_counters_for_level": "선택한 수준에 조수사가 없습니다 (또는 모두 학습됨)",
+    "readings_title": "읽기",
+    "bindings_learned": "결합형: {}",
+    "not_found": "접미사를 찾을 수 없습니다",
+    "examples_title": "예문"
   }
 }

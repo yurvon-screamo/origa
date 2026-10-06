@@ -57,7 +57,12 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
 
 _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
     {
+        # Counter-word registry (issue #415): a hand-edited CDN data file
+        # (like grammar/) — release-updated, never immutable.
+        "counters/",
         "dictionary/",
+        # Word examples (#528): content JSON rebuilt on every corpus refresh.
+        "examples/",
         "grammar/",
         "phrases/data/",
         "phrases/data_bundle",  # phrases/data_bundle_0.json etc

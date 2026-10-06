@@ -1,4 +1,6 @@
 pub mod cdn_blob;
+pub mod counters;
+pub mod example;
 pub mod furigana_dict;
 pub mod grammar;
 pub mod grammar_migration;

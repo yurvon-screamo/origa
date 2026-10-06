@@ -6,6 +6,7 @@ pub struct JlptContent {
     pub kanji_by_level: HashMap<JapaneseLevel, HashSet<String>>,
     pub words_by_level: HashMap<JapaneseLevel, HashSet<String>>,
     pub grammar_by_level: HashMap<JapaneseLevel, HashSet<String>>,
+    pub counters_by_level: HashMap<JapaneseLevel, HashSet<String>>,
 }
 
 impl JlptContent {
@@ -14,6 +15,7 @@ impl JlptContent {
             kanji_by_level: HashMap::new(),
             words_by_level: HashMap::new(),
             grammar_by_level: HashMap::new(),
+            counters_by_level: HashMap::new(),
         }
     }
 
@@ -35,6 +37,7 @@ impl JlptContent {
             CardType::Vocabulary => &self.words_by_level,
             CardType::Grammar => &self.grammar_by_level,
             CardType::Phrase => &self.words_by_level,
+            CardType::Counter => &self.counters_by_level,
         };
 
         JapaneseLevel::ALL

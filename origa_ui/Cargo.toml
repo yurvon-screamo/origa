@@ -12,6 +12,7 @@ name = "origa_ui_bin"
 path = "src/main.rs"
 
 [dependencies]
+percent-encoding = "2"
 leptos.workspace = true
 leptos_icons.workspace = true
 icondata.workspace = true

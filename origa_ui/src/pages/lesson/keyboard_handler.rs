@@ -58,6 +58,27 @@ pub fn create_keyboard_handler(
         let current_card_id = state.card_ids.get(state.current_index);
         let current_card = current_card_id.and_then(|id| state.cards.get(id));
 
+        // Слот пачки связок счётного суффикса несёт СВОЮ клавиатуру
+        // (Space — reveal, 1/2 — классический рейтинг связки, issue #415).
+        // Общий хендлер здесь обязан молчать: иначе 1/2 рейтят СЕМАНТИКУ
+        // карты (StandardLesson) и прыгают с карты в середине пачки —
+        // двойная обработка одного нажатия.
+        if current_card.is_some_and(|c| matches!(c.view(), LessonCardView::CounterBindings { .. }))
+        {
+            return;
+        }
+
+        // Example recall (#528) owns its whole interaction: the
+        // self-assessment buttons (understood / not understood →
+        // translation reveal) and the rating-free advance. The shared
+        // handler MUST stay silent here: Space would force-show the
+        // answer and 1-4 would push a real FSRS rating through on_rate —
+        // breaking the «self-assessment never touches FSRS» invariant of
+        // the view and skipping the translation reveal.
+        if current_card.is_some_and(|c| matches!(c.view(), LessonCardView::Example { .. })) {
+            return;
+        }
+
         let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)

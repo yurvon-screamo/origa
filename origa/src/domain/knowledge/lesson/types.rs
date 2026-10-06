@@ -342,8 +342,46 @@ pub enum LessonCardView {
     /// word + translation. Audio availability is a render-time concern: the
     /// UI degrades this view to `Normal` when no audio source exists.
     AudioRecall(Card),
+    /// Textbook example recall (#528): the question side shows a sentence
+    /// using the word (no translation), the learner self-assesses
+    /// understood / didn't understand, the answer side reveals the phrase
+    /// translation with the word highlighted. The self-assessment is a
+    /// training signal only — it never feeds FSRS (see issue #528).
+    /// Sentence data (text/translations) is resolved by the UI through the
+    /// examples loader; the view degrades to `Normal` when the word has no
+    /// examples on the CDN.
+    Example {
+        card: Card,
+        sentence_id: u32,
+        start: i32,
+        end: i32,
+    },
     KanjiReadingQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
+    /// Пачка связок счётного суффикса (issue #415): каждая цифра ×
+    /// суффикс — отдельный показ классическим «знаю / не знаю»,
+    /// порядок — `CounterCard::binding_showcase`. Чтение резолвится из
+    /// реестра на рендере (wire несёт только число).
+    CounterBindings {
+        card: Card,
+        items: Vec<CounterBindingItem>,
+    },
+}
+
+/// Один показ пачки: число × суффикс.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CounterBindingItem {
+    number: u8,
+}
+
+impl CounterBindingItem {
+    pub fn new(number: u8) -> Self {
+        Self { number }
+    }
+
+    pub fn number(&self) -> u8 {
+        self.number
+    }
 }
 
 impl LessonCardView {
@@ -354,11 +392,13 @@ impl LessonCardView {
             | LessonCardView::GrammarMutated { card, .. }
             | LessonCardView::Writing(card)
             | LessonCardView::PhraseListen { card, .. }
-            | LessonCardView::AudioRecall(card) => card,
+            | LessonCardView::AudioRecall(card)
+            | LessonCardView::Example { card, .. } => card,
             LessonCardView::Quiz(quiz) => quiz.card(),
             LessonCardView::YesNo(yc) => yc.card(),
             LessonCardView::KanjiReadingQuiz(quiz) => quiz.card(),
             LessonCardView::GrammarQuiz(gq) => gq.card(),
+            LessonCardView::CounterBindings { card, .. } => card,
         }
     }
 
@@ -373,7 +413,9 @@ impl LessonCardView {
             | LessonCardView::Writing(_)
             | LessonCardView::PhraseListen { .. }
             | LessonCardView::AudioRecall(_)
-            | LessonCardView::KanjiReadingQuiz(_) => None,
+            | LessonCardView::Example { .. }
+            | LessonCardView::KanjiReadingQuiz(_)
+            | LessonCardView::CounterBindings { .. } => None,
         }
     }
 }
@@ -536,7 +578,7 @@ impl IntoIterator for LessonData {
 mod tests {
     use super::*;
     use crate::domain::Card;
-    use crate::domain::knowledge::{PhraseCard, VocabularyCard};
+    use crate::domain::knowledge::{CounterCard, PhraseCard, VocabularyCard};
     use crate::domain::value_objects::Question;
 
     fn make_vocabulary_lesson_card(id: Ulid) -> (Ulid, LessonCard) {
@@ -700,6 +742,30 @@ mod tests {
     /// loadable. LessonData itself is never synced across clients, but the
     /// roundtrip still pins the enum's externally-tagged wire shape.
     #[test]
+    fn example_view_roundtrips_through_serde() {
+        let view = LessonCardView::Example {
+            card: Card::Vocabulary(VocabularyCard::new(
+                Question::new("家族".to_string()).expect("valid question"),
+            )),
+            sentence_id: 42,
+            start: 3,
+            end: 5,
+        };
+
+        let json = serde_json::to_string(&view).expect("serialize Example view");
+        let restored: LessonCardView =
+            serde_json::from_str(&json).expect("deserialize Example view");
+
+        assert_eq!(restored, view);
+        assert!(
+            json.contains("Example"),
+            "wire shape must keep the variant tag: {json}"
+        );
+    }
+
+    /// Wire-format contract for `LessonCardView::AudioRecall` (see the
+    /// Example test above for why the roundtrip is pinned).
+    #[test]
     fn audio_recall_view_roundtrips_through_serde() {
         let view = LessonCardView::AudioRecall(Card::Vocabulary(VocabularyCard::new(
             Question::new("温度".to_string()).expect("valid question"),
@@ -714,6 +780,28 @@ mod tests {
             json.contains("AudioRecall"),
             "wire shape must keep the variant tag: {json}"
         );
+    }
+
+    /// Wire contract пачки связок: вариант и числа переживают serde
+    /// roundtrip (issue #415).
+    #[test]
+    fn counter_bindings_view_roundtrips_through_serde() {
+        use crate::dictionary::counters::tests::init_test_counters;
+        init_test_counters();
+        let mut counter = CounterCard::new(crate::dictionary::counters::tests::TEST_HON);
+        counter.ensure_registry_bindings();
+
+        let view = LessonCardView::CounterBindings {
+            card: Card::Counter(counter),
+            items: vec![CounterBindingItem::new(3), CounterBindingItem::new(10)],
+        };
+        let json = serde_json::to_string(&view).expect("serialize CounterBindings view");
+        let restored: LessonCardView =
+            serde_json::from_str(&json).expect("deserialize CounterBindings view");
+
+        assert_eq!(restored, view);
+        assert!(json.contains("CounterBindings"), "wire tag: {json}");
+        assert_eq!(view.card().content_key(), "本");
     }
 
     /// AudioRecall exposes the wrapped card and no grammar info — same
