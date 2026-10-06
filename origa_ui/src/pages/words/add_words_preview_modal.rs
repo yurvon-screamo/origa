@@ -12,6 +12,11 @@ use crate::pages::words::inbox::{
     InboxSeamGuard, InboxSignals, InboxStageView, register_inbox_seam,
 };
 use crate::pages::words::ocr_processing::OcrState;
+use crate::pages::words::transcript::{
+    TranscriptDecision, join_selected, sentence_has_unknown_content, split_sentences,
+    transcript_entry,
+};
+use crate::pages::words::transcript_view::TranscriptStageView;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
@@ -23,6 +28,7 @@ use leptos::task::spawn_local;
 use origa::domain::User;
 use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
+use std::collections::HashSet;
 
 #[component]
 pub fn AddWordsPreviewModal(
@@ -70,15 +76,74 @@ pub fn AddWordsPreviewModal(
     let inbox = InboxSignals::new();
     let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
 
+    // Transcript stage (AU-2): long audio transcriptions land here first so
+    // the user picks which sentences to analyze instead of facing the word
+    // preview of an hour-long text.
+    let transcript_sentences: RwSignal<Option<Vec<String>>> = RwSignal::new(None);
+    let transcript_selected: RwSignal<HashSet<usize>> = RwSignal::new(HashSet::new());
+
     Effect::new({
         let state = state.clone();
         move |_| {
             if !is_open.get() {
                 state.reset();
                 inbox.reset();
+                transcript_sentences.set(None);
+                transcript_selected.set(HashSet::new());
             }
         }
     });
+
+    // Transcript stage actions (AU-2). Hoisted before the view: Callback is
+    // Copy, but the inline `state.clone()` moved the non-Copy state into
+    // the view closure and turned it FnOnce.
+    let on_analyze_selected_sentences = Callback::new({
+        let state = state.clone();
+        move |_: ()| {
+            let sentences = transcript_sentences.get().unwrap_or_default();
+            let text = join_selected(&sentences, &transcript_selected.get());
+            transcript_sentences.set(None);
+            transcript_selected.set(HashSet::new());
+            state.set_extracted_text(text);
+        }
+    });
+    let on_use_all_text = Callback::new({
+        let state = state.clone();
+        move |_: ()| {
+            let sentences = transcript_sentences.get().unwrap_or_default();
+            let text = sentences.join("");
+            transcript_sentences.set(None);
+            transcript_selected.set(HashSet::new());
+            state.set_extracted_text(text);
+        }
+    });
+
+    // Audio transcriptions land on the transcript screen; image OCR goes
+    // straight to analysis (a page photo has no sentence-selection value).
+    let on_audio_text_extracted = {
+        let state = state.clone();
+        let known_kanji = known_kanji;
+        Callback::new(move |text: String| {
+            let sentences = split_sentences(&text);
+            match transcript_entry(sentences.len()) {
+                TranscriptDecision::DirectAnalysis => {
+                    transcript_sentences.set(None);
+                    state.set_extracted_text(text);
+                },
+                TranscriptDecision::ShowScreen => {
+                    let known = known_kanji.get();
+                    let preselected: HashSet<usize> = sentences
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, sentence)| sentence_has_unknown_content(sentence, &known))
+                        .map(|(index, _)| index)
+                        .collect();
+                    transcript_sentences.set(Some(sentences));
+                    transcript_selected.set(preselected);
+                },
+            }
+        })
+    };
 
     // The e2e seam registers once at mount and unregisters via its guard's
     // Drop when the drawer component is disposed.
@@ -92,6 +157,7 @@ pub fn AddWordsPreviewModal(
                 inbox,
                 toasts,
                 i18n,
+                on_audio_text_extracted,
             ));
         }
     });
@@ -237,7 +303,24 @@ pub fn AddWordsPreviewModal(
                                     }
                                 }}
                                 {move || {
-                                    if inbox.active.get() {
+                                    if transcript_sentences.get().is_some() {
+                                        view! {
+                                            <TranscriptStageView
+                                                sentences=Signal::derive(move || {
+                                                    transcript_sentences
+                                                        .get()
+                                                        .unwrap_or_default()
+                                                })
+                                                selected=transcript_selected
+                                                on_analyze_selected=on_analyze_selected_sentences
+                                                on_use_all=on_use_all_text
+                                                on_back=Callback::new(move |_: ()| {
+                                                    transcript_sentences.set(None);
+                                                    transcript_selected.set(HashSet::new());
+                                                })
+                                            />
+                                        }.into_any()
+                                    } else if inbox.active.get() {
                                         view! {
                                             <InboxStageView
                                                 inbox=inbox
@@ -279,7 +362,7 @@ pub fn AddWordsPreviewModal(
                                                     InputMode::Audio => view! {
                                                         <AudioInputStage
                                                             is_open=Signal::derive(move || is_open.get())
-                                                            on_text_extracted=on_text_extracted
+                                                            on_text_extracted=on_audio_text_extracted
                                                             on_error=on_ocr_error
                                                             on_switch_to_text=on_switch_to_text
                                                         />

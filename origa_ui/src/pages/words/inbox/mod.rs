@@ -114,6 +114,8 @@ impl Default for InboxSignals {
 pub(super) enum InboxKind {
     Text(String),
     File(web_sys::File),
+    /// Pre-split sentences (e2e seam): lands on the transcript screen.
+    TranscriptTexts(Vec<String>),
 }
 
 pub(super) struct InboxPayload {
@@ -135,7 +137,12 @@ pub(super) enum InboxRoute {
     Analyze(String),
     OcrFile(web_sys::File),
     SttFile(web_sys::File),
-    Unsupported { mime: String, name: String },
+    /// Transcript screen with ready sentences (seam/e2e path).
+    TranscriptScreen(Vec<String>),
+    Unsupported {
+        mime: String,
+        name: String,
+    },
     EmptyText,
 }
 
@@ -194,6 +201,7 @@ pub(super) fn classify_file(mime: &str, file_name: &str) -> FileClass {
 /// running an analysis that is guaranteed to find nothing.
 pub(super) fn route_payload(payload: InboxPayload) -> InboxRoute {
     match payload.kind {
+        InboxKind::TranscriptTexts(sentences) => InboxRoute::TranscriptScreen(sentences),
         InboxKind::Text(text) => {
             if text.trim().is_empty() {
                 InboxRoute::EmptyText
@@ -251,6 +259,7 @@ pub(super) struct SeamPayload {
     pub text: Option<String>,
     pub file_name: Option<String>,
     pub mime: Option<String>,
+    pub sentences: Option<Vec<String>>,
 }
 
 /// Upper bound for seam text payloads — keeps an accidental huge string in

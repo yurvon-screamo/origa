@@ -81,9 +81,18 @@ pub(in crate::pages::words) fn register_inbox_seam(
     inbox: InboxSignals,
     toasts: RwSignal<Vec<ToastData>>,
     i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
+    on_audio_text: Callback<String>,
 ) -> Option<InboxSeamGuard> {
     let closure = Closure::wrap(Box::new(move |payload: JsValue| {
-        handle_seam_payload(payload, &state, is_open, &inbox, toasts, i18n);
+        handle_seam_payload(
+            payload,
+            &state,
+            is_open,
+            &inbox,
+            toasts,
+            i18n,
+            on_audio_text,
+        );
     }) as Box<dyn Fn(JsValue)>);
     register_inbox_seam_with(closure)
 }
@@ -95,6 +104,7 @@ fn handle_seam_payload(
     inbox: &InboxSignals,
     toasts: RwSignal<Vec<ToastData>>,
     i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
+    on_audio_text: Callback<String>,
 ) {
     let parsed: SeamPayload = match serde_wasm_bindgen::from_value(payload) {
         Ok(parsed) => parsed,
@@ -123,6 +133,7 @@ fn handle_seam_payload(
                 state,
                 is_open,
                 inbox,
+                on_audio_text,
             );
         },
         AcceptDecision::RejectBusy => {
@@ -151,6 +162,10 @@ fn build_kind(parsed: SeamPayload) -> Option<InboxKind> {
             let mime = parsed.mime.unwrap_or_default();
             Some(InboxKind::File(construct_file(&file_name, &mime)?))
         },
+        "transcript" => {
+            let sentences = parsed.sentences?;
+            Some(InboxKind::TranscriptTexts(sentences))
+        },
         other => {
             warn!(kind = other, "inbox seam: unknown payload kind");
             None
@@ -178,13 +193,15 @@ fn construct_file(file_name: &str, mime: &str) -> Option<web_sys::File> {
 
 /// Applies the routed pipeline entry point. Every accepted route opens the
 /// drawer; the zero-tap contract is that the user lands on processing or on
-/// the word preview, never back on the source tabs.
+/// the word preview, never back on the source tabs. `on_audio_text` is the
+/// modal's audio fork: STT results land on the transcript screen.
 pub(in crate::pages::words) fn execute_route(
     route: InboxRoute,
     i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     state: &PreviewModalState,
     is_open: RwSignal<bool>,
     inbox: &InboxSignals,
+    on_audio_text: Callback<String>,
 ) {
     inbox.reset();
     is_open.set(true);
@@ -231,6 +248,11 @@ pub(in crate::pages::words) fn execute_route(
                 Callback::new(|_: String| {}),
             );
         },
+        InboxRoute::TranscriptScreen(sentences) => {
+            // Non-empty sentences guarantee the screen (count > 1).
+            inbox.active.set(true);
+            on_audio_text.run(sentences.join(""));
+        },
         InboxRoute::SttFile(file) => {
             inbox.active.set(true);
             let ctx = TranscribeContext {
@@ -243,7 +265,16 @@ pub(in crate::pages::words) fn execute_route(
                     run_id,
                 }),
             };
-            let on_text_extracted = text_callback(state, *inbox, run_id);
+            // The same run-fence wraps the transcript-screen opener: a late
+            // STT result must not yank a superseded run onto the screen.
+            let inbox_for_callback = *inbox;
+            let on_text_extracted = Callback::new(move |text: String| {
+                if inbox_for_callback.generation.get_untracked() != run_id {
+                    debug!(run_id, "inbox: stale extraction result dropped");
+                    return;
+                }
+                on_audio_text.run(text);
+            });
             transcribe_file(
                 i18n,
                 file,

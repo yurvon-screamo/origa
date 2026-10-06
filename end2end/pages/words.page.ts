@@ -35,6 +35,11 @@ export class WordsPage extends BasePage {
     readonly inboxError: Locator;
     readonly inboxOpenManuallyBtn: Locator;
 
+    // Transcript screen (AU-2)
+    readonly transcriptStage: Locator;
+    readonly transcriptSentences: Locator;
+    readonly transcriptAnalyzeBtn: Locator;
+
     // Anki import
     readonly ankiTab: Locator;
     readonly ankiDropZone: Locator;
@@ -100,6 +105,15 @@ export class WordsPage extends BasePage {
         this.inboxError = page.getByTestId("words-inbox-error");
         this.inboxOpenManuallyBtn = page.getByTestId(
             "words-inbox-open-manually-btn",
+        );
+
+        // Transcript screen (AU-2)
+        this.transcriptStage = page.getByTestId("words-transcript-stage");
+        this.transcriptSentences = page.getByTestId(
+            "words-transcript-sentence",
+        );
+        this.transcriptAnalyzeBtn = page.getByTestId(
+            "words-transcript-analyze-btn",
         );
 
         // Anki import
@@ -288,6 +302,52 @@ export class WordsPage extends BasePage {
                 window as unknown as Record<string, (p: unknown) => void>
             ).__ORIGA_TEST_INBOX__(payload);
         }, { kind: "file", fileName, mime });
+    }
+
+    async shareTranscript(sentenceCount: number): Promise<void> {
+        await this.expectInboxSeamAvailable();
+        const sentences = [
+            "私は本を読みます。",
+            "本は面白いです。",
+            "彼は行きます。",
+        ].slice(0, sentenceCount);
+        await this.page.evaluate((payload) => {
+            (
+                window as unknown as Record<string, (p: unknown) => void>
+            ).__ORIGA_TEST_INBOX__(payload);
+        }, { kind: "transcript", sentences });
+    }
+
+    async expectTranscriptStage(): Promise<void> {
+        await expect(this.transcriptStage).toBeVisible({ timeout: 10_000 });
+    }
+
+    async transcriptCheckedCount(): Promise<number> {
+        const sentences = this.transcriptSentences;
+        const count = await sentences.count();
+        let checked = 0;
+        for (let i = 0; i < count; i++) {
+            // The test id IS the checkbox input.
+            if (await sentences.nth(i).isChecked()) {
+                checked++;
+            }
+        }
+        return checked;
+    }
+
+    async uncheckTranscriptSentence(index: number): Promise<void> {
+        const checkbox = this.transcriptSentences.nth(index);
+        if (await checkbox.isChecked()) {
+            await this.transcriptSentences.nth(index).click();
+        }
+        await expect(checkbox).not.toBeChecked({ timeout: 2000 });
+    }
+
+    async analyzeSelectedSentences(): Promise<void> {
+        await this.transcriptAnalyzeBtn.click({ timeout: 5000 });
+        await this.analyzedWordItems
+            .first()
+            .waitFor({ state: "visible", timeout: 15_000 });
     }
 
     private async expectInboxSeamAvailable(): Promise<void> {

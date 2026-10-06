@@ -497,6 +497,11 @@
       "recording": "Listening — speak now",
       "live_unavailable": "Live microphone recognition is not available on this device."
     },
+    "transcript": {
+      "selected_count": "Selected: {}",
+      "analyze_selected": "Analyze selected",
+      "use_all_text": "Use all text"
+    },
     "no_translation_found": "No translation found — won't be added",
     "tooltip_no_translation": "Word not found in our dictionaries",
     "already_added": "Added"

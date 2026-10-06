@@ -45,3 +45,29 @@ When('пользователь возвращается к ручному вво
     const wordsPage = new WordsPage(page);
     await wordsPage.returnToManualInput();
 });
+
+When('пользователю поделились транскриптом из трёх предложений', async ({ page }) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.shareTranscript(3);
+});
+
+Then('отображается экран транскрипта', async ({ page }) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.expectTranscriptStage();
+});
+
+Then('все предложения предвыбраны', async ({ page }) => {
+    const wordsPage = new WordsPage(page);
+    const total = await wordsPage.transcriptSentences.count();
+    expect(await wordsPage.transcriptCheckedCount()).toBe(total);
+});
+
+When('пользователь снимает выделение со второго предложения', async ({ page }) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.uncheckTranscriptSentence(1);
+});
+
+When('подтверждает анализ выбранных предложений', async ({ page }) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.analyzeSelectedSentences();
+});

@@ -497,6 +497,11 @@
       "recording": "Слушаю — говорите сейчас",
       "live_unavailable": "Распознавание с микрофона недоступно на этом устройстве."
     },
+    "transcript": {
+      "selected_count": "Выбрано: {}",
+      "analyze_selected": "Анализировать выбранное",
+      "use_all_text": "Весь текст"
+    },
     "no_translation_found": "Нет перевода — не будет добавлено",
     "tooltip_no_translation": "Слово не найдено в наших словарях",
     "already_added": "Добавлено"

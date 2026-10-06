@@ -497,6 +497,11 @@
       "recording": "Đang lắng nghe — hãy nói",
       "live_unavailable": "Nhận dạng micrô trực tiếp không khả dụng trên thiết bị này."
     },
+    "transcript": {
+      "selected_count": "Đã chọn: {}",
+      "analyze_selected": "Phân tích mục đã chọn",
+      "use_all_text": "Dùng toàn bộ văn bản"
+    },
     "no_translation_found": "Không tìm thấy bản dịch — sẽ không được thêm",
     "tooltip_no_translation": "Không tìm thấy từ này trong từ điển của chúng tôi",
     "already_added": "Đã thêm"
