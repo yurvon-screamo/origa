@@ -30,8 +30,10 @@ impl PickerKind {
     /// name. Deriving (not hardcoding) matters: the OCR pipeline converts
     /// the file through FileReader, whose data-URL prefix is taken from
     /// this type — a wrong or empty type breaks the `data:image/` parse
-    /// even when the bytes are fine. Unknown extensions yield an empty
-    /// type and are rejected honestly by the consumers.
+    /// even when the bytes are fine. Unknown extensions keep an empty type
+    /// (reachable only via the dialog's All-files bypass): `is_image_file`
+    /// admits empty, so such a file fails later at the data-URL parse with
+    /// a raw error — honest, not localized.
     pub fn mime_for_name(&self, name: &str) -> &'static str {
         let lower = name.to_ascii_lowercase();
         match self {
