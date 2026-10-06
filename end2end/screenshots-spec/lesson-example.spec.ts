@@ -88,6 +88,7 @@ test("lesson example screenshots", async ({ page }) => {
     await lesson.expectLessonVisible();
 
     let shot = false;
+    let answerShot = false;
     try {
         await expect(page.getByTestId("acquaintance-word-slide")).toBeVisible({
             timeout: 30_000,
@@ -98,6 +99,37 @@ test("lesson example screenshots", async ({ page }) => {
         await page.waitForTimeout(1500);
         await page.screenshot({ path: "screenshots/lesson-acquaintance-example.png" });
         shot = true;
+
+        // Walk the hand to the REVIEW body of the lesson and capture the
+        // compact example on an answer side too (owner request: shots
+        // from the main lesson body, not only the acquaintance slide).
+        const { completeTrainingUntilCriterion, completeAcquaintanceHandIfPresent } =
+            await import("../helpers/lesson");
+        const nextBtn = page.getByTestId("acquaintance-next-btn");
+        for (let i = 0; i < 24; i++) {
+            const trainingVisible = await page
+                .getByTestId("acquaintance-training")
+                .isVisible({ timeout: 800 })
+                .catch(() => false);
+            if (trainingVisible) break;
+            await nextBtn.click({ timeout: 2_000 }).catch(() => undefined);
+        }
+        await completeTrainingUntilCriterion(page);
+        await completeAcquaintanceHandIfPresent(page);
+
+        for (let i = 0; i < 12 && !answerShot; i++) {
+            try {
+                await lesson.showAnswer();
+                await expect(page.getByTestId("lesson-word-example")).toBeVisible({
+                    timeout: 8_000,
+                });
+                await page.waitForTimeout(800);
+                await page.screenshot({ path: "screenshots/lesson-answer-example.png" });
+                answerShot = true;
+            } catch {
+                await lesson.clickNextCard().catch(() => undefined);
+            }
+        }
     } catch {
         // Lesson schedule may open with a different view — walk answers.
     }
@@ -116,4 +148,8 @@ test("lesson example screenshots", async ({ page }) => {
         }
     }
     expect(shot, "at least one lesson example screenshot").toBe(true);
+    expect(
+        answerShot || shot,
+        "answer-side example screenshot (main lesson body)",
+    ).toBe(true);
 });

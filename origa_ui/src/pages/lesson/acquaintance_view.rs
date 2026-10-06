@@ -582,6 +582,7 @@ fn WordSlide(
             </ul>
             <WordExampleLine
                 word=word_stored.get_value()
+                prominent=true
                 known_kanji=known_kanji.get_untracked()
                 native_language=native_language
             />

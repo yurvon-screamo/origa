@@ -13,6 +13,10 @@ use std::collections::HashSet;
 #[component]
 pub fn WordExampleLine(
     word: String,
+    /// Acquaintance-slide presentation: centered and larger. The answer
+    /// side keeps the compact left-aligned default.
+    #[prop(default = false)]
+    prominent: bool,
     known_kanji: HashSet<char>,
     native_language: NativeLanguage,
 ) -> impl IntoView {
@@ -35,7 +39,9 @@ pub fn WordExampleLine(
         let WordExample { detail, start, end } = we;
         let word = word.get_value();
         // Stored offsets win; when absent (kana variant of a kanji word),
-        // fall back to locating the surface form in the sentence.
+        // fall back to locating the surface form in the sentence. When
+        // NEITHER locates the word (mid empty), render one unhighlighted
+        // run — an empty highlight span reads as a stray tick mark.
         let (head, mid, tail) = if start >= 0 && end >= 0 {
             split_highlight(&detail.text, start, end)
         } else {
@@ -52,16 +58,32 @@ pub fn WordExampleLine(
             .unwrap_or_default()
             .to_string();
         let known = known.get_value();
+        let line_class = if prominent {
+            "word-example-line word-example-line-prominent"
+        } else {
+            "word-example-line"
+        };
         view! {
-            <div class="word-example-line" data-testid="lesson-word-example">
+            <div class=line_class data-testid="lesson-word-example">
                 <div class="word-example-line-ja">
-                    <FuriganaText text=head.clone() known_kanji=known.clone()/>
-                    <FuriganaText
-                        text=mid.clone()
-                        known_kanji=known.clone()
-                        class=String::from("word-example-highlight")
-                    />
-                    <FuriganaText text=tail.clone() known_kanji=known/>
+                    {if mid.is_empty() {
+                        // No highlight to draw: one run.
+                        view! {
+                            <FuriganaText text=head known_kanji=known/>
+                        }
+                        .into_any()
+                    } else {
+                        view! {
+                            <FuriganaText text=head.clone() known_kanji=known.clone()/>
+                            <FuriganaText
+                                text=mid
+                                known_kanji=known.clone()
+                                class=String::from("word-example-highlight")
+                            />
+                            <FuriganaText text=tail known_kanji=known/>
+                        }
+                        .into_any()
+                    }}
                 </div>
                 <Text size=TextSize::Small variant=TypographyVariant::Muted>
                     {translation}

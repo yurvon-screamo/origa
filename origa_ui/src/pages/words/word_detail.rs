@@ -297,7 +297,6 @@ pub fn WordDetail() -> impl IntoView {
                                             <ExampleCard
                                                 example=we
                                                 word=word()
-                                                known_kanji=known_kanji.get()
                                                 native_lang=native_lang.get()
                                             />
                                         }
@@ -345,15 +344,12 @@ pub fn WordDetail() -> impl IntoView {
 }
 
 #[component]
-fn ExampleCard(
-    example: WordExample,
-    word: String,
-    known_kanji: HashSet<char>,
-    native_lang: NativeLanguage,
-) -> impl IntoView {
+fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) -> impl IntoView {
     let WordExample { detail, start, end } = example;
     // Stored offsets win; when absent (kana variant of a kanji word), the
-    // surface form is re-located in the sentence.
+    // surface form is re-located in the sentence. When NEITHER locates the
+    // word (mid is empty), the sentence renders as one unhighlighted run —
+    // an empty highlight span would show up as a stray tick mark.
     let (head, mid, tail) = if start >= 0 && end >= 0 {
         split_highlight(&detail.text, start, end)
     } else {
@@ -368,22 +364,37 @@ fn ExampleCard(
             None => split_highlight(&detail.text, -1, -1),
         }
     };
+    let mid = if mid.is_empty() { None } else { Some(mid) };
 
     let translation = detail
         .translation(&native_lang)
         .unwrap_or_default()
         .to_string();
 
+    // The example is reference material: furigana is shown over EVERY
+    // kanji regardless of the reader's knowledge (an empty known set),
+    // unlike lesson surfaces where known kanji hide their readings.
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
             <div class="word-detail-example-ja">
-                <FuriganaText text=head.clone() known_kanji=known_kanji.clone()/>
-                <FuriganaText
-                    text=mid.clone()
-                    known_kanji=known_kanji.clone()
-                    class=String::from("word-example-highlight")
-                />
-                <FuriganaText text=tail.clone() known_kanji=known_kanji/>
+                {move || {
+                    match &mid {
+                        Some(mid) => view! {
+                            <FuriganaText text=head.clone() known_kanji=HashSet::new()/>
+                            <FuriganaText
+                                text=mid.clone()
+                                known_kanji=HashSet::new()
+                                class=String::from("word-example-highlight")
+                            />
+                            <FuriganaText text=tail.clone() known_kanji=HashSet::new()/>
+                        }
+                        .into_any(),
+                        None => view! {
+                            <FuriganaText text=head.clone() known_kanji=HashSet::new()/>
+                        }
+                        .into_any(),
+                    }
+                }}
             </div>
             <div class="word-detail-example-translation" data-testid="word-detail-example-translation">
                 {translation}

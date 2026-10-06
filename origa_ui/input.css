@@ -6936,6 +6936,9 @@ rt {
     background: var(--bg-paper);
     border: 1px solid var(--border-dark);
     padding: 28px 24px;
+    /* Breathing room between the hero card and the section heading that
+       follows it (TRANSLATION was flush against the border). */
+    margin-bottom: 24px;
 }
 
 .word-detail-hero-word {
@@ -7021,6 +7024,16 @@ rt {
 .word-example-line-ja {
     font-size: 17px;
     line-height: 1.6;
+}
+
+/* Acquaintance-slide presentation (#528): the example sits under the
+   centered word — center it and size it up to match the slide scale. */
+.word-example-line-prominent {
+    text-align: center;
+}
+
+.word-example-line-prominent .word-example-line-ja {
+    font-size: 24px;
 }
 
 @media (max-width: 640px) {

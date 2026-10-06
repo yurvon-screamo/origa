@@ -72,6 +72,14 @@ pub fn ExampleRecallCard(
                     let word = word.get_value();
                     let (head, mid, tail) = highlight_parts(&we, &word);
                     let known = known_kanji.get();
+                    if mid.is_empty() {
+                        // No highlight to draw: one run (an empty highlight
+                        // span reads as a stray tick mark).
+                        return view! {
+                            <FuriganaText text=head known_kanji=known/>
+                        }
+                        .into_any();
+                    }
                     view! {
                         <FuriganaText text=head.clone() known_kanji=known.clone()/>
                         <FuriganaText
