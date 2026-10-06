@@ -13,6 +13,8 @@ use crate::i18n::use_i18n;
 use crate::ui_components::{Alert, AlertType, Button, ButtonVariant};
 
 use super::audio_live_recorder::AudioLiveRecorder;
+#[cfg(target_arch = "wasm32")]
+use super::long_record_panel::LongRecordPanel;
 
 #[component]
 pub(super) fn AudioInputStage(
@@ -123,6 +125,25 @@ pub(super) fn AudioInputStage(
                                 on_text_extracted
                                 on_error
                             />
+                            {(
+                                #[cfg(target_arch = "wasm32")]
+                                view! {
+                                    <LongRecordPanel
+                                        disposed=Callback::new(move |_: ()| false)
+                                        on_text_extracted=on_text_extracted
+                                        on_error
+                                        audio_state
+                                        status_text
+                                        error_message
+                                    />
+                                }
+                                .into_any(),
+                                #[cfg(not(target_arch = "wasm32"))]
+                                view! {
+                                    <div data-testid="words-long-record-panel"></div>
+                                }
+                                .into_any(),
+                            )}
                             {move || {
                                 error_message.get().map(move |msg| view! {
                                     <div>

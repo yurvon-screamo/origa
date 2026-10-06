@@ -484,6 +484,9 @@
       "drop_zone": "Bấm hoặc kéo thả để tải âm thanh lên",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — dài tới 200 MB",
       "model_download_notice": "Lần đầu sử dụng sẽ tải mô hình nhận dạng giọng nói (~150 MB). Dữ liệu được lưu để dùng lại.",
+      "long_record_hint": "Ghi âm bài học hoặc podcast — bản chép sẽ được tách thành câu sau.",
+      "record_start": "Ghi âm",
+      "recording_secs": "Đang ghi… {}giây",
       "processing": "Đang xử lý âm thanh...",
       "fragment_progress": "Đoạn {}…",
       "interrupted_on_fragment": "Quá trình chuyển đổi bị gián đoạn tại đoạn {}: {}",
@@ -495,7 +498,8 @@
       "loading_model": "Đang tải mô hình cho {}...",
       "record": "Ghi âm từ micrô",
       "recording": "Đang lắng nghe — hãy nói",
-      "live_unavailable": "Nhận dạng micrô trực tiếp không khả dụng trên thiết bị này."
+      "live_unavailable": "Nhận dạng micrô trực tiếp không khả dụng trên thiết bị này.",
+      "record_stop": "Dừng"
     },
     "transcript": {
       "selected_count": "Đã chọn: {}",

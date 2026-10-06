@@ -122,7 +122,6 @@ pub fn AddWordsPreviewModal(
     // straight to analysis (a page photo has no sentence-selection value).
     let on_audio_text_extracted = {
         let state = state.clone();
-        let known_kanji = known_kanji;
         Callback::new(move |text: String| {
             let sentences = split_sentences(&text);
             match transcript_entry(sentences.len()) {

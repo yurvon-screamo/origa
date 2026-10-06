@@ -484,6 +484,9 @@
       "drop_zone": "Click or drag to upload audio",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — any length up to 200 MB",
       "model_download_notice": "First use downloads the speech-recognition model (~150 MB). The data is cached for reuse.",
+      "long_record_hint": "Record a lesson or podcast — the transcript is split into sentences afterwards.",
+      "record_start": "Record",
+      "recording_secs": "Recording… {}s",
       "processing": "Processing audio...",
       "fragment_progress": "Fragment {}…",
       "interrupted_on_fragment": "Transcription interrupted at fragment {}: {}",
@@ -495,7 +498,8 @@
       "loading_model": "Loading model for {}...",
       "record": "Record from microphone",
       "recording": "Listening — speak now",
-      "live_unavailable": "Live microphone recognition is not available on this device."
+      "live_unavailable": "Live microphone recognition is not available on this device.",
+      "record_stop": "Stop"
     },
     "transcript": {
       "selected_count": "Selected: {}",

@@ -148,7 +148,10 @@ async fn load_whisper_model_inner(
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn transcribe_wav_bytes(wav_bytes: &[u8], ctx: &TranscribeContext) -> Result<String, String> {
+pub(super) async fn transcribe_wav_bytes(
+    wav_bytes: &[u8],
+    ctx: &TranscribeContext,
+) -> Result<String, String> {
     // device-ai native file ASR is primary (no model download); Whisper WASM
     // is the fallback. Routing is runtime-resolved via capabilities, so on
     // Windows/Linux and the web the native path is unavailable and Whisper is
@@ -189,7 +192,7 @@ async fn transcribe_wav_bytes(wav_bytes: &[u8], ctx: &TranscribeContext) -> Resu
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-async fn transcribe_wav_bytes(
+pub(super) async fn transcribe_wav_bytes(
     _wav_bytes: &[u8],
     _ctx: &TranscribeContext,
 ) -> Result<String, String> {

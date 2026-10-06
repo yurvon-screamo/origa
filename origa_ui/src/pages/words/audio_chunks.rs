@@ -183,7 +183,7 @@ fn apply_fades(samples: &mut [f32], fade_samples: usize) {
 
 /// Encodes mono f32 samples as a PCM WAV file: 16-bit little-endian,
 /// standard 44-byte RIFF header.
-fn encode_wav_s16_mono(samples: &[f32], sample_rate: u32) -> Vec<u8> {
+pub(super) fn encode_wav_s16_mono(samples: &[f32], sample_rate: u32) -> Vec<u8> {
     let data_len = samples.len() * 2;
     let mut wav = Vec::with_capacity(44 + data_len);
     wav.extend_from_slice(b"RIFF");

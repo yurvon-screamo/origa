@@ -484,6 +484,9 @@
       "drop_zone": "클릭하거나 오디오를 끌어다 놓아 업로드하세요",
       "file_type": "WAV, MP3, M4A, OGG, FLAC — 최대 200 MB",
       "model_download_notice": "처음 사용 시 음성 인식 모델(~150 MB)을 다운로드합니다. 데이터는 재사용을 위해 캐시됩니다.",
+      "long_record_hint": "수업이나 팟캐스트를 녹음하세요 — 나중에 전사본이 문장으로 나뉩니다.",
+      "record_start": "녹음",
+      "recording_secs": "녹음 중… {}초",
       "processing": "오디오 처리 중...",
       "fragment_progress": "조각 {}…",
       "interrupted_on_fragment": "{}번째 조각에서 변환이 중단되었습니다: {}",
@@ -495,7 +498,8 @@
       "loading_model": "{} 모델 불러오는 중...",
       "record": "마이크로 녹음",
       "recording": "듣고 있습니다 — 말씀하세요",
-      "live_unavailable": "이 기기에서는 실시간 마이크 인식을 사용할 수 없습니다."
+      "live_unavailable": "이 기기에서는 실시간 마이크 인식을 사용할 수 없습니다.",
+      "record_stop": "정지"
     },
     "transcript": {
       "selected_count": "선택됨: {}",
