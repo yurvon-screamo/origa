@@ -11,6 +11,19 @@ repository = "https://github.com/yurvon-screamo/origa"
 readme = "README.md"
 
 [workspace.dependencies]
+# Audio decoding (pure Rust, wasm32-compatible): mp3/m4a(aac-lc)/ogg/vorbis/
+# flac/wav via feature-selected codecs. No opus/webm — symphonia 0.5 has no
+# opus decoder. Frontend-only consumer (origa_ui).
+symphonia = { version = "0.5", default-features = false, features = [
+    "aac",
+    "flac",
+    "isomp4",
+    "mp3",
+    "ogg",
+    "pcm",
+    "vorbis",
+    "wav",
+] }
 # System
 tokio = { version = "1.48", default-features = false, features = [
     "rt",

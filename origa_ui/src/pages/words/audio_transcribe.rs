@@ -1,9 +1,12 @@
-//! Reusable audio-file speech-to-text pipeline.
+//! Audio speech-to-text pipeline shared by the Audio tab and the inbox.
 //!
-//! Extracted from `audio_input_stage` so the inbox (zero-tap intake) and the
-//! drawer's Audio tab run the exact same validation and transcription path:
-//! extension whitelist, WAV-only rule on the WASM fallback, 50 MB cap, then
-//! native device-ai file ASR with the Whisper WASM fallback.
+//! `transcribe_file` is the single entry point: it validates the file size,
+//! streams the audio through [`super::audio_chunks::ChunkedDecoder`] into
+//! 30-second WAV chunks, and transcribes each chunk via native device-ai
+//! with the Whisper WASM fallback. Chunking removes the old wav-only /
+//! 50 MB / single-shot limits: format validation lives entirely in the
+//! symphonia probe (any decodable container of any length works), and a
+//! cancelled/superseded run is fenced by the stale-run token.
 
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -14,18 +17,19 @@ use std::cell::{Cell, RefCell};
 #[cfg(target_arch = "wasm32")]
 use std::rc::Rc;
 #[cfg(target_arch = "wasm32")]
-use tracing::{error, info};
+use tracing::info;
+use tracing::{error, warn};
 use wasm_bindgen::JsCast;
 
 #[cfg(target_arch = "wasm32")]
 use crate::core::config::whisper_base_url;
 #[cfg(target_arch = "wasm32")]
 use crate::loaders::whisper_model_loader::WhisperModelLoader;
-#[cfg(target_arch = "wasm32")]
 use crate::utils::file::read_file_as_bytes;
 #[cfg(target_arch = "wasm32")]
 use base64::{Engine, engine::general_purpose::STANDARD};
 
+use super::audio_chunks::{ChunkedDecoder, WavChunk, join_chunk_texts};
 /// Progress state of the audio transcription pipeline. The Audio tab and the
 /// inbox both render their progress UI from this single source.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -144,27 +148,13 @@ async fn load_whisper_model_inner(
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn transcribe_via_wasm(
-    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
-    file: &web_sys::File,
-    name: &str,
-    ctx: &TranscribeContext,
-) -> Result<String, String> {
-    let bytes = read_file_as_bytes(file).await.map_err(|e| {
-        error!(error = %e, "Audio file read failed");
-        if !ctx.is_stale() {
-            ctx.audio_state.set(AudioState::Error);
-            ctx.error_message.set(Some(e.clone()));
-        }
-        e
-    })?;
-
+async fn transcribe_wav_bytes(wav_bytes: &[u8], ctx: &TranscribeContext) -> Result<String, String> {
     // device-ai native file ASR is primary (no model download); Whisper WASM
     // is the fallback. Routing is runtime-resolved via capabilities, so on
     // Windows/Linux and the web the native path is unavailable and Whisper is
     // used transparently.
     if let Some(text) =
-        super::asr_provider::recognize_file_via_device_ai(&STANDARD.encode(&bytes)).await
+        super::asr_provider::recognize_file_via_device_ai(&STANDARD.encode(wav_bytes)).await
     {
         return Ok(text);
     }
@@ -180,63 +170,45 @@ async fn transcribe_via_wasm(
             e
         })?;
 
-    // The i18n context is read off the reactive scope inside an async fn;
-    // wrap in untrack to silence the reactive_graph warning without
-    // pretending to subscribe.
-    let loading_label = leptos::prelude::untrack(|| {
-        i18n.get_keys()
-            .words()
-            .audio()
-            .loading_model()
-            .inner()
-            .to_string()
-    });
-    if !ctx.is_stale() {
-        ctx.status_text
-            .set(Some(loading_label.replacen("{}", name, 1)));
-        ctx.audio_state.set(AudioState::Processing);
-    }
-
     let use_case = origa::use_cases::TranscribeAudioUseCase::new();
     let infer_start = web_sys::js_sys::Date::now();
-    let result = use_case.execute(model.clone(), &bytes).await.map_err(|e| {
-        error!(error = %e, "Whisper transcription failed");
-        format!("Transcription failed: {:?}", e)
-    });
+    let result = use_case
+        .execute(model.clone(), wav_bytes)
+        .await
+        .map_err(|e| {
+            error!(error = %e, "Whisper transcription failed");
+            format!("Transcription failed: {:?}", e)
+        });
     let infer_ms = web_sys::js_sys::Date::now() - infer_start;
     info!(
         infer_ms,
-        bytes_len = bytes.len(),
+        bytes_len = wav_bytes.len(),
         "Whisper inference timing"
     );
     result
 }
 
-#[cfg(target_arch = "wasm32")]
-async fn dispatch_transcription(
-    i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
-    file: web_sys::File,
-    name: String,
-    ctx: TranscribeContext,
-) -> Result<String, String> {
-    transcribe_via_wasm(i18n, &file, &name, &ctx).await
-}
-
 #[cfg(not(target_arch = "wasm32"))]
-async fn dispatch_transcription(
-    _i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
-    _file: web_sys::File,
-    _name: String,
-    _ctx: TranscribeContext,
+async fn transcribe_wav_bytes(
+    _wav_bytes: &[u8],
+    _ctx: &TranscribeContext,
 ) -> Result<String, String> {
     Err("Speech-to-text requires WASM runtime".to_string())
 }
 
-/// Validates and transcribes one audio file.
+/// Upper file-size bound. Chunked decoding keeps peak memory near
+/// `input bytes + one chunk`, so the cap guards memory, not duration.
+const MAX_FILE_SIZE_MB: f64 = 200.0;
+
+/// Validates and transcribes one audio file of any supported format and
+/// length.
 ///
-/// Rejects unsupported extensions, non-WAV files on the WASM fallback and
-/// files over 50 MB *before* touching the pipeline state; every rejection
-/// lands in `ctx.error_message` without flipping `audio_state`.
+/// Format validation lives entirely in the symphonia probe — a broken or
+/// unsupported file surfaces as a decode error without touching the pipeline
+/// state. Transcription runs per 30-second chunk: empty chunks (silence/
+/// music) are skipped, and a chunk error aborts with the fragment number
+/// while partial text is intentionally not delivered (the error plus the
+/// manual-input fallback is the recovery path).
 pub(super) fn transcribe_file(
     i18n: leptos_i18n::I18nContext<crate::i18n::Locale>,
     file: web_sys::File,
@@ -245,40 +217,7 @@ pub(super) fn transcribe_file(
     on_error: Callback<String>,
 ) {
     let name = file.name();
-    let is_wav = name.ends_with(".wav");
-    let valid_ext = is_wav
-        || name.ends_with(".mp3")
-        || name.ends_with(".webm")
-        || name.ends_with(".m4a")
-        || name.ends_with(".ogg");
-
-    if !valid_ext {
-        ctx.error_message.set(Some(
-            i18n.get_keys()
-                .words()
-                .audio()
-                .unsupported_format()
-                .inner()
-                .to_string(),
-        ));
-        return;
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    if !is_wav {
-        ctx.error_message.set(Some(
-            i18n.get_keys()
-                .words()
-                .audio()
-                .wav_only()
-                .inner()
-                .to_string(),
-        ));
-        return;
-    }
-
-    let max_size_mb = 50.0;
-    if file.size() / (1024.0 * 1024.0) > max_size_mb {
+    if file.size() / (1024.0 * 1024.0) > MAX_FILE_SIZE_MB {
         ctx.error_message.set(Some(
             i18n.get_keys()
                 .words()
@@ -286,7 +225,7 @@ pub(super) fn transcribe_file(
                 .file_too_large()
                 .inner()
                 .to_string()
-                .replacen("{}", &max_size_mb.to_string(), 1),
+                .replacen("{}", &MAX_FILE_SIZE_MB.to_string(), 1),
         ));
         return;
     }
@@ -303,39 +242,145 @@ pub(super) fn transcribe_file(
     ));
 
     spawn_local(async move {
-        let result = dispatch_transcription(i18n, file, name, ctx.clone()).await;
+        let bytes = match read_file_as_bytes(&file).await {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                error!(error = %e, "Audio file read failed");
+                if !ctx.disposed.is_disposed() && !ctx.is_stale() {
+                    ctx.audio_state.set(AudioState::Error);
+                    ctx.error_message.set(Some(e.clone()));
+                    on_error.run(e);
+                }
+                return;
+            },
+        };
 
-        // A superseded or cancelled run must touch neither the shared
-        // state nor the callbacks — its result belongs to no visible run.
+        let mut decoder = match ChunkedDecoder::new(bytes) {
+            Ok(decoder) => decoder,
+            Err(e) => {
+                warn!(error = %e, "Audio decode failed");
+                if !ctx.disposed.is_disposed() && !ctx.is_stale() {
+                    ctx.audio_state.set(AudioState::Error);
+                    ctx.error_message.set(Some(e));
+                    // No details to surface beyond the probe message — the
+                    // manual-input fallback covers the recovery path.
+                    on_error.run(String::new());
+                }
+                return;
+            },
+        };
+
+        let ctx_for_loop = ctx.clone();
+        let joined = match run_chunk_loop(
+            || decoder.next_chunk(),
+            || ctx.disposed.is_disposed() || ctx.is_stale(),
+            |fragment| {
+                if !ctx.is_stale() {
+                    ctx.status_text.set(Some(
+                        i18n.get_keys()
+                            .words()
+                            .audio()
+                            .fragment_progress()
+                            .inner()
+                            .to_string()
+                            .replacen("{}", &fragment.to_string(), 1),
+                    ));
+                    ctx.audio_state.set(AudioState::Processing);
+                }
+            },
+            |wav_bytes| {
+                let ctx = ctx_for_loop.clone();
+                async move { transcribe_wav_bytes(&wav_bytes, &ctx).await }
+            },
+        )
+        .await
+        {
+            Ok(text) => text,
+            Err((fragment, reason)) => {
+                let message = i18n
+                    .get_keys()
+                    .words()
+                    .audio()
+                    .interrupted_on_fragment()
+                    .inner()
+                    .to_string()
+                    .replacen("{}", &fragment.to_string(), 1)
+                    .replacen("{}", &reason, 1);
+                error!(fragment, error = %reason, "Chunked transcription aborted");
+                if !ctx.disposed.is_disposed() && !ctx.is_stale() {
+                    ctx.audio_state.set(AudioState::Error);
+                    ctx.error_message.set(Some(message.clone()));
+                    on_error.run(message);
+                }
+                return;
+            },
+        };
+
         if ctx.disposed.is_disposed() || ctx.is_stale() {
             return;
         }
 
-        match result {
-            Ok(text) => {
-                if text.trim().is_empty() {
-                    ctx.audio_state.set(AudioState::Error);
-                    ctx.error_message.set(Some(
-                        i18n.get_keys()
-                            .words()
-                            .audio()
-                            .no_speech()
-                            .inner()
-                            .to_string(),
-                    ));
-                } else {
-                    ctx.audio_state.set(AudioState::Ready);
-                    ctx.status_text.set(None);
-                    on_text_extracted.run(text);
-                }
-            },
-            Err(e) => {
-                ctx.audio_state.set(AudioState::Error);
-                ctx.error_message.set(Some(e.clone()));
-                on_error.run(e);
-            },
+        if joined.trim().is_empty() {
+            ctx.audio_state.set(AudioState::Error);
+            ctx.error_message.set(Some(
+                i18n.get_keys()
+                    .words()
+                    .audio()
+                    .no_speech()
+                    .inner()
+                    .to_string(),
+            ));
+            return;
         }
+
+        ctx.audio_state.set(AudioState::Ready);
+        ctx.status_text.set(None);
+        on_text_extracted.run(joined);
     });
+}
+
+/// The chunk loop, separated from UI wiring for testability.
+///
+/// Returns the joined transcription, or `(fragment_number, reason)` when a
+/// chunk fails. Silent chunks are skipped; a cancelled run yields the
+/// accumulated text, which the caller discards via its own stale check.
+async fn run_chunk_loop<D, C, F, Fut, P>(
+    mut next_chunk: D,
+    is_cancelled: C,
+    mut on_fragment: P,
+    mut recognize: F,
+) -> Result<String, (u32, String)>
+where
+    D: FnMut() -> Option<Result<WavChunk, String>>,
+    C: Fn() -> bool,
+    P: FnMut(u32),
+    F: FnMut(Vec<u8>) -> Fut,
+    Fut: std::future::Future<Output = Result<String, String>>,
+{
+    let mut texts: Vec<String> = Vec::new();
+    let mut fragment = 0_u32;
+    loop {
+        if is_cancelled() {
+            return Ok(join_chunk_texts(&texts));
+        }
+        let Some(chunk_result) = next_chunk() else {
+            break;
+        };
+        let chunk = match chunk_result {
+            Ok(chunk) => chunk,
+            Err(reason) => return Err((fragment + 1, reason)),
+        };
+
+        fragment += 1;
+        on_fragment(fragment);
+
+        match recognize(chunk.wav_bytes).await {
+            Ok(text) if text.trim().is_empty() => {}, // silent chunk — skip
+            Ok(text) => texts.push(text),
+            Err(reason) => return Err((fragment, reason)),
+        }
+    }
+    Ok(join_chunk_texts(&texts))
 }
 
 /// Reads the selected file out of a file-input change event. Shared by the

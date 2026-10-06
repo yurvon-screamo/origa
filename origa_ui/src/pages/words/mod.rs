@@ -5,6 +5,7 @@ mod add_words_preview_modal_state;
 pub(crate) mod analyzed_word_item;
 mod anki_import_stage;
 mod asr_provider;
+mod audio_chunks;
 mod audio_input_stage;
 mod audio_live_recorder;
 mod audio_transcribe;

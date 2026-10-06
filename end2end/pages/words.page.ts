@@ -297,10 +297,19 @@ export class WordsPage extends BasePage {
                     window as unknown as Record<string, unknown>
                 ).__ORIGA_TEST_INBOX__ === "function",
         );
-        expect(
-            registered,
-            "inbox e2e seam is not registered — check the __origa_e2e_seam localStorage opt-in",
-        ).toBe(true);
+        if (!registered) {
+            const diagnostics = await this.page.evaluate(() => ({
+                flag: window.localStorage.getItem("__origa_e2e_seam"),
+                origin: window.location.origin,
+                wordsMounted: Boolean(
+                    document.querySelector('[data-testid="words-page"]'),
+                ),
+            }));
+            expect(
+                registered,
+                `inbox e2e seam is not registered — diagnostics: ${JSON.stringify(diagnostics)}`,
+            ).toBe(true);
+        }
     }
 
     /** The drawer is open and already showing analyzed words — no tabs. */
