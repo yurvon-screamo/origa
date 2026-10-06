@@ -6,7 +6,7 @@ use leptos::task::spawn_local;
 
 use crate::loaders::example_loader::{WordExample, load_word_examples};
 use crate::pages::words::split_highlight;
-use crate::ui_components::{FuriganaText, Text, TextSize, TypographyVariant};
+use crate::ui_components::{AudioButtons, FuriganaText, Text, TextSize, TypographyVariant};
 use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
@@ -37,6 +37,7 @@ pub fn WordExampleLine(
             return ().into_any();
         };
         let WordExample { detail, start, end } = we;
+        let sentence_text = detail.text.clone();
         let word = word.get_value();
         // Stored offsets win; when absent (kana variant of a kanji word),
         // fall back to locating the surface form in the sentence. When
@@ -85,9 +86,16 @@ pub fn WordExampleLine(
                         .into_any()
                     }}
                 </div>
-                <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                    {translation}
-                </Text>
+                <div class="word-example-line-meta">
+                    <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                        {translation}
+                    </Text>
+                    <AudioButtons
+                        text=sentence_text
+                        audio_path=None
+                        test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
+                    />
+                </div>
             </div>
         }
         .into_any()
