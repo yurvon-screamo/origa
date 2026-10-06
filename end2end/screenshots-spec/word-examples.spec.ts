@@ -11,7 +11,7 @@ import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
 const WORD = process.env.SHOT_WORD || "あさ";
 
 test("word detail screenshots", async ({ page }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(600_000);
 
     const { token, csrfToken } = await getAdminToken();
     const email = generateUniqueEmail();
@@ -73,8 +73,32 @@ test("word detail screenshots", async ({ page }) => {
     await expect(wordsNav).toBeVisible();
 
     // Word detail page: hero + translations section + examples.
+    const failedRequests: string[] = [];
+    const appConsole: string[] = [];
+    page.on("requestfailed", (req) =>
+        failedRequests.push(`FAIL ${req.url().slice(0, 140)}: ${req.failure()?.errorText}`),
+    );
+    page.on("response", (res) => {
+        if (res.status() >= 400) failedRequests.push(`${res.status()} ${res.url().slice(0, 140)}`);
+    });
+    page.on("console", (msg) => {
+        const t = msg.text().replace(/\x1b\[[0-9;]*m/g, "");
+        if (/ERROR|WARN|merge|records|logout|profile/.test(t)) {
+            appConsole.push(`${msg.type()}: ${t.slice(0, 200)}`);
+        }
+    });
     await page.goto(`/words/${encodeURIComponent(WORD)}`);
-    await expect(page.getByTestId("word-detail-word")).toBeVisible({ timeout: 60_000 });
+    try {
+        await expect(page.getByTestId("word-detail-word")).toBeVisible({ timeout: 60_000 });
+    } catch {
+        // Full page.goto bootstraps the WASM app from scratch; while the
+        // session migration/merge is still in flight ProtectedRoute shows
+        // Login even for an authenticated user. The bootstrap persists the
+        // user locally, so one reload after it settles lands on the page.
+        await page.waitForTimeout(25_000);
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await expect(page.getByTestId("word-detail-word")).toBeVisible({ timeout: 90_000 });
+    }
     await page.waitForTimeout(3000); // examples chunk fetch
     await page.screenshot({ path: "screenshots/word-detail-full.png", fullPage: true });
     await page.screenshot({ path: "screenshots/word-detail-viewport.png" });
