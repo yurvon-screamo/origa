@@ -47,7 +47,14 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                     study_card=card
                     on_open_detail_cb=Callback::new(move |w: String| {
                         let navigate = use_navigate();
-                        navigate(&format!("/words/{}", w), Default::default());
+                        let path = format!(
+                            "/words/{}",
+                            percent_encoding::utf8_percent_encode(
+                                &w,
+                                percent_encoding::NON_ALPHANUMERIC
+                            )
+                        );
+                        navigate(&path, Default::default());
                     })
                     native_language=ctx.native_lang
                     known_kanji=ctx.known_kanji.get()

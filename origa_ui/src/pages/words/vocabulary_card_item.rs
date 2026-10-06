@@ -7,6 +7,7 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
+use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
 use ulid::Ulid;
 
 #[component]
@@ -39,8 +40,14 @@ pub fn VocabularyCardItem(
         _ => "?".to_string(),
     };
     let word_for_link = word.clone();
-    // Entry point to the #528 detail page: the word box navigates on
-    // click; the callback (with the router) is injected by the parent.
+    // Entry point to the #528 detail page: a real <a href> keeps the
+    // native link semantics (keyboard Tab+Enter, screen readers,
+    // middle/ctrl-click opens a new tab); a plain left-click is upgraded
+    // to in-SPA navigation through the callback injected by the parent.
+    let detail_href = format!(
+        "/words/{}",
+        utf8_percent_encode(&word_for_link, NON_ALPHANUMERIC)
+    );
     let study_card_for_meaning = study_card.clone();
     let answer_data = Memo::new(move |_| {
         let lang = native_language.get();
@@ -74,13 +81,23 @@ pub fn VocabularyCardItem(
                 </Tag>
             </div>
             <div class="word-card-body">
-                <div
+                <a
                     class="word-card-word-box cursor-pointer"
                     data-testid="words-card-word-link"
-                    on:click=move |_: leptos::ev::MouseEvent| on_open_detail_cb.run(word_for_link.clone())
+                    href=detail_href.clone()
+                    on:click=move |ev: leptos::ev::MouseEvent| {
+                        // Modifier/middle clicks keep the native link
+                        // behaviour (new tab); only a plain left-click
+                        // navigates inside the SPA.
+                        if ev.meta_key() || ev.ctrl_key() || ev.shift_key() || ev.alt_key() {
+                            return;
+                        }
+                        ev.prevent_default();
+                        on_open_detail_cb.run(word_for_link.clone());
+                    }
                 >
                     <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
-                </div>
+                </a>
                 <div class="word-card-content">
                     <WordTranslations
                         translations=translations

@@ -20,9 +20,13 @@ use std::collections::HashSet;
 pub fn ExampleRecallCard(
     card: Card,
     sentence_id: u32,
+    /// Char offsets of the word inside the sentence, carried by
+    /// `LessonCardView::Example` from the CDN index (-1 = unlocated).
+    start: i32,
+    end: i32,
     on_advance: Callback<()>,
-    known_kanji: HashSet<char>,
-    native_language: NativeLanguage,
+    known_kanji: Signal<HashSet<char>>,
+    native_language: Signal<NativeLanguage>,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let word = match &card {
@@ -30,33 +34,44 @@ pub fn ExampleRecallCard(
         _ => String::new(),
     };
     let word = StoredValue::new(word);
-    let known = StoredValue::new(known_kanji);
 
     let example: RwSignal<Option<WordExample>> = RwSignal::new(None);
+    // A failed chunk load (CDN 404, offline, corrupt file) must not turn
+    // the card into a dead end: the fallback renders an explicit
+    // «unavailable» notice with the advance button, so the lesson always
+    // has a way forward.
+    let load_failed: RwSignal<bool> = RwSignal::new(false);
     spawn_local(async move {
-        if let Ok(detail) = load_example_detail(sentence_id).await {
-            example.set(Some(WordExample {
-                detail,
-                // offsets are word-specific and unknown in this view — the
-                // highlight is re-located from the word surface
-                start: -1,
-                end: -1,
-            }));
+        match load_example_detail(sentence_id).await {
+            Ok(detail) => example.set(Some(WordExample { detail, start, end })),
+            Err(_) => load_failed.set(true),
         }
     });
 
     let understood: RwSignal<Option<bool>> = RwSignal::new(None);
 
+    let next_button = move || {
+        view! {
+            <Button
+                variant=ButtonVariant::Olive
+                on_click=Callback::new(move |_| on_advance.run(()))
+                test_id="lesson-example-next"
+            >
+                {crate::i18n::t!(i18n, lesson.next)}
+            </Button>
+        }
+    };
+
     view! {
         <div class="example-recall" data-testid="lesson-example-recall">
-            <div class="example-recall-ja">
+            <div class="example-recall-ja" data-testid="lesson-example-ja">
                 {move || {
                     let Some(we) = example.get() else {
                         return ().into_any();
                     };
                     let word = word.get_value();
                     let (head, mid, tail) = highlight_parts(&we, &word);
-                    let known = known.get_value();
+                    let known = known_kanji.get();
                     view! {
                         <FuriganaText text=head.clone() known_kanji=known.clone()/>
                         <FuriganaText
@@ -71,12 +86,26 @@ pub fn ExampleRecallCard(
             </div>
 
             {move || {
+                if load_failed.get() {
+                    return view! {
+                        <div
+                            class="example-recall-unavailable"
+                            data-testid="lesson-example-unavailable"
+                        >
+                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                                {i18n.get_keys().lesson().example_unavailable().inner().to_string()}
+                            </Text>
+                        </div>
+                        {next_button()}
+                    }
+                    .into_any();
+                }
                 let Some(we) = example.get() else {
                     return ().into_any();
                 };
                 let translation = we
                     .detail
-                    .translation(&native_language)
+                    .translation(&native_language.get())
                     .unwrap_or_default()
                     .to_string();
 
@@ -94,8 +123,8 @@ pub fn ExampleRecallCard(
                                 >
                                     {i18n
                                         .get_keys()
-                                        .words()
-                                        .detail_example_understood()
+                                        .lesson()
+                                        .example_recall_understood()
                                         .inner()
                                         .to_string()}
                                 </Button>
@@ -106,8 +135,8 @@ pub fn ExampleRecallCard(
                                 >
                                     {i18n
                                         .get_keys()
-                                        .words()
-                                        .detail_example_not_understood()
+                                        .lesson()
+                                        .example_recall_not_understood()
                                         .inner()
                                         .to_string()}
                                 </Button>
@@ -131,20 +160,14 @@ pub fn ExampleRecallCard(
 
             {move || {
                 // Advance appears once the learner self-assessed (the
-                // translation has been revealed).
+                // translation has been revealed). The self-assessment
+                // value itself is intentional design (#528): a reflection
+                // affordance with NO downstream effect — the owner
+                // explicitly rejected tying it to FSRS or any gating.
                 if understood.get().is_none() {
                     return ().into_any();
                 }
-                view! {
-                    <Button
-                        variant=ButtonVariant::Olive
-                        on_click=Callback::new(move |_| on_advance.run(()))
-                        test_id="lesson-example-next"
-                    >
-                        {crate::i18n::t!(i18n, lesson.next)}
-                    </Button>
-                }
-                .into_any()
+                next_button().into_any()
             }}
         </div>
     }

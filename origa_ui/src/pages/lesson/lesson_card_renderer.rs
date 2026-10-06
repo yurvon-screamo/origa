@@ -31,18 +31,25 @@ pub(in crate::pages::lesson) fn render_lesson_card(
 ) -> impl IntoView {
     // #528: the example-recall view owns its whole interaction flow
     // (sentence question, understood/didn't-understand, translation reveal)
-    // and advances the lesson WITHOUT an FSRS rating.
+    // and advances the lesson WITHOUT an FSRS rating. The stored char
+    // offsets from the CDN index locate the word highlight; the view
+    // falls back to a surface find only when they are unlocated (-1).
     if let LessonCardView::Example {
-        card, sentence_id, ..
+        card,
+        sentence_id,
+        start,
+        end,
     } = lesson_card.clone().into_view()
     {
         return view! {
             <ExampleRecallCard
                 card=card
                 sentence_id=sentence_id
+                start=start
+                end=end
                 on_advance=on_example_advance
-                known_kanji=known_kanji.get()
-                native_language=native_language.get()
+                known_kanji=known_kanji
+                native_language=native_language.into()
             />
         }
         .into_any();

@@ -16,6 +16,7 @@ algorithmic checks only (ja language, word present, length, sentence end).
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -29,6 +30,28 @@ DATA = REPO / "cdn" / "examples" / "data"
 INDEX = REPO / "cdn" / "examples" / "index.json"
 TR_URL = "http://127.0.0.1:8091/v1/chat/completions"
 LOCALES = ("ru", "vi", "ko")
+
+
+def atomic_write(path: Path, payload: str) -> None:
+    """Write via tmp + os.replace so an interrupted run never leaves a
+    half-written chunk or index behind (chunks and index must never
+    desync: readers locate rows by sid → chunk)."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(payload, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def word_offsets(ja: str, word: str) -> tuple[int, int]:
+    """Char offsets of the word (or its dictionary-stem form for
+    conjugated usages) inside the sentence; (-1, -1) when unlocated."""
+    if word and word in ja:
+        start = ja.count("", 0, ja.index(word)) - 1
+        return start, start + len(word)
+    stem = word[:-1] if len(word) > 1 else ""
+    if stem and stem in ja:
+        start = ja.count("", 0, ja.index(stem)) - 1
+        return start, start + len(stem)
+    return -1, -1
 
 GEN_SYS = (
     "You are a Japanese teacher writing textbook example sentences. "
@@ -139,11 +162,17 @@ def main() -> int:
                 )
             except Exception:
                 continue
+            # Algorithmic gates: ja language, length, sentence end, and
+            # the target word actually present (dictionary form or its
+            # stem for conjugated usages) — an example the learner cannot
+            # locate the word in is unanswerable.
+            start, end = word_offsets(ja, word)
             ok = (
                 ja
                 and len(ja) <= 60
                 and ja.endswith(SENT_END)
                 and detect_language(ja) == "ja"
+                and start >= 0
             )
             if not ok:
                 continue
@@ -167,7 +196,10 @@ def main() -> int:
             refs = []
             for row in rows:
                 row["i"] = next_sid
-                refs.append([next_sid, -1, -1])
+                # offsets live in the index refs only; the row itself
+                # keeps the furigana list ("f") untouched.
+                start, end = word_offsets(row["x"], word)
+                refs.append([next_sid, start, end])
                 generated.append(row)
                 next_sid += 1
             words[word] = {"refs": refs}
@@ -179,16 +211,16 @@ def main() -> int:
     all_rows.extend(generated)
     chunks = [all_rows[i : i + 1000] for i in range(0, len(all_rows), 1000)]
     for idx, chunk in enumerate(chunks):
-        (DATA / f"s{idx:04d}.json").write_text(
+        atomic_write(
+            DATA / f"s{idx:04d}.json",
             json.dumps(chunk, ensure_ascii=False, separators=(",", ":")),
-            encoding="utf-8",
         )
 
     index["words"] = dict(sorted(words.items()))
     index["s"] = len(all_rows)
-    INDEX.write_text(
+    atomic_write(
+        INDEX,
         json.dumps(index, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
-        encoding="utf-8",
     )
     filled = sum(1 for w in holes if words.get(w, {}).get("refs"))
     print(f"generated sentences: {len(generated)} (words filled: {filled})",

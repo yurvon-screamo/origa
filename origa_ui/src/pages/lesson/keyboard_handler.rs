@@ -68,6 +68,17 @@ pub fn create_keyboard_handler(
             return;
         }
 
+        // Example recall (#528) owns its whole interaction: the
+        // self-assessment buttons (understood / not understood →
+        // translation reveal) and the rating-free advance. The shared
+        // handler MUST stay silent here: Space would force-show the
+        // answer and 1-4 would push a real FSRS rating through on_rate —
+        // breaking the «self-assessment never touches FSRS» invariant of
+        // the view and skipping the translation reveal.
+        if current_card.is_some_and(|c| matches!(c.view(), LessonCardView::Example { .. })) {
+            return;
+        }
+
         let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)

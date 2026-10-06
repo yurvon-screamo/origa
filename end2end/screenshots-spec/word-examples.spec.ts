@@ -19,36 +19,23 @@ test("word detail screenshots", async ({ page }) => {
 
     // Pre-approve the one-time resource download before any app script
     // runs — otherwise the consent overlay intercepts every click on a
-    // fresh browser context (the 06:xx morning failures).
+    // fresh browser context.
     await page.context().addInitScript(() => {
         if (window.location.origin === "http://localhost:1420") {
             window.localStorage.setItem("origa_resource_download_consented", "true");
         }
     });
 
-    const login = new LoginPage(page);
-    const appConsole: string[] = [];
-    page.on("console", (msg) => {
-        const t = msg.text().replace(/\x1b\[[0-9;]*m/g, "");
-        if (/ERROR|WARN|Login|login|profile|merge|records/.test(t)) {
-            appConsole.push(`${msg.type()}: ${t.slice(0, 220)}`);
-        }
-    });
-    // Pre-approve the one-time resource download before any app script
-    // runs (same trick as helpers/auth.ts uiLogin).
-    await page.context().addInitScript(() => {
-        if (window.location.origin === "http://localhost:1420") {
-            window.localStorage.setItem("origa_resource_download_consented", "true");
-        }
-    });
     // Cold-start flake: the resource-loading overlay can intercept the
     // first form interaction while bundles download — full retries, like
-    // helpers/auth uiLogin.
+    // helpers/auth uiLogin. NOTE: the localStorage.clear() below runs
+    // after the app document booted, so the consent flag set by the init
+    // script has already been read — the clear only wipes stale sessions
+    // from earlier manual debugging.
+    const login = new LoginPage(page);
     let loggedIn = false;
     for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
         await page.goto("/", { waitUntil: "domcontentloaded" });
-        // Wipe any stale injected sessions (earlier manual debugging) so
-        // this attempt starts from a clean profile.
         await page.evaluate(() => localStorage.clear());
         try {
             await login.expandPasswordForm();
@@ -70,9 +57,7 @@ test("word detail screenshots", async ({ page }) => {
         if (await markAll.isVisible({ timeout: 10_000 }).catch(() => false)) {
             await markAll.click();
             const confirmBtn = page.getByTestId("onboarding-confirm-ok");
-            await confirmBtn
-                .click({ timeout: 10_000 })
-                .catch(() => undefined);
+            await confirmBtn.click({ timeout: 10_000 }).catch(() => undefined);
         }
         await expect(page.getByTestId("scoring-step-complete")).toBeVisible({
             timeout: 120_000,
@@ -87,51 +72,10 @@ test("word detail screenshots", async ({ page }) => {
     await wordsNav.waitFor({ state: "visible", timeout: 600_000 });
     await expect(wordsNav).toBeVisible();
 
-    // Word detail page
-    const failedRequests: string[] = [];
-    page.on("requestfailed", (req) =>
-        failedRequests.push(`FAIL ${req.url().slice(0, 120)}: ${req.failure()?.errorText}`),
-    );
-    page.on("response", (res) => {
-        if (res.status() >= 400) failedRequests.push(`${res.status()} ${res.url().slice(0, 120)}`);
-    });
+    // Word detail page: hero + translations section + examples.
     await page.goto(`/words/${encodeURIComponent(WORD)}`);
-    await page.waitForTimeout(8000);
-    console.log("APP-CONSOLE:", JSON.stringify(appConsole.slice(-14), null, 1));
-    console.log("FAILED-REQUESTS:", JSON.stringify(failedRequests.slice(0, 15), null, 1));
-    const mainHtml = await page
-        .locator("main")
-        .innerHTML()
-        .catch(() => "<no main>");
-    console.log("MAIN-HTML:", mainHtml.slice(0, 600));
-    await page.screenshot({ path: "screenshots/word-detail-diagnostic.png" });
     await expect(page.getByTestId("word-detail-word")).toBeVisible({ timeout: 60_000 });
     await page.waitForTimeout(3000); // examples chunk fetch
-    // Layout diagnostics: computed styles of the ruby annotation.
-    const rubyStyles = await page.evaluate(() => {
-        const dump = (el: Element | null) => {
-            if (!el) return null;
-            const cs = getComputedStyle(el);
-            return {
-                fontFamily: cs.fontFamily.slice(0, 70),
-                fontSize: cs.fontSize,
-                letterSpacing: cs.letterSpacing,
-                lineHeight: cs.lineHeight,
-                rubyAlign: cs.rubyAlign,
-                rubyPosition: cs.rubyPosition,
-                display: cs.display,
-            };
-        };
-        return {
-            heroWord: dump(document.querySelector('[data-testid="word-detail-word"]')),
-            heroRt: dump(document.querySelector('[data-testid="word-detail-word"] .furigana-rt')),
-            heroRuby: dump(document.querySelector('[data-testid="word-detail-word"] .furigana-ruby')),
-            exampleJa: dump(document.querySelector('.word-detail-example-ja')),
-            exampleRt: dump(document.querySelector('.word-detail-example-ja .furigana-rt')),
-        };
-    });
     await page.screenshot({ path: "screenshots/word-detail-full.png", fullPage: true });
     await page.screenshot({ path: "screenshots/word-detail-viewport.png" });
-
-
 });

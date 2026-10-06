@@ -241,7 +241,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                             show_answer_sig,
                             Callback::new(move |_| show_answer()),
                             on_rate_callback,
-            on_example_advance,
+                            on_example_advance,
                             rating_disabled_sig,
                             known_kanji_sig,
                             native_language,
