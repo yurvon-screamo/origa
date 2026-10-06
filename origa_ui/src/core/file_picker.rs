@@ -26,14 +26,27 @@ impl PickerKind {
         }
     }
 
-    /// MIME type for the constructed `File`. Images get an empty type on
-    /// purpose: `is_image_file` accepts empty and the real bytes carry the
-    /// true type, which the OCR data-URL parser validates. Anki decks get
-    /// octet-stream (the Anki consumer has no MIME gate).
-    pub fn mime(&self) -> &'static str {
+    /// MIME type for the constructed `File`, derived from the picked file
+    /// name. Deriving (not hardcoding) matters: the OCR pipeline converts
+    /// the file through FileReader, whose data-URL prefix is taken from
+    /// this type — a wrong or empty type breaks the `data:image/` parse
+    /// even when the bytes are fine. Unknown extensions yield an empty
+    /// type and are rejected honestly by the consumers.
+    pub fn mime_for_name(&self, name: &str) -> &'static str {
+        let lower = name.to_ascii_lowercase();
         match self {
-            PickerKind::Image => "",
             PickerKind::AnkiDeck => "application/octet-stream",
+            PickerKind::Image => {
+                if lower.ends_with(".png") {
+                    "image/png"
+                } else if lower.ends_with(".jpg") || lower.ends_with(".jpeg") {
+                    "image/jpeg"
+                } else if lower.ends_with(".webp") {
+                    "image/webp"
+                } else {
+                    ""
+                }
+            },
         }
     }
 }

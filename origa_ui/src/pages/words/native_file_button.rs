@@ -40,9 +40,12 @@ pub fn NativeFilePickerButton(
                                     return;
                                 }
                                 match picked {
-                                    Ok(Some((name, bytes))) => match file_from_bytes(&name, bytes, kind.mime()) {
-                                        Some(file) => on_file.run(file),
-                                        None => warn!(name = %name, "Native pick: File construction failed"),
+                                    Ok(Some((name, bytes))) => {
+                                        let mime = kind.mime_for_name(&name);
+                                        match file_from_bytes(&name, bytes, mime) {
+                                            Some(file) => on_file.run(file),
+                                            None => warn!(name = %name, "Native pick: File construction failed"),
+                                        }
                                     },
                                     Ok(None) => {}, // user cancelled
                                     Err(e) => warn!(error = %e, "Native file pick failed"),
@@ -103,5 +106,26 @@ mod tests {
         assert_eq!(name, "Images");
         assert!(extensions.contains(&"png") && extensions.contains(&"jpg"));
         assert_eq!(PickerKind::AnkiDeck.dialog_filter().1, &["apkg"]);
+    }
+
+    /// The constructed File's type feeds the OCR data-URL parser — a wrong
+    /// or empty type breaks the `data:image/` prefix even for valid bytes
+    /// (empirically verified: FileReader derives the prefix from File.type).
+    #[rstest]
+    #[case::png("photo.png", "image/png")]
+    #[case::jpg("photo.jpg", "image/jpeg")]
+    #[case::jpeg("photo.JPEG", "image/jpeg")]
+    #[case::webp("photo.webp", "image/webp")]
+    #[case::unknown_extension("photo.heic", "")]
+    fn image_mime_is_derived_from_the_file_name(#[case] name: &str, #[case] expected: &str) {
+        assert_eq!(PickerKind::Image.mime_for_name(name), expected);
+    }
+
+    #[test]
+    fn anki_mime_is_octet_stream_regardless_of_name() {
+        assert_eq!(
+            PickerKind::AnkiDeck.mime_for_name("deck.apkg"),
+            "application/octet-stream"
+        );
     }
 }

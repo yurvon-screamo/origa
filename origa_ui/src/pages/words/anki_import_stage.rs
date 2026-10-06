@@ -381,9 +381,7 @@ pub fn AnkiImportStage(
                         <NativeFilePickerButton
                             kind=PickerKind::AnkiDeck
                             disposed=Callback::new(move |_: ()| disposed.is_disposed())
-                            on_file=Callback::new(move |file: web_sys::File| {
-                                native_pick_handler.run(file);
-                            })
+                            on_file=native_pick_handler
                             test_id="anki-native-picker-btn"
                         />
                     </div>

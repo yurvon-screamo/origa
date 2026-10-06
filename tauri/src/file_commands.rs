@@ -5,9 +5,10 @@
 //! boundary, so there is no arbitrary-path-read surface — the user's
 //! explicit pick in the native dialog is what authorizes the read.
 //!
-//! Desktop-only: mobile pickers return `content://` URIs (Android) and
-//! security-scoped URLs (iOS) that `std::fs::read` cannot service; those
-//! platforms keep the WebView's own file input.
+//! The picker BUTTON is desktop-only (mobile keeps the WebView file
+//! input: content:// URIs and security-scoped URLs are not serviceable by
+//! `std::fs::read`). The command itself registers on every platform — a
+//! call from mobile fails gracefully at `into_path`.
 
 use base64::{Engine, engine::general_purpose::STANDARD};
 use serde::{Deserialize, Serialize};
