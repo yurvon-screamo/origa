@@ -49,18 +49,21 @@ test("lesson example screenshots", async ({ page }) => {
 
     if (page.url().includes("onboarding")) {
         await completeOnboardingToScoring(page, { level: "N4" });
-        // SKIP the interactive assessment: every card stays new — the
-        // fresh profile gets due cards and the lesson button appears.
-        const skipButton = page.getByTestId("onboarding-skip");
+        // The interactive assessment screen («Mark the cards you already
+        // know») exposes its own skip button (onboarding-skip-scoring).
+        // SKIP keeps every card new — the fresh profile gets due cards
+        // and the lesson button appears on home.
+        const skipButton = page.getByTestId("onboarding-skip-scoring");
         await skipButton
-            .waitFor({ state: "visible", timeout: 60_000 })
+            .waitFor({ state: "visible", timeout: 90_000 })
             .catch(() => undefined);
         if (await skipButton.isVisible().catch(() => false)) {
             await skipButton.click();
-            await page
-                .getByTestId("onboarding-confirm-ok")
-                .click({ timeout: 10_000 })
+            const confirmBtn = page.getByTestId("onboarding-confirm-ok");
+            await confirmBtn
+                .waitFor({ state: "visible", timeout: 10_000 })
                 .catch(() => undefined);
+            await confirmBtn.click({ timeout: 10_000 }).catch(() => undefined);
         }
         // After skip the flow lands either on the completed scoring step
         // (finish button) or straight on home.

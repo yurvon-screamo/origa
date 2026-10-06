@@ -4652,6 +4652,10 @@ async fn example_view_swallows_shared_keyboard() {
         state.card_ids = vec![card_id];
     });
 
+    // The show_answer callback mirrors the container's real one: it must
+    // ALSO flip state.showing_answer — the rating branch below is gated
+    // on it (the control half of the test relies on the real pipeline).
+    let lesson_state_for_show = ctx.lesson_state;
     let handler = create_keyboard_handler(
         ctx.clone(),
         RwSignal::new(None::<Ulid>),
@@ -4666,7 +4670,10 @@ async fn example_view_swallows_shared_keyboard() {
             on_quiz_submit: Callback::new(|_| ()),
             on_audio_answer: Callback::new(|_| ()),
             on_replay_audio: Callback::new(|_| ()),
-            show_answer: Box::new(move || shown.update(|n| *n += 1)),
+            show_answer: Box::new(move || {
+                shown.update(|n| *n += 1);
+                lesson_state_for_show.update(|state| state.showing_answer = true);
+            }),
             on_next_card: Callback::new(|_| ()),
         },
     );

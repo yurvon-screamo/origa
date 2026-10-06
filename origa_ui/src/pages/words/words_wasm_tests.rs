@@ -331,7 +331,15 @@ async fn word_card_link_is_a_real_anchor_and_opens_detail() {
         let opened = RwSignal::new(None::<String>);
         set_opened.set(Some(opened));
         let on_open = Callback::new(move |w: String| opened.set(Some(w)));
-        let card = reversed_study_card("ねこ");
+        // reversed_study_card keeps "translation" as the word surface; the
+        // link test needs a real Japanese word (serde fixture, same as the
+        // lesson tests) so the encoded href is meaningful.
+        let card = origa::domain::StudyCard::new(
+            serde_json::from_str(
+                r#"{"Vocabulary":{"word":{"text":"ねこ"},"reverse_side":null,"pos":null}}"#,
+            )
+            .expect("deserialize vocab card fixture"),
+        );
         view! {
             <VocabularyCardItem
                 study_card=card
