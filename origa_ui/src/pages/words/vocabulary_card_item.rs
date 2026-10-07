@@ -75,11 +75,6 @@ pub fn VocabularyCardItem(
 
     view! {
         <div class="word-card anima-lift" data-testid="words-card-item">
-            <div class="word-card-badge">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {move || status.label(&i18n)}
-                </Tag>
-            </div>
             <div class="word-card-body">
                 <a
                     class="word-card-word-box cursor-pointer"
@@ -99,6 +94,11 @@ pub fn VocabularyCardItem(
                     <FuriganaText text=word known_kanji=known_kanji_for_furigana/>
                 </a>
                 <div class="word-card-content">
+                    <div class="flex justify-end w-full">
+                        <Tag variant=Signal::derive(move || status.tag_variant())>
+                            {move || status.label(&i18n)}
+                        </Tag>
+                    </div>
                     <WordTranslations
                         translations=translations
                         description=description

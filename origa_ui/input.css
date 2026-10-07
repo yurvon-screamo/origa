@@ -5579,12 +5579,12 @@ rt {
 }
 
 .kanji-card-content {
-    flex: 0 1 auto;
+    flex: 1 1 0%;
     min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-self: flex-start;
+    align-self: stretch;
     gap: 4px;
 }
 
@@ -5639,20 +5639,6 @@ rt {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-}
-
-/* === Kanji Card Badge === */
-.kanji-card-badge {
-    position: absolute;
-    top: 6px;
-    right: 4px;
-    z-index: 10;
-}
-
-.kanji-card-badge .tag {
-    font-size: 9px;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
 }
 
 
@@ -5783,12 +5769,12 @@ rt {
 }
 
 .counter-card-content {
-    flex: 0 1 auto;
+    flex: 1 1 0%;
     min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-self: flex-start;
+    align-self: stretch;
     gap: 4px;
 }
 
@@ -5828,24 +5814,10 @@ rt {
     flex-shrink: 0;
 }
 
-.counter-card-badge {
-    position: absolute;
-    top: 6px;
-    right: 4px;
-    z-index: 10;
-}
-
-.counter-card-badge .tag {
-    font-size: 9px;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
-}
-
 /* === Counter Detail (mirror of kanji/grammar detail, issue #415) === */
 .counter-detail-container {
     padding: 24px 32px;
-    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    /* main уже даёт 80px под таббар; здесь без двойного запаса */
 }
 
 .counter-detail-top-bar {
@@ -5863,8 +5835,8 @@ rt {
     flex: 1;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: var(--text-2xs, 11px);
-    letter-spacing: 0.1em;
+    font-size: var(--text-sm, 14px);
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--fg-muted);
 }
@@ -5959,6 +5931,8 @@ rt {
 
 .counter-detail-hero-actions {
     display: flex;
+    flex-wrap: wrap;
+    row-gap: 8px;
     gap: 8px;
     padding-top: 16px;
     border-top: 1px solid var(--border-light);
@@ -6081,11 +6055,12 @@ rt {
 }
 
 .word-card-content {
+    flex: 1 1 0%;
     min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-self: flex-start;
+    align-self: stretch;
     gap: 4px;
 }
 
@@ -6108,19 +6083,6 @@ rt {
     justify-content: space-between;
     padding: 12px 20px;
     gap: 12px;
-}
-
-.word-card-badge {
-    position: absolute;
-    top: 6px;
-    right: 4px;
-    z-index: 10;
-}
-
-.word-card-badge .tag {
-    font-size: 9px;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
 }
 
 .word-card-actions {
@@ -6399,19 +6361,6 @@ rt {
     justify-content: space-between;
     padding: 12px 20px;
     gap: 12px;
-}
-
-.grammar-card-badge {
-    position: absolute;
-    top: 6px;
-    right: 4px;
-    z-index: 10;
-}
-
-.grammar-card-badge .tag {
-    font-size: 9px;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
 }
 
 .grammar-card-actions {

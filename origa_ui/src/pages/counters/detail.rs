@@ -335,14 +335,14 @@ pub fn CountersDetail() -> impl IntoView {
                                             key=|(word, _)| word.clone()
                                             children=move |(word, meaning): (String, String)| {
                                                 view! {
-                                                    <div class="flex items-baseline justify-between gap-4 py-1.5 border-b border-[var(--fg-light)] last:border-b-0">
+                                                    <div class="py-2 border-b border-[var(--fg-light)] last:border-b-0">
                                                         <FuriganaText
                                                             text=word.clone()
                                                             known_kanji=HashSet::new()
                                                         />
-                                                        <span class="font-mono text-[var(--fg-muted)] text-right">
+                                                        <p class="mt-1 text-left font-mono text-[var(--fg-muted)]">
                                                             {meaning}
-                                                        </span>
+                                                        </p>
                                                     </div>
                                                 }
                                             }

@@ -65,21 +65,19 @@ pub fn GrammarCardItem(
 
     view! {
         <div class="grammar-card anima-lift" data-testid="grammar-card-item">
-            <div class="grammar-card-badge">
-                <Tag variant=Signal::derive(move || status.tag_variant())>
-                    {move || status.label(&i18n)}
-                </Tag>
-            </div>
             <A href=format!("/grammar/{}", card_id) attr:class="grammar-card-link">
-                <Show when=move || !short_description.get().is_empty()>
-                    <div class="grammar-card-content">
-                        <p class="grammar-card-heading">{move || short_description.get()}</p>
+                <div class="grammar-card-content">
+                    <div class="flex items-start justify-between gap-2 w-full">
+                        <p class="grammar-card-heading flex-1 min-w-0">{move || short_description.get()}</p>
+                        <Tag variant=Signal::derive(move || status.tag_variant())>
+                            {move || status.label(&i18n)}
+                        </Tag>
                     </div>
-                </Show>
-                <div class="grammar-card-rule-box">
-                    <FuriganaText text=title.get_untracked() known_kanji=known_kanji/>
                 </div>
             </A>
+            <div class="grammar-card-rule-box">
+                <FuriganaText text=title.get_untracked() known_kanji=known_kanji/>
+            </div>
             <div class="grammar-card-divider"></div>
             <div class="grammar-card-footer">
                 <FsrsMetrics
