@@ -3,7 +3,7 @@ use crate::core::haptics;
 use crate::hooks::phrase_checker;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, CardType, LessonCard, RateMode, Rating};
+use origa::domain::{Card, CardType, LessonCard, LessonCardView, RateMode, Rating};
 use origa::traits::UserRepository;
 use origa::use_cases::{CreatePhraseCardUseCase, RateCardWithSideEffectsUseCase};
 use tracing::warn;
@@ -82,7 +82,16 @@ pub(crate) fn advance_lesson_state(
         let next_index = state.current_index + 1;
         let total = state.card_ids.len();
 
-        state.review_count += 1;
+        // #528: the example companion is a training interlude, not a
+        // review — the completion screen must not count it.
+        let is_example_companion = state
+            .card_ids
+            .get(state.current_index)
+            .and_then(|id| state.cards.get(id))
+            .is_some_and(|card| matches!(card.view(), LessonCardView::Example { .. }));
+        if !is_example_companion {
+            state.review_count += 1;
+        }
         state.waiting_for_next = false;
         state.pending_rating = None;
 

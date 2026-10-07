@@ -20,10 +20,6 @@ const QUIZ_OPTIONS_COUNT: usize = 4;
 // barely-known word coast into `is_known_card` on guessed recognition.
 // Only strict-recall formats remain: Normal, AudioRecall, Reversed,
 // GrammarMutated.
-/// #528: textbook-example recall slot for non-new vocabulary reviews with
-/// CDN examples. Drawn independently of the main ladder (a second RNG
-/// draw) — the ladder probabilities stay untouched.
-const PROB_VOCAB_EXAMPLE_VIEW: f32 = 0.10;
 const PROB_LATE_NORMAL_VIEW: f32 = 0.20;
 const PROB_LATE_AUDIO_VIEW: f32 = 0.50;
 const PROB_LATE_REVERSED_VIEW: f32 = 0.80;
@@ -194,22 +190,10 @@ impl<'a> LessonViewGenerator<'a> {
         memory: &MemoryHistory,
         rng: &mut R,
     ) -> LessonCardView {
-        // #528 example-recall slot: independent draw, only for words that
-        // have textbook examples on the CDN.
-        if let Card::Vocabulary(vocab) = card {
-            let word = vocab.word().text();
-            let refs = crate::dictionary::example::get_word_example_refs(word);
-            if !refs.is_empty() && rng.random::<f32>() < PROB_VOCAB_EXAMPLE_VIEW {
-                let pick = rng.random_range(0..refs.len());
-                let r = &refs[pick];
-                return LessonCardView::Example {
-                    card: card.clone(),
-                    sentence_id: r.sentence_id(),
-                    start: r.start(),
-                    end: r.end(),
-                };
-            }
-        }
+        // #528: the Example view is NOT drawn here anymore — example
+        // recall ships as a companion slot attached to its word by
+        // `example_companions::attach_example_companions` (the final
+        // layout pass), not as a per-showing view replacement.
         let is_high_difficulty = memory.is_high_difficulty();
         let eligible_for_advanced = memory.is_known_card() || memory.is_in_progress();
         let eligible_for_reversed = eligible_for_advanced
