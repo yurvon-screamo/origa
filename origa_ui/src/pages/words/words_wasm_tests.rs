@@ -19,7 +19,7 @@ use crate::pages::words::WordsHeader;
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::vocabulary_card_item::VocabularyCardItem;
 use crate::test_support::{
-    create_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
+    create_wrapper, mount_with_i18n, mount_with_router, mount_with_router_and_stores, shared_cell,
 };
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -383,5 +383,69 @@ async fn word_card_link_is_a_real_anchor_and_opens_detail() {
         get_opened.get().expect("captured").get(),
         Some("ねこ".to_string()),
         "plain click runs the SPA navigation callback"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn word_card_link_navigates_the_router_on_click() {
+    // Regression: the real WordsContent callback captured the navigator
+    // INSIDE the click closure — use_navigate() outside a reactive owner
+    // silently no-ops, so after prevent_default the link was dead (tap on
+    // a word card did nothing). This test uses the SAME shape as the
+    // production fix: capture the navigator at component scope and click
+    // through a real Router, asserting the URL actually changes.
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router(&wrapper, move || {
+        let navigate = StoredValue::new(leptos_router::hooks::use_navigate());
+        let on_open = Callback::new(move |w: String| {
+            let path = format!(
+                "/words/{}",
+                percent_encoding::utf8_percent_encode(&w, percent_encoding::NON_ALPHANUMERIC)
+            );
+            navigate.get_value()(&path, Default::default());
+        });
+        let card = origa::domain::StudyCard::new(
+            serde_json::from_str(
+                r#"{"Vocabulary":{"word":{"text":"ねこ"},"reverse_side":null,"pos":null}}"#,
+            )
+            .expect("deserialize vocab card fixture"),
+        );
+        view! {
+            <VocabularyCardItem
+                study_card=card
+                native_language=Signal::from(origa::domain::NativeLanguage::Russian)
+                on_open_detail_cb=on_open
+                known_kanji=HashSet::new()
+                on_toggle_favorite=Callback::new(|_| ())
+                on_mark_as_known=Callback::new(|_| ())
+                on_delete=Callback::new(|_| ())
+                is_deleting=Signal::from(false)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    wrapper
+        .query_selector("[data-testid=\"words-card-word-link\"]")
+        .unwrap()
+        .expect("word link rendered")
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    tick().await;
+
+    let pathname = web_sys::window()
+        .expect("window")
+        .location()
+        .pathname()
+        .expect("pathname");
+    let decoded = percent_encoding::percent_decode(pathname.as_bytes())
+        .decode_utf8()
+        .expect("utf-8 pathname")
+        .to_string();
+    assert_eq!(
+        decoded, "/words/ねこ",
+        "clicking the word link must navigate the router"
     );
 }

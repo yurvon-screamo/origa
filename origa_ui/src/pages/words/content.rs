@@ -22,6 +22,12 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         None,
     );
 
+    // The router navigator must be captured in the component's reactive
+    // scope — calling use_navigate() inside the click closure runs outside
+    // any owner and silently kills the navigation after prevent_default
+    // (the dead-link bug: tap/click on a word card did nothing).
+    let navigate = StoredValue::new(use_navigate());
+
     let ctx_for_render = ctx.clone();
     let empty_message =
         Signal::derive(move || td_string!(i18n.get_locale(), words.words_not_found).to_string());
@@ -46,7 +52,6 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 <VocabularyCardItem
                     study_card=card
                     on_open_detail_cb=Callback::new(move |w: String| {
-                        let navigate = use_navigate();
                         let path = format!(
                             "/words/{}",
                             percent_encoding::utf8_percent_encode(
@@ -54,7 +59,7 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                                 percent_encoding::NON_ALPHANUMERIC
                             )
                         );
-                        navigate(&path, Default::default());
+                        navigate.get_value()(&path, Default::default());
                     })
                     native_language=ctx.native_lang
                     known_kanji=ctx.known_kanji.get()
