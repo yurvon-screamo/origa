@@ -6027,6 +6027,7 @@ name = "origa_ui"
 version = "0.1.0"
 dependencies = [
  "ammonia",
+ "any_spawner",
  "base64 0.23.1",
  "bincode",
  "chrono",

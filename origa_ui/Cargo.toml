@@ -86,6 +86,7 @@ end2end-cmd = "npx playwright test"
 end2end-dir = "end2end"
 
 [dev-dependencies]
+any_spawner = "0.3"
 rstest.workspace = true
 wasm-bindgen-test.workspace = true
 tokio = { workspace = true, features = ["rt", "macros"] }

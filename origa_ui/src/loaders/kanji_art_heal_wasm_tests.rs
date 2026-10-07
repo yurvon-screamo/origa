@@ -61,6 +61,12 @@ async fn read_cache_text(cache: &web_sys::Cache, path: &str) -> Option<String> {
 
 #[wasm_bindgen_test]
 async fn poisoned_kanji_art_entry_is_detected_and_purged() {
+    // The any_spawner executor behind leptos::task::spawn_local is
+    // initialized lazily by the first Leptos component MOUNT; no app is
+    // mounted here, and depending on link order this test can run before
+    // any mount test — the heal path would then reach spawn_local with
+    // no executor and panic. Initialize it explicitly (idempotent).
+    let _ = any_spawner::Executor::init_wasm_bindgen();
     reset_kanji_art_state();
     let cache = open_cache().await;
 
