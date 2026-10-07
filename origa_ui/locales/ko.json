@@ -330,7 +330,8 @@
         "example_recall_understood": "이해했어요",
         "example_recall_not_understood": "이해 못했어요",
         "example_unavailable": "예문을 사용할 수 없습니다 — 다음 카드로 계속하세요",
-        "example_reveal_translation": "번역 보기"
+        "example_reveal_translation": "번역 보기",
+        "example_tag": "예문"
     },
     "home": {
         "loading": "불러오는 중...",

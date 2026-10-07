@@ -18,6 +18,9 @@ pub struct KeyboardActions {
     pub on_replay_audio: Callback<()>,
     pub show_answer: Box<dyn Fn()>,
     pub on_next_card: Callback<()>,
+    /// #528: binary self-assessment on the example companion's ANSWER
+    /// side. Rating-free — must never reach on_rate.
+    pub on_example_answer: Callback<bool>,
 }
 
 /// Keys that dismiss the feedback card under the pure-manual advance
@@ -68,17 +71,6 @@ pub fn create_keyboard_handler(
             return;
         }
 
-        // Example recall (#528) owns its whole interaction: the
-        // self-assessment buttons (understood / not understood →
-        // translation reveal) and the rating-free advance. The shared
-        // handler MUST stay silent here: Space would force-show the
-        // answer and 1-4 would push a real FSRS rating through on_rate —
-        // breaking the «self-assessment never touches FSRS» invariant of
-        // the view and skipping the translation reveal.
-        if current_card.is_some_and(|c| matches!(c.view(), LessonCardView::Example { .. })) {
-            return;
-        }
-
         let is_multi_quiz = current_card
             .map(|c| {
                 matches!(c.view(), LessonCardView::KanjiReadingQuiz(q) if q.mode() == QuizMode::Multi)
@@ -94,6 +86,12 @@ pub fn create_keyboard_handler(
                         | LessonCardView::GrammarQuiz(_)
                 )
             })
+            .unwrap_or(false);
+        // Example companion (#528): Space reveals the translation through
+        // the shared pipeline; on the answer side 1/2 push the binary
+        // self-assessment through on_example_answer (rating-free).
+        let is_example = current_card
+            .map(|c| matches!(c.view(), LessonCardView::Example { .. }))
             .unwrap_or(false);
         let is_yesno = current_card
             .map(|c| matches!(c.view(), LessonCardView::YesNo(_)))
@@ -162,6 +160,26 @@ pub fn create_keyboard_handler(
         // semantics) while the audio self-assessment stays binary.
         if is_audio_recall_active && state.showing_answer {
             handle_audio_rate_key(&key, &actions.on_audio_answer);
+            return;
+        }
+
+        // ORDERING CONTRACT (#528): this branch MUST stay ABOVE the
+        // generic rating branch below — otherwise 1/2 on the example
+        // companion's answer side would leak a real FSRS rating through
+        // on_rate. 1 = didn't understand, 2 = understood; both advance
+        // rating-free; other keys stay inert.
+        if is_example && state.showing_answer {
+            match key.as_str() {
+                "1" => {
+                    ev.prevent_default();
+                    actions.on_example_answer.run(false);
+                },
+                "2" => {
+                    ev.prevent_default();
+                    actions.on_example_answer.run(true);
+                },
+                _ => {},
+            }
             return;
         }
 

@@ -97,6 +97,13 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let counter_repository = lesson_ctx.repository.clone();
 
+    // #528: the example companion's binary self-assessment advances
+    // rating-free — the bool is a UI affordance only.
+    let on_example_answer = {
+        let advance = on_example_advance;
+        Callback::new(move |_: bool| advance.run(()))
+    };
+
     let handle_keydown = create_keyboard_handler(
         lesson_ctx,
         is_rating,
@@ -113,6 +120,7 @@ pub fn LessonCardContainer() -> impl IntoView {
             on_replay_audio,
             show_answer: Box::new(show_answer),
             on_next_card,
+            on_example_answer,
         },
     );
 

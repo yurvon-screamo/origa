@@ -2,6 +2,7 @@ mod card;
 mod counter;
 mod daily_history;
 mod empty_diagnosis;
+mod example_companions;
 mod grammar;
 mod kanji;
 mod kanji_companions;
@@ -438,7 +439,12 @@ impl KnowledgeSet {
         let mut phrase_new_budget = budget.new_phrases_per_lesson();
         let with_phrases =
             lesson_builder::add_phrases(interleaved, self, native_language, &mut phrase_new_budget);
-        lesson_builder::redistribute_core_for_spacing(with_phrases)
+        let spaced = lesson_builder::redistribute_core_for_spacing(with_phrases);
+        // FINAL layout pass (#528): example companions attach to their
+        // words with a random gap. Must run after every reshuffling pass
+        // (interleave / redistribute) — those would carry the companion
+        // away from the word it belongs to.
+        example_companions::attach_example_companions(spaced, self, &mut rand::rng())
     }
 
     pub(crate) fn rate_card(
