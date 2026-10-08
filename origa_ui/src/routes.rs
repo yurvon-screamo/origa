@@ -652,6 +652,23 @@ pub fn AppRoutes() -> impl IntoView {
     // and polls the cold-start pending slot. No-op in the web build.
     crate::core::share_intake::start_share_intake();
 
+    // Navigate to /words when a share arrives while the user is elsewhere
+    // (the protected route redirects to login when unauthenticated — the
+    // payload stays parked until the first authenticated visit).
+    {
+        let pending = crate::core::share_intake::pending_signal();
+        let navigate = leptos_router::hooks::use_navigate();
+        Effect::new(move |_| {
+            let pathname = leptos::prelude::document()
+                .location()
+                .and_then(|loc| loc.pathname().ok())
+                .unwrap_or_default();
+            if pending.get().is_some() && !pathname.starts_with("/words") {
+                navigate("/words", Default::default());
+            }
+        });
+    }
+
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);

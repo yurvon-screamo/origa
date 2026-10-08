@@ -43,23 +43,24 @@
 
             </intent-filter>
             <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
-            <!-- SHARE INTAKE (IN-2): receive shares from other apps.
-                 The alias keeps the share-sheet label distinct from the
-                 launcher label. -->
-            <activity-alias
-                android:name=".ShareAlias"
-                android:targetActivity=".MainActivity"
-                android:label="@string/share_alias_title"
-                android:exported="true">
-                <intent-filter>
-                    <action android:name="android.intent.action.SEND" />
-                    <category android:name="android.intent.category.DEFAULT" />
-                    <data android:mimeType="text/plain" />
-                    <data android:mimeType="image/*" />
-                    <data android:mimeType="audio/*" />
-                </intent-filter>
-            </activity-alias>
         </activity>
+
+        <!-- SHARE INTAKE (IN-2): receive shares from other apps.
+             Alias at application level (a nested alias is invalid per the
+             manifest schema); the label stays distinct from the launcher. -->
+        <activity-alias
+            android:name=".ShareAlias"
+            android:targetActivity=".MainActivity"
+            android:label="@string/share_alias_title"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+        </activity-alias>
 
         <provider
           android:name="androidx.core.content.FileProvider"

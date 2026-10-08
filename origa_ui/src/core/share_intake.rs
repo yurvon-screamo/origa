@@ -86,9 +86,19 @@ pub fn park_share(payload: ShareWire) {
     pending_slot().set(Some(payload));
 }
 
+/// Read-only signal access for navigation triggers.
+pub fn pending_signal() -> RwSignal<Option<ShareWire>> {
+    *pending_slot()
+}
+
 /// Takes the parked share (read + clear atomically).
 pub fn take_share() -> Option<ShareWire> {
-    pending_slot().try_write().and_then(|mut slot| slot.take())
+    let slot = pending_slot();
+    let value = slot.get_untracked();
+    if value.is_some() {
+        slot.set(None);
+    }
+    value
 }
 
 /// Starts the host-event listener and polls the cold-start pending slot.
@@ -101,6 +111,8 @@ pub fn start_share_intake() -> bool {
     // Cold start: the event fired before this listener existed.
     poll_pending_share();
     listen_share_events();
+    // Android warm shares arrive with window focus (no event channel).
+    poll_on_focus();
     true
 }
 
@@ -115,6 +127,24 @@ fn poll_pending_share() {
             Err(e) => tracing::debug!("share-intake: pending poll failed: {e}"),
         }
     });
+}
+
+/// Re-polls the host pending slot: Android warm shares park in the Kotlin
+/// ShareBuffer (no event channel), so window focus (= app brought to
+/// foreground by a share) must re-check.
+fn poll_on_focus() {
+    let Some(window) = web_sys::window() else {
+        return;
+    };
+    let callback = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
+        poll_pending_share();
+    }) as Box<dyn Fn()>);
+    let callback_ptr: &js_sys::Function = callback
+        .as_ref()
+        .dyn_ref::<js_sys::Function>()
+        .expect("closure to Function");
+    let _ = window.add_event_listener_with_callback("focus", callback_ptr);
+    callback.forget();
 }
 
 fn listen_share_events() {

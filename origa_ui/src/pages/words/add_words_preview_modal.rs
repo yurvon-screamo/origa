@@ -21,7 +21,7 @@ use crate::pages::words::transcript_view::TranscriptStageView;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
-    ToastContainer, ToastData, TypographyVariant,
+    ToastContainer, ToastData, ToastType, TypographyVariant,
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -30,6 +30,7 @@ use origa::domain::User;
 use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
 use std::collections::HashSet;
+use std::sync::atomic::Ordering;
 
 #[component]
 pub fn AddWordsPreviewModal(
@@ -147,6 +148,8 @@ pub fn AddWordsPreviewModal(
 
     // External share intake (IN-2/IN-3): consume the parked payload once
     // per mount of the words page. Runs after all inbox signals exist.
+    static SHARE_ERROR_TOAST_SEQ: std::sync::atomic::AtomicUsize =
+        std::sync::atomic::AtomicUsize::new(0);
     {
         let state = state.clone();
         let on_audio_text = on_audio_text_extracted;
@@ -192,6 +195,21 @@ pub fn AddWordsPreviewModal(
                 },
                 ShareWire::Error { message } => {
                     tracing::warn!(message = %message, "share-intake: host reported error");
+                    toasts.update(|list| {
+                        list.push(ToastData {
+                            id: SHARE_ERROR_TOAST_SEQ.fetch_add(1, Ordering::Relaxed),
+                            toast_type: ToastType::Info,
+                            title: i18n
+                                .get_keys_untracked()
+                                .common()
+                                .error()
+                                .inner()
+                                .to_string(),
+                            message,
+                            duration_ms: Some(6000),
+                            closable: true,
+                        });
+                    });
                 },
                 ShareWire::None => {},
             }

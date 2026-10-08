@@ -81,16 +81,61 @@ fn take_android_pending() -> Option<ShareWire> {
             e
         })
         .ok()?;
-    // Cached class lookup is not worth the complexity for a once-per-app-
-    // start call; a local find is fine.
-    let class = env
-        .find_class("net/uwuwu/origa/ShareBuffer")
+
+    // FindClass from an attached native thread uses the system class
+    // loader, which cannot see app classes — resolve ShareBuffer through
+    // the Application's classLoader instead (JNI Tips: class resolution
+    // off the Java stack).
+    let app_context = crate::android_context::app_context()?;
+    let class_loader = env
+        .call_method(
+            app_context,
+            "getClassLoader",
+            "()Ljava/lang/ClassLoader;",
+            &[],
+        )
         .map_err(|e| {
-            tracing::warn!("[share-intake] ShareBuffer class not found: {e:?}");
+            tracing::warn!("[share-intake] getClassLoader failed: {e:?}");
+            e
+        })
+        .ok()?
+        .l()
+        .map_err(|e| {
+            tracing::warn!("[share-intake] getClassLoader returned non-object: {e:?}");
             e
         })
         .ok()?;
-    let json = env
+
+    let class_name = env
+        .new_string("net.uwuwu.origa.ShareBuffer")
+        .map_err(|e| {
+            tracing::warn!("[share-intake] new_string failed: {e:?}");
+            e
+        })
+        .ok()?;
+    let class = env
+        .call_static_method(
+            "java/lang/Class",
+            "forName",
+            "(Ljava/lang/String;Ljava/lang/ClassLoader;)Ljava/lang/Class;",
+            &[
+                jni::objects::JValue::Object(&class_name),
+                jni::objects::JValue::Object(&class_loader),
+            ],
+        )
+        .map_err(|e| {
+            tracing::warn!("[share-intake] Class.forName failed: {e:?}");
+            e
+        })
+        .ok()?
+        .l()
+        .map_err(|e| {
+            tracing::warn!("[share-intake] forName returned non-object: {e:?}");
+            e
+        })
+        .ok()?;
+
+    let json_value = env
         .call_static_method(class, "takePending", "()Ljava/lang/String;", &[])
         .map_err(|e| {
             tracing::warn!("[share-intake] takePending JNI call failed: {e:?}");
@@ -103,7 +148,9 @@ fn take_android_pending() -> Option<ShareWire> {
             e
         })
         .ok()?;
-    let jstring = unsafe { jni::objects::JString::from_raw(json.as_raw()) };
+    // Ownership transfer: JObject::into() → JString consumes the local
+    // ref (a from_raw + alive JObject would double-delete on drop).
+    let jstring: jni::objects::JString = json_value.into();
     let json: String = env
         .get_string(&jstring)
         .map_err(|e| {
@@ -120,12 +167,14 @@ fn take_android_pending() -> Option<ShareWire> {
         .ok()
 }
 
-/// Emits the payload to the main window and mirrors it into the pending
-/// slot (the frontend may not be listening yet on a cold start).
+/// Emits the payload to the main window (warm delivery — the frontend
+/// listener is mounted). Does NOT mirror into the pending slot: the
+/// cold-start path stores there before any window exists; mirroring a
+/// delivered event would replay it on the next remount poll.
 pub(crate) fn emit_share(app: &AppHandle, payload: ShareWire) {
-    store_pending(&payload);
     if let Err(e) = app.emit(SHARE_INTAKE_EVENT, &payload) {
-        tracing::warn!("[share-intake] emit failed: {e:?}");
+        tracing::warn!("[share-intake] emit failed, parking as pending: {e:?}");
+        store_pending(&payload);
     }
 }
 
@@ -222,13 +271,26 @@ pub fn delete_share_file(app: AppHandle, path: String) -> Result<(), String> {
 }
 
 /// Removes leftovers from crashed sessions (called once at startup).
+/// Only sweeps files older than STALE_AFTER_SECS: on Android the Kotlin
+/// writer parks the cold-start share in `onCreate`, racing this sweep —
+/// a fresh file must survive.
 pub(crate) fn cleanup_stale_share_files(app: &AppHandle) {
+    const STALE_AFTER_SECS: u64 = 3600;
     let Ok(dir) = share_intake_dir(app) else {
         return;
     };
+    let cutoff = std::time::SystemTime::now()
+        .checked_sub(std::time::Duration::from_secs(STALE_AFTER_SECS))
+        .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
     if let Ok(entries) = std::fs::read_dir(&dir) {
         for entry in entries.flatten() {
-            let _ = std::fs::remove_file(entry.path());
+            let is_stale = entry
+                .metadata()
+                .and_then(|meta| meta.modified())
+                .is_ok_and(|modified| modified < cutoff);
+            if is_stale {
+                let _ = std::fs::remove_file(entry.path());
+            }
         }
     }
 }

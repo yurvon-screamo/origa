@@ -9,6 +9,8 @@ import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import java.io.File
 
+private const val MAX_SHARE_BYTES: Long = 200L * 1024 * 1024
+
 class MainActivity : TauriActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -42,6 +44,11 @@ class MainActivity : TauriActivity() {
         try {
             val resolver = contentResolver ?: return
             val displayName = queryDisplayName(uri)
+            val size = querySize(uri)
+            if (size > MAX_SHARE_BYTES) {
+                ShareBuffer.setError("The shared file exceeds the size limit")
+                return
+            }
             val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return
             val extension = displayName.substringAfterLast('.', "").lowercase()
             val dir = File(cacheDir, "share-intake")
@@ -54,6 +61,19 @@ class MainActivity : TauriActivity() {
         } catch (e: Exception) {
             ShareBuffer.setError("Shared file read failed: ${e.message}")
         }
+    }
+
+    private fun querySize(uri: Uri): Long {
+        try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (sizeIndex >= 0 && cursor.moveToFirst() && !cursor.isNull(sizeIndex)) {
+                    return cursor.getLong(sizeIndex)
+                }
+            }
+        } catch (_: Exception) {
+        }
+        return Long.MAX_VALUE // unknown → read and let the byte cap guard
     }
 
     private fun queryDisplayName(uri: Uri): String {
