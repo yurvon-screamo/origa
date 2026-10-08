@@ -2165,6 +2165,178 @@ mod acquaintance_training {
     }
 }
 
+mod mixed_hand_regression {
+    use super::*;
+    use crate::pages::lesson::acquaintance_state::{
+        AcquaintanceContext, AcquaintanceSlideData, AcquaintanceStage, AcquaintanceState,
+    };
+    use crate::pages::lesson::training_view::TrainingBody;
+    use ulid::Ulid;
+
+    fn acq_context() -> AcquaintanceContext {
+        let state = RwSignal::new(AcquaintanceState::default());
+        state.update(|s| s.stage = AcquaintanceStage::Training);
+        AcquaintanceContext {
+            repository: crate::repository::HybridUserRepository::new(),
+            state,
+            slides: RwSignal::new(Vec::new()),
+            known_kanji: RwSignal::new(HashSet::new()),
+            native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
+            current_card: RwSignal::new(None),
+            showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
+        }
+    }
+
+    fn mount_training(ctx: &AcquaintanceContext) -> web_sys::Element {
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <TrainingBody ctx=c2.clone() /> }.into_any()
+        });
+        wrapper
+    }
+
+    /// Живой баг-репорт (rc3, issue #415): рука из шести счётных
+    /// суффиксов и двух слов «застревает» — смена на РУ→ЯП не наступает
+    /// и рука не закрывается. Прогоняем полный тренировочный флоу
+    /// кликами: каждый «Помню» идёт через реальный after_answer.
+    #[wasm_bindgen_test]
+    async fn six_counters_two_words_hand_reaches_reverse_and_completes() {
+        let ctx = acq_context();
+        let counters: Vec<Ulid> = (0..6).map(|_| Ulid::new()).collect();
+        let words: Vec<Ulid> = (0..2).map(|_| Ulid::new()).collect();
+
+        let mut entries: Vec<(Ulid, origa::domain::CardType)> = counters
+            .iter()
+            .map(|&id| (id, origa::domain::CardType::Counter))
+            .collect();
+        entries.extend(
+            words
+                .iter()
+                .map(|&id| (id, origa::domain::CardType::Vocabulary)),
+        );
+        ctx.state.update(|state| {
+            state.hand = Some(origa::domain::AcquaintanceHand::new(entries).unwrap());
+        });
+
+        let mut slides = Vec::new();
+        for &id in counters.iter() {
+            slides.push(AcquaintanceSlideData::Counter {
+                card_id: id,
+                suffix: "本".to_string(),
+                meaning: "длинные предметы".to_string(),
+                table: Vec::new(),
+            });
+        }
+        for &id in words.iter() {
+            slides.push(AcquaintanceSlideData::Vocabulary {
+                card_id: id,
+                word: "ねこ".to_string(),
+                pos_label: None,
+                translations: vec!["кошка".to_string()],
+            });
+        }
+        ctx.slides.set(slides);
+
+        let wrapper = mount_training(&ctx);
+        tick().await;
+
+        let click = |sel: &str| {
+            wrapper
+                .query_selector(sel)
+                .unwrap()
+                .expect(sel)
+                .dyn_into::<web_sys::HtmlElement>()
+                .unwrap()
+                .click();
+        };
+
+        // Полный флоу: раскрываем и отвечаем «Помню»最多 200 раз —
+        // рука обязана пройти Forward, смениться на Reverse и закрыться.
+        // Каждый клик ждёт свою кнопку: advance и окно финиша руки
+        // асинхронны (persist), кнопки исчезают и появляются.
+        let wait_and_click = |sel: &'static str| async {
+            for _ in 0..200 {
+                if let Some(el) = wrapper
+                    .query_selector(sel)
+                    .ok()
+                    .flatten()
+                    .and_then(|el| el.dyn_into::<web_sys::HtmlElement>().ok())
+                {
+                    el.click();
+                    return true;
+                }
+                gloo_timers::future::TimeoutFuture::new(10).await;
+            }
+            false
+        };
+
+        let mut reached_reverse = false;
+        let mut completed = false;
+        for _ in 0..200 {
+            if ctx.state.get_untracked().stage == AcquaintanceStage::Completed {
+                completed = true;
+                break;
+            }
+            if !reached_reverse
+                && ctx
+                    .state
+                    .get_untracked()
+                    .hand
+                    .as_ref()
+                    .and_then(|h| h.subphase())
+                    == Some(origa::domain::AcquaintanceSubphase::Reverse)
+            {
+                reached_reverse = true;
+            }
+            assert!(
+                wait_and_click("[data-testid=\"acquaintance-reveal-btn\"]").await,
+                "кнопка раскрытия так и не появилась — рука застряла"
+            );
+            tick().await;
+            assert!(
+                wait_and_click("[data-testid=\"acquaintance-rating-remember\"]").await,
+                "кнопка «Помню» так и не появилась — рука застряла"
+            );
+            tick().await;
+            // Persist завершения руки асинхронен: ждём либо следующую
+            // кнопку, либо Completed — что раньше.
+            for _ in 0..200 {
+                if ctx.state.get_untracked().stage == AcquaintanceStage::Completed {
+                    completed = true;
+                    break;
+                }
+                if wrapper
+                    .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+                    .ok()
+                    .flatten()
+                    .is_some()
+                {
+                    break;
+                }
+                gloo_timers::future::TimeoutFuture::new(10).await;
+            }
+        }
+        assert!(
+            completed,
+            "цикл исчерпан: stage={:?}",
+            ctx.state.get_untracked().stage
+        );
+
+        assert!(
+            reached_reverse,
+            "подфаза обязана смениться на РУ→ЯП после закрытия Forward-критериев"
+        );
+        assert_eq!(
+            ctx.state.get_untracked().stage,
+            AcquaintanceStage::Completed,
+            "рука из 6 счётчиков + 2 слов обязана закрыться"
+        );
+    }
+}
+
 mod acquaintance_training_fronts {
     use super::*;
     use crate::pages::lesson::acquaintance_state::{
