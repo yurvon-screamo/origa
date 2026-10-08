@@ -1,6 +1,6 @@
 use crate::domain::{
     OrigaError, PartOfSpeech, Rating,
-    knowledge::{CounterCard, GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
+    knowledge::{CounterCard, ExampleCard, GrammarRuleCard, KanjiCard, PhraseCard, VocabularyCard},
     memory::{MemoryHistory, MemoryState},
     value_objects::{CardAnswer, NativeLanguage, Question},
 };
@@ -203,6 +203,7 @@ pub enum Card {
     Grammar(GrammarRuleCard),
     Phrase(PhraseCard),
     Counter(CounterCard),
+    Example(ExampleCard),
 }
 
 impl Card {
@@ -220,6 +221,13 @@ impl Card {
                 })
             },
             Card::Counter(card) => card.question(),
+            // The sentence itself is CDN data the domain does not load;
+            // the word surface is the minimal valid question.
+            Card::Example(card) => {
+                Question::new(card.word().to_string()).map_err(|e| OrigaError::InvalidQuestion {
+                    reason: e.to_string(),
+                })
+            },
         }
     }
 
@@ -237,6 +245,13 @@ impl Card {
                 })
             },
             Card::Counter(card) => card.answer(lang),
+            // The translation is CDN data (domain does not fetch it);
+            // the word surface is the minimal valid answer.
+            Card::Example(card) => {
+                CardAnswer::text(card.word().to_string()).map_err(|e| OrigaError::InvalidAnswer {
+                    reason: e.to_string(),
+                })
+            },
         }
     }
 
@@ -247,6 +262,7 @@ impl Card {
             Card::Grammar(card) => card.rule_id().to_string(),
             Card::Phrase(card) => card.phrase_id().to_string(),
             Card::Counter(card) => card.suffix().to_string(),
+            Card::Example(card) => format!("{}:{}", card.word(), card.sentence_id()),
         }
     }
 
@@ -265,6 +281,7 @@ pub enum CardType {
     Grammar,
     Phrase,
     Counter,
+    Example,
 }
 
 /// Uniqueness identity of a card for bulk-import deduplication: card type
@@ -294,6 +311,7 @@ impl From<&Card> for CardType {
             Card::Grammar(_) => CardType::Grammar,
             Card::Phrase(_) => CardType::Phrase,
             Card::Counter(_) => CardType::Counter,
+            Card::Example(_) => CardType::Example,
         }
     }
 }

@@ -34,6 +34,7 @@ fn ui_card_type(card_type: origa::domain::CardType) -> UiCardType {
         origa::domain::CardType::Grammar => UiCardType::Grammar,
         origa::domain::CardType::Phrase => UiCardType::Phrase,
         origa::domain::CardType::Counter => UiCardType::Counter,
+        origa::domain::CardType::Example => UiCardType::Example,
     }
 }
 

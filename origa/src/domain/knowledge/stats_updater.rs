@@ -30,7 +30,9 @@ impl ComputedStats {
         };
 
         for study_card in study_cards.values() {
-            if matches!(study_card.card(), Card::Phrase(_)) {
+            // Examples are sentence-level SRS cards (#528 v3): they are
+            // not words and must not skew the word aggregates.
+            if matches!(study_card.card(), Card::Phrase(_) | Card::Example(_)) {
                 continue;
             }
             let memory = study_card.memory();
@@ -204,7 +206,7 @@ pub(crate) fn recalculate_daily_stats(
     // for the common case.
     let (positive, negative, total) = study_cards
         .values()
-        .filter(|card| !matches!(card.card(), Card::Phrase(_)))
+        .filter(|card| !matches!(card.card(), Card::Phrase(_) | Card::Example(_)))
         .filter(|card| {
             card.memory()
                 .last_review_date()

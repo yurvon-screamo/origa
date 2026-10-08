@@ -174,6 +174,9 @@ pub(crate) fn build_acquaintance_slides(
                     })
                 },
                 Card::Phrase(_) => None,
+                // Пример (#528 v3) в руку знакомства не попадает (свои
+                // слоты в теле урока); ветка — exhaustiveness.
+                Card::Example(_) => None,
             }
         })
         .collect()

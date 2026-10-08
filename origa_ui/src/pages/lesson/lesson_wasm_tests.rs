@@ -4644,6 +4644,7 @@ async fn example_companion_keyboard_contract() {
         sentence_id: 0,
         start: -1,
         end: -1,
+        premiere: true,
     };
     ctx.lesson_state.update(|state| {
         state.cards.insert(

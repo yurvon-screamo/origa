@@ -38,6 +38,8 @@ impl JlptContent {
             CardType::Grammar => &self.grammar_by_level,
             CardType::Phrase => &self.words_by_level,
             CardType::Counter => &self.counters_by_level,
+            // Пример живёт по уровню своего слова-владельца.
+            CardType::Example => &self.words_by_level,
         };
 
         JapaneseLevel::ALL
