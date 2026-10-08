@@ -146,41 +146,32 @@ pub fn AddWordsPreviewModal(
         })
     };
 
-    // External share intake (IN-2/IN-3): consume the parked payload once
-    // per mount of the words page. Runs after all inbox signals exist.
+    // External share intake (IN-2/IN-3): consume parked payloads as they
+    // arrive (mount + warm event delivery while the page is open). The
+    // parking slot is non-reactive (thread_local), so a poll interval is
+    // the consumption trigger.
     static SHARE_ERROR_TOAST_SEQ: std::sync::atomic::AtomicUsize =
         std::sync::atomic::AtomicUsize::new(0);
     {
         let state = state.clone();
         let on_audio_text = on_audio_text_extracted;
-        spawn_local(async move {
-            let Some(payload) = share_intake::take_share() else {
-                return;
-            };
-            match payload {
-                ShareWire::Text { text } => {
-                    let route = crate::pages::words::inbox::wire_route_text(&text);
-                    crate::pages::words::inbox::seam::execute_route(
-                        route,
-                        i18n,
-                        &state,
-                        is_open,
-                        &inbox,
-                        on_audio_text,
-                    );
-                },
-                ShareWire::File {
-                    file_name,
-                    mime,
-                    cache_path,
-                } => match share_intake::read_shared_bytes(&cache_path).await {
-                    Ok(bytes) => {
-                        let kind =
-                            crate::pages::words::inbox::wire_route_file(&file_name, &mime, bytes);
-                        if let Some(kind) = kind {
-                            let route = crate::pages::words::inbox::route_payload(
-                                crate::pages::words::inbox::InboxPayload { kind },
-                            );
+        let i18n_for_share = i18n;
+        leptos::task::spawn_local(async move {
+            loop {
+                gloo_timers::future::TimeoutFuture::new(300).await;
+                let Some(payload) = share_intake::take_share() else {
+                    continue;
+                };
+                let state = state.clone();
+                let on_audio_text = on_audio_text;
+                let i18n = i18n_for_share;
+                let toasts = toasts;
+                let is_open = is_open;
+                let inbox = inbox;
+                spawn_local(async move {
+                    match payload {
+                        ShareWire::Text { text } => {
+                            let route = crate::pages::words::inbox::wire_route_text(&text);
                             crate::pages::words::inbox::seam::execute_route(
                                 route,
                                 i18n,
@@ -189,29 +180,55 @@ pub fn AddWordsPreviewModal(
                                 &inbox,
                                 on_audio_text,
                             );
-                        }
-                    },
-                    Err(e) => tracing::warn!(error = %e, "share-intake: file read failed"),
-                },
-                ShareWire::Error { message } => {
-                    tracing::warn!(message = %message, "share-intake: host reported error");
-                    toasts.update(|list| {
-                        list.push(ToastData {
-                            id: SHARE_ERROR_TOAST_SEQ.fetch_add(1, Ordering::Relaxed),
-                            toast_type: ToastType::Info,
-                            title: i18n
-                                .get_keys_untracked()
-                                .common()
-                                .error()
-                                .inner()
-                                .to_string(),
-                            message,
-                            duration_ms: Some(6000),
-                            closable: true,
-                        });
-                    });
-                },
-                ShareWire::None => {},
+                        },
+                        ShareWire::File {
+                            file_name,
+                            mime,
+                            cache_path,
+                        } => match share_intake::read_shared_bytes(&cache_path).await {
+                            Ok(bytes) => {
+                                let kind = crate::pages::words::inbox::wire_route_file(
+                                    &file_name, &mime, bytes,
+                                );
+                                if let Some(kind) = kind {
+                                    let route = crate::pages::words::inbox::route_payload(
+                                        crate::pages::words::inbox::InboxPayload { kind },
+                                    );
+                                    crate::pages::words::inbox::seam::execute_route(
+                                        route,
+                                        i18n,
+                                        &state,
+                                        is_open,
+                                        &inbox,
+                                        on_audio_text,
+                                    );
+                                }
+                            },
+                            Err(e) => {
+                                tracing::warn!(error = %e, "share-intake: file read failed")
+                            },
+                        },
+                        ShareWire::Error { message } => {
+                            tracing::warn!(message = %message, "share-intake: host reported error");
+                            toasts.update(|list| {
+                                list.push(ToastData {
+                                    id: SHARE_ERROR_TOAST_SEQ.fetch_add(1, Ordering::Relaxed),
+                                    toast_type: ToastType::Info,
+                                    title: i18n
+                                        .get_keys_untracked()
+                                        .common()
+                                        .error()
+                                        .inner()
+                                        .to_string(),
+                                    message,
+                                    duration_ms: Some(6000),
+                                    closable: true,
+                                });
+                            });
+                        },
+                        ShareWire::None => {},
+                    }
+                });
             }
         });
     }

@@ -45,11 +45,31 @@ class MainActivity : TauriActivity() {
             val resolver = contentResolver ?: return
             val displayName = queryDisplayName(uri)
             val size = querySize(uri)
-            if (size > MAX_SHARE_BYTES) {
+            if (size in 0..MAX_SHARE_BYTES) {
+                // known size within cap → read directly
+            } else if (size > MAX_SHARE_BYTES) {
                 ShareBuffer.setError("The shared file exceeds the size limit")
                 return
             }
-            val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return
+            // size == -1 (unknown) or within cap: read with a byte guard
+            val bytes = resolver.openInputStream(uri)?.use { stream ->
+                val buffer = java.io.ByteArrayOutputStream()
+                val chunk = ByteArray(64 * 1024)
+                var total = 0L
+                while (true) {
+                    val read = stream.read(chunk)
+                    if (read < 0) break
+                    total += read
+                    if (total > MAX_SHARE_BYTES) {
+                        return@use null
+                    }
+                    buffer.write(chunk, 0, read)
+                }
+                buffer.toByteArray()
+            } ?: run {
+                ShareBuffer.setError("The shared file exceeds the size limit")
+                return
+            }
             val extension = displayName.substringAfterLast('.', "").lowercase()
             val dir = File(cacheDir, "share-intake")
             dir.mkdirs()
@@ -73,7 +93,7 @@ class MainActivity : TauriActivity() {
             }
         } catch (_: Exception) {
         }
-        return Long.MAX_VALUE // unknown → read and let the byte cap guard
+        return -1L // unknown → skip the pre-check, readBytes cap below
     }
 
     private fun queryDisplayName(uri: Uri): String {

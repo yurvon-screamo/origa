@@ -10,7 +10,6 @@
 //! unconsumed older one.
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use leptos::prelude::*;
 use wasm_bindgen::{JsCast, JsValue};
 
 use crate::core::tauri::{event_listen_fn, invoke_with_args, is_tauri};
@@ -74,31 +73,27 @@ impl ShareWire {
     }
 }
 
-/// Global take-once parking slot (the last share wins).
-static PENDING: std::sync::OnceLock<RwSignal<Option<ShareWire>>> = std::sync::OnceLock::new();
-
-fn pending_slot() -> &'static RwSignal<Option<ShareWire>> {
-    PENDING.get_or_init(|| RwSignal::new(None))
+// Global take-once parking slot (the last share wins). A thread_local
+// RefCell — reactive signals are owner-scoped and wasm tests dispose
+// owners, which would kill a signal shared across test boundaries.
+thread_local! {
+    static PENDING_SLOT: std::cell::RefCell<Option<ShareWire>> =
+        const { std::cell::RefCell::new(None) };
 }
 
-/// Parks a payload for the Words page to consume on mount.
+/// Parks a payload for the Words page to consume.
 pub fn park_share(payload: ShareWire) {
-    pending_slot().set(Some(payload));
+    PENDING_SLOT.with(|slot| *slot.borrow_mut() = Some(payload));
 }
 
-/// Read-only signal access for navigation triggers.
-pub fn pending_signal() -> RwSignal<Option<ShareWire>> {
-    *pending_slot()
-}
-
-/// Takes the parked share (read + clear atomically).
+/// Takes the parked share (read + clear).
 pub fn take_share() -> Option<ShareWire> {
-    let slot = pending_slot();
-    let value = slot.get_untracked();
-    if value.is_some() {
-        slot.set(None);
-    }
-    value
+    PENDING_SLOT.with(|slot| slot.borrow_mut().take())
+}
+
+/// Whether a share is parked (navigation trigger polls this).
+pub fn has_pending_share() -> bool {
+    PENDING_SLOT.with(|slot| slot.borrow().is_some())
 }
 
 /// Starts the host-event listener and polls the cold-start pending slot.

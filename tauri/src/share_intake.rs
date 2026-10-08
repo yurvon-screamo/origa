@@ -167,15 +167,22 @@ fn take_android_pending() -> Option<ShareWire> {
         .ok()
 }
 
-/// Emits the payload to the main window (warm delivery — the frontend
-/// listener is mounted). Does NOT mirror into the pending slot: the
-/// cold-start path stores there before any window exists; mirroring a
-/// delivered event would replay it on the next remount poll.
+/// Warm delivery: emits to the mounted frontend listener. Cold-start
+/// callers (argv before the window exists, pre-run-loop ingests) use
+/// [`store_pending_and_emit`] instead — `emit` returns Ok even with no
+/// listener, so cold/warm is decided at the call site, not from the
+/// emit result.
 pub(crate) fn emit_share(app: &AppHandle, payload: ShareWire) {
     if let Err(e) = app.emit(SHARE_INTAKE_EVENT, &payload) {
-        tracing::warn!("[share-intake] emit failed, parking as pending: {e:?}");
-        store_pending(&payload);
+        tracing::warn!("[share-intake] emit failed: {e:?}");
     }
+}
+
+/// Cold-start delivery: stores into the pending slot (the frontend poll
+/// drains it on mount) AND emits (a fast warm listener may win the race).
+pub(crate) fn store_pending_and_emit(app: &AppHandle, payload: ShareWire) {
+    store_pending(&payload);
+    emit_share(app, payload);
 }
 
 /// Writes shared bytes into the cache directory and returns the wire
@@ -358,6 +365,9 @@ pub(crate) fn ingest_path(app: &AppHandle, path: &std::path::Path) {
         },
     };
     let payload = park_shared_bytes(app, bytes, &file_name, "", &extension_of(&file_name));
+    // Warm path by default (single-instance and Opened-during-run both
+    // arrive with a live window); the cold-start argv caller overrides
+    // with store_pending_and_emit after this returns.
     emit_share(app, payload);
 }
 
@@ -367,6 +377,20 @@ pub(crate) fn ingest_argv(app: &AppHandle, args: &[String]) {
     for path in parse_shared_paths(args) {
         ingest_path(app, &path);
     }
+}
+
+/// Cold-start variant: the pending slot carries the payload (the frontend
+/// drains it on mount) in addition to the best-effort emit.
+pub(crate) fn ingest_path_cold(app: &AppHandle, path: &std::path::Path) {
+    let file_name = path
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_else(|| "file".to_string());
+    let Ok(bytes) = std::fs::read(path) else {
+        return;
+    };
+    let payload = park_shared_bytes(app, bytes, &file_name, "", &extension_of(&file_name));
+    store_pending_and_emit(app, payload);
 }
 
 #[cfg(test)]

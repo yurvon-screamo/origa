@@ -294,8 +294,13 @@ pub fn run() {
     {
         let handle = app.handle();
         share_intake::cleanup_stale_share_files(handle);
+        // Cold start: argv file-association launches arrive before the
+        // webview mounts its listener — the pending slot is the reliable
+        // channel (emit alone returns Ok with no listener and is lost).
         let argv: Vec<String> = std::env::args().skip(1).collect();
-        share_intake::ingest_argv(handle, &argv);
+        for path in share_intake::parse_shared_paths(&argv) {
+            share_intake::ingest_path_cold(handle, &path);
+        }
     }
 
     // macOS file-association and reopened-file delivery (both cold and
