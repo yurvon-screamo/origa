@@ -97,11 +97,54 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     let counter_repository = lesson_ctx.repository.clone();
 
-    // #528: the example companion's binary self-assessment advances
-    // rating-free — the bool is a UI affordance only.
+    // #528 v3: the example's binary self-assessment rates (or lazily
+    // creates) the sentence's OWN SRS card and then advances — the word
+    // owner's schedule is never touched. The is_rating gate is taken
+    // SYNCHRONOUSLY before the spawn (the keyboard handler's early exit
+    // covers keys for free; the buttons share the same disabled signal
+    // as the rating buttons), mirroring the on_rate pipeline.
     let on_example_answer = {
+        let is_completed = lesson_ctx.is_completed;
+        let repository = lesson_ctx.repository.clone();
         let advance = on_example_advance;
-        Callback::new(move |_: bool| advance.run(()))
+        Callback::new(move |understood: bool| {
+            if is_rating.get_untracked().is_some() {
+                return;
+            }
+            let state = lesson_state.get_untracked();
+            let Some(slot_id) = state.card_ids.get(state.current_index).copied() else {
+                return;
+            };
+            let Some(lesson_card) = state.cards.get(&slot_id) else {
+                return;
+            };
+            let LessonCardView::Example {
+                card, sentence_id, ..
+            } = lesson_card.view()
+            else {
+                return;
+            };
+            let word = match card {
+                origa::domain::Card::Vocabulary(vocab) => vocab.word().text().to_string(),
+                origa::domain::Card::Example(example) => example.word().to_string(),
+                _ => return,
+            };
+            let sentence_id = *sentence_id;
+            is_rating.set(Some(slot_id));
+            let repository = repository.clone();
+            let is_rating_cell = is_rating;
+            spawn_local(async move {
+                let use_case = origa::use_cases::RateExampleUseCase::new(&repository);
+                if let Err(e) = use_case.execute(&word, sentence_id, understood).await {
+                    tracing::warn!(error = ?e, word, sentence_id, "Example rating failed — advancing anyway");
+                }
+                is_rating_cell.set(None);
+                // Advance regardless: a failed rating must not turn the
+                // card into a dead end (the card's fallback philosophy).
+                let _ = is_completed;
+                advance.run(());
+            });
+        })
     };
 
     let handle_keydown = create_keyboard_handler(

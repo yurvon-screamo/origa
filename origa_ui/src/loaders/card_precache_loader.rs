@@ -90,8 +90,9 @@ fn get_card_cdn_resources(card: &StudyCard) -> Vec<String> {
         Card::Kanji(k) => kanji_svg_resources(k.kanji().text(), Some(&k.jlpt().to_string())),
         Card::Grammar(_) => vec![],
         // Контент счётного суффикса резолвится из реестра в памяти —
-        // CDN-ресурсов у counter-карт нет.
-        Card::Counter(_) => vec![],
+        // CDN-ресурсов у counter-карт нет. Пример (#528 v3) подгружается
+        // лениво на показе карточки — прекешировать нечего.
+        Card::Counter(_) | Card::Example(_) => vec![],
     }
 }
 

@@ -187,6 +187,17 @@ impl User {
         &self.knowledge_set
     }
 
+    /// #528 v3: the PREMIERE first review of a freshly created example
+    /// card (memory only — no history/ghost marks). See
+    /// KnowledgeSet::apply_example_premiere.
+    pub fn apply_example_premiere(
+        &mut self,
+        card_id: Ulid,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        self.knowledge_set.apply_example_premiere(card_id, rating)
+    }
+
     #[cfg(test)]
     pub fn knowledge_set_mut(&mut self) -> &mut KnowledgeSet {
         &mut self.knowledge_set
@@ -425,7 +436,9 @@ impl User {
             // Phrase cards roll up under `words` — see domain/jlpt_content.rs.
             let (learned_map, projected_map) = match card {
                 Card::Kanji(_) => (&mut learned.kanji, &mut projected.kanji),
-                Card::Vocabulary(_) | Card::Phrase(_) => (&mut learned.words, &mut projected.words),
+                Card::Vocabulary(_) | Card::Phrase(_) | Card::Example(_) => {
+                    (&mut learned.words, &mut projected.words)
+                },
                 Card::Grammar(_) => (&mut learned.grammar, &mut projected.grammar),
                 // Счётные суффиксы — собственная категория прогресса
                 // (issue #415): отдельная полоса на дашборде, вне общего

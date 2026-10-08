@@ -100,7 +100,7 @@ pub(super) fn is_core_candidate(
     now: DateTime<Utc>,
 ) -> bool {
     !favorite_ids.contains(id)
-        && !matches!(card.card(), Card::Phrase(_))
+        && !matches!(card.card(), Card::Phrase(_) | Card::Example(_))
         && !card.memory().has_active_ghost(now)
 }
 
@@ -236,7 +236,8 @@ pub(super) fn collect_padding<'a>(
             !all_selected_ids.contains(id)
                 // Счётчик — не наполнитель: его семантическая дата
                 // заморожена сидом, сортировка padding по ней лгала бы.
-                && !matches!(card.card(), Card::Phrase(_) | Card::Counter(_))
+                // Примеры (#528 v3) — свой due-пасс, не core-наполнитель.
+                && !matches!(card.card(), Card::Phrase(_) | Card::Counter(_) | Card::Example(_))
                 && !card.memory().has_active_ghost(now)
                 && card.memory().is_high_difficulty()
         })

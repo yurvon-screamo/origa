@@ -98,6 +98,15 @@ pub(super) fn extract_card_data(
             readings: None,
             card_type: CardType::Counter,
         },
+        // Пример (#528 v3): в скоринг онбординга не попадает (свои слоты
+        // в теле урока); ветка — exhaustiveness.
+        DomainCard::Example(e) => ScoringCard {
+            card_id,
+            question: e.word().to_string(),
+            answer: no_translation(),
+            readings: None,
+            card_type: CardType::Example,
+        },
     }
 }
 

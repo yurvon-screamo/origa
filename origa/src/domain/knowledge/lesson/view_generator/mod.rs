@@ -96,6 +96,29 @@ impl<'a> LessonViewGenerator<'a> {
         let card_type = CardType::from(card);
 
         match card_type {
+            // #528 v3: a due example card always shows as the example
+            // recall view (premiere=false — a review, counted in the
+            // lesson progress). Offsets come from the CDN index entry for
+            // this word+sentence pair.
+            CardType::Example => {
+                let (word, sentence_id) = match card {
+                    Card::Example(ec) => (ec.word().to_string(), ec.sentence_id()),
+                    _ => unreachable!("CardType::Example implies Card::Example"),
+                };
+                let refs = crate::dictionary::example::get_word_example_refs(&word);
+                let (start, end) = refs
+                    .iter()
+                    .find(|r| r.sentence_id() == sentence_id)
+                    .map(|r| (r.start(), r.end()))
+                    .unwrap_or((-1, -1));
+                LessonCardView::Example {
+                    card: card.clone(),
+                    sentence_id,
+                    start,
+                    end,
+                    premiere: false,
+                }
+            },
             CardType::Grammar if !is_new => {
                 let rand_val = rng.random::<f32>();
                 if rand_val < PROB_GRAMMAR_QUIZ {

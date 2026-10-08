@@ -38,6 +38,19 @@ pub(crate) fn attach_example_companions(
         core_count,
     } = lesson_data;
 
+    // Words that already own an Example SRS card (#528 v3) get NO
+    // premiere: the card's own due schedule will bring the sentence back
+    // («one example card per word» — the rng pick is made once, at the
+    // first «didn't understand»).
+    let words_with_example_card: std::collections::HashSet<&str> = knowledge_set
+        .study_cards()
+        .values()
+        .filter_map(|sc| match sc.card() {
+            Card::Example(ec) => Some(ec.word()),
+            _ => None,
+        })
+        .collect();
+
     // Original slots only: companions inserted below are never visited,
     // so a companion cannot produce another companion.
     let mut planned: Vec<(usize, LessonCard)> = Vec::new();
@@ -53,6 +66,9 @@ pub(crate) fn attach_example_companions(
         let Card::Vocabulary(vocab) = lesson_card.card() else {
             continue;
         };
+        if words_with_example_card.contains(vocab.word().text()) {
+            continue;
+        }
         let Some(study_card) = knowledge_set.get_card(*slot_id) else {
             continue;
         };
@@ -72,6 +88,9 @@ pub(crate) fn attach_example_companions(
                 sentence_id: pick.sentence_id(),
                 start: pick.start(),
                 end: pick.end(),
+                // A companion slot IS the premiere: the first showing of
+                // this sentence, attached to its word with a gap.
+                premiere: true,
             },
             false,
         );
@@ -101,6 +120,80 @@ pub(crate) fn attach_example_companions(
     }
 }
 
+/// #528 v3: mix due example SRS cards into the lesson («like phrases»):
+/// sorted by next_review_date, capped, deduped against every slot the
+/// lesson already has (companions included — a card enters at most
+/// once). Runs as the FINAL pass after `attach_example_companions`.
+pub(crate) fn mix_due_example_cards(
+    lesson_data: LessonData,
+    knowledge_set: &KnowledgeSet,
+    now: chrono::DateTime<chrono::Utc>,
+) -> LessonData {
+    const MAX_DUE_EXAMPLES_PER_LESSON: usize = 5;
+
+    let LessonData {
+        mut cards,
+        core_count,
+    } = lesson_data;
+
+    let in_lesson: std::collections::HashSet<ulid::Ulid> =
+        cards.iter().map(|(id, _)| *id).collect();
+
+    let mut due: Vec<(ulid::Ulid, &super::StudyCard)> = knowledge_set
+        .study_cards()
+        .iter()
+        .filter(|(id, sc)| {
+            !in_lesson.contains(*id)
+                && matches!(sc.card(), Card::Example(_))
+                && !sc.memory().is_new()
+                && sc.memory().next_review_date().is_some_and(|d| *d <= now)
+        })
+        .map(|(id, sc)| (*id, sc))
+        .collect();
+    due.sort_by_key(|(_, sc)| sc.memory().next_review_date());
+    due.truncate(MAX_DUE_EXAMPLES_PER_LESSON);
+
+    let inserted = due.len();
+    if inserted == 0 {
+        return LessonData { cards, core_count };
+    }
+
+    // No placement constraint (owner: «просто подмешиваются»): append
+    // into the core section, core_count grows by the insertions.
+    for (card_id, _) in due {
+        let Some(sc) = knowledge_set.get_card(card_id) else {
+            continue;
+        };
+        // premiere=false: a due review, counted in the lesson progress.
+        // Offsets resolve from the CDN index entry (view mirrors the
+        // generator's CardType::Example branch).
+        let (word, sentence_id) = match sc.card() {
+            Card::Example(ec) => (ec.word().to_string(), ec.sentence_id()),
+            _ => continue,
+        };
+        let refs = get_word_example_refs(&word);
+        let (start, end) = refs
+            .iter()
+            .find(|r| r.sentence_id() == sentence_id)
+            .map(|r| (r.start(), r.end()))
+            .unwrap_or((-1, -1));
+        let view = LessonCardView::Example {
+            card: sc.card().clone(),
+            sentence_id,
+            start,
+            end,
+            premiere: false,
+        };
+        let pos = core_count.min(cards.len());
+        cards.insert(pos, (card_id, LessonCard::new(card_id, view, false)));
+    }
+
+    LessonData {
+        cards,
+        core_count: core_count + inserted,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,18 +206,18 @@ mod tests {
     use chrono::Utc;
     use rand::SeedableRng;
 
-    const FIXTURE_INDEX: &str = r#"{ "v": 1, "h": "", "s": 2, "words": {
+    pub(super) const FIXTURE_INDEX: &str = r#"{ "v": 1, "h": "", "s": 2, "words": {
         "たべる": { "refs": [[0, 0, 3]] },
         "よむ":   { "refs": [[1, 0, 2]] }
     } }"#;
 
-    fn lock() -> std::sync::MutexGuard<'static, ()> {
+    pub(super) fn lock() -> std::sync::MutexGuard<'static, ()> {
         EXAMPLE_INDEX_TEST_LOCK
             .lock()
             .unwrap_or_else(|e| e.into_inner())
     }
 
-    fn seeded() -> rand::rngs::StdRng {
+    pub(super) fn seeded() -> rand::rngs::StdRng {
         rand::rngs::StdRng::seed_from_u64(42)
     }
 
@@ -300,5 +393,119 @@ mod tests {
             20 + MAX_EXAMPLE_COMPANIONS_PER_LESSON,
             "core_count grows by exactly the inserted companions"
         );
+    }
+}
+
+#[cfg(test)]
+mod v3_tests {
+    use super::tests::{FIXTURE_INDEX, lock, seeded};
+    use super::*;
+    use crate::dictionary::example::{init_example_index, reset_example_index_for_test};
+    use crate::domain::ExampleCard;
+    use crate::domain::memory::{Difficulty, MemoryState, Rating, Stability};
+    use crate::domain::value_objects::Question;
+    use chrono::{Duration, Utc};
+
+    fn ks_with_rated_example_card() -> KnowledgeSet {
+        let mut ks = KnowledgeSet::new();
+        let card = Card::Vocabulary(crate::domain::VocabularyCard::new(
+            Question::new("たべる".to_string()).unwrap(),
+        ));
+        let sc = ks.create_card(card).unwrap();
+        ks.study_cards.get_mut(sc.card_id()).unwrap().apply_review(
+            MemoryState::new(
+                Stability::new(5.0).unwrap(),
+                Difficulty::new(3.0).unwrap(),
+                Utc::now() - Duration::days(3),
+            ),
+            Rating::Good,
+        );
+        // An example card rated 3 days ago — due now.
+        let ex = ks
+            .create_card(Card::Example(ExampleCard::new("たべる", 0)))
+            .unwrap();
+        ks.study_cards.get_mut(ex.card_id()).unwrap().apply_review(
+            MemoryState::new(
+                Stability::new(0.5).unwrap(),
+                Difficulty::new(6.0).unwrap(),
+                Utc::now() - Duration::days(3),
+            ),
+            Rating::Again,
+        );
+        ks
+    }
+
+    fn lesson_with_word(ks: &KnowledgeSet) -> (LessonData, Ulid) {
+        let id = *ks
+            .study_cards()
+            .values()
+            .find(|sc| matches!(sc.card(), Card::Vocabulary(_)))
+            .unwrap()
+            .card_id();
+        let sc = ks.get_card(id).unwrap();
+        (
+            LessonData {
+                cards: vec![(
+                    id,
+                    LessonCard::new(id, LessonCardView::Normal(sc.card().clone()), false),
+                )],
+                core_count: 1,
+            },
+            id,
+        )
+    }
+
+    #[test]
+    fn companion_is_excluded_when_the_word_already_owns_an_example_card() {
+        let _guard = lock();
+        reset_example_index_for_test();
+        init_example_index(FIXTURE_INDEX).expect("fixture index");
+
+        let ks = ks_with_rated_example_card();
+        let (data, _) = lesson_with_word(&ks);
+        let out = attach_example_companions(data, &ks, &mut seeded());
+        assert_eq!(
+            out.cards.len(),
+            1,
+            "no premiere when an example SRS card exists for the word"
+        );
+    }
+
+    #[test]
+    fn due_example_card_enters_the_lesson_exactly_once() {
+        let _guard = lock();
+        reset_example_index_for_test();
+        init_example_index(FIXTURE_INDEX).expect("fixture index");
+
+        let ks = ks_with_rated_example_card();
+        let (data, _) = lesson_with_word(&ks);
+        let out = mix_due_example_cards(data, &ks, Utc::now());
+
+        let example_card_id = *ks
+            .study_cards()
+            .iter()
+            .find(|(_, sc)| matches!(sc.card(), Card::Example(_)))
+            .unwrap()
+            .0;
+        let entries = out
+            .cards
+            .iter()
+            .filter(|(id, _)| *id == example_card_id)
+            .count();
+        assert_eq!(entries, 1, "due example enters exactly once");
+        assert_eq!(out.core_count, 2, "core_count grows by the insertion");
+        // The inserted slot is a REVIEW (premiere=false).
+        let view = out
+            .cards
+            .iter()
+            .find(|(id, _)| *id == example_card_id)
+            .unwrap();
+        assert!(matches!(
+            view.1.view(),
+            LessonCardView::Example {
+                premiere: false,
+                ..
+            }
+        ));
     }
 }

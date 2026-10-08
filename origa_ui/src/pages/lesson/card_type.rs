@@ -13,6 +13,7 @@ pub enum CardType {
     Grammar,
     Phrase,
     Counter,
+    Example,
 }
 
 impl CardType {
@@ -48,6 +49,12 @@ impl CardType {
                 .counter()
                 .inner()
                 .to_string(),
+            CardType::Example => i18n
+                .get_keys_untracked()
+                .lesson()
+                .example_tag()
+                .inner()
+                .to_string(),
         }
     }
 
@@ -58,6 +65,7 @@ impl CardType {
             CardType::Grammar => TagVariant::Terracotta,
             CardType::Phrase => TagVariant::Sage,
             CardType::Counter => TagVariant::Olive,
+            CardType::Example => TagVariant::Sage,
         }
     }
 
@@ -72,8 +80,10 @@ impl CardType {
             CardType::Vocabulary => 2,
             CardType::Phrase => 3,
             // Счётные суффиксы — в конце ряда: существующие порядки
-            // стабильны (issue #415).
+            // стабильны (issue #415). Примеры (#528 v3) — предпоследние
+            // (рядом с фразами); онбординг их не показывает (exhaustiveness).
             CardType::Counter => 4,
+            CardType::Example => 5,
         }
     }
 }
@@ -86,6 +96,7 @@ impl From<&DomainCard> for CardType {
             DomainCard::Grammar(_) => CardType::Grammar,
             DomainCard::Counter(_) => CardType::Counter,
             DomainCard::Phrase(_) => CardType::Phrase,
+            DomainCard::Example(_) => CardType::Example,
         }
     }
 }
