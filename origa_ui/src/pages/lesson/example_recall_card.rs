@@ -26,6 +26,10 @@ use origa::domain::NativeLanguage;
 #[component]
 pub fn ExampleRecallCard(
     sentence_id: u32,
+    /// #528: audio mode (the AudioRecall etalon) — the question side
+    /// PLAYS the sentence and hides its text until the reveal.
+    #[prop(default = false)]
+    audio: bool,
     show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_advance: Callback<()>,
@@ -129,8 +133,22 @@ pub fn ExampleRecallCard(
                         .to_string();
 
                     if !show_answer.get() {
-                        // Question side: the sentence alone (token
-                        // translator, no furigana — the phrase-card etalon).
+                        // Question side. Audio mode (the AudioRecall
+                        // etalon): only the sound — the sentence plays
+                        // (auto-TTS + the speaker button) and its text
+                        // stays hidden until the reveal.
+                        if audio {
+                            return view! {
+                                <div class="example-recall-ja" data-testid="lesson-example-ja">
+                                    <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                                        {t!(i18n, lesson.example_listen)}
+                                    </Text>
+                                </div>
+                            }
+                            .into_any();
+                        }
+                        // Text mode: the sentence alone (token translator,
+                        // no furigana — the phrase-card etalon).
                         return view! {
                             <div class="example-recall-ja" data-testid="lesson-example-ja">
                                 <TranslatorText

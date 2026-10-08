@@ -450,7 +450,12 @@ impl KnowledgeSet {
             example_companions::attach_example_companions(spaced, self, &mut rand::rng());
         // #528 v3: due example SRS cards mix in last («like phrases»):
         // own schedule, deduped against every slot the lesson has.
-        example_companions::mix_due_example_cards(with_premieres, self, chrono::Utc::now())
+        example_companions::mix_due_example_cards(
+            with_premieres,
+            self,
+            chrono::Utc::now(),
+            &mut rand::rng(),
+        )
     }
 
     /// #528 v3: the PREMIERE first review of a freshly created example

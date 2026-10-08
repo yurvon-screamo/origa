@@ -331,7 +331,8 @@
         "example_recall_not_understood": "Didn't understand",
         "example_unavailable": "Example unavailable — continue with the next card",
         "example_reveal_translation": "Reveal translation",
-        "example_tag": "Example"
+        "example_tag": "Example",
+        "example_listen": "Listen to the sentence"
     },
     "home": {
         "loading": "Loading...",

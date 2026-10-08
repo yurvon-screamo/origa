@@ -111,12 +111,16 @@ impl<'a> LessonViewGenerator<'a> {
                     .find(|r| r.sentence_id() == sentence_id)
                     .map(|r| (r.start(), r.end()))
                     .unwrap_or((-1, -1));
+                // Audio mode for due reviews mirrors the word-card
+                // AudioRecall share (50%): listen first, read on reveal.
+                let audio = rng.random::<f32>() < 0.5;
                 LessonCardView::Example {
                     card: card.clone(),
                     sentence_id,
                     start,
                     end,
                     premiere: false,
+                    audio,
                 }
             },
             CardType::Grammar if !is_new => {

@@ -73,8 +73,20 @@ pub fn VocabularyCardItem(
 
     let known_kanji_for_furigana = known_kanji;
 
+    // Whole-card navigation (owner UX fix): the entire card opens the
+    // detail page; the action buttons below stop propagation so they do
+    // not trigger the navigation.
+    let word_for_card = word_for_link.clone();
+    let on_open_card = move |_: leptos::ev::MouseEvent| {
+        on_open_detail_cb.run(word_for_card.clone());
+    };
+
     view! {
-        <div class="word-card anima-lift" data-testid="words-card-item">
+        <div
+            class="word-card anima-lift cursor-pointer"
+            data-testid="words-card-item"
+            on:click=on_open_card
+        >
             <div class="word-card-body">
                 <a
                     class="word-card-word-box cursor-pointer"
@@ -83,11 +95,13 @@ pub fn VocabularyCardItem(
                     on:click=move |ev: leptos::ev::MouseEvent| {
                         // Modifier/middle clicks keep the native link
                         // behaviour (new tab); only a plain left-click
-                        // navigates inside the SPA.
+                        // navigates inside the SPA. stopPropagation: the
+                        // card root would navigate a second time.
                         if ev.meta_key() || ev.ctrl_key() || ev.shift_key() || ev.alt_key() {
                             return;
                         }
                         ev.prevent_default();
+                        ev.stop_propagation();
                         on_open_detail_cb.run(word_for_link.clone());
                     }
                 >

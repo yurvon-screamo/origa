@@ -331,7 +331,8 @@
         "example_recall_not_understood": "Не понял",
         "example_unavailable": "Пример недоступен — перейдите к следующей карточке",
         "example_reveal_translation": "Показать перевод",
-        "example_tag": "Пример"
+        "example_tag": "Пример",
+        "example_listen": "Прослушайте предложение"
     },
     "home": {
         "loading": "Загрузка...",

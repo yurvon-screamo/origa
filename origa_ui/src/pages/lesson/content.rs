@@ -295,6 +295,15 @@ pub fn LessonContent() -> impl IntoView {
 
             match cards_result {
                 Ok(mut lesson_data) => {
+                    // #528 owner fix: retarget each PREMIERE example slot
+                    // to its easiest sentence (fewest unknown words against
+                    // the user's vocabulary), then warm the sentence cache
+                    // for every example slot — card renders never wait on
+                    // the network mid-lesson.
+                    super::example_selection::pick_easiest_examples(&mut lesson_data.cards, &repo)
+                        .await;
+                    super::example_selection::prefetch_example_sentences(&lesson_data.cards);
+
                     let phrase_ids: Vec<Ulid> = lesson_data
                         .cards
                         .iter()

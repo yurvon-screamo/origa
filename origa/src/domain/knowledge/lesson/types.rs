@@ -361,6 +361,13 @@ pub enum LessonCardView {
         /// card. serde default keeps the wire back-compatible.
         #[serde(default)]
         premiere: bool,
+        /// #528 v3 owner request: AUDIO mode (the word-card AudioRecall
+        /// etalon) — the question side plays the sentence and hides its
+        /// text until the reveal. Only due reviews sample it (50%,
+        /// like the word PROB_LATE_AUDIO_VIEW); premieres always show
+        /// the text (a first encounter needs reading).
+        #[serde(default)]
+        audio: bool,
     },
     KanjiReadingQuiz(QuizCard),
     GrammarQuiz(GrammarQuizCard),
@@ -757,6 +764,7 @@ mod tests {
             start: 3,
             end: 5,
             premiere: true,
+            audio: false,
         };
 
         let json = serde_json::to_string(&view).expect("serialize Example view");
