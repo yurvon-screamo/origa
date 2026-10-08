@@ -170,7 +170,6 @@ pub fn AddWordsPreviewModal(
                     continue;
                 };
                 let state = state.clone();
-                let on_audio_text = on_audio_text;
                 let i18n = i18n_for_share;
                 let toasts = toasts;
                 let is_open = is_open;

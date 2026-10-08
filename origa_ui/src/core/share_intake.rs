@@ -146,11 +146,11 @@ fn poll_on_focus() {
     let callback = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
         poll_pending_share();
     }) as Box<dyn Fn()>);
-    let callback_ptr: &js_sys::Function = callback
-        .as_ref()
-        .dyn_ref::<js_sys::Function>()
-        .expect("closure to Function");
-    let _ = window.add_event_listener_with_callback("focus", callback_ptr);
+    if let Some(callback_ptr) = callback.as_ref().dyn_ref::<js_sys::Function>() {
+        let _ = window.add_event_listener_with_callback("focus", callback_ptr);
+    } else {
+        tracing::warn!("share-intake: focus closure conversion failed");
+    }
     callback.forget();
 }
 
