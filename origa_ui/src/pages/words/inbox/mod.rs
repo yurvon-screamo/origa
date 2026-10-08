@@ -262,6 +262,26 @@ pub(super) struct SeamPayload {
     pub sentences: Option<Vec<String>>,
 }
 
+/// External share bridge: text payload → route (whitespace-only lands on
+/// the no-words notice, like the seam's text kind).
+pub(crate) fn wire_route_text(text: &str) -> InboxRoute {
+    route_payload(InboxPayload {
+        kind: InboxKind::Text(text.to_string()),
+    })
+}
+
+/// External share bridge: file payload → kind (File construction mirrors
+/// the native picker button). `None` when File construction fails.
+pub(crate) fn wire_route_file(file_name: &str, mime: &str, bytes: Vec<u8>) -> Option<InboxKind> {
+    let mime = if mime.is_empty() {
+        crate::pages::words::ocr_processing::extension_mime(file_name)
+    } else {
+        mime.to_string()
+    };
+    let file = crate::pages::words::native_file_button::file_from_bytes(file_name, bytes, &mime)?;
+    Some(InboxKind::File(file))
+}
+
 /// Upper bound for seam text payloads — keeps an accidental huge string in
 /// a test session from ballooning the WASM heap. File payloads are bounded
 /// by the shared pipelines' own caps.

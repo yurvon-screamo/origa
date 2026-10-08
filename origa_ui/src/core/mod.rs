@@ -6,6 +6,7 @@ pub mod device_ai;
 pub mod file_picker;
 pub mod haptics;
 pub mod platform;
+pub mod share_intake;
 pub mod tauri;
 pub mod updater;
 pub mod version;

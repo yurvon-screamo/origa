@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Origa</string>
     <string name="main_activity_title">Origa</string>
+    <string name="share_alias_title" translatable="true">Add to Origa</string>
 </resources>

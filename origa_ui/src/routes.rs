@@ -648,6 +648,10 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
 #[component]
 pub fn AppRoutes() -> impl IntoView {
+    // External share intake (IN-2/IN-3): listens for host share events
+    // and polls the cold-start pending slot. No-op in the web build.
+    crate::core::share_intake::start_share_intake();
+
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);

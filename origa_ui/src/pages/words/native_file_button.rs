@@ -65,7 +65,7 @@ pub fn NativeFilePickerButton(
 /// Wraps raw bytes into a `File` carrying the original name and MIME type.
 /// `None` on construction failure (non-browser context / invalid name) —
 /// the payload is dropped, the warning is the caller's.
-fn file_from_bytes(name: &str, bytes: Vec<u8>, mime: &str) -> Option<web_sys::File> {
+pub(super) fn file_from_bytes(name: &str, bytes: Vec<u8>, mime: &str) -> Option<web_sys::File> {
     let parts = js_sys::Array::new();
     let array = js_sys::Uint8Array::from(bytes.as_slice());
     parts.push(&array.into());

@@ -18,6 +18,7 @@ mod android_context;
 #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
 mod device_ai_commands;
 mod file_commands;
+mod share_intake;
 // Auto-updater is Windows/Linux-only and is additionally compiled OUT of
 // app-store builds (`ORIGA_APP_STORE=1`): Microsoft Store policy 10.2.5
 // (and Mac App Store 2.4.5(vii)) forbid self-update outside the respective
@@ -109,12 +110,15 @@ pub fn run() {
     // activations to an already-running instance through this plugin.
     #[cfg(any(windows, target_os = "linux"))]
     {
-        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             tracing::info!("[deep-link] single-instance activated (app was already running)");
             let _ = app
                 .get_webview_window("main")
                 .expect("no main window")
                 .set_focus();
+            // File-association opens on a running instance arrive as argv
+            // paths (deep-link URLs are filtered by the parser).
+            share_intake::ingest_argv(app, &args);
         }));
     }
 
@@ -191,7 +195,7 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_device_ai_apis::init());
     }
 
-    builder
+    let app = builder
         .invoke_handler(tauri::generate_handler![
             get_current_deep_link,
             auth_store_get,
@@ -204,7 +208,10 @@ pub fn run() {
             install_update,
             #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
             device_ai_commands::device_ai_recognize_file,
-            file_commands::pick_and_read_file
+            file_commands::pick_and_read_file,
+            share_intake::get_pending_share,
+            share_intake::read_share_file,
+            share_intake::delete_share_file
         ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
@@ -278,8 +285,33 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    // Cold-start delivery: file-association launches arrive before any
+    // window exists, so pending collection happens pre-run and the
+    // frontend picks it up via get_pending_share.
+    {
+        let handle = app.handle();
+        share_intake::cleanup_stale_share_files(handle);
+        let argv: Vec<String> = std::env::args().skip(1).collect();
+        share_intake::ingest_argv(handle, &argv);
+    }
+
+    // macOS file-association and reopened-file delivery (both cold and
+    // warm runs surface here as Opened events).
+    app.run(|_app_handle, _event| {
+        #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
+        if let tauri::RunEvent::Opened { urls } = _event {
+            for url in urls {
+                // Deep-link URLs (origa://…) resolve to no file path and
+                // are owned by the deep-link plugin; only files are ours.
+                if let Ok(path) = url.to_file_path() {
+                    share_intake::ingest_path(_app_handle, &path);
+                }
+            }
+        }
+    });
 }
 
 /// Starts the Sentry release-health session with the anonymous install id

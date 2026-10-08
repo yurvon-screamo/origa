@@ -1,3 +1,4 @@
+use crate::core::share_intake::{self, ShareWire};
 use crate::i18n::{t, use_i18n};
 use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_handlers;
 use crate::pages::words::add_words_preview_modal_state::{
@@ -143,6 +144,59 @@ pub fn AddWordsPreviewModal(
             }
         })
     };
+
+    // External share intake (IN-2/IN-3): consume the parked payload once
+    // per mount of the words page. Runs after all inbox signals exist.
+    {
+        let state = state.clone();
+        let on_audio_text = on_audio_text_extracted;
+        spawn_local(async move {
+            let Some(payload) = share_intake::take_share() else {
+                return;
+            };
+            match payload {
+                ShareWire::Text { text } => {
+                    let route = crate::pages::words::inbox::wire_route_text(&text);
+                    crate::pages::words::inbox::seam::execute_route(
+                        route,
+                        i18n,
+                        &state,
+                        is_open,
+                        &inbox,
+                        on_audio_text,
+                    );
+                },
+                ShareWire::File {
+                    file_name,
+                    mime,
+                    cache_path,
+                } => match share_intake::read_shared_bytes(&cache_path).await {
+                    Ok(bytes) => {
+                        let kind =
+                            crate::pages::words::inbox::wire_route_file(&file_name, &mime, bytes);
+                        if let Some(kind) = kind {
+                            let route = crate::pages::words::inbox::route_payload(
+                                crate::pages::words::inbox::InboxPayload { kind },
+                            );
+                            crate::pages::words::inbox::seam::execute_route(
+                                route,
+                                i18n,
+                                &state,
+                                is_open,
+                                &inbox,
+                                on_audio_text,
+                            );
+                        }
+                    },
+                    Err(e) => tracing::warn!(error = %e, "share-intake: file read failed"),
+                },
+                ShareWire::Error { message } => {
+                    tracing::warn!(message = %message, "share-intake: host reported error");
+                },
+                ShareWire::None => {},
+            }
+        });
+    }
 
     // The e2e seam registers once at mount and unregisters via its guard's
     // Drop when the drawer component is disposed.
