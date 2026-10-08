@@ -55,6 +55,16 @@ impl AcquaintanceEntry {
             && (!self.is_word() || self.reverse_successes >= CRITERION_SUCCESSSES)
     }
 
+    /// Тестовая диагностика прогресса (юнит- и wasm-репродукции).
+    pub fn debug_forward(&self) -> u8 {
+        self.forward_successes
+    }
+
+    /// Тестовая диагностика прогресса (юнит- и wasm-репродукции).
+    pub fn debug_reverse(&self) -> u8 {
+        self.reverse_successes
+    }
+
     pub(super) fn is_word(&self) -> bool {
         self.card_type == CardType::Vocabulary
     }

@@ -37,6 +37,10 @@ pub fn resolve_key_action(
         AcquaintanceStage::Training => match (showing_answer, key) {
             (false, " ") => Some(AcquaintanceKeyAction::Reveal),
             (false, "Enter") if audio_front => Some(AcquaintanceKeyAction::ReplayAudio),
+            // Space на ответе — «Помню» (юзер-репорт rc3: привычный
+            // «дальше» не работал — рука казалась застрявшей). Единый
+            // паттерн «дальше»: показ → «Далее», тренировка → «Помню».
+            (true, " ") => Some(AcquaintanceKeyAction::RateRemember),
             (true, "1") => Some(AcquaintanceKeyAction::RateDontRemember),
             (true, "2") => Some(AcquaintanceKeyAction::RateRemember),
             _ => None,
@@ -92,6 +96,22 @@ pub fn create_acquaintance_keyboard_handler(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Юзер-репорт (rc3): после раскрытия ответа тренировки привычный
+    /// Space ничего не делал — «застрял, не смог выйти из знакомства».
+    /// Space на ответе обязан работать как «Помню»: единый паттерн
+    /// «дальше» (Space=«Далее» в показе, Space=«Помню» в тренировке).
+    #[test]
+    fn space_on_answer_rates_remember() {
+        assert_eq!(
+            resolve_key_action(AcquaintanceStage::Training, true, false, " "),
+            Some(AcquaintanceKeyAction::RateRemember)
+        );
+        assert_eq!(
+            resolve_key_action(AcquaintanceStage::Training, true, true, " "),
+            Some(AcquaintanceKeyAction::RateRemember)
+        );
+    }
 
     #[test]
     fn presentation_space_advances() {
@@ -160,17 +180,18 @@ mod tests {
     }
 
     #[test]
-    fn training_space_after_reveal_does_nothing() {
-        // После раскрытия оценивание только [1]/[2]: Space не должен
-        // случайно скрыть ответ или двинуть ротацию — ни на текстовом,
-        // ни на аудио-фронте.
+    fn training_space_after_reveal_rates_remember() {
+        // После раскрытия Space = «Помню» (юзер-репорт rc3: привычный
+        // «дальше» не работал — рука казалась застрявшей). Ответ не
+        // скрывается и ротация не движется сама: Space идёт тем же
+        // рейтинговым путём, что [2].
         assert_eq!(
             resolve_key_action(AcquaintanceStage::Training, true, false, " "),
-            None
+            Some(AcquaintanceKeyAction::RateRemember)
         );
         assert_eq!(
             resolve_key_action(AcquaintanceStage::Training, true, true, " "),
-            None
+            Some(AcquaintanceKeyAction::RateRemember)
         );
     }
 

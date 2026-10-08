@@ -96,3 +96,68 @@ fn fresh_entries_start_with_zero_progress_below_criterion() {
     assert_eq!(entry.progress_in(Some(AcquaintanceSubphase::Forward)), 0);
     assert_eq!(CRITERION_SUCCESSSES, 3);
 }
+
+/// Репродукция живого баг-репорта (issue #415, rc3): рука из шести
+/// счётных суффиксов и двух слов обязана пройти показ → тренировку
+/// Forward → смену на РУ→ЯП (Reverse) → закрыться после Reverse-витка
+/// слов. Симптом владельца: «застряло, не смог выйти из знакомства и
+/// перейти к формату РУ→ЯП».
+#[test]
+fn mixed_counter_word_hand_completes_through_reverse() {
+    use super::*;
+    use crate::domain::CardType;
+    use ulid::Ulid;
+
+    let counters: Vec<Ulid> = (0..6).map(|_| Ulid::new()).collect();
+    let words: Vec<Ulid> = (0..2).map(|_| Ulid::new()).collect();
+
+    let mut entries: Vec<(Ulid, CardType, u8, u8)> = counters
+        .iter()
+        .map(|&id| (id, CardType::Counter, 0, 0))
+        .collect();
+    entries.extend(words.iter().map(|&id| (id, CardType::Vocabulary, 0, 0)));
+
+    let mut hand = AcquaintanceHand::new_test(entries, Some(AcquaintanceSubphase::Forward));
+
+    // Forward-виток: каждый счётчик и слово получают критерий успехов;
+    // после каждого успешного ответа UI зовёт advance_subphase_if_words_done
+    // (контракт after_answer) — воспроизводим честный флоу.
+    for _ in 0..CRITERION_SUCCESSSES {
+        for &id in counters.iter().chain(words.iter()) {
+            let outcome = hand
+                .record_answer(id, true)
+                .expect("forward answer records");
+            assert!(
+                !matches!(outcome, AnswerOutcome::HandCompleted),
+                "смена стороны должна предшествовать завершению руки"
+            );
+            if matches!(outcome, AnswerOutcome::Counted { .. }) {
+                hand.advance_subphase_if_words_done();
+            }
+        }
+    }
+
+    // Последний успех слов обязан переключить подфазу на РУ→ЯП.
+    assert_eq!(
+        hand.subphase(),
+        Some(AcquaintanceSubphase::Reverse),
+        "все критерии Forward закрыты — подфаза обязана смениться на Reverse"
+    );
+
+    // Reverse-виток: только слова; закрывают обратный критерий.
+    let mut completed = false;
+    for _ in 0..CRITERION_SUCCESSSES {
+        for &id in words.iter() {
+            let outcome = hand
+                .record_answer(id, true)
+                .expect("reverse answer records");
+            if matches!(outcome, AnswerOutcome::HandCompleted) {
+                completed = true;
+            }
+        }
+    }
+    assert!(
+        completed,
+        "рука из 6 счётчиков + 2 слов обязана закрыться после Reverse-витка слов"
+    );
+}
