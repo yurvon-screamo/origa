@@ -34,10 +34,15 @@ pub(in crate::pages::lesson) fn render_lesson_card(
     // and advances the lesson WITHOUT an FSRS rating. start/end stay
     // payload of the wire variant (no highlight in this view — the
     // owner-requested token translator does not carry ranges).
-    if let LessonCardView::Example { sentence_id, .. } = lesson_card.clone().into_view() {
+    if let LessonCardView::Example {
+        sentence_id, audio, ..
+    } = lesson_card.clone().into_view()
+    {
         return view! {
             <ExampleRecallCard
                 sentence_id=sentence_id
+                audio=audio
+                known_kanji=known_kanji
                 show_answer=show_answer
                 on_show_answer=on_show_answer
                 on_advance=on_example_advance

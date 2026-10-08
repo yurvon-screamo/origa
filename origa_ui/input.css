@@ -6955,8 +6955,7 @@ rt {
 }
 
 .word-detail-example-translation {
-    font-size: 15px;
-    color: var(--text-secondary);
+    text-align: center;
 }
 
 /* Compact example on the vocabulary answer side (#528) */
@@ -6985,18 +6984,27 @@ rt {
     font-size: 24px;
 }
 
-.word-detail-example-meta {
+/* Sentence row: the token translator + the play button next to IT
+   (owner UX — sound belongs to the Japanese line). */
+.word-detail-example-ja-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.word-example-line-meta {
+/* The play button row: next to THE SENTENCE (owner UX — sound belongs
+   to the Japanese line), not to the translation. */
+.word-example-line-ja-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+/* Translation centered under the sentence (owner UX). */
+.word-example-line-translation {
+    text-align: center;
 }
 
 @media (max-width: 640px) {
