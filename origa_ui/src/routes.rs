@@ -665,7 +665,13 @@ pub fn AppRoutes() -> impl IntoView {
                         .location()
                         .and_then(|loc| loc.pathname().ok())
                         .unwrap_or_default();
-                    if !pathname.starts_with("/words") {
+                    // Public routes mean the user is unauthenticated —
+                    // navigating to /words would fight the ProtectedRoute
+                    // guard and reset the login form every tick. The
+                    // payload stays parked until the user authenticates.
+                    let is_public =
+                        pathname.starts_with("/login") || pathname.starts_with("/onboarding");
+                    if !is_public && !pathname.starts_with("/words") {
                         navigate("/words", Default::default());
                     }
                 }

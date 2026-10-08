@@ -311,8 +311,10 @@ pub fn run() {
             for url in urls {
                 // Deep-link URLs (origa://…) resolve to no file path and
                 // are owned by the deep-link plugin; only files are ours.
+                // Opened fires cold (before the listener mounts) and warm
+                // alike — the pending slot is the reliable channel.
                 if let Ok(path) = url.to_file_path() {
-                    share_intake::ingest_path(_app_handle, &path);
+                    share_intake::ingest_path_cold(_app_handle, &path);
                 }
             }
         }

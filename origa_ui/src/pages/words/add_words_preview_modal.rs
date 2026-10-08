@@ -154,11 +154,18 @@ pub fn AddWordsPreviewModal(
         std::sync::atomic::AtomicUsize::new(0);
     {
         let state = state.clone();
+        let disposed = state.disposed;
         let on_audio_text = on_audio_text_extracted;
         let i18n_for_share = i18n;
         leptos::task::spawn_local(async move {
             loop {
                 gloo_timers::future::TimeoutFuture::new(300).await;
+                // Exit when this modal instance unmounts — otherwise the
+                // loop outlives the page and steals shares from the next
+                // instance's signals (dead instance, no subscribers).
+                if disposed.is_disposed() {
+                    return;
+                }
                 let Some(payload) = share_intake::take_share() else {
                     continue;
                 };
