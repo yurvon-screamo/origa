@@ -89,8 +89,10 @@ pub(crate) fn attach_example_companions(
                 start: pick.start(),
                 end: pick.end(),
                 // A companion slot IS the premiere: the first showing of
-                // this sentence, attached to its word with a gap.
+                // this sentence, attached to its word with a gap. Always
+                // text (a first encounter needs reading) — no audio mode.
                 premiere: true,
+                audio: false,
             },
             false,
         );
@@ -128,6 +130,7 @@ pub(crate) fn mix_due_example_cards(
     lesson_data: LessonData,
     knowledge_set: &KnowledgeSet,
     now: chrono::DateTime<chrono::Utc>,
+    rng: &mut impl rand::Rng,
 ) -> LessonData {
     const MAX_DUE_EXAMPLES_PER_LESSON: usize = 5;
 
@@ -183,6 +186,7 @@ pub(crate) fn mix_due_example_cards(
             start,
             end,
             premiere: false,
+            audio: rng.random::<f32>() < 0.5,
         };
         let pos = core_count.min(cards.len());
         cards.insert(pos, (card_id, LessonCard::new(card_id, view, false)));
@@ -479,7 +483,7 @@ mod v3_tests {
 
         let ks = ks_with_rated_example_card();
         let (data, _) = lesson_with_word(&ks);
-        let out = mix_due_example_cards(data, &ks, Utc::now());
+        let out = mix_due_example_cards(data, &ks, Utc::now(), &mut seeded());
 
         let example_card_id = *ks
             .study_cards()

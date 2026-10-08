@@ -18,7 +18,7 @@ use crate::pages::shared::{
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     AudioButtons, CardActionBar, DeleteConfirmModal, FsrsMetrics, FuriganaText, Text, TextSize,
-    TypographyVariant,
+    TranslatorText, TypographyVariant,
 };
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
@@ -44,13 +44,31 @@ pub fn split_highlight(text: &str, start: i32, end: i32) -> (String, String, Str
 
 /// Find the user's vocabulary study card for a dictionary word.
 fn find_word_card(user: &User, word: &str) -> Option<(Ulid, StudyCard)> {
-    user.knowledge_set()
+    let found = user
+        .knowledge_set()
         .study_cards()
         .iter()
         .find_map(|(id, card)| match card.card() {
             DomainCard::Vocabulary(v) if v.word().text() == word => Some((*id, card.clone())),
             _ => None,
-        })
+        });
+    if found.is_none() {
+        // #528 owner report: the action bar was missing on a card the
+        // owner considers theirs. Log the exact mismatch for diagnosis:
+        // is the URL word form different from the stored card word?
+        let vocab_total = user
+            .knowledge_set()
+            .study_cards()
+            .values()
+            .filter(|c| matches!(c.card(), DomainCard::Vocabulary(_)))
+            .count();
+        tracing::warn!(
+            word,
+            vocab_total,
+            "Word detail: no card for this word — action bar hidden"
+        );
+    }
+    found
 }
 
 #[component]
@@ -341,55 +359,27 @@ pub fn WordDetail() -> impl IntoView {
 #[component]
 fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) -> impl IntoView {
     let WordExample { detail, start, end } = example;
-    // Stored offsets win; when absent (kana variant of a kanji word), the
-    // surface form is re-located in the sentence. When NEITHER locates the
-    // word (mid is empty), the sentence renders as one unhighlighted run —
-    // an empty highlight span would show up as a stray tick mark.
-    let (head, mid, tail) = if start >= 0 && end >= 0 {
-        split_highlight(&detail.text, start, end)
-    } else {
-        let char_idx = detail
-            .text
-            .find(&word)
-            .map(|b| detail.text[..b].chars().count());
-        match char_idx {
-            Some(ci) => {
-                split_highlight(&detail.text, ci as i32, (ci + word.chars().count()) as i32)
-            },
-            None => split_highlight(&detail.text, -1, -1),
-        }
-    };
-    let mid = if mid.is_empty() { None } else { Some(mid) };
+    let _ = (&start, &end, &word); // offsets unused by the token translator
 
     let translation = detail
         .translation(&native_lang)
         .unwrap_or_default()
         .to_string();
 
-    // The example is reference material: furigana is shown over EVERY
-    // kanji regardless of the reader's knowledge (an empty known set),
-    // unlike lesson surfaces where known kanji hide their readings.
+    // The word page is reference material — the sentence renders through
+    // the TOKEN TRANSLATOR (the phrase-card etalon, owner request): every
+    // token is interactive with its own translation. The word highlight
+    // and the furigana segments are gone: the hero word sits right above.
+    let sentence = detail.text.clone();
+
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
             <div class="word-detail-example-ja">
-                {move || {
-                    match &mid {
-                        Some(mid) => view! {
-                            <FuriganaText text=head.clone() known_kanji=HashSet::new()/>
-                            <FuriganaText
-                                text=mid.clone()
-                                known_kanji=HashSet::new()
-                                class=String::from("word-example-highlight")
-                            />
-                            <FuriganaText text=tail.clone() known_kanji=HashSet::new()/>
-                        }
-                        .into_any(),
-                        None => view! {
-                            <FuriganaText text=head.clone() known_kanji=HashSet::new()/>
-                        }
-                        .into_any(),
-                    }
-                }}
+                <TranslatorText
+                    text=sentence
+                    class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
+                    test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
+                />
             </div>
             <div class="word-detail-example-meta">
                 <div
