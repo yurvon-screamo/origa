@@ -210,6 +210,7 @@ pub fn run() {
             device_ai_commands::device_ai_recognize_file,
             file_commands::pick_and_read_file,
             share_intake::get_pending_share,
+            share_intake::share_listener_ready,
             share_intake::read_share_file,
             share_intake::delete_share_file
         ])
@@ -311,10 +312,15 @@ pub fn run() {
             for url in urls {
                 // Deep-link URLs (origa://…) resolve to no file path and
                 // are owned by the deep-link plugin; only files are ours.
-                // Opened fires cold (before the listener mounts) and warm
-                // alike — the pending slot is the reliable channel.
+                // Cold (listener not yet mounted): pending slot is the
+                // reliable channel. Warm: emit only — a pending copy
+                // would double-deliver on the next focus poll.
                 if let Ok(path) = url.to_file_path() {
-                    share_intake::ingest_path_cold(_app_handle, &path);
+                    if share_intake::is_listener_ready() {
+                        share_intake::ingest_path(_app_handle, &path);
+                    } else {
+                        share_intake::ingest_path_cold(_app_handle, &path);
+                    }
                 }
             }
         }

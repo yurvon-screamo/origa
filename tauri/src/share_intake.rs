@@ -49,6 +49,27 @@ pub enum ShareWire {
 /// Host-side pending slot (cold-start delivery).
 static PENDING: std::sync::Mutex<Option<ShareWire>> = std::sync::Mutex::new(None);
 
+/// Whether the frontend share listener has mounted (set by the
+/// `share_listener_ready` command). `Opened` events before this point
+/// are cold — their emit goes nowhere, so the pending slot is the only
+/// reliable channel; after this point, emit is warm and pending would
+/// just become a stale duplicate.
+static LISTENER_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Marks the frontend share listener as mounted. Call once from the
+/// frontend after `start_share_intake`.
+#[tauri::command]
+pub fn share_listener_ready() {
+    LISTENER_READY.store(true, std::sync::atomic::Ordering::Release);
+}
+
+/// Whether the frontend listener has signalled readiness. Only consumed
+/// by the Apple/mobile Opened handler (cfg-gated in lib.rs).
+#[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
+pub(crate) fn is_listener_ready() -> bool {
+    LISTENER_READY.load(std::sync::atomic::Ordering::Acquire)
+}
+
 fn store_pending(payload: &ShareWire) {
     let mut pending = PENDING.lock().expect("share-intake pending lock");
     *pending = Some(payload.clone());

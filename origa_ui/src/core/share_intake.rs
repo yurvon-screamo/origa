@@ -108,7 +108,19 @@ pub fn start_share_intake() -> bool {
     listen_share_events();
     // Android warm shares arrive with window focus (no event channel).
     poll_on_focus();
+    // Tell the host the listener is up: Opened events after this point
+    // are warm (emit only) — a pending copy would double-deliver on the
+    // next focus poll.
+    signal_listener_ready();
     true
+}
+
+fn signal_listener_ready() {
+    spawn_local_or_ignore(async move {
+        if let Err(e) = invoke_with_args("share_listener_ready", &JsValue::UNDEFINED).await {
+            tracing::debug!("share-intake: listener-ready signal failed: {e}");
+        }
+    });
 }
 
 fn poll_pending_share() {
