@@ -375,24 +375,26 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
             <div class="word-detail-example-ja">
-                <TranslatorText
-                    text=sentence
-                    class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
-                    test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
-                />
-            </div>
-            <div class="word-detail-example-meta">
+                <div class="word-detail-example-ja-row">
+                    <TranslatorText
+                        text=sentence
+                        class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
+                        test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
+                    />
+                    // The play button sits next to THE SENTENCE, not to
+                    // the translation (owner UX).
+                    <AudioButtons
+                        text=detail.text
+                        audio_path=None
+                        test_id=Signal::derive(|| "word-detail-example-audio".to_string())
+                    />
+                </div>
                 <div
                     class="word-detail-example-translation"
                     data-testid="word-detail-example-translation"
                 >
                     {translation}
                 </div>
-                <AudioButtons
-                    text=detail.text
-                    audio_path=None
-                    test_id=Signal::derive(|| "word-detail-example-audio".to_string())
-                />
             </div>
         </div>
     }

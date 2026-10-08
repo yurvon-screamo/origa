@@ -5,11 +5,12 @@
 //! self-assessment, same order as every other card). The rating never
 //! touches FSRS: advancing uses a rating-free lesson-state transition.
 //!
-//! Visual etalon: the phrase card — the sentence renders through the
-//! token translator (`TranslatorText`), the answer side repeats it above
-//! a divider with the translation under it; the audio button sits in the
-//! tags row above the card (top-right), the binary rating buttons render
-//! BELOW the card exactly like `RatingButtons`.
+//! Visual etalon: the phrase card — the QUESTION side shows plain
+//! furigana (reading only, like every question side); the ANSWER side
+//! re-renders the sentence through the token translator (`TranslatorText`)
+//! above a divider with the translation under it; the audio button sits
+//! in the tags row above the card (top-right), the binary rating buttons
+//! render BELOW the card exactly like `RatingButtons`.
 
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -18,7 +19,7 @@ use super::LESSON_CARD_CLASS;
 use crate::i18n::{t, use_i18n};
 use crate::loaders::example_loader::{WordExample, load_example_detail};
 use crate::ui_components::{
-    AudioButtons, Button, ButtonVariant, Card, Tag, Text, TextSize, TranslatorText,
+    AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
     TypographyVariant,
 };
 use origa::domain::NativeLanguage;
@@ -30,6 +31,7 @@ pub fn ExampleRecallCard(
     /// PLAYS the sentence and hides its text until the reveal.
     #[prop(default = false)]
     audio: bool,
+    #[prop(into)] known_kanji: Signal<std::collections::HashSet<char>>,
     show_answer: Signal<bool>,
     on_show_answer: Callback<()>,
     on_advance: Callback<()>,
@@ -147,14 +149,16 @@ pub fn ExampleRecallCard(
                             }
                             .into_any();
                         }
-                        // Text mode: the sentence alone (token translator,
-                        // no furigana — the phrase-card etalon).
+                        // Text mode: plain furigana — a QUESTION side
+                        // reads, it does not parse (the token translator
+                        // waits for the answer, like the phrase cards).
+                        let known = known_kanji.get();
                         return view! {
                             <div class="example-recall-ja" data-testid="lesson-example-ja">
-                                <TranslatorText
+                                <FuriganaText
                                     text=we.detail.text.clone()
+                                    known_kanji=known
                                     class=sentence_class
-                                    test_id=sentence_test_id
                                 />
                             </div>
                         }

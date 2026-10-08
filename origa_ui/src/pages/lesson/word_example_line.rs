@@ -66,6 +66,16 @@ pub fn WordExampleLine(
         };
         view! {
             <div class=line_class data-testid="lesson-word-example">
+                // The play button sits next to THE SENTENCE (owner UX:
+                // sound belongs to the Japanese line, not to the
+                // translation).
+                <div class="word-example-line-ja-row">
+                    <AudioButtons
+                        text=sentence_text
+                        audio_path=None
+                        test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
+                    />
+                </div>
                 <div class="word-example-line-ja">
                     {if mid.is_empty() {
                         // No highlight to draw: one run.
@@ -86,15 +96,11 @@ pub fn WordExampleLine(
                         .into_any()
                     }}
                 </div>
-                <div class="word-example-line-meta">
+                // Translation centered under the sentence.
+                <div class="word-example-line-translation">
                     <Text size=TextSize::Small variant=TypographyVariant::Muted>
                         {translation}
                     </Text>
-                    <AudioButtons
-                        text=sentence_text
-                        audio_path=None
-                        test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
-                    />
                 </div>
             </div>
         }

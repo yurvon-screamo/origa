@@ -4744,6 +4744,7 @@ async fn example_recall_failed_load_is_not_a_dead_end() {
         view! {
             <super::example_recall_card::ExampleRecallCard
                 sentence_id=u32::MAX - 7
+                known_kanji=Signal::derive(|| std::collections::HashSet::new())
                 show_answer=Signal::from(false)
                 on_show_answer=Callback::new(|_| ())
                 on_advance=on_advance
