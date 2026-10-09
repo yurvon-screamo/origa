@@ -87,6 +87,11 @@ device-ai.workspace = true
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-haptics.workspace = true
 
+# iOS Share Extension (IN-4): App Group container access via NSFileManager.
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2.workspace = true
+objc2-foundation.workspace = true
+
 # Apple-only: ASWebAuthenticationSession plugin for OAuth. Wraps Apple's
 # native auth session API so the browser returns to the app after the OAuth
 # redirect — required by App Review Guideline 4 (default-browser login is

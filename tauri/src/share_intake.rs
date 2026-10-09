@@ -75,10 +75,59 @@ fn store_pending(payload: &ShareWire) {
     *pending = Some(payload.clone());
 }
 
+/// iOS: reads the App Group container's pending_share.json written by
+/// the Share Extension (IN-4). Take-once: reads and deletes the marker.
+#[cfg(target_os = "ios")]
+fn take_ios_pending() -> Option<ShareWire> {
+    let container = ios_app_group_container()?;
+    let marker = container.join("pending_share.json");
+    let json = std::fs::read_to_string(&marker).ok()?;
+    let _ = std::fs::remove_file(&marker);
+    serde_json::from_str::<ShareWire>(&json)
+        .map_err(|e| {
+            tracing::warn!("[share-intake] iOS pending JSON decode failed: {e:?}");
+            e
+        })
+        .ok()
+}
+
+/// Resolves the App Group container path via NSFileManager (iOS only).
+/// Uses the objc2-foundation crates already transitively available.
+#[cfg(target_os = "ios")]
+fn ios_app_group_container() -> Option<std::path::PathBuf> {
+    // NSFileManager.containerURL(forSecurityApplicationGroupIdentifier:)
+    // Called through the objc2 runtime bridge.
+    unsafe {
+        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")
+            .expect("NSFileManager class must exist");
+        let default_sel = objc2::msg_send![manager_class, defaultManager];
+        let manager: *mut objc2::runtime::AnyObject = default_sel;
+        let group_id = objc2_foundation::NSString::from_str("group.net.uwuwu.origa.share");
+        let url: *mut objc2::runtime::AnyObject = objc2::msg_send![
+            manager,
+            containerURLForSecurityApplicationGroupIdentifier: &*group_id
+        ];
+        if url.is_null() {
+            return None;
+        }
+        let path: *mut objc2::runtime::AnyObject = objc2::msg_send![url, path];
+        if path.is_null() {
+            return None;
+        }
+        let nsstring = objc2_foundation::NSString::retain(path as *mut _);
+        Some(std::path::PathBuf::from(nsstring.to_string()))
+    }
+}
+
 /// Returns and clears the pending share (take-once; a newer share
 /// overwrites an unconsumed older one).
 #[tauri::command]
 pub fn get_pending_share() -> Option<ShareWire> {
+    // iOS: the Share Extension writes to the App Group container.
+    #[cfg(target_os = "ios")]
+    if let Some(wire) = take_ios_pending() {
+        return Some(wire);
+    }
     // Android: the Kotlin ShareBuffer owns the cold-start/warm shares;
     // drain it first (JNI), then fall back to the desktop pending slot.
     #[cfg(target_os = "android")]
