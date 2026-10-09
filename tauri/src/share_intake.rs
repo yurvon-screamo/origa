@@ -156,8 +156,9 @@ fn take_android_pending() -> Option<ShareWire> {
         })
         .ok()?;
 
+    let class: jni::objects::JClass = class.into();
     let json_value = env
-        .call_static_method(class, "takePending", "()Ljava/lang/String;", &[])
+        .call_static_method(&class, "takePending", "()Ljava/lang/String;", &[])
         .map_err(|e| {
             tracing::warn!("[share-intake] takePending JNI call failed: {e:?}");
             e
@@ -394,6 +395,7 @@ pub(crate) fn ingest_path(app: &AppHandle, path: &std::path::Path) {
 
 /// Parses argv and ingests every existing file path (warm single-instance
 /// delivery on Windows/Linux).
+#[cfg(any(windows, target_os = "linux"))]
 pub(crate) fn ingest_argv(app: &AppHandle, args: &[String]) {
     for path in parse_shared_paths(args) {
         ingest_path(app, &path);
