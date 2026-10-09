@@ -83,12 +83,70 @@ fn take_ios_pending() -> Option<ShareWire> {
     let marker = container.join("pending_share.json");
     let json = std::fs::read_to_string(&marker).ok()?;
     let _ = std::fs::remove_file(&marker);
-    serde_json::from_str::<ShareWire>(&json)
+    let wire: ShareWire = serde_json::from_str(&json)
         .map_err(|e| {
             tracing::warn!("[share-intake] iOS pending JSON decode failed: {e:?}");
             e
         })
-        .ok()
+        .ok()?;
+
+    // File shares: the App Group path is outside the read validator's
+    // allowed scope (app_cache_dir/share-intake). Copy the bytes into the
+    // app cache; the App Group original is removed.
+    if let ShareWire::File { ref cache_path, .. } = wire {
+        let group_file = std::path::PathBuf::from(cache_path);
+        if group_file.exists() {
+            if let Some(app_dir) = ios_app_cache_share_dir() {
+                let file_name = group_file
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                let target = app_dir.join(&file_name);
+                if std::fs::copy(&group_file, &target).is_ok() {
+                    let _ = std::fs::remove_file(&group_file);
+                    return Some(match wire {
+                        ShareWire::File {
+                            file_name, mime, ..
+                        } => ShareWire::File {
+                            file_name,
+                            mime,
+                            cache_path: target.to_string_lossy().to_string(),
+                        },
+                        _ => wire,
+                    });
+                }
+            }
+        }
+    }
+    Some(wire)
+}
+
+/// The app's Caches/share-intake directory on iOS (NSCachesDirectory).
+#[cfg(target_os = "ios")]
+fn ios_app_cache_share_dir() -> Option<std::path::PathBuf> {
+    unsafe {
+        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")?;
+        let manager: *mut objc2::runtime::AnyObject =
+            objc2::msg_send![manager_class, defaultManager];
+        let caches: *mut objc2::runtime::AnyObject = objc2::msg_send![
+            manager,
+            URLsForDirectory: 1usize,
+            inDomains: 1usize
+        ];
+        if caches.is_null() {
+            return None;
+        }
+        let first: *mut objc2::runtime::AnyObject = objc2::msg_send![caches, firstObject];
+        if first.is_null() {
+            return None;
+        }
+        let path: *mut objc2::runtime::AnyObject = objc2::msg_send![first, path];
+        if path.is_null() {
+            return None;
+        }
+        let nsstring = objc2_foundation::NSString::retain(path as *mut _);
+        Some(std::path::PathBuf::from(nsstring.to_string()).join(SHARE_INTAKE_DIR))
+    }
 }
 
 /// Resolves the App Group container path via NSFileManager (iOS only).
@@ -98,8 +156,7 @@ fn ios_app_group_container() -> Option<std::path::PathBuf> {
     // NSFileManager.containerURL(forSecurityApplicationGroupIdentifier:)
     // Called through the objc2 runtime bridge.
     unsafe {
-        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")
-            .expect("NSFileManager class must exist");
+        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")?;
         let default_sel = objc2::msg_send![manager_class, defaultManager];
         let manager: *mut objc2::runtime::AnyObject = default_sel;
         let group_id = objc2_foundation::NSString::from_str("group.net.uwuwu.origa.share");

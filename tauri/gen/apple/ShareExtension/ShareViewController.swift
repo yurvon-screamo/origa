@@ -106,7 +106,7 @@ class ShareViewController: UIViewController {
         if let url = item as? URL {
             cacheFile(url: url, mimeType: mimeType)
         } else if let data = item as? Data {
-            let ext = url.pathExtension.isEmpty ? "bin" : url.pathExtension
+            let ext = "bin"
             cacheData(data, fileName: "shared_file", mimeType: mimeType, extension_: ext)
         } else {
             writeError("Unrecognized file format")
@@ -179,12 +179,22 @@ class ShareViewController: UIViewController {
     }
 
     private func escapeJSON(_ value: String) -> String {
-        let escaped = value
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-            .replacingOccurrences(of: "\n", with: "\\n")
-            .replacingOccurrences(of: "\r", with: "\\r")
-            .replacingOccurrences(of: "\t", with: "\\t")
+        var escaped = ""
+        for ch in value.unicodeScalars {
+            switch ch {
+            case "\"": escaped += "\\\"" 
+            case "\\": escaped += "\\\\"
+            case "\n": escaped += "\\n"
+            case "\r": escaped += "\\r"
+            case "\t": escaped += "\\t"
+            default:
+                if ch.value < 0x20 {
+                    escaped += String(format: "\\u%04x", ch.value)
+                } else {
+                    escaped.unicodeScalars.append(ch)
+                }
+            }
+        }
         return "\"\(escaped)\""
     }
 

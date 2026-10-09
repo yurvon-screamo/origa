@@ -28,7 +28,7 @@
 				<true/>
 				<key>NSExtensionActivationSupportsImageWithMaxCount</key>
 				<integer>1</integer>
-				<key>NSExtensionActivationSupportsMovieWithMaxCount</key>
+				<key>NSExtensionActivationSupportsAudioWithMaxCount</key>
 				<integer>1</integer>
 			</dict>
 		</dict>

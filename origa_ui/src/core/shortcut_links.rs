@@ -86,6 +86,12 @@ pub fn take_shortcut_tab() -> Option<&'static str> {
     PENDING_TAB.with(|slot| slot.borrow_mut().take())
 }
 
+/// Whether a shortcut tab is parked (peek — the nav cycle checks without
+/// consuming; the modal's mount consumes).
+pub fn has_shortcut_tab() -> bool {
+    PENDING_TAB.with(|slot| slot.borrow().is_some())
+}
+
 /// Starts listening for `origa://add` deep links (event + cold-start
 /// poll). Coexists with the share-intake listener on the same channel.
 pub fn start_shortcut_listener() {
@@ -109,7 +115,7 @@ pub fn start_shortcut_listener() {
         }
     });
 
-    let Some(_listen) = event_listen_fn() else {
+    let Some(listen) = event_listen_fn() else {
         return;
     };
     let callback = wasm_bindgen::closure::Closure::wrap(Box::new(move |event: JsValue| {
@@ -121,10 +127,12 @@ pub fn start_shortcut_listener() {
         }
     }) as Box<dyn Fn(JsValue)>);
     if let Some(callback_ptr) = callback.as_ref().dyn_ref::<js_sys::Function>() {
-        let _ = callback_ptr.call2(
+        // listen(event_name, handler, options?) — the share-intake pattern.
+        let _ = listen.call3(
             &JsValue::UNDEFINED,
             &JsValue::from_str("deep-link://new-url"),
             callback_ptr,
+            &JsValue::UNDEFINED,
         );
     }
     callback.forget();

@@ -675,7 +675,7 @@ pub fn AppRoutes() -> impl IntoView {
                 gloo_timers::future::TimeoutFuture::new(500).await;
                 // Shortcut deep-link: navigate to /words (the consume
                 // loop on the Words page opens the drawer on the target tab).
-                if crate::core::shortcut_links::take_shortcut_tab().is_some() {
+                if crate::core::shortcut_links::has_shortcut_tab() {
                     let pathname = leptos::prelude::document()
                         .location()
                         .and_then(|loc| loc.pathname().ok())
