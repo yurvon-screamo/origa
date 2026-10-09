@@ -239,6 +239,12 @@ pub fn AddWordsPreviewModal(
         });
     }
 
+    // Shortcut deep-link (L-1): open the drawer on the target tab.
+    if let Some(tab_id) = crate::core::shortcut_links::take_shortcut_tab() {
+        is_open.set(true);
+        active_tab.set(tab_id.to_string());
+    }
+
     // The e2e seam registers once at mount and unregisters via its guard's
     // Drop when the drawer component is disposed.
     let seam_guard = StoredValue::new_local(None::<InboxSeamGuard>);

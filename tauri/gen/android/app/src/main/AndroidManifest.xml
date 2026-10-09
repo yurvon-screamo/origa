@@ -48,6 +48,10 @@
         <!-- SHARE INTAKE (IN-2): receive shares from other apps.
              Alias at application level (a nested alias is invalid per the
              manifest schema); the label stays distinct from the launcher. -->
+        <meta-data
+            android:name="android.app.shortcuts"
+            android:resource="@xml/shortcuts" />
+
         <activity-alias
             android:name=".ShareAlias"
             android:targetActivity=".MainActivity"
