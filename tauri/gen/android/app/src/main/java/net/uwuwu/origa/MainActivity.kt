@@ -27,15 +27,16 @@ class MainActivity : TauriActivity() {
         if (intent == null || intent.action != Intent.ACTION_SEND) {
             return
         }
+        val mimeType = intent.type ?: return
         when {
-            intent.type == "text/plain" && intent.hasExtra(Intent.EXTRA_TEXT) -> {
+            mimeType == "text/plain" && intent.hasExtra(Intent.EXTRA_TEXT) -> {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return
                 ShareBuffer.setPending(text)
             }
-            intent.type != null && (intent.type.startsWith("image/") || intent.type.startsWith("audio/")) -> {
+            mimeType.startsWith("image/") || mimeType.startsWith("audio/") -> {
                 @Suppress("DEPRECATION")
                 val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
-                captureSharedUri(uri, intent.type!!)
+                captureSharedUri(uri, mimeType)
             }
         }
     }
