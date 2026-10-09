@@ -28,7 +28,8 @@ pub(crate) fn generate_quiz(
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
         // Счётный суффикс не попадает в квиз-генераторы: его показ —
         // всегда Normal (ветка нужна только для exhaustiveness).
-        Card::Counter(_) => {},
+        // Пример-карта (#528 v3) — то же: её показ всегда Example-вью.
+        Card::Counter(_) | Card::Example(_) => {},
     }
 
     let correct_answer = original_card.answer(lang)?;
@@ -119,7 +120,8 @@ pub(crate) fn generate_yesno(
         Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Phrase(_) => {},
         // Счётный суффикс не попадает в квиз-генераторы: его показ —
         // всегда Normal (ветка нужна только для exhaustiveness).
-        Card::Counter(_) => {},
+        // Пример-карта (#528 v3) — то же: её показ всегда Example-вью.
+        Card::Counter(_) | Card::Example(_) => {},
     }
 
     let question = original_card.question(lang)?;
@@ -162,7 +164,11 @@ pub(crate) fn generate_phrase_quiz(
 ) -> Option<LessonCardView> {
     let phrase_card = match &original_card {
         Card::Phrase(pc) => pc,
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Grammar(_) | Card::Counter(_) => return None,
+        Card::Vocabulary(_)
+        | Card::Kanji(_)
+        | Card::Grammar(_)
+        | Card::Counter(_)
+        | Card::Example(_) => return None,
     };
 
     let audio_file = format!("{}.opus", phrase_card.phrase_id());
@@ -171,6 +177,7 @@ pub(crate) fn generate_phrase_quiz(
     let mut distractors: Vec<String> = same_type_cards
         .iter()
         .filter_map(|c| match c {
+            Card::Example(_) => None,
             Card::Phrase(_) => c
                 .answer(lang)
                 .ok()
@@ -211,7 +218,11 @@ pub(crate) fn generate_kanji_reading_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     let kanji_card = match &original_card {
         Card::Kanji(kc) => kc,
-        Card::Vocabulary(_) | Card::Grammar(_) | Card::Phrase(_) | Card::Counter(_) => {
+        Card::Vocabulary(_)
+        | Card::Grammar(_)
+        | Card::Phrase(_)
+        | Card::Counter(_)
+        | Card::Example(_) => {
             return Ok(LessonCardView::Normal(original_card));
         },
     };
@@ -298,6 +309,7 @@ fn collect_distractors(
     let mut distractors: Vec<String> = same_type_cards
         .iter()
         .filter_map(|c| match c {
+            Card::Example(_) => None,
             Card::Kanji(kc) => {
                 let other_info = cached_kanji_info(kc.kanji().text(), kanji_cache).ok()?;
                 // Drop rare readings of OTHER kanji too — offering a rare
@@ -349,7 +361,11 @@ pub(crate) fn generate_grammar_quiz(
 ) -> Result<LessonCardView, OrigaError> {
     let grammar_rule_card = match &original_card {
         Card::Grammar(grc) => grc,
-        Card::Vocabulary(_) | Card::Kanji(_) | Card::Phrase(_) | Card::Counter(_) => {
+        Card::Vocabulary(_)
+        | Card::Kanji(_)
+        | Card::Phrase(_)
+        | Card::Counter(_)
+        | Card::Example(_) => {
             return Ok(LessonCardView::Normal(original_card));
         },
     };

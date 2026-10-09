@@ -54,6 +54,8 @@ fn section_label(i18n: &I18nContext<Locale>, card_type: CardType) -> String {
         },
         CardType::Phrase => td_string!(locale, onboarding.scoring.section.phrase).to_string(),
         CardType::Counter => td_string!(locale, onboarding.scoring.section.counter).to_string(),
+        // Примеры (#528 v3) в скоринг не попадают — ветка exhaustiveness.
+        CardType::Example => td_string!(locale, onboarding.scoring.section.vocabulary).to_string(),
     }
 }
 
@@ -67,6 +69,7 @@ fn section_color_class(card_type: CardType) -> &'static str {
         // Счётные суффиксы делят оливковую полосу с кандзи-секцией:
         // отдельный цветовой класс не заводится (issue #415, v1).
         CardType::Counter => "scoring-section-kanji",
+        CardType::Example => "",
     }
 }
 

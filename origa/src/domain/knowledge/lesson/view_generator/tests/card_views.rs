@@ -372,40 +372,15 @@ mod example_slot_tests {
     }"#;
 
     #[test]
-    fn late_stage_vocab_with_cdn_examples_can_get_example_view() {
+    fn vocab_reviews_never_draw_the_example_view_anymore() {
+        // #528 v2: the example-recall slot is gone from the per-showing
+        // ladder — companions are attached by the final layout pass
+        // (see `example_companions`). No RNG seed may produce the view.
         let _index_guard = EXAMPLE_INDEX_TEST_LOCK
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         reset_example_index_for_test();
         init_example_index(EXAMPLE_INDEX_JSON).expect("fixture index");
-
-        let ks = make_review_vocab_ks();
-        let study_card = make_late_stage_card("食べる");
-
-        let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
-        let mut example_views = 0;
-        for seed in 0..200u64 {
-            let mut rng = StdRng::seed_from_u64(seed);
-            if matches!(
-                generator.apply_view(&study_card, false, &mut rng),
-                LessonCardView::Example { .. }
-            ) {
-                example_views += 1;
-            }
-        }
-        reset_example_index_for_test();
-        assert!(
-            example_views > 0,
-            "words with CDN examples must occasionally get the example view"
-        );
-    }
-
-    #[test]
-    fn words_without_examples_never_get_the_example_view() {
-        let _index_guard = EXAMPLE_INDEX_TEST_LOCK
-            .lock()
-            .unwrap_or_else(|e| e.into_inner());
-        reset_example_index_for_test(); // empty index: no word has examples
 
         let ks = make_review_vocab_ks();
         let study_card = make_late_stage_card("食べる");
@@ -418,7 +393,7 @@ mod example_slot_tests {
                     generator.apply_view(&study_card, false, &mut rng),
                     LessonCardView::Example { .. }
                 ),
-                "empty examples index must never produce the example view"
+                "the per-showing ladder must not draw the example view (companions own it)"
             );
         }
         reset_example_index_for_test();

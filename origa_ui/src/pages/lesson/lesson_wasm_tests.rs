@@ -2165,6 +2165,178 @@ mod acquaintance_training {
     }
 }
 
+mod mixed_hand_regression {
+    use super::*;
+    use crate::pages::lesson::acquaintance_state::{
+        AcquaintanceContext, AcquaintanceSlideData, AcquaintanceStage, AcquaintanceState,
+    };
+    use crate::pages::lesson::training_view::TrainingBody;
+    use ulid::Ulid;
+
+    fn acq_context() -> AcquaintanceContext {
+        let state = RwSignal::new(AcquaintanceState::default());
+        state.update(|s| s.stage = AcquaintanceStage::Training);
+        AcquaintanceContext {
+            repository: crate::repository::HybridUserRepository::new(),
+            state,
+            slides: RwSignal::new(Vec::new()),
+            known_kanji: RwSignal::new(HashSet::new()),
+            native_language: RwSignal::new(origa::domain::NativeLanguage::Russian),
+            current_card: RwSignal::new(None),
+            showing_answer: RwSignal::new(false),
+            audio_front: RwSignal::new(false),
+        }
+    }
+
+    fn mount_training(ctx: &AcquaintanceContext) -> web_sys::Element {
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <TrainingBody ctx=c2.clone() /> }.into_any()
+        });
+        wrapper
+    }
+
+    /// Живой баг-репорт (rc3, issue #415): рука из шести счётных
+    /// суффиксов и двух слов «застревает» — смена на РУ→ЯП не наступает
+    /// и рука не закрывается. Прогоняем полный тренировочный флоу
+    /// кликами: каждый «Помню» идёт через реальный after_answer.
+    #[wasm_bindgen_test]
+    async fn six_counters_two_words_hand_reaches_reverse_and_completes() {
+        let ctx = acq_context();
+        let counters: Vec<Ulid> = (0..6).map(|_| Ulid::new()).collect();
+        let words: Vec<Ulid> = (0..2).map(|_| Ulid::new()).collect();
+
+        let mut entries: Vec<(Ulid, origa::domain::CardType)> = counters
+            .iter()
+            .map(|&id| (id, origa::domain::CardType::Counter))
+            .collect();
+        entries.extend(
+            words
+                .iter()
+                .map(|&id| (id, origa::domain::CardType::Vocabulary)),
+        );
+        ctx.state.update(|state| {
+            state.hand = Some(origa::domain::AcquaintanceHand::new(entries).unwrap());
+        });
+
+        let mut slides = Vec::new();
+        for &id in counters.iter() {
+            slides.push(AcquaintanceSlideData::Counter {
+                card_id: id,
+                suffix: "本".to_string(),
+                meaning: "длинные предметы".to_string(),
+                table: Vec::new(),
+            });
+        }
+        for &id in words.iter() {
+            slides.push(AcquaintanceSlideData::Vocabulary {
+                card_id: id,
+                word: "ねこ".to_string(),
+                pos_label: None,
+                translations: vec!["кошка".to_string()],
+            });
+        }
+        ctx.slides.set(slides);
+
+        let wrapper = mount_training(&ctx);
+        tick().await;
+
+        let click = |sel: &str| {
+            wrapper
+                .query_selector(sel)
+                .unwrap()
+                .expect(sel)
+                .dyn_into::<web_sys::HtmlElement>()
+                .unwrap()
+                .click();
+        };
+
+        // Полный флоу: раскрываем и отвечаем «Помню»最多 200 раз —
+        // рука обязана пройти Forward, смениться на Reverse и закрыться.
+        // Каждый клик ждёт свою кнопку: advance и окно финиша руки
+        // асинхронны (persist), кнопки исчезают и появляются.
+        let wait_and_click = |sel: &'static str| async {
+            for _ in 0..200 {
+                if let Some(el) = wrapper
+                    .query_selector(sel)
+                    .ok()
+                    .flatten()
+                    .and_then(|el| el.dyn_into::<web_sys::HtmlElement>().ok())
+                {
+                    el.click();
+                    return true;
+                }
+                gloo_timers::future::TimeoutFuture::new(10).await;
+            }
+            false
+        };
+
+        let mut reached_reverse = false;
+        let mut completed = false;
+        for _ in 0..200 {
+            if ctx.state.get_untracked().stage == AcquaintanceStage::Completed {
+                completed = true;
+                break;
+            }
+            if !reached_reverse
+                && ctx
+                    .state
+                    .get_untracked()
+                    .hand
+                    .as_ref()
+                    .and_then(|h| h.subphase())
+                    == Some(origa::domain::AcquaintanceSubphase::Reverse)
+            {
+                reached_reverse = true;
+            }
+            assert!(
+                wait_and_click("[data-testid=\"acquaintance-reveal-btn\"]").await,
+                "кнопка раскрытия так и не появилась — рука застряла"
+            );
+            tick().await;
+            assert!(
+                wait_and_click("[data-testid=\"acquaintance-rating-remember\"]").await,
+                "кнопка «Помню» так и не появилась — рука застряла"
+            );
+            tick().await;
+            // Persist завершения руки асинхронен: ждём либо следующую
+            // кнопку, либо Completed — что раньше.
+            for _ in 0..200 {
+                if ctx.state.get_untracked().stage == AcquaintanceStage::Completed {
+                    completed = true;
+                    break;
+                }
+                if wrapper
+                    .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+                    .ok()
+                    .flatten()
+                    .is_some()
+                {
+                    break;
+                }
+                gloo_timers::future::TimeoutFuture::new(10).await;
+            }
+        }
+        assert!(
+            completed,
+            "цикл исчерпан: stage={:?}",
+            ctx.state.get_untracked().stage
+        );
+
+        assert!(
+            reached_reverse,
+            "подфаза обязана смениться на РУ→ЯП после закрытия Forward-критериев"
+        );
+        assert_eq!(
+            ctx.state.get_untracked().stage,
+            AcquaintanceStage::Completed,
+            "рука из 6 счётчиков + 2 слов обязана закрыться"
+        );
+    }
+}
+
 mod acquaintance_training_fronts {
     use super::*;
     use crate::pages::lesson::acquaintance_state::{
@@ -4624,18 +4796,19 @@ async fn counter_readings_table_orders_numbers_what_last() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn example_view_swallows_shared_keyboard() {
+async fn example_companion_keyboard_contract() {
     use super::keyboard_handler::{KeyboardActions, create_keyboard_handler};
     use ulid::Ulid;
 
-    // The example-recall view owns its self-assessment flow and advances
-    // WITHOUT an FSRS rating (#528 invariant). The shared keyboard must
-    // stay silent on it: Space must not force-show an answer side and
-    // 1-4 must not push a rating through on_rate.
+    // #528 v2 companion contract: Space reveals the translation through
+    // the shared pipeline; on the ANSWER side 1/2 push the binary
+    // self-assessment through on_example_answer (rating-free); the
+    // on_rate callback is unreachable for the example view at any point.
     let ctx = lesson_context();
     ctx.is_completed.set(false);
     let rated = RwSignal::new(0u32);
     let shown = RwSignal::new(0u32);
+    let answered = RwSignal::new(Vec::<bool>::new());
 
     let card_id = Ulid::new();
     let example_view = origa::domain::LessonCardView::Example {
@@ -4643,6 +4816,8 @@ async fn example_view_swallows_shared_keyboard() {
         sentence_id: 0,
         start: -1,
         end: -1,
+        premiere: true,
+        audio: false,
     };
     ctx.lesson_state.update(|state| {
         state.cards.insert(
@@ -4652,9 +4827,6 @@ async fn example_view_swallows_shared_keyboard() {
         state.card_ids = vec![card_id];
     });
 
-    // The show_answer callback mirrors the container's real one: it must
-    // ALSO flip state.showing_answer — the rating branch below is gated
-    // on it (the control half of the test relies on the real pipeline).
     let lesson_state_for_show = ctx.lesson_state;
     let handler = create_keyboard_handler(
         ctx.clone(),
@@ -4675,6 +4847,9 @@ async fn example_view_swallows_shared_keyboard() {
                 lesson_state_for_show.update(|state| state.showing_answer = true);
             }),
             on_next_card: Callback::new(|_| ()),
+            on_example_answer: Callback::new(move |understood: bool| {
+                answered.update(|v| v.push(understood));
+            }),
         },
     );
 
@@ -4686,14 +4861,32 @@ async fn example_view_swallows_shared_keyboard() {
         handler(ev);
     };
 
-    press(" ");
+    // Question side: digits stay inert; then Space reveals.
     press("1");
+    assert!(
+        answered.get_untracked().is_empty(),
+        "digits inert before reveal"
+    );
+    press(" ");
+    assert_eq!(shown.get(), 1, "Space reveals the translation");
+    assert_eq!(rated.get(), 0, "no FSRS rating so far");
+
+    // Answer side: 1 = didn't understand, 2 = understood; 3/4 inert;
+    // on_rate unreachable.
+    press("3");
     press("4");
-    assert_eq!(shown.get(), 0, "Space must not force-show the answer");
-    assert_eq!(rated.get(), 0, "digits must not push an FSRS rating");
+    assert!(answered.get_untracked().is_empty(), "3/4 stay inert");
+    press("1");
+    press("2");
+    assert_eq!(
+        answered.get_untracked(),
+        vec![false, true],
+        "1 → didn't understand, 2 → understood"
+    );
+    assert_eq!(rated.get(), 0, "the example view never reaches on_rate");
 
     // Control (the test is not a vacuum): the same keys on a Normal card
-    // DO reveal and rate — the swallow is example-view-specific.
+    // DO reveal and rate — the special-casing is example-specific.
     let normal = origa::domain::LessonCardView::Normal(vocab_card_fixture("ねこ"));
     ctx.lesson_state.update(|state| {
         state.cards.insert(
@@ -4703,7 +4896,7 @@ async fn example_view_swallows_shared_keyboard() {
         state.showing_answer = false;
     });
     press(" ");
-    assert_eq!(shown.get(), 1, "control: Normal reveals on Space");
+    assert_eq!(shown.get(), 2, "control: Normal reveals on Space");
     press("1");
     assert_eq!(rated.get(), 1, "control: Normal rates on 1");
 }
@@ -4722,13 +4915,11 @@ async fn example_recall_failed_load_is_not_a_dead_end() {
         let on_advance = Callback::new(move |_: ()| advanced.set(true));
         view! {
             <super::example_recall_card::ExampleRecallCard
-                card=vocab_card_fixture("たべる")
                 sentence_id=u32::MAX - 7
-                start=-1
-                end=-1
+                known_kanji=Signal::derive(|| std::collections::HashSet::new())
+                show_answer=Signal::from(false)
+                on_show_answer=Callback::new(|_| ())
                 on_advance=on_advance
-                known_kanji=Signal::derive(|| HashSet::new())
-                native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
             />
         }
         .into_any()

@@ -18,6 +18,7 @@ mod migrate_grammar_cards;
 mod rate_card;
 mod rate_card_with_side_effects;
 mod rate_counter_binding;
+mod rate_example;
 mod seed_counters;
 mod seed_ready_phrases;
 mod select_acquaintance_hand;
@@ -58,6 +59,7 @@ pub use migrate_grammar_cards::{MigrateGrammarCardsUseCase, MigrationReport, mig
 pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use rate_counter_binding::RateCounterBindingUseCase;
+pub use rate_example::RateExampleUseCase;
 pub use seed_counters::{SeedCountersUseCase, seed_counters_into_user};
 pub use seed_ready_phrases::SeedReadyPhrasesUseCase;
 pub use seed_ready_phrases::collect_known_grammar_rules;

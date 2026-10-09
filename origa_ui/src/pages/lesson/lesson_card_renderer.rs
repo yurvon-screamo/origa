@@ -29,27 +29,23 @@ pub(in crate::pages::lesson) fn render_lesson_card(
     known_kanji: Signal<HashSet<char>>,
     native_language: RwSignal<NativeLanguage>,
 ) -> impl IntoView {
-    // #528: the example-recall view owns its whole interaction flow
-    // (sentence question, understood/didn't-understand, translation reveal)
-    // and advances the lesson WITHOUT an FSRS rating. The stored char
-    // offsets from the CDN index locate the word highlight; the view
-    // falls back to a surface find only when they are unlocated (-1).
+    // #528: the example-recall companion owns its whole interaction flow
+    // (sentence question → reveal translation → binary self-assessment)
+    // and advances the lesson WITHOUT an FSRS rating. start/end stay
+    // payload of the wire variant (no highlight in this view — the
+    // owner-requested token translator does not carry ranges).
     if let LessonCardView::Example {
-        card,
-        sentence_id,
-        start,
-        end,
+        sentence_id, audio, ..
     } = lesson_card.clone().into_view()
     {
         return view! {
             <ExampleRecallCard
-                card=card
                 sentence_id=sentence_id
-                start=start
-                end=end
-                on_advance=on_example_advance
+                audio=audio
                 known_kanji=known_kanji
-                native_language=native_language.into()
+                show_answer=show_answer
+                on_show_answer=on_show_answer
+                on_advance=on_example_advance
             />
         }
         .into_any();

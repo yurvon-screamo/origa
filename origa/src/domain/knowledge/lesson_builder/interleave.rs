@@ -37,6 +37,12 @@ pub(crate) fn interleave_core_by_type(mut lesson_data: LessonData) -> LessonData
             // в vocab-промежутки, как кандзи и грамматика (issue #415).
             CardType::Counter => counter.push(card),
             CardType::Phrase => other.push(card),
+            // UNREACHABLE (#528 v3): example cards are excluded from the
+            // core selection (is_core_candidate) and due examples are
+            // inserted by the FINAL pass, after this interleave. Kept as
+            // `other` so a future regression compiles instead of leaking
+            // them into the vocab round-robin.
+            CardType::Example => other.push(card),
         }
     }
 

@@ -434,7 +434,7 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                         test_id=Signal::derive(|| "acquaintance-rating-remember".to_string())
                     >
                         {t!(i18n, acquaintance.remember)}
-                        <span class="kbd-hint">"[2]"</span>
+                        <span class="kbd-hint">"[2] / {t!(i18n, lesson.space_key)}"</span>
                     </Button>
                 </div>
             </Show>

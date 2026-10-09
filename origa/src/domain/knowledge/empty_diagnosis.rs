@@ -37,7 +37,10 @@ pub fn diagnose_empty_lesson(
     let mut earliest_future_review: Option<DateTime<Utc>> = None;
 
     for study_card in knowledge_set.study_cards().values() {
-        if matches!(CardType::from(study_card.card()), CardType::Phrase) {
+        if matches!(
+            CardType::from(study_card.card()),
+            CardType::Phrase | CardType::Example
+        ) {
             continue;
         }
         if study_card.memory().is_new() {

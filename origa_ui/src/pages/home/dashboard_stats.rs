@@ -69,6 +69,7 @@ pub fn compute_studied_today(
                     Card::Grammar(g) => g.rule_id().to_string(),
                     Card::Phrase(p) => p.phrase_id().to_string(),
                     Card::Counter(c) => c.suffix().to_string(),
+                    Card::Example(e) => e.word().to_string(),
                 });
 
             let meaning = format_answer_text(card, lang);
@@ -79,6 +80,9 @@ pub fn compute_studied_today(
                 CardType::Grammar => "grammar",
                 CardType::Phrase => "vocabulary",
                 CardType::Counter => "counter",
+                // Пример (#528 v3) сворачивается в категорию слов —
+                // как фразы (владелец слова не различается на дашборде).
+                CardType::Example => "vocabulary",
             };
 
             let (reading, short_description) = match card {

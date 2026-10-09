@@ -2,6 +2,8 @@ mod card;
 mod counter;
 mod daily_history;
 mod empty_diagnosis;
+mod example_card;
+mod example_companions;
 mod grammar;
 mod kanji;
 mod kanji_companions;
@@ -19,6 +21,7 @@ pub use card::{Card, CardType, StudyCard};
 pub use counter::{CounterBindingMemory, CounterCard};
 pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
+pub use example_card::ExampleCard;
 pub use grammar::GrammarRuleCard;
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
@@ -438,7 +441,39 @@ impl KnowledgeSet {
         let mut phrase_new_budget = budget.new_phrases_per_lesson();
         let with_phrases =
             lesson_builder::add_phrases(interleaved, self, native_language, &mut phrase_new_budget);
-        lesson_builder::redistribute_core_for_spacing(with_phrases)
+        let spaced = lesson_builder::redistribute_core_for_spacing(with_phrases);
+        // FINAL layout pass (#528): example companions attach to their
+        // words with a random gap. Must run after every reshuffling pass
+        // (interleave / redistribute) — those would carry the companion
+        // away from the word it belongs to.
+        let with_premieres =
+            example_companions::attach_example_companions(spaced, self, &mut rand::rng());
+        // #528 v3: due example SRS cards mix in last («like phrases»):
+        // own schedule, deduped against every slot the lesson has.
+        example_companions::mix_due_example_cards(
+            with_premieres,
+            self,
+            chrono::Utc::now(),
+            &mut rand::rng(),
+        )
+    }
+
+    /// #528 v3: the PREMIERE first review of a freshly created example
+    /// card — memory only. Deliberately bypasses `rate_card`: a premiere
+    /// is not a review (no daily-history marks, no ghost ladder, not
+    /// counted in the lesson progress).
+    pub fn apply_example_premiere(
+        &mut self,
+        card_id: Ulid,
+        rating: Rating,
+    ) -> Result<(), OrigaError> {
+        let card = self
+            .study_cards
+            .get_mut(&card_id)
+            .ok_or(OrigaError::CardNotFound { card_id })?;
+        let memory_state = rate_memory(RateMode::PhraseReview, rating, card.memory())?;
+        card.apply_review(memory_state, rating);
+        Ok(())
     }
 
     pub(crate) fn rate_card(
@@ -454,7 +489,7 @@ impl KnowledgeSet {
             let effective_mode = match mode {
                 RateMode::ShortTerm | RateMode::OnboardingScoring => mode,
                 _ => match card.card() {
-                    Card::Phrase(_) => RateMode::PhraseReview,
+                    Card::Phrase(_) | Card::Example(_) => RateMode::PhraseReview,
                     Card::Grammar(_) => RateMode::GrammarReview,
                     Card::Kanji(_) => RateMode::KanjiReview,
                     Card::Vocabulary(_) | Card::Counter(_) => mode,
