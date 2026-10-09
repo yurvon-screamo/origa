@@ -1,4 +1,6 @@
+use crate::core::file_picker::PickerKind;
 use crate::i18n::{t, use_i18n};
+use crate::pages::words::native_file_button::NativeFilePickerButton;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Dropdown, DropdownItem, Spinner, Text, TextSize,
@@ -137,8 +139,12 @@ pub fn AnkiImportStage(
                 }
             });
         });
-    let dd = use_drag_and_drop(on_drop_file);
+    let dd = use_drag_and_drop(on_drop_file.clone());
     let is_drag_over = dd.is_drag_over();
+
+    // Used only by the native picker button; the drop zone goes through
+    // the drag-and-drop wrapper over the same handler.
+    let native_pick_handler = Callback::new(move |file: web_sys::File| on_drop_file(file));
     let dd_on_drag_over = dd.on_drag_over();
     let dd_on_drag_leave = dd.on_drag_leave();
     let dd_on_drop = dd.on_drop();
@@ -369,6 +375,15 @@ pub fn AnkiImportStage(
                                 </Text>
                             </div>
                         </label>
+                    </div>
+
+                    <div class="flex justify-center pt-2">
+                        <NativeFilePickerButton
+                            kind=PickerKind::AnkiDeck
+                            disposed=Callback::new(move |_: ()| disposed.is_disposed())
+                            on_file=native_pick_handler
+                            test_id="anki-native-picker-btn"
+                        />
                     </div>
                 }
                 .into_any(),

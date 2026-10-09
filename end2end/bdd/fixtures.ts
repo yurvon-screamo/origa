@@ -51,6 +51,18 @@ export const test = base.extend<
     page: [
         async ({ browser, testUser }, use) => {
             const context = await browser.newContext();
+            // Opt this browser context into the inbox test seam (slice IN-1):
+            // the app registers the window hook only when this exact
+            // localStorage flag is present, in debug and release builds
+            // alike. Production users never have the flag, so the seam stays
+            // dormant there. Origin-guarded: init scripts also run on
+            // about:blank where localStorage access is a SecurityError.
+            const { APP_BASE_URL } = await import("../playwright.config");
+            await context.addInitScript((origin) => {
+                if (window.location.origin === origin) {
+                    window.localStorage.setItem("__origa_e2e_seam", "1");
+                }
+            }, APP_BASE_URL);
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
             try {

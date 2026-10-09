@@ -648,6 +648,63 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
 
 #[component]
 pub fn AppRoutes() -> impl IntoView {
+    // External share intake (IN-2/IN-3): listens for host share events
+    // and polls the cold-start pending slot. No-op in the web build.
+    crate::core::share_intake::start_share_intake();
+    crate::core::shortcut_links::start_shortcut_listener();
+
+    // Capability matrix (P-1): detect and report degradations to Sentry.
+    leptos::task::spawn_local(async move {
+        let caps = crate::core::capabilities::CaptureCapabilities::detect().await;
+        tracing::info!(
+            platform = %caps.platform,
+            mic = caps.live_microphone,
+            ocr = caps.native_ocr,
+            picker = caps.native_picker,
+            "capture capabilities"
+        );
+    });
+
+    // Navigate to /words when a share arrives while the user is elsewhere
+    // (the protected route redirects to login when unauthenticated — the
+    // payload stays parked until the first authenticated visit).
+    {
+        let navigate = leptos_router::hooks::use_navigate();
+        leptos::task::spawn_local(async move {
+            loop {
+                gloo_timers::future::TimeoutFuture::new(500).await;
+                // Shortcut deep-link: navigate to /words (the consume
+                // loop on the Words page opens the drawer on the target tab).
+                if crate::core::shortcut_links::has_shortcut_tab() {
+                    let pathname = leptos::prelude::document()
+                        .location()
+                        .and_then(|loc| loc.pathname().ok())
+                        .unwrap_or_default();
+                    let is_public =
+                        pathname.starts_with("/login") || pathname.starts_with("/onboarding");
+                    if !is_public && !pathname.starts_with("/words") {
+                        navigate("/words", Default::default());
+                    }
+                }
+                if crate::core::share_intake::has_pending_share() {
+                    let pathname = leptos::prelude::document()
+                        .location()
+                        .and_then(|loc| loc.pathname().ok())
+                        .unwrap_or_default();
+                    // Public routes mean the user is unauthenticated —
+                    // navigating to /words would fight the ProtectedRoute
+                    // guard and reset the login form every tick. The
+                    // payload stays parked until the user authenticates.
+                    let is_public =
+                        pathname.starts_with("/login") || pathname.starts_with("/onboarding");
+                    if !is_public && !pathname.starts_with("/words") {
+                        navigate("/words", Default::default());
+                    }
+                }
+            }
+        });
+    }
+
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let repository = auth_store.repository().clone();
     let current_user: RwSignal<Option<User>> = RwSignal::new(None);

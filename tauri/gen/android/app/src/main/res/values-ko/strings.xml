@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="share_alias_title">Origa에 추가</string>
+    <string name="shortcut_audio">녹음</string>
+    <string name="shortcut_audio_long">녹음하여 단어 추가</string>
+    <string name="shortcut_camera">카메라</string>
+    <string name="shortcut_camera_long">사진 촬영하여 단어 추가</string>
+    <string name="shortcut_text">텍스트</string>
+    <string name="shortcut_text_long">텍스트 입력하여 단어 추가</string>
+</resources>

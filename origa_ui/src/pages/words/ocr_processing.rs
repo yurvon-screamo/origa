@@ -20,7 +20,7 @@ thread_local! {
     static MODEL_LOADING: Cell<bool> = const { Cell::new(false) };
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(super) enum OcrState {
     #[default]
     Idle,
@@ -109,6 +109,21 @@ async fn run_ocr_on_data_url(
     }
 
     handle_ocr_result(&i18n, result, ctx, on_text_extracted);
+}
+
+/// MIME derived from a file extension for files constructed from bytes.
+/// Empty for unknown extensions — consumers validate honestly.
+pub(crate) fn extension_mime(file_name: &str) -> String {
+    let lower = file_name.to_ascii_lowercase();
+    if lower.ends_with(".png") {
+        "image/png".to_string()
+    } else if lower.ends_with(".jpg") || lower.ends_with(".jpeg") {
+        "image/jpeg".to_string()
+    } else if lower.ends_with(".webp") {
+        "image/webp".to_string()
+    } else {
+        String::new()
+    }
 }
 
 pub(super) fn process_file(
