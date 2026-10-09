@@ -117,6 +117,12 @@ fn take_ios_pending() -> Option<ShareWire> {
                 }
             }
         }
+        // Copy failed — the App Group path is unreadable downstream.
+        // Degrade to an Error wire (the frontend shows a toast) instead
+        // of silently losing the share behind the validator gate.
+        return Some(ShareWire::Error {
+            message: "The shared file could not be staged for reading".to_string(),
+        });
     }
     Some(wire)
 }
@@ -130,7 +136,7 @@ fn ios_app_cache_share_dir() -> Option<std::path::PathBuf> {
             objc2::msg_send![manager_class, defaultManager];
         let caches: *mut objc2::runtime::AnyObject = objc2::msg_send![
             manager,
-            URLsForDirectory: 1usize,
+            URLsForDirectory: 13usize, // NSCachesDirectory
             inDomains: 1usize
         ];
         if caches.is_null() {
