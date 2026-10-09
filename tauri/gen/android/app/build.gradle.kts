@@ -81,6 +81,13 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("com.google.android.material:material:1.12.0")
+    // Japanese OCR model for tauri-plugin-device-ai-apis. The plugin declares
+    // it `compileOnly` (host apps opt in, see the plugin README): without this
+    // dependency the plugin's reflective JapaneseTextRecognizerOptions lookup
+    // fails and native OCR degrades to the slow WASM fallback. Do not remove
+    // as "unused" — the plugin resolves it only via Class.forName, so neither
+    // the IDE nor R8 sees a static reference.
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.4")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")

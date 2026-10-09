@@ -15,6 +15,8 @@
 
 pub mod contracts;
 mod invoke;
+#[cfg(all(target_arch = "wasm32", test))]
+mod invoke_wasm_tests;
 
 use std::cell::RefCell;
 
