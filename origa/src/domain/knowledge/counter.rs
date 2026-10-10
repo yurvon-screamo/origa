@@ -167,20 +167,19 @@ impl CounterCard {
             })
     }
 
-    /// Состав и порядок пачки: due-связки по возрастанию срока следующего
-    /// показа (тай-брейк — нерегулярная выше), затем новички (нерегулярные
-    /// первыми). Числа без памяти (недосид) не показываются —
-    /// `ensure_registry_bindings` закрывает этот случай при сидировании.
+    /// Состав и порядок пачки — подряд по цифрам (юзер-репорт 0.8.0-rc:
+    /// группировка нерегулярных чтений первыми — жёсткая подсказка
+    /// «эти сложные»): due-связки по возрастанию срока, при равных
+    /// сроках — по цифрам; новички — после due по цифрам. Вопросительное
+    /// 何 — последней (инвариант таблицы чтений). Числа без памяти
+    /// (недосид) не показываются — `ensure_registry_bindings` закрывает
+    /// этот случай при сидировании.
     pub fn binding_showcase(&self) -> Vec<u8> {
-        let Some(entry) = crate::dictionary::counters::get_counter(&self.suffix) else {
-            return Vec::new();
-        };
-        let irregular = |number: u8| {
-            entry
-                .readings()
-                .iter()
-                .find(|r| r.number() == number)
-                .is_some_and(|r| r.irregular())
+        // Цифровой порядок с 何 в конце: 1..=10 по возрастанию, 0 —
+        // последний (в реестре 何 хранится первой).
+        let numeric_order = |n: u8| match n {
+            0 => (2u8, 0u8),
+            k => (1, k),
         };
 
         let mut due: Vec<(u8, Option<&chrono::DateTime<chrono::Utc>>)> = self
@@ -194,7 +193,7 @@ impl CounterCard {
             let date_b = b.1.unwrap_or(&chrono::DateTime::<chrono::Utc>::MIN_UTC);
             date_a
                 .cmp(date_b)
-                .then_with(|| irregular(b.0).cmp(&irregular(a.0)))
+                .then_with(|| numeric_order(a.0).cmp(&numeric_order(b.0)))
         });
 
         let mut newcomers: Vec<u8> = self
@@ -203,7 +202,7 @@ impl CounterCard {
             .filter(|b| b.memory.is_new())
             .map(|b| b.number)
             .collect();
-        newcomers.sort_by_key(|&n| std::cmp::Reverse(irregular(n)));
+        newcomers.sort_by_key(|&n| numeric_order(n));
 
         due.into_iter().map(|(n, _)| n).chain(newcomers).collect()
     }
@@ -333,31 +332,34 @@ mod tests {
         seed_binding_at(card, number, chrono::Utc::now() - chrono::Duration::days(1));
     }
 
-    /// Порядок пачки: due-связки по возрастанию срока, при равном сроке
-    /// нерегулярная выше; новички — после due, нерегулярные первыми.
+    /// Порядок пачки — подряд по цифрам (юзер-репорт 0.8.0-rc:
+    /// группировка нерегулярных чтений первыми — жёсткая подсказка
+    /// «эти сложные»). Канон: due-связки по возрастанию срока, при
+    /// равных сроках — порядок следования (цифры подряд); новички —
+    /// после due в порядке реестра (1..10, 何 последней).
     #[test]
-    fn showcase_orders_due_by_date_then_irregular_and_newcomers_last() {
+    fn showcase_orders_numerically_without_irregular_grouping() {
         init_test_counters();
         let mut card = seeded_card(TEST_NIN);
 
-        // Равный срок (одна дата): нерегулярные 3 и 4 — выше регулярной 6
-        // (3 и 4 оба нерегулярные по фикстуре — между ними стабильный
-        // порядок следования), новички — после due-связок.
+        // Равный срок у 6, 4, 3 (засев в обратном порядке): порядок
+        // реестра, НЕ нерегулярная группировка (жёсткая подсказка).
         let equal_due = chrono::Utc::now() - chrono::Duration::days(1);
-        seed_binding_at(&mut card, 3, equal_due);
-        seed_binding_at(&mut card, 4, equal_due);
         seed_binding_at(&mut card, 6, equal_due);
+        seed_binding_at(&mut card, 4, equal_due);
+        seed_binding_at(&mut card, 3, equal_due);
 
         let showcase = card.binding_showcase();
         assert_eq!(showcase.len(), 11, "due + every newcomer");
-        // Равные даты: нерегулярные 3 и 4 первыми (в порядке следования),
-        // регулярная 6 — после них.
-        assert_eq!(showcase[0], 3, "irregular bindings win the equal-date tie");
+        // Равные даты: порядок реестра (3, 4, 6), без группировки.
+        assert_eq!(showcase[0], 3, "registry order wins the equal-date tie");
         assert_eq!(showcase[1], 4);
-        assert_eq!(showcase[2], 6, "regular binding follows the irregular ones");
-        // Новички — после due-связок.
-        assert!(showcase[3..].contains(&1));
-        assert!(showcase[3..].contains(&2));
+        assert_eq!(showcase[2], 6);
+        // Новички — после due, подряд по цифрам реестра (1, 2, 5, 7...).
+        assert_eq!(showcase[3], 1);
+        assert_eq!(showcase[4], 2);
+        // 何 — последней (инвариант реестра).
+        assert_eq!(*showcase.last().unwrap(), 0);
     }
 
     #[test]

@@ -108,11 +108,15 @@ pub fn CounterBindingsSession(
             return;
         };
         on_rate_binding.run((item.number(), rating));
-        revealed.set(false);
-        highlighted_number.set(u8::MAX);
         if index + 1 >= total {
+            // Последняя связка: отвеченная карта ОСТАЁТСЯ на экране
+            // (замороженный ответ — юзер-репорт 0.8.0-rc: сброс revealed
+            // мелькал фронтом «цифра×суффикс» перед следующей карточкой
+            // урока) — advance сразу, без промежуточного фронт-кадра.
             on_next.run(());
         } else {
+            revealed.set(false);
+            highlighted_number.set(u8::MAX);
             current.set(index + 1);
         }
     };
