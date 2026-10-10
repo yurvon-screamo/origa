@@ -6,6 +6,15 @@ use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
+/// Многосимвольные суффиксы (切れ, ヶ月): модификатор без столбика.
+fn multi_class(base: &str, multi: &str, suffix: &str) -> String {
+    if suffix.chars().count() > 1 {
+        format!("{base} {multi}")
+    } else {
+        base.to_string()
+    }
+}
+
 #[component]
 pub fn CounterCardItem(
     study_card: StudyCard,
@@ -68,8 +77,10 @@ pub fn CounterCardItem(
     view! {
         <div class="counter-card anima-lift" data-testid="counter-card-item">
             <A href=format!("/counters/{card_id}") attr:class="counter-card-link">
-                <div class="counter-card-char-box">
-                    <span class="counter-card-char">{suffix.clone()}</span>
+                <div class=multi_class("counter-card-char-box", "counter-card-char-box--multi", &suffix)>
+                    <span class=multi_class("counter-card-char", "counter-card-char--multi", &suffix)>
+                        {suffix.clone()}
+                    </span>
                 </div>
                 <div class="counter-card-content">
                     <div class="flex items-start justify-between gap-2 w-full">

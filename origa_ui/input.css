@@ -5761,6 +5761,40 @@ rt {
     background: var(--bg-aged);
 }
 
+/* Многосимвольные суффиксы (切れ, ヶ月, くくり): без переноса в
+   столбик — одна строка, уменьшенный знак, бокс тянется по ширине. */
+.counter-card-char-box--multi {
+    width: auto;
+    min-width: 64px;
+    height: 64px;
+    padding: 0 8px;
+}
+
+.counter-card-char--multi {
+    font-size: 28px;
+    white-space: nowrap;
+}
+
+.counter-detail-hero-char-box--multi {
+    width: auto;
+    min-width: 96px;
+    height: 96px;
+    padding: 0 12px;
+}
+
+.counter-detail-hero-char--multi {
+    font-size: 40px;
+    white-space: nowrap;
+}
+
+.counter-grid-tile-char--multi {
+    white-space: nowrap;
+}
+
+.counter-detail-hero-char--multi {
+    white-space: nowrap;
+}
+
 .counter-card-char {
     font-family: var(--font-serif);
     font-size: 40px;
