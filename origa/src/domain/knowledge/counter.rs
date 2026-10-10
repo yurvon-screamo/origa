@@ -103,6 +103,36 @@ impl CounterCard {
         number: u8,
         rating: crate::domain::memory::Rating,
     ) -> Result<(), OrigaError> {
+        // Первый Good уходит из дневной ротации назавтра (юзер-репорт
+        // 0.8.0-rc: rate_memory от пустой истории даёт интервал ~0 дней —
+        // «вчера забыл одно чтение, а урок опять показывает ВСЕ»).
+        // Сид первого ревью — тот же паттерн, что complete_acquaintance_hand.
+        if rating == crate::domain::memory::Rating::Easy
+            || rating == crate::domain::memory::Rating::Good
+        {
+            if let Some(memory) = self.binding_memory(number) {
+                if memory.is_new() {
+                    let seeded = crate::domain::memory::MemoryState::with_card_state(
+                        crate::domain::memory::Stability::new(3.0).map_err(|e| {
+                            OrigaError::InvalidMemoryState {
+                                reason: e.to_string(),
+                            }
+                        })?,
+                        crate::domain::memory::Difficulty::new(5.0).map_err(|e| {
+                            OrigaError::InvalidMemoryState {
+                                reason: e.to_string(),
+                            }
+                        })?,
+                        chrono::Utc::now() + chrono::Duration::days(1),
+                        crate::domain::memory::CardState::Review,
+                    );
+                    let memory = self.binding_memory_mut(number)?;
+                    memory.seed(seeded);
+                    return Ok(());
+                }
+            }
+        }
+
         let memory = self.binding_memory_mut(number)?;
         let next = crate::domain::srs::rate_memory(
             crate::domain::RateMode::CounterReview,
@@ -339,6 +369,25 @@ mod tests {
     /// «эти сложные»). Канон: due-связки по возрастанию срока, при
     /// равных сроках — порядок следования (цифры подряд); новички —
     /// после due в порядке реестра (1..10, 何 последней).
+    /// Юзер-репорт (0.8.0-rc): «вчера забыл только 1 чтение, а урок
+    /// снова показывает ВСЕ вариации» — Good-связки обязаны уходить
+    /// в дальний интервал, не возвращаясь назавтра.
+    #[test]
+    fn first_good_binding_leaves_daily_rotation() {
+        init_test_counters();
+        let mut card = seeded_card(TEST_HON);
+        let before = chrono::Utc::now();
+        card.apply_binding_review(1, crate::domain::memory::Rating::Good)
+            .unwrap();
+        let next = card.binding_memory(1).unwrap().next_review_date().copied();
+        let interval_days = next.map(|d| (d - before).num_hours() as f64 / 24.0);
+        println!("DBG first Good interval (days): {interval_days:?}");
+        assert!(
+            interval_days.is_some_and(|d| d >= 1.0),
+            "первая Good обязана давать интервал >= 2 дней, got {interval_days:?}"
+        );
+    }
+
     #[test]
     fn showcase_orders_numerically_without_irregular_grouping() {
         init_test_counters();
