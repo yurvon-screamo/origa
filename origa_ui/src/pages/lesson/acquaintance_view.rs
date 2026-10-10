@@ -1004,7 +1004,14 @@ fn CounterSlide(
     let stored_meaning = StoredValue::new(meaning);
     view! {
         <div class="space-y-4" data-testid="acquaintance-counter-slide">
-            <p class="font-serif text-6xl text-center text-[var(--fg-black)]">
+            <p class=stored_suffix.with_value(|suf| {
+                if suf.chars().count() > 1 {
+                    "font-serif text-6xl text-center text-[var(--fg-black)] whitespace-nowrap"
+                } else {
+                    "font-serif text-6xl text-center text-[var(--fg-black)]"
+                }
+                    .to_string()
+            })>
                 {stored_suffix.get_value()}
             </p>
             <p class="font-mono text-lg text-[var(--fg-muted)] text-center">

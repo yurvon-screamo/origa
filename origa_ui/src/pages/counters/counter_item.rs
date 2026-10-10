@@ -49,7 +49,11 @@ pub fn CounterItem(
                 }
             }
         >
-            <span class="counter-grid-tile-char">{counter_entry.suffix()}</span>
+            <span class={if counter_entry.suffix().chars().count() > 1 {
+                "counter-grid-tile-char counter-grid-tile-char--multi"
+            } else {
+                "counter-grid-tile-char"
+            }}>{counter_entry.suffix()}</span>
             <span class="counter-grid-tile-meaning">{move || first_meaning.get()}</span>
             <Show when=move || is_selected.get()>
                 <span class="counter-grid-tile-check">"✓"</span>
