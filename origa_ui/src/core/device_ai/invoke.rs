@@ -39,6 +39,21 @@ pub async fn get_capabilities() -> Result<Capabilities, String> {
 
 /// Recognize text in a base64-encoded image. Japanese is prioritised.
 pub async fn recognize_text(base64: &str) -> Result<TextRecognitionResult, String> {
+    let payload = build_recognize_text_payload(base64);
+
+    let raw = invoke(CMD_VISION_RECOGNIZE_TEXT, &payload, DEFAULT_TIMEOUT).await?;
+    serde_wasm_bindgen::from_value::<TextRecognitionResult>(raw)
+        .map_err(|e| format!("vision_recognize_text decode failed: {e:?}"))
+}
+
+/// Builds the `vision_recognize_text` command payload.
+///
+/// The plugin contract splits language selection by platform
+/// (`guest-js/types.ts`, `OcrOptions`): iOS/macOS/Windows Vision reads
+/// `languages` (BCP-47 tags), while Android ML Kit reads `script` — with no
+/// `script` it silently defaults to the Latin recognizer, which cannot read
+/// Japanese. Both fields are always sent; each platform ignores the other's.
+pub(super) fn build_recognize_text_payload(base64: &str) -> js_sys::Object {
     let image = js_sys::Object::new();
     set_str(&image, "base64", base64);
 
@@ -48,14 +63,12 @@ pub async fn recognize_text(base64: &str) -> Result<TextRecognitionResult, Strin
     let options = js_sys::Object::new();
     set_ref(&options, "languages", &languages);
     set_str(&options, "recognitionLevel", "accurate");
+    set_str(&options, "script", "japanese");
 
     let payload = js_sys::Object::new();
     set_ref(&payload, "image", &image);
     set_ref(&payload, "options", &options);
-
-    let raw = invoke(CMD_VISION_RECOGNIZE_TEXT, &payload, DEFAULT_TIMEOUT).await?;
-    serde_wasm_bindgen::from_value::<TextRecognitionResult>(raw)
-        .map_err(|e| format!("vision_recognize_text decode failed: {e:?}"))
+    payload
 }
 
 /// Perform one-shot live-microphone speech recognition. Returns when the
