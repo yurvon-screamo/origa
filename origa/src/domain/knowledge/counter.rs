@@ -66,6 +66,13 @@ impl CounterCard {
         }
     }
 
+    /// Многосимвольный суффикс (切れ, ヶ月, くくり): UI включает
+    /// модификатор вёрстки «одной строкой» (issue #415, датасет ≤3
+    /// знаков — nowrap рассчитан на это).
+    pub fn is_multi_char(&self) -> bool {
+        self.suffix.chars().count() > 1
+    }
+
     pub fn suffix(&self) -> &str {
         &self.suffix
     }

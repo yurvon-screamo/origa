@@ -5791,10 +5791,6 @@ rt {
     white-space: nowrap;
 }
 
-.counter-detail-hero-char--multi {
-    white-space: nowrap;
-}
-
 .counter-card-char {
     font-family: var(--font-serif);
     font-size: 40px;
