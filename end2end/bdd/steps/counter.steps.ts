@@ -199,11 +199,14 @@ Then('в уроке показывается пачка связок счётн�
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
 });
 
-When('пользователь жмёт пробел и видит таблицу чтений с акцентом строки', async ({ page }) => {
+When('пользователь раскрывает таблицу чтений на ответе связки', async ({ page }) => {
 	await page.keyboard.press(" ");
 	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 	// Таблица свёрнута по умолчанию (expand/collapse-паттерн объёмных
-	// ответов) — раскрываем перед проверкой.
+	// ответов): проверяем скрытость, раскрываем, после — обратный сворот.
+	await expect(
+		page.getByTestId("counter-binding-mutations"),
+	).toHaveCount(0);
 	await page.getByTestId("counter-binding-mutations-toggle").click();
 	const table = page.getByTestId("counter-binding-mutations-table");
 	await table.waitFor({ timeout: 10_000 });
@@ -218,6 +221,9 @@ When('пользователь жмёт пробел и видит таблиц�
 		await highlighted.count(),
 		"the answered row must be accented",
 	).toBeGreaterThanOrEqual(1);
+	// Обратный сворот прячет таблицу.
+	await page.getByTestId("counter-binding-mutations-toggle").click();
+	await expect(page.getByTestId("counter-binding-mutations")).toHaveCount(0);
 });
 
 When('пользователь жмёт {string} отвечая {string}', async ({ page }, key: string, _answer: string) => {
