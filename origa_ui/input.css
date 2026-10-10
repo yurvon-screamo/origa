@@ -6984,22 +6984,31 @@ rt {
     font-size: 24px;
 }
 
-/* Sentence row: the token translator + the play button next to IT
-   (owner UX — sound belongs to the Japanese line). */
-.word-detail-example-ja-row {
+/* One line: the token-translator sentence takes the width and the play
+   button sits at the RIGHT EDGE of THAT line (owner UX). */
+.word-detail-example-ja-line {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
 }
 
-/* The play button row: next to THE SENTENCE (owner UX — sound belongs
-   to the Japanese line), not to the translation. */
-.word-example-line-ja-row {
+.word-detail-example-ja {
+    flex: 1;
+    min-width: 0;
+}
+
+/* One line: the Japanese sentence takes the width (centered) and the
+   play button sits at the RIGHT EDGE of THAT line (owner UX — sound
+   belongs to the Japanese line, not above it, not by the translation). */
+.word-example-line-ja-line {
     display: flex;
-    justify-content: center;
-    margin-bottom: 4px;
+    align-items: center;
+    gap: 10px;
+}
+
+.word-example-line-ja {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Translation centered under the sentence (owner UX). */
@@ -7038,7 +7047,17 @@ rt {
     gap: 16px;
 }
 
+/* One line: the Japanese sentence takes the width and the play button
+   sits at the RIGHT EDGE of THAT line (owner UX). */
+.example-recall-ja-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .example-recall-ja {
+    flex: 1;
+    min-width: 0;
     font-size: 26px;
     line-height: 1.7;
     color: var(--fg-black);

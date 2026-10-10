@@ -66,18 +66,12 @@ pub fn WordExampleLine(
         };
         view! {
             <div class=line_class data-testid="lesson-word-example">
-                // The play button sits next to THE SENTENCE (owner UX:
-                // sound belongs to the Japanese line, not to the
-                // translation).
-                <div class="word-example-line-ja-row">
-                    <AudioButtons
-                        text=sentence_text
-                        audio_path=None
-                        test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
-                    />
-                </div>
-                <div class="word-example-line-ja">
-                    {if mid.is_empty() {
+                // One line: the Japanese sentence + the play button at
+                // the RIGHT EDGE of that line (owner UX — sound belongs
+                // to the Japanese line, not to the translation).
+                <div class="word-example-line-ja-line">
+                    <div class="word-example-line-ja">
+                        {if mid.is_empty() {
                         // No highlight to draw: one run.
                         view! {
                             <FuriganaText text=head known_kanji=known/>
@@ -95,6 +89,12 @@ pub fn WordExampleLine(
                         }
                         .into_any()
                     }}
+                    </div>
+                    <AudioButtons
+                        text=sentence_text
+                        audio_path=None
+                        test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
+                    />
                 </div>
                 // Translation centered under the sentence.
                 <div class="word-example-line-translation">
