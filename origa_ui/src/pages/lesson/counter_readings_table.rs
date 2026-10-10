@@ -15,6 +15,8 @@ pub(in crate::pages::lesson) struct CounterReadingRow {
 
 /// Порядок таблицы: числа по возрастанию, лексикализованные исключения
 /// >10 за десяткой, вопросительное 何 последним (инвариант датасета).
+/// Тот же порядок, что numeric_order в domain/knowledge/counter.rs
+/// (порядок пачки): править синхронно.
 fn reading_sort_key(number: u8) -> (u8, u8) {
     match number {
         0 => (2, 0),

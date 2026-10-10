@@ -39,13 +39,16 @@ pub fn CounterBindingsSession(
 ) -> impl IntoView {
     let i18n = use_i18n();
     let current = RwSignal::new(0usize);
+    let revealed = RwSignal::new(false);
+    // Завершение пачки: повторные 1/2/клики на замороженном ответе
+    // игнорируются (двойной advance урока — перескок карточек).
+    let finished = RwSignal::new(false);
     // Полная таблица чтений на ответе свёрнута по умолчанию (юзер-репорт:
     // «вижу лишь ответ; фулл таблицу — под развернуть»); кнопка — тот же
     // expand/collapse-паттерн, что у объёмных карточек ответа. Разворот
     // НЕ сбрасывается между связками пачки: раскрывший таблицу юзер
     // сохраняет контекст, акцент строки обновляется на каждом ответе.
     let table_expanded = RwSignal::new(false);
-    let revealed = RwSignal::new(false);
     // Акцент строки текущей связки (u8::MAX — вне диапазона чисел).
     let highlighted_number = RwSignal::new(u8::MAX);
     let total = items.len();
@@ -100,7 +103,7 @@ pub fn CounterBindingsSession(
         }));
 
     let rate = move |rating: Rating| {
-        if !revealed.get_untracked() {
+        if !revealed.get_untracked() || finished.get_untracked() {
             return;
         }
         let index = current.get_untracked();
@@ -113,6 +116,8 @@ pub fn CounterBindingsSession(
             // (замороженный ответ — юзер-репорт 0.8.0-rc: сброс revealed
             // мелькал фронтом «цифра×суффикс» перед следующей карточкой
             // урока) — advance сразу, без промежуточного фронт-кадра.
+            // Повторные 1/2/клики гасятся finished-гейтом выше.
+            finished.set(true);
             on_next.run(());
         } else {
             revealed.set(false);
@@ -123,7 +128,7 @@ pub fn CounterBindingsSession(
     let on_rate = Callback::new(move |rating: Rating| rate(rating));
 
     let reveal = move || {
-        if revealed.get_untracked() {
+        if revealed.get_untracked() || finished.get_untracked() {
             return;
         }
         let number = items
@@ -136,6 +141,9 @@ pub fn CounterBindingsSession(
     // Клавиатура слота: Space — показ ответа, 1/2 — «Не знаю»/«Знаю»
     // (тот же контракт, что у остальных карт).
     let _ = use_event_listener(document(), leptos::ev::keydown, move |ev| {
+        if ev.repeat() {
+            return;
+        }
         if super::keyboard_handler::is_typing_target(ev.target().as_ref()) {
             return;
         }
