@@ -202,6 +202,9 @@ Then('в уроке показывается пачка связок счётн�
 When('пользователь жмёт пробел и видит таблицу чтений с акцентом строки', async ({ page }) => {
 	await page.keyboard.press(" ");
 	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+	// Таблица свёрнута по умолчанию (expand/collapse-паттерн объёмных
+	// ответов) — раскрываем перед проверкой.
+	await page.getByTestId("counter-binding-mutations-toggle").click();
 	const table = page.getByTestId("counter-binding-mutations-table");
 	await table.waitFor({ timeout: 10_000 });
 	// Строки двух testid: обычная и акцентная (отвеченная) строка.
