@@ -5,7 +5,7 @@ locale: vi
 meta_title: "App học tiếng Nhật offline: 'ngoại tuyến' nghĩa là gì (2026)"
 meta_description: "'Ngoại tuyến' trong các ứng dụng khác nhau có nghĩa khác nhau: ôn ngoại tuyến, tra ngoại tuyến, AI ngoại tuyến. App học tiếng Nhật miễn phí offline nào thực sự hoạt động không cần internet và bạn đánh đổi gì."
 target_keywords: ["học tiếng nhật ngoại tuyến", "app học tiếng nhật offline", "app học tiếng nhật miễn phí offline", "app flashcard tiếng nhật offline"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-07-21
 status: ready
 ---

@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Lịch thi JLPT 2026: đề thi ngày 6/12, đăng ký theo từng nước"
 meta_description: "JLPT 2026 diễn ra ngày 5/7 và 6/12. Thời gian đăng ký khác nhau theo từng nước và phần lớn đã đóng vào giữa tháng 9. Ngày thi, lệ phí, hình thức đề và kế hoạch ôn cho những tuần còn lại."
 target_keywords: ["jlpt 2026", "thi jlpt tháng 12 2026", "lịch thi jlpt 2026", "đăng ký jlpt 2026"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-09-18
 status: ready
 ---

@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Tiếng Nhật từ số 0: kế hoạch cho người mới bắt đầu (2026)"
 meta_description: "Bắt đầu học tiếng Nhật tự học như thế nào: không lòng vòng, không hứa 'thành thạo trong một tháng'. Trình tự thực tế từ hiragana đến N4, công cụ, và các lỗi gần như mọi người mới đều mắc."
 target_keywords: ["học tiếng nhật từ con số không", "học tiếng nhật tự học", "bắt đầu học tiếng nhật", "tiếng nhật cho người mới bắt đầu"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-07-21
 status: ready
 ---

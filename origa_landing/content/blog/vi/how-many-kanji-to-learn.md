@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Cần biết bao nhiêu hán tự: con số thật (2026)"
 meta_description: "2.136 hán tự Jōyō không phải mục tiêu của bạn. Ngưỡng thật theo từng việc: truyện tranh có furigana, bài viết web, báo giấy. Vì sao 'biết hán tự' là câu hỏi sai và cách đo tiến độ."
 target_keywords: ["học bao nhiêu hán tự", "hán tự jlpt các cấp", "cần bao nhiêu hán tự", "đọc manga cần bao nhiêu hán tự"]
-lastmod: 2026-09-19
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---

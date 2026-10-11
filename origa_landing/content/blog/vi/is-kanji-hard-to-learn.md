@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Hán tự có khó không: thứ thực sự làm chậm việc học (2026)"
 meta_description: "Hán tự không khó vì lý do đa số nghĩ. Thứ thực sự làm chậm: đọc khi chưa có vốn từ, học chữ ngoài lời, đọc lại thay vì ôn theo lịch. Và một tuần đầu thực tế trông thế nào."
 target_keywords: ["học hán tự khó không", "hán tự là gì", "tự học hán tự", "học chữ hán nhật"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-09-18
 status: ready
 ---

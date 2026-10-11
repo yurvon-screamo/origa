@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Tự học tiếng Nhật: kế hoạch 30 ngày và vòng lặp học (2026)"
 meta_description: "Tự học gãy không phải vì thiếu năng khiếu mà vì thiếu vòng phản hồi. Chu trình đọc, ghi lại, ôn tập, sử dụng; kế hoạch tháng đầu theo tuần; và cách giữ đà khi không có hạn chót của giáo viên."
 target_keywords: ["tự học tiếng nhật", "cách học tiếng nhật", "học tiếng nhật một mình", "lộ trình tự học tiếng nhật"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-09-18
 status: ready
 ---

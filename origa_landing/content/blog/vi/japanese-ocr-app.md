@@ -5,7 +5,7 @@ locale: vi
 meta_title: "So sánh ứng dụng OCR tiếng Nhật (2026): Cái nào thực sự hoạt động"
 meta_description: "OCR biến ảnh thành văn bản, nhưng học tiếng Nhật từ văn bản đó là một vấn đề khác. So sánh thực tế OCR đa năng, OCR chuyên manga, và OCR tích hợp học tập."
 target_keywords: ["ocr tiếng nhật", "app ocr tiếng nhật", "ocr nhật văn android", "nhận dạng chữ hán tự"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-07-21
 status: ready
 ---

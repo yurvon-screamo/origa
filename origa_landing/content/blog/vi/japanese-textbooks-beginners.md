@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Giáo trình tiếng Nhật nhập môn: so sánh (2026)"
 meta_description: "Minna no Nihongo vs Genki vs Tae Kim vs Irodori: mỗi bộ một đánh đổi riêng. So sánh theo ngôn ngữ trung gian, cấu trúc và giá."
 target_keywords: ["giáo trình tiếng nhật cho người mới", "minna no nihongo review", "sách học tiếng nhật", "giáo trình minna no nihongo"]
-lastmod: 2026-09-19
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---

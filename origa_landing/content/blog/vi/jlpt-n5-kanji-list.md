@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Hán tự N5: bảng chi tiết + PDF in (80 hán tự)"
 meta_description: "Bảng hán tự N5 từ từ điển Origa: âm on, âm kun, nghĩa, từ thông dụng. Xếp theo tần suất. PDF in miễn phí bằng 4 ngôn ngữ, kèm giải thích vì sao có nơi nói 80 có nơi nói 103 chữ."
 target_keywords: ["hán tự n5", "tự học hán tự n5", "hán tự n5 pdf", "hán tự n5"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-09-18
 status: ready
 ---

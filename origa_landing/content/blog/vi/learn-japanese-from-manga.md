@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Học tiếng Nhật qua manga: Hướng dẫn thực tế 2026"
 meta_description: "Đọc manga bằng tiếng Nhật thì dễ thấy động lực. Học từ nó là một kỹ năng khác. Hướng dẫn thực chiến về quy trình thực sự xây dựng từ vựng: công cụ, ma sát, và gì nên bỏ qua."
 target_keywords: ["học tiếng nhật qua manga", "học tiếng nhật từ manga", "app học tiếng nhật với anime", "app nhập vai tiếng nhật"]
-lastmod: 2026-07-21
+lastmod: 2026-10-12
 published: 2026-07-21
 status: ready
 ---

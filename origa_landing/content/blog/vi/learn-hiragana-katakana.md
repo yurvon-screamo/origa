@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Học Hiragana và Katakana trong 2 tuần (2026)"
 meta_description: "Kế hoạch 14 ngày thực tế cho cả hai bảng chữ tiếng Nhật, không cày bảng. Cái gì hiệu quả, cái gì không, và vì sao không thể trì hoãn katakana."
 target_keywords: ["học hiragana", "học katakana", "hiragana katakana", "học bảng chữ tiếng nhật"]
-lastmod: 2026-09-19
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---

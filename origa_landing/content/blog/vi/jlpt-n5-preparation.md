@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Ôn JLPT N5: phạm vi, đề thi, lộ trình (2026)"
 meta_description: "JLPT N5 thực sự đòi hỏi gì: phạm vi từ vựng và hán tự, cấu trúc đề, điểm chuẩn, thời gian ôn thực tế. Kế hoạch ôn và những lỗi làm rớt phần nghe."
 target_keywords: ["jlpt n5", "ôn jlpt n5", "jlpt n5 học gì", "lộ trình jlpt n5"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---

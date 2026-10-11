@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Học tiếng Nhật qua anime có được không? Phân tích trung thực (2026)"
 meta_description: "Anime cho bạn luyện nghe thật và động lực, nhưng lời thoại nhân vật không phải hội thoại thường ngày. Quy trình xem chủ động, cách chọn phụ đề, và kết nối với SRS."
 target_keywords: ["học tiếng nhật qua anime", "học tiếng nhật bằng anime", "anime học tiếng nhật", "xem anime phụ đề tiếng nhật"]
-lastmod: 2026-09-19
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---
