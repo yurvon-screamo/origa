@@ -5,7 +5,7 @@ locale: en
 meta_title: "Japanese AI Tutors Compared (2026): What Works"
 meta_description: "AI tutors are good at explaining grammar and correcting sentences. They don't schedule your reviews or help you remember. A practical breakdown of where AI fits in Japanese learning."
 target_keywords: ["japanese ai tutor", "best ai japanese language tutor free", "ai japanese tutor app", "ai conversation practice japanese"]
-lastmod: 2026-07-21
+lastmod: 2026-10-11
 published: 2026-07-21
 status: ready
 ---
@@ -20,7 +20,7 @@ This article is not a ranking. It's a breakdown of what AI tutors are actually g
 
 Includes Origa. Origa uses AI, but it is not an AI tutor in the conversational sense most people mean.
 
-## What AI tutors are genuinely good at
+## What AI tutors are good at
 
 When the underlying model is competent (and current models are, for Japanese up to intermediate level), AI tutors handle four things better than any textbook:
 
@@ -58,7 +58,7 @@ The pattern across most "AI tutor" apps is the same: they ship the conversation/
 
 ### Dedicated AI language apps (Speak, Talkpal, Praktika, etc.)
 
-**Strength:** the AI is wrapped in a learning-shaped UI: scenario cards, progress badges, lesson flows. The conversation is guided, so you don't have to invent the topic.
+**Strength:** the AI is wrapped in a learning-shaped UI: scenario cards, progress badges, lesson flows. The conversation is guided; scenario cards set the topic, you answer.
 
 **Weakness:** the SRS layer is usually thin or absent. Lessons are pre-built; vocabulary capture is weak; long-term retention is on you. Subscription pricing compounds. Speak Premium Plus is ~$30/month, Talkpal Premium ~$20/month, Praktika ~$100/year (prices fluctuate by region and platform). For Japanese specifically, the depth is often shallower than for English or Spanish: the market is smaller, and the AI training data for Japanese learning scenarios is thinner.
 

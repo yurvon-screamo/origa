@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning App (2026)"
 meta_description: "There is no single 'best' Japanese app. There's the best set for your goal. A category-by-category breakdown: vocabulary, kanji, grammar, listening, JLPT."
 target_keywords: ["best japanese learning app", "japanese learning app review", "how to choose japanese app", "japanese learning app comparison"]
-lastmod: 2026-09-26
+lastmod: 2026-10-11
 published: 2026-07-19
 status: ready
 ---
@@ -30,7 +30,7 @@ So the typical picture of someone studying Japanese is three to five apps at onc
 
 ### Vocabulary and spaced repetition
 
-The base skill is memorizing words and not forgetting them. Spaced repetition systems (SRS) dominate here. The FSRS algorithm is the current standard: it adjusts review intervals based on how you, specifically, forget a specific card.
+The base skill is memorizing words and not forgetting them. Spaced repetition systems (SRS) dominate here. The FSRS algorithm is the current standard: it adjusts review intervals based on how you forget each specific card.
 
 - **Anki.** Free, open source, runs everywhere. Maximum flexibility: cards can be laid out however you want, decks are configurable. The flip side of that flexibility is that cards need to be created and formatted manually. For Japanese, that means: open a dictionary, copy the word, then the reading, then the translation, then find audio. The interface is English; there are community Russian decks, but the app itself is built for an English speaker. [FSRS](https://docs.ankiweb.net/deck-options.html#fsrs) appeared in Anki 23.10 (October 2023) and is on by default for new collections starting in 24.10.
 - **Origa.** Uses the same FSRS, but card creation is reduced to typing a word: the built-in bilingual dictionary pulls in the reading, translation, and audio on its own. You can import existing Anki decks (`.anki2`, `.anki21`). Progress transfers. Interface and dictionaries are in your language.
