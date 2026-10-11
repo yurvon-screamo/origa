@@ -17,21 +17,68 @@
       "target_keyword": "anki alternative japanese",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-19",
-      "source": "human (EN+RU); LLM machine-translated (KO+VI)"
+      "source": "human (EN+RU); LLM machine-translated (KO+VI)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "EN diff (17 lines): bold lead-ins removed, heading trimmed, scheduler row reworded, lastmod bump",
+          "verified": [
+            "FSRS configured per study mode: origa/src/domain/srs.rs:38-110 (RateMode x7, engines: HashMap<RateMode, FSRS>)",
+            "Anki import .anki2/.anki21/.anki21b: origa/src/use_cases/import_anki_pack.rs:10-12",
+            "Links /docs/capture, /compare, /download, /blog/best-japanese-learning-app: all exist"
+          ],
+          "desloper": "P0=0, P1=2 (low TTR — domain terminology; bold in bullets — standard) ruled false positives for comparison article",
+          "gate": "READY (EN); KO/VI review flag unchanged"
+        },
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU commit 7ad30f48 (amend of c32115db): calque fix + planner claim fix (FSRS per study mode, mirrors EN 09643851) + lastmod",
+          "verified": [
+            "diff = 3 lines exactly",
+            "FSRS per study mode: origa/src/domain/srs.rs:38-110 (RateMode x7)"
+          ],
+          "desloper": "P0=0; remaining P1 fragment-lead x5 ruled deliberate thesis style (mirrors EN)",
+          "gate": "READY (RU)"
+        }
+      ]
     },
     {
       "slug": "best-japanese-learning-app",
       "target_keyword": "best japanese learning app",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-19",
-      "source": "human (EN+RU); LLM machine-translated (KO+VI)"
+      "source": "human (EN+RU); LLM machine-translated (KO+VI)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "EN commit dc701979: tautology fix (specifically/specific card) + lastmod; RU twin passed same day with zero diff",
+          "verified": [
+            "diff = 2 lines, no claims touched",
+            "links /docs/kanji /docs/capture /compare /blog/best-japanese-learning-app-offline all exist"
+          ],
+          "desloper": "P0=0, P1=2 (16 bold — house blog style; low-ttr — comparison terminology) ruled false positives",
+          "gate": "READY (EN)"
+        }
+      ]
     },
     {
       "slug": "learn-japanese-from-manga",
       "target_keyword": "learn japanese from manga",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-21",
-      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)"
+      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU batch commit 865a5fc5: dejstvitelno x3->2 fix + lastmod; link /ru/blog/yaponskiy-s-nulya live",
+          "verified": [
+            "diff matches report, no product claims touched",
+            "batch desloper sweep: P0=0 across all 12 RU files"
+          ],
+          "desloper": "residual P1/P2 ruled FP",
+          "gate": "READY (RU batch)"
+        }
+      ]
     },
     {
       "slug": "japanese-ocr-app",
@@ -45,21 +92,88 @@
       "target_keyword": "learn japanese offline",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-21",
-      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)"
+      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "EN commit 5de2b755: 2 fact-drift fixes (dictionaries via initial CDN download, not bundled; furigana dictionary/tokenizer-driven, not a model) + lastmod. RU twin d44ab898: meta_description colon + lastmod",
+          "verified": [
+            "README.md:11 initial content download; cdn/dictionaries 110M on disk",
+            "furigana: origa/src/dictionary/furigana_dict (JmdictFurigana.rkyv) + lindera — dictionary-driven, no model",
+            "model mass claim hundreds-of-MB conservative vs ~400M (NDLOCR 147M + Whisper ~145M + dict 110M)"
+          ],
+          "desloper": "EN P1x3 FP (functional features, catalog bold skeleton); RU P1x4 FP (znachit/na samom dele subject-matter, real contrast)",
+          "gate": "READY (EN+RU)"
+        },
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU fact-drift mirror fixes landed in af138557 via add/commit race; split done: b5af8f7e (EN hiragana) + 085f8fd1 (RU factfix), diffs verified byte-exact by lead",
+          "verified": [
+            "dictionaries via CDN initial download (README:11, cdn/dictionaries 110M)",
+            "furigana dictionary-driven, no ML (furigana_dict + lindera)",
+            "offline layers: models only OCR/STT"
+          ],
+          "gate": "READY (RU)"
+        }
+      ]
     },
     {
       "slug": "japanese-ai-tutor",
       "target_keyword": "japanese ai tutor",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-21",
-      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)"
+      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU batch commit 6c38adf6: calc drop + kantselyarit fix + lastmod; pricing table (:82 competitors) untouched — watchlist",
+          "verified": [
+            "diff matches report, no product claims touched",
+            "batch desloper sweep: P0=0 across all 12 RU files"
+          ],
+          "desloper": "residual P1/P2 ruled FP (substring posledovatelnost, quoted arrow-notations, thesis fragment-leads)",
+          "gate": "READY (RU batch)"
+        }
+      ]
     },
     {
       "slug": "yaponskiy-s-nulya",
       "target_keyword": "изучение японского языка с нуля",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-21",
-      "source": "human (RU draft factcheck round-2); LLM machine-translated (EN/KO/VI from RU)"
+      "source": "human (RU draft factcheck round-2); LLM machine-translated (EN/KO/VI from RU)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU commit 51ef356f: 3x desloper P1 fixes (meta desc, parallelism, bureaucratese) + lastmod bump; humanize bulk run rejected, no claims touched",
+          "verified": [
+            "diff: no product claims changed",
+            "link /ru/blog/learn-japanese-from-manga exists",
+            "factcheck detail: ru territory humanize/yaponskiy-s-nulya.factcheck.json"
+          ],
+          "desloper": "P0=0; remaining 3 P1 ruled false positives (Следовательно x4 = substring of posledovatel-nost; arrow in quoted idiom; FAQ fragment answer)",
+          "gate": "READY (RU)"
+        }
+      ]
+    },
+    {
+      "slug": "japanese-textbooks-beginners",
+      "target_keyword": "japanese textbooks for beginners",
+      "gate": "READY",
+      "first_published": "2026-07-21",
+      "source": "human (EN+RU); LLM machine-translated (KO+VI)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-11",
+          "scope": "RU batch commit eb716783: tautology fix (Golovnin) + lastmod; slug added to registry (was missing)",
+          "verified": [
+            "diff matches report, no product claims touched",
+            "batch desloper sweep: P0=0 across all 12 RU files"
+          ],
+          "desloper": "residual P1/P2 ruled FP",
+          "gate": "READY (RU batch)"
+        }
+      ]
     }
   ],
   "claims": [
@@ -67,128 +181,175 @@
       "claim": "Anki added FSRS support in 23.10 (October 2023) and enabled it by default for new collections in 24.10+.",
       "confidence": 0.95,
       "status": "verified",
-      "sources": ["https://docs.ankiweb.net/deck-options.html#fsrs"],
+      "sources": [
+        "https://docs.ankiweb.net/deck-options.html#fsrs"
+      ],
       "note": "Inline citation present in all 4 locales. Wording differentiates 23.10 introduction vs 24.10 default-on for new collections."
     },
     {
       "claim": "Anki desktop is free and open source; AnkiDroid free; AnkiWeb sync free; AnkiMobile iOS is the only paid piece.",
       "confidence": 0.95,
       "status": "verified",
-      "sources": ["https://apps.ankiweb.net"]
+      "sources": [
+        "https://apps.ankiweb.net"
+      ]
     },
     {
       "claim": "Origa uses FSRS spaced repetition.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["AGENTS.md", "README.md"]
+      "sources": [
+        "AGENTS.md",
+        "README.md"
+      ]
     },
     {
       "claim": "Origa imports .anki2, .anki21, .anki21b decks.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["origa_landing/src/content/en.rs"]
+      "sources": [
+        "origa_landing/src/content/en.rs"
+      ]
     },
     {
       "claim": "Origa has 200,000+ native phrases.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["README.md"]
+      "sources": [
+        "README.md"
+      ]
     },
     {
       "claim": "Origa runs on Windows, Linux, macOS, Android, and web; iOS is planned but not shipping.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["README.md", "origa_landing/src/pages/download.rs"]
+      "sources": [
+        "README.md",
+        "origa_landing/src/pages/download.rs"
+      ]
     },
     {
       "claim": "Origa OCR and STT models run locally (offline card creation).",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["README.md", "AGENTS.md"]
+      "sources": [
+        "README.md",
+        "AGENTS.md"
+      ]
     },
     {
       "claim": "Origa interface languages: English, Russian, Korean and Vietnamese all shipped (KO/VI content release, 2026-09-08: vocabulary chunks, phrases, grammar overlay, kanji/radical descriptions and well-known set titles deployed to the CDN). Landing, docs and blog copy updated 2026-09-08 — the earlier 'planned' wording is obsolete. Documentation pages and legal texts remain English/Russian only.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["origa_ui/locales/ (en/ru/ko/vi .json)", "cdn/manifest.json (grammar_ko_vi.json, chunk vi/ko fields)", "ADR-047"]
+      "sources": [
+        "origa_ui/locales/ (en/ru/ko/vi .json)",
+        "cdn/manifest.json (grammar_ko_vi.json, chunk vi/ko fields)",
+        "ADR-047"
+      ]
     },
     {
       "claim": "WaniKani is radical-based, English interface, paid subscription.",
       "confidence": 0.95,
       "status": "verified",
-      "sources": ["https://www.wanikani.com/"]
+      "sources": [
+        "https://www.wanikani.com/"
+      ]
     },
     {
       "claim": "Bunpro is grammar-focused SRS, web-based, English interface.",
       "confidence": 0.95,
       "status": "verified",
-      "sources": ["https://bunpro.jp/"]
+      "sources": [
+        "https://bunpro.jp/"
+      ]
     },
     {
       "claim": "Duolingo is gamified and shallow for Japanese.",
       "confidence": 0.85,
       "status": "verified",
-      "sources": ["https://www.duolingo.com/"]
+      "sources": [
+        "https://www.duolingo.com/"
+      ]
     },
     {
       "claim": "Migii is a JLPT test simulator (timed practice).",
       "confidence": 0.9,
       "status": "verified",
-      "sources": ["https://eup.java-mind.com/"]
+      "sources": [
+        "https://eup.java-mind.com/"
+      ]
     },
     {
       "claim": "manga-ocr (kha-white) — open-source library, multi-line manga OCR.",
       "confidence": 0.95,
       "status": "verified",
-      "sources": ["https://github.com/kha-white/manga-ocr"]
+      "sources": [
+        "https://github.com/kha-white/manga-ocr"
+      ]
     },
     {
       "claim": "Poricom (blueaxis) — desktop GUI for manga-ocr.",
       "confidence": 0.9,
       "status": "verified",
-      "sources": ["https://github.com/blueaxis/Poricom"]
+      "sources": [
+        "https://github.com/blueaxis/Poricom"
+      ]
     },
     {
       "claim": "YomiNinja (matt-m-o) — pipes OCR output into Yomitan/Yomichan.",
       "confidence": 0.9,
       "status": "verified",
-      "sources": ["https://github.com/matt-m-o/YomiNinja"]
+      "sources": [
+        "https://github.com/matt-m-o/YomiNinja"
+      ]
     },
     {
       "claim": "KanjiSnap (iOS) — uses Apple Live Text for OCR.",
       "confidence": 0.85,
       "status": "verified",
-      "sources": ["App Store listing"]
+      "sources": [
+        "App Store listing"
+      ]
     },
     {
       "claim": "Imiwa, Nihongo — iOS/Android dictionaries with OCR.",
       "confidence": 0.9,
       "status": "verified",
-      "sources": ["App Store / Google Play listings"]
+      "sources": [
+        "App Store / Google Play listings"
+      ]
     },
     {
       "claim": "2136 joyo kanji — MEXT official count.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["MEXT official jōyō kanji list"]
+      "sources": [
+        "MEXT official jōyō kanji list"
+      ]
     },
     {
       "claim": "ChatGPT Plus, Claude Pro, Gemini Advanced — ~$200/year (~$17/month) each, mid-2026 pricing.",
       "confidence": 0.9,
       "status": "verified",
-      "sources": ["OpenAI, Anthropic, Google public pricing pages"]
+      "sources": [
+        "OpenAI, Anthropic, Google public pricing pages"
+      ]
     },
     {
       "claim": "Speak ~$30/month Premium Plus; Talkpal ~$20/month Premium; Praktika ~$100/year.",
       "confidence": 0.85,
       "status": "verified",
-      "sources": ["speak.com, talkpal.ai, praktika.ai public pricing"]
+      "sources": [
+        "speak.com, talkpal.ai, praktika.ai public pricing"
+      ]
     },
     {
       "claim": "Minna no Nihongo, Genki, Tae Kim's Guide — real Japanese textbooks.",
       "confidence": 1.0,
       "status": "verified",
-      "sources": ["publisher sites, Tae Kim's Guide GitHub"]
+      "sources": [
+        "publisher sites, Tae Kim's Guide GitHub"
+      ]
     }
   ],
   "flags": [
