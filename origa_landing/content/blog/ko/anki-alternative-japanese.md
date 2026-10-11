@@ -5,7 +5,7 @@ locale: ko
 meta_title: "일본어 Anki 대안 어플 (2026)"
 meta_description: "Anki는 강력하지만 설정이 학습 시간을 갉아먹습니다. Anki가 일본어에 적합한 때, 대안이 도움이 되는 때, 무엇을 찾아야 하는지에 대한 실전 가이드."
 target_keywords: ["anki 대안 일본어", "일본어 플래시카드 앱", "간격 반복 앱 일본어 무료", "일본어 한자 공부 앱", "무료 일본어 공부 앱 추천"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-07-19
 status: ready
 ---
@@ -126,4 +126,4 @@ Origa가 유일한 옵션은 아니며, 병목에 따라 최선이 아닐 수도
 
 ### 아이폰에서만 공부하면 어떨까요?
 
-네. Origa는 App Store에서 iPhone과 iPad용으로 제공되며, Anki 덱 가져오기도 거기서 작동합니다. 진행 상황은 데스크톱 및 웹 버전과 동기화됩니다.
+괜찮습니다. Origa는 App Store에서 iPhone과 iPad용으로 제공되며, Anki 덱 가져오기도 거기서 작동합니다. 진행 상황은 데스크톱 및 웹 버전과 동기화됩니다.
