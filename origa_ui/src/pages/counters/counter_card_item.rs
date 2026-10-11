@@ -6,6 +6,17 @@ use leptos_router::components::A;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
 use ulid::Ulid;
 
+/// Многосимвольные суффиксы (切れ, ヶ月): модификатор без столбика.
+/// Предикат — доменный (`CounterCard::is_multi_char`): знание о
+/// длине суффикса живёт рядом с суффиксом.
+fn multi_class(base: &str, multi: &str, is_multi: bool) -> String {
+    if is_multi {
+        format!("{base} {multi}")
+    } else {
+        base.to_string()
+    }
+}
+
 #[component]
 pub fn CounterCardItem(
     study_card: StudyCard,
@@ -29,7 +40,7 @@ pub fn CounterCardItem(
         })
     });
 
-    let (suffix, bindings_summary) = match study_card.card() {
+    let (suffix, bindings_summary, is_multi) = match study_card.card() {
         DomainCard::Counter(counter_card) => {
             let known = counter_card
                 .bindings()
@@ -39,9 +50,10 @@ pub fn CounterCardItem(
             (
                 counter_card.suffix().to_string(),
                 format!("{known}/{}", counter_card.bindings().len()),
+                counter_card.is_multi_char(),
             )
         },
-        _ => ("?".to_string(), String::new()),
+        _ => ("?".to_string(), String::new(), false),
     };
 
     let study_card_for_answer = study_card.clone();
@@ -68,8 +80,10 @@ pub fn CounterCardItem(
     view! {
         <div class="counter-card anima-lift" data-testid="counter-card-item">
             <A href=format!("/counters/{card_id}") attr:class="counter-card-link">
-                <div class="counter-card-char-box">
-                    <span class="counter-card-char">{suffix.clone()}</span>
+                <div class=multi_class("counter-card-char-box", "counter-card-char-box--multi", is_multi)>
+                    <span class=multi_class("counter-card-char", "counter-card-char--multi", is_multi)>
+                        {suffix.clone()}
+                    </span>
                 </div>
                 <div class="counter-card-content">
                     <div class="flex items-start justify-between gap-2 w-full">

@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Giáo trình tiếng Nhật nhập môn: so sánh (2026)"
 meta_description: "Minna no Nihongo vs Genki vs Tae Kim vs Irodori: mỗi bộ một đánh đổi riêng. So sánh theo ngôn ngữ trung gian, cấu trúc và giá."
 target_keywords: ["giáo trình tiếng nhật cho người mới", "minna no nihongo review", "sách học tiếng nhật", "giáo trình minna no nihongo"]
-lastmod: 2026-09-19
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---
@@ -14,7 +14,7 @@ status: ready
 
 # Giáo trình tiếng Nhật cho người mới: Minna no Nihongo, Genki và các lựa chọn
 
-Ứng dụng lo từ vựng và ôn tập, nhưng ngữ pháp tuần tự với bài tập phân cấp vẫn đến từ giáo trình. Vấn đề là việc chọn bộ đầu tiên đồng nghĩa với lội qua chiến tranh fan hâm mộ mà ít so sánh trung thực.
+Ứng dụng lo từ vựng và ôn tập, nhưng ngữ pháp tuần tự với bài tập theo cấp độ vẫn đến từ giáo trình. Vấn đề là việc chọn bộ đầu tiên đồng nghĩa với lội qua những cuộc chiến giữa các fan mà ít so sánh trung thực.
 
 Dưới đây là phân tích năm lựa chọn không kèm bảng xếp hạng "tốt nhất trong các loại tốt nhất". Mỗi bộ mang một đánh đổi riêng, và lựa chọn đúng phụ thuộc ba thứ: ngôn ngữ trung gian, ngân sách, và hình thức học.
 
@@ -80,11 +80,11 @@ Giấy hay điện tử là thói quen, nhưng với tiếng Nhật, giấy có 
 
 ## Giới hạn của Origa
 
-Origa không phải giáo trình và không thay thế khóa nào ở trên: nó không dắt bạn qua ngữ pháp từng bài. Vai trò của nó là việc đỡ đòn: củng cố từ vựng và hán tự từ các giáo trình đó bằng lặp lại ngắt quãng, furigana khi đọc, và luyện nghe. Có bộ từ sẵn cho Minna no Nihongo và Irodori; giáo trình khác có thể tạo thẻ từ văn bản trong vài phút.
+Origa không phải giáo trình và không thay thế khóa nào ở trên: nó không dắt bạn qua ngữ pháp từng bài. Vai trò của nó là việc hỗ trợ bên cạnh: củng cố từ vựng và hán tự từ các giáo trình đó bằng lặp lại ngắt quãng, furigana khi đọc, và luyện nghe. Có bộ từ sẵn cho Minna no Nihongo và Irodori; giáo trình khác có thể tạo thẻ từ văn bản trong vài phút.
 
 ## Kết luận
 
-Với đa số người tự học, bộ stack hoạt động trông thế này: Minna no Nihongo làm khóa chính (hoặc Genki nếu tiếng Anh của bạn mạnh), Tae Kim làm tham khảo "tại sao", và một app SRS làm động cơ ghi nhớ. Chọn một giáo trình chính và bám nó. [Ghép với app nào](/vi/blog/best-japanese-learning-app) được bàn riêng.
+Với đa số người tự học, bộ công cụ hoạt động trông thế này: Minna no Nihongo làm khóa chính (hoặc Genki nếu tiếng Anh của bạn mạnh), Tae Kim làm tham khảo "tại sao", và một app SRS làm động cơ ghi nhớ. Chọn một giáo trình chính và bám nó. [Ghép với app nào](/vi/blog/best-japanese-learning-app) được bàn riêng.
 
 ## FAQ
 
