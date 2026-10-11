@@ -3,7 +3,7 @@ title: "Tự học tiếng Nhật: 30 ngày đầu và vòng lặp phía sau"
 slug: /vi/blog/how-to-learn-japanese-by-yourself
 locale: vi
 meta_title: "Tự học tiếng Nhật: kế hoạch 30 ngày và vòng lặp học (2026)"
-meta_description: "Tự học gãy không phải vì thiếu năng khiếu mà vì thiếu vòng phản hồi. Chu trình đọc, ghi lại, ôn tập, sử dụng; kế hoạch tháng đầu theo tuần; và cách giữ đà khi không có hạn nộp của thầy."
+meta_description: "Tự học gãy không phải vì thiếu năng khiếu mà vì thiếu vòng phản hồi. Chu trình đọc, ghi lại, ôn tập, sử dụng; kế hoạch tháng đầu theo tuần; và cách giữ đà khi không có hạn chót của giáo viên."
 target_keywords: ["tự học tiếng nhật", "cách học tiếng nhật", "học tiếng nhật một mình", "lộ trình tự học tiếng nhật"]
 lastmod: 2026-09-18
 published: 2026-09-18
@@ -20,28 +20,28 @@ Trang này nói về việc tự dựng cấu trúc đó: một vòng học ch�
 
 ## Vòng lặp: đọc, ghi lại, ôn, sử dụng
 
-Mọi thứ sau tháng đầu là một chu trình bốn động tác:
+Mọi thứ sau tháng đầu là một chu trình bốn bước:
 
-1. **Đọc** (hoặc nghe) tiếng Nhật cao hơn mức thoải mái một chút. Đối thoại giáo trình lúc đầu, rồi sách đọc phân cấp, truyện tranh, phụ đề. Đây là nơi nguyên liệu mới vào; không có đầu vào đều đặn, phần còn lại của vòng đói.
-2. **Ghi lại** thứ bạn gặp và muốn giữ: từ, hán tự, điểm ngữ pháp, câu. Ma sát quan trọng ở đây; một bước ghi lại đi qua bốn ứng dụng sẽ chết trong vài tuần.
+1. **Đọc** (hoặc nghe) tiếng Nhật cao hơn mức thoải mái một chút. Đối thoại giáo trình lúc đầu, rồi sách đọc theo cấp độ, truyện tranh, phụ đề. Đây là nơi nguyên liệu mới vào; không có đầu vào đều đặn, phần còn lại của vòng đói.
+2. **Ghi lại** thứ bạn gặp và muốn giữ: từ, hán tự, điểm ngữ pháp, câu. Ở đây ma sát là yếu tố quyết định; một bước ghi lại đi qua bốn ứng dụng sẽ chết trong vài tuần.
 3. **Ôn tập** các mục đã ghi theo lịch. Lặp lại ngắt quãng là động cơ của trí nhớ, và nó chỉ hoạt động như thói quen hằng ngày, không phải marathon cuối tuần.
-4. **Sử dụng** thứ đã ôn: viết một câu, nói nó, đọc thứ mà nó xuất hiện lại. Sử dụng là thứ biến "nhận ra" thành "biết".
+4. **Sử dụng** thứ đã ôn: viết một câu, nói nó, đọc nội dung có nó xuất hiện lại. Sử dụng là thứ biến "nhận ra" thành "biết".
 
 Lớp học chạy vòng này với giáo viên đứng giữa. Người tự học thành công chạy nó bằng công cụ và thói quen. Người tự học thất bại thường chỉ làm bước 1 và 3: đọc thụ động và cày thẻ ghi nhớ, rồi tự hỏi vì sao chẳng thứ gì nối với nhau.
 
-Vòng lặp cũng trả lời câu hỏi động lực. Bạn không cần ý chí cho cả năm; bạn cần buổi học tiếp theo phải hiển nhiên. Cùng giờ, cùng chỗ, cùng thao tác mở đầu.
+Vòng lặp cũng trả lời câu hỏi động lực. Bạn không cần ý chí cho cả năm; bạn cần buổi học tiếp theo trở thành điều đương nhiên. Cùng giờ, cùng chỗ, cùng thao tác mở đầu.
 
 ## 30 ngày đầu, theo tuần
 
-**Tuần 1: kana, cả hai.** Hiragana và katakana đến mức nhận dạng. [Hướng dẫn kana](/vi/blog/learn-hiragana-katakana) trải lộ trình. Đừng nhắm hoàn hảo; nhắm "đọc kana chậm mà không cần bảng", để các tuần sau tôi luyện.
+**Tuần 1: kana, cả hai.** Hiragana và katakana đến mức nhận dạng. [Hướng dẫn kana](/vi/blog/learn-hiragana-katakana) trải lộ trình. Đừng nhắm hoàn hảo; nhắm "đọc kana chậm mà không cần bảng", để các tuần sau hoàn thiện.
 
 **Tuần 2: 50 từ đầu và âm thanh.** Chào hỏi cơ bản, số, danh từ thường ngày, kèm âm thanh, để từ đọng cùng âm của nó chứ không chỉ cách viết. Thói quen ôn bắt đầu ngay bây giờ: mười phút, mỗi ngày, không ngoại lệ. Thói quen quan trọng hơn số lượng.
 
 **Tuần 3: ngữ pháp cơ bản qua một nguồn.** Một giáo trình, một loạt video, hoặc một ứng dụng, chọn rồi giữ. Câu です/ます, trợ từ, dạng câu hỏi. Quy tắc không phải "nguồn tốt nhất"; nó là "một nguồn, đi hết".
 
-**Tuần 4: tư liệu thật đầu tiên.** Thứ dành cho người bản xứ hoặc người hơn bạn một bậc: một đoạn sách đọc phân cấp, một trang truyện có furigana, bản chép hội thoại. Gặp vòng lặp ở cỡ nhỏ: đọc, ghi lại năm từ, ôn chúng, đọc lại sau hai ngày và cảm nhận khác biệt.
+**Tuần 4: tư liệu thật đầu tiên.** Thứ dành cho người bản xứ hoặc người hơn bạn một bậc: một đoạn sách đọc theo cấp độ, một trang truyện có furigana, bản chép hội thoại. Gặp vòng lặp trong phiên bản thu nhỏ: đọc, ghi lại năm từ, ôn chúng, đọc lại sau hai ngày và cảm nhận khác biệt.
 
-Ba mươi ngày sau, bạn có kana, hạt giống vốn từ lõi, bộ khung câu, và quan trọng nhất, một vòng lặp đang chạy. Từ đây đầu vào lớn dần; vòng lặp không đổi.
+Ba mươi ngày sau, bạn có kana, một lượng từ vựng lõi đầu tiên, bộ khung câu, và quan trọng nhất, một vòng lặp đang chạy. Từ đây đầu vào lớn dần; vòng lặp không đổi.
 
 ## Điều giữ người tự học đi tiếp
 
@@ -57,15 +57,15 @@ Công cụ: nửa "ghi lại và ôn" của vòng lặp là chỗ Origa đứng,
 
 ### Thật sự học tiếng Nhật một mình được không?
 
-Đến mức đọc và hội thoại chức năng, được; hàng nghìn người làm vậy. Thứ tự học thật sự thiếu, phản hồi chỉnh sửa cho nói và viết, giải quyết được sau này bằng trao đổi ngôn ngữ hoặc gia sư đặt lên nền đã tự dựng.
+Đến mức đọc và hội thoại chức năng, được; hàng nghìn người làm vậy. Cái tự học thật sự thiếu — phản hồi chỉnh sửa cho nói và viết — giải quyết được sau này bằng trao đổi ngôn ngữ hoặc gia sư đặt lên nền đã tự dựng.
 
 ### Mỗi ngày cần bao nhiêu giờ?
 
-Mức sàn 20–30 phút bền thắng những buổi dài thưa thớt. Nhiều thời gian hơn thì nhanh hơn, nhưng kiểu thất bại của tự học là thiếu đều đặn, không phải thiếu đủ.
+Mức sàn 20–30 phút bền thắng những buổi dài thưa thớt. Nhiều thời gian hơn thì nhanh hơn, nhưng kiểu thất bại của tự học là thiếu đều đặn, không phải thiếu khối lượng.
 
 ### Nên học gì trước: ngữ pháp hay từ vựng?
 
-Cả hai, với liều nhỏ xen kẽ, và kana trước cả hai. Từ vựng thiếu cấu trúc đẻ ra chuỗi câu; ngữ pháp thiếu từ vựng đẻ ra khuôn rỗng. Tuần 2 và 3 ở trên cố tình chồng lấn chúng.
+Cả hai, với liều nhỏ xen kẽ, và kana trước cả hai. Từ vựng thiếu cấu trúc sinh ra chuỗi câu rời rạc; ngữ pháp thiếu từ vựng sinh ra khuôn mẫu rỗng. Tuần 2 và 3 ở trên cố tình chồng lấn chúng.
 
 ### Có nhất thiết phải thi JLPT không?
 

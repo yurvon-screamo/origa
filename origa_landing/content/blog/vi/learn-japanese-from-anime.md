@@ -24,19 +24,19 @@ Bài này nói về cái anime thực sự rèn được, cái nó không bao gi
 
 **Ngữ điệu và sự tự nhiên.** Bạn hấp thụ câu hỏi, sự ngạc nhiên, sự bực bội nghe như thế nào — những thứ phiên âm không truyền nổi.
 
-**Động lực.** Tư liệu nhàm chán là lý do số một người ta bỏ học ngôn ngữ. Nội dung bạn tự đến xem giữ sự đều đặn tốt hơn bất kỳ ứng dụng theo dõi thói quen nào.
+**Động lực.** Tư liệu nhàm chán là lý do số một khiến người ta bỏ cuộc với ngôn ngữ. Nội dung bạn tự đến xem giữ sự đều đặn tốt hơn bất kỳ ứng dụng theo dõi thói quen nào.
 
 ## Anime không bao giờ cho bạn gì
 
-**Lời nhân vật ≠ hội thoại thường ngày.** Cái bẫy lớn nhất. Lời thoại hoạt hình bị cường điệu: nhân vật hét お前 (cái "mày" thô), dùng văn phong cổ, tiếng hô chiến đấu, và cấu trúc mang dấu giới tính nghe lạ hoặc vô lễ ngoài đời. Người chỉ tích trữ từ vựng từ shōnen sẽ nói như nhân vật anime. Buồn cười ở bữa tối, lúng túng ở chỗ làm.
+**Lời nhân vật ≠ hội thoại thường ngày.** Cái bẫy lớn nhất. Lời thoại hoạt hình bị cường điệu: nhân vật hét お前 (cái "mày" thô), dùng văn phong cổ, tiếng hô chiến đấu, và cấu trúc mang dấu giới tính nghe lạ hoặc vô lễ ngoài đời. Người chỉ tích trữ từ vựng từ shōnen sẽ nói như nhân vật anime. Buồn cười ở bữa tối, lúng túng ở nơi làm việc.
 
-**Ngữ pháp tuần tự.** Một bộ phim không sắp quy tắc từ dễ đến khó. Không có nền tảng hệ thống, bạn nhận ra mảnh vụn mà không hiểu cấu trúc.
+**Ngữ pháp tuần tự.** Một bộ phim không sắp quy tắc từ dễ đến khó. Không có nền tảng hệ thống, bạn nhận ra những mảnh rời rạc mà không hiểu cấu trúc.
 
 **Tăng trưởng từ vựng được bảo đảm.** Tần suất từ trong một bộ fantasy phản ánh thế giới của bộ đó, không phải ngôn ngữ.
 
 ## Ảo tưởng xem thụ động
 
-Xem anime với phụ đề tiếng Việt rồi gọi đó là học là sai lầm phổ biến nhất. Não lấy cốt truyện từ hình ảnh và phụ đề, còn âm thanh ở nền. Một năm ở chế độ này bạn nhận ra 50 từ rời rạc và không câu hoàn chỉnh nào.
+Xem anime với phụ đề tiếng Việt rồi gọi đó là học là sai lầm phổ biến nhất. Não lấy cốt truyện từ hình ảnh và phụ đề, còn âm thanh ở nền. Một năm ở chế độ này bạn nhận ra 50 từ rời rạc và không nắm được câu hoàn chỉnh nào.
 
 Bài kiểm tra đơn giản: tắt phụ đề một phút. Nếu câu chuyện sụp đổ về mặt thị giác, bạn đang xem chứ không phải nghe.
 
@@ -45,7 +45,7 @@ Bài kiểm tra đơn giản: tắt phụ đề một phút. Nếu câu chuyện
 Điều kiện tiên quyết: nền N5–N4 (kana, ~300 từ). Xem [kế hoạch khởi đầu](/vi/blog/yaponskiy-s-nulya). Dưới mức đó, anime là động lực, không phải tư liệu.
 
 1. **Chọn thể loại gần đời thường.** Truyện trường học, công sở, gia đình cho từ vựng bình thường; fantasy và mecha cho từ vựng fantasy-mecha.
-2. **Xem tập với phụ đề tiếng Nhật.** Phụ đề JP gắn âm với chữ, củng cố kép.
+2. **Xem tập với phụ đề tiếng Nhật.** Phụ đề JP gắn âm với chữ, củng cố theo hai kênh cùng lúc.
 3. **Rút 5–10 từ lạ mỗi tập.** Không phải tất cả. Chỉ từ hay gặp và lặp lại.
 4. **Đưa những từ đó vào lặp lại ngắt quãng trong ngày** ([cách từ điển Origa hoạt động](/vi/docs/vocabulary)).
 5. **Xem lại một cảnh chốt không phụ đề** và kiểm chứng bạn giờ nghe được đúng những từ đó.
@@ -56,7 +56,7 @@ Cùng vòng lặp đó chạy trên game. Game nặng chữ — visual novel, JR
 
 ## Chọn phụ đề nào
 
-Ưu tiên: **JP → Việt → không.** Phụ đề tiếng Nhật rèn liên kết âm-chữ. Phụ đề tiếng Việt hơn không nhưng đẩy ngôn ngữ xuống nền.
+Ưu tiên: **JP → Việt → không.** Phụ đề tiếng Nhật rèn liên kết âm-chữ. Phụ đề tiếng Việt vẫn hơn không có gì nhưng đẩy ngôn ngữ xuống nền.
 
 ## Các lỗi của xem chủ động
 
@@ -78,7 +78,7 @@ Origa đảm nhiệm bước 3–4 của quy trình: thư viện tích hợp có
 
 ## Kết luận
 
-Anime là chất tạo động lực tốt nhất và trình luyện tai vững chắc một khi bạn vượt N4, và là giáo trình duy nhất tệ nhất có thể. Công thức hoạt động: thể loại đời thường, phụ đề JP, 5–10 từ mỗi tập vào SRS, xem lại không phụ đề. Khi đó bộ đếm tập và bộ đếm từ cùng lớn.
+Anime là công cụ tạo động lực tốt nhất và bài tập luyện tai vững chắc một khi bạn vượt N4, và là giáo trình duy nhất tệ nhất có thể. Công thức hoạt động: thể loại đời thường, phụ đề JP, 5–10 từ mỗi tập vào SRS, xem lại không phụ đề. Khi đó bộ đếm tập và bộ đếm từ cùng lớn.
 
 Truyện tranh hoạt động tương tự với trọng tâm đọc (xem [so sánh hai nguồn](/vi/blog/learn-japanese-from-manga)). Sẵn sàng thử quy trình? [Tải Origa](/vi/download).
 

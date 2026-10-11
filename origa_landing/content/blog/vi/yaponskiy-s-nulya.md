@@ -37,7 +37,7 @@ Kế hoạch thực tế dưới đây nhắm trường hợp đầu: số khôn
 Hiragana và katakana là hai bảng âm tiết. Có 46 + 46 ký tự; hai tuần là tốc độ bình thường. Không có chúng, đọc sách giáo khoa là không thể.
 
 - Đừng cố học cùng với hán tự. Kana trước, như một khối riêng.
-- Luyện viết, không chỉ nhận diện. Vẽ mỗi ký tự 5–10 lần khắc sâu vào trí nhớ.
+- Luyện viết, không chỉ nhận diện. Tô mỗi ký tự 5–10 lần để khắc sâu vào trí nhớ.
 - Dùng một trình luyện với lặp lại ngắt quãng. Nhìn bảng một lần không hoạt động.
 
 Một lỗi điển hình là học hiragana và bỏ katakana vì hiragana xuất hiện nhiều hơn ở đầu sách giáo khoa. Katakana sẽ đuổi kịp bạn ở tuần thứ ba, khi mượn từ bắt đầu xuất hiện trong văn bản: コーヒー (cà phê), テレビ (TV), スマートフォン (smartphone). Học cả hai bảng âm tiết cùng nhau.
@@ -65,7 +65,7 @@ Hán tự là phần đáng sợ nhất cho người học phương Tây. 2136 h
 Ở giai đoạn này, bạn đã có thể đọc nội dung đơn giản. Rủi ro chính là mắc kẹt trong chế độ "sách giáo khoa đến sách giáo khoa". Để tiếp tục phát triển, bạn cần ngôn ngữ sống: anime có phụ đề, manga có furigana, bài báo đơn giản, podcast cho người học ([đọc manga ở giai đoạn này hoạt động thế nào](/vi/blog/learn-japanese-from-manga)).
 
 - Xây một thói quen: 15–30 phút mỗi ngày với nội dung hơi trên trình độ của bạn (cách tiếp cận i+1).
-- Mọi từ lạ bạn gặp là ứng cử viên để ôn. Không có hệ thống, những từ này bay hơi trong một tuần.
+- Mọi từ lạ bạn gặp là ứng viên để đưa vào ôn tập. Không có hệ thống, những từ này bay hơi trong một tuần.
 - Đây thường là nơi nhu cầu về một công cụ kết nối "thấy trong nội dung" với "học trong SRS" xuất hiện.
 
 ## Các sai lầm chính của người mới
@@ -74,7 +74,7 @@ Hán tự là phần đáng sợ nhất cho người học phương Tây. 2136 h
 
 **Quá nhiều ứng dụng.** Người mới cài năm ứng dụng "tốt nhất cho tiếng Nhật" và không đạt đến mức mà ứng dụng nào trong số đó có giá trị. Một hoặc hai, dùng đều đặn, là tốt hơn.
 
-**Ảo tưởng Duolingo.** Duolingo tốt cho điểm bắt đầu: làm quen với âm thanh và các bảng âm tiết. Nhưng ngay khi bạn hoàn thành "khóa" đầu tiên, bạn đập vào trần: ngữ pháp được giải thích kém, hán tự gần như không có, độ sâu không đủ ngay cả cho N5. Duolingo là khởi đầu, không phải con đường.
+**Ảo tưởng Duolingo.** Duolingo tốt cho điểm bắt đầu: làm quen với âm thanh và các bảng âm tiết. Nhưng ngay khi bạn hoàn thành "khóa" đầu tiên, bạn chạm trần ngay: ngữ pháp được giải thích kém, hán tự gần như không có, độ sâu không đủ ngay cả cho N5. Duolingo là khởi đầu, không phải con đường.
 
 **Học hán tự từ danh sách.** 100 hán tự học rời rạc sẽ biến thành 30 nhận ra và 70 quên sau một tháng. Hán tự chỉ dính bên trong từ.
 
@@ -82,7 +82,7 @@ Hán tự là phần đáng sợ nhất cho người học phương Tây. 2136 h
 
 ## Tại sao tất cả điều này khó hơn nếu bạn không học qua tiếng Anh
 
-Các tài liệu học tiếng Nhật tốt nhất phần lớn bằng tiếng Anh. WaniKani, Bunpro, Tofugu, Tae Kim. Tất cả bằng tiếng Anh. Nếu bạn học tiếng Nhật qua một ngôn ngữ trung gian không phải tiếng Anh, bạn chịu gánh đôi: đầu tiên dịch từ tiếng Nhật sang ngôn ngữ trung gian, rồi ngôn ngữ trung gian sang tiếng mẹ đẻ. Đây không phải kháng nghị triết học; đó là thời gian mất trên mỗi từ.
+Các tài liệu học tiếng Nhật tốt nhất phần lớn bằng tiếng Anh. WaniKani, Bunpro, Tofugu, Tae Kim. Tất cả bằng tiếng Anh. Nếu bạn học tiếng Nhật qua một ngôn ngữ trung gian không phải tiếng Anh, bạn chịu gánh nặng kép: đầu tiên dịch từ tiếng Nhật sang ngôn ngữ trung gian, rồi ngôn ngữ trung gian sang tiếng mẹ đẻ. Đây không phải tuyên ngôn triết học; đó là thời gian mất đi với mỗi từ.
 
 Trong các phân khúc không phải tiếng Anh, có ít tài liệu hơn và chất lượng không đều. Origa ban đầu được xây dựng cho giao diện không phải tiếng Anh bản xứ và từ điển. Đó là một cố gắng đóng đúng khoảng trống này. Nhưng trung thực mà nói: ngay cả thư viện nội dung dựng sẵn của Origa cũng nhỏ hơn các đối thủ ưu tiên tiếng Anh với một thập kỷ lịch sử.
 
@@ -104,7 +104,7 @@ Logic của Origa là tiếp quản phần rườm rà kỹ thuật (tạo thẻ
 
 ## Một kết luận thực tế
 
-Từ số không đến cấp độ nơi bạn đọc manga furigana đơn giản và hiểu đối thoại anime mất khoảng 6–12 tháng học đều đặn, 30–60 phút mỗi ngày. Nhanh hơn xảy ra, nhưng hiếm và với cái giá của cường độ khó duy trì. Chậm hơn là ổn.
+Từ số không đến cấp độ nơi bạn đọc manga furigana đơn giản và hiểu đối thoại anime mất khoảng 6–12 tháng học đều đặn, 30–60 phút mỗi ngày. Có khi nhanh hơn, nhưng hiếm, và phải trả bằng cường độ khó duy trì. Chậm hơn là ổn.
 
 Nguyên tắc chính: **đều đặn đánh bại cường độ.** 30 phút mỗi ngày trong một năm mang lại nhiều hơn 5 giờ mỗi tuần một lần trong ba tháng sau đó là kiệt sức. Công cụ là thứ yếu. Chọn một cái không làm bạn bực mình khi dùng, và bám lấy nó. Nếu bạn quyết định thử, [tải Origa](/vi/download).
 
@@ -116,11 +116,11 @@ Có. Anki miễn phí trên desktop, Tae Kim's Guide có miễn phí, và có r�
 
 ### Cần bao nhiêu hán tự để đọc manga?
 
-Cho manga có furigana đầy đủ (shōnen/shōjo) là 100–300, đây là N5-N4. Cho manga không có furigana, bạn cần khoảng 1000+, đây là N3 trở lên.
+Với manga có furigana đầy đủ (shōnen/shōjo) là 100–300, đây là N5-N4. Với manga không có furigana, bạn cần khoảng 1000+, đây là N3 trở lên.
 
 ### Tôi có cần gia sư không?
 
-Ở cấp độ N5-N4, không. Tự học hoạt động. Ở N3 trở lên, gia sư là mong muốn để sửa phát âm và kiểm tra viết. Nếu mục tiêu của bạn là vượt JLPT, gia sư giúp với định dạng thi.
+Ở cấp độ N5-N4, không. Tự học hoạt động. Ở N3 trở lên, nên có gia sư để sửa phát âm và kiểm tra bài viết. Nếu mục tiêu của bạn là vượt JLPT, gia sư giúp với định dạng thi.
 
 ### Tôi nên đọc gì ngay từ đầu?
 

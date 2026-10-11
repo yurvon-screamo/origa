@@ -105,7 +105,7 @@ N5 đòi hỏi khoảng 80 hán tự theo cách phân bổ tần suất Jōyō h
 
 Bạn sẽ gặp cả hai con số. Không số nào sai; chúng đếm khác nhau.
 
-Ban tổ chức JLPT không công bố danh sách hán tự chính thức theo từng cấp. Những gì lưu hành là các bản dựng lại của giáo viên, và hai quan điểm là chủ đạo. Quan điểm cũ (trước kỳ sửa đề 2010, vẫn gặp trong tài liệu ôn) gán cho N5 khoảng 103 chữ. Quan điểm mới chia bộ Jōyō chuẩn theo tần suất sử dụng, giống từ điển của chúng tôi và các trang tham khảo như Kanshudo, và ra con số 80 cho N5, dời khoảng 23 chữ còn lại xuống ranh giới N4.
+Ban tổ chức JLPT không công bố danh sách hán tự chính thức theo từng cấp. Những gì lưu hành là các bản dựng lại của giáo viên, và hai quy ước là chủ đạo. Quy ước cũ (trước kỳ sửa đề 2010, vẫn gặp trong tài liệu ôn) gán cho N5 khoảng 103 chữ. Quy ước mới chia bộ Jōyō chuẩn theo tần suất sử dụng, giống từ điển của chúng tôi và các trang tham khảo như Kanshudo, và ra con số 80 cho N5, dời khoảng 23 chữ còn lại xuống ranh giới N4.
 
 Kết luận thực tế: học 80 chữ dưới đây rồi tiếp [vùng N4](/jlpt/n4/vi.pdf), bạn đã phủ mọi chữ mà quan điểm cũ tính vào N5, còn dư. Cãi nhau về con số ít hữu ích hơn là phủ cả hai vùng.
 
@@ -128,8 +128,8 @@ Mọi danh sách cũng có bản tiếng Anh, tiếng Nga và tiếng Hàn — t
 Ba quy tắc đúng với mọi độ dài danh sách:
 
 1. **Tần suất trước.** Bảng xếp theo mức dùng, và các dòng đầu mang trọng lượng lệch hẳn: 20 chữ đầu đã xuất hiện trong phần lớn câu trình độ người mới. Lấy chúng trước.
-2. **Học hán tự trong từ.** Một chữ có âm đọc mà không có từ đi kèm là câu đố. Cột "từ thông dụng" mới là phần lơi: 人 trong 人間 và 一人 là tri thức, 人 đứng một mình là mảnh ghép. [Hướng dẫn chuẩn bị N5](/vi/blog/jlpt-n5-preparation) giải thích cách từ vựng quanh các hán tự này khớp vào đề thi.
-3. **Ôn theo lịch, không theo ý chí.** Lặp lại ngắt quãng thắng việc đọc lại PDF. Origa dựng vòng này từ chính tài liệu bạn đọc — trang giáo trình, truyện tranh, phụ đề — biến hán tự gặp được thành thẻ có lịch, ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
+2. **Học hán tự trong từ.** Một chữ có âm đọc mà không có từ đi kèm chỉ là kiến thức vặt. Cột "từ thông dụng" mới là phần đáng giá: 人 trong 人間 và 一人 là tri thức, 人 đứng một mình là mảnh ghép. [Hướng dẫn chuẩn bị N5](/vi/blog/jlpt-n5-preparation) giải thích cách từ vựng quanh các hán tự này khớp vào đề thi.
+3. **Ôn theo lịch, không trông chờ ý chí.** Lặp lại ngắt quãng thắng việc đọc lại PDF. Origa dựng vòng này từ chính tài liệu bạn đọc — trang giáo trình, truyện tranh, phụ đề — biến hán tự gặp được thành thẻ có lịch, ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
 
 Nếu mục tiêu là ngày thi, [lịch JLPT 2026 và thời gian đăng ký theo từng nước](/vi/blog/jlpt-2026-dates) nằm ở trang riêng và được cập nhật mỗi kỳ.
 
@@ -137,15 +137,15 @@ Nếu mục tiêu là ngày thi, [lịch JLPT 2026 và thời gian đăng ký th
 
 ### JLPT N5 có bao nhiêu hán tự?
 
-80 theo cách phân bổ tần suất hiện đại (dùng ở đây); khoảng 103 theo quan điểm trước 2010. Không có danh sách chính thức theo cấp từ ban tổ chức, cả hai con số đều là bản dựng lại.
+80 theo cách phân bổ tần suất hiện đại (dùng ở đây); khoảng 103 theo quy ước trước 2010. Ban tổ chức không công bố danh sách chính thức theo cấp, nên cả hai con số đều là bản dựng lại.
 
 ### Danh sách này đủ thi chưa?
 
-Với phần hán tự của N5, 80 chữ dưới đây cộng vùng N4 phủ mọi chữ mà cả hai quan điểm gán cho cấp này. Nhưng hán tự không phải cả bài thi: từ vựng và phần nghe cũng nặng bằng nhau — xem hướng dẫn chuẩn bị.
+Với phần hán tự của N5, 80 chữ dưới đây cộng vùng N4 phủ mọi chữ mà cả hai quy ước gán cho cấp này. Nhưng hán tự không phải cả bài thi: từ vựng và phần nghe cũng quan trọng không kém — xem hướng dẫn chuẩn bị.
 
 ### In danh sách được không?
 
-Được. Các PDF trên miễn phí, sinh từ cùng dữ liệu với bảng, và cập nhật khi dữ liệu đổi. A4 ngang, một dòng mỗi hán tự.
+Được. Các PDF trên miễn phí, được sinh ra từ cùng dữ liệu với bảng, và cập nhật khi dữ liệu thay đổi. A4 ngang, một dòng mỗi hán tự.
 
 ### Sau N5 thì sao?
 

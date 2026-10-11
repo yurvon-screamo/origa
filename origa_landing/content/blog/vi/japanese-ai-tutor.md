@@ -30,21 +30,21 @@ Khi mô hình nền tảng đủ năng lực (và các mô hình hiện tại, �
 
 **Thực hành đàm thoại không xấu hổ.** Đa số người học không nói to vì xấu hổ. AI không phán xét. Hai phút "hãy nói về ngày của tôi" với AI xây dựng sự tự tin theo cách sách giáo khoa không thể.
 
-**Hỗ trợ đọc.** Dán một đoạn bạn không thể phân tích, yêu cầu dịch và phân tích. Nhanh hơn là lướt qua ba trang tham chiếu.
+**Hỗ trợ đọc.** Dán một đoạn bạn không thể phân tích, yêu cầu dịch và phân tích. Nhanh hơn là lật qua ba trang tài liệu tham khảo.
 
-Đây là năng lực thực, giá trị. Nếu bạn đã từng mắc kẹt trên một câu 20 phút vì không từ điển nào giải thích ngữ pháp, bạn biết AI có thể tiết kiệm cho bạn bao nhiêu.
+Đây là những năng lực thực sự và có giá trị. Nếu bạn đã từng mắc kẹt trên một câu 20 phút vì không từ điển nào giải thích ngữ pháp, bạn biết AI có thể giúp bạn tiết kiệm bao nhiêu.
 
 ## Những gì gia sư AI không giỏi
 
-Phần khó là câu tiếp theo, mà đa số marketing ứng dụng bỏ qua: **không năng lực nào trong số đó giúp bạn nhớ gì cả.**
+Phần khó là câu tiếp theo, mà đa số quảng cáo ứng dụng bỏ qua: **không năng lực nào trong số đó giúp bạn nhớ gì cả.**
 
-- **Gia sư AI không lên lịch ôn tập của bạn.** Đường cong quên không quan tâm rằng bạn hiểu ばかり vào thứ Ba. Đến thứ Sáu, nó đã biến. Không có lặp lại ngắt quãng, "học" với gia sư AI bay hơi trong một tuần.
+- **Gia sư AI không lên lịch ôn tập của bạn.** Đường cong lãng quên không quan tâm rằng bạn hiểu ばかり vào thứ Ba. Đến thứ Sáu, nó đã biến. Không có lặp lại ngắt quãng, "học" với gia sư AI bay hơi trong một tuần.
 - **Gia sư AI không xây đường ống từ vựng.** Bạn có thể hỏi về một từ, nhận giải thích hay, và không có cách nào nắm bắt từ đó để ôn sau. Đa số ứng dụng gia sư AI có tính năng "lưu"; gần như không ai ôn những gì họ lưu.
 - **Gia sư AI không cho bạn chương trình học.** Chúng đáp ứng những gì bạn hỏi. Nếu bạn không biết hỏi gì, bạn lang thang. Người mới cần cấu trúc; AI cho bạn bất cứ gì bạn mang đến.
 - **Gia sư AI không thay thế nghe hoặc đọc.** Thực hành đàm thoại với bot là một kỹ năng cụ thể, không phải sự thay thế cho 30 phút đắm chìm trong tiếng Nhật thật.
 - **Gia sư AI chững lại.** Ở trình độ trung cấp trở lên, các sửa chữa trở nên sai tinh tế theo cách người học không thể bắt được. Mô hình tự tin tán thành một câu mà người bản xứ sẽ thấy kỳ. Bạn học lỗi.
 
-Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng cung cấp khả năng đàm thoại/sửa, để sự ghi nhớ cho người dùng, và tính tiền như một giải pháp hoàn chỉnh. Không phải.
+Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng cung cấp khả năng đàm thoại/sửa, để sự ghi nhớ cho người dùng, và tính phí như một giải pháp hoàn chỉnh. Thực tế không phải vậy.
 
 ## Ba danh mục ứng dụng "gia sư AI"
 
@@ -60,7 +60,7 @@ Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng cung c
 
 **Điểm mạnh:** AI được bọc trong UI hình thức học: thẻ kịch bản, huy hiệu tiến bộ, luồng bài học. Đàm thoại được dẫn dắt, nên bạn không phải tự nghĩ chủ đề.
 
-**Điểm yếu:** lớp SRS thường mỏng hoặc vắng. Bài học dựng sẵn; nắm bắt từ vựng yếu; ghi nhớ dài hạn là trách nhiệm của bạn. Định giá thuê bao cộng dồn. Speak Premium Plus ~$30/tháng, Talkpal Premium ~$20/tháng, Praktika ~$100/năm (giá biến động theo khu vực và nền tảng). Riêng cho tiếng Nhật, độ sâu thường nông hơn cho tiếng Anh hoặc tiếng Tây Ban Nha: thị trường nhỏ hơn, và dữ liệu huấn luyện AI cho các kịch bản học tiếng Nhật mỏng hơn.
+**Điểm yếu:** lớp SRS thường mỏng hoặc vắng. Bài học dựng sẵn; nắm bắt từ vựng yếu; ghi nhớ dài hạn là trách nhiệm của bạn. Chi phí thuê bao cộng dồn lại. Speak Premium Plus ~$30/tháng, Talkpal Premium ~$20/tháng, Praktika ~$100/năm (giá biến động theo khu vực và nền tảng). Riêng cho tiếng Nhật, độ sâu thường nông hơn cho tiếng Anh hoặc tiếng Tây Ban Nha: thị trường nhỏ hơn, và dữ liệu huấn luyện AI cho các kịch bản học tiếng Nhật mỏng hơn.
 
 **Tốt nhất cho:** người học muốn thực hành đàm thoại có hướng dẫn và không phiền trả tiền cho cấu trúc.
 
@@ -80,7 +80,7 @@ Một danh sách kiểm tra thực sự phân tách giá trị từ hype:
 - **Sửa AI có đáng tin ở trình độ của bạn không?** Thử với các câu bạn đã biết câu trả lời. Nếu AI sai trên chúng, nó sẽ tệ hơn trên thứ bạn không biết.
 - **Hướng dẫn AI là tùy chọn hay bắt buộc?** Người mới hưởng lợi từ cấu trúc (luồng có hướng dẫn). Người trung cấp hưởng lợi từ tự do. Chọn hình thức đúng cho trình độ của bạn.
 - **AI chạy ở đâu?** Đám mây thông minh hơn nhưng ghi log mọi tương tác. AI trên thiết bị riêng tư nhưng kém năng lực hơn. Không có cái nào phổ quát tốt hơn.
-- **Toán thuê bao là gì?** Tính đến giữa 2026: ChatGPT Plus, Claude Pro và Gemini Advanced mỗi cái ~$200/năm (~$17/tháng); các ứng dụng ngôn ngữ AI chuyên dụng chạy cao hơn. Speak ~$30/tháng, Talkpal ~$20/tháng, Praktika ~$100/năm. Xếp một trong số đó với SRS trả phí hoặc ứng dụng hán tự và bạn thoải mái ở $30–50/tháng định kỳ, $360–600/năm, vô thời hạn. Kiểm tra xem một lựa chọn mua một lần hoặc một ứng dụng source-available (mã nguồn xem được công khai, không phải mã nguồn mở) có đóng phần lớn khoảng cách không.
+- **Toán thuê bao là gì?** Tính đến giữa 2026: ChatGPT Plus, Claude Pro và Gemini Advanced mỗi cái ~$200/năm (~$17/tháng); các ứng dụng ngôn ngữ AI chuyên dụng chạy cao hơn. Speak ~$30/tháng, Talkpal ~$20/tháng, Praktika ~$100/năm. Cộng một trong số đó với SRS trả phí hoặc ứng dụng hán tự và bạn thoải mái ở $30–50/tháng định kỳ, $360–600/năm, vô thời hạn. Kiểm tra xem một lựa chọn mua một lần hoặc một ứng dụng source-available (mã nguồn xem được công khai, không phải mã nguồn mở) có đóng phần lớn khoảng cách không.
 
 ## Origa dùng AI thế nào
 
@@ -110,11 +110,11 @@ Nếu bạn có thể chạy cả hai (SRS cho ghi nhớ, gia sư AI cho giải 
 
 ### Tôi có thể học tiếng Nhật chỉ với ChatGPT không?
 
-Bạn có thể thực hành đàm thoại và nhận giải thích ngữ pháp. Bạn sẽ không nhớ những gì bạn học mà không có SRS riêng biệt. ChatGPT đơn lẻ là gia sư không có chương trình hoặc trí nhớ. Hữu dụng, không đầy đủ.
+Bạn có thể thực hành đàm thoại và nhận giải thích ngữ pháp. Bạn sẽ không nhớ những gì bạn học mà không có SRS riêng biệt. ChatGPT đơn lẻ là gia sư không có chương trình hoặc trí nhớ. Hữu dụng nhưng không đầy đủ.
 
 ### Các ứng dụng gia sư AI có tốt hơn ChatGPT không?
 
-Cho các kịch bản có hướng dẫn và bài học cấu trúc, có: chúng bọc AI trong một luồng học. Cho sự linh hoạt thô, không. Lựa chọn tốt nhất phụ thuộc vào việc bạn muốn cấu trúc (dùng ứng dụng gia sư AI) hay linh hoạt (dùng ChatGPT trực tiếp).
+Với các kịch bản có hướng dẫn và bài học cấu trúc, có: chúng bọc AI trong một luồng học. Với sự linh hoạt thô, thì không. Lựa chọn tốt nhất phụ thuộc vào việc bạn muốn cấu trúc (dùng ứng dụng gia sư AI) hay linh hoạt (dùng ChatGPT trực tiếp).
 
 ### Origa có chatbot AI không?
 
@@ -122,7 +122,7 @@ Không. Origa dùng AI cho OCR, STT, và trích từ vựng, phía đầu vào c
 
 ### AI cục bộ có tốt như AI đám mây không?
 
-Cho OCR và STT trên đầu vào tiếng Nhật điển hình: gần, đôi khi bằng. Cho AI đàm thoại: không, các mô hình đám mây tốt hơn đáng kể. Đánh đổi là riêng tư và dùng ngoại tuyến vs. năng lực thô.
+Với OCR và STT trên đầu vào tiếng Nhật điển hình: gần, đôi khi bằng. Cho AI đàm thoại: không, các mô hình đám mây tốt hơn đáng kể. Đánh đổi là riêng tư và dùng ngoại tuyến vs. năng lực thô.
 
 ### Thiết lập rẻ nhất hoạt động là gì?
 

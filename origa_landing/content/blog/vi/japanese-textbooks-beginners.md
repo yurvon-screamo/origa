@@ -14,7 +14,7 @@ status: ready
 
 # Giáo trình tiếng Nhật cho người mới: Minna no Nihongo, Genki và các lựa chọn
 
-Ứng dụng lo từ vựng và ôn tập, nhưng ngữ pháp tuần tự với bài tập phân cấp vẫn đến từ giáo trình. Vấn đề là việc chọn bộ đầu tiên đồng nghĩa với lội qua chiến tranh fan hâm mộ mà ít so sánh trung thực.
+Ứng dụng lo từ vựng và ôn tập, nhưng ngữ pháp tuần tự với bài tập theo cấp độ vẫn đến từ giáo trình. Vấn đề là việc chọn bộ đầu tiên đồng nghĩa với lội qua những cuộc chiến giữa các fan mà ít so sánh trung thực.
 
 Dưới đây là phân tích năm lựa chọn không kèm bảng xếp hạng "tốt nhất trong các loại tốt nhất". Mỗi bộ mang một đánh đổi riêng, và lựa chọn đúng phụ thuộc ba thứ: ngôn ngữ trung gian, ngân sách, và hình thức học.
 

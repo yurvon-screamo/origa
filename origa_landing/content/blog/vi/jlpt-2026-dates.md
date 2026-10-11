@@ -36,7 +36,7 @@ Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng
 | Nhật Bản | 24/8 – 7/9 | Đã đóng, và đóng sớm (3/9) do quá tải |
 | Mỹ | Từ đầu tháng 9 | Thường mở đến mùa thu, nhưng các điểm thi phổ biến thường hết chỗ sớm — hãy đăng ký ngay |
 | Anh | Từ đầu/giữa tháng 8 | Mỗi điểm thi đóng khi đủ chỉ tiêu |
-| Nga | Từ khoảng đầu tháng 8 | Phần lớn thành phố chỉ có kỳ tháng 12 |
+| Nga | Từ khoảng đầu tháng 8 | Phần lớn các thành phố chỉ có kỳ tháng 12 |
 
 Hai quy tắc luôn đúng với mọi bảng ngày tháng. Thứ nhất, thời gian nhận hồ sơ kết thúc mà không báo trước khi điểm thi hết chỗ — năm nay Nhật Bản và Philippines đều đã đóng sớm. Thứ hai, không tồn tại hạn chót toàn cầu: đơn vị chủ quản địa phương của bạn mới là nơi quyết định, và danh sách các điểm thi ở nước ngoài trên jlpt.jp cho biết tổ chức đó là ai.
 
@@ -59,13 +59,13 @@ Kết quả kỳ tháng 12 lên mạng vào **cuối tháng 1/2027**, giấy ch�
 
 ## Còn mười một tuần: việc gì thực sự có tác dụng
 
-Từ giữa tháng 9 đến 6/12 là khoảng mười một tuần. Đủ để dịch chuyển một bậc nếu đã có nền; không đủ để xây nền từ số không. Thứ tự đúng ở cự ly này:
+Từ giữa tháng 9 đến 6/12 là khoảng mười một tuần. Đủ để dịch chuyển một bậc nếu đã có nền; không đủ để xây nền từ số không. Thứ tự đúng ở chặng mười một tuần này:
 
 1. **Tuần này làm trọn một đề cũ.** Không phải để dự đoán điểm — mà để tìm phần mất điểm nhiều nhất. Phần đó chính là kế hoạch học của bạn.
 2. **Giữ mức tối thiểu từ vựng, không đặt trần.** Mức ôn hàng ngày thực tế thắng kế hoạch tham vọng mà bạn bỏ rơi giữa tháng 10. Phạm vi thực tế của N5, N4 nằm trong [bản phân tích cấu trúc cấp độ](/vi/blog/jlpt-n5-preparation).
-3. **Nghe mỗi ngày, đúng format đề.** Nghe hiểu là phần thi rớt nhiều nhất của người tự học. Audio tốc độ hội thoại và câu hỏi theo format đề — không phải podcast chậm mở nền.
-4. **Đọc theo khối có bấm giờ.** Phần đọc đo sức bền không kém ngữ pháp. Hai khối 20 phút mỗi tuần hơn một giờ đọc không mục tiêu.
-5. **Xong thủ tục ngay bây giờ.** In giấy dự thi (Hàn Quốc: từ 26/10), quãng đường đến điểm thi, quy định giấy tờ. Mỗi năm đều có người học suốt rồi đứng trước cửa phòng thi mà không vào được.
+3. **Nghe mỗi ngày, đúng dạng đề.** Nghe hiểu là phần thi rớt nhiều nhất của người tự học. Audio tốc độ hội thoại và câu hỏi theo dạng đề — không phải podcast chậm mở nền.
+4. **Đọc theo khối có bấm giờ.** Phần đọc đo sức bền không kém ngữ pháp. Hai khối 20 phút mỗi tuần thắng một giờ đọc không mục tiêu.
+5. **Xong thủ tục ngay bây giờ.** In giấy dự thi (Hàn Quốc: từ 26/10), quãng đường đến điểm thi, quy định giấy tờ. Mỗi năm đều có người học chăm chỉ rồi đứng trước cửa phòng thi mà không vào được.
 
 Nếu công cụ chưa chốt: Origa xây từ vựng từ chính tài liệu bạn đang đọc — trang giáo trình, trang truyện tranh, video phụ đề — và xếp lịch ôn theo lặp lại ngắt quãng, hoạt động ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
 

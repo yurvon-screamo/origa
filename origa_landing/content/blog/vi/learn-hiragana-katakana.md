@@ -24,7 +24,7 @@ Hai tuần là khung thời gian thực tế để nhận dạng thành thạo c
 
 Sự phân chia này thực dụng: thấy ký tự katakana giữa câu, bạn đã biết từ đó nhiều khả năng là từ nước ngoài. Đó là trợ giúp đọc, và chính là thứ bạn mất nếu chỉ học hiragana.
 
-Mỗi bảng có 46 ký tự lõi cộng các dạng phái sinh có âm đục (か → が) và tổ hợp (きゃ、しゅ). Dạng phái sinh theo quy tắc từ dạng cơ bản, nên khối lượng ghi nhớ thật sự là 92 ký tự.
+Mỗi bảng có 46 ký tự lõi cộng các dạng phái sinh có âm đục (か → が) và tổ hợp (きゃ、しゅ). Dạng phái sinh tuân theo quy tắc từ dạng cơ bản, nên khối lượng ghi nhớ thật sự là 92 ký tự.
 
 ## "Biết một bảng chữ" nghĩa là gì
 
@@ -42,7 +42,7 @@ Kế hoạch dưới đây nhắm cấp độ một trong hai tuần. Cấp đ�
 
 Mỗi ngày một hàng bảng: あ行 (a-i-u-e-o), rồi か行, さ行, v.v. Tức 5–8 ký tự mới mỗi ngày.
 
-- Viết mỗi ký tự mới 5–10 lần vừa đọc to âm của nó. Viết mạo không phải để chữ đẹp; nó ép sự chú ý vào hình dáng.
+- Viết mỗi ký tự mới 5–10 lần vừa đọc to âm của nó. Tô theo mẫu không phải để chữ đẹp; nó ép sự chú ý vào hình dáng.
 - Cuối mỗi ngày, đọc to mọi ký tự đã học từ ngày một. Nhớ lại ngay trước khi quên là cơ chế giữ tri nhớ chính.
 - Lập thẻ lặp lại ngắt quãng ngay lập tức, chứ không phải "khi thuộc rồi".
 
@@ -54,13 +54,13 @@ Cùng thứ tự từng hàng, thêm một thứ: bắt đầu mỗi buổi bằ
 
 Bốn ngày đọc văn bản ngắn thật nơi hai bảng trộn nhau. Từ mượn là tư liệu lý tưởng: chúng viết bằng katakana, nhưng theo âm bạn đã biết hầu hết. コーヒー (cà phê), カメラ (máy ảnh), テーブル (bàn). Đoán theo âm luyện cả hai bảng cùng lúc.
 
-Điểm kiểm tra: bảng ký tự ngẫu nhiên của cả hai bảng, đọc to trong 3–4 phút với không quá 3–5 lỗi. Chậm hơn thì thêm vài ngày đọc. Bình thường.
+Điểm kiểm tra: bảng ký tự ngẫu nhiên của cả hai bảng, đọc to trong 3–4 phút với không quá 3–5 lỗi. Chậm hơn thì thêm vài ngày đọc. Không sao.
 
 ## Phương pháp: cái gì hiệu quả và cái gì không
 
 **Lặp lại ngắt quãng hiệu quả.** Thẻ hiện đúng trước khi quên thắng hẳn việc đọc lại bảng. Nhìn bảng một lần thì hoàn toàn không hiệu quả.
 
-**Viết mạo, vừa phải.** 5–10 lần mỗi ký tự giúp chú ý. Một cuốn 50 trang cho mỗi ký tự là lãng phí khi mục tiêu là nhận dạng.
+**Tô theo mẫu, vừa phải.** 5–10 lần mỗi ký tự giúp chú ý. Một cuốn 50 trang cho mỗi ký tự là lãng phí khi mục tiêu là nhận dạng.
 
 **Thủ thuật ghi nhớ, cẩn thận.** Chuyện kiểu "き trông như chìa khóa" tăng tốc ghi nhớ ban đầu nhưng làm chậm chuyển sang nhận dạng trực tiếp: bạn sẽ phát lại câu chuyện trong đầu thay vì chỉ thấy ký tự. Dùng cho những ký tự ương bướng thôi, không phải tất cả.
 
@@ -68,15 +68,15 @@ Bốn ngày đọc văn bản ngắn thật nơi hai bảng trộn nhau. Từ m�
 
 ## Lỗi thường gặp
 
-**Học hiragana rồi bỏ katakana.** Kinh điển: hiragana trôi chảy, katakana thấy có vẻ tùy chọn. Một tháng sau mở thực đơn hay bao bì và không hiểu gì. Katakana vồ lấy bạn ở tuần thứ ba dù thế nào; câu hỏi duy nhất là bạn học nó chủ động hay tái tạo đau đớn từ ngữ cảnh.
+**Học hiragana rồi bỏ katakana.** Kinh điển: hiragana trôi chảy, katakana thấy có vẻ tùy chọn. Một tháng sau mở thực đơn hay bao bì và không hiểu gì. Katakana sẽ đuổi kịp bạn ở tuần thứ ba dù thế nào; câu hỏi duy nhất là bạn học nó chủ động hay phải đoán mò đau đớn từ ngữ cảnh.
 
 **Học ký tự ngoài từ.** Ký tự ghi nhớ cô lập mờ nhạt nhanh hơn ký tự gặp trong một từ đã nói được.
 
 **Chủ nghĩa hoàn hảo chữ viết.** Ở giai đoạn nhận dạng, hình dáng quan trọng hơn thư pháp. Chữ đẹp là kỹ năng riêng cho sau này.
 
-**"Thuộc hoàn hảo mới đi tiếp".** Kana không phải thi cuối kỳ; chúng là công cụ. 90% nhận dạng là đủ để bắt đầu đọc văn bản đơn giản, nơi 10% còn lại tự lo lấy.
+**"Thuộc hoàn hảo mới đi tiếp".** Kana không phải thi cuối kỳ; chúng là công cụ. 90% nhận dạng là đủ để bắt đầu đọc văn bản đơn giản, và 10% còn lại tự xử lý được.
 
-## Origa vừa vào kế hoạch này ở đâu
+## Origa nằm ở đâu trong kế hoạch này
 
 Origa rèn kana qua thẻ lặp lại ngắt quãng FSRS, cùng cơ chế với phần còn lại của từ vựng bạn ([thêm về từ điển và lịch trình](/vi/docs/vocabulary)). Nhập một ký tự hay âm tiết, ứng dụng kéo vào âm đọc và audio trong khi tự động dựng lịch ôn.
 
@@ -84,7 +84,7 @@ Nhưng hãy rõ vị trí của công cụ: kana là bước một, không phả
 
 ## Giới hạn của Origa
 
-- **Thẻ, không phải viết mạo.** Nhận dạng được rèn tốt; sản xuất chữ tay thì không.
+- **Thẻ, không phải tô theo mẫu.** Nhận dạng được rèn tốt; sản xuất chữ tay thì không.
 - **Không phải trường hợp sử dụng chính.** Trình luyện kana chuyên dụng làm cùng công việc. Lợi thế của Origa là kana sống trong cùng ứng dụng với từ vựng tiếp theo của bạn, thay vì một công cụ riêng bạn sẽ bỏ lại sau hai tuần.
 
 ## Kết luận
@@ -97,7 +97,7 @@ Sau bảng chữ là ngôn ngữ thật: ngữ pháp, những từ đầu, hán 
 
 ### Học cả hai bảng cùng lúc được không?
 
-Được, nhưng ký tự sẽ can thiệp lẫn nhau. Tuần tự (hiragana trước, katakana sau) dễ hơn về tâm lý và mất cùng hai tuần. Một quy tắc: đã bắt đầu katakana thì giữ việc ôn hiragana hằng ngày.
+Được, nhưng ký tự sẽ gây nhầm lẫn cho nhau. Tuần tự (hiragana trước, katakana sau) dễ hơn về tâm lý và mất cùng hai tuần. Một quy tắc: đã bắt đầu katakana thì giữ việc ôn hiragana hằng ngày.
 
 ### Bao nhiêu ký tự mỗi ngày là thực tế?
 
@@ -105,7 +105,7 @@ Sau bảng chữ là ngôn ngữ thật: ngữ pháp, những từ đầu, hán 
 
 ### Có cần luyện viết tay không?
 
-Cho nhận dạng, không — 5–10 lần viết mạo mỗi ký tự là đủ cho chú ý. Cho việc viết, có, nhưng đó là kỹ năng riêng có thể trì hoãn nhiều tháng.
+Với mục tiêu nhận dạng, thì không — 5–10 lần tô theo mẫu mỗi ký tự là đủ cho chú ý. Cho việc viết, có, nhưng đó là kỹ năng riêng có thể trì hoãn nhiều tháng.
 
 ### Đọc gì sau khi học xong hai bảng?
 

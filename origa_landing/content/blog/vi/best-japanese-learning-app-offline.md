@@ -26,7 +26,7 @@ Ba kịch bản cụ thể, không triết học:
 - **Riêng tư.** Ứng dụng đám mây gửi giọng nói, ảnh, và lịch sử đọc của bạn lên máy chủ. Dữ liệu đó có giá trị với công ty, và với bất cứ ai mua công ty sau. Xử lý trên thiết bị giữ nó trên điện thoại.
 - **Đăng ký và bị khóa chặt.** Ứng dụng trực tuyến ưu tiên thường khóa tính năng sau thanh toán định kỳ. Hủy đăng ký, mất quyền truy cập. Ứng dụng ngoại tuyến ưu tiên, đặc biệt là ứng dụng source-available (mã nguồn xem được công khai, không phải mã nguồn mở), có xu hướng cho bạn giữ những gì đã xây.
 
-Đa số người học không cần ngoại tuyến mỗi phút. Họ cần nó cho việc đi lại, du lịch, và phẩm giá riêng tư nhỏ của việc không có thói quen học của mình bị ghi log. Biết ứng dụng nào cho bạn điều nào trong số này (không có bất ngờ) là điều mà câu hỏi "ứng dụng ngoại tuyến tốt nhất" thực sự quy về.
+Đa số người học không cần ngoại tuyến mỗi phút. Họ cần nó cho việc đi lại, du lịch, và cho sự riêng tư nhỏ nhặt của việc không để thói quen học của mình bị ghi lại dấu vết. Biết ứng dụng nào cho bạn điều nào trong số này (không có bất ngờ) là điều mà câu hỏi "ứng dụng ngoại tuyến tốt nhất" thực sự quy về.
 
 ## Bốn lớp của "ngoại tuyến"
 
@@ -81,7 +81,7 @@ Các ứng dụng này đi kèm từ điển trên thiết bị. Tra cứu làm 
 
 Origa được dựng để chạy ngoại tuyến từ đầu đến cuối. SRS hoạt động ngoại tuyến (lớp 1). Từ điển song ngữ trên thiết bị (lớp 2). Tạo thẻ từ ảnh hoặc ảnh chụp màn hình hoạt động ngoại tuyến (lớp 3) vì OCR (NDLOCR-Lite) chạy cục bộ (lớp 4). STT để thêm thẻ từ âm thanh cũng chạy cục bộ. Không có yêu cầu nào tới máy chủ trong luồng học bình thường.
 
-Nói cách khác: nếu bạn muốn học tiếng Nhật trên chuyến bay 12 tiếng không trả tiền wifi, toàn bộ tính năng của Origa hoạt động. Cái bẫy nằm trong các hạn chế dưới đây.
+Nói cách khác: nếu bạn muốn học tiếng Nhật trên chuyến bay 12 tiếng mà không phải trả tiền wifi, toàn bộ tính năng của Origa hoạt động. Cái khó nằm trong các hạn chế dưới đây.
 
 ## Bảng điểm ngoại tuyến
 
@@ -102,19 +102,19 @@ Bảng điểm là toàn bộ câu hỏi "ứng dụng ngoại tuyến tốt nh�
 
 Ngoại tuyến ưu tiên không miễn phí, và các đánh đổi đáng biết trước khi cam kết.
 
-- **Kích thước ứng dụng.** Các mô hình AI trên thiết bị lớn. Origa phát hành với NDLOCR-Lite và mô hình STT Whisper. Cùng nhau, chúng thêm hàng trăm megabyte vào cài đặt. Ứng dụng đám mây giữ nhỏ vì công việc nặng xảy ra trên máy chủ.
+- **Kích thước ứng dụng.** Các mô hình AI trên thiết bị lớn. Origa phát hành với NDLOCR-Lite và mô hình STT Whisper. Cộng lại, chúng thêm hàng trăm megabyte vào bản cài đặt. Ứng dụng đám mây giữ nhỏ vì công việc nặng xảy ra trên máy chủ.
 - **Pin và CPU.** OCR và STT cục bộ dùng bộ xử lý thiết bị. Trên điện thoại cũ, quét trang manga mất vài giây và làm ấm thiết bị. OCR đám mây nhanh hơn trên phần cứng chậm.
 - **Trần độ chính xác.** Mô hình OCR và dịch đám mây thường chính xác hơn mô hình trên thiết bị, vì chúng có thể lớn hơn. NDLOCR-Lite là tốt; Vision API phía máy chủ của Google đôi khi tốt hơn. Khoảng cách đang hẹp lại, nhưng tồn tại.
-- **Độ trễ cập nhật.** Ứng dụng đám mây cải thiện lặng lẽ trên máy chủ. Ứng dụng ngoại tuyến ưu tiên phát hành cập nhật mô hình như cập nhật ứng dụng. Bạn phải cập nhật ứng dụng để có mô hình OCR tốt hơn.
+- **Cập nhật chậm hơn.** Ứng dụng đám mây cải thiện lặng lẽ trên máy chủ. Ứng dụng ngoại tuyến ưu tiên phát hành cập nhật mô hình như cập nhật ứng dụng. Bạn phải cập nhật ứng dụng để có mô hình OCR tốt hơn.
 
-Cho đa số người học các đánh đổi này đáng. Cho ai đó có điện thoại cũ và kết nối nhanh, miễn phí, luôn bật, có thể không.
+Với đa số người học, các đánh đổi này là đáng. Với ai đó có điện thoại cũ và kết nối nhanh, miễn phí, luôn bật, thì có thể không.
 
 ## Origa xử lý việc này thế nào
 
-Cụ thể, để các tuyên bố có thể kiểm tra:
+Cụ thể, để mọi tuyên bố đều kiểm tra được:
 
 - **SRS cục bộ.** FSRS chạy trên thiết bị. Ôn hoạt động trong chế độ máy bay.
-- **Từ điển cục bộ.** Từ điển song ngữ (tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt ghép với tiếng Nhật) được đóng gói với ứng dụng.
+- **Từ điển cục bộ.** Từ điển song ngữ (tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt kết hợp với tiếng Nhật) được đóng gói với ứng dụng.
 - **OCR cục bộ (NDLOCR-Lite).** Quét ảnh hoặc dán ảnh chụp màn hình, từ được nhận dạng trên thiết bị.
 - **STT cục bộ (Whisper).** Thêm thẻ từ âm thanh mà không gửi âm thanh đến máy chủ.
 - **Tạo furigana cục bộ.** Furigana trên hán tự được tạo bởi mô hình trên thiết bị và ẩn tự động trên các hán tự bạn đã học.

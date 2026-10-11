@@ -14,9 +14,9 @@ status: ready
 
 # Thay thế Anki cho tiếng Nhật: khi nào nên đổi (và khi nào nên giữ Anki)
 
-Anki là câu trả lời mặc định cho câu hỏi "làm sao để ghi nhớ từ vựng tiếng Nhật". Danh tiếng đó là xứng đáng. Nó cũng là công cụ đòi hỏi bạn nhiều thứ: xây dựng bộ bài, thiết kế mẫu thẻ, tìm âm thanh, cấu hình bộ lập lịch, đồng bộ giữa các thiết bị. Một số người học thích sự tự do đó. Người khác dành nhiều thời gian quản lý Anki hơn là học tiếng Nhật.
+Anki là câu trả lời mặc định cho câu hỏi "làm sao để ghi nhớ từ vựng tiếng Nhật". Nó xứng đáng với danh tiếng đó. Nó cũng là công cụ đòi hỏi bạn nhiều thứ: xây dựng bộ bài, thiết kế mẫu thẻ, tìm âm thanh, cấu hình bộ lập lịch, đồng bộ giữa các thiết bị. Một số người học thích sự tự do đó. Người khác dành nhiều thời gian quản lý Anki hơn là học tiếng Nhật.
 
-Đây là hướng dẫn thực chiến, không phải bài bóc phốt. Nó bao quát nơi Anki thực sự thắng với tiếng Nhật, nơi nó cản trở, "thay thế" thực sự nên cung cấp điều gì, và cách một vài lựa chọn hiện tại so sánh, bao gồm Origa, ứng dụng tôi đang phát triển.
+Đây là hướng dẫn thực chiến, không phải bài viết nhằm hạ bệ Anki. Nó bao gồm nơi Anki thực sự thắng với tiếng Nhật, nơi nó cản trở, "thay thế" thực sự nên cung cấp điều gì, và cách một vài lựa chọn hiện tại so sánh, bao gồm Origa, ứng dụng tôi đang phát triển.
 
 ## Nơi Anki thắng
 
@@ -25,9 +25,9 @@ Nếu bất kỳ điều nào dưới đây mô tả bạn, Anki có lẽ là c�
 - **Bạn muốn bộ lập lịch kiểm soát hoàn toàn.** Anki đã thêm [hỗ trợ FSRS trong phiên bản 23.10](https://docs.ankiweb.net/deck-options.html#fsrs) (tháng 10 năm 2023) như tùy chọn thử nghiệm, và bật mặc định cho các bộ sưu tập mới từ phiên bản 24.10. Đó là cùng thuật toán lặp lại ngắt quãng mà cộng đồng nghiên cứu đã hội tụ. Bạn có thể tinh chỉnh tỷ lệ ghi nhớ, bước tùy chỉnh và giới hạn ôn theo ngày.
 - **Bạn học nhiều hơn tiếng Nhật.** Anki không phụ thuộc lĩnh vực. Y khoa, luật, lý thuyết âm nhạc, ngôn ngữ thứ ba. Một ứng dụng, một hàng đợi ôn tập.
 - **Bạn tự xây dựng loại thẻ riêng.** Hệ thống mẫu của Anki (HTML/CSS với các trường) không có đối thủ. Nếu bạn thích tự thiết kế thẻ không kém gì học qua chúng, không có gì so được.
-- **Bạn muốn miễn phí và tự host.** Anki desktop miễn phí và open source. AnkiDroid miễn phí. Đồng bộ AnkiWeb miễn phí. Phần duy nhất trả phí là AnkiMobile trên iOS, vốn tài trợ cho sự phát triển của phần còn lại.
+- **Bạn muốn miễn phí và tự host.** Anki desktop miễn phí và open source. AnkiDroid miễn phí. Đồng bộ AnkiWeb miễn phí. Phần duy nhất trả phí là AnkiMobile trên iOS — chính phần này tài trợ cho việc phát triển của phần còn lại.
 
-Điểm cuối cùng quan trọng. "Miễn phí và mở" không phải là câu khẩu hiệu cho Anki. Đó là lý do cấu trúc mà hệ sinh thái có hàng nghìn bộ bài dùng chung và một thập kỷ bảo trì cộng đồng.
+Điểm cuối cùng quan trọng. "Miễn phí và mở" không phải khẩu hiệu marketing của Anki. Đó là lý do cấu trúc mà hệ sinh thái có hàng nghìn bộ bài dùng chung và một thập kỷ bảo trì cộng đồng.
 
 ## Nơi Anki cản trở riêng cho tiếng Nhật
 
@@ -51,18 +51,18 @@ Nếu bạn đang tìm "thay thế Anki cho tiếng Nhật", câu hỏi không p
 
 Danh sách kiểm tra thực sự hữu ích:
 
-- **Cùng chất lượng lập lịch.** Nếu thay thế dùng hộp Leitner ngây thơ hoặc khoảng cố định, bạn đang đổi lấy trí nhớ thực cho sự tiện lợi. Tìm FSRS hoặc thuật toán SRS được tài liệu hóa.
+- **Cùng chất lượng lập lịch.** Nếu thay thế dùng hộp Leitner đơn giản hoặc khoảng cố định, bạn đang đổi trí nhớ thật lấy sự tiện lợi. Tìm FSRS hoặc thuật toán SRS được tài liệu hóa.
 - **Từ điển tiếng Nhật tích hợp ngôn ngữ của bạn.** Nếu thêm thẻ vẫn cần tra từ điển bên ngoài, bạn chỉ dịch chuyển ma sát, không gỡ bỏ.
 - **Furigana tự động với ẩn thông minh.** Furigana nên xuất hiện trên hán tự chưa học và biến mất trên hán tự đã học, không cần mẫu tùy chỉnh.
 - **Hán tự và từ vựng biết về nhau.** Công cụ nên coi 食べる và 食事 là liên quan, không phải là thẻ không liên quan.
 - **OCR hoặc trích xuất văn bản.** Có thể thêm từ từ ảnh trang manga hoặc ảnh chụp giáo trình là khác biệt giữa học nội dung của bạn và học danh sách từ của ai đó. ([Xem Origa xử lý thế nào](/vi/docs/capture).)
 - **Đường dẫn ngữ pháp dùng từ vựng của bạn.** Nếu không ngữ pháp lại là ứng dụng thứ hai.
 
-Nếu một "thay thế" thất bại ở mục đầu tiên (chất lượng lập lịch), nó không phải thay thế. Đó là hạ cấp mặc áo khoác thân thiện hơn.
+Nếu một "thay thế" thất bại ở mục đầu tiên (chất lượng lập lịch), nó không phải thay thế. Đó là một bản hạ cấp khoác lớp giao diện thân thiện hơn.
 
 ## Origa xử lý điều này thế nào
 
-Vì vậy tôi sẽ cụ thể để bạn có thể kiểm tra các tuyên bố. Nó tồn tại vì vấn đề "năm ứng dụng cho một ngôn ngữ" mô tả ở trên chính xác là điều tác giả gặp phải.
+Nên tôi sẽ nói cụ thể để bạn có thể kiểm tra các tuyên bố. Nó tồn tại vì vấn đề "năm ứng dụng cho một ngôn ngữ" mô tả ở trên chính xác là điều tác giả gặp phải.
 
 Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung thực rằng **cả hai đều dùng FSRS**. Origa không phát minh ra thuật toán, và Anki không tụt hậu với nó. Chất lượng lập lịch tương đương. Điểm khác biệt nằm ở mọi thứ bao quanh bộ lập lịch.
 
@@ -77,7 +77,7 @@ Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung th�
 | Ngôn ngữ giao diện | Tiếng Anh (có bản dịch cộng đồng) | Tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt |
 | Nhập từ Anki | — | Nhập bộ bài `.anki2` / `.anki21` |
 
-Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không phải vứt bỏ nhiều năm tiến bộ với Anki. Origa nhập các bộ bài Anki hiện có, vì vậy chi phí di chuyển thấp.
+Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không phải vứt bỏ nhiều năm tiến bộ với Anki. Origa nhập các bộ bài Anki hiện có, nên chi phí chuyển đổi thấp.
 
 ### Hạn chế đã biết
 
@@ -93,16 +93,16 @@ Origa không phải lựa chọn duy nhất, và tùy vào điểm nghẽn của
 
 - **Riêng hán tự: [WaniKani](https://www.wanikani.com/).** Dựa theo bộ thủ, thứ tự có cấu trúc, giao diện tiếng Anh. Tốt nhất nếu bạn bắt đầu hán tự từ số 0 và muốn một lộ trình cố định. Nó trả phí, và thứ tự của nó là của riêng nó. Bạn học cái nó dạy, không phải cái bạn gặp hôm nay.
 - **Riêng ngữ pháp: [Bunpro](https://bunpro.jp/).** SRS ngữ pháp, dựa trên web, giao diện tiếng Anh. Tốt nhất nếu điểm nghẽn là drill ngữ pháp và bạn sẵn sàng giữ từ vựng trong Anki.
-- **Cho người mới bắt đầu hoàn toàn: [Duolingo](https://www.duolingo.com/).** Game hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
+- **Cho người mới bắt đầu hoàn toàn: [Duolingo](https://www.duolingo.com/).** Trò chơi hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
 - **Cho mô phỏng thi JLPT: [Migii](https://eup.java-mind.com/).** Luyện tập thi có thời gian. Bổ sung một công cụ ghi nhớ thay vì thay thế.
 
-Quy luật: hầu hết các "thay thế" chuyên biệt ở một lát cắt (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ. Xem [so sánh đầy đủ](/vi/compare) và đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
+Quy luật: hầu hết các "thay thế" chuyên sâu về một mảng duy nhất (hán tự, ngữ pháp, người mới, thi). Lý do mọi người kết thúc ở năm ứng dụng là không công cụ chuyên biệt đơn lẻ nào bao phủ toàn bộ. Thông điệp của Origa là nó là công cụ duy nhất cố gắng bao phủ toàn bộ. Xem [so sánh đầy đủ](/vi/compare) và đọc các hạn chế trên trước khi giả định nó phù hợp với bạn.
 
 ## Cách quyết định
 
 Dùng Anki nếu bạn coi trọng sự kiểm soát, học nhiều hơn một môn, hoặc đã đầu tư vào một hệ thống bộ bài hoạt động. Bạn không mất gì khi ở lại.
 
-Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt việc may ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước. Nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu. ([Tải Origa](/vi/download).)
+Cân nhắc Origa nếu ma sát của bạn đặc biệt là tạo thẻ tiếng Nhật, bạn muốn furigana và liên kết hán tự được xử lý giúp, bạn học qua ngôn ngữ không phải tiếng Anh, hoặc bạn mệt vì phải ghép ngữ pháp vào công cụ từ vựng. Nhập bộ bài Anki trước. Nếu quy trình phù hợp, giữ nó; nếu không, bạn quay lại nơi bạn đã bắt đầu. ([Tải Origa](/vi/download).)
 
 Phiên bản trung thực của "thay thế Anki tốt nhất" là "cái gỡ bỏ *ma sát của bạn*". Tìm ra bước nào trong quy trình hiện tại ngốn nhiều thời gian nhất, và chọn công cụ gỡ bỏ bước đó mà không làm giảm chất lượng lập lịch. Tiêu chí chọn theo từng nhóm nhiệm vụ được tổng hợp trong [tổng quan ứng dụng học tiếng Nhật](/vi/blog/best-japanese-learning-app).
 
@@ -114,7 +114,7 @@ Cả hai dùng FSRS. Origa không phát minh ra nó và không tuyên bố đi�
 
 ### Tôi có thể giữ bộ bài Anki không?
 
-Có. Origa nhập các định dạng `.anki2`, `.anki21`, và `.anki21b`, vì vậy bộ bài và lịch sử ôn tập được chuyển.
+Có. Origa nhập các định dạng `.anki2`, `.anki21`, và `.anki21b`, nên bộ bài và lịch sử ôn tập được chuyển theo.
 
 ### Origa có miễn phí không?
 
@@ -122,7 +122,7 @@ Có, hiện tại miễn phí sử dụng trên tất cả các nền tảng.
 
 ### Có hoạt động ngoại tuyến không?
 
-Có. Các mô hình OCR và nhận dạng giọng nói chạy cục bộ, vì vậy tạo thẻ và ôn tập không cần kết nối internet.
+Có. Các mô hình OCR và nhận dạng giọng nói chạy cục bộ, nên tạo thẻ và ôn tập không cần kết nối internet.
 
 ### Nếu tôi chỉ học trên iPhone thì sao?
 
