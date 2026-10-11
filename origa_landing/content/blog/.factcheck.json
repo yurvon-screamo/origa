@@ -39,6 +39,25 @@
           ],
           "desloper": "P0=0; remaining P1 fragment-lead x5 ruled deliberate thesis style (mirrors EN)",
           "gate": "READY (RU)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -58,6 +77,25 @@
           ],
           "desloper": "P0=0, P1=2 (16 bold — house blog style; low-ttr — comparison terminology) ruled false positives",
           "gate": "READY (EN)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -77,6 +115,25 @@
           ],
           "desloper": "residual P1/P2 ruled FP",
           "gate": "READY (RU batch)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -85,7 +142,28 @@
       "target_keyword": "japanese ocr app",
       "gate": "READY_WITH_REVIEW_FLAG",
       "first_published": "2026-07-21",
-      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)"
+      "source": "human (EN draft factcheck round-2); LLM machine-translated (RU/KO/VI from EN)",
+      "rechecks": [
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
+        }
+      ]
     },
     {
       "slug": "best-japanese-learning-app-offline",
@@ -114,6 +192,25 @@
             "offline layers: models only OCR/STT"
           ],
           "gate": "READY (RU)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -133,6 +230,25 @@
           ],
           "desloper": "residual P1/P2 ruled FP (substring posledovatelnost, quoted arrow-notations, thesis fragment-leads)",
           "gate": "READY (RU batch)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -153,6 +269,25 @@
           ],
           "desloper": "P0=0; remaining 3 P1 ruled false positives (Следовательно x4 = substring of posledovatel-nost; arrow in quoted idiom; FAQ fragment answer)",
           "gate": "READY (RU)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     },
@@ -172,6 +307,25 @@
           ],
           "desloper": "residual P1/P2 ruled FP",
           "gate": "READY (RU batch)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "VI native pass tier 1 (commit ca091583, branch blog/vi-native-pass-2026-10-12): P0 fixes (slug ASCII, Russian-decks fact restored, source-available wording, hau-het removed, Philippines restored) + meaning-layer cleanup; style layer + desloper --lang vi deferred to tier 2; tier 2 d5db1348 verified (148/148, P0/P1=0 on resample, artifacts+raw-EN+MT-patterns grep-clean)",
+          "verified": [
+            "grep-verified: 0 x \"nguon cong khai\", 0 x \"bo bai ... tieng Viet\" substitution, 0 x \"hau het lop hoc\", slug fixed, Philippines x2 restored",
+            "15 files, vi/ only, base 04548d9c"
+          ],
+          "gate": "READY (VI)"
+        },
+        {
+          "checked_at": "2026-10-12",
+          "scope": "KO native pass (branch blog/ko-native-pass-2026-10-12, 29 commits r1+r2+fixes): MT-bug fixes per native review (nonexistent words, sense-distorting typos, systematic replacements, idiom calques, telegraph syntax); fixes 483d352f+7ad7abc6 verified",
+          "verified": [
+            "grep: 자학=0, 서방해집니다=0, 목업별=0, 만문=0, 고문투=0",
+            "lastmod bumps 15/15 after 7ad7abc6",
+            "desloper --lang ko sample P0=P1=0"
+          ],
+          "gate": "READY (KO)"
         }
       ]
     }
