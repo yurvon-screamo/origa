@@ -5,7 +5,7 @@ locale: en
 meta_title: "Japanese from Zero: A Realistic Self-Starter Plan (2026)"
 meta_description: "Where to start learning Japanese on your own: no fluff, no 'fluency in a month' promises. A realistic sequence from hiragana to N4, tools, and the mistakes almost every beginner makes."
 target_keywords: ["japanese from zero", "learn japanese from scratch", "how to start learning japanese", "self study japanese beginner"]
-lastmod: 2026-09-26
+lastmod: 2026-10-11
 published: 2026-07-21
 status: ready
 ---
@@ -128,4 +128,4 @@ At N5-N4 level, no. Self-study works. At N3 and above, a tutor is desirable for 
 
 ### Should I learn the kana before starting Origa?
 
-Not strictly required, but recommended. Origa can train hiragana and katakana via flashcards, but that's not the main use case. It's built for a learner who is already moving through grammar and vocabulary.
+Not strictly required, but recommended. Origa can train hiragana and katakana via flashcards, but that's not the main use case: the app is built for a learner who is already moving through grammar and vocabulary.
