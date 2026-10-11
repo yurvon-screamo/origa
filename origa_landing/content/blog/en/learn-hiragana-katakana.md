@@ -5,7 +5,7 @@ locale: en
 meta_title: "How to Learn Hiragana and Katakana in Two Weeks (2026)"
 meta_description: "A realistic 14-day plan for both Japanese scripts without grinding tables. What works, what doesn't, and why you can't postpone katakana."
 target_keywords: ["learn hiragana", "learn katakana", "hiragana katakana", "japanese alphabet learning"]
-lastmod: 2026-08-23
+lastmod: 2026-10-11
 published: 2026-08-23
 status: ready
 ---
@@ -14,7 +14,7 @@ status: ready
 
 # Hiragana and Katakana: Learning Both Scripts in Two Weeks
 
-The first wall in Japanese isn't kanji. It's what stands in front of them: two syllabaries, 46 basic characters each. Beginners stall here for months. Not because the material is hard, but because they learn it wrong: passively, one script at a time, with no review system.
+The first wall in Japanese isn't kanji. It's what stands in front of them: two syllabaries, 46 basic characters each. Beginners stall here for months. They stall because they learn it wrong: passively, one script at a time, with no review system.
 
 Two weeks is a realistic timeframe to recognize both scripts fluently, at 30–45 minutes a day. Here's a day-by-day plan, the methods that work, and the mistakes that stretch the process into half a year.
 
