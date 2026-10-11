@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Ôn JLPT N5: phạm vi, đề thi, lộ trình (2026)"
 meta_description: "JLPT N5 thực sự đòi hỏi gì: phạm vi từ vựng và hán tự, cấu trúc đề, điểm chuẩn, thời gian ôn thực tế. Kế hoạch ôn và những lỗi làm rớt phần nghe."
 target_keywords: ["jlpt n5", "ôn jlpt n5", "jlpt n5 học gì", "lộ trình jlpt n5"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-09-19
 status: ready
 ---
@@ -20,13 +20,13 @@ Bài phân tích này nói về N5 thực sự chứa gì, đề thi cấu trúc
 
 ## N5 nghĩa là gì về phạm vi
 
-Một lời né tránh trung thực trước: ban tổ chức (Quỹ Giao lưu Quốc tế cùng JEES) không công bố danh sách từ hay hán tự chính thức. Những con số lưu hành online là đồng thuận giáo viên dựa trên phân tích đề cũ.
+Một lưu ý trung thực trước: ban tổ chức (Quỹ Giao lưu Quốc tế cùng JEES) không công bố danh sách từ hay hán tự chính thức. Những con số lưu hành online là đồng thuận giáo viên dựa trên phân tích đề cũ.
 
 Theo ước tính đó, N5 bao phủ:
 
 - **~80 hán tự**, ký tự tần suất cao: 数字, 時間, 人, 行く;
 - **~800 từ**, từ vựng thường ngày cơ bản: gia đình, số, thời gian, động từ di chuyển;
-- **ngữ pháp cơ bản**: thể lịch sự ます/です, trợ từ は、が、を、に、で、へ, cách chia động từ·tính từ đơn giản, hậu tố đếm.
+- **ngữ pháp cơ bản**: thể lịch sự ます/です, trợ từ は、が、を、に、で、へ, cách chia động từ và tính từ đơn giản, hậu tố đếm.
 
 Nếu bạn đã xong khoảng nửa đầu Minna no Nihongo hoặc Genki I, bạn đã chính thức nằm trong lãnh thổ N5.
 
@@ -46,7 +46,7 @@ Bài học thực tế: **bạn không thể bỏ qua nghe.** Đó là lý do th
 
 ## Ôn luyện mất bao lâu
 
-Mốc giờ học trên lớp của Quỹ Giao lưu là khoảng 350 giờ đến N5. Tự học từ số không ở 30–60 phút mỗi ngày, lộ trình thực tế là 4–8 tháng. Nhanh hơn nếu có nhiều giờ hơn mỗi ngày hoặc nền sẵn (như đã biết kana).
+Chuẩn của Quỹ Giao lưu cho giờ học trên lớp là khoảng 350 giờ đến N5. Tự học từ số không ở 30–60 phút mỗi ngày, lộ trình thực tế là 4–8 tháng. Nhanh hơn nếu có nhiều giờ hơn mỗi ngày hoặc nền sẵn (như đã biết kana).
 
 Hai tuần đầu của 4–8 tháng đó dành cho kana. [Kế hoạch học của chúng tôi](/vi/blog/learn-hiragana-katakana) khớp đúng khung đó.
 
@@ -58,7 +58,7 @@ Hai tuần đầu của 4–8 tháng đó dành cho kana. [Kế hoạch học c�
 
 **Giai đoạn 3. Từ vựng và hán tự qua lặp lại ngắt quãng (song song, suốt kỳ hạn).** Việc ôn hằng ngày quan trọng hơn số thẻ mới. Ở 5–10 thẻ mới mỗi ngày, 800 từ của N5 tích lũy trong 3–4 tháng kể cả ôn.
 
-**Giai đoạn 4. Nghe (từ tháng hai).** 15–30 phút mỗi ngày: hội thoại giáo trình, podcast người mới, video đơn giản. N5 nhắm lời nói chậm, rõ trên chủ đề thường ngày.
+**Giai đoạn 4. Nghe (từ tháng hai).** 15–30 phút mỗi ngày: hội thoại giáo trình, podcast người mới, video đơn giản. N5 dùng lời nói chậm, rõ trên các chủ đề thường ngày.
 
 **Giai đoạn 5. Đề thử (3–4 tuần cuối).** Câu hỏi mẫu chính thức đăng trên trang JLPT; dạng đề luyện được bằng trình mô phỏng như Migii ([chúng tôi đưa nó vào so sánh công cụ](/vi/blog/best-japanese-learning-app)). Luôn dùng đồng hồ: hết giờ là một kiểu trượt riêng.
 
@@ -66,30 +66,30 @@ Hai tuần đầu của 4–8 tháng đó dành cho kana. [Kế hoạch học c�
 
 800 từ phân bố dễ đoán theo chủ đề, khiến việc kiểm tra độ phủ dễ:
 
-- **Con người và gia đình**: 父, 母, 友達, 先生 cộng hậu tố lịch sự さん·ちゃん;
-- **Số, giờ, thứ trong tuần**: 一時半, 月曜日 và hậu tố đếm cho vật·người;
+- **Con người và gia đình**: 父, 母, 友達, 先生 cộng hậu tố lịch sự さん và ちゃん;
+- **Số, giờ, thứ trong tuần**: 一時半, 月曜日 và hậu tố đếm cho vật và người;
 - **Động từ di chuyển·hành động lõi**: 行く, 来る, 食べる, 飲む, 見る, する ở mọi dạng trong chương trình;
 - **Cả hai loại tính từ**: 大きい (i) và 静か (na), với quy tắc phủ định riêng của từng loại;
-- **Nơi chốn và phương hướng**: 学校, 家, 上, 下, 中 cùng các bài tập trợ từ に·で;
-- **Từ vựng thường ngày tần suất cao**: ăn, tiền, đi lại, thời tiết.
+- **Nơi chốn và phương hướng**: 学校, 家, 上, 下, 中 cùng các bài tập trợ từ に và で;
+- **Từ vựng thường ngày tần suất cao**: đồ ăn, tiền, đi lại, thời tiết.
 
 Bài kiểm tra sẵn sàng: mô tả một ngày điển hình của bạn thành câu đơn, nói to. Nếu "dậy, ăn, đi, làm, về" chảy không vấp, nền từ vựng đã có.
 
 ## Lỗi thường gặp
 
-**Trì hoãn nghe đến tháng cuối.** Khả năng hiểu được xây theo tháng, không theo tuần. Người tự học hay trượt ngưỡng tối thiểu nhất ở phần Nghe.
+**Trì hoãn nghe đến tháng cuối.** Khả năng hiểu được xây dần theo tháng, không theo tuần. Người tự học hay trượt ngưỡng tối thiểu nhất ở phần Nghe.
 
-**Cày hán tự thành danh sách rời.** 80 hán tự N5 học trần trụi xuống còn 30 chữ nhận ra trong một tháng. Hán tự bám trong từ.
+**Cày hán tự thành danh sách rời.** 80 hán tự N5 học khô khan sẽ còn lại 30 chữ sau một tháng. Hán tự bám trong từ.
 
 **Luyện không bấm giờ.** Không áp lực thời gian, đề thử lúc nào cũng ổn. Kỳ thi thật thì không.
 
-**Đăng ký muộn.** Kỳ thi mỗi năm một hai lần (7 và 12; không phải nước nào cũng cả hai), chỗ giới hạn, đăng ký mở trước vài tháng. Xem điều khoản trung tâm gần bạn sớm. [Lịch 2026 và cửa đăng ký theo nước](/vi/blog/jlpt-2026-dates) nằm ở trang riêng, cập nhật mỗi kỳ.
+**Đăng ký muộn.** Kỳ thi mỗi năm một hai lần (7 và 12; không phải nước nào cũng cả hai), số chỗ có hạn, đăng ký mở trước vài tháng. Xem điều khoản trung tâm gần bạn sớm. [Lịch 2026 và cửa đăng ký theo nước](/vi/blog/jlpt-2026-dates) nằm ở trang riêng, cập nhật mỗi kỳ.
 
 ## Giới hạn của Origa
 
 Origa giúp phía nội dung của việc ôn, trong ranh giới rõ:
 
-- **Không phải trình mô phỏng đề.** Origa theo dõi cấp JLPT của bạn, buộc từ điển hán tự và tham khảo ngữ pháp vào N5–N1, hiển thị phân tích ôn, nhưng không luyện dạng đề có giờ. Đó là việc của Migii hoặc đề mẫu chính thức.
+- **Không phải trình mô phỏng đề.** Origa theo dõi cấp JLPT của bạn, gắn từ điển hán tự và tài liệu tham khảo ngữ pháp với các cấp N5–N1, hiển thị phân tích ôn, nhưng không luyện dạng đề có giờ. Đó là việc của Migii hoặc đề mẫu chính thức.
 - **Nghe trong ứng dụng** dùng các cụm từ âm thanh chọn theo cấp: rèn hiểu thật, không phải dạng phần Nghe.
 
 ## Kết luận
@@ -102,7 +102,7 @@ Sau N5 là N4, cách như nhau, khối lượng gấp đôi. Bắt đầu từ s
 
 ### JLPT tổ chức khi nào?
 
-Thường là Chủ nhật đầu của tháng 7 và 12. Một số nước mỗi năm một lần; kiểm tra trung tâm của bạn.
+Thường là Chủ nhật đầu của tháng 7 và 12. Một số nước mỗi năm một lần; kiểm tra với trung tâm gần bạn.
 
 ### Thi online được không?
 
@@ -110,7 +110,7 @@ Không. JLPT chỉ tổ chức trực tiếp tại các trung tâm được ch�
 
 ### N5 đủ làm việc tại Nhật chưa?
 
-Tự nó thì chưa. Nhà tuyển dụng kỳ vọng tối thiểu N3–N2. Nhưng N5 tốt với vai trò cột mốc trung gian và lần đầu nếm dạng đề trước các cấp có hậu quả hơn.
+Tự nó thì chưa. Nhà tuyển dụng kỳ vọng tối thiểu N3–N2. Nhưng N5 tốt với vai trò cột mốc trung gian và lần đầu nếm dạng đề trước các cấp có tính quyết định cao hơn.
 
 ### Cần bao nhiêu điểm để đậu?
 

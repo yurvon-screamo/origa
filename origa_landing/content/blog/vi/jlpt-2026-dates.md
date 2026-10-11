@@ -5,7 +5,7 @@ locale: vi
 meta_title: "Lịch thi JLPT 2026: đề thi ngày 6/12, đăng ký theo từng nước"
 meta_description: "JLPT 2026 diễn ra ngày 5/7 và 6/12. Thời gian đăng ký khác nhau theo từng nước và phần lớn đã đóng vào giữa tháng 9. Ngày thi, lệ phí, hình thức đề và kế hoạch ôn cho những tuần còn lại."
 target_keywords: ["jlpt 2026", "thi jlpt tháng 12 2026", "lịch thi jlpt 2026", "đăng ký jlpt 2026"]
-lastmod: 2026-09-18
+lastmod: 2026-10-12
 published: 2026-09-18
 status: ready
 ---
@@ -23,7 +23,7 @@ JLPT được tổ chức cùng một ngày trên toàn thế giới: năm 2026,
 | Vòng 1 (tháng 7) | Chủ nhật 5/7/2026 | Đã thi; điểm từ cuối tháng 8 |
 | Vòng 2 (tháng 12) | Chủ nhật 6/12/2026 | Đăng ký gần hết hạn; vài nước còn mở |
 
-Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng nơi. Tại Việt Nam, JLPT được tổ chức ở Hà Nội, TP.HCM, Đà Nẵng và Huế với đầy đủ các cấp độ từ N5 đến N1; mỗi nơi một đơn vị chủ quản, một thời hạn nhận hồ sơ riêng. Nguồn chính thức là danh sách thành phố thi ở nước ngoài trên jlpt.jp; mọi bảng tóm tắt khác đều là thông tin thứ cấp.
+Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng nơi. Tại Việt Nam, JLPT được tổ chức ở Hà Nội, TP.HCM, Đà Nẵng và Huế; mỗi nơi một đơn vị chủ quản, một thời hạn nhận hồ sơ riêng. Nguồn chính thức là danh sách thành phố thi ở nước ngoài trên jlpt.jp; mọi bảng tóm tắt khác đều là thông tin thứ cấp.
 
 ## Thời gian đăng ký theo từng nước
 
@@ -34,11 +34,11 @@ Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng
 | Việt Nam | **Tùy thành phố, đa số đóng trong tháng 9** | TP.HCM (28/7 – 28/8) đã đóng; Hà Nội, Đà Nẵng, Huế theo thông báo của đơn vị chủ quản — hỏi trực tiếp, hồ sơ thường đóng khi đủ chỉ tiêu |
 | Hàn Quốc | 1/9 – 20/9 | Còn mở; đợt bổ sung 28/9 – 4/10, phụ phí 10% |
 | Nhật Bản | 24/8 – 7/9 | Đã đóng, và đóng sớm (3/9) do quá tải |
-| Mỹ | Từ đầu tháng 9 | Thường mở đến mùa thu, nhưng điểm thi phổ biến chớ đóng sớm |
+| Mỹ | Từ đầu tháng 9 | Thường mở đến mùa thu, nhưng các điểm thi phổ biến thường hết chỗ sớm — hãy đăng ký ngay |
 | Anh | Từ đầu/giữa tháng 8 | Mỗi điểm thi đóng khi đủ chỉ tiêu |
-| Nga | Từ khoảng đầu tháng 8 | Phần lớn thành phố chỉ có kỳ tháng 12 |
+| Nga | Từ khoảng đầu tháng 8 | Phần lớn các thành phố chỉ có kỳ tháng 12 |
 
-Hai quy tắc luôn đúng với mọi bảng ngày tháng. Thứ nhất, thời gian nhận hồ sơ kết thúc mà không báo trước khi điểm thi đủ chỗ — năm nay Nhật Bản và Philippines đều đã đóng sớm. Thứ hai, không tồn tại hạn chót toàn cầu: đơn vị chủ quản địa phương của bạn mới là nơi quyết định, và danh sách overseas trên jlpt.jp cho biết tổ chức đó là ai.
+Hai quy tắc luôn đúng với mọi bảng ngày tháng. Thứ nhất, thời gian nhận hồ sơ kết thúc mà không báo trước khi điểm thi hết chỗ — năm nay Nhật Bản và Philippines đều đã đóng sớm. Thứ hai, không tồn tại hạn chót toàn cầu: đơn vị chủ quản địa phương của bạn mới là nơi quyết định, và danh sách các điểm thi ở nước ngoài trên jlpt.jp cho biết tổ chức đó là ai.
 
 Nếu cửa đã đóng, hãy kiểm tra đợt đăng ký bổ sung: Hàn Quốc có đợt 28/9 – 4/10 với phụ phí 10%, một số ủy ban khác cũng có cơ chế tương tự. Nếu đã lỡ hết, mục tiêu là kỳ tháng 7/2027 — đăng ký thường mở vào tháng 3–4/2027.
 
@@ -59,13 +59,13 @@ Kết quả kỳ tháng 12 lên mạng vào **cuối tháng 1/2027**, giấy ch�
 
 ## Còn mười một tuần: việc gì thực sự có tác dụng
 
-Từ giữa tháng 9 đến 6/12 là khoảng mười một tuần. Đủ để dịch chuyển một bậc nếu đã có nền; không đủ để xây nền từ số không. Thứ tự đúng ở cự ly này:
+Từ giữa tháng 9 đến 6/12 là khoảng mười một tuần. Đủ để dịch chuyển một bậc nếu đã có nền; không đủ để xây nền từ số không. Thứ tự đúng ở chặng mười một tuần này:
 
 1. **Tuần này làm trọn một đề cũ.** Không phải để dự đoán điểm — mà để tìm phần mất điểm nhiều nhất. Phần đó chính là kế hoạch học của bạn.
-2. **Giữ mức tối thiểu từ vựng, không đặt trần.** Lượng ôn mỗi ngày mà giữ được lâu hơn kế hoạch tham vọng rồi bỏ giữa tháng 10. Phạm vi thực tế của N5, N4 nằm trong [bản phân tích cấu trúc cấp độ](/vi/blog/jlpt-n5-preparation).
-3. **Nghe mỗi ngày, đúng format đề.** Nghe hiểu là phần thi rớt nhiều nhất của người tự học. Audio tốc độ hội thoại và câu hỏi theo format đề — không phải podcast chậm mở nền.
-4. **Đọc theo khối có bấm giờ.** Phần đọc đo sức bền không kém ngữ pháp. Hai khối 20 phút mỗi tuần hơn một giờ đọc không mục tiêu.
-5. **Xong thủ tục ngay bây giờ.** In giấy dự thi (Hàn Quốc: từ 26/10), quãng đường đến điểm thi, quy định giấy tờ. Mỗi năm đều có người học suốt rồi đứng trước cửa phòng thi mà không vào được.
+2. **Giữ mức tối thiểu từ vựng, không đặt trần.** Mức ôn hàng ngày thực tế thắng kế hoạch tham vọng mà bạn bỏ rơi giữa tháng 10. Phạm vi thực tế của N5, N4 nằm trong [bản phân tích cấu trúc cấp độ](/vi/blog/jlpt-n5-preparation).
+3. **Nghe mỗi ngày, đúng dạng đề.** Nghe hiểu là phần thi rớt nhiều nhất của người tự học. Audio tốc độ hội thoại và câu hỏi theo dạng đề — không phải podcast chậm mở nền.
+4. **Đọc theo khối có bấm giờ.** Phần đọc đo sức bền không kém ngữ pháp. Hai khối 20 phút mỗi tuần thắng một giờ đọc không mục tiêu.
+5. **Xong thủ tục ngay bây giờ.** In giấy dự thi (Hàn Quốc: từ 26/10), quãng đường đến điểm thi, quy định giấy tờ. Mỗi năm đều có người học chăm chỉ rồi đứng trước cửa phòng thi mà không vào được.
 
 Nếu công cụ chưa chốt: Origa xây từ vựng từ chính tài liệu bạn đang đọc — trang giáo trình, trang truyện tranh, video phụ đề — và xếp lịch ôn theo lặp lại ngắt quãng, hoạt động ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
 
@@ -77,7 +77,7 @@ Chủ nhật 6/12/2026, trên toàn thế giới. N1–N2 thi buổi sáng, N3�
 
 ### Còn đăng ký được kỳ JLPT tháng 12/2026 không?
 
-Tùy nước. Tại Việt Nam, hồ sơ ở TP.HCM đã đóng; Hà Nội, Đà Nẵng và Huế nhận theo thông báo riêng của từng đơn vị — hỏi trực tiếp và hỏi sớm. Hàn Quốc nhận hồ sơ đến 20/9 và đợt bổ sung đến 4/10. Nhật Bản và phần lớn điểm thi châu Âu đã đóng; Mỹ thường mở đến mùa thu.
+Tùy nước. Tại Việt Nam, hồ sơ ở TP.HCM đã đóng; Hà Nội, Đà Nẵng và Huế nhận theo thông báo riêng của từng đơn vị — hỏi trực tiếp và hỏi sớm. Hàn Quốc nhận hồ sơ đến 20/9 và đợt bổ sung đến 4/10. Nhật Bản, Philippines và phần lớn điểm thi châu Âu đã đóng; Mỹ thường mở đến mùa thu.
 
 ### Lệ phí JLPT là bao nhiêu?
 
