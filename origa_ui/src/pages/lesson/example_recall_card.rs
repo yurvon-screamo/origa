@@ -81,11 +81,27 @@ pub fn ExampleRecallCard(
     let sentence_test_id = Signal::derive(|| "lesson-example-sentence".to_string());
 
     view! {
-        // Tags row above the card — the shared lesson-card pattern. The
-        // audio button does NOT live here anymore: it sits at the right
-        // edge of the JAPANESE SENTENCE line (owner UX).
+        // Tags row above the card — the shared lesson-card pattern:
+        // the card-type tag on the left, the sentence audio button at
+        // the TOP-RIGHT corner (owner request: the question side holds
+        // nothing but the sentence, so the button follows the uniform
+        // top-right placement of every other card).
         <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
             <Tag>{t!(i18n, lesson.example_tag)}</Tag>
+            <Show when=move || example.get().is_some()>
+                <div class="ml-auto">
+                    {move || {
+                        let we = example.get().expect("checked by Show");
+                        view! {
+                            <AudioButtons
+                                text=we.detail.text
+                                audio_path=None
+                                test_id=Signal::derive(|| "lesson-example-audio".to_string())
+                            />
+                        }
+                    }}
+                </div>
+            </Show>
         </div>
 
         <Card
@@ -138,45 +154,27 @@ pub fn ExampleRecallCard(
                         // Text mode: plain furigana — a QUESTION side
                         // reads, it does not parse (the token translator
                         // waits for the answer, like the phrase cards).
-                        // One line: sentence + the play button at the
-                        // RIGHT EDGE (owner UX).
                         let known = known_kanji.get();
-                        let audio_text = we.detail.text.clone();
                         return view! {
-                            <div class="example-recall-ja-line">
-                                <div class="example-recall-ja" data-testid="lesson-example-ja">
-                                    <FuriganaText
-                                        text=we.detail.text.clone()
-                                        known_kanji=known
-                                        class=sentence_class
-                                    />
-                                </div>
-                                <AudioButtons
-                                    text=audio_text
-                                    audio_path=None
-                                    test_id=Signal::derive(|| "lesson-example-audio".to_string())
+                            <div class="example-recall-ja" data-testid="lesson-example-ja">
+                                <FuriganaText
+                                    text=we.detail.text.clone()
+                                    known_kanji=known
+                                    class=sentence_class
                                 />
                             </div>
                         }
                         .into_any();
                     }
-                    // Answer side: the token-translator sentence (with
-                    // the play button at its right edge) + divider + the
-                    // translation (the LessonCardAnswer phrase etalon).
-                    let audio_text = we.detail.text.clone();
+                    // Answer side: the token-translator sentence +
+                    // divider + the translation (the LessonCardAnswer
+                    // phrase etalon).
                     view! {
-                        <div class="example-recall-ja-line">
-                            <div class="example-recall-ja" data-testid="lesson-example-ja">
-                                <TranslatorText
-                                    text=we.detail.text.clone()
-                                    class=sentence_class
-                                    test_id=sentence_test_id
-                                />
-                            </div>
-                            <AudioButtons
-                                text=audio_text
-                                audio_path=None
-                                test_id=Signal::derive(|| "lesson-example-audio".to_string())
+                        <div class="example-recall-ja" data-testid="lesson-example-ja">
+                            <TranslatorText
+                                text=we.detail.text.clone()
+                                class=sentence_class
+                                test_id=sentence_test_id
                             />
                         </div>
                         <div class="border-t border-[var(--border-light)] pt-4 mt-4">

@@ -7047,17 +7047,7 @@ rt {
     gap: 16px;
 }
 
-/* One line: the Japanese sentence takes the width and the play button
-   sits at the RIGHT EDGE of THAT line (owner UX). */
-.example-recall-ja-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .example-recall-ja {
-    flex: 1;
-    min-width: 0;
     font-size: 26px;
     line-height: 1.7;
     color: var(--fg-black);
