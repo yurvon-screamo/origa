@@ -32,7 +32,7 @@ Ba cấp độ hay bị gộp vào nhau:
 
 1. **Nhận dạng.** Thấy ký tự và nhớ âm của nó. Đủ để đọc kèm từ điển.
 2. **Sản xuất.** Nghe âm tiết và viết ký tự. Cần cho việc viết tay.
-3. **Tốc độ.** Đọc văn bản không dừng lại để nhớ ký tự. Cần đểhưởng việc đọc.
+3. **Tốc độ.** Đọc văn bản không dừng lại để nhớ ký tự. Cần để hưởng việc đọc.
 
 Kế hoạch dưới đây nhắm cấp độ một trong hai tuần. Cấp độ hai đến cùng luyện viết; cấp độ ba chỉ đến từ đọc văn bản thật — điều đó ổn. Không ai đọc tiếng Nhật lưu loát sau một tháng.
 
@@ -43,7 +43,7 @@ Kế hoạch dưới đây nhắm cấp độ một trong hai tuần. Cấp đ�
 Mỗi ngày một hàng bảng: あ行 (a-i-u-e-o), rồi か行, さ行, v.v. Tức 5–8 ký tự mới mỗi ngày.
 
 - Viết mỗi ký tự mới 5–10 lần vừa đọc to âm của nó. Viết mạo không phải để chữ đẹp; nó ép sự chú ý vào hình dáng.
-- Cuối mỗi ngày, đọc to mọi ký tự đã học từ ngày một. Nhớ lại ngay trước khi quên là cơ chế giữ chính.
+- Cuối mỗi ngày, đọc to mọi ký tự đã học từ ngày một. Nhớ lại ngay trước khi quên là cơ chế giữ tri nhớ chính.
 - Lập thẻ lặp lại ngắt quãng ngay lập tức, chứ không phải "khi thuộc rồi".
 
 ### Ngày 6–10: Katakana
@@ -58,11 +58,11 @@ Bốn ngày đọc văn bản ngắn thật nơi hai bảng trộn nhau. Từ m�
 
 ## Phương pháp: cái gì hiệu quả và cái gì không
 
-**Lặp lại ngắt quãng hiệu quả.** Thẻ hiện đúng trước khi quên thắng việc đọc lại bảng với khoảng cách lớn. Nhìn bảng một lần thì hoàn toàn không hiệu quả.
+**Lặp lại ngắt quãng hiệu quả.** Thẻ hiện đúng trước khi quên thắng hẳn việc đọc lại bảng. Nhìn bảng một lần thì hoàn toàn không hiệu quả.
 
 **Viết mạo, vừa phải.** 5–10 lần mỗi ký tự giúp chú ý. Một cuốn 50 trang cho mỗi ký tự là lãng phí khi mục tiêu là nhận dạng.
 
-**Mnemonic, cẩn thận.** Chuyện kiểu "き trông như chìa khóa" tăng tốc ghi nhớ ban đầu nhưng làm chậm chuyển sang nhận dạng trực tiếp: bạn sẽ phát lại câu chuyện trong đầu thay vì chỉ thấy ký tự. Dùng cho những ký tự ương bướng thôi, không phải tất cả.
+**Thủ thuật ghi nhớ, cẩn thận.** Chuyện kiểu "き trông như chìa khóa" tăng tốc ghi nhớ ban đầu nhưng làm chậm chuyển sang nhận dạng trực tiếp: bạn sẽ phát lại câu chuyện trong đầu thay vì chỉ thấy ký tự. Dùng cho những ký tự ương bướng thôi, không phải tất cả.
 
 **App có lịch trình hiệu quả.** Bất cứ thứ gì loại bỏ việc tự theo dõi "hôm nay ôn gì" tiết kiệm nguồn lực duy nhất mà người mới thiếu: sự đều đặn.
 

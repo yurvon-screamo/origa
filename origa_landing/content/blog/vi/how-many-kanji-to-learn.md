@@ -48,7 +48,7 @@ Bài học thực tế: đặt mục tiêu là "kho từ vựng X từ phủ Y h
 
 **Lặp lại ngắt quãng không thể thương lượng.** Không có hệ thống, từ của hôm qua biến mất trong một tuần; có SRS, khoảng cách tự giãn ra tuần và tháng.
 
-**Furigana là giàn giáo, không phải nạng vĩnh viễn.** Cơ động đúng: furigana hiện trên chữ chưa biết và ẩn trên chữ đã học, ép nhớ lại. Việc đọc giữ được thoải mái trong khi tải trí nhớ lớn lên cùng từ vựng.
+**Furigana là giàn giáo, không phải nạng vĩnh viễn.** Cơ chế đúng: furigana hiện trên chữ chưa biết và ẩn trên chữ đã học, ép nhớ lại. Việc đọc giữ được thoải mái trong khi tải trí nhớ lớn lên cùng từ vựng.
 
 ## Một ký tự trong thực tế
 
@@ -58,13 +58,13 @@ Học hán tự qua từ vựng trông thế nào, dùng 食:
 - Một tuần sau gặp **食事** (shokuji), "bữa ăn". Đọc mới: shoku. Ứng dụng nối hai từ qua ký tự chung.
 - Sau nữa, **和食** (washoku), "ẩm thực Nhật". Từ thứ ba, không cần đọc mới.
 
-Kết quả: thay vì "hán tự số 126 với ba cách đọc" trừu tượng, bạn sở hữu ba từ sống và trực giác rằng 食 nghĩa là ăn uống trong bất kỳ công ty nào. Bộ đếm hán tự của bạn tăng một như tác dụng phụ của ba thẻ — đúng như nó nên lớn lên. Học ký tự "trước", trước khi gặp trong ngữ cảnh, nghĩa là học nó hai lần.
+Kết quả: thay vì "hán tự số 126 với ba cách đọc" trừu tượng, bạn sở hữu ba từ sống và trực giác rằng 食 mang nghĩa ăn uống ở bất cứ đâu nó xuất hiện. Bộ đếm hán tự của bạn tăng một như tác dụng phụ của ba thẻ — đúng như nó nên lớn lên. Học ký tự "trước", trước khi gặp trong ngữ cảnh, nghĩa là học nó hai lần.
 
 ## Đo tiến độ
 
 Ba chỉ số dùng được:
 
-1. **Độ phủ văn bản.** Lấy một trang tư liệu mục tiêu và đếm từ quen thuộc. 90%+ đọc dễ chịu; 70% nặng nhưng vẫn sản xuất.
+1. **Độ phủ văn bản.** Lấy một trang tư liệu mục tiêu và đếm từ quen thuộc. 90%+ đọc dễ chịu; 70% nặng nhưng vẫn học được nhiều.
 2. **Bộ đếm từ đã học.** Nếu ứng dụng theo dõi thẻ ở trạng thái "đã học", đó là ước lượng trực tiếp kho từ của bạn.
 3. **Đề thử JLPT.** Gián tiếp nhưng chuẩn hóa.
 

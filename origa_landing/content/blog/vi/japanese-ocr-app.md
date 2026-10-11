@@ -54,7 +54,7 @@ Có ba trường hợp sử dụng thực, và chúng kéo theo các hướng kh
 
 Một lối khác qua cùng vấn đề là **mokuro**: thay vì nhận dạng từng khung hình một, nó tiền xử lý cả các tập manga thành trang HTML nơi văn bản trở nên chọn được. Bạn đọc kết quả trong trình duyệt, còn Yomitan đảm nhiệm từ điển pop-up. Đây là đường ống theo lô chứ không phải ứng dụng — thiết lập cầu kỳ hơn, nhưng mạnh cho việc khai thác từ. Chiều ngược lại là **Yomu**: ứng dụng đọc trên iOS có sẵn OCR và tra cứu, để đọc manga và trang giấy mà không phải tự lắp công cụ.
 
-**Điểm yếu:** hẹp. Chúng hoạt động trên manga, không trên ảnh chụp sách giáo khoa hoặc văn bản đời thực. Và cùng khoảng trống ghi nhớ áp dụng: OCR nạp tra cứu, không nạp SRS, trừ khi bạn đã dẫn nó vào Anki qua Yomitan + AnkiConnect. Những người dùng mạnh thường chạy stack ba ứng dụng đó. Cách pipeline này khớp vào việc học thật sự; xem [hướng dẫn học tiếng Nhật qua manga](/vi/blog/learn-japanese-from-manga).
+**Điểm yếu:** hẹp. Chúng hoạt động trên manga, không trên ảnh chụp sách giáo khoa hoặc văn bản đời thực. Và cùng khoảng trống ghi nhớ áp dụng: OCR nạp tra cứu, không nạp SRS, trừ khi bạn đã dẫn nó vào Anki qua Yomitan + AnkiConnect. Những người dùng mạnh thường chạy stack ba ứng dụng đó. Cách đường ống này khớp vào việc học thật sự; xem [hướng dẫn học tiếng Nhật qua manga](/vi/blog/learn-japanese-from-manga).
 
 **Trường hợp:** hỗ trợ đọc manga cho người học sẵn sàng cấu hình đường ống đa công cụ. Trường hợp 2.
 
@@ -74,7 +74,7 @@ Câu hỏi checklist phân tách tất cả những công cụ này là "kết q
 | Apple Live Text | Đa năng | Văn bản chọn được — bạn tự mang nó sang ứng dụng khác |
 | Imiwa, Nihongo | Từ điển + OCR | Mục từ điển; nhiều lắm là danh sách từ đánh dấu |
 | KanjiSnap | Từ điển + OCR | Mục từ điển (nhận dạng dựa trên Live Text) |
-| manga-ocr (mô hình) | Chuyên manga | Văn bản đã nhận dạng, cho pipeline tra cứu và khai thác |
+| manga-ocr (mô hình) | Chuyên manga | Văn bản đã nhận dạng, cho đường ống tra cứu và khai thác |
 | Poricom, YomiNinja | Chuyên manga (desktop) | Văn bản khung hình → tra cứu trong lúc đọc |
 | Namida-OCR | Chuyên manga (trình duyệt) | Văn bản khung hình → tra cứu trong trình duyệt |
 | mokuro | Tiền xử lý manga | Cả tập thành trang với văn bản chọn được; đọc cùng Yomitan |
@@ -88,7 +88,7 @@ Chín dòng đầu đưa bạn văn bản hoặc một lần tra cứu. Dòng cu
 Một danh sách kiểm tra thực sự phân tách các danh mục:
 
 - **Kết quả OCR đi đâu?** Chỉ văn bản thuần = công cụ dịch. Mục từ từ điển = công cụ tra cứu. Đường ống thẻ = công cụ học. Hai cái đầu không giúp bạn nhớ gì cả.
-- **Nó chạy trên thiết bị hay đám mây?** OCR đám mây thường chính xác hơn nhưng cần kết nối internet và gửi ảnh của bạn lên máy chủ. OCR trên thiết bị (NDLOCR, khuôn khổ Apple Vision, mô hình ML trên thiết bị) hoạt động ngoại tuyến và riêng tư. Không có cái nào phổ quát tốt hơn. Chọn dựa trên việc bạn cần ngoại tuyến + riêng tư hay chính xác tối đa.
+- **Nó chạy trên thiết bị hay đám mây?** OCR đám mây thường chính xác hơn nhưng cần kết nối internet và gửi ảnh của bạn lên máy chủ. OCR trên thiết bị (NDLOCR, khung Apple Vision, mô hình ML trên thiết bị) hoạt động ngoại tuyến và riêng tư. Không có cái nào phổ quát tốt hơn. Chọn dựa trên việc bạn cần ngoại tuyến + riêng tư hay chính xác tối đa.
 - **Nó xử lý văn bản dọc không?** Tiếng Nhật thường được đặt theo chiều dọc, đặc biệt trong manga và tiểu thuyết. Nhiều engine OCR đa năng được chỉnh cho văn bản ngang và xáo trộn đầu vào dọc.
 - **Nó xử lý furigana không?** Furigana là kana nhỏ in cạnh hán tự. OCR rẻ đọc nó như một từ riêng và làm bẩn đầu ra. Cái tốt hơn thì hoặc bỏ qua furigana, hoặc gắn nó với hán tự đúng.
 - **OCR là cuối đường ống hay đầu?** Đây là câu hỏi mà đa số danh sách "OCR app tốt nhất" bỏ qua. Nếu câu trả lời là "cuối", bạn có công cụ tra cứu. Nếu "đầu", bạn có công cụ học.
@@ -108,20 +108,20 @@ Nói cách khác: Origa là ứng dụng OCR cho người học đã mệt mỏi
 ## Những hạn chế đã biết
 
 - **Origa không phải ứng dụng dịch.** Nếu bạn cần đọc một biển hiệu một lần, dùng Google Lens. Đường ống Origa quá mức cho tra cứu một lần.
-- **OCR không hoàn hảo trên phông cách điệu.** Lettering manga vẽ tay, phông trang trí, và một số hiệu ứng âm bị đọc sai. Dự toán sửa tay.
+- **OCR không hoàn hảo trên phông cách điệu.** Chữ vẽ tay trên manga, phông trang trí, và một số hiệu ứng âm bị đọc sai. Tính trước phần sửa tay.
 - **Nó không phải trình đọc manga.** Bạn có thể quét khung hình, nhưng Origa không hiển thị chính manga. Ghép nó với trình đọc bạn chọn.
 - **Chưa có tích hợp Yomitan hôm nay.** Bạn có thể nhập các bộ bài Anki hiện có, nhưng đường ống Yomitan→Origa trực tiếp chưa có.
 - **Chất lượng OCR di động phụ thuộc camera và ánh sáng.** Giống như mọi ứng dụng OCR điện thoại. Ảnh sắc nét, ánh sáng đều, không nghiêng. Các quy tắc thông thường áp dụng.
 
 ## Chọn thế nào
 
-Gần như chắc chắn bạn đã có một ứng dụng OCR đa năng trên điện thoại (Live Text trên iOS, Lens trên Android). Cho đa số nhu cầu dịch một lần, đó là đủ và miễn phí. Câu hỏi là liệu bạn đã vượt "dịch một lần" và cần "nắm bắt và học" chưa. Nếu rồi: bạn tiếp tục thấy cùng một hán tự và không nhớ, nếu bạn đã thử gắn sao từ trong từ điển và không bao giờ ôn, nếu đọc manga của bạn tạo ra từ bạn quên sang chương tiếp theo, thì OCR tích hợp học là mảnh còn thiếu. [Tải Origa](/vi/download) để thử đường ống đầu cuối.
+Gần như chắc chắn bạn đã có một ứng dụng OCR đa năng trên điện thoại (Live Text trên iOS, Lens trên Android). Cho đa số nhu cầu dịch một lần, đó là đủ và miễn phí. Câu hỏi là liệu bạn đã vượt "dịch một lần" và cần "nắm bắt và học" chưa. Nếu rồi: bạn tiếp tục thấy cùng một hán tự và không nhớ, nếu bạn đã thử gắn sao từ trong từ điển và không bao giờ ôn, nếu đọc manga của bạn tạo ra từ bạn quên sang chương tiếp theo, thì OCR tích hợp học là mảnh còn thiếu. [Tải Origa](/vi/download) để thử đường ống từ đầu đến cuối.
 
 ## Câu hỏi thường gặp
 
 ### OCR tiếng Nhật có đủ chính xác để dựa vào không?
 
-Trên văn bản in ngang sạch, OCR hiện đại (Apple Live Text, Google Lens, NDLOCR) đủ tin cậy cho tra cứu hàng ngày. Trên văn bản manga dọc và phông cách điệu, dự kiến nhiều lỗi hơn và dự toán sửa tay. Số liệu chính xác do nhà cung cấp công bố hiếm và luôn gắn với một bộ thử nghiệm cụ thể, nên đừng tin các phần trăm tròn bạn đọc trong văn bản tiếp thị. Văn bản viết tay hoặc trang trí vẫn không đáng tin cậy trên bảng tổng thể.
+Trên văn bản in ngang sạch, OCR hiện đại (Apple Live Text, Google Lens, NDLOCR) đủ tin cậy cho tra cứu hàng ngày. Trên văn bản manga dọc và phông cách điệu, dự kiến nhiều lỗi hơn và tính trước phần sửa tay. Số liệu chính xác do nhà cung cấp công bố hiếm và luôn gắn với một bộ thử nghiệm cụ thể, nên đừng tin các phần trăm tròn bạn đọc trong văn bản tiếp thị. Văn bản viết tay hoặc trang trí vẫn không đáng tin cậy trong mọi trường hợp.
 
 ### OCR có hoạt động ngoại tuyến không?
 
@@ -129,7 +129,7 @@ Tùy ứng dụng. OCR dựa trên đám mây (đa số ứng dụng dịch) c�
 
 ### Tôi có thể OCR manga vào thẻ không?
 
-Có, nhưng bạn cần một đường ống kết nối OCR với SRS. Origa làm việc này đầu cuối. Thay thế là Yomitan → Anki, linh hoạt hơn nhưng cần thiết lập.
+Có, nhưng bạn cần một đường ống kết nối OCR với SRS. Origa làm việc này từ đầu đến cuối. Thay thế là Yomitan → Anki, linh hoạt hơn nhưng cần thiết lập.
 
 ### Tại sao không chỉ dùng Google Lens?
 

@@ -16,7 +16,7 @@ status: ready
 
 "Mình sẽ học tiếng Nhật qua anime": ảo tưởng phổ biến thứ hai, sau "một tháng là nói lưu loát". Nhưng bản thân anime lại là một trong những tư liệu tốt nhất dành cho người đã có nền. Mâu thuẫn giải quyết đơn giản: anime hiệu quả khi là luyện nghe và động lực, và thất bại khi là giáo trình duy nhất của bạn.
 
-Bài này nói về cái anime thực sự rèn được, cái nó không bao giờ cho được, và một routine xem trông thế nào khi nó làm lớn ngôn ngữ của bạn thay vì bộ đếm số tập.
+Bài này nói về cái anime thực sự rèn được, cái nó không bao giờ cho được, và một thói quen xem trông thế nào khi nó làm lớn ngôn ngữ của bạn thay vì bộ đếm số tập.
 
 ## Anime cho bạn gì
 
@@ -24,7 +24,7 @@ Bài này nói về cái anime thực sự rèn được, cái nó không bao gi
 
 **Ngữ điệu và sự tự nhiên.** Bạn hấp thụ câu hỏi, sự ngạc nhiên, sự bực bội nghe như thế nào — những thứ phiên âm không truyền nổi.
 
-**Động lực.** Tư liệu nhàm chán là lý do số một người ta bỏ học ngôn ngữ. Nội dung bạn tự đến xem giữ sự đều đặn tốt hơn bất kỳ tracker thói quen nào.
+**Động lực.** Tư liệu nhàm chán là lý do số một người ta bỏ học ngôn ngữ. Nội dung bạn tự đến xem giữ sự đều đặn tốt hơn bất kỳ ứng dụng theo dõi thói quen nào.
 
 ## Anime không bao giờ cho bạn gì
 
@@ -52,7 +52,7 @@ Bài kiểm tra đơn giản: tắt phụ đề một phút. Nếu câu chuyện
 
 15–30 phút mỗi ngày là đủ. Một tập ở chế độ này hơn năm tập thụ động.
 
-Cùng vòng lặp đó chạy trên game. Game nặng chữ — visual novel, JRPG trọng cốt truyện, thứ có log hội thoại đọc lại được — gần truyện tranh hơn anime: chữ đứng yên nên ghi bắt dễ hơn, và ảnh chụp hộp thoại đi thẳng vào OCR. Game nhiều lồng tiếng thêm kênh âm thanh lên trên. Những thứ giữ nguyên từ quy trình trên: bắt ít hơn số từ gặp, ôn trong ngày, và một trăm giờ đầu ưu tiên bối cảnh đời thường hơn tiếng lóng fantasy. Biến thể ưu tiên chữ nằm ở [hướng dẫn truyện tranh](/vi/blog/learn-japanese-from-manga) và [so sánh công cụ OCR](/vi/blog/japanese-ocr-app).
+Cùng vòng lặp đó chạy trên game. Game nặng chữ — visual novel, JRPG trọng cốt truyện, thứ có bản ghi hội thoại đọc lại được — gần truyện tranh hơn anime: chữ đứng yên nên rút từ dễ hơn, và ảnh chụp hộp thoại đi thẳng vào OCR. Game nhiều lồng tiếng thêm kênh âm thanh lên trên. Những thứ giữ nguyên từ quy trình trên: rút ít hơn số từ gặp, ôn trong ngày, và một trăm giờ đầu ưu tiên bối cảnh đời thường hơn tiếng lóng fantasy. Biến thể ưu tiên chữ nằm ở [hướng dẫn truyện tranh](/vi/blog/learn-japanese-from-manga) và [so sánh công cụ OCR](/vi/blog/japanese-ocr-app).
 
 ## Chọn phụ đề nào
 
@@ -62,7 +62,7 @@ Cùng vòng lặp đó chạy trên game. Game nặng chữ — visual novel, JR
 
 **Rút hết mọi thứ.** Bốn mươi từ mỗi tập không bao giờ vào trí nhớ dài hạn dưới bất kỳ SRS nào. Năm từ lặp lại sẽ vào.
 
-**Tạm dừng ở mỗi từ lạ.** Việc xem biến thành vác tả và bị bỏ trong một tuần. Nguyên tắc: xem hết, rút sau.
+**Tạm dừng ở mỗi từ lạ.** Việc xem biến thành cực hình và bị bỏ rơi trong một tuần. Nguyên tắc: xem hết, rút sau.
 
 **Chọn bộ vượt trình độ "để phát triển".** i+1 hiệu quả khi "+1" là vài từ lạ mỗi cảnh. Bộ fantasy ở trình độ N5 cho "+30", thu được 0.
 
@@ -72,8 +72,8 @@ Cùng vòng lặp đó chạy trên game. Game nặng chữ — visual novel, JR
 
 Origa đảm nhiệm bước 3–4 của quy trình: thư viện tích hợp có hơn 200.000 cụm từ từ anime, visual novel và nội dung bản xứ khác kèm âm gốc, tự chọn theo trình độ của bạn theo nguyên tắc i+1 ([chi tiết](/vi/docs/phrases)). Biết ranh giới:
 
-- **Origa không phải trình phát video.** Việc xem diễn ra trong app streaming hoặc trình phát của bạn; ứng dụng lo phần trích xuất, thẻ, và lịch ôn.
-- **Cụm từ là mảnh, không phải tập.** Chúng rèn nhận dạng giọng nói đúng trình độ nhưng không thay thế nghe toàn cảnh.
+- **Origa không phải trình phát video.** Việc xem diễn ra trong ứng dụng xem trực tuyến hoặc trình phát của bạn; ứng dụng lo phần trích xuất, thẻ, và lịch ôn.
+- **Cụm từ là mảnh, không phải tập.** Chúng rèn khả năng nhận ra lời nói đúng trình độ nhưng không thay thế nghe toàn cảnh.
 - **Cũng không phải luyện nói.** Riêng nội dung không bao giờ cung cấp được. Tuyến đó được bàn riêng ở [phân tích gia sư AI](/vi/blog/japanese-ai-tutor).
 
 ## Kết luận
@@ -84,9 +84,9 @@ Truyện tranh hoạt động tương tự với trọng tâm đọc (xem [so s�
 
 ## FAQ
 
-### Người mới hoàn toàn bắt đầu với phụ đề thế nào?
+### Người mới hoàn toàn nên bắt đầu với phụ đề thế nào?
 
-Dưới N4, xem với phụ đề tiếng Việt và không giả vờ là học: đó là động lực. Bật routine phụ đề JP chủ động khi bạn biết ~300 từ và đọc kana không vấp.
+Dưới N4, xem với phụ đề tiếng Việt và không giả vờ là học: đó là động lực. Bật thói quen phụ đề JP chủ động khi bạn biết ~300 từ và đọc kana không vấp.
 
 ### Nên xem gì trước?
 
@@ -98,4 +98,4 @@ Những lần nhận ra đầu tiên sau 2–3 tuần mỗi ngày ở chế đ�
 
 ### Anime thay thế được giáo trình không?
 
-Không. Nó cho bạn tai và động lực, không cho ngữ pháp tuần tự hay kiểm soát từ vựng. "Giáo trình + SRS + anime như immersion" hoạt động; "chỉ anime" thì không.
+Không. Nó cho bạn tai và động lực, không cho ngữ pháp tuần tự hay kiểm soát từ vựng. "Giáo trình + SRS + anime như cách ngâm mình trong tiếng Nhật" hoạt động; "chỉ anime" thì không.

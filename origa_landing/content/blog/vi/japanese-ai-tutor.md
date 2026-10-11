@@ -14,11 +14,11 @@ status: ready
 
 # Gia sư AI tiếng Nhật: giỏi cái gì (và không giỏi cái gì)
 
-"Gia sư AI tiếng Nhật" là một trong những danh mục tìm kiếm tăng trưởng nhanh nhất trong học ngôn ngữ. ChatGPT đã làm cho việc có một đối thoại đàm thoại vô tận kiên nhẫn, có thể giải thích ngữ pháp theo yêu cầu, sửa bài viết của bạn, và không bao giờ mệt với câu hỏi của bạn, trở nên khả thi. Một làn sóng ứng dụng đã xây dựng sản phẩm trên nền tảng đó.
+"Gia sư AI tiếng Nhật" là một trong những danh mục tìm kiếm tăng trưởng nhanh nhất trong học ngôn ngữ. ChatGPT đã làm cho việc có một đối tác trò chuyện kiên nhẫn vô tận — giải thích ngữ pháp theo yêu cầu, sửa bài viết của bạn, và không bao giờ mệt với câu hỏi của bạn — trở nên khả thi. Một làn sóng ứng dụng đã xây dựng sản phẩm trên nền tảng đó.
 
 Bài này không phải xếp hạng. Đây là phân tích về những gì gia sư AI thực sự giỏi, nơi chúng thiếu sót, và nơi chúng phù hợp trong quy trình học tiếng Nhật nghiêm túc. Phiên bản trung thực là gia sư AI xuất sắc ở một nửa công việc và vắng mặt ở nửa còn lại. Đánh đồng hai phần là cách người học kết thúc trả tiền thuê bao chatbot và quên mọi thứ họ "học" sang tháng sau.
 
-Bao gồm Origa, ứng dụng tôi đang phát triển, được định vị trung thực. Origa dùng AI, nhưng không phải gia sư AI theo nghĩa đàm thoại mà đa số người dùng.
+Bao gồm Origa, ứng dụng tôi đang phát triển, được định vị trung thực. Origa dùng AI, nhưng không phải gia sư AI theo nghĩa đàm thoại mà đa số người dùng hiểu.
 
 ## Những gì gia sư AI thực sự giỏi
 
@@ -42,9 +42,9 @@ Phần khó là câu tiếp theo, mà đa số marketing ứng dụng bỏ qua: 
 - **Gia sư AI không xây đường ống từ vựng.** Bạn có thể hỏi về một từ, nhận giải thích hay, và không có cách nào nắm bắt từ đó để ôn sau. Đa số ứng dụng gia sư AI có tính năng "lưu"; gần như không ai ôn những gì họ lưu.
 - **Gia sư AI không cho bạn chương trình học.** Chúng đáp ứng những gì bạn hỏi. Nếu bạn không biết hỏi gì, bạn lang thang. Người mới cần cấu trúc; AI cho bạn bất cứ gì bạn mang đến.
 - **Gia sư AI không thay thế nghe hoặc đọc.** Thực hành đàm thoại với bot là một kỹ năng cụ thể, không phải sự thay thế cho 30 phút đắm chìm trong tiếng Nhật thật.
-- **Gia sư AI đạt mức cao nguyên.** Ở trình độ trung cấp trở lên, các sửa chữa trở nên sai tinh tế theo cách người học không thể bắt được. Mô hình tự tin tán thành một câu mà người bản xứ sẽ thấy kỳ. Bạn học lỗi.
+- **Gia sư AI chững lại.** Ở trình độ trung cấp trở lên, các sửa chữa trở nên sai tinh tế theo cách người học không thể bắt được. Mô hình tự tin tán thành một câu mà người bản xứ sẽ thấy kỳ. Bạn học lỗi.
 
-Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng xuất khả năng đàm thoại/sửa, để sự ghi nhớ cho người dùng, và tính tiền như một giải pháp hoàn chỉnh. Không phải.
+Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng cung cấp khả năng đàm thoại/sửa, để sự ghi nhớ cho người dùng, và tính tiền như một giải pháp hoàn chỉnh. Không phải.
 
 ## Ba danh mục ứng dụng "gia sư AI"
 
@@ -66,7 +66,7 @@ Mẫu hình trên đa số ứng dụng "gia sư AI" giống nhau: chúng xuất
 
 ### AI tích hợp học (Origa ở nhóm này, một phần)
 
-Origa dùng AI: OCR cục bộ (NDLOCR-Lite), speech-to-text cục bộ (Whisper), tạo furigana, trích từ vựng tự động. Nhưng nó **không phải gia sư AI theo nghĩa đàm thoại**. Nó không có chatbot. Nó không giải thích ngữ pháp theo yêu cầu.
+Origa dùng AI: OCR cục bộ (NDLOCR-Lite), STT cục bộ (Whisper), tạo furigana, trích từ vựng tự động. Nhưng nó **không phải gia sư AI theo nghĩa đàm thoại**. Nó không có chatbot. Nó không giải thích ngữ pháp theo yêu cầu.
 
 Điều Origa làm là dùng AI như điểm vào của đường ống ghi nhớ. Bạn quét một trang, AI đọc các từ; bạn ghi âm, AI phiên âm; bạn dán văn bản, AI trích từ vựng. Mỗi mục nắm được trở thành một thẻ được lên lịch bởi FSRS. AI là lớp đầu vào, không phải lớp dạy. ([Xem Origa dùng AI cho OCR, STT, và trích từ vựng thế nào](/vi/docs/capture).)
 
@@ -79,8 +79,8 @@ Một danh sách kiểm tra thực sự phân tách giá trị từ hype:
 - **AI có kết nối với cơ chế ghi nhớ không?** Nếu "lưu từ này" không nạp SRS, AI là giải trí.
 - **Sửa AI có đáng tin ở trình độ của bạn không?** Thử với các câu bạn đã biết câu trả lời. Nếu AI sai trên chúng, nó sẽ tệ hơn trên thứ bạn không biết.
 - **Hướng dẫn AI là tùy chọn hay bắt buộc?** Người mới hưởng lợi từ cấu trúc (luồng có hướng dẫn). Người trung cấp hưởng lợi từ tự do. Chọn hình thức đúng cho trình độ của bạn.
-- **AI chạy ở đâu?** Đám mây thông minh hơn nhưng ghi log mọi tương tác. Trên thiết bị riêng tư nhưng kém năng lực hơn. Không có cái nào phổ quát tốt hơn.
-- **Toán thuê bao là gì?** Tính đến giữa 2026: ChatGPT Plus, Claude Pro và Gemini Advanced mỗi cái ~$200/năm (~$17/tháng); các ứng dụng ngôn ngữ AI chuyên dụng chạy cao hơn. Speak ~$30/tháng, Talkpal ~$20/tháng, Praktika ~$100/năm. Xếp một trong số đó với SRS trả phí hoặc ứng dụng hán tự và bạn thoải mái ở $30–50/tháng định kỳ, $360–600/năm, vô thời hạn. Kiểm tra xem một lựa chọn mua một lần hoặc nguồn công khai có đóng phần lớn khoảng cách không.
+- **AI chạy ở đâu?** Đám mây thông minh hơn nhưng ghi log mọi tương tác. AI trên thiết bị riêng tư nhưng kém năng lực hơn. Không có cái nào phổ quát tốt hơn.
+- **Toán thuê bao là gì?** Tính đến giữa 2026: ChatGPT Plus, Claude Pro và Gemini Advanced mỗi cái ~$200/năm (~$17/tháng); các ứng dụng ngôn ngữ AI chuyên dụng chạy cao hơn. Speak ~$30/tháng, Talkpal ~$20/tháng, Praktika ~$100/năm. Xếp một trong số đó với SRS trả phí hoặc ứng dụng hán tự và bạn thoải mái ở $30–50/tháng định kỳ, $360–600/năm, vô thời hạn. Kiểm tra xem một lựa chọn mua một lần hoặc một ứng dụng source-available (mã nguồn xem được công khai, không phải mã nguồn mở) có đóng phần lớn khoảng cách không.
 
 ## Origa dùng AI thế nào
 
@@ -98,13 +98,13 @@ Lựa chọn thiết kế rõ ràng: dùng AI nơi nó loại bỏ ma sát khỏ
 
 - **Origa không thay thế gia sư AI.** Nếu nút thắt của bạn là "tôi cần ai đó giải thích ngữ pháp cho tôi", Origa không giúp. Dùng chatbot.
 - **AI cục bộ có giới hạn.** OCR và STT trên thiết bị tốt nhưng không chính xác như các dịch vụ đám mây tốt nhất trên đầu vào cách điệu hoặc nhiễu. Dự kiến sửa tay đôi khi.
-- **Chưa có chương trình học dẫn dắt bởi AI.** Cấu trúc của Origa đến từ các cấp JLPT và nhập sách giáo khoa, không phải từ AI tạo đường học. Đây là lựa chọn cố ý; một chương trình AI sẽ đưa vào cùng vấn đề cao nguyên như gia sư AI.
+- **Chưa có chương trình học dẫn dắt bởi AI.** Cấu trúc của Origa đến từ các cấp JLPT và nhập sách giáo khoa, không phải từ AI tạo lộ trình học. Đây là lựa chọn có chủ đích; một chương trình AI sẽ đưa vào cùng vấn đề chững lại như gia sư AI.
 
 ## Quyết định thế nào
 
 Nếu thời gian học của bạn là 30 phút một ngày và bạn phải chọn giữa gia sư AI và SRS, chọn SRS. Lặp lại ngắt quãng là thành phần duy nhất của học ngôn ngữ nơi bằng chứng rõ ràng; luyện nói chỉ thực sự có ý nghĩa khi bạn đã có nền tảng khoảng N4 ([kế hoạch bắt đầu từ số không](/vi/blog/yaponskiy-s-nulya)). Gia sư AI là khoản mua hào nhoáng hơn, nhưng chính SRS mới mang lại tiến bộ năm qua năm.
 
-Nếu bạn có thể chạy cả hai (SRS cho ghi nhớ, gia sư AI cho giải thích theo yêu cầu và thực hành đàm thoại), đó là thiết lập best-of-both-worlds thực tế mà đa số người học trung cấp trở lên hội tụ. Origa che nửa SRS và dùng AI cho đầu vào, không cho đàm thoại. ChatGPT hoặc Claude che nửa đàm thoại. Kết hợp rẻ hơn và hiệu quả hơn một thuê bao gia sư AI đơn lẻ hứa hẹn mọi thứ và giao đàm thoại cộng thêm ghi nhớ yếu. Nếu nửa SRS là thứ bạn cần, [tải Origa](/vi/download).
+Nếu bạn có thể chạy cả hai (SRS cho ghi nhớ, gia sư AI cho giải thích theo yêu cầu và thực hành đàm thoại), đó là thiết lập gom được lợi thế của cả hai, thứ đa số người học trung cấp trở lên hội tụ về. Origa che nửa SRS và dùng AI cho đầu vào, không cho đàm thoại. ChatGPT hoặc Claude che nửa đàm thoại. Kết hợp rẻ hơn và hiệu quả hơn một thuê bao gia sư AI đơn lẻ hứa hẹn mọi thứ và giao đàm thoại cộng thêm ghi nhớ yếu. Nếu nửa SRS là thứ bạn cần, [tải Origa](/vi/download).
 
 ## Câu hỏi thường gặp
 
@@ -118,11 +118,11 @@ Cho các kịch bản có hướng dẫn và bài học cấu trúc, có: chúng
 
 ### Origa có chatbot AI không?
 
-Không. Origa dùng AI cho OCR, speech-to-text, và trích từ vựng, phía đầu vào của học. Cho AI đàm thoại, ghép Origa với ChatGPT, Claude, hoặc ứng dụng gia sư AI chuyên dụng.
+Không. Origa dùng AI cho OCR, STT, và trích từ vựng, phía đầu vào của việc học. Cho AI đàm thoại, ghép Origa với ChatGPT, Claude, hoặc ứng dụng gia sư AI chuyên dụng.
 
 ### AI cục bộ có tốt như AI đám mây không?
 
-Cho OCR và STT trên đầu vào tiếng Nhật điển hình: gần, đôi khi bằng. Cho AI đàm thoại: không, các mô hình đám mây đáng kể hơn. Đánh đổi là riêng tư và dùng ngoại tuyến vs. năng lực thô.
+Cho OCR và STT trên đầu vào tiếng Nhật điển hình: gần, đôi khi bằng. Cho AI đàm thoại: không, các mô hình đám mây tốt hơn đáng kể. Đánh đổi là riêng tư và dùng ngoại tuyến vs. năng lực thô.
 
 ### Thiết lập rẻ nhất hoạt động là gì?
 

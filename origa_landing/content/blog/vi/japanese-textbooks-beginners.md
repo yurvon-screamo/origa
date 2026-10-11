@@ -80,11 +80,11 @@ Giấy hay điện tử là thói quen, nhưng với tiếng Nhật, giấy có 
 
 ## Giới hạn của Origa
 
-Origa không phải giáo trình và không thay thế khóa nào ở trên: nó không dắt bạn qua ngữ pháp từng bài. Vai trò của nó là việc đỡ đòn: củng cố từ vựng và hán tự từ các giáo trình đó bằng lặp lại ngắt quãng, furigana khi đọc, và luyện nghe. Có bộ từ sẵn cho Minna no Nihongo và Irodori; giáo trình khác có thể tạo thẻ từ văn bản trong vài phút.
+Origa không phải giáo trình và không thay thế khóa nào ở trên: nó không dắt bạn qua ngữ pháp từng bài. Vai trò của nó là việc hỗ trợ bên cạnh: củng cố từ vựng và hán tự từ các giáo trình đó bằng lặp lại ngắt quãng, furigana khi đọc, và luyện nghe. Có bộ từ sẵn cho Minna no Nihongo và Irodori; giáo trình khác có thể tạo thẻ từ văn bản trong vài phút.
 
 ## Kết luận
 
-Với đa số người tự học, bộ stack hoạt động trông thế này: Minna no Nihongo làm khóa chính (hoặc Genki nếu tiếng Anh của bạn mạnh), Tae Kim làm tham khảo "tại sao", và một app SRS làm động cơ ghi nhớ. Chọn một giáo trình chính và bám nó. [Ghép với app nào](/vi/blog/best-japanese-learning-app) được bàn riêng.
+Với đa số người tự học, bộ công cụ hoạt động trông thế này: Minna no Nihongo làm khóa chính (hoặc Genki nếu tiếng Anh của bạn mạnh), Tae Kim làm tham khảo "tại sao", và một app SRS làm động cơ ghi nhớ. Chọn một giáo trình chính và bám nó. [Ghép với app nào](/vi/blog/best-japanese-learning-app) được bàn riêng.
 
 ## FAQ
 

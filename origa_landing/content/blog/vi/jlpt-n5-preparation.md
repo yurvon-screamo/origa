@@ -20,7 +20,7 @@ Bài phân tích này nói về N5 thực sự chứa gì, đề thi cấu trúc
 
 ## N5 nghĩa là gì về phạm vi
 
-Một lời né tránh trung thực trước: ban tổ chức (Quỹ Giao lưu Quốc tế cùng JEES) không công bố danh sách từ hay hán tự chính thức. Những con số lưu hành online là đồng thuận giáo viên dựa trên phân tích đề cũ.
+Một lưu ý trung thực trước: ban tổ chức (Quỹ Giao lưu Quốc tế cùng JEES) không công bố danh sách từ hay hán tự chính thức. Những con số lưu hành online là đồng thuận giáo viên dựa trên phân tích đề cũ.
 
 Theo ước tính đó, N5 bao phủ:
 
@@ -71,25 +71,25 @@ Hai tuần đầu của 4–8 tháng đó dành cho kana. [Kế hoạch học c�
 - **Động từ di chuyển·hành động lõi**: 行く, 来る, 食べる, 飲む, 見る, する ở mọi dạng trong chương trình;
 - **Cả hai loại tính từ**: 大きい (i) và 静か (na), với quy tắc phủ định riêng của từng loại;
 - **Nơi chốn và phương hướng**: 学校, 家, 上, 下, 中 cùng các bài tập trợ từ に·で;
-- **Từ vựng thường ngày tần suất cao**: ăn, tiền, đi lại, thời tiết.
+- **Từ vựng thường ngày tần suất cao**: đồ ăn, tiền, đi lại, thời tiết.
 
 Bài kiểm tra sẵn sàng: mô tả một ngày điển hình của bạn thành câu đơn, nói to. Nếu "dậy, ăn, đi, làm, về" chảy không vấp, nền từ vựng đã có.
 
 ## Lỗi thường gặp
 
-**Trì hoãn nghe đến tháng cuối.** Khả năng hiểu được xây theo tháng, không theo tuần. Người tự học hay trượt ngưỡng tối thiểu nhất ở phần Nghe.
+**Trì hoãn nghe đến tháng cuối.** Khả năng hiểu được xây dần theo tháng, không theo tuần. Người tự học hay trượt ngưỡng tối thiểu nhất ở phần Nghe.
 
 **Cày hán tự thành danh sách rời.** 80 hán tự N5 học trần trụi xuống còn 30 chữ nhận ra trong một tháng. Hán tự bám trong từ.
 
 **Luyện không bấm giờ.** Không áp lực thời gian, đề thử lúc nào cũng ổn. Kỳ thi thật thì không.
 
-**Đăng ký muộn.** Kỳ thi mỗi năm một hai lần (7 và 12; không phải nước nào cũng cả hai), chỗ giới hạn, đăng ký mở trước vài tháng. Xem điều khoản trung tâm gần bạn sớm. [Lịch 2026 và cửa đăng ký theo nước](/vi/blog/jlpt-2026-dates) nằm ở trang riêng, cập nhật mỗi kỳ.
+**Đăng ký muộn.** Kỳ thi mỗi năm một hai lần (7 và 12; không phải nước nào cũng cả hai), số chỗ có hạn, đăng ký mở trước vài tháng. Xem điều khoản trung tâm gần bạn sớm. [Lịch 2026 và cửa đăng ký theo nước](/vi/blog/jlpt-2026-dates) nằm ở trang riêng, cập nhật mỗi kỳ.
 
 ## Giới hạn của Origa
 
 Origa giúp phía nội dung của việc ôn, trong ranh giới rõ:
 
-- **Không phải trình mô phỏng đề.** Origa theo dõi cấp JLPT của bạn, buộc từ điển hán tự và tham khảo ngữ pháp vào N5–N1, hiển thị phân tích ôn, nhưng không luyện dạng đề có giờ. Đó là việc của Migii hoặc đề mẫu chính thức.
+- **Không phải trình mô phỏng đề.** Origa theo dõi cấp JLPT của bạn, gắn từ điển hán tự và tài liệu tham khảo ngữ pháp với các cấp N5–N1, hiển thị phân tích ôn, nhưng không luyện dạng đề có giờ. Đó là việc của Migii hoặc đề mẫu chính thức.
 - **Nghe trong ứng dụng** dùng các cụm từ âm thanh chọn theo cấp: rèn hiểu thật, không phải dạng phần Nghe.
 
 ## Kết luận
@@ -110,7 +110,7 @@ Không. JLPT chỉ tổ chức trực tiếp tại các trung tâm được ch�
 
 ### N5 đủ làm việc tại Nhật chưa?
 
-Tự nó thì chưa. Nhà tuyển dụng kỳ vọng tối thiểu N3–N2. Nhưng N5 tốt với vai trò cột mốc trung gian và lần đầu nếm dạng đề trước các cấp có hậu quả hơn.
+Tự nó thì chưa. Nhà tuyển dụng kỳ vọng tối thiểu N3–N2. Nhưng N5 tốt với vai trò cột mốc trung gian và lần đầu nếm dạng đề trước các cấp có tính quyết định cao hơn.
 
 ### Cần bao nhiêu điểm để đậu?
 

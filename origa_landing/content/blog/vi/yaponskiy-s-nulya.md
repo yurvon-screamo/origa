@@ -14,7 +14,7 @@ status: ready
 
 # Tiếng Nhật từ con số không: Kế hoạch tự học thực tế để bắt đầu
 
-"Tiếng Nhật từ con số không" là một trong những tìm kiếm phổ biến nhất của người mới, và là một trong những tìm kiếm dễ đánh lừa nhất, bởi những mục đích rất khác nhau ẩn sau cụm từ đó. Một người muốn theo kịp đối thoại anime. Người khác cần N3 cho visa làm việc. Người thứ ba chỉ muốn viết hán tự đẹp. Các kế hoạch cho ba trường hợp đó phân kỳ ở mỗi bước.
+"Tiếng Nhật từ con số không" là một trong những tìm kiếm phổ biến nhất của người mới, và là một trong những tìm kiếm dễ gây hiểu lầm nhất, bởi những mục đích rất khác nhau ẩn sau cụm từ đó. Một người muốn theo kịp đối thoại anime. Người khác cần N3 cho visa làm việc. Người thứ ba chỉ muốn viết hán tự đẹp. Các kế hoạch cho ba trường hợp đó phân kỳ ở mỗi bước.
 
 Bài này không phải "học tiếng Nhật trong 30 ngày" và không phải danh sách top-10 ứng dụng. Đây là một trình tự thực tế cho tự học: học gì trước, hoãn gì tới sau, công cụ nào giúp ở giai đoạn nào, và những sai lầm gần như mọi người mới đều mắc.
 
@@ -50,7 +50,7 @@ Sau kana, bản thân ngôn ngữ bắt đầu: câu được xây thế nào, �
 - Song song, bắt đầu một từ điển và lặp lại ngắt quãng. Ngữ pháp không có từ vựng thì không hoạt động.
 - Mục tiêu của giai đoạn này là hiểu các câu đơn giản như "tôi đã đi cửa hàng hôm qua" và xây dựng câu của riêng bạn trong giới hạn N5.
 
-Sách giáo khoa tốt ở giai đoạn này: Minna no Nihongo (みんなの日本語), Genki, Tae Kim's Grammar Guide. Điểm trừ của Minna là bạn thường cần mua một sách riêng cho chú thích ngữ pháp bằng tiếng mẹ đẻ. Điểm cộng là cấu trúc nghiêm ngặt và liên kết cấp độ.
+Sách giáo khoa tốt ở giai đoạn này: Minna no Nihongo (みんなの日本語), Genki, Tae Kim's Grammar Guide. Điểm trừ của Minna là bạn thường cần mua một cuốn sách riêng cho chú thích ngữ pháp bằng tiếng mẹ đẻ. Điểm cộng là cấu trúc nghiêm ngặt và liên kết cấp độ.
 
 ### Giai đoạn 3. Hán tự và N5 (3–6 tháng)
 
@@ -70,13 +70,13 @@ Hán tự là phần đáng sợ nhất cho người học phương Tây. 2136 h
 
 ## Các sai lầm chính của người mới
 
-**Học ngôn ngữ, không học kỹ năng.** "Tôi học tiếng Nhật" là quá mơ hồ. Chia ra: đọc, nghe, viết, nói. Ở giai đoạn đầu, tập trung vào đọc và nghe; nói tốt hơn là hoãn đến N4, nếu không bạn có thể củng cố phát âm sai.
+**Học ngôn ngữ, không học kỹ năng.** "Tôi học tiếng Nhật" là quá mơ hồ. Chia ra: đọc, nghe, viết, nói. Ở giai đoạn đầu, tập trung vào đọc và nghe; nên hoãn nói đến sau N4, nếu không bạn có thể củng cố phát âm sai.
 
 **Quá nhiều ứng dụng.** Người mới cài năm ứng dụng "tốt nhất cho tiếng Nhật" và không đạt đến mức mà ứng dụng nào trong số đó có giá trị. Một hoặc hai, dùng đều đặn, là tốt hơn.
 
 **Ảo tưởng Duolingo.** Duolingo tốt cho điểm bắt đầu: làm quen với âm thanh và các bảng âm tiết. Nhưng ngay khi bạn hoàn thành "khóa" đầu tiên, bạn đập vào trần: ngữ pháp được giải thích kém, hán tự gần như không có, độ sâu không đủ ngay cả cho N5. Duolingo là khởi đầu, không phải con đường.
 
-**Học hán tự từ danh sách.** 100 hán tự học cách ly sẽ biến thành 30 nhận ra và 70 quên sau một tháng. Hán tự chỉ dính bên trong từ.
+**Học hán tự từ danh sách.** 100 hán tự học rời rạc sẽ biến thành 30 nhận ra và 70 quên sau một tháng. Hán tự chỉ dính bên trong từ.
 
 **Bỏ qua nghe.** Nếu bạn chỉ đọc và viết, sau một năm bạn sẽ không hiểu một từ nào trong lời nói người bản xứ. Nghe là một kỹ năng riêng; nó phải được rèn từ đầu, ngay cả khi bạn chỉ hiểu 20%.
 
@@ -100,7 +100,7 @@ Logic của Origa là tiếp quản phần rườm rà kỹ thuật (tạo thẻ
 
 - **Nó không phải sách giáo khoa.** Origa không dẫn bạn qua bài ngữ pháp. Dùng Minna no Nihongo, Genki, hoặc Tae Kim, và dùng Origa để giữ từ vựng và hán tự từ các sách giáo khoa đó.
 - **Ứng dụng trẻ hơn Anki.** Anki có một thập kỷ tinh chỉnh và thư viện lớn các bộ bài dựng sẵn. Origa có ít nội dung dựng sẵn hơn, dù đang phát triển.
-- **Parity desktop/mobile là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, kiểm tra bản dựng hiện tại cho nền tảng của bạn.
+- **Tương đương desktop/mobile là tốt nhưng không tuyệt đối.** Trước khi chuyển hoàn toàn, kiểm tra bản dựng hiện tại cho nền tảng của bạn.
 
 ## Một kết luận thực tế
 
@@ -112,7 +112,7 @@ Nguyên tắc chính: **đều đặn đánh bại cường độ.** 30 phút m�
 
 ### Tôi có thể học tiếng Nhật từ con số không miễn phí không?
 
-Có. Anki miễn phí trên desktop, Tae Kim's Guide có sẵn tự do, và có rất nhiều tài nguyên trên YouTube. Origa cũng miễn phí. Các dịch vụ thuê bao (WaniKani, Bunpro) thường trả phí, nhưng không bắt buộc.
+Có. Anki miễn phí trên desktop, Tae Kim's Guide có miễn phí, và có rất nhiều tài nguyên trên YouTube. Origa cũng miễn phí. Các dịch vụ thuê bao (WaniKani, Bunpro) thường trả phí, nhưng không bắt buộc.
 
 ### Cần bao nhiêu hán tự để đọc manga?
 
@@ -124,8 +124,8 @@ Cho manga có furigana đầy đủ (shōnen/shōjo) là 100–300, đây là N5
 
 ### Tôi nên đọc gì ngay từ đầu?
 
-*Yotsuba&!* (よつばと!) là khuyến nghị kinh điển: từ vựng đời thường, ngữ pháp nhẹ, furigana đầy đủ. Nếu nó có vẻ quá khó, là quá sớm, hãy quay lại sau vài tháng với sách giáo khoa.
+*Yotsuba&!* (よつばと!) là khuyến nghị kinh điển: từ vựng đời thường, ngữ pháp nhẹ, furigana đầy đủ. Nếu nó có vẻ quá khó thì đó là dấu hiệu còn quá sớm; hãy quay lại sau vài tháng với sách giáo khoa.
 
 ### Tôi có nên học kana trước khi bắt đầu Origa không?
 
-Không bắt buộc, nhưng nên. Origa có thể rèn hiragana và katakana qua thẻ, nhưng đó không phải trường hợp sử dụng chính. Nó được xây cho người học đã đang tiến qua ngữ pháp và từ vựng.
+Không bắt buộc, nhưng nên. Origa có thể rèn hiragana và katakana qua thẻ, nhưng đó không phải trường hợp sử dụng chính. Nó được xây cho người học đang tiến qua ngữ pháp và từ vựng.

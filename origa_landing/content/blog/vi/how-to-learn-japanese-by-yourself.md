@@ -3,7 +3,7 @@ title: "Tự học tiếng Nhật: 30 ngày đầu và vòng lặp phía sau"
 slug: /vi/blog/how-to-learn-japanese-by-yourself
 locale: vi
 meta_title: "Tự học tiếng Nhật: kế hoạch 30 ngày và vòng lặp học (2026)"
-meta_description: "Tự học gãy không phải vì thiếu năng khiếu mà vì thiếu vòng phản hồi. Chu trình đọc, ghi bắt, ôn tập, sử dụng; kế hoạch tháng đầu theo tuần; và cách giữ đà khi không có hạn nộp của thầy."
+meta_description: "Tự học gãy không phải vì thiếu năng khiếu mà vì thiếu vòng phản hồi. Chu trình đọc, ghi lại, ôn tập, sử dụng; kế hoạch tháng đầu theo tuần; và cách giữ đà khi không có hạn nộp của thầy."
 target_keywords: ["tự học tiếng nhật", "cách học tiếng nhật", "học tiếng nhật một mình", "lộ trình tự học tiếng nhật"]
 lastmod: 2026-09-18
 published: 2026-09-18
@@ -18,12 +18,12 @@ Tiếng Nhật tự học không gãy vì thiếu năng khiếu hay thiếu ứn
 
 Trang này nói về việc tự dựng cấu trúc đó: một vòng học chạy được từ tháng đầu đến mức thành thạo, và một kế hoạch cụ thể cho 30 ngày đầu. Nếu bạn chưa chọn trình tự khởi động, [kế hoạch khởi đầu thực tế từ số không](/vi/blog/yaponskiy-s-nulya) bàn về học gì theo thứ tự nào; trang này coi câu hỏi đó đã xong và hỏi làm sao giữ cho nó chạy.
 
-## Vòng lặp: đọc, ghi bắt, ôn, sử dụng
+## Vòng lặp: đọc, ghi lại, ôn, sử dụng
 
 Mọi thứ sau tháng đầu là một chu trình bốn động tác:
 
 1. **Đọc** (hoặc nghe) tiếng Nhật cao hơn mức thoải mái một chút. Đối thoại giáo trình lúc đầu, rồi sách đọc phân cấp, truyện tranh, phụ đề. Đây là nơi nguyên liệu mới vào; không có đầu vào đều đặn, phần còn lại của vòng đói.
-2. **Ghi bắt** thứ bạn gặp và muốn giữ: từ, hán tự, điểm ngữ pháp, câu hội. Ma sát quan trọng ở đây; một bước ghi bắt đi qua bốn ứng dụng sẽ chết trong vài tuần.
+2. **Ghi lại** thứ bạn gặp và muốn giữ: từ, hán tự, điểm ngữ pháp, câu. Ma sát quan trọng ở đây; một bước ghi lại đi qua bốn ứng dụng sẽ chết trong vài tuần.
 3. **Ôn tập** các mục đã ghi theo lịch. Lặp lại ngắt quãng là động cơ của trí nhớ, và nó chỉ hoạt động như thói quen hằng ngày, không phải marathon cuối tuần.
 4. **Sử dụng** thứ đã ôn: viết một câu, nói nó, đọc thứ mà nó xuất hiện lại. Sử dụng là thứ biến "nhận ra" thành "biết".
 
@@ -39,7 +39,7 @@ Vòng lặp cũng trả lời câu hỏi động lực. Bạn không cần ý ch
 
 **Tuần 3: ngữ pháp cơ bản qua một nguồn.** Một giáo trình, một loạt video, hoặc một ứng dụng, chọn rồi giữ. Câu です/ます, trợ từ, dạng câu hỏi. Quy tắc không phải "nguồn tốt nhất"; nó là "một nguồn, đi hết".
 
-**Tuần 4: tư liệu thật đầu tiên.** Thứ làm cho người bản xứ hoặc hơn bạn một bậc: một đoạn sách đọc phân cấp, một trang truyện có furigana, bản chép hội thoại. Gặp vòng lặp ở cỡ nhỏ: đọc, ghi bắt năm từ, ôn chúng, đọc lại sau hai ngày và cảm nhận khác biệt.
+**Tuần 4: tư liệu thật đầu tiên.** Thứ dành cho người bản xứ hoặc người hơn bạn một bậc: một đoạn sách đọc phân cấp, một trang truyện có furigana, bản chép hội thoại. Gặp vòng lặp ở cỡ nhỏ: đọc, ghi lại năm từ, ôn chúng, đọc lại sau hai ngày và cảm nhận khác biệt.
 
 Ba mươi ngày sau, bạn có kana, hạt giống vốn từ lõi, bộ khung câu, và quan trọng nhất, một vòng lặp đang chạy. Từ đây đầu vào lớn dần; vòng lặp không đổi.
 
@@ -51,7 +51,7 @@ Ba thói quen phân biệt người tiếp tục với người khởi động l
 - **Tư liệu bạn thật sự muốn đọc.** Truyện tranh, văn bản game, lời bài hát, blog nấu ăn. Nguồn "đúng" mà bạn né giá trị kém hơn nguồn "sai" mà bạn mở mỗi tối. [Học qua truyện tranh](/vi/blog/learn-japanese-from-manga) và [qua anime](/vi/blog/learn-japanese-from-anime) bàn hai trường hợp phổ biến nhất.
 - **Một đường chân trời nhìn thấy.** Ngày thi hoạt động: [các kỳ JLPT 2026 và đăng ký](/vi/blog/jlpt-2026-dates) đưa cho vòng lặp một hạn chót và một chứng chỉ ở cuối. Nếu thi không phải gu của bạn, một dự án cụ thể (đọc tập một không cần trợ giúp, viết mỗi ngày một dòng nhật ký) đóng cùng vai trò.
 
-Công cụ: nửa "ghi bắt và ôn" của vòng lặp là chỗ Origa đứng, biến mọi thứ bạn đọc, trang, khung hình, ảnh chụp màn hình, thành thẻ có lịch kèm âm đọc và âm thanh, ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
+Công cụ: nửa "ghi lại và ôn" của vòng lặp là chỗ Origa đứng, biến mọi thứ bạn đọc, trang, khung hình, ảnh chụp màn hình, thành thẻ có lịch kèm âm đọc và âm thanh, ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
 
 ## FAQ
 

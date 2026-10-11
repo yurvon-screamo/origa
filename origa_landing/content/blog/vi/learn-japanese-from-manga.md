@@ -22,10 +22,10 @@ Trên thực tế, đa số người học mắc kẹt đâu đó ở trang ba. 
 
 ## Tại sao manga hoạt động như một nguồn học
 
-Manga có ba thuộc tính khiến nó unusually tốt cho người học tiếng Nhật trình độ sơ-trung cấp:
+Manga có ba thuộc tính khiến nó đặc biệt tốt cho người học tiếng Nhật trình độ sơ-trung cấp:
 
 - **Đầu vào hiểu được với giàn giáo trực quan.** Các nét vẽ mang phần lớn ý nghĩa. Thường bạn có thể đoán một từ chưa gặp vì nhân vật đang chỉ vào vật, hoặc khung hình cho thấy hành động. Văn bản thuần túy không cho điều đó.
-- **Đối thoại ngắn, đập.** Các câu trong manga thường một đến ba câu. Bạn có thể giữ cả một phát ngôn trong trí nhớ làm việc, phân tích nó, và đi tiếp. Tiểu thuyết và bài báo không phân chia tử tế như vậy.
+- **Đối thoại ngắn gọn, đắt.** Các câu trong manga thường một đến ba câu. Bạn có thể giữ cả một phát ngôn trong trí nhớ làm việc, phân tích nó, và đi tiếp. Tiểu thuyết và bài báo không phân chia tử tế như vậy.
 - **Furigana trong các tạp chí shōnen/shōjo.** Rất nhiều manga thân thiện với người mới in furigana trên mọi hán tự, loại bỏ rào cản lớn nhất khi đọc ở trình độ N5–N3.
 
 Cái bẫy là đầu vào hiểu được chỉ xây dựng nhận thức thụ động. Để biến nó thành nhớ chủ động (thực sự *dùng* từ sau này), bạn cần lặp lại ngắt quãng. Đây là khoảng trống mà đa số người tự học không lấp.
@@ -36,7 +36,7 @@ Quy trình mơ ước là: đọc manga, thấy từ lạ, học nó. Thực t�
 
 **Ma sát tra cứu.** Với mỗi từ lạ bạn hoặc (a) vẽ nó vào từ điển hán tự theo bộ thủ, (b) gõ những gì bạn nghĩ là âm đọc vào từ điển văn bản, hoặc (c) chụp khung hình và chạy OCR. Mỗi đường mất 10–30 giây mỗi từ. Với một từ lạ mỗi khung hình, đó là một cuộc mài chậm.
 
-**Phụ thuộc furigana.** Nếu furigana luôn hiển thị, bạn đọc âm đọc mà không bao giờ nhớ hán tự. Bạn xong tập và nhận biết được không hán tự mới nào. Nếu bạn ẩn furigana, bạn chưa thể đọc gì cả. Không có trạng thái trung gian trừ khi công cụ theo dõi những hán tự bạn đã học và chỉ ẩn furigana trên những hán tự đó.
+**Phụ thuộc furigana.** Nếu furigana luôn hiển thị, bạn đọc âm đọc mà không bao giờ nhớ hán tự. Bạn xong tập mà không nhận ra hán tự mới nào. Nếu bạn ẩn furigana, bạn chưa thể đọc gì cả. Không có trạng thái trung gian trừ khi công cụ theo dõi những hán tự bạn đã học và chỉ ẩn furigana trên những hán tự đó.
 
 **Ma sát ghi nhớ.** Tra một từ một lần không có nghĩa là bạn đã học nó. Bạn sẽ quên nó ở chương ba. Không có đường ống SRS, "tôi đã tra nó" và "tôi biết nó" là hai câu không liên quan.
 
@@ -57,15 +57,15 @@ Dự báo lớn nhất về việc thói quen này có dính hay không là **ma
 Không có ứng dụng đơn lẻ nào vừa là trình đọc manga tốt *vừa* là SRS tốt *vừa* là từ điển tốt. Đa số thiết lập khâu hai hoặc ba công cụ lại với nhau.
 
 - **Công cụ OCR dựng cho manga.** Stack mã nguồn mở tham chiếu là `manga-ocr` (một mô hình được huấn luyện riêng trên văn bản manga, bao gồm bong bóng thoại nhiều dòng) được bọc trong ứng dụng desktop như Poricom hoặc linh hoạt hơn là YomiNinja. YomiNinja có thể chuyển văn bản nhận được thẳng vào Yomitan. Trên di động, KanjiSnap (iOS) dựa vào Live Text của Apple cho hiệu quả tương tự. Thuận tiện cho tra cứu nhanh. Cái bẫy là nhận dạng không hoàn hảo trên phông chữ manga cách điệu, và kết quả tra cứu thường là một mục từ điển một lần, không phải thẻ SRS. Bạn vẫn cần gửi từ đó đi đâu đó để giữ.
-- **Tiện ích từ điển trình duyệt** (Yomitan, hậu nhiệm được duy trì của Yomichan). Yomitan bản thân nó không phải là OCR. Đó là từ điển pop-up tra văn bản được chọn. Nó hoạt động trực tiếp trên các trình đọc manga dựa trên web nơi văn bản có thể chọn được; cho hình ảnh, bạn ghép nó với một OCR ngoài (YomiNinja, công cụ chụp màn hình). Điểm mạnh của nó là xuất Anki: một lần tra có thể trở thành thẻ trong một cú nhấp qua AnkiConnect.
+- **Tiện ích từ điển trình duyệt** (Yomitan, bản kế thừa đang được duy trì của Yomichan). Yomitan bản thân nó không phải là OCR. Đó là từ điển nổi tra văn bản được chọn. Nó hoạt động trực tiếp trên các trình đọc manga dựa trên web nơi văn bản có thể chọn được; cho hình ảnh, bạn ghép nó với một OCR ngoài (YomiNinja, công cụ chụp màn hình). Điểm mạnh của nó là xuất Anki: một lần tra có thể trở thành thẻ trong một cú nhấp qua AnkiConnect.
 - **Anki như lớp giữ.** SRS mặc định cho cộng đồng. Bạn có thể dựng bộ bài khai thác manga thủ công, hoặc dùng xuất Yomitan. Anki xử lý lịch trình; nó không xử lý việc đọc hay OCR.
 - **Origa.** Origa không phải trình đọc manga. Nó là phía SRS của quy trình này. Nơi nó vừa vặn: bạn quét một khung hình bằng camera điện thoại hoặc dán ảnh chụp màn hình, OCR trích xuất các từ, và mỗi từ trở thành một thẻ với câu, âm đọc, dịch nghĩa, và âm thanh, vào một bộ bài tự lên lịch. Furigana ẩn trên các hán tự bạn đã học, nên đọc và nhớ được rèn luyện cùng nhau. ([Xem Origa xử lý OCR, furigana, và liên kết từ vựng thế nào](/vi/docs/capture); các công cụ khác cũng bao phủ bước này trong [so sánh ứng dụng OCR tiếng Nhật](/vi/blog/japanese-ocr-app).)
 
-Nói cách khác: một thiết lập học manga tốt trong 2026 là **một trình đọc manga + một SRS thực sự nắm bắt những gì bạn đọc**. Origa đang cố gắng là nửa sau của điều đó, không phải nửa đầu. Để xem nó so sánh với Anki, WaniKani, và các công cụ khác đã đề cập thế nào, xem [so sánh đầy đủ](/vi/compare).
+Nói cách khác: một thiết lập học manga tốt trong 2026 là **một trình đọc manga + một SRS thực sự nắm bắt những gì bạn đọc**. Origa đang cố gắng là nửa sau của điều đó, không phải nửa đầu. Để xem nó so sánh với Anki, WaniKani, và các công cụ khác đã nêu ở trên thế nào, xem [so sánh đầy đủ](/vi/compare).
 
 ## Những hạn chế đã biết
 
-- **Origa không render manga.** Nó không phải trình xem CBR/CBZ, không phải trình đọc. Bạn đọc manga trong ứng dụng nào bạn thích, và khai thác từ nó vào Origa.
+- **Origa không hiển thị manga.** Nó không phải trình xem CBR/CBZ, không phải trình đọc. Bạn đọc manga trong ứng dụng nào bạn thích, và khai thác từ nó vào Origa.
 - **OCR tốt, không hoàn hảo.** Hán tự vẽ tay hoặc cách điệu mạnh có thể thất bại nhận dạng. Thỉnh thoảng bạn sẽ cần sửa bằng tay.
 - **Không chụp ngữ cảnh khung hình tự động.** Bạn có thể quét một khung hình, nhưng Origa không lưu ảnh khung hình với thẻ như thiết lập Yomitan+Anki chuyên dụng có thể. Bạn có câu và âm thanh, không phải hình.
 - **Chưa có tích hợp Yomitan hôm nay.** Nếu quy trình của bạn đã chạy trên Yomitan+Anki, Origa chưa vừa vặn sạch. Bạn có thể nhập các bộ bài Anki hiện có (`.anki2`, `.anki21`, `.anki21b`), nên di chuyển là một chiều và không mất mát, nhưng đường ống Yomitan→Origa trực tiếp chưa có.
@@ -82,14 +82,14 @@ Nếu bạn chưa từng khai thác từ manga, đây là một khởi đầu í
 4. Chụp ảnh hoặc chụp màn hình mỗi khung hình. Chạy qua đường ống OCR-to-SRS của bạn (Origa, hoặc Yomitan+Anki, hoặc thủ công).
 5. Ôn sáng hôm sau. Rồi đọc chương tiếp theo.
 
-Bạn sẽ không hoàn thành một tập mỗi tuần theo cách này. Bạn sẽ hoàn thành một tập mỗi tháng và thực sự nhớ những gì trong đó. Sự đánh đổi đó là toàn bộ điểm.
+Bạn sẽ không hoàn thành một tập mỗi tuần theo cách này. Bạn sẽ hoàn thành một tập mỗi tháng và thực sự nhớ những gì trong đó. Cái giá đánh đổi đó là đáng.
 
 ## Làm sao biết nó đang hoạt động
 
 Hai tín hiệu, cả hai đều trễ:
 
 - **Nhận biết khi gặp lại.** Hai tuần sau khi khai thác một từ, bạn thấy nó lại trong một manga khác và đọc mà không cần tra. Đó là SRS đang làm việc của nó.
-- **Trôi đầu ra.** Bạn bắt đầu để ý từ đó rỉ vào các câu của chính bạn (trong viết, trong đầu). Thụ động đã bắt đầu sang chủ động.
+- **Rò sang câu của bạn.** Bạn bắt đầu để ý từ đó rỉ vào các câu của chính bạn (trong viết, trong đầu). Thụ động đã bắt đầu chuyển sang chủ động.
 
 Nếu sau một tháng khai thác đều đặn mà cả hai đều không xảy ra, vấn đề gần như luôn là một trong hai: bạn đang khai thác quá nhiều từ (thẻ chồng lên, ôn tập sụp), hoặc lịch trình SRS của bạn quá lỏng (tìm FSRS, không phải Leitner ngây thơ). Sửa liều lượng, không phải manga.
 

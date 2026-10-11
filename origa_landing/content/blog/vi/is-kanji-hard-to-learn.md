@@ -1,6 +1,6 @@
 ---
 title: "Hán tự có khó học không? Một câu trả lời trung thực"
-slug: /vi/blog/is-hán tự-hard-to-learn
+slug: /vi/blog/is-kanji-hard-to-learn
 locale: vi
 meta_title: "Hán tự có khó không: thứ thực sự làm chậm việc học (2026)"
 meta_description: "Hán tự không khó vì lý do đa số nghĩ. Thứ thực sự làm chậm: đọc khi chưa có vốn từ, học chữ ngoài lời, đọc lại thay vì ôn theo lịch. Một tuần đầu tiên thực tế."
@@ -23,7 +23,7 @@ Câu trả lời trung thực có ba phần: hán tự thực sự là gì (ít 
 Bỏ lớp huyền bí đi, hán tự là hệ thống chữ nơi ký tự đại diện cho một hình vị, một đơn vị nghĩa, chứ không phải một âm. Ba hệ quả theo sau, và không cái nào là "bất khả thi":
 
 - **Kho chữ lớn nhưng hữu hạn.** Một người đọc có học cần khoảng 2.000 chữ (bộ Jōyō), và văn bản thường ngày dựa nặng vào vài trăm chữ trong đó. [Cần bao nhiêu hán tự theo mục tiêu](/vi/blog/how-many-kanji-to-learn) phân tích con số.
-- **Chữ mang gợi ý, không phải mã.** Đa số hán tự gồm một thành phần nghĩa ước và một thành phần âm ước. 火 (lửa) xuất hiện trong các từ liên quan đến cháy; 生 (sống) nằm trong từ đọc sei hoặc shō. Gợi ý không chính xác, nhưng vẫn là gợi ý.
+- **Chữ mang gợi ý, không phải mã.** Đa số hán tự gồm một bộ phận gợi nghĩa và một bộ phận gợi âm. 火 (lửa) xuất hiện trong các từ liên quan đến cháy; 生 (sống) nằm trong từ đọc sei hoặc shō. Gợi ý không chính xác, nhưng vẫn là gợi ý.
 - **Người biết tiếng Hán đã đọc một hệ hình vị rồi.** Với người biết chữ Hán, câu hỏi đảo ngược: hán tự Nhật phần lớn là chữ quen với ranh giới từ lạ. Độ khó dời sang ngữ pháp và từ vựng, không phải chữ viết.
 
 Không cái nào trong đây là bức tường. Đó là hành lang dài có đèn sáng.
@@ -47,7 +47,7 @@ Một kế hoạch cụ thể né cả bốn bẫy:
 - **Ngày 3–7: 25 hán tự đầu theo tần suất, trong từ.** Lấy [danh sách N5](/vi/blog/jlpt-n5-kanji-list), bắt đầu từ đầu trang, và học mỗi chữ qua hai ba từ thông dụng của nó: 人 qua 人間 và 一人, không phải như một trừu tượng. Hai mươi lăm chữ kèm từ là một tuần thực tế ở mức 30–40 phút mỗi ngày.
 - **Từ ngày đầu: xếp lịch ôn.** Dù dùng công cụ gì, việc ôn phải có lịch, không phải tùy hứng. Origa dựng vòng này từ tư liệu đọc thật, từ trang giáo trình đến khung truyện, với OCR bắt những từ bạn thực sự gặp, ngoại tuyến. [Cách hoạt động](/vi/features) · [tải xuống](/vi/download).
 
-Ở nhịp đó bạn không "học hán tự" như một dự án; bạn đang đọc tiếng Nhật trên bánh tập, và bánh tập tự rơi dần.
+Ở nhịp đó bạn không "học hán tự" như một dự án; bạn đang đọc tiếng Nhật với bánh xe tập, và bánh xe tập tháo dần.
 
 ## FAQ
 
@@ -61,7 +61,7 @@ Khác, không phải khó hơn. Nói đòi rèn tai và xử lý thời gian th�
 
 ### Có học tiếng Nhật không cần hán tự không?
 
-Nói và nghe thì được. Nhưng mọi tài liệu viết trên mức du lịch đều dùng hán tự, nên trần nhà đến rất nhanh. Đa số người tự học bỏ qua chữ viết quay lại với nó trong vòng một năm.
+Nói và nghe thì được. Nhưng mọi tài liệu viết trên mức du lịch đều dùng hán tự, nên bạn sẽ chạm trần rất nhanh. Đa số người tự học bỏ qua chữ viết quay lại với nó trong vòng một năm.
 
 ### Có cần viết hán tự tay không?
 

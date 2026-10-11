@@ -35,13 +35,13 @@ Anki là động cơ mục đích chung. Tiếng Nhật không mục đích chun
 
 **Tạo thẻ mặc định thủ công.** Để thêm một từ, bạn thường mở từ điển, sao chép từ, dán, sao chép đọc, dán, sao chép dịch, dán, tìm âm thanh ở đâu đó, đính kèm. Làm điều này cho một trăm từ và bạn đã mất một buổi tối.
 
-**Hán tự và từ vựng tồn tại như những mảng tách biệt.** Anki không biết rằng 食べる và 食事 chia sẻ cùng hán tự, hoặc rằng bạn "biết" một hán tự khi đã thấy nó trong năm từ khác nhau. Bạn tự xây dựng liên kết đó, hoặc không có nó.
+**Hán tự và từ vựng tồn tại như những mảng tách biệt.** Anki không biết rằng 食べる và 食事 dùng chung một hán tự, hoặc rằng bạn "biết" một hán tự khi đã thấy nó trong năm từ khác nhau. Bạn tự xây dựng liên kết đó, hoặc không có nó.
 
 **Furigana là thứ bạn thêm, không phải thứ bạn có.** Ẩn furigana trên hán tự đã học (để buộc bạn nhớ đọc) đòi hỏi cấu hình tùy chỉnh. Mặc định, furigana luôn bật hoặc luôn tắt.
 
-**Ngữ pháp là ứng dụng riêng.** Đa số người học ghép Anki với một SRS ngữ pháp (Bunpro) hoặc giáo trình. Anki không có khái niệm "giải thích điểm ngữ pháp này bằng từ ta đã biết", vì nó không có khái niệm về việc ta biết từ nào.
+**Ngữ pháp là ứng dụng riêng.** Đa số người học ghép Anki với một SRS ngữ pháp (Bunpro) hoặc giáo trình. Anki không có khái niệm "giải thích điểm ngữ pháp này bằng từ bạn đã biết", vì nó không có khái niệm về việc bạn biết từ nào.
 
-**Giao diện giả định tiếng Anh.** UI Anki ưu tiên tiếng Anh. Có bản dịch cộng đồng và bộ bài cộng đồng tiếng Việt, nhưng ứng dụng không được thiết kế cho người học tiếng Nhật *qua* tiếng Việt, tiếng Hàn, hay tiếng Nga.
+**Giao diện giả định tiếng Anh.** UI Anki ưu tiên tiếng Anh. Có bản dịch cộng đồng và bộ bài cộng đồng tiếng Nga, nhưng ứng dụng không được thiết kế cho người học tiếng Nhật *qua* tiếng Việt, tiếng Hàn, hay tiếng Nga.
 
 Không gì trong số này là lỗi của Anki. Anki làm đúng những gì nó đặt ra. Đó là dấu hiệu cho thấy Anki là công cụ chung còn tiếng Nhật là vấn đề cụ thể.
 
@@ -77,7 +77,7 @@ Vài điểm khác biệt cụ thể so với Anki, với cảnh báo trung th�
 | Ngôn ngữ giao diện | Tiếng Anh (có bản dịch cộng đồng) | Tiếng Anh, tiếng Nga, tiếng Hàn và tiếng Việt |
 | Nhập từ Anki | — | Nhập bộ bài `.anki2` / `.anki21` |
 
-Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không phải vứt bỏ hàng năm tiến bộ với Anki. Origa nhập các bộ bài Anki hiện có, vì vậy chi phí di chuyển thấp.
+Dòng cuối quan trọng nếu bạn cân nhắc chuyển đổi: bạn không phải vứt bỏ nhiều năm tiến bộ với Anki. Origa nhập các bộ bài Anki hiện có, vì vậy chi phí di chuyển thấp.
 
 ### Hạn chế đã biết
 
@@ -91,7 +91,7 @@ Nếu bất kỳ điều nào phá vỡ quy trình của bạn, đó là lý do 
 
 Origa không phải lựa chọn duy nhất, và tùy vào điểm nghẽn của bạn, có thể không phải tốt nhất.
 
-- **Riêng hán tự: [WaniKani](https://www.wanikani.com/).** Dựa theo gốc, thứ tự có cấu trúc, giao diện tiếng Anh. Tốt nhất nếu bạn bắt đầu hán tự từ số 0 và muốn một lộ trình cố định. Nó trả phí, và thứ tự của nó là của riêng nó. Bạn học cái nó dạy, không phải cái bạn gặp hôm nay.
+- **Riêng hán tự: [WaniKani](https://www.wanikani.com/).** Dựa theo bộ thủ, thứ tự có cấu trúc, giao diện tiếng Anh. Tốt nhất nếu bạn bắt đầu hán tự từ số 0 và muốn một lộ trình cố định. Nó trả phí, và thứ tự của nó là của riêng nó. Bạn học cái nó dạy, không phải cái bạn gặp hôm nay.
 - **Riêng ngữ pháp: [Bunpro](https://bunpro.jp/).** SRS ngữ pháp, dựa trên web, giao diện tiếng Anh. Tốt nhất nếu điểm nghẽn là drill ngữ pháp và bạn sẵn sàng giữ từ vựng trong Anki.
 - **Cho người mới bắt đầu hoàn toàn: [Duolingo](https://www.duolingo.com/).** Game hóa, nhẹ nhàng, nông. Không thay thế khả năng ghi nhớ của Anki; một điểm khởi đầu bạn sẽ vượt qua.
 - **Cho mô phỏng thi JLPT: [Migii](https://eup.java-mind.com/).** Luyện tập thi có thời gian. Bổ sung một công cụ ghi nhớ thay vì thay thế.
