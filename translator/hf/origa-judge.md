@@ -119,11 +119,7 @@ The standalone content scanners that pair this judge with the double-confirmatio
 
 ## Production record
 
-One cleanup pass over the live Origa CDN with this judge in the loop: 2,066 phrase fixes and 1,693 dictionary fixes (Japanese insertions, wrong meanings, hallucinated senses, wrong-language entries), each fix double-confirmed and regression-checked.
-
-## Limitations
-
-- Ranking-only; no calibrated absolute thresholds (see #713).
+Deployed in Origa's production content pipeline for dictionary and phrase quality control.
 - False negatives on phonetic loanwords.
 - Trained and evaluated on ja→{en,ru,ko,vi} pairs from one domain (learning content). Out-of-domain behavior is untested.
 

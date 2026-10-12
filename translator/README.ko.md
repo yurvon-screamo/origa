@@ -2,7 +2,7 @@
 
 [English](README.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [Tiếng Việt](README.vi.md)
 
-Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기, 품질 판별기(judge), 그리고 라이브 CDN에 대해 실행된 프로덕션 정리 파이프라인.
+Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기와 품질 판별기(judge).
 
 여기는 코드와 평가 하네스입니다. 모델 가중치는 Hugging Face에 있고, 학습 코퍼스는 내부 자산으로 공개하지 않습니다.
 
@@ -13,9 +13,6 @@ Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기, 
 
 **판별기** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N); 절대 점수는 로캘별로 보정되지 않았습니다 — [이슈 #713](https://github.com/yurvon-screamo/origa/issues/713) 참조.
-
-**정리 파이프라인** (프로덕션 1회 실행 완료)
-judge로 스캔 → 이중 확인(로캘 내 백분위 × 알고리즘 플래그) → 서브에이전트 재작성 → 레코드별 리비전 → judge 회귀 검증 → CDN 패치 → 배포 + HTTP 검증. 프로덕션 1회 실행에서 구문 2,066건과 사전 1,693건을 수정했습니다.
 
 ## 품질 수치
 
