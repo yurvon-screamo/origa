@@ -1,0 +1,8 @@
+{
+  "name": "origa-factory",
+  "private": true,
+  "devDependencies": {
+    "bun-types": "^1.4.3",
+    "typescript": "^7.0.2"
+  }
+}

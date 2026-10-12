@@ -110,3 +110,4 @@ packaging/flatpak/cargo-sources.json
 /vendors/
 
 *.flatpak
+.opencode/factory/node_modules/
