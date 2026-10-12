@@ -11,7 +11,7 @@ This is the code and evaluation harness. Model weights live on Hugging Face; tra
 **Translator — `ep1`** ([HF: origa-translator-ep1](https://huggingface.co/yurvon-screamo/origa-translator-ep1))
 LoRA adapter (r=16 α=32, 24.16M trainable, 205 text-stack modules) over `google/gemma-4-E2B-it-qat-w4a16-ct`. Trained for 1 epoch on 600k phrase pairs (150k × 4 locales), val_loss 0.6720.
 
-**Judge — `v3`** ([HF: origa-judge-v3](https://huggingface.co/yurvon-screamo/origa-judge-v3))
+**Judge — `v3`** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 59,973 pairs. Internal eval: 81.9% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N); its absolute scores are not calibrated per locale — see [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
 
 **Cleanup pipeline** (completed run)
@@ -81,7 +81,7 @@ Scripts read locations from environment variables (all optional, defaults are re
 | --- | --- |
 | `ORIGA_DATA_DIR` | Training data root |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoints and scratch space |
-| `ORIGA_JUDGE_HEADS` | Path to `judge_heads_v3.pt` |
+| `ORIGA_JUDGE_HEADS` | Path to `origa-judge.pt` |
 | `ORIGA_JUDGE_DATA` | Judge datasets |
 | `ORIGA_PIPELINE_OUT` | Cleanup pipeline output |
 | `ORIGA_CDN_PHRASES`, `ORIGA_CDN_DICTIONARY` | Live CDN content trees |

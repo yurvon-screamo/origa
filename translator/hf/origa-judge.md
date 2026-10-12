@@ -84,7 +84,7 @@ class Heads(torch.nn.Module):
         zc = F.normalize(self.a(av), dim=-1)
         return (zq * zc).sum(-1)
 
-ck = torch.load(hf_hub_download("yurvon-screamo/origa-judge-v3", "judge_heads_v3.pt"), map_location="cpu")
+ck = torch.load(hf_hub_download("yurvon-screamo/origa-judge", "origa-judge.pt"), map_location="cpu")
 heads = Heads(ck["dim"]); heads.load_state_dict(ck["heads"]); heads.eval()
 
 def embed(texts):
