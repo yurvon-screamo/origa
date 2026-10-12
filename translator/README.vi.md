@@ -76,7 +76,7 @@ Các script đọc đường dẫn từ biến môi trường (tất cả tùy c
 | --- | --- |
 | `ORIGA_DATA_DIR` | Thư mục gốc dữ liệu huấn luyện |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoint và không gian làm việc |
-| `ORIGA_JUDGE_HEADS` | Đường dẫn tới `judge_heads_v3.pt` |
+| `ORIGA_JUDGE_HEADS` | Đường dẫn tới `origa-judge.pt` |
 | `ORIGA_JUDGE_DATA` | Dataset của judge |
 
 ## Công thức huấn luyện (nền QAT)
