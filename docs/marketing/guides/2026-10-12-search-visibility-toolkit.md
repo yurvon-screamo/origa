@@ -36,8 +36,14 @@ creds = service_account.Credentials.from_service_account_file(
     PATH_TO_JSON, scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
 svc = build("searchconsole", "v1", credentials=creds)
 
+# ВАЖНО: siteUrl должен совпадать с типом проперти в GSC.
+# У нас проперти — URL-prefix `https://origa.uwuwu.net/`; запросы к
+# `sc-domain:origa.uwuwu.net` вернут 403 forbidden даже при полном доступе.
+# Список доступных проперти: svc.sites().list().execute()
+SITE = "https://origa.uwuwu.net/"
+
 row = svc.searchanalytics().query(
-    siteUrl="sc-domain:origa.uwuwu.net",
+    siteUrl=SITE,
     body={
         "startDate": "2026-09-12", "endDate": "2026-10-12",
         "dimensions": ["query"],            # + "page", "country" вторым срезом
