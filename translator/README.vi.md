@@ -69,8 +69,6 @@ Inference của judge: serve `intfloat/multilingual-e5-base` qua vLLM pooling v�
 | `judge_api.py` | API câu hỏi có kiểu đặt trên các đầu judge |
 | `train_judge_heads.py` | Trainer các đầu judge (ăn embedding từ vLLM) |
 | `build_judge_v3.py` | Lắp dataset judge (v3) |
-| `pipeline_translate_judge.py` | Đầu-cuối: dịch → kiểm tra → judge → margin |
-| `scan_phrases_v3.py` / `scan_dictionary_v3.py` | Quét production trên phrase/từ điển CDN |
 
 Các script đọc đường dẫn từ biến môi trường (tất cả tùy chọn, mặc định tính theo repo):
 
@@ -80,8 +78,6 @@ Các script đọc đường dẫn từ biến môi trường (tất cả tùy c
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoint và không gian làm việc |
 | `ORIGA_JUDGE_HEADS` | Đường dẫn tới `judge_heads_v3.pt` |
 | `ORIGA_JUDGE_DATA` | Dataset của judge |
-| `ORIGA_PIPELINE_OUT` | Đầu ra của pipeline dọn dẹp |
-| `ORIGA_CDN_PHRASES`, `ORIGA_CDN_DICTIONARY` | Cây nội dung CDN thật |
 
 ## Công thức huấn luyện (nền QAT)
 
@@ -95,7 +91,6 @@ Post-mortem đầy đủ, gồm các bản sửa hạ tầng (lồng cgroup ch�
 ## Hạn chế đã biết
 
 - Judge xếp hạng, không chấm điểm tuyệt đối. Ngưỡng tuyệt đối chưa hiệu chỉnh theo từng locale (bằng chứng cho KO và VI tại [#713](https://github.com/yurvon-screamo/origa/issues/713)). Best-of-N là cách dùng được hỗ trợ.
-- `pipeline_translate_judge.py` vẫn trỏ vào judge heads v2 mặc định (lịch sử); các scanner độc lập (`scan_phrases_v3.py`, `scan_dictionary_v3.py`) dùng v3. Đây là chủ ý, mô tả nguyên trạng, chưa hợp nhất.
 - Judge cho false-negative trên từ mượn phiên âm; vì vậy scan production luôn cần quy tắc xác nhận kép (phân vị × cờ thuật toán), không cắt theo điểm thô.
 - Translator còn sót lỗi 🟡 trên VI (trôi register, trôi lịch sự) và hiếm chỗ đảo cấu trúc trên EN. Chúng tôi đánh giá đây là trần năng lực của nền 2B; thêm dữ liệu không làm mất đi.
 - Huấn luyện chỉ chạy trên Intel XPU; inference chạy ở bất cứ đâu vLLM hỗ trợ nền.
