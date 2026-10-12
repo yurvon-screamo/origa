@@ -2,7 +2,7 @@
 
 [English](README.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [Tiếng Việt](README.vi.md)
 
-Bộ stack dịch cho pipeline nội dung của Origa: một bộ dịch JA→{EN,RU,KO,VI}, một judge chấm chất lượng, và pipeline dọn dẹp đã chạy trên CDN thật.
+Bộ stack dịch cho pipeline nội dung của Origa: một bộ dịch JA→{EN,RU,KO,VI} và một judge chấm chất lượng.
 
 Đây là code và bộ đo lường. Trọng số mô hình nằm trên Hugging Face; kho dữ liệu huấn luyện là nội bộ, không phát hành.
 
@@ -13,9 +13,6 @@ Adapter LoRA (r=16 α=32, 24.16M tham số huấn luyện được, 205 mô-đun
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N); điểm tuyệt đối chưa được hiệu chỉnh theo từng locale — xem [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
-
-**Pipeline dọn dẹp** (đã chạy xong)
-Quét bằng judge → xác nhận kép (phân vị theo locale × cờ thuật toán) → subagent viết lại → soát từng bản ghi → judge regression → vá CDN → deploy + kiểm chứng HTTP. Một lượt chạy trên bản production đã sửa 2,066 bản ghi phrase và 1,693 bản ghi từ điển.
 
 ## Các con số chất lượng
 

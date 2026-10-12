@@ -2,7 +2,7 @@
 
 [English](README.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [Tiếng Việt](README.vi.md)
 
-Translation stack for the Origa content pipeline: a JA→{EN,RU,KO,VI} translator, a quality judge, and the production cleanup pipeline that ran against the live CDN.
+Translation stack for the Origa content pipeline: a JA→{EN,RU,KO,VI} translator and a quality judge.
 
 This is the code and evaluation harness. Model weights live on Hugging Face; training corpora are internal and not released.
 
@@ -13,9 +13,6 @@ LoRA adapter (r=16 α=32, 24.16M trainable, 205 text-stack modules) over `google
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 59,973 pairs. Internal eval: 81.9% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N); its absolute scores are not calibrated per locale — see [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
-
-**Cleanup pipeline** (completed run)
-Scan with the judge → double confirmation (per-locale percentile × algorithmic flag) → subagent rewrite → per-record revision → judge regression → CDN patch → deploy + HTTP verify. One production pass fixed 2,066 phrase records and 1,693 dictionary records.
 
 ## Quality numbers
 
