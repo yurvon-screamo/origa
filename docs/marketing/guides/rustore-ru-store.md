@@ -5,7 +5,7 @@
 
 ## Статус доступов
 
-Ключ есть (`marketing/.env`: `RUSTORE_KEY_ID` + `RUSTORE_PRIVATE_KEY_PATH` → `keys/rustore_private_key.b64`, id приложения 2351033386, пакет `net.uwuwu.origa`). Работает: рейтинг, отзывы, статусы версий, публикация (последняя уже в CI `upload-rustore`).
+Ключ есть и разведён. `marketing/.env` хранит `RUSTORE_KEY_ID` и путь `RUSTORE_PRIVATE_KEY_PATH`; сам приватный ключ лежит в `keys/rustore_private_key.b64` (gitignored, права 600). Приложение: id 2351033386, пакет `net.uwuwu.origa`. Работает: рейтинг, отзывы, статусы версий, публикация (последняя уже в CI `upload-rustore`).
 
 ## Как получить данные
 
