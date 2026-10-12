@@ -320,7 +320,7 @@ function readdirSafe(p: string): string[] {
   }
 }
 
-async function startIssue(issue: IssueRef, state: FactoryState): Promise<void> {
+async function startIssue(issue: IssueRef, state: FactoryState, attemptsSeed: number): Promise<void> {
   const { branch, worktree } = worktreePaths(WORKTREES_ROOT, issue.number)
   mkdirSync(WORKTREES_ROOT, { recursive: true })
 
@@ -361,10 +361,10 @@ async function startIssue(issue: IssueRef, state: FactoryState): Promise<void> {
     lastCommentAt,
     lastCommentId,
     createdAt: Date.now(),
-    attempts: 0,
+    attempts: attemptsSeed,
   }
   saveState(state)
-  log(`issue #${issue.number}: сессия ${sessionID}, пайп запущен`)
+  log(`issue #${issue.number}: сессия ${sessionID}, пайп запущен (попыток до этого: ${attemptsSeed})`)
 }
 
 /** Полная чистка; помечает задачу удалённой ТОЛЬКО при подтверждении каждого шага. */
@@ -400,12 +400,11 @@ async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState
 
 // ——— цикл ———
 
-/** Учесть неудачную попытку; true = стартовать можно, false = карантин. */
-async function registerFailure(n: number, state: FactoryState, err: unknown): Promise<boolean> {
+/** Учесть неудачную попытку (seed — счётчик ДО попытки, из записи рестарт-пути). */
+async function registerFailure(n: number, state: FactoryState, seed: number, err: unknown): Promise<void> {
   const key = String(n)
-  const prev = state.issues[key]
-  const attempts = (prev?.attempts ?? 0) + 1
-  const entry: TrackedIssue = prev ?? {
+  const attempts = seed + 1
+  const entry: TrackedIssue = state.issues[key] ?? {
     sessionID: "", worktree: "", branch: "",
     lastCommentAt: "", lastCommentId: "", createdAt: Date.now(), attempts: 0,
   }
@@ -413,12 +412,10 @@ async function registerFailure(n: number, state: FactoryState, err: unknown): Pr
   state.issues[key] = entry
   saveState(state)
   log(`issue #${n}: старт не удался (попытка ${attempts}) — ${err}`)
-  if (attempts === MAX_ATTEMPTS) {
-    log(`issue #${n}: карантин после ${attempts} попыток`)
+  if (attempts >= MAX_ATTEMPTS) {
     await shOk(["gh", "issue", "comment", String(n), "--repo", REPO, "--body",
-      `🤖 [factory] не смог завестись после ${attempts} попыток. Напиши комментарий к задаче — попробую снова.`])
+      `🤖 [factory] не смог завестись (попытка ${attempts}). Проверь лог ~/.local/share/opencode/log/origa-factory.log и напиши комментарий — попробую снова.`])
   }
-  return attempts < MAX_ATTEMPTS
 }
 
 async function tick(state: FactoryState): Promise<void> {
@@ -426,9 +423,9 @@ async function tick(state: FactoryState): Promise<void> {
 
   for (const issue of untrackedIssues(issues, state)) {
     try {
-      await startIssue(issue, state)
+      await startIssue(issue, state, 0)
     } catch (e) {
-      await registerFailure(issue.number, state, e)
+      await registerFailure(issue.number, state, 0, e)
     }
   }
 
@@ -447,24 +444,27 @@ async function tick(state: FactoryState): Promise<void> {
     }
     const fresh = newUserComments(viewed.comments, { at: tracked.lastCommentAt, id: tracked.lastCommentId }, ALLOWED_AUTHORS)
 
-    // карантин/сбой: новый коммент юзера будит задачу (раньше skip-проверки)
-    if (tracked.sessionID === "" ) {
-      if (fresh.length === 0) continue // ждём активности юзера
-      log(`issue #${n}: новая активность после сбоя — перезапуск задачи`)
-      delete state.issues[key]
-      saveState(state)
-      const ref = issues.find((i) => i.number === n) ?? viewedToRef(n, viewed)
-      try {
-        await startIssue(ref, state)
-      } catch (e) {
-        await registerFailure(n, state, e)
+    if (tracked.sessionID === "") {
+      // карантин: ждём явной активности юзера
+      if (fresh.length === 0) continue
+      await restartIssue(n, tracked, fresh, issues, viewed, state)
+      continue
+    }
+
+    if (fresh.length === 0) {
+      // юзер молчит, но сессия могла умереть посреди прогона — заметить (R3):
+      // dead без fresh → уведомление и карантин (рестарт по комменту юзера,
+      // несохранённая работа ворктри не стирается молча)
+      const quiet = await sessionLiveness(tracked.sessionID)
+      if (quiet === "dead") {
+        log(`issue #${n}: сессия умерла (юзер молчит) — карантин + уведомление`)
+        tracked.sessionID = ""
+        saveState(state)
+        await shOk(["gh", "issue", "comment", String(n), "--repo", REPO, "--body",
+          "🤖 [factory] сессия разработки потеряна. Напиши комментарий — перезапущу задачу (несохранённые изменения ворктри будут перезаписаны с master)."])
       }
       continue
     }
-    // достигнут лимит без активности юзера — тишина до нового коммента
-    if (tracked.attempts >= MAX_ATTEMPTS && fresh.length === 0) continue
-
-    if (fresh.length === 0) continue
 
     const liveness = await sessionLiveness(tracked.sessionID)
     if (liveness === "unknown") {
@@ -473,14 +473,7 @@ async function tick(state: FactoryState): Promise<void> {
     }
     if (liveness === "dead") {
       log(`issue #${n}: сессия умерла — перезапуск задачи`)
-      delete state.issues[key]
-      saveState(state)
-      const ref = issues.find((i) => i.number === n) ?? viewedToRef(n, viewed)
-      try {
-        await startIssue(ref, state)
-      } catch (e) {
-        await registerFailure(n, state, e)
-      }
+      await restartIssue(n, tracked, fresh, issues, viewed, state)
       continue
     }
     log(`issue #${n}: ${fresh.length} новых коммент(ов) → сессия`)
@@ -495,9 +488,35 @@ async function tick(state: FactoryState): Promise<void> {
   }
 }
 
+/** Перезапуск задачи: граница комментов двигается ДО старта (иначе петля
+ *  на старых комментах), счётчик попыток передаётся явно и переживает путь. */
+async function restartIssue(
+  n: number,
+  tracked: TrackedIssue,
+  fresh: IssueComment[],
+  issues: IssueRef[],
+  viewed: { state: "open" | "closed"; comments: IssueComment[] },
+  state: FactoryState,
+): Promise<void> {
+  const seed = tracked.attempts
+  const last = fresh[fresh.length - 1]
+  tracked.lastCommentAt = last.createdAt
+  tracked.lastCommentId = last.id
+  tracked.sessionID = "" // карантин до успеха старта
+  saveState(state)
+  const ref = issues.find((i) => i.number === n) ?? viewedToRef(n, viewed)
+  try {
+    await startIssue(ref, state, seed)
+  } catch (e) {
+    await registerFailure(n, state, seed, e)
+  }
+}
+
 function viewedToRef(n: number, viewed: IssueView): IssueRef {
   return { number: n, title: `issue #${n}`, body: "(перезапуск после сбоя — см. комменты ишью)", state: viewed.state, updatedAt: "" }
 }
+
+let tickCount = 0
 
 async function main(): Promise<void> {
   if (!acquireLock()) {
@@ -516,6 +535,8 @@ async function main(): Promise<void> {
     } catch (e) {
       log(`tick: ${e}`)
     }
+    tickCount++
+    if (tickCount % 10 === 0) rotateLog() // ~раз в 10 минут живого демона
     await new Promise((r) => setTimeout(r, POLL_SEC * 1000))
   }
 }
