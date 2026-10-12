@@ -400,6 +400,14 @@ async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState
 
 // ——— цикл ———
 
+/** Уведомление в ишью с одним ретраем (F2: потеря коммента недопустима). */
+async function notifyIssue(n: number, body: string): Promise<void> {
+  const args = ["gh", "issue", "comment", String(n), "--repo", REPO, "--body", body]
+  if (await shOk(args)) return
+  await new Promise((r) => setTimeout(r, 15_000))
+  if (!(await shOk(args))) log(`issue #${n}: уведомление не доставлено — ${body.slice(0, 80)}`)
+}
+
 /** Учесть неудачную попытку (seed — счётчик ДО попытки, из записи рестарт-пути). */
 async function registerFailure(n: number, state: FactoryState, seed: number, err: unknown): Promise<void> {
   const key = String(n)
@@ -413,8 +421,8 @@ async function registerFailure(n: number, state: FactoryState, seed: number, err
   saveState(state)
   log(`issue #${n}: старт не удался (попытка ${attempts}) — ${err}`)
   if (attempts >= MAX_ATTEMPTS) {
-    await shOk(["gh", "issue", "comment", String(n), "--repo", REPO, "--body",
-      `🤖 [factory] не смог завестись (попытка ${attempts}). Проверь лог ~/.local/share/opencode/log/origa-factory.log и напиши комментарий — попробую снова.`])
+    await notifyIssue(n,
+      `🤖 [factory] не смог завестись (попытка ${attempts}). Проверь лог ~/.local/share/opencode/log/origa-factory.log и напиши комментарий — попробую снова.`)
   }
 }
 
@@ -460,8 +468,8 @@ async function tick(state: FactoryState): Promise<void> {
         log(`issue #${n}: сессия умерла (юзер молчит) — карантин + уведомление`)
         tracked.sessionID = ""
         saveState(state)
-        await shOk(["gh", "issue", "comment", String(n), "--repo", REPO, "--body",
-          "🤖 [factory] сессия разработки потеряна. Напиши комментарий — перезапущу задачу (несохранённые изменения ворктри будут перезаписаны с master)."])
+        await notifyIssue(n,
+          "🤖 [factory] сессия разработки потеряна. Напиши комментарий — перезапущу задачу (несохранённые изменения ворктри будут перезаписаны с master).")
       }
       continue
     }

@@ -157,20 +157,23 @@ export function worktreePaths(root: string, issueNumber: number): { branch: stri
 }
 
 /** Валидация записи state.json (битое состояние не должно попадать в git/REST пути).
- *  Два формата: полный (ses_ + work/issue-) и карантинный (пустые поля после сбоя старта). */
+ *  Три легальных формата: полный (ses_ + пути), чистый карантин (всё пусто —
+ *  сбои старта) и гибрид (sessionID="" + живые пути — сессия умерла, работа
+ *  в ворктри сохраняется до решения юзера; пишут quiet-dead и restartIssue). */
 export function isValidTracked(v: unknown): v is TrackedIssue {
   if (v === null || typeof v !== "object") return false
   const t = v as Record<string, unknown>
-  const fieldsOk =
-    typeof t.lastCommentAt === "string" &&
-    typeof t.lastCommentId === "string" &&
-    typeof t.createdAt === "number" &&
-    (t.attempts === undefined || typeof t.attempts === "number")
-  if (!fieldsOk) return false
-  if (t.sessionID === "" && t.worktree === "" && t.branch === "") return true // карантин
+  if (
+    typeof t.lastCommentAt !== "string" ||
+    typeof t.lastCommentId !== "string" ||
+    typeof t.createdAt !== "number" ||
+    !(t.attempts === undefined || typeof t.attempts === "number")
+  ) return false
+  const sesOk = t.sessionID === "" || (typeof t.sessionID === "string" && t.sessionID.startsWith("ses_"))
+  if (!sesOk) return false
+  if (t.worktree === "" && t.branch === "") return true // чистый карантин
   return (
-    typeof t.sessionID === "string" && t.sessionID.startsWith("ses_") &&
     typeof t.worktree === "string" && t.worktree.startsWith("/") &&
     typeof t.branch === "string" && t.branch.startsWith("work/issue-")
-  )
+  ) // полный или гибрид
 }

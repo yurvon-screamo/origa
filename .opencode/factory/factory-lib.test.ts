@@ -153,4 +153,11 @@ describe("isValidTracked", () => {
   test("карантинная запись (пустые поля) валидна — переживает рестарт", () => {
     expect(isValidTracked({ sessionID: "", worktree: "", branch: "", lastCommentAt: "", lastCommentId: "", createdAt: 1, attempts: 2 })).toBe(true)
   })
+  test("гибридная запись (умершая сессия + живой ворктри) валидна — F1", () => {
+    expect(isValidTracked({ ...ok, sessionID: "" })).toBe(true)
+  })
+  test("битые гибриды отбрасываются", () => {
+    expect(isValidTracked({ ...ok, sessionID: "", worktree: "" })).toBe(false)
+    expect(isValidTracked({ ...ok, sessionID: "", branch: "master" })).toBe(false)
+  })
 })
