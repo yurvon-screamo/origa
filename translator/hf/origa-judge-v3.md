@@ -48,9 +48,10 @@ Training: 5 epochs, ~5 minutes on vLLM-produced embeddings. InfoNCE heads held p
 
 ## Usage
 
-Serve the encoder through vLLM pooling:
+### 1. Serve the encoder
 
 ```bash
+pip install vllm
 vllm serve intfloat/multilingual-e5-base --served-model-name e5b \
   --runner pooling --port 8090 --gpu-memory-utilization 0.45 \
   --max-num-seqs 256 --attention-backend TRITON_ATTN \
@@ -59,11 +60,60 @@ vllm serve intfloat/multilingual-e5-base --served-model-name e5b \
 
 `MEAN` pooling is required; the vLLM default (LAST) breaks head compatibility. The default `FLASH_ATTN` backend fails on this model; use `TRITON_ATTN`.
 
-Call the heads through the typed-question API (noul/choice/score), which handles rank calibration and the context-first layout:
+### 2. Rank candidate translations (copy-paste script)
 
-[scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py)
+```bash
+pip install torch requests huggingface_hub
+```
 
-Standalone scanners that pair this judge with the double-confirmation rule:
+```python
+import numpy as np
+import requests
+import torch
+import torch.nn.functional as F
+from huggingface_hub import hf_hub_download
+
+# --- heads ---
+class Heads(torch.nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.s = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
+        self.a = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
+    def forward(self, sv, av):
+        zq = F.normalize(self.s(sv), dim=-1)
+        zc = F.normalize(self.a(av), dim=-1)
+        return (zq * zc).sum(-1)
+
+ck = torch.load(hf_hub_download("yurvon-screamo/origa-judge-v3", "judge_heads_v3.pt"), map_location="cpu")
+heads = Heads(ck["dim"]); heads.load_state_dict(ck["heads"]); heads.eval()
+
+def embed(texts):
+    r = requests.post("http://127.0.0.1:8090/v1/embeddings",
+                      json={"model": "e5b", "input": texts}, timeout=300)
+    r.raise_for_status()
+    return torch.from_numpy(np.asarray([d["embedding"] for d in r.json()["data"]], dtype=np.float32))
+
+def score(source: str, candidates: list[str]):
+    """Higher = better translation of `source` (relative, not absolute)."""
+    st = embed([f"query: {source}"])
+    ct = embed([f"passage: {t}" for t in candidates])
+    with torch.no_grad():
+        return heads(st.expand(len(candidates), -1), ct).numpy()
+
+jp = "帰りたいなぁ"
+candidates = ["I want to go home", "The way back is long"]
+for cand, s in zip(candidates, score(jp, candidates)):
+    print(f"{s: .3f}  {cand}")
+# Higher score = closer match to the source sentence.
+```
+
+Prefixed embeddings follow the e5 convention: `query:` for the source sentence, `passage:` for each candidate. Scores are comparable only within one ranking call.
+
+### 3. Typed-question API
+
+The production wrapper around these heads (yes/no verdicts, multiple choice, expected-score questions with rank-calibrated softmax) lives in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py).
+
+The standalone content scanners that pair this judge with the double-confirmation rule:
 
 [scan_phrases_v3.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/scan_phrases_v3.py) · [scan_dictionary_v3.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/scan_dictionary_v3.py)
 
