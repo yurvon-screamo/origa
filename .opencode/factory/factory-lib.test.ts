@@ -64,7 +64,7 @@ describe("newUserComments", () => {
     // обработан второй (21): пусто — вечного дубля нет
     expect(newUserComments(same, { at: same[1].createdAt, id: "21" }, ALLOWED)).toEqual([])
   })
-  test("пустая граница = всё новое (🤖-комментыисключены)", () => {
+  test("пустая граница = всё новое (🤖-комменты исключены)", () => {
     // base[0] — 🤖-коммент агента: не триггерит даже без границы
     expect(newUserComments(base, { at: "", id: "" }, ALLOWED).map((x) => x.id)).toEqual(["11"])
   })
@@ -147,8 +147,10 @@ describe("isValidTracked", () => {
   })
   test("битые записи отбрасываются", () => {
     expect(isValidTracked({ ...ok, sessionID: "junk" })).toBe(false)
-    expect(isValidTracked({ ...ok, sessionID: "" })).toBe(true) // карантин
     expect(isValidTracked({ ...ok, branch: "master" })).toBe(false)
     expect(isValidTracked(null)).toBe(false)
+  })
+  test("карантинная запись (пустые поля) валидна — переживает рестарт", () => {
+    expect(isValidTracked({ sessionID: "", worktree: "", branch: "", lastCommentAt: "", lastCommentId: "", createdAt: 1, attempts: 2 })).toBe(true)
   })
 })

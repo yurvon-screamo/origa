@@ -3,7 +3,7 @@
 // сессию девелопера в своём ворктри от свежего master, мостит комменты юзера
 // (allowlist-авторы) в сессию, агент сам постит вопросы/отчёты/PR через gh.
 // Закрытие ишью — сессия и ворктри умирают. Запуск: systemd --user.
-import { appendFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync, renameSync, existsSync, rmSync } from "node:fs"
+import { appendFileSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, renameSync, existsSync, rmSync } from "node:fs"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
 import {
@@ -41,16 +41,48 @@ const log = (m: string): void => {
   try { appendFileSync(LOG_PATH, `${new Date().toISOString()} ${m}\n`) } catch {}
 }
 
-// ——— одиночный инстанс (lock-каталог атомарен) ———
+/** Ротация: >5MB → .old (перезапись предыдущего .old). */
+function rotateLog(): void {
+  try {
+    if (!existsSync(LOG_PATH)) return
+    if (statSync(LOG_PATH).size > 5 * 1024 * 1024) {
+      rmSync(`${LOG_PATH}.old`, { force: true })
+      renameSync(LOG_PATH, `${LOG_PATH}.old`)
+    }
+  } catch {}
+}
+
+// ——— одиночный инстанс: lock-каталог + pid, самоосвобождение по SIGTERM ———
 
 function acquireLock(): boolean {
   try {
     mkdirSync(LOCK_DIR, { recursive: false })
-    writeFileSync(join(LOCK_DIR, "pid"), String(process.pid))
-    return true
   } catch {
-    return false
+    // каталог есть: жив ли владелец?
+    try {
+      const pid = Number(readFileSync(join(LOCK_DIR, "pid"), "utf-8").trim())
+      if (Number.isInteger(pid)) {
+        process.kill(pid, 0) // бросает, если процесс мёртв
+        return false // живой конкурент
+      }
+    } catch {
+      // pid-файла нет или процесс мёртв — захватываем брошенный lock
+    }
+    try {
+      rmSync(LOCK_DIR, { recursive: true, force: true })
+      mkdirSync(LOCK_DIR, { recursive: false })
+    } catch {
+      return false
+    }
   }
+  writeFileSync(join(LOCK_DIR, "pid"), String(process.pid))
+  const release = (): void => {
+    try { rmSync(LOCK_DIR, { recursive: true, force: true }) } catch {}
+    process.exit(0)
+  }
+  process.on("SIGTERM", release)
+  process.on("SIGINT", release)
+  return true
 }
 
 // ——— состояние (валидация + атомарная запись) ———
@@ -189,15 +221,21 @@ async function restCall(path: string, init?: { method?: string; body?: unknown }
   const reg = JSON.parse(readFileSync(SERVICE_REG, "utf-8")) as { url?: string; password?: string }
   const base = (reg.url ?? "").replace("0.0.0.0", "127.0.0.1")
   const auth = "Basic " + Buffer.from(`opencode:${reg.password ?? ""}`).toString("base64")
-  const res = await fetch(`${base}/api${path}`, {
-    method: init?.method ?? "GET",
-    headers: { authorization: auth, "content-type": "application/json" },
-    body: init?.body === undefined ? undefined : JSON.stringify(init.body),
-    signal: AbortSignal.timeout(REST_TIMEOUT_MS),
-  })
+  let res: Response
+  try {
+    res = await fetch(`${base}/api${path}`, {
+      method: init?.method ?? "GET",
+      headers: { authorization: auth, "content-type": "application/json" },
+      body: init?.body === undefined ? undefined : JSON.stringify(init.body),
+      signal: AbortSignal.timeout(REST_TIMEOUT_MS),
+    })
+  } catch (e) {
+    // транспортная ошибка/таймаут — статус неизвестен
+    throw Object.assign(new Error(`transport: ${e}`), { status: 0 })
+  }
   const text = await res.text()
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`)
+    throw Object.assign(new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`), { status: res.status })
   }
   if (text.trim() === "") return {}
   const j: unknown = JSON.parse(text)
@@ -227,12 +265,18 @@ async function promptSession(sessionID: string, text: string): Promise<boolean> 
   }
 }
 
-async function sessionAlive(sessionID: string): Promise<boolean> {
+type Liveness = "alive" | "dead" | "unknown"
+
+/** 404 = сессии нет; таймаут/сеть/5xx = неизвестно — разрушать нельзя. */
+async function sessionLiveness(sessionID: string): Promise<Liveness> {
+  if (sessionID === "") return "dead"
   try {
     await restCall(`/session/${sessionID}`)
-    return true
-  } catch {
-    return false
+    return "alive"
+  } catch (e) {
+    const status = (e as { status?: number }).status
+    if (status === 404 || status === 400) return "dead"
+    return "unknown"
   }
 }
 
@@ -255,11 +299,15 @@ function reconcileOrphans(state: FactoryState): void {
   for (const name of readdirSafe(WORKTREES_ROOT)) {
     const full = join(WORKTREES_ROOT, name)
     if (!known.has(full) && /^issue-\d+$/.test(name)) {
-      log(`reconcile: осиротевший ворктри ${full} — удаляю`)
-      rmSync(full, { recursive: true, force: true })
-      void shOk(["git", "-C", ORIGA, "worktree", "prune"])
-      const m = name.match(/^issue-(\d+)$/)
-      if (m) void shOk(["git", "-C", ORIGA, "branch", "-D", `work/${name}`])
+      try {
+        log(`reconcile: осиротевший ворктри ${full} — удаляю`)
+        rmSync(full, { recursive: true, force: true })
+        void shOk(["git", "-C", ORIGA, "worktree", "prune"])
+        const m = name.match(/^issue-(\d+)$/)
+        if (m) void shOk(["git", "-C", ORIGA, "branch", "-D", `work/${name}`])
+      } catch (e) {
+        log(`reconcile: ${full} не удался — ${e} (не критично, попробую на след. старте)`)
+      }
     }
   }
 }
@@ -276,13 +324,13 @@ async function startIssue(issue: IssueRef, state: FactoryState): Promise<void> {
   const { branch, worktree } = worktreePaths(WORKTREES_ROOT, issue.number)
   mkdirSync(WORKTREES_ROOT, { recursive: true })
 
-  // идемпотентность: хвосты прошлого неудачного старта вычищаем
+  // идемпотентность: хвосты прошлого неудачного старта вычищаем безусловно
   if (existsSync(worktree)) {
-    log(`issue #${issue.number}: ворктри уже есть — переиспользую путь заново`)
+    log(`issue #${issue.number}: ворктри уже есть — чищу перед пересозданием`)
     rmSync(worktree, { recursive: true, force: true })
-    await shOk(["git", "-C", ORIGA, "worktree", "prune"])
-    await shOk(["git", "-C", ORIGA, "branch", "-D", branch])
   }
+  await shOk(["git", "-C", ORIGA, "worktree", "prune"])
+  await shOk(["git", "-C", ORIGA, "branch", "-D", branch])
 
   await sh(["git", "-C", ORIGA, "fetch", "origin", "master"])
   await sh(["git", "-C", ORIGA, "worktree", "add", "-b", branch, worktree, "origin/master"])
@@ -291,7 +339,10 @@ async function startIssue(issue: IssueRef, state: FactoryState): Promise<void> {
   if (sessionID === null) throw new Error("сессия не создалась")
 
   const sent = await promptSession(sessionID, kickoffPrompt(issue, REPO))
-  if (!sent) throw new Error("kickoff-промпт не ушёл")
+  if (!sent) {
+    await deleteSession(sessionID) // rollback: сессия создана, но не запущена
+    throw new Error("kickoff-промпт не ушёл")
+  }
 
   // актуальная граница комментов: не будить агента старыми
   const viewed = await viewIssue(issue.number)
@@ -320,11 +371,13 @@ async function startIssue(issue: IssueRef, state: FactoryState): Promise<void> {
 async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState): Promise<void> {
   log(`issue #${n}: закрыта — чистка`)
   let clean = true
-  if (!(await sessionAlive(tracked.sessionID)) || (await deleteSession(tracked.sessionID))) {
-    // сессии нет или удалена — ок
-  } else {
+  const liveness = await sessionLiveness(tracked.sessionID)
+  if (liveness === "unknown") {
     clean = false
-    log(`issue #${n}: сессия не удалилась — оставляю в state для ретрая`)
+    log(`issue #${n}: живость сессии неизвестна — ретрай чистки на след. тике`)
+  } else if (liveness === "alive" && !(await deleteSession(tracked.sessionID))) {
+    clean = false
+    log(`issue #${n}: сессия не удалилась — ретрай чистки на след. тике`)
   }
   if (existsSync(tracked.worktree)) {
     const removed = await shOk(["git", "-C", ORIGA, "worktree", "remove", "--force", tracked.worktree])
@@ -334,7 +387,7 @@ async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState
     }
     if (existsSync(tracked.worktree)) {
       clean = false
-      log(`issue #${n}: ворктри не удалился — оставляю в state для ретрая`)
+      log(`issue #${n}: ворктри не удалился — ретрай чистки на след. тике`)
     }
   }
   await shOk(["git", "-C", ORIGA, "branch", "-D", tracked.branch])
@@ -347,6 +400,27 @@ async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState
 
 // ——— цикл ———
 
+/** Учесть неудачную попытку; true = стартовать можно, false = карантин. */
+async function registerFailure(n: number, state: FactoryState, err: unknown): Promise<boolean> {
+  const key = String(n)
+  const prev = state.issues[key]
+  const attempts = (prev?.attempts ?? 0) + 1
+  const entry: TrackedIssue = prev ?? {
+    sessionID: "", worktree: "", branch: "",
+    lastCommentAt: "", lastCommentId: "", createdAt: Date.now(), attempts: 0,
+  }
+  entry.attempts = attempts
+  state.issues[key] = entry
+  saveState(state)
+  log(`issue #${n}: старт не удался (попытка ${attempts}) — ${err}`)
+  if (attempts === MAX_ATTEMPTS) {
+    log(`issue #${n}: карантин после ${attempts} попыток`)
+    await shOk(["gh", "issue", "comment", String(n), "--repo", REPO, "--body",
+      `🤖 [factory] не смог завестись после ${attempts} попыток. Напиши комментарий к задаче — попробую снова.`])
+  }
+  return attempts < MAX_ATTEMPTS
+}
+
 async function tick(state: FactoryState): Promise<void> {
   const issues = await listOpenIssues()
 
@@ -354,30 +428,12 @@ async function tick(state: FactoryState): Promise<void> {
     try {
       await startIssue(issue, state)
     } catch (e) {
-      log(`issue #${issue.number}: старт не удался — ${e}`)
-      const prev = state.issues[String(issue.number)]
-      const attempts = (prev?.attempts ?? 0) + 1
-      if (prev) prev.attempts = attempts
-      else state.issues[String(issue.number)] = {
-        sessionID: "", worktree: "", branch: "",
-        lastCommentAt: "", lastCommentId: "", createdAt: Date.now(), attempts,
-      }
-      saveState(state)
-      if (attempts >= MAX_ATTEMPTS) {
-        log(`issue #${issue.number}: карантин после ${attempts} попыток`)
-        await shOk(["gh", "issue", "comment", String(issue.number), "--repo", REPO, "--body",
-          `🤖 [factory] не смог завестись после ${attempts} попыток. Напиши комментарий к задаче — попробую снова.`])
-      }
+      await registerFailure(issue.number, state, e)
     }
   }
 
   for (const key of Object.keys(state.issues)) {
     const tracked = state.issues[key]
-    // карантин: новая активность юзера сбрасывает счётчик
-    if (tracked.attempts >= MAX_ATTEMPTS) {
-      // проснётся при новом комменте ниже (viewIssue+граница не тронуты)
-      continue
-    }
     const n = Number(key)
     const viewed = await viewIssue(n)
     if (viewed === null) continue
@@ -390,9 +446,10 @@ async function tick(state: FactoryState): Promise<void> {
       continue
     }
     const fresh = newUserComments(viewed.comments, { at: tracked.lastCommentAt, id: tracked.lastCommentId }, ALLOWED_AUTHORS)
-    if (fresh.length === 0) continue
-    if (tracked.sessionID === "") {
-      // задача в карантине/после сбоя: новый коммент — перезапуск
+
+    // карантин/сбой: новый коммент юзера будит задачу (раньше skip-проверки)
+    if (tracked.sessionID === "" ) {
+      if (fresh.length === 0) continue // ждём активности юзера
       log(`issue #${n}: новая активность после сбоя — перезапуск задачи`)
       delete state.issues[key]
       saveState(state)
@@ -400,11 +457,21 @@ async function tick(state: FactoryState): Promise<void> {
       try {
         await startIssue(ref, state)
       } catch (e) {
-        log(`issue #${n}: перезапуск не удался — ${e}`)
+        await registerFailure(n, state, e)
       }
       continue
     }
-    if (!(await sessionAlive(tracked.sessionID))) {
+    // достигнут лимит без активности юзера — тишина до нового коммента
+    if (tracked.attempts >= MAX_ATTEMPTS && fresh.length === 0) continue
+
+    if (fresh.length === 0) continue
+
+    const liveness = await sessionLiveness(tracked.sessionID)
+    if (liveness === "unknown") {
+      log(`issue #${n}: живость сессии неизвестна (сеть/таймаут) — пропускаю тик`)
+      continue // разрушать живую сессию по неоднозначному сигналу нельзя
+    }
+    if (liveness === "dead") {
       log(`issue #${n}: сессия умерла — перезапуск задачи`)
       delete state.issues[key]
       saveState(state)
@@ -412,7 +479,7 @@ async function tick(state: FactoryState): Promise<void> {
       try {
         await startIssue(ref, state)
       } catch (e) {
-        log(`issue #${n}: перезапуск после смерти сессии не удался — ${e}`)
+        await registerFailure(n, state, e)
       }
       continue
     }
@@ -434,10 +501,11 @@ function viewedToRef(n: number, viewed: IssueView): IssueRef {
 
 async function main(): Promise<void> {
   if (!acquireLock()) {
-    console.error("другой инстанс origa-factory держит lock — выходим")
+    console.error("другой живой инстанс origa-factory держит lock — выходим")
     process.exit(1)
   }
   mkdirSync(dirname(LOG_PATH), { recursive: true })
+  rotateLog()
   log(`origa-factory: старт (repo=${REPO}, label=${LABEL}, poll=${POLL_SEC}s, model=${MODEL.id})`)
   const state = loadState()
   log(`восстановлено задач: ${Object.keys(state.issues).length}`)
