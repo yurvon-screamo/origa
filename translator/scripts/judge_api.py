@@ -13,7 +13,7 @@ Types:
     score:  {"instructions": str, "criteria": [level, ...]}
             -> {"expected": float, "levels": [P per level]}
 
-Backed by: e5b embeddings server (:8090, mean pooling) + judge_heads_v3.
+Backed by: e5b embeddings server (:8090, mean pooling) + judge heads.
 NOTE: probabilities are RANKED-CALIBRATED only (relative comparison);
 absolute thresholds require the future calibration layer (per-locale).
 
@@ -36,7 +36,7 @@ import torch
 import torch.nn.functional as F
 
 EMB_URL = "http://127.0.0.1:8090/v1/embeddings"
-HEADS = Path(os.environ.get("ORIGA_JUDGE_HEADS", "model/judge_heads_v3.pt"))
+HEADS = Path(os.environ.get("ORIGA_JUDGE_HEADS", "model/origa-judge.pt"))
 MAX_LEN = 1000  # e5 window guard (512 tokens ~ safe for our locales)
 
 

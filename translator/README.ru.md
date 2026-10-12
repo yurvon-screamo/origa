@@ -76,7 +76,7 @@ tok = AutoTokenizer.from_pretrained(BASE)
 | --- | --- |
 | `ORIGA_DATA_DIR` | Корень обучающих данных |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Чекпоинты и рабочее пространство |
-| `ORIGA_JUDGE_HEADS` | Путь к `judge_heads_v3.pt` |
+| `ORIGA_JUDGE_HEADS` | Путь к `origa-judge.pt` |
 | `ORIGA_JUDGE_DATA` | Датасеты судьи |
 
 ## Рецепт обучения (QAT-база)

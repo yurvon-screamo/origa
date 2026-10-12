@@ -76,7 +76,7 @@ judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되
 | --- | --- |
 | `ORIGA_DATA_DIR` | 학습 데이터 루트 |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | 체크포인트와 작업 공간 |
-| `ORIGA_JUDGE_HEADS` | `judge_heads_v3.pt` 경로 |
+| `ORIGA_JUDGE_HEADS` | `origa-judge.pt` 경로 |
 | `ORIGA_JUDGE_DATA` | judge 데이터셋 |
 
 ## 학습 레시피 (QAT 베이스)
