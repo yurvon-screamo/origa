@@ -11,7 +11,7 @@ Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기, 
 **번역기 — `ep1`** ([HF: origa-translator-ep1](https://huggingface.co/yurvon-screamo/origa-translator-ep1))
 `google/gemma-4-E2B-it-qat-w4a16-ct` 위의 LoRA 어댑터(r=16 α=32, 학습 파라미터 24.16M, 텍스트 스택 205개 모듈). 600k 문장 쌍(150k × 4 로캘)으로 1 에포크 학습, val_loss 0.6720.
 
-**판별기 — `v3`** ([HF: origa-judge-v3](https://huggingface.co/yurvon-screamo/origa-judge-v3))
+**판별기** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N); 절대 점수는 로캘별로 보정되지 않았습니다 — [이슈 #713](https://github.com/yurvon-screamo/origa/issues/713) 참조.
 
 **정리 파이프라인** (프로덕션 1회 실행 완료)

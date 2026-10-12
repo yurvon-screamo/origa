@@ -11,7 +11,7 @@ Bộ stack dịch cho pipeline nội dung của Origa: một bộ dịch JA→{E
 **Translator — `ep1`** ([HF: origa-translator-ep1](https://huggingface.co/yurvon-screamo/origa-translator-ep1))
 Adapter LoRA (r=16 α=32, 24.16M tham số huấn luyện được, 205 mô-đun trên text stack) đặt trên `google/gemma-4-E2B-it-qat-w4a16-ct`. Huấn luyện 1 epoch trên 600k cặp câu (150k × 4 locale), val_loss 0.6720.
 
-**Judge — `v3`** ([HF: origa-judge-v3](https://huggingface.co/yurvon-screamo/origa-judge-v3))
+**Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N); điểm tuyệt đối chưa được hiệu chỉnh theo từng locale — xem [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
 
 **Pipeline dọn dẹp** (đã chạy xong)
