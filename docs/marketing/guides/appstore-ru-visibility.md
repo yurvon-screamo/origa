@@ -59,3 +59,13 @@ GET https://itunes.apple.com/RU/rss/customerreviews/id=<appId>/sortby=mostrecent
 - Гайды: `docs/marketing/guides/`; срез-JSON не коммитим, числа — сюда с датой.
 - Ключи: `marketing/.env` (ASC_KEY_ID, ASC_ISSUER_ID, ASC_P8_PATH) — не в чат/репо.
 - Находки: uwuwu-заявки (проект origa).
+
+## Аддендум 2026-10-12: ASC-мета витрины (снято через ASC API)
+
+JWT (ES256, kid+issuer из .env) работает: `GET /v1/apps/6795012532/appStoreVersions` + `appStoreVersionLocalizations`.
+
+- **RU-локаль витрины: subtitle пуст**, keywords (12): японский, jlpt, кандзи, кана, иероглифы, карточки, словарь, аудирование, повторение, грамматика, манга, аниме.
+- EN-локаль: subtitle тоже пуст; keywords 13 (kanji, kana, srs, flashcards, vocab, dictionary, ocr, anime, manga, furigana, nihongo, study, memorize).
+- Вывод: subtitle (до 30 символов) не используется ни в одной локали — прямой ASC-пакет кандидат: RU-подзаголовок под «с нуля/JLPT»-интент из suggest-среза.
+
+**Блокер**: Analytics Reports API (`/v1/analytics/reportRequests`, `reportInstances`) отдаёт 404 на оба пути при рабочем JWT — вероятная причина: роль ключа без «Access to Reports». Владельцу: пересоздать ключ ASC с ролью Admin или Access to Reports; после этого снять RU-territory показы/загрузки.
