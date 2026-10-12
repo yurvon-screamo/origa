@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="share_alias_title">Добавить в Origa</string>
+    <string name="shortcut_audio">Запись</string>
+    <string name="shortcut_audio_long">Записать аудио для слов</string>
+    <string name="shortcut_camera">Камера</string>
+    <string name="shortcut_camera_long">Сфотографировать для слов</string>
+    <string name="shortcut_text">Текст</string>
+    <string name="shortcut_text_long">Ввести текст для слов</string>
+</resources>

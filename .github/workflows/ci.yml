@@ -822,7 +822,7 @@ jobs:
                       ;;
                     words)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(words|sets|phrases)\.feature\.spec\.js"
+                        --grep "features/(words|capture_inbox|sets|phrases)\.feature\.spec\.js"
                       ;;
                     grammar-kanji)
                       npx playwright test --project=bdd --retries=1 \

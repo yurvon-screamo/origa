@@ -39,6 +39,7 @@ base64.workspace = true
 idb.workspace = true
 lexical-sort.workspace = true
 pulldown-cmark.workspace = true
+symphonia.workspace = true
 ammonia.workspace = true
 scraper.workspace = true
 ego-tree.workspace = true

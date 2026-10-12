@@ -3,6 +3,9 @@ import { defineBddConfig } from "playwright-bdd";
 
 const isCI = !!process.env.CI;
 
+/** The app origin the suite runs against; also the inbox seam opt-in scope. */
+export const APP_BASE_URL = "http://localhost:1420";
+
 const bddTestDir = defineBddConfig({
     features: "./bdd/features",
     steps: "./bdd/**/*.ts",
@@ -24,7 +27,7 @@ export default defineConfig({
         ? [["blob", { outputDir: "blob-report" }]]
         : [["html", { open: "on-failure", host: "0.0.0.0" }]],
     use: {
-        baseURL: "http://localhost:1420",
+        baseURL: APP_BASE_URL,
         // Tests assert Russian UI copy (BDD features + page objects), and a
         // brand-new profile now inherits the browser locale (see
         // create_new_user_from_session) instead of a hardcoded default. Pin
