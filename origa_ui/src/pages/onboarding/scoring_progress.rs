@@ -60,15 +60,14 @@ fn section_label(i18n: &I18nContext<Locale>, card_type: CardType) -> String {
 }
 
 /// CSS class for a section's colour in the progress bar legend and marker.
-/// Grammar → Terracotta, Kanji → Olive, Vocabulary/Phrase → default (black).
+/// Grammar → Terracotta, Kanji/Counters → Olive, Vocabulary/Phrase → default
+/// (black). Счётные суффиксы делят оливковую полосу с кандзи (issue #415,
+/// v1) — но testid свой: `scoring-section-counter`.
 fn section_color_class(card_type: CardType) -> &'static str {
     match card_type {
         CardType::Grammar => "scoring-section-grammar",
-        CardType::Kanji => "scoring-section-kanji",
+        CardType::Kanji | CardType::Counter => "scoring-section-kanji",
         CardType::Vocabulary | CardType::Phrase => "",
-        // Счётные суффиксы делят оливковую полосу с кандзи-секцией:
-        // отдельный цветовой класс не заводится (issue #415, v1).
-        CardType::Counter => "scoring-section-kanji",
         CardType::Example => "",
     }
 }
