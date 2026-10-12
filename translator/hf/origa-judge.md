@@ -115,7 +115,6 @@ The production wrapper around these heads (yes/no verdicts, multiple choice, exp
 
 The standalone content scanners that pair this judge with the double-confirmation rule:
 
-[scan_phrases_v3.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/scan_phrases_v3.py) · [scan_dictionary_v3.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/scan_dictionary_v3.py)
 
 ## Production record
 

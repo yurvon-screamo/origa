@@ -69,8 +69,6 @@ judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되
 | `judge_api.py` | judge 헤드 위의 타입 질의 API |
 | `train_judge_heads.py` | judge 헤드 트레이너 (vLLM 임베딩 소비) |
 | `build_judge_v3.py` | judge 데이터셋 조립 (v3) |
-| `pipeline_translate_judge.py` | 엔드투엔드: 번역 → 점검 → judge → 마진 |
-| `scan_phrases_v3.py` / `scan_dictionary_v3.py` | CDN 구문/사전의 프로덕션 스캔 |
 
 스크립트는 위치를 환경 변수에서 읽습니다 (모두 선택 사항, 기본값은 레포 상대 경로):
 
@@ -80,8 +78,6 @@ judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | 체크포인트와 작업 공간 |
 | `ORIGA_JUDGE_HEADS` | `judge_heads_v3.pt` 경로 |
 | `ORIGA_JUDGE_DATA` | judge 데이터셋 |
-| `ORIGA_PIPELINE_OUT` | 정리 파이프라인 출력 |
-| `ORIGA_CDN_PHRASES`, `ORIGA_CDN_DICTIONARY` | 라이브 CDN 콘텐츠 트리 |
 
 ## 학습 레시피 (QAT 베이스)
 
@@ -95,7 +91,6 @@ OOM cgroup 케이지, 262k 어휘용 masked CE, XPU 얼로케이터 파편화를
 ## 알려진 제한
 
 - judge는 랭킹할 뿐 채점하지 않습니다. 절대 임계값은 로캘별로 보정되지 않았습니다(KO와 VI의 근거는 [#713](https://github.com/yurvon-screamo/origa/issues/713)). 지원되는 용법은 Best-of-N입니다.
-- `pipeline_translate_judge.py`는 기본적으로 여전히 judge 헤드 v2를 가리킵니다(역사적 사정); 독립 스캐너(`scan_phrases_v3.py`, `scan_dictionary_v3.py`)는 v3를 사용합니다. 의도된 상태이며 있는 그대로 설명합니다 — 아직 통일되지 않았습니다.
 - judge는 음차 외래어에서 거짓 음성(false negative)을 냅니다; 따라서 프로덕션 스캔에는 이중 확인 규칙(백분위 × 알고리즘 플래그)이 필요하며, 날 점수 컷오프는 절대 사용하지 마세요.
 - 번역기는 VI에서 🟡 잔여 문제(레지스터/존칭 시프트)와 드문 EN 역전을 유지합니다. 우리는 이를 2B 베이스의 capability 한계로 평가했으며, 데이터를 더해도 사라지지 않았습니다.
 - 학습은 Intel XPU 전용입니다; 추론은 베이스가 지원하는 환경이면 어디서든 vLLM으로 실행됩니다.

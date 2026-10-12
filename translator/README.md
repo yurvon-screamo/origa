@@ -69,8 +69,6 @@ Judge inference: serve `intfloat/multilingual-e5-base` through vLLM pooling with
 | `judge_api.py` | Typed-question API over judge heads |
 | `train_judge_heads.py` | Judge head trainer (consumes vLLM embeddings) |
 | `build_judge_v3.py` | Judge dataset assembly (v3) |
-| `pipeline_translate_judge.py` | End-to-end: translate → checks → judge → margin |
-| `scan_phrases_v3.py` / `scan_dictionary_v3.py` | Production scans of CDN phrases/dictionary |
 
 Scripts read locations from environment variables (all optional, defaults are repo-relative):
 
@@ -80,8 +78,6 @@ Scripts read locations from environment variables (all optional, defaults are re
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoints and scratch space |
 | `ORIGA_JUDGE_HEADS` | Path to `origa-judge.pt` |
 | `ORIGA_JUDGE_DATA` | Judge datasets |
-| `ORIGA_PIPELINE_OUT` | Cleanup pipeline output |
-| `ORIGA_CDN_PHRASES`, `ORIGA_CDN_DICTIONARY` | Live CDN content trees |
 
 ## Training recipe (QAT base)
 
@@ -95,7 +91,6 @@ The full post-mortem, including infra fixes (OOM cgroup cage, masked CE for the 
 ## Known limitations
 
 - The judge ranks, it does not grade. Absolute thresholds are not calibrated per locale (evidence for KO and VI in [#713](https://github.com/yurvon-screamo/origa/issues/713)). Best-of-N is the supported usage.
-- `pipeline_translate_judge.py` still points at judge heads v2 by default (historical); the standalone scanners (`scan_phrases_v3.py`, `scan_dictionary_v3.py`) use v3. This is intentional, described as is, not yet unified.
 - The judge produces false negatives on phonetic loanwords; production scans therefore require the double-confirmation rule (percentile × algorithmic flag), never a raw score cutoff.
 - The translator keeps residual 🟡 issues on VI (register/politeness shifts) and rare EN inversions. We assessed these as a capability limit of the 2B base; more data did not remove them.
 - Intel XPU only for training; inference runs anywhere vLLM supports the base.
