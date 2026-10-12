@@ -11,7 +11,7 @@
 **Переводчик — `ep1`** ([HF: origa-translator-ep1](https://huggingface.co/yurvon-screamo/origa-translator-ep1))
 LoRA-адаптер (r=16 α=32, 24.16M обучаемых параметров, 205 модулей текстового стека) поверх `google/gemma-4-E2B-it-qat-w4a16-ct`. Обучен 1 эпоху на 600k парах фраз (150k × 4 локали), val_loss 0.6720.
 
-**Судья — `v3`** ([HF: origa-judge-v3](https://huggingface.co/yurvon-screamo/origa-judge-v3))
+**Судья** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
 `intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE-головы. Обучен на 59 973 парах. Внутренняя оценка: 81.9% на golden_v4c (662 пары, 7 итераций аудита). Судья ранжирует кандидатов (Best-of-N); абсолютные скоры не откалиброваны по локалям — см. [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
 
 **Конвейер чистки** (выполнен)
