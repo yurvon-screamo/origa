@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning App (2026)"
 meta_description: "There is no single 'best' Japanese app. There's the best set for your goal. A category-by-category breakdown: vocabulary, kanji, grammar, listening, JLPT."
 target_keywords: ["best japanese learning app", "japanese learning app review", "how to choose japanese app", "japanese learning app comparison"]
-lastmod: 2026-10-11
+lastmod: 2026-10-12
 published: 2026-07-19
 status: ready
 ---
@@ -89,6 +89,7 @@ The search for a Japanese learning app in your own language runs into almost no 
 2. **Check the scheduler quality.** If an app uses naive spaced repetition or fixed intervals instead of FSRS, you're trading real retention for a friendly interface. That's a bad trade.
 3. **Look at the interface language.** If you don't study through English, apps with an English core will slow you down at every step.
 4. **Check migration.** If you already have an Anki deck, make sure the new app imports it. Throwing away years of progress is an unjustified cost.
+5. **If your bottleneck is capturing words from your own reading**, look at [the OCR-to-cards workflow](/blog/japanese-ocr-app) rather than at another flashcard app.
 
 In most cases a working set is one memorization app plus one or two specialized tools (grammar, exam format). The goal is to cover categories without duplication. Origa tries to be the one app that covers vocabulary, kanji, grammar, and listening together, but see the limitations below.
 

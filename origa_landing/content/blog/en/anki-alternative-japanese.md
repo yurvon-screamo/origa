@@ -5,7 +5,7 @@ locale: en
 meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
-lastmod: 2026-10-11
+lastmod: 2026-10-12
 published: 2026-07-19
 status: ready
 ---
@@ -73,7 +73,7 @@ A few concrete differences from Anki, with the caveat that *both use FSRS*. Orig
 | Furigana | Add manually or via template | Generated automatically; hides on learned kanji |
 | Kanji ↔ vocabulary linkage | You build it | Built-in; kanji tracked across the words you've seen |
 | Grammar | Separate app | Structured grammar reference, examples use words you've learned |
-| OCR card creation | Not built-in | Scan a photo; words extracted into cards |
+| OCR card creation | Not built-in | Scan a photo; words extracted into cards ([how the pipeline works](/blog/japanese-ocr-app)) |
 | Interface languages | English (community translations exist) | English, Russian, Korean and Vietnamese |
 | Import from Anki | — | Imports `.anki2` / `.anki21` decks |
 
