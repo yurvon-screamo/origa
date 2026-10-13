@@ -98,7 +98,7 @@ fn request_review_ios() {
         let application: Option<Retained<AnyObject>> =
             objc2::msg_send![objc2::class!(UIApplication), sharedApplication];
         let Some(application) = application else {
-            eprintln!("[store-review] UIApplication unavailable");
+            tracing::warn!("[store-review] UIApplication unavailable");
             return;
         };
         let scenes: Option<Retained<AnyObject>> = objc2::msg_send![&application, connectedScenes];
