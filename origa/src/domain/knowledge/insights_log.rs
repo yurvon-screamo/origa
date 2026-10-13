@@ -96,22 +96,24 @@ impl InsightsLog {
 
     pub fn hour_buckets(&self) -> [Bucket; HOUR_BUCKET_COUNT] {
         let mut buckets = [(0u32, 0u32); HOUR_BUCKET_COUNT];
-        for (bucket, attempts) in buckets.iter_mut().zip(&self.hour_attempts) {
-            *bucket = (*attempts, 0);
-        }
-        for (i, correct) in self.hour_correct.iter().enumerate() {
-            buckets[i].1 = *correct;
+        for ((bucket, attempts), correct) in buckets
+            .iter_mut()
+            .zip(&self.hour_attempts)
+            .zip(&self.hour_correct)
+        {
+            *bucket = (*attempts, *correct);
         }
         buckets
     }
 
     pub fn delay_buckets(&self) -> [Bucket; DELAY_BUCKET_COUNT] {
         let mut buckets = [(0u32, 0u32); DELAY_BUCKET_COUNT];
-        for (bucket, attempts) in buckets.iter_mut().zip(&self.delay_attempts) {
-            *bucket = (*attempts, 0);
-        }
-        for (i, correct) in self.delay_correct.iter().enumerate() {
-            buckets[i].1 = *correct;
+        for ((bucket, attempts), correct) in buckets
+            .iter_mut()
+            .zip(&self.delay_attempts)
+            .zip(&self.delay_correct)
+        {
+            *bucket = (*attempts, *correct);
         }
         buckets
     }

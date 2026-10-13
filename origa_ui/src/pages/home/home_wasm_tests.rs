@@ -270,11 +270,11 @@ async fn insights_section_renders_five_panels() {
     assert!(section.is_some(), "insights section must render");
 
     for panel in [
-        "is1-insights-week-verdict",
-        "is1-insights-pace",
-        "is1-insights-time-of-day",
-        "is1-insights-overdue",
-        "is1-insights-hardest-words",
+        "is1-week-verdict",
+        "is1-pace",
+        "is1-time-of-day",
+        "is1-overdue",
+        "is1-hardest-words",
     ] {
         let node = wrapper.query_selector(&format!("[data-testid=\"{panel}\"]"));
         assert!(node.is_ok_and(|n| n.is_some()), "{panel} panel must render");
@@ -292,14 +292,13 @@ async fn insights_section_empty_data_shows_neutral_phrase_without_proofs() {
 
     // Ни одна панель не имеет данных: кнопок доказательств быть не должно,
     // а вердикт — нейтральная фраза empty-state.
-    let proofs_button =
-        wrapper.query_selector("[data-testid=\"is2-insights-week-verdict-proofs\"]");
+    let proofs_button = wrapper.query_selector("[data-testid=\"is2-week-verdict-proofs\"]");
     assert!(
         proofs_button.is_ok_and(|b| b.is_none()),
         "empty data must not render a proofs toggle"
     );
     let text = wrapper
-        .query_selector("[data-testid=\"is2-insights-week-verdict\"]")
+        .query_selector("[data-testid=\"is2-week-verdict\"]")
         .unwrap()
         .unwrap()
         .text_content()
@@ -324,7 +323,7 @@ async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
     tick().await;
 
     let text = wrapper
-        .query_selector("[data-testid=\"is3-insights-week-verdict\"]")
+        .query_selector("[data-testid=\"is3-week-verdict\"]")
         .unwrap()
         .unwrap()
         .text_content()
@@ -334,8 +333,7 @@ async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
         "verdict must include the percentage; got: {text}"
     );
 
-    let proofs_button =
-        wrapper.query_selector("[data-testid=\"is3-insights-week-verdict-proofs\"]");
+    let proofs_button = wrapper.query_selector("[data-testid=\"is3-week-verdict-proofs\"]");
     assert!(
         proofs_button.is_ok_and(|b| b.is_some()),
         "verdict with data must offer the proofs toggle"

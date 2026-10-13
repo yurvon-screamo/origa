@@ -3,6 +3,61 @@ use crate::i18n::{td_string, use_i18n};
 use leptos::prelude::*;
 use origa::domain::insights::{WeekVerdict, WeekVerdictKind};
 
+/// Ветка фразы вердикта недели; выделена в чистую функцию для прямого
+/// тестирования выбора (маппинг ветки на i18n-ключ тривиален).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum WeekPhrase {
+    Empty,
+    Holding,
+    HoldingNoMonth,
+    Dipping,
+}
+
+pub(crate) fn week_phrase_kind(verdict: Option<&WeekVerdict>) -> WeekPhrase {
+    match verdict {
+        None => WeekPhrase::Empty,
+        Some(data) => match data.kind {
+            WeekVerdictKind::Dipping => WeekPhrase::Dipping,
+            WeekVerdictKind::Holding => match data.month_accuracy_pct {
+                Some(_) => WeekPhrase::Holding,
+                None => WeekPhrase::HoldingNoMonth,
+            },
+        },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    fn verdict(kind: WeekVerdictKind, month: Option<u8>) -> WeekVerdict {
+        WeekVerdict {
+            week_accuracy_pct: 50,
+            month_accuracy_pct: month,
+            kind,
+        }
+    }
+
+    #[rstest]
+    #[case::no_data(None, WeekPhrase::Empty)]
+    #[case::holding_with_month(
+        Some(verdict(WeekVerdictKind::Holding, Some(70))),
+        WeekPhrase::Holding
+    )]
+    #[case::holding_without_month(
+        Some(verdict(WeekVerdictKind::Holding, None)),
+        WeekPhrase::HoldingNoMonth
+    )]
+    #[case::dipping(Some(verdict(WeekVerdictKind::Dipping, Some(70))), WeekPhrase::Dipping)]
+    fn week_phrase_kind_maps_every_branch(
+        #[case] input: Option<WeekVerdict>,
+        #[case] expected: WeekPhrase,
+    ) {
+        assert_eq!(week_phrase_kind(input.as_ref()), expected);
+    }
+}
+
 /// Панель «Как идёт неделя?»: точность недели против предыдущих 30 дней.
 #[component]
 pub(crate) fn WeekVerdictPanel(
@@ -20,8 +75,9 @@ pub(crate) fn WeekVerdictPanel(
         let locale = i18n.get_locale();
         match verdict.get() {
             None => td_string!(locale, insights.collecting_data).to_string(),
-            Some(data) => match data.kind {
-                WeekVerdictKind::Dipping => {
+            Some(data) => match week_phrase_kind(Some(&data)) {
+                WeekPhrase::Empty => td_string!(locale, insights.collecting_data).to_string(),
+                WeekPhrase::Dipping => {
                     let month = data.month_accuracy_pct.unwrap_or(0);
                     td_string!(
                         locale,
@@ -30,16 +86,14 @@ pub(crate) fn WeekVerdictPanel(
                         month = month
                     )
                 },
-                WeekVerdictKind::Holding => match data.month_accuracy_pct {
-                    Some(_) => {
-                        td_string!(locale, insights.week_holding, week = data.week_accuracy_pct)
-                    },
-                    None => td_string!(
-                        locale,
-                        insights.week_holding_no_month,
-                        week = data.week_accuracy_pct
-                    ),
+                WeekPhrase::Holding => {
+                    td_string!(locale, insights.week_holding, week = data.week_accuracy_pct)
                 },
+                WeekPhrase::HoldingNoMonth => td_string!(
+                    locale,
+                    insights.week_holding_no_month,
+                    week = data.week_accuracy_pct
+                ),
             },
         }
     });

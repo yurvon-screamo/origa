@@ -76,11 +76,11 @@ export class HomePage extends BasePage {
 
     // Insights (#749)
     this.insights = page.getByTestId("home-insights");
-    this.insightsWeekVerdict = page.getByTestId("home-insights-insights-week-verdict");
-    this.insightsPace = page.getByTestId("home-insights-insights-pace");
-    this.insightsTimeOfDay = page.getByTestId("home-insights-insights-time-of-day");
-    this.insightsOverdue = page.getByTestId("home-insights-insights-overdue");
-    this.insightsHardestWords = page.getByTestId("home-insights-insights-hardest-words");
+    this.insightsWeekVerdict = page.getByTestId("home-insights-week-verdict");
+    this.insightsPace = page.getByTestId("home-insights-pace");
+    this.insightsTimeOfDay = page.getByTestId("home-insights-time-of-day");
+    this.insightsOverdue = page.getByTestId("home-insights-overdue");
+    this.insightsHardestWords = page.getByTestId("home-insights-hardest-words");
 
     // Recent Study
     this.recentStudy = page.getByTestId("home-recent-study");

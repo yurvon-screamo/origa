@@ -1,7 +1,7 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::insights::{InsightsSection, compute_insights_panels};
+use super::insights::{InsightsPanels, InsightsSection, compute_insights_panels};
 use super::{
     CompletionForecast, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem, StudiedTodayList,
     WelcomeCard, compute_completion_forecast, compute_studied_today,
@@ -118,7 +118,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let jlpt_progress = RwSignal::new(JlptProgress::new());
-    let insights_panels = RwSignal::new(super::insights::panels_data::InsightsPanels::default());
+    let insights_panels = RwSignal::new(InsightsPanels::default());
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());

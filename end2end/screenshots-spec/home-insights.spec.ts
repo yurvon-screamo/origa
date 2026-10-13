@@ -69,7 +69,7 @@ async function captureHome(page: import("@playwright/test").Page, name: string):
     // The insights section renders behind the loading gate — wait for the
     // week-verdict panel before shooting.
     await expect(
-        page.getByTestId("home-insights-insights-week-verdict"),
+        page.getByTestId("home-insights-week-verdict"),
     ).toBeVisible({ timeout: 120_000 });
     // Give fonts/images a beat to settle, then capture the viewport.
     await page.waitForTimeout(1_500);
