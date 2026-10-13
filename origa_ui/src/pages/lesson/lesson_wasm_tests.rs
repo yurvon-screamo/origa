@@ -14,19 +14,17 @@ use wasm_bindgen_test::*;
 
 use super::answer_display::CardAnswerDisplay;
 use super::audio_recall_card::AudioRecallCardView;
+use super::binary_rating_buttons::{BinaryRatingButtons, RatingButtons};
 use super::grammar_info_badge::GrammarInfoBadge;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::lesson_card_question::LessonCardQuestion;
 use super::lesson_progress::LessonProgress;
 use super::next_card_button::NextCardButton;
 use super::phrase_card::PhraseCardView;
-use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
-use super::rating_buttons::RatingButtons;
-use super::rating_buttons_view::RatingButtonsView;
 use super::yesno_card_view::YesNoCardView;
 use crate::test_support::{
     create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
@@ -212,13 +210,37 @@ async fn rating_buttons_view_delegates_to_rating_buttons() {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <RatingButtonsView on_rate /> }.into_any()
+        // The RatingButtons preset feeds BinaryRatingButtons; the custom
+        // label/hint props must surface verbatim (configurability contract
+        // of the shared binary row).
+        view! {
+            <BinaryRatingButtons
+                left_label="Не помню".to_string()
+                right_label="Помню".to_string()
+                left_test_id="custom-left-btn"
+                right_test_id="custom-right-btn"
+                left_hint="[1]"
+                right_hint="[2] / Пробел"
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;
 
+    let left = wrapper
+        .query_selector("[data-testid=\"custom-left-btn\"]")
+        .unwrap()
+        .unwrap();
+    assert!(
+        left.text_content().unwrap().contains("Не помню"),
+        "custom left label must render"
+    );
+
     wrapper
-        .query_selector("[data-testid=\"lesson-rating-btn-good\"]")
+        .query_selector("[data-testid=\"custom-right-btn\"]")
         .unwrap()
         .unwrap()
         .unchecked_into::<web_sys::HtmlElement>()
@@ -228,7 +250,7 @@ async fn rating_buttons_view_delegates_to_rating_buttons() {
     assert_eq!(
         rating.get(),
         Some(origa::domain::Rating::Good),
-        "the view wrapper must pass the callback through"
+        "custom right button must dispatch"
     );
 }
 
@@ -1158,7 +1180,19 @@ async fn phrase_rating_buttons_clicks_dispatch_ratings() {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <PhraseRatingButtons on_rate test_id="prb1" /> }.into_any()
+        view! {
+            <BinaryRatingButtons
+                left_label="не понял".to_string()
+                right_label="понял".to_string()
+                left_test_id="prb1-did-not-understand"
+                right_test_id="prb1-understood"
+                left_hint="[1]"
+                right_hint="[2]"
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;
@@ -1190,8 +1224,20 @@ async fn phrase_rating_buttons_disabled_blocks_dispatch() {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <PhraseRatingButtons on_rate disabled=Signal::from(true) test_id="prb2" /> }
-            .into_any()
+        view! {
+            <BinaryRatingButtons
+                left_label="не понял".to_string()
+                right_label="понял".to_string()
+                left_test_id="prb2-did-not-understand"
+                right_test_id="prb2-understood"
+                left_hint="[1]"
+                right_hint="[2]"
+                disabled=Signal::from(true)
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;

@@ -4,6 +4,7 @@ use super::acquaintance_keyboard::{
 use super::acquaintance_state::{
     AcquaintanceContext, AcquaintanceSlideData, resolve_audio_front, should_autoplay_word_audio,
 };
+use super::binary_rating_buttons::BinaryRatingButtons;
 use super::keyboard_handler::is_typing_target;
 use super::training_answer::TrainingAnswerSlide;
 use super::training_front::TrainingFrontSlide;
@@ -401,42 +402,36 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                 </div>
             </Show>
             <Show when=move || showing_answer.get() && !hand_finishing.get() fallback=move || ()>
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                            do_rate(
-                                &ctx_stored,
-                                &current_id,
-                                &showing_answer,
-                                &rotation_index,
-                                &training_order,
-                                false,
-                            );
-                        })
-                        test_id=Signal::derive(|| "acquaintance-rating-dont-know".to_string())
-                    >
-                        {t!(i18n, acquaintance.dont_remember)}
-                        <span class="kbd-hint">"[1]"</span>
-                    </Button>
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Olive)
-                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                            do_rate(
-                                &ctx_stored,
-                                &current_id,
-                                &showing_answer,
-                                &rotation_index,
-                                &training_order,
-                                true,
-                            );
-                        })
-                        test_id=Signal::derive(|| "acquaintance-rating-remember".to_string())
-                    >
-                        {t!(i18n, acquaintance.remember)}
-                        <span class="kbd-hint">"[2] / {t!(i18n, lesson.space_key)}"</span>
-                    </Button>
-                </div>
+                <BinaryRatingButtons
+                    left_label=Signal::derive(move || t_string!(i18n, acquaintance.dont_remember).to_string())
+                    right_label=Signal::derive(move || t_string!(i18n, acquaintance.remember).to_string())
+                    left_test_id="acquaintance-rating-dont-know"
+                    right_test_id="acquaintance-rating-remember"
+                    left_hint="[1]"
+                    right_hint=Signal::derive(move || {
+                        format!("[2] / {}", t_string!(i18n, lesson.space_key))
+                    })
+                    on_left=Callback::new(move |_: ()| {
+                        do_rate(
+                            &ctx_stored,
+                            &current_id,
+                            &showing_answer,
+                            &rotation_index,
+                            &training_order,
+                            false,
+                        );
+                    })
+                    on_right=Callback::new(move |_: ()| {
+                        do_rate(
+                            &ctx_stored,
+                            &current_id,
+                            &showing_answer,
+                            &rotation_index,
+                            &training_order,
+                            true,
+                        );
+                    })
+                />
             </Show>
         </div>
     }

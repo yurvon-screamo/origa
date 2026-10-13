@@ -1,10 +1,11 @@
+use super::binary_rating_buttons::RatingButtons;
+
 use super::card_type::CardType;
 use super::kanji_card_data::extract_kanji_card_data;
 use super::lesson_card_header::LessonCardTags;
 use super::lesson_card_shell::LessonCardShell;
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
-use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::pages::shared::format_answer_text;
 use crate::ui_components::{DisplayText, Heading, HeadingLevel, KanjiDrawingPractice};
 use leptos::prelude::*;
@@ -123,7 +124,7 @@ pub fn WritingCard(
                 </button>
             </div>
 
-            <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
+            <RatingButtons on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
         </Show>
         </LessonCardShell>
     }

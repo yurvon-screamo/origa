@@ -9,8 +9,8 @@
 //! ответа («число×суффикс»); текст чтения —
 //! `counter-binding-answer-reading` (не читать чтение с заголовка).
 
+use super::binary_rating_buttons::RatingButtons;
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
-use super::rating_buttons_view::RatingButtonsView;
 use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant, Card};
 use leptos::prelude::*;
@@ -241,7 +241,7 @@ pub fn CounterBindingsSession(
                                 </Button>
                             </div>
                             <div class="flex justify-center">
-                                <RatingButtonsView on_rate=on_rate />
+                                <RatingButtons on_rate=on_rate />
                             </div>
                         }
                     }}

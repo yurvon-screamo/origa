@@ -9,6 +9,7 @@ use origa::domain::{Card as DomainCard, NativeLanguage};
 use std::collections::HashSet;
 
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
+use super::binary_rating_buttons::BinaryRatingButtons;
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_card_header::LessonTagsRow;
@@ -158,27 +159,17 @@ pub fn AudioRecallCardView(
                 // Self-assessment rates and advances immediately
                 // (ADR-050): the word and translation are already on
                 // screen, there is nothing else to hold the learner for.
-                // `on_answer` (Callback<bool>, Copy) is captured by both
-                // buttons.
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <Button
-                        test_id=Signal::derive(|| "audio-recall-dont-know-btn".to_string())
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        disabled=disabled
-                        on_click=Callback::new(move |_| on_answer.run(false))
-                    >
-                        {t!(i18n, lesson.dont_know_rating)} <span class="kbd-hint">"[1]"</span>
-                    </Button>
-
-                    <Button
-                        test_id=Signal::derive(|| "audio-recall-know-btn".to_string())
-                        variant=Signal::derive(|| ButtonVariant::Olive)
-                        disabled=disabled
-                        on_click=Callback::new(move |_| on_answer.run(true))
-                    >
-                        {t!(i18n, lesson.know)} <span class="kbd-hint">"[2]"</span>
-                    </Button>
-                </div>
+                <BinaryRatingButtons
+                    left_label=Signal::derive(move || t_string!(i18n, lesson.dont_know_rating).to_string())
+                    right_label=Signal::derive(move || t_string!(i18n, lesson.know).to_string())
+                    left_test_id="audio-recall-dont-know-btn"
+                    right_test_id="audio-recall-know-btn"
+                    left_hint="[1]"
+                    right_hint="[2]"
+                    disabled=disabled
+                    on_left=Callback::new(move |_| on_answer.run(false))
+                    on_right=Callback::new(move |_| on_answer.run(true))
+                />
             </Show>
         </LessonCardShell>
     }
