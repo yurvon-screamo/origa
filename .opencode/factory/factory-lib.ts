@@ -91,6 +91,9 @@ export function sanitizeBoundary(text: string): string {
   return text.replace(/^\s*===.*$/gm, "≡")
 }
 
+/** Комменты агента фабрики идут от GitHub App uwuwu-agent[bot]. */
+export const GH_AS_AGENT = "/home/yurvon/origa/.opencode/factory/gh-as-agent"
+
 /** Промпт-контракт пайпа для новой задачи. */
 export function kickoffPrompt(issue: IssueRef, repo: string): string {
   return [
@@ -103,18 +106,18 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "ПАЙП (строго по порядку):",
     "1. Изучи задачу и репо (ветка ворктри уже создана — работай здесь).",
     "2. Если для старта нужны решения пользователя — задай вопросы ОДНИМ комментарием",
-    "   (готовый markdown-файл + gh issue comment с --body-file, первая строка обязательно " + AGENT_MARK + ")",
+    "   (готовый markdown-файл + gh-as-agent issue comment с --body-file, первая строка обязательно " + AGENT_MARK + ")",
     `   и ЗАВЕРШИ ход. Ответ придёт новым комментом в ишью — тебя разбудят.`,
     "3. Если всё ясно: прогони план через code-quality-reviewer сабагента, исправь замечания.",
-    "4. Реализуй. Коммить атомарно, сообщения по конвенции репо.",
+    "4. Реализуй. Коммить атомарно, сообщения по конвенции репо. Пуш ветки — как настроено (от бота).",
     "5. Если задача затрагивает UI/верстку: сними Playwright-ом скрины вьюпортов",
     "   desktop 1280x800 и mobile 390x844, сохрани в .pr-screenshots/ и закоммить.",
     "   Если UI в задаче не затронут — в отчёте напиши «UI не затронут».",
-    `6. Отчёт в ишью: gh issue comment ${issue.number} --body-file <файл> по ШАБЛОНУ ниже.`,
-    `7. PR: gh pr create --title "<кратко>" --body-file <файл> с «Closes #${issue.number}», отчётом и скринами.`,
+    `6. Отчёт в ишью: ${GH_AS_AGENT} issue comment ${issue.number} --body-file <файл> по ШАБЛОНУ ниже.`,
+    `7. PR: ${GH_AS_AGENT} pr create --title "<кратко>" --body-file <файл> с «Closes #${issue.number}», отчётом и скринами.`,
     "   СРАЗУ после создания ПР переименуй свою сессию тулом session_rename:",
     '   tools.opencode.session_rename({ title: "PR #<номер ПР> · <название ПР>" })',
-    "8. Проверь CI (gh pr checks --watch может висеть — опрашивай gh pr checks напрямую).",
+    `8. Проверь CI (${GH_AS_AGENT} pr checks --watch может висеть — опрашивай напрямую).`,
     "   Красный — чини. Зелёный — коммент «готово к ревью».",
     "9. Мержит пользователь. Замечания придут комментами в ишью — исправляй в этой же ветке и пушь.",
     "",
@@ -126,10 +129,12 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "**Риски:** …",
     "",
     "ПРАВИЛА:",
+    `- ВСЕ постинги в GitHub — только через ${GH_AS_AGENT} (выступаешь как uwuwu-agent[bot]).`,
+    "  Голый gh для issue comment/pr create/pr checks --repo ЗАПРЕЩЁН (постить от аккаунта юзера нельзя).",
     "- КАЖДЫЙ твой комментарий в ишью начинается с " + AGENT_MARK + " — без него тебя разбудит собственный коммент.",
-    "- ВСЁ, что должен увидеть пользователь — ТОЛЬКО gh issue comment. Твой текст в сессии пользователь не читает.",
+    "- ВСЁ, что должен увидеть пользователь — ТОЛЬКО комменты в ишью. Твой текст в сессии пользователь не читает.",
     "- Не мержи сам. Не закрывай ишью сам. Не выходи за пределы ворктри.",
-    "- Разрешённые gh-команды: gh issue comment/view, gh pr create/checks. Запрещены: gh pr merge, gh issue close.",
+    `- Разрешено: ${GH_AS_AGENT} issue comment/view, ${GH_AS_AGENT} pr create/checks. Запрещены: pr merge, issue close.`,
     "- Если задача правит сам код фабрики (.opencode/factory/) — в ПР напомни: после мержа нужен",
     "  systemctl --user restart origa-factory (работающий демон не подхватит новый код сам).",
   ].join("\n")
@@ -148,7 +153,7 @@ export function wakeupPrompt(
     "",
     quoted,
     "",
-    "Отреагируй по пайпу: ответь на вопросы/исправь замечания. Ответ пользователю — gh issue comment (🤖), не текст в сессии.",
+    "Отреагируй по пайпу: ответь на вопросы/исправь замечания. Ответ пользователю — gh-as-agent issue comment (🤖), не текст в сессии.",
   ].join("\n")
 }
 
