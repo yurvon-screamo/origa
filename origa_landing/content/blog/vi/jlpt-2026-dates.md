@@ -40,7 +40,7 @@ Ngày thi là chung trên toàn cầu, nhưng lịch cụ thể thì tùy từng
 
 Hai quy tắc luôn đúng với mọi bảng ngày tháng. Thứ nhất, thời gian nhận hồ sơ kết thúc mà không báo trước khi điểm thi hết chỗ — năm nay Nhật Bản và Philippines đều đã đóng sớm. Thứ hai, không tồn tại hạn chót toàn cầu: đơn vị chủ quản địa phương của bạn mới là nơi quyết định, và danh sách các điểm thi ở nước ngoài trên jlpt.jp cho biết tổ chức đó là ai.
 
-Nếu cửa đã đóng, hãy kiểm tra đợt đăng ký bổ sung: Hàn Quốc có đợt 28/9 – 4/10 với phụ phí 10%, một số ủy ban khác cũng có cơ chế tương tự. Nếu đã lỡ hết, mục tiêu là kỳ tháng 7/2027 — đăng ký thường mở vào tháng 3–4/2027.
+Nếu cửa đã đóng, hãy kiểm tra đợt đăng ký bổ sung: Hàn Quốc có đợt 28/9 – 4/10 với phụ phí 10%, một số ủy ban khác cũng có cơ chế tương tự. Nếu đã lỡ hết, mục tiêu là kỳ tháng 7/2027 — đăng ký thường mở vào tháng 3–4/2027. Cho mục tiêu visa kỹ năng đặc định, JFT-Basic là lựa chọn thay thế với nhiều đợt trong năm: [thi JFT-Basic tại Việt Nam](/vi/blog/jft-basic-test-vietnam).
 
 ## Ngày thi diễn ra thế nào
 
