@@ -7,10 +7,10 @@ use origa::domain::QuizOption;
 use std::collections::HashSet;
 
 use super::card_type::CardType;
-use super::dont_know_button::DontKnowButton;
 use super::lesson_card_header::LessonCardTagsQuiz;
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
+use super::quiz_options::QuizOptions;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
 
@@ -79,70 +79,15 @@ pub fn PhraseCardView(
         </div>
 
             <Show when=move || !show_result.get()>
-                <div class="grid grid-cols-2 gap-2 sm:gap-3">
-                {move || {
-                    options_stored
-                        .get_value()
-                        .iter()
-                        .enumerate()
-                        .map(|(index, option): (usize, &QuizOption)| {
-                            let is_correct = option.is_correct();
-                            let is_selected = selected_option == Some(index);
-                            let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem]";
-                            let disabled_class = if show_result.get() { "pointer-events-none" } else { "" };
-                            let result_class = quiz_result().option_class(is_correct, is_selected);
-                            let selected_ring = if is_selected && !show_result.get() {
-                                "ring-2 ring-[var(--accent-olive)]"
-                            } else {
-                                ""
-                            };
-                            let class = format!(
-                                "{} {} {} {}",
-                                base_class,
-                                disabled_class,
-                                result_class,
-                                selected_ring
-                            );
-                            let key_hint = format!("[{}]", index + 1);
-                            let option_text = option.text().to_string();
-
-                            view! {
-                                <button
-                                    class=class
-                                    data-testid=format!("quiz-option-{}", index)
-                                    on:click=move |_| {
-                                        if !show_result.get() {
-                                            on_select_option.run(index);
-                                        }
-                                    }
-                                >
-                                    <div class="flex items-start justify-between gap-2">
-                                        <Text size=TextSize::Default>
-                                            <MarkdownText
-                                                content=Signal::derive(move || option_text.clone())
-                                                variant=MarkdownVariant::Default
-                                                known_kanji=known_kanji.get()
-                                            />
-                                        </Text>
-                                        <Show when=move || !show_result.get()>
-                                            <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono shrink-0">
-                                                {key_hint.clone()}
-                                            </span>
-                                        </Show>
-                                    </div>
-                                </button>
-                            }
-                        })
-                        .collect::<Vec<_>>()
-                }}
-            </div>
-            </Show>
-
-            <Show when=move || !show_result.get()>
-                <DontKnowButton
+                <QuizOptions
+                    options=options_stored.get_value()
+                    selected_option=selected_option
+                    show_result=show_result
+                    quiz_result=quiz_result()
+                    on_select_option=on_select_option
+                    on_dont_know=on_dont_know
                     dont_know_selected=Signal::derive(move || dont_know_selected)
-                    disabled=show_result
-                    on_click=on_dont_know
+                    known_kanji=known_kanji
                 />
             </Show>
 
