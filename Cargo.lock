@@ -5972,6 +5972,7 @@ dependencies = [
  "device-ai",
  "jni",
  "ndk-context",
+ "objc2",
  "rustls",
  "rustls-platform-verifier",
  "sentry",

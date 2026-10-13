@@ -25,11 +25,16 @@ mod device_ai_commands;
 // (GitHub Releases) would conflict with App Store distribution.
 #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
 mod updater_commands;
+// In-app store review prompt (SKStoreReviewController on Apple platforms,
+// no-op elsewhere). Registered unconditionally — the WASM gate invokes it
+// on every platform and keys its cooldown off the `false` return. ADR-062.
+mod store_review;
 
 use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 // `Manager` consumers: single-instance focus (Windows/Linux) and the iOS
 // plugin-state registration (`app.manage`). The macOS path registers no
 // state, so the import stays out of macOS builds.
+use store_review::request_app_review;
 #[cfg(any(windows, target_os = "linux", target_os = "ios"))]
 use tauri::Manager;
 use tauri::{Emitter, Listener};
@@ -196,6 +201,7 @@ pub fn run() {
             auth_store_set,
             auth_store_delete,
             is_store_build,
+            request_app_review,
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
             check_for_update,
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
