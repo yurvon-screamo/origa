@@ -26,7 +26,7 @@ a successful study session, slowly enough to respect Apple's system limits
 After each completed study session the lesson completion screen calls the
 gate in `origa_ui/src/core/review_request.rs`; when the gate allows, the WASM
 side invokes the `request_app_review` Tauri command
-(`tauri/src/src/store_review.rs`), which forwards to the platform in-app
+(`tauri/src/store_review.rs`), which forwards to the platform in-app
 review API.
 
 Gate rules (per device, `localStorage`):
@@ -45,7 +45,8 @@ Gate rules (per device, `localStorage`):
 
 Platform scope: **Apple only** (macOS `+requestReviewInWindow:` with the
 main window, iOS `+requestReviewInScene:` with the foreground-active
-scene). Windows, Linux, Android and the web build are no-ops today.
+scene — both in `tauri/src/store_review.rs`). Windows, Linux, Android and
+the web build are no-ops today.
 
 ## Alternatives Considered
 

@@ -12,6 +12,11 @@
 //! compromise (see ADR-062 for the rejected Swift-bridge alternative).
 //! Windows/Linux return `false`: no in-app store review API is wired yet.
 
+// get_webview_window is a `Manager` trait method; only the macOS branch
+// needs it, so the import is target-scoped to stay warning-free on iOS.
+#[cfg(target_os = "macos")]
+use tauri::Manager;
+
 /// Requests the native store review prompt.
 ///
 /// Returns `true` when the platform supports in-app review and the prompt
@@ -55,8 +60,8 @@ fn request_app_review_apple(app: tauri::AppHandle) -> bool {
     true
 }
 
-/// macOS: `+requestReviewInWindow:` with the main window (macOS 10.14+,
-/// the only window-scoped ObjC entry point; deprecated macOS 15 — ADR-062).
+/// macOS: `+requestReviewInWindow:` with the main window (available well
+/// before the project's macOS 14.0 minimum; deprecated macOS 15 — ADR-062).
 #[cfg(target_os = "macos")]
 fn request_review_macos(ns_window: Option<usize>) {
     use objc2::runtime::AnyObject;
@@ -78,7 +83,8 @@ fn request_review_macos(ns_window: Option<usize>) {
 }
 
 /// iOS: `+requestReviewInScene:` with the foreground-active scene
-/// (iOS 16+ entry point; deprecated iOS 18 — ADR-062).
+/// (available well before the project's iOS 26.0 minimum; deprecated
+/// iOS 18 — ADR-062).
 ///
 /// Tauri iOS runs a single-window single-scene app, so the first scene in
 /// `connectedScenes` is the app's only scene; anything but a foreground-
@@ -108,7 +114,7 @@ fn request_review_ios() {
         // UISceneActivationStateForegroundActive == 0.
         let activation_state: isize = objc2::msg_send![&scene, activationState];
         if !is_window_scene || activation_state != 0 {
-            eprintln!(
+            tracing::warn!(
                 "[store-review] no foreground-active UIWindowScene (state: {activation_state})"
             );
             return;
