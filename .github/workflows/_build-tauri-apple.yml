@@ -456,6 +456,37 @@ jobs:
                     exit 1
                   fi
 
+            - name: Set App Store release type to automatic
+              # Issue #730: with releaseType MANUAL (the ASC default) Apple
+              # shows the manual "Release" button after review approval — it
+              # was forgotten for the 0.7.37 drafts. Setting AUTOMATIC on the
+              # appStoreVersion makes Apple publish right after approval.
+              #
+              # ORDER INVARIANT: must run AFTER "Upload to App Store Connect"
+              # (gated on its outcome) and BEFORE "Cleanup API key" (needs
+              # the decoded key in private_keys/).
+              #
+              # STABLE-ONLY: RC uploads go to TestFlight and must not create
+              # appStoreVersion drafts (the draft-accumulation complaint of
+              # issue #730). The skip_appstore_upload member is redundant
+              # with steps.upload.outcome (skip ⇒ skipped ⇒ never success)
+              # but documents intent symmetrically to the upload step —
+              # kept deliberately.
+              if: >-
+                inputs.version_type == 'stable' &&
+                inputs.skip_appstore_upload != true &&
+                steps.upload.outcome == 'success'
+              env:
+                  # Step env only, never $GITHUB_ENV: APPLE_API_* must not
+                  # reach the cargo tauri ios build step (ADR-056 invariant).
+                  APPLE_API_KEY_PATH: ${{ steps.decode-key.outputs.key-path }}
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+              run: |
+                  python3 .github/scripts/asc_set_automatic_release.py \
+                    --platform IOS \
+                    --version-string "${{ inputs.version_base }}"
+
             - name: Report upload result
               id: upload-report
               if: always()
@@ -860,6 +891,25 @@ jobs:
                     echo "::error::altool macOS upload failed (exit $EXIT_CODE)"
                     exit 1
                   fi
+
+            - name: Set App Store release type to automatic
+              # Issue #730 — see the same step in the build-ios job for the
+              # full rationale. ORDER INVARIANT: AFTER "Upload to App Store
+              # Connect" (gated on its outcome), BEFORE "Cleanup API key and
+              # keychain" (needs the decoded key in private_keys/).
+              # APPLE_API_KEY_PATH is already in the job env ("Set API key
+              # env" step); the KEY and ISSUER values stay step-scoped.
+              if: >-
+                inputs.version_type == 'stable' &&
+                inputs.skip_appstore_upload != true &&
+                steps.upload.outcome == 'success'
+              env:
+                  APPLE_API_KEY: ${{ secrets.apple-api-key }}
+                  APPLE_API_ISSUER: ${{ secrets.apple-api-issuer }}
+              run: |
+                  python3 .github/scripts/asc_set_automatic_release.py \
+                    --platform MAC_OS \
+                    --version-string "${{ inputs.version_base }}"
 
             - name: Report build result
               id: build-report
