@@ -1,10 +1,11 @@
 use super::kanji_card_data::extract_kanji_card_data;
+use super::lesson_card_shell::LessonCardShell;
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::pages::shared::format_answer_text;
 use crate::ui_components::{
-    Card, DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
+    DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
@@ -69,67 +70,72 @@ pub fn WritingCard(
     let on_rate_sv = StoredValue::new(on_rate);
     let disabled_sv = StoredValue::new(disabled);
 
-    view! {
-        <div class="flex flex-col">
-            <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
-                <Tag variant=tag_variant>
-                    {card_type_label}
-                </Tag>
-            </div>
-            <Card class=super::LESSON_CARD_CLASS shadow=true test_id="lesson-card-root">
-
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-4">
-                    <DisplayText>{display_text_sv.get_value()}</DisplayText>
+    let tags_row: ChildrenFn = std::sync::Arc::new(move || {
+        let label = card_type_label.clone();
+        view! {
+                <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+                    <Tag variant=tag_variant>
+                        {label}
+                    </Tag>
                 </div>
+        }
+        .into_any()
+    });
 
-                <Show when=move || !show_details.get()>
-                    <div class="my-4">
-                        <KanjiDrawingPractice
-                            kanji=symbol_sv.get_value()
-                            on_complete=Callback::new(move |_| {
-                                show_details.set(true);
-                                if let Some(cb) = on_show_answer {
-                                    cb.run(());
-                                }
-                            })
-                        />
-                    </div>
-                </Show>
-
-                <Show when=move || show_details.get()>
-                    <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
-                        {symbol_sv.get_value()}
-                    </Heading>
-
-                    <KanjiCardDetails
-                        kanji=symbol_sv.get_value()
-                        name=display_text_sv.get_value()
-                        radicals=radicals_sv.get_value()
-                        example_words=examples_sv.get_value()
-                        on_readings=on_readings_sv.get_value()
-                        kun_readings=kun_readings_sv.get_value()
-                        known_kanji=known_kanji
-                        native_language=native_language
-                    />
-
-                    <div class="flex justify-center mt-4">
-                        <button
-                            type="button"
-                            class="btn btn-ghost text-xs"
-                            on:click=move |_: leptos::ev::MouseEvent| {
-                                show_details.set(false);
-                            }
-                        >
-                            {t!(i18n, lesson.writing_try_again)}
-                        </button>
-                    </div>
-
-                    <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
-                </Show>
-            </div>
-        </Card>
+    view! {
+        <LessonCardShell
+            tags=tags_row
+            test_id="lesson-card-root"
+        >
+        <div class="text-center mb-4">
+            <DisplayText>{display_text_sv.get_value()}</DisplayText>
         </div>
+
+        <Show when=move || !show_details.get()>
+            <div class="my-4">
+                <KanjiDrawingPractice
+                    kanji=symbol_sv.get_value()
+                    on_complete=Callback::new(move |_| {
+                        show_details.set(true);
+                        if let Some(cb) = on_show_answer {
+                            cb.run(());
+                        }
+                    })
+                />
+            </div>
+        </Show>
+
+        <Show when=move || show_details.get()>
+            <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
+                {symbol_sv.get_value()}
+            </Heading>
+
+            <KanjiCardDetails
+                kanji=symbol_sv.get_value()
+                name=display_text_sv.get_value()
+                radicals=radicals_sv.get_value()
+                example_words=examples_sv.get_value()
+                on_readings=on_readings_sv.get_value()
+                kun_readings=kun_readings_sv.get_value()
+                known_kanji=known_kanji
+                native_language=native_language
+            />
+
+            <div class="flex justify-center mt-4">
+                <button
+                    type="button"
+                    class="btn btn-ghost text-xs"
+                    on:click=move |_: leptos::ev::MouseEvent| {
+                        show_details.set(false);
+                    }
+                >
+                    {t!(i18n, lesson.writing_try_again)}
+                </button>
+            </div>
+
+            <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
+        </Show>
+        </LessonCardShell>
     }
     .into_any()
 }

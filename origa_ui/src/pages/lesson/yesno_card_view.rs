@@ -1,6 +1,6 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, Card, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
+    Button, ButtonVariant, DisplayText, MarkdownText, MarkdownVariant, Text, TextSize,
     TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
@@ -11,6 +11,7 @@ use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
+use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
@@ -205,146 +206,150 @@ pub fn YesNoCardView(
     let show_correct_answer_line =
         move || show_result.get() && !matches!(yesno_result(), YesNoResult::Correct);
 
+    let tags_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+                <LessonCardTagsQuiz
+                    card_type=card_type
+                    part_of_speech=part_of_speech.clone()
+                    audio=Signal::derive(move || Some(CardHeaderAudio {
+                        card_type,
+                        question_text: display_question.get_value(),
+                        is_reversed: false,
+                        audio_path: None,
+                    }))
+                />
+        }
+        .into_any()
+    });
+
     view! {
-        <div class="flex flex-col">
-            <LessonCardTagsQuiz
-                card_type=card_type
-                part_of_speech=part_of_speech
-                audio=Signal::derive(move || Some(CardHeaderAudio {
-                    card_type,
-                    question_text: display_question.get_value(),
-                    is_reversed: false,
-                    audio_path: None,
-                }))
-            />
-            <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="lesson-card-root">
+        <LessonCardShell
+            tags=tags_row
+            test_id="lesson-card-root"
+        >
+        <div class="text-center mb-3 sm:mb-6">
+                <Show when=move || kanji_for_animation.get_value().is_none()>
+                    <div class="mb-2 sm:mb-3">
+                        <MarkdownText
+                            content=Signal::derive(move || display_word.get_value())
+                            known_kanji=known_kanji.get()
+                            variant=Signal::derive(|| MarkdownVariant::Large)
+                        />
+                    </div>
+                </Show>
 
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-3 sm:mb-6">
-                    <Show when=move || kanji_for_animation.get_value().is_none()>
-                        <div class="mb-2 sm:mb-3">
-                            <MarkdownText
-                                content=Signal::derive(move || display_word.get_value())
-                                known_kanji=known_kanji.get()
-                                variant=Signal::derive(|| MarkdownVariant::Large)
-                            />
-                        </div>
-                    </Show>
+                <Show when=move || kanji_for_animation.get_value().is_some()>
+                    {move || {
+                        kanji_for_animation.get_value().map(|kanji: String| {
+                            view! {
+                                <div class="mb-2 sm:mb-3">
+                                    <DisplayText>
+                                        {kanji}
+                                    </DisplayText>
+                                </div>
+                            }
+                        })
+                    }}
+                </Show>
 
-                    <Show when=move || kanji_for_animation.get_value().is_some()>
-                        {move || {
-                            kanji_for_animation.get_value().map(|kanji: String| {
-                                view! {
-                                    <div class="mb-2 sm:mb-3">
-                                        <DisplayText>
-                                            {kanji}
-                                        </DisplayText>
-                                    </div>
-                                }
-                            })
-                        }}
-                    </Show>
-
-                    // The statement (the claimed translation) is the
-                    // question. On the result side a CORRECT claim would
-                    // duplicate the revealed answer below the verdict —
-                    // hide it there; a distractor claim stays visible as
-                    // the contrast against the real answer.
-                    <Show when=move || !show_result.get() || !is_statement_correct>
-                        <div data-testid="yesno-statement">
-                            <Text size=TextSize::Default variant=TypographyVariant::Muted>
-                                {move || statement_value.get_value()}
-                            </Text>
-                        </div>
-                    </Show>
-
-                    <Show when=move || !show_result.get()>
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                            {t!(i18n, lesson.is_this_correct)}
+                // The statement (the claimed translation) is the
+                // question. On the result side a CORRECT claim would
+                // duplicate the revealed answer below the verdict —
+                // hide it there; a distractor claim stays visible as
+                // the contrast against the real answer.
+                <Show when=move || !show_result.get() || !is_statement_correct>
+                    <div data-testid="yesno-statement">
+                        <Text size=TextSize::Default variant=TypographyVariant::Muted>
+                            {move || statement_value.get_value()}
                         </Text>
-                    </Show>
-                </div>
+                    </div>
+                </Show>
 
                 <Show when=move || !show_result.get()>
-                    <div class="grid grid-cols-2 gap-3">
-                        <Button
-                            test_id=Signal::derive(|| "yesno-no-btn".to_string())
-                            variant=Signal::derive(|| ButtonVariant::Default)
-                            class=no_btn_class
-                            disabled=Signal::derive(move || show_result.get())
-                            on_click=Callback::new(move |_| on_answer.run(false))
-                        >
-                            {t!(i18n, lesson.no)} <span class="kbd-hint">"[1]"</span>
-                        </Button>
-
-                        <Button
-                            test_id=Signal::derive(|| "yesno-yes-btn".to_string())
-                            variant=yes_variant
-                            class=yes_btn_class
-                            disabled=Signal::derive(move || show_result.get())
-                            on_click=Callback::new(move |_| on_answer.run(true))
-                        >
-                            {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
-                        </Button>
-                    </div>
-                    <button
-                        data-testid="yesno-dont-know-btn"
-                        class=move || {
-                            let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                            if dont_know_selected.get() {
-                                format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                            } else if show_result.get() {
-                                format!("{} quiz-option-dimmed pointer-events-none", base)
-                            } else {
-                                format!("{} quiz-option-neutral", base)
-                            }
-                        }
-                        on:click=move |_| {
-                            if !show_result.get() {
-                                on_dont_know.run(());
-                            }
-                        }
-                    >
-                        <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                        <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
-                    </button>
-                </Show>
-
-                <Show when=move || show_result.get()>
-                    <QuizResultDisplay quiz_result=QuizResult::from(yesno_result()) />
-
-                    // The correct answer (Да/Нет) is feedback for a miss:
-                    // shown only when the learner did not answer correctly,
-                    // same pattern as the single-quiz card.
-                    <Show when=show_correct_answer_line>
-                        <div class="mt-2 text-center">
-                            <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                                {t!(i18n, lesson.correct_answer)}
-                                <span class="font-semibold">
-                                    {correct_answer_text}
-                                </span>
-                            </Text>
-                        </div>
-                    </Show>
-                </Show>
-
-                // The yes/no verdict alone is not the answer the learner
-                // wants — the actual card answer (translation / meaning /
-                // description) is revealed on every result, correct or not.
-                <Show when=move || show_result.get()>
-                    <CardAnswerDisplay
-                        translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
-                        description=Signal::derive(move || answer_vocab_description_stored.get_value())
-                        text=Signal::derive(move || answer_text_display_stored.get_value())
-                        known_kanji=known_kanji
-                    />
-                </Show>
-
-                <Show when=move || waiting_for_next.get() && show_result.get()>
-                    <NextCardButton on_next_card=on_next_card />
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
+                        {t!(i18n, lesson.is_this_correct)}
+                    </Text>
                 </Show>
             </div>
-        </Card>
-        </div>
+
+            <Show when=move || !show_result.get()>
+                <div class="grid grid-cols-2 gap-3">
+                    <Button
+                        test_id=Signal::derive(|| "yesno-no-btn".to_string())
+                        variant=Signal::derive(|| ButtonVariant::Default)
+                        class=no_btn_class
+                        disabled=Signal::derive(move || show_result.get())
+                        on_click=Callback::new(move |_| on_answer.run(false))
+                    >
+                        {t!(i18n, lesson.no)} <span class="kbd-hint">"[1]"</span>
+                    </Button>
+
+                    <Button
+                        test_id=Signal::derive(|| "yesno-yes-btn".to_string())
+                        variant=yes_variant
+                        class=yes_btn_class
+                        disabled=Signal::derive(move || show_result.get())
+                        on_click=Callback::new(move |_| on_answer.run(true))
+                    >
+                        {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
+                    </Button>
+                </div>
+                <button
+                    data-testid="yesno-dont-know-btn"
+                    class=move || {
+                        let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
+                        if dont_know_selected.get() {
+                            format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
+                        } else if show_result.get() {
+                            format!("{} quiz-option-dimmed pointer-events-none", base)
+                        } else {
+                            format!("{} quiz-option-neutral", base)
+                        }
+                    }
+                    on:click=move |_| {
+                        if !show_result.get() {
+                            on_dont_know.run(());
+                        }
+                    }
+                >
+                    <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
+                    <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
+                </button>
+            </Show>
+
+            <Show when=move || show_result.get()>
+                <QuizResultDisplay quiz_result=QuizResult::from(yesno_result()) />
+
+                // The correct answer (Да/Нет) is feedback for a miss:
+                // shown only when the learner did not answer correctly,
+                // same pattern as the single-quiz card.
+                <Show when=show_correct_answer_line>
+                    <div class="mt-2 text-center">
+                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
+                            {t!(i18n, lesson.correct_answer)}
+                            <span class="font-semibold">
+                                {correct_answer_text}
+                            </span>
+                        </Text>
+                    </div>
+                </Show>
+            </Show>
+
+            // The yes/no verdict alone is not the answer the learner
+            // wants — the actual card answer (translation / meaning /
+            // description) is revealed on every result, correct or not.
+            <Show when=move || show_result.get()>
+                <CardAnswerDisplay
+                    translations=Signal::derive(move || answer_vocab_translations_stored.get_value())
+                    description=Signal::derive(move || answer_vocab_description_stored.get_value())
+                    text=Signal::derive(move || answer_text_display_stored.get_value())
+                    known_kanji=known_kanji
+                />
+            </Show>
+
+            <Show when=move || waiting_for_next.get() && show_result.get()>
+                <NextCardButton on_next_card=on_next_card />
+            </Show>
+        </LessonCardShell>
     }
 }

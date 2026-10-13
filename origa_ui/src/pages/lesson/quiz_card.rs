@@ -1,6 +1,6 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    Card, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
     MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant, is_speech_supported,
     speak_word, stop_current_audio,
 };
@@ -11,6 +11,7 @@ use std::collections::HashSet;
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
+use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
@@ -153,159 +154,163 @@ pub fn QuizCardView(
 
     let is_multi = quiz_card.mode() == QuizMode::Multi;
 
+    let tags_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+                <LessonCardTagsQuiz
+                    card_type=card_type
+                    quiz_variant=quiz_variant
+                    part_of_speech=part_of_speech.clone()
+                    audio=Signal::derive(move || Some(CardHeaderAudio {
+                        card_type,
+                        question_text: display_question.get_value(),
+                        is_reversed: false,
+                        audio_path: None,
+                    }))
+                />
+        }
+        .into_any()
+    });
+
     view! {
-        <div class="flex flex-col">
-            <LessonCardTagsQuiz
-                card_type=card_type
-                quiz_variant=quiz_variant
-                part_of_speech=part_of_speech
-                audio=Signal::derive(move || Some(CardHeaderAudio {
-                    card_type,
-                    question_text: display_question.get_value(),
-                    is_reversed: false,
-                    audio_path: None,
-                }))
-            />
-            <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="lesson-card-root">
-
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-0.5 sm:mb-1">
-                    <Show when=move || kanji_for_animation.get_value().is_none()>
-                        <div class="mb-4">
-                            <Heading level=HeadingLevel::H2>
-                                <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
-                            </Heading>
-                        </div>
-                        // Grammar quizzes conjugate a base word that is not part of
-                        // the question (title) or the options (inflected forms).
-                        // Show it explicitly, mirroring the practice session (#502).
-                        <Show when=move || {
-                            quiz_variant == QuizVariant::Grammar
-                                && base_word_stored.get_value().is_some_and(|s| !s.is_empty())
-                        }>
-                            <div
-                                class="mb-4 font-serif text-2xl text-[var(--fg-black)]"
-                                data-testid="lesson-grammar-base-word"
-                            >
-                                <FuriganaText
-                                    text=base_word_stored.get_value().unwrap_or_default()
-                                    known_kanji=known_kanji.get()
-                                    native_language=native_language
-                                />
-                            </div>
-                        </Show>
-                    </Show>
-
-                    <Show when=move || kanji_for_animation.get_value().is_some()>
-                        {move || {
-                            kanji_for_animation.get_value().map(|kanji: String| {
-                                let kanji_clone = kanji.clone();
-                                view! {
-                                    <div class="mb-3 sm:mb-6">
-                                        <DisplayText>
-                                            {kanji}
-                                        </DisplayText>
-                                    </div>
-                                    <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation />
-                                }
-                            })
-                        }}
-                    </Show>
-
-                    <Show when=move || !show_result.get()>
-                        <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
-                            {if is_multi && quiz_variant == QuizVariant::Reading {
-                                t!(i18n, lesson.choose_all_readings).into_any()
-                            } else {
-                                match quiz_variant {
-                                    QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
-                                    QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
-                                    QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
-                                }
-                            }}
-                        </Text>
-                    </Show>
-                </div>
-
-                <Show when=move || is_multi>
-                    <QuizOptionsMulti
-                        options=options.get_value()
-                        selected_options=selected_options.get()
-                        show_result=show_result
-                        multi_submitted=multi_submitted
-                        multi_result=multi_result_stored.get_value()
-                        on_toggle=on_toggle_with_speech
-                        on_submit=on_submit
-                        on_dont_know=on_dont_know
-                        dont_know_selected=dont_know_selected
-                        known_kanji=known_kanji
-                        waiting_for_next=waiting_for_next
-                        on_next_card=on_next_card
-                    />
-                    <Show when=move || multi_submitted.get()>
-                        {move || {
-                            multi_result_stored
-                                .get_value()
-                                .map(|r| {
-                                    let result = if lenient_grading {
-                                        QuizResult::from_multi_result_lenient(&r)
-                                    } else {
-                                        QuizResult::from_multi_result(&r)
-                                    };
-                                    view! {
-                                        <QuizResultDisplay
-                                            quiz_result=result
-                                            multi_result=multi_result_stored.get_value()
-                                            options=options.get_value()
-                                        />
-                                    }
-                                })
-                        }}
-                    </Show>
-                </Show>
-
-                <Show when=move || !is_multi>
-                    <Show when=move || !show_result.get()>
-                        <QuizOptions
-                            options=options.get_value()
-                            selected_option=selected_option
-                            show_result=show_result
-                            quiz_result=quiz_result()
-                            on_select_option=on_select_with_speech
-                            on_dont_know=on_dont_know
-                            dont_know_selected=dont_know_selected
-                            known_kanji=known_kanji
-                        />
-                    </Show>
-
-                    <Show when=move || show_result.get()>
-                        <QuizResultDisplay quiz_result=quiz_result() />
-
-                        // Show the correct answer so the user can learn from
-                        // mistakes or confirm their choice.
-                        <div class="mt-3 p-3 bg-[var(--bg-secondary)] text-center">
-                            <MarkdownText
-                                content=Signal::derive(move || {
-                                    options
-                                        .get_value()
-                                        .iter()
-                                        .find(|o| o.is_correct())
-                                        .map(|o| o.text().to_string())
-                                        .unwrap_or_default()
-                                })
-                                variant=MarkdownVariant::Default
+        <LessonCardShell
+            tags=tags_row
+            test_id="lesson-card-root"
+        >
+        <div class="text-center mb-0.5 sm:mb-1">
+                <Show when=move || kanji_for_animation.get_value().is_none()>
+                    <div class="mb-4">
+                        <Heading level=HeadingLevel::H2>
+                            <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
+                        </Heading>
+                    </div>
+                    // Grammar quizzes conjugate a base word that is not part of
+                    // the question (title) or the options (inflected forms).
+                    // Show it explicitly, mirroring the practice session (#502).
+                    <Show when=move || {
+                        quiz_variant == QuizVariant::Grammar
+                            && base_word_stored.get_value().is_some_and(|s| !s.is_empty())
+                    }>
+                        <div
+                            class="mb-4 font-serif text-2xl text-[var(--fg-black)]"
+                            data-testid="lesson-grammar-base-word"
+                        >
+                            <FuriganaText
+                                text=base_word_stored.get_value().unwrap_or_default()
                                 known_kanji=known_kanji.get()
+                                native_language=native_language
                             />
                         </div>
                     </Show>
+                </Show>
 
-                    <Show when=move || waiting_for_next.get() && show_result.get()>
-                        <NextCardButton on_next_card=on_next_card />
-                    </Show>
+                <Show when=move || kanji_for_animation.get_value().is_some()>
+                    {move || {
+                        kanji_for_animation.get_value().map(|kanji: String| {
+                            let kanji_clone = kanji.clone();
+                            view! {
+                                <div class="mb-3 sm:mb-6">
+                                    <DisplayText>
+                                        {kanji}
+                                    </DisplayText>
+                                </div>
+                                <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation />
+                            }
+                        })
+                    }}
+                </Show>
+
+                <Show when=move || !show_result.get()>
+                    <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
+                        {if is_multi && quiz_variant == QuizVariant::Reading {
+                            t!(i18n, lesson.choose_all_readings).into_any()
+                        } else {
+                            match quiz_variant {
+                                QuizVariant::Meaning => t!(i18n, lesson.choose_answer).into_any(),
+                                QuizVariant::Reading => t!(i18n, lesson.choose_reading).into_any(),
+                                QuizVariant::Grammar => t!(i18n, lesson.choose_grammar).into_any(),
+                            }
+                        }}
+                    </Text>
                 </Show>
             </div>
-        </Card>
-        </div>
+
+            <Show when=move || is_multi>
+                <QuizOptionsMulti
+                    options=options.get_value()
+                    selected_options=selected_options.get()
+                    show_result=show_result
+                    multi_submitted=multi_submitted
+                    multi_result=multi_result_stored.get_value()
+                    on_toggle=on_toggle_with_speech
+                    on_submit=on_submit
+                    on_dont_know=on_dont_know
+                    dont_know_selected=dont_know_selected
+                    known_kanji=known_kanji
+                    waiting_for_next=waiting_for_next
+                    on_next_card=on_next_card
+                />
+                <Show when=move || multi_submitted.get()>
+                    {move || {
+                        multi_result_stored
+                            .get_value()
+                            .map(|r| {
+                                let result = if lenient_grading {
+                                    QuizResult::from_multi_result_lenient(&r)
+                                } else {
+                                    QuizResult::from_multi_result(&r)
+                                };
+                                view! {
+                                    <QuizResultDisplay
+                                        quiz_result=result
+                                        multi_result=multi_result_stored.get_value()
+                                        options=options.get_value()
+                                    />
+                                }
+                            })
+                    }}
+                </Show>
+            </Show>
+
+            <Show when=move || !is_multi>
+                <Show when=move || !show_result.get()>
+                    <QuizOptions
+                        options=options.get_value()
+                        selected_option=selected_option
+                        show_result=show_result
+                        quiz_result=quiz_result()
+                        on_select_option=on_select_with_speech
+                        on_dont_know=on_dont_know
+                        dont_know_selected=dont_know_selected
+                        known_kanji=known_kanji
+                    />
+                </Show>
+
+                <Show when=move || show_result.get()>
+                    <QuizResultDisplay quiz_result=quiz_result() />
+
+                    // Show the correct answer so the user can learn from
+                    // mistakes or confirm their choice.
+                    <div class="mt-3 p-3 bg-[var(--bg-secondary)] text-center">
+                        <MarkdownText
+                            content=Signal::derive(move || {
+                                options
+                                    .get_value()
+                                    .iter()
+                                    .find(|o| o.is_correct())
+                                    .map(|o| o.text().to_string())
+                                    .unwrap_or_default()
+                            })
+                            variant=MarkdownVariant::Default
+                            known_kanji=known_kanji.get()
+                        />
+                    </div>
+                </Show>
+
+                <Show when=move || waiting_for_next.get() && show_result.get()>
+                    <NextCardButton on_next_card=on_next_card />
+                </Show>
+            </Show>
+        </LessonCardShell>
     }
 }
 
