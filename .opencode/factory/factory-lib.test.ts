@@ -120,6 +120,13 @@ describe("kickoffPrompt", () => {
     expect(p).toContain("--body-file")
     expect(p).not.toMatch(/gh issue comment \d+ --body "/)
   })
+  test("после ПР агент переименовывает сессию в PR #N · title", () => {
+    expect(p).toContain("session_rename")
+    expect(p).toContain("PR #<номер ПР> · <название ПР>")
+  })
+  test("правки кода фабрики требуют рестарта — напоминание в контракте", () => {
+    expect(p).toContain("systemctl --user restart origa-factory")
+  })
 })
 
 describe("wakeupPrompt", () => {

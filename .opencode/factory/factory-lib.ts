@@ -112,6 +112,8 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "   Если UI в задаче не затронут — в отчёте напиши «UI не затронут».",
     `6. Отчёт в ишью: gh issue comment ${issue.number} --body-file <файл> по ШАБЛОНУ ниже.`,
     `7. PR: gh pr create --title "<кратко>" --body-file <файл> с «Closes #${issue.number}», отчётом и скринами.`,
+    "   СРАЗУ после создания ПР переименуй свою сессию тулом session_rename:",
+    '   tools.opencode.session_rename({ title: "PR #<номер ПР> · <название ПР>" })',
     "8. Проверь CI (gh pr checks --watch может висеть — опрашивай gh pr checks напрямую).",
     "   Красный — чини. Зелёный — коммент «готово к ревью».",
     "9. Мержит пользователь. Замечания придут комментами в ишью — исправляй в этой же ветке и пушь.",
@@ -128,6 +130,8 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "- ВСЁ, что должен увидеть пользователь — ТОЛЬКО gh issue comment. Твой текст в сессии пользователь не читает.",
     "- Не мержи сам. Не закрывай ишью сам. Не выходи за пределы ворктри.",
     "- Разрешённые gh-команды: gh issue comment/view, gh pr create/checks. Запрещены: gh pr merge, gh issue close.",
+    "- Если задача правит сам код фабрики (.opencode/factory/) — в ПР напомни: после мержа нужен",
+    "  systemctl --user restart origa-factory (работающий демон не подхватит новый код сам).",
   ].join("\n")
 }
 
