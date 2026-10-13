@@ -12,10 +12,9 @@ use wasm_bindgen_test::*;
 
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::RecentlyStudiedItem;
+use crate::pages::home::insights::InsightsSection;
 use crate::pages::home::insights::panels_data::InsightsPanels;
-use crate::pages::home::{
-    InsightsSection, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
-};
+use crate::pages::home::{JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard};
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
 wasm_bindgen_test_configure!(run_in_browser);
