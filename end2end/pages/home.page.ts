@@ -25,12 +25,13 @@ export class HomePage extends BasePage {
   // Lesson
   readonly lessonButton: Locator;
 
-  // Today Overview
-  readonly todayOverview: Locator;
-  readonly todayTotalCount: Locator;
-
-  // Activity Chart
-  readonly activityChart: Locator;
+  // Insights (#749)
+  readonly insights: Locator;
+  readonly insightsWeekVerdict: Locator;
+  readonly insightsPace: Locator;
+  readonly insightsTimeOfDay: Locator;
+  readonly insightsOverdue: Locator;
+  readonly insightsHardestWords: Locator;
 
   // Recent Study
   readonly recentStudy: Locator;
@@ -73,14 +74,13 @@ export class HomePage extends BasePage {
     // Lesson
     this.lessonButton = page.getByTestId("home-welcome-lesson");
 
-    // Today Overview
-    this.todayOverview = page.getByTestId("home-today-overview");
-    this.todayTotalCount = this.todayOverview.locator(
-      ".font-serif.text-[48px]",
-    );
-
-    // Activity Chart
-    this.activityChart = page.getByTestId("home-activity-chart");
+    // Insights (#749)
+    this.insights = page.getByTestId("home-insights");
+    this.insightsWeekVerdict = page.getByTestId("home-insights-insights-week-verdict");
+    this.insightsPace = page.getByTestId("home-insights-insights-pace");
+    this.insightsTimeOfDay = page.getByTestId("home-insights-insights-time-of-day");
+    this.insightsOverdue = page.getByTestId("home-insights-insights-overdue");
+    this.insightsHardestWords = page.getByTestId("home-insights-insights-hardest-words");
 
     // Recent Study
     this.recentStudy = page.getByTestId("home-recent-study");

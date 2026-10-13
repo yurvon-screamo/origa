@@ -27,8 +27,17 @@ pub fn InsightsSection(
 ) -> impl IntoView {
     let i18n = use_i18n();
 
+    let section_prefix = move || {
+        let val = test_id.get();
+        if val.is_empty() {
+            "home-insights".to_string()
+        } else {
+            val
+        }
+    };
+
     view! {
-        <section data-testid=move || test_id.get()>
+        <section data-testid=section_prefix>
             <p class="text-xs text-[var(--fg-muted)] uppercase tracking-widest mb-4">
                 {move || {
                     let locale = i18n.get_locale();
@@ -39,24 +48,26 @@ pub fn InsightsSection(
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
                 <WeekVerdictPanel
                     verdict=Signal::derive(move || panels.get().week.clone())
-                    test_id=Signal::derive(|| "insights-week-verdict".to_string())
+                    test_id=Signal::derive(move || format!("{}-insights-week-verdict", section_prefix()))
                 />
                 <PacePanel
                     pace=Signal::derive(move || panels.get().pace)
-                    test_id=Signal::derive(|| "insights-pace".to_string())
+                    test_id=Signal::derive(move || format!("{}-insights-pace", section_prefix()))
                 />
                 <TimeOfDayPanel
                     insight=Signal::derive(move || panels.get().time_of_day)
-                    test_id=Signal::derive(|| "insights-time-of-day".to_string())
+                    test_id=Signal::derive(move || format!("{}-insights-time-of-day", section_prefix()))
                 />
                 <OverduePanel
                     insight=Signal::derive(move || panels.get().overdue)
-                    test_id=Signal::derive(|| "insights-overdue".to_string())
+                    test_id=Signal::derive(move || format!("{}-insights-overdue", section_prefix()))
                 />
                 <div class="lg:col-span-2">
                     <HardestWordsPanel
                         insight=Signal::derive(move || panels.get().hardest_words)
-                        test_id=Signal::derive(|| "insights-hardest-words".to_string())
+                        test_id=Signal::derive(move || {
+                            format!("{}-insights-hardest-words", section_prefix())
+                        })
                     />
                 </div>
             </div>

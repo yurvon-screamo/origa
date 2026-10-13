@@ -57,9 +57,10 @@ Then('отображается призрачный прогресс', async ({ 
     await expect(page.getByTestId("home-jlpt-progress-progress-projected")).toBeVisible();
 });
 
-Then('отображается обзор активности', async ({ page }) => {
+Then('отображаются панели наблюдений', async ({ page }) => {
     const homePage = new HomePage(page);
-    await expect(homePage.todayOverview).toBeVisible();
+    await expect(homePage.insights).toBeVisible();
+    await expect(homePage.insightsWeekVerdict).toBeVisible();
 });
 
 Then('отображается недавняя активность', async ({ page }) => {
@@ -87,8 +88,13 @@ Then('приветственная карточка содержит имя по
     expect(text?.trim().length ?? 0).toBeGreaterThan(0);
 });
 
-Then('отображается график активности', async ({ page }) => {
-    await expect(page.getByTestId(/activity.*chart|chart.*activity/)).toBeVisible({ timeout: 10_000 });
+Then('отображаются все пять панелей наблюдений', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await expect(homePage.insightsWeekVerdict).toBeVisible({ timeout: 10_000 });
+    await expect(homePage.insightsPace).toBeVisible();
+    await expect(homePage.insightsTimeOfDay).toBeVisible();
+    await expect(homePage.insightsOverdue).toBeVisible();
+    await expect(homePage.insightsHardestWords).toBeVisible();
 });
 
 Then('отображается нижняя панель навигации', async ({ page }) => {
