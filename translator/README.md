@@ -12,7 +12,7 @@ This is the code and evaluation harness. Model weights live on Hugging Face; tra
 LoRA adapter (r=16 α=32, 24.16M trainable, 205 text-stack modules) over `google/gemma-4-E2B-it-qat-w4a16-ct`. Trained for 1 epoch on 600k phrase pairs (150k × 4 locales), val_loss 0.6720.
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 59,973 pairs. Internal eval: 81.9% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N). Absolute per-locale thresholds ship as a calibration layer: `judge_api.Judge.verdict()` gives a go/no-go from thresholds fitted on labeled pairs (`calibrate_judge.py`). A provisional calibration (all four locales, fitted on the golden_v4c author-audit labels) is committed under `calibration/`; the native KO/VI wave (~200 pairs/locale) will replace it — [#713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 59,973 pairs. Internal eval: 81.9% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N). Absolute per-locale thresholds ship as a calibration layer: `judge_api.Judge.verdict()` gives a go/no-go from thresholds fitted on labeled pairs (`calibrate_judge.py`). Thresholds are audit-calibrated (golden_v4c author labels); an LLM-labeled production-flow wave (200/locale, #713) quantified the residual blind spot: subtle failures score inside the good distribution (per-locale `wave_v1` blocks), so scans keep the double-confirmation rule — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## Quality numbers
 
@@ -92,7 +92,7 @@ The full post-mortem, including infra fixes (OOM cgroup cage, masked CE for the 
 
 ## Known limitations
 
-- Absolute go/no-go verdicts (`judge_api` `verdict()`) use the committed per-locale thresholds (`calibration/judge_calibration.json`). The current file is provisional: fitted on the golden_v4c author-audit labels (CV F1 0.68–0.76 per locale). The native KO/VI wave (~200 pairs/locale, in flight) refits it — [#713](https://github.com/yurvon-screamo/origa/issues/713); until then treat KO/VI verdicts as directional. The layer still fails loudly on unfitted locales.
+- Absolute go/no-go verdicts (`judge_api` `verdict()`) use the committed per-locale thresholds (`calibration/judge_calibration.json`), fitted on the golden_v4c author-audit labels (CV F1 0.68–0.76 per locale) — i.e. "free of audit-grade corruption". A labeled production-flow wave (200 pairs/locale, LLM labels, [#713](https://github.com/yurvon-screamo/origa/issues/713)) showed that subtle failures (KO name transliterations, register shifts, idiom flips) score inside the good distribution: absolute verdicts do not catch them, the wave-fit threshold is degenerate and was NOT committed. Scans keep the double-confirmation rule; the layer still fails loudly on unfitted locales.
 - The judge produces false negatives on phonetic loanwords. A calibrated threshold does not remove this class: production scans keep the double-confirmation rule (percentile × algorithmic flag), never a bare score cutoff. `verdict()` is for auto-pipeline accept decisions on fresh translations.
 - The translator keeps residual 🟡 issues on VI (register/politeness shifts) and rare EN inversions. We assessed these as a capability limit of the 2B base; more data did not remove them.
 - Intel XPU only for training; inference runs anywhere vLLM supports the base.

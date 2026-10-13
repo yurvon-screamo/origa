@@ -12,7 +12,7 @@ Bộ stack dịch cho pipeline nội dung của Origa: một bộ dịch JA→{E
 Adapter LoRA (r=16 α=32, 24.16M tham số huấn luyện được, 205 mô-đun trên text stack) đặt trên `google/gemma-4-E2B-it-qat-w4a16-ct`. Huấn luyện 1 epoch trên 600k cặp câu (150k × 4 locale), val_loss 0.6720.
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N). Ngưỡng tuyệt đối theo từng locale đi kèm lớp hiệu chỉnh: `judge_api.Judge.verdict()` đưa phán đoán đạt/không đạt từ ngưỡng được fit trên các cặp có gán nhãn (`calibrate_judge.py`). Bản hiệu chỉnh tạm thời (cả bốn locale, fit trên nhãn audit của tác giả từ golden_v4c) đã được commit trong `calibration/`; đợt gán nhãn KO/VI bởi người bản xứ (~200 cặp/locale) sẽ thay thế — [#713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N). Ngưỡng tuyệt đối theo từng locale đi kèm lớp hiệu chỉnh: `judge_api.Judge.verdict()` đưa phán đoán đạt/không đạt từ ngưỡng được fit trên các cặp có gán nhãn (`calibrate_judge.py`). Ngưỡng được hiệu chỉnh theo audit (nhãn tác giả golden_v4c); đợt gán nhãn production-flow bằng LLM (200 cặp/locale, #713) đã định lượng vùng mù còn lại: lỗi tinh vi nằm trong phân bố good (khối `wave_v1` theo locale), nên scan giữ quy tắc xác nhận kép — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## Các con số chất lượng
 
@@ -92,7 +92,7 @@ Post-mortem đầy đủ, gồm các bản sửa hạ tầng (lồng cgroup ch�
 
 ## Hạn chế đã biết
 
-- Phán đoán tuyệt đối đạt/không đạt (`judge_api` `verdict()`) dùng ngưỡng theo từng locale đã commit (`calibration/judge_calibration.json`). File hiện tại là bản tạm thời: fit trên nhãn audit của tác giả từ golden_v4c (CV F1 0.68–0.76 theo locale). Đợt gán nhãn KO/VI bởi người bản xứ (~200 cặp/locale, đang tiến hành) sẽ fit lại — [#713](https://github.com/yurvon-screamo/origa/issues/713); đến lúc đó hãy coi phán đoán KO/VI là tham khảo hướng. Lớp này vẫn fail loud với locale chưa fit.
+- Phán đoán tuyệt đối đạt/không đạt (`judge_api` `verdict()`) dùng ngưỡng theo từng locale đã commit (`calibration/judge_calibration.json`). Fit trên nhãn audit của tác giả từ golden_v4c (CV F1 0.68–0.76 theo locale), tức 'không lỗi cấp audit'. Kết quả đợt production-flow (200 cặp/locale, nhãn LLM, [#713](https://github.com/yurvon-screamo/origa/issues/713)): lỗi tinh vi (phiên âm tên KO, trôi register, đảo idiom) nằm trong phân bố good — phán đoán tuyệt đối không bắt được, ngưỡng thoái hóa của wave KHÔNG được commit. Scan giữ xác nhận kép; lớp vẫn fail loud với locale chưa fit.
 - Judge cho false-negative trên từ mượn phiên âm. Ngưỡng đã hiệu chỉnh không xoá được lớp lỗi này: scan production vẫn giữ quy tắc xác nhận kép (phân vị × cờ thuật toán), không cắt theo điểm thô. `verdict()` dùng cho quyết định tự động đạt/không của pipeline trên bản dịch mới.
 - Translator còn sót lỗi 🟡 trên VI (trôi register, trôi lịch sự) và hiếm chỗ đảo cấu trúc trên EN. Chúng tôi đánh giá đây là trần năng lực của nền 2B; thêm dữ liệu không làm mất đi.
 - Huấn luyện chỉ chạy trên Intel XPU; inference chạy ở bất cứ đâu vLLM hỗ trợ nền.

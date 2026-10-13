@@ -7,10 +7,10 @@
  "heads_sha256": "1043af22a8554f3e4fda73f1013861c59573725834081bb967228d43b940fc62",
  "embedding_model": "intfloat/multilingual-e5-base",
  "sampling": {
-  "seed": null,
-  "pool_rows": null,
-  "sampled": 1324,
-  "prevalence_bad": 0.5
+  "seed": 7,
+  "pool_rows": 174592,
+  "sampled": 400,
+  "prevalence_bad": 0.08
  },
  "locales": {
   "en": {
@@ -71,6 +71,18 @@
     "p05": -0.1451354,
     "p50": 0.2035675,
     "p95": 0.78478045
+   },
+   "source": "golden_v4c author-audit (provisional)",
+   "wave_v1": {
+    "n": 200,
+    "good": 182,
+    "bad": 18,
+    "good_median": 0.7464,
+    "bad_median": 0.7704,
+    "bad_min": 0.1501,
+    "good_max": 0.8924,
+    "labels": "LLM-labeled random production-flow sample (seed 7)",
+    "finding": "absolute score does not separate this bad class (bad distribution overlaps/overlaps-above good); wave-fit max-F1 threshold is degenerate (accept-all), thresholds NOT replaced; scans must keep double confirmation"
    }
   },
   "ru": {
@@ -131,8 +143,20 @@
     "p05": -0.1824334,
     "p50": 0.07713,
     "p95": 0.7451403999999999
+   },
+   "source": "golden_v4c author-audit (provisional)",
+   "wave_v1": {
+    "n": 200,
+    "good": 186,
+    "bad": 14,
+    "good_median": 0.6409,
+    "bad_median": 0.6184,
+    "bad_min": 0.228,
+    "good_max": 0.8421,
+    "labels": "LLM-labeled random production-flow sample (seed 7)",
+    "finding": "absolute score does not separate this bad class (bad distribution overlaps/overlaps-above good); wave-fit max-F1 threshold is degenerate (accept-all), thresholds NOT replaced; scans must keep double confirmation"
    }
   }
  },
- "note": "PROVISIONAL: fitted on golden_v4c author-audit labels (prior to the native KO/VI labeling wave, issue #713); backend: hf-transformers mean-pooling float32 on Intel XPU."
+ "note": "Thresholds: golden_v4c author-audit labels (audit-grade corruption distribution; CV F1 0.68-0.78). agent_wave_v1 (LLM-labeled, 200/locale production-flow, issue #713) quantified the residual blind spot: subtle prod failures (KO name transliterations, register shifts, idiom flips) score inside the good distribution - per-locale wave_v1 blocks carry the numbers. verdict() = 'free of audit-grade corruption', not 'flawless'. Wave bads are ready negatives for the next judge retrain."
 }

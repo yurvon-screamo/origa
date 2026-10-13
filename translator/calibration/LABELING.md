@@ -8,6 +8,14 @@ A provisional calibration already ships in `calibration/judge_calibration.json`
 (fitted on the golden_v4c author-audit labels). The native wave refits it:
 native labels replace author labels as the fit source for KO/VI.
 
+Status of wave v1 (completed, LLM-labeled): the production-flow wave did NOT
+replace the thresholds — its bad class (KO name transliterations, register
+shifts, idiom flips) scores inside the good distribution, so the wave-fit
+max-F1 threshold is degenerate (accept-all). The wave numbers live in the
+per-locale `wave_v1` blocks of the calibration file as quantified evidence of
+the blind spot. Fixing that class is a judge-retraining task (the wave bads
+are ready negatives for the next self-teaching round), not a threshold task.
+
 ## What gets labeled
 
 One task = one pair:
