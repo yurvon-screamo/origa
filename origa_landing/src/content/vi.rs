@@ -288,4 +288,12 @@ pub static CONTENT: Content = Content {
     terms_h1: "Terms of Service",
     terms_last_updated_label: "Last updated",
     terms_body: super::en::TO_BODY_EN,
+
+    // HowTo JSON-LD steps for /blog/japanese-ocr-app — a compressed restatement
+    // of the pipeline the article documents; keep in sync with the article body.
+    blog_ocr_howto_name: "Cách biến văn bản tiếng Nhật thành thẻ ghi nhớ với Origa",
+    blog_ocr_howto_step1: "Chụp ảnh trang bạn đang đọc",
+    blog_ocr_howto_step2: "Mô hình NDLOCR-Lite chạy trên thiết bị nhận dạng văn bản tiếng Nhật",
+    blog_ocr_howto_step3: "Mỗi từ được nhận dạng trở thành thẻ ghi nhớ kèm cách đọc, bản dịch và audio",
+    blog_ocr_howto_step4: "Ôn tập thẻ theo lịch FSRS",
 };

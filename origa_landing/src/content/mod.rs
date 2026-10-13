@@ -377,6 +377,16 @@ pub struct Content {
     pub terms_h1: &'static str,
     pub terms_last_updated_label: &'static str,
     pub terms_body: &'static str,
+
+    // HowTo JSON-LD for the `/blog/japanese-ocr-app` article (all 4 locales).
+    // The steps summarize the pipeline the article itself documents
+    // ("Learning-integrated OCR", "How Origa handles this", the "Origa" row
+    // of "The tools at a glance"); served via `blog::howto::schema_for_slug`.
+    pub blog_ocr_howto_name: &'static str,
+    pub blog_ocr_howto_step1: &'static str,
+    pub blog_ocr_howto_step2: &'static str,
+    pub blog_ocr_howto_step3: &'static str,
+    pub blog_ocr_howto_step4: &'static str,
 }
 
 mod en;
