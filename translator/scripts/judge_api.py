@@ -14,8 +14,12 @@ Types:
             -> {"expected": float, "levels": [P per level]}
 
 Backed by: e5b embeddings server (:8090, mean pooling) + judge heads.
-NOTE: probabilities are RANKED-CALIBRATED only (relative comparison);
-absolute thresholds require the future calibration layer (per-locale).
+Calibration layer (issue #713): Judge.verdict() gives an absolute per-locale
+go/no-go from thresholds fitted on native-labeled pairs (calibrate_judge.py).
+It is meant for auto-pipeline accept decisions on fresh translations.
+Production scans keep the double-confirmation rule (percentile x algorithmic
+flag) — phonetic-loanword false negatives survive any threshold. Uncalibrated
+locale or mismatched heads -> CalibrationError (fail loud, never silently rank).
 
 Usage:
     from judge_api import Judge
@@ -35,8 +39,13 @@ import requests
 import torch
 import torch.nn.functional as F
 
+from judge_calibration import Calibration, verify_head_hash
+
 EMB_URL = "http://127.0.0.1:8090/v1/embeddings"
 HEADS = Path(os.environ.get("ORIGA_JUDGE_HEADS", "model/origa-judge.pt"))
+CALIBRATION = Path(os.environ.get(
+    "ORIGA_JUDGE_CALIBRATION",
+    Path(__file__).resolve().parent.parent / "calibration" / "judge_calibration.json"))
 MAX_LEN = 1000  # e5 window guard (512 tokens ~ safe for our locales)
 
 
@@ -53,13 +62,17 @@ class Heads(torch.nn.Module):
 
 
 class Judge:
-    def __init__(self, heads_path: str = str(HEADS), emb_url: str = EMB_URL, temperature: float = 0.07):
+    def __init__(self, heads_path: str = str(HEADS), emb_url: str = EMB_URL,
+                 temperature: float = 0.07, calibration_path: Path = CALIBRATION):
         ck = torch.load(heads_path, map_location="cpu")
         self.hs = Heads(ck["dim"])
         self.hs.load_state_dict(ck["heads"])
         self.hs.eval()
         self.url = emb_url
         self.tau = temperature
+        self.heads_path = Path(heads_path)
+        self.calibration_path = Path(calibration_path)
+        self._calibration: Calibration | None = None
 
     def _embed(self, texts: list[str]) -> torch.Tensor:
         texts = [t[:MAX_LEN] for t in texts]
@@ -75,6 +88,33 @@ class Judge:
         ct = self._embed([f"passage: {t}" for t in cand_texts])
         with torch.no_grad():
             return self.hs(st.expand(len(cand_texts), -1), ct).numpy()
+
+    def raw_score(self, state: str, translation: str) -> float:
+        """Raw pair score (cosine through the heads). Higher = better fit.
+
+        Comparable only within one ranking call — never a cutoff by itself;
+        for absolute decisions use verdict().
+        """
+        return float(self._score(state, [translation])[0])
+
+    def _load_calibration(self) -> Calibration:
+        if self._calibration is None:
+            calibration = Calibration.load(self.calibration_path)
+            verify_head_hash(calibration.doc["heads_sha256"], self.heads_path)
+            self._calibration = calibration
+        return self._calibration
+
+    def verdict(self, state: str, translation: str, locale: str) -> dict:
+        """Absolute per-locale go/no-go from fitted thresholds (issue #713).
+
+        Raises CalibrationError when the calibration file is missing, the
+        locale is unfitted, or the heads bytes differ from the fitted ones.
+        """
+        calibration = self._load_calibration()
+        entry = calibration.entry(locale)
+        score = self.raw_score(state, translation)
+        return {"ok": calibration.decide(locale, score), "score": score,
+                "threshold": entry["threshold"], "locale": locale}
 
     def answer(self, state: str, questions: dict) -> dict:
         """One state, many typed questions. CLM layout: context first, question last."""
