@@ -1,5 +1,5 @@
 //! WASM render tests for `pages/lesson` presentational components:
-//! `RatingButtons`, `RatingButtonsView`, `NextCardButton`,
+//! `BinaryRatingButtons`, `RatingButtons`, `NextCardButton`,
 //! `LessonCardQuestion`, `LessonProgress`, `GrammarInfoBadge`,
 //! `CardAnswerDisplay`.
 
@@ -126,7 +126,7 @@ async fn kanji_card_details_hides_empty_radical_translation() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// RatingButtons / RatingButtonsView
+// BinaryRatingButtons / RatingButtons preset
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
@@ -203,7 +203,7 @@ async fn rating_buttons_disabled_state_blocks_click() {
 }
 
 #[wasm_bindgen_test]
-async fn rating_buttons_view_delegates_to_rating_buttons() {
+async fn binary_rating_buttons_custom_props_surface_and_dispatch() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
@@ -1169,11 +1169,11 @@ async fn phrase_card_view_result_shows_next_button() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// PhraseRatingButtons
+// BinaryRatingButtons — phrase self-assessment configuration
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn phrase_rating_buttons_clicks_dispatch_ratings() {
+async fn phrase_rating_row_clicks_dispatch_ratings() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
@@ -1217,7 +1217,7 @@ async fn phrase_rating_buttons_clicks_dispatch_ratings() {
 }
 
 #[wasm_bindgen_test]
-async fn phrase_rating_buttons_disabled_blocks_dispatch() {
+async fn phrase_rating_row_disabled_blocks_dispatch() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
