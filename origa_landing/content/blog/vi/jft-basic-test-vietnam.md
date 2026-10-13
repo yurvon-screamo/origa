@@ -53,7 +53,7 @@ Kết quả dưới 200 cũng không lãng phí: từ tháng 8/2026 bài thi x�
 
 ## Nếu lỡ đợt này
 
-Các đợt quay lại liên tục quanh năm. Chiến thuật của những người cần chứng chỉ gấp: thi đợt gần nhất để lấy trải nghiệm đề thật (điểm thấp hơn 200 vẫn đo được khoảng cách), ôn đậm theo phần mất điểm, thi đợt kế tiếp. Hai đợt cách nhau vài tuần — quãng thời gian đủ để nâng một bậc nếu lộ trình ôn chạy đều, [bắt đầu từ bài đo nền tuần một](/vi/blog/jft-basic-preparation).
+Các đợt quay lại liên tục quanh năm (Prometric yêu cầu tối thiểu 45 ngày giữa hai lần thi). Chiến thuật của những người cần chứng chỉ gấp: thi đợt gần nhất để lấy trải nghiệm đề thật (điểm thấp hơn 200 vẫn đo được khoảng cách), ôn đậm theo phần mất điểm, thi đợt kế tiếp sau đủ 45 ngày. Quãng giữa hai lần đủ để nâng một bậc nếu lộ trình ôn chạy đều, [bắt đầu từ bài đo nền tuần một](/vi/blog/jft-basic-preparation).
 
 ## Nguồn chính thức
 

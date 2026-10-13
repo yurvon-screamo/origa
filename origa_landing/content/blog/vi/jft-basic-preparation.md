@@ -55,7 +55,7 @@ Người đã học hết nửa đầu Minna no Nihongo hoặc có nền tương
 
 **Tuần 5–7 — Irodori Sơ cấp 2, thêm luyện nghe mỗi ngày.** Nghe là phần mất điểm nhiều nhất ở thí sinh tự ôn: audio trong đề chỉ phát một lần. Mười phút nghe passive mỗi tối cộng mười phút nghe active (chép lại câu ngắn) mỗi sáng. Thi thử thứ ba cuối tuần 7 — lúc này điểm nên vượt 200.
 
-**Tuần 8 — đề và tay nghề máy tính.** Hai đề mẫu trong điều kiện thật: 60 phút, không tạm dừng, làm trên màn hình. Đặt lịch thi khi điểm hai đề liên tiếp vượt 210 — trừ đi biến động ngày thi.
+**Tuần 8 — đề và tay nghề máy tính.** Hai đề mẫu trong điều kiện thật: 60 phút, không tạm dừng, làm trên màn hình. Đặt lịch thi khi điểm hai đề liên tiếp vượt 210 — trừ đi biến động ngày thi. Lưu ý lịch của Prometric: giữa hai lần thi cách nhau tối thiểu 45 ngày, và sau khi đạt từ 200 điểm bạn không đăng ký lại được nữa — chứng chỉ đã đáp ứng yêu cầu.
 
 ## SRS: phần giữ điểm
 

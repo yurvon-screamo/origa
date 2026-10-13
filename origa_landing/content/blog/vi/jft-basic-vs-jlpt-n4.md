@@ -14,7 +14,7 @@ status: ready
 
 # JFT-Basic và JLPT N4: chọn kỳ thi nào cho visa kỹ năng đặc định
 
-Visa kỹ năng đặc định (Specified Skilled Worker — SSW) yêu cầu đúng một thứ về tiếng Nhật: chứng chỉ mức A2. Đạt được bằng hai con đường ngang quyền: **JFT-Basic** của Japan Foundation hoặc **JLPT N4** trở lên. Người Việt là nhóm ứng viên SSW lớn nhất — trên 130 nghìn người đang làm việc tại Nhật theo chương trình này — nên câu hỏi "thi cái nào" là câu hỏi thực tế, không phải lý thuyết.
+Visa kỹ năng đặc định (Specified Skilled Worker — SSW) yêu cầu đúng một thứ về tiếng Nhật: chứng chỉ mức A2. Đạt được bằng hai con đường ngang quyền: **JFT-Basic** của Japan Foundation hoặc **JLPT N4** trở lên. Theo số liệu chính thức cuối tháng 6/2026, có **163 154 người Việt** giữ visa SSW (38,3% tổng số, tính cả Type 1 và Type 2) — nhóm ứng viên lớn nhất, và câu hỏi "thi cái nào" là câu hỏi thực tế, không phải lý thuyết.
 
 Hai kỳ thi khác nhau nhiều hơn cái tên của chúng. Chọn đúng cái hợp với hoàn cảnh của bạn tiết kiệm vài tháng.
 
@@ -42,7 +42,7 @@ Visa SSW chấp nhận JLPT N4 hoặc cấp cao hơn. Ngoài SSW, N4 còn đư�
 | Điểm thấp hơn | Vẫn được xếp A1/A2.1 — biết mình đang ở đâu | Không có chứng chỉ nếu không đạt |
 | Giá trị ngoài SSW | Hẹp hơn — thiết kế cho mục tiêu SSW | Rộng: học tiếp, xin việc, trường Nhật ngữ |
 
-Điểm khác biệt lớn nhất không nằm ở độ khó — N4 của JLPT và A2 của JFT-Basic gần nhau về mặt năng lực. Khác biệt nằm ở **tần suất và cơ chế**: JFT-Basic cho bạn cơ hội thi lại sau vài tuần, JLPT khiến bạn chờ nửa năm nếu lỡ một kỳ.
+Điểm khác biệt lớn nhất không nằm ở độ khó — N4 của JLPT và A2 của JFT-Basic gần nhau về mặt năng lực. Khác biệt nằm ở **tần suất và cơ chế**: JFT-Basic thi trên máy tính qua Prometric quanh năm (lệ thi lại: tối thiểu 45 ngày giữa hai lần), còn JLPT khiến bạn chờ nửa năm nếu lỡ một kỳ. Một điều cần biết: đã đạt từ 200 điểm thì không được thi lại JFT-Basic nữa — bạn đã có mức yêu cầu.
 
 ## Chọn cái nào
 
@@ -50,11 +50,11 @@ Visa SSW chấp nhận JLPT N4 hoặc cấp cao hơn. Ngoài SSW, N4 còn đư�
 
 **Chọn JLPT N4 khi:** bạn có thời gian chờ kỳ thi gần nhất; bạn muốn tấm chứng chỉ dùng được ngoài hồ sơ SSW (học bổng, trường nghề, nhà tuyển dụng quen biết JLPT); bạn đã ôn theo giáo trình JLPT và cấu trúc đề đã quen tay.
 
-**Làm cả hai cũng không lãng phí:** vốn từ và ngữ pháp mức A2 dùng chung cho cả hai đề. Ôn một lần, thi JFT-Basic trước để lấy visa, thi JLPT N4 sau để mở đường học tiếp — nhiều người đi làm tại Nhật làm đúng theo thứ tự này.
+**Làm cả hai cũng không lãng phí:** vốn từ và ngữ pháp mức A2 dùng chung cho cả hai đề. Ôn một lần, thi JFT-Basic trước để lấy visa, thi JLPT N4 sau để mở đường học tiếp — nhiều người đi làm tại Nhật làm đúng theo thứ tự này. Và từ tháng 4/2027, loại visa phát triển kỹ năng mới (Employment for Skill Development) dự kiến dùng JFT-Basic để xác nhận đầu vào ở mức A1 — путь JFT-Basic sẽ có giá trị cả sau khi bạn đổi hướng trong nước Nhật.
 
 ## Ôn cái gì cho cả hai
 
-Lõi từ vựng và ngữ pháp mức A2 trùng nhau cao. Japan Foundation xây riêng giáo trình **Irodori: Japanese for Life in Japan** bám sát khung Can-do của JFT-Basic — nhưng nội dung của nó (sinh hoạt, công việc, giao tiếp cơ bản) cũng phủ phần lớn đề N4 phần từ vựng và hội thoại. Học Irodori nghiêm túc là ôn cho cả hai kỳ thi cùng lúc.
+Lõi từ vựng và ngữ pháp mức A2 trùng nhau cao. Japan Foundation xây riêng giáo trình **Irodori: Japanese for Life in Japan** bám sát 341 mục tiêu Can-do của khung JFT-Basic — nội dung (sinh hoạt, công việc, giao tiếp cơ bản) cũng phủ phần lớn đề N4 phần từ vựng và hội thoại. Học Irodori nghiêm túc là ôn cho cả hai kỳ thi cùng lúc.
 
 Cách giữ từ của Irodori: nhập bộ từ vào hệ thống lặp lại ngắt quãng, học mỗi ngày, nghe theo audio gốc. Origa có sẵn các bộ từ Irodori nhập tại [trang nội dung](/vi/content), kèm âm đọc và lịch ôn FSRS — phần này chạy ngoại tuyến, phù hợp học ở những nơi không có mạng ổn định. Lộ trình nền nếu bạn đang bắt đầu từ con số không: [kế hoạch tự học thực tế](/vi/blog/yaponskiy-s-nulya).
 
