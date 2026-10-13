@@ -3,9 +3,18 @@
  * complete onboarding (mark all known → the corpus is in the set), then
  * seed a typical active-user state directly into the IndexedDB record:
  * three weeks of daily history, insight buckets with a worst evening
- * window and an overdue price, a couple of troubled words. Capture the
+ * window and an overdue price, a slice of troubled words. Capture the
  * redesigned home with live verdicts — desktop and mobile. Output:
  * .pr-screenshots/ at the repo root.
+ *
+ * Verdict provenance on the captured screens (documented because it is
+ * NOT the seed alone): the onboarding mark-all-known stamps ~2.5k cards
+ * with last_rating=Easy, and the mount-sync recalculate creates a
+ * today-history item at ~100% positive. The featured verdict therefore
+ * reads ~99% Holding (seed week days + today's recalculated item), and
+ * the time-of-day accuracy is max(seed bucket, scoring buckets) — on
+ * this flow it lands at 52%. If onboarding stops touching last_rating,
+ * these two numbers silently shift.
  */
 import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
@@ -28,6 +37,9 @@ function rfc3339(date: Date): string {
 }
 
 function daysAgoFromNow(days: number, hourUtc = 12): string {
+    // UTC noon keeps the day index stable on the CI runner (UTC). Local
+    // zones beyond ±12 may shift near-midnight days by one — acceptable
+    // for a one-shot PR screenshot.
     const date = new Date();
     date.setUTCDate(date.getUTCDate() - days);
     date.setUTCHours(hourUtc, 0, 0, 0);

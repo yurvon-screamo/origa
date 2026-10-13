@@ -389,12 +389,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        pace_text.contains("67"),
-        "pace verdict must show per-day count; got: {pace_text}"
-    );
-    assert!(
-        pace_text.contains("12"),
-        "pace verdict must show the delta; got: {pace_text}"
+        pace_text.contains("Reviews per day: 67") && pace_text.contains("12"),
+        "pace verdict must show the per-day count and delta; got: {pace_text}"
     );
 
     // Время суток: точность худшего окна.
@@ -417,8 +413,12 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        overdue_text.contains("14"),
+        overdue_text.contains("14 p.p.") || overdue_text.contains("14 "),
         "overdue verdict must show the drop; got: {overdue_text}"
+    );
+    assert!(
+        !overdue_text.contains("114") && !overdue_text.contains("140"),
+        "overdue drop must not match a longer number; got: {overdue_text}"
     );
 
     // Дорогие слова: доля и топ.
@@ -429,7 +429,7 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        words_text.contains("26"),
+        words_text.contains("1 in 26") || words_text.contains("of 52"),
         "hardest-words verdict must show the ratio; got: {words_text}"
     );
     assert!(
