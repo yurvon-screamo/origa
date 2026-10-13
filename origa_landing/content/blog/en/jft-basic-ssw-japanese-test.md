@@ -16,7 +16,7 @@ status: ready
 
 If you are aiming at a Specified Skilled Worker (SSW) job in Japan, the Japanese test you most likely need is **not** the JLPT. It is the **JFT-Basic**: the Japan Foundation Test for Basic Japanese, a computer-based exam that checks whether you can handle everyday life in Japan: shopping, paperwork, transport, a conversation with your supervisor.
 
-Japan's SSW program is growing fast. The Immigration Services Agency reported **444,256 visa holders as of June 2026, a record, up 13.8% in six months**. Vietnam is the largest source country (163,154 workers), followed by Indonesia (107,242), Myanmar, the Philippines, and China. Every one of those workers had to prove basic Japanese.
+Japan's SSW program is growing fast. The Immigration Services Agency reported **444,256 visa holders as of the end of June 2026 (Type 1 and Type 2 combined), a record, up 13.8% in six months**. Vietnam is the largest source country (163,154 workers, 38.3%), followed by Indonesia (107,242), Myanmar, the Philippines, and China. Every one of those workers had to prove basic Japanese. Every figure comes from the [Immigration Services Agency report of September 29, 2026](https://www.japantimes.co.jp/news/2026/09/29/japan/specified-skilled-workers-number-record/).
 
 This guide covers how the test is scored, what changed in August 2026, how it compares to the JLPT N4, and the official way to prepare.
 
