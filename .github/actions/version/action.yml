@@ -59,9 +59,9 @@ runs:
               # (the Play versionCode offset: leading-zero and dotted forms
               # would collide or have no monotonic mapping; the script caps
               # the offset at 98, reserving 99 for the stable of the train).
-              # Exotic tag forms (rc0/rc01, rc.1, beta1) fall into the alpha
-              # branch, which rejects non-numeric tag versions fail-loud —
-              # unrecognized tags never misversion or crash cryptically.
+              # Exotic TAG forms (rc0/rc01, rc.1, beta1) fall into the alpha
+              # branch and are rejected there fail-loud (see below); branch
+              # builds keep the tolerant describe-based derivation.
               elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc([1-9][0-9]*)$ ]]; then
                 VERSION="${REF_NAME#v}"
                 VERSION_BASE="${VERSION%%-rc*}"
@@ -79,16 +79,19 @@ runs:
                 else
                   TAG_VERSION="${LATEST_TAG#v}"
 
-                  # Fail loud on unrecognized tag forms (e.g. a dotted rc tag
-                  # that missed the prerelease regex): bash arithmetic would
-                  # otherwise either crash with a cryptic error ("0-rc.1") or
-                  # silently swallow the suffix and misversion the build.
-                  if [[ ! "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  # A TAG run reaching the alpha branch carries an
+                  # unrecognized tag form (not vX.Y.Z, not vX.Y.Z-rcN) —
+                  # operator error, reject loud instead of misversioning.
+                  # BRANCH runs must stay tolerant: the latest reachable tag
+                  # may legitimately be an rc (vX.Y.Z-rcN), whose base
+                  # X.Y.(Z+1) is exactly the next alpha train — parsed
+                  # explicitly below instead of by arithmetic accident.
+                  if [[ "$REF_TYPE" == "tag" && ! "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                     echo "::error::unrecognized release tag form: '$REF_NAME' (latest tag '$LATEST_TAG' is not vX.Y.Z) — use vX.Y.Z or vX.Y.Z-rcN" >&2
                     exit 1
                   fi
 
-                  IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG_VERSION"
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "${TAG_VERSION%%-rc*}"
 
                   MAJOR=${MAJOR:-0}
                   MINOR=${MINOR:-0}
