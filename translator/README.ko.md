@@ -12,7 +12,7 @@ Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기�
 `google/gemma-4-E2B-it-qat-w4a16-ct` 위의 LoRA 어댑터(r=16 α=32, 학습 파라미터 24.16M, 텍스트 스택 205개 모듈). 600k 문장 쌍(150k × 4 로캘)으로 1 에포크 학습, val_loss 0.6720.
 
 **판별기** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N); 절대 점수는 로캘별로 보정되지 않았습니다 — [이슈 #713](https://github.com/yurvon-screamo/origa/issues/713) 참조.
+`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N). 로캘별 절대 임계값은 캘리브레이션 레이어로 제공됩니다: `judge_api.Judge.verdict()`는 원어민 라벨링 쌍으로 피팅한 임계값으로 합격/불합격 판정을 냅니다(`calibrate_judge.py`); KO/VI 라벨링(로캘당 ~200쌍)이 진행 중입니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## 품질 수치
 
@@ -55,7 +55,7 @@ tok = AutoTokenizer.from_pretrained(BASE)
 
 `low_cpu_mem_usage=False` + `CompressedTensorsConfig(run_compressed=False)` 없이는 레이어가 packed weight 없는 스켈레톤으로 로드되며 PEFT가 실패합니다.
 
-judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되 `--pooler-config '{"pooling_type":"MEAN"}'`(기본값인 LAST pooling은 헤드 호환성을 깨뜨립니다)와 `--attention-backend TRITON_ATTN`을 사용합니다. 호출은 헤드 위의 타입 질의 API인 `scripts/judge_api.py`(noul/choice/score)로 합니다.
+judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되 `--pooler-config '{"pooling_type":"MEAN"}'`(기본값인 LAST pooling은 헤드 호환성을 깨뜨립니다)와 `--attention-backend TRITON_ATTN`을 사용합니다. 호출은 헤드 위의 타입 질의 API인 `scripts/judge_api.py`(noul/choice/score)로 합니다; 임계값이 피팅되면 `verdict()`가 캘리브레이션된 로캘별 합격/불합격 판정을 추가합니다.
 
 ## 스크립트
 
@@ -66,7 +66,8 @@ judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되
 | `run_600k.sh` | 체크포인팅과 auto-resume이 있는 전체 600k 실행 |
 | `eval_wrapper.py` | 단일 샷 생성 + 언어 감지 + 재시도 |
 | `eval_model.py` / `bench_train_qat.py` | 모델 평가와 학습 벤치마크 |
-| `judge_api.py` | judge 헤드 위의 타입 질의 API |
+| `judge_api.py` | judge 헤드 위의 타입 질의 API + 캘리브레이션된 `verdict()` |
+| `calibrate_judge.py` | 라벨링 태스크 export/import + 로캘별 임계값 피팅 (issue #713) |
 | `train_judge_heads.py` | judge 헤드 트레이너 (vLLM 임베딩 소비) |
 | `build_judge_v3.py` | judge 데이터셋 조립 (v3) |
 
@@ -77,6 +78,7 @@ judge 추론: `intfloat/multilingual-e5-base`를 vLLM pooling으로 서빙하되
 | `ORIGA_DATA_DIR` | 학습 데이터 루트 |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | 체크포인트와 작업 공간 |
 | `ORIGA_JUDGE_HEADS` | `origa-judge.pt` 경로 |
+| `ORIGA_JUDGE_CALIBRATION` | `judge_calibration.json` 경로 (피팅된 로캘별 임계값) |
 | `ORIGA_JUDGE_DATA` | judge 데이터셋 |
 
 ## 학습 레시피 (QAT 베이스)
@@ -90,8 +92,8 @@ OOM cgroup 케이지, 262k 어휘용 masked CE, XPU 얼로케이터 파편화를
 
 ## 알려진 제한
 
-- judge는 랭킹할 뿐 채점하지 않습니다. 절대 임계값은 로캘별로 보정되지 않았습니다(KO와 VI의 근거는 [#713](https://github.com/yurvon-screamo/origa/issues/713)). 지원되는 용법은 Best-of-N입니다.
-- judge는 음차 외래어에서 거짓 음성(false negative)을 냅니다; 따라서 프로덕션 스캔에는 이중 확인 규칙(백분위 × 알고리즘 플래그)이 필요하며, 날 점수 컷오프는 절대 사용하지 마세요.
+- 합격/불합격 절대 판정(`judge_api` `verdict()`)에는 원어민 라벨링 쌍으로 피팅한 로캘별 임계값이 필요합니다(로캘당 ~200쌍; KO/VI 라벨링 진행 중, [#713](https://github.com/yurvon-screamo/origa/issues/713)). 레이어는 피팅되지 않은 로캘에서 크게 실패합니다; 그때까지 지원되는 용법은 Best-of-N뿐입니다.
+- judge는 음차 외래어에서 거짓 음성(false negative)을 냅니다. 캘리브레이션된 임계값도 이 클래스를 없애지 못합니다: 프로덕션 스캔은 이중 확인 규칙(백분위 × 알고리즘 플래그)을 유지하며, 날 점수 컷오프는 쓰지 않습니다. `verdict()`는 새 번역에 대한 파이프라인 자동 합격 판정용입니다.
 - 번역기는 VI에서 🟡 잔여 문제(레지스터/존칭 시프트)와 드문 EN 역전을 유지합니다. 우리는 이를 2B 베이스의 capability 한계로 평가했으며, 데이터를 더해도 사라지지 않았습니다.
 - 학습은 Intel XPU 전용입니다; 추론은 베이스가 지원하는 환경이면 어디서든 vLLM으로 실행됩니다.
 

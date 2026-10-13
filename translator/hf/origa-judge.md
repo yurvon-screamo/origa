@@ -22,7 +22,7 @@ tags:
 
 InfoNCE heads over `intfloat/multilingual-e5-base` (mean-pooling, `query:`/`passage:` prefixes) that score JA→X translation pairs for the Origa content pipeline.
 
-**This is a ranker, not a grader.** It compares candidates against a reference (Best-of-N selection). Absolute scores are not calibrated across locales — do not use a raw score as a pass/fail threshold. Per-locale calibration is tracked in [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
+**Ranking first, grading behind calibration.** The training objective is InfoNCE: scores compare candidates within one call (Best-of-N selection). A bare score across calls is not a pass/fail signal. Absolute per-locale go/no-go is available through the calibration layer in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py) — `Judge.verdict()` applies thresholds fitted on native-labeled pairs with [scripts/calibrate_judge.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/calibrate_judge.py). Locales without a fitted calibration fail loudly; KO/VI labeling (~200 pairs/locale) is in progress — [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
 
 Part of the [Origa](https://github.com/yurvon-screamo/origa) translation stack.
 
@@ -111,7 +111,7 @@ Prefixed embeddings follow the e5 convention: `query:` for the source sentence, 
 
 ### 3. Typed-question API
 
-The production wrapper around these heads (yes/no verdicts, multiple choice, expected-score questions with rank-calibrated softmax) lives in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py).
+The production wrapper around these heads (yes/no verdicts, multiple choice, expected-score questions with rank-calibrated softmax, plus calibrated per-locale `verdict()`) lives in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py).
 
 The standalone content scanners that pair this judge with the double-confirmation rule:
 
@@ -119,7 +119,7 @@ The standalone content scanners that pair this judge with the double-confirmatio
 ## Production record
 
 Deployed in Origa's production content pipeline for dictionary and phrase quality control.
-- False negatives on phonetic loanwords.
+- False negatives on phonetic loanwords. A calibrated `verdict()` threshold does not remove this class: scans keep the double-confirmation rule (score percentile × algorithmic flag); `verdict()` itself is for auto-pipeline accept decisions on fresh translations.
 - Trained and evaluated on ja→{en,ru,ko,vi} pairs from one domain (learning content). Out-of-domain behavior is untested.
 
 ## License

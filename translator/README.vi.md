@@ -12,7 +12,7 @@ Bộ stack dịch cho pipeline nội dung của Origa: một bộ dịch JA→{E
 Adapter LoRA (r=16 α=32, 24.16M tham số huấn luyện được, 205 mô-đun trên text stack) đặt trên `google/gemma-4-E2B-it-qat-w4a16-ct`. Huấn luyện 1 epoch trên 600k cặp câu (150k × 4 locale), val_loss 0.6720.
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N); điểm tuyệt đối chưa được hiệu chỉnh theo từng locale — xem [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base` (mean-pooling) + các đầu InfoNCE. Huấn luyện trên 59,973 cặp. Đánh giá nội bộ: 81.9% trên golden_v4c (662 cặp, 7 vòng audit). Judge xếp hạng ứng viên (Best-of-N). Ngưỡng tuyệt đối theo từng locale đi kèm lớp hiệu chỉnh: `judge_api.Judge.verdict()` đưa phán đoán đạt/không đạt từ ngưỡng được fit trên các cặp do người bản xứ gán nhãn (`calibrate_judge.py`); việc gán nhãn KO/VI (~200 cặp/locale) đang tiến hành — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## Các con số chất lượng
 
@@ -55,7 +55,7 @@ tok = AutoTokenizer.from_pretrained(BASE)
 
 Không có `low_cpu_mem_usage=False` + `CompressedTensorsConfig(run_compressed=False)`, các layer sẽ nạp thành bộ khung rỗng không mang trọng số đóng gói và PEFT sẽ lỗi.
 
-Inference của judge: serve `intfloat/multilingual-e5-base` qua vLLM pooling với `--pooler-config '{"pooling_type":"MEAN"}'` (pooling mặc định LAST làm vỡ tương thích đầu) và `--attention-backend TRITON_ATTN`. Gọi qua `scripts/judge_api.py` — API câu hỏi có kiểu (noul/choice/score) đặt trên các đầu.
+Inference của judge: serve `intfloat/multilingual-e5-base` qua vLLM pooling với `--pooler-config '{"pooling_type":"MEAN"}'` (pooling mặc định LAST làm vỡ tương thích đầu) và `--attention-backend TRITON_ATTN`. Gọi qua `scripts/judge_api.py` — API câu hỏi có kiểu (noul/choice/score) đặt trên các đầu; khi ngưỡng đã được fit, `verdict()` bổ sung phán đoán đạt/không đạt theo locale đã hiệu chỉnh.
 
 ## Scripts
 
@@ -66,7 +66,8 @@ Inference của judge: serve `intfloat/multilingual-e5-base` qua vLLM pooling v�
 | `run_600k.sh` | Chạy trọn 600k với checkpoint và auto-resume |
 | `eval_wrapper.py` | Sinh single-shot + dò ngôn ngữ + retry |
 | `eval_model.py` / `bench_train_qat.py` | Đánh giá mô hình và benchmark huấn luyện |
-| `judge_api.py` | API câu hỏi có kiểu đặt trên các đầu judge |
+| `judge_api.py` | API câu hỏi có kiểu đặt trên các đầu judge + `verdict()` đã hiệu chỉnh |
+| `calibrate_judge.py` | Export/import task gán nhãn + fit ngưỡng theo locale (issue #713) |
 | `train_judge_heads.py` | Trainer các đầu judge (ăn embedding từ vLLM) |
 | `build_judge_v3.py` | Lắp dataset judge (v3) |
 
@@ -77,6 +78,7 @@ Các script đọc đường dẫn từ biến môi trường (tất cả tùy c
 | `ORIGA_DATA_DIR` | Thư mục gốc dữ liệu huấn luyện |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoint và không gian làm việc |
 | `ORIGA_JUDGE_HEADS` | Đường dẫn tới `origa-judge.pt` |
+| `ORIGA_JUDGE_CALIBRATION` | Đường dẫn tới `judge_calibration.json` (ngưỡng theo locale đã fit) |
 | `ORIGA_JUDGE_DATA` | Dataset của judge |
 
 ## Công thức huấn luyện (nền QAT)
@@ -90,8 +92,8 @@ Post-mortem đầy đủ, gồm các bản sửa hạ tầng (lồng cgroup ch�
 
 ## Hạn chế đã biết
 
-- Judge xếp hạng, không chấm điểm tuyệt đối. Ngưỡng tuyệt đối chưa hiệu chỉnh theo từng locale (bằng chứng cho KO và VI tại [#713](https://github.com/yurvon-screamo/origa/issues/713)). Best-of-N là cách dùng được hỗ trợ.
-- Judge cho false-negative trên từ mượn phiên âm; vì vậy scan production luôn cần quy tắc xác nhận kép (phân vị × cờ thuật toán), không cắt theo điểm thô.
+- Phán đoán tuyệt đối đạt/không đạt (`judge_api` `verdict()`) cần ngưỡng theo từng locale được fit trên các cặp do người bản xứ gán nhãn (~200 cặp/locale; gán nhãn KO/VI đang tiến hành, [#713](https://github.com/yurvon-screamo/origa/issues/713)). Lớp này fail loud với locale chưa fit; đến lúc đó Best-of-N là cách dùng duy nhất được hỗ trợ.
+- Judge cho false-negative trên từ mượn phiên âm. Ngưỡng đã hiệu chỉnh không xoá được lớp lỗi này: scan production vẫn giữ quy tắc xác nhận kép (phân vị × cờ thuật toán), không cắt theo điểm thô. `verdict()` dùng cho quyết định tự động đạt/không của pipeline trên bản dịch mới.
 - Translator còn sót lỗi 🟡 trên VI (trôi register, trôi lịch sự) và hiếm chỗ đảo cấu trúc trên EN. Chúng tôi đánh giá đây là trần năng lực của nền 2B; thêm dữ liệu không làm mất đi.
 - Huấn luyện chỉ chạy trên Intel XPU; inference chạy ở bất cứ đâu vLLM hỗ trợ nền.
 
