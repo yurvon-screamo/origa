@@ -183,7 +183,7 @@ Blocklist companion-слов [deleted_companion_words] — множество с
 
 Цена просрочки [OverdueInsight] — панель-инсайт: разница точности вовремя и с просрочкой в процентных пунктах. В коде: `domain::insights::OverdueInsight`.
 
-Дорогие слова [HardestWordsInsight] — панель-инсайт: доля проблемных слов (два и более подряд `Again` среди не-новых слов) и топ-3 самых провальных. В коде: `domain::insights::HardestWordsInsight`.
+Дорогие слова [HardestWordsInsight] — панель-инсайт: доля проблемных слов (два и более провалов [lapses] за жизнь среди изученных слов) и топ-3 самых провальных. В коде: `domain::insights::HardestWordsInsight`.
 
 ---
 
