@@ -16,6 +16,7 @@ pub use dashboard_stats::{
     CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_studied_today,
 };
 pub use home_skeleton::JlptSkeleton;
+pub use insights::InsightsSection;
 pub use jlpt_progress_card::JlptProgressCard;
 pub use recent_study::StudiedTodayList;
 pub use welcome_card::WelcomeCard;
