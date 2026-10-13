@@ -288,4 +288,12 @@ pub static CONTENT: Content = Content {
     terms_h1: "Terms of Service",
     terms_last_updated_label: "Last updated",
     terms_body: super::en::TO_BODY_EN,
+
+    // HowTo JSON-LD steps for /blog/japanese-ocr-app — a compressed restatement
+    // of the pipeline the article documents; keep in sync with the article body.
+    blog_ocr_howto_name: "Origa로 일본어 텍스트를 플래시카드로 만드는 방법",
+    blog_ocr_howto_step1: "읽고 있는 페이지를 촬영합니다",
+    blog_ocr_howto_step2: "온디바이스 NDLOCR-Lite 모델이 일본어 텍스트를 인식합니다",
+    blog_ocr_howto_step3: "인식된 단어마다 읽기, 번역, 음성이 담긴 플래시카드가 만들어집니다",
+    blog_ocr_howto_step4: "FSRS 복습 일정에 따라 카드를 반복합니다",
 };

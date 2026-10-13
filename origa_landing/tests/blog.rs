@@ -514,6 +514,127 @@ fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
     )
 }
 
+/// Inverse of [`find_jsonld_block_by_type`] for negative assertions: `true`
+/// when at least one JSON-LD block carries the given `@type`.
+fn jsonld_block_exists(html: &str, type_name: &str) -> bool {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let Some(end_rel) = rest[body_start..].find(close) else {
+            return false;
+        };
+        let body_end = body_start + end_rel;
+        if rest[body_start..body_end].contains(&needle) {
+            return true;
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    false
+}
+
+#[tokio::test]
+async fn ocr_article_how_to_jsonld_is_localized_in_all_locales() {
+    // The HowTo schema ships on every native render of the OCR article:
+    // `inLanguage` must match the render locale and the steps must be
+    // translated (no EN leakage into RU/KO/VI) while keeping the NDLOCR-Lite
+    // model name verbatim.
+    let cases = [
+        ("/blog/japanese-ocr-app", "en"),
+        ("/ru/blog/japanese-ocr-app", "ru"),
+        ("/ko/blog/japanese-ocr-app", "ko"),
+        ("/vi/blog/japanese-ocr-app", "vi"),
+    ];
+    for (uri, lang) in cases {
+        let (_, body) = get(uri).await;
+        let block = find_jsonld_block_by_type(&body, "HowTo");
+        let value: serde_json::Value =
+            serde_json::from_str(&block).expect("HowTo JSON-LD must be valid JSON");
+        assert_eq!(
+            value.get("inLanguage").and_then(|v| v.as_str()),
+            Some(lang),
+            "HowTo inLanguage must match the render locale on {uri}; got: {block}"
+        );
+        let steps = value
+            .get("step")
+            .and_then(|v| v.as_array())
+            .unwrap_or_else(|| panic!("HowTo must carry a step array on {uri}; got: {block}"));
+        assert_eq!(
+            steps.len(),
+            4,
+            "HowTo must have 4 steps on {uri}; got: {block}"
+        );
+        let step_text: Vec<&str> = steps
+            .iter()
+            .map(|s| {
+                s.get("text")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_else(|| panic!("each step must carry text on {uri}; got: {s}"))
+            })
+            .collect();
+        assert!(
+            step_text.iter().any(|t| t.contains("NDLOCR-Lite")),
+            "the on-device model must be named in the steps on {uri}; got: {step_text:?}"
+        );
+        assert!(
+            lang == "en" || step_text.iter().any(|t| t.chars().any(|c| !c.is_ascii())),
+            "non-EN HowTo steps must be translated on {uri}; got: {step_text:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn ocr_article_how_to_steps_follow_documented_pipeline() {
+    // The step order must mirror the pipeline the article documents:
+    // capture → on-device recognition → flashcards → FSRS review. Pinning
+    // the first and last steps stops a silent reordering from turning the
+    // schema into a wrong user-flow claim.
+    let (_, body) = get("/blog/japanese-ocr-app").await;
+    let block = find_jsonld_block_by_type(&body, "HowTo");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("HowTo JSON-LD must be valid JSON");
+    let steps: Vec<String> = value
+        .get("step")
+        .and_then(|v| v.as_array())
+        .expect("step array")
+        .iter()
+        .map(|s| {
+            s.get("text")
+                .and_then(|v| v.as_str())
+                .expect("step text")
+                .to_lowercase()
+        })
+        .collect();
+    assert_eq!(steps.len(), 4);
+    assert!(
+        steps[0].contains("photograph"),
+        "step 1 must be the capture step; got: {steps:?}"
+    );
+    assert!(
+        steps[3].contains("fsrs"),
+        "step 4 must be the FSRS review step; got: {steps:?}"
+    );
+}
+
+#[tokio::test]
+async fn how_to_schema_ships_only_on_the_ocr_article() {
+    // Exhaustive negative guard across every published slug: a stray slug in
+    // the `blog::howto` match must not silently widen the schema's footprint,
+    // and the wiring must not leak HowTo into articles without HowTo content.
+    for slug in ALL_SLUGS {
+        if *slug == "japanese-ocr-app" {
+            continue;
+        }
+        let (_, body) = get(&format!("/blog/{slug}")).await;
+        assert!(
+            !jsonld_block_exists(&body, "HowTo"),
+            "article {slug} must not emit HowTo JSON-LD"
+        );
+    }
+}
+
 #[tokio::test]
 async fn en_article_has_breadcrumb_jsonld() {
     let (_, body) = get("/blog/anki-alternative-japanese").await;

@@ -212,6 +212,7 @@ fn render_article(
             &pairs,
         ))
     };
+    let how_to_json = crate::blog::howto::schema_for_slug(meta.canonical_locale, post.slug);
     let translation_locales = blog::locales_for_slug(post.slug);
 
     view! {
@@ -251,6 +252,10 @@ fn render_article(
         <SchemaOrg json=article_json/>
         <SchemaOrg json=breadcrumb_json/>
         {match faq_json {
+            Some(json) => view! { <SchemaOrg json/> }.into_any(),
+            None => ().into_any(),
+        }}
+        {match how_to_json {
             Some(json) => view! { <SchemaOrg json/> }.into_any(),
             None => ().into_any(),
         }}
