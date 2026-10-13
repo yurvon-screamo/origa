@@ -242,11 +242,11 @@ async function restCall(path: string, init?: { method?: string; body?: unknown }
   return (j as { data?: unknown }).data ?? j
 }
 
-async function createSession(worktree: string, issueNumber: number): Promise<string | null> {
+async function createSession(worktree: string, issueNumber: number, issueTitle: string): Promise<string | null> {
   const raw = await restCall("/session", {
     method: "POST",
     body: {
-      title: `factory #${issueNumber}`,
+      title: `#${issueNumber} · ${issueTitle.replace(/[\r\n]+/g, " ").slice(0, 60)}`,
       model: { providerID: MODEL.providerID, id: MODEL.id },
       location: { directory: worktree },
     },
@@ -335,7 +335,7 @@ async function startIssue(issue: IssueRef, state: FactoryState, attemptsSeed: nu
   await sh(["git", "-C", ORIGA, "fetch", "origin", "master"])
   await sh(["git", "-C", ORIGA, "worktree", "add", "-b", branch, worktree, "origin/master"])
 
-  const sessionID = await createSession(worktree, issue.number)
+  const sessionID = await createSession(worktree, issue.number, issue.title)
   if (sessionID === null) throw new Error("сессия не создалась")
 
   const sent = await promptSession(sessionID, kickoffPrompt(issue, REPO))
