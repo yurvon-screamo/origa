@@ -260,7 +260,7 @@ async fn category_progress_grid_shows_percentage_per_card() {
 async fn insights_section_renders_five_panels() {
     let wrapper = create_wrapper();
     let panels = RwSignal::new(InsightsPanels::default());
-    mount_with_i18n(&wrapper, || {
+    mount_with_i18n(&wrapper, move || {
         view! { <InsightsSection panels=panels test_id="is1" /> }.into_any()
     });
     tick().await;
@@ -284,7 +284,7 @@ async fn insights_section_renders_five_panels() {
 async fn insights_section_empty_data_shows_neutral_phrase_without_proofs() {
     let wrapper = create_wrapper();
     let panels = RwSignal::new(InsightsPanels::default());
-    mount_with_i18n(&wrapper, || {
+    mount_with_i18n(&wrapper, move || {
         view! { <InsightsSection panels=panels test_id="is2" /> }.into_any()
     });
     tick().await;
@@ -316,7 +316,7 @@ async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
         }),
         ..InsightsPanels::default()
     });
-    mount_with_i18n(&wrapper, || {
+    mount_with_i18n(&wrapper, move || {
         view! { <InsightsSection panels=panels test_id="is3" /> }.into_any()
     });
     tick().await;
