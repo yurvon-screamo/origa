@@ -385,8 +385,13 @@ class Calibration:
             raise CalibrationLoadError(f"unsupported calibration format in {path}")
         if not isinstance(doc.get("heads_sha256"), str):
             raise CalibrationLoadError(f"calibration file {path} has no heads_sha256")
-        if not isinstance(doc.get("locales"), dict):
+        locales = doc.get("locales")
+        if not isinstance(locales, dict):
             raise CalibrationLoadError(f"calibration file {path} has no locales map")
+        for locale, entry in locales.items():
+            if not isinstance(entry, dict) or not isinstance(entry.get("threshold"), (int, float)):
+                raise CalibrationLoadError(
+                    f"calibration file {path}: locale {locale!r} has no numeric threshold")
         return cls(doc)
 
     def entry(self, locale: str) -> dict:

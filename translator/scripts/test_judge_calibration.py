@@ -211,6 +211,13 @@ class TestCalibration:
         with pytest.raises(jc.CalibrationLoadError, match="locales"):
             jc.Calibration.load(path)
 
+    def test_locale_entry_without_threshold_rejected(self, tmp_path):
+        path = tmp_path / "cal.json"
+        doc = {"format": 1, "heads_sha256": "a" * 64, "locales": {"ko": {}}}
+        path.write_text(json.dumps(doc), encoding="utf-8")
+        with pytest.raises(jc.CalibrationLoadError, match="'ko' has no numeric threshold"):
+            jc.Calibration.load(path)
+
     def test_head_hash_mismatch_fails_loud(self, tmp_path):
         heads = tmp_path / "heads.pt"
         heads.write_bytes(b"weights-v3")
@@ -257,6 +264,13 @@ class TestCliGlue:
         assert [r["id"] for r in rows[:3]] == ["ko-0001", "ko-0002", "ko-0003"]
         md = (tmp_path / "task.md").read_text(encoding="utf-8")
         assert "### ko-0001 (ko)" in md and "- [ ] good" in md
+
+    def test_export_rejects_missing_pool_file(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        args = argparse.Namespace(pool=str(tmp_path / "absent.jsonl"), locales="ko",
+                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+        assert cj.cmd_export(args) == 2
+        assert "pool file not found" in capsys.readouterr().err
 
     def test_export_rejects_empty_locales(self, tmp_path, capsys):
         import calibrate_judge as cj

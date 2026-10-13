@@ -52,8 +52,12 @@ def cmd_export(args: argparse.Namespace) -> int:
         if not jc.LOCALE_RE.match(lc):
             print(f"error: locale {lc!r} does not match ^[a-z]{2}$", file=sys.stderr)
             return 2
+    pool_path = Path(args.pool)
+    if not pool_path.exists():
+        print(f"error: pool file not found: {pool_path}", file=sys.stderr)
+        return 2
     pool: list[dict] = []
-    for line_no, line in enumerate(Path(args.pool).read_text(encoding="utf-8").splitlines(), start=1):
+    for line_no, line in enumerate(pool_path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
         try:
