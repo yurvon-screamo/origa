@@ -1,0 +1,138 @@
+{
+ "format": 1,
+ "fitted_at": "2026-10-13T09:11:53+00:00",
+ "policy": {
+  "name": "max_f1"
+ },
+ "heads_sha256": "1043af22a8554f3e4fda73f1013861c59573725834081bb967228d43b940fc62",
+ "embedding_model": "intfloat/multilingual-e5-base",
+ "sampling": {
+  "seed": null,
+  "pool_rows": null,
+  "sampled": 1324,
+  "prevalence_bad": 0.5
+ },
+ "locales": {
+  "en": {
+   "threshold": -0.281944,
+   "n_good": 169,
+   "n_bad": 169,
+   "metrics": {
+    "precision": 0.645933014354067,
+    "recall": 0.7988165680473372,
+    "f1": 0.7142857142857143
+   },
+   "confusion": {
+    "tp": 135,
+    "fp": 74,
+    "tn": 95,
+    "fn": 34
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.6842222613389661,
+    "f1_std": 0.06812485946647932
+   },
+   "good_stats": {
+    "mean": -0.11711150295857989,
+    "std": 0.1891616416545121,
+    "p05": -0.3996628,
+    "p50": -0.140776,
+    "p95": 0.20368039999999984
+   }
+  },
+  "ko": {
+   "threshold": 0.030249,
+   "n_good": 38,
+   "n_bad": 38,
+   "metrics": {
+    "precision": 0.6730769230769231,
+    "recall": 0.9210526315789473,
+    "f1": 0.7777777777777778
+   },
+   "confusion": {
+    "tp": 35,
+    "fp": 17,
+    "tn": 21,
+    "fn": 3
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.7513929208046854,
+    "f1_std": 0.07644807199492552
+   },
+   "good_stats": {
+    "mean": 0.3159471052631579,
+    "std": 0.29804310013203283,
+    "p05": -0.1451354,
+    "p50": 0.2035675,
+    "p95": 0.78478045
+   }
+  },
+  "ru": {
+   "threshold": -0.1779575,
+   "n_good": 370,
+   "n_bad": 370,
+   "metrics": {
+    "precision": 0.7039473684210527,
+    "recall": 0.8675675675675676,
+    "f1": 0.7772397094430993
+   },
+   "confusion": {
+    "tp": 321,
+    "fp": 135,
+    "tn": 235,
+    "fn": 49
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.7624547247348832,
+    "f1_std": 0.020165198538232686
+   },
+   "good_stats": {
+    "mean": 0.02357097027027027,
+    "std": 0.19871393686412578,
+    "p05": -0.2559265,
+    "p50": -0.0032975,
+    "p95": 0.38416880000000003
+   }
+  },
+  "vi": {
+   "threshold": -0.186263,
+   "n_good": 85,
+   "n_bad": 85,
+   "metrics": {
+    "precision": 0.648,
+    "recall": 0.9529411764705882,
+    "f1": 0.7714285714285715
+   },
+   "confusion": {
+    "tp": 81,
+    "fp": 44,
+    "tn": 41,
+    "fn": 4
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.7547351646273939,
+    "f1_std": 0.060944484810930476
+   },
+   "good_stats": {
+    "mean": 0.1490149411764706,
+    "std": 0.2839547750802327,
+    "p05": -0.1824334,
+    "p50": 0.07713,
+    "p95": 0.7451403999999999
+   }
+  }
+ },
+ "note": "PROVISIONAL: fitted on golden_v4c author-audit labels (prior to the native KO/VI labeling wave, issue #713); backend: hf-transformers mean-pooling float32 on Intel XPU."
+}

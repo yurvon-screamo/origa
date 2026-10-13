@@ -4,6 +4,10 @@ Native-speaker labeling builds the per-locale thresholds that turn the judge
 from a ranker into a grader ([issue #713](https://github.com/yurvon-screamo/origa/issues/713)).
 Target: ~200 labeled pairs per locale, ~400 pairs total.
 
+A provisional calibration already ships in `calibration/judge_calibration.json`
+(fitted on the golden_v4c author-audit labels). The native wave refits it:
+native labels replace author labels as the fit source for KO/VI.
+
 ## What gets labeled
 
 One task = one pair:

@@ -12,7 +12,7 @@ Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기�
 `google/gemma-4-E2B-it-qat-w4a16-ct` 위의 LoRA 어댑터(r=16 α=32, 학습 파라미터 24.16M, 텍스트 스택 205개 모듈). 600k 문장 쌍(150k × 4 로캘)으로 1 에포크 학습, val_loss 0.6720.
 
 **판별기** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N). 로캘별 절대 임계값은 캘리브레이션 레이어로 제공됩니다: `judge_api.Judge.verdict()`는 원어민 라벨링 쌍으로 피팅한 임계값으로 합격/불합격 판정을 냅니다(`calibrate_judge.py`); KO/VI 라벨링(로캘당 ~200쌍)이 진행 중입니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N). 로캘별 절대 임계값은 캘리브레이션 레이어로 제공됩니다: `judge_api.Judge.verdict()`는 라벨링된 쌍으로 피팅한 임계값으로 합격/불합격 판정을 냅니다(`calibrate_judge.py`). 잠정 캘리브레이션(4개 로캘 전부, golden_v4c 저자 감사 라벨 기준)이 `calibration/`에 커밋되어 있습니다; 원어민 KO/VI 웨이브(로캘당 ~200쌍)가 이를 대체합니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## 품질 수치
 
@@ -92,7 +92,7 @@ OOM cgroup 케이지, 262k 어휘용 masked CE, XPU 얼로케이터 파편화를
 
 ## 알려진 제한
 
-- 합격/불합격 절대 판정(`judge_api` `verdict()`)에는 원어민 라벨링 쌍으로 피팅한 로캘별 임계값이 필요합니다(로캘당 ~200쌍; KO/VI 라벨링 진행 중, [#713](https://github.com/yurvon-screamo/origa/issues/713)). 레이어는 피팅되지 않은 로캘에서 크게 실패합니다; 그때까지 지원되는 용법은 Best-of-N뿐입니다.
+- 합격/불합격 절대 판정(`judge_api` `verdict()`)은 커밋된 로캘별 임계값(`calibration/judge_calibration.json`)을 사용합니다. 현재 파일은 잠정 버전입니다: golden_v4c 저자 감사 라벨로 피팅(로캘별 CV F1 0.68–0.76). 원어민 KO/VI 웨이브(로캘당 ~200쌍, 진행 중)가 리피팅합니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713); 그때까지 KO/VI 판정은 방향성 참고로 취급하세요. 레이어는 피팅되지 않은 로캘에서 여전히 크게 실패합니다.
 - judge는 음차 외래어에서 거짓 음성(false negative)을 냅니다. 캘리브레이션된 임계값도 이 클래스를 없애지 못합니다: 프로덕션 스캔은 이중 확인 규칙(백분위 × 알고리즘 플래그)을 유지하며, 날 점수 컷오프는 쓰지 않습니다. `verdict()`는 새 번역에 대한 파이프라인 자동 합격 판정용입니다.
 - 번역기는 VI에서 🟡 잔여 문제(레지스터/존칭 시프트)와 드문 EN 역전을 유지합니다. 우리는 이를 2B 베이스의 capability 한계로 평가했으며, 데이터를 더해도 사라지지 않았습니다.
 - 학습은 Intel XPU 전용입니다; 추론은 베이스가 지원하는 환경이면 어디서든 vLLM으로 실행됩니다.
