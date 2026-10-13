@@ -83,6 +83,7 @@ jobs:
             PLAY_SA_JSON: ${{ secrets.play-service-account-json }}
         steps:
             - name: Check out repository
+              id: checkout
               uses: actions/checkout@v7
 
             - name: Guard — service account secret must exist
@@ -111,6 +112,7 @@ jobs:
                   .github/scripts/extract-whatsnew.sh "$VERSION" CHANGELOG.md whatsnew/whatsnew-ru-RU
 
             - name: Prepare release-notes directory (rc)
+              id: prepare-notes
               # The action reads localized whatsnew-* files from the
               # directory; an empty dir yields no release notes — RCs ship
               # without store notes by design.
@@ -169,8 +171,10 @@ jobs:
               # healthy run is a true "skipped".
               if: always()
               env:
+                  CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
                   GUARD_RESULT: ${{ steps.guard.outcome }}
                   NOTES_RESULT: ${{ steps.release-notes.outcome }}
+                  PREPARE_RESULT: ${{ steps.prepare-notes.outcome }}
                   DOWNLOAD_RESULT: ${{ steps.download-aab.outcome }}
                   LOCATE_RESULT: ${{ steps.locate.outcome }}
                   UPLOAD_RESULT: ${{ steps.upload.outcome }}
@@ -178,7 +182,7 @@ jobs:
                   if [ "$UPLOAD_RESULT" = "success" ]; then
                     echo "status=success" >> "$GITHUB_OUTPUT"
                     echo "✅ AAB delivered to Play closed testing (track ${{ env.PLAY_TRACK }})"
-                  elif [ "$GUARD_RESULT" = "failure" ] || [ "$NOTES_RESULT" = "failure" ] || [ "$DOWNLOAD_RESULT" = "failure" ] || [ "$LOCATE_RESULT" = "failure" ] || [ "$UPLOAD_RESULT" = "failure" ]; then
+                  elif [ "$CHECKOUT_RESULT" = "failure" ] || [ "$GUARD_RESULT" = "failure" ] || [ "$NOTES_RESULT" = "failure" ] || [ "$PREPARE_RESULT" = "failure" ] || [ "$DOWNLOAD_RESULT" = "failure" ] || [ "$LOCATE_RESULT" = "failure" ] || [ "$UPLOAD_RESULT" = "failure" ]; then
                     echo "status=failure" >> "$GITHUB_OUTPUT"
                     echo "❌ Play upload failed — see the failed step above. The AAB remains attached to the GitHub Release for manual upload via Play Console"
                   else
