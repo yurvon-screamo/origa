@@ -14,7 +14,6 @@ mod memory;
 mod score_content;
 mod serde_utils;
 mod srs;
-mod stats;
 pub(crate) mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
@@ -67,7 +66,6 @@ pub use memory::{
 };
 pub use score_content::ScoreContentResult;
 pub use srs::{RateMode, RatingContext};
-pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, TokenInfo,
     TokenTranslation, init_dictionary, install_precomputed_entries, install_precomputed_entry,

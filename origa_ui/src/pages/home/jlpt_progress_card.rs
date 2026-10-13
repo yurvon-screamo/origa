@@ -1,5 +1,6 @@
-use crate::i18n::{t, use_i18n};
+use crate::i18n::{t, td_string, use_i18n};
 use crate::pages::home::category_grid::CategoryProgressGrid;
+use crate::pages::home::dashboard_stats::CompletionForecast;
 use crate::ui_components::{Card, DisplayText, Tag, TagVariant, Text, TextSize};
 use leptos::prelude::*;
 use origa::domain::{JlptProgress, LevelProgressDetail};
@@ -7,8 +8,12 @@ use origa::domain::{JlptProgress, LevelProgressDetail};
 #[component]
 pub fn JlptProgressCard(
     jlpt_progress: Signal<JlptProgress>,
+    /// Прогноз завершения (#749): одна строка под шапкой прогресса.
+    #[prop(optional, into)]
+    forecast: Signal<CompletionForecast>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
+    let i18n = use_i18n();
     let current_level = Signal::derive(move || jlpt_progress.get().current_level());
     let level_detail = Signal::derive(move || {
         let level = jlpt_progress.get().current_level();
@@ -69,6 +74,35 @@ pub fn JlptProgressCard(
                     {move || format!("{:.0}%", overall_pct.get())}
                 </DisplayText>
             </div>
+
+            <Show when=move || forecast.get().days_remaining.is_some()>
+                <p
+                    class="font-mono text-sm text-[var(--fg-muted)] mb-4"
+                    data-testid=move || {
+                        let val = test_id.get();
+                        if val.is_empty() { None } else { Some(format!("{}-forecast", val)) }
+                    }
+                >
+                    {move || {
+                        let locale = i18n.get_locale();
+                        let fc = forecast.get();
+                        let days = fc.days_remaining.unwrap_or(0);
+                        let days_label = td_string!(locale, home.days_label);
+                        format!("~{} {} · {}", days, days_label, fc.target_date_label)
+                    }}
+                </p>
+            </Show>
+            <Show when=move || forecast.get().is_all_studied>
+                <p
+                    class="font-mono text-sm text-[var(--accent-olive)] mb-4"
+                    data-testid=move || {
+                        let val = test_id.get();
+                        if val.is_empty() { None } else { Some(format!("{}-all-studied", val)) }
+                    }
+                >
+                    {t!(i18n, home.all_studied)}
+                </p>
+            </Show>
 
             <CategoryDetailSection detail=level_detail test_id=test_id />
         </Card>

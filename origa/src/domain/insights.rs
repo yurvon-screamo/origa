@@ -57,6 +57,10 @@ pub enum WeekVerdictKind {
 pub struct PaceInsight {
     pub per_day: u32,
     pub delta: i32,
+    /// Всего оценок за окно 1..=14 дней назад.
+    pub recent_total: u32,
+    /// Всего оценок за окно 15..=28 дней назад.
+    pub previous_total: u32,
 }
 
 /// Время суток: худшее 4-часовое окно при достаточной выборке.
@@ -205,6 +209,8 @@ pub fn compute_pace(
     Some(PaceInsight {
         per_day,
         delta: per_day as i32 - previous_per_day as i32,
+        recent_total: recent_total as u32,
+        previous_total: previous_total as u32,
     })
 }
 

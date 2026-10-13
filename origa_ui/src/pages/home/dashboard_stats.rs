@@ -20,15 +20,6 @@ pub struct RecentlyStudiedItem {
     pub short_description: Option<String>,
 }
 
-#[derive(Clone)]
-pub struct ActivityDataPoint {
-    pub date_label: String,
-    pub learned: f64,
-    pub in_progress: f64,
-    pub new_count: f64,
-    pub difficult: f64,
-}
-
 pub fn compute_studied_today(
     knowledge_set: &KnowledgeSet,
     lang: &NativeLanguage,
@@ -122,36 +113,6 @@ pub fn compute_studied_today(
         .collect()
 }
 
-pub fn compute_30day_chart_data(
-    history: &[DailyHistoryItem],
-    lang: &NativeLanguage,
-) -> Vec<ActivityDataPoint> {
-    let mut items: Vec<_> = history.to_vec();
-    items.sort_by_key(|a| a.timestamp());
-
-    let start = items.len().saturating_sub(30);
-    items
-        .into_iter()
-        .skip(start)
-        .map(|item| {
-            let local = chrono::Local.from_utc_datetime(&item.timestamp().naive_utc());
-            let day = local.day();
-            let month_idx = (local.month0() as usize).min(11);
-            let month_str = match lang {
-                NativeLanguage::Russian => RU_MONTHS_SHORT[month_idx],
-                _ => EN_MONTHS_SHORT[month_idx],
-            };
-            ActivityDataPoint {
-                date_label: format!("{} {}", day, month_str),
-                learned: item.known_words() as f64,
-                in_progress: item.in_progress_words() as f64,
-                new_count: item.new_words() as f64,
-                difficult: item.high_difficulty_words() as f64,
-            }
-        })
-        .collect()
-}
-
 #[derive(Clone, Default)]
 pub struct CompletionForecast {
     pub days_remaining: Option<usize>,
@@ -229,26 +190,6 @@ mod tests {
             let _ = set.create_card(Card::Vocabulary(vocab));
         }
         set
-    }
-
-    #[test]
-    fn chart_data_limits_to_thirty_points() {
-        let history = vec![DailyHistoryItem::new(); 45];
-        let data = compute_30day_chart_data(&history, &NativeLanguage::English);
-        assert_eq!(data.len(), 30, "only the last 30 days are charted");
-    }
-
-    #[test]
-    fn chart_data_labels_are_localised() {
-        let history = vec![DailyHistoryItem::new()];
-        let en = compute_30day_chart_data(&history, &NativeLanguage::English);
-        let ru = compute_30day_chart_data(&history, &NativeLanguage::Russian);
-        assert_eq!(en.len(), 1);
-        // Same day → labels share the day number, month abbreviations differ
-        // between locales for most months; both must be non-empty and start
-        // with the day number.
-        assert!(!en[0].date_label.is_empty());
-        assert!(!ru[0].date_label.is_empty());
     }
 
     #[test]

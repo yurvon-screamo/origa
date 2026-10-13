@@ -1,6 +1,6 @@
 //! WASM render tests for `pages/home` components: `WelcomeCard`,
 //! `JlptProgressCard`, `JlptSkeleton`, `CategoryProgressGrid`,
-//! `ActivityChart`, `StudiedTodayList`.
+//! `InsightsSection`, `StudiedTodayList`.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -12,8 +12,9 @@ use wasm_bindgen_test::*;
 
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::RecentlyStudiedItem;
+use crate::pages::home::insights::panels_data::InsightsPanels;
 use crate::pages::home::{
-    ActivityChart, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
+    InsightsSection, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
 };
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
@@ -253,100 +254,91 @@ async fn category_progress_grid_shows_percentage_per_card() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ActivityChart
+// InsightsSection (#749)
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn activity_chart_renders_four_series() {
+async fn insights_section_renders_five_panels() {
     let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels::default());
     mount_with_i18n(&wrapper, || {
-        // Two points: the chart hides itself below two data points
-        // (`has_enough_data`).
-        let points = vec![
-            crate::pages::home::dashboard_stats::ActivityDataPoint {
-                date_label: "1 янв".to_string(),
-                learned: 10.0,
-                in_progress: 5.0,
-                new_count: 3.0,
-                difficult: 1.0,
-            },
-            crate::pages::home::dashboard_stats::ActivityDataPoint {
-                date_label: "2 янв".to_string(),
-                learned: 12.0,
-                in_progress: 4.0,
-                new_count: 2.0,
-                difficult: 0.0,
-            },
-        ];
-        view! {
-            <ActivityChart
-                chart_data=Signal::derive(move || points.clone())
-                rating_ratio=Signal::from(None::<origa::domain::RatingRatio>)
-                test_id="ac1"
-            />
-        }
-        .into_any()
+        view! { <InsightsSection panels=panels test_id="is1" /> }.into_any()
     });
     tick().await;
 
-    // The chart mounts after the mobile-detection effect settles — poll
-    // briefly for the chart container instead of asserting after one tick.
-    // (SVG elements live in the SVG namespace; query by class.)
-    let chart_rendered = crate::test_support::wait_until(
-        || {
-            wrapper
-                .query_selector(".chart-container")
-                .unwrap()
-                .is_some()
-        },
-        10,
-        25,
-    )
-    .await;
-    assert!(
-        chart_rendered,
-        "the multi-line chart must render once effects settle"
-    );
+    let section = wrapper.query_selector("[data-testid=\"is1\"]").unwrap();
+    assert!(section.is_some(), "insights section must render");
 
-    // Four data series → four polylines
-    let polylines = wrapper
-        .query_selector_all(".chart-container polyline")
-        .unwrap()
-        .length();
-    assert_eq!(polylines, 4, "four series must be drawn; got {polylines}");
+    for panel in [
+        "is1-insights-week-verdict",
+        "is1-insights-pace",
+        "is1-insights-time-of-day",
+        "is1-insights-overdue",
+        "is1-insights-hardest-words",
+    ] {
+        let node = wrapper.query_selector(&format!("[data-testid=\"{panel}\"]"));
+        assert!(node.is_ok_and(|n| n.is_some()), "{panel} panel must render");
+    }
 }
 
 #[wasm_bindgen_test]
-async fn activity_chart_ratio_badge_high_percentage() {
+async fn insights_section_empty_data_shows_neutral_phrase_without_proofs() {
     let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels::default());
     mount_with_i18n(&wrapper, || {
-        let point = crate::pages::home::dashboard_stats::ActivityDataPoint {
-            date_label: "1 янв".to_string(),
-            learned: 1.0,
-            in_progress: 0.0,
-            new_count: 0.0,
-            difficult: 0.0,
-        };
-        let ratio = origa::domain::RatingRatio {
-            percentage: 75,
-            positive_count: 30,
-            negative_count: 10,
-        };
-        view! {
-            <ActivityChart
-                chart_data=Signal::derive(move || vec![point.clone()])
-                rating_ratio=Signal::from(Some(ratio))
-                test_id="ac2"
-            />
-        }
-        .into_any()
+        view! { <InsightsSection panels=panels test_id="is2" /> }.into_any()
     });
     tick().await;
 
-    let text = wrapper.text_content().unwrap();
+    // Ни одна панель не имеет данных: кнопок доказательств быть не должно,
+    // а вердикт — нейтральная фраза empty-state.
+    let proofs_button =
+        wrapper.query_selector("[data-testid=\"is2-insights-week-verdict-proofs\"]");
     assert!(
-        text.contains("75"),
-        "ratio percent must render; got: {text}"
+        proofs_button.is_ok_and(|b| b.is_none()),
+        "empty data must not render a proofs toggle"
+    );
+    let text = wrapper
+        .query_selector("[data-testid=\"is2-insights-week-verdict\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(!text.is_empty(), "the panel must show a phrase");
+}
+
+#[wasm_bindgen_test]
+async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
+    let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels {
+        week: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 84,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        ..InsightsPanels::default()
+    });
+    mount_with_i18n(&wrapper, || {
+        view! { <InsightsSection panels=panels test_id="is3" /> }.into_any()
+    });
+    tick().await;
+
+    let text = wrapper
+        .query_selector("[data-testid=\"is3-insights-week-verdict\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        text.contains("84"),
+        "verdict must include the percentage; got: {text}"
+    );
+
+    let proofs_button =
+        wrapper.query_selector("[data-testid=\"is3-insights-week-verdict-proofs\"]");
+    assert!(
+        proofs_button.is_ok_and(|b| b.is_some()),
+        "verdict with data must offer the proofs toggle"
     );
 }
 
