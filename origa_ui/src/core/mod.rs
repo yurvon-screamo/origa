@@ -5,6 +5,9 @@ pub mod config;
 pub mod device_ai;
 pub mod haptics;
 pub mod platform;
+pub mod review_request;
+#[cfg(all(target_arch = "wasm32", test))]
+mod review_request_wasm_tests;
 pub mod tauri;
 pub mod updater;
 pub mod version;

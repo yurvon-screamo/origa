@@ -34,6 +34,11 @@ fn park_home_handoff(repo: &crate::repository::HybridUserRepository) {
 
 #[component]
 pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -> impl IntoView {
+    // Session-complete hook: counts the finished session and may trigger
+    // the native store review prompt (120-day cooldown, ADR-062). Runs on
+    // every mount; the gate keeps it quiet and idempotent.
+    crate::core::review_request::maybe_request_app_review(review_count);
+
     let i18n = use_i18n();
     let navigate = use_navigate();
     let Some(lesson_ctx) = use_context::<LessonContext>() else {
