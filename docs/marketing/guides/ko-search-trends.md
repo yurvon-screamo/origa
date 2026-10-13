@@ -65,7 +65,7 @@ https://ac.search.naver.com/nx/ac?st=1&r_lt=1&q=<urlencoded seed>
 
 ## 3. Naver Data Lab — официальный API трендов (✅ работает через партнёрскую пару)
 
-**Статус:** работает с 2026-10-13. Пара ключей от партнёрского проекта (Developers Center legacy — ключи, выданные до закрытия 2026-07-31, работают до fade-out 2027-06-30). Значения в `.env`: `NAVER_DATALAB_CLIENT_ID` / `NAVER_DATALAB_CLIENT_SECRET`. Долгосрочно — миграция на собственный NCP-аккаунт (uwuwu `projects/origa/naver-datalab-access-2026`: developers-путь для новых заявок закрыт 31.07.2026; NCP global-узел ncloud.com/en — Individual-регистрация, японский узел требует JP-юрлицо).
+**Статус:** работает с 2026-10-13. Пара ключей от партнёрского проекта (Developers Center legacy — ключи, выданные до закрытия 2026-07-31, работают до fade-out 2027-06-30). Значения — только в `marketing/.env` (`NAVER_DATALAB_CLIENT_ID` / `NAVER_DATALAB_CLIENT_SECRET`), в репо не хранятся; скрипт без env завершается ошибкой. Долгосрочно — миграция на собственный NCP-аккаунт (uwuwu `projects/origa/naver-datalab-access-2026`: developers-путь для новых заявок закрыт 31.07.2026; NCP global-узел ncloud.com/en — Individual-регистрация, японский узел требует JP-юрлицо).
 
 **Как получить данные.** `POST https://openapi.naver.com/v1/datalab/search`, заголовки `X-Naver-Client-Id` / `X-Naver-Client-Secret`, body: `keywordGroups` (до 5 групп × 20 keywords), `timeUnit=month`, данные с 2016-01-01. Скрипт: `marketing/ko/scripts/datalab_slice.py` (маркетинг-репо).
 
