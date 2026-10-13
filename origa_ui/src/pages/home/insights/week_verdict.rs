@@ -58,7 +58,17 @@ mod tests {
     }
 }
 
-/// Панель «Как идёт неделя?»: точность недели против предыдущих 30 дней.
+/// Цвет главной фразы по вердикту: держишь темп — оливковый, просел —
+/// терракотовый (ошибка). Пустые данные — приглушённый серый.
+fn week_verdict_class(kind: Option<WeekVerdictKind>) -> &'static str {
+    match kind {
+        None => "heading-h2 text-[var(--fg-muted)]",
+        Some(WeekVerdictKind::Dipping) => "heading-h2 text-[var(--error)]",
+        Some(WeekVerdictKind::Holding) => "heading-h2 text-[var(--success)]",
+    }
+}
+
+/// Featured-панель «Как идёт неделя?»: главный вердикт секции, вся ширина.
 #[component]
 pub(crate) fn WeekVerdictPanel(
     verdict: Signal<Option<WeekVerdict>>,
@@ -74,9 +84,9 @@ pub(crate) fn WeekVerdictPanel(
     let phrase = Signal::derive(move || {
         let locale = i18n.get_locale();
         match verdict.get() {
-            None => td_string!(locale, insights.collecting_data).to_string(),
+            None => td_string!(locale, insights.week_empty).to_string(),
             Some(data) => match week_phrase_kind(Some(&data)) {
-                WeekPhrase::Empty => td_string!(locale, insights.collecting_data).to_string(),
+                WeekPhrase::Empty => td_string!(locale, insights.week_empty).to_string(),
                 WeekPhrase::Dipping => {
                     let month = data.month_accuracy_pct.unwrap_or(0);
                     td_string!(
@@ -97,6 +107,9 @@ pub(crate) fn WeekVerdictPanel(
             },
         }
     });
+
+    let verdict_class =
+        Signal::derive(move || week_verdict_class(verdict.get().map(|data| data.kind)).to_string());
 
     let proofs = Signal::derive(move || {
         let locale = i18n.get_locale();
@@ -125,6 +138,8 @@ pub(crate) fn WeekVerdictPanel(
         <InsightPanel
             question=question
             verdict=phrase
+            verdict_class=verdict_class
+            has_data=Signal::derive(move || verdict.get().is_some())
             proofs=proofs
             test_id=test_id
         />

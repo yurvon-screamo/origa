@@ -19,7 +19,7 @@ pub(crate) fn TimeOfDayPanel(
     let phrase = Signal::derive(move || {
         let locale = i18n.get_locale();
         let Some(data) = insight.get() else {
-            return td_string!(locale, insights.collecting_data).to_string();
+            return td_string!(locale, insights.time_empty).to_string();
         };
 
         let period = match data.worst_bucket {
@@ -50,6 +50,7 @@ pub(crate) fn TimeOfDayPanel(
         <InsightPanel
             question=question
             verdict=phrase
+            has_data=Signal::derive(move || insight.get().is_some())
             proofs=proofs
             test_id=test_id
         />

@@ -66,12 +66,12 @@ pub(crate) fn PacePanel(
     let phrase = Signal::derive(move || {
         let locale = i18n.get_locale();
         let Some(data) = pace.get() else {
-            return td_string!(locale, insights.collecting_data).to_string();
+            return td_string!(locale, insights.pace_empty).to_string();
         };
 
         let count = data.per_day;
         match pace_phrase_kind(Some(&data)) {
-            PacePhrase::Empty => td_string!(locale, insights.collecting_data).to_string(),
+            PacePhrase::Empty => td_string!(locale, insights.pace_empty).to_string(),
             PacePhrase::Up => {
                 td_string!(locale, insights.pace_up, count = count, delta = data.delta)
             },
@@ -106,6 +106,7 @@ pub(crate) fn PacePanel(
         <InsightPanel
             question=question
             verdict=phrase
+            has_data=Signal::derive(move || pace.get().is_some())
             proofs=proofs
             test_id=test_id
         />

@@ -19,7 +19,7 @@ pub(crate) fn HardestWordsPanel(
     let phrase = Signal::derive(move || {
         let locale = i18n.get_locale();
         match insight.get() {
-            None => td_string!(locale, insights.collecting_data).to_string(),
+            None => td_string!(locale, insights.words_empty).to_string(),
             Some(data) => td_string!(
                 locale,
                 insights.words_troubled,
@@ -51,6 +51,7 @@ pub(crate) fn HardestWordsPanel(
         <InsightPanel
             question=question
             verdict=phrase
+            has_data=Signal::derive(move || insight.get().is_some())
             proofs=proofs
             test_id=test_id
         />

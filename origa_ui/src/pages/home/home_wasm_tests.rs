@@ -339,6 +339,105 @@ async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
     );
 }
 
+#[wasm_bindgen_test]
+async fn insights_section_with_full_data_renders_concrete_verdicts() {
+    // Типичное состояние активного юзера: все пять панелей с данными.
+    let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels {
+        week: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 84,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        pace: Some(origa::domain::insights::PaceInsight {
+            per_day: 67,
+            delta: 12,
+            recent_total: 938,
+            previous_total: 770,
+        }),
+        time_of_day: Some(origa::domain::insights::TimeOfDayInsight {
+            worst_bucket: 5,
+            accuracy_pct: 52,
+            attempts: 23,
+        }),
+        overdue: Some(origa::domain::insights::OverdueInsight {
+            accuracy_drop_pp: 14,
+            ontime_accuracy_pct: 86,
+            late_accuracy_pct: 72,
+        }),
+        hardest_words: Some(origa::domain::insights::HardestWordsInsight {
+            one_in: 26,
+            troubled_count: 2,
+            studied_total: 52,
+            top: vec![origa::domain::insights::HardWord {
+                japanese: "\u{7d50}\u{5c40}".to_string(),
+                meaning: "in the end".to_string(),
+                lapses: 4,
+            }],
+        }),
+    });
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is4" /> }.into_any()
+    });
+    tick().await;
+
+    // Вердикт темпа: число повторений и положительная дельта.
+    let pace_text = wrapper
+        .query_selector("[data-testid=\"is4-pace\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        pace_text.contains("67"),
+        "pace verdict must show per-day count; got: {pace_text}"
+    );
+    assert!(
+        pace_text.contains("12"),
+        "pace verdict must show the delta; got: {pace_text}"
+    );
+
+    // Время суток: точность худшего окна.
+    let time_text = wrapper
+        .query_selector("[data-testid=\"is4-time-of-day\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        time_text.contains("52"),
+        "time-of-day verdict must show accuracy; got: {time_text}"
+    );
+
+    // Цена просрочки: разница в пунктах.
+    let overdue_text = wrapper
+        .query_selector("[data-testid=\"is4-overdue\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        overdue_text.contains("14"),
+        "overdue verdict must show the drop; got: {overdue_text}"
+    );
+
+    // Дорогие слова: доля и топ.
+    let words_text = wrapper
+        .query_selector("[data-testid=\"is4-hardest-words\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        words_text.contains("26"),
+        "hardest-words verdict must show the ratio; got: {words_text}"
+    );
+    assert!(
+        words_text.contains("\u{7d50}\u{5c40}"),
+        "hardest-words proofs must include the top word; got: {words_text}"
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // StudiedTodayList
 // ═══════════════════════════════════════════════════════════════════════

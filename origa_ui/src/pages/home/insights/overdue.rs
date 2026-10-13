@@ -19,7 +19,7 @@ pub(crate) fn OverduePanel(
     let phrase = Signal::derive(move || {
         let locale = i18n.get_locale();
         match insight.get() {
-            None => td_string!(locale, insights.collecting_data).to_string(),
+            None => td_string!(locale, insights.overdue_empty).to_string(),
             Some(data) if data.accuracy_drop_pp > 0 => {
                 td_string!(locale, insights.overdue_costs, drop = data.accuracy_drop_pp)
             },
@@ -50,6 +50,7 @@ pub(crate) fn OverduePanel(
         <InsightPanel
             question=question
             verdict=phrase
+            has_data=Signal::derive(move || insight.get().is_some())
             proofs=proofs
             test_id=test_id
         />

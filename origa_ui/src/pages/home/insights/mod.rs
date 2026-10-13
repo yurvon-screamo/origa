@@ -46,10 +46,12 @@ pub fn InsightsSection(
             </p>
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-                <WeekVerdictPanel
-                    verdict=Signal::derive(move || panels.get().week.clone())
-                    test_id=Signal::derive(move || format!("{}-week-verdict", section_prefix()))
-                />
+                <div class="lg:col-span-2">
+                    <WeekVerdictPanel
+                        verdict=Signal::derive(move || panels.get().week.clone())
+                        test_id=Signal::derive(move || format!("{}-week-verdict", section_prefix()))
+                    />
+                </div>
                 <PacePanel
                     pace=Signal::derive(move || panels.get().pace)
                     test_id=Signal::derive(move || format!("{}-pace", section_prefix()))
@@ -62,14 +64,12 @@ pub fn InsightsSection(
                     insight=Signal::derive(move || panels.get().overdue)
                     test_id=Signal::derive(move || format!("{}-overdue", section_prefix()))
                 />
-                <div class="lg:col-span-2">
-                    <HardestWordsPanel
-                        insight=Signal::derive(move || panels.get().hardest_words)
-                        test_id=Signal::derive(move || {
-                            format!("{}-hardest-words", section_prefix())
-                        })
-                    />
-                </div>
+                <HardestWordsPanel
+                    insight=Signal::derive(move || panels.get().hardest_words)
+                    test_id=Signal::derive(move || {
+                        format!("{}-hardest-words", section_prefix())
+                    })
+                />
             </div>
         </section>
     }
