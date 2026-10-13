@@ -28,12 +28,13 @@ Part of the [Origa](https://github.com/yurvon-screamo/origa) translation stack.
 
 ## Results (internal eval)
 
-- Test: `golden_v4c` — 662 pairs, 7 audit iterations. Score: 542 (81.9%). Control set v7c: 547 (82.6%), parity.
+- Test: `golden_v4c` — 662 pairs, 7 audit iterations. Score: 548 (82.8%) with the copy-paste recipe below; the previously published heads scored 542 (81.9%). Control retrain without the wave data: 551 (83.2%) — parity.
+- Labeled production-flow wave (200/locale, [issue #713](https://github.com/yurvon-screamo/origa/issues/713)): gold-over-defect rank on the 32 labeled failures 28/32 (was 14/32 blind) — the retrain targets exactly that class (name transliterations, register shifts, idiom flips).
 - Known false-negative class: phonetic loanwords. Production scans therefore pair the score with a per-locale percentile and an independent algorithmic flag (double confirmation), never a raw cutoff.
 
 ## Training data
 
-59,973 pairs:
+60,004 pairs (v3 data with one poisoned positive row removed, plus 32 labeled production-flow failures):
 
 | Component | Pairs |
 | --- | --- |
@@ -43,6 +44,7 @@ Part of the [Origa](https://github.com/yurvon-screamo/origa) translation stack.
 | Deep pipeline errors (margin < −0.50, 75% real) | 2,200 |
 | Paraphrase positives (double-filtered) | 5,900 |
 | Audit pairs | 500 |
+| Labeled production-flow failures (wave_v1, [#713](https://github.com/yurvon-screamo/origa/issues/713)) | 32 |
 
 Training: 5 epochs, ~5 minutes on vLLM-produced embeddings. InfoNCE heads held parity on a control set even with 70% noisy negatives: noise cleaning matters for interpretability, not for the score.
 

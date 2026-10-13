@@ -12,7 +12,7 @@ Origa 콘텐츠 파이프라인용 번역 스택: JA→{EN,RU,KO,VI} 번역기�
 `google/gemma-4-E2B-it-qat-w4a16-ct` 위의 LoRA 어댑터(r=16 α=32, 학습 파라미터 24.16M, 텍스트 스택 205개 모듈). 600k 문장 쌍(150k × 4 로캘)으로 1 에포크 학습, val_loss 0.6720.
 
 **판별기** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 59,973쌍으로 학습. 내부 평가: golden_v4c에서 81.9%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N). 로캘별 절대 임계값은 캘리브레이션 레이어로 제공됩니다: `judge_api.Judge.verdict()`는 라벨링된 쌍으로 피팅한 임계값으로 합격/불합격 판정을 냅니다(`calibrate_judge.py`). 임계값은 감사 기준으로 캘리브레이션되었습니다(golden_v4c 저자 라벨); LLM 라벨링 프로덕션-플로 웨이브(로캘당 200쌍, #713)가 잔여 맹점을 정량화했습니다: 미세한 오류가 good 분포 안에 스코어링됩니다(로캘별 `wave_v1` 블록), 따라서 스캔은 이중 확인 규칙을 유지합니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base`(mean-pooling) + InfoNCE 헤드. 60,004쌍으로 학습(v3 + 라벨링된 프로덕션 오류 32건). 내부 평가: golden_v4c에서 82.8%(662쌍, 7차 감사). 판별기는 후보를 랭킹합니다(Best-of-N). 로캘별 절대 임계값은 캘리브레이션 레이어로 제공됩니다: `judge_api.Judge.verdict()`는 라벨링된 쌍으로 피팅한 임계값으로 합격/불합격 판정을 냅니다(`calibrate_judge.py`). 임계값은 감사 기준으로 캘리브레이션되었습니다(golden_v4c 저자 라벨); LLM 라벨링 프로덕션-플로 웨이브(로캘당 200쌍, #713)가 잔여 맹점을 정량화했습니다: 미세한 오류가 good 분포 안에 스코어링됩니다(로캘별 `wave_v1` 블록), 따라서 스캔은 이중 확인 규칙을 유지합니다 — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## 품질 수치
 
