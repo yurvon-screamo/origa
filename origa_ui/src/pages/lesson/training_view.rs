@@ -369,22 +369,23 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                                 audio_front=ctx_stored.get_value().audio_front.get()
                             />
                         </div>
-                        <Show
-                            when=move || {
-                                showing_answer.get()
-                                    && !ctx_stored.get_value().audio_front.get()
-                            }
-                            fallback=move || ()
-                        >
-                            // Front/answer divider: only when the front keeps
-                            // visible content after the reveal. An audio front
-                            // hides its play button post-reveal — a divider
-                            // over nothing reads as a stray stripe above the
-                            // answer (owner remark on the #735 screenshots).
-                            <div
-                                class="border-t border-[var(--border-light)] my-2"
-                                data-testid="acquaintance-answer-divider"
-                            ></div>
+                        <Show when=move || showing_answer.get() fallback=move || ()>
+                            <Show
+                                when=move || !ctx_stored.get_value().audio_front.get()
+                                fallback=move || ()
+                            >
+                                // Front/answer divider: only when the front
+                                // keeps visible content after the reveal. An
+                                // audio front hides its play button post-reveal
+                                // — a divider over nothing reads as a stray
+                                // stripe above the answer (owner remark on the
+                                // #735 screenshots). The ANSWER itself renders
+                                // for every front.
+                                <div
+                                    class="border-t border-[var(--border-light)] my-2"
+                                    data-testid="acquaintance-answer-divider"
+                                ></div>
+                            </Show>
                             <TrainingAnswerSlide
                                 ctx=ctx_stored.get_value()
                                 card_id=card_id
