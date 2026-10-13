@@ -13,6 +13,7 @@ import {
   wakeupPrompt,
   worktreePaths,
   isValidTracked,
+  GH_AS_AGENT,
   type FactoryState,
   type IssueComment,
   type IssueRef,
@@ -334,6 +335,10 @@ async function startIssue(issue: IssueRef, state: FactoryState, attemptsSeed: nu
 
   await sh(["git", "-C", ORIGA, "fetch", "origin", "master"])
   await sh(["git", "-C", ORIGA, "worktree", "add", "-b", branch, worktree, "origin/master"])
+  // Пуши из ворктри — от GitHub App uwuwu-agent[bot]: локальный credential helper
+  // дергает installation token (кэш в /tmp, живёт час)
+  await sh(["git", "-C", worktree, "config", "credential.helper",
+    `!f() { echo username=x-access-token; echo password=$(/home/yurvon/.bun/bin/bun /home/yurvon/origa/.opencode/factory/app-token.ts); }; f`])
 
   const sessionID = await createSession(worktree, issue.number, issue.title)
   if (sessionID === null) throw new Error("сессия не создалась")
@@ -400,9 +405,9 @@ async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState
 
 // ——— цикл ———
 
-/** Уведомление в ишью с одним ретраем (F2: потеря коммента недопустима). */
+/** Уведомление в ишью от uwuwu-agent[bot] с одним ретраем (F2: потеря коммента недопустима). */
 async function notifyIssue(n: number, body: string): Promise<void> {
-  const args = ["gh", "issue", "comment", String(n), "--repo", REPO, "--body", body]
+  const args = [GH_AS_AGENT, "issue", "comment", String(n), "--repo", REPO, "--body", body]
   if (await shOk(args)) return
   await new Promise((r) => setTimeout(r, 15_000))
   if (!(await shOk(args))) log(`issue #${n}: уведомление не доставлено — ${body.slice(0, 80)}`)

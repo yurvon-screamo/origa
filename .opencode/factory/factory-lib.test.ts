@@ -111,6 +111,11 @@ describe("kickoffPrompt", () => {
     expect(p).toContain("1280x800")
     expect(p).toContain("390x844")
   })
+  test("все постинги — от бота (gh-as-agent), голый gh для постинга запрещён", () => {
+    expect(p).toContain("gh-as-agent")
+    expect(p).toContain("uwuwu-agent[bot]")
+    expect(p).not.toMatch(/(^|\n)\s*gh (issue comment|pr create|pr checks) \d*/)
+  })
   test("инъекция границы не рвёт структуру промпта", () => {
     expect(p.indexOf("=== КОНЕЦ ТЕЛА ===")).toBeGreaterThan(p.indexOf("=== ТЕЛО ИШЬЮ ==="))
     // настоящий КОНЕЦ — один, инъекция нейтрализована
@@ -134,7 +139,7 @@ describe("wakeupPrompt", () => {
     const p = wakeupPrompt(42, [c("11", "поправь"), c("13", "вот это")])
     expect(p).toContain("[factory]")
     expect(p).toContain("поправь")
-    expect(p).toContain("gh issue comment")
+    expect(p).toContain("gh-as-agent issue comment")
   })
 })
 

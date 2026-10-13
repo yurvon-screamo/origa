@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# gh-as-agent — gh от имени GitHub App uwuwu-agent[bot].
+# Обёртка для агентских сессий фабрики: комменты/PR/пуши идут от бота,
+# creds живут в ~/.config/origa-factory/app.json (см. app-token.ts).
+set -euo pipefail
+CFG="$HOME/.config/origa-factory/app.json"
+if [ ! -f "$CFG" ]; then
+  echo "gh-as-agent: нет $CFG — GitHub App не настроен" >&2
+  exit 1
+fi
+TOK="$(/home/yurvon/.bun/bin/bun /home/yurvon/origa/.opencode/factory/app-token.ts)"
+exec env GH_TOKEN="$TOK" GH_PROMPT_DISABLED=1 gh "$@"
