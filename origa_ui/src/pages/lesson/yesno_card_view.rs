@@ -10,6 +10,7 @@ use std::collections::HashSet;
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
+use super::dont_know_button::DontKnowButton;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
@@ -294,27 +295,12 @@ pub fn YesNoCardView(
                         {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
                     </Button>
                 </div>
-                <button
-                    data-testid="yesno-dont-know-btn"
-                    class=move || {
-                        let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                        if dont_know_selected.get() {
-                            format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                        } else if show_result.get() {
-                            format!("{} quiz-option-dimmed pointer-events-none", base)
-                        } else {
-                            format!("{} quiz-option-neutral", base)
-                        }
-                    }
-                    on:click=move |_| {
-                        if !show_result.get() {
-                            on_dont_know.run(());
-                        }
-                    }
-                >
-                    <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                    <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">{t!(i18n, lesson.space_key)}</span>
-                </button>
+                <DontKnowButton
+                    dont_know_selected
+                    disabled=show_result
+                    test_id="yesno-dont-know-btn"
+                    on_click=on_dont_know
+                />
             </Show>
 
             <Show when=move || show_result.get()>

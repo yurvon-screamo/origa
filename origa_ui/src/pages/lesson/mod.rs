@@ -11,6 +11,7 @@ pub(crate) mod complete_screen;
 mod content;
 mod counter_bindings_session;
 mod counter_readings_table;
+mod dont_know_button;
 mod empty_state_view;
 mod example_recall_card;
 mod example_selection;

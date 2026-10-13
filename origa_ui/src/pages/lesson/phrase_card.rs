@@ -7,6 +7,7 @@ use origa::domain::QuizOption;
 use std::collections::HashSet;
 
 use super::card_type::CardType;
+use super::dont_know_button::DontKnowButton;
 use super::lesson_card_header::LessonCardTagsQuiz;
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
@@ -138,27 +139,11 @@ pub fn PhraseCardView(
             </Show>
 
             <Show when=move || !show_result.get()>
-                <button
-                    data-testid="quiz-dont-know-btn"
-                    class=move || {
-                        let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
-                        if dont_know_selected {
-                            format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
-                        } else {
-                            format!("{} quiz-option-neutral", base)
-                        }
-                    }
-                    on:click=move |_| {
-                        if !show_result.get() {
-                            on_dont_know.run(());
-                        }
-                    }
-                >
-                    <Text size=TextSize::Default>{t!(i18n, lesson.dont_know)}</Text>
-                    <span class="kbd-hint text-[var(--fg-muted)] text-xs font-mono">
-                        {t!(i18n, lesson.space_key)}
-                    </span>
-                </button>
+                <DontKnowButton
+                    dont_know_selected=Signal::derive(move || dont_know_selected)
+                    disabled=show_result
+                    on_click=on_dont_know
+                />
             </Show>
 
             <Show when=move || show_result.get()>
