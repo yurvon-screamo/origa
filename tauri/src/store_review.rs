@@ -26,9 +26,12 @@ use tauri::Manager;
 /// frontend keeps its cooldown intact for future sessions.
 #[tauri::command]
 pub fn request_app_review(app: tauri::AppHandle) -> bool {
+    // Tail expressions in both cfg blocks: on Apple targets the second
+    // block compiles out, and a `return` in the first would trip
+    // clippy::needless_return there (the non-Apple branch needs neither).
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     {
-        return request_app_review_apple(app);
+        request_app_review_apple(app)
     }
     #[cfg(not(any(target_os = "macos", target_os = "ios")))]
     {
