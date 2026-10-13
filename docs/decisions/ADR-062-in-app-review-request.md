@@ -52,16 +52,27 @@ the web build are no-ops today.
 
 - **Deep link to the store review page** — App Review policy risk; the
   in-app API is the canonical, system-rate-limited mechanism.
-- **Community Tauri review plugins** — none official/maintained; the call
-  surface is two class methods, not worth a third-party dependency.
+- **Community Tauri review plugins** — `tauri-plugin-in-app-review`
+  (Gbyte-Group, MIT, listed on v2.tauri.app) exists and works: iOS via a
+  Swift side (StoreKit 2 on iOS 18+, `SKStoreReviewController` fallback on
+  14–17) and Android via the Google Play In-App Review API. Rejected for
+  now: it does **not** support macOS (desktop "not applicable"), so the
+  macOS App Store build would still need our objc2 branch; the project is
+  tiny (created 2025-12, two releases, ~150 downloads); its void API gives
+  no "prompt was requested" signal our cooldown semantics rely on.
+  Revisit for the **Android/Google Play** leg when that distribution
+  channel starts mattering (RuStore has no in-app API today).
+- **Swift plugin like `tauri-plugin-aswebauth`** — the Swift mobile-plugin
+  mechanism is iOS-only (`Package.swift` platforms `.iOS`); Tauri has no
+  Swift plugin surface for macOS desktop, where aswebauth itself uses
+  Rust+objc2 (`src/macos.rs`). A Swift bridge would buy the non-deprecated
+  StoreKit 2 call on iOS only; macOS still needs objc2. Rejected for now
+  (single call, extra build surface); revisit if Apple removes the ObjC
+  entry points.
 - **`objc2-store-kit` typed bindings** — pulls a large generated crate for
   two calls; raw `objc2` msg_send (version pinned by the workspace to the
   wry/tao generation) is sufficient and compiles under a standalone
   `rustc --target aarch64-apple-{ios,darwin}` check.
-- **Swift bridge to StoreKit 2 `AppStore.requestReview(in:)`** — the
-  non-deprecated replacement is Swift-only; a Swift bridge into
-  `tauri/gen/apple` would add a toolchain build step for one call. Rejected;
-  revisit if Apple removes the ObjC entry points.
 - **Per-account gating** — rejected: per-device gating is simpler, requires
   no server state, and errs toward fewer interruptions (the ASO goal only
   needs a steady stream of prompted users).
