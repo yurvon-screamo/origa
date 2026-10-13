@@ -44,13 +44,24 @@ DEFAULT_OUT = Path(__file__).resolve().parent.parent / "calibration" / "judge_ca
 
 
 def cmd_export(args: argparse.Namespace) -> int:
-    pool = [json.loads(line) for line in
-            Path(args.pool).read_text(encoding="utf-8").splitlines() if line.strip()]
     locales = [lc.strip() for lc in args.locales.split(",") if lc.strip()]
+    if not locales:
+        print("error: --locales is empty; list locales, e.g. --locales ko,vi", file=sys.stderr)
+        return 2
     for lc in locales:
         if not jc.LOCALE_RE.match(lc):
             print(f"error: locale {lc!r} does not match ^[a-z]{2}$", file=sys.stderr)
             return 2
+    pool: list[dict] = []
+    for line_no, line in enumerate(Path(args.pool).read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as exc:
+            print(f"error: {args.pool} line {line_no}: invalid JSON ({exc})", file=sys.stderr)
+            return 2
+        pool.append(row)
     rng = random.Random(args.seed)
     out_rows: list[dict] = []
     for lc in locales:
@@ -111,10 +122,11 @@ def cmd_import(args: argparse.Namespace) -> int:
 
 
 def cmd_fit(args: argparse.Namespace) -> int:
-    # torch loads only here; export/import stay dependency-free
-    from judge_api import Judge
-
-    lines = Path(args.labels).read_text(encoding="utf-8").splitlines()
+    labels_path = Path(args.labels)
+    if not labels_path.exists():
+        print(f"error: labels file not found: {labels_path}", file=sys.stderr)
+        return 2
+    lines = labels_path.read_text(encoding="utf-8").splitlines()
     try:
         pairs, warnings = jc.validate_labeled_file(lines)
     except jc.ValidationError as exc:
@@ -122,15 +134,23 @@ def cmd_fit(args: argparse.Namespace) -> int:
         return 1
     for warning in warnings:
         print(f"warning: {warning}", file=sys.stderr)
-    policy = jc.parse_policy(args.policy)
-    judge = Judge()
-    heads_sha = _sha256(judge.heads_path)
-    if heads_sha is None:
-        print(f"error: heads file not found: {judge.heads_path} "
-              f"(set ORIGA_JUDGE_HEADS)", file=sys.stderr)
+    try:
+        policy = jc.parse_policy(args.policy)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
         return 2
+    heads_path = jc.heads_path_from_env()
+    heads_sha = _sha256(heads_path)
+    if heads_sha is None:
+        print(f"error: heads file not found: {heads_path} (set ORIGA_JUDGE_HEADS)",
+              file=sys.stderr)
+        return 2
+    # torch loads only here, after every torch-free check passed
+    from judge_api import Judge
+
+    judge = Judge()
     print(f"scoring {len(pairs)} pairs via {judge.url} …")
-    scores = [judge.raw_score(p.state, p.translation) for p in pairs]
+    scores = judge.score_pairs([(p.state, p.translation) for p in pairs])
     entries, n_used, n_bad = {}, 0, 0
     failed = False
     for lc in sorted({p.locale for p in pairs}):
@@ -149,13 +169,15 @@ def cmd_fit(args: argparse.Namespace) -> int:
         print("error: no locale fitted", file=sys.stderr)
         return 1
     prevalence = n_bad / n_used if n_used else 0.0
-    doc = jc.build_calibration_doc(entries, policy, heads_sha, n_used, prevalence,
-                                   embedding_model="e5b", seed=args.seed,
-                                   pool_rows=args.pool_rows)
+    doc = jc.build_calibration_doc(
+        entries, policy, heads_sha, n_used, prevalence,
+        embedding_model=judge.embedding_model,
+        sampling_provenance={"seed": args.seed, "pool_rows": args.pool_rows})
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"calibration -> {out} (heads_sha256 {heads_sha[:12]}…, {len(entries)} locale(s))")
+    # exit 1 with a written file = partial success: some locales were SKIPPED
     return 1 if failed else 0
 
 
@@ -195,7 +217,11 @@ def main() -> int:
     im.add_argument("--labels", required=True)
     im.set_defaults(func=cmd_import)
 
-    fi = sub.add_parser("fit", help="score pairs and fit per-locale thresholds")
+    fi = sub.add_parser(
+        "fit", help="score pairs and fit per-locale thresholds",
+        epilog="exit codes: 0 all locales fitted; 1 some locales SKIPPED "
+               "(calibration file still written with the fitted ones — check "
+               "stderr); 2 usage error")
     fi.add_argument("--labels", required=True, help="labeled JSONL (task rows + label)")
     fi.add_argument("--policy", default="max_f1",
                     help="max_f1 | min_precision=X | min_recall=X")

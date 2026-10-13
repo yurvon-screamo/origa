@@ -31,7 +31,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -39,13 +38,12 @@ import requests
 import torch
 import torch.nn.functional as F
 
+import judge_calibration
 from judge_calibration import Calibration, verify_head_hash
 
 EMB_URL = "http://127.0.0.1:8090/v1/embeddings"
-HEADS = Path(os.environ.get("ORIGA_JUDGE_HEADS", "model/origa-judge.pt"))
-CALIBRATION = Path(os.environ.get(
-    "ORIGA_JUDGE_CALIBRATION",
-    Path(__file__).resolve().parent.parent / "calibration" / "judge_calibration.json"))
+HEADS = judge_calibration.heads_path_from_env()
+CALIBRATION = judge_calibration.calibration_path_from_env()
 MAX_LEN = 1000  # e5 window guard (512 tokens ~ safe for our locales)
 
 
@@ -73,6 +71,7 @@ class Judge:
         self.heads_path = Path(heads_path)
         self.calibration_path = Path(calibration_path)
         self._calibration: Calibration | None = None
+        self.embedding_model: str | None = None  # served model id, captured on first response
 
     def _embed(self, texts: list[str]) -> torch.Tensor:
         texts = [t[:MAX_LEN] for t in texts]
@@ -80,7 +79,10 @@ class Judge:
         for s in range(0, len(texts), 64):
             r = requests.post(self.url, json={"model": "e5b", "input": texts[s:s + 64]}, timeout=300)
             r.raise_for_status()
-            out += [d["embedding"] for d in r.json()["data"]]
+            payload = r.json()
+            if self.embedding_model is None:
+                self.embedding_model = payload.get("model")
+            out += [d["embedding"] for d in payload["data"]]
         return torch.from_numpy(np.asarray(out, dtype=np.float32))
 
     def _score(self, state_text: str, cand_texts: list[str]) -> np.ndarray:
@@ -89,13 +91,21 @@ class Judge:
         with torch.no_grad():
             return self.hs(st.expand(len(cand_texts), -1), ct).numpy()
 
+    def score_pairs(self, pairs: list[tuple[str, str]]) -> list[float]:
+        """Batched raw pair scores for [(state, translation), …]."""
+        st = self._embed([f"query: {state}" for state, _ in pairs])
+        ct = self._embed([f"passage: {t}" for _, t in pairs])
+        with torch.no_grad():
+            scores = self.hs(st, ct)
+        return [float(v) for v in scores]
+
     def raw_score(self, state: str, translation: str) -> float:
         """Raw pair score (cosine through the heads). Higher = better fit.
 
         Comparable only within one ranking call — never a cutoff by itself;
         for absolute decisions use verdict().
         """
-        return float(self._score(state, [translation])[0])
+        return self.score_pairs([(state, translation)])[0]
 
     def _load_calibration(self) -> Calibration:
         if self._calibration is None:

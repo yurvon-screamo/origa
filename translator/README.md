@@ -55,24 +55,6 @@ tok = AutoTokenizer.from_pretrained(BASE)
 
 Without `low_cpu_mem_usage=False` + `CompressedTensorsConfig(run_compressed=False)` the layers load as skeletons without packed weights and PEFT fails.
 
-Or load with transformers (details matter on the QAT base, see gotchas):
-
-```python
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, CompressedTensorsConfig
-from peft import PeftModel
-
-BASE = "google/gemma-4-E2B-it-qat-w4a16-ct"
-model = AutoModelForCausalLM.from_pretrained(
-    BASE, dtype=torch.bfloat16, low_cpu_mem_usage=False,
-    quantization_config=CompressedTensorsConfig(run_compressed=False),
-).to("xpu")
-model = PeftModel.from_pretrained(model, "yurvon-screamo/origa-translator-ep1").eval()
-tok = AutoTokenizer.from_pretrained(BASE)
-```
-
-Without `low_cpu_mem_usage=False` + `CompressedTensorsConfig(run_compressed=False)` the layers load as skeletons without packed weights and PEFT fails.
-
 Judge inference: serve `intfloat/multilingual-e5-base` through vLLM pooling with `--pooler-config '{"pooling_type":"MEAN"}'` (the default LAST pooling breaks head compatibility) and `--attention-backend TRITON_ATTN`. Call it through `scripts/judge_api.py`, a typed-question API (noul/choice/score) over the heads; `verdict()` adds a calibrated per-locale go/no-go once thresholds are fitted.
 
 ## Scripts

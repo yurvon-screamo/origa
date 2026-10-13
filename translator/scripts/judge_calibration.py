@@ -22,7 +22,8 @@ Calibration file (format 1):
                       "metrics": {"precision", "recall", "f1"},
                       "confusion": {"tp", "fp", "tn", "fn"},
                       "degenerate": bool,  # accept-all / accept-none threshold
-                      "cv": {"folds": 5, "folds_used": int, "f1_mean": float, "f1_std": float}
+                      "cv": {"folds": 5, "folds_used": int, "f1_mean": float, "f1_std": float,
+                             "infeasible_folds"?: int}   # optional key
                             | {"status": "unavailable", "reason": str}}}}
 
 Threshold semantics: ok = score >= threshold. Ties go to "good".
@@ -48,6 +49,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import re
 import statistics
@@ -65,6 +67,19 @@ CV_SEED: Final = 7
 MIN_PAIRS: Final = 40
 MIN_PER_CLASS: Final = 8
 CV_MIN_PER_CLASS: Final = 25
+
+
+def heads_path_from_env(environ: dict | None = None) -> Path:
+    """Path to origa-judge.pt (runtime + fit must use the same bytes)."""
+    environ = os.environ if environ is None else environ
+    return Path(environ.get("ORIGA_JUDGE_HEADS", "model/origa-judge.pt"))
+
+
+def calibration_path_from_env(environ: dict | None = None) -> Path:
+    """Path to judge_calibration.json (default: translator/calibration/)."""
+    environ = os.environ if environ is None else environ
+    default = Path(__file__).resolve().parent.parent / "calibration" / "judge_calibration.json"
+    return Path(environ.get("ORIGA_JUDGE_CALIBRATION", str(default)))
 
 
 class CalibrationError(Exception):
@@ -143,16 +158,17 @@ def parse_policy(spec: str) -> Policy:
 def parse_labeled_pair(obj: object, line_no: int) -> LabeledPair:
     if not isinstance(obj, dict):
         raise ValidationError(f"line {line_no}: not a JSON object")
-    missing = [k for k in ("id", "locale", "state", "translation", "label") if not obj.get(k)]
+    required = ("id", "locale", "state", "translation", "label")
+    missing = [k for k in required if not isinstance(obj.get(k), str) or not obj.get(k)]
     if missing:
-        raise ValidationError(f"line {line_no}: missing fields {missing}")
+        raise ValidationError(f"line {line_no}: missing or non-string fields {missing}")
     if obj["label"] not in LABELS:
         raise ValidationError(f"line {line_no}: label must be one of {LABELS}")
-    if not LOCALE_RE.match(str(obj["locale"])):
+    if not LOCALE_RE.match(obj["locale"]):
         raise ValidationError(f"line {line_no}: locale must match ^[a-z]{2}$")
     return LabeledPair(
-        id=str(obj["id"]), locale=str(obj["locale"]), state=str(obj["state"]),
-        translation=str(obj["translation"]), label=str(obj["label"]),
+        id=obj["id"], locale=obj["locale"], state=obj["state"],
+        translation=obj["translation"], label=obj["label"],
         source=obj.get("source"), annotator=obj.get("annotator"), note=obj.get("note"),
     )
 
@@ -361,9 +377,16 @@ class Calibration:
                 f"calibration file not found: {path}. "
                 f"Fit one with calibrate_judge.py (issue #713); "
                 f"until then use ranking (Best-of-N), not absolute verdicts.")
-        doc = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise CalibrationLoadError(f"corrupted calibration file {path}: {exc}") from exc
         if not isinstance(doc, dict) or doc.get("format") != FORMAT_VERSION:
             raise CalibrationLoadError(f"unsupported calibration format in {path}")
+        if not isinstance(doc.get("heads_sha256"), str):
+            raise CalibrationLoadError(f"calibration file {path} has no heads_sha256")
+        if not isinstance(doc.get("locales"), dict):
+            raise CalibrationLoadError(f"calibration file {path} has no locales map")
         return cls(doc)
 
     def entry(self, locale: str) -> dict:
@@ -382,14 +405,17 @@ class Calibration:
 def build_calibration_doc(locales: dict, policy: Policy, heads_sha256: str,
                           sampled: int, prevalence_bad: float,
                           embedding_model: str | None = None,
-                          seed: int | None = None, pool_rows: int | None = None) -> dict:
+                          sampling_provenance: dict | None = None) -> dict:
+    """Assemble the calibration file. `sampling_provenance` carries the
+    export-time facts recorded at fit via --seed/--pool-rows (either may be
+    absent — then the corresponding value stays null)."""
+    provenance = {"seed": None, "pool_rows": None, **(sampling_provenance or {})}
     return {
         "format": FORMAT_VERSION,
         "fitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "policy": {"name": policy.name, **({"min": policy.minimum} if policy.minimum is not None else {})},
         "heads_sha256": heads_sha256,
         "embedding_model": embedding_model,
-        "sampling": {"seed": seed, "pool_rows": pool_rows,
-                     "sampled": sampled, "prevalence_bad": prevalence_bad},
+        "sampling": {**provenance, "sampled": sampled, "prevalence_bad": prevalence_bad},
         "locales": locales,
     }

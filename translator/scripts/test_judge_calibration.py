@@ -3,6 +3,7 @@
 
 Run: python -m pytest translator/scripts -q
 """
+import argparse
 import json
 
 import judge_calibration as jc
@@ -43,6 +44,11 @@ class TestParseAndValidate:
         row = {"id": "x", "locale": "ko", "state": "s", "translation": "t", "label": "maybe"}
         with pytest.raises(jc.ValidationError, match="label"):
             jc.parse_labeled_pair(row, 3)
+
+    def test_non_string_id_rejected(self):
+        row = {"id": 7, "locale": "ko", "state": "s", "translation": "t", "label": "good"}
+        with pytest.raises(jc.ValidationError, match="non-string"):
+            jc.parse_labeled_pair(row, 1)
 
     def test_bad_locale_format_rejected(self):
         row = {"id": "x", "locale": "KOR", "state": "s", "translation": "t", "label": "good"}
@@ -187,6 +193,24 @@ class TestCalibration:
         with pytest.raises(jc.CalibrationLoadError, match="format"):
             jc.Calibration.load(path)
 
+    def test_corrupted_json_raises_calibration_error(self, tmp_path):
+        path = tmp_path / "cal.json"
+        path.write_text("{not json", encoding="utf-8")
+        with pytest.raises(jc.CalibrationLoadError, match="corrupted"):
+            jc.Calibration.load(path)
+
+    def test_missing_heads_hash_rejected(self, tmp_path):
+        path = tmp_path / "cal.json"
+        path.write_text(json.dumps({"format": 1, "locales": {}}), encoding="utf-8")
+        with pytest.raises(jc.CalibrationLoadError, match="heads_sha256"):
+            jc.Calibration.load(path)
+
+    def test_missing_locales_rejected(self, tmp_path):
+        path = tmp_path / "cal.json"
+        path.write_text(json.dumps({"format": 1, "heads_sha256": "a" * 64}), encoding="utf-8")
+        with pytest.raises(jc.CalibrationLoadError, match="locales"):
+            jc.Calibration.load(path)
+
     def test_head_hash_mismatch_fails_loud(self, tmp_path):
         heads = tmp_path / "heads.pt"
         heads.write_bytes(b"weights-v3")
@@ -210,3 +234,83 @@ class TestPolicyParsing:
     def test_unknown_policy_rejected(self):
         with pytest.raises(ValueError, match="unknown policy"):
             jc.parse_policy("balanced")
+
+
+class TestCliGlue:
+    """CLI glue of calibrate_judge (torch-free paths)."""
+
+    def write_pool(self, path, n_each: int = 12):
+        with open(path, "w", encoding="utf-8") as f:
+            for lc in ("ko", "vi"):
+                for i in range(n_each):
+                    f.write(json.dumps({"locale": lc, "state": f"jp{i}",
+                                        "translation": f"{lc} {i}"}, ensure_ascii=False) + "\n")
+
+    def test_export_writes_sequential_ids_and_md(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        self.write_pool(tmp_path / "pool.jsonl")
+        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="ko,vi",
+                                  n=10, out=str(tmp_path / "task.jsonl"),
+                                  md=str(tmp_path / "task.md"), seed=7)
+        assert cj.cmd_export(args) == 0
+        rows = [json.loads(l) for l in open(tmp_path / "task.jsonl", encoding="utf-8")]
+        assert [r["id"] for r in rows[:3]] == ["ko-0001", "ko-0002", "ko-0003"]
+        md = (tmp_path / "task.md").read_text(encoding="utf-8")
+        assert "### ko-0001 (ko)" in md and "- [ ] good" in md
+
+    def test_export_rejects_empty_locales(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        self.write_pool(tmp_path / "pool.jsonl")
+        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="",
+                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+        assert cj.cmd_export(args) == 2
+
+    def test_export_rejects_malformed_pool_json(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        (tmp_path / "pool.jsonl").write_text('{"locale": "ko" oops}\n', encoding="utf-8")
+        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="ko",
+                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+        assert cj.cmd_export(args) == 2
+        assert "line 1" in capsys.readouterr().err
+
+    def test_import_reports_counts_and_floor(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        pairs = make_pairs(3, 2)
+        path = tmp_path / "l.jsonl"
+        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
+        assert cj.cmd_import(argparse.Namespace(labels=str(path))) == 0
+        out = capsys.readouterr().out
+        assert "ko: good=3 bad=2 -> below fit floor" in out
+
+    def test_import_failure_returns_one(self, tmp_path):
+        import calibrate_judge as cj
+        path = tmp_path / "l.jsonl"
+        path.write_text('{"id": "x"}\n', encoding="utf-8")
+        assert cj.cmd_import(argparse.Namespace(labels=str(path))) == 1
+
+    def test_markdown_render_lists_every_pair(self):
+        import calibrate_judge as cj
+        rows = [{"id": "ko-0001", "locale": "ko", "state": "jp", "translation": "한국어"}]
+        md = cj.render_markdown(rows)
+        assert "### ko-0001 (ko)" in md and "jp" in md and "한국어" in md
+
+    def test_fit_rejects_unknown_policy_before_scoring(self, tmp_path, capsys):
+        import calibrate_judge as cj
+        pairs = make_pairs(2, 2)
+        path = tmp_path / "l.jsonl"
+        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
+        args = argparse.Namespace(labels=str(path), policy="nonsense",
+                                  out=str(tmp_path / "c.json"), seed=None, pool_rows=None)
+        assert cj.cmd_fit(args) == 2
+        assert "unknown policy" in capsys.readouterr().err
+
+    def test_fit_friendly_error_without_heads(self, tmp_path, capsys, monkeypatch):
+        import calibrate_judge as cj
+        pairs = make_pairs(2, 2)
+        path = tmp_path / "l.jsonl"
+        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
+        monkeypatch.setenv("ORIGA_JUDGE_HEADS", str(tmp_path / "absent.pt"))
+        args = argparse.Namespace(labels=str(path), policy="max_f1",
+                                  out=str(tmp_path / "c.json"), seed=None, pool_rows=None)
+        assert cj.cmd_fit(args) == 2
+        assert "heads file not found" in capsys.readouterr().err

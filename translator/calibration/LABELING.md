@@ -11,7 +11,8 @@ One task = one pair:
 - **JP** — the source phrase.
 - **Translation** — a candidate KO or VI translation produced by the pipeline.
 
-The operator creates tasks with:
+The operator creates tasks from the `translator/` directory (all paths below
+are relative to it):
 
 ```bash
 python scripts/calibrate_judge.py export --pool pool.jsonl --locales ko,vi \
