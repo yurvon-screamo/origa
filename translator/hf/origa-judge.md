@@ -22,18 +22,19 @@ tags:
 
 InfoNCE heads over `intfloat/multilingual-e5-base` (mean-pooling, `query:`/`passage:` prefixes) that score JA→X translation pairs for the Origa content pipeline.
 
-**This is a ranker, not a grader.** It compares candidates against a reference (Best-of-N selection). Absolute scores are not calibrated across locales — do not use a raw score as a pass/fail threshold. Per-locale calibration is tracked in [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
+**Ranking first, grading behind calibration.** The training objective is InfoNCE: scores compare candidates within one call (Best-of-N selection). A bare score across calls is not a pass/fail signal. Absolute per-locale go/no-go is available through the calibration layer in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py) — `Judge.verdict()` applies thresholds fitted on labeled pairs with [scripts/calibrate_judge.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/calibrate_judge.py). Thresholds (all four locales) are committed in [translator/calibration/](https://github.com/yurvon-screamo/origa/tree/master/translator/calibration), audit-calibrated on golden_v4c author labels. A labeled production-flow wave (200 pairs/locale, [issue #713](https://github.com/yurvon-screamo/origa/issues/713)) quantified the residual blind spot: subtle failures score inside the good distribution (per-locale `wave_v1` blocks), so production scans keep the double-confirmation rule. Locales without a fitted calibration fail loudly.
 
 Part of the [Origa](https://github.com/yurvon-screamo/origa) translation stack.
 
 ## Results (internal eval)
 
-- Test: `golden_v4c` — 662 pairs, 7 audit iterations. Score: 542 (81.9%). Control set v7c: 547 (82.6%), parity.
+- Test: `golden_v4c` — 662 pairs, 7 audit iterations. Score: 548 (82.8%) with the copy-paste recipe below; the previously published heads scored 542 (81.9%). Control retrain without the wave data: 551 (83.2%) — parity.
+- Labeled production-flow wave (200/locale, [issue #713](https://github.com/yurvon-screamo/origa/issues/713)): gold-over-defect rank on the 32 labeled failures 28/32 (was 14/32 blind) — the retrain targets exactly that class (name transliterations, register shifts, idiom flips).
 - Known false-negative class: phonetic loanwords. Production scans therefore pair the score with a per-locale percentile and an independent algorithmic flag (double confirmation), never a raw cutoff.
 
 ## Training data
 
-59,973 pairs:
+60,004 pairs (v3 data with one poisoned positive row removed, plus 32 labeled production-flow failures):
 
 | Component | Pairs |
 | --- | --- |
@@ -43,6 +44,7 @@ Part of the [Origa](https://github.com/yurvon-screamo/origa) translation stack.
 | Deep pipeline errors (margin < −0.50, 75% real) | 2,200 |
 | Paraphrase positives (double-filtered) | 5,900 |
 | Audit pairs | 500 |
+| Labeled production-flow failures (wave_v1, [#713](https://github.com/yurvon-screamo/origa/issues/713)) | 32 |
 
 Training: 5 epochs, ~5 minutes on vLLM-produced embeddings. InfoNCE heads held parity on a control set even with 70% noisy negatives: noise cleaning matters for interpretability, not for the score.
 
@@ -111,7 +113,7 @@ Prefixed embeddings follow the e5 convention: `query:` for the source sentence, 
 
 ### 3. Typed-question API
 
-The production wrapper around these heads (yes/no verdicts, multiple choice, expected-score questions with rank-calibrated softmax) lives in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py).
+The production wrapper around these heads (yes/no verdicts, multiple choice, expected-score questions with rank-calibrated softmax, plus calibrated per-locale `verdict()`) lives in [scripts/judge_api.py](https://github.com/yurvon-screamo/origa/blob/master/translator/scripts/judge_api.py).
 
 The standalone content scanners that pair this judge with the double-confirmation rule:
 
@@ -119,7 +121,7 @@ The standalone content scanners that pair this judge with the double-confirmatio
 ## Production record
 
 Deployed in Origa's production content pipeline for dictionary and phrase quality control.
-- False negatives on phonetic loanwords.
+- False negatives on phonetic loanwords. A calibrated `verdict()` threshold does not remove this class: scans keep the double-confirmation rule (score percentile × algorithmic flag); `verdict()` itself is for auto-pipeline accept decisions on fresh translations.
 - Trained and evaluated on ja→{en,ru,ko,vi} pairs from one domain (learning content). Out-of-domain behavior is untested.
 
 ## License

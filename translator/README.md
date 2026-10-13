@@ -12,7 +12,7 @@ This is the code and evaluation harness. Model weights live on Hugging Face; tra
 LoRA adapter (r=16 α=32, 24.16M trainable, 205 text-stack modules) over `google/gemma-4-E2B-it-qat-w4a16-ct`. Trained for 1 epoch on 600k phrase pairs (150k × 4 locales), val_loss 0.6720.
 
 **Judge** ([HF: origa-judge](https://huggingface.co/yurvon-screamo/origa-judge))
-`intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 59,973 pairs. Internal eval: 81.9% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N); its absolute scores are not calibrated per locale — see [issue #713](https://github.com/yurvon-screamo/origa/issues/713).
+`intfloat/multilingual-e5-base` (mean-pooling) + InfoNCE heads. Trained on 60,004 pairs (v3 + 32 labeled production failures). Internal eval: 82.8% on golden_v4c (662 pairs, 7 audit iterations). The judge ranks candidates (Best-of-N). Absolute per-locale thresholds ship as a calibration layer: `judge_api.Judge.verdict()` gives a go/no-go from thresholds fitted on labeled pairs (`calibrate_judge.py`). Thresholds are audit-calibrated (golden_v4c author labels); an LLM-labeled production-flow wave (200/locale, #713) quantified the residual blind spot: subtle failures score inside the good distribution (per-locale `wave_v1` blocks), so scans keep the double-confirmation rule — [#713](https://github.com/yurvon-screamo/origa/issues/713).
 
 ## Quality numbers
 
@@ -55,7 +55,7 @@ tok = AutoTokenizer.from_pretrained(BASE)
 
 Without `low_cpu_mem_usage=False` + `CompressedTensorsConfig(run_compressed=False)` the layers load as skeletons without packed weights and PEFT fails.
 
-Judge inference: serve `intfloat/multilingual-e5-base` through vLLM pooling with `--pooler-config '{"pooling_type":"MEAN"}'` (the default LAST pooling breaks head compatibility) and `--attention-backend TRITON_ATTN`. Call it through `scripts/judge_api.py`, a typed-question API (noul/choice/score) over the heads.
+Judge inference: serve `intfloat/multilingual-e5-base` through vLLM pooling with `--pooler-config '{"pooling_type":"MEAN"}'` (the default LAST pooling breaks head compatibility) and `--attention-backend TRITON_ATTN`. Call it through `scripts/judge_api.py`, a typed-question API (noul/choice/score) over the heads; `verdict()` adds a calibrated per-locale go/no-go once thresholds are fitted.
 
 ## Scripts
 
@@ -66,7 +66,8 @@ Judge inference: serve `intfloat/multilingual-e5-base` through vLLM pooling with
 | `run_600k.sh` | Full 600k run with checkpointing and auto-resume |
 | `eval_wrapper.py` | Single-shot generation + language detection + retry |
 | `eval_model.py` / `bench_train_qat.py` | Model eval and training benchmark |
-| `judge_api.py` | Typed-question API over judge heads |
+| `judge_api.py` | Typed-question API over judge heads + calibrated `verdict()` |
+| `calibrate_judge.py` | Labeling task export/import + per-locale threshold fitting (issue #713) |
 | `train_judge_heads.py` | Judge head trainer (consumes vLLM embeddings) |
 | `build_judge_v3.py` | Judge dataset assembly (v3) |
 
@@ -77,6 +78,7 @@ Scripts read locations from environment variables (all optional, defaults are re
 | `ORIGA_DATA_DIR` | Training data root |
 | `ORIGA_RUNS_DIR`, `ORIGA_WORK_DIR` | Checkpoints and scratch space |
 | `ORIGA_JUDGE_HEADS` | Path to `origa-judge.pt` |
+| `ORIGA_JUDGE_CALIBRATION` | Path to `judge_calibration.json` (fitted per-locale thresholds) |
 | `ORIGA_JUDGE_DATA` | Judge datasets |
 
 ## Training recipe (QAT base)
@@ -90,8 +92,8 @@ The full post-mortem, including infra fixes (OOM cgroup cage, masked CE for the 
 
 ## Known limitations
 
-- The judge ranks, it does not grade. Absolute thresholds are not calibrated per locale (evidence for KO and VI in [#713](https://github.com/yurvon-screamo/origa/issues/713)). Best-of-N is the supported usage.
-- The judge produces false negatives on phonetic loanwords; production scans therefore require the double-confirmation rule (percentile × algorithmic flag), never a raw score cutoff.
+- Absolute go/no-go verdicts (`judge_api` `verdict()`) use the committed per-locale thresholds (`calibration/judge_calibration.json`), fitted on the golden_v4c author-audit labels (CV F1 0.68–0.76 per locale) — i.e. "free of audit-grade corruption". A labeled production-flow wave (200 pairs/locale, LLM labels, [#713](https://github.com/yurvon-screamo/origa/issues/713)) showed that subtle failures (KO name transliterations, register shifts, idiom flips) score inside the good distribution: absolute verdicts do not catch them, the wave-fit threshold is degenerate and was NOT committed. Scans keep the double-confirmation rule; the layer still fails loudly on unfitted locales.
+- The judge produces false negatives on phonetic loanwords. A calibrated threshold does not remove this class: production scans keep the double-confirmation rule (percentile × algorithmic flag), never a bare score cutoff. `verdict()` is for auto-pipeline accept decisions on fresh translations.
 - The translator keeps residual 🟡 issues on VI (register/politeness shifts) and rare EN inversions. We assessed these as a capability limit of the 2B base; more data did not remove them.
 - Intel XPU only for training; inference runs anywhere vLLM supports the base.
 
