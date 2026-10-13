@@ -14,7 +14,7 @@ status: ready
 
 # JFT-Basic: The Japanese Test for the SSW Visa (and How It Differs from JLPT)
 
-If you are aiming at a Specified Skilled Worker (SSW) job in Japan, the Japanese test you most likely need is **not** the JLPT. It is the **JFT-Basic**: the Japan Foundation Test for Basic Japanese, a computer-based exam that checks whether you can handle everyday life in Japan: shopping, paperwork, transport, a conversation with your supervisor.
+If you are aiming at a Specified Skilled Worker (SSW) job in Japan, two Japanese tests can get you there: the **JLPT N4** or the **JFT-Basic**: the Japan Foundation Test for Basic Japanese, a computer-based exam that checks whether you can handle everyday life in Japan: shopping, paperwork, transport, a conversation with your supervisor. This guide is about the second one, and where it wins is scheduling: it runs year-round at Prometric centers, while the JLPT comes twice a year.
 
 Japan's SSW program is growing fast. The Immigration Services Agency reported **444,256 visa holders as of the end of June 2026 (Type 1 and Type 2 combined), a record, up 13.8% in six months**. Vietnam is the largest source country (163,154 workers, 38.3%), followed by Indonesia (107,242), Myanmar, the Philippines, and China. Every one of those workers had to prove basic Japanese. Every figure comes from the [Immigration Services Agency report of September 29, 2026](https://www.japantimes.co.jp/news/2026/09/29/japan/specified-skilled-workers-number-record/).
 
@@ -42,7 +42,7 @@ From August 2026, the Japan Foundation reports three levels instead of a single 
 
 The pass line for the SSW (Type 1) visa did not move: it is still **200 points, which equals A2 (A2.2)**. What the new bands add is a map for people who score below it. A2.1 means "close"; A1 means "keep building vocabulary and basic grammar."
 
-A second reason for the change: a new residence status, **Employment for Skill Development (育成就労)**, starts in April 2027. It generally requires A1 or higher at the start of employment, and A2.1 results are used for voluntary employer changes under that program. If your goal is the current SSW visa, aim at 200 as before.
+A second reason for the change: a new residence status, **Employment for Skill Development (育成就労)**, starts in April 2027. It generally requires A1 or higher at the start of employment, and A2.1 results are expected to be used mainly to confirm requirements for a voluntary change of employer under that program. If your goal is the current SSW visa, aim at 200 as before.
 
 ## Retakes, results, and rules worth knowing
 
@@ -60,9 +60,9 @@ Both tests sit near the same level of practical Japanese, but they answer differ
 | Format | CBT, ~50 questions, 60 minutes | Paper/CTB, longer sections, twice a year (July/December) |
 | Pass | 200/250 (A2.2) | Sectional scoring, no single pass line |
 | Availability | Prometric centers year-round | Twice a year |
-| Required for SSW visa | **Yes** (A2.2, 200+) | Not accepted as the SSW Japanese requirement |
+| Accepted for the SSW visa | **Yes** (A2.2, 200+) | Yes — JLPT N4 or higher also satisfies the requirement |
 
-The practical summary: for the SSW visa, JFT-Basic is the direct route: it runs more often and it is the test the program actually asks for. The JLPT remains the broader credential if you plan to study in Japan later or want a certificate employers outside the SSW system recognize. Some workers take JFT-Basic first for the visa and JLPT N3 later for career growth.
+The practical summary: both tests satisfy the SSW requirement (JLPT N4 or JFT-Basic A2.2). JFT-Basic wins on scheduling: Prometric sessions run year-round, while the JLPT offers two sittings a year, and missing one can cost months. The JLPT remains the broader credential if you plan to study in Japan later or want a certificate employers outside the SSW system recognize. Some workers take JFT-Basic first for the visa and JLPT N3 later for career growth.
 
 ## How to prepare: Irodori is the official path
 
@@ -85,7 +85,7 @@ Honest limits: Origa covers the vocabulary and reading side; the JFT-Basic also 
 
 ### Is JFT-Basic easier than the JLPT?
 
-It is shorter (60 minutes) and more focused on daily-life situations. "Easier" is the wrong frame: the A2 pass requires real recall, and the two-way testing (Japanese→English and English→Japanese) removes lucky guessing.
+It is shorter (60 minutes) and more focused on daily-life situations. "Easier" is the wrong frame: it is a timed CBT with four sections — Script and Vocabulary, Conversation and Expression, Listening, Reading — and the questions are built on Can-do objectives, so surface recognition is not enough.
 
 ### Can I take JFT-Basic outside Japan?
 
