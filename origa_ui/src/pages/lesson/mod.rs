@@ -50,6 +50,7 @@ mod quiz_options;
 mod quiz_options_multi;
 mod quiz_result;
 pub(crate) mod quiz_result_display;
+mod reveal_answer_button;
 mod training_answer;
 mod training_front;
 mod training_view;

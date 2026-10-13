@@ -18,6 +18,7 @@ use leptos::task::spawn_local;
 use super::LESSON_CARD_CLASS;
 use super::binary_rating_buttons::BinaryRatingButtons;
 use super::lesson_card_header::LessonTagsRow;
+use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::{t, t_string, use_i18n};
 use crate::loaders::example_loader::{WordExample, load_example_detail};
 use crate::ui_components::{
@@ -194,14 +195,13 @@ pub fn ExampleRecallCard(
             <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
                 {move || {
                     view! {
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            on_click=Callback::new(move |_| on_show_answer.run(()))
-                            test_id=Signal::derive(|| "lesson-example-reveal".to_string())
-                        >
-                            {t!(i18n, lesson.example_reveal_translation)}
-                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
+                        <RevealAnswerButton
+                            test_id="lesson-example-reveal"
+                            label=Signal::derive(move || {
+                                t_string!(i18n, lesson.example_reveal_translation).to_string()
+                            })
+                            on_click=on_show_answer
+                        />
                     }
                 }}
             </Show>

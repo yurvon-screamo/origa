@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    AudioButtons, Button, ButtonVariant, MarkdownText, MarkdownVariant, Tag, TagVariant, Text,
-    TextSize, TypographyVariant, speak_word, stop_current_audio, word_audio_available,
+    AudioButtons, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize,
+    TypographyVariant, speak_word, stop_current_audio, word_audio_available,
 };
 use leptos::prelude::*;
 use leptos_icons::Icon;
@@ -15,6 +15,7 @@ use super::card_type::CardType;
 use super::lesson_card_header::LessonTagsRow;
 use super::lesson_card_shell::LessonCardShell;
 use super::lesson_state::LessonContext;
+use super::reveal_answer_button::RevealAnswerButton;
 
 /// Audio-recall card: the word is NEVER shown on the question side — the
 /// learner hears it (autoplay + manual replay) and opens the answer with
@@ -122,19 +123,14 @@ pub fn AudioRecallCardView(
 
                 // Question side: audio + the classic «Показать» reveal —
                 // the self-assessment lives on the ANSWER side, after the
-                // learner has seen the word and its translation.
+                // learner has seen the word and its translation. Space
+                // follows the universal reveal pattern shared with every
+                // other card type — the replay moved to Enter.
                 <div class="flex justify-center">
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Filled)
-                        on_click=Callback::new(move |_| on_reveal.run(()))
-                        test_id=Signal::derive(|| "audio-recall-reveal-btn".to_string())
-                    >
-                        {t!(i18n, lesson.show_answer)}
-                        // Space follows the universal reveal pattern
-                        // shared with every other card type — the
-                        // replay moved to Enter.
-                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                    </Button>
+                    <RevealAnswerButton
+                        test_id="audio-recall-reveal-btn"
+                        on_click=on_reveal
+                    />
                 </div>
             </Show>
 

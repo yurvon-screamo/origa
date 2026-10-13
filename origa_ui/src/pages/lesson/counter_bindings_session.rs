@@ -11,6 +11,7 @@
 
 use super::binary_rating_buttons::RatingButtons;
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
+use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant, Card};
 use leptos::prelude::*;
@@ -186,14 +187,10 @@ pub fn CounterBindingsSession(
                     </div>
                     <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
                     <div class="flex justify-center">
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            test_id=Signal::derive(|| "counter-binding-show-answer-btn".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| reveal())
-                        >
-                            <span>{t!(i18n, lesson.show_answer)}</span>
-                            <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
+                        <RevealAnswerButton
+                            test_id="counter-binding-show-answer-btn"
+                            on_click=Callback::new(move |_: ()| reveal())
+                        />
                     </div>
                 </Show>
 

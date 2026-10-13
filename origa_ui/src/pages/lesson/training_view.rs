@@ -6,12 +6,11 @@ use super::acquaintance_state::{
 };
 use super::binary_rating_buttons::BinaryRatingButtons;
 use super::keyboard_handler::is_typing_target;
+use super::reveal_answer_button::RevealAnswerButton;
 use super::training_answer::TrainingAnswerSlide;
 use super::training_front::TrainingFrontSlide;
 use crate::i18n::*;
-use crate::ui_components::{
-    Button, ButtonVariant, is_speech_supported, speak_word, word_audio_available,
-};
+use crate::ui_components::{is_speech_supported, speak_word, word_audio_available};
 use leptos::prelude::*;
 use leptos_use::use_event_listener;
 use origa::domain::{AcquaintanceSubphase, AnswerOutcome};
@@ -387,18 +386,12 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
             </div>
             <Show when=move || !showing_answer.get() && !hand_finishing.get() fallback=move || ()>
                 <div class="flex justify-center">
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Filled)
-                        on_click=Callback::new(move |_| {
+                    <RevealAnswerButton
+                        test_id="acquaintance-reveal-btn"
+                        on_click=Callback::new(move |_: ()| {
                             do_reveal(&ctx_stored, &current_id, &showing_answer, muted_now());
                         })
-                        test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
-                    >
-                        {t!(i18n, lesson.show_answer)}
-                        // Space = «Показать ответ» на любом фронте
-                        // (единый паттерн урока); повтор аудио — Enter.
-                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                    </Button>
+                    />
                 </div>
             </Show>
             <Show when=move || showing_answer.get() && !hand_finishing.get() fallback=move || ()>
