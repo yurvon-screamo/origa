@@ -7,8 +7,8 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
 use std::collections::HashSet;
-use tracing::warn;
 
+use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::next_card_button::NextCardButton;
@@ -68,27 +68,11 @@ pub fn QuizCardView(
     let card = quiz_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
-    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
     let part_of_speech = card.vocabulary_part_of_speech();
 
-    let question_text = match card.question(&lang) {
-        Ok(q) => q.text().to_string(),
-        Err(e) => {
-            warn!(
-                card_type = ?card_type,
-                content_key = %card.content_key(),
-                error = %e,
-                "Failed to get card question"
-            );
-            String::new()
-        },
-    };
+    let question_text = card_question_text(&card, &lang, card_type);
     let question = StoredValue::new(question_text.clone());
-    let display_question = StoredValue::new(if is_na_adj {
-        super::na_adjective_helper::append_na_suffix(&question_text)
-    } else {
-        question_text.clone()
-    });
+    let display_question = StoredValue::new(display_question_text(&card, &lang, card_type));
     let options: StoredValue<Vec<origa::domain::QuizOption>> =
         StoredValue::new(quiz_card.options().to_vec());
     let multi_result_stored = StoredValue::new(multi_result);
@@ -112,21 +96,7 @@ pub fn QuizCardView(
     };
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => {
-            let text = match card.question(&lang) {
-                Ok(q) => q.text().to_string(),
-                Err(e) => {
-                    warn!(
-                        card_type = ?card_type,
-                        content_key = %card.content_key(),
-                        error = %e,
-                        "Failed to get card question"
-                    );
-                    String::new()
-                },
-            };
-            Some(text)
-        },
+        DomainCard::Kanji(_) => Some(card_question_text(&card, &lang, card_type)),
         _ => None,
     });
 

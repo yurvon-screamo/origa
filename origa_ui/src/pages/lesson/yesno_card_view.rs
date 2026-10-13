@@ -6,9 +6,9 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, YesNoCard};
 use std::collections::HashSet;
-use tracing::warn;
 
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
+use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::next_card_button::NextCardButton;
@@ -100,53 +100,23 @@ pub fn YesNoCardView(
     let card = yesno_card.card().clone();
     let card_type = CardType::from(&card);
     let lang = native_language;
-    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
     let part_of_speech = card.vocabulary_part_of_speech();
 
     let word_raw = yesno_card.word().to_string();
-    let display_word = StoredValue::new(if is_na_adj {
-        super::na_adjective_helper::append_na_suffix(&word_raw)
-    } else {
-        word_raw
-    });
+    let display_word =
+        StoredValue::new(if super::na_adjective_helper::is_na_adjective_card(&card) {
+            super::na_adjective_helper::append_na_suffix(&word_raw)
+        } else {
+            word_raw
+        });
     let statement_value = StoredValue::new(yesno_card.statement().to_string());
     let is_statement_correct = yesno_card.is_correct();
 
-    let question_text_raw = match card.question(&lang) {
-        Ok(q) => q.text().to_string(),
-        Err(e) => {
-            warn!(
-                card_type = ?card_type,
-                content_key = %card.content_key(),
-                error = %e,
-                "Failed to get card question"
-            );
-            String::new()
-        },
-    };
-    let question_text = StoredValue::new(question_text_raw.clone());
-    let display_question = StoredValue::new(if is_na_adj {
-        super::na_adjective_helper::append_na_suffix(&question_text_raw)
-    } else {
-        question_text_raw
-    });
+    let question_text = StoredValue::new(card_question_text(&card, &lang, card_type));
+    let display_question = StoredValue::new(display_question_text(&card, &lang, card_type));
 
     let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
-        DomainCard::Kanji(_) => {
-            let text = match card.question(&lang) {
-                Ok(q) => q.text().to_string(),
-                Err(e) => {
-                    warn!(
-                        card_type = ?card_type,
-                        content_key = %card.content_key(),
-                        error = %e,
-                        "Failed to get card question"
-                    );
-                    String::new()
-                },
-            };
-            Some(text)
-        },
+        DomainCard::Kanji(_) => Some(card_question_text(&card, &lang, card_type)),
         _ => None,
     });
 

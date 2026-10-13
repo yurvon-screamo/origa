@@ -1,3 +1,4 @@
+use super::kanji_card_data::extract_kanji_card_data;
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
@@ -9,105 +10,6 @@ use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
-
-struct KanjiData {
-    symbol: String,
-    description: String,
-    on_readings: Option<Vec<crate::ui_components::ReadingItem>>,
-    kun_readings: Option<Vec<crate::ui_components::ReadingItem>>,
-    radicals: Option<Vec<crate::pages::lesson::kanji_card_details::RadicalDisplay>>,
-    examples: Option<Vec<(String, String)>>,
-}
-
-fn extract_kanji_data(kanji_card: &DomainCard, native_language: NativeLanguage) -> KanjiData {
-    let DomainCard::Kanji(kanji) = kanji_card else {
-        unreachable!()
-    };
-
-    let symbol = kanji.kanji().text().to_string();
-    let description = match kanji.description(&native_language) {
-        Ok(_) => format_answer_text(kanji_card, &native_language),
-        Err(e) => {
-            warn!(
-                kanji = %symbol,
-                error = %e,
-                "Failed to get kanji description"
-            );
-            String::new()
-        },
-    };
-
-    let on_readings: Option<Vec<crate::ui_components::ReadingItem>> = {
-        let readings = kanji
-            .on_readings_with_freq()
-            .into_iter()
-            .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                reading: r,
-                freq: f,
-                is_rare: rare,
-            })
-            .collect::<Vec<_>>();
-        if readings.is_empty() {
-            None
-        } else {
-            Some(readings)
-        }
-    };
-
-    let kun_readings: Option<Vec<crate::ui_components::ReadingItem>> = {
-        let readings = kanji
-            .kun_readings_with_freq()
-            .into_iter()
-            .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                reading: r,
-                freq: f,
-                is_rare: rare,
-            })
-            .collect::<Vec<_>>();
-        if readings.is_empty() {
-            None
-        } else {
-            Some(readings)
-        }
-    };
-
-    let radicals: Option<Vec<crate::pages::lesson::kanji_card_details::RadicalDisplay>> =
-        match kanji.radicals_info() {
-            Ok(r) => Some(
-                r.iter()
-                    .map(
-                        |info| crate::pages::lesson::kanji_card_details::RadicalDisplay {
-                            symbol: info.radical(),
-                            name: info.name(&native_language).to_string(),
-                            description: info.description(&native_language).to_string(),
-                        },
-                    )
-                    .collect(),
-            ),
-            Err(e) => {
-                warn!("Failed to get radicals for kanji: {:?}", e);
-                None
-            },
-        };
-
-    let examples: Option<Vec<(String, String)>> = {
-        let ex: Vec<_> = kanji
-            .example_words(&native_language)
-            .iter()
-            .map(|e| (e.word().to_string(), e.meaning().to_string()))
-            .collect();
-        if ex.is_empty() { None } else { Some(ex) }
-    };
-
-    KanjiData {
-        symbol,
-        description,
-        on_readings,
-        kun_readings,
-        radicals,
-        examples,
-    }
-}
 
 fn get_card_type(i18n: &I18nContext<Locale>) -> (String, TagVariant) {
     let label = i18n
@@ -131,23 +33,30 @@ pub fn WritingCard(
     let i18n = use_i18n();
     let (card_type_label, tag_variant) = get_card_type(&i18n);
 
-    let (symbol_char, display_text, on_readings, kun_readings, radicals, example_words) =
-        match &card {
-            DomainCard::Kanji(_) => {
-                let data = extract_kanji_data(&card, native_language);
-                (
-                    data.symbol,
-                    data.description,
-                    data.on_readings,
-                    data.kun_readings,
-                    data.radicals,
-                    data.examples,
-                )
-            },
-            _ => {
+    let (symbol_char, on_readings, kun_readings, radicals, example_words) =
+        match extract_kanji_card_data(&card, native_language) {
+            Some(data) => (
+                data.symbol,
+                data.on_readings,
+                data.kun_readings,
+                data.radicals,
+                data.example_words,
+            ),
+            None => {
                 return view! { <div>{t!(i18n, lesson.writing_card_kanji_only)}</div> }.into_any();
             },
         };
+
+    let display_text = match &card {
+        DomainCard::Kanji(kanji) => match kanji.description(&native_language) {
+            Ok(_) => format_answer_text(&card, &native_language),
+            Err(e) => {
+                warn!(kanji = %symbol_char, error = %e, "Failed to get kanji description");
+                String::new()
+            },
+        },
+        _ => String::new(),
+    };
 
     let show_details = RwSignal::new(false);
 

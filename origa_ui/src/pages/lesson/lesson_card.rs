@@ -15,7 +15,7 @@ use tracing;
 
 use super::answer_display::extract_card_answer;
 use super::card_type::CardType;
-use super::kanji_card_details::RadicalDisplay;
+use super::kanji_card_data::extract_kanji_card_data;
 use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTags};
 use super::lesson_card_question::LessonCardQuestion;
@@ -51,18 +51,7 @@ pub fn LessonCard(
         && grammar_info.is_none()
         && super::na_adjective_helper::is_na_adjective_card(&card);
 
-    let question_text = match card.question(&lang) {
-        Ok(q) => q.text().to_string(),
-        Err(e) => {
-            tracing::warn!(
-                card_type = ?card_type,
-                content_key = %card.content_key(),
-                error = %e,
-                "Failed to get card question"
-            );
-            String::new()
-        },
-    };
+    let question_text = super::card_text::card_question_text(&card, &lang, card_type);
     let question = StoredValue::new(question_text.clone());
     let display_question = StoredValue::new(if is_na_adj {
         super::na_adjective_helper::append_na_suffix(&question_text)
@@ -100,101 +89,19 @@ pub fn LessonCard(
     let answer_translations_stored = StoredValue::new(answer_data.translations);
     let answer_description_stored = StoredValue::new(answer_data.description);
 
-    let radicals: Option<Vec<RadicalDisplay>> = match &card {
-        DomainCard::Kanji(kanji) => match kanji.radicals_info() {
-            Ok(r) => Some(
-                r.iter()
-                    .map(|info| RadicalDisplay {
-                        symbol: info.radical(),
-                        name: info.name(&lang).to_string(),
-                        description: info.description(&lang).to_string(),
-                    })
-                    .collect(),
-            ),
-            Err(e) => {
-                tracing::warn!("Failed to get radicals for kanji: {:?}", e);
-                None
-            },
-        },
-        _ => None,
-    };
-    let radicals_stored = StoredValue::new(radicals);
-
-    let example_words: Option<Vec<(String, String)>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let examples: Vec<_> = kanji
-                .example_words(&lang)
-                .iter()
-                .map(|e| (e.word().to_string(), e.meaning().to_string()))
-                .collect();
-            if examples.is_empty() {
-                None
-            } else {
-                Some(examples)
-            }
-        },
-        _ => None,
-    };
-    let examples_stored = StoredValue::new(example_words);
-
-    let on_readings: Option<Vec<crate::ui_components::ReadingItem>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let readings = kanji
-                .on_readings_with_freq()
-                .into_iter()
-                .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                    reading: r,
-                    freq: f,
-                    is_rare: rare,
-                })
-                .collect::<Vec<_>>();
-            if readings.is_empty() {
-                None
-            } else {
-                Some(readings)
-            }
-        },
-        _ => None,
-    };
-    let on_readings_stored = StoredValue::new(on_readings);
-
-    let kun_readings: Option<Vec<crate::ui_components::ReadingItem>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let readings = kanji
-                .kun_readings_with_freq()
-                .into_iter()
-                .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                    reading: r,
-                    freq: f,
-                    is_rare: rare,
-                })
-                .collect::<Vec<_>>();
-            if readings.is_empty() {
-                None
-            } else {
-                Some(readings)
-            }
-        },
-        _ => None,
-    };
-    let kun_readings_stored = StoredValue::new(kun_readings);
+    let kanji_data = extract_kanji_card_data(&card, lang);
+    let radicals_stored = StoredValue::new(kanji_data.as_ref().and_then(|d| d.radicals.clone()));
+    let examples_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.example_words.clone()));
+    let on_readings_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.on_readings.clone()));
+    let kun_readings_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.kun_readings.clone()));
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => {
-            let text = match card.question(&lang) {
-                Ok(q) => q.text().to_string(),
-                Err(e) => {
-                    tracing::warn!(
-                        card_type = ?card_type,
-                        content_key = %card.content_key(),
-                        error = %e,
-                        "Failed to get kanji for animation"
-                    );
-                    String::new()
-                },
-            };
-            Some(text)
-        },
+        DomainCard::Kanji(_) => Some(super::card_text::card_question_text(
+            &card, &lang, card_type,
+        )),
         _ => None,
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);

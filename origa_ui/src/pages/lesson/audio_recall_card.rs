@@ -9,6 +9,7 @@ use origa::domain::{Card as DomainCard, NativeLanguage};
 use std::collections::HashSet;
 
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
+use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
 use super::lesson_state::LessonContext;
 
@@ -35,16 +36,8 @@ pub fn AudioRecallCardView(
     let card_type = CardType::from(&card);
     let lang = native_language;
 
-    let question_text = match card.question(&lang) {
-        Ok(q) => q.text().to_string(),
-        Err(_) => String::new(),
-    };
-    let is_na_adj = super::na_adjective_helper::is_na_adjective_card(&card);
-    let display_word = if is_na_adj {
-        super::na_adjective_helper::append_na_suffix(&question_text)
-    } else {
-        question_text.clone()
-    };
+    let question_text = card_question_text(&card, &lang, card_type);
+    let display_word = display_question_text(&card, &lang, card_type);
     let word_stored = StoredValue::new(display_word);
     // The tags-row replay button speaks the raw word (no な-suffix) — the
     // same text the question-side big button replays via `on_replay`.
