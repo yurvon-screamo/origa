@@ -86,17 +86,19 @@ jobs:
               uses: actions/checkout@v7
 
             - name: Guard — service account secret must exist
+              id: guard
               # Fail-loud before any artifact download or API call. The
               # release stays green (isolation doctrine); the red job is the
               # reminder to set the secret.
               if: env.PLAY_SA_JSON == ''
               run: |
                   echo "::error::PLAY_SERVICE_ACCOUNT_JSON is empty — the Google Play closed-testing upload cannot run."
-                  echo "Fix: gh secret set PLAY_SERVICE_ACCOUNT_JSON --repo yurvon-screamo/origa < service-account.json"
+                  echo "Fix: gh secret set PLAY_SERVICE_ACCOUNT_JSON --repo ${{ github.repository }} < service-account.json"
                   echo "Prerequisites: see the header comment of _upload-google-play.yml."
                   exit 1
 
             - name: Extract release notes from CHANGELOG.md (stable only)
+              id: release-notes
               if: inputs.version_type == 'stable'
               env:
                   VERSION: ${{ inputs.version }}
@@ -116,6 +118,7 @@ jobs:
               run: mkdir -p whatsnew
 
             - name: Download AAB artifact
+              id: download-aab
               uses: actions/download-artifact@v8
               with:
                   name: android-aab
@@ -159,15 +162,26 @@ jobs:
               # ORDER INVARIANT: must run AFTER the upload step (same pattern
               # as _build-tauri-apple.yml upload-report) so the outcome is
               # final when recorded.
+              #
+              # Outcome-aware, not just upload.outcome: a skipped upload with
+              # a FAILED guard/notes/download step is a FAILURE (the job is
+              # red for a real reason), only a skipped upload on an otherwise
+              # healthy run is a true "skipped".
               if: always()
+              env:
+                  GUARD_RESULT: ${{ steps.guard.outcome }}
+                  NOTES_RESULT: ${{ steps.release-notes.outcome }}
+                  DOWNLOAD_RESULT: ${{ steps.download-aab.outcome }}
+                  LOCATE_RESULT: ${{ steps.locate.outcome }}
+                  UPLOAD_RESULT: ${{ steps.upload.outcome }}
               run: |
-                  if [ "${{ steps.upload.outcome }}" = "success" ]; then
+                  if [ "$UPLOAD_RESULT" = "success" ]; then
                     echo "status=success" >> "$GITHUB_OUTPUT"
                     echo "✅ AAB delivered to Play closed testing (track ${{ env.PLAY_TRACK }})"
-                  elif [ "${{ steps.upload.outcome }}" = "skipped" ]; then
+                  elif [ "$GUARD_RESULT" = "failure" ] || [ "$NOTES_RESULT" = "failure" ] || [ "$DOWNLOAD_RESULT" = "failure" ] || [ "$LOCATE_RESULT" = "failure" ] || [ "$UPLOAD_RESULT" = "failure" ]; then
+                    echo "status=failure" >> "$GITHUB_OUTPUT"
+                    echo "❌ Play upload failed — see the failed step above. The AAB remains attached to the GitHub Release for manual upload via Play Console"
+                  else
                     echo "status=skipped" >> "$GITHUB_OUTPUT"
                     echo "ℹ️ Play upload skipped (non-release run)"
-                  else
-                    echo "status=failure" >> "$GITHUB_OUTPUT"
-                    echo "❌ Play upload failed — the AAB remains attached to the GitHub Release for manual upload via Play Console"
                   fi

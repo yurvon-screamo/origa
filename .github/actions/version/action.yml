@@ -53,9 +53,14 @@ runs:
                 VERSION_BASE="${VERSION}"
                 VERSION_TYPE="stable"
               # Prerelease: vX.Y.Z-rcN — trailing digit required, so a bare
-              # "rc" falls through to alpha. The rc-segment regex accepts both
-              # "rc1" and the dotted "rc.1" / "rc1.2" forms.
-              elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9.]*[0-9]+$ ]]; then
+              # "rc" falls through to alpha. The rc-segment regex accepts ONLY
+              # pure positive digits without leading zeros: this is the same
+              # universe as .github/scripts/compute-android-versioncode.sh,
+              # which turns the rc number into the Play versionCode offset
+              # (rc01 and rc1 would collide; dotted rc.1/rc1.2 have no
+              # monotonic mapping). Exotic forms fall through to the alpha
+              # branch — the pre-existing degradation for unrecognized tags.
+              elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc([1-9][0-9]*)$ ]]; then
                 VERSION="${REF_NAME#v}"
                 VERSION_BASE="${VERSION%%-rc*}"
                 VERSION_TYPE="prerelease"

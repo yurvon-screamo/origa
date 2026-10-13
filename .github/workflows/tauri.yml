@@ -379,7 +379,7 @@ jobs:
 
                       ## Android
                       - `origa.apk`
-                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle. On tag runs the "Upload to Google Play (closed testing)" job delivers it to the Play closed-testing track (track alpha) automatically; the asset stays attached here as the manual fallback for Play Console / RuStore.
+                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle. Delivery to the Play closed-testing track (alpha) is attempted by the "Upload to Google Play (closed testing)" job of this run — see that job's result for the delivery status. The asset stays attached here as the manual fallback for Play Console / RuStore.
 
                       ## Updater
                       - `latest.json` — Tauri updater manifest (stable releases only)

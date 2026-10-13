@@ -538,14 +538,14 @@ jobs:
             # AAB chain runs only on tags (version_type stable/prerelease) and
             # push-to-master (github.ref) for burn-in; PR skips entirely.
             # Burn-in keeps the non-blocking posture, but on TAGS the chain is
-            # BLOCKING (continue-on-error: false): a tag is a delivery
-            # release — the AAB feeds Google Play closed testing and RuStore,
-            # so a silently missing AAB must fail the build instead of
-            # surfacing later as "artifact not found" in the upload jobs.
+            # BLOCKING (continue-on-error: false via ref_type): a tag is a
+            # delivery release — the AAB feeds Google Play closed testing and
+            # RuStore, so a silently missing AAB must fail the build instead
+            # of surfacing later as "artifact not found" in the upload jobs.
             - name: Build Tauri Android AAB
               id: build-aab
               if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease' || github.ref == 'refs/heads/master'
-              continue-on-error: ${{ github.ref != 'refs/tags/v' }}
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri
               run: |
                   # Same Play versionCode override as the APK build (tag runs
@@ -559,7 +559,7 @@ jobs:
             - name: Verify AAB release signature
               id: verify-aab
               if: steps.build-aab.outcome == 'success'
-              continue-on-error: ${{ github.ref != 'refs/tags/v' }}
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri/gen/android/app/build/outputs/bundle
               run: |
                   set -o pipefail
@@ -593,7 +593,7 @@ jobs:
             - name: Rename AAB to versioned output
               id: rename-aab
               if: steps.verify-aab.outcome == 'success'
-              continue-on-error: ${{ github.ref != 'refs/tags/v' }}
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri/gen/android/app/build/outputs/bundle
               env:
                   VERSION: ${{ inputs.version }}
@@ -609,7 +609,7 @@ jobs:
 
             - name: Upload Android AAB
               if: steps.rename-aab.outcome == 'success'
-              continue-on-error: ${{ github.ref != 'refs/tags/v' }}
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               uses: actions/upload-artifact@v7
               env:
                   VERSION: ${{ inputs.version }}
