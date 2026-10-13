@@ -16,6 +16,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
+use super::lesson_card_header::LessonTagsRow;
 use crate::i18n::{t, use_i18n};
 use crate::loaders::example_loader::{WordExample, load_example_detail};
 use crate::ui_components::{
@@ -86,7 +87,7 @@ pub fn ExampleRecallCard(
         // the TOP-RIGHT corner (owner request: the question side holds
         // nothing but the sentence, so the button follows the uniform
         // top-right placement of every other card).
-        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+        <LessonTagsRow>
             <Tag>{t!(i18n, lesson.example_tag)}</Tag>
             <Show when=move || example.get().is_some()>
                 <div class="ml-auto">
@@ -102,7 +103,7 @@ pub fn ExampleRecallCard(
                     }}
                 </div>
             </Show>
-        </div>
+        </LessonTagsRow>
 
         <Card
             class=Signal::derive(|| LESSON_CARD_CLASS.to_string())

@@ -11,6 +11,7 @@ use std::collections::HashSet;
 use super::answer_display::{CardAnswerDisplay, extract_card_answer};
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
+use super::lesson_card_header::LessonTagsRow;
 use super::lesson_card_shell::LessonCardShell;
 use super::lesson_state::LessonContext;
 
@@ -71,28 +72,29 @@ pub fn AudioRecallCardView(
 
     let tags_row: ChildrenFn = std::sync::Arc::new(move || {
         view! {
-                <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
-                    <Tag variant=Signal::derive(move || card_type.tag_variant())>
-                        {card_type.label(&i18n)}
-                    </Tag>
-                    <Tag variant=Signal::derive(move || TagVariant::Filled)>
-                        {t!(i18n, lesson.audio_tag)}
-                    </Tag>
-                    // Answer side: a compact replay button on the right
-                    // edge of the tags row, like the normal cards' header
-                    // audio — the question side keeps the big play button
-                    // (its core interaction).
-                    <Show when=move || show_result.get()>
-                        <div class="ml-auto shrink-0">
-                            <AudioButtons
-                                text=header_replay_text.get_value()
-                                audio_path=None
-                                test_id=Signal::derive(|| "audio-recall-header-play-btn".to_string())
-                            />
-                        </div>
-                    </Show>
-                </div>
-        }.into_any()
+            <LessonTagsRow>
+                <Tag variant=Signal::derive(move || card_type.tag_variant())>
+                    {card_type.label(&i18n)}
+                </Tag>
+                <Tag variant=Signal::derive(move || TagVariant::Filled)>
+                    {t!(i18n, lesson.audio_tag)}
+                </Tag>
+                // Answer side: a compact replay button on the right edge of
+                // the tags row, like the normal cards' header audio — the
+                // question side keeps the big play button (its core
+                // interaction).
+                <Show when=move || show_result.get()>
+                    <div class="ml-auto shrink-0">
+                        <AudioButtons
+                            text=header_replay_text.get_value()
+                            audio_path=None
+                            test_id=Signal::derive(|| "audio-recall-header-play-btn".to_string())
+                        />
+                    </div>
+                </Show>
+            </LessonTagsRow>
+        }
+        .into_any()
     });
 
     view! {

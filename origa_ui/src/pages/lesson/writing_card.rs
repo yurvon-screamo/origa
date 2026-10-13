@@ -1,26 +1,16 @@
+use super::card_type::CardType;
 use super::kanji_card_data::extract_kanji_card_data;
+use super::lesson_card_header::LessonCardTags;
 use super::lesson_card_shell::LessonCardShell;
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
 use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::pages::shared::format_answer_text;
-use crate::ui_components::{
-    DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
-};
+use crate::ui_components::{DisplayText, Heading, HeadingLevel, KanjiDrawingPractice};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
-
-fn get_card_type(i18n: &I18nContext<Locale>) -> (String, TagVariant) {
-    let label = i18n
-        .get_keys_untracked()
-        .lesson()
-        .kanji()
-        .inner()
-        .to_string();
-    (label, TagVariant::Olive)
-}
 
 #[component]
 pub fn WritingCard(
@@ -32,7 +22,6 @@ pub fn WritingCard(
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let (card_type_label, tag_variant) = get_card_type(&i18n);
 
     let (symbol_char, on_readings, kun_readings, radicals, example_words) =
         match extract_kanji_card_data(&card, native_language) {
@@ -70,14 +59,15 @@ pub fn WritingCard(
     let on_rate_sv = StoredValue::new(on_rate);
     let disabled_sv = StoredValue::new(disabled);
 
+    let card_for_tags = card.clone();
     let tags_row: ChildrenFn = std::sync::Arc::new(move || {
-        let label = card_type_label.clone();
         view! {
-                <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
-                    <Tag variant=tag_variant>
-                        {label}
-                    </Tag>
-                </div>
+            <LessonCardTags
+                card_type=CardType::Kanji
+                grammar_info=None
+                show_answer=Signal::derive(|| false)
+                card=card_for_tags.clone()
+            />
         }
         .into_any()
     });

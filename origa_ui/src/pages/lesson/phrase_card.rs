@@ -1,13 +1,13 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    AudioPlayer, MarkdownText, MarkdownVariant, Tag, TagVariant, Text, TextSize, TranslatorText,
-    TypographyVariant,
+    AudioPlayer, MarkdownText, MarkdownVariant, Text, TextSize, TranslatorText, TypographyVariant,
 };
 use leptos::prelude::*;
 use origa::domain::QuizOption;
 use std::collections::HashSet;
 
 use super::card_type::CardType;
+use super::lesson_card_header::LessonCardTagsQuiz;
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
 use super::quiz_result::QuizResult;
@@ -56,14 +56,7 @@ pub fn PhraseCardView(
 
     let tags_row: ChildrenFn = std::sync::Arc::new(move || {
         view! {
-                <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
-                    <Tag variant=Signal::derive(move || card_type.tag_variant())>
-                        {card_type.label(&i18n)}
-                    </Tag>
-                    <Tag variant=Signal::derive(move || TagVariant::Filled)>
-                        {t!(i18n, lesson.quiz)}
-                    </Tag>
-                </div>
+            <LessonCardTagsQuiz card_type=card_type />
         }
         .into_any()
     });
