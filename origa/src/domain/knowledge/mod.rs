@@ -26,7 +26,7 @@ pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use example_card::ExampleCard;
 pub use grammar::GrammarRuleCard;
-pub use insights_log::{HOUR_BUCKET_COUNT, InsightsLog, delay_bucket_of, hour_bucket_of};
+pub use insights_log::{HOUR_BUCKET_COUNT, InsightsLog};
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
