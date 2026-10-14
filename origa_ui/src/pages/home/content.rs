@@ -4,7 +4,8 @@ use super::content_sync::{
 use super::insights::{InsightsPanels, InsightsSection, compute_insights_panels};
 use super::{
     CompletionForecast, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem, StudiedTodayList,
-    WelcomeCard, compute_completion_forecast, compute_studied_today,
+    TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
+    compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
 use crate::loaders::recalculate_user_jlpt_progress;
@@ -119,6 +120,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let insights_panels = RwSignal::new(InsightsPanels::default());
+    let today_overview = RwSignal::new(TodayOverview::default());
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
@@ -176,6 +178,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         jlpt_progress.set(user.jlpt_progress().clone());
                         known_kanji.set(ks.get_known_kanji());
                         insights_panels.set(compute_insights_panels(ks, user.native_language()));
+                        today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                         recent_studied.set(compute_studied_today(ks, user.native_language()));
                         forecast.set(compute_completion_forecast(
                             ks,
@@ -263,6 +266,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
                     insights_panels.set(compute_insights_panels(ks, user.native_language()));
+                    today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
                     forecast.set(compute_completion_forecast(
                         ks,
@@ -306,6 +310,12 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     when=move || !is_loading.get()
                     fallback=move || view! { <JlptSkeleton /> }
                 >
+                    <TodayOverviewCard
+                        overview=Signal::derive(move || today_overview.get())
+                        forecast=Signal::derive(move || forecast.get())
+                        test_id=Signal::derive(|| "home-today-overview".to_string())
+                    />
+
                     <InsightsSection
                         panels=insights_panels
                         test_id=Signal::derive(|| "home-insights".to_string())
@@ -313,7 +323,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
                     <JlptProgressCard
                         jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                        forecast=Signal::derive(move || forecast.get())
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
 

@@ -4,9 +4,9 @@ use crate::domain::DailyHistoryItem;
 use chrono::{DateTime, FixedOffset, NaiveDate, Utc};
 
 /// Неделя вердикта: сегодня + 6 предыдущих локальных дней.
-const WEEK_DAYS: i64 = 7;
-/// Окно сравнения вердикта: 30 дней перед неделей.
-const MONTH_DAYS: i64 = 30;
+pub(crate) const WEEK_DAYS: i64 = 7;
+/// Месяц вердикта: сегодня + 29 предыдущих локальных дней.
+pub(crate) const MONTH_DAYS: i64 = 30;
 /// Окно темпа: 14 полных дней (сегодня исключён — частичный день искажает
 /// среднее за день).
 const PACE_DAYS: i64 = 14;
@@ -103,26 +103,49 @@ pub fn compute_week_verdict(
     offset: FixedOffset,
     now: DateTime<Utc>,
 ) -> Option<WeekVerdict> {
+    compute_window_verdict(history, offset, now, WEEK_DAYS, MONTH_DAYS)
+}
+
+/// #749 панель «Месяц»: та же механика, что у недели, но окна 30 дней
+/// (включая сегодня) против предыдущих 30.
+pub fn compute_month_verdict(
+    history: &[DailyHistoryItem],
+    offset: FixedOffset,
+    now: DateTime<Utc>,
+) -> Option<WeekVerdict> {
+    compute_window_verdict(history, offset, now, MONTH_DAYS, MONTH_DAYS)
+}
+
+/// Общий вердикт окна: точность последних `recent_days` локальных дней
+/// против `baseline_days` перед ними.
+fn compute_window_verdict(
+    history: &[DailyHistoryItem],
+    offset: FixedOffset,
+    now: DateTime<Utc>,
+    recent_days: i64,
+    baseline_days: i64,
+) -> Option<WeekVerdict> {
     let today = now.with_timezone(&offset).date_naive();
     let days = daily_ratings(history, offset, today);
     if days.is_empty() {
         return None;
     }
 
-    let (week_positive, week_total) = sum_range(&days, 0, WEEK_DAYS - 1);
-    let week_accuracy_pct = accuracy_pct(week_positive, week_total)?;
+    let (recent_positive, recent_total) = sum_range(&days, 0, recent_days - 1);
+    let recent_accuracy_pct = accuracy_pct(recent_positive, recent_total)?;
 
-    let (month_positive, month_total) = sum_range(&days, WEEK_DAYS, WEEK_DAYS + MONTH_DAYS - 1);
-    let month_accuracy_pct = accuracy_pct(month_positive, month_total);
+    let (base_positive, base_total) =
+        sum_range(&days, recent_days, recent_days + baseline_days - 1);
+    let baseline_accuracy_pct = accuracy_pct(base_positive, base_total);
 
-    let kind = match month_accuracy_pct {
-        Some(month_accuracy) if week_accuracy_pct < month_accuracy => WeekVerdictKind::Dipping,
+    let kind = match baseline_accuracy_pct {
+        Some(baseline) if recent_accuracy_pct < baseline => WeekVerdictKind::Dipping,
         _ => WeekVerdictKind::Holding,
     };
 
     Some(WeekVerdict {
-        week_accuracy_pct,
-        month_accuracy_pct,
+        week_accuracy_pct: recent_accuracy_pct,
+        month_accuracy_pct: baseline_accuracy_pct,
         kind,
     })
 }

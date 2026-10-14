@@ -258,7 +258,7 @@ async fn category_progress_grid_shows_percentage_per_card() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn insights_section_renders_five_panels() {
+async fn insights_section_renders_five_ledger_rows() {
     let wrapper = create_wrapper();
     let panels = RwSignal::new(InsightsPanels::default());
     mount_with_i18n(&wrapper, move || {
@@ -269,20 +269,23 @@ async fn insights_section_renders_five_panels() {
     let section = wrapper.query_selector("[data-testid=\"is1\"]").unwrap();
     assert!(section.is_some(), "insights section must render");
 
-    for panel in [
+    for row in [
         "is1-week-verdict",
         "is1-pace",
         "is1-time-of-day",
         "is1-overdue",
         "is1-hardest-words",
     ] {
-        let node = wrapper.query_selector(&format!("[data-testid=\"{panel}\"]"));
-        assert!(node.is_ok_and(|n| n.is_some()), "{panel} panel must render");
+        let node = wrapper.query_selector(&format!("[data-testid=\"{row}\"]"));
+        assert!(
+            node.is_ok_and(|n| n.is_some()),
+            "{row} ledger row must render"
+        );
     }
 }
 
 #[wasm_bindgen_test]
-async fn insights_section_empty_data_shows_neutral_phrase_without_proofs() {
+async fn insights_section_empty_data_shows_guidance_phrases() {
     let wrapper = create_wrapper();
     let panels = RwSignal::new(InsightsPanels::default());
     mount_with_i18n(&wrapper, move || {
@@ -290,59 +293,21 @@ async fn insights_section_empty_data_shows_neutral_phrase_without_proofs() {
     });
     tick().await;
 
-    // Ни одна панель не имеет данных: кнопок доказательств быть не должно,
-    // а вердикт — нейтральная фраза empty-state.
-    let proofs_button = wrapper.query_selector("[data-testid=\"is2-week-verdict-proofs\"]");
-    assert!(
-        proofs_button.is_ok_and(|b| b.is_none()),
-        "empty data must not render a proofs toggle"
-    );
     let text = wrapper
         .query_selector("[data-testid=\"is2-week-verdict\"]")
         .unwrap()
         .unwrap()
         .text_content()
         .unwrap();
-    assert!(!text.is_empty(), "the panel must show a phrase");
-}
-
-#[wasm_bindgen_test]
-async fn insights_section_week_verdict_renders_phrase_and_proofs_toggle() {
-    let wrapper = create_wrapper();
-    let panels = RwSignal::new(InsightsPanels {
-        week: Some(origa::domain::insights::WeekVerdict {
-            week_accuracy_pct: 84,
-            month_accuracy_pct: Some(70),
-            kind: origa::domain::insights::WeekVerdictKind::Holding,
-        }),
-        ..InsightsPanels::default()
-    });
-    mount_with_i18n(&wrapper, move || {
-        view! { <InsightsSection panels=panels test_id="is3" /> }.into_any()
-    });
-    tick().await;
-
-    let text = wrapper
-        .query_selector("[data-testid=\"is3-week-verdict\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
     assert!(
-        text.contains("84"),
-        "verdict must include the percentage; got: {text}"
-    );
-
-    let proofs_button = wrapper.query_selector("[data-testid=\"is3-week-verdict-proofs\"]");
-    assert!(
-        proofs_button.is_ok_and(|b| b.is_some()),
-        "verdict with data must offer the proofs toggle"
+        !text.is_empty(),
+        "the verdict row must show a guidance phrase"
     );
 }
 
 #[wasm_bindgen_test]
 async fn insights_section_with_full_data_renders_concrete_verdicts() {
-    // Типичное состояние активного юзера: все пять панелей с данными.
+    // Типичное состояние активного юзера: все пять строк с данными.
     let wrapper = create_wrapper();
     let panels = RwSignal::new(InsightsPanels {
         week: Some(origa::domain::insights::WeekVerdict {
@@ -367,9 +332,9 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
             late_accuracy_pct: 72,
         }),
         hardest_words: Some(origa::domain::insights::HardestWordsInsight {
-            one_in: 26,
+            one_in: 38,
             troubled_count: 2,
-            studied_total: 52,
+            studied_total: 76,
             top: vec![origa::domain::insights::HardWord {
                 japanese: "\u{7d50}\u{5c40}".to_string(),
                 meaning: "in the end".to_string(),
@@ -382,7 +347,19 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
     });
     tick().await;
 
-    // Вердикт темпа: число повторений и положительная дельта.
+    // Вердикт недели: фраза со стабильной оценкой.
+    let verdict_text = wrapper
+        .query_selector("[data-testid=\"is4-week-verdict\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        verdict_text.contains("84"),
+        "week verdict must show the percentage; got: {verdict_text}"
+    );
+
+    // Темп: число повторений и дельта.
     let pace_text = wrapper
         .query_selector("[data-testid=\"is4-pace\"]")
         .unwrap()
@@ -394,8 +371,7 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         "pace verdict must show the per-day count and delta; got: {pace_text}"
     );
 
-    // Время суток: фраза указывает худшее окно (bucket 5 = после 20:00 в
-    // en-локали); точность живёт в доказательствах, не во фразе.
+    // Худшее время: окно после 20:00.
     let time_text = wrapper
         .query_selector("[data-testid=\"is4-time-of-day\"]")
         .unwrap()
@@ -404,10 +380,10 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .unwrap();
     assert!(
         time_text.contains("after 20:00"),
-        "time-of-day verdict must name the worst window; got: {time_text}"
+        "time verdict must name the worst window; got: {time_text}"
     );
 
-    // Цена просрочки: разница в пунктах.
+    // Просрочка: потеря пунктов.
     let overdue_text = wrapper
         .query_selector("[data-testid=\"is4-overdue\"]")
         .unwrap()
@@ -415,16 +391,11 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        overdue_text.contains("14 p.p.") || overdue_text.contains("14 "),
+        overdue_text.contains("14 p.p."),
         "overdue verdict must show the drop; got: {overdue_text}"
     );
-    assert!(
-        !overdue_text.contains("114") && !overdue_text.contains("140"),
-        "overdue drop must not match a longer number; got: {overdue_text}"
-    );
 
-    // Дорогие слова: доля и топ. Топ-слово живёт в свёрнутых
-    // доказательствах: раскрываем кликом по кнопке, затем ассертим.
+    // Тяжёлые слова: доля.
     let words_text = wrapper
         .query_selector("[data-testid=\"is4-hardest-words\"]")
         .unwrap()
@@ -432,26 +403,59 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        words_text.contains("1 in 26") || words_text.contains("of 52"),
-        "hardest-words verdict must show the ratio; got: {words_text}"
+        words_text.contains("1 in 38"),
+        "hard-words verdict must show the ratio; got: {words_text}"
     );
-    let proofs_button = wrapper
-        .query_selector("[data-testid=\"is4-hardest-words-proofs\"]")
+}
+
+#[wasm_bindgen_test]
+async fn insights_section_period_switch_swaps_the_verdict() {
+    let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels {
+        week: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 84,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        month: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 74,
+            month_accuracy_pct: Some(61),
+            kind: origa::domain::insights::WeekVerdictKind::Dipping,
+        }),
+        ..InsightsPanels::default()
+    });
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is5" /> }.into_any()
+    });
+    tick().await;
+
+    let verdict_text = |wrapper: &web_sys::Element| {
+        wrapper
+            .query_selector("[data-testid=\"is5-week-verdict\"]")
+            .unwrap()
+            .unwrap()
+            .text_content()
+            .unwrap()
+    };
+    assert!(
+        verdict_text(&wrapper).contains("84"),
+        "week mode must show the week verdict; got: {}",
+        verdict_text(&wrapper)
+    );
+
+    let month_chip = wrapper
+        .query_selector("[data-testid=\"is5-period-month\"]")
         .unwrap()
         .unwrap()
         .dyn_into::<web_sys::HtmlElement>()
         .unwrap();
-    proofs_button.click();
+    month_chip.click();
     tick().await;
-    let words_proofs_text = wrapper
-        .query_selector("[data-testid=\"is4-hardest-words\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
+
     assert!(
-        words_proofs_text.contains("\u{7d50}\u{5c40}"),
-        "hardest-words proofs must include the top word; got: {words_proofs_text}"
+        verdict_text(&wrapper).contains("74"),
+        "month mode must swap to the month verdict; got: {}",
+        verdict_text(&wrapper)
     );
 }
 

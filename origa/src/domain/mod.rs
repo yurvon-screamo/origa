@@ -14,6 +14,7 @@ mod memory;
 mod score_content;
 mod serde_utils;
 mod srs;
+mod stats;
 pub(crate) mod tokenizer;
 mod user;
 pub(crate) mod value_objects;
@@ -52,6 +53,7 @@ pub use knowledge::{
     estimate_completion_date, install_precompute_for_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
+pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 
 /// Re-exported so the UI can stay layering-clean: presentation code reaches
 /// the rare-reading threshold through the domain, not by reaching into the

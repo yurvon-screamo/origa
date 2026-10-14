@@ -6,6 +6,7 @@ pub mod home_skeleton;
 pub mod insights;
 pub mod jlpt_progress_card;
 pub mod recent_study;
+pub mod today_overview;
 pub mod welcome_card;
 
 #[cfg(all(target_arch = "wasm32", test))]
@@ -17,7 +18,9 @@ pub use dashboard_stats::{
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jlpt_progress_card::JlptProgressCard;
+pub use origa::domain::{TodayOverview, compute_today_overview};
 pub use recent_study::StudiedTodayList;
+pub use today_overview::TodayOverviewCard;
 pub use welcome_card::WelcomeCard;
 
 use crate::i18n::*;

@@ -1,6 +1,6 @@
-use super::panel_frame::InsightPanel;
-use crate::i18n::{td_string, use_i18n};
-use leptos::prelude::*;
+//! Строка «Темп»: среднее повторений за день против прошлых 14 дней.
+
+use crate::i18n::{I18nContext, Locale, td_string};
 use origa::domain::insights::PaceInsight;
 
 /// Ветка фразы темпа; чистая функция для прямого тестирования выбора.
@@ -21,6 +21,30 @@ pub(crate) fn pace_phrase_kind(pace: Option<&PaceInsight>) -> PacePhrase {
             _ => PacePhrase::Flat,
         },
     }
+}
+
+/// Фраза темпа выбранного периода данных.
+pub(crate) fn pace_verdict_text(i18n: I18nContext<Locale>, pace: Option<&PaceInsight>) -> String {
+    let locale = i18n.get_locale();
+    let Some(data) = pace else {
+        return td_string!(locale, insights.pace_empty).to_string();
+    };
+    let count = data.per_day;
+    match pace_phrase_kind(Some(data)) {
+        PacePhrase::Empty => td_string!(locale, insights.pace_empty).to_string(),
+        PacePhrase::Up => td_string!(locale, insights.pace_up, count = count, delta = data.delta),
+        PacePhrase::Down => {
+            let magnitude = -data.delta;
+            td_string!(locale, insights.pace_down, count = count, delta = magnitude)
+        },
+        PacePhrase::Flat => td_string!(locale, insights.pace_flat, count = count),
+    }
+}
+
+/// Метка строки темпа.
+pub(crate) fn pace_label(i18n: I18nContext<Locale>) -> String {
+    let locale = i18n.get_locale();
+    td_string!(locale, insights.pace_label).to_string()
 }
 
 #[cfg(test)]
@@ -47,68 +71,5 @@ mod tests {
         #[case] expected: PacePhrase,
     ) {
         assert_eq!(pace_phrase_kind(input.as_ref()), expected);
-    }
-}
-
-/// Панель «Каков темп?»: среднее повторений за день против прошлых 14 дней.
-#[component]
-pub(crate) fn PacePanel(
-    pace: Signal<Option<PaceInsight>>,
-    #[prop(optional, into)] test_id: Signal<String>,
-) -> impl IntoView {
-    let i18n = use_i18n();
-
-    let question = Signal::derive(move || {
-        let locale = i18n.get_locale();
-        td_string!(locale, insights.pace_question)
-    });
-
-    let phrase = Signal::derive(move || {
-        let locale = i18n.get_locale();
-        let Some(data) = pace.get() else {
-            return td_string!(locale, insights.pace_empty).to_string();
-        };
-
-        let count = data.per_day;
-        match pace_phrase_kind(Some(&data)) {
-            PacePhrase::Empty => td_string!(locale, insights.pace_empty).to_string(),
-            PacePhrase::Up => {
-                td_string!(locale, insights.pace_up, count = count, delta = data.delta)
-            },
-            PacePhrase::Down => {
-                let magnitude = -data.delta;
-                td_string!(locale, insights.pace_down, count = count, delta = magnitude)
-            },
-            PacePhrase::Flat => td_string!(locale, insights.pace_flat, count = count),
-        }
-    });
-
-    let proofs = Signal::derive(move || {
-        let locale = i18n.get_locale();
-        let Some(data) = pace.get() else {
-            return Vec::new();
-        };
-        vec![
-            format!(
-                "{}: {}",
-                td_string!(locale, insights.pace_proof_recent),
-                data.recent_total
-            ),
-            format!(
-                "{}: {}",
-                td_string!(locale, insights.pace_proof_previous),
-                data.previous_total
-            ),
-        ]
-    });
-
-    view! {
-        <InsightPanel
-            question=question
-            verdict=phrase
-            has_data=Signal::derive(move || pace.get().is_some())
-            proofs=proofs
-            test_id=test_id
-        />
     }
 }

@@ -16,7 +16,8 @@ mod hardest_words;
 
 pub use bucket_panels::{OverdueInsight, TimeOfDayInsight, compute_overdue, compute_time_of_day};
 pub use daily_windows::{
-    PaceInsight, WeekVerdict, WeekVerdictKind, compute_pace, compute_week_verdict,
+    PaceInsight, WeekVerdict, WeekVerdictKind, compute_month_verdict, compute_pace,
+    compute_week_verdict,
 };
 pub use hardest_words::{HardWord, HardestWordsInsight, compute_hardest_words};
 
