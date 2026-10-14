@@ -1,6 +1,6 @@
 ---
 title: "初心者のための日本語教科書：みんなの日本語、Genki、そして代替"
-slug: /blog/japanese-textbooks-beginners
+slug: /ja/blog/japanese-textbooks-beginners
 locale: ja
 meta_title: "初心者向け日本語教科書比較：みんなの日本語、Genki、Tae Kim、いろどり"
 meta_description: "アプリは語彙と復習をカバーしますが、段階的な文法は教科書から来ます。中間言語・予算・学習形式別の5選択肢の比較。"

@@ -1,6 +1,6 @@
 ---
 title: "漢字は難しいのか？ 正直な答え"
-slug: /blog/is-kanji-hard-to-learn
+slug: /ja/blog/is-kanji-hard-to-learn
 locale: ja
 meta_title: "漢字は難しい？ 正直な答え — 学習の実態と最初の1週間"
 meta_description: "漢字は難しくありませんが、理由は期待どおりではありません。難しさの正体、実践で学習を遅くする4つの落とし穴、今日始める場合の最初の1週間。"

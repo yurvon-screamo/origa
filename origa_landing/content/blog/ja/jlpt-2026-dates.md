@@ -1,6 +1,6 @@
 ---
 title: "JLPT 2026：試験日、出願期間、12月までの道のり"
-slug: /blog/jlpt-2026-dates
+slug: /ja/blog/jlpt-2026-dates
 locale: ja
 meta_title: "JLPT 2026 日程：12月6日試験、国別の出願期間"
 meta_description: "JLPT 2026は7月5日と12月6日。出願期間は国ごとに異なり、ほとんどは9月に締め切りました。日程、受験料、試験当日の形式、残り数週間でできること。"

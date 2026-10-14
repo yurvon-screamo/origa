@@ -1,6 +1,6 @@
 ---
 title: "アニメで日本語を学ぶ：機能することと神話"
-slug: /blog/learn-japanese-from-anime
+slug: /ja/blog/learn-japanese-from-anime
 locale: ja
 meta_title: "アニメで日本語を学ぶ — 機能することと神話"
 meta_description: "アニメは実際に何を鍛え、何を決して与えないか。受動視聴の罠、機能する能動視聴のワークフロー、Origaがそのどこをカバーするか。"

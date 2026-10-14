@@ -1,6 +1,6 @@
 ---
 title: "漫画で日本語を学ぶ方法（3ページ目で挫折しないために）"
-slug: /blog/learn-japanese-from-manga
+slug: /ja/blog/learn-japanese-from-manga
 locale: ja
 meta_title: "漫画で日本語を学ぶ — 挫折しないための実践ガイド"
 meta_description: "漫画を日本語で読むのは夢ですが、多くの学習者は3ページ目で停滞します。漫画を保持ある日本語に変える実践ワークフロー、摩擦の正体、ツールの現状。"

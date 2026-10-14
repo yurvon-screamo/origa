@@ -1,6 +1,6 @@
 ---
 title: "ひらがなとカタカナ：2週間で両方の文字を学ぶ"
-slug: /blog/learn-hiragana-katakana
+slug: /ja/blog/learn-hiragana-katakana
 locale: ja
 meta_title: "ひらがな・カタカナの学び方 — 2週間プラン"
 meta_description: "日本語学習の最初の壁は漢字ではなく2つの文字です。1日30〜45分で両方を流暢に認識する2週間プラン、効く方法、半年に引き延ばす落とし穴。"

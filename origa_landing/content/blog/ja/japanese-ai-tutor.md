@@ -1,6 +1,6 @@
 ---
 title: "日本語AIチューター：得意なことと不得意なこと"
-slug: /blog/japanese-ai-tutor
+slug: /ja/blog/japanese-ai-tutor
 locale: ja
 meta_title: "日本語AIチューターの実力 — 得意分野と限界（2026年）"
 meta_description: "AIチューターが実際に得意なこと（文法の即時解説、添削、会話練習）、不得意なこと（記憶の保持）、Origaの立ち位置。カテゴリ別比較付き。"

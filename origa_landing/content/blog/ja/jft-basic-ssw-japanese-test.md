@@ -1,6 +1,6 @@
 ---
 title: "JFT-Basic：SSWビザのための日本語テスト（JLPTとの違い）"
-slug: /blog/jft-basic-ssw-japanese-test
+slug: /ja/blog/jft-basic-ssw-japanese-test
 locale: ja
 meta_title: "JFT-Basic テストガイド：スコアとA2.2合格ライン（2026年）"
 meta_description: "JFT-Basicは日本の特定技能ビザのための日本語テストです。2026年8月からのA1/A2.1バンド、200点の合格ライン、Irodoriを使った学習方法を解説します。"

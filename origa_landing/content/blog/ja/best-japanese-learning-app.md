@@ -1,6 +1,6 @@
 ---
 title: "最高の日本語学習アプリ：2026年の選び方"
-slug: /blog/best-japanese-learning-app
+slug: /ja/blog/best-japanese-learning-app
 locale: ja
 meta_title: "最高の日本語学習アプリ（2026年）"
 meta_description: "「最高の」日本語アプリは1つではありません。あるのは目的に合った最適な組み合わせです。語彙・漢字・文法・聴解・JLPTをカテゴリ別に解説。"

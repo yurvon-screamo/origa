@@ -1,6 +1,6 @@
 ---
 title: "JLPT N5：必要なものと対策方法"
-slug: /blog/jlpt-n5-preparation
+slug: /ja/blog/jlpt-n5-preparation
 locale: ja
 meta_title: "JLPT N5 対策：出題範囲、構成、学習期間"
 meta_description: "N5の実際の中身（約80漢字・800語・基礎文法）、試験構成（3セクション105分、各セクション最低点）、ゼロからの対策期間4〜8か月。"

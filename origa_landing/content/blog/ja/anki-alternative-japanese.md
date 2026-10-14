@@ -1,6 +1,6 @@
 ---
 title: "日本語学習のためのAnki代替：切り替えるべき時（Ankiを使い続けるべき時）"
-slug: /blog/anki-alternative-japanese
+slug: /ja/blog/anki-alternative-japanese
 locale: ja
 meta_title: "日本語学習のAnki代替アプリ：切り替えの判断基準（2026年）"
 meta_description: "Ankiは強力ですが、セットアップに学習時間を取られます。日本語学習にAnkiが向く場合、代替が助かる場合、何に注目すべきかの実践ガイド。"

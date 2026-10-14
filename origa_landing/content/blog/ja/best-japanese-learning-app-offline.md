@@ -1,6 +1,6 @@
 ---
 title: "日本語をオフラインで学べるアプリ：「オフライン」の実際の意味"
-slug: /blog/best-japanese-learning-app-offline
+slug: /ja/blog/best-japanese-learning-app-offline
 locale: ja
 meta_title: "オフラインで使える日本語学習アプリ（2026年）"
 meta_description: "「オフライン」はアプリによって意味が違います: 復習、検索、AI。どの日本語学習アプリが接続なしで実際に機能するか、何をトレードするかの実践分解。"

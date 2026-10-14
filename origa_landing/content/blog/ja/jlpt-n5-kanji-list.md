@@ -1,6 +1,6 @@
 ---
 title: "JLPT N5 漢字リスト、印刷用PDF付き"
-slug: /blog/jlpt-n5-kanji-list
+slug: /ja/blog/jlpt-n5-kanji-list
 locale: ja
 meta_title: "JLPT N5 漢字リスト + 印刷用PDF（全80漢字）"
 meta_description: "Origaの辞書によるN5漢字表: 文字、音読み・訓読み、意味、常用語。実際の使用頻度順。4言語の印刷用PDF無料、80と103の議論の解説付き。"

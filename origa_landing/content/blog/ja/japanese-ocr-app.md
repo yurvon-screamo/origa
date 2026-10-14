@@ -1,6 +1,6 @@
 ---
 title: "日本語OCRアプリ：得意なことと弱点"
-slug: /blog/japanese-ocr-app
+slug: /ja/blog/japanese-ocr-app
 locale: ja
 meta_title: "日本語OCRアプリ比較（2026年）：実際に機能するもの"
 meta_description: "OCRは写真をテキストに変えますが、そのテキストから日本語を学ぶことは別の問題です。汎用・漫画特化・学習統合OCRアプリの実践比較。"

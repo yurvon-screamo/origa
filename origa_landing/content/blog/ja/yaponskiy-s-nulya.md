@@ -1,6 +1,6 @@
 ---
 title: "日本語ゼロから：現実的な独学スタートプラン"
-slug: /blog/yaponskiy-s-nulya
+slug: /ja/blog/yaponskiy-s-nulya
 locale: ja
 meta_title: "日本語ゼロから：現実的な独学プラン（2026年）"
 meta_description: "ひらがなからN4まで：独学の現実的な順序、ツール、初心者ほぼ全員が犯す間違い。高さのある目標なし、穴だらけの約束なし。"

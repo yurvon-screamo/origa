@@ -1,6 +1,6 @@
 ---
 title: "実際に必要な漢字の数：正直な数字"
-slug: /blog/how-many-kanji-to-learn
+slug: /ja/blog/how-many-kanji-to-learn
 locale: ja
 meta_title: "本当に必要な漢字の数 — 正直な数字"
 meta_description: "常用漢字2,136は新聞を読むための量です。目的別の具体的な数字：漫画100〜300、日常会話200〜400、小説1,300〜1,800。"
