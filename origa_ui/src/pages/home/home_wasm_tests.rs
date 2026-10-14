@@ -347,7 +347,7 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
     });
     tick().await;
 
-    // Вердикт недели: фраза со стабильной оценкой.
+    // Вердикт недели: фраза-статус + subline с точностью обоих окон.
     let verdict_text = wrapper
         .query_selector("[data-testid=\"is4-week-verdict\"]")
         .unwrap()
@@ -355,8 +355,10 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        verdict_text.contains("84"),
-        "week verdict must show the percentage; got: {verdict_text}"
+        verdict_text.contains("Accuracy is steady")
+            && verdict_text.contains("84")
+            && verdict_text.contains("70"),
+        "week verdict row must show the status phrase and both windows; got: {verdict_text}"
     );
 
     // Темп: число повторений и дельта.
@@ -367,8 +369,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        pace_text.contains("Reviews per day: 67") && pace_text.contains("12"),
-        "pace verdict must show the per-day count and delta; got: {pace_text}"
+        pace_text.contains("Reviews per day: 67") && pace_text.contains("+12"),
+        "pace row must show the per-day count and the delta sub-line; got: {pace_text}"
     );
 
     // Худшее время: окно после 20:00.
@@ -379,8 +381,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        time_text.contains("after 20:00"),
-        "time verdict must name the worst window; got: {time_text}"
+        time_text.contains("after 20:00") && time_text.contains("23 answers"),
+        "time row must name the worst window and the sample sub-line; got: {time_text}"
     );
 
     // Просрочка: потеря пунктов.
@@ -391,8 +393,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        overdue_text.contains("14 p.p."),
-        "overdue verdict must show the drop; got: {overdue_text}"
+        overdue_text.contains("14 p.p.") && overdue_text.contains("72%"),
+        "overdue row must show the drop and the late-vs-ontime sub-line; got: {overdue_text}"
     );
 
     // Тяжёлые слова: доля.
@@ -403,8 +405,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        words_text.contains("1 in 38"),
-        "hard-words verdict must show the ratio; got: {words_text}"
+        words_text.contains("2 hard words of 76") && words_text.contains("38"),
+        "hard-words row must show the share and the one-in-N sub-line; got: {words_text}"
     );
 }
 
@@ -453,7 +455,8 @@ async fn insights_section_period_switch_swaps_the_verdict() {
     tick().await;
 
     assert!(
-        verdict_text(&wrapper).contains("74"),
+        verdict_text(&wrapper).contains("Accuracy has dropped")
+            && verdict_text(&wrapper).contains("74"),
         "month mode must swap to the month verdict; got: {}",
         verdict_text(&wrapper)
     );

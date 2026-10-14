@@ -310,6 +310,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     when=move || !is_loading.get()
                     fallback=move || view! { <JlptSkeleton /> }
                 >
+                    <JlptProgressCard
+                        jlpt_progress=Signal::derive(move || jlpt_progress.get())
+                        test_id=Signal::derive(|| "home-jlpt-progress".to_string())
+                    />
+
                     <TodayOverviewCard
                         overview=Signal::derive(move || today_overview.get())
                         forecast=Signal::derive(move || forecast.get())
@@ -319,11 +324,6 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     <InsightsSection
                         panels=insights_panels
                         test_id=Signal::derive(|| "home-insights".to_string())
-                    />
-
-                    <JlptProgressCard
-                        jlpt_progress=Signal::derive(move || jlpt_progress.get())
-                        test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
 
                     <StudiedTodayList

@@ -8,11 +8,11 @@ pub mod week;
 
 pub use panels_data::{InsightsPanels, compute_insights_panels};
 
-use hardest_words::{words_label, words_verdict_text};
+use hardest_words::{words_label, words_subline_text, words_verdict_text};
 use leptos::prelude::*;
-use overdue::{overdue_label, overdue_verdict_text};
-use pace::{pace_label, pace_verdict_text};
-use time_of_day::{time_label, time_verdict_text};
+use overdue::{overdue_label, overdue_subline_text, overdue_verdict_text};
+use pace::{pace_label, pace_subline_text, pace_verdict_text};
+use time_of_day::{time_label, time_subline_text, time_verdict_text};
 use week::{verdict_label, week_subline_text, week_verdict_class, week_verdict_text};
 
 use crate::i18n::{td_string, use_i18n};
@@ -105,6 +105,9 @@ pub fn InsightsSection(
                         pace_verdict_text(i18n, panels.get().pace.as_ref())
                     })
                     phrase_class=Signal::derive(|| "heading-h3 text-[var(--fg-black)]".to_string())
+                    subline=Signal::derive(move || {
+                        pace_subline_text(i18n, panels.get().pace.as_ref())
+                    })
                     row_test_id=Signal::derive(move || format!("{}-pace", section_prefix()))
                 />
                 <LedgerRow
@@ -113,6 +116,9 @@ pub fn InsightsSection(
                         time_verdict_text(i18n, panels.get().time_of_day.as_ref())
                     })
                     phrase_class=Signal::derive(|| "heading-h3 text-[var(--fg-black)]".to_string())
+                    subline=Signal::derive(move || {
+                        time_subline_text(i18n, panels.get().time_of_day.as_ref())
+                    })
                     row_test_id=Signal::derive(move || format!("{}-time-of-day", section_prefix()))
                 />
                 <LedgerRow
@@ -121,6 +127,9 @@ pub fn InsightsSection(
                         overdue_verdict_text(i18n, panels.get().overdue.as_ref())
                     })
                     phrase_class=Signal::derive(|| "heading-h3 text-[var(--fg-black)]".to_string())
+                    subline=Signal::derive(move || {
+                        overdue_subline_text(i18n, panels.get().overdue.as_ref())
+                    })
                     row_test_id=Signal::derive(move || format!("{}-overdue", section_prefix()))
                 />
                 <LedgerRow
@@ -129,19 +138,12 @@ pub fn InsightsSection(
                         words_verdict_text(i18n, panels.get().hardest_words.as_ref())
                     })
                     phrase_class=Signal::derive(|| "heading-h3 text-[var(--fg-black)]".to_string())
+                    subline=Signal::derive(move || {
+                        words_subline_text(i18n, panels.get().hardest_words.as_ref())
+                    })
                     row_test_id=Signal::derive(move || format!("{}-hardest-words", section_prefix()))
                 />
             </div>
-
-            <p class="mt-3 text-xs text-[var(--fg-muted)] font-mono">
-                {move || {
-                    let locale = i18n.get_locale();
-                    td_string!(locale, insights.week_subline,
-                        week = panels.get().week.as_ref().map(|w| w.week_accuracy_pct).unwrap_or(0),
-                        month = panels.get().month.as_ref().and_then(|m| m.month_accuracy_pct).unwrap_or(0)
-                    )
-                }}
-            </p>
         </section>
     }
 }

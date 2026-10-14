@@ -36,6 +36,27 @@ pub(crate) fn overdue_verdict_text(
     }
 }
 
+/// Sub-line просрочки: точность поздних ответов против вовремя.
+pub(crate) fn overdue_subline_text(
+    i18n: I18nContext<Locale>,
+    insight: Option<&OverdueInsight>,
+) -> String {
+    let locale = i18n.get_locale();
+    let Some(data) = insight else {
+        return String::new();
+    };
+    if overdue_phrase_kind(Some(data)) != OverduePhrase::Costs {
+        return String::new();
+    }
+    td_string!(
+        locale,
+        insights.overdue_sub,
+        late = data.late_accuracy_pct,
+        ontime = data.ontime_accuracy_pct
+    )
+    .to_string()
+}
+
 /// Метка строки просрочки.
 pub(crate) fn overdue_label(i18n: I18nContext<Locale>) -> String {
     let locale = i18n.get_locale();

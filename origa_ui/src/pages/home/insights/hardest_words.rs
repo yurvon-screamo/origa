@@ -1,4 +1,5 @@
 //! Строка «Тяжёлые слова»: доля проблемных слов и топ провалов.
+//! Фраза — только доля; мнемоника «одно из N» — в sub-line.
 
 use crate::i18n::{I18nContext, Locale, td_string};
 use origa::domain::insights::HardestWordsInsight;
@@ -15,9 +16,21 @@ pub(crate) fn words_verdict_text(
             locale,
             insights.words_troubled,
             troubled = data.troubled_count,
-            total = data.studied_total,
-            one_in = data.one_in
-        ),
+            total = data.studied_total
+        )
+        .to_string(),
+    }
+}
+
+/// Sub-line тяжёлых слов: как часто встречается такое слово.
+pub(crate) fn words_subline_text(
+    i18n: I18nContext<Locale>,
+    insight: Option<&HardestWordsInsight>,
+) -> String {
+    let locale = i18n.get_locale();
+    match insight {
+        None => String::new(),
+        Some(data) => td_string!(locale, insights.words_sub, one_in = data.one_in).to_string(),
     }
 }
 

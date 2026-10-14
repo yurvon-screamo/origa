@@ -5,8 +5,8 @@ pub(crate) fn verdict_class_by_kind(
 ) -> &'static str {
     use origa::domain::insights::WeekVerdictKind;
     match kind {
-        None => "heading-h2 text-[var(--fg-muted)]",
-        Some(WeekVerdictKind::Dipping) => "heading-h2 text-[var(--error)]",
-        Some(WeekVerdictKind::Holding) => "heading-h2 text-[var(--success)]",
+        None => "heading-h3 text-[var(--fg-muted)]",
+        Some(WeekVerdictKind::Dipping) => "heading-h3 text-[var(--error)]",
+        Some(WeekVerdictKind::Holding) => "heading-h3 text-[var(--success)]",
     }
 }

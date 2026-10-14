@@ -19,26 +19,17 @@ pub(crate) fn week_phrase_kind(verdict: Option<&WeekVerdict>) -> WeekPhrase {
     }
 }
 
-/// Фраза вердикта выбранного периода.
+/// Фраза вердикта выбранного периода: только факт. Числа обоих окон —
+/// в `week_subline_text`, чтобы строка читалась одним взглядом.
 pub(crate) fn week_verdict_text(
     i18n: I18nContext<Locale>,
     verdict: Option<&WeekVerdict>,
 ) -> String {
     let locale = i18n.get_locale();
-    let Some(data) = verdict else {
-        return td_string!(locale, insights.week_empty).to_string();
-    };
-    match week_phrase_kind(Some(data)) {
+    match week_phrase_kind(verdict) {
         WeekPhrase::Empty => td_string!(locale, insights.week_empty).to_string(),
-        WeekPhrase::Dipping => td_string!(
-            locale,
-            insights.week_dipping,
-            week = data.week_accuracy_pct,
-            month = data.month_accuracy_pct.unwrap_or(0)
-        ),
-        WeekPhrase::Holding => {
-            td_string!(locale, insights.week_holding, week = data.week_accuracy_pct)
-        },
+        WeekPhrase::Dipping => td_string!(locale, insights.week_dipping).to_string(),
+        WeekPhrase::Holding => td_string!(locale, insights.week_holding).to_string(),
     }
 }
 
@@ -62,7 +53,7 @@ pub(crate) fn week_subline_text(
     }
 }
 
-/// Класс фразы вердикта: крупный serif, окрашен по статусу.
+/// Класс фразы вердикта: serif как у остальных строк, окрашен по статусу.
 pub(crate) fn week_verdict_class(verdict: Option<&WeekVerdict>) -> String {
     verdict_class_by_kind(verdict.map(|data| data.kind)).to_string()
 }

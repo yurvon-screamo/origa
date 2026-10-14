@@ -28,6 +28,24 @@ pub(crate) fn time_verdict_text(
     td_string!(locale, insights.time_worst, period = period)
 }
 
+/// Sub-line худшего окна: объём выборки и точность в нём.
+pub(crate) fn time_subline_text(
+    i18n: I18nContext<Locale>,
+    insight: Option<&TimeOfDayInsight>,
+) -> String {
+    let locale = i18n.get_locale();
+    let Some(data) = insight else {
+        return String::new();
+    };
+    td_string!(
+        locale,
+        insights.time_sub,
+        attempts = data.attempts,
+        accuracy = data.accuracy_pct
+    )
+    .to_string()
+}
+
 /// Метка строки худшего времени.
 pub(crate) fn time_label(i18n: I18nContext<Locale>) -> String {
     let locale = i18n.get_locale();
