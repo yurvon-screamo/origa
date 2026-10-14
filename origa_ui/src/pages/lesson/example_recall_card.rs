@@ -16,7 +16,10 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
-use crate::i18n::{t, use_i18n};
+use super::binary_rating_buttons::BinaryRatingButtons;
+use super::lesson_card_header::LessonTagsRow;
+use super::reveal_answer_button::RevealAnswerButton;
+use crate::i18n::{t, t_string, use_i18n};
 use crate::loaders::example_loader::{WordExample, load_example_detail};
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
@@ -86,7 +89,7 @@ pub fn ExampleRecallCard(
         // the TOP-RIGHT corner (owner request: the question side holds
         // nothing but the sentence, so the button follows the uniform
         // top-right placement of every other card).
-        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+        <LessonTagsRow>
             <Tag>{t!(i18n, lesson.example_tag)}</Tag>
             <Show when=move || example.get().is_some()>
                 <div class="ml-auto">
@@ -102,7 +105,7 @@ pub fn ExampleRecallCard(
                     }}
                 </div>
             </Show>
-        </div>
+        </LessonTagsRow>
 
         <Card
             class=Signal::derive(|| LESSON_CARD_CLASS.to_string())
@@ -192,65 +195,54 @@ pub fn ExampleRecallCard(
             <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
                 {move || {
                     view! {
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            on_click=Callback::new(move |_| on_show_answer.run(()))
-                            test_id=Signal::derive(|| "lesson-example-reveal".to_string())
-                        >
-                            {t!(i18n, lesson.example_reveal_translation)}
-                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
+                        <RevealAnswerButton
+                            test_id="lesson-example-reveal"
+                            label=Signal::derive(move || {
+                                t_string!(i18n, lesson.example_reveal_translation).to_string()
+                            })
+                            on_click=on_show_answer
+                        />
                     }
                 }}
             </Show>
         </Card>
 
-        // Binary self-assessment BELOW the card — the RatingButtons
-        // etalon: «didn't understand [1]» (default) on the left,
-        // «understood [2]» (olive) on the right. Each choice advances
-        // rating-free immediately.
-        {move || {
-            if load_failed.get() {
-                return view! {
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Filled)
-                        on_click=Callback::new(move |_| on_advance.run(()))
-                        test_id=Signal::derive(|| "lesson-example-next".to_string())
-                        class=Signal::derive(|| "mt-4".to_string())
-                    >
-                        {t!(i18n, lesson.next)}
-                    </Button>
+            // Binary self-assessment BELOW the card — the RatingButtons
+            // etalon: «didn't understand [1]» (default) on the left,
+            // «understood [2]» (olive) on the right. Each choice advances
+            // rating-free immediately.
+            {move || {
+                if load_failed.get() {
+                    return view! {
+                        <Button
+                            variant=Signal::derive(|| ButtonVariant::Filled)
+                            on_click=Callback::new(move |_| on_advance.run(()))
+                            test_id=Signal::derive(|| "lesson-example-next".to_string())
+                            class=Signal::derive(|| "mt-4".to_string())
+                        >
+                            {t!(i18n, lesson.next)}
+                        </Button>
+                    }
+                    .into_any();
                 }
-                .into_any();
-            }
-            if !show_answer.get() {
-                return ().into_any();
-            }
-            view! {
-                <div
-                    class="grid grid-cols-2 gap-3 mt-4"
-                    data-testid="lesson-example-recall-actions"
-                >
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        on_click=Callback::new(move |_| on_advance.run(()))
-                        test_id=Signal::derive(|| "lesson-example-not-understood".to_string())
-                    >
-                        {t!(i18n, lesson.example_recall_not_understood)}
-                        <span class="kbd-hint">"[1]"</span>
-                    </Button>
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Olive)
-                        on_click=Callback::new(move |_| on_advance.run(()))
-                        test_id=Signal::derive(|| "lesson-example-understood".to_string())
-                    >
-                        {t!(i18n, lesson.example_recall_understood)}
-                        <span class="kbd-hint">"[2]"</span>
-                    </Button>
-                </div>
-            }
-            .into_any()
-        }}
+                if !show_answer.get() {
+                    return ().into_any();
+                }
+                view! {
+                    <BinaryRatingButtons
+                        left_label=Signal::derive(move || t_string!(i18n, lesson.example_recall_not_understood).to_string())
+                        right_label=Signal::derive(move || t_string!(i18n, lesson.example_recall_understood).to_string())
+                        left_test_id="lesson-example-not-understood"
+                        right_test_id="lesson-example-understood"
+                        left_hint="[1]"
+                        right_hint="[2]"
+                        container_test_id="lesson-example-recall-actions"
+                        on_left=Callback::new(move |_| on_advance.run(()))
+                        on_right=Callback::new(move |_| on_advance.run(()))
+                    />
+                }
+                .into_any()
+            }}
     }
 }
 

@@ -24,6 +24,19 @@ pub struct CardHeaderAudio {
     pub audio_path: Option<String>,
 }
 
+/// Container of the tags row rendered ABOVE a lesson card border: tags on
+/// the left, right-side content (header audio) pushed by `ml-auto` inside.
+/// The single home of the row layout — every card view renders its tags
+/// through this row.
+#[component]
+pub fn LessonTagsRow(children: Children) -> impl IntoView {
+    view! {
+        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+            {children()}
+        </div>
+    }
+}
+
 /// Tags row rendered ABOVE the card for ALL card types:
 /// tags on the left (card type, POS, quiz variant, grammar badge),
 /// audio button pushed to the right. Both stay outside the Card border.
@@ -47,7 +60,7 @@ pub fn LessonCardTags(
             .map(|p| part_of_speech_label(p, &i18n)),
     );
     view! {
-        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+        <LessonTagsRow>
             <Tag variant=Signal::derive(move || card_type.tag_variant())>
                 {card_type.label(&i18n)}
             </Tag>
@@ -106,7 +119,7 @@ pub fn LessonCardTags(
                     }.into_any()
                 })
             }}
-        </div>
+        </LessonTagsRow>
     }
 }
 
@@ -123,7 +136,7 @@ pub fn LessonCardTagsQuiz(
     let pos_label = StoredValue::new(part_of_speech.map(|p| part_of_speech_label(p, &i18n)));
 
     view! {
-        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+        <LessonTagsRow>
             <Tag variant=Signal::derive(move || card_type.tag_variant())>
                 {card_type.label(&i18n)}
             </Tag>
@@ -172,7 +185,7 @@ pub fn LessonCardTagsQuiz(
                     }.into_any()
                 })
             }}
-        </div>
+        </LessonTagsRow>
     }
 }
 

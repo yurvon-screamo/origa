@@ -1,11 +1,12 @@
-use crate::i18n::*;
 use crate::ui_components::{
-    Button, ButtonVariant, DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode,
-    KanjiWritingSection, MarkdownText, MarkdownVariant,
+    DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
+    MarkdownText, MarkdownVariant,
 };
 use leptos::prelude::*;
 use origa::domain::NativeLanguage;
 use std::collections::HashSet;
+
+use super::reveal_answer_button::RevealAnswerButton;
 
 #[component]
 pub fn LessonCardQuestion(
@@ -21,7 +22,6 @@ pub fn LessonCardQuestion(
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
     native_language: NativeLanguage,
 ) -> impl IntoView {
-    let i18n = use_i18n();
     let question = StoredValue::new(question_text);
     let kanji_stored = StoredValue::new(kanji);
 
@@ -88,13 +88,7 @@ pub fn LessonCardQuestion(
                 }}
             </Show>
 
-            <Button
-                variant=Signal::derive(|| ButtonVariant::Filled)
-                test_id=Signal::derive(|| "lesson-show-answer-btn".to_string())
-                on_click=Callback::new(move |_| on_show_answer.run(()))
-            >
-                {t!(i18n, lesson.show_answer)} <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-            </Button>
+            <RevealAnswerButton on_click=on_show_answer />
         </div>
     }
 }

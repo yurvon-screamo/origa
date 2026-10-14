@@ -1,5 +1,5 @@
 use crate::ui_components::{
-    Card, get_reading_from_text, is_speech_supported, register_audio, speak_tts_text, speak_word,
+    get_reading_from_text, is_speech_supported, register_audio, speak_tts_text, speak_word,
     stop_current_audio,
 };
 use leptos::prelude::*;
@@ -15,10 +15,11 @@ use tracing;
 
 use super::answer_display::extract_card_answer;
 use super::card_type::CardType;
-use super::kanji_card_details::RadicalDisplay;
+use super::kanji_card_data::extract_kanji_card_data;
 use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTags};
 use super::lesson_card_question::LessonCardQuestion;
+use super::lesson_card_shell::LessonCardShell;
 use super::lesson_state::LessonContext;
 use crate::repository::cdn_provider::prefetch_blob_url;
 
@@ -51,18 +52,7 @@ pub fn LessonCard(
         && grammar_info.is_none()
         && super::na_adjective_helper::is_na_adjective_card(&card);
 
-    let question_text = match card.question(&lang) {
-        Ok(q) => q.text().to_string(),
-        Err(e) => {
-            tracing::warn!(
-                card_type = ?card_type,
-                content_key = %card.content_key(),
-                error = %e,
-                "Failed to get card question"
-            );
-            String::new()
-        },
-    };
+    let question_text = super::card_text::card_question_text(&card, &lang, card_type);
     let question = StoredValue::new(question_text.clone());
     let display_question = StoredValue::new(if is_na_adj {
         super::na_adjective_helper::append_na_suffix(&question_text)
@@ -100,101 +90,19 @@ pub fn LessonCard(
     let answer_translations_stored = StoredValue::new(answer_data.translations);
     let answer_description_stored = StoredValue::new(answer_data.description);
 
-    let radicals: Option<Vec<RadicalDisplay>> = match &card {
-        DomainCard::Kanji(kanji) => match kanji.radicals_info() {
-            Ok(r) => Some(
-                r.iter()
-                    .map(|info| RadicalDisplay {
-                        symbol: info.radical(),
-                        name: info.name(&lang).to_string(),
-                        description: info.description(&lang).to_string(),
-                    })
-                    .collect(),
-            ),
-            Err(e) => {
-                tracing::warn!("Failed to get radicals for kanji: {:?}", e);
-                None
-            },
-        },
-        _ => None,
-    };
-    let radicals_stored = StoredValue::new(radicals);
-
-    let example_words: Option<Vec<(String, String)>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let examples: Vec<_> = kanji
-                .example_words(&lang)
-                .iter()
-                .map(|e| (e.word().to_string(), e.meaning().to_string()))
-                .collect();
-            if examples.is_empty() {
-                None
-            } else {
-                Some(examples)
-            }
-        },
-        _ => None,
-    };
-    let examples_stored = StoredValue::new(example_words);
-
-    let on_readings: Option<Vec<crate::ui_components::ReadingItem>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let readings = kanji
-                .on_readings_with_freq()
-                .into_iter()
-                .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                    reading: r,
-                    freq: f,
-                    is_rare: rare,
-                })
-                .collect::<Vec<_>>();
-            if readings.is_empty() {
-                None
-            } else {
-                Some(readings)
-            }
-        },
-        _ => None,
-    };
-    let on_readings_stored = StoredValue::new(on_readings);
-
-    let kun_readings: Option<Vec<crate::ui_components::ReadingItem>> = match &card {
-        DomainCard::Kanji(kanji) => {
-            let readings = kanji
-                .kun_readings_with_freq()
-                .into_iter()
-                .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                    reading: r,
-                    freq: f,
-                    is_rare: rare,
-                })
-                .collect::<Vec<_>>();
-            if readings.is_empty() {
-                None
-            } else {
-                Some(readings)
-            }
-        },
-        _ => None,
-    };
-    let kun_readings_stored = StoredValue::new(kun_readings);
+    let kanji_data = extract_kanji_card_data(&card, lang);
+    let radicals_stored = StoredValue::new(kanji_data.as_ref().and_then(|d| d.radicals.clone()));
+    let examples_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.example_words.clone()));
+    let on_readings_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.on_readings.clone()));
+    let kun_readings_stored =
+        StoredValue::new(kanji_data.as_ref().and_then(|d| d.kun_readings.clone()));
 
     let kanji_for_animation: Option<String> = match &card {
-        DomainCard::Kanji(_) => {
-            let text = match card.question(&lang) {
-                Ok(q) => q.text().to_string(),
-                Err(e) => {
-                    tracing::warn!(
-                        card_type = ?card_type,
-                        content_key = %card.content_key(),
-                        error = %e,
-                        "Failed to get kanji for animation"
-                    );
-                    String::new()
-                },
-            };
-            Some(text)
-        },
+        DomainCard::Kanji(_) => Some(super::card_text::card_question_text(
+            &card, &lang, card_type,
+        )),
         _ => None,
     };
     let kanji_stored = StoredValue::new(kanji_for_animation);
@@ -307,55 +215,62 @@ pub fn LessonCard(
         }
     });
 
-    view! {
-        <div class="flex flex-col">
-            <LessonCardTags
-                card_type=card_type
-                grammar_info=grammar_info.clone()
-                show_answer=show_answer
-                card=card.clone()
-                show_grammar_badge
-                audio=audio_props
-            />
-            <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id="lesson-card-root">
-                <div class="flex-1 flex flex-col justify-center">
-                    <Show when=move || !show_answer.get()>
-                        <LessonCardQuestion
-                            question_text=card_question_text.get_value()
-                            kanji=kanji_stored.get_value()
-                            is_reversed=is_reversed
-                            is_counter=matches!(card, origa::domain::Card::Counter(_))
-                            on_show_answer=on_show_answer
-                            known_kanji=known_kanji
-                            native_language=native_language
-                        />
-                    </Show>
+    let card_for_tags = card.clone();
+    let grammar_info_for_tags = grammar_info.clone();
+    let tags_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+                <LessonCardTags
+                    card_type=card_type
+                    grammar_info=grammar_info_for_tags.clone()
+                    show_answer=show_answer
+                    card=card_for_tags.clone()
+                    show_grammar_badge
+                    audio=audio_props
+                />
+        }
+        .into_any()
+    });
 
-                    <Show when=move || show_answer.get()>
-                        <LessonCardAnswer
-                            question_text=answer_heading.get_value()
-                            answer_text=if is_reversed { question.get_value() } else { answer.get_value() }
-                            answer_translations=answer_translations_stored.get_value()
-                            answer_description=answer_description_stored.get_value()
-                            is_expanded=is_expanded
-                            needs_collapse=needs_collapse
-                            content_ref=content_ref
-                            on_toggle=on_toggle
-                            is_kanji=card_type == CardType::Kanji
-                            is_phrase
-                            is_reversed=is_reversed
-                            on_readings=on_readings_stored.get_value()
-                            kun_readings=kun_readings_stored.get_value()
-                            radicals=radicals_stored.get_value()
-                            example_words=examples_stored.get_value()
-                            grammar_info=grammar_info.clone()
-                            known_kanji=known_kanji
-                            native_language=native_language
-                        />
-                    </Show>
-                </div>
-            </Card>
-        </div>
+    view! {
+        <LessonCardShell
+            tags=tags_row
+            test_id="lesson-card-root"
+        >
+        <Show when=move || !show_answer.get()>
+            <LessonCardQuestion
+                question_text=card_question_text.get_value()
+                kanji=kanji_stored.get_value()
+                is_reversed=is_reversed
+                is_counter=matches!(card, origa::domain::Card::Counter(_))
+                on_show_answer=on_show_answer
+                known_kanji=known_kanji
+                native_language=native_language
+            />
+        </Show>
+
+        <Show when=move || show_answer.get()>
+            <LessonCardAnswer
+                question_text=answer_heading.get_value()
+                answer_text=if is_reversed { question.get_value() } else { answer.get_value() }
+                answer_translations=answer_translations_stored.get_value()
+                answer_description=answer_description_stored.get_value()
+                is_expanded=is_expanded
+                needs_collapse=needs_collapse
+                content_ref=content_ref
+                on_toggle=on_toggle
+                is_kanji=card_type == CardType::Kanji
+                is_phrase
+                is_reversed=is_reversed
+                on_readings=on_readings_stored.get_value()
+                kun_readings=kun_readings_stored.get_value()
+                radicals=radicals_stored.get_value()
+                example_words=examples_stored.get_value()
+                grammar_info=grammar_info.clone()
+                known_kanji=known_kanji
+                native_language=native_language
+            />
+        </Show>
+        </LessonCardShell>
     }
 }
 
