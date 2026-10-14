@@ -393,7 +393,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         "pace verdict must show the per-day count and delta; got: {pace_text}"
     );
 
-    // Время суток: точность худшего окна.
+    // Время суток: фраза указывает худшее окно (bucket 5 = после 20:00 в
+    // en-локали); точность живёт в доказательствах, не во фразе.
     let time_text = wrapper
         .query_selector("[data-testid=\"is4-time-of-day\"]")
         .unwrap()
@@ -401,8 +402,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         .text_content()
         .unwrap();
     assert!(
-        time_text.contains("52"),
-        "time-of-day verdict must show accuracy; got: {time_text}"
+        time_text.contains("after 20:00"),
+        "time-of-day verdict must name the worst window; got: {time_text}"
     );
 
     // Цена просрочки: разница в пунктах.
