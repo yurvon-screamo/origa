@@ -6,6 +6,7 @@ import {
     skipWhenUmamiTrackerAbsent,
     type UmamiEventCollector,
 } from "../../helpers/analytics";
+import { completeOnboardingToScoring } from "../../helpers/onboarding";
 
 // Collector for the telemetry scenario below. Scenario-scoped: playwright-bdd
 // runs scenarios of a file sequentially within a worker (same pattern as the
@@ -44,7 +45,20 @@ Given('новый пользователь с включённой аналит�
     await skipWhenUmamiTrackerAbsent(page);
 });
 
-Then('трекер Umami отправил события всех шагов онбординга', async () => {
+// Telemetry-specific walk: identical to the shared empty-import Given, plus
+// a daily-load click — an intra-step state mutation proving that start
+// events fire on step ENTRY, not on every interaction (issue #774 review).
+Given('новый пользователь дошёл до шага сводки импорта с кликом темпа загрузки', async ({ page }) => {
+    const reached = await completeOnboardingToScoring(page, {
+        level: "none",
+        skipApps: true,
+        stopAtSummary: true,
+        selectDailyLoad: true,
+    });
+    expect(reached, "onboarding must stop at the summary step").toBe(true);
+});
+
+Then('трекер Umami отправил события всех шагов онбординга', async ({ page }) => {
     expect(umamiCollector, "перехват должен быть установлен раньше хода").not.toBeNull();
     // Beacons land asynchronously after the finish click — wait for the last
     // funnel event before asserting the ordered sequence.
@@ -56,5 +70,27 @@ Then('трекер Umami отправил события всех шагов о�
             { timeout: 15_000 },
         )
         .toBe(true);
+
+    // Exact equality: the collector holds precisely the funnel, no duplicate
+    // starts (intra-step mutations must not re-fire them) and no extras.
+    // Navigation entries are in the message so a page reload mid-walk (the
+    // one way wasm-level dedup resets) is visible in the failure report.
+    const navigations = await page.evaluate(() =>
+        performance
+            .getEntriesByType("navigation")
+            .map(
+                (entry) =>
+                    `${(entry as PerformanceNavigationTiming).type}:${new URL(entry.name).pathname}`,
+            )
+            .join(","),
+    );
+
+    const names = umamiCollector!.events.map((event) => event.name);
+    const expectedNames = ONBOARDING_EVENT_FUNNEL.map((event) => event.name);
+    expect(
+        names,
+        `точная воронка: без дублей start и лишних событий; navigations=[${navigations}]`,
+    ).toEqual(expectedNames);
+
     await expectUmamiEventSequence(umamiCollector!, ONBOARDING_EVENT_FUNNEL);
 });
