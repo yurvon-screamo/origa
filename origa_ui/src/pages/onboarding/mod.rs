@@ -48,7 +48,7 @@ use progress::ProgressStep;
 use scoring_finish_button::ScoringFinishButton;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
-use telemetry::{StepPhase, track_step};
+use telemetry::{track_step_complete, track_step_start};
 
 /// Which destructive action is awaiting confirmation in the modal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -199,14 +199,17 @@ pub fn Onboarding() -> impl IntoView {
 
     // Step telemetry (issue #774): every entry into a step emits
     // `onboarding_<step>_start` — mount, forward/back navigation and the
-    // resume jump all included (attempt semantics, ADR-054 §5). The tracked
-    // dependency is the step only: locale is read untracked, so flipping
-    // the language on the intro step never re-fires the start event.
+    // resume jump all included (attempt semantics, ADR-054 §5.1). The Memo
+    // gates the effect on the step VALUE: a plain-struct signal notifies on
+    // every intra-step mutation (daily-load pick, JLPT choice, app toggles),
+    // and those must not re-fire the start event. Locale is read untracked,
+    // so flipping the language on the intro step never re-fires it either.
+    let current_step = Memo::new(move |_| state.get().current_step);
     let i18n_for_step_start = i18n;
     Effect::new(move |_| {
-        let step = state.get().current_step;
+        let step = current_step.get();
         let locale = locale_code(&i18n_for_step_start.get_locale_untracked());
-        track_step(step, StepPhase::Start, locale);
+        track_step_start(step, locale);
     });
 
     let repo_for_init = repository.clone();
@@ -290,7 +293,7 @@ pub fn Onboarding() -> impl IntoView {
         let completed_step = state.get_untracked().current_step;
         if !matches!(completed_step, OnboardingStep::Scoring) {
             let locale = locale_code(&i18n.get_locale_untracked());
-            track_step(completed_step, StepPhase::Complete, locale);
+            track_step_complete(completed_step, locale);
         }
         state.update(|s| {
             s.go_to_next_step();

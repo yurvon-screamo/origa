@@ -133,54 +133,74 @@ pub(crate) fn track_event(name: &str, props: &[(&str, &str)]) {
 /// muted build) and pending events are discarded instead of queueing forever.
 const PENDING_FLUSH_INTERVAL_MS: u32 = 200;
 const PENDING_FLUSH_MAX_TRIES: u32 = 50;
+const PENDING_FLUSH_MAX_WAIT_S: u32 = 10;
 
-/// Queues an event for `window.umami` and installs the one-shot flusher
-/// (idempotent). The flusher lives entirely in this JS snippet: on each tick
-/// it waits for a usable tracker, then drains the queue in FIFO order —
-/// preserving event order — and clears itself. When the give-up bound is
-/// reached it discards the queue instead of holding it forever.
-fn enqueue_pending(window: &web_sys::Window, name: &str, data: &js_sys::Object) {
-    let enqueue = js_sys::Function::new_with_args(
-        "name, data",
-        // The trailing statement runs on every call; the guarded block only
-        // on the first (window.__umami_enqueue is the installed singleton).
-        r#"
-            if (!window.__umami_enqueue) {
-                window.__umami_pending = [];
-                window.__umami_enqueue = function (name, data) {
-                    window.__umami_pending.push({ name: name, data: data });
-                    if (window.__umami_flush_timer) return;
-                    window.__umami_flush_tries = 0;
-                    window.__umami_flush_timer = setInterval(function () {
-                        window.__umami_flush_tries++;
-                        if (!(window.umami && typeof window.umami.track === 'function')) {
-                            if (window.__umami_flush_tries >= {max_tries}) {
-                                clearInterval(window.__umami_flush_timer);
-                                window.__umami_flush_timer = null;
-                                window.__umami_pending = [];
-                            }
-                            return;
-                        }
+/// Enqueue snippet: defines `window.__umami_enqueue` (idempotent singleton
+/// guard inside) and calls it. Compiled ONCE per session ([`enqueue_pending`]
+/// keeps it in a thread-local) — the snippet is large enough that
+/// re-compiling it per event would be wasteful.
+const ENQUEUE_JS: &str = r#"
+    if (!window.__umami_enqueue) {
+        window.__umami_pending = [];
+        window.__umami_enqueue = function (name, data) {
+            window.__umami_pending.push({ name: name, data: data });
+            if (window.__umami_flush_timer) return;
+            window.__umami_flush_tries = 0;
+            window.__umami_flush_timer = setInterval(function () {
+                window.__umami_flush_tries++;
+                if (!(window.umami && typeof window.umami.track === 'function')) {
+                    if (window.__umami_flush_tries >= {max_tries}) {
                         clearInterval(window.__umami_flush_timer);
                         window.__umami_flush_timer = null;
-                        var pending = window.__umami_pending.splice(0);
-                        for (var i = 0; i < pending.length; i++) {
-                            try {
-                                window.umami.track(pending[i].name, pending[i].data);
-                            } catch (e) {}
-                        }
-                    }, {interval_ms});
-                };
-            }
-            window.__umami_enqueue(name, data);
-        "#
-        .replace("{max_tries}", &PENDING_FLUSH_MAX_TRIES.to_string())
-        .replace("{interval_ms}", &PENDING_FLUSH_INTERVAL_MS.to_string())
-        .as_str(),
-    );
-    if let Err(error) = enqueue.call2(window, &wasm_bindgen::JsValue::from_str(name), data) {
-        tracing::warn!("Umami: enqueue of {name} failed: {error:?}");
+                        // Give-up observability: the tracker never appeared
+                        // (ad blocker, muted build) and the queue is lost.
+                        // The snippet runs outside the Rust stack, so the
+                        // browser console is the only channel for this warn.
+                        console.warn(
+                            'Umami: tracker did not load in {max_wait_s}s — dropped ' +
+                                window.__umami_pending.length + ' queued event(s)'
+                        );
+                        window.__umami_pending = [];
+                    }
+                    return;
+                }
+                clearInterval(window.__umami_flush_timer);
+                window.__umami_flush_timer = null;
+                var pending = window.__umami_pending.splice(0);
+                for (var i = 0; i < pending.length; i++) {
+                    try {
+                        window.umami.track(pending[i].name, pending[i].data);
+                    } catch (e) {}
+                }
+            }, {interval_ms});
+        };
     }
+    window.__umami_enqueue(name, data);
+"#;
+
+/// Queues an event for `window.umami` and installs the one-shot flusher
+/// (idempotent). The flusher lives entirely in the JS snippet: on each tick
+/// it waits for a usable tracker, then drains the queue in FIFO order —
+/// preserving event order — and clears itself. When the give-up bound is
+/// reached it discards the queue (with a console warn) instead of holding
+/// it forever.
+fn enqueue_pending(window: &web_sys::Window, name: &str, data: &js_sys::Object) {
+    thread_local! {
+        static ENQUEUE_FN: js_sys::Function = js_sys::Function::new_with_args(
+            "name, data",
+            ENQUEUE_JS
+                .replace("{max_tries}", &PENDING_FLUSH_MAX_TRIES.to_string())
+                .replace("{max_wait_s}", &PENDING_FLUSH_MAX_WAIT_S.to_string())
+                .replace("{interval_ms}", &PENDING_FLUSH_INTERVAL_MS.to_string())
+                .as_str(),
+        );
+    }
+
+    ENQUEUE_FN.with(|enqueue| {
+        if let Err(error) = enqueue.call2(window, &wasm_bindgen::JsValue::from_str(name), data) {
+            tracing::warn!("Umami: enqueue of {name} failed: {error:?}");
+        }
+    });
 }
 
 /// `data-domains` hostname allow-list: the production web app plus the

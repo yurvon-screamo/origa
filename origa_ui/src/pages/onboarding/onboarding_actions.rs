@@ -12,8 +12,9 @@ use origa::use_cases::{
 };
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use super::onboarding_state::{OnboardingState, OnboardingStep};
-use super::telemetry::{StepPhase, track_step};
+use super::onboarding_state::OnboardingState;
+use super::onboarding_state::OnboardingStep::Summary;
+use super::telemetry::track_step_complete;
 
 /// Sequence for save-error toast ids. Every push takes a fresh id: the
 /// `ToastContainer` renders through `<For key=toast.id>`, so reusing an id
@@ -233,12 +234,8 @@ pub(super) fn create_on_start_import_callback(
                 // outcome, not an intent that an error branch would refute.
                 tracing::info!("No sets selected for import — advancing to scoring");
                 // An empty selection is a valid summary completion: the
-                // user moved on to scoring (issue #774 / ADR-054 §5).
-                track_step(
-                    OnboardingStep::Summary,
-                    StepPhase::Complete,
-                    locale_code(&i18n.get_locale_untracked()),
-                );
+                // user moved on to scoring (issue #774 / ADR-054 §5.1).
+                track_step_complete(Summary, locale_code(&i18n.get_locale_untracked()));
                 state.update(|s| {
                     s.go_to_next_step();
                 });
@@ -299,12 +296,8 @@ pub(super) fn create_on_start_import_callback(
                     );
 
                     // The import checkpoint committed: the user moved on to
-                    // scoring (issue #774 / ADR-054 §5).
-                    track_step(
-                        OnboardingStep::Summary,
-                        StepPhase::Complete,
-                        locale_code(&i18n.get_locale_untracked()),
-                    );
+                    // scoring (issue #774 / ADR-054 §5.1).
+                    track_step_complete(Summary, locale_code(&i18n.get_locale_untracked()));
                     state.update(|s| {
                         s.go_to_next_step();
                     });

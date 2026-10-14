@@ -142,8 +142,10 @@ soon as `window.umami` appears — the e2e scenario below caught exactly
 this drop before the queue existed.
 
 **Contract** — every step of `OnboardingStep` emits `start` on entry
-(single Effect on `current_step`: mount, forward/back navigation, the
-resume jump all included) and `complete` on its forward action:
+(single Effect memo-gated on the step value: mount, forward/back
+navigation, the resume jump — but NOT intra-step mutations like
+level/app picks, which update the same signal without changing the step)
+and `complete` on its forward action:
 
 | Step enum | slug | start | complete (fired by) |
 |---|---|---|---|
@@ -167,6 +169,12 @@ table above is the mapping. Every event carries event-data properties
   leaves the user on the step and emits nothing). Back-navigation re-fires
   `start`; funnel tools match first occurrence in order, so repeats do not
   distort step conversion.
+- *Remount dedup*: the ProtectedRoute sync overlay can unmount and remount
+  the Onboarding component mid-step (an authenticated `save_sync` — e.g.
+  the intro language save) without changing the step. Start events are
+  deduped against the last started step in the page session, so a remount
+  never double-fires the same step's `start`; navigation (step value
+  changed) always emits.
 - *Skip paths stay silent* (unchanged from the declarative contract): skip
   is visible as drop-off after the last `start`.
 - *Bounce noise*: `intro_start` fires on every `/onboarding` mount,

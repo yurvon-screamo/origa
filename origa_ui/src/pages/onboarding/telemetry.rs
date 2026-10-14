@@ -87,11 +87,57 @@ pub(super) fn device() -> &'static str {
 /// Emits `onboarding_<step>_<phase>` with `locale` + `device` event
 /// properties. Fire-and-forget: telemetry failures are logged inside the
 /// analytics layer, never surfaced to the flow.
-pub(super) fn track_step(step: OnboardingStep, phase: StepPhase, locale: &str) {
+fn track_step(step: OnboardingStep, phase: StepPhase, locale: &str) {
     analytics::track_event(
         &event_name(step, phase),
         &[("locale", locale), ("device", device())],
     );
+}
+
+/// sessionStorage key of the last started step slug in this tab session.
+const LAST_STARTED_KEY: &str = "umami_last_start_step";
+
+/// Pure dedup decision: `true` when `step` differs from the recorded slug.
+fn is_start_duplicate(last: Option<String>, step: OnboardingStep) -> bool {
+    last.as_deref() == Some(step_slug(step))
+}
+
+fn read_last_started() -> Option<String> {
+    let window = web_sys::window()?;
+    let storage = window.session_storage().ok()??;
+    storage.get_item(LAST_STARTED_KEY).ok()?
+}
+
+fn write_last_started(slug: &str) -> Option<()> {
+    let window = web_sys::window()?;
+    let storage = window.session_storage().ok()??;
+    storage.set_item(LAST_STARTED_KEY, slug).ok()
+}
+
+/// Dedup decision for start events: `true` only when `step` differs from
+/// the last started one (mutates the dedup state). Storage failures degrade
+/// to emitting — attempt semantics beat missing data.
+fn should_emit_start(step: OnboardingStep) -> bool {
+    let last = read_last_started();
+    if is_start_duplicate(last, step) {
+        return false;
+    }
+    let _ = write_last_started(step_slug(step));
+    true
+}
+
+/// Step entry: `onboarding_<step>_start`, deduped against remounts and
+/// in-tab reloads.
+pub(super) fn track_step_start(step: OnboardingStep, locale: &str) {
+    if should_emit_start(step) {
+        track_step(step, StepPhase::Start, locale);
+    }
+}
+
+/// Step forward action succeeded: `onboarding_<step>_complete` (fires once
+/// per transition point — no dedup needed).
+pub(super) fn track_step_complete(step: OnboardingStep, locale: &str) {
+    track_step(step, StepPhase::Complete, locale);
 }
 
 #[cfg(test)]
@@ -192,5 +238,33 @@ mod tests {
         #[case] expected: &str,
     ) {
         assert_eq!(classify_device(user_agent, max_touch_points), expected);
+    }
+
+    #[test]
+    fn start_dedup_decisions() {
+        // Fresh session (nothing recorded): the first entry emits.
+        assert!(!is_start_duplicate(None, OnboardingStep::Intro));
+        // A sync-overlay remount or an in-tab reload re-runs the effect with
+        // the same step — suppressed via the recorded slug.
+        assert!(is_start_duplicate(
+            Some("intro".to_string()),
+            OnboardingStep::Intro
+        ));
+        // Forward navigation emits the new step.
+        assert!(!is_start_duplicate(
+            Some("intro".to_string()),
+            OnboardingStep::Load
+        ));
+        // Back-navigation re-entry emits: the step differs from the last
+        // started one.
+        assert!(!is_start_duplicate(
+            Some("load".to_string()),
+            OnboardingStep::Intro
+        ));
+        // Resume jump across steps emits.
+        assert!(!is_start_duplicate(
+            Some("intro".to_string()),
+            OnboardingStep::Scoring
+        ));
     }
 }
