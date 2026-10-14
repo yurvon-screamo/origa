@@ -103,7 +103,7 @@ def parse_entries(rows: Iterable[Sequence[object]]) -> list[dict]:
         match = LOCATION_RE.match(location)
         if match:
             book, lesson = match.group(1), int(match.group(2))
-        elif location == CLASSROOM_LOCATION and level in ("A1", "A2"):
+        elif location == CLASSROOM_LOCATION:
             book, lesson = "入門", CLASSROOM_FALLBACK_LESSON
         else:
             raise ValueError(f"Unrecognized location {location!r} (Can-do {can_do_id})")

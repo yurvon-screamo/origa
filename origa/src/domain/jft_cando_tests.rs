@@ -171,6 +171,17 @@ fn parse_rejects_unknown_band_and_level_tags() {
 fn fixture_carries_both_official_level_tags() {
     // Parse-time validation already rejects foreign tags; this pins that the
     // real dataset exercises both official values (no silent narrowing).
-    assert!(FIXTURE.contains("\"level\": \"A1\""));
-    assert!(FIXTURE.contains("\"level\": \"A2\""));
+    // Reads through serde_json so the check survives generator formatting
+    // changes (indent, key order).
+    let document: serde_json::Value = serde_json::from_str(FIXTURE).expect("fixture is valid JSON");
+    let levels: HashSet<&str> = document["can_dos"]
+        .as_array()
+        .expect("can_dos array")
+        .iter()
+        .map(|entry| entry["level"].as_str().expect("level str"))
+        .collect();
+    assert!(
+        levels.contains("A1") && levels.contains("A2"),
+        "levels: {levels:?}"
+    );
 }

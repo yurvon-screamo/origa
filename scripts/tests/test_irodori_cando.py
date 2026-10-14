@@ -9,6 +9,8 @@ generator itself and by the Rust domain tests on the tracked fixture
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from generate_irodori_cando import (
@@ -105,12 +107,22 @@ def test_expected_constants_match_approved_band_semantics():
     assert EXPECTED_BAND_TOTALS == {"A1": 107, "A2.1": 109, "A2": 125}
 
 
-def test_build_json_is_deterministic_and_carries_version_and_source():
-    entries = parse_entries([source_row(1.0, "A1", "入門／第1課／活動1")])
+def test_parse_then_build_yields_id_ascending_document():
+    """End-to-end determinism: unsorted source rows come out id-ascending.
 
-    first = build_json(entries)
-    second = build_json(list(reversed(entries)))
+    build_json does not sort itself — the guarantee lives in parse_entries,
+    so the check must run through both functions to catch an ordering drift.
+    """
+    entries = parse_entries(
+        [
+            source_row(300.0, "A2", "初級2／第10課／活動1"),
+            source_row(2.0, "A1", "入門／第1課／活動1"),
+            source_row(42.0, "A2", "初級1／第5課／活動2"),
+        ]
+    )
 
-    assert first == second
-    assert '"version": 1' in first
-    assert "2023-10" in first
+    document = json.loads(build_json(entries))
+
+    assert [entry["id"] for entry in document["can_dos"]] == [2, 42, 300]
+    assert document["version"] == 1
+    assert "2023-10" in document["source"]

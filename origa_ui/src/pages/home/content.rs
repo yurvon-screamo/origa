@@ -109,6 +109,32 @@ async fn take_handoff_bounded() -> Option<origa::domain::User> {
     }
 }
 
+/// Irodori learner? Fetch the Can-do catalog and compute band coverage over
+/// the imported lessons. JLPT-only users never hit the network here; a
+/// catalog failure just keeps the readiness card hidden.
+fn spawn_jft_coverage_fetch(
+    imported_sets: HashSet<String>,
+    jft_coverage: RwSignal<Option<JftCoverage>>,
+    disposed: StoredValue<()>,
+) {
+    if !imported_sets.iter().any(|id| id.starts_with("irodori_")) {
+        return;
+    }
+    spawn_local(async move {
+        match JftCandoLoaderImpl::new().load().await {
+            Ok(catalog) => {
+                if disposed.is_disposed() {
+                    return;
+                }
+                jft_coverage.set(Some(catalog.coverage(&imported_sets)));
+            },
+            Err(e) => {
+                tracing::warn!("JFT readiness catalog unavailable, card hidden: {e}");
+            },
+        }
+    });
+}
+
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let i18n = use_i18n();
@@ -201,32 +227,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         tracing::debug!("Home init skipped stats paint: sync already painted");
                     }
 
-                    // Irodori learner? Fetch the Can-do catalog and compute
-                    // band coverage over the imported lessons. JLPT-only
-                    // users never hit the network here; a catalog failure
-                    // just keeps the card hidden.
-                    if user
-                        .imported_sets()
-                        .iter()
-                        .any(|id| id.starts_with("irodori_"))
-                    {
-                        let imported = user.imported_sets().clone();
-                        spawn_local(async move {
-                            match JftCandoLoaderImpl::new().load().await {
-                                Ok(catalog) => {
-                                    if disposed.is_disposed() {
-                                        return;
-                                    }
-                                    jft_coverage.set(Some(catalog.coverage(&imported)));
-                                },
-                                Err(e) => {
-                                    tracing::warn!(
-                                        "JFT readiness catalog unavailable, card hidden: {e}"
-                                    );
-                                },
-                            }
-                        });
-                    }
+                    spawn_jft_coverage_fetch(user.imported_sets().clone(), jft_coverage, disposed);
 
                     is_loading.set(false);
 

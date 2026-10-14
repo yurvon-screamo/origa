@@ -71,7 +71,8 @@ fn BandRow(band: Signal<BandCoverage>, label_key: BandLabel) -> impl IntoView {
         }
     });
 
-    let band_code = move || band.get().band.code().to_string();
+    // Dot-free slug: "A2.1" would break unquoted CSS attribute selectors.
+    let band_slug = move || band.get().band.code().replace('.', "");
     let summary = Signal::derive(move || {
         let b = band.get();
         format!("{}/{} ({:.0}%)", b.covered, b.total, b.percentage())
@@ -81,7 +82,7 @@ fn BandRow(band: Signal<BandCoverage>, label_key: BandLabel) -> impl IntoView {
     view! {
         <div
             class="grid grid-cols-[max-content_1fr_auto] items-center gap-3"
-            data-testid=move || format!("home-jft-band-{}", band_code())
+            data-testid=move || format!("home-jft-band-{}", band_slug())
         >
             <Text size=Signal::from(TextSize::Small)>{label}</Text>
             <div class="progress-track">

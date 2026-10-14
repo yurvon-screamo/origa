@@ -462,7 +462,7 @@ async fn jft_readiness_card_renders_three_band_rows_with_counts() {
         .unwrap();
     // All three band rows render, in learning-path order, with counts and
     // percentages; the imported band shows full coverage.
-    for testid in ["home-jft-band-A1", "home-jft-band-A2.1", "home-jft-band-A2"] {
+    for testid in ["home-jft-band-A1", "home-jft-band-A21", "home-jft-band-A2"] {
         assert!(
             wrapper
                 .query_selector(&format!("[data-testid=\"{testid}\"]"))
