@@ -1,6 +1,6 @@
 ---
 title: "日本語の独学法：最初の30日と、その後のループ"
-slug: /blog/how-to-learn-japanese-by-yourself
+slug: /ja/blog/how-to-learn-japanese-by-yourself
 locale: ja
 meta_title: "日本語の独学法 — 最初の30日と学習ループ"
 meta_description: "独学は才能やアプリではなく、構造の欠如で失敗します。1か月目から通年まで機能する1つの学習ループと、最初の30日の具体的プラン。"
