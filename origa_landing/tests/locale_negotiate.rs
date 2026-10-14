@@ -356,9 +356,10 @@ async fn lang_query_param_ru_sets_cookie() {
 
 #[tokio::test]
 async fn invalid_lang_param_ignored() {
-    // An unrecognised ?lang value (not en/ru/ko/vi) must not 500, set a bogus
-    // cookie, or otherwise alter behaviour — it falls through to the normal
-    // cookie / Accept-Language negotiation exactly as if the param were absent.
+    // An unrecognised ?lang value (not one of the supported locales) must
+    // not 500, set a bogus cookie, or otherwise alter behaviour — it falls
+    // through to the normal cookie / Accept-Language negotiation exactly as
+    // if the param were absent.
     let (status, headers) = request("/?lang=xyz", Method::GET, Some("ru"), None).await;
 
     assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);

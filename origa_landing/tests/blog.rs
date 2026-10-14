@@ -2,9 +2,11 @@
 //!
 //! Mirrors the convention in `tests/seo_meta.rs`: render the production
 //! router via `tower::ServiceExt::oneshot`, parse the resulting HTML with
-//! plain string assertions. Coverage spans all 4 locales (EN/RU/KO/VI) for
-//! every published article, plus the index page and the legacy-slug 308
-//! redirect.
+//! plain string assertions. `ALL_SLUGS` pins the full-coverage article
+//! cluster (every locale serves it natively) and is asserted across all 5
+//! locales (EN/RU/KO/VI/JA); partial-coverage clusters (EN+RU-only, JFT
+//! EN/RU/KO, VI-only) are covered by dedicated tests, plus the index page
+//! and the legacy-slug 308 redirect.
 
 #![cfg(feature = "ssr")]
 
@@ -167,7 +169,9 @@ async fn seed_article_html_is_sanitized() {
 }
 
 // =========================================================================
-// hreflang — now uniform 5-element set on every article (en/ru/ko/vi + x-default)
+// hreflang — the full-coverage cluster carries a uniform 5-element set on
+// every article (en/ru/ko/vi + x-default); partial clusters (EN+RU-only,
+// JFT EN/RU/KO, VI-only) advertise only their own translations
 // =========================================================================
 
 #[tokio::test]
