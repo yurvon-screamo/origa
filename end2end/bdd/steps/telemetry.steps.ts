@@ -73,8 +73,10 @@ Then('трекер Umami отправил события всех шагов о�
 
     // Exact equality: the collector holds precisely the funnel, no duplicate
     // starts (intra-step mutations must not re-fire them) and no extras.
-    // Navigation entries are in the message so a page reload mid-walk (the
-    // one way wasm-level dedup resets) is visible in the failure report.
+    // Navigation entries are in the message for failure forensics: the
+    // sessionStorage dedup survives reloads, so a duplicate start here
+    // means a second wasm session (fresh tab / storage failure), not a
+    // reload mid-walk.
     const navigations = await page.evaluate(() =>
         performance
             .getEntriesByType("navigation")
