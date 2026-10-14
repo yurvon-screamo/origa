@@ -80,7 +80,7 @@ fn BandRow(band: Signal<BandCoverage>, label_key: BandLabel) -> impl IntoView {
 
     view! {
         <div
-            class="grid grid-cols-[3.5rem_1fr_auto] items-center gap-3"
+            class="grid grid-cols-[max-content_1fr_auto] items-center gap-3"
             data-testid=move || format!("home-jft-band-{}", band_code())
         >
             <Text size=Signal::from(TextSize::Small)>{label}</Text>
