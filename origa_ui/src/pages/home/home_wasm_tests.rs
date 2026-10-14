@@ -8,6 +8,7 @@ use std::collections::HashSet;
 
 use leptos::prelude::*;
 use leptos::task::tick;
+use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use crate::pages::home::category_grid::CategoryProgressGrid;
@@ -422,7 +423,8 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         "overdue drop must not match a longer number; got: {overdue_text}"
     );
 
-    // Дорогие слова: доля и топ.
+    // Дорогие слова: доля и топ. Топ-слово живёт в свёрнутых
+    // доказательствах: раскрываем кликом по кнопке, затем ассертим.
     let words_text = wrapper
         .query_selector("[data-testid=\"is4-hardest-words\"]")
         .unwrap()
@@ -433,9 +435,23 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
         words_text.contains("1 in 26") || words_text.contains("of 52"),
         "hardest-words verdict must show the ratio; got: {words_text}"
     );
+    let proofs_button = wrapper
+        .query_selector("[data-testid=\"is4-hardest-words-proofs\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    proofs_button.click();
+    tick().await;
+    let words_proofs_text = wrapper
+        .query_selector("[data-testid=\"is4-hardest-words\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
     assert!(
-        words_text.contains("\u{7d50}\u{5c40}"),
-        "hardest-words proofs must include the top word; got: {words_text}"
+        words_proofs_text.contains("\u{7d50}\u{5c40}"),
+        "hardest-words proofs must include the top word; got: {words_proofs_text}"
     );
 }
 
