@@ -2,12 +2,13 @@ use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
 use super::{
-    ActivityChart, ActivityDataPoint, CompletionForecast, JlptProgressCard, JlptSkeleton,
-    RatingRatio, RecentlyStudiedItem, StudiedTodayList, TodayOverview, TodayOverviewCard,
-    WelcomeCard, compute_30day_chart_data, compute_completion_forecast, compute_rating_ratio,
-    compute_studied_today, compute_today_overview,
+    ActivityChart, ActivityDataPoint, CompletionForecast, JftReadinessCard, JlptProgressCard,
+    JlptSkeleton, RatingRatio, RecentlyStudiedItem, StudiedTodayList, TodayOverview,
+    TodayOverviewCard, WelcomeCard, compute_30day_chart_data, compute_completion_forecast,
+    compute_rating_ratio, compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
+use crate::loaders::JftCandoLoaderImpl;
 use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::{HybridUserRepository, get_last_sync_time, set_last_sync_time};
 use crate::store::ConnectivityStore;
@@ -18,6 +19,7 @@ use crate::ui_components::{ToastContainer, ToastData};
 use crate::utils::display_name::display_name_for;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::domain::JftCoverage;
 use origa::domain::JlptProgress;
 use origa::traits::UserRepository;
 
@@ -125,6 +127,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let rating_ratio: RwSignal<Option<RatingRatio>> = RwSignal::new(None);
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
+    // JFT-Basic readiness (#760): None hides the card — no Irodori imports,
+    // or the CDN catalog failed to load (offline paths stay quiet).
+    let jft_coverage: RwSignal<Option<JftCoverage>> = RwSignal::new(None);
 
     let is_loading = RwSignal::new(true);
     let user_name: RwSignal<String> = RwSignal::new(String::new());
@@ -194,6 +199,33 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         stats_painter.set_value(StatsPainter::Init);
                     } else {
                         tracing::debug!("Home init skipped stats paint: sync already painted");
+                    }
+
+                    // Irodori learner? Fetch the Can-do catalog and compute
+                    // band coverage over the imported lessons. JLPT-only
+                    // users never hit the network here; a catalog failure
+                    // just keeps the card hidden.
+                    if user
+                        .imported_sets()
+                        .iter()
+                        .any(|id| id.starts_with("irodori_"))
+                    {
+                        let imported = user.imported_sets().clone();
+                        spawn_local(async move {
+                            match JftCandoLoaderImpl::new().load().await {
+                                Ok(catalog) => {
+                                    if disposed.is_disposed() {
+                                        return;
+                                    }
+                                    jft_coverage.set(Some(catalog.coverage(&imported)));
+                                },
+                                Err(e) => {
+                                    tracing::warn!(
+                                        "JFT readiness catalog unavailable, card hidden: {e}"
+                                    );
+                                },
+                            }
+                        });
                     }
 
                     is_loading.set(false);
@@ -324,6 +356,15 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         jlpt_progress=Signal::derive(move || jlpt_progress.get())
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
+
+                    <Show when=move || jft_coverage.get().is_some()>
+                        <JftReadinessCard
+                            coverage=Signal::derive(move || {
+                                jft_coverage.get().expect("guarded by the enclosing Show")
+                            })
+                            test_id=Signal::derive(|| "home-jft-readiness".to_string())
+                        />
+                    </Show>
 
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,5fr)_minmax(360px,7fr)] lg:gap-8">
                         <TodayOverviewCard

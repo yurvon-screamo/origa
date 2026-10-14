@@ -69,11 +69,10 @@ pub struct JftCandoCatalog {
 
 impl JftCandoCatalog {
     pub fn parse(json: &str) -> Result<Self, OrigaError> {
-        let document: CatalogDocument = serde_json::from_str(json).map_err(|e| {
-            OrigaError::WellKnownSetParseError {
+        let document: CatalogDocument =
+            serde_json::from_str(json).map_err(|e| OrigaError::WellKnownSetParseError {
                 reason: format!("irodori_cando.json parse failed: {e}"),
-            }
-        })?;
+            })?;
         if document.can_dos.is_empty() {
             return Err(OrigaError::WellKnownSetParseError {
                 reason: "irodori_cando.json has no can_dos".to_string(),
@@ -96,27 +95,28 @@ impl JftCandoCatalog {
             }
         }
 
-        let bands = JftBand::ALL
-            .into_iter()
-            .map(|band| BandCoverage {
+        let bands = std::array::from_fn(|index| {
+            let band = JftBand::ALL[index];
+            BandCoverage {
                 band,
                 covered: covered_per_band.get(&band).copied().unwrap_or(0),
                 total: total_per_band.get(&band).copied().unwrap_or(0),
-            })
-            .collect();
+            }
+        });
 
         JftCoverage { bands }
     }
 }
 
-/// Coverage across all bands, in [`JftBand::ALL`] order.
+/// Coverage across all bands, in [`JftBand::ALL`] order. The band count is
+/// fixed by construction, so the UI indexes rows without Option handling.
 #[derive(Debug, Clone, PartialEq)]
 pub struct JftCoverage {
-    bands: Vec<BandCoverage>,
+    bands: [BandCoverage; 3],
 }
 
 impl JftCoverage {
-    pub fn bands(&self) -> &[BandCoverage] {
+    pub fn bands(&self) -> &[BandCoverage; 3] {
         &self.bands
     }
 

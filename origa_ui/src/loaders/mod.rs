@@ -4,6 +4,7 @@ pub mod dictionary;
 pub mod example_loader;
 pub mod furigana_dict_loader;
 pub mod grammar_precompute_loader;
+pub mod jft_cando_loader;
 pub mod jlpt_content_loader;
 #[cfg(all(target_arch = "wasm32", test))]
 mod kanji_art_heal_wasm_tests;
@@ -20,6 +21,7 @@ pub mod well_known_set_loader;
 #[cfg(target_arch = "wasm32")]
 pub mod whisper_model_loader;
 
+pub use jft_cando_loader::JftCandoLoaderImpl;
 pub use jlpt_content_loader::{get_jlpt_content, recalculate_user_jlpt_progress};
 pub use ocr_model_loader::ModelLoader;
 pub use well_known_set_loader::WellKnownSetLoaderImpl;

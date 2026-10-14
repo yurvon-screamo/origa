@@ -389,7 +389,13 @@
         "badge_words": "Words",
         "badge_grammar": "Grammar",
         "rating_accuracy": "Accuracy",
-        "counters_label": "Counters"
+        "counters_label": "Counters",
+        "jft_readiness": {
+            "subtitle": "Irodori Can-do coverage (341 of the 381 JFT-Basic framework items). Pass level A2 = 200/250 points.",
+            "a1": "A1",
+            "a2_1": "A2.1",
+            "a2": "A2 (pass)"
+        }
     },
     "login": {
         "or_login_with": "or sign in / register with",

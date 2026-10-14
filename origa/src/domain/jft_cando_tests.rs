@@ -71,7 +71,8 @@ fn importing_one_lesson_moves_only_its_own_band(#[case] band: JftBand, #[case] l
             );
         } else {
             assert_eq!(
-                band_coverage.covered, 0,
+                band_coverage.covered,
+                0,
                 "band {} must stay untouched",
                 band_coverage.band.code()
             );
@@ -84,7 +85,7 @@ fn importing_every_lesson_yields_full_coverage() {
     // Arrange: every lesson of every band.
     let all_lessons: HashSet<String> = JftBand::ALL
         .into_iter()
-        .flat_map(|band| fixture_lessons_of_band(band))
+        .flat_map(fixture_lessons_of_band)
         .collect();
 
     // Act
@@ -135,7 +136,10 @@ fn bands_are_ordered_along_the_learning_path() {
 fn parse_rejects_malformed_documents(#[case] json: &str) {
     let result = JftCandoCatalog::parse(json);
 
-    assert!(matches!(result, Err(OrigaError::WellKnownSetParseError { .. })));
+    assert!(matches!(
+        result,
+        Err(OrigaError::WellKnownSetParseError { .. })
+    ));
 }
 
 #[test]
@@ -143,16 +147,24 @@ fn parse_rejects_unknown_band_and_level_tags() {
     // The enums are the data contract: unknown official tags must fail loudly
     // instead of slipping through as opaque strings.
     // Arrange
-    let bad_band = r#"{"can_dos": [{"id": 1, "level": "A1", "band": "B1", "lesson": "irodori_nyuumon_01"}]}"#;
-    let bad_level = r#"{"can_dos": [{"id": 1, "level": "C1", "band": "A1", "lesson": "irodori_nyuumon_01"}]}"#;
+    let bad_band =
+        r#"{"can_dos": [{"id": 1, "level": "A1", "band": "B1", "lesson": "irodori_nyuumon_01"}]}"#;
+    let bad_level =
+        r#"{"can_dos": [{"id": 1, "level": "C1", "band": "A1", "lesson": "irodori_nyuumon_01"}]}"#;
 
     // Act
     let band_result = JftCandoCatalog::parse(bad_band);
     let level_result = JftCandoCatalog::parse(bad_level);
 
     // Assert
-    assert!(matches!(band_result, Err(OrigaError::WellKnownSetParseError { .. })));
-    assert!(matches!(level_result, Err(OrigaError::WellKnownSetParseError { .. })));
+    assert!(matches!(
+        band_result,
+        Err(OrigaError::WellKnownSetParseError { .. })
+    ));
+    assert!(matches!(
+        level_result,
+        Err(OrigaError::WellKnownSetParseError { .. })
+    ));
 }
 
 #[test]
