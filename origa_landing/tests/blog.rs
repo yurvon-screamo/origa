@@ -843,8 +843,8 @@ async fn blog_index_does_not_shadow_article_route() {
 }
 
 #[tokio::test]
-async fn all_four_blog_index_urls_return_200() {
-    for uri in ["/blog", "/ru/blog", "/ko/blog", "/vi/blog"] {
+async fn all_blog_index_urls_return_200() {
+    for uri in ["/blog", "/ru/blog", "/ko/blog", "/vi/blog", "/ja/blog"] {
         let (status, body) = get(uri).await;
         assert_eq!(status, StatusCode::OK, "expected 200 for {uri}");
         assert!(
@@ -852,6 +852,42 @@ async fn all_four_blog_index_urls_return_200() {
             "{uri} must render the blog index page"
         );
     }
+}
+
+#[tokio::test]
+async fn ja_blog_index_renders_empty_state_in_japanese() {
+    // JA ships no blog articles yet (issue #772): the index must render the
+    // localized empty state rather than leaking EN articles into the JA URL
+    // space (list_by_locale is a strict locale filter).
+    let (status, body) = get("/ja/blog").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.contains("公開された記事はまだありません"),
+        "JA blog index must show the Japanese empty state"
+    );
+    assert!(
+        !body.contains("blog-index__item-link"),
+        "JA blog index must not list EN articles"
+    );
+}
+
+#[tokio::test]
+async fn ja_blog_article_falls_back_to_en_with_noindex_and_canonical() {
+    // /ja/blog/<existing-slug> has no JA translation: the EN article is
+    // served as a fallback with `noindex, follow` and a canonical pointing
+    // at the EN URL (same contract as every other non-native locale).
+    let (status, body) = get("/ja/blog/anki-alternative-japanese").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.contains(r#"name="robots" content="noindex"#),
+        "JA fallback article must carry noindex"
+    );
+    assert!(
+        body.contains(
+            r#"rel="canonical" href="https://origa.uwuwu.net/blog/anki-alternative-japanese""#
+        ),
+        "JA fallback article canonical must point at the EN URL"
+    );
 }
 
 // =========================================================================
@@ -865,6 +901,7 @@ async fn header_includes_blog_link_on_every_locale() {
         ("/ru", "/ru/blog", "Блог"),
         ("/ko", "/ko/blog", "블로그"),
         ("/vi", "/vi/blog", "Blog"),
+        ("/ja", "/ja/blog", "ブログ"),
     ];
     for (uri, expected_href, expected_label) in cases {
         let (_, body) = get(uri).await;

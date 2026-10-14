@@ -394,7 +394,7 @@ async fn negotiate_locale(
 
 /// Extract a valid locale from the `?lang=XX` query parameter on a request to
 /// "/". Returns `None` when the parameter is absent or its value is not one of
-/// the supported locales (en/ru/ko/vi), so the caller can fall through to
+/// the supported locales (en/ru/ko/vi/ja), so the caller can fall through to
 /// normal cookie / Accept-Language negotiation.
 fn query_locale_param(uri: &Uri) -> Option<Locale> {
     let query = uri.query()?;
@@ -465,7 +465,7 @@ fn locale_from_accept_language(header: &str) -> Option<Locale> {
     // "en-US,en;q=0.9,ru;q=0.8". Each entry becomes (primary subtag, q). Tags
     // with q=0 ("not acceptable") are dropped. The entries are then sorted by
     // q descending — stable, so ties keep the header's listed order — and the
-    // first supported locale (en/ru/ko/vi) wins. English resolves to `None`
+    // first supported locale (en/ru/ko/vi/ja) wins. English resolves to `None`
     // (the root URL); a non-English locale becomes a redirect target.
     //
     // Q-values matter: an English-primary bilingual ("en;q=0.9,ru;q=0.8") must
@@ -499,6 +499,7 @@ fn locale_from_accept_language(header: &str) -> Option<Locale> {
             "ru" => return Some(Locale::Ru),
             "ko" => return Some(Locale::Ko),
             "vi" => return Some(Locale::Vi),
+            "ja" => return Some(Locale::Ja),
             _ => {},
         }
     }

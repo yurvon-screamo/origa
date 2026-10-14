@@ -151,6 +151,11 @@ fn app_store_badge(locale: Locale) -> &'static str {
         Locale::Ru => "/badges/app-store-ru.svg",
         Locale::Ko => "/badges/app-store-ko.svg",
         Locale::Vi => "/badges/app-store-vi.svg",
+        // No official ja-SVG in the repo yet (only Apple's unmodified badge
+        // artwork is allowed); the EN badge is the interim choice, matching
+        // `image_prefix() == "en"` for Ja. Backlog: drop the official
+        // ja badge into `public/badges/app-store-ja.svg` and switch this arm.
+        Locale::Ja => "/badges/app-store-en.svg",
     }
 }
 

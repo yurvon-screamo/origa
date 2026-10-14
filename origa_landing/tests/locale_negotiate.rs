@@ -57,6 +57,7 @@ fn header_value(headers: &HeaderMap, name: &http::HeaderName) -> Option<String> 
 #[case::ru("ru", "/ru")]
 #[case::ko("ko", "/ko")]
 #[case::vi("vi", "/vi")]
+#[case::ja("ja", "/ja")]
 #[case::ru_region("ru-RU,ru;q=0.9,en;q=0.8", "/ru")]
 #[tokio::test]
 async fn accept_language_redirects_to_localised_root(
@@ -89,6 +90,7 @@ async fn accept_language_redirects_to_localised_root(
 #[case::ru("ru", "/ru")]
 #[case::ko("ko", "/ko")]
 #[case::vi("vi", "/vi")]
+#[case::ja("ja", "/ja")]
 #[tokio::test]
 async fn saved_cookie_redirects_to_localised_root(
     #[case] value: &str,
@@ -117,7 +119,9 @@ async fn saved_cookie_redirects_to_localised_root(
 #[case::en("en")]
 #[case::en_region("en-US,en;q=0.9")]
 #[case::en_primary_with_ru_secondary("en-US,en;q=0.9,ru;q=0.8")]
-#[case::unsupported_ja("ja,en;q=0.5")]
+// "ja" became a supported locale (issue #772); use a genuinely unsupported
+// language as the unsupported-Accept-Language case.
+#[case::unsupported_de("de,en;q=0.5")]
 #[case::ru_not_acceptable("ru;q=0,en")]
 #[case::empty("")]
 #[tokio::test]

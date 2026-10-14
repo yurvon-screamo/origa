@@ -93,6 +93,29 @@ async fn vi_docs_index_returns_200() {
     );
 }
 
+#[tokio::test]
+async fn ja_docs_fall_back_to_en_with_noindex_and_canonical() {
+    // JA ships no docs yet (issue #772) — the first live exercise of the
+    // docs fallback branch: the EN page renders with `noindex, follow` and
+    // a canonical pointing at the EN URL, so crawlers never index the JA
+    // URL as duplicate content.
+    for path in ["/ja/docs", "/ja/docs/getting-started"] {
+        let (status, body) = get(path).await;
+        assert_eq!(status, StatusCode::OK, "expected 200 for {path}");
+        assert!(
+            body.contains(r#"name="robots" content="noindex"#),
+            "JA docs fallback {path} must carry noindex"
+        );
+    }
+    let (_, body) = get("/ja/docs/getting-started").await;
+    assert!(
+        body.contains(&format!(
+            r#"rel="canonical" href="{BASE_URL}/docs/getting-started""#
+        )),
+        "JA docs fallback canonical must point at the EN URL"
+    );
+}
+
 // =========================================================================
 // SEO: native pages are indexable, self-canonical, fully alternated
 // =========================================================================

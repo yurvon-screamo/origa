@@ -213,7 +213,7 @@ async fn og_locale_alternates_present_for_other_locales() {
         "current og:locale missing; got first 600 chars: {}",
         body.chars().take(600).collect::<String>()
     );
-    for alt in ["en_US", "ko_KR", "vi_VN"] {
+    for alt in ["en_US", "ko_KR", "vi_VN", "ja_JP"] {
         assert!(
             body.contains(&format!(
                 r#"property="og:locale:alternate" content="{alt}""#
@@ -232,13 +232,13 @@ async fn og_locale_alternates_present_for_other_locales() {
 }
 
 #[tokio::test]
-async fn en_home_has_three_alternates() {
+async fn en_home_has_four_alternates() {
     let body = get_body("/").await;
     let alt_count = body.matches(r#"property="og:locale:alternate""#).count();
-    // EN + RU + KO + VI = 4 locales; minus the current = 3 alternates.
+    // EN + RU + KO + VI + JA = 5 locales; minus the current = 4 alternates.
     assert_eq!(
-        alt_count, 3,
-        "expected 3 og:locale:alternate tags, got {alt_count}"
+        alt_count, 4,
+        "expected 4 og:locale:alternate tags, got {alt_count}"
     );
 }
 
@@ -348,6 +348,51 @@ async fn ko_keywords_are_korean() {
         has_korean,
         "KO keywords meta must contain Korean text; got first 800 chars: {}",
         body.chars().take(800).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn ja_keywords_are_japanese() {
+    let body = get_body("/ja").await;
+    let has_japanese =
+        body.contains(r#"<meta name="keywords" content="日本語"#) || body.contains("漢字");
+    assert!(
+        has_japanese,
+        "JA keywords meta must contain Japanese text; got first 800 chars: {}",
+        body.chars().take(800).collect::<String>()
+    );
+}
+
+#[tokio::test]
+async fn ja_landing_renders_japanese_hero_with_lang_ja() {
+    // JA locale (issue #772): the page must render as real Japanese content
+    // — correct <html lang>, localized hero, and the expected canonical URL.
+    let body = get_body("/ja").await;
+    assert!(
+        body.contains(r#"<html lang="ja">"#),
+        "JA home must set <html lang=\"ja\">; got first 600 chars: {}",
+        body.chars().take(600).collect::<String>()
+    );
+    assert!(
+        body.contains("自分の言語で日本語を学べるアプリ"),
+        "JA hero title missing"
+    );
+    assert!(
+        body.contains(r#"rel="canonical" href="https://origa.uwuwu.net/ja""#),
+        "JA home canonical must be /ja"
+    );
+    assert!(
+        body.contains(r#"property="og:locale" content="ja_JP""#),
+        "JA home must carry og:locale ja_JP"
+    );
+    // The static-page hreflang cluster advertises every locale including JA.
+    assert!(
+        body.contains(r#"hreflang="ja" href="https://origa.uwuwu.net/ja""#),
+        "JA home must list itself under hreflang=ja"
+    );
+    assert!(
+        body.contains(r#"hreflang="vi" href="https://origa.uwuwu.net/vi""#),
+        "JA home must still list the VI alternate"
     );
 }
 
@@ -490,7 +535,13 @@ async fn footer_has_legal_links_on_every_locale() {
     // /privacy and /terms links on every locale variant of the home page.
     // Required for Google Play policy compliance (Privacy Policy reachable
     // from the app's landing site on every supported language).
-    for (locale_prefix, path_prefix) in [("", ""), ("/ru", "/ru"), ("/ko", "/ko"), ("/vi", "/vi")] {
+    for (locale_prefix, path_prefix) in [
+        ("", ""),
+        ("/ru", "/ru"),
+        ("/ko", "/ko"),
+        ("/vi", "/vi"),
+        ("/ja", "/ja"),
+    ] {
         let uri = if locale_prefix.is_empty() {
             "/".to_string()
         } else {
@@ -538,7 +589,7 @@ async fn home_schema_description_covers_jlpt_levels_all_locales() {
     // differentiator, so the home description must state it in every
     // locale. Guards against locale drift: KO/VI copy carried the levels
     // while EN/RU did not. The dash is U+2013, matching the content files.
-    for uri in ["/", "/ru", "/ko", "/vi"] {
+    for uri in ["/", "/ru", "/ko", "/vi", "/ja"] {
         let body = get_body(uri).await;
         let json = first_jsonld_block(&body);
         let value: serde_json::Value = serde_json::from_str(&json).expect("JSON-LD must parse");
