@@ -5,6 +5,7 @@ mod furigana_annotator;
 pub(crate) mod grammar;
 mod import_preview;
 mod japanese;
+mod jft_cando;
 mod jlpt_content;
 mod jlpt_progress;
 mod knowledge;
@@ -38,6 +39,9 @@ pub use grammar::{detect_format_map_rules, detect_grammar_rules_in_text, detect_
 pub use import_preview::{WordImportClassifier, WordImportOutcome, WordImportPreview};
 pub use japanese::{JapaneseChar, JapaneseText};
 pub use japanese::{hiragana_to_katakana, katakana_to_hiragana, split_japanese_sentences};
+pub use jft_cando::{
+    BandCoverage, CandoEntry, JftBand, JftCandoCatalog, JftCandoLevel, JftCoverage,
+};
 pub use jlpt_content::{JlptContent, JlptContentError};
 pub use jlpt_progress::{
     CategoryCounts, CategoryProgress, JlptProgress, LevelProgressDetail, ProgressUpdate,
