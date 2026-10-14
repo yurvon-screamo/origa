@@ -15,9 +15,11 @@ mod scoring_mark_all;
 mod scoring_progress;
 mod scoring_step;
 mod summary_step;
+mod telemetry;
 
 use crate::i18n::{
-    Locale, locale_to_native_language, native_language_to_locale, t, td_string, use_i18n,
+    Locale, locale_code, locale_to_native_language, native_language_to_locale, t, td_string,
+    use_i18n,
 };
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
@@ -46,6 +48,7 @@ use progress::ProgressStep;
 use scoring_finish_button::ScoringFinishButton;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
+use telemetry::{StepPhase, track_step};
 
 /// Which destructive action is awaiting confirmation in the modal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -194,6 +197,18 @@ pub fn Onboarding() -> impl IntoView {
         }
     });
 
+    // Step telemetry (issue #774): every entry into a step emits
+    // `onboarding_<step>_start` — mount, forward/back navigation and the
+    // resume jump all included (attempt semantics, ADR-054 §5). The tracked
+    // dependency is the step only: locale is read untracked, so flipping
+    // the language on the intro step never re-fires the start event.
+    let i18n_for_step_start = i18n;
+    Effect::new(move |_| {
+        let step = state.get().current_step;
+        let locale = locale_code(&i18n_for_step_start.get_locale_untracked());
+        track_step(step, StepPhase::Start, locale);
+    });
+
     let repo_for_init = repository.clone();
     let loader = WellKnownSetLoaderImpl::new();
     let initialized = RwSignal::new(false);
@@ -267,6 +282,15 @@ pub fn Onboarding() -> impl IntoView {
         // the name is optional, failures are logged inside the callback).
         if matches!(state.get_untracked().current_step, OnboardingStep::Intro) {
             save_intro_username.run(());
+        }
+        // The step being left is the one whose Next was clicked. Scoring
+        // has no Next button; its completion is the declarative
+        // `onboarding_complete` on the finish button (ADR-054 §5), so it is
+        // excluded here.
+        let completed_step = state.get_untracked().current_step;
+        if !matches!(completed_step, OnboardingStep::Scoring) {
+            let locale = locale_code(&i18n.get_locale_untracked());
+            track_step(completed_step, StepPhase::Complete, locale);
         }
         state.update(|s| {
             s.go_to_next_step();
