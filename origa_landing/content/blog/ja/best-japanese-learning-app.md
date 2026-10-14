@@ -102,11 +102,11 @@ Origaには、ネイティブの日本語コンテンツ（アニメ、ビジュ
 
 ### Origaの間隔反復はAnkiと同じですか？
 
-はい、両方ともFSRSです。詳細は[Ankiの記事](/blog/anki-alternative-japanese)を参照してください。
+はい、両方ともFSRSです。詳細は[Ankiの記事](/ja/blog/anki-alternative-japanese)を参照してください。
 
 ### Ankiのデッキは残せますか？
 
-はい。Origaは`.anki2`、`.anki21`、`.anki21b`をインポートします。デッキと復習履歴が引き継がれます。移行の詳細は[Ankiの記事](/blog/anki-alternative-japanese)を参照してください。
+はい。Origaは`.anki2`、`.anki21`、`.anki21b`をインポートします。デッキと復習履歴が引き継がれます。移行の詳細は[Ankiの記事](/ja/blog/anki-alternative-japanese)を参照してください。
 
 ### Origaは無料ですか？
 
@@ -114,7 +114,7 @@ Origaには、ネイティブの日本語コンテンツ（アニメ、ビジュ
 
 ### オフラインで動きますか？
 
-はい。各カテゴリで「オフライン」が何をカバーするかは、[オフラインの記事](/blog/best-japanese-learning-app-offline)を参照してください。
+はい。各カテゴリで「オフライン」が何をカバーするかは、[オフラインの記事](/ja/blog/best-japanese-learning-app-offline)を参照してください。
 
 ### iPhoneしか使わない場合は？
 

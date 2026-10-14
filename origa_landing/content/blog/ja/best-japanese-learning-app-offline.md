@@ -129,7 +129,7 @@ Origaの通常フローにはインターネット接続を必要とする機能
 
 ## 選び方
 
-オフラインの必要性が「既存のAnkiデッキを地下鉄で復習する」なら、AnkiMobile（iOS）またはAnkiDroid（Android）が最も安く、実証済みの答えです（[Ankiに留まる時](/blog/anki-alternative-japanese)）。
+オフラインの必要性が「既存のAnkiデッキを地下鉄で復習する」なら、AnkiMobile（iOS）またはAnkiDroid（Android）が最も安く、実証済みの答えです（[Ankiに留まる時](/ja/blog/anki-alternative-japanese)）。
 
 オフラインの必要性が「接続の悪い1か月の旅行中に、出会った漫画や教科書から語彙を追加し続けたい」なら、OCRとコンテンツ作成がオフラインで動くアプリが必要で、復習だけでは不十分です。Origaはまさにそのユースケースのために作られました。
 
