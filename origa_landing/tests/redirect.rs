@@ -81,6 +81,7 @@ async fn send_with_cache(
 #[case::ru("/ru/", "/ru")]
 #[case::ko("/ko/", "/ko")]
 #[case::vi("/vi/", "/vi")]
+#[case::ja("/ja/", "/ja")]
 #[tokio::test]
 async fn locale_root_with_trailing_slash_redirects(
     #[case] input: &str,
@@ -101,6 +102,7 @@ async fn locale_root_with_trailing_slash_redirects(
 #[case("/ru/download/", "/ru/download")]
 #[case("/ko/features/", "/ko/features")]
 #[case("/vi/download/", "/vi/download")]
+#[case("/ja/features/", "/ja/features")]
 #[case("/privacy/", "/privacy")]
 #[case("/terms/", "/terms")]
 #[case("/ru/privacy/", "/ru/privacy")]
@@ -139,6 +141,7 @@ async fn root_with_trailing_slash_is_not_redirected() {
 #[case("/ru")]
 #[case("/ko")]
 #[case("/vi")]
+#[case("/ja")]
 #[case("/ru/features")]
 #[tokio::test]
 async fn canonical_path_without_trailing_slash_is_not_redirected(#[case] input: &str) {

@@ -2,7 +2,8 @@
 //! compile-time-embedded markdown sources.
 //!
 //! Mirrors [`crate::blog::registry`] in structure but covers the `/docs`
-//! section. Docs ship in all four locales (EN, RU, KO, VI); the EN fallback
+//! section. Docs ship in four locales (EN, RU, KO, VI — no JA yet, see
+//! #772); the EN fallback
 //! in [`crate::pages::docs`] stays as graceful degradation for future pages
 //! that land in fewer locales first (the blog already relies on that pattern
 //! for its EN+RU cluster). The frontmatter parser

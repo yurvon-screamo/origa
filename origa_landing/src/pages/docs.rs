@@ -1,7 +1,8 @@
 //! `/docs` index and `/docs/<slug>` article pages.
 //!
 //! The index renders the `index.md` content for the requested locale. Docs
-//! ship in all four locales; the article pages keep an EN fallback for future
+//! ship in four locales (EN, RU, KO, VI — no JA yet, see #772); the article
+//! pages keep an EN fallback for future
 //! pages that land in fewer locales first — a fallback render carries
 //! `robots: noindex, follow` and a canonical URL pointing at the EN version
 //! (the same strategy the blog uses for its EN+RU cluster). Both layouts
@@ -47,8 +48,9 @@ pub fn DocsArticlePage() -> impl IntoView {
 /// records that the user asked for a non-EN locale but received the EN page —
 /// drives the `noindex` + canonical-redirect SEO signals.
 ///
-/// With docs shipping in all four locales this branch is dormant today; it
-/// exists for future pages added in fewer locales first (the blog relies on
+/// The branch went live with the JA locale (#772): JA docs don't exist yet,
+/// so every `/ja/docs/...` request resolves through the fallback. It also
+/// covers future pages added in fewer locales first (the blog relies on
 /// the same pattern for its EN+RU cluster), so a partial translation degrades
 /// to an EN render instead of a 404.
 enum Resolution {

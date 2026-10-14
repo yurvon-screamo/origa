@@ -53,20 +53,25 @@ fn is_iso_date(value: &str) -> bool {
 
 #[test]
 fn lastmod_appears_once_per_url() {
-    // Each <url> element carries exactly one <lastmod>. As of 2026-09-17 the
-    // count is: 7 static page groups × 4 locales (28) + 4 blog index URLs
+    // Each <url> element carries exactly one <lastmod>. As of 2026-10 the
+    // count is: 7 static page groups × 5 locales (35, JA added in #772)
+    // + 4 blog index URLs
     // + 7 full articles × 4 locales (28) + 5 EN+RU articles × 2 locales (10)
-    // + docs (2 index + 10 article pairs × 4 locales = 44) = 114 <url>
+    // + JFT-Basic cluster: 1 article × 3 locales (3) + 3 VI-only articles (3)
+    // + docs (2 index + 10 article pairs × 4 locales = 44) = 127 <url>
     // entries. The count assertion catches drift in either direction — a
     // missing locale variant or a duplicate entry.
     let values = lastmod_values(&sitemap_contents());
-    assert_eq!(values.len(), 114, "expected one <lastmod> per <url>");
+    assert_eq!(values.len(), 127, "expected one <lastmod> per <url>");
 }
 
 #[test]
 fn every_url_block_has_full_hreflang_alternate_set() {
     // Every URL carries the hreflang set for its locale coverage:
-    // - Pages with all 4 locales (static, blog core, docs): 5 entries
+    // - Static pages: all 5 locales incl. JA (#772) → 6 entries
+    //   (en/ru/ko/vi/ja + x-default). Detected via the /ja URL, which only
+    //   static blocks advertise while JA blog/docs are out of the sitemap.
+    // - Blog core and docs with all 4 locales: 5 entries
     //   (en/ru/ko/vi + x-default).
     // - The EN+RU-only blog cluster (2026-08): 3 entries (en/ru + x-default)
     //   — alternates must point only at translations that exist (see the
@@ -82,8 +87,33 @@ fn every_url_block_has_full_hreflang_alternate_set() {
     for block in xml.split("<url>").skip(1) {
         let url_block = block.split("</url>").next().unwrap_or(block);
         let alternate_count = url_block.matches("<xhtml:link rel=\"alternate\"").count();
+        // JFT-Basic cluster (#772 registry fix): partial coverage classes —
+        // ssw-japanese-test in EN/RU/KO → 4 alternates; the VI-only trio
+        // → 2 alternates.
+        let is_ssw = url_block.contains("/blog/jft-basic-ssw-japanese-test");
+        let is_vi_jft = [
+            "jft-basic-preparation",
+            "jft-basic-test-vietnam",
+            "jft-basic-vs-jlpt-n4",
+        ]
+        .iter()
+        .any(|s| url_block.contains(s));
         let is_partial = PARTIAL_COVERAGE_PATHS.iter().any(|p| url_block.contains(p));
-        let expected = if is_partial { 3 } else { 5 };
+        let expected = if url_block.contains("origa.uwuwu.net/ja") {
+            // Static pages ship in all 5 locales incl. JA (issue #772). JA
+            // blog/docs are not in the sitemap yet, so any URL block that
+            // advertises /ja is a static page: 6 alternates
+            // (en/ru/ko/vi/ja + x-default).
+            6
+        } else if is_ssw {
+            4
+        } else if is_vi_jft {
+            2
+        } else if is_partial {
+            3
+        } else {
+            5
+        };
         assert_eq!(
             alternate_count, expected,
             "expected {expected} hreflang alternates for this URL; got {alternate_count} in:\n{url_block}"
@@ -204,6 +234,10 @@ fn article_urls_carry_frontmatter_lastmod() {
         (
             "blog/en/how-many-kanji-to-learn.md",
             "https://origa.uwuwu.net/blog/how-many-kanji-to-learn",
+        ),
+        (
+            "blog/vi/jft-basic-test-vietnam.md",
+            "https://origa.uwuwu.net/vi/blog/jft-basic-test-vietnam",
         ),
     ];
     for (content_path, url) in cases {

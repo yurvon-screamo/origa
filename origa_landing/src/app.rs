@@ -137,6 +137,19 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("docs") view=DocsIndexPage />
                     <Route path=path!("docs/:slug") view=DocsArticlePage />
                 </ParentRoute>
+                <ParentRoute path=path!("ja") view=move || view! { <Layout locale=Locale::Ja /> }>
+                    <Route path=path!("") view=HomePage />
+                    <Route path=path!("features") view=FeaturesPage />
+                    <Route path=path!("compare") view=ComparePage />
+                    <Route path=path!("content") view=IntegrationsPage />
+                    <Route path=path!("download") view=DownloadPage />
+                    <Route path=path!("privacy") view=PrivacyPage />
+                    <Route path=path!("terms") view=TermsPage />
+                    <Route path=path!("blog") view=BlogIndexPage />
+                    <Route path=path!("blog/:slug") view=BlogPostPage />
+                    <Route path=path!("docs") view=DocsIndexPage />
+                    <Route path=path!("docs/:slug") view=DocsArticlePage />
+                </ParentRoute>
             </Routes>
         </Router>
     }
