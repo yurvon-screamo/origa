@@ -28,6 +28,7 @@ use std::collections::HashSet;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn is_sync_fresh_within_window_is_true() {
@@ -53,6 +54,25 @@ mod tests {
         assert!(
             !init_should_apply(StatsPainter::Sync),
             "a late init read must not overwrite fresher sync-painted stats"
+        );
+    }
+
+    #[rstest]
+    #[case::no_imports(HashSet::new(), false)]
+    #[case::jlpt_only(HashSet::from(["jlpt_n5".to_string(), "migii_n5_1".to_string()]), false)]
+    #[case::irodori_present(HashSet::from(["irodori_nyuumon_01".to_string()]), true)]
+    #[case::irodori_among_others(
+        HashSet::from(["jlpt_n4".to_string(), "irodori_shokyuu2_18".to_string()]),
+        true
+    )]
+    fn irodori_imports_are_detected_only_for_irodori_sets(
+        #[case] imported: HashSet<String>,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(
+            has_irodori_imports(&imported),
+            expected,
+            "imported: {imported:?}"
         );
     }
 }
@@ -109,6 +129,13 @@ async fn take_handoff_bounded() -> Option<origa::domain::User> {
     }
 }
 
+/// Whether any imported set belongs to the Irodori/JFT track. Users without
+/// Irodori imports never trigger the readiness-card fetch: the card stays
+/// hidden and no CDN request is made.
+fn has_irodori_imports(imported_sets: &HashSet<String>) -> bool {
+    imported_sets.iter().any(|id| id.starts_with("irodori_"))
+}
+
 /// Irodori learner? Fetch the Can-do catalog and compute band coverage over
 /// the imported lessons. JLPT-only users never hit the network here; a
 /// catalog failure just keeps the readiness card hidden.
@@ -117,7 +144,7 @@ fn spawn_jft_coverage_fetch(
     jft_coverage: RwSignal<Option<JftCoverage>>,
     disposed: StoredValue<()>,
 ) {
-    if !imported_sets.iter().any(|id| id.starts_with("irodori_")) {
+    if !has_irodori_imports(&imported_sets) {
         return;
     }
     spawn_local(async move {

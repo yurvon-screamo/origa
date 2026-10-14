@@ -389,13 +389,7 @@
         "badge_words": "Từ",
         "badge_grammar": "Ngữ pháp",
         "rating_accuracy": "Độ chính xác",
-        "counters_label": "Từ đếm",
-        "jft_readiness": {
-            "subtitle": "Độ phủ Can-do của Irodori (341/381 mục khung JFT-Basic). Đậu mức A2 = 200/250 điểm.",
-            "a1": "A1",
-            "a2_1": "A2.1",
-            "a2": "A2 (đậu)"
-        }
+        "counters_label": "Từ đếm"
     },
     "login": {
         "or_login_with": "hoặc đăng nhập / đăng ký bằng",

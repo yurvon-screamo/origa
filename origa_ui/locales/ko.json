@@ -389,13 +389,7 @@
         "badge_words": "단어",
         "badge_grammar": "문법",
         "rating_accuracy": "정확도",
-        "counters_label": "조수사",
-        "jft_readiness": {
-            "subtitle": "Irodori Can-do 커버리지 (JFT-Basic 381개 중 341개). 합격 레벨 A2 = 200/250점.",
-            "a1": "A1",
-            "a2_1": "A2.1",
-            "a2": "A2 (합격)"
-        }
+        "counters_label": "조수사"
     },
     "login": {
         "or_login_with": "또는 다음으로 로그인 / 회원가입",

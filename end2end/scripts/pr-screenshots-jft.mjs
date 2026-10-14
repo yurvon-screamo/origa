@@ -20,7 +20,7 @@ import { join } from "path";
 const OUT = "/tmp/opencode/pr-screens-jft";
 mkdirSync(OUT, { recursive: true });
 
-const BASE = "http://localhost:1420";
+const BASE = process.env.SHOTS_BASE ?? "http://localhost:1420";
 const ADMIN = { email: "admin@localhost", password: "secret" };
 const TRAILBASE = "http://127.0.0.1:4000";
 
@@ -62,9 +62,20 @@ const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     locale: "ru-RU",
 });
+if (process.env.SHOTS_DEBUG) {
+    context.on("console", (msg) => console.log(`[browser:${msg.type()}] ${msg.text()}`));
+    context.on("requestfailed", (req) =>
+        console.log(`[reqfail] ${req.method()} ${req.url()} :: ${req.failure()?.errorText}`),
+    );
+    context.on("response", (res) => {
+        if (res.status() >= 400) console.log(`[http] ${res.status()} ${res.url()}`);
+    });
+}
 await context.addInitScript(() => {
     const g = globalThis;
-    if (g.location?.origin === "http://localhost:1420") {
+    // Same-origin guard: the consent flag belongs to the app origin the
+    // shots run against (SHOTS_BASE may move the app off :1420).
+    if (g.location?.origin === new URL(BASE).origin) {
         g.localStorage?.setItem("origa_resource_download_consented", "true");
     }
 });
@@ -83,12 +94,23 @@ await page.getByTestId("email-input").waitFor({ timeout: 30_000 });
 await page.getByTestId("email-input").fill(email);
 await page.getByTestId("password-input").fill(password);
 await page.getByTestId("login-form").locator("button[type=submit]").click();
-await page.waitForURL(/\/onboarding$/, { timeout: 90_000 });
+// Both terminals are legal: the AD-3 redirect lands on /home, and the Home
+// onboarding guard then moves fresh users to /onboarding (see app.rs AD-3).
+await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
+if (page.url().endsWith("/home")) {
+    await page.goto(`${BASE}/onboarding`, { waitUntil: "domcontentloaded" });
+}
 
 // Onboarding: intro → load → JLPT (none) → apps (Irodori only) → progress
 // (Nyuumon lesson 9) → summary → import → scoring → mark known → finish.
-await page.getByTestId("onboarding-spinner").waitFor({ state: "hidden", timeout: 60_000 });
-await page.getByTestId("onboarding-next").click();
+// A fresh app origin has no resource cache: the first-run consent overlay
+// (or its auto-start download) may block the flow for a while.
+await page
+    .getByTestId("resource-consent-download-button")
+    .click({ timeout: 20_000 })
+    .catch(() => {});
+await page.getByTestId("onboarding-spinner").waitFor({ state: "hidden", timeout: 240_000 });
+await page.getByTestId("onboarding-next").click({ timeout: 240_000 });
 await page.getByTestId("onboarding-load-step").waitFor({ state: "visible", timeout: 10_000 });
 await page.getByTestId("onboarding-next").click();
 await page.getByTestId("onboarding-jlpt-step").waitFor({ state: "visible", timeout: 10_000 });

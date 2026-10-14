@@ -389,13 +389,7 @@
         "badge_words": "Слова",
         "badge_grammar": "Грамматика",
         "rating_accuracy": "Точность",
-        "counters_label": "Счётные суффиксы",
-        "jft_readiness": {
-            "subtitle": "Покрытие Can-do курса Irodori (341 из 381 задания рамки JFT-Basic). Проходной уровень A2 = 200 из 250 баллов.",
-            "a1": "A1",
-            "a2_1": "A2.1",
-            "a2": "A2 (проходной)"
-        }
+        "counters_label": "Счётные суффиксы"
     },
     "login": {
         "or_login_with": "или войти/зарегистрироваться через",
