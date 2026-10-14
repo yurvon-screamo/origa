@@ -23,6 +23,7 @@ pub fn SetCard(
     let is_imported = set_info.is_imported;
     let word_count = set_info.word_count;
     let set_id = set_info.set_id.clone();
+    let is_irodori = set_info.set_type == "Irodori";
 
     let is_selected = Signal::derive({
         let sid = set_id.clone();
@@ -72,10 +73,20 @@ pub fn SetCard(
             <div class="flex-1 min-h-0 mb-3">
                 <MarkdownText content=Signal::derive(move || description.clone()) known_kanji=known_kanji.clone()/>
             </div>
-            <div class="flex items-center justify-between mt-auto">
-                <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
-                    {word_count.map(|c| i18n.get_keys().sets().words_count().inner().to_string().replacen("{}", &c.to_string(), 1)).unwrap_or_default()}
-                </Text>
+            <div class="flex items-center justify-between mt-auto gap-2 flex-wrap">
+                <div class="flex items-center gap-2 min-w-0 flex-wrap">
+                    <Text size=Signal::derive(|| TextSize::Small) variant=Signal::derive(|| TypographyVariant::Muted)>
+                        {word_count.map(|c| i18n.get_keys().sets().words_count().inner().to_string().replacen("{}", &c.to_string(), 1)).unwrap_or_default()}
+                    </Text>
+                    <Show when=move || is_irodori>
+                        <Tag
+                            variant=Signal::derive(|| TagVariant::Default)
+                            test_id=Signal::derive(|| "sets-card-jft-badge".to_string())
+                        >
+                            {t!(i18n, sets.jft_badge)}
+                        </Tag>
+                    </Show>
+                </div>
                 <Show when=move || is_imported>
                     <Tag variant=Signal::derive(|| TagVariant::Olive)>
                         {t!(i18n, sets.imported_tag)}
