@@ -313,8 +313,14 @@ jobs:
                   # Minisign signatures are content-based, so the rename does
                   # not invalidate them. Guards match the Windows pattern —
                   # Dependabot builds run --no-sign and emit no .sig at all.
-                  mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
-                  [ -f "deb/Origa_${VERSION}_amd64.deb.sig" ] && mv "deb/Origa_${VERSION}_amd64.deb.sig" "deb/Origa_amd64.deb.sig" || true
+                  # The deb alias is taken by glob, not by version expansion:
+                  # the Linux job rewrites the prerelease '-' to '+' for the
+                  # bundler, so the emitted name does not match $VERSION.
+                  DEB_FILE=$(ls deb/Origa_*_amd64.deb 2>/dev/null | head -1 || true)
+                  if [ -n "$DEB_FILE" ]; then
+                    mv "$DEB_FILE" "deb/Origa_amd64.deb"
+                    [ -f "${DEB_FILE}.sig" ] && mv "${DEB_FILE}.sig" "deb/Origa_amd64.deb.sig" || true
+                  fi
                   # RPM name carries a release suffix (Origa_<version>-1_<arch>.rpm),
                   # so the alias is taken by glob, not by version expansion.
                   RPM_FILE=$(ls rpm/*.rpm 2>/dev/null | head -1 || true)
