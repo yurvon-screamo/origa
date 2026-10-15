@@ -21,7 +21,7 @@ pub fn JftReadinessCard(
         <Card
             shadow=Signal::from(true)
             class=Signal::derive(|| "p-4 sm:p-6 lg:p-8".to_string())
-            test_id=test_id.clone()
+            test_id=test_id
         >
             <div class="flex items-center gap-2 sm:gap-4" data-testid=Signal::derive(move || format!("{}-progress", test_id.get()))>
                 <Tag
