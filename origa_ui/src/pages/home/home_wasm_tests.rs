@@ -315,6 +315,11 @@ async fn insights_section_with_full_data_renders_concrete_verdicts() {
             month_accuracy_pct: Some(70),
             kind: origa::domain::insights::WeekVerdictKind::Holding,
         }),
+        month: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 79,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
         pace: Some(origa::domain::insights::PaceInsight {
             per_day: 67,
             delta: 12,
