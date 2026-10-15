@@ -140,7 +140,7 @@ await page
     .getByTestId("home-jft-readiness")
     .waitFor({ state: "visible", timeout: 60_000 });
 await page
-    .getByTestId("home-jft-band-A2")
+    .getByTestId("home-jft-readiness-stamp")
     .waitFor({ state: "visible", timeout: 10_000 });
 
 console.log("[shots] Desktop home…");
