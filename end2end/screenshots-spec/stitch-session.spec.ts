@@ -200,7 +200,8 @@ async function captureViewport(page: Page, name: string): Promise<void> {
         timeout: 420_000,
     });
     await page.waitForTimeout(2_000);
-    await page.screenshot({ path: path.join(PROPOSALS_DIR, name) });
+    // Full page: леджер Наблюдений ниже счётчиков, обрезать нельзя.
+    await page.screenshot({ path: path.join(PROPOSALS_DIR, name), fullPage: true });
 }
 
 test("capture home insights with seeded verdicts", async ({ page }) => {
@@ -216,8 +217,14 @@ test("capture home insights with seeded verdicts", async ({ page }) => {
     await page.reload({ waitUntil: "domcontentloaded" });
     await captureViewport(page, "final-home-ru-desktop.png");
 
-    // Mobile, same seeded state.
+    // Mobile: hide the fixed tab bar — on a fullPage shot Playwright
+    // stamps it mid-image, covering the ledger rows.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload({ waitUntil: "domcontentloaded" });
     await captureViewport(page, "final-home-ru-mobile.png");
+    // После reload: fixed таб-бар на fullPage-скрине штампуется в середину
+    // изображения и перекрывает строки леджера.
+    await page.addStyleTag({ content: ".bottom-tab-bar { display: none !important; }" });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: path.join(PROPOSALS_DIR, "final-home-ru-mobile.png"), fullPage: true });
 });
