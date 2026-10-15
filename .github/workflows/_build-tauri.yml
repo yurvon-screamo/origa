@@ -237,14 +237,17 @@ jobs:
                   version: ${{ inputs.version }}
 
             - name: Deb-compatible version
-              # Alpha versions arrive as "0.8.1-alpha.N"; the deb bundler
-              # rejects '-' (allowed: alphanumeric, '.', '_', '+', '%',
-              # '{', '}', '~', '^'). Debian convention for prereleases is
-              # '~': sorts BEFORE the release, which matches the intent.
-              # macOS/Windows bundlers accept '-' — patched per-job, the
-              # shared update-version step stays untouched.
+              # Prerelease versions arrive as "0.8.1-alpha.N" / "0.8.0-rc17".
+              # The Linux bundlers reject '-' in the package version
+              # (allowed: alphanumeric, '.', '_', '+', '%', '{', '}', '~',
+              # '^'), while tauri.conf.json must stay semver — '~' fails
+              # that check. Semver build metadata '+' satisfies both, so
+              # the first '-' in the version value becomes '+'
+              # (0.8.1+alpha.87, 0.8.0+rc17). macOS/Windows bundlers
+              # accept '-' — patched per-job, the shared update-version
+              # step stays untouched.
               run: |
-                  sed -i.bak 's/-alpha\./~alpha./' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
+                  sed -i.bak '/"version": /s/-/+/' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
                   grep '"version"' tauri/tauri.conf.json
 
             - name: Refresh APT indexes
