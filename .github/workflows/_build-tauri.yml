@@ -236,6 +236,17 @@ jobs:
               with:
                   version: ${{ inputs.version }}
 
+            - name: Deb-compatible version
+              # Alpha versions arrive as "0.8.1-alpha.N"; the deb bundler
+              # rejects '-' (allowed: alphanumeric, '.', '_', '+', '%',
+              # '{', '}', '~', '^'). Debian convention for prereleases is
+              # '~': sorts BEFORE the release, which matches the intent.
+              # macOS/Windows bundlers accept '-' — patched per-job, the
+              # shared update-version step stays untouched.
+              run: |
+                  sed -i.bak 's/-alpha\./~alpha./' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
+                  grep '"version"' tauri/tauri.conf.json
+
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
