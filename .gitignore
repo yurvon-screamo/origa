@@ -111,3 +111,5 @@ packaging/flatpak/cargo-sources.json
 
 *.flatpak
 .opencode/factory/node_modules/
+.stitch/
+end2end/.stitch/

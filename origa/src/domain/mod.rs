@@ -4,11 +4,12 @@ mod furigana;
 mod furigana_annotator;
 pub(crate) mod grammar;
 mod import_preview;
+pub mod insights;
 mod japanese;
 mod jlpt_content;
 mod jlpt_progress;
 mod knowledge;
-mod local_day;
+pub mod local_day;
 mod memory;
 mod score_content;
 mod serde_utils;
@@ -45,13 +46,14 @@ pub use jlpt_progress::{
 pub use knowledge::NewCardPolicy;
 pub use knowledge::{
     Card, CardType, CounterBindingItem, CounterBindingMemory, CounterCard, DailyHistoryItem,
-    ExampleCard, ExampleKanjiWord, GrammarInfo, GrammarQuizCard, GrammarRuleCard, KanjiCard,
-    KnowledgeSet, LessonCard, LessonCardView, LessonData, LessonEmptyDiagnosis,
+    ExampleCard, ExampleKanjiWord, GrammarInfo, GrammarQuizCard, GrammarRuleCard, InsightsLog,
+    KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData, LessonEmptyDiagnosis,
     LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard, QuizCard, QuizMode,
     QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
     estimate_completion_date, install_precompute_for_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
+pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 
 /// Re-exported so the UI can stay layering-clean: presentation code reaches
 /// the rare-reading threshold through the domain, not by reaching into the
@@ -66,7 +68,6 @@ pub use memory::{
 };
 pub use score_content::ScoreContentResult;
 pub use srs::{RateMode, RatingContext};
-pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};
 pub use tokenizer::{
     DictionaryData, PartOfSpeech, PrecomputedEntry, PrecomputedToken, SUDACHIDICT_DIR, TokenInfo,
     TokenTranslation, init_dictionary, install_precomputed_entries, install_precomputed_entry,
