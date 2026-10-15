@@ -15,9 +15,11 @@ mod scoring_mark_all;
 mod scoring_progress;
 mod scoring_step;
 mod summary_step;
+mod telemetry;
 
 use crate::i18n::{
-    Locale, locale_to_native_language, native_language_to_locale, t, td_string, use_i18n,
+    Locale, locale_code, locale_to_native_language, native_language_to_locale, t, td_string,
+    use_i18n,
 };
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
@@ -46,6 +48,7 @@ use progress::ProgressStep;
 use scoring_finish_button::ScoringFinishButton;
 use scoring_step::ScoringStep;
 use summary_step::SummaryStep;
+use telemetry::{track_step_complete, track_step_start};
 
 /// Which destructive action is awaiting confirmation in the modal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -194,6 +197,21 @@ pub fn Onboarding() -> impl IntoView {
         }
     });
 
+    // Step telemetry (issue #774): every entry into a step emits
+    // `onboarding_<step>_start` — mount, forward/back navigation and the
+    // resume jump all included (attempt semantics, ADR-054 §5.1). The Memo
+    // gates the effect on the step VALUE: a plain-struct signal notifies on
+    // every intra-step mutation (daily-load pick, JLPT choice, app toggles),
+    // and those must not re-fire the start event. Locale is read untracked,
+    // so flipping the language on the intro step never re-fires it either.
+    let current_step = Memo::new(move |_| state.get().current_step);
+    let i18n_for_step_start = i18n;
+    Effect::new(move |_| {
+        let step = current_step.get();
+        let locale = locale_code(&i18n_for_step_start.get_locale_untracked());
+        track_step_start(step, locale);
+    });
+
     let repo_for_init = repository.clone();
     let loader = WellKnownSetLoaderImpl::new();
     let initialized = RwSignal::new(false);
@@ -267,6 +285,15 @@ pub fn Onboarding() -> impl IntoView {
         // the name is optional, failures are logged inside the callback).
         if matches!(state.get_untracked().current_step, OnboardingStep::Intro) {
             save_intro_username.run(());
+        }
+        // The step being left is the one whose Next was clicked. Scoring
+        // has no Next button; its completion is the declarative
+        // `onboarding_complete` on the finish button (ADR-054 §5), so it is
+        // excluded here.
+        let completed_step = state.get_untracked().current_step;
+        if !matches!(completed_step, OnboardingStep::Scoring) {
+            let locale = locale_code(&i18n.get_locale_untracked());
+            track_step_complete(completed_step, locale);
         }
         state.update(|s| {
             s.go_to_next_step();

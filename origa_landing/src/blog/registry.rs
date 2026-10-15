@@ -385,6 +385,43 @@ const ARTICLES: &[(Locale, &str, &str)] = &[
         "how-to-learn-japanese-by-yourself",
         include_str!("../../content/blog/vi/how-to-learn-japanese-by-yourself.md"),
     ),
+    // Article 17: "JFT-Basic: The Japanese Test for the SSW Visa" — published
+    // in EN/RU/KO (no VI version; VI readers get the three VI-native JFT
+    // articles below). The .md files landed in #761/#765/#766 but were never
+    // registered here — the landing served neither them nor the
+    // jlpt-2026-dates backlink, which tests/blog.rs caught as a dead link.
+    (
+        Locale::En,
+        "jft-basic-ssw-japanese-test",
+        include_str!("../../content/blog/en/jft-basic-ssw-japanese-test.md"),
+    ),
+    (
+        Locale::Ru,
+        "jft-basic-ssw-japanese-test",
+        include_str!("../../content/blog/ru/jft-basic-ssw-japanese-test.md"),
+    ),
+    (
+        Locale::Ko,
+        "jft-basic-ssw-japanese-test",
+        include_str!("../../content/blog/ko/jft-basic-ssw-japanese-test.md"),
+    ),
+    // Articles 18–20: VI-native JFT-Basic cluster for the SSW audience
+    // (afb06dac) — same registration gap as article 17.
+    (
+        Locale::Vi,
+        "jft-basic-preparation",
+        include_str!("../../content/blog/vi/jft-basic-preparation.md"),
+    ),
+    (
+        Locale::Vi,
+        "jft-basic-test-vietnam",
+        include_str!("../../content/blog/vi/jft-basic-test-vietnam.md"),
+    ),
+    (
+        Locale::Vi,
+        "jft-basic-vs-jlpt-n4",
+        include_str!("../../content/blog/vi/jft-basic-vs-jlpt-n4.md"),
+    ),
 ];
 
 static REGISTRY: OnceLock<Vec<BlogPost>> = OnceLock::new();

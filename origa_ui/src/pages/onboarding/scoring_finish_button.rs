@@ -2,6 +2,8 @@ use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant};
 use leptos::prelude::*;
 
+use super::telemetry;
+
 /// The Finish button of the onboarding scoring step.
 ///
 /// Finishing is an async checkpoint (`CompleteOnboardingScoringUseCase` +
@@ -25,6 +27,11 @@ pub fn ScoringFinishButton(
             disabled=Signal::derive(move || is_finishing.get())
             attr:data-loading=Signal::derive(move || is_finishing.get().to_string())
             attr:data-umami-event="onboarding_complete"
+            // Same event-data properties as the programmatic step events
+            // (issue #774 / ADR-054 §5.1), so the whole funnel slices
+            // uniformly by locale and device.
+            attr:data-umami-event-locale=locale_code(&i18n.get_locale_untracked())
+            attr:data-umami-event-device=telemetry::device()
             test_id=test_id
         >
             {move || if is_finishing.get() { t!(i18n, onboarding.completing).into_any() } else { t!(i18n, onboarding.finish).into_any() }}

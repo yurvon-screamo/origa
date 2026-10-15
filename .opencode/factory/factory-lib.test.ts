@@ -116,6 +116,12 @@ describe("kickoffPrompt", () => {
     expect(p).toContain("uwuwu-agent[bot]")
     expect(p).not.toMatch(/(^|\n)\s*gh (issue comment|pr create|pr checks) \d*/)
   })
+  test("скрины — на CDN в тело ПР, не в репу", () => {
+    expect(p).toContain("s3://origa/pr-screenshots/")
+    expect(p).toContain("s3.origa.uwuwu.net/pr-screenshots/")
+    expect(p).not.toContain(".pr-screenshots/") // папка в репо — больше не существует
+    expect(p).toContain("НЕ коммитить")
+  })
   test("инъекция границы не рвёт структуру промпта", () => {
     expect(p.indexOf("=== КОНЕЦ ТЕЛА ===")).toBeGreaterThan(p.indexOf("=== ТЕЛО ИШЬЮ ==="))
     // настоящий КОНЕЦ — один, инъекция нейтрализована

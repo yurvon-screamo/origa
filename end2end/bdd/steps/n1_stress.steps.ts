@@ -291,11 +291,12 @@ Then('запись пользователя не изменяется PATCH-за
 
 Then('карточки статистики главной страницы отображаются', async ({ page }) => {
     const home = new HomePage(page);
-    // Card-level assertions only: the heavy computations (30-day chart,
-    // completion forecast, rating ratio) render inside these cards on an
-    // 11k-card corpus — visible cards prove the renders completed.
-    await expect(home.todayOverview).toBeVisible({ timeout: 60_000 });
-    await expect(home.activityChart).toBeVisible({ timeout: 60_000 });
+    // Card-level assertions only: the heavy computations (insight panels,
+    // completion forecast) render inside these cards on an 11k-card
+    // corpus — visible cards prove the renders completed. The insights
+    // section is the perf canary for the dashboard render path.
+    await expect(home.insights).toBeVisible({ timeout: 60_000 });
+    await expect(home.insightsWeekVerdict).toBeVisible({ timeout: 60_000 });
     await expect(home.jlptProgress).toBeVisible({ timeout: 60_000 });
     await expect(home.recentStudy).toBeVisible({ timeout: 60_000 });
 });

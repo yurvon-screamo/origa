@@ -129,6 +129,54 @@ fn bands_are_ordered_along_the_learning_path() {
     assert_eq!(codes, vec!["A1", "A2.1", "A2"]);
 }
 
+#[test]
+fn current_band_is_a1_while_its_coverage_is_below_the_threshold() {
+    // Arrange: one Nyuumon lesson — A1 partially covered.
+    let imported: HashSet<String> = ["irodori_nyuumon_01".to_string()].into_iter().collect();
+
+    // Act
+    let current = CATALOG.coverage(&imported).current().clone();
+
+    // Assert
+    assert_eq!(current.band, JftBand::A1);
+    assert!(current.percentage() < 90.0);
+}
+
+#[test]
+fn current_band_advances_only_past_the_cleared_predecessor() {
+    // Arrange: the onboarding flow imports cumulatively, so completing
+    // Shokyuu 1 means all of Nyuumon plus Shokyuu 1 — A1 and A2.1 fully
+    // covered, and the learner is working through A2 while it is empty.
+    let imported: HashSet<String> = [JftBand::A1, JftBand::A21]
+        .into_iter()
+        .flat_map(fixture_lessons_of_band)
+        .collect();
+
+    // Act
+    let coverage = CATALOG.coverage(&imported);
+    let current = coverage.current();
+
+    // Assert
+    assert_eq!(current.band, JftBand::A2);
+    assert_eq!(current.percentage(), 0.0);
+}
+
+#[test]
+fn current_band_stays_on_a2_when_everything_is_cleared() {
+    // Arrange: every lesson of every band.
+    let all_lessons: HashSet<String> = JftBand::ALL
+        .into_iter()
+        .flat_map(fixture_lessons_of_band)
+        .collect();
+
+    // Act
+    let current = CATALOG.coverage(&all_lessons).current().clone();
+
+    // Assert: the tracker parks on the pass level at its real percentage.
+    assert_eq!(current.band, JftBand::A2);
+    assert_eq!(current.percentage(), 100.0);
+}
+
 #[rstest]
 #[case::empty_object("{}")]
 #[case::missing_array(r#"{"version": 1}"#)]

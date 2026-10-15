@@ -16,10 +16,11 @@ pub enum Locale {
     Ru,
     Ko,
     Vi,
+    Ja,
 }
 
 impl Locale {
-    pub const ALL: &[Locale] = &[Locale::En, Locale::Ru, Locale::Ko, Locale::Vi];
+    pub const ALL: &[Locale] = &[Locale::En, Locale::Ru, Locale::Ko, Locale::Vi, Locale::Ja];
 
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -27,6 +28,7 @@ impl Locale {
             Locale::Ru => "ru",
             Locale::Ko => "ko",
             Locale::Vi => "vi",
+            Locale::Ja => "ja",
         }
     }
 
@@ -36,6 +38,7 @@ impl Locale {
             Locale::Ru => "ru_RU",
             Locale::Ko => "ko_KR",
             Locale::Vi => "vi_VN",
+            Locale::Ja => "ja_JP",
         }
     }
 
@@ -45,6 +48,7 @@ impl Locale {
             Locale::Ru => "/ru",
             Locale::Ko => "/ko",
             Locale::Vi => "/vi",
+            Locale::Ja => "/ja",
         }
     }
 
@@ -54,12 +58,13 @@ impl Locale {
             Locale::Ru => &super::content::ru::CONTENT,
             Locale::Ko => &super::content::ko::CONTENT,
             Locale::Vi => &super::content::vi::CONTENT,
+            Locale::Ja => &super::content::ja::CONTENT,
         }
     }
 
     pub fn image_prefix(&self) -> &'static str {
         match self {
-            Locale::Ko | Locale::Vi => "en",
+            Locale::Ko | Locale::Vi | Locale::Ja => "en",
             _ => self.as_str(),
         }
     }
@@ -70,6 +75,7 @@ impl Locale {
             Locale::Ru => "RU",
             Locale::Ko => "KO",
             Locale::Vi => "VI",
+            Locale::Ja => "JA",
         }
     }
 }
@@ -83,6 +89,7 @@ impl FromStr for Locale {
             "ru" => Ok(Self::Ru),
             "ko" => Ok(Self::Ko),
             "vi" => Ok(Self::Vi),
+            "ja" => Ok(Self::Ja),
             _ => Err(()),
         }
     }
@@ -378,7 +385,7 @@ pub struct Content {
     pub terms_last_updated_label: &'static str,
     pub terms_body: &'static str,
 
-    // HowTo JSON-LD for the `/blog/japanese-ocr-app` article (all 4 locales).
+    // HowTo JSON-LD for the `/blog/japanese-ocr-app` article (all 5 locales).
     // The steps summarize the pipeline the article itself documents
     // ("Learning-integrated OCR", "How Origa handles this", the "Origa" row
     // of "The tools at a glance"); served via `blog::howto::schema_for_slug`.
@@ -390,6 +397,44 @@ pub struct Content {
 }
 
 mod en;
+mod ja;
 mod ko;
 mod ru;
 mod vi;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // `home.rs` indexes `home_carousel_labels[0..=4]` directly and drives the
+    // screenshots slider from `home_shots`; a locale shipping fewer than five
+    // entries would panic at SSR render time. Catch it at unit-test time for
+    // every locale instead (same spirit as `blog::howto`'s all-locale test).
+    #[test]
+    fn carousel_slices_have_five_entries_in_every_locale() {
+        for locale in Locale::ALL {
+            let c = locale.content();
+            assert_eq!(
+                c.home_carousel_labels.len(),
+                5,
+                "home_carousel_labels must have 5 entries in {locale:?}"
+            );
+            assert_eq!(
+                c.home_shots.len(),
+                5,
+                "home_shots must have 5 pairs in {locale:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn from_str_round_trips_every_locale() {
+        for locale in Locale::ALL {
+            assert_eq!(
+                locale.as_str().parse::<Locale>().ok(),
+                Some(*locale),
+                "as_str must round-trip through FromStr for {locale:?}"
+            );
+        }
+    }
+}

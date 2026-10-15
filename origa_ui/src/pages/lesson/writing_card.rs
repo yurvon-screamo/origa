@@ -1,123 +1,17 @@
+use super::binary_rating_buttons::RatingButtons;
+
+use super::card_type::CardType;
+use super::kanji_card_data::extract_kanji_card_data;
+use super::lesson_card_header::LessonCardTags;
+use super::lesson_card_shell::LessonCardShell;
 use crate::i18n::*;
 use crate::pages::lesson::kanji_card_details::KanjiCardDetails;
-use crate::pages::lesson::rating_buttons_view::RatingButtonsView;
 use crate::pages::shared::format_answer_text;
-use crate::ui_components::{
-    Card, DisplayText, Heading, HeadingLevel, KanjiDrawingPractice, Tag, TagVariant,
-};
+use crate::ui_components::{DisplayText, Heading, HeadingLevel, KanjiDrawingPractice};
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, Rating};
 use std::collections::HashSet;
 use tracing::warn;
-
-struct KanjiData {
-    symbol: String,
-    description: String,
-    on_readings: Option<Vec<crate::ui_components::ReadingItem>>,
-    kun_readings: Option<Vec<crate::ui_components::ReadingItem>>,
-    radicals: Option<Vec<crate::pages::lesson::kanji_card_details::RadicalDisplay>>,
-    examples: Option<Vec<(String, String)>>,
-}
-
-fn extract_kanji_data(kanji_card: &DomainCard, native_language: NativeLanguage) -> KanjiData {
-    let DomainCard::Kanji(kanji) = kanji_card else {
-        unreachable!()
-    };
-
-    let symbol = kanji.kanji().text().to_string();
-    let description = match kanji.description(&native_language) {
-        Ok(_) => format_answer_text(kanji_card, &native_language),
-        Err(e) => {
-            warn!(
-                kanji = %symbol,
-                error = %e,
-                "Failed to get kanji description"
-            );
-            String::new()
-        },
-    };
-
-    let on_readings: Option<Vec<crate::ui_components::ReadingItem>> = {
-        let readings = kanji
-            .on_readings_with_freq()
-            .into_iter()
-            .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                reading: r,
-                freq: f,
-                is_rare: rare,
-            })
-            .collect::<Vec<_>>();
-        if readings.is_empty() {
-            None
-        } else {
-            Some(readings)
-        }
-    };
-
-    let kun_readings: Option<Vec<crate::ui_components::ReadingItem>> = {
-        let readings = kanji
-            .kun_readings_with_freq()
-            .into_iter()
-            .map(|(r, f, rare)| crate::ui_components::ReadingItem {
-                reading: r,
-                freq: f,
-                is_rare: rare,
-            })
-            .collect::<Vec<_>>();
-        if readings.is_empty() {
-            None
-        } else {
-            Some(readings)
-        }
-    };
-
-    let radicals: Option<Vec<crate::pages::lesson::kanji_card_details::RadicalDisplay>> =
-        match kanji.radicals_info() {
-            Ok(r) => Some(
-                r.iter()
-                    .map(
-                        |info| crate::pages::lesson::kanji_card_details::RadicalDisplay {
-                            symbol: info.radical(),
-                            name: info.name(&native_language).to_string(),
-                            description: info.description(&native_language).to_string(),
-                        },
-                    )
-                    .collect(),
-            ),
-            Err(e) => {
-                warn!("Failed to get radicals for kanji: {:?}", e);
-                None
-            },
-        };
-
-    let examples: Option<Vec<(String, String)>> = {
-        let ex: Vec<_> = kanji
-            .example_words(&native_language)
-            .iter()
-            .map(|e| (e.word().to_string(), e.meaning().to_string()))
-            .collect();
-        if ex.is_empty() { None } else { Some(ex) }
-    };
-
-    KanjiData {
-        symbol,
-        description,
-        on_readings,
-        kun_readings,
-        radicals,
-        examples,
-    }
-}
-
-fn get_card_type(i18n: &I18nContext<Locale>) -> (String, TagVariant) {
-    let label = i18n
-        .get_keys_untracked()
-        .lesson()
-        .kanji()
-        .inner()
-        .to_string();
-    (label, TagVariant::Olive)
-}
 
 #[component]
 pub fn WritingCard(
@@ -129,25 +23,31 @@ pub fn WritingCard(
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
-    let (card_type_label, tag_variant) = get_card_type(&i18n);
 
-    let (symbol_char, display_text, on_readings, kun_readings, radicals, example_words) =
-        match &card {
-            DomainCard::Kanji(_) => {
-                let data = extract_kanji_data(&card, native_language);
-                (
-                    data.symbol,
-                    data.description,
-                    data.on_readings,
-                    data.kun_readings,
-                    data.radicals,
-                    data.examples,
-                )
-            },
-            _ => {
+    let (symbol_char, on_readings, kun_readings, radicals, example_words) =
+        match extract_kanji_card_data(&card, native_language) {
+            Some(data) => (
+                data.symbol,
+                data.on_readings,
+                data.kun_readings,
+                data.radicals,
+                data.example_words,
+            ),
+            None => {
                 return view! { <div>{t!(i18n, lesson.writing_card_kanji_only)}</div> }.into_any();
             },
         };
+
+    let display_text = match &card {
+        DomainCard::Kanji(kanji) => match kanji.description(&native_language) {
+            Ok(_) => format_answer_text(&card, &native_language),
+            Err(e) => {
+                warn!(kanji = %symbol_char, error = %e, "Failed to get kanji description");
+                String::new()
+            },
+        },
+        _ => String::new(),
+    };
 
     let show_details = RwSignal::new(false);
 
@@ -160,67 +60,73 @@ pub fn WritingCard(
     let on_rate_sv = StoredValue::new(on_rate);
     let disabled_sv = StoredValue::new(disabled);
 
+    let card_for_tags = card.clone();
+    let tags_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+            <LessonCardTags
+                card_type=CardType::Kanji
+                grammar_info=None
+                show_answer=Signal::derive(|| false)
+                card=card_for_tags.clone()
+            />
+        }
+        .into_any()
+    });
+
     view! {
-        <div class="flex flex-col">
-            <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
-                <Tag variant=tag_variant>
-                    {card_type_label}
-                </Tag>
-            </div>
-            <Card class=super::LESSON_CARD_CLASS shadow=true test_id="lesson-card-root">
-
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="text-center mb-4">
-                    <DisplayText>{display_text_sv.get_value()}</DisplayText>
-                </div>
-
-                <Show when=move || !show_details.get()>
-                    <div class="my-4">
-                        <KanjiDrawingPractice
-                            kanji=symbol_sv.get_value()
-                            on_complete=Callback::new(move |_| {
-                                show_details.set(true);
-                                if let Some(cb) = on_show_answer {
-                                    cb.run(());
-                                }
-                            })
-                        />
-                    </div>
-                </Show>
-
-                <Show when=move || show_details.get()>
-                    <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
-                        {symbol_sv.get_value()}
-                    </Heading>
-
-                    <KanjiCardDetails
-                        kanji=symbol_sv.get_value()
-                        name=display_text_sv.get_value()
-                        radicals=radicals_sv.get_value()
-                        example_words=examples_sv.get_value()
-                        on_readings=on_readings_sv.get_value()
-                        kun_readings=kun_readings_sv.get_value()
-                        known_kanji=known_kanji
-                        native_language=native_language
-                    />
-
-                    <div class="flex justify-center mt-4">
-                        <button
-                            type="button"
-                            class="btn btn-ghost text-xs"
-                            on:click=move |_: leptos::ev::MouseEvent| {
-                                show_details.set(false);
-                            }
-                        >
-                            {t!(i18n, lesson.writing_try_again)}
-                        </button>
-                    </div>
-
-                    <RatingButtonsView on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
-                </Show>
-            </div>
-        </Card>
+        <LessonCardShell
+            tags=tags_row
+            test_id="lesson-card-root"
+        >
+        <div class="text-center mb-4">
+            <DisplayText>{display_text_sv.get_value()}</DisplayText>
         </div>
+
+        <Show when=move || !show_details.get()>
+            <div class="my-4">
+                <KanjiDrawingPractice
+                    kanji=symbol_sv.get_value()
+                    on_complete=Callback::new(move |_| {
+                        show_details.set(true);
+                        if let Some(cb) = on_show_answer {
+                            cb.run(());
+                        }
+                    })
+                />
+            </div>
+        </Show>
+
+        <Show when=move || show_details.get()>
+            <Heading level=HeadingLevel::H1 class="text-6xl mb-2 text-primary text-center">
+                {symbol_sv.get_value()}
+            </Heading>
+
+            <KanjiCardDetails
+                kanji=symbol_sv.get_value()
+                name=display_text_sv.get_value()
+                radicals=radicals_sv.get_value()
+                example_words=examples_sv.get_value()
+                on_readings=on_readings_sv.get_value()
+                kun_readings=kun_readings_sv.get_value()
+                known_kanji=known_kanji
+                native_language=native_language
+            />
+
+            <div class="flex justify-center mt-4">
+                <button
+                    type="button"
+                    class="btn btn-ghost text-xs"
+                    on:click=move |_: leptos::ev::MouseEvent| {
+                        show_details.set(false);
+                    }
+                >
+                    {t!(i18n, lesson.writing_try_again)}
+                </button>
+            </div>
+
+            <RatingButtons on_rate=on_rate_sv.get_value() disabled=disabled_sv.get_value() />
+        </Show>
+        </LessonCardShell>
     }
     .into_any()
 }

@@ -236,6 +236,20 @@ jobs:
               with:
                   version: ${{ inputs.version }}
 
+            - name: Deb-compatible version
+              # Prerelease versions arrive as "0.8.1-alpha.N" / "0.8.0-rc17".
+              # The Linux bundlers reject '-' in the package version
+              # (allowed: alphanumeric, '.', '_', '+', '%', '{', '}', '~',
+              # '^'), while tauri.conf.json must stay semver — '~' fails
+              # that check. Semver build metadata '+' satisfies both, so
+              # the first '-' in the version value becomes '+'
+              # (0.8.1+alpha.87, 0.8.0+rc17). macOS/Windows bundlers
+              # accept '-' — patched per-job, the shared update-version
+              # step stays untouched.
+              run: |
+                  sed -i.bak '/"version": /s/-/+/' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
+                  grep '"version"' tauri/tauri.conf.json
+
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
@@ -299,8 +313,14 @@ jobs:
                   # Minisign signatures are content-based, so the rename does
                   # not invalidate them. Guards match the Windows pattern —
                   # Dependabot builds run --no-sign and emit no .sig at all.
-                  mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
-                  [ -f "deb/Origa_${VERSION}_amd64.deb.sig" ] && mv "deb/Origa_${VERSION}_amd64.deb.sig" "deb/Origa_amd64.deb.sig" || true
+                  # The deb alias is taken by glob, not by version expansion:
+                  # the Linux job rewrites the prerelease '-' to '+' for the
+                  # bundler, so the emitted name does not match $VERSION.
+                  DEB_FILE=$(ls deb/Origa_*_amd64.deb 2>/dev/null | head -1 || true)
+                  if [ -n "$DEB_FILE" ]; then
+                    mv "$DEB_FILE" "deb/Origa_amd64.deb"
+                    [ -f "${DEB_FILE}.sig" ] && mv "${DEB_FILE}.sig" "deb/Origa_amd64.deb.sig" || true
+                  fi
                   # RPM name carries a release suffix (Origa_<version>-1_<arch>.rpm),
                   # so the alias is taken by glob, not by version expansion.
                   RPM_FILE=$(ls rpm/*.rpm 2>/dev/null | head -1 || true)

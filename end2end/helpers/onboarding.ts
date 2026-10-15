@@ -63,6 +63,14 @@ export interface CompleteOnboardingOptions {
      * never reached); the caller continues via the page object.
      */
     stopAtSummary?: boolean;
+
+    /**
+     * Click the medium daily-load option on the Load step. Off by default:
+     * only telemetry assertions need an intra-step state mutation (it
+     * must not re-fire `<step>_start` — issue #774), other callers keep
+     * the walk minimal.
+     */
+    selectDailyLoad?: boolean;
 }
 
 /**
@@ -105,6 +113,13 @@ export async function completeOnboardingToScoring(
     // Intro → Load
     await page.getByTestId("onboarding-next").click();
     await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
+
+    // Optional intra-step mutation: picking a load option updates the
+    // onboarding state signal (telemetry scenario relies on this click to
+    // verify start events fire on step ENTRY, not on every interaction).
+    if (options.selectDailyLoad === true) {
+        await page.getByTestId("daily-load-option-medium").click();
+    }
 
     // Load → JLPT (default medium load)
     await page.getByTestId("onboarding-next").click();

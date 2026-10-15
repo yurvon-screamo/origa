@@ -115,6 +115,11 @@ pub struct JftCoverage {
     bands: [BandCoverage; 3],
 }
 
+/// A band counts as cleared at this coverage: the "minus 10 percent" rule
+/// (approved in #760) mirrors the JLPT advance tolerance — a band does not
+/// have to hit 100% before the learner is considered on the next one.
+const BAND_ADVANCE_THRESHOLD_PERCENT: f64 = 90.0;
+
 impl JftCoverage {
     pub fn bands(&self) -> &[BandCoverage; 3] {
         &self.bands
@@ -124,6 +129,17 @@ impl JftCoverage {
     /// track learner (the home card's visibility gate).
     pub fn total_covered(&self) -> usize {
         self.bands.iter().map(|b| b.covered).sum()
+    }
+
+    /// The band the learner is currently working through, along the
+    /// A1 → A2.1 → A2 course path: the first band below the advance
+    /// threshold. When every band is cleared the tracker stays on A2
+    /// (the JFT-Basic pass level) with its real percentage.
+    pub fn current(&self) -> &BandCoverage {
+        self.bands
+            .iter()
+            .find(|band| band.percentage() < BAND_ADVANCE_THRESHOLD_PERCENT)
+            .unwrap_or(&self.bands[2])
     }
 }
 

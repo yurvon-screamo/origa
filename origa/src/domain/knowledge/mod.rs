@@ -5,6 +5,7 @@ mod empty_diagnosis;
 mod example_card;
 mod example_companions;
 mod grammar;
+mod insights_log;
 mod kanji;
 mod kanji_companions;
 pub mod lesson;
@@ -19,10 +20,13 @@ pub mod vocabulary;
 use card::ImportDedupKey;
 pub use card::{Card, CardType, StudyCard};
 pub use counter::{CounterBindingMemory, CounterCard};
+#[cfg(test)]
+pub(crate) use daily_history::DailyStatsUpdate;
 pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use example_card::ExampleCard;
 pub use grammar::GrammarRuleCard;
+pub use insights_log::{HOUR_BUCKET_COUNT, InsightsLog};
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
@@ -38,10 +42,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use ulid::Ulid;
 
+use chrono::Utc;
+
 use crate::dictionary::kanji::get_kanji_info;
 use crate::domain::{
     DailyBudget, JapaneseLevel, JlptContent, NativeLanguage, OrigaError, RateMode, Rating,
-    RatingContext, srs::rate_memory,
+    RatingContext, local_day, srs::rate_memory,
 };
 
 pub(crate) const MAX_COMPANION_WORDS: usize = 3;
@@ -85,6 +91,10 @@ pub struct KnowledgeSet {
     deleted_companion_words: HashSet<String>,
     #[serde(flatten)]
     stats: StatsTracker,
+    /// Агрегаты точности для панелей-инсайтов (#749): константные бакеты,
+    /// не растут со временем. `default` — back-compat со старыми данными.
+    #[serde(default)]
+    insights: InsightsLog,
     // Transient bulk-import dedup index (see `begin_bulk_import`): never
     // serialized, rebuilt from `study_cards` when a bulk import starts, and
     // always `None` outside an import batch.
@@ -152,6 +162,7 @@ impl KnowledgeSet {
             deleted_cards: HashSet::new(),
             deleted_companion_words: HashSet::new(),
             stats: StatsTracker::new(),
+            insights: InsightsLog::default(),
             import_dedup_index: None,
         }
     }
@@ -187,6 +198,7 @@ impl KnowledgeSet {
         }
 
         self.stats.merge(&new_values.stats);
+        self.insights.merge(&new_values.insights);
         self.recalculate_daily_stats();
     }
 
@@ -200,6 +212,11 @@ impl KnowledgeSet {
 
     pub fn lesson_history(&self) -> &[DailyHistoryItem] {
         self.stats.history()
+    }
+
+    /// Агрегаты точности для панелей-инсайтов (только чтение).
+    pub fn insights(&self) -> &InsightsLog {
+        &self.insights
     }
 
     pub fn new_cards_studied_today(&self) -> usize {
@@ -486,6 +503,10 @@ impl KnowledgeSet {
         if let Some(card) = self.study_cards.get_mut(&card_id) {
             let was_new = card.memory().is_new();
             let is_phrase = matches!(card.card(), Card::Phrase(_));
+            let is_word_card = !matches!(card.card(), Card::Phrase(_) | Card::Example(_));
+            // Просрочка считается по расписанию ДО ревью: после apply_review
+            // next_review_date уже перезаписан.
+            let pre_review_due = card.memory().next_review_date().copied();
             let effective_mode = match mode {
                 RateMode::ShortTerm | RateMode::OnboardingScoring => mode,
                 _ => match card.card() {
@@ -503,6 +524,14 @@ impl KnowledgeSet {
                 card.apply_ghost_transition(rating, was_new);
             }
             self.update_history(rating, was_new, is_phrase, mode);
+            if is_word_card {
+                self.insights.record(
+                    local_day::local_offset(),
+                    Utc::now(),
+                    pre_review_due,
+                    rating,
+                );
+            }
             Ok(())
         } else {
             Err(OrigaError::CardNotFound { card_id })
