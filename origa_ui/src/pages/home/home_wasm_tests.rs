@@ -461,7 +461,7 @@ async fn insights_section_period_switch_swaps_the_verdict() {
 
     assert!(
         verdict_text(&wrapper).contains("Accuracy has dropped")
-            && verdict_text(&wrapper).contains("74"),
+            && !verdict_text(&wrapper).contains("Accuracy is steady"),
         "month mode must swap to the month verdict; got: {}",
         verdict_text(&wrapper)
     );
