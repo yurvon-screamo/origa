@@ -374,16 +374,10 @@ async function startIssue(issue: IssueRef, state: FactoryState, attemptsSeed: nu
 
 /** Полная чистка; помечает задачу удалённой ТОЛЬКО при подтверждении каждого шага. */
 async function finishIssue(n: number, tracked: TrackedIssue, state: FactoryState): Promise<void> {
-  log(`issue #${n}: закрыта — чистка`)
+  // Сессию девелопера НЕ удаляем: закрытые сессии — источник для механизмов
+  // памяти (опыт задач живёт в истории). Чистим только ФС: ворктри и ветку.
+  log(`issue #${n}: закрыта — чистка (сессия сохранена)`)
   let clean = true
-  const liveness = await sessionLiveness(tracked.sessionID)
-  if (liveness === "unknown") {
-    clean = false
-    log(`issue #${n}: живость сессии неизвестна — ретрай чистки на след. тике`)
-  } else if (liveness === "alive" && !(await deleteSession(tracked.sessionID))) {
-    clean = false
-    log(`issue #${n}: сессия не удалилась — ретрай чистки на след. тике`)
-  }
   if (existsSync(tracked.worktree)) {
     const removed = await shOk(["git", "-C", ORIGA, "worktree", "remove", "--force", tracked.worktree])
     if (!removed) {
