@@ -31,11 +31,13 @@ fn number_label(number: u8) -> String {
 pub fn CounterBindingsSession(
     card: Card,
     items: Vec<CounterBindingItem>,
-    /// Оценка связки: (number, rating) — вызывающий подключает
-    /// `RateCounterBindingUseCase` со своим репозиторием.
-    on_rate_binding: Callback<(u8, Rating)>,
-    /// Завершение пачки: штатный advance урока.
-    on_next: Callback<()>,
+    /// Оценка связки: (number, rating, is_last) — вызывающий подключает
+    /// `RateCounterBindingUseCase` со своим репозиторием. `is_last`
+    /// сериализует advance урока ПОСЛЕ сохранения рейтинга (юзер-репорт
+    /// 0.8.0-rc: параллельный сейв семантики затирал рейтинг последней
+    /// связки — 何 вечно возвращалась новичком, пачка мелькала каждый
+    /// урок). Сама сессия урок не продвигает.
+    on_rate_binding: Callback<(u8, Rating, bool)>,
     #[prop(into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -111,15 +113,16 @@ pub fn CounterBindingsSession(
         let Some(item) = items.with_value(|i| i.get(index).cloned()) else {
             return;
         };
-        on_rate_binding.run((item.number(), rating));
-        if index + 1 >= total {
+        let is_last = index + 1 >= total;
+        on_rate_binding.run((item.number(), rating, is_last));
+        if is_last {
             // Последняя связка: отвеченная карта ОСТАЁТСЯ на экране
-            // (замороженный ответ — юзер-репорт 0.8.0-rc: сброс revealed
-            // мелькал фронтом «цифра×суффикс» перед следующей карточкой
-            // урока) — advance сразу, без промежуточного фронт-кадра.
-            // Повторные 1/2/клики гасятся finished-гейтом выше.
+            // (замороженный ответ — сброс revealed мелькал фронтом перед
+            // следующей карточкой урока). Advance выполняет контейнер
+            // ПОСЛЕ сохранения рейтинга (is_last) — параллельные
+            // get+save больше не конкурируют за юзера. Повторные
+            // 1/2/клики гасятся finished-гейтом выше.
             finished.set(true);
-            on_next.run(());
         } else {
             revealed.set(false);
             highlighted_number.set(u8::MAX);

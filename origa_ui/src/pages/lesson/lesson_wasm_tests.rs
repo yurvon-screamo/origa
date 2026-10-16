@@ -5001,3 +5001,83 @@ async fn example_recall_failed_load_is_not_a_dead_end() {
         "advance fires on click — no dead end"
     );
 }
+
+mod counter_pack_contract {
+    use super::*;
+    use crate::pages::lesson::counter_bindings_session::CounterBindingsSession;
+    use origa::domain::CounterCard;
+
+    /// Регрессия юзер-репорта 0.8.0-rc (канон — док-комментарий prop
+    /// on_rate_binding сессии): сессия не продвигает урок сама, оценка
+    /// последней связки уходит с is_last=true.
+    #[wasm_bindgen_test]
+    async fn counter_pack_last_binding_rates_with_is_last_and_freezes() {
+        // RwSignal (Send+Sync) — запись из колбэка, чтение в ассертах.
+        let calls = RwSignal::new(Vec::<(u8, origa::domain::Rating, bool)>::new());
+        let on_rate = Callback::new(move |(n, r, last): (u8, origa::domain::Rating, bool)| {
+            calls.update(|c| c.push((n, r, last)));
+        });
+
+        let card = origa::domain::Card::Counter(CounterCard::new("本"));
+        // Порядок пачки: цифры подряд, 何 (0) — последней.
+        let items = vec![
+            origa::domain::CounterBindingItem::new(1),
+            origa::domain::CounterBindingItem::new(2),
+            origa::domain::CounterBindingItem::new(0),
+        ];
+
+        let wrapper = create_wrapper();
+        let card2 = card.clone();
+        let items2 = items.clone();
+        let on_rate2 = on_rate.clone();
+        mount_with_i18n(&wrapper, move || {
+            view! {
+                <CounterBindingsSession
+                    card=card2
+                    items=items2
+                    on_rate_binding=on_rate2
+                    test_id=Signal::derive(|| "counter-bindings-card".to_string())
+                />
+            }
+            .into_any()
+        });
+        tick().await;
+
+        let click = |sel: &str| {
+            wrapper
+                .query_selector(sel)
+                .unwrap()
+                .expect(sel)
+                .dyn_into::<web_sys::HtmlElement>()
+                .unwrap()
+                .click();
+        };
+
+        // Полный проход пачки: reveal + «Знаю» на каждой связке.
+        for _ in 0..3 {
+            click("[data-testid=\"counter-binding-show-answer-btn\"]");
+            tick().await;
+            click("[data-testid=\"lesson-rating-btn-good\"]");
+            tick().await;
+        }
+
+        assert_eq!(
+            calls.get(),
+            vec![
+                (1, origa::domain::Rating::Good, false),
+                (2, origa::domain::Rating::Good, false),
+                (0, origa::domain::Rating::Good, true),
+            ],
+            "последняя оценка обязана нести is_last=true — advance урока сериализует контейнер"
+        );
+
+        // Замороженный ответ: фронт-кнопок нет, повторные клики молчат.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"counter-binding-show-answer-btn\"]")
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(calls.get().len(), 3, "finished-гейт: дублей рейтинга нет");
+    }
+}
