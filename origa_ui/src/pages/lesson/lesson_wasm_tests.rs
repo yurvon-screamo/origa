@@ -5007,12 +5007,9 @@ mod counter_pack_contract {
     use crate::pages::lesson::counter_bindings_session::CounterBindingsSession;
     use origa::domain::CounterCard;
 
-    /// Юзер-репорт (0.8.0-rc): последняя связка пачки (何) вечно
-    /// возвращалась новичком — её рейтинг затирался гонкой параллельных
-    /// сейвов (связка + семантика). Контракт фиксации: сессия НЕ
-    /// продвигает урок сама; оценка последней связки уходит с
-    /// is_last=true, и advance сериализует контейнер — только после
-    /// сохранения рейтинга.
+    /// Регрессия юзер-репорта 0.8.0-rc (канон — док-комментарий prop
+    /// on_rate_binding сессии): сессия не продвигает урок сама, оценка
+    /// последней связки уходит с is_last=true.
     #[wasm_bindgen_test]
     async fn counter_pack_last_binding_rates_with_is_last_and_freezes() {
         // RwSignal (Send+Sync) — запись из колбэка, чтение в ассертах.

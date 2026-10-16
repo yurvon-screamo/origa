@@ -266,6 +266,28 @@ Then('пачка переходит к следующей цифре', async ({ 
 		.toContain("2 / 11");
 });
 
+When('пользователь проходит пачку связок до конца', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	// Полный проход: Space раскрывает, «2» отвечает «Знаю». Последняя
+	// связка (何) замораживается; advance сериализован после сейва —
+	// потому ждём экран завершения терпеливо, лишние нажатия гасятся
+	// finished-гейтом сессии.
+	for (let i = 0; i < 15; i++) {
+		if (await page.getByTestId("lesson-complete-screen").isVisible().catch(() => false)) {
+			break;
+		}
+		await page.keyboard.press(" ");
+		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+		await page.keyboard.press("2");
+		await page.waitForTimeout(250);
+	}
+});
+
+Then('урок завершается экраном прохождения', async ({ page }) => {
+	await page.getByTestId("lesson-complete-screen").waitFor({ timeout: 20_000 });
+});
+
 When('пользователь перезаходит в урок', async ({ page }) => {
 	await page.goto("http://localhost:1420/lesson");
 });
