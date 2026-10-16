@@ -152,7 +152,7 @@
             "duolingo_ru_desc": "러시아어 Duolingo",
             "duolingo_en_desc": "영어 Duolingo",
             "minna_desc": "일본어 교재 (N5-N4)",
-            "irodori_desc": "국제교류기금 일본어 교재 (N5-N4)"
+            "irodori_desc": "JFT-Basic 시험 대비 국제교류기금 교재 (SSW 비자)"
         },
         "progress": {
             "title": "나의 진행 상황",
@@ -606,6 +606,7 @@
         "filter_new_sets": "새 세트",
         "cancel_selection": "선택 취소",
         "imported_tag": "가져옴",
+        "jft_badge": "JFT-Basic / SSW 대비",
         "level_label": "레벨 {}",
         "import_success": "카드 {}개가 성공적으로 생성되었습니다",
         "import_partial": "카드 {}개 생성, {}개 건너뜀 (이미 있음)",

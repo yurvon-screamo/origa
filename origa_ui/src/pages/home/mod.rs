@@ -4,6 +4,7 @@ pub(crate) mod content_sync;
 pub mod dashboard_stats;
 pub mod home_skeleton;
 pub mod insights;
+pub mod jft_readiness_card;
 pub mod jlpt_progress_card;
 pub mod recent_study;
 pub mod today_overview;
@@ -17,6 +18,7 @@ pub use dashboard_stats::{
     CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_studied_today,
 };
 pub use home_skeleton::JlptSkeleton;
+pub use jft_readiness_card::JftReadinessCard;
 pub use jlpt_progress_card::JlptProgressCard;
 pub use origa::domain::{TodayOverview, compute_today_overview};
 pub use recent_study::StudiedTodayList;

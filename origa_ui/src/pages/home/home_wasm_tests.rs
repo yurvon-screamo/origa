@@ -15,7 +15,9 @@ use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::RecentlyStudiedItem;
 use crate::pages::home::insights::InsightsSection;
 use crate::pages::home::insights::panels_data::InsightsPanels;
-use crate::pages::home::{JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard};
+use crate::pages::home::{
+    JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
+};
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -536,4 +538,108 @@ async fn studied_today_list_renders_items_with_count() {
         "the meaning must render; got: {text}"
     );
     assert!(text.contains('1'), "the item count must render");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// JftReadinessCard
+// ═══════════════════════════════════════════════════════════════════════
+
+/// A minimal catalog fixture: one Can-do per band, lesson ids mirroring the
+/// CDN set-id shape. Renders three rows with known numbers.
+fn readiness_fixture_coverage(imported: &str) -> origa::domain::JftCoverage {
+    let json = format!(
+        r#"{{"version": 1, "can_dos": [
+            {{"id": 1, "level": "A1", "band": "A1", "lesson": "{imported}"}},
+            {{"id": 2, "level": "A2", "band": "A2.1", "lesson": "other_1"}},
+            {{"id": 3, "level": "A2", "band": "A2", "lesson": "other_2"}}
+        ]}}"#
+    );
+    origa::domain::JftCandoCatalog::parse(&json)
+        .expect("fixture parses")
+        .coverage(&HashSet::from([imported.to_string()]))
+}
+
+#[wasm_bindgen_test]
+async fn jft_readiness_card_renders_single_current_band_bar() {
+    let wrapper = create_wrapper();
+    let _mount = mount_with_i18n(&wrapper, || {
+        view! {
+            <JftReadinessCard
+                coverage=Signal::derive(|| readiness_fixture_coverage("mine_1"))
+                test_id="jft1"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    // The fixture imports the single A1 Can-do: A1 is cleared (100% ≥ 90),
+    // so the tracker shows the next band in the course path — A2.1 at 0%.
+    let stamp = wrapper
+        .query_selector("[data-testid=\"jft1-stamp\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(stamp.contains("JFT-Basic A2.1"), "stamp text; got: {stamp}");
+
+    let pct = wrapper
+        .query_selector("[data-testid=\"jft1-pct\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(pct.contains("0%"), "current band percentage; got: {pct}");
+
+    // Exactly one progress row: the per-band rows are gone by design.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft1-progress\"]")
+            .is_ok_and(|el| el.is_some()),
+        "the single progress row must render"
+    );
+    assert!(
+        !wrapper.inner_html().contains("home-jft-band-"),
+        "no per-band rows must remain"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn jft_readiness_card_visibility_tracks_coverage_signal() {
+    // The home page wraps the card in <Show when=coverage.is_some()>; the
+    // same gate must hide the card for None (offline catalog, no imports)
+    // and reveal it once a coverage lands.
+    let wrapper = create_wrapper();
+    let coverage: RwSignal<Option<origa::domain::JftCoverage>> = RwSignal::new(None);
+    let _mount = mount_with_i18n(&wrapper, move || {
+        view! {
+            <Show when=move || coverage.get().is_some()>
+                <JftReadinessCard
+                    coverage=Signal::derive(move || {
+                        coverage.get().expect("guarded by the enclosing Show")
+                    })
+                    test_id="jft2"
+                />
+            </Show>
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft2\"]")
+            .is_ok_and(|el| el.is_none()),
+        "card must be hidden while coverage is None"
+    );
+
+    coverage.set(Some(readiness_fixture_coverage("mine_1")));
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft2\"]")
+            .is_ok_and(|el| el.is_some()),
+        "card must render once coverage arrives"
+    );
 }

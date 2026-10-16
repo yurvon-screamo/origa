@@ -152,7 +152,7 @@
             "duolingo_ru_desc": "Duolingo на русском языке",
             "duolingo_en_desc": "Duolingo на английском языке",
             "minna_desc": "Учебник японского языка (N5-N4)",
-            "irodori_desc": "Учебник японского языка от Japan Foundation (N5-N4)"
+            "irodori_desc": "Курс Japan Foundation для подготовки к JFT-Basic (виза SSW)"
         },
         "progress": {
             "title": "Ваш прогресс",
@@ -606,6 +606,7 @@
         "filter_new_sets": "Новые",
         "cancel_selection": "Отменить выбор",
         "imported_tag": "Импортирован",
+        "jft_badge": "Подготовка к JFT-Basic (SSW)",
         "level_label": "Уровень {}",
         "import_success": "Успешно создано {} карточек",
         "import_partial": "Создано {} карточек, пропущено {} (уже существуют)",

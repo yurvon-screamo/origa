@@ -152,7 +152,7 @@
             "duolingo_ru_desc": "Duolingo tiếng Nga",
             "duolingo_en_desc": "Duolingo tiếng Anh",
             "minna_desc": "Giáo trình tiếng Nhật (N5-N4)",
-            "irodori_desc": "Giáo trình tiếng Nhật của Quỹ Giao lưu Quốc tế (N5-N4)"
+            "irodori_desc": "Giáo trình của Quỹ Nhật Bản luyện thi JFT-Basic (visa SSW)"
         },
         "progress": {
             "title": "Tiến độ của bạn",
@@ -606,6 +606,7 @@
         "filter_new_sets": "Mới",
         "cancel_selection": "Bỏ chọn",
         "imported_tag": "Đã nhập",
+        "jft_badge": "Luyện thi JFT-Basic (SSW)",
         "level_label": "Cấp độ {}",
         "import_success": "Đã tạo thành công {} thẻ",
         "import_partial": "Đã tạo {} thẻ, bỏ qua {} (đã tồn tại)",

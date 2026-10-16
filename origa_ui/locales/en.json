@@ -152,7 +152,7 @@
             "duolingo_ru_desc": "Duolingo in Russian",
             "duolingo_en_desc": "Duolingo in English",
             "minna_desc": "Japanese textbook (N5-N4)",
-            "irodori_desc": "Japanese textbook by Japan Foundation (N5-N4)"
+            "irodori_desc": "Japan Foundation coursebook for the JFT-Basic test (SSW visa)"
         },
         "progress": {
             "title": "Your progress",
@@ -606,6 +606,7 @@
         "filter_new_sets": "New",
         "cancel_selection": "Cancel selection",
         "imported_tag": "Imported",
+        "jft_badge": "JFT-Basic / SSW prep",
         "level_label": "Level {}",
         "import_success": "Successfully created {} cards",
         "import_partial": "Created {} cards, skipped {} (already exist)",

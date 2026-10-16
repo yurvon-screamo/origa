@@ -3,11 +3,12 @@ use super::content_sync::{
 };
 use super::insights::{InsightsPanels, InsightsSection, compute_insights_panels};
 use super::{
-    CompletionForecast, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem, StudiedTodayList,
-    TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
+    CompletionForecast, JftReadinessCard, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem,
+    StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
     compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
+use crate::loaders::JftCandoLoaderImpl;
 use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::{HybridUserRepository, get_last_sync_time, set_last_sync_time};
 use crate::store::ConnectivityStore;
@@ -18,6 +19,7 @@ use crate::ui_components::{ToastContainer, ToastData};
 use crate::utils::display_name::display_name_for;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use origa::domain::JftCoverage;
 use origa::domain::JlptProgress;
 use origa::traits::UserRepository;
 
@@ -26,6 +28,7 @@ use std::collections::HashSet;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn is_sync_fresh_within_window_is_true() {
@@ -51,6 +54,25 @@ mod tests {
         assert!(
             !init_should_apply(StatsPainter::Sync),
             "a late init read must not overwrite fresher sync-painted stats"
+        );
+    }
+
+    #[rstest]
+    #[case::no_imports(HashSet::new(), false)]
+    #[case::jlpt_only(HashSet::from(["jlpt_n5".to_string(), "migii_n5_1".to_string()]), false)]
+    #[case::irodori_present(HashSet::from(["irodori_nyuumon_01".to_string()]), true)]
+    #[case::irodori_among_others(
+        HashSet::from(["jlpt_n4".to_string(), "irodori_shokyuu2_18".to_string()]),
+        true
+    )]
+    fn irodori_imports_are_detected_only_for_irodori_sets(
+        #[case] imported: HashSet<String>,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(
+            has_irodori_imports(&imported),
+            expected,
+            "imported: {imported:?}"
         );
     }
 }
@@ -107,6 +129,39 @@ async fn take_handoff_bounded() -> Option<origa::domain::User> {
     }
 }
 
+/// Whether any imported set belongs to the Irodori/JFT track. Users without
+/// Irodori imports never trigger the readiness-card fetch: the card stays
+/// hidden and no CDN request is made.
+fn has_irodori_imports(imported_sets: &HashSet<String>) -> bool {
+    imported_sets.iter().any(|id| id.starts_with("irodori_"))
+}
+
+/// Irodori learner? Fetch the Can-do catalog and compute band coverage over
+/// the imported lessons. JLPT-only users never hit the network here; a
+/// catalog failure just keeps the readiness card hidden.
+fn spawn_jft_coverage_fetch(
+    imported_sets: HashSet<String>,
+    jft_coverage: RwSignal<Option<JftCoverage>>,
+    disposed: StoredValue<()>,
+) {
+    if !has_irodori_imports(&imported_sets) {
+        return;
+    }
+    spawn_local(async move {
+        match JftCandoLoaderImpl::new().load().await {
+            Ok(catalog) => {
+                if disposed.is_disposed() {
+                    return;
+                }
+                jft_coverage.set(Some(catalog.coverage(&imported_sets)));
+            },
+            Err(e) => {
+                tracing::warn!("JFT readiness catalog unavailable, card hidden: {e}");
+            },
+        }
+    });
+}
+
 #[component]
 pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl IntoView {
     let i18n = use_i18n();
@@ -124,6 +179,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
+    // JFT-Basic readiness (#760): None hides the card — no Irodori imports,
+    // or the CDN catalog failed to load (offline paths stay quiet).
+    let jft_coverage: RwSignal<Option<JftCoverage>> = RwSignal::new(None);
 
     let is_loading = RwSignal::new(true);
     let user_name: RwSignal<String> = RwSignal::new(String::new());
@@ -189,6 +247,8 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     } else {
                         tracing::debug!("Home init skipped stats paint: sync already painted");
                     }
+
+                    spawn_jft_coverage_fetch(user.imported_sets().clone(), jft_coverage, disposed);
 
                     is_loading.set(false);
 
@@ -314,6 +374,15 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         jlpt_progress=Signal::derive(move || jlpt_progress.get())
                         test_id=Signal::derive(|| "home-jlpt-progress".to_string())
                     />
+
+                    <Show when=move || jft_coverage.get().is_some()>
+                        <JftReadinessCard
+                            coverage=Signal::derive(move || {
+                                jft_coverage.get().expect("guarded by the enclosing Show")
+                            })
+                            test_id=Signal::derive(|| "home-jft-readiness".to_string())
+                        />
+                    </Show>
 
                     <TodayOverviewCard
                         overview=Signal::derive(move || today_overview.get())

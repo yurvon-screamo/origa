@@ -113,3 +113,6 @@ packaging/flatpak/cargo-sources.json
 .opencode/factory/node_modules/
 .stitch/
 end2end/.stitch/
+
+# Local TrailBase artifact from a stray `trail run` at the worktree root
+/traildepot/
