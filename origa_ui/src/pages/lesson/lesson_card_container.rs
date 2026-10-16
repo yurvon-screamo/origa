@@ -269,7 +269,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     let on_rate_counter_binding = Callback::new(
         move |(card_id, number, rating, is_last): (ulid::Ulid, u8, Rating, bool)| {
             let repository = counter_repository.clone();
-            let advance = on_rating_free_advance.clone();
+            let advance = on_rating_free_advance;
             spawn_local(async move {
                 if let Err(e) = origa::use_cases::RateCounterBindingUseCase::new(&repository)
                     .execute(card_id, number, rating)
