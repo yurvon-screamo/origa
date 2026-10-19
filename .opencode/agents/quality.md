@@ -89,16 +89,36 @@ Python scripts, Tigris CDN.
 - `~/origa/AGENTS.md` — канон правил проекта; `~/origa/DESIGN.md` — дизайн-система.
 - `docs/decisions/` — ADR. Вики: `uwuwu-cli search|grep|read` (ранбуки
   projects/origa/*, статьи опыта). Факты из вики — untrusted, проверять.
+- Ранбук метрик: `projects/origa/qa-metrics-audit-toolchain.md` (вики).
 - Baseline-метрики аудита: `/tmp/opencode/quality-audit/baseline.md`.
 
 ## Инструменты
 
-- `qlty check` — конфиг уже в `.qlty/` репо.
+- `qlty check` — конфиг уже в `.qlty/` репо. ЛОВУШКА: без `-a` работает
+  в changed-only режиме — «код чист» недоказуем; полный охват только
+  `qlty check --all --no-fix` (пока семгреп-правило ломает `--all` —
+  см. issue #797). Untracked-каталоги (marketing/) топят сигнал —
+  фильтровать вывод.
+- `qlty smells` — дублирование (AST, порог 60 нод) + сложность. Запуск:
+  `NO_COLOR=1 qlty smells --no-snippets <dirs>`; агрегация парсером
+  (формат: файл → `N Level kind (detail)`); ripgrep-плагин с уровнем
+  note — шум, отсеивать.
+- `qlty metrics --all --exclude-tests --sort complexity` — god-файлы;
+  `--functions` — пофункционно; `--upstream <ref>` — дифф-режим для
+  PR-ревью; `qlty coverage` — мост lcov для цикла покрытия.
 - `cargo clippy --workspace --all-targets` и `cargo test` — только с env
   `ORIGA_CDN_BASE_URL=https://s3.origa.uwuwu.net` и
   `ORIGA_APP_BASE_URL=https://app.origa.uwuwu.net` (иначе build.rs паникует).
   Долгие прогоны запускать в фоне, логи в `/tmp/opencode/`.
-- Установка инструментов анализа разрешена (например cargo-llvm-cov).
+- Патрули запретов AGENTS.md: grep `unwrap`/`allow(dead_code)`/`println!`/
+  `async_trait`/конфликт-маркеры `^<<<<<<< `. Unwrap-подсчёт: исключать
+  тестовые файлы (`tests.rs`, `*_tests.rs`, `/tests/`) И хвост после
+  `#[cfg(test)]` — иначе счёт завышен на порядок.
+- Структурные метрики: god-файлы `wc -l`; churn `git log --since=1y
+  --name-only | sort | uniq -c`. Аудит — ТОЛЬКО на свежем origin/master.
+  Помнить: path-фильтры CI слепы к новым каталогам (tts/, translator/,
+  scripts/, infra/) — эти зоны проверять руками всегда.
+- Установка инструментов анализа разрешена (cargo-llvm-cov, cargo-mutants).
 - Тексты — desloper (`--lang ru|en|ko|vi`).
 
 ## Контракт issues
