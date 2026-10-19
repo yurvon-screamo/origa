@@ -139,6 +139,26 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     </NavLink>
                 </div>
             </div>
+            // Official unmodified Product Hunt "featured" badge (dark),
+            // self-hosted like the store badges on /download — same
+            // brand-asset exception: built-in artwork, linked to the
+            // product page.
+            <div class="landing-footer__ph">
+                <a
+                    href="https://www.producthunt.com/products/origa-app-to-learn-japanese?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-origa"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Origa on Product Hunt"
+                >
+                    <img
+                        src="/badges/product-hunt.svg"
+                        alt="Origa — Product Hunt"
+                        width="250"
+                        height="54"
+                        loading="lazy"
+                    />
+                </a>
+            </div>
         </footer>
     }
 }

@@ -238,6 +238,14 @@
     gap: var(--space-lg);
 }
 
+.landing-footer__ph {
+    margin-top: var(--space-lg);
+}
+
+.landing-footer__ph img {
+    display: block;
+}
+
 @media (max-width: 640px) {
     .landing-footer__grid {
         grid-template-columns: 1fr;
