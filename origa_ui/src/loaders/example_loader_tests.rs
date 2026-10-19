@@ -250,3 +250,14 @@ async fn cached_chunk_is_not_refetched_for_other_refs() {
         "one fetch per chunk"
     );
 }
+
+/// #528: the CDN audio path must match the IndexTTS batch filenames
+/// byte-for-byte (`{id:06d}.opus` — see tts/gen_batch.py + tts/README.md);
+/// a format drift here 404s every example clip at runtime.
+#[test]
+fn example_audio_path_matches_batch_pipeline_format() {
+    use crate::loaders::example_loader::example_audio_path;
+    assert_eq!(example_audio_path(0), "examples/audio/000000.opus");
+    assert_eq!(example_audio_path(12345), "examples/audio/012345.opus");
+    assert_eq!(example_audio_path(22412), "examples/audio/022412.opus");
+}

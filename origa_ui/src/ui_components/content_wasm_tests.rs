@@ -159,6 +159,35 @@ async fn audio_buttons_empty_text_render_nothing() {
     );
 }
 
+/// #528: an example button with a CDN audio_path must render enabled
+/// regardless of speech-synthesis support (has_content = path.is_some());
+/// Japanese text segmentation stays unavailable here (see the note above),
+/// but the path alone must carry the button.
+#[wasm_bindgen_test]
+async fn audio_buttons_with_audio_path_renders_enabled() {
+    let wrapper = create_wrapper();
+    mount_to_wrapper(&wrapper, || {
+        view! {
+            <AudioButtons
+                text=""
+                audio_path=Some("examples/audio/012345.opus".to_string())
+                test_id="ab-audio"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let btn = wrapper
+        .query_selector("[data-testid=\"ab-audio\"]")
+        .expect("button rendered")
+        .expect("query_selector returned node");
+    assert!(
+        !btn.get_attribute("disabled").is_some(),
+        "CDN-path button is enabled without speech synthesis"
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // derive_test_id helper
 // ═══════════════════════════════════════════════════════════════════════
