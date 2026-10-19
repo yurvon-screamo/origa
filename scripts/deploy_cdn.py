@@ -110,6 +110,10 @@ VERSIONED_FILES: list[str] = [
 SYNC_DIRS = [
     # Word examples (#528): index + numbered data chunks, release-updated.
     "examples",
+    # Word-example TTS audio (#528): generated opus per sentence id,
+    # immutable — must precede the parent examples/ entry so the exact
+    # prefix matches first (sync walks SYNC_DIRS independently).
+    "examples/audio",
     "kanji_animations",
     "kanji_frames",
     "ndlocr",
@@ -147,6 +151,7 @@ SYNC_DIRS = [
 # full re-upload, observed since 2026-06).
 SIZE_ONLY_SYNC_DIRS: Final[frozenset[str]] = frozenset(
     {
+        "examples/audio",
         "fonts",
         "kanji_animations",
         "kanji_frames",
@@ -318,8 +323,16 @@ def sync_directories(
             continue
 
         # Each SYNC_DIR is homogeneous in update frequency (all-ML, all-art,
-        # all-content), so one Cache-Control per directory is correct.
+        # all-content), so one Cache-Control per directory is correct —
+        # except subdirs with their own SYNC_DIRS entry (a different policy):
+        # the parent walk must skip them or --force would re-upload them
+        # under the parent's Cache-Control header.
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
+        child_entries = [d for d in SYNC_DIRS if d.startswith(dir_name + "/")]
+        # Exclude prefixes are relative to the parent's local_dir (the
+        # walk yields paths like audio/000123.opus under examples/),
+        # NOT the full SYNC_DIR key.
+        child_excludes = [f"{d[len(dir_name) + 1:]}/" for d in child_entries]
         effective = ignore_mtime or dir_name in SIZE_ONLY_SYNC_DIRS
         marker = " (size-only)" if effective else ""
         print(f"  {dir_name}/  [{cache_control}]{marker}")
@@ -330,6 +343,7 @@ def sync_directories(
             dry_run,
             effective,
             force=force,
+            exclude_prefixes=child_excludes,
         )
 
 
