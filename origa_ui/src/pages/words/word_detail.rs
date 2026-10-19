@@ -11,7 +11,7 @@ use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
 
 use crate::i18n::{locale_to_native_language, td_string, use_i18n};
-use crate::loaders::example_loader::{WordExample, load_word_examples};
+use crate::loaders::example_loader::{WordExample, example_audio_path, load_word_examples};
 use crate::pages::shared::{
     CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
 };
@@ -387,7 +387,9 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
                 </div>
                 <AudioButtons
                     text=detail.text
-                    audio_path=None
+                    // #528: generated IndexTTS clip for this sentence
+                    // (immutable CDN opus); TTS stays the fallback.
+                    audio_path=Some(example_audio_path(detail.sentence_id))
                     test_id=Signal::derive(|| "word-detail-example-audio".to_string())
                 />
             </div>
