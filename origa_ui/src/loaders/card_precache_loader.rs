@@ -323,3 +323,18 @@ mod tests {
         assert!(resources.is_empty());
     }
 }
+
+/// #528: example cards precache their generated TTS clip — the same
+/// instant-on-play contract phrases have. The path must be the ONLY
+/// resource (the sentence text itself loads lazily on card show).
+#[test]
+fn example_card_precaches_its_tts_clip() {
+    use crate::loaders::example_loader::example_audio_path;
+    use origa::domain::ExampleCard;
+
+    let card = StudyCard::new(Card::Example(ExampleCard::new("猫", 12345)));
+    assert_eq!(
+        get_card_cdn_resources(&card),
+        vec![example_audio_path(12345)]
+    );
+}
