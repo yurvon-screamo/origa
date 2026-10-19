@@ -39,7 +39,7 @@ os.makedirs("/tmp/leak_test", exist_ok=True)
 
 for i in range(12):
     t0 = time.perf_counter()
-    item = corpus[i * 100]
+    item = corpus[i * 100 % len(corpus)]  # guard: small corpora
     tts.infer(spk_audio_prompt=ref_pool[item["id"] % len(ref_pool)],
               text=item["text"], lang="JA",
               output_path=f"/tmp/leak_test/{i:03d}.wav")

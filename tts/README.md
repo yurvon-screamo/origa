@@ -6,92 +6,124 @@ and shipped to the CDN as `examples/audio/{id:06d}.opus` (immutable).
 
 ## Pipeline
 
-```
+```text
 phrases corpus ──build_ref_pool.py──▶ ref_pool/ (80 neutral voices)
                                             │
 examples corpus (cdn/examples/data) ────────┤
                                             ▼
-                                     gen_batch.py ──▶ wav (22 050 Hz)
+                                     gen_batch.py ──▶ wav (22 050 Hz, model-native)
                                             │
-                                     convert_opus.sh
+                                     convert_opus.sh (completeness gate)
                                             ▼
                                    opus 24 kbps → cdn/examples/audio/
                                             │
                                      scripts/deploy_cdn.py
 ```
 
-Voice assignment is deterministic: item `id % len(pool)` — the same sentence
-always gets the same voice across regenerations.
+## Voice assignment — a pinned contract, not a recomputable value
+
+Rotation is `item_id % len(pool)`: deterministic **only relative to the exact
+pool**. The production pool (80 voices, ordering included) is archived here as
+`ref_pool_manifest.json`; `gen_batch.py` requires the pool's `manifest.json`
+to exist and aborts otherwise.
+
+**Regeneration rule**: the `examples/audio/` CDN keys are immutable. Re-running
+with the *pinned* pool reproduces byte-similar audio (safe). Rebuilding the
+pool via `build_ref_pool.py` over a changed phrases corpus produces a
+*different* pool — every sentence would get a different voice, and re-uploading
+under the same keys would split-brain edge caches (the PR #182 immutable
+overwrite class). A re-voiced regeneration must move to content-addressed
+keys (`examples/audio-v2/{hash}/…`), never overwrite.
 
 ## Environment
 
 Tested on Intel Arc B390 (Panther Lake iGPU, unified memory), Python 3.12:
 
-```
-torch        2.15.0.dev+xpu  (nightly, download.pytorch.org/whl/nightly/xpu)
+```text
+torch        2.15.0.dev+xpu  (download.pytorch.org/whl/nightly/xpu)
 torchaudio   matching nightly
-indextts     pip install -e <index-tts repo>  (v2.5 checkpoints in tts-demo/)
+indextts     pip install -e <index-tts repo>  (v2.5 checkpoints, ~5.2 GB)
 transformers 4.47
 soundfile    (required — see patch note)
 ```
 
-**torchaudio patch**: torchcodec wheels target FFmpeg 4–6 while the workstation
-runs FFmpeg 9, so `torchaudio.load/save` are monkey-patched to soundfile inside
-`gen_batch.py`. Drop the patch if torchcodec catches up.
+**torchaudio patch**: torchcodec wheels target FFmpeg 4–6 while the reference
+workstation runs FFmpeg 9, so `torchaudio.load/save` are monkey-patched to
+soundfile inside `gen_batch.py`. Drop the patch if torchcodec catches up.
 
 ## Usage
 
-```bash
-# 1) reference pool (80 voices, ~5 min)
-python3 tts/build_ref_pool.py --out tts-demo/ref_pool
+All commands run from a work dir (`tts-demo/` below) that is **not** the repo;
+scripts stay in the repo and are referenced by path.
 
-# 2) full-corpus manifest (id+text from the CDN data chunks)
+```bash
+# 0) work dir + checkpoints (once)
+mkdir tts-demo && cd tts-demo
+git clone https://github.com/index-tts/index-tts && pip install -e index-tts
+# fetch IndexTTS-2.5 checkpoints into index-tts/checkpoints/ (~5.2 GB)
+
+# 1) reference pool: 80 voices from the pinned manifest
+python3 /path/to/repo/tts/build_ref_pool.py --out ref_pool
+# (ref_pool/manifest.json must match /path/to/repo/tts/ref_pool_manifest.json
+#  for regenerating the production voices; diff them if unsure)
+
+# 2) corpus manifest (id + text from the CDN data chunks)
 python3 - << 'EOF'
 import json, pathlib
 rows = []
-for f in sorted(pathlib.Path('cdn/examples/data').glob('s*.json')):
+for f in sorted(pathlib.Path('/path/to/repo/cdn/examples/data').glob('s*.json')):
     rows.extend(json.load(open(f)))
 seen = {r['i']: r for r in rows}
-items = [{"id": r['i'], "text": r['x']} for r in sorted(seen.values(), key=lambda x: x['i'])]
-json.dump(items, open('tts-demo/full_corpus.json', 'w'), ensure_ascii=False)
+items = [{"id": r['i'], "text": r['x']}
+         for r in sorted(seen.values(), key=lambda x: x['i'])]
+json.dump(items, open('full_corpus.json', 'w'), ensure_ascii=False)
 EOF
 
-# 3) generation — N shard workers (2 fit a 30 GB iGPU box)
-systemd-run --user --unit=tts-batch@0 --working-directory=tts-demo \
-    <python> gen_batch.py --shard 0 --total-shards 2
-systemd-run --user --unit=tts-batch@1 --working-directory=tts-demo \
-    <python> gen_batch.py --shard 1 --total-shards 2
+# 3) generation — N shard workers (2 fit a 30 GB iGPU box; pair each with
+#    systemd Restart=always, see "Failure model" below)
+systemd-run --user --unit=tts-batch@0 --working-directory="$PWD" \
+    <python> /path/to/repo/tts/gen_batch.py --shard 0 --total-shards 2
+systemd-run --user --unit=tts-batch@1 --working-directory="$PWD" \
+    <python> /path/to/repo/tts/gen_batch.py --shard 1 --total-shards 2
 
-# 4) convert + deploy
-tts/convert_opus.sh            # wav → opus 24 kbps into tts-demo/opus_out
-cp tts-demo/opus_out/*.opus cdn/examples/audio/
-scripts/.venv/bin/python scripts/deploy_cdn.py
+# 4) convert + completeness gate (fails loudly on a partial corpus)
+bash /path/to/repo/tts/convert_opus.sh
+
+# 5) deploy
+cp opus_out/*.opus /path/to/repo/cdn/examples/audio/
+cd /path/to/repo && scripts/.venv/bin/python scripts/deploy_cdn.py
 ```
 
-## Operational notes (learned the hard way)
+## Failure model (root-caused via `leak_diag.py`)
 
-- **Checkpointing**: every wav is its own checkpoint (`skip if exists &&
-  size > 1 KB`); restarts never lose progress. Failed items self-heal on the
-  next worker restart.
-- **OOM cascade fix**: exception unwinding does NOT free the tensors a failed
-  inference allocated. Without cleanup, one OOM poisons every following item
-  until a process restart. The except-handler in `gen_batch.py` runs
+- **OOM cascade**: exception unwinding does NOT free tensors a failed
+  inference allocated. One OOM poisons every following item until a process
+  restart. The except-handler in `gen_batch.py` runs
   `gc.collect() + torch.xpu.empty_cache() + synchronize()` to break the
   cascade — this single fix took sustained throughput from ~490 to ~700+
   files/hour (2 workers).
-- **Circuit breaker**: 5 consecutive failures still exit(1); pair the worker
-  with `systemd Restart=always` for a clean-VRAM recovery (~60 s).
+- **Circuit breaker**: 5 consecutive failures `exit(1)`; systemd
+  `Restart=always` recovers with clean VRAM in ~60 s. Checkpoints make the
+  restart free.
+- **Scattered failures** (non-cascade) get one retry pass; if any remain the
+  worker exits 1 — an incomplete corpus must never reach the immutable CDN
+  prefix (a missing file 404s forever: the pitch/audio incident class).
+  `convert_opus.sh` re-checks completeness as the final gate.
 - **iGPU = unified memory**: "VRAM" is system RAM; per-worker footprint is
-  ~10 GB (RSS + GPU). Two workers saturate a 30 GB box; the 4-worker plan
-  OOMs.
-- **leak_diag.py**: per-iteration RSS/GPU/gc probe — proved the leak was
-  OOM-debris, not a Python-side accumulation. Run it first when throughput
-  degrades.
+  ~10 GB (RSS + GPU). Two workers saturate a 30 GB box; a 4-worker plan OOMs.
+- A finished worker does NOT retry its failures — re-run the same command
+  (checkpoints skip the good clips and retry only the gaps).
+
+## Checkpoint validity
+
+A wav counts as done only when `soundfile.info()` reads a duration ≥ 0.5 s —
+a file truncated by the OOM-killer (plausible size, broken tail) is retried,
+not shipped.
 
 ## Numbers (Arc B390, 2 workers)
 
 | Metric | Value |
-|---|---|
+| :--- | :--- |
 | Corpus | 22 413 sentences |
 | Generation | ~45 h wall (≈ 500–700 files/h) |
 | Output | 296 MB opus (24 kbps mono, ~13 KB/file) |

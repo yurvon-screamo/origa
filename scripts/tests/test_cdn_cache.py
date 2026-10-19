@@ -25,10 +25,13 @@ EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
     "phrases/audio": IMMUTABLE,
     "whisper": IMMUTABLE,
     "fonts": IMMUTABLE,
-    # Word examples (#528) and pitch audio: content rebuilt/hash-named per
-    # corpus refresh, but the enclosing _cdn_cache rules keep them on the
-    # conservative release-updated tier.
+    # Word examples (#528) data chunks and pitch audio: content rebuilt or
+    # hash-named per corpus refresh — conservative release-updated tier.
     "examples": RELEASE_UPDATED,
+    # Example TTS audio (#528): generated once per sentence id, byte-stable
+    # forever — immutable, exactly like phrases/audio. More specific than
+    # the examples/ rule; precedence lives in cache_control_for's if-chain.
+    "examples/audio": IMMUTABLE,
     "pitch/audio": RELEASE_UPDATED,
     "phrases/data": RELEASE_UPDATED,
     "phrases/precomputed": RELEASE_UPDATED,
@@ -207,8 +210,20 @@ def test_immutable_and_release_rules_are_disjoint():
     # a prefix of a release-updated path (or vice versa), precedence in
     # cache_control_for would silently mask one category. dictionary/ vs
     # dictionaries/ is the canonical trap — they must not prefix each other.
+    #
+    # Deliberate exception: an immutable CHILD under a release-updated PARENT
+    # (examples/audio/ inside examples/) is allowed when listed below —
+    # precedence is safe because cache_control_for checks IMMUTABLE_RULES
+    # first, so the more-specific child wins. The deploy-side invariant
+    # (the parent sync walk must skip the child subtree) is pinned separately
+    # in test_deploy_cdn_excludes.py.
+    intentional_nestings = {
+        "examples/audio/": "examples/",  # example TTS audio (#528)
+    }
     for imm in _cdn_cache._IMMUTABLE_RULES:
         for rel in _cdn_cache._RELEASE_UPDATED_RULES:
+            if intentional_nestings.get(imm) == rel:
+                continue
             assert not imm.startswith(rel), f"{imm} shadowed by release rule {rel}"
             assert not rel.startswith(imm), f"{rel} shadowed by immutable rule {imm}"
 
