@@ -12,6 +12,15 @@ use origa::traits::CdnProvider;
 
 use crate::repository::cdn_provider;
 
+/// CDN path of the generated TTS clip for an example sentence (#528).
+///
+/// IndexTTS-2.5 batch output, shipped as immutable opus under
+/// `examples/audio/` (see `tts/` in the repo for the pipeline). The
+/// `{id:06d}` padding matches the batch filenames exactly.
+pub fn example_audio_path(sentence_id: u32) -> String {
+    format!("examples/audio/{sentence_id:06}.opus")
+}
+
 const EXAMPLES_INDEX_PATH: &str = "examples/index.json";
 
 /// Data chunks with a fetch currently in flight: concurrent consumers

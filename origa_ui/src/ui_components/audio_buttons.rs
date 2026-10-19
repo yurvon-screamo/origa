@@ -48,8 +48,24 @@ pub fn AudioButtons(
                             // one during the network round-trip.
                             stop_current_audio();
                             is_playing.set(true);
+                            // Keep the text for the degradation path: a failed
+                            // CDN clip (offline, 404) falls back to speech
+                            // synthesis — a silent no-op button reads as broken.
+                            let text_for_fallback = text_signal.get();
                             spawn_local(async move {
-                                play_phrase_audio(&audio_path, is_playing).await;
+                                if !play_phrase_audio(&audio_path, is_playing).await {
+                                    if is_speech_supported()
+                                        && !get_reading_from_text(&text_for_fallback).is_empty()
+                                    {
+                                        speak_word_with_callback(
+                                            &text_for_fallback,
+                                            1.0,
+                                            move || is_playing.set(false),
+                                        );
+                                    } else {
+                                        is_playing.set(false);
+                                    }
+                                }
                             });
                         } else if is_speech_supported() {
                             stop_current_audio();
@@ -77,21 +93,22 @@ pub fn AudioButtons(
 /// `HTMLAudioElement`. Updates `is_playing` based on lifecycle events.
 ///
 /// Uses the same promise-absorbing pattern as `AudioPlayer` to avoid Bug B
-/// (`Uncaught (in promise) NotSupportedError`). If the prefetch fails the
-/// signal is reset so the user can retry.
-async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) {
+/// (`Uncaught (in promise) NotSupportedError`). Returns `false` when the
+/// prefetch or element construction failed (signal already reset) — the
+/// caller decides whether to degrade to speech synthesis.
+async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) -> bool {
     let blob_url = match prefetch_blob_url(path).await {
         Ok(url) => url,
         Err(e) => {
             tracing::warn!(path = %path, error = ?e, "AudioButtons prefetch failed");
             is_playing.set(false);
-            return;
+            return false;
         },
     };
 
     let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(&blob_url) else {
         is_playing.set(false);
-        return;
+        return false;
     };
     let _ = audio.set_attribute("preload", "auto");
 
@@ -139,4 +156,5 @@ async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) {
             is_playing.set(false);
         },
     }
+    true
 }

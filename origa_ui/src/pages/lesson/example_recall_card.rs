@@ -17,7 +17,7 @@ use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
 use crate::i18n::{t, use_i18n};
-use crate::loaders::example_loader::{WordExample, load_example_detail};
+use crate::loaders::example_loader::{WordExample, example_audio_path, load_example_detail};
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
     TypographyVariant,
@@ -95,7 +95,10 @@ pub fn ExampleRecallCard(
                         view! {
                             <AudioButtons
                                 text=we.detail.text
-                                audio_path=None
+                                // #528: generated IndexTTS clip (immutable
+                                // CDN opus); speech synthesis stays the
+                                // degradation path on prefetch failure.
+                                audio_path=Some(example_audio_path(sentence_id))
                                 test_id=Signal::derive(|| "lesson-example-audio".to_string())
                             />
                         }

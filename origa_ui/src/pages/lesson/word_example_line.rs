@@ -4,7 +4,7 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 
-use crate::loaders::example_loader::{WordExample, load_word_examples};
+use crate::loaders::example_loader::{WordExample, example_audio_path, load_word_examples};
 use crate::pages::words::split_highlight;
 use crate::ui_components::{AudioButtons, FuriganaText, Text, TextSize, TypographyVariant};
 use origa::domain::NativeLanguage;
@@ -92,7 +92,9 @@ pub fn WordExampleLine(
                     </div>
                     <AudioButtons
                         text=sentence_text
-                        audio_path=None
+                        // #528: generated IndexTTS clip for this sentence
+                        // (immutable CDN opus); TTS stays the fallback.
+                        audio_path=Some(example_audio_path(detail.sentence_id))
                         test_id=Signal::derive(|| "lesson-word-example-audio".to_string())
                     />
                 </div>
