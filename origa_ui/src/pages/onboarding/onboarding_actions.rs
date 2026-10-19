@@ -1,4 +1,4 @@
-use crate::i18n::Locale;
+use crate::i18n::{Locale, locale_code};
 use crate::loaders::recalculate_user_jlpt_progress;
 use crate::repository::cdn_provider;
 use crate::ui_components::{ToastData, ToastType};
@@ -13,6 +13,8 @@ use origa::use_cases::{
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::onboarding_state::OnboardingState;
+use super::onboarding_state::OnboardingStep::Summary;
+use super::telemetry::track_step_complete;
 
 /// Sequence for save-error toast ids. Every push takes a fresh id: the
 /// `ToastContainer` renders through `<For key=toast.id>`, so reusing an id
@@ -231,6 +233,9 @@ pub(super) fn create_on_start_import_callback(
                 // Logged after the checkpoint so the message states an
                 // outcome, not an intent that an error branch would refute.
                 tracing::info!("No sets selected for import — advancing to scoring");
+                // An empty selection is a valid summary completion: the
+                // user moved on to scoring (issue #774 / ADR-054 §5.1).
+                track_step_complete(Summary, locale_code(&i18n.get_locale_untracked()));
                 state.update(|s| {
                     s.go_to_next_step();
                 });
@@ -290,6 +295,9 @@ pub(super) fn create_on_start_import_callback(
                         import_result.skipped_duplicates
                     );
 
+                    // The import checkpoint committed: the user moved on to
+                    // scoring (issue #774 / ADR-054 §5.1).
+                    track_step_complete(Summary, locale_code(&i18n.get_locale_untracked()));
                     state.update(|s| {
                         s.go_to_next_step();
                     });

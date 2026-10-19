@@ -285,6 +285,14 @@ pub static CONTENT: Content = Content {
     terms_h1: "Terms of Service",
     terms_last_updated_label: "Last updated",
     terms_body: TO_BODY_EN,
+
+    // HowTo JSON-LD steps for /blog/japanese-ocr-app — a compressed restatement
+    // of the pipeline the article documents; keep in sync with the article body.
+    blog_ocr_howto_name: "How to turn Japanese text into flashcards with Origa",
+    blog_ocr_howto_step1: "Photograph the page you are reading",
+    blog_ocr_howto_step2: "The on-device NDLOCR-Lite model recognizes the Japanese text offline",
+    blog_ocr_howto_step3: "Each recognized word becomes a flashcard with its reading, translation, and audio",
+    blog_ocr_howto_step4: "Review the cards on an FSRS schedule",
 };
 
 pub const PR_BODY_EN: &str = r#"

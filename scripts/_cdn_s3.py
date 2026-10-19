@@ -543,6 +543,7 @@ def sync_directory(
     dry_run: bool,
     ignore_mtime: bool = False,
     force: bool = False,
+    exclude_prefixes: list[str] | None = None,
 ) -> None:
     """Upload new/changed local files under ``local_dir`` to a bucket prefix.
 
@@ -571,10 +572,17 @@ def sync_directory(
     # (a minute+ of pagination across 100k+ objects on the recovery path).
     remote = {} if force else list_remote_objects(prefix)
 
-    # Count total files first for progress bar
+    # Count total files first for progress bar; drop excluded subtrees
+    # (child SYNC_DIRS entries with their own Cache-Control policy —
+    # the parent walk must never touch or re-upload them).
+    excludes = tuple(exclude_prefixes or [])
     all_files = [
         p for p in sorted(local_dir.rglob("*"))
         if p.is_file() and p.name != "README.md"
+        and not any(
+            p.relative_to(local_dir).as_posix().startswith(e)
+            for e in excludes
+        )
     ]
     total = len(all_files)
     start = _time.time()

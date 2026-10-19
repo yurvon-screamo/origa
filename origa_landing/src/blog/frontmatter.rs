@@ -47,7 +47,7 @@ pub enum FrontmatterError {
     MissingField(&'static str),
     #[error("duplicate key `{0}` (only one value per key is allowed)")]
     DuplicateKey(String),
-    #[error("invalid locale `{0}` (expected en/ru/ko/vi)")]
+    #[error("invalid locale `{0}` (expected en/ru/ko/vi/ja)")]
     InvalidLocale(String),
     #[error("invalid status `{0}` (expected draft or ready)")]
     InvalidStatus(String),

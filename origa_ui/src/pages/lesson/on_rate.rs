@@ -116,8 +116,10 @@ pub(crate) fn advance_lesson_state(
 }
 
 /// #528: advance the lesson WITHOUT any FSRS rating — the example-recall
-/// self-assessment is a training signal only (see issue #528).
-pub fn create_on_example_advance_callback(
+/// self-assessment is a training signal only (see issue #528). The counter
+/// pack uses the same contract: bindings carry their own SRS memory, a
+/// pack completion must not rate the suffix's semantic card.
+pub fn create_rating_free_advance_callback(
     lesson_state: RwSignal<super::lesson_state::LessonState>,
     is_completed: RwSignal<bool>,
 ) -> Callback<()> {

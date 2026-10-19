@@ -1,0 +1,191 @@
+name: Upload to Google Play (closed testing)
+
+# Reusable workflow for uploading the signed AAB to the Google Play closed
+# testing track (alpha) via r0adkll/upload-google-play@v1 (major-tag pin per
+# repo convention; v1 currently points to a node24 runtime). Called from
+# tauri.yml after build-tauri succeeds on tag pushes.
+# CONTRACT: stable + prerelease only — while Origa lives in closed testing,
+# both RC and stable builds deliver to the same alpha track. Within one train
+# RC versionCodes sort below the stable (BASE*100+N vs BASE*100+99, see
+# .github/scripts/compute-android-versioncode.sh), so Play accepts every
+# next upload of the train.
+#
+# Terminology trap: the repo's version_type=alpha means an UNTAGGED branch
+# build (see .github/actions/version/action.yml), while the Play track
+# `alpha` is CLOSED TESTING. Same word, different entities — this workflow
+# delivers to the TRACK and is gated on version_type stable|prerelease.
+#
+# Flow:
+#   0. Guard: PLAY_SERVICE_ACCOUNT_JSON must be present — fail-loud BEFORE
+#      the 50+ MB AAB download (fail-fast order mirrors _upload-rustore.yml)
+#   1. (stable only) Extract ru-RU release notes from CHANGELOG.md — the same
+#      missing-section-fails-loud contract as upload-rustore. RCs ship
+#      without store release notes (no CHANGELOG section exists for them).
+#   2. Download the android-aab artifact built by _build-tauri.yml
+#   3. Upload to track `alpha`, status `completed` (goes live for testers)
+#
+# Prerequisites (manual, one-time; verified 2026-10-13 in issue #747):
+#   - GCP service account with a JSON key (origa-play-upload@origa-489118...),
+#     linked in Play Console → Setup → API access
+#   - "Google Play Android Developer API" enabled in the SA's GCP project
+#   - Play Console → Users and permissions: SA invited with the
+#     "Release to testing" role (no Admin, no production release)
+#   - Closed testing track exists; its Play API name is `alpha`. A custom
+#     track name in Play Console must be reflected in PLAY_TRACK below
+#   - GitHub secret PLAY_SERVICE_ACCOUNT_JSON holds the full JSON key
+#
+# Isolation doctrine (mirrors upload-rustore): this job is intentionally
+# ABSENT from release.needs in tauri.yml — a transient Play failure (network,
+# moderation, quota) MUST NOT block the GitHub Release. Do NOT add
+# upload-google-play to release.needs — that regresses isolation. Until the
+# secret is set, every release run shows this job RED while the release
+# itself stays green — that red is the intended loud reminder.
+#
+# Re-tag policy: a versionCode is burned in Play forever. Re-pushing an
+# already-delivered tag cannot re-upload the same code — recovery is a bumped
+# rc suffix or patch version, not a re-tag.
+
+on:
+    workflow_call:
+        inputs:
+            version:
+                type: string
+                required: true
+            version_type:
+                type: string
+                required: true
+        secrets:
+            play-service-account-json:
+                required: false
+        outputs:
+            upload-status:
+                description: "Play closed-testing upload result: success|failure|skipped"
+                value: ${{ jobs.upload.outputs.status }}
+
+permissions:
+    contents: read
+
+jobs:
+    upload:
+        # Self-gate mirrors the caller's if-clause — defense in depth, same
+        # pattern as _upload-rustore.yml.
+        if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease'
+        runs-on: ubuntu-latest
+        outputs:
+            status: ${{ steps.upload-report.outputs.status }}
+        env:
+            PACKAGE_NAME: net.uwuwu.origa
+            # Play API track name for closed testing. NOT the repo's
+            # version_type=alpha (untagged builds) — see the header.
+            PLAY_TRACK: alpha
+            # Step-level `if` can only see job-level env, so the secret is
+            # surfaced here once for both the guard and the upload step.
+            PLAY_SA_JSON: ${{ secrets.play-service-account-json }}
+        steps:
+            - name: Check out repository
+              id: checkout
+              uses: actions/checkout@v7
+
+            - name: Guard — service account secret must exist
+              id: guard
+              # Fail-loud before any artifact download or API call. The
+              # release stays green (isolation doctrine); the red job is the
+              # reminder to set the secret.
+              if: env.PLAY_SA_JSON == ''
+              run: |
+                  echo "::error::PLAY_SERVICE_ACCOUNT_JSON is empty — the Google Play closed-testing upload cannot run."
+                  echo "Fix: gh secret set PLAY_SERVICE_ACCOUNT_JSON --repo ${{ github.repository }} < service-account.json"
+                  echo "Prerequisites: see the header comment of _upload-google-play.yml."
+                  exit 1
+
+            - name: Extract release notes from CHANGELOG.md (stable only)
+              id: release-notes
+              if: inputs.version_type == 'stable'
+              env:
+                  VERSION: ${{ inputs.version }}
+              run: |
+                  set -e
+                  # Runs BEFORE any Play API call: a missing/empty CHANGELOG
+                  # section fails the job without uploading anything (same
+                  # authoring contract as upload-rustore).
+                  mkdir -p whatsnew
+                  .github/scripts/extract-whatsnew.sh "$VERSION" CHANGELOG.md whatsnew/whatsnew-ru-RU
+
+            - name: Prepare release-notes directory (rc)
+              id: prepare-notes
+              # The action reads localized whatsnew-* files from the
+              # directory; an empty dir yields no release notes — RCs ship
+              # without store notes by design.
+              if: inputs.version_type == 'prerelease'
+              run: mkdir -p whatsnew
+
+            - name: Download AAB artifact
+              id: download-aab
+              uses: actions/download-artifact@v8
+              with:
+                  name: android-aab
+                  path: aab/
+
+            - name: Locate AAB file
+              id: locate
+              run: |
+                  set -e
+                  AAB_PATH=$(find aab/ -name "*.aab" -type f | head -1)
+                  if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
+                    echo "::error::No AAB file found under aab/ — build-android must upload the android-aab artifact"
+                    ls -la aab/ 2>&1 || true
+                    exit 1
+                  fi
+                  SIZE=$(stat -c%s "$AAB_PATH")
+                  echo "Found AAB: $AAB_PATH ($SIZE bytes)"
+                  echo "aab_path=$AAB_PATH" >> "$GITHUB_OUTPUT"
+
+            - name: Upload to Google Play (closed testing)
+              id: upload
+              # Redundant with the guard by design (belt and braces): the
+              # action's own validateServiceAccountJson would fail on an
+              # empty credential, and env-context step conditions are only
+              # readable from the job env.
+              if: env.PLAY_SA_JSON != ''
+              uses: r0adkll/upload-google-play@v1
+              with:
+                  serviceAccountJsonPlainText: ${{ secrets.play-service-account-json }}
+                  packageName: ${{ env.PACKAGE_NAME }}
+                  releaseFiles: ${{ steps.locate.outputs.aab_path }}
+                  releaseName: Origa ${{ inputs.version }}
+                  # `tracks` (not the deprecated singular `track`), status
+                  # completed = live for closed testers immediately.
+                  tracks: ${{ env.PLAY_TRACK }}
+                  status: completed
+                  whatsNewDirectory: whatsnew/
+
+            - name: Report upload result
+              id: upload-report
+              # ORDER INVARIANT: must run AFTER the upload step (same pattern
+              # as _build-tauri-apple.yml upload-report) so the outcome is
+              # final when recorded.
+              #
+              # Outcome-aware, not just upload.outcome: a skipped upload with
+              # a FAILED guard/notes/download step is a FAILURE (the job is
+              # red for a real reason), only a skipped upload on an otherwise
+              # healthy run is a true "skipped".
+              if: always()
+              env:
+                  CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
+                  GUARD_RESULT: ${{ steps.guard.outcome }}
+                  NOTES_RESULT: ${{ steps.release-notes.outcome }}
+                  PREPARE_RESULT: ${{ steps.prepare-notes.outcome }}
+                  DOWNLOAD_RESULT: ${{ steps.download-aab.outcome }}
+                  LOCATE_RESULT: ${{ steps.locate.outcome }}
+                  UPLOAD_RESULT: ${{ steps.upload.outcome }}
+              run: |
+                  if [ "$UPLOAD_RESULT" = "success" ]; then
+                    echo "status=success" >> "$GITHUB_OUTPUT"
+                    echo "✅ AAB delivered to Play closed testing (track ${{ env.PLAY_TRACK }})"
+                  elif [ "$CHECKOUT_RESULT" = "failure" ] || [ "$GUARD_RESULT" = "failure" ] || [ "$NOTES_RESULT" = "failure" ] || [ "$PREPARE_RESULT" = "failure" ] || [ "$DOWNLOAD_RESULT" = "failure" ] || [ "$LOCATE_RESULT" = "failure" ] || [ "$UPLOAD_RESULT" = "failure" ]; then
+                    echo "status=failure" >> "$GITHUB_OUTPUT"
+                    echo "❌ Play upload failed — see the failed step above. The AAB remains attached to the GitHub Release for manual upload via Play Console"
+                  else
+                    echo "status=skipped" >> "$GITHUB_OUTPUT"
+                    echo "ℹ️ Play upload skipped (non-release run)"
+                  fi

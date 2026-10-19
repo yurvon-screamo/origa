@@ -6,13 +6,13 @@ on:
             version:
                 type: string
                 required: true
-            # version_base and version_type are retained for caller
-            # compatibility (ci.yml and tauri.yml pass them) but are no longer
-            # consumed inside this workflow after ADR-025: artifact naming is
-            # unconditional (always versioned + fixed alias), and update-version
-            # receives the full `version` so prerelease binaries report their
-            # rc suffix. Kept as required to avoid a contract-breaking change
-            # to the workflow_call signature in the same PR.
+            # version_base is consumed by build-android since the Google Play
+            # closed-testing channel (issue #747): the versionCode formula
+            # parses the numeric X.Y.Z from it. version_type drives Sentry
+            # environment mapping and gates the AAB chain. Artifact naming is
+            # unconditional (always versioned + fixed alias, ADR-025), and
+            # update-version receives the full `version` so prerelease
+            # binaries report their rc suffix.
             version_base:
                 type: string
                 required: true
@@ -236,6 +236,20 @@ jobs:
               with:
                   version: ${{ inputs.version }}
 
+            - name: Deb-compatible version
+              # Prerelease versions arrive as "0.8.1-alpha.N" / "0.8.0-rc17".
+              # The Linux bundlers reject '-' in the package version
+              # (allowed: alphanumeric, '.', '_', '+', '%', '{', '}', '~',
+              # '^'), while tauri.conf.json must stay semver — '~' fails
+              # that check. Semver build metadata '+' satisfies both, so
+              # the first '-' in the version value becomes '+'
+              # (0.8.1+alpha.87, 0.8.0+rc17). macOS/Windows bundlers
+              # accept '-' — patched per-job, the shared update-version
+              # step stays untouched.
+              run: |
+                  sed -i.bak '/"version": /s/-/+/' tauri/tauri.conf.json && rm -f tauri/tauri.conf.json.bak
+                  grep '"version"' tauri/tauri.conf.json
+
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
@@ -299,8 +313,14 @@ jobs:
                   # Minisign signatures are content-based, so the rename does
                   # not invalidate them. Guards match the Windows pattern —
                   # Dependabot builds run --no-sign and emit no .sig at all.
-                  mv "deb/Origa_${VERSION}_amd64.deb" "deb/Origa_amd64.deb"
-                  [ -f "deb/Origa_${VERSION}_amd64.deb.sig" ] && mv "deb/Origa_${VERSION}_amd64.deb.sig" "deb/Origa_amd64.deb.sig" || true
+                  # The deb alias is taken by glob, not by version expansion:
+                  # the Linux job rewrites the prerelease '-' to '+' for the
+                  # bundler, so the emitted name does not match $VERSION.
+                  DEB_FILE=$(ls deb/Origa_*_amd64.deb 2>/dev/null | head -1 || true)
+                  if [ -n "$DEB_FILE" ]; then
+                    mv "$DEB_FILE" "deb/Origa_amd64.deb"
+                    [ -f "${DEB_FILE}.sig" ] && mv "${DEB_FILE}.sig" "deb/Origa_amd64.deb.sig" || true
+                  fi
                   # RPM name carries a release suffix (Origa_<version>-1_<arch>.rpm),
                   # so the alias is taken by glob, not by version expansion.
                   RPM_FILE=$(ls rpm/*.rpm 2>/dev/null | head -1 || true)
@@ -383,6 +403,29 @@ jobs:
               uses: ./.github/actions/update-version
               with:
                   version: ${{ inputs.version }}
+
+            - name: Compute Android versionCode
+              # Tag runs only: tauri-cli derives versionCode as
+              # major*1_000_000 + minor*1_000 + patch and IGNORES the
+              # pre-release segment, so rc1/rc2/stable of one train would all
+              # carry the same code — Play rejects reused codes, breaking the
+              # second RC and the stable (issue #747). The script applies the
+              # monotonic BASE*100+offset scheme; master burn-in builds keep
+              # the tauri default (no Play delivery from them).
+              if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease'
+              env:
+                  VERSION: ${{ inputs.version }}
+                  VERSION_BASE: ${{ inputs.version_base }}
+                  VERSION_TYPE: ${{ inputs.version_type }}
+              run: |
+                  set -euo pipefail
+                  VERSION_CODE=$(.github/scripts/compute-android-versioncode.sh "$VERSION" "$VERSION_BASE" "$VERSION_TYPE")
+                  echo "ANDROID_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+                  # Audit trail: this is the exact override the APK/AAB build
+                  # steps inject; the first tag run of the channel shows in
+                  # the log what Play will receive.
+                  echo "version=$VERSION type=$VERSION_TYPE versionCode=$VERSION_CODE"
+                  echo "override: --config {\"bundle\":{\"android\":{\"versionCode\":$VERSION_CODE}}}"
 
             - name: Install system dependencies
               run: |
@@ -475,8 +518,15 @@ jobs:
                   echo "=== Debug info ==="
                   echo "NDK_HOME=$NDK_HOME"
                   echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+                  # Tag runs carry a monotonic Play versionCode override (see
+                  # "Compute Android versionCode") so APK and AAB of one
+                  # release always share the same code.
+                  CONFIG_ARGS=()
+                  if [ -n "${ANDROID_VERSION_CODE:-}" ]; then
+                    CONFIG_ARGS+=(--config "{\"bundle\":{\"android\":{\"versionCode\":$ANDROID_VERSION_CODE}}}")
+                  fi
                   echo "=== Start build ==="
-                  cargo tauri android build 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+                  cargo tauri android build "${CONFIG_ARGS[@]}" 2>&1 || (echo "Build failed with exit code $?"; exit 1)
 
             - name: Rename APK to fixed-name output
               working-directory: tauri/gen/android/app/build/outputs/apk
@@ -507,19 +557,29 @@ jobs:
 
             # AAB chain runs only on tags (version_type stable/prerelease) and
             # push-to-master (github.ref) for burn-in; PR skips entirely.
-            # Every step is non-blocking (continue-on-error) so APK-publish
-            # stays green during burn-in.
+            # Burn-in keeps the non-blocking posture, but on TAGS the chain is
+            # BLOCKING (continue-on-error: false via ref_type): a tag is a
+            # delivery release — the AAB feeds Google Play closed testing and
+            # RuStore, so a silently missing AAB must fail the build instead
+            # of surfacing later as "artifact not found" in the upload jobs.
             - name: Build Tauri Android AAB
               id: build-aab
               if: inputs.version_type == 'stable' || inputs.version_type == 'prerelease' || github.ref == 'refs/heads/master'
-              continue-on-error: true
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri
-              run: cargo tauri android build --aab
+              run: |
+                  # Same Play versionCode override as the APK build (tag runs
+                  # only) — one code per release across both bundle formats.
+                  CONFIG_ARGS=()
+                  if [ -n "${ANDROID_VERSION_CODE:-}" ]; then
+                    CONFIG_ARGS+=(--config "{\"bundle\":{\"android\":{\"versionCode\":$ANDROID_VERSION_CODE}}}")
+                  fi
+                  cargo tauri android build "${CONFIG_ARGS[@]}" --aab
 
             - name: Verify AAB release signature
               id: verify-aab
               if: steps.build-aab.outcome == 'success'
-              continue-on-error: true
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri/gen/android/app/build/outputs/bundle
               run: |
                   set -o pipefail
@@ -553,7 +613,7 @@ jobs:
             - name: Rename AAB to versioned output
               id: rename-aab
               if: steps.verify-aab.outcome == 'success'
-              continue-on-error: true
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               working-directory: tauri/gen/android/app/build/outputs/bundle
               env:
                   VERSION: ${{ inputs.version }}
@@ -569,7 +629,7 @@ jobs:
 
             - name: Upload Android AAB
               if: steps.rename-aab.outcome == 'success'
-              continue-on-error: true
+              continue-on-error: ${{ github.ref_type != 'tag' }}
               uses: actions/upload-artifact@v7
               env:
                   VERSION: ${{ inputs.version }}

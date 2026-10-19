@@ -25,6 +25,11 @@ EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
     "phrases/audio": IMMUTABLE,
     "whisper": IMMUTABLE,
     "fonts": IMMUTABLE,
+    # Word examples (#528) and pitch audio: content rebuilt/hash-named per
+    # corpus refresh, but the enclosing _cdn_cache rules keep them on the
+    # conservative release-updated tier.
+    "examples": RELEASE_UPDATED,
+    "pitch/audio": RELEASE_UPDATED,
     "phrases/data": RELEASE_UPDATED,
     "phrases/precomputed": RELEASE_UPDATED,
     "well_known_set/duolingo": RELEASE_UPDATED,

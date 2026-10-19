@@ -2192,3 +2192,189 @@ fn mark_card_as_known_leaves_active_ghost_intact() {
     assert!(after.is_known_card(), "seed branch must run");
     assert_eq!(after.ghost(), Some(&ghost_before));
 }
+
+// --- InsightsLog capture (#749) ---
+
+#[test]
+fn rate_card_on_word_card_writes_insight_buckets() {
+    // Arrange: словесная карта с прошедшим расписанием
+    let mut knowledge_set = KnowledgeSet::new();
+    let card_id = *knowledge_set
+        .create_card(create_vocab_card("猫"))
+        .unwrap()
+        .card_id();
+    knowledge_set
+        .study_cards_mut_for_test()
+        .get_mut(&card_id)
+        .unwrap()
+        .seed_first_review(create_known_memory_state());
+
+    // Act
+    knowledge_set
+        .rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+
+    // Assert: часовой бакет записан, группа просрочки — без due (расписание в будущем)
+    assert_eq!(knowledge_set.insights().total_reviews(), 1);
+    let total_hour_attempts: u32 = knowledge_set
+        .insights()
+        .hour_buckets()
+        .iter()
+        .map(|(attempts, _)| attempts)
+        .sum();
+    assert_eq!(total_hour_attempts, 1);
+}
+
+#[test]
+fn rate_card_on_phrase_card_skips_insight_log() {
+    // Arrange: фразы не входят в словесную популяцию инсайтов
+    ensure_test_phrase_index();
+    let mut knowledge_set = KnowledgeSet::new();
+    let phrase_card = knowledge_set
+        .create_card(Card::Phrase(PhraseCard::new(phrase_id_hello())))
+        .unwrap();
+    let phrase_id = *phrase_card.card_id();
+
+    // Act
+    knowledge_set
+        .rate_card(
+            phrase_id,
+            Rating::Good,
+            RateMode::PhraseReview,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+
+    // Assert
+    assert_eq!(knowledge_set.insights().total_reviews(), 0);
+}
+
+#[test]
+fn knowledge_set_merge_combines_insights_via_max() {
+    // Arrange: у левого провал, у правого успех в том же бакете
+    let mut left = KnowledgeSet::new();
+    let left_card = *left.create_card(create_vocab_card("猫")).unwrap().card_id();
+    left.rate_card(
+        left_card,
+        Rating::Again,
+        RateMode::StandardLesson,
+        RatingContext::Explicit,
+    )
+    .unwrap();
+
+    let mut right = KnowledgeSet::new();
+    let right_card = *right
+        .create_card(create_vocab_card("犬"))
+        .unwrap()
+        .card_id();
+    right
+        .rate_card(
+            right_card,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+
+    // Act
+    left.merge(&right);
+
+    // Assert: попытки max(1,1)=1, верные max(0,1)=1
+    let total_attempts: u32 = left
+        .insights()
+        .hour_buckets()
+        .iter()
+        .map(|(attempts, _)| attempts)
+        .sum();
+    let total_correct: u32 = left
+        .insights()
+        .hour_buckets()
+        .iter()
+        .map(|(_, correct)| correct)
+        .sum();
+    assert_eq!(total_attempts, 1);
+    assert_eq!(total_correct, 1);
+}
+
+// --- ВРЕМЕННЫЙ шаблон сериализации для e2e seed (#749) — удалить после использования ---
+
+#[test]
+fn print_knowledge_set_template() {
+    // Arrange: два слова (одно проблемное) + сегодняшний айтем истории.
+    let mut set = KnowledgeSet::new();
+    for (i, word) in ["結局", "つまり"].iter().enumerate() {
+        let card = Card::Vocabulary(VocabularyCard::new_with_pos(
+            Question::new(word.to_string()).unwrap(),
+            None,
+            Some(Question::new(format!("{word} gloss")).unwrap()),
+        ));
+        let study_card = set.create_card(card).unwrap();
+        let id = *study_card.card_id();
+        set.rate_card(
+            id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+        if i == 0 {
+            set.rate_card(
+                id,
+                Rating::Again,
+                RateMode::StandardLesson,
+                RatingContext::Explicit,
+            )
+            .unwrap();
+        }
+    }
+    let mut item = DailyHistoryItem::new();
+    item.update(
+        DailyStatsUpdate {
+            avg_stability: 12.0,
+            avg_difficulty: 4.0,
+            total_words: 2,
+            known_words: 0,
+            new_words: 0,
+            in_progress_words: 2,
+            high_difficulty_words: 0,
+            positive_ratings: 9,
+            negative_ratings: 2,
+            total_ratings: 11,
+            new_cards_studied_today: 0,
+            phrase_cards_studied_today: 0,
+        },
+        Rating::Good,
+    );
+
+    // Act
+    let json = serde_json::to_string_pretty(&set).unwrap();
+    let item_json = serde_json::to_string_pretty(&item).unwrap();
+    let insights = &set.insights;
+
+    // Assert: печатаем канонический шаблон для seed-скрипта.
+    println!("KNOWLEDGE_SET_BEGIN\n{json}\nKNOWLEDGE_SET_END");
+    println!("HISTORY_ITEM_BEGIN\n{item_json}\nHISTORY_ITEM_END");
+    println!(
+        "INSIGHTS_BEGIN\n{}{}\nINSIGHTS_END",
+        serde_json::to_string(&insights.hour_buckets()).unwrap(),
+        serde_json::to_string(&insights.delay_buckets()).unwrap(),
+    );
+}
+
+#[test]
+fn decode_external_seed_file() {
+    let path = std::env::var("SEED_FILE").unwrap_or_default();
+    if path.is_empty() {
+        return;
+    }
+    let json = std::fs::read_to_string(&path).unwrap();
+    match serde_json::from_str::<KnowledgeSet>(&json) {
+        Ok(set) => println!("DECODE_OK cards: {}", set.study_cards().len()),
+        Err(e) => println!("DECODE_FAIL: {e}"),
+    }
+}

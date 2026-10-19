@@ -379,7 +379,7 @@ jobs:
 
                       ## Android
                       - `origa.apk`
-                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle for Google Play Console upload
+                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle. Delivery to the Play closed-testing track (alpha) is attempted by the "Upload to Google Play (closed testing)" job of this run — see that job's result for the delivery status. The asset stays attached here as the manual fallback for Play Console / RuStore.
 
                       ## Updater
                       - `latest.json` — Tauri updater manifest (stable releases only)
@@ -414,3 +414,30 @@ jobs:
         secrets:
             rustore-key-id: ${{ secrets.RUSTORE_KEY_ID }}
             rustore-private-key: ${{ secrets.RUSTORE_PRIVATE_KEY }}
+
+    upload-google-play:
+        name: Upload to Google Play (closed testing)
+        # Stable + prerelease: while Origa lives in closed testing, both RC
+        # and stable builds deliver to the same alpha track (RC versionCodes
+        # sort below the stable of the same train — see
+        # .github/scripts/compute-android-versioncode.sh for the scheme).
+        #
+        # Isolation doctrine (mirrors upload-rustore): this job is
+        # intentionally ABSENT from release.needs ([version, build-tauri,
+        # build-apple, generate-latest-json]). Transient Play upload failures
+        # (network, moderation, quota) even on a stable release MUST NOT
+        # block the GitHub Release. Do NOT add upload-google-play to
+        # release.needs — that regresses isolation.
+        if: >
+            always() &&
+            needs.build-tauri.result == 'success' &&
+            startsWith(github.ref, 'refs/tags/v') &&
+            (needs.version.outputs.version_type == 'stable' ||
+             needs.version.outputs.version_type == 'prerelease')
+        needs: [version, build-tauri]
+        uses: ./.github/workflows/_upload-google-play.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+            version_type: ${{ needs.version.outputs.version_type }}
+        secrets:
+            play-service-account-json: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

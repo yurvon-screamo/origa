@@ -9,8 +9,9 @@
 //! ответа («число×суффикс»); текст чтения —
 //! `counter-binding-answer-reading` (не читать чтение с заголовка).
 
+use super::binary_rating_buttons::RatingButtons;
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
-use super::rating_buttons_view::RatingButtonsView;
+use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
 use crate::ui_components::{Button, ButtonVariant, Card};
 use leptos::prelude::*;
@@ -30,11 +31,13 @@ fn number_label(number: u8) -> String {
 pub fn CounterBindingsSession(
     card: Card,
     items: Vec<CounterBindingItem>,
-    /// Оценка связки: (number, rating) — вызывающий подключает
-    /// `RateCounterBindingUseCase` со своим репозиторием.
-    on_rate_binding: Callback<(u8, Rating)>,
-    /// Завершение пачки: штатный advance урока.
-    on_next: Callback<()>,
+    /// Оценка связки: (number, rating, is_last) — вызывающий подключает
+    /// `RateCounterBindingUseCase` со своим репозиторием. `is_last`
+    /// сериализует advance урока ПОСЛЕ сохранения рейтинга (юзер-репорт
+    /// 0.8.0-rc: параллельный сейв семантики затирал рейтинг последней
+    /// связки — 何 вечно возвращалась новичком, пачка мелькала каждый
+    /// урок). Сама сессия урок не продвигает.
+    on_rate_binding: Callback<(u8, Rating, bool)>,
     #[prop(into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -110,15 +113,16 @@ pub fn CounterBindingsSession(
         let Some(item) = items.with_value(|i| i.get(index).cloned()) else {
             return;
         };
-        on_rate_binding.run((item.number(), rating));
-        if index + 1 >= total {
+        let is_last = index + 1 >= total;
+        on_rate_binding.run((item.number(), rating, is_last));
+        if is_last {
             // Последняя связка: отвеченная карта ОСТАЁТСЯ на экране
-            // (замороженный ответ — юзер-репорт 0.8.0-rc: сброс revealed
-            // мелькал фронтом «цифра×суффикс» перед следующей карточкой
-            // урока) — advance сразу, без промежуточного фронт-кадра.
-            // Повторные 1/2/клики гасятся finished-гейтом выше.
+            // (замороженный ответ — сброс revealed мелькал фронтом перед
+            // следующей карточкой урока). Advance выполняет контейнер
+            // ПОСЛЕ сохранения рейтинга (is_last) — параллельные
+            // get+save больше не конкурируют за юзера. Повторные
+            // 1/2/клики гасятся finished-гейтом выше.
             finished.set(true);
-            on_next.run(());
         } else {
             revealed.set(false);
             highlighted_number.set(u8::MAX);
@@ -186,14 +190,10 @@ pub fn CounterBindingsSession(
                     </div>
                     <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
                     <div class="flex justify-center">
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            test_id=Signal::derive(|| "counter-binding-show-answer-btn".to_string())
-                            on_click=Callback::new(move |_: leptos::ev::MouseEvent| reveal())
-                        >
-                            <span>{t!(i18n, lesson.show_answer)}</span>
-                            <span class="kbd-hint text-[var(--fg-light)]">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
+                        <RevealAnswerButton
+                            test_id="counter-binding-show-answer-btn"
+                            on_click=Callback::new(move |_: ()| reveal())
+                        />
                     </div>
                 </Show>
 
@@ -241,7 +241,7 @@ pub fn CounterBindingsSession(
                                 </Button>
                             </div>
                             <div class="flex justify-center">
-                                <RatingButtonsView on_rate=on_rate />
+                                <RatingButtons on_rate=on_rate />
                             </div>
                         }
                     }}

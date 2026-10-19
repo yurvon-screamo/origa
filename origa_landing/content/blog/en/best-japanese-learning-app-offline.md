@@ -5,7 +5,7 @@ locale: en
 meta_title: "Best Japanese Learning Apps That Work Offline (2026)"
 meta_description: "'Offline' means different things in different apps: offline review, offline lookup, offline AI. A practical breakdown of which Japanese learning apps actually work without internet, and what you trade."
 target_keywords: ["learn japanese offline", "best app to learn japanese offline", "japanese learning app free offline", "offline japanese flashcards app"]
-lastmod: 2026-10-11
+lastmod: 2026-10-12
 published: 2026-07-21
 status: ready
 ---
@@ -131,7 +131,7 @@ There is no feature in Origa's normal flow that requires an internet connection.
 
 If your offline need is "review my existing Anki deck on the subway," AnkiMobile (iOS) or AnkiDroid (Android) is the cheapest, most proven answer ([when to stay with Anki](/blog/anki-alternative-japanese)).
 
-If your offline need is "I'm travelling for a month with bad connectivity and I want to keep adding vocabulary from manga and textbooks I encounter," you need an app where OCR and content creation work offline, not just review. Origa is built for that exact use case.
+If your offline need is "I'm travelling for a month with bad connectivity and I want to keep adding vocabulary from manga and textbooks I encounter," you need an app where OCR and content creation work offline, not just review ([the OCR-to-cards workflow](/blog/japanese-ocr-app)). Origa is built for that exact use case.
 
 If you don't actually need offline (you study at home on wifi and don't care about privacy), the online-first apps (WaniKani, Bunpro, Duolingo) are perfectly good. Don't buy "offline-first" as a feature you won't use; the trade-offs are real. For how Origa compares with the other tools above, see the [full comparison](/compare); if offline-first is your priority, [download Origa](/download) and put it on a flight.
 

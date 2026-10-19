@@ -1,5 +1,5 @@
 //! WASM render tests for `pages/lesson` presentational components:
-//! `RatingButtons`, `RatingButtonsView`, `NextCardButton`,
+//! `BinaryRatingButtons`, `RatingButtons`, `NextCardButton`,
 //! `LessonCardQuestion`, `LessonProgress`, `GrammarInfoBadge`,
 //! `CardAnswerDisplay`.
 
@@ -14,19 +14,17 @@ use wasm_bindgen_test::*;
 
 use super::answer_display::CardAnswerDisplay;
 use super::audio_recall_card::AudioRecallCardView;
+use super::binary_rating_buttons::{BinaryRatingButtons, RatingButtons};
 use super::grammar_info_badge::GrammarInfoBadge;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::lesson_card_question::LessonCardQuestion;
 use super::lesson_progress::LessonProgress;
 use super::next_card_button::NextCardButton;
 use super::phrase_card::PhraseCardView;
-use super::phrase_rating_buttons::PhraseRatingButtons;
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
 use super::quiz_result_display::QuizResultDisplay;
-use super::rating_buttons::RatingButtons;
-use super::rating_buttons_view::RatingButtonsView;
 use super::yesno_card_view::YesNoCardView;
 use crate::test_support::{
     create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
@@ -128,7 +126,7 @@ async fn kanji_card_details_hides_empty_radical_translation() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// RatingButtons / RatingButtonsView
+// BinaryRatingButtons / RatingButtons preset
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
@@ -205,20 +203,44 @@ async fn rating_buttons_disabled_state_blocks_click() {
 }
 
 #[wasm_bindgen_test]
-async fn rating_buttons_view_delegates_to_rating_buttons() {
+async fn binary_rating_buttons_custom_props_surface_and_dispatch() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <RatingButtonsView on_rate /> }.into_any()
+        // The RatingButtons preset feeds BinaryRatingButtons; the custom
+        // label/hint props must surface verbatim (configurability contract
+        // of the shared binary row).
+        view! {
+            <BinaryRatingButtons
+                left_label="Не помню".to_string()
+                right_label="Помню".to_string()
+                left_test_id="custom-left-btn"
+                right_test_id="custom-right-btn"
+                left_hint="[1]"
+                right_hint="[2] / Пробел"
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;
 
+    let left = wrapper
+        .query_selector("[data-testid=\"custom-left-btn\"]")
+        .unwrap()
+        .unwrap();
+    assert!(
+        left.text_content().unwrap().contains("Не помню"),
+        "custom left label must render"
+    );
+
     wrapper
-        .query_selector("[data-testid=\"lesson-rating-btn-good\"]")
+        .query_selector("[data-testid=\"custom-right-btn\"]")
         .unwrap()
         .unwrap()
         .unchecked_into::<web_sys::HtmlElement>()
@@ -228,7 +250,7 @@ async fn rating_buttons_view_delegates_to_rating_buttons() {
     assert_eq!(
         rating.get(),
         Some(origa::domain::Rating::Good),
-        "the view wrapper must pass the callback through"
+        "custom right button must dispatch"
     );
 }
 
@@ -1147,18 +1169,30 @@ async fn phrase_card_view_result_shows_next_button() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// PhraseRatingButtons
+// BinaryRatingButtons — phrase self-assessment configuration
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn phrase_rating_buttons_clicks_dispatch_ratings() {
+async fn phrase_rating_row_clicks_dispatch_ratings() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <PhraseRatingButtons on_rate test_id="prb1" /> }.into_any()
+        view! {
+            <BinaryRatingButtons
+                left_label="не понял".to_string()
+                right_label="понял".to_string()
+                left_test_id="prb1-did-not-understand"
+                right_test_id="prb1-understood"
+                left_hint="[1]"
+                right_hint="[2]"
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;
@@ -1183,15 +1217,27 @@ async fn phrase_rating_buttons_clicks_dispatch_ratings() {
 }
 
 #[wasm_bindgen_test]
-async fn phrase_rating_buttons_disabled_blocks_dispatch() {
+async fn phrase_rating_row_disabled_blocks_dispatch() {
     let wrapper = create_wrapper();
     let (set_rating, get_rating) = shared_cell::<RwSignal<Option<origa::domain::Rating>>>();
     mount_with_i18n(&wrapper, move || {
         let rating = RwSignal::new(None);
         set_rating.set(Some(rating));
         let on_rate = Callback::new(move |r: origa::domain::Rating| rating.set(Some(r)));
-        view! { <PhraseRatingButtons on_rate disabled=Signal::from(true) test_id="prb2" /> }
-            .into_any()
+        view! {
+            <BinaryRatingButtons
+                left_label="не понял".to_string()
+                right_label="понял".to_string()
+                left_test_id="prb2-did-not-understand"
+                right_test_id="prb2-understood"
+                left_hint="[1]"
+                right_hint="[2]"
+                disabled=Signal::from(true)
+                on_left=Callback::new(move |_| on_rate.run(origa::domain::Rating::Again))
+                on_right=Callback::new(move |_| on_rate.run(origa::domain::Rating::Good))
+            />
+        }
+        .into_any()
     });
     let rating = get_rating.get().expect("captured");
     tick().await;
@@ -4954,4 +5000,84 @@ async fn example_recall_failed_load_is_not_a_dead_end() {
         get_advanced.get().expect("captured").get(),
         "advance fires on click — no dead end"
     );
+}
+
+mod counter_pack_contract {
+    use super::*;
+    use crate::pages::lesson::counter_bindings_session::CounterBindingsSession;
+    use origa::domain::CounterCard;
+
+    /// Регрессия юзер-репорта 0.8.0-rc (канон — док-комментарий prop
+    /// on_rate_binding сессии): сессия не продвигает урок сама, оценка
+    /// последней связки уходит с is_last=true.
+    #[wasm_bindgen_test]
+    async fn counter_pack_last_binding_rates_with_is_last_and_freezes() {
+        // RwSignal (Send+Sync) — запись из колбэка, чтение в ассертах.
+        let calls = RwSignal::new(Vec::<(u8, origa::domain::Rating, bool)>::new());
+        let on_rate = Callback::new(move |(n, r, last): (u8, origa::domain::Rating, bool)| {
+            calls.update(|c| c.push((n, r, last)));
+        });
+
+        let card = origa::domain::Card::Counter(CounterCard::new("本"));
+        // Порядок пачки: цифры подряд, 何 (0) — последней.
+        let items = vec![
+            origa::domain::CounterBindingItem::new(1),
+            origa::domain::CounterBindingItem::new(2),
+            origa::domain::CounterBindingItem::new(0),
+        ];
+
+        let wrapper = create_wrapper();
+        let card2 = card.clone();
+        let items2 = items.clone();
+        let on_rate2 = on_rate.clone();
+        mount_with_i18n(&wrapper, move || {
+            view! {
+                <CounterBindingsSession
+                    card=card2
+                    items=items2
+                    on_rate_binding=on_rate2
+                    test_id=Signal::derive(|| "counter-bindings-card".to_string())
+                />
+            }
+            .into_any()
+        });
+        tick().await;
+
+        let click = |sel: &str| {
+            wrapper
+                .query_selector(sel)
+                .unwrap()
+                .expect(sel)
+                .dyn_into::<web_sys::HtmlElement>()
+                .unwrap()
+                .click();
+        };
+
+        // Полный проход пачки: reveal + «Знаю» на каждой связке.
+        for _ in 0..3 {
+            click("[data-testid=\"counter-binding-show-answer-btn\"]");
+            tick().await;
+            click("[data-testid=\"lesson-rating-btn-good\"]");
+            tick().await;
+        }
+
+        assert_eq!(
+            calls.get(),
+            vec![
+                (1, origa::domain::Rating::Good, false),
+                (2, origa::domain::Rating::Good, false),
+                (0, origa::domain::Rating::Good, true),
+            ],
+            "последняя оценка обязана нести is_last=true — advance урока сериализует контейнер"
+        );
+
+        // Замороженный ответ: фронт-кнопок нет, повторные клики молчат.
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"counter-binding-show-answer-btn\"]")
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(calls.get().len(), 3, "finished-гейт: дублей рейтинга нет");
+    }
 }

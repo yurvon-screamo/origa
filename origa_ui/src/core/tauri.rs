@@ -17,10 +17,11 @@ pub fn is_tauri() -> bool {
 
 /// Returns `true` on iOS (iPhone/iPad/iPod WKWebView).
 ///
-/// Uses `navigator.platform` first — on iPad with "Request Desktop Site"
-/// (iOS 13+) the userAgent switches to a desktop-class string without
-/// "iPad", but `navigator.platform` still returns "iPad". Falls back to
-/// userAgent for older WebViews where platform may be unavailable.
+/// Uses `navigator.platform` first, then userAgent. LIMITATION (see
+/// `classify_device` in `pages/onboarding/telemetry.rs`): an iPad in the
+/// default desktop mode (iPadOS 13+) reports BOTH "MacIntel" platform and a
+/// Macintosh UA, so `is_ios()` misses it — only iPads explicitly requesting
+/// the mobile site (or Safari's "Request Mobile Website") are detected.
 pub fn is_ios() -> bool {
     window().is_some_and(|w| {
         let nav = w.navigator();

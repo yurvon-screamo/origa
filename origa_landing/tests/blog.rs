@@ -2,9 +2,11 @@
 //!
 //! Mirrors the convention in `tests/seo_meta.rs`: render the production
 //! router via `tower::ServiceExt::oneshot`, parse the resulting HTML with
-//! plain string assertions. Coverage spans all 4 locales (EN/RU/KO/VI) for
-//! every published article, plus the index page and the legacy-slug 308
-//! redirect.
+//! plain string assertions. `ALL_SLUGS` pins the full-coverage article
+//! cluster (every locale serves it natively) and is asserted across all 5
+//! locales (EN/RU/KO/VI/JA); partial-coverage clusters (EN+RU-only, JFT
+//! EN/RU/KO, VI-only) are covered by dedicated tests, plus the index page
+//! and the legacy-slug 308 redirect.
 
 #![cfg(feature = "ssr")]
 
@@ -167,7 +169,9 @@ async fn seed_article_html_is_sanitized() {
 }
 
 // =========================================================================
-// hreflang — now uniform 5-element set on every article (en/ru/ko/vi + x-default)
+// hreflang — the full-coverage cluster carries a uniform 5-element set on
+// every article (en/ru/ko/vi + x-default); partial clusters (EN+RU-only,
+// JFT EN/RU/KO, VI-only) advertise only their own translations
 // =========================================================================
 
 #[tokio::test]
@@ -514,6 +518,127 @@ fn find_jsonld_block_by_type(html: &str, type_name: &str) -> String {
     )
 }
 
+/// Inverse of [`find_jsonld_block_by_type`] for negative assertions: `true`
+/// when at least one JSON-LD block carries the given `@type`.
+fn jsonld_block_exists(html: &str, type_name: &str) -> bool {
+    let open = r#"<script type="application/ld+json">"#;
+    let close = "</script>";
+    let needle = format!("\"@type\":\"{type_name}\"");
+    let mut rest = html;
+    while let Some(start) = rest.find(open) {
+        let body_start = start + open.len();
+        let Some(end_rel) = rest[body_start..].find(close) else {
+            return false;
+        };
+        let body_end = body_start + end_rel;
+        if rest[body_start..body_end].contains(&needle) {
+            return true;
+        }
+        rest = &rest[body_end + close.len()..];
+    }
+    false
+}
+
+#[tokio::test]
+async fn ocr_article_how_to_jsonld_is_localized_in_all_locales() {
+    // The HowTo schema ships on every native render of the OCR article:
+    // `inLanguage` must match the render locale and the steps must be
+    // translated (no EN leakage into RU/KO/VI) while keeping the NDLOCR-Lite
+    // model name verbatim.
+    let cases = [
+        ("/blog/japanese-ocr-app", "en"),
+        ("/ru/blog/japanese-ocr-app", "ru"),
+        ("/ko/blog/japanese-ocr-app", "ko"),
+        ("/vi/blog/japanese-ocr-app", "vi"),
+    ];
+    for (uri, lang) in cases {
+        let (_, body) = get(uri).await;
+        let block = find_jsonld_block_by_type(&body, "HowTo");
+        let value: serde_json::Value =
+            serde_json::from_str(&block).expect("HowTo JSON-LD must be valid JSON");
+        assert_eq!(
+            value.get("inLanguage").and_then(|v| v.as_str()),
+            Some(lang),
+            "HowTo inLanguage must match the render locale on {uri}; got: {block}"
+        );
+        let steps = value
+            .get("step")
+            .and_then(|v| v.as_array())
+            .unwrap_or_else(|| panic!("HowTo must carry a step array on {uri}; got: {block}"));
+        assert_eq!(
+            steps.len(),
+            4,
+            "HowTo must have 4 steps on {uri}; got: {block}"
+        );
+        let step_text: Vec<&str> = steps
+            .iter()
+            .map(|s| {
+                s.get("text")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_else(|| panic!("each step must carry text on {uri}; got: {s}"))
+            })
+            .collect();
+        assert!(
+            step_text.iter().any(|t| t.contains("NDLOCR-Lite")),
+            "the on-device model must be named in the steps on {uri}; got: {step_text:?}"
+        );
+        assert!(
+            lang == "en" || step_text.iter().any(|t| t.chars().any(|c| !c.is_ascii())),
+            "non-EN HowTo steps must be translated on {uri}; got: {step_text:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn ocr_article_how_to_steps_follow_documented_pipeline() {
+    // The step order must mirror the pipeline the article documents:
+    // capture → on-device recognition → flashcards → FSRS review. Pinning
+    // the first and last steps stops a silent reordering from turning the
+    // schema into a wrong user-flow claim.
+    let (_, body) = get("/blog/japanese-ocr-app").await;
+    let block = find_jsonld_block_by_type(&body, "HowTo");
+    let value: serde_json::Value =
+        serde_json::from_str(&block).expect("HowTo JSON-LD must be valid JSON");
+    let steps: Vec<String> = value
+        .get("step")
+        .and_then(|v| v.as_array())
+        .expect("step array")
+        .iter()
+        .map(|s| {
+            s.get("text")
+                .and_then(|v| v.as_str())
+                .expect("step text")
+                .to_lowercase()
+        })
+        .collect();
+    assert_eq!(steps.len(), 4);
+    assert!(
+        steps[0].contains("photograph"),
+        "step 1 must be the capture step; got: {steps:?}"
+    );
+    assert!(
+        steps[3].contains("fsrs"),
+        "step 4 must be the FSRS review step; got: {steps:?}"
+    );
+}
+
+#[tokio::test]
+async fn how_to_schema_ships_only_on_the_ocr_article() {
+    // Exhaustive negative guard across every published slug: a stray slug in
+    // the `blog::howto` match must not silently widen the schema's footprint,
+    // and the wiring must not leak HowTo into articles without HowTo content.
+    for slug in ALL_SLUGS {
+        if *slug == "japanese-ocr-app" {
+            continue;
+        }
+        let (_, body) = get(&format!("/blog/{slug}")).await;
+        assert!(
+            !jsonld_block_exists(&body, "HowTo"),
+            "article {slug} must not emit HowTo JSON-LD"
+        );
+    }
+}
+
 #[tokio::test]
 async fn en_article_has_breadcrumb_jsonld() {
     let (_, body) = get("/blog/anki-alternative-japanese").await;
@@ -722,8 +847,8 @@ async fn blog_index_does_not_shadow_article_route() {
 }
 
 #[tokio::test]
-async fn all_four_blog_index_urls_return_200() {
-    for uri in ["/blog", "/ru/blog", "/ko/blog", "/vi/blog"] {
+async fn all_blog_index_urls_return_200() {
+    for uri in ["/blog", "/ru/blog", "/ko/blog", "/vi/blog", "/ja/blog"] {
         let (status, body) = get(uri).await;
         assert_eq!(status, StatusCode::OK, "expected 200 for {uri}");
         assert!(
@@ -731,6 +856,42 @@ async fn all_four_blog_index_urls_return_200() {
             "{uri} must render the blog index page"
         );
     }
+}
+
+#[tokio::test]
+async fn ja_blog_index_renders_empty_state_in_japanese() {
+    // JA ships no blog articles yet (issue #772): the index must render the
+    // localized empty state rather than leaking EN articles into the JA URL
+    // space (list_by_locale is a strict locale filter).
+    let (status, body) = get("/ja/blog").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.contains("公開された記事はまだありません"),
+        "JA blog index must show the Japanese empty state"
+    );
+    assert!(
+        !body.contains("blog-index__item-link"),
+        "JA blog index must not list EN articles"
+    );
+}
+
+#[tokio::test]
+async fn ja_blog_article_falls_back_to_en_with_noindex_and_canonical() {
+    // /ja/blog/<existing-slug> has no JA translation: the EN article is
+    // served as a fallback with `noindex, follow` and a canonical pointing
+    // at the EN URL (same contract as every other non-native locale).
+    let (status, body) = get("/ja/blog/anki-alternative-japanese").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.contains(r#"name="robots" content="noindex"#),
+        "JA fallback article must carry noindex"
+    );
+    assert!(
+        body.contains(
+            r#"rel="canonical" href="https://origa.uwuwu.net/blog/anki-alternative-japanese""#
+        ),
+        "JA fallback article canonical must point at the EN URL"
+    );
 }
 
 // =========================================================================
@@ -744,6 +905,7 @@ async fn header_includes_blog_link_on_every_locale() {
         ("/ru", "/ru/blog", "Блог"),
         ("/ko", "/ko/blog", "블로그"),
         ("/vi", "/vi/blog", "Blog"),
+        ("/ja", "/ja/blog", "ブログ"),
     ];
     for (uri, expected_href, expected_label) in cases {
         let (_, body) = get(uri).await;

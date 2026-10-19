@@ -1,6 +1,6 @@
 //! WASM render tests for `pages/home` components: `WelcomeCard`,
 //! `JlptProgressCard`, `JlptSkeleton`, `CategoryProgressGrid`,
-//! `ActivityChart`, `StudiedTodayList`.
+//! `InsightsSection`, `StudiedTodayList`.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -8,12 +8,15 @@ use std::collections::HashSet;
 
 use leptos::prelude::*;
 use leptos::task::tick;
+use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::RecentlyStudiedItem;
+use crate::pages::home::insights::InsightsSection;
+use crate::pages::home::insights::panels_data::InsightsPanels;
 use crate::pages::home::{
-    ActivityChart, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
+    JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
 };
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
@@ -253,100 +256,216 @@ async fn category_progress_grid_shows_percentage_per_card() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ActivityChart
+// InsightsSection (#749)
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn activity_chart_renders_four_series() {
+async fn insights_section_renders_five_ledger_rows() {
     let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
-        // Two points: the chart hides itself below two data points
-        // (`has_enough_data`).
-        let points = vec![
-            crate::pages::home::dashboard_stats::ActivityDataPoint {
-                date_label: "1 янв".to_string(),
-                learned: 10.0,
-                in_progress: 5.0,
-                new_count: 3.0,
-                difficult: 1.0,
-            },
-            crate::pages::home::dashboard_stats::ActivityDataPoint {
-                date_label: "2 янв".to_string(),
-                learned: 12.0,
-                in_progress: 4.0,
-                new_count: 2.0,
-                difficult: 0.0,
-            },
-        ];
-        view! {
-            <ActivityChart
-                chart_data=Signal::derive(move || points.clone())
-                rating_ratio=Signal::from(None::<origa::domain::RatingRatio>)
-                test_id="ac1"
-            />
-        }
-        .into_any()
+    let panels = RwSignal::new(InsightsPanels::default());
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is1" /> }.into_any()
     });
     tick().await;
 
-    // The chart mounts after the mobile-detection effect settles — poll
-    // briefly for the chart container instead of asserting after one tick.
-    // (SVG elements live in the SVG namespace; query by class.)
-    let chart_rendered = crate::test_support::wait_until(
-        || {
-            wrapper
-                .query_selector(".chart-container")
-                .unwrap()
-                .is_some()
-        },
-        10,
-        25,
-    )
-    .await;
-    assert!(
-        chart_rendered,
-        "the multi-line chart must render once effects settle"
-    );
+    let section = wrapper.query_selector("[data-testid=\"is1\"]").unwrap();
+    assert!(section.is_some(), "insights section must render");
 
-    // Four data series → four polylines
-    let polylines = wrapper
-        .query_selector_all(".chart-container polyline")
-        .unwrap()
-        .length();
-    assert_eq!(polylines, 4, "four series must be drawn; got {polylines}");
+    for row in [
+        "is1-week-verdict",
+        "is1-pace",
+        "is1-time-of-day",
+        "is1-overdue",
+        "is1-hardest-words",
+    ] {
+        let node = wrapper.query_selector(&format!("[data-testid=\"{row}\"]"));
+        assert!(
+            node.is_ok_and(|n| n.is_some()),
+            "{row} ledger row must render"
+        );
+    }
 }
 
 #[wasm_bindgen_test]
-async fn activity_chart_ratio_badge_high_percentage() {
+async fn insights_section_empty_data_shows_guidance_phrases() {
     let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
-        let point = crate::pages::home::dashboard_stats::ActivityDataPoint {
-            date_label: "1 янв".to_string(),
-            learned: 1.0,
-            in_progress: 0.0,
-            new_count: 0.0,
-            difficult: 0.0,
-        };
-        let ratio = origa::domain::RatingRatio {
-            percentage: 75,
-            positive_count: 30,
-            negative_count: 10,
-        };
-        view! {
-            <ActivityChart
-                chart_data=Signal::derive(move || vec![point.clone()])
-                rating_ratio=Signal::from(Some(ratio))
-                test_id="ac2"
-            />
-        }
-        .into_any()
+    let panels = RwSignal::new(InsightsPanels::default());
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is2" /> }.into_any()
     });
     tick().await;
 
-    let text = wrapper.text_content().unwrap();
+    let text = wrapper
+        .query_selector("[data-testid=\"is2-week-verdict\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
     assert!(
-        text.contains("75"),
-        "ratio percent must render; got: {text}"
+        !text.is_empty(),
+        "the verdict row must show a guidance phrase"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn insights_section_with_full_data_renders_concrete_verdicts() {
+    // Типичное состояние активного юзера: все пять строк с данными.
+    let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels {
+        week: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 84,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        month: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 79,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        pace: Some(origa::domain::insights::PaceInsight {
+            per_day: 67,
+            delta: 12,
+            recent_total: 938,
+            previous_total: 770,
+        }),
+        time_of_day: Some(origa::domain::insights::TimeOfDayInsight {
+            worst_bucket: 5,
+            accuracy_pct: 52,
+            attempts: 23,
+        }),
+        overdue: Some(origa::domain::insights::OverdueInsight {
+            accuracy_drop_pp: 14,
+            ontime_accuracy_pct: 86,
+            late_accuracy_pct: 72,
+        }),
+        hardest_words: Some(origa::domain::insights::HardestWordsInsight {
+            one_in: 38,
+            troubled_count: 2,
+            studied_total: 76,
+            top: vec![origa::domain::insights::HardWord {
+                japanese: "\u{7d50}\u{5c40}".to_string(),
+                meaning: "in the end".to_string(),
+                lapses: 4,
+            }],
+        }),
+    });
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is4" /> }.into_any()
+    });
+    tick().await;
+
+    // Вердикт недели: фраза-статус + subline с точностью обоих окон.
+    let verdict_text = wrapper
+        .query_selector("[data-testid=\"is4-week-verdict\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        verdict_text.contains("Accuracy is steady")
+            && verdict_text.contains("84")
+            && verdict_text.contains("70"),
+        "week verdict row must show the status phrase and both windows; got: {verdict_text}"
+    );
+
+    // Темп: число повторений и дельта.
+    let pace_text = wrapper
+        .query_selector("[data-testid=\"is4-pace\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        pace_text.contains("Reviews per day: 67") && pace_text.contains("+12"),
+        "pace row must show the per-day count and the delta sub-line; got: {pace_text}"
+    );
+
+    // Худшее время: окно после 20:00.
+    let time_text = wrapper
+        .query_selector("[data-testid=\"is4-time-of-day\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        time_text.contains("after 20:00") && time_text.contains("23 answers"),
+        "time row must name the worst window and the sample sub-line; got: {time_text}"
+    );
+
+    // Просрочка: потеря пунктов.
+    let overdue_text = wrapper
+        .query_selector("[data-testid=\"is4-overdue\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        overdue_text.contains("14 p.p.") && overdue_text.contains("72%"),
+        "overdue row must show the drop and the late-vs-ontime sub-line; got: {overdue_text}"
+    );
+
+    // Тяжёлые слова: доля.
+    let words_text = wrapper
+        .query_selector("[data-testid=\"is4-hardest-words\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(
+        words_text.contains("2 hard words of 76") && words_text.contains("38"),
+        "hard-words row must show the share and the one-in-N sub-line; got: {words_text}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn insights_section_period_switch_swaps_the_verdict() {
+    let wrapper = create_wrapper();
+    let panels = RwSignal::new(InsightsPanels {
+        week: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 84,
+            month_accuracy_pct: Some(70),
+            kind: origa::domain::insights::WeekVerdictKind::Holding,
+        }),
+        month: Some(origa::domain::insights::WeekVerdict {
+            week_accuracy_pct: 74,
+            month_accuracy_pct: Some(61),
+            kind: origa::domain::insights::WeekVerdictKind::Dipping,
+        }),
+        ..InsightsPanels::default()
+    });
+    mount_with_i18n(&wrapper, move || {
+        view! { <InsightsSection panels=panels test_id="is5" /> }.into_any()
+    });
+    tick().await;
+
+    let verdict_text = |wrapper: &web_sys::Element| {
+        wrapper
+            .query_selector("[data-testid=\"is5-week-verdict\"]")
+            .unwrap()
+            .unwrap()
+            .text_content()
+            .unwrap()
+    };
+    assert!(
+        verdict_text(&wrapper).contains("84"),
+        "week mode must show the week verdict; got: {}",
+        verdict_text(&wrapper)
+    );
+
+    let month_chip = wrapper
+        .query_selector("[data-testid=\"is5-period-month\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    month_chip.click();
+    tick().await;
+
+    assert!(
+        verdict_text(&wrapper).contains("Accuracy has dropped")
+            && !verdict_text(&wrapper).contains("Accuracy is steady"),
+        "month mode must swap to the month verdict; got: {}",
+        verdict_text(&wrapper)
     );
 }
 
@@ -419,4 +538,108 @@ async fn studied_today_list_renders_items_with_count() {
         "the meaning must render; got: {text}"
     );
     assert!(text.contains('1'), "the item count must render");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// JftReadinessCard
+// ═══════════════════════════════════════════════════════════════════════
+
+/// A minimal catalog fixture: one Can-do per band, lesson ids mirroring the
+/// CDN set-id shape. Renders three rows with known numbers.
+fn readiness_fixture_coverage(imported: &str) -> origa::domain::JftCoverage {
+    let json = format!(
+        r#"{{"version": 1, "can_dos": [
+            {{"id": 1, "level": "A1", "band": "A1", "lesson": "{imported}"}},
+            {{"id": 2, "level": "A2", "band": "A2.1", "lesson": "other_1"}},
+            {{"id": 3, "level": "A2", "band": "A2", "lesson": "other_2"}}
+        ]}}"#
+    );
+    origa::domain::JftCandoCatalog::parse(&json)
+        .expect("fixture parses")
+        .coverage(&HashSet::from([imported.to_string()]))
+}
+
+#[wasm_bindgen_test]
+async fn jft_readiness_card_renders_single_current_band_bar() {
+    let wrapper = create_wrapper();
+    let _mount = mount_with_i18n(&wrapper, || {
+        view! {
+            <JftReadinessCard
+                coverage=Signal::derive(|| readiness_fixture_coverage("mine_1"))
+                test_id="jft1"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    // The fixture imports the single A1 Can-do: A1 is cleared (100% ≥ 90),
+    // so the tracker shows the next band in the course path — A2.1 at 0%.
+    let stamp = wrapper
+        .query_selector("[data-testid=\"jft1-stamp\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(stamp.contains("JFT-Basic A2.1"), "stamp text; got: {stamp}");
+
+    let pct = wrapper
+        .query_selector("[data-testid=\"jft1-pct\"]")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+    assert!(pct.contains("0%"), "current band percentage; got: {pct}");
+
+    // Exactly one progress row: the per-band rows are gone by design.
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft1-progress\"]")
+            .is_ok_and(|el| el.is_some()),
+        "the single progress row must render"
+    );
+    assert!(
+        !wrapper.inner_html().contains("home-jft-band-"),
+        "no per-band rows must remain"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn jft_readiness_card_visibility_tracks_coverage_signal() {
+    // The home page wraps the card in <Show when=coverage.is_some()>; the
+    // same gate must hide the card for None (offline catalog, no imports)
+    // and reveal it once a coverage lands.
+    let wrapper = create_wrapper();
+    let coverage: RwSignal<Option<origa::domain::JftCoverage>> = RwSignal::new(None);
+    let _mount = mount_with_i18n(&wrapper, move || {
+        view! {
+            <Show when=move || coverage.get().is_some()>
+                <JftReadinessCard
+                    coverage=Signal::derive(move || {
+                        coverage.get().expect("guarded by the enclosing Show")
+                    })
+                    test_id="jft2"
+                />
+            </Show>
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft2\"]")
+            .is_ok_and(|el| el.is_none()),
+        "card must be hidden while coverage is None"
+    );
+
+    coverage.set(Some(readiness_fixture_coverage("mine_1")));
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"jft2\"]")
+            .is_ok_and(|el| el.is_some()),
+        "card must render once coverage arrives"
+    );
 }

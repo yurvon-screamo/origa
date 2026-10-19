@@ -139,7 +139,11 @@
     --space-xxl: 48px;
     --space-xxxl: 64px;
 
-    --font-serif: "Cormorant Garamond", serif;
+    /* JA glyphs have no coverage in Cormorant/DM Mono: the explicit JP serif
+       names resolve them to a mincho (serif) face on macOS/Windows/Linux
+       instead of the browser default (sans on stock Android, which has no
+       system JP serif). Issue #772. */
+    --font-serif: "Cormorant Garamond", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", serif;
     --font-mono: "DM Mono", monospace;
 
     /* Typography Scale */

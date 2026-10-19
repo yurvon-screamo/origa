@@ -1,0 +1,166 @@
+{
+ "format": 1,
+ "fitted_at": "2026-10-13T11:54:35+00:00",
+ "policy": {
+  "name": "max_f1"
+ },
+ "heads_sha256": "5866ace0c8aaf93ed202a37aa63cf4cbffa1851704844a14a24168b07f4491e7",
+ "embedding_model": "intfloat/multilingual-e5-base",
+ "sampling": {
+  "seed": 7,
+  "pool_rows": 174592,
+  "sampled": 400,
+  "prevalence_bad": 0.08
+ },
+ "locales": {
+  "ru": {
+   "threshold": -0.08194777369499207,
+   "n_good": 370,
+   "n_bad": 370,
+   "metrics": {
+    "precision": 0.6828282828282828,
+    "recall": 0.9135135135135135,
+    "f1": 0.7815028901734105
+   },
+   "confusion": {
+    "tp": 338,
+    "fp": 157,
+    "tn": 213,
+    "fn": 32
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.773840317373331,
+    "f1_std": 0.013393114039432512
+   },
+   "good_stats": {
+    "mean": 0.19337444587082073,
+    "std": 0.21556952434135648,
+    "p05": -0.1457920990884304,
+    "p50": 0.17676325887441635,
+    "p95": 0.5923819601535799
+   },
+   "source": "golden_v4c author-audit (provisional)"
+  },
+  "en": {
+   "threshold": -0.15317321568727493,
+   "n_good": 169,
+   "n_bad": 169,
+   "metrics": {
+    "precision": 0.7452229299363057,
+    "recall": 0.6923076923076923,
+    "f1": 0.7177914110429449
+   },
+   "confusion": {
+    "tp": 117,
+    "fp": 40,
+    "tn": 129,
+    "fn": 52
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.709479686979687,
+    "f1_std": 0.07714345210679978
+   },
+   "good_stats": {
+    "mean": -0.03049450480109136,
+    "std": 0.23032613801407284,
+    "p05": -0.3776203989982605,
+    "p50": -0.0331755131483078,
+    "p95": 0.35271306037902833
+   },
+   "source": "golden_v4c author-audit (provisional)"
+  },
+  "vi": {
+   "threshold": -0.04977782070636749,
+   "n_good": 85,
+   "n_bad": 85,
+   "metrics": {
+    "precision": 0.6869565217391305,
+    "recall": 0.9294117647058824,
+    "f1": 0.79
+   },
+   "confusion": {
+    "tp": 79,
+    "fp": 36,
+    "tn": 49,
+    "fn": 6
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.7678790840914227,
+    "f1_std": 0.06276696541729213
+   },
+   "good_stats": {
+    "mean": 0.29473879738327335,
+    "std": 0.2880468693108152,
+    "p05": -0.06725309491157531,
+    "p50": 0.23975063860416412,
+    "p95": 0.8167890548706055
+   },
+   "source": "golden_v4c author-audit (provisional)",
+   "wave_v1": {
+    "n": 200,
+    "good": 186,
+    "bad": 14,
+    "good_median": 0.7321,
+    "bad_median": 0.6957,
+    "bad_min": 0.4242,
+    "good_max": 0.9113,
+    "labels": "LLM-labeled random production-flow sample (seed 7), v4 heads",
+    "finding": "v4 retrain (wave bads as negatives) flipped the medians the right way and lifted gold-over-defect rank to 28/32, but the absolute threshold stays degenerate at production prevalence (7-9% bad) - scans keep double confirmation",
+    "fit_threshold_degenerate": true
+   }
+  },
+  "ko": {
+   "threshold": 0.21193024516105652,
+   "n_good": 38,
+   "n_bad": 38,
+   "metrics": {
+    "precision": 0.6538461538461539,
+    "recall": 0.8947368421052632,
+    "f1": 0.7555555555555555
+   },
+   "confusion": {
+    "tp": 34,
+    "fp": 18,
+    "tn": 20,
+    "fn": 4
+   },
+   "degenerate": false,
+   "cv": {
+    "folds": 5,
+    "folds_used": 5,
+    "f1_mean": 0.7334586466165414,
+    "f1_std": 0.08834764213715203
+   },
+   "good_stats": {
+    "mean": 0.44689437658771086,
+    "std": 0.2637470520624906,
+    "p05": 0.02005699258297683,
+    "p50": 0.39981260895729065,
+    "p95": 0.8423156529664994
+   },
+   "source": "golden_v4c author-audit (provisional)",
+   "wave_v1": {
+    "n": 200,
+    "good": 182,
+    "bad": 18,
+    "good_median": 0.8146,
+    "bad_median": 0.798,
+    "bad_min": 0.286,
+    "good_max": 0.9242,
+    "labels": "LLM-labeled random production-flow sample (seed 7), v4 heads",
+    "finding": "v4 retrain (wave bads as negatives) flipped the medians the right way and lifted gold-over-defect rank to 28/32, but the absolute threshold stays degenerate at production prevalence (7-9% bad) - scans keep double confirmation",
+    "fit_threshold_degenerate": true
+   }
+  }
+ },
+ "note": "Bound to judge heads v4 (origa-judge.pt on HF). Thresholds: golden_v4c author-audit labels (audit-grade corruption distribution). agent_wave_v1 blocks: LLM-labeled production-flow diagnostics under v4 heads - medians flipped (rank 28/32 gold-over-defect), absolute threshold still degenerate at production prevalence; verdict() = 'free of audit-grade corruption'. Issue #713."
+}
