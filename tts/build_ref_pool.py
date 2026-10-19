@@ -31,7 +31,7 @@ def neutrality(text: str) -> int:
     score += text.count("！") * 5 + text.count("？") * 4 + text.count("…") * 3
     score += text.count("っ") * 2
     score += text.count("♪") * 3 + text.count("☆") * 3 + text.count("★") * 3
-    score += len(re.findall(r"[A-Za-zА-Яа-я]", text)) * 2
+    score += len(re.findall(r"[A-Za-zА-Яа-яЁё]", text)) * 2
     return score
 
 
