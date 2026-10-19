@@ -51,6 +51,10 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
         "kanji_frames_n1.json",
         "ndlocr/",
         "phrases/audio/",
+        # Word-example TTS audio (#528): generated once per sentence id,
+        # byte-identical forever — immutable. More specific than the
+        # release-updated examples/ rule, and IMMUTABLE is checked first.
+        "examples/audio/",
         "whisper/",
     }
 )
