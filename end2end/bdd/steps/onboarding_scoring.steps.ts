@@ -104,13 +104,18 @@ When('пользователь нажимает "Не знаю"', async ({ page 
     // a stable section-label list rather than a per-click counter.
     lastDontKnowQuestion = await onboarding.scoringQuestion.textContent();
     await onboarding.clickDontKnow();
-    for (let i = 0; i < 30; i++) {
-        const isComplete = await onboarding.scoringComplete.isVisible().catch(() => false);
-        if (isComplete) return;
-        const next = await onboarding.scoringQuestion.textContent().catch(() => null);
-        if (next !== null && next !== lastDontKnowQuestion) return;
-        await page.waitForTimeout(200);
-    }
+    await expect
+        .poll(
+            async () => {
+                if (await onboarding.scoringComplete.isVisible().catch(() => false)) {
+                    return "complete";
+                }
+                const next = await onboarding.scoringQuestion.textContent().catch(() => null);
+                return next !== null && next !== lastDontKnowQuestion ? next : null;
+            },
+            { timeout: 15_000 },
+        )
+        .not.toBeNull();
 });
 
 When('пользователь перезагружает страницу приложения', async ({ page }) => {
@@ -153,12 +158,14 @@ When('пользователь нажимает "Знаю"', async ({ page }) =>
     // Wait for either the next card or the complete screen to appear.
     // Using isVisible().catch() polling pattern (not Promise.race+catch)
     // to avoid swallowing errors silently.
-    for (let i = 0; i < 30; i++) {
-        const isComplete = await onboarding.scoringComplete.isVisible().catch(() => false);
-        const hasNext = await onboarding.scoringDontKnowBtn.isVisible().catch(() => false);
-        if (isComplete || hasNext) return;
-        await page.waitForTimeout(200);
-    }
+    await expect
+        .poll(
+            async () =>
+                (await onboarding.scoringComplete.isVisible().catch(() => false)) ||
+                (await onboarding.scoringDontKnowBtn.isVisible().catch(() => false)),
+            { timeout: 15_000 },
+        )
+        .toBe(true);
 });
 
 When('пользователь отмечает все оставшиеся карточки как известные', async ({ page }) => {

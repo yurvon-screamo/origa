@@ -1,45 +1,26 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { Then, When } from "../fixtures";
 import { getAdminToken } from "../../fixtures/admin";
 import { getTrailBaseUrl } from "../../config";
+import { readUserStoreKeys } from "../../helpers/indexeddb";
 
 const NIL_USER_ID = "0".repeat(26);
-
-async function readUserStoreKeys(page: Page): Promise<string[]> {
-    return await page.evaluate(async (): Promise<string[]> => {
-        return await new Promise<string[]>((resolve, reject) => {
-            const open = indexedDB.open("origa");
-            open.onerror = () => reject(new Error("indexedDB open failed"));
-            open.onupgradeneeded = () => resolve([]);
-            open.onsuccess = () => {
-                const db = open.result;
-                if (!db.objectStoreNames.contains("users")) {
-                    resolve([]);
-                    return;
-                }
-                const tx = db.transaction("users", "readonly");
-                const store = tx.objectStore("users");
-                const req = store.getAllKeys();
-                req.onsuccess = () => resolve(req.result.map((k) => String(k)));
-                req.onerror = () => reject(new Error("getAllKeys failed"));
-            };
-        });
-    });
-}
 
 Then('user ID в IndexedDB не nil', async ({ page }) => {
     await page.waitForURL(/\/home$/, { timeout: 15_000 });
     await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 30_000 });
 
-    const deadline = Date.now() + 10_000;
-    let canonicalKey: string | null = null;
-    while (Date.now() < deadline) {
-        const keys = await readUserStoreKeys(page).catch(() => [] as string[]);
-        canonicalKey = keys.find((k) => !k.endsWith(`:${NIL_USER_ID}`)) ?? null;
-        if (canonicalKey) break;
-        await page.waitForTimeout(250);
-    }
-    expect(canonicalKey, "Expected a non-nil user key in IndexedDB after login").not.toBeNull();
+    // Ключ с canonical user id появляется после логина: ждём состояния
+    // хранилища, а не фиксированной паузы.
+    await expect
+        .poll(
+            async () => {
+                const keys = await readUserStoreKeys(page).catch(() => [] as string[]);
+                return keys.find((k) => !k.endsWith(`:${NIL_USER_ID}`)) ?? null;
+            },
+            { timeout: 15_000 },
+        )
+        .not.toBeNull();
 
     const keys = await readUserStoreKeys(page);
     const nilKeys = keys.filter((k) => k.endsWith(`:${NIL_USER_ID}`));
