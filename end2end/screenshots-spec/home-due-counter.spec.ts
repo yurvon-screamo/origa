@@ -16,21 +16,21 @@
  * cross-device merge picks the later state, and a tie would hand the
  * server snapshot (yesterday) the win and break the expected number.
  *
- * Output directory: $SCREENSHOT_DIR (default .pr-screenshots/).
+ * Output directory: $SCREENSHOT_DIR (default: a temp dir — a plain run
+ * must not leave binary screenshots in the working tree; the repo keeps
+ * PR screenshots under .pr-screenshots/ and the factory uploads them to
+ * the CDN).
  */
 import { test, expect, type Page } from "@playwright/test";
+import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring } from "../helpers/onboarding";
 import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
 
 const OUTPUT_DIR = path.resolve(
-    process.env.SCREENSHOT_DIR ?? path.resolve(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "../../.pr-screenshots",
-    ),
+    process.env.SCREENSHOT_DIR ?? path.join(os.tmpdir(), "origa-pr-screenshots"),
 );
 
 /** How many cards the counter must show after the seed. */
@@ -236,12 +236,21 @@ async function loginFreshUser(page: Page): Promise<void> {
     });
 }
 
-async function captureHome(page: Page, name: string): Promise<void> {
+async function captureHome(
+    page: Page,
+    name: string,
+    expectedCount?: number,
+): Promise<void> {
     // The counter must be on screen before the shot — it is the feature
     // under review.
     const counter = page.getByTestId("home-today-overview-due-count");
     await expect(counter).toBeVisible({ timeout: 120_000 });
-    await expect(counter).toContainText(String(DUE_TARGET), { timeout: 120_000 });
+    if (expectedCount !== undefined) {
+        // Exact number: a plain substring check would also pass for "137".
+        await expect(counter).toHaveText(new RegExp(`\\b${expectedCount}\\b`), {
+            timeout: 120_000,
+        });
+    }
     // Let fonts/images settle, then capture the viewport.
     await page.waitForTimeout(1_500);
     await page.screenshot({ path: path.join(OUTPUT_DIR, name) });
@@ -269,6 +278,11 @@ test("home due counter screenshots with seeded data", async ({ page }) => {
         `day-one due cards (onboarding "mark all known", no date rewrite): ${dayOne}`,
     );
 
+    // The day-one state is what a fresh profile really lands in — the
+    // whole imported corpus is past its review date. Capture it before the
+    // seed rewrites the dates.
+    await captureHome(page, "home-due-counter-day-one-desktop.png", dayOne);
+
     const seeded = seedDueCards(stored.value, new Date());
     expect(seeded.due, "the seed must produce exactly DUE_TARGET due cards").toBe(
         DUE_TARGET,
@@ -279,10 +293,10 @@ test("home due counter screenshots with seeded data", async ({ page }) => {
     // snapshot with max()/LWW semantics — the seeded future dates survive
     // because every patched card carries a bumped `last_review_date`.
     await page.reload({ waitUntil: "domcontentloaded" });
-    await captureHome(page, "home-due-counter-desktop.png");
+    await captureHome(page, "home-due-counter-desktop.png", DUE_TARGET);
 
     // Mobile 390x844 — same seeded state.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload({ waitUntil: "domcontentloaded" });
-    await captureHome(page, "home-due-counter-mobile.png");
+    await captureHome(page, "home-due-counter-mobile.png", DUE_TARGET);
 });

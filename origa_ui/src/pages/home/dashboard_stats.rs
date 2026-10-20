@@ -177,11 +177,14 @@ pub fn compute_completion_forecast(
 /// Типы карт, которые считает счётчик повторений: слова, кандзи, грамматика
 /// и счётные суффиксы. Фразы и примеры исключены — у них собственные
 /// пайплайны повторения (issue #809).
+///
+/// Разбор исчерпывающий: новый тип карты в домене заставит дописать руку
+/// здесь, а не молча выпасть из счётчика (прецедент `Card::Example`, #528 v3).
 fn is_counted_card_type(card_type: CardType) -> bool {
-    matches!(
-        card_type,
-        CardType::Vocabulary | CardType::Kanji | CardType::Grammar | CardType::Counter
-    )
+    match card_type {
+        CardType::Vocabulary | CardType::Kanji | CardType::Grammar | CardType::Counter => true,
+        CardType::Phrase | CardType::Example => false,
+    }
 }
 
 /// Сколько карт ждут повторения: срок повторения уже наступил.
@@ -346,15 +349,17 @@ mod tests {
             NativeLanguage::English,
             None,
         );
+        let mut created = Vec::new();
         for word in ["猫", "犬", "鳥", "魚"] {
-            user.create_card(vocabulary_card(word))
-                .expect("card created");
+            created.push(
+                user.create_card(vocabulary_card(word))
+                    .expect("card created"),
+            );
         }
-        let ids: Vec<_> = user.knowledge_set().study_cards().keys().copied().collect();
-        known_card(&mut user, ids[0]);
-        known_card(&mut user, ids[1]);
+        known_card(&mut user, *created[0].card_id());
+        known_card(&mut user, *created[1].card_id());
         user.rate_card(
-            ids[3],
+            *created[3].card_id(),
             Rating::Good,
             RateMode::StandardLesson,
             RatingContext::Explicit,
@@ -407,30 +412,27 @@ mod tests {
     }
 
     #[test]
-    fn due_count_card_types_exclude_phrases_and_examples() {
-        assert!(is_counted_card_type(CardType::Vocabulary));
-        assert!(is_counted_card_type(CardType::Kanji));
-        assert!(is_counted_card_type(CardType::Grammar));
-        assert!(is_counted_card_type(CardType::Counter));
-        assert!(!is_counted_card_type(CardType::Phrase));
-        assert!(!is_counted_card_type(CardType::Example));
-    }
-
-    #[test]
     fn due_count_never_exceeds_overview_total() {
-        // Arrange: смешанный набор — просроченные, новая и изученная карта.
+        // Arrange: две словарные карты с прошедшим сроком и одна фраза с
+        // прошедшим сроком. Фраза не считается ни счётчиком, ни сводкой —
+        // если она попадёт в счётчик, число (3) превысит «всего» (2).
         let mut user = User::new(
             "tester@origa.local".to_string(),
             NativeLanguage::English,
             None,
         );
-        for word in ["猫", "犬", "鳥", "魚", "羊"] {
-            user.create_card(vocabulary_card(word))
-                .expect("card created");
-        }
-        let ids: Vec<_> = user.knowledge_set().study_cards().keys().copied().collect();
-        known_card(&mut user, ids[0]);
-        known_card(&mut user, ids[1]);
+        let first = user
+            .create_card(vocabulary_card("猫"))
+            .expect("card created");
+        let second = user
+            .create_card(vocabulary_card("犬"))
+            .expect("card created");
+        let phrase = user
+            .create_card(Card::Phrase(PhraseCard::new(Ulid::new())))
+            .expect("phrase created");
+        known_card(&mut user, *first.card_id());
+        known_card(&mut user, *second.card_id());
+        known_card(&mut user, *phrase.card_id());
 
         // Act
         let due = compute_due_count(user.knowledge_set());
@@ -439,6 +441,7 @@ mod tests {
         // Assert: счётчик — подмножество «всего» в шапке виджета: каждая
         // не-фразовая карта попадает ровно в один бакет сводки, а due ⇒
         // «не новая» ⇒ бакет один из трёх «изученных».
+        assert_eq!(due, 2, "the phrase card is not counted");
         assert!(
             due <= total,
             "due count {due} must not exceed the overview total {total}"
