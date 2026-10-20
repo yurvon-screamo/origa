@@ -337,6 +337,7 @@
     "home": {
         "loading": "불러오는 중...",
         "total_label": "전체",
+        "due_review": "복습 {{count}}개",
         "new_status": "새 항목",
         "learned_status": "학습됨",
         "in_progress_status": "진행 중",

@@ -337,6 +337,7 @@
     "home": {
         "loading": "Đang tải...",
         "total_label": "tổng",
+        "due_review": "{{count}} cần ôn tập",
         "new_status": "Mới",
         "learned_status": "Đã học",
         "in_progress_status": "Đang học",

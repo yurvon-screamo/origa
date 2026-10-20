@@ -337,6 +337,7 @@
     "home": {
         "loading": "Загрузка...",
         "total_label": "всего",
+        "due_review": "{{count}} к повторению",
         "new_status": "Новые",
         "learned_status": "Изучено",
         "in_progress_status": "В процессе",

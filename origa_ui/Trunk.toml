@@ -5,3 +5,16 @@ dist = "dist"
 [serve]
 port = 1420
 open = false
+
+# Tailwind CSS is pinned to the v3 line on purpose. Trunk 0.22.0 (released
+# 2026-10-20) bumped its bundled tailwindcss from 3.3.5 to 4.3.3, and the v4
+# engine does not read this project's v3-style config (`@tailwind base/...`
+# + tailwind.config.js): the generated stylesheet silently loses classes —
+# among them the responsive grid variants (`md:grid-cols-2`, `lg:grid-cols-2`,
+# `xl:grid-cols-3`, `2xl:grid-cols-4`). The grammar/kanji/words grids then
+# collapse into a single column, which broke the e2e grammar scenarios
+# (the card grows to full width and the click on its centre misses the link).
+# Pinning the tool keeps the CSS identical across trunk versions; migrating
+# the project to Tailwind v4 is a separate task.
+[tools]
+tailwindcss = "3.3.5"
