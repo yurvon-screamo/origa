@@ -15,6 +15,16 @@ fn quiz_variant_matches_card_type(quiz_variant: QuizVariant, card_type: CardType
     )
 }
 
+/// Видимость кнопки аудио в шапке карточки урока (обе стороны — вопрос и
+/// ответ, кнопка ответа рендерится только в Reversed-ветке, где counter
+/// не бывает). Кандзи исключён: чтение — то, что спрашивается. Счётный
+/// суффикс (#808) — по той же логике: у голого знака нет единственного
+/// чтения (本: ほん/ぼん/っぽん; 時 — じ, словарное とき в счёте неверно),
+/// любой звук по суффиксу — словарная подсказка-ошибка.
+fn header_audio_visible(card_type: CardType) -> bool {
+    !matches!(card_type, CardType::Kanji | CardType::Counter)
+}
+
 /// Bundled audio props for the tags row.
 #[derive(Clone)]
 pub struct CardHeaderAudio {
@@ -200,7 +210,7 @@ pub fn LessonCardAudio(
     let text = StoredValue::new(question_text);
     let path = StoredValue::new(audio_path);
     view! {
-        <Show when=move || card_type != CardType::Kanji && !is_reversed>
+        <Show when=move || header_audio_visible(card_type) && !is_reversed>
             <AudioButtons
                 text=text.get_value()
                 audio_path=path.get_value()
@@ -221,7 +231,7 @@ pub fn LessonCardAnswerAudio(
     let text = StoredValue::new(question_text);
     let path = StoredValue::new(audio_path);
     view! {
-        <Show when=move || card_type != CardType::Kanji>
+        <Show when=move || header_audio_visible(card_type)>
             <AudioButtons
                 text=text.get_value()
                 audio_path=path.get_value()
@@ -234,6 +244,7 @@ pub fn LessonCardAnswerAudio(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn grammar_variant_matches_grammar_card_type() {
@@ -281,5 +292,17 @@ mod tests {
             QuizVariant::Grammar,
             CardType::Phrase
         ));
+    }
+
+    /// #808: Kanji и Counter беззвучны на обеих сторонах (у голого знака
+    /// нет единственного чтения); словесные карты озвучиваются.
+    #[rstest]
+    #[case(CardType::Vocabulary, true)]
+    #[case(CardType::Grammar, true)]
+    #[case(CardType::Phrase, true)]
+    #[case(CardType::Kanji, false)]
+    #[case(CardType::Counter, false)]
+    fn header_audio_visible_by_card_type(#[case] card_type: CardType, #[case] expected: bool) {
+        assert_eq!(header_audio_visible(card_type), expected);
     }
 }
