@@ -53,8 +53,14 @@ Given('у пользователя есть слово для практики �
         .filter({ hasText: "читать" })
         .first();
     await expect(yomuCard).toBeVisible({ timeout: 10_000 });
-    await yomuCard.getByTestId("words-card-item-mark-known-btn").click();
-    await page.waitForTimeout(300);
+    // «Знаю» переводит карту в статус Learned (stability 22 > порога 21),
+    // и кнопка «Знаю» исчезает — это и есть признак, что отметка
+    // доехала до хранилища и список перерисовался. Раньше здесь стояла
+    // фиксированная пауза: она короче асинхронной записи, и практика
+    // успевала открыться без слова.
+    const markKnownBtn = yomuCard.getByTestId("words-card-item-mark-known-btn");
+    await markKnownBtn.click();
+    await expect(markKnownBtn).toBeHidden({ timeout: 15_000 });
 });
 
 When('пользователь открывает страницу грамматики', async ({ page }) => {
@@ -237,7 +243,22 @@ When('отвечает на все вопросы практики', async ({ pa
                 continue;
             }
         }
-        await page.waitForTimeout(200);
+        // Сессия блокирует опции сразу после ответа и показывает кнопку
+        // «Далее». Ждём состояния, а не фиксированной паузы: таймаут
+        // здесь — явный провал шага (раньше цикл молча крутился и падал
+        // позже, в Then, с невнятным сообщением).
+        await expect
+            .poll(
+                async () => {
+                    if (await complete.isVisible().catch(() => false)) return true;
+                    if (await nextBtn.isVisible().catch(() => false)) return true;
+                    const locked =
+                        (await option.getAttribute("class", { timeout: 1_000 }).catch(() => "")) ?? "";
+                    return !locked.includes("pointer-events-none");
+                },
+                { timeout: 10_000 },
+            )
+            .toBe(true);
     }
 });
 
