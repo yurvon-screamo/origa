@@ -12,12 +12,12 @@ use chrono::{DateTime, Duration, Utc};
 use proptest::prelude::*;
 use ulid::Ulid;
 
-use super::{CardState, Difficulty, MemoryHistory, MemoryState, Rating, Stability};
+use super::ghost::GHOST_TTL_DAYS;
+use super::{
+    CardState, Difficulty, GhostRung, GhostState, MemoryHistory, MemoryState, Rating, Stability,
+};
 use crate::domain::RateMode;
 use crate::domain::srs::rate_memory;
-
-use super::GhostRung;
-use super::GhostState;
 
 /// Every scheduling mode of the app: the wrapper configures each one
 /// differently (retention, maximum interval, fuzz), so the scheduling
@@ -82,31 +82,40 @@ fn history_after(ratings: &[Rating]) -> MemoryHistory {
 /// Model of the ghost state machine (`domain/memory/ghost.rs`): the ghost
 /// state and the failure counter after one rating.
 ///
-/// A success resets the failure counter and advances the ladder when the
-/// window is open (the third rung resolves the ghost). A failure restarts
-/// the ladder at the first rung when the window is open; without an active
-/// ghost the failures accumulate and the second one spawns a new cycle —
-/// a terminal ghost is replaced by that spawn.
+/// The model mirrors the implementation rule by rule, so a change in
+/// `ghost.rs` shows up here as a property failure:
+/// - the lazy TTL: an active ghost that has been silent for longer than
+///   the TTL is written off before the rating is applied;
+/// - a success resets the failure counter and advances the ladder when the
+///   window is open (the third rung resolves the ghost);
+/// - a failure restarts the ladder at the first rung when the window is
+///   open; without an active ghost the failures accumulate and the second
+///   one spawns a new cycle — a terminal ghost is replaced by that spawn;
+/// - the new-card gate: a card that was new before the rating never
+///   spawns a ghost.
 fn model_ghost_step(
     current: Option<&GhostState>,
     consecutive: u8,
     rating: Rating,
+    was_new_before_rating: bool,
     now: DateTime<Utc>,
 ) -> (Option<GhostState>, u8) {
-    let restarted = || {
+    // The lazy TTL runs first, exactly like in the implementation.
+    let (mut state, mut counter) = match current {
         Some(GhostState::Active {
-            rung: GhostRung::First,
-            due_at: now + GhostRung::First.interval(),
-            last_transition_at: now,
-        })
+            last_transition_at, ..
+        }) if now - *last_transition_at > Duration::days(GHOST_TTL_DAYS) => {
+            (Some(GhostState::Expired { at: now }), 0)
+        },
+        other => (other.cloned(), consecutive),
     };
 
     match rating {
         Rating::Good | Rating::Easy => {
-            let mut next_state = current.cloned();
-            if let Some(GhostState::Active { rung, due_at, .. }) = &next_state {
+            counter = 0;
+            if let Some(GhostState::Active { rung, due_at, .. }) = &state {
                 if *due_at <= now {
-                    next_state = Some(match rung.next() {
+                    state = Some(match rung.next() {
                         Some(next) => GhostState::Active {
                             rung: next,
                             due_at: now + next.interval(),
@@ -116,24 +125,30 @@ fn model_ghost_step(
                     });
                 }
             }
-            (next_state, 0)
         },
         Rating::Again | Rating::Hard => {
-            if let Some(GhostState::Active { due_at, .. }) = current {
-                return if *due_at <= now {
-                    (restarted(), consecutive)
-                } else {
-                    (current.cloned(), consecutive)
-                };
+            if let Some(GhostState::Active { due_at, .. }) = &state {
+                if *due_at <= now {
+                    state = Some(GhostState::Active {
+                        rung: GhostRung::First,
+                        due_at: now + GhostRung::First.interval(),
+                        last_transition_at: now,
+                    });
+                }
+                return (state, counter);
             }
-            let counter = consecutive.saturating_add(1);
-            if counter >= 2 {
-                (restarted(), 0)
-            } else {
-                (current.cloned(), counter)
+            counter = counter.saturating_add(1);
+            if counter >= 2 && !was_new_before_rating {
+                state = Some(GhostState::Active {
+                    rung: GhostRung::First,
+                    due_at: now + GhostRung::First.interval(),
+                    last_transition_at: now,
+                });
+                counter = 0;
             }
         },
     }
+    (state, counter)
 }
 
 proptest! {
@@ -143,6 +158,7 @@ proptest! {
     fn counters_track_the_applied_rating_chain(
         ratings in prop::collection::vec(rating_strategy(), 0..40),
     ) {
+        // Arrange
         let mut history = MemoryHistory::new();
         let state = MemoryState::new(
             Stability::new(5.0).expect("5.0 is a valid stability"),
@@ -154,6 +170,7 @@ proptest! {
         let mut lapses = 0u32;
         let mut easy = 0usize;
         let mut good = 0usize;
+        // Act
         for rating in &ratings {
             history.apply_review(state.clone(), *rating);
             reps += 1;
@@ -165,6 +182,7 @@ proptest! {
             }
         }
 
+        // Assert
         prop_assert_eq!(history.reps(), reps);
         prop_assert_eq!(history.lapses(), lapses);
         prop_assert_eq!(history.easy_review_count(), easy);
@@ -179,12 +197,15 @@ proptest! {
         left_ratings in prop::collection::vec(rating_strategy(), 0..20),
         right_ratings in prop::collection::vec(rating_strategy(), 0..20),
     ) {
+        // Arrange
         let left = history_after(&left_ratings);
         let right = history_after(&right_ratings);
 
+        // Act
         let mut merged = left.clone();
         merged.merge(&right);
 
+        // Assert
         prop_assert!(merged.reps() >= left.reps());
         prop_assert!(merged.reps() >= right.reps());
         prop_assert!(merged.lapses() >= left.lapses());
@@ -201,14 +222,17 @@ proptest! {
         left_ratings in prop::collection::vec(rating_strategy(), 0..20),
         right_ratings in prop::collection::vec(rating_strategy(), 0..20),
     ) {
+        // Arrange
         let left = history_after(&left_ratings);
         let right = history_after(&right_ratings);
 
+        // Act
         let mut merged = left.clone();
         merged.merge(&right);
         let once = merged.clone();
         merged.merge(&right);
 
+        // Assert
         prop_assert_eq!(merged.reps(), once.reps());
         prop_assert_eq!(merged.lapses(), once.lapses());
         prop_assert_eq!(merged.easy_review_count(), once.easy_review_count());
@@ -223,15 +247,18 @@ proptest! {
     fn ghost_spawns_only_after_two_consecutive_failures(
         failures in prop::collection::vec(any::<bool>(), 0..20),
     ) {
+        // Arrange
         let now = Utc::now();
         let card_id = Ulid::new();
         let mut history = MemoryHistory::new();
         history.seed(valid_review_state(5.0, 5.0, now));
 
+        // Act
         for (index, is_hard) in failures.iter().enumerate() {
             let rating = if *is_hard { Rating::Hard } else { Rating::Again };
             history.apply_ghost_transition(rating, now, false, &card_id);
 
+            // Assert
             if index < 1 {
                 prop_assert!(
                     history.ghost().is_none(),
@@ -272,6 +299,7 @@ proptest! {
         window_open in any::<bool>(),
         ratings in prop::collection::vec(rating_strategy(), 0..20),
     ) {
+        // Arrange
         let now = Utc::now();
         let card_id = Ulid::new();
         let due_at = if window_open {
@@ -290,11 +318,20 @@ proptest! {
             last_transition_at: now,
         });
         let mut expected_consecutive = 0u8;
+
+        // Act
         for rating in &ratings {
-            let (next_state, next_consecutive) =
-                model_ghost_step(expected.as_ref(), expected_consecutive, *rating, now);
+            let (next_state, next_consecutive) = model_ghost_step(
+                expected.as_ref(),
+                expected_consecutive,
+                *rating,
+                false,
+                now,
+            );
 
             history.apply_ghost_transition(*rating, now, false, &card_id);
+
+            // Assert
             prop_assert_eq!(history.ghost(), next_state.as_ref());
             prop_assert_eq!(history.consecutive_again(), next_consecutive);
 
@@ -310,6 +347,7 @@ proptest! {
         rating in rating_strategy(),
         age_days in 31i64..400,
     ) {
+        // Arrange
         let now = Utc::now();
         let card_id = Ulid::new();
         let mut history = MemoryHistory::new();
@@ -320,8 +358,10 @@ proptest! {
             now - Duration::days(age_days),
         )));
 
+        // Act
         history.apply_ghost_transition(rating, now, false, &card_id);
 
+        // Assert
         prop_assert!(
             matches!(history.ghost(), Some(GhostState::Expired { at }) if *at == now),
             "a ghost older than the TTL must expire on the next rating"
@@ -335,6 +375,7 @@ proptest! {
         left_age_days in prop::option::of(0i64..100),
         right_age_days in prop::option::of(0i64..100),
     ) {
+        // Arrange
         let now = Utc::now();
         let left = history_after(&[]);
         let right = history_after(&[]);
@@ -372,8 +413,11 @@ proptest! {
             },
         };
 
+        // Act
         let mut merged = left.clone();
         merged.merge(&right);
+
+        // Assert
         prop_assert_eq!(merged.ghost(), expected.as_ref());
     }
 
@@ -385,10 +429,14 @@ proptest! {
         difficulty in valid_difficulty_strategy(),
         ratings in prop::collection::vec(rating_strategy(), 0..12),
     ) {
+        // Arrange
         let mut history = MemoryHistory::new();
         // The chain starts from a state the scheduler can work with.
         history.seed(valid_review_state(stability, difficulty, Utc::now()));
+
+        // Act
         for rating in &ratings {
+            // Assert
             for mode in ALL_RATE_MODES {
                 let next = rate_memory(mode, *rating, &history);
                 prop_assert!(
@@ -413,6 +461,7 @@ proptest! {
         difficulty in valid_difficulty_strategy(),
         rating in rating_strategy(),
     ) {
+        // Arrange
         let now = Utc::now();
         let mut history = MemoryHistory::new();
         history.seed(MemoryState::with_card_state(
@@ -425,6 +474,7 @@ proptest! {
         // time (zero days) by the stability — the degenerate case.
         history.last_review_date = Some(now);
 
+        // Act + Assert
         for mode in ALL_RATE_MODES {
             if let Ok(next) = rate_memory(mode, rating, &history) {
                 prop_assert!(
@@ -454,39 +504,51 @@ proptest! {
         rounds in 1u32..8,
         elapsed_days in 1i64..30,
     ) {
-        let mut history = MemoryHistory::new();
-        let mut previous: Option<f64> = None;
+        // Arrange: one chain per rate mode, every chain starts from the
+        // same valid state.
+        let mut chains: Vec<(RateMode, MemoryHistory, Option<f64>)> = ALL_RATE_MODES
+            .iter()
+            .map(|mode| {
+                let mut history = MemoryHistory::new();
+                history.seed(valid_review_state(stability, difficulty, Utc::now()));
+                (*mode, history, None)
+            })
+            .collect();
 
         for _ in 0..rounds {
             let now = Utc::now();
-            history.seed(valid_review_state(stability, difficulty, now));
-            history.last_review_date = Some(now - Duration::days(elapsed_days));
 
-            for mode in ALL_RATE_MODES {
-                let next = rate_memory(mode, Rating::Good, &history)
+            // Act: the next Good of every chain, with the last review moved
+            // into the past so the scheduler sees an elapsed review.
+            for (mode, history, previous) in chains.iter_mut() {
+                history.last_review_date = Some(now - Duration::days(elapsed_days));
+                let next = rate_memory(*mode, Rating::Good, history)
                     .expect("a valid state schedules in every mode");
+
+                // Assert
                 let current = next.stability().value();
-                prop_assert!(
-                    current.is_finite(),
-                    "stability must be finite in {mode:?}"
-                );
+                prop_assert!(current.is_finite(), "stability must be finite in {mode:?}");
                 if let Some(previous) = previous {
                     prop_assert!(
-                        current >= previous,
+                        current >= *previous,
                         "a Good series must not lower the stability in {mode:?}: {previous} -> {current}"
                     );
                 }
-                previous = Some(current);
+                *previous = Some(current);
+                history.apply_review(next, Rating::Good);
             }
         }
     }
 }
 
 /// Regression guard for the degenerate input the finiteness property
-/// explores: a review card with zero stability must be rejected by the
-/// scheduler instead of producing a NaN stability.
+/// explores: a review card with zero stability must never produce a
+/// non-finite state. Today the scheduler rejects the input outright; if
+/// rs-fsrs ever learns to schedule it, a finite state is fine as well —
+/// what must not come back is a NaN stability.
 #[test]
-fn rate_memory_rejects_a_zero_stability_review_state() {
+fn rate_memory_never_returns_a_non_finite_state_for_a_zero_stability_card() {
+    // Arrange
     let now = Utc::now();
     let mut history = MemoryHistory::new();
     history.seed(MemoryState::with_card_state(
@@ -497,12 +559,16 @@ fn rate_memory_rejects_a_zero_stability_review_state() {
     ));
     history.last_review_date = Some(now);
 
+    // Act
     for mode in ALL_RATE_MODES {
         for rating in [Rating::Again, Rating::Hard, Rating::Good, Rating::Easy] {
-            assert!(
-                rate_memory(mode, rating, &history).is_err(),
-                "a zero-stability review card must not schedule in {mode:?} for {rating:?}"
-            );
+            // Assert
+            if let Ok(state) = rate_memory(mode, rating, &history) {
+                assert!(
+                    state.stability().value().is_finite() && state.difficulty().value().is_finite(),
+                    "a zero-stability review card must not schedule into a non-finite state in {mode:?} for {rating:?}"
+                );
+            }
         }
     }
 }

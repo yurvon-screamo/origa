@@ -89,13 +89,11 @@ idb = "0.6"
 lexical-sort = "0.3"
 
 # Testing
-# Testing
 rstest = "0.26"
 # Property-based tests for the FSRS wrapper (domain/memory). Only the `std`
 # feature: the default set pulls `fork`/`timeout` (process forking) and
 # `bit-set`, none of which the property tests need.
 proptest = { version = "1.11", default-features = false, features = ["std"] }
-
 
 # UI
 leptos = { version = "0.8", default-features = false, features = ["csr"] }
