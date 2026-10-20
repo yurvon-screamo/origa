@@ -76,24 +76,6 @@ export class PhrasesPage extends BasePage {
         await btn.dispatchEvent("click");
     }
 
-    async getFavoriteButton(index: number): Promise<Locator> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        return card.getByTestId("phrases-card-item-favorite-btn");
-    }
-
-    async toggleFavoriteByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-favorite-btn");
-        await btn.dispatchEvent("click");
-        await this.page.waitForTimeout(1000);
-    }
-
-    async isFavorited(index: number): Promise<boolean> {
-        const btn = await this.getFavoriteButton(index);
-        const filledPath = btn.locator('svg path[fill="currentColor"]');
-        return filledPath.isVisible().catch(() => false);
-    }
-
     async deleteCardByIndex(index: number): Promise<void> {
         const card = this.page.getByTestId("phrases-card-item").nth(index);
         const btn = card.getByTestId("phrases-card-item-delete-btn");

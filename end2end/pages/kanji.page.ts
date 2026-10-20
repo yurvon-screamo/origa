@@ -182,24 +182,6 @@ export class KanjiPage extends BasePage {
         await this.loadMoreButton.click();
     }
 
-    async getFavoriteButton(index: number): Promise<Locator> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        return card.getByTestId("kanji-card-item-favorite-btn");
-    }
-
-    async isFavorited(index: number): Promise<boolean> {
-        const btn = await this.getFavoriteButton(index);
-        const filledPath = btn.locator('svg path[fill="currentColor"]');
-        return filledPath.isVisible().catch(() => false);
-    }
-
-    async toggleFavoriteByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        const btn = card.getByTestId("kanji-card-item-favorite-btn");
-        await btn.dispatchEvent("click");
-        await this.page.waitForTimeout(1000);
-    }
-
     async deleteFromDetail(): Promise<void> {
         // Both desktop and mobile action bars render — use .first() for strict mode compatibility
         const deleteBtn = this.page
