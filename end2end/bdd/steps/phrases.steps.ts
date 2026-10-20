@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
 import { HomePage, PhrasesPage } from "../../pages";
+import { waitUntilStable } from "../../helpers/wait";
 
 When('пользователь открывает страницу фраз', async ({ page }) => {
     const phrasesPage = new PhrasesPage(page);
@@ -97,8 +98,11 @@ Then('текст фраз содержит фуригану', async ({ page }) =
 
 When('ищет фразы {string}', async ({ page }, query: string) => {
     const phrasesPage = new PhrasesPage(page);
+    // Шаг-действие: заполнили поиск. Дальше поиск догружает детали фраз
+    // в фоне, и следующий Then сам ждёт результат (toHaveCount с
+    // авто-ретраем) — фиксированная пауза здесь только задерживала
+    // прогон и ничего не гарантировала.
     await phrasesPage.searchPhrases(query);
-    await page.waitForTimeout(500);
 });
 
 Then('на странице фраз нет карточек', async ({ page }) => {
@@ -119,7 +123,7 @@ When('пользователь открывает страницу фраз с �
     await phrasesPage.expectPhrasesVisible();
 });
 
-Then('количество загруженных чанков данных фраз ограничено видимой пачкой', async ({ page }) => {
+Then('количество загруженных чанков данных фраз ограничено видимой пачкой', async () => {
     const chunkUrl = /\/phrases\/data\/p\d{4}\.json/;
     const countNow = () => phrasesRequestLog.filter((url) => chunkUrl.test(url)).length;
 
@@ -128,13 +132,16 @@ Then('количество загруженных чанков данных фр
     // (fetch EVERY chunk of the user's ~6k phrases) kept the stream busy
     // for a long time and would sail far past the bound below; the lazy
     // visible-slice load settles quickly on a few dozen chunks.
-    let previous = -1;
-    for (let i = 0; i < 20; i++) {
-        await page.waitForTimeout(500);
-        const current = countNow();
-        if (current === previous) break;
-        previous = current;
-    }
+    await waitUntilStable(countNow, {
+        label: "phrase data chunk requests",
+        quietMs: 1_000,
+        timeoutMs: 10_000,
+        pollMs: 500,
+    }).catch(() => {
+        // Поток не устоялся — уходим к проверке ниже: она сообщает
+        // фактическое число загруженных чанков, это и есть actionable
+        // сигнал (как и раньше, когда цикл просто исчерпывал итерации).
+    });
 
     const finalCount = countNow();
     expect(
