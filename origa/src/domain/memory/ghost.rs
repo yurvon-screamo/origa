@@ -31,7 +31,7 @@ impl GhostRung {
     /// Интервал до показа, который засчитывается на этой ступени:
     /// спавн/рестарт → First (12ч), успех на First → Second (1д),
     /// успех на Second → Third (3д). Успех на Third закрывает добивание.
-    fn interval(self) -> Duration {
+    pub(crate) fn interval(self) -> Duration {
         match self {
             GhostRung::First => Duration::hours(12),
             GhostRung::Second => Duration::days(1),
@@ -39,7 +39,7 @@ impl GhostRung {
         }
     }
 
-    fn next(self) -> Option<GhostRung> {
+    pub(crate) fn next(self) -> Option<GhostRung> {
         match self {
             GhostRung::First => Some(GhostRung::Second),
             GhostRung::Second => Some(GhostRung::Third),

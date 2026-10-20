@@ -6,6 +6,9 @@ mod ghost;
 
 pub use ghost::{GhostRung, GhostState};
 
+#[cfg(test)]
+mod property_tests;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
