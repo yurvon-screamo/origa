@@ -337,6 +337,7 @@
     "home": {
         "loading": "Loading...",
         "total_label": "total",
+        "due_review": "{{count}} to review",
         "new_status": "New",
         "learned_status": "Learned",
         "in_progress_status": "In Progress",

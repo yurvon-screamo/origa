@@ -15,7 +15,8 @@ mod home_wasm_tests;
 
 pub use content::HomeContent;
 pub use dashboard_stats::{
-    CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_studied_today,
+    CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_due_count,
+    compute_studied_today,
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jft_readiness_card::JftReadinessCard;

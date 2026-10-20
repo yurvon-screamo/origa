@@ -62,6 +62,7 @@ mod tests {
 pub fn TodayOverviewCard(
     overview: Signal<TodayOverview>,
     forecast: Signal<CompletionForecast>,
+    due_count: Signal<usize>,
     #[prop(optional, into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -100,6 +101,10 @@ pub fn TodayOverviewCard(
         td_string!(locale, home.days_label)
     });
 
+    // Отдельный сигнал: в `when=` макрос парсит `>` как оператор
+    // сравнения, поэтому сравнение живёт в обычном замыкании.
+    let has_due = Signal::derive(move || due_count.get() > 0);
+
     view! {
         <Card shadow=true class=Signal::derive(|| "p-6 h-full".to_string()) test_id=test_id>
             <div class="flex flex-col h-full">
@@ -119,6 +124,19 @@ pub fn TodayOverviewCard(
                             )
                         }}
                     </Text>
+
+                    <Show when=move || has_due.get()>
+                        <span
+                            class="font-mono text-[12px] text-[var(--fg-muted)] whitespace-nowrap shrink-0"
+                            data-testid=move || format!("{}-due-count", test_id.get())
+                        >
+                            {move || {
+                                let locale = i18n.get_locale();
+                                let count = u32::try_from(due_count.get()).unwrap_or(u32::MAX);
+                                td_string!(locale, home.due_review, count = count)
+                            }}
+                        </span>
+                    </Show>
 
                     <div class="ml-auto">
                         <Show when=move || forecast.get().days_remaining.is_some()>
