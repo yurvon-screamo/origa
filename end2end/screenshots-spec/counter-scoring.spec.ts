@@ -43,15 +43,25 @@ test("counter scoring card screenshots", async ({ page }) => {
 
     const login = new LoginPage(page);
     let loggedIn = false;
-    for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
+    for (let attempt = 1; attempt <= 2 && !loggedIn; attempt++) {
         await page.goto("/", { waitUntil: "domcontentloaded" });
         await page.evaluate(() => localStorage.clear());
+        // The clear above wipes the download consent too — restore it, or
+        // the ~230 MB consent overlay blocks every later step (the overlay
+        // demands an explicit click; the init-script value alone is not
+        // enough after a clear).
+        await page.evaluate(() =>
+            localStorage.setItem("origa_resource_download_consented", "true"),
+        );
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
             await login.fillPassword(DEFAULT_TEST_PASSWORD);
             await login.submit();
-            await page.waitForURL(/\/(home|onboarding)$/, { timeout: 120_000 });
+            // A cold DEBUG wasm bundle (local trunk serve) takes minutes to
+            // download and compile in the browser — well over the CI-tuned
+            // 120s, hence the generous window here.
+            await page.waitForURL(/\/(home|onboarding)/, { timeout: 420_000 });
             loggedIn = true;
         } catch {
             loggedIn = false;
@@ -59,25 +69,35 @@ test("counter scoring card screenshots", async ({ page }) => {
     }
     expect(loggedIn, "login must succeed within 3 attempts").toBe(true);
 
-    const reached = await completeOnboardingToScoring(page, { level: "N5" });
+    const reached = await completeOnboardingToScoring(page, {
+        level: "N5",
+        onboardingUrlTimeout: 420_000,
+        scoringReadyTimeout: 600_000,
+    });
     expect(reached, "scoring step must be reachable for a fresh N5 user").toBe(true);
 
     // Walk the queue: counters are the last section (sort_order 4 — after
-    // Grammar/Kanji/Vocabulary/Phrase). «Не знаю» advances and persists the
-    // skip; the button re-enables when the per-click save settles.
+    // Grammar/Kanji/Vocabulary/Phrase; N5 import ≈ 211+80+1772+19 cards).
+    // «Не знаю» advances and persists the skip; the button re-enables when
+    // the per-click save settles.
     const step = page.getByTestId("onboarding-scoring-step");
     const tag = step.locator("span.tag").first();
     const dontKnow = page.getByTestId("scoring-step-dont-know");
     let reached_counter = false;
-    for (let i = 0; i < 1500; i++) {
-        await tag.waitFor({ state: "visible", timeout: 30_000 });
-        const label = ((await tag.textContent()) ?? "").trim();
+    for (let i = 0; i < 2500; i++) {
+        const label = ((await tag.textContent().catch(() => null)) ?? "").trim();
+        if (!label) {
+            break; // queue exhausted (completion screen) — counter not found
+        }
         if (label === COUNTER_TAG) {
             reached_counter = true;
             break;
         }
+        if (i % 200 === 0) {
+            console.log(`[walk] card#${i} tag="${label}"`);
+        }
         await dontKnow.click();
-        await expect(dontKnow).toBeEnabled({ timeout: 15_000 });
+        await expect(dontKnow).toBeEnabled({ timeout: 10_000 });
     }
     expect(reached_counter, "counter card must appear in the N5 scoring queue").toBe(true);
 

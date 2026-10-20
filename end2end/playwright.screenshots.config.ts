@@ -10,6 +10,11 @@ export default defineConfig({
     reporter: [["line"]],
     use: {
         baseURL: "http://localhost:1420",
+        // Pin the UI locale the same way the BDD config does: the specs
+        // assert Russian product copy (e.g. the «Счётный суффикс» tag in
+        // counter-scoring.spec.ts) and a fresh profile inherits the runner
+        // locale otherwise.
+        locale: "ru-RU",
         trace: "off",
         screenshot: "off",
         ...devices["Desktop Chrome"],
