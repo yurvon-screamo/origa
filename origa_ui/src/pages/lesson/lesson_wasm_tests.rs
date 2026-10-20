@@ -5036,6 +5036,7 @@ mod counter_pack_contract {
                     card=card2
                     items=items2
                     on_rate_binding=on_rate2
+                    is_muted=Signal::derive(|| false)
                     test_id=Signal::derive(|| "counter-bindings-card".to_string())
                 />
             }
