@@ -8,6 +8,7 @@
         "test": "playwright test",
         "pretest": "bddgen",
         "typecheck": "tsc --noEmit",
+        "lint": "eslint bdd pages helpers fixtures *.ts",
         "bdd:gen": "bddgen",
         "test:bdd": "bddgen && playwright test --project=bdd",
         "test:ui": "playwright test --ui",
