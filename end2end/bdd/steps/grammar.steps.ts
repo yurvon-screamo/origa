@@ -252,9 +252,13 @@ When('отвечает на все вопросы практики', async ({ pa
                 async () => {
                     if (await complete.isVisible().catch(() => false)) return true;
                     if (await nextBtn.isVisible().catch(() => false)) return true;
-                    const locked =
-                        (await option.getAttribute("class", { timeout: 1_000 }).catch(() => "")) ?? "";
-                    return !locked.includes("pointer-events-none");
+                    const classes = await option
+                        .getAttribute("class", { timeout: 1_000 })
+                        .catch(() => null);
+                    // No option at all is not "the option is unlocked" —
+                    // keep waiting for the session to move on.
+                    if (classes === null) return false;
+                    return !classes.includes("pointer-events-none");
                 },
                 { timeout: 10_000 },
             )

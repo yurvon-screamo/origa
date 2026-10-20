@@ -13,6 +13,9 @@ import { type Page } from "@playwright/test";
 
 const DATABASE_NAME = "origa";
 const USER_STORE = "users";
+/** Suffix of the legacy nil-user row (`user:000…0`) — it is not the
+ * canonical user and must never win the lookup. */
+const NIL_USER_SUFFIX = `:${"0".repeat(26)}`;
 
 /** Memory of one counter binding (a digit × suffix pair). */
 export interface PersistedCounterBinding {
@@ -68,13 +71,25 @@ export async function readUserStoreKeys(page: Page): Promise<string[]> {
     );
 }
 
-/** The persisted user, or `null` when the store holds no user yet. */
+/**
+ * The persisted user, or `null` when the store holds no user yet.
+ *
+ * The store may keep a legacy nil-user row next to the canonical one, so
+ * the canonical key is read first. The value is the whole user row: the
+ * helper is meant for the e2e-sized users (a full corpus is megabytes),
+ * not for bulk reads.
+ */
 export async function readPersistedUser(page: Page): Promise<PersistedUser | null> {
     const raw = await page.evaluate(
-        async ({ databaseName, userStore }): Promise<string | null> => {
+        async ({
+            databaseName,
+            userStore,
+            nilUserSuffix,
+        }): Promise<string | null> => {
             return await new Promise<string | null>((resolve, reject) => {
                 const open = indexedDB.open(databaseName);
                 open.onerror = () => reject(new Error("indexedDB open failed"));
+                open.onupgradeneeded = () => resolve(null);
                 open.onsuccess = () => {
                     const db = open.result;
                     if (!db.objectStoreNames.contains(userStore)) {
@@ -83,19 +98,45 @@ export async function readPersistedUser(page: Page): Promise<PersistedUser | nul
                     }
                     const tx = db.transaction(userStore, "readonly");
                     const store = tx.objectStore(userStore);
-                    const req = store.getAll();
-                    req.onsuccess = () => {
-                        const row = req.result.find(
-                            (value: unknown) =>
-                                typeof value === "string" && value.includes('"email"'),
-                        );
-                        resolve(typeof row === "string" ? row : null);
+                    const keysReq = store.getAllKeys();
+                    keysReq.onsuccess = () => {
+                        const keys = keysReq.result.map((key) => String(key));
+                        // The canonical row first, the legacy nil-user row
+                        // only as a last resort.
+                        const ordered = [
+                            ...keys.filter((key) => !key.endsWith(nilUserSuffix)),
+                            ...keys.filter((key) => key.endsWith(nilUserSuffix)),
+                        ];
+                        const readNext = (index: number): void => {
+                            if (index >= ordered.length) {
+                                resolve(null);
+                                return;
+                            }
+                            const req = store.get(ordered[index]);
+                            req.onsuccess = () => {
+                                const value = req.result;
+                                if (
+                                    typeof value === "string" &&
+                                    value.includes('"email"')
+                                ) {
+                                    resolve(value);
+                                    return;
+                                }
+                                readNext(index + 1);
+                            };
+                            req.onerror = () => reject(new Error("get failed"));
+                        };
+                        readNext(0);
                     };
-                    req.onerror = () => reject(new Error("getAll failed"));
+                    keysReq.onerror = () => reject(new Error("getAllKeys failed"));
                 };
             });
         },
-        { databaseName: DATABASE_NAME, userStore: USER_STORE },
+        {
+            databaseName: DATABASE_NAME,
+            userStore: USER_STORE,
+            nilUserSuffix: NIL_USER_SUFFIX,
+        },
     );
 
     if (raw === null) {

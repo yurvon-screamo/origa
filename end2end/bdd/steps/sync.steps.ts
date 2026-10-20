@@ -18,7 +18,10 @@ Then('user ID в IndexedDB не nil', async ({ page }) => {
                 const keys = await readUserStoreKeys(page).catch(() => [] as string[]);
                 return keys.find((k) => !k.endsWith(`:${NIL_USER_ID}`)) ?? null;
             },
-            { timeout: 15_000 },
+            {
+                timeout: 15_000,
+                message: "Expected a non-nil user key in IndexedDB after login",
+            },
         )
         .not.toBeNull();
 

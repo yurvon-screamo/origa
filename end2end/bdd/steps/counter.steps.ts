@@ -275,7 +275,9 @@ When('пользователь жмёт {string} отвечая {string}', async
 				countReviewedCounterBindings(
 					await readPersistedUser(page).catch(() => null),
 				),
-			{ timeout: 15_000 },
+			// The store row is read as a whole — poll it twice a second,
+			// not ten times.
+			{ timeout: 15_000, intervals: [500] },
 		)
 		.toBeGreaterThan(reviewedBefore);
 });
@@ -305,8 +307,13 @@ When('пользователь проходит пачку связок до к�
 			.textContent({ timeout: 2_000 })
 			.catch(() => null);
 		await page.keyboard.press("2");
+		if (progressBefore === null) {
+			// Счётчика прогресса не было — ждать нечего.
+			continue;
+		}
 		// Сессия переходит к следующей связке: растёт счётчик прогресса.
-		// Последняя связка закрывает пачку — элемент прогресса исчезает.
+		// Последняя связка закрывает пачку — элемент прогресса исчезает,
+		// и это тоже переход.
 		await expect
 			.poll(
 				async () => {
@@ -314,7 +321,7 @@ When('пользователь проходит пачку связок до к�
 						.getByTestId("counter-bindings-progress")
 						.textContent({ timeout: 2_000 })
 						.catch(() => null);
-					return advanced === null || advanced !== progressBefore;
+					return advanced !== progressBefore;
 				},
 				{ timeout: 15_000 },
 			)

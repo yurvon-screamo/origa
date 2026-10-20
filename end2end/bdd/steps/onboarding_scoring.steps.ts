@@ -154,18 +154,28 @@ Then('отображаются метки секций прогресс-бара
 
 When('пользователь нажимает "Знаю"', async ({ page }) => {
     const onboarding = new OnboardingPage(page);
+    // Снимок вопроса ДО ответа: следующая карточка показывает другой
+    // вопрос — по смене текста и ждём перехода. Кнопка «Не знаю» тут
+    // не годится: она рендерится на каждой карточке скоринга, и опрос
+    // по ней срабатывал бы сразу, не дожидаясь перехода.
+    const questionBefore = await onboarding.scoringQuestion.textContent();
     await onboarding.clickKnow();
-    // Wait for either the next card or the complete screen to appear.
-    // Using isVisible().catch() polling pattern (not Promise.race+catch)
-    // to avoid swallowing errors silently.
     await expect
         .poll(
-            async () =>
-                (await onboarding.scoringComplete.isVisible().catch(() => false)) ||
-                (await onboarding.scoringDontKnowBtn.isVisible().catch(() => false)),
+            async () => {
+                if (await onboarding.scoringComplete.isVisible().catch(() => false)) {
+                    return "complete";
+                }
+                const question = await onboarding.scoringQuestion
+                    .textContent()
+                    .catch(() => null);
+                return question !== null && question !== questionBefore
+                    ? question
+                    : null;
+            },
             { timeout: 15_000 },
         )
-        .toBe(true);
+        .not.toBeNull();
 });
 
 When('пользователь отмечает все оставшиеся карточки как известные', async ({ page }) => {

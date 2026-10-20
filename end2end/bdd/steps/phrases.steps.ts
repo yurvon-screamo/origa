@@ -132,21 +132,24 @@ Then('количество загруженных чанков данных фр
     // (fetch EVERY chunk of the user's ~6k phrases) kept the stream busy
     // for a long time and would sail far past the bound below; the lazy
     // visible-slice load settles quickly on a few dozen chunks.
+    let settleError = "";
     await waitUntilStable(countNow, {
         label: "phrase data chunk requests",
         quietMs: 1_000,
         timeoutMs: 10_000,
         pollMs: 500,
-    }).catch(() => {
+    }).catch((error: unknown) => {
         // Поток не устоялся — уходим к проверке ниже: она сообщает
         // фактическое число загруженных чанков, это и есть actionable
         // сигнал (как и раньше, когда цикл просто исчерпывал итерации).
+        settleError = error instanceof Error ? error.message : String(error);
     });
 
     const finalCount = countNow();
     expect(
         finalCount,
-        `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}`,
+        `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}` +
+            (settleError ? ` — the request stream never settled: ${settleError}` : ""),
     ).toBeLessThanOrEqual(60);
     // Positive control: data WAS loaded (the preceding step already
     // asserted non-empty card text, this guards against a vacuous zero).
