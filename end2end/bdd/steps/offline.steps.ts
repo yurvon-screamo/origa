@@ -97,7 +97,7 @@ Given('кэш словарей пуст', async ({ page }) => {
     await page.evaluate(async () => {
         const keys = await caches.keys();
         for (const key of keys) {
-            if (key.startsWith("origa-")) await caches.delete(key);
+            if (key.startsWith(ORIGA_CACHE_PREFIX)) await caches.delete(key);
         }
     });
 });
