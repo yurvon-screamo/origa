@@ -31,6 +31,9 @@ pub fn LessonCardContainer() -> impl IntoView {
     let is_rating = RwSignal::new(None::<Ulid>);
     let known_kanji = lesson_ctx.known_kanji;
     let native_language = lesson_ctx.native_language;
+    // До move `lesson_ctx` в keyboard handler (RwSignal Copy): сигнал мьюта
+    // нужен монтированию пачки связок (#808, озвучка чтения при раскрытии).
+    let is_muted = lesson_ctx.is_muted;
 
     let show_answer = move || {
         lesson_state.update(|state| {
@@ -356,6 +359,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     card=card
                                     items=items
                                     on_rate_binding=on_rate_binding
+                                    is_muted=is_muted
                                     test_id=Signal::derive(|| "counter-bindings-card".to_string())
                                 />
                             })

@@ -140,7 +140,13 @@ export class OnboardingPage extends BasePage {
         this.scoringStep = page.getByTestId("onboarding-scoring-step");
         this.scoringHint = page.getByTestId("scoring-step-hint");
         this.scoringProgress = page.getByTestId("scoring-step-progress");
-        this.scoringQuestion = page.getByTestId("scoring-step-question");
+        this.scoringQuestion = page
+            .getByTestId("scoring-step-question")
+            // Counter suffixes render as plain text (issue #808: dictionary
+            // furigana contradicts the counting context) — the locator must
+            // match both question renderings. Third silent-type surface
+            // (kanji, counter + a future one) → consolidate in CardType.
+            .or(page.getByTestId("scoring-step-question-plain"));
         this.scoringAnswer = page.getByTestId("scoring-step-answer");
         this.scoringDontKnowBtn = page.getByTestId("scoring-step-dont-know");
         this.scoringKnowBtn = page.getByTestId("scoring-step-know");
