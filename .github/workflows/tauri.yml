@@ -77,6 +77,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803).
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -89,6 +91,10 @@ jobs:
               with:
                   targets: wasm32-unknown-unknown
                   shared-key: origa-ci-v2
+                  # tauri.yml only triggers on tags and manual dispatch; a
+                  # default save-if would store a fresh cache on the tag ref
+                  # where it is unreachable from any other run (issue #803).
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
