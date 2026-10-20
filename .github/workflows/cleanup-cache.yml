@@ -4,9 +4,17 @@ on:
   pull_request:
     types:
       - closed
+  # Daily, not weekly: GitHub skipped 2 of 4 weekly runs in Sep–Oct 2026,
+  # and a stalled cleanup let the repo hit the 10 GB cache budget
+  # ("your cache is now read only", issue #803).
   schedule:
-    - cron: '0 3 * * 1'
+    - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — report decisions without deleting"
+        type: boolean
+        default: false
 
 concurrency:
   group: cache-cleanup
@@ -24,7 +32,7 @@ jobs:
         run: |
           echo "Fetching list of cache keys"
           cacheKeysForPR=$(gh cache list --ref $BRANCH --limit 100 --json id --jq '.[].id')
-          
+
           set +e
           echo "Deleting caches..."
           for cacheKey in $cacheKeysForPR; do
@@ -39,58 +47,142 @@ jobs:
   scheduled-cleanup:
     name: Scheduled Cache Cleanup
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       actions: write
       contents: read
     steps:
-      - name: Delete stale and orphaned caches
+      - name: Delete stale, superseded and ref-orphaned caches
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
-          echo "=== Fetching all caches ==="
-          CACHES=$(gh cache list --limit 500 --json key,ref,lastAccessedAt,id)
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from datetime import datetime, timezone
 
-          if [[ -z "$CACHES" ]] || [[ "$CACHES" == "[]" ]]; then
-            echo "No caches found or fetch failed - nothing to clean"
-            exit 0
-          fi
+          DRY_RUN = os.environ.get("DRY_RUN", "false") == "true"
+          MASTER = "refs/heads/master"
+          # Caches on PR-merge and tag refs are unreachable from any other
+          # ref, so they only serve re-runs of the run that saved them. Keep
+          # a short debugging window. NB: the API reports tag caches as
+          # "refs/heads/refs/tags/<tag>" — the only reliable master test is
+          # string equality. If a long-lived branch ever appears, exclude
+          # its ref here the same way.
+          NON_MASTER_TTL_DAYS = 2
+          # Master keys matching no current family or seed below are
+          # version-bump leftovers (e.g. a superseded xwin-v17); give them a
+          # grace period before removal.
+          MASTER_ORPHAN_DAYS = 14
 
-          echo "$CACHES" | jq -r '.[] | "\(.id)\t\(.key)\t\(.ref)\t\(.lastAccessedAt)"' | while IFS=$'\t' read -r id key ref last_accessed; do
-            # Skip entries with missing or invalid timestamp
-            if [[ -z "$last_accessed" ]] || [[ "$last_accessed" == "null" ]]; then
-              echo "SKIP (no timestamp): $key"
-              continue
-            fi
+          def gh(*args):
+              return subprocess.check_output(["gh", *args], text=True)
 
-            days_old=$(( ( $(date +%s) - $(date -d "$last_accessed" +%s) ) / 86400 ))
+          def parse_ts(value):
+              return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
-            if [[ "$ref" != "refs/heads/master" && "$days_old" -gt 7 ]]; then
-              echo "DELETE (non-master, ${days_old}d old): $key"
-              gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
-              continue
-            fi
+          def fetch_all_caches():
+              # gh cache list silently caps at the REST per_page limit; page
+              # through the API until total_count is reached. Fetch everything
+              # BEFORE deleting so page shifts cannot skip entries.
+              caches, page = [], 1
+              while True:
+                  data = json.loads(gh("api", f"repos/{{owner}}/{{repo}}/actions/caches?per_page=100&page={page}"))
+                  batch = data.get("actions_caches", [])
+                  caches.extend(batch)
+                  if not batch or len(caches) >= data.get("total_count", 0):
+                      return caches
+                  page += 1
 
-            # Delete orphaned old shared-key caches (pre-v2)
-            # NOTE: pattern assumes Swatinem/rust-cache key prefix "v0-rust" — verify if upgrading rust-cache
-            if echo "$key" | grep -qE 'v0-rust-.*(origa-ci|origa-linux|origa-mobile|origa-cross-build)(-v[0-9]+)?' && \
-               ! echo "$key" | grep -qE 'origa-(ci|linux|mobile|cross-build)-v2'; then
-              echo "DELETE (orphaned old shared-key): $key"
-              gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
-              continue
-            fi
+          # Families whose newest member wins: GitHub's restore-keys
+          # resolution returns the most recently CREATED matching entry, so
+          # older family members are unreachable and exist only as dead
+          # weight (issue #803).
+          def family_of(key):
+              if key.startswith("v0-rust-"):
+                  # Swatinem/rust-cache: ...-<shared-key>-<platform>-<hash>-<hash>
+                  return key.rsplit("-", 2)[0]
+              if key.startswith("codeql-overlay-base-database-"):
+                  # CodeQL default setup: ...-<dbhash>-<lang>-<version>-<commit>-<runid>-1
+                  return key.rsplit("-", 3)[0]
+              for prefix in ("Linux-gradle-", "macOS-gradle-", "cdn-data-v15-"):
+                  if key.startswith(prefix):
+                      return key.rsplit("-", 1)[0]
+              return None
 
-            # Delete master caches older than 14 days (except critical)
-            if [[ "$ref" == "refs/heads/master" && "$days_old" -gt 14 ]]; then
-              if ! echo "$key" | grep -qE '(cdn-data|cache-apt-pkgs|playwright-chromium|xwin|trunk-tools|trailbase|gradle|ndk)'; then
-                echo "DELETE (master stale ${days_old}d): $key"
-                gh cache delete "$id" || echo "WARNING: failed to delete cache $id ($key)"
-                continue
-              fi
-            fi
+          # Constant-key seeds on master (no content hash): tag and PR runs
+          # exact-hit them, which is what keeps jobs like the Windows
+          # cross-build from saving fresh copies on isolated refs. Never age
+          # them out; a version bump changes the key and the old seed is
+          # then reaped by the orphan rule.
+          MASTER_SEEDS = re.compile(
+              r"^(xwin-Linux-x86_64-pc-windows-msvc-v\d+"
+              r"|trunk-tools-v\d+"
+              r"|trailbase-v\d+\.\d+\.\d+-verified)$"
+          )
 
-            echo "KEEP (${days_old}d old): $key [ref=$ref]"
-          done
+          def main():
+              caches = fetch_all_caches()
+              now = datetime.now(timezone.utc)
+              deletions = []
 
-          echo "=== Cleanup complete ==="
+              def age_days(c):
+                  return (now - parse_ts(c["created_at"])).total_seconds() / 86400
+
+              # Rule 1: non-master refs — short TTL.
+              for c in caches:
+                  if c["ref"] != MASTER and age_days(c) > NON_MASTER_TTL_DAYS:
+                      deletions.append((c, f"non-master ref {c['ref']}, {age_days(c):.0f}d old"))
+
+              master = [c for c in caches if c["ref"] == MASTER]
+
+              # Rule 2: master family dedupe — keep newest per family.
+              families = {}
+              for c in master:
+                  fam = family_of(c["key"])
+                  if fam:
+                      families.setdefault(fam, []).append(c)
+              newest_in_family = set()
+              for fam, members in families.items():
+                  members.sort(key=lambda c: c["created_at"], reverse=True)
+                  newest_in_family.add(members[0]["key"])
+                  for c in members[1:]:
+                      deletions.append((c, f"superseded by newer {fam} entry"))
+
+              # Rule 3: master orphans — no current family, no seed, idle
+              # past the grace period.
+              for c in master:
+                  if c["key"] in newest_in_family or MASTER_SEEDS.match(c["key"]):
+                      continue
+                  if age_days(c) > MASTER_ORPHAN_DAYS:
+                      deletions.append((c, f"master orphan, {age_days(c):.0f}d old"))
+
+              deletions.sort(key=lambda item: item[0]["key"])
+              freed = sum(c["size_in_bytes"] for c, _ in deletions)
+              print(f"=== {len(caches)} caches, deleting {len(deletions)} ({freed / 1e9:.2f} GB) ===")
+              for c, reason in deletions:
+                  print(f"DELETE [{reason}]: {c['key'][:60]} ({c['size_in_bytes'] / 1e6:.0f} MB) [{c['ref']}]")
+
+              if DRY_RUN:
+                  print("=== DRY RUN: nothing deleted ===")
+                  return
+
+              failed = 0
+              for c, _ in deletions:
+                  try:
+                      gh("cache", "delete", str(c["id"]))
+                  except subprocess.CalledProcessError as exc:
+                      failed += 1
+                      print(f"WARNING: failed to delete cache {c['id']} ({c['key'][:60]}): {exc}")
+              print(f"=== Cleanup complete: {len(deletions) - failed} deleted, {failed} failed ===")
+              if failed:
+                  sys.exit(1)
+
+          main()
+          PY

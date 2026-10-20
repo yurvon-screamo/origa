@@ -102,29 +102,53 @@ runs:
         # Counts lines, so duplicated manifest entries are counted twice; the
         # integrity script counts unique paths (a set) and reports lower totals.
         TOTAL=$(grep -cv -e '^[[:space:]]*$' -e '^[[:space:]]*#' end2end/cdn-manifest.txt || true)
-        echo "Downloading $TOTAL CDN files from manifest..."
-        OK=0
+
+        # Step-level retry: per-file retries (above) absorb short blips, but a
+        # minutes-long prod outage used to fail the whole job on the first
+        # pass. Each attempt resumes — already-non-empty files are skipped —
+        # so a retry only fetches what the previous attempt missed (issue #803).
+        # Known edge: a 200 response with a truncated body and no
+        # content-length can make curl exit 0 on a partial file, which the
+        # non-empty resume check then keeps. The SHA256-based final
+        # verification step is the backstop for that class.
+        ATTEMPTS=3
         FAIL=0
-        while IFS= read -r path; do
-          # Trim leading/trailing whitespace to match the Python parser's
-          # strip() (verify_cdn_integrity.py); a whitespace-only line must be
-          # skipped, not downloaded as an empty path.
-          path="${path#"${path%%[![:space:]]*}"}"
-          path="${path%"${path##*[![:space:]]}"}"
-          case "$path" in ''|\#*) continue ;; esac
-          mkdir -p "cdn/$(dirname "$path")"
-          if dl "cdn/$path" "${CDN_BASE}/$path"; then
-            OK=$((OK + 1))
-          else
-            FAIL=$((FAIL + 1))
+        for attempt in $(seq 1 $ATTEMPTS); do
+          OK=0
+          FAIL=0
+          while IFS= read -r path; do
+            # Trim leading/trailing whitespace to match the Python parser's
+            # strip() (verify_cdn_integrity.py); a whitespace-only line must be
+            # skipped, not downloaded as an empty path.
+            path="${path#"${path%%[![:space:]]*}"}"
+            path="${path%"${path##*[![:space:]]}"}"
+            case "$path" in ''|\#*) continue ;; esac
+            if [ -s "cdn/$path" ]; then
+              OK=$((OK + 1))
+              continue
+            fi
+            mkdir -p "cdn/$(dirname "$path")"
+            if dl "cdn/$path" "${CDN_BASE}/$path"; then
+              OK=$((OK + 1))
+            else
+              FAIL=$((FAIL + 1))
+            fi
+          done < end2end/cdn-manifest.txt
+          echo "Attempt $attempt/$ATTEMPTS: $OK/$TOTAL files present, $FAIL failed"
+          if [ "$FAIL" -eq 0 ]; then
+            break
           fi
-        done < end2end/cdn-manifest.txt
-        echo "Downloaded $OK/$TOTAL files ($FAIL failed)"
+          if [ "$attempt" -lt "$ATTEMPTS" ]; then
+            DELAY=$((attempt * 30))
+            echo "Prod CDN unreachable for $FAIL files — retrying in ${DELAY}s"
+            sleep "$DELAY"
+          fi
+        done
 
         # Fail loud: a silently incomplete cdn/ used to reach the e2e jobs
         # (issue #544) and, once cached, poisoned every subsequent run.
         if [ "$FAIL" -gt 0 ]; then
-          echo "FATAL: $FAIL/$TOTAL manifest files failed to download"
+          echo "::error::CDN download failed: $FAIL/$TOTAL manifest files unreachable from ${CDN_BASE} after $ATTEMPTS attempts. This is a prod-infra outage, not a code failure — re-run the cdn-download job once the CDN is healthy."
           exit 1
         fi
 
