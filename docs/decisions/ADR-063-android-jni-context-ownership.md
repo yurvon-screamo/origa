@@ -1,4 +1,10 @@
-# ADR-044: Android JNI context ownership (ndk-context publication)
+# ADR-063: Android JNI context ownership (ndk-context publication)
+
+> **Renamed from ADR-044** (2026-10-21, issue #804): the number 044 was
+> issued twice; this decision (2026-09-03) moves to the next free number.
+> ADR-044 now refers to
+> [ADR-044: Apple OAuth callback via direct server-side scheme redirect](ADR-044-apple-oauth-direct-scheme-redirect.md).
+> Old references in git history were not rewritten.
 
 ## Status
 

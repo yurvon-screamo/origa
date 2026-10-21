@@ -28,7 +28,7 @@ pub(super) enum AudioState {
     #[default]
     Idle,
     LoadingModel,
-    #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+    #[cfg(target_arch = "wasm32")]
     Processing,
     Ready,
     Error,
@@ -357,25 +357,28 @@ pub(super) fn AudioInputStage(
     view! {
         <div class="space-y-4">
             {move || {
-                match audio_state.get() {
-                    AudioState::LoadingModel | AudioState::Processing => view! {
-                        <div class="space-y-4">
-                            <div class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
-                                <span class="spinner spinner-sm"></span>
-                                {move || status_text.get().unwrap_or_else(|| i18n.get_keys().words().audio().processing().inner().to_string())}
-                            </div>
-                            <Button
-                                variant=Signal::derive(|| ButtonVariant::Ghost)
-                                on_click=Callback::new(move |_| {
-                                    audio_state.set(AudioState::Idle);
-                                    #[cfg(target_arch = "wasm32")]
-                                    WHISPER_LOADING.with(|l| l.set(false));
-                                })
-                            >
-                                {move || i18n.get_keys().common().cancel().inner().to_string()}
-                            </Button>
+                let busy = move || view! {
+                    <div class="space-y-4">
+                        <div class="text-lg font-semibold text-[var(--fg-black)] flex items-center gap-2">
+                            <span class="spinner spinner-sm"></span>
+                            {move || status_text.get().unwrap_or_else(|| i18n.get_keys().words().audio().processing().inner().to_string())}
                         </div>
-                    }.into_any(),
+                        <Button
+                            variant=Signal::derive(|| ButtonVariant::Ghost)
+                            on_click=Callback::new(move |_| {
+                                audio_state.set(AudioState::Idle);
+                                #[cfg(target_arch = "wasm32")]
+                                WHISPER_LOADING.with(|l| l.set(false));
+                            })
+                        >
+                            {move || i18n.get_keys().common().cancel().inner().to_string()}
+                        </Button>
+                    </div>
+                }.into_any();
+                match audio_state.get() {
+                    AudioState::LoadingModel => busy(),
+                    #[cfg(target_arch = "wasm32")]
+                    AudioState::Processing => busy(),
                     _ => view! {
                         <>
                             <div class="border-2 border-dashed p-8 text-center transition-colors cursor-pointer border-[var(--border-dark)] hover:border-[var(--accent-olive)]/50">

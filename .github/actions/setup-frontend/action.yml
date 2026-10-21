@@ -17,7 +17,7 @@ runs:
 
         - name: Add cargo bin to PATH
           shell: bash
-          run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
         - name: Install tools via cargo-binstall
           shell: bash

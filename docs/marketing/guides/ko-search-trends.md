@@ -38,7 +38,7 @@ JLPT-помесячно (0–100, сид «jlpt»): круглый год 25–4
 
 **Как получить.** Открытый endpoint, без авторизации:
 
-```
+```text
 https://ac.search.naver.com/nx/ac?st=1&r_lt=1&q=<urlencoded seed>
 ```
 

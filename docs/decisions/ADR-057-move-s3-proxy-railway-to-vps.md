@@ -12,7 +12,7 @@ Accepted (cutover 2026-09-17; Railway decommission pending 3–7 day observation
 
 After the ADR-049 mitigation the CDN chain for `s3.origa.uwuwu.net` was:
 
-```
+```text
 Client → Caddy @ Aeza VPS (85.192.63.249) → Railway edge → s3-proxy (pottava/s3-proxy) → Tigris bucket adaptable-foodbox-ucep7wx
 ```
 
@@ -43,7 +43,7 @@ Facts that motivated the change:
 Run the identical `pottava/s3-proxy` container on the uwuwu.net VPS and point the
 Caddy site at it:
 
-```
+```text
 Client → Caddy @ Aeza VPS → s3-proxy (docker, 127.0.0.1:8081) → Tigris (t3.storageapi.dev)
 ```
 

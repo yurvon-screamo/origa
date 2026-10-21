@@ -1,12 +1,18 @@
-# ADR-056: Flatpak for Linux distribution, AppImage retired
+# ADR-064: Flatpak for Linux distribution, AppImage retired
 
+> **Renamed from ADR-056** (2026-10-21, issue #804): the number 056 was
+> issued twice; this decision (2026-09-16) moves to the next free number.
+> ADR-056 now refers to
+> [ADR-056: iOS manual signing вместо минта сертификатов на каждом CI-прогоне](ADR-056-apple-ios-manual-signing.md).
+> Old references in git history were not rewritten.
+>
 > ⚠️ **Superseded (2026-09-20):** the Flatpak channel is retired — see
-> ADR-058. The AppImage retirement decision below remains historical
+> ADR-065. The AppImage retirement decision below remains historical
 > context and is not reversed.
 
 ## Status
 
-Accepted (2026-09-16); Flatpak channel superseded by ADR-058 (2026-09-20)
+Accepted (2026-09-16); Flatpak channel superseded by ADR-065 (2026-09-20)
 
 ## Context
 

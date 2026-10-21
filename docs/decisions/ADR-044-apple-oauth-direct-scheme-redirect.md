@@ -1,5 +1,10 @@
 # ADR-044: Apple OAuth callback via direct server-side scheme redirect
 
+> **Note (2026-10-21, issue #804):** the number 044 was historically issued
+> twice. The Android JNI context decision that briefly shared it now lives
+> at [ADR-063](ADR-063-android-jni-context-ownership.md); this ADR keeps the
+> number (created earlier, 2026-09-02).
+
 ## Status
 
 Accepted
@@ -15,7 +20,7 @@ Mac App Store review of v0.7.3 rejected Sign in with Apple (Guideline
 Apple"). Production HTTP logs (Railway, 2026-09-02 09:51–09:53) show the
 reviewer attempted SIWA four times; every attempt completed server-side —
 
-```
+```text
 GET  /api/auth/v1/oauth/apple/login            303
 POST /api/auth/v1/oauth/apple/callback         303   (code exchanged)
 GET  /public/auth/desktop-callback.html        200

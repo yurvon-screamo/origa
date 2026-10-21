@@ -161,8 +161,21 @@ impl RadicalDatabase {
         let radical_map = radkfile
             .radicals
             .into_iter()
-            .map(|(k, v)| {
-                let radical_char = k.chars().next().unwrap();
+            .filter_map(|(k, v)| {
+                // A radical key is a single character by definition; an empty
+                // or multi-character key means corrupt CDN data. Skip the
+                // entry (with a warning) instead of panicking or truncating.
+                let mut chars = k.chars();
+                let radical_char = match (chars.next(), chars.next()) {
+                    (Some(c), None) => c,
+                    _ => {
+                        tracing::warn!(
+                            radical = %k,
+                            "radical key is not a single character — entry skipped"
+                        );
+                        return None;
+                    },
+                };
                 let jlpt = JapaneseLevel::from_str_or_default(&v.jlpt);
                 let kanji = v
                     .kanji
@@ -170,7 +183,7 @@ impl RadicalDatabase {
                     .flat_map(|c| c.chars().collect::<Vec<_>>())
                     .collect::<Vec<char>>();
 
-                (
+                Some((
                     radical_char,
                     RadicalInfo {
                         radical: radical_char,
@@ -186,7 +199,7 @@ impl RadicalDatabase {
                         jlpt,
                         kanji,
                     },
-                )
+                ))
             })
             .collect::<HashMap<char, RadicalInfo>>();
 
@@ -313,6 +326,22 @@ mod tests {
     fn radical_database_from_json_empty() {
         let json = r#"{"radicals": {}}"#;
         let db = RadicalDatabase::from_json(json).unwrap();
+        assert!(db.radical_list().is_empty());
+    }
+
+    #[test]
+    fn radical_database_from_json_empty_key_skips_entry() {
+        let json = r#"{"radicals": {"": {"strokeCount": 1, "kanji": [], "name": "empty", "description": "Broken entry", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+
+        assert!(db.radical_list().is_empty());
+    }
+
+    #[test]
+    fn radical_database_from_json_multi_char_key_skips_entry() {
+        let json = r#"{"radicals": {"一日": {"strokeCount": 1, "kanji": [], "name": "broken", "description": "Broken entry", "jlpt": "N5"}}}"#;
+        let db = RadicalDatabase::from_json(json).unwrap();
+
         assert!(db.radical_list().is_empty());
     }
 

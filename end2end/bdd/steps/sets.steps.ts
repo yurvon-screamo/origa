@@ -76,13 +76,18 @@ Then('ни один набор не импортирован', async ({ page }) 
 
 When('ищет наборы {string}', async ({ page }, query: string) => {
     const setsPage = new SetsPage(page);
+    // Шаг-действие: заполнили поиск. Фильтр применяется синхронно по
+    // сигналу, результат проверяет следующий Then.
     await setsPage.searchSets(query);
-    await page.waitForTimeout(500);
 });
 
 Then('список наборов пуст', async ({ page }) => {
     const setsPage = new SetsPage(page);
-    expect(await setsPage.getSetCardCount()).toBe(0);
+    // Одноразовый expect не успевал за перерисовкой списка: считаем
+    // с авто-ретраем, пока фильтр реально не применится.
+    await expect
+        .poll(() => setsPage.getSetCardCount(), { timeout: 10_000 })
+        .toBe(0);
 });
 
 When('выбирает первый набор', async ({ page }) => {

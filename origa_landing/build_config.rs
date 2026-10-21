@@ -9,7 +9,7 @@
 //! `build_defaults.rs`. That shared file is `#[path]`-included by `origa_ui`,
 //! which never references the landing host — a shared `DEFAULT_LANDING` would
 //! be dead code in the `origa_ui` build binary, and the project forbids
-//! `#[allow(dead_code)]` (`AGENTS.md`). The same value also lives in
+//! dead-code allow attributes (`AGENTS.md`). The same value also lives in
 //! `tauri/build_config.rs` (used for CSP injection); both are pinned to the
 //! canonical `https://origa.uwuwu.net` and guarded by drift-detection tests.
 //! See ADR-024 for the generalized principle and this constraint.

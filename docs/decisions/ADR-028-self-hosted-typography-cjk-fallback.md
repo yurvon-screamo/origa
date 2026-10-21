@@ -9,7 +9,7 @@ Accepted
 > Cormorant subset extended with Cyrillic; Noto JP switched to
 > `font-display: block`. The Cyrillic-less DM Mono rows in the table below
 > are historical — see ADR-030 for the current font set.
-
+>
 > **Updated (2026-07-22): offline-first bundling implemented.** Alternative #5
 > (bundle fonts for true offline first launch) is now in effect. trunk cannot
 > accept assets outside the `index.html` directory (trunk-rs/trunk#1045), so
@@ -28,7 +28,7 @@ Accepted
 > installer (Win/Linux/macOS/Android) grows by ~3.5 MB (2 Noto JP dominate);
 > justified by correct CJK on the very first launch and offline operation. Web
 > builds are unchanged.
-
+>
 > **Updated (2026-07-31): CJK unified on Noto Sans JP; Noto Serif JP removed.**
 > Both `--font-serif` and `--font-mono` now fall through to a single CJK family
 > — Noto Sans JP (Gothic) — so kanji and kana never mix Mincho/Gothic within a

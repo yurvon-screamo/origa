@@ -1,15 +1,21 @@
-# ADR-058: Flatpak channel retired, Linux = .deb + .rpm + AUR
+# ADR-065: Flatpak channel retired, Linux = .deb + .rpm + AUR
+
+> **Renamed from ADR-058** (2026-10-21, issue #804): the number 058 was
+> issued twice; this decision (2026-09-20) moves to the next free number.
+> ADR-058 now refers to
+> [ADR-058: Move Origa delivery to CloudFront + user-owned Tigris origin, DNS to Bunny](ADR-058-cdn-cloudfront-tigris-bunny.md).
+> Old references in git history were not rewritten.
 
 ## Status
 
 Accepted (2026-09-20)
 
-Supersedes the Flatpak half of ADR-056 (the AppImage retirement made there
+Supersedes the Flatpak half of ADR-064 (the AppImage retirement made there
 stands). Follows #627 (deb in-app updater restored).
 
 ## Context
 
-ADR-056 made Flatpak the primary universal Linux channel: its WebKitGTK
+ADR-064 made Flatpak the primary universal Linux channel: its WebKitGTK
 comes from the GNOME runtime and works on every distribution, while the
 bundled-Ubuntu-WebKitGTK AppImage died on rolling setups. The natural end
 state of that decision was a Flathub submission.
@@ -53,7 +59,7 @@ users had no auto-update at all.
    `linux-x86_64-deb`, `linux-x86_64-rpm`, and `linux-x86_64` (fallback,
    pointing at the .deb) — see the generate-latest-json step.
 4. Flatpak remains blocked on the Flathub policy, not on engineering:
-   if the policy ever changes, ADR-056 describes the bundle pipeline and
+   if the policy ever changes, ADR-064 describes the bundle pipeline and
    this ADR can be reverted.
 
 ## Consequences
@@ -67,7 +73,7 @@ users had no auto-update at all.
 - AUR registration is paused as of 2026-09-20 (automated-account wave,
   no manual queue). Until the `origa-bin` listing is live, the landing
   download card links the in-repo PKGBUILD (`makepkg -si`) instead of the
-  AUR page; switch it to https://aur.archlinux.org/packages/origa-bin in
+  AUR page; switch it to <https://aur.archlinux.org/packages/origa-bin> in
   a follow-up commit right after publishing. Watch aur-general / Arch
   news for the reopening.
 - Fedora post-release checkpoint: install the .rpm from tag N-1 in a

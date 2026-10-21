@@ -163,6 +163,7 @@ table above is the mapping. Every event carries event-data properties
 (`mobile|desktop`).
 
 **Semantics:**
+
 - *Attempt semantics*, same as `login_submit`: `complete` fires on the
   forward action (steps Intro–Progress are synchronous clicks; Summary
   completes only when the import checkpoint succeeds — a failed import
@@ -213,6 +214,7 @@ listed although the app ships `OAuthProvider::Apple`.
 ## Alternatives Considered
 
 ### Self-hosted Umami
+
 - Pros: no quota, data ownership, no third-party JS host in the CSP.
 - Rejected for now: another always-on service to operate (the project
   already runs Railway services, CDN, Sentry SaaS); the free cloud plan
@@ -220,13 +222,16 @@ listed although the app ships `OAuthProvider::Apple`.
   (`data-website-id`, `data-host-url`) makes self-hosting a config change.
 
 ### Google Analytics
+
 - Rejected: cookies/consent banner required, contradicts privacy positioning.
 
 ### Sentry-based funnel metrics
+
 - Rejected: Sentry is error telemetry (ADR-036); pageview analytics would
   abuse transactions for product metrics and mix concerns.
 
 ### Static tag + Playwright route-abort for CI mute
+
 - Rejected: covers only the browser-based e2e job; the android-smoke
   emulator runs a real WebView that Playwright cannot intercept. A build
   gate covers both uniformly.
