@@ -8,12 +8,9 @@
  * Run through the CLI (`npm run shots -- capture --scenario <id>`), which
  * sets the environment below and starts this file directly.
  */
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { test } from "@playwright/test";
 
-import type { ShotManifest } from "../shots/manifest.ts";
-import { runScenario } from "../shots/runner.ts";
+import { runScenarioWithManifest } from "../shots/runner.ts";
 import type { ViewportTag } from "../shots/viewports.ts";
 
 const requested = (process.env.SHOT_SCENARIOS ?? "")
@@ -25,6 +22,7 @@ const label = process.env.SHOT_LABEL ?? "shots";
 const cdnBaseUrl = process.env.SHOT_CDN_BASE_URL ?? "";
 const commit = process.env.SHOT_COMMIT ?? "unknown";
 const locale = process.env.SHOT_LOCALE ?? "";
+const baseUrl = process.env.SHOT_BASE_URL ?? "";
 const viewports = (process.env.SHOT_VIEWPORTS ?? "")
     .split(",")
     .map((value) => value.trim())
@@ -39,17 +37,16 @@ test.describe("screenshot scenarios", () => {
     for (const id of requested) {
         test(`shots: ${id}`, async ({ browser }) => {
             // A capture drives the whole app: login, onboarding, navigation.
-            test.setTimeout(900_000);
-            await mkdir(outDir, { recursive: true });
-            const entries = await runScenario(browser, id, {
+            test.setTimeout(1_200_000);
+            await runScenarioWithManifest(browser, id, {
                 outDir,
+                label,
                 cdnBaseUrl,
                 commit,
                 viewports: viewports.length > 0 ? viewports : undefined,
                 locale: locale || undefined,
+                baseURL: baseUrl || undefined,
             });
-            const manifest: ShotManifest = { version: 1, label, entries };
-            await writeFile(join(outDir, `manifest.${id}.json`), `${JSON.stringify(manifest, null, 2)}\n`);
         });
     }
 });

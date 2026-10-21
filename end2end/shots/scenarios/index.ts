@@ -1,5 +1,14 @@
 import type { ShotScenario } from "../scenario.ts";
+import { counterScoringScenario } from "./counter-scoring.ts";
+import { feedbackFormScenario } from "./feedback-form.ts";
+import { homeDueCounterScenario } from "./home-due-counter.ts";
+import { homeInsightsScenario } from "./home-insights.ts";
 import { homeScenario } from "./home.ts";
+import { jftCardScenario } from "./jft-card.ts";
+import { lessonExampleScenario } from "./lesson-example.ts";
+import { lessonUnificationScenario } from "./lesson-unification.ts";
+import { stitchSessionScenario } from "./stitch-session.ts";
+import { wordExamplesScenario } from "./word-examples.ts";
 
 /**
  * The browser-side implementations of the catalog.
@@ -9,6 +18,15 @@ import { homeScenario } from "./home.ts";
  */
 export const implementations: Record<string, ShotScenario> = {
     [homeScenario.id]: homeScenario,
+    [wordExamplesScenario.id]: wordExamplesScenario,
+    [lessonExampleScenario.id]: lessonExampleScenario,
+    [counterScoringScenario.id]: counterScoringScenario,
+    [homeDueCounterScenario.id]: homeDueCounterScenario,
+    [homeInsightsScenario.id]: homeInsightsScenario,
+    [stitchSessionScenario.id]: stitchSessionScenario,
+    [feedbackFormScenario.id]: feedbackFormScenario,
+    [jftCardScenario.id]: jftCardScenario,
+    [lessonUnificationScenario.id]: lessonUnificationScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {
