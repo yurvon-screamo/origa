@@ -17,7 +17,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
+import { generateUniqueEmail, DEFAULT_TEST_PASSWORD, waitForLoginComplete } from "../helpers/auth";
 
 const COUNTER_TAG = "Счётный суффикс";
 const LABEL = process.env.SHOT_LABEL ?? "after";
@@ -61,7 +61,7 @@ test("counter scoring card screenshots", async ({ page }) => {
             // A cold DEBUG wasm bundle (local trunk serve) takes minutes to
             // download and compile in the browser — well over the CI-tuned
             // 120s, hence the generous window here.
-            await page.waitForURL(/\/(home|onboarding)/, { timeout: 420_000 });
+            await waitForLoginComplete(page);
             loggedIn = true;
         } catch {
             loggedIn = false;

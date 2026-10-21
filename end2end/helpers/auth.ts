@@ -62,6 +62,27 @@ export async function wipeClientAuthState(page: Page): Promise<void> {
   await page.reload();
 }
 
+/**
+ * Wait until the app finished the login round-trip.
+ *
+ * A URL match alone is not a reliable "logged in" signal: the app settles
+ * on the ROOT route ("/" renders Home) and never moves to /home, so the
+ * terminal-URL wait has to fall back to the content markers — the same
+ * fallback the BDD suite uses (see uiLogin below).
+ */
+export async function waitForLoginComplete(page: Page): Promise<void> {
+  try {
+    await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
+  } catch {
+    const toggle = page.getByTestId("login-password-toggle");
+    await toggle.waitFor({ state: "hidden", timeout: 15_000 });
+    await page
+      .getByTestId("home-page")
+      .or(page.getByTestId("onboarding-stepper"))
+      .waitFor({ state: "visible", timeout: 60_000 });
+  }
+}
+
 export interface TestUserContext {
   email: string;
   password: string;
@@ -169,16 +190,7 @@ export async function uiLogin(
       // without ever matching the terminal URL — for that case accept
       // the root only with explicit CONTENT markers (no login form +
       // home/wizard mounted).
-      try {
-        await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
-      } catch {
-        const toggle = page.getByTestId("login-password-toggle");
-        await toggle.waitFor({ state: "hidden", timeout: 15_000 });
-        await page
-          .getByTestId("home-page")
-          .or(page.getByTestId("onboarding-stepper"))
-          .waitFor({ state: "visible", timeout: 60_000 });
-      }
+      await waitForLoginComplete(page);
       return;
     } catch (e) {
       if (attempt === maxRetries) {

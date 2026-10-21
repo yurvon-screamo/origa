@@ -1,7 +1,17 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const isCI = !!process.env.CI;
+
 // Screenshot-only runner for #528: reuses the project's webServer recipe
-// (static cdn + trunk serve with local TrailBase) and a dedicated testDir.
+// (static cdn + the app server) and a dedicated testDir.
+//
+// TrailBase comes from global-setup.ts, the same file the BDD suite uses
+// (see end2end/AGENTS.md). The specs log in as admin@localhost, and
+// TrailBase creates that account with a RANDOM password on a fresh depot
+// — global-setup.ts is what sets the known one. The trail webServer entry
+// that used to live here started TrailBase in the config directory instead
+// of end2end/trailbase-fixture, so the instance had no `user` /
+// `domain_user` record APIs and the app could not read its own profile.
 export default defineConfig({
     testDir: "./screenshots-spec",
     timeout: 180_000,
@@ -23,27 +33,23 @@ export default defineConfig({
             args: ["--disable-dev-shm-usage", "--disable-gpu"],
         },
     },
+    globalSetup: "./global-setup.ts",
+    globalTeardown: "./global-teardown.ts",
     webServer: [
-        {
-            // trail --dev shuts down gracefully on stdin EOF: keep the
-            // stream open via `sleep infinity |` (playwright's own stdin
-            // modes both end up as EOF for the spawned server).
-            command: "trail run --dev --address 0.0.0.0:4000",
-            port: 4000,
-            reuseExistingServer: true,
-            timeout: 60_000,
-            env: { DEPOT: "./trailbase-fixture/traildepot" },
-        },
         {
             command: "npx serve ../cdn -p 8080 --no-clipboard --cors",
             port: 8080,
-            reuseExistingServer: true,
+            reuseExistingServer: !isCI,
             timeout: 30_000,
         },
         {
-            command: "cd ../origa_ui && trunk serve",
+            // CI serves the prebuilt bundle (the same recipe as the BDD
+            // config); locally `trunk serve` keeps the hot-reload loop.
+            command: isCI
+                ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
+                : "cd ../origa_ui && trunk serve",
             port: 1420,
-            reuseExistingServer: true,
+            reuseExistingServer: !isCI,
             timeout: 600_000,
             stdout: "pipe",
             stderr: "pipe",

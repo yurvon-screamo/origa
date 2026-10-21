@@ -9,8 +9,8 @@ import { HomePage } from "../pages/home.page";
 import { LoginPage } from "../pages/login.page";
 import { LessonPage } from "../pages/lesson.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
-import { completeOnboardingToScoring } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
+import { completeOnboardingToScoring, isOnboardingShown } from "../helpers/onboarding";
+import { generateUniqueEmail, DEFAULT_TEST_PASSWORD, waitForLoginComplete } from "../helpers/auth";
 
 test("lesson example screenshots", async ({ page }) => {
     test.setTimeout(600_000);
@@ -34,12 +34,19 @@ test("lesson example screenshots", async ({ page }) => {
     for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
         await page.goto("/", { waitUntil: "domcontentloaded" });
         await page.evaluate(() => localStorage.clear());
+        // The clear above wipes the download consent too — restore it, or
+        // the ~230 MB consent overlay blocks every later step (the overlay
+        // demands an explicit click; the init-script value alone is not
+        // enough after a clear).
+        await page.evaluate(() =>
+            localStorage.setItem("origa_resource_download_consented", "true"),
+        );
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
             await login.fillPassword(DEFAULT_TEST_PASSWORD);
             await login.submit();
-            await page.waitForURL(/\/(home|onboarding)$/, { timeout: 120_000 });
+            await waitForLoginComplete(page);
             loggedIn = true;
         } catch {
             loggedIn = false;
@@ -47,7 +54,7 @@ test("lesson example screenshots", async ({ page }) => {
     }
     expect(loggedIn, "login must succeed within 3 attempts").toBe(true);
 
-    if (page.url().includes("onboarding")) {
+    if (await isOnboardingShown(page)) {
         await completeOnboardingToScoring(page, { level: "N4" });
         // The interactive assessment screen («Mark the cards you already
         // know») exposes its own skip button (onboarding-skip-scoring).

@@ -3,6 +3,21 @@ import { type Page, expect } from "@playwright/test";
 import { OnboardingPage } from "../pages";
 
 /**
+ * Whether the app currently shows the onboarding wizard.
+ *
+ * The URL is not a reliable signal here: the app settles on the ROOT
+ * route ("/" renders Home) and shows the wizard inside it, so a fresh
+ * profile never moves to /onboarding. The stepper marker is what the
+ * BDD suite uses for the same decision.
+ */
+export async function isOnboardingShown(page: Page, timeout = 60_000): Promise<boolean> {
+    return page
+        .getByTestId("onboarding-stepper")
+        .isVisible({ timeout })
+        .catch(() => false);
+}
+
+/**
  * Waits for the scoring step to finish loading.
  * Resolves when either scoring-step-hint (cards ready) or
  * scoring-step-complete (0 new cards) is visible.
