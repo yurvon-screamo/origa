@@ -500,6 +500,9 @@ jobs:
             # build.rs off the mtime-fresh skip onto the rebuild path; the
             # grep asserts the no-deps warning branch, not just a green exit.
             - name: Build landing without node dependencies
+              # bash gives -eo pipefail (the default shell has no pipefail,
+              # so a failed cargo build would be masked by tee's exit code).
+              shell: bash
               run: |
                   test ! -e origa_landing/node_modules
                   touch origa_landing/style/landing.css
