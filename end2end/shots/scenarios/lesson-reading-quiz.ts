@@ -38,8 +38,11 @@ export const lessonReadingQuizScenario: ShotScenario = {
                         .isVisible()
                         .catch(() => false)
                 ) {
-                    await captureReadingQuiz(page, sink);
-                    quizShot = true;
+                    quizShot = await captureReadingQuiz(page, sink);
+                    if (quizShot) break;
+                    // A single-reading kanji cannot produce a lenient
+                    // state — the capture was skipped, reroll.
+                    await page.waitForTimeout(400);
                     break;
                 }
 
@@ -148,7 +151,10 @@ async function loadKanjiDict(page: Page): Promise<KanjiEntry[]> {
     throw new Error("the kanji dictionary is not reachable from the page");
 }
 
-async function captureReadingQuiz(page: Page, sink: { shot(name: string): Promise<unknown> }) {
+async function captureReadingQuiz(
+    page: Page,
+    sink: { shot(name: string): Promise<unknown> },
+): Promise<boolean> {
     // The quiz renders the kanji through DisplayText with a dedicated
     // test id (`lesson-quiz-kanji`, quiz_card.rs).
     const kanji = (
@@ -170,11 +176,14 @@ async function captureReadingQuiz(page: Page, sink: { shot(name: string): Promis
     }
 
     // A strict subset with ≥50% of the correct readings → the lenient
-    // pass: green «зачтено», the missed list, the kanji name box.
-    const toSelect =
-        correctIdxs.length >= 2
-            ? correctIdxs.slice(0, Math.ceil(correctIdxs.length / 2))
-            : correctIdxs;
+    // pass: green «зачтено», the missed list, the kanji name box. A
+    // single-reading kanji has no lenient state (any correct pick is
+    // perfect) — skip it, the caller rerolls for a better kanji.
+    if (correctIdxs.length < 2) {
+        console.log("[shots] single-reading kanji — no lenient state, reroll");
+        return false;
+    }
+    const toSelect = correctIdxs.slice(0, Math.ceil(correctIdxs.length / 2));
     for (const idx of toSelect) {
         await page.getByTestId(`quiz-option-${idx}`).click({ timeout: 5_000 }).catch(() => {});
         await page.waitForTimeout(150);
@@ -201,4 +210,5 @@ async function captureReadingQuiz(page: Page, sink: { shot(name: string): Promis
         .getByTestId("lesson-card-next-btn")
         .click({ timeout: 8_000 })
         .catch(() => undefined);
+    return true;
 }
