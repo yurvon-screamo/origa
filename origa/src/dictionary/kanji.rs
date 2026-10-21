@@ -294,16 +294,29 @@ impl KanjiDatabase {
         let kanji_map = kanji_db
             .kanji
             .into_iter()
-            .map(|k| {
+            .filter_map(|k| {
+                // A kanji key is a single character by definition; an empty
+                // or multi-character key means corrupt CDN data. Skip the
+                // entry (with a warning) instead of panicking or truncating.
+                let mut chars = k.kanji.chars();
+                let kanji_char = match (chars.next(), chars.next()) {
+                    (Some(c), None) => c,
+                    _ => {
+                        tracing::warn!(
+                            kanji = %k.kanji,
+                            "kanji key is not a single character — entry skipped"
+                        );
+                        return None;
+                    },
+                };
                 let jlpt = JapaneseLevel::from_str_or_default(&k.jlpt);
-                let kanji_char = k.kanji.chars().next().unwrap();
                 let radicals = k
                     .radicals
                     .into_iter()
                     .flat_map(|r| r.chars().collect::<Vec<_>>())
                     .collect::<Vec<char>>();
 
-                (
+                Some((
                     kanji_char.to_string(),
                     KanjiInfo {
                         kanji: kanji_char,
@@ -319,7 +332,7 @@ impl KanjiDatabase {
                         kun_readings: k.kun_readings,
                         reading_frequencies: k.reading_frequencies,
                     },
-                )
+                ))
             })
             .collect::<HashMap<String, KanjiInfo>>();
 
@@ -562,7 +575,7 @@ mod tests {
     }
 
     #[test]
-    fn kanji_database_from_json_multibyte_kanji() {
+    fn kanji_database_from_json_multi_char_kanji_skips_entry() {
         let json = r#"{
             "kanji": [{
                 "kanji": "一二三四五六七八九十",
@@ -577,8 +590,29 @@ mod tests {
             }]
         }"#;
         let db = KanjiDatabase::from_json(json).unwrap();
-        let info = db.get_kanji_info("一").unwrap();
-        assert_eq!(info.kanji(), '一');
+        // A multi-character kanji key is corrupt CDN data — the entry is
+        // skipped (warned) rather than truncated to its first character.
+        assert!(db.get_kanji_info("一").is_err());
+        assert!(db.all_kanji().is_empty());
+    }
+
+    #[test]
+    fn kanji_database_from_json_empty_kanji_skips_entry() {
+        let json = r#"{
+            "kanji": [{
+                "kanji": "",
+                "jlpt": "N5",
+                "used_in": 100,
+                "description_ru": [],
+                "description_en": [],
+                "radicals": [],
+                "popular_words": [],
+                "on_readings": [],
+                "kun_readings": []
+            }]
+        }"#;
+        let db = KanjiDatabase::from_json(json).unwrap();
+        assert!(db.all_kanji().is_empty());
     }
 
     #[test]

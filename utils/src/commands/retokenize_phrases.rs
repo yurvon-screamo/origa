@@ -3,7 +3,7 @@ use origa::domain::{OrigaError, tokenize_text};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Re-tokenizes every phrase in phrase_index.json with the CURRENT tokenizer.
 ///
@@ -177,6 +177,3 @@ pub fn run_retokenize_phrases(index_path: PathBuf, data_dir: PathBuf) -> Result<
     tracing::info!("Written: {}", index_path.display());
     Ok(())
 }
-
-#[allow(dead_code)]
-fn unused(_: &Path) {}
