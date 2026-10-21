@@ -42,11 +42,18 @@ export const lessonExampleScenario: ShotScenario = {
                 // The example line of the slide loads from the CDN
                 // asynchronously. When the examples index is not
                 // available, the slide renders without it — the screen is
-                // still the screen.
-                await page
+                // still the screen, but the registry must not pretend the
+                // capture shows the example.
+                const exampleLine = await page
                     .getByTestId("lesson-word-example")
                     .waitFor({ state: "visible", timeout: 15_000 })
-                    .catch(() => undefined);
+                    .then(() => true)
+                    .catch(() => false);
+                if (!exampleLine) {
+                    console.warn(
+                        "[shots] the slide has no example line — the examples index is not available",
+                    );
+                }
                 await page.waitForTimeout(1_500);
                 await sink.shot("acquaintance-example");
                 acquaintanceShot = true;

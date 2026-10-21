@@ -30,7 +30,10 @@ export function createSink(page: Page, options: SinkOptions): ShotSink {
         entries,
         shot: async (name: string, shotOptions: { fullPage?: boolean } = {}) => {
             const fullPage = shotOptions.fullPage ?? false;
-            const file = join(options.outDir, shotFileName(options.scenario, name, options.viewport));
+            const file = join(
+                options.outDir,
+                shotFileName(options.scenario, name, options.viewport, options.locale),
+            );
             await page.screenshot({ path: file, fullPage });
             const data = await readFile(file);
             const size = readPngSize(data);

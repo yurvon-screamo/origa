@@ -3,7 +3,6 @@ import type { Page } from "@playwright/test";
 import { fresh } from "./fresh.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { ledger } from "./ledger.ts";
-import { lessonReady } from "./lesson-ready.ts";
 import { onboarded } from "./onboarded.ts";
 import { onboardedInsights } from "./onboarded-insights.ts";
 import type { PresetId } from "./registry.ts";
@@ -29,7 +28,6 @@ export type Preset = (context: PresetContext) => Promise<void>;
 export const presets: Record<PresetId, Preset> = {
     fresh,
     onboarded,
-    "lesson-ready": lessonReady,
     "scoring-n5": scoringN5,
     "onboarded-insights": onboardedInsights,
     ledger,

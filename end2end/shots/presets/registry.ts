@@ -8,7 +8,6 @@
 export const PRESET_IDS = [
     "fresh",
     "onboarded",
-    "lesson-ready",
     "scoring-n5",
     "onboarded-insights",
     "ledger",

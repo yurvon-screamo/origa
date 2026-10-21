@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join, relative as relativePath } from "node:path";
 import { promisify } from "node:util";
 
 const run = promisify(execFile);
@@ -162,9 +162,10 @@ export function hasAwsProfile(profile: string): boolean {
     }
 }
 
-/** Whether a path lies inside another path. */
+/** Whether a path lies inside another path (the same path counts as inside). */
 export function isInside(inner: string, outer: string): boolean {
-    const normalizedInner = inner.replace(/\/+$/, "");
-    const normalizedOuter = outer.replace(/\/+$/, "");
-    return normalizedInner === normalizedOuter || normalizedInner.startsWith(`${normalizedOuter}/`);
+    // path.relative works with the separator of the platform — a string
+    // comparison would miss the Windows backslash.
+    const relative = relativePath(outer, inner);
+    return !relative.startsWith("..") && !isAbsolute(relative);
 }

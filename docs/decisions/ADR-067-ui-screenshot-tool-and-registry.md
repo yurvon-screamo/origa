@@ -56,7 +56,7 @@ decision are now scenarios of that catalog:
 | Before | Now |
 | --- | --- |
 | `screenshots-spec/word-examples.spec.ts` | scenario `word-examples` (preset `onboarded`) |
-| `screenshots-spec/lesson-example.spec.ts` | scenario `lesson-example` (preset `lesson-ready`) |
+| `screenshots-spec/lesson-example.spec.ts` | scenario `lesson-example` (preset `with-word`) |
 | `screenshots-spec/counter-scoring.spec.ts` | scenario `counter-scoring` (preset `scoring-n5`) |
 | `screenshots-spec/home-due-counter.spec.ts` | scenario `home-due-counter` (preset `onboarded`) |
 | `screenshots-spec/home-insights.spec.ts` | scenario `home-insights` (preset `onboarded-insights`) |
@@ -178,3 +178,10 @@ into the production TrailBase.
 - **The unit tests of the factory.** `.opencode/factory` has its own
   test suite, and it runs locally (`bun test`) — not in CI.
 - **The eslint coverage of `end2end/screenshots-spec/`.**
+- **A lock around the registry.** The registry is written file by file,
+  and a capture reads the previous entry before it writes its own: two
+  agents that capture the SAME screen at the same time can lose the
+  upload link of one of them in the working tree. The git merge resolves
+  the conflict in the registry files, but the losing link is gone from
+  the file itself. Two agents that capture DIFFERENT screens never touch
+  the same file.

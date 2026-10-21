@@ -7,6 +7,14 @@ const ASSET_PATTERN = /origa_ui-[^"'\\s]+\.(?:js|wasm)/g;
 export const UNKNOWN_CDN = "unknown (dist)";
 
 /**
+ * The detected value of the run.
+ *
+ * The served bundle is the same for every scenario of a run, and the
+ * detection downloads it — once per run is enough.
+ */
+let detected: { baseURL: string; expected: string; value: string } | null = null;
+
+/**
  * Which CDN the served bundle actually points at.
  *
  * The URL is compiled into the bundle (`build.rs` → `rustc-env`), so in
@@ -15,6 +23,15 @@ export const UNKNOWN_CDN = "unknown (dist)";
  * unprovable value is reported honestly rather than guessed.
  */
 export async function detectCdnBaseUrl(baseURL: string, expected: string): Promise<string> {
+    if (detected?.baseURL === baseURL && detected.expected === expected) {
+        return detected.value;
+    }
+    const value = await readCdnBaseUrl(baseURL, expected);
+    detected = { baseURL, expected, value };
+    return value;
+}
+
+async function readCdnBaseUrl(baseURL: string, expected: string): Promise<string> {
     if (SERVE_MODE === "build") return expected;
     try {
         const html = await (await fetch(baseURL)).text();

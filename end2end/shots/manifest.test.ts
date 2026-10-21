@@ -30,8 +30,18 @@ test("png dimensions are read from the header", () => {
     assert.equal(size.height, 800);
 });
 
-test("capture file name carries the scenario, the screen and the viewport", () => {
-    assert.equal(shotFileName("home", "home", "desktop"), "home--home--desktop.png");
+test("capture file name carries the scenario, the screen, the viewport and the locale", () => {
+    assert.equal(
+        shotFileName("home", "home", "desktop", "ru-RU"),
+        "home--home--desktop--ru-RU.png",
+    );
+});
+
+test("the locales of one screen do not share a file", () => {
+    assert.notEqual(
+        shotFileName("home", "home", "desktop", "ru-RU"),
+        shotFileName("home", "home", "desktop", "en-US"),
+    );
 });
 
 test("registry key separates the locales of one screen", () => {

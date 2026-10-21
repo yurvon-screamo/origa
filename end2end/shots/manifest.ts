@@ -50,9 +50,20 @@ export function readPngSize(data: Buffer): { width: number; height: number } {
     return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
 }
 
-/** File name of a capture — deterministic, one screen per file. */
-export function shotFileName(scenario: string, screen: string, viewport: ViewportTag): string {
-    return `${scenario}--${screen}--${viewport}.png`;
+/**
+ * File name of a capture — deterministic, one screen per file.
+ *
+ * The locale is part of the name: two locales of one screen in the same
+ * output directory would otherwise overwrite each other while the
+ * registry keeps both entries.
+ */
+export function shotFileName(
+    scenario: string,
+    screen: string,
+    viewport: ViewportTag,
+    locale: string,
+): string {
+    return `${scenario}--${screen}--${viewport}--${locale}.png`;
 }
 
 /** Key of a capture inside the registry. */

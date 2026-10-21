@@ -26,7 +26,7 @@ import { SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { renderIndex } from "../shots/index.ts";
 import type { ShotEntry, ShotManifest } from "../shots/manifest.ts";
 import { runPreflight } from "../shots/preflight.ts";
-import { mergeEntry, readRegistry, registryDir, type UploadInfo } from "../shots/registry.ts";
+import { mergeEntry, readRegistry, registryDir, type RegistryShot, type UploadInfo } from "../shots/registry.ts";
 import { DEFAULT_VIEWPORTS, VIEWPORTS, type ViewportTag } from "../shots/viewports.ts";
 
 const run = promisify(execFile);
@@ -34,7 +34,7 @@ const run = promisify(execFile);
 const end2endRoot = fileURLToPath(new URL("..", import.meta.url));
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 
-loadDotenv({ path: join(end2endRoot, ".env"), override: true });
+loadDotenv({ path: join(end2endRoot, ".env"), override: true, quiet: true });
 
 const CDN_HOST = "https://s3.origa.uwuwu.net";
 const CDN_BUCKET = "origa";
@@ -88,6 +88,12 @@ function parseOptions(argv: string[]): Options {
         }
     }
     const label = last("label") ?? `shots-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    if (!/^[A-Za-z0-9._-]+$/.test(label)) {
+        // The label becomes a directory name and a part of the S3 key.
+        throw new Error(
+            `Invalid label "${label}" — only letters, digits, dot, underscore and dash are allowed`,
+        );
+    }
 
     return {
         scenario,
@@ -174,7 +180,7 @@ async function captureCommand(options: Options): Promise<number> {
         for (const entry of entries) {
             await mergeEntry(directory, entry, uploads.get(entry.file));
         }
-        await writeIndex(directory);
+        await writeIndex(directory, await readRegistry(directory));
         console.log(`\nРеестр обновлён: ${join(repoRoot, "docs", "ui-screenshots")}`);
     }
 
@@ -182,7 +188,16 @@ async function captureCommand(options: Options): Promise<number> {
     for (const entry of entries) {
         console.log(`  ${entry.scenario}/${entry.screen} [${entry.viewport}] ${entry.width}×${entry.height} ${entry.sha256.slice(0, 8)}`);
     }
-    console.log(`\n${renderMarkdown(entries, uploads)}`);
+    if (uploads.size === entries.length && entries.length > 0) {
+        console.log(`\n${renderMarkdown(entries, uploads)}`);
+    } else {
+        // Without an upload there is no link to paste into a pull request —
+        // a markdown image with a local path would break there.
+        console.log("\nЛокальные файлы (без --upload вставить в PR нельзя):");
+        for (const entry of entries) {
+            console.log(`  ${entry.file}`);
+        }
+    }
     return 0;
 }
 
@@ -190,14 +205,13 @@ async function captureCommand(options: Options): Promise<number> {
 async function indexCommand(): Promise<number> {
     const directory = registryDir(repoRoot);
     const entries = await readRegistry(directory);
-    await writeIndex(directory);
+    await writeIndex(directory, entries);
     console.log(`Индекс обновлён: ${entries.length} записей`);
     return 0;
 }
 
 /** Regenerates the human-readable index from the registry. */
-async function writeIndex(directory: string): Promise<void> {
-    const entries = await readRegistry(directory);
+async function writeIndex(directory: string, entries: RegistryShot[]): Promise<void> {
     const target = join(repoRoot, "docs", "ui-screenshots");
     await mkdir(target, { recursive: true });
     await writeFile(join(target, "README.md"), renderIndex(entries), "utf-8");
@@ -306,7 +320,10 @@ function usage(): number {
   --label <label>      метка запуска, попадает в имя объекта CDN
   --base-url <url>     другой бандл (сборка before/after на другом порту)
   --upload             залить в CDN и напечатать ссылки
-  --no-registry        не обновлять реестр (разовый прогон)`);
+  --no-registry        не обновлять реестр (разовый прогон)
+
+Переменные окружения сценариев: SHOT_WORD — слово для «word-examples» (あса по умолчанию),
+SHOT_BASE_URL — другая сборка (before/after на другом порту).`);
     return 1;
 }
 

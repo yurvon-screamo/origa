@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 import { SERVE_MODE, resolveCdnSource } from "./shots/config.ts";
 
@@ -16,7 +17,9 @@ const cdnSource = resolveCdnSource();
 function headCommit(): string {
     try {
         return execFileSync("git", ["rev-parse", "HEAD"], {
-            cwd: new URL("..", import.meta.url).pathname,
+            // fileURLToPath: a pathname would keep a leading slash on
+            // Windows and the git call would fail.
+            cwd: fileURLToPath(new URL("..", import.meta.url)),
             encoding: "utf-8",
         }).trim();
     } catch {
