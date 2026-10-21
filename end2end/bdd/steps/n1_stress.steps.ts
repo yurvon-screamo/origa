@@ -11,6 +11,7 @@ import { PhrasesPage } from "../../pages/phrases.page";
 import { ProfilePage } from "../../pages/profile.page";
 import { SetsPage } from "../../pages/sets.page";
 import { WordsPage } from "../../pages/words.page";
+import { waitUntilStable } from "../../helpers/wait";
 
 /**
  * N1 stress scenarios (@stress): every scenario pays the full-corpus seed
@@ -224,12 +225,6 @@ When('на втором устройстве начинается отслежи
     // PATCH is possible if the seed left the meta dirty), and that cycle
     // must complete BEFORE the window opens — otherwise a red here would
     // blame the skip path for seed-state noise (ADR-045).
-    const hasDomainUserActivity = async (): Promise<boolean> => {
-        const pending = apiRequestLog.length;
-        await secondDevicePage.waitForTimeout(10_000);
-        return apiRequestLog.length > pending;
-    };
-
     // Every domain_user request (GET and PATCH alike) participates in the
     // quiet detection; the final assertion filters PATCH entries only.
     secondDevicePage.on("request", (request) => {
@@ -238,11 +233,16 @@ When('на втором устройстве начинается отслежи
         }
     });
 
-    for (let round = 0; round < 30; round++) {
-        if (!(await hasDomainUserActivity())) {
-            break;
-        }
-    }
+    // Тишина сети: ждём окна без новых domain_user запросов. Раньше здесь
+    // был цикл слепых 10-секундных пауз; тихое окно выражает то же
+    // ожидание, но падает с внятным сообщением вместо молчаливого
+    // выхода по лимиту итераций.
+    await waitUntilStable(() => apiRequestLog.length, {
+        label: "domain_user requests (pre-measurement)",
+        quietMs: 10_000,
+        timeoutMs: 300_000,
+        pollMs: 500,
+    });
     apiRequestLog.length = 0;
 });
 
@@ -267,12 +267,12 @@ When('на втором устройстве повторно открывает
     // The negative assertion needs the post-GET settle too: a broken skip
     // path decodes 11k cards and PATCHes seconds AFTER the GET response.
     // Quiet-window: 15s without new domain_user requests.
-    let quiet = false;
-    for (let round = 0; round < 12 && !quiet; round++) {
-        const before = apiRequestLog.length;
-        await secondDevicePage.waitForTimeout(5_000);
-        quiet = apiRequestLog.length === before;
-    }
+    await waitUntilStable(() => apiRequestLog.length, {
+        label: "domain_user requests (post-GET settle)",
+        quietMs: 15_000,
+        timeoutMs: 60_000,
+        pollMs: 500,
+    });
 });
 
 Then('запись пользователя не изменяется PATCH-запросом', async ({ apiRequestLog }) => {

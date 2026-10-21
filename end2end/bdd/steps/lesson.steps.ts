@@ -91,7 +91,8 @@ Then('фронт тренировки показывает слово или а�
         });
         showsAudio = true;
     } catch {
-        showsAudio = false;
+        // Аудио в e2e-среде может быть недоступно — тогда фронт текстовый,
+        // и начальное значение showsAudio остаётся в силе.
     }
     expect(
         showsWord || showsAudio,

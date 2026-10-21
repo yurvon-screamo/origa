@@ -1,6 +1,10 @@
 import { expect } from "@playwright/test";
 import { When, Then, Given } from "../fixtures";
 import { awaitHandVisible } from "../../helpers/lesson";
+import {
+	countReviewedCounterBindings,
+	readPersistedUser,
+} from "../../helpers/indexeddb";
 
 When("пользователь открывает урок напрямую", async ({ page }) => {
 	// Транзит /words → /home редиректит в wizard (app-level, KNOWN_FIXME):
@@ -241,6 +245,10 @@ When('пользователь жмёт {string} отвечая {string}', async
 	const before = await progress
 		.textContent({ timeout: 2_000 })
 		.catch(() => null);
+	// Сколько связок уже несут память — база для ожидания записи ниже.
+	const reviewedBefore = countReviewedCounterBindings(
+		await readPersistedUser(page).catch(() => null),
+	);
 	await page.keyboard.press(key);
 	// Пачка переходит локально мгновенно, а запись оценки асинхронна
 	// (spawn_local → save): дожидаемся перехода по прогрессу и флеша
@@ -256,7 +264,22 @@ When('пользователь жмёт {string} отвечая {string}', async
 			{ timeout: 10_000 },
 		)
 		.not.toBe(before);
-	await page.waitForTimeout(600);
+	// Флеш сохранения: оценка связки уходит в локальное хранилище
+	// асинхронно (spawn_local → save), а следующий шаг перезаходит в урок
+	// (полная перезагрузка). Ждём СОСТОЯНИЕ хранилища: у отвеченной
+	// связки появляется память (у новой связки её не было). Семантическая
+	// память карты тут не показатель — рейтинг связки её не трогает.
+	await expect
+		.poll(
+			async () =>
+				countReviewedCounterBindings(
+					await readPersistedUser(page).catch(() => null),
+				),
+			// The store row is read as a whole — poll it twice a second,
+			// not ten times.
+			{ timeout: 15_000, intervals: [500] },
+		)
+		.toBeGreaterThan(reviewedBefore);
 });
 
 Then('пачка переходит к следующей цифре', async ({ page }) => {
@@ -279,8 +302,30 @@ When('пользователь проходит пачку связок до к�
 		}
 		await page.keyboard.press(" ");
 		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+		const progressBefore = await page
+			.getByTestId("counter-bindings-progress")
+			.textContent({ timeout: 2_000 })
+			.catch(() => null);
 		await page.keyboard.press("2");
-		await page.waitForTimeout(250);
+		if (progressBefore === null) {
+			// Счётчика прогресса не было — ждать нечего.
+			continue;
+		}
+		// Сессия переходит к следующей связке: растёт счётчик прогресса.
+		// Последняя связка закрывает пачку — элемент прогресса исчезает,
+		// и это тоже переход.
+		await expect
+			.poll(
+				async () => {
+					const advanced = await page
+						.getByTestId("counter-bindings-progress")
+						.textContent({ timeout: 2_000 })
+						.catch(() => null);
+					return advanced !== progressBefore;
+				},
+				{ timeout: 15_000 },
+			)
+			.toBe(true);
 	}
 });
 
@@ -306,9 +351,4 @@ When('пользователь жмёт пробел для ответа пер�
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.keyboard.press(" ");
 	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
-});
-
-When('пользователь жмёт клавишу {string} отвечая {string}', async ({ page }, key: string, _answer: string) => {
-	await page.keyboard.press(key);
-	await page.waitForTimeout(400);
 });
