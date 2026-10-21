@@ -72,18 +72,26 @@ had already been hardened against exactly this (issue #808); the other two
 were left behind. Both now restore the flag after the clear, like their
 hardened sibling.
 
-
 ## Decision
 
 **1. The landing SSR tests run in CI, in their own job.**
 `.github/workflows/ci.yml` gains a `landing-test` job
 (`needs: [changes]`, gated by the new `run_landing_test` flag: the
 `landing` path filter, the `ci` path filter, or any non-PR event). The
-job runs `cargo test -p origa_landing --features ssr` with
+`landing` filter also covers `Cargo.toml` and `Cargo.lock`: the landing
+crate takes its dependencies from the workspace manifest, so a leptos or
+axum bump changes the landing code without touching `origa_landing/**`.
+The job runs `cargo test -p origa_landing --features ssr` with
 `CARGO_PROFILE_DEV_DEBUG=0` and `CARGO_PROFILE_TEST_DEBUG=0` — the
-workaround for the linker limit — and joins the CI Gate, so a red landing
-test blocks the pull request (fail-closed, skip only when
+workaround for the linker limit — and joins the CI Gate, so a red
+landing test blocks the pull request (fail-closed, skip only when
 `run_landing_test == false`).
+
+The same job lints the ssr code (`cargo clippy -p origa_landing
+--features ssr --all-targets -- -D warnings`): the workspace clippy run
+builds the crate WITHOUT the ssr feature, so `src/server.rs`,
+`src/main.rs` and the ten ssr integration test targets were never
+compiled by any workflow.
 
 A separate job rather than a step in the Test job: the landing compile is
 the heaviest in the workspace, so it gets a runner of its own and runs in
@@ -113,9 +121,12 @@ machine:
   `counter-scoring.spec.ts` already does — without it the consent
   overlay blocks the login and the spec fails.
 - The specs wait for the login with the shared `waitForLoginComplete`
-  helper and detect the wizard with `isOnboardingShown` — the app
-  settles on the root route and renders the wizard inside it, so the
-  terminal-URL check the specs used never matched.
+  helper and detect the wizard with `isOnboardingShown`. The URL is not
+  a reliable signal in either place: right after the login the app sits
+  on the root route, and the redirect of a fresh profile to /onboarding
+  happens only once the app is up — so the marker is what decides
+  ("home-page" / "onboarding-stepper"), the same way the BDD suite
+  decides it.
 - `stitch-session.spec.ts` creates its demo account through the admin
   API instead of relying on a pre-existing local user.
 
@@ -171,9 +182,11 @@ separate task with its own runtime profile.
   longer depends on the developer's machine, but the onboarding flow of
   a fresh profile (wizard + the ~230 MB resource download) is not
   verified in a pipeline yet — the weekly job follows that work.
-- The CDN data download is cached per ref. The weekly run uses the
-  default-branch scope, so the first run pulls the full manifest
-  (~1200 files) and later runs hit the cache.
+- The CDN data download is cached by a content-addressed key
+  (`cdn-data-v15-<hash of end2end/cdn-manifest.txt>`), and GitHub caches
+  are branch-scoped: the weekly run on master reuses only the caches
+  created on master. The first weekly run pulls the full manifest
+  (~1200 files), later runs hit the cache.
 - `cargo llvm-cov` writes no report when a test target fails, so a broken
   `origa` suite means no coverage number that week. The coverage job is
   fail-closed on purpose: the Test job is the gate for test failures.
@@ -192,7 +205,7 @@ separate task with its own runtime profile.
   request.
 - Run `cargo-mutants` as a calibration pass over the domain and memory
   crates and record which tests actually catch regressions.
-- Run clippy over the ssr-only code of the landing crate
-  (`cargo clippy -p origa_landing --features ssr --all-targets`), which
-  no workflow has ever done. The first run of that command reported one
-  lint, fixed in this pull request.
+- The `stitch-session` demo account (`insights2@origa.local`) does not
+  match the `e2e-` prefix the orphan collector deletes, so it stays in a
+  local TrailBase depot forever. Renaming it touches the seeded data of
+  the spec and was left out of this pull request.

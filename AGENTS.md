@@ -123,7 +123,6 @@ cargo test -p origa_landing --features ssr
 rust-lld (stable ≥ 1.98) — «relocation out of range» / «section too large».
 Без отладочной информации крейт линкуется за секунды вместо десяти минут.
 
-
 ## Ключевые зависимости
 
 `rs-fsrs` (FSRS), `ort` + NDLOCR-Lite (OCR), `ort` + `rustfft` (Whisper STT),
