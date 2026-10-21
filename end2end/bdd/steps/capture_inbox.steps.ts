@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { Given, When, Then } from "../fixtures";
+import { When, Then } from "../fixtures";
 import { WordsPage } from "../../pages";
 
 // Zero-tap intake (slice IN-1): payloads arrive through the app's e2e seam
