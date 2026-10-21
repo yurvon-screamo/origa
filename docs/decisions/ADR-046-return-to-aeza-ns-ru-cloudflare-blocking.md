@@ -124,5 +124,5 @@ BOTH zones (Aeza DB and the dormant CF zone) while resolvers still hold cached o
 - `docs/runbooks/return-to-aeza-ns-2026-09.md` — execution runbook + rollback
 - `docs/backups/uwuwu.net.aeza.2026-09-03.zone` — zone dump (post-restore)
 - ADR-021 (previous revert), ADR-007 (original SERVFAIL history), ADR-037 + PR #372 (CF DPI-throttle precedent)
-- TSPU DNS interception reporting: https://vc.ru/services/3102791 ,
-  https://habr.com/ru/articles/1075272 (2026-08-26+)
+- TSPU DNS interception reporting: <https://vc.ru/services/3102791> ,
+  <https://habr.com/ru/articles/1075272> (2026-08-26+)

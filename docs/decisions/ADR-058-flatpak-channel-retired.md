@@ -67,7 +67,7 @@ users had no auto-update at all.
 - AUR registration is paused as of 2026-09-20 (automated-account wave,
   no manual queue). Until the `origa-bin` listing is live, the landing
   download card links the in-repo PKGBUILD (`makepkg -si`) instead of the
-  AUR page; switch it to https://aur.archlinux.org/packages/origa-bin in
+  AUR page; switch it to <https://aur.archlinux.org/packages/origa-bin> in
   a follow-up commit right after publishing. Watch aur-general / Arch
   news for the reopening.
 - Fedora post-release checkpoint: install the .rpm from tag N-1 in a

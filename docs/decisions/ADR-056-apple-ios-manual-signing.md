@@ -127,6 +127,7 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
      «has revoked your certificate» на этом шаге — **ожидаемо**, это плановая
      ротация, а не инцидент.
 - **Генерация cert/P12** (работает с любого Linux, ключ не покидает машину):
+
   ```bash
   openssl genrsa -out ci.key 2048
   openssl req -new -key ci.key -out ci.csr -subj "/CN=Origa CI/O=Origa/C=US"
@@ -140,6 +141,7 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
     -passout file:p12.password.txt
   base64 -w0 ci.p12   # → APPLE_IOS_CERTIFICATE
   ```
+
   Рабочие материалы ротации живут на машине владельца в
   `~/apple-certs-adr056/` (ключ 600, пароль P12 в `p12.password.txt`).
 - **Известная хрупкость**: инъекция `PROVISIONING_PROFILE_SPECIFIER` строит
