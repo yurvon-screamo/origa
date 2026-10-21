@@ -164,6 +164,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         CardListExtras {
             search: Some(search),
             on_visible_cards: Some(on_visible_cards),
+            search_match: None,
         },
         move |card| {
             let ctx = ctx_for_render.clone();
