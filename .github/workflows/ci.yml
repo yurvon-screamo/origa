@@ -294,6 +294,16 @@ jobs:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+                  patchelf protobuf-compiler libspeechd-dev
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -404,6 +414,16 @@ jobs:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+                  patchelf protobuf-compiler libspeechd-dev
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -524,6 +544,16 @@ jobs:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+                  patchelf protobuf-compiler libspeechd-dev
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -577,6 +607,16 @@ jobs:
                       libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
                       protobuf-compiler libspeechd-dev
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+                  patchelf protobuf-compiler libspeechd-dev
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -652,6 +692,12 @@ jobs:
               with:
                   packages: protobuf-compiler
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache).
+              if: github.ref_type == 'tag'
+              run: sudo apt-get install -y --no-install-recommends protobuf-compiler
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
