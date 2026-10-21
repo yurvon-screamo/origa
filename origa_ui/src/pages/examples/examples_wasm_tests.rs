@@ -10,7 +10,7 @@ use leptos::task::tick;
 use wasm_bindgen_test::*;
 
 use crate::pages::examples::example_card_item::ExampleCardItem;
-use crate::pages::examples::header::ExamplesHeader;
+use crate::pages::shared::card_list_page_header;
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -18,7 +18,10 @@ wasm_bindgen_test_configure!(run_in_browser);
 #[wasm_bindgen_test]
 async fn examples_header_renders_title_and_info_tooltip() {
     let wrapper = create_wrapper();
-    let _mount = mount_with_router(&wrapper, || view! { <ExamplesHeader /> }.into_any());
+    let _mount = mount_with_router(&wrapper, || {
+        card_list_page_header("examples", || "Examples".to_string(), || "hint".to_string())
+            .into_any()
+    });
     tick().await;
 
     assert!(
@@ -56,10 +59,12 @@ async fn example_card_item_without_store_renders_skeleton_and_status() {
             <ExampleCardItem
                 study_card=example_study_card()
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
-                on_toggle_favorite=Callback::new(|_| ())
-                on_mark_as_known=Callback::new(|_| ())
-                on_delete=Callback::new(|_| ())
-                is_deleting=Signal::from(false)
+                actions=crate::pages::shared::CardItemActions {
+                    on_toggle_favorite: Callback::new(|_| ()),
+                    on_mark_as_known: Callback::new(|_| ()),
+                    on_delete: Callback::new(|_| ()),
+                    is_deleting: Signal::from(false),
+                }
                 details_trigger=trigger
             />
         }
@@ -101,10 +106,12 @@ async fn example_card_item_delete_opens_confirm_modal() {
             <ExampleCardItem
                 study_card=example_study_card()
                 native_language=Signal::from(origa::domain::NativeLanguage::Russian)
-                on_toggle_favorite=Callback::new(|_| ())
-                on_mark_as_known=Callback::new(|_| ())
-                on_delete=Callback::new(|_| ())
-                is_deleting=Signal::from(false)
+                actions=crate::pages::shared::CardItemActions {
+                    on_toggle_favorite: Callback::new(|_| ()),
+                    on_mark_as_known: Callback::new(|_| ()),
+                    on_delete: Callback::new(|_| ()),
+                    is_deleting: Signal::from(false),
+                }
                 details_trigger=trigger
             />
         }

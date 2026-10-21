@@ -55,6 +55,19 @@ pub struct CardListExtras {
 /// inside the `filtered_cards` recomputation.
 pub type SearchMatcher = Arc<dyn Fn(&StudyCard, &str, NativeLanguage) -> bool + Send + Sync>;
 
+/// Action callbacks and deletion state of one card list item — they
+/// always travel together from [`CardListContext`]; grouping them keeps
+/// the item components at a sane arity (#823). The id-taking callbacks
+/// are context-level: the item injects its own card id when wiring the
+/// action bar.
+#[derive(Clone, Copy)]
+pub struct CardItemActions {
+    pub on_toggle_favorite: Callback<ulid::Ulid>,
+    pub on_mark_as_known: Callback<ulid::Ulid>,
+    pub on_delete: Callback<DeleteRequest>,
+    pub is_deleting: Signal<bool>,
+}
+
 #[derive(Clone)]
 pub struct CardListContext {
     #[expect(
@@ -71,6 +84,18 @@ pub struct CardListContext {
     pub toasts: RwSignal<Vec<ToastData>>,
     pub all_cards: RwSignal<Vec<StudyCard>>,
     pub is_loading: RwSignal<bool>,
+}
+
+impl CardListContext {
+    /// The action bundle shared by every item of the list.
+    pub fn actions(&self) -> CardItemActions {
+        CardItemActions {
+            on_toggle_favorite: self.on_toggle_favorite,
+            on_mark_as_known: self.on_mark_as_known,
+            on_delete: self.on_delete,
+            is_deleting: self.is_deleting,
+        }
+    }
 }
 
 pub fn create_card_list_context(
@@ -147,14 +172,21 @@ pub fn create_card_list_context(
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
-    CardListContext {
-        current_user,
-        native_lang,
-        known_kanji,
+    let actions = CardItemActions {
         on_toggle_favorite,
         on_mark_as_known,
         on_delete,
         is_deleting: is_deleting.into(),
+    };
+
+    CardListContext {
+        current_user,
+        native_lang,
+        known_kanji,
+        on_toggle_favorite: actions.on_toggle_favorite,
+        on_mark_as_known: actions.on_mark_as_known,
+        on_delete: actions.on_delete,
+        is_deleting: actions.is_deleting,
         toasts,
         all_cards,
         is_loading,

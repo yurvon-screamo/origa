@@ -5,7 +5,7 @@ import { ExamplesPage, WordsPage } from "../../pages";
 When('пользователь открывает страницу примеров', async ({ page }) => {
     const examplesPage = new ExamplesPage(page);
     await examplesPage.goto();
-    await examplesPage.expectExamplesVisible();
+    await examplesPage.expectVisible();
 });
 
 When('нажимает навигацию к примерам', async ({ page }) => {
@@ -22,7 +22,7 @@ When('ищет пример {string} на странице примеров', as
 
 Then('страница примеров отображается', async ({ page }) => {
     const examplesPage = new ExamplesPage(page);
-    await examplesPage.expectExamplesVisible(15_000);
+    await examplesPage.expectVisible(15_000);
 });
 
 Then('на странице примеров отображается пустое состояние', async ({ page }) => {

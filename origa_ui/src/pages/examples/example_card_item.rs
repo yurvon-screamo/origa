@@ -1,4 +1,4 @@
-use super::super::shared::{CardStatus, DeleteRequest};
+use super::super::shared::{CardItemActions, CardStatus, DeleteRequest};
 use crate::i18n::use_i18n;
 use crate::loaders::example_loader::example_audio_path;
 use crate::ui_components::{
@@ -7,16 +7,12 @@ use crate::ui_components::{
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, NativeLanguage, StudyCard};
-use ulid::Ulid;
 
 #[component]
 pub fn ExampleCardItem(
     study_card: StudyCard,
     #[prop(into)] native_language: Signal<NativeLanguage>,
-    on_toggle_favorite: Callback<Ulid>,
-    on_mark_as_known: Callback<()>,
-    on_delete: Callback<DeleteRequest>,
-    is_deleting: Signal<bool>,
+    actions: CardItemActions,
     details_trigger: RwSignal<u32>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -27,7 +23,7 @@ pub fn ExampleCardItem(
     let is_delete_modal_open = RwSignal::new(false);
 
     let confirm_delete = Callback::new(move |_| {
-        on_delete.run(DeleteRequest {
+        actions.on_delete.run(DeleteRequest {
             card_id,
             on_success: Callback::new(move |_| is_delete_modal_open.set(false)),
         })
@@ -145,9 +141,11 @@ pub fn ExampleCardItem(
                         tag_variant=TagVariant::default()
                         tag_label=Signal::derive(|| "".to_string())
                         is_favorite=Signal::derive(move || is_favorite)
-                        on_toggle_favorite=Callback::new(move |_| on_toggle_favorite.run(card_id))
+                        on_toggle_favorite=Callback::new(move |_| {
+                            actions.on_toggle_favorite.run(card_id)
+                        })
                         show_mark_as_known=Signal::derive(move || status != CardStatus::Learned)
-                        on_mark_as_known=Callback::new(move |_| on_mark_as_known.run(()))
+                        on_mark_as_known=Callback::new(move |_| actions.on_mark_as_known.run(card_id))
                         on_delete=Callback::new(move |_| is_delete_modal_open.set(true))
                         test_id=Signal::derive(|| "examples-card-item".to_string())
                         show_tag=Signal::derive(|| false)
@@ -158,7 +156,7 @@ pub fn ExampleCardItem(
         <DeleteConfirmModal
             test_id="examples-delete-modal"
             is_open=is_delete_modal_open
-            is_deleting=is_deleting
+            is_deleting=actions.is_deleting
             on_confirm=confirm_delete
             on_close=Callback::new(move |_| is_delete_modal_open.set(false))
         />
