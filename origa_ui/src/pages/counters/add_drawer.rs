@@ -58,7 +58,7 @@ pub fn AddCountersDrawer(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>
     let handlers = DrawerHandlers::new(&state, is_open);
 
     let filtered_counters = Memo::new(move |_| {
-        let query = state.search_query.get().to_lowercase();
+        let query = state.search_query.get().trim().to_lowercase();
         let counter_list = state.available_counters.get();
         let lang = native_language.get();
         if query.is_empty() {

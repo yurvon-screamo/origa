@@ -18,7 +18,7 @@ pub fn RulesList(
 ) -> impl IntoView {
     let i18n = use_i18n();
     let filtered_rules = move || {
-        let query = search_query.get().to_lowercase();
+        let query = search_query.get().trim().to_lowercase();
         if query.is_empty() {
             return rules.clone();
         }
