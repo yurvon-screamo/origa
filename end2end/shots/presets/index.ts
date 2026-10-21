@@ -8,6 +8,7 @@ import { onboarded } from "./onboarded.ts";
 import { onboardedInsights } from "./onboarded-insights.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
+import { withWord } from "./with-word.ts";
 
 /** What a preset works with. */
 export interface PresetContext {
@@ -33,4 +34,5 @@ export const presets: Record<PresetId, Preset> = {
     "onboarded-insights": onboardedInsights,
     ledger,
     "irodori-nyuumon": irodoriNyuumon,
+    "with-word": withWord,
 };

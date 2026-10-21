@@ -2,6 +2,7 @@ import { type Locator, type Page } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import type { ShotSink } from "../types.ts";
 
 /** Clicks the first of the given test ids that is on screen. */
 async function clickFirstVisible(page: Page, testIds: string[], timeout = 1_500): Promise<string | null> {
@@ -129,26 +130,35 @@ export const lessonUnificationScenario: ShotScenario = {
             return;
         }
 
-        // The review body: every card is revealed, captured and advanced.
-        for (let card = 1; card <= 8; card++) {
-            const completeShown = await page
-                .getByTestId("lesson-complete-screen")
-                .waitFor({ state: "visible", timeout: 2_000 })
-                .then(() => true)
-                .catch(() => false);
-            if (completeShown) break;
-
-            let kind = "unknown";
-            for (const [name, selector] of QUESTION_MARKERS) {
-                if (await firstVisible(page, selector)) {
-                    kind = name;
-                    break;
-                }
-            }
-            await clickFirstVisible(page, REVEALS, 3_000);
-            await page.waitForTimeout(700);
-            await sink.shot(`review-body-${kind}-${card}`);
-            await clickFirstVisible(page, ADVANCES, 3_000);
-        }
+        await captureReviewBody(page, sink);
     },
 };
+
+/**
+ * The review body: every card is revealed, captured and advanced.
+ *
+ * A fresh user has no due review cards — the walk is a no-op. It still
+ * covers seeded profiles (an imported history).
+ */
+async function captureReviewBody(page: Page, sink: ShotSink): Promise<void> {
+    for (let card = 1; card <= 8; card++) {
+        const completeShown = await page
+            .getByTestId("lesson-complete-screen")
+            .waitFor({ state: "visible", timeout: 2_000 })
+            .then(() => true)
+            .catch(() => false);
+        if (completeShown) break;
+
+        let kind = "unknown";
+        for (const [name, selector] of QUESTION_MARKERS) {
+            if (await firstVisible(page, selector)) {
+                kind = name;
+                break;
+            }
+        }
+        await clickFirstVisible(page, REVEALS, 3_000);
+        await page.waitForTimeout(700);
+        await sink.shot(`review-body-${kind}-${card}`);
+        await clickFirstVisible(page, ADVANCES, 3_000);
+    }
+}

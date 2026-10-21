@@ -13,6 +13,7 @@ export const PRESET_IDS = [
     "onboarded-insights",
     "ledger",
     "irodori-nyuumon",
+    "with-word",
 ] as const;
 
 export type PresetId = (typeof PRESET_IDS)[number];

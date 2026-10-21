@@ -48,7 +48,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         route: "/lesson",
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
-        preset: "lesson-ready",
+        preset: "with-word",
     },
     "counter-scoring": {
         id: "counter-scoring",
@@ -88,7 +88,15 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         route: "/lesson",
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
-        preset: "fresh",
+        preset: "with-word",
+    },
+    "token-popup": {
+        id: "token-popup",
+        title: "Поповер токена с кнопкой жалобы",
+        route: "/phrases",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "onboarded",
     },
     "jft-card": {
         id: "jft-card",
