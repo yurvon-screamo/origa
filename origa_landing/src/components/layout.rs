@@ -128,10 +128,8 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     >
                         {c.footer_license}
                     </a>
-                    // Product Hunt listing as a plain link, not the official
-                    // badge artwork: the badge froze its upvote counter in the
-                    // SVG and read as a foreign sticker in the paper layout.
-                    // A text link keeps the Resources column uniform.
+                    // Plain link, not the official badge artwork: the badge
+                    // froze its upvote counter inside the SVG.
                     <a
                         href="https://www.producthunt.com/products/origa-app-to-learn-japanese"
                         class="landing-footer__link"
