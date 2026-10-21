@@ -4,6 +4,7 @@ import { awaitHandVisible } from "../../helpers/lesson";
 import {
 	countReviewedCounterBindings,
 	readPersistedUser,
+	reviewedCounterBindingNumbers,
 } from "../../helpers/indexeddb";
 
 When("пользователь открывает урок напрямую", async ({ page }) => {
@@ -238,13 +239,6 @@ When('пользователь жмёт {string} отвечая {string}', async
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	const front = page.getByTestId("counter-binding-front");
 	if (await front.isVisible({ timeout: 5_000 }).catch(() => false)) {
-		// Запоминаем оценённую цифру: порядок пачки случайный, и проверка
-		// «оценённая связка больше не показывается» сверяется с ней, а не
-		// с фиксированной «1».
-		const digit = ((await front.locator("span").first().textContent()) ?? "").trim();
-		await page.evaluate((d) => {
-			(window as unknown as { __ratedDigit?: string }).__ratedDigit = d;
-		}, digit);
 		await page.keyboard.press(" ");
 		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 	}
@@ -325,6 +319,8 @@ When('пользователь проходит пачку связок до к�
 	// связка (何) замораживается; advance сериализован после сейва —
 	// потому ждём экран завершения терпеливо, лишние нажатия гасятся
 	// finished-гейтом сессии.
+	// Граница цикла: 11 связок реестра (1..=10 + 何) + запас на лишние
+	// нажатия. Если в пачку попадут beyond-ten формы — границу поднять.
 	for (let i = 0; i < 15; i++) {
 		if (await page.getByTestId("lesson-complete-screen").isVisible().catch(() => false)) {
 			break;
@@ -369,19 +365,18 @@ When('пользователь перезаходит в урок', async ({ pag
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
-	// Порядок пачки случайный — сверяемся с той цифрой, которую юзер
-	// оценил (запомнил предыдущий шаг), а не с фиксированной «1».
-	const rated = await page.evaluate(
-		() => (window as unknown as { __ratedDigit?: string }).__ratedDigit ?? "",
-	);
-	expect(rated.length, "предыдущий шаг должен был запомнить оценённую цифру").toBeGreaterThan(0);
+	// Порядок пачки случайный, а window не переживает перезагрузку
+	// (следующий шаг делает goto) — источник истины: связки с памятью в
+	// IDB (оценённая связка получила current_state).
+	const rated = reviewedCounterBindingNumbers(await readPersistedUser(page));
+	expect(rated.length, "должна быть ровно одна оценённая связка").toBe(1);
 	await expect
 		.poll(
 			async () =>
 				page.getByTestId("counter-binding-front").locator("span").first().textContent(),
 			{ timeout: 15_000 },
 		)
-		.not.toBe(rated);
+		.not.toBe(String(rated[0]));
 	const progress = await page.getByTestId("counter-bindings-progress").textContent();
 	expect(progress).toContain("1 / 10");
 });
