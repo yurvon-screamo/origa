@@ -13,7 +13,7 @@ Accepted (cutover 2026-09-19; old Railway bucket retained as backup)
 After ADR-057 the delivery chain still routed **every byte of Origa traffic
 through one Aeza VPS** (85.192.63.249):
 
-```
+```text
 Client → Caddy @ Aeza → Railway (API/landing)            [app.origa / origa]
 Client → Caddy @ Aeza → docker s3-proxy → Tigris (CDN)   [s3.origa]
 ```

@@ -15,7 +15,7 @@ Mac App Store review of v0.7.3 rejected Sign in with Apple (Guideline
 Apple"). Production HTTP logs (Railway, 2026-09-02 09:51–09:53) show the
 reviewer attempted SIWA four times; every attempt completed server-side —
 
-```
+```text
 GET  /api/auth/v1/oauth/apple/login            303
 POST /api/auth/v1/oauth/apple/callback         303   (code exchanged)
 GET  /public/auth/desktop-callback.html        200
