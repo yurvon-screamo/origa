@@ -494,6 +494,21 @@ jobs:
                   shared-key: origa-ci-v2
                   save-if: false
 
+            # Issue #832: a fresh clone without landing node deps must build.
+            # Runs before setup-node/npm ci, so node_modules cannot exist.
+            # touch() makes the committed landing.processed.css stale, forcing
+            # build.rs off the mtime-fresh skip onto the rebuild path; the
+            # grep asserts the no-deps warning branch, not just a green exit.
+            - name: Build landing without node dependencies
+              # bash gives -eo pipefail (the default shell has no pipefail,
+              # so a failed cargo build would be masked by tee's exit code).
+              shell: bash
+              run: |
+                  test ! -e origa_landing/node_modules
+                  touch origa_landing/style/landing.css
+                  cargo build -p origa_landing 2>&1 | tee /tmp/landing-no-deps-build.log
+                  grep -q "Tailwind CSS not installed" /tmp/landing-no-deps-build.log
+
             - name: Setup Node.js for landing CSS
               uses: actions/setup-node@v7
               with:
