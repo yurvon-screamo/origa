@@ -55,6 +55,22 @@ async fn words_header_renders_title_and_actions() {
     );
     assert!(
         wrapper
+            .query_selector("[data-testid=\"words-phrases-btn\"]")
+            .ok()
+            .flatten()
+            .is_some(),
+        "words header must render the phrases button (#823)"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"words-examples-btn\"]")
+            .ok()
+            .flatten()
+            .is_some(),
+        "words header must render the examples button (#823)"
+    );
+    assert!(
+        wrapper
             .query_selector("[data-testid=\"words-title\"]")
             .ok()
             .flatten()

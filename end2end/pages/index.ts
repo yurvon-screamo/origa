@@ -1,4 +1,6 @@
 export { BasePage } from "./base.page";
+export { CardListPage } from "./card_list.page";
+export { ExamplesPage } from "./examples.page";
 export { FeedbackPage } from "./feedback.page";
 export { GrammarPage } from "./grammar.page";
 export { HomePage } from "./home.page";

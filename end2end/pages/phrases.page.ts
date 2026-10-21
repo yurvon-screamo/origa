@@ -1,39 +1,24 @@
 import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./base.page";
+import { CardListPage } from "./card_list.page";
 
 type PhrasesFilterType = "Все" | "Новые" | "Сложные" | "В процессе" | "Изученные";
 
-export class PhrasesPage extends BasePage {
+export class PhrasesPage extends CardListPage {
+    // Legacy-prefixed aliases — the phrases steps reference these names.
     readonly phrasesPage: Locator;
     readonly phrasesCard: Locator;
     readonly phrasesTitle: Locator;
     readonly backButton: Locator;
-    readonly searchInput: Locator;
     readonly phrasesGrid: Locator;
-    readonly emptyState: Locator;
-    readonly loadMoreButton: Locator;
-    readonly cardItem: Locator;
-
-    readonly deleteModal: Locator;
-    readonly deleteConfirmBtn: Locator;
-    readonly deleteCancelBtn: Locator;
 
     constructor(page: Page) {
-        super(page);
+        super(page, "phrases");
 
-        this.phrasesPage = page.getByTestId("phrases-page");
-        this.phrasesCard = page.getByTestId("phrases-card");
-        this.phrasesTitle = page.getByTestId("phrases-title");
+        this.phrasesPage = this.pageRoot;
+        this.phrasesCard = this.card;
+        this.phrasesTitle = this.title;
         this.backButton = page.getByTestId("phrases-back-btn");
-        this.searchInput = page.getByTestId("phrases-search-input");
-        this.phrasesGrid = page.getByTestId("phrases-grid");
-        this.emptyState = page.getByTestId("phrases-empty-state");
-        this.loadMoreButton = page.getByTestId("phrases-load-more-btn");
-        this.cardItem = page.getByTestId("phrases-card-item");
-
-        this.deleteModal = page.getByTestId("phrases-delete-modal");
-        this.deleteConfirmBtn = page.getByTestId("phrases-delete-modal-confirm");
-        this.deleteCancelBtn = page.getByTestId("phrases-delete-modal-cancel");
+        this.phrasesGrid = this.grid;
     }
 
     async goto(): Promise<void> {
@@ -41,10 +26,7 @@ export class PhrasesPage extends BasePage {
     }
 
     async expectPhrasesVisible(timeout = 30_000): Promise<void> {
-        // Leptos WASM hydration may take several seconds after navigation
-        await expect(this.phrasesPage).toBeVisible({ timeout });
-        await expect(this.phrasesCard).toBeVisible({ timeout });
-        await expect(this.phrasesTitle).toBeVisible({ timeout });
+        await this.expectVisible(timeout);
     }
 
     async searchPhrases(query: string): Promise<void> {
@@ -71,24 +53,19 @@ export class PhrasesPage extends BasePage {
     }
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-mark-known-btn");
+        const btn = this.cardItem.nth(index).getByTestId("phrases-card-item-mark-known-btn");
         await btn.dispatchEvent("click");
     }
 
     async deleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-delete-btn");
-        await btn.dispatchEvent("click");
+        await this.cardItem.nth(index).getByTestId("phrases-card-item-delete-btn").dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteConfirmBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
     }
 
     async cancelDeleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-delete-btn");
-        await btn.dispatchEvent("click");
+        await this.cardItem.nth(index).getByTestId("phrases-card-item-delete-btn").dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });

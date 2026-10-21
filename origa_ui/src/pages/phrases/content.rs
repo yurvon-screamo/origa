@@ -1,16 +1,15 @@
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
 
 use super::super::shared::{
-    CardListExtras, CardListViewConfig, CardsLoadedCallback, ListGrouping, ListPage, ListUiStore,
-    card_list_view, create_card_list_context,
+    BackfillState, CardListExtras, CardListViewConfig, CardsLoadedCallback, LazyDetailHooks,
+    ListGrouping, ListPage, ListUiStore, card_list_view, create_card_list_context,
+    create_search_backfill_effect, create_visible_slice_loader,
 };
 use super::lazy_details::{load_and_refresh, missing_details, phrase_ids_of};
 use super::phrase_card_item::PhraseCardItem;
 use crate::i18n::{td_string, use_i18n};
 use crate::repository::HybridUserRepository;
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 use origa::domain::{Card, StudyCard};
 use ulid::Ulid;
 
@@ -37,65 +36,17 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         all_phrase_ids.set(phrase_ids_of(cards));
     });
 
-    // Visible-slice lazy load: runs on first render, "load more" and
-    // filter/search switches. While a load is in flight, later triggers
-    // only mark a rerun — the loop picks the freshest visible ids after
-    // the current batch lands (no lost tail, no duplicate batches).
-    let visible_ids: RwSignal<Vec<Ulid>> = RwSignal::new(Vec::new());
-    let visible_load_running = Arc::new(AtomicBool::new(false));
-    let visible_load_rerun = Arc::new(AtomicBool::new(false));
-    // Dispose-сентинел страницы фраз: останавливает visible-loop
-    // на верху следующего прохода после смерти owner'а.
-    let visible_load_disposed = StoredValue::new(());
-    let on_visible_cards = {
-        let refresh = refresh_trigger;
-        let running = visible_load_running.clone();
-        let rerun = visible_load_rerun.clone();
-        let backfill_running = search_backfill_loading;
-        Arc::new(move |cards: &[StudyCard]| {
-            // The search backfill covers EVERY phrase — a visible-slice
-            // load racing it would only collect Errs on the in-flight
-            // chunks. Skip; the backfill's refresh re-renders the cards.
-            if backfill_running.get_untracked() {
-                return;
-            }
-            let ids = phrase_ids_of(cards);
-            if missing_details(&ids).is_empty() {
-                return;
-            }
-            visible_ids.set(ids);
-            if running.swap(true, Ordering::AcqRel) {
-                rerun.store(true, Ordering::Release);
-                return;
-            }
-            let running = running.clone();
-            let rerun = rerun.clone();
-            // Unscoped with a disposed guard (NOT scoped): the ambient
-            // owner at the spawn point is whatever context the list
-            // component invokes this Arc callback from — unpredictable
-            // for scoping. The loop-top reads `visible_ids` on every
-            // rerun pass (i.e. after an await); the sentinel fence below
-            // stops the task at the top of the next pass once the
-            // phrases page is disposed (disposed-signal fix). A snapshot
-            // would defeat the rerun flag — each pass must read the
-            // fresh ids.
-            spawn_local(async move {
-                loop {
-                    if visible_load_disposed.is_disposed() {
-                        return;
-                    }
-                    let ids = visible_ids.get_untracked();
-                    if !ids.is_empty() {
-                        load_and_refresh(ids, refresh).await;
-                    }
-                    if !rerun.swap(false, Ordering::AcqRel) {
-                        break;
-                    }
-                }
-                running.store(false, Ordering::Release);
-            });
-        })
+    let hooks = LazyDetailHooks {
+        ids_of: Arc::new(phrase_ids_of),
+        missing_of: Arc::new(missing_details),
+        load_batch: Arc::new(move |ids| {
+            Box::pin(async move { load_and_refresh(ids, refresh_trigger).await })
+        }),
     };
+
+    // Visible-slice lazy load: runs on first render, "load more" and
+    // filter/search switches (shared machinery, see lazy_card_details).
+    let on_visible_cards = create_visible_slice_loader(search_backfill_loading, hooks.clone());
 
     // Search semantics parity with the pre-lazy behavior: matching runs
     // over the loaded details instantly, while the REST of the user's
@@ -104,37 +55,17 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     // batch — search results jump to complete when it lands (the browser
     // serializes the fetches over its connection pool anyway), and the
     // indicator stays visible for the whole load.
-    {
-        let all_ids = all_phrase_ids;
-        let backfill_done_sig = backfill_done;
-        let loading_sig = search_backfill_loading;
-        let refresh = refresh_trigger;
-        let search_sig = search;
-        Effect::new(move |_| {
-            let query = search_sig.get();
-            if query.trim().is_empty()
-                || backfill_done_sig.get_untracked()
-                || loading_sig.get_untracked()
-            {
-                return;
-            }
-            let missing = missing_details(&all_ids.get_untracked());
-            if missing.is_empty() {
-                backfill_done_sig.set(true);
-                return;
-            }
-            loading_sig.set(true);
-            spawn_local(async move {
-                tracing::info!(
-                    phrases = missing.len(),
-                    "Backfilling all phrase details for search"
-                );
-                load_and_refresh(missing, refresh).await;
-                loading_sig.set(false);
-                backfill_done_sig.set(true);
-            });
-        });
-    }
+    create_search_backfill_effect(
+        BackfillState {
+            search,
+            all_ids: all_phrase_ids,
+            done: backfill_done,
+            loading: search_backfill_loading,
+        },
+        "phrases",
+        hooks.missing_of,
+        hooks.load_batch,
+    );
 
     let ctx = create_card_list_context(
         repository,
@@ -164,6 +95,7 @@ pub fn PhrasesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         CardListExtras {
             search: Some(search),
             on_visible_cards: Some(on_visible_cards),
+            search_match: None,
         },
         move |card| {
             let ctx = ctx_for_render.clone();

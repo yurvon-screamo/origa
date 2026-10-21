@@ -12,6 +12,8 @@ export class WordsPage extends BasePage {
     // Navigation buttons
     readonly backButton: Locator;
     readonly setsButton: Locator;
+    readonly phrasesButton: Locator;
+    readonly examplesButton: Locator;
     readonly addButton: Locator;
 
     // Search
@@ -72,6 +74,8 @@ export class WordsPage extends BasePage {
         // Navigation buttons
         this.backButton = page.getByTestId("words-back-btn");
         this.setsButton = page.getByTestId("words-sets-btn");
+        this.phrasesButton = page.getByTestId("words-phrases-btn");
+        this.examplesButton = page.getByTestId("words-examples-btn");
         this.addButton = page.getByTestId("words-add-btn");
 
         // Search
@@ -161,6 +165,14 @@ export class WordsPage extends BasePage {
 
     async clickSets(): Promise<void> {
         await this.setsButton.click();
+    }
+
+    async clickPhrases(): Promise<void> {
+        await this.phrasesButton.click();
+    }
+
+    async clickExamples(): Promise<void> {
+        await this.examplesButton.click();
     }
 
     async openAddModal(): Promise<void> {
