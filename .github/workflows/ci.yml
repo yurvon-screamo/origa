@@ -498,7 +498,7 @@ jobs:
 
     # Runs the Android app on an emulator — the only CI net for the class of
     # startup bugs that compile fine and build fine but crash on launch
-    # (born from the tao 0.35 ndk-context break, ADR-044). Builds a debug
+    # (born from the tao 0.35 ndk-context break, ADR-063). Builds a debug
     # APK for the SAME ABI as the emulator (x86_64); production release
     # builds stay aarch64 via _build-tauri.yml. The WASM frontend is built
     # in-job (self-contained: no artifact cascades, no skip-legal traps).
