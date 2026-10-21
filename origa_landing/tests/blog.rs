@@ -583,7 +583,7 @@ async fn ocr_article_how_to_jsonld_is_localized_in_all_locales() {
             "the on-device model must be named in the steps on {uri}; got: {step_text:?}"
         );
         assert!(
-            lang == "en" || step_text.iter().any(|t| t.chars().any(|c| !c.is_ascii())),
+            lang == "en" || step_text.iter().any(|t| !t.is_ascii()),
             "non-EN HowTo steps must be translated on {uri}; got: {step_text:?}"
         );
     }
