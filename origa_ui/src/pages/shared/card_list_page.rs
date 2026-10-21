@@ -5,7 +5,7 @@ use super::{
     CardCounts, CardStatus, DEFAULT_VISIBLE_COUNT, DeleteRequest, Filter, FilterBtn, FirstRunGuard,
     GroupedGrid, JlptCounts, JlptFilter, JlptFilterBtn, LevelIndex, ListGrouping, ListPage,
     ListUiStore, LoadMoreButton, create_delete_callback, create_mark_as_known_callback,
-    create_toggle_favorite_callback, jlpt_level_idx, order_cards_by_group,
+    create_toggle_favorite_callback, default_card_matches, jlpt_level_idx, order_cards_by_group,
     restore_scroll_when_ready, track_scroll_while_authenticated,
 };
 use crate::i18n::use_i18n;
@@ -17,7 +17,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, CardAnswer, JapaneseLevel, NativeLanguage, StudyCard, User};
+use origa::domain::{Card, JapaneseLevel, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
 use std::collections::HashMap;
 
@@ -46,7 +46,8 @@ pub struct CardListExtras {
     /// `Card::question()/answer()`, which for CDN-backed cards (examples)
     /// resolve only to the word surface — the sentence text is not domain
     /// data. A matcher lets the page match the query against lazily loaded
-    /// CDN details instead. Receives the ALREADY lowercased query.
+    /// CDN details instead. Receives the ALREADY lowercased and trimmed
+    /// query.
     pub search_match: Option<SearchMatcher>,
 }
 
@@ -255,7 +256,7 @@ where
     };
 
     let filtered_cards = Memo::new(move |_| {
-        let query = search.get().to_lowercase();
+        let query = search.get().trim().to_lowercase();
         let current_filter = filter.get();
         let current_jlpt = jlpt_filter.get();
         let index = level_index.get();
@@ -268,33 +269,7 @@ where
                 let matches_search = query.is_empty()
                     || match search_match.as_ref() {
                         Some(matcher) => matcher(card, &query, lang),
-                        None => {
-                            let card_inner = card.card();
-                            let question = card_inner.question(&lang);
-
-                            let matches_question = question
-                                .ok()
-                                .is_some_and(|q| q.text().to_lowercase().contains(&query));
-
-                            let matches_answer = match card_inner.answer(&lang).ok() {
-                                Some(CardAnswer::Vocabulary {
-                                    translations,
-                                    description,
-                                }) => {
-                                    translations
-                                        .iter()
-                                        .any(|t| t.to_lowercase().contains(&query))
-                                        || description
-                                            .as_ref()
-                                            .is_some_and(|d| d.to_lowercase().contains(&query))
-                                },
-                                Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
-                                Some(CardAnswer::GrammarNuances { .. }) => false,
-                                None => false,
-                            };
-
-                            matches_question || matches_answer
-                        },
+                        None => default_card_matches(card, &query, lang),
                     };
                 let matches_filter =
                     current_filter.matches(CardStatus::from_study_card(card), card.is_favorite());

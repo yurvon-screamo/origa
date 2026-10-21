@@ -137,7 +137,7 @@ impl ModalState {
     }
 
     pub fn select_all(&self) {
-        let query = self.search_query.get().to_lowercase();
+        let query = self.search_query.get().trim().to_lowercase();
         let rules = self.available_rules.get();
         let lang = self.native_language.get();
         let filtered_ids: HashSet<Ulid> = rules

@@ -20,6 +20,9 @@ mod mark_as_known_button;
 mod mark_known_callback;
 mod pagination;
 mod resource_download_consent;
+mod search_matching;
+#[cfg(test)]
+mod search_matching_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod shared_wasm_tests;
 mod toggle_favorite_callback;
@@ -49,4 +52,7 @@ pub use mark_as_known_button::MarkAsKnownButton;
 pub use mark_known_callback::create_mark_as_known_callback;
 pub use pagination::LoadMoreButton;
 pub use resource_download_consent::{ResourceDownloadConsent, is_resource_download_consented};
+pub(crate) use search_matching::{
+    default_card_matches, kanji_search_matcher, readings_match, vocabulary_search_matcher,
+};
 pub use toggle_favorite_callback::create_toggle_favorite_callback;

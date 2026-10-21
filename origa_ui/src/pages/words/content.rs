@@ -1,10 +1,11 @@
 use super::super::shared::{
     CardListExtras, CardListViewConfig, ListGrouping, ListPage, card_list_view,
-    create_card_list_context,
+    create_card_list_context, vocabulary_search_matcher,
 };
 use super::vocabulary_card_item::VocabularyCardItem;
 use crate::i18n::{td_string, use_i18n};
 use crate::repository::HybridUserRepository;
+use crate::store::AuthStore;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use origa::domain::Card;
@@ -21,6 +22,13 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         |card| matches!(card, Card::Vocabulary(_)),
         None,
     );
+
+    // Reading search resolves through the furigana dictionary; wiring its
+    // readiness into the matcher makes a query typed during dictionary
+    // loading re-run once the dictionary lands (#837).
+    let furigana_ready = use_context::<AuthStore>()
+        .expect("AuthStore not provided")
+        .is_furigana_loaded;
 
     // The router navigator must be captured in the component's reactive
     // scope — calling use_navigate() inside the click closure runs outside
@@ -44,7 +52,10 @@ pub fn WordsContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         ListPage::Words,
         ListGrouping::Flat,
         config,
-        CardListExtras::default(),
+        CardListExtras {
+            search_match: Some(vocabulary_search_matcher(furigana_ready)),
+            ..CardListExtras::default()
+        },
         move |card| {
             let ctx = ctx_for_render.clone();
             let card_id = *card.card_id();
