@@ -50,13 +50,13 @@ on:
         outputs:
             windows-signature:
                 value: ${{ jobs.build-windows.outputs.signature }}
-            # linux-signature is back (ADR-056 addendum, deb channel): the
+            # linux-signature is back (ADR-064 addendum, deb channel): the
             # updater manifest carries a linux-x86_64 entry pointing at the
             # fixed-name Origa_amd64.deb asset. tauri-plugin-updater 2.10.0
             # installs .deb updates via pkexec (graphical sudo fallback).
             linux-signature:
                 value: ${{ jobs.build-linux.outputs.signature }}
-            # linux-rpm-signature (ADR-058): rpm channel (RHEL/Fedora) — the
+            # linux-rpm-signature (ADR-065): rpm channel (RHEL/Fedora) — the
             # manifest also carries linux-x86_64-rpm → Origa_x86_64.rpm;
             # the plugin installs rpm updates via pkexec rpm -U.
             linux-rpm-signature:
@@ -281,9 +281,9 @@ jobs:
             - name: Build Tauri app for Linux
               working-directory: tauri
               # --no-sign for Dependabot — see build-windows for the rationale.
-              # Linux bundles: deb + rpm (ADR-058). AppImage is retired —
+              # Linux bundles: deb + rpm (ADR-065). AppImage is retired —
               # its bundled Ubuntu WebKitGTK breaks on rolling distributions
-              # (ADR-056 for the incident); Flatpak is retired too (ADR-058).
+              # (ADR-064 for the incident); Flatpak is retired too (ADR-065).
               # `targets: "all"` in tauri.conf.json would also build an
               # AppImage here, so both targets are pinned explicitly.
               run: |
@@ -309,7 +309,7 @@ jobs:
                   # name for the landing page's /releases/latest/download/
                   # <fixed> links. Single-name (no versioned copy) per ADR-025
                   # addendum. (AppImage aliases removed with the channel —
-                  # ADR-056.) The .sig updater signatures ride along:
+                  # ADR-064.) The .sig updater signatures ride along:
                   # Minisign signatures are content-based, so the rename does
                   # not invalidate them. Guards match the Windows pattern —
                   # Dependabot builds run --no-sign and emit no .sig at all.

@@ -8,13 +8,13 @@
 //! [`JNI_OnLoad`] when the native library is loaded (neither tao, wry nor
 //! tauri define that symbol), we capture the JavaVM there, resolve the
 //! Application context via `ActivityThread.currentApplication()`, and
-//! publish both into `ndk-context` for every consumer. See ADR-044.
+//! publish both into `ndk-context` for every consumer. See ADR-063.
 //!
 //! Failure policy: every step degrades to `false` + `tracing::error!` +
 //! logcat. Nothing here may panic — it runs across the JNI FFI boundary and
 //! release profiles build with `panic = "abort"` (uncatchable).
 //!
-//! Single-publisher assumption (ADR-044): in this process only this module
+//! Single-publisher assumption (ADR-063): in this process only this module
 //! calls `ndk_context::initialize_android_context`. The CAS guard protects
 //! against our own re-entry (a second `JNI_OnLoad` is possible on
 //! classloader splits); a hypothetical foreign publisher would abort on
@@ -121,7 +121,7 @@ pub fn app_context() -> Option<JObject<'static>> {
 
 /// Resolve the Application object. `ActivityThread` is a hidden but stable
 /// system class; `currentApplication()` is the standard reflection-based
-/// accessor used across the Android ecosystem (see ADR-044).
+/// accessor used across the Android ecosystem (see ADR-063).
 fn current_application<'local>(env: &mut jni::JNIEnv<'local>) -> Option<JObject<'local>> {
     let activity_thread = env.find_class("android/app/ActivityThread").ok()?;
     let application = env

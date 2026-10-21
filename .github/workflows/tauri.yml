@@ -231,13 +231,13 @@ jobs:
                   # Signature is content-based (Minisign), so it stays valid
                   # after the versioned → alias rename in _build-tauri.yml.
                   #
-                  # Linux keys (ADR-058): the plugin searches
+                  # Linux keys (ADR-065): the plugin searches
                   # linux-x86_64-{deb,rpm} FIRST (based on the bundle type
                   # patched into the client binary), then falls back to
                   # linux-x86_64. So: deb clients get the .deb, rpm clients
                   # get the .rpm, and the bare key stays as the fallback for
                   # #627-era clients and unknown bundle types.
-                  # Flatpak has NO entry (ADR-058: channel retired) and no
+                  # Flatpak has NO entry (ADR-065: channel retired) and no
                   # self-updater anyway.
                   # Fail loud on a missing signature for any platform — a
                   # silently empty signature field would publish a manifest
@@ -363,7 +363,7 @@ jobs:
                       - `Origa_x86_64.rpm` — RHEL/Fedora (in-app auto-update;
                         upgrade via pkexec `rpm -U`)
 
-                      ### Migrating from the retired Flatpak channel (ADR-058)
+                      ### Migrating from the retired Flatpak channel (ADR-065)
                       The Flatpak bundle is no longer published. Install the
                       .deb (Debian/Ubuntu), the .rpm (RHEL/Fedora), or the
                       AUR package (Arch), and carry your data over with:

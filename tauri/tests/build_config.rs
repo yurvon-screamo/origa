@@ -532,7 +532,7 @@ fn check_for_update_gates_endpoint_check_behind_is_dev() {
     );
 }
 
-/// Regression guard for the AUR heuristic (ADR-058): on systems with neither
+/// Regression guard for the AUR heuristic (ADR-065): on systems with neither
 /// dpkg nor rpm (Arch & co., where the app arrives via AUR and is updated by
 /// the AUR helper), `check_for_update` must skip the endpoint check — the
 /// subsequent install would be guaranteed to fail (`pkexec dpkg`/`rpm -U`

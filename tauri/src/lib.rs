@@ -5,7 +5,7 @@ mod auth_store;
 mod install_id;
 // Android JNI context ownership: since Tauri 2.11 (tao 0.35) nothing
 // publishes the JavaVM/Application into `ndk-context`, so this module owns
-// the invariant (JNI_OnLoad capture + publication). See ADR-044.
+// the invariant (JNI_OnLoad capture + publication). See ADR-063.
 #[cfg(target_os = "android")]
 mod android_context;
 // device-ai native file-based speech recognition. macOS-only — the device-ai
@@ -77,7 +77,7 @@ pub fn run() {
     // handshake. Without this, the first HTTPS request panics with
     // "Expect rustls-platform-verifier to be initialized" and aborts the
     // process. The JavaVM/Application are published into `ndk-context` by
-    // `JNI_OnLoad` at library load (see `android_context`, ADR-044) — this
+    // `JNI_OnLoad` at library load (see `android_context`, ADR-063) — this
     // call is defense-in-depth for paths where publication has not happened
     // yet, and the verifier init below reads from that publication.
     #[cfg(target_os = "android")]
@@ -421,7 +421,7 @@ fn init_sentry() -> Option<sentry::ClientInitGuard> {
 /// context.
 ///
 /// The JavaVM and Application context come from our own publication in
-/// `android_context` (ADR-044) — `ndk_context::android_context()` is NOT
+/// `android_context` (ADR-063) — `ndk_context::android_context()` is NOT
 /// used here: since Tauri 2.11 (tao 0.35) nothing populates that global and
 /// reading it aborts the process.
 ///
@@ -456,7 +456,7 @@ fn init_platform_verifier_android() {
     match rustls_platform_verifier::android::init_with_env(env, context) {
         Ok(()) => {
             // Both channels on purpose: tracing feeds Sentry in production
-            // (ADR-036), logcat is the CI smoke-test marker (ADR-044).
+            // (ADR-036), logcat is the CI smoke-test marker (ADR-063).
             tracing::info!("[rustls] platform-verifier initialized for Android");
             android_context::logcat_info("[rustls] platform-verifier initialized for Android");
         },
