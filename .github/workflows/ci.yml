@@ -64,6 +64,7 @@ jobs:
               steps.components.outputs.landing == 'true' ||
               steps.components.outputs.tauri == 'true' ||
               steps.components.outputs.utils == 'true' ||
+              steps.components.outputs.tts == 'true' ||
               steps.components.outputs.ci == 'true' }}
             run_macos_check: >-
               ${{ (github.event_name != 'pull_request' ||
@@ -167,6 +168,8 @@ jobs:
                           - end2end/**
                       utils:
                           - utils/**
+                      tts:
+                          - tts/**
                       ci:
                           - .github/**
 
@@ -188,6 +191,23 @@ jobs:
               with:
                   fetch-depth: 0
                   filter: blob:none
+
+            - name: Fail on unresolved merge-conflict markers
+              # Incident 3f1353bd → #791: a manual merge committed
+              # unresolved conflict markers and shipped green because the
+              # new tts/ directory was in no path-filter — every job,
+              # Lint included, legally skipped. This job is never
+              # path-filtered (CI invariant #3), so the gate covers every
+              # PR — docs-only and scripts-only included. git grep exit
+              # codes: 0 = found, 1 = clean, >1 = git error (fail loud,
+              # never silently pass).
+              run: |
+                  rc=0
+                  git grep -nE '^(<<<<<<< |>>>>>>> )' || rc=$?
+                  [ "$rc" -le 1 ] || { echo "git grep failed (rc=$rc)" >&2; exit "$rc"; }
+                  [ "$rc" -eq 0 ] || exit 0
+                  echo "::error::Unresolved merge-conflict markers committed — resolve before merge" >&2
+                  exit 1
 
             - name: Calculate version
               id: version
@@ -279,6 +299,27 @@ jobs:
             - name: Build landing CSS
               working-directory: origa_landing
               run: npm ci && npm run build:css
+
+            - name: Install shellcheck
+              # noble ships 0.9.0.1 — the version the tts/ scripts are
+              # verified against (koalaman/shellcheck:v0.9.0 locally).
+              run: sudo apt-get install -y --no-install-recommends shellcheck
+
+            - name: Lint tts python scripts
+              # E9 = syntax errors (the incident class: committed conflict
+              # markers), F = pyflakes (undefined names, unused imports).
+              # Version is pinned: ruff's default rule set drifts between
+              # releases. Cosmetic E401/E402/E701 findings in the
+              # GPU-workstation operational code are deliberately out of
+              # scope.
+              uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+              with:
+                  version: "0.17.1"
+                  src: tts
+                  args: check --select E9,F
+
+            - name: Lint tts shell scripts
+              run: shellcheck tts/*.sh
 
             - name: Check formatting
               run: cargo fmt --check --all
