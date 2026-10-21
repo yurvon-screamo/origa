@@ -238,6 +238,13 @@ When('пользователь жмёт {string} отвечая {string}', async
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	const front = page.getByTestId("counter-binding-front");
 	if (await front.isVisible({ timeout: 5_000 }).catch(() => false)) {
+		// Запоминаем оценённую цифру: порядок пачки случайный, и проверка
+		// «оценённая связка больше не показывается» сверяется с ней, а не
+		// с фиксированной «1».
+		const digit = ((await front.locator("span").first().textContent()) ?? "").trim();
+		await page.evaluate((d) => {
+			(window as unknown as { __ratedDigit?: string }).__ratedDigit = d;
+		}, digit);
 		await page.keyboard.press(" ");
 		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 	}
@@ -287,6 +294,28 @@ Then('пачка переходит к следующей цифре', async ({ 
 	await expect
 		.poll(async () => progress.textContent(), { timeout: 15_000 })
 		.toContain("2 / 11");
+});
+
+When('пользователь раскрывает ответ связки', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	await page.keyboard.press(" ");
+	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+});
+
+Then('на ответе связки есть фуригана с чтением из реестра', async ({ page }) => {
+	// Фуригана — ruby-подпись чтения из реестра (не по кускам: 1日 =
+	// ついたчи, а не いち+にчи).
+	const rt = page.getByTestId("counter-binding-answer-reading");
+	await rt.waitFor({ timeout: 10_000 });
+	const reading = ((await rt.textContent()) ?? "").trim();
+	expect(reading.length).toBeGreaterThan(0);
+	// Чтение каной (хирагана) — из реестра счётных суффиксов.
+	expect(reading).toMatch(/[\u3040-\u309f]/);
+});
+
+Then('на ответе связки есть кнопка озвучки', async ({ page }) => {
+	await page.getByTestId("counter-binding-audio-btn").waitFor({ timeout: 10_000 });
 });
 
 When('пользователь проходит пачку связок до конца', async ({ page }) => {
@@ -340,9 +369,19 @@ When('пользователь перезаходит в урок', async ({ pag
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	// Порядок пачки случайный — сверяемся с той цифрой, которую юзер
+	// оценил (запомнил предыдущий шаг), а не с фиксированной «1».
+	const rated = await page.evaluate(
+		() => (window as unknown as { __ratedDigit?: string }).__ratedDigit ?? "",
+	);
+	expect(rated.length, "предыдущий шаг должен был запомнить оценённую цифру").toBeGreaterThan(0);
 	await expect
-		.poll(async () => page.getByTestId("counter-binding-front").textContent(), { timeout: 15_000 })
-		.not.toContain("1×");
+		.poll(
+			async () =>
+				page.getByTestId("counter-binding-front").locator("span").first().textContent(),
+			{ timeout: 15_000 },
+		)
+		.not.toBe(rated);
 	const progress = await page.getByTestId("counter-bindings-progress").textContent();
 	expect(progress).toContain("1 / 10");
 });
