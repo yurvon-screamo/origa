@@ -69,10 +69,18 @@ export async function wipeClientAuthState(page: Page): Promise<void> {
  * on the ROOT route ("/" renders Home) and never moves to /home, so the
  * terminal-URL wait has to fall back to the content markers — the same
  * fallback the BDD suite uses (see uiLogin below).
+ *
+ * `timeout` is the budget for the terminal-URL wait. The fallback keeps
+ * its own (short) budget: it only runs when the URL did not settle.
+ * Callers that boot a cold WASM bundle (local `trunk serve`) need a
+ * larger budget than the CI-tuned default.
  */
-export async function waitForLoginComplete(page: Page): Promise<void> {
+export async function waitForLoginComplete(
+  page: Page,
+  timeout = 90_000,
+): Promise<void> {
   try {
-    await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
+    await page.waitForURL(/\/(home|onboarding)$/, { timeout });
   } catch {
     const toggle = page.getByTestId("login-password-toggle");
     await toggle.waitFor({ state: "hidden", timeout: 15_000 });
@@ -81,6 +89,20 @@ export async function waitForLoginComplete(page: Page): Promise<void> {
       .or(page.getByTestId("onboarding-stepper"))
       .waitFor({ state: "visible", timeout: 60_000 });
   }
+}
+
+/**
+ * Restore the one-time resource-download consent.
+ *
+ * The app shows the ~230 MB download overlay on authenticated routes
+ * until the consent is given, and the overlay blocks every click. The
+ * specs pre-approve it through an init script, but a `localStorage.clear()`
+ * wipes the flag again — so it has to be restored after the clear.
+ */
+export async function restoreDownloadConsent(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    localStorage.setItem("origa_resource_download_consented", "true"),
+  );
 }
 
 export interface TestUserContext {

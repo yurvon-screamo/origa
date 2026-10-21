@@ -17,7 +17,12 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD, waitForLoginComplete } from "../helpers/auth";
+import {
+    generateUniqueEmail,
+    DEFAULT_TEST_PASSWORD,
+    waitForLoginComplete,
+    restoreDownloadConsent,
+} from "../helpers/auth";
 
 const COUNTER_TAG = "Счётный суффикс";
 const LABEL = process.env.SHOT_LABEL ?? "after";
@@ -50,9 +55,7 @@ test("counter scoring card screenshots", async ({ page }) => {
         // the ~230 MB consent overlay blocks every later step (the overlay
         // demands an explicit click; the init-script value alone is not
         // enough after a clear).
-        await page.evaluate(() =>
-            localStorage.setItem("origa_resource_download_consented", "true"),
-        );
+        await restoreDownloadConsent(page);
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
@@ -61,7 +64,7 @@ test("counter scoring card screenshots", async ({ page }) => {
             // A cold DEBUG wasm bundle (local trunk serve) takes minutes to
             // download and compile in the browser — well over the CI-tuned
             // 120s, hence the generous window here.
-            await waitForLoginComplete(page);
+            await waitForLoginComplete(page, 420_000);
             loggedIn = true;
         } catch {
             loggedIn = false;

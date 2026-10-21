@@ -159,9 +159,14 @@ async function injectSeed(page: Page): Promise<void> {
 async function login(page: Page): Promise<void> {
     // The demo account is not part of the TrailBase fixture — create it so
     // the spec also runs on a fresh instance (CI). An existing account is
-    // fine: the password is the same one the spec logs in with.
+    // fine: the password is the same one the spec logs in with, and only
+    // that case is tolerated — an auth failure must surface as one.
     const { token, csrfToken } = await getAdminToken();
-    await createTestUser(token, csrfToken, EMAIL, PASSWORD).catch(() => undefined);
+    await createTestUser(token, csrfToken, EMAIL, PASSWORD).catch((e: unknown) => {
+        if (!String(e).includes("already exists")) {
+            throw e;
+        }
+    });
 
     await page.context().addInitScript(() => {
         if (window.location.origin === "http://localhost:1420") {

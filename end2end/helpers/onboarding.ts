@@ -3,18 +3,21 @@ import { type Page, expect } from "@playwright/test";
 import { OnboardingPage } from "../pages";
 
 /**
- * Whether the app currently shows the onboarding wizard.
+ * Whether the app shows the onboarding wizard.
  *
- * The URL is not a reliable signal here: the app settles on the ROOT
- * route ("/" renders Home) and shows the wizard inside it, so a fresh
- * profile never moves to /onboarding. The stepper marker is what the
- * BDD suite uses for the same decision.
+ * The URL is not a reliable signal right after the login: the app lands
+ * on the root route and redirects a fresh profile to /onboarding only
+ * once the app is up — so the wizard marker is what the BDD suite uses
+ * for the same decision. The wait is real: the marker only appears a
+ * moment after the login round-trip.
  */
 export async function isOnboardingShown(page: Page, timeout = 60_000): Promise<boolean> {
-    return page
-        .getByTestId("onboarding-stepper")
-        .isVisible({ timeout })
-        .catch(() => false);
+    try {
+        await page.getByTestId("onboarding-stepper").waitFor({ state: "visible", timeout });
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /**

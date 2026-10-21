@@ -10,7 +10,12 @@ import { LoginPage } from "../pages/login.page";
 import { LessonPage } from "../pages/lesson.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import { completeOnboardingToScoring, isOnboardingShown } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD, waitForLoginComplete } from "../helpers/auth";
+import {
+    generateUniqueEmail,
+    DEFAULT_TEST_PASSWORD,
+    waitForLoginComplete,
+    restoreDownloadConsent,
+} from "../helpers/auth";
 
 test("lesson example screenshots", async ({ page }) => {
     test.setTimeout(600_000);
@@ -38,9 +43,7 @@ test("lesson example screenshots", async ({ page }) => {
         // the ~230 MB consent overlay blocks every later step (the overlay
         // demands an explicit click; the init-script value alone is not
         // enough after a clear).
-        await page.evaluate(() =>
-            localStorage.setItem("origa_resource_download_consented", "true"),
-        );
+        await restoreDownloadConsent(page);
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
