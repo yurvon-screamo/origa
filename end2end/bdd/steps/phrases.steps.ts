@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
-import { HomePage, PhrasesPage } from "../../pages";
+import { PhrasesPage, WordsPage } from "../../pages";
 import { waitUntilStable } from "../../helpers/wait";
 
 When('пользователь открывает страницу фраз', async ({ page }) => {
@@ -15,8 +15,10 @@ When('ищет фразу {string} на странице фраз', async ({ pag
 });
 
 When('нажимает навигацию к фразам', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.sidebarPhrases.click();
+    // #823: phrases left the nav bars — the entry point is the words
+    // header button now.
+    const wordsPage = new WordsPage(page);
+    await wordsPage.phrasesButton.click({ timeout: 10_000 });
     await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
 });
 
@@ -38,13 +40,6 @@ Then('на странице фраз отображается пустое со�
 Then('отображается поле поиска фраз', async ({ page }) => {
     const phrasesPage = new PhrasesPage(page);
     await expect(phrasesPage.searchInput).toBeVisible();
-});
-
-Then('отображается вкладка фраз в навигации', async ({ page }) => {
-    // Viewport is set up by the 'пользователь устанавливает мобильный размер
-    // экрана' Given step — the bottom-tab nav is mobile-only (lg:hidden).
-    await expect(page.getByTestId("bottom-tab")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId("bottom-tab-tab-phrases")).toBeVisible({ timeout: 10_000 });
 });
 
 When('нажимает кнопку возврата с фраз', async ({ page }) => {

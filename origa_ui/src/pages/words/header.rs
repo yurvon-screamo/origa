@@ -8,6 +8,8 @@ use leptos_router::hooks::use_navigate;
 pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
     let i18n = use_i18n();
     let navigate_sets = use_navigate();
+    let navigate_phrases = use_navigate();
+    let navigate_examples = use_navigate();
     let is_modal_open = RwSignal::new(false);
 
     view! {
@@ -25,6 +27,24 @@ pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
                 })
             >
                 {t!(i18n, words.decks)}
+            </Button>
+            <Button
+                variant=ButtonVariant::Ghost
+                test_id="words-phrases-btn"
+                on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                    navigate_phrases("/phrases", Default::default());
+                })
+            >
+                {t!(i18n, words.phrases)}
+            </Button>
+            <Button
+                variant=ButtonVariant::Ghost
+                test_id="words-examples-btn"
+                on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
+                    navigate_examples("/examples", Default::default());
+                })
+            >
+                {t!(i18n, words.examples)}
             </Button>
             <Button
                 variant=ButtonVariant::Olive

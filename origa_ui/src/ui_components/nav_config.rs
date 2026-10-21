@@ -5,7 +5,6 @@ pub enum NavRoute {
     Grammar,
     Kanji,
     Counters,
-    Phrases,
     Profile,
 }
 
@@ -17,7 +16,6 @@ impl NavRoute {
             Self::Grammar => "/grammar",
             Self::Kanji => "/kanji",
             Self::Counters => "/counters",
-            Self::Phrases => "/phrases",
             Self::Profile => "/profile",
         }
     }
@@ -29,7 +27,6 @@ impl NavRoute {
             Self::Grammar => icondata::LuPencilLine,
             Self::Kanji => icondata::LuBookOpen,
             Self::Counters => icondata::LuHash,
-            Self::Phrases => icondata::LuMessageSquare,
             Self::Profile => icondata::LuUser,
         }
     }
@@ -46,7 +43,6 @@ impl NavRoute {
             Self::Grammar => keys.home().grammar().inner().to_string(),
             Self::Kanji => keys.home().kanji().inner().to_string(),
             Self::Counters => keys.home().counters_label().inner().to_string(),
-            Self::Phrases => keys.home().phrases().inner().to_string(),
             Self::Profile => keys.home().profile().inner().to_string(),
         }
     }
@@ -54,35 +50,39 @@ impl NavRoute {
     pub fn is_active(self, path: &str) -> bool {
         match self {
             Self::Home => path.starts_with("/home") || path == "/" || path.is_empty(),
-            Self::Words => path.starts_with("/words") || path.starts_with("/sets"),
+            // The Words section covers its sibling pages reached from the
+            // words header (#823): decks and the phrase/example lists.
+            Self::Words => {
+                path.starts_with("/words")
+                    || path.starts_with("/sets")
+                    || path.starts_with("/phrases")
+                    || path.starts_with("/examples")
+            },
             Self::Grammar => path.starts_with("/grammar"),
             Self::Kanji => path.starts_with("/kanji"),
             Self::Counters => path.starts_with("/counters"),
-            Self::Phrases => path.starts_with("/phrases"),
             Self::Profile => path.starts_with("/profile"),
         }
     }
 
-    pub const fn all() -> &'static [NavRoute; 7] {
+    pub const fn all() -> &'static [NavRoute; 6] {
         &[
             Self::Home,
             Self::Words,
             Self::Grammar,
             Self::Kanji,
             Self::Counters,
-            Self::Phrases,
             Self::Profile,
         ]
     }
 
-    pub const fn sidebar_routes() -> &'static [NavRoute; 6] {
+    pub const fn sidebar_routes() -> &'static [NavRoute; 5] {
         &[
             Self::Home,
             Self::Words,
             Self::Grammar,
             Self::Kanji,
             Self::Counters,
-            Self::Phrases,
         ]
     }
 
@@ -93,7 +93,6 @@ impl NavRoute {
             Self::Grammar => "tab-grammar",
             Self::Kanji => "tab-kanji",
             Self::Counters => "tab-counters",
-            Self::Phrases => "tab-phrases",
             Self::Profile => "tab-profile",
         }
     }
@@ -109,7 +108,6 @@ mod tests {
         assert_eq!(NavRoute::Words.href(), "/words");
         assert_eq!(NavRoute::Grammar.href(), "/grammar");
         assert_eq!(NavRoute::Kanji.href(), "/kanji");
-        assert_eq!(NavRoute::Phrases.href(), "/phrases");
         assert_eq!(NavRoute::Profile.href(), "/profile");
     }
 
@@ -130,18 +128,28 @@ mod tests {
     }
 
     #[test]
+    fn is_active_words_section_covers_phrases_and_examples() {
+        // #823: phrases/examples lost their nav entries — the words
+        // section stays highlighted on their pages (reached from the
+        // words header).
+        assert!(NavRoute::Words.is_active("/phrases"));
+        assert!(NavRoute::Words.is_active("/examples"));
+        assert!(!NavRoute::Home.is_active("/phrases"));
+        assert!(!NavRoute::Home.is_active("/examples"));
+    }
+
+    #[test]
     fn is_active_detail_paths_match_their_section() {
         assert!(NavRoute::Grammar.is_active("/grammar/123"));
         assert!(NavRoute::Kanji.is_active("/kanji/食"));
-        assert!(NavRoute::Phrases.is_active("/phrases"));
         assert!(NavRoute::Profile.is_active("/profile"));
     }
 
     #[test]
-    fn all_contains_seven_routes_sidebar_excludes_profile() {
-        assert_eq!(NavRoute::all().len(), 7);
+    fn all_contains_six_routes_sidebar_excludes_profile() {
+        assert_eq!(NavRoute::all().len(), 6);
         assert!(!NavRoute::sidebar_routes().contains(&NavRoute::Profile));
-        assert_eq!(NavRoute::sidebar_routes().len(), 6);
+        assert_eq!(NavRoute::sidebar_routes().len(), 5);
     }
 
     #[test]

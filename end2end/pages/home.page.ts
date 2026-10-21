@@ -16,7 +16,6 @@ export class HomePage extends BasePage {
   readonly sidebarWords: Locator;
   readonly sidebarGrammar: Locator;
   readonly sidebarKanji: Locator;
-  readonly sidebarPhrases: Locator;
 
   // JLPT Progress
   readonly jlptProgress: Locator;
@@ -65,7 +64,6 @@ export class HomePage extends BasePage {
     this.sidebarWords = page.getByTestId("sidebar-tab-words");
     this.sidebarGrammar = page.getByTestId("sidebar-tab-grammar");
     this.sidebarKanji = page.getByTestId("sidebar-tab-kanji");
-    this.sidebarPhrases = page.getByTestId("sidebar-tab-phrases");
 
     // JLPT Progress
     this.jlptProgress = page.getByTestId("home-jlpt-progress");
