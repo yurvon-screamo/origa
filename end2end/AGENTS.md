@@ -79,7 +79,7 @@ the repository root.
 
 The suite is run by hand for now: its infrastructure no longer depends
 on the developer's machine, but the onboarding flow of a fresh profile is
-not verified in a pipeline yet (ADR-063, "Not Done Here"). The weekly
+not verified in a pipeline yet (ADR-066, "Not Done Here"). The weekly
 job follows that work.
 
 ## Test Users

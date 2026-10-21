@@ -106,7 +106,7 @@ cargo fmt --check && cargo fmt
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
-### SSR-тесты лендинга (ADR-063)
+### SSR-тесты лендинга (ADR-066)
 
 Целевые тесты `origa_landing` требуют фичу `ssr` — без неё они не собираются
 вообще, поэтому `cargo test --workspace` их не выполняет. Отдельная команда:

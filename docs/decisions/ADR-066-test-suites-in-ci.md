@@ -1,4 +1,4 @@
-# ADR-063: Test suites in CI — landing SSR tests, screenshot specs, coverage
+# ADR-066: Test suites in CI — landing SSR tests, screenshot specs, coverage
 
 ## Status
 

@@ -1,6 +1,6 @@
 name: Quality Coverage
 
-# Coverage net for the `origa` crate (issue #800, ADR-063). Two modes,
+# Coverage net for the `origa` crate (issue #800, ADR-066). Two modes,
 # one job:
 #
 #   * weekly (Mon 04:17 UTC, default branch) — the coverage trend on
@@ -15,7 +15,7 @@ name: Quality Coverage
 # silently degrades (no secrets) — the artifact upload still works.
 #
 # The screenshot specs (end2end/screenshots-spec) are NOT here yet: their
-# onboarding flow still needs work in a CI-like environment (ADR-063,
+# onboarding flow still needs work in a CI-like environment (ADR-066,
 # "Not Done Here").
 on:
     schedule:
