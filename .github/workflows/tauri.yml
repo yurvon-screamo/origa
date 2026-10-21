@@ -102,7 +102,7 @@ jobs:
                   tools: trunk
 
             - name: Add cargo bin to PATH
-              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
             - name: Build frontend
               working-directory: origa_ui

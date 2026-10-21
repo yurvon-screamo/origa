@@ -775,15 +775,15 @@ jobs:
                   key: trailbase-v0.28.3-verified
 
             - name: Add TrailBase to PATH
-              run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
             - name: Validate TrailBase CLI
               id: validate-trailbase
               run: |
                   if command -v trail &> /dev/null && trail --version &> /dev/null; then
-                    echo "valid=true" >> $GITHUB_OUTPUT
+                    echo "valid=true" >> "$GITHUB_OUTPUT"
                   else
-                    echo "valid=false" >> $GITHUB_OUTPUT
+                    echo "valid=false" >> "$GITHUB_OUTPUT"
                   fi
 
             - name: Install TrailBase CLI
