@@ -1,5 +1,7 @@
 #[path = "build_config.rs"]
 mod build_config;
+#[path = "css_rebuild.rs"]
+mod css_rebuild;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
@@ -10,6 +12,7 @@ fn main() {
     println!("cargo:rustc-env=ORIGA_LANDING_BASE_URL={landing_base_url}");
     println!("cargo:rerun-if-env-changed=ORIGA_LANDING_BASE_URL");
     println!("cargo:rerun-if-changed=build_config.rs");
+    println!("cargo:rerun-if-changed=css_rebuild.rs");
 
     let app_base_url = std::env::var("ORIGA_APP_BASE_URL")
         .ok()
@@ -84,6 +87,43 @@ fn build_css() {
         return;
     }
 
+    // Issue #832: a fresh clone has no node_modules, and the production
+    // Docker image has no node at all — both must keep building with the
+    // committed stylesheet instead of panicking on a dead `npx` call.
+    let tailwind_installed = base.join("node_modules/tailwindcss/package.json").exists();
+    match css_rebuild::css_rebuild_action(tailwind_installed, output.exists()) {
+        css_rebuild::CssAction::Rebuild => run_tailwind(&input, &output, &manifest_dir),
+        css_rebuild::CssAction::UseExisting => {
+            println!(
+                "cargo:warning=Tailwind CSS not installed (no origa_landing/node_modules): \
+                 keeping {}; it may be stale. \
+                 Run `npm ci` (or `bun install`) in origa_landing/ to rebuild CSS.",
+                output.display()
+            );
+        },
+        // No warning here: the post-check below fails the build with the
+        // full explanation and install instructions.
+        css_rebuild::CssAction::Fail => {},
+    }
+
+    // Every non-skip path must leave a stylesheet on disk. Without it the
+    // binary serves 404 on `/landing.processed.css` (server.rs ServeFile)
+    // with an empty LANDING_CSS_VERSION cache tag — a silently broken site.
+    if !output.exists() {
+        panic!(
+            "{} is missing and the Tailwind CSS rebuild is unavailable. \
+             Run `npm ci` (or `bun install`) in origa_landing/, then rebuild.",
+            output.display()
+        );
+    }
+}
+
+/// Shell out to `npx tailwindcss` (via `cmd /C` on Windows). A non-zero exit
+/// is a genuine build error — this branch only runs when Tailwind IS
+/// installed — so it fails loudly. A missing `npx` binary (production Docker
+/// image has no node) keeps the build going: the committed stylesheet is the
+/// contract there, and the caller's post-check enforces its presence.
+fn run_tailwind(input: &std::path::Path, output: &std::path::Path, manifest_dir: &str) {
     let result = if cfg!(windows) {
         std::process::Command::new("cmd")
             .args([
@@ -96,7 +136,7 @@ fn build_css() {
                 output.to_str().unwrap(),
                 "--minify",
             ])
-            .current_dir(&manifest_dir)
+            .current_dir(manifest_dir)
             .status()
     } else {
         std::process::Command::new("npx")
@@ -108,13 +148,17 @@ fn build_css() {
                 output.to_str().unwrap(),
                 "--minify",
             ])
-            .current_dir(&manifest_dir)
+            .current_dir(manifest_dir)
             .status()
     };
 
     match result {
         Ok(s) if s.success() => {},
-        Ok(s) => panic!("CSS build failed: npx tailwindcss exited with {s}"),
+        Ok(s) => panic!(
+            "CSS build failed: npx tailwindcss exited with {s}. \
+             Tailwind is installed in origa_landing/node_modules, so reproduce with \
+             `npm run build:css` there and check tailwind.config.js and style/*.css."
+        ),
         Err(e) => {
             println!("cargo:warning=npx not available, skipping CSS rebuild: {e}");
         },

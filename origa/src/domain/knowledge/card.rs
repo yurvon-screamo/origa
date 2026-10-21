@@ -756,7 +756,7 @@ mod tests {
 
             #[test]
             fn returns_answer_for_vocabulary_card() {
-                crate::use_cases::init_real_dictionaries();
+                crate::test_support::init_real_dictionaries();
                 let vocab_card = create_vocabulary_card("猫");
                 let card = Card::Vocabulary(vocab_card);
 
@@ -775,7 +775,7 @@ mod tests {
 
             #[test]
             fn returns_answer_for_kanji_card() {
-                crate::use_cases::init_real_dictionaries();
+                crate::test_support::init_real_dictionaries();
                 let kanji_card = create_kanji_card("日");
                 let card = Card::Kanji(kanji_card);
 

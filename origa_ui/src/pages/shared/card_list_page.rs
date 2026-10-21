@@ -5,7 +5,7 @@ use super::{
     CardCounts, CardStatus, DEFAULT_VISIBLE_COUNT, DeleteRequest, Filter, FilterBtn, FirstRunGuard,
     GroupedGrid, JlptCounts, JlptFilter, JlptFilterBtn, LevelIndex, ListGrouping, ListPage,
     ListUiStore, LoadMoreButton, create_delete_callback, create_mark_as_known_callback,
-    create_toggle_favorite_callback, jlpt_level_idx, order_cards_by_group,
+    create_toggle_favorite_callback, default_card_matches, jlpt_level_idx, order_cards_by_group,
     restore_scroll_when_ready, track_scroll_while_authenticated,
 };
 use crate::i18n::use_i18n;
@@ -17,7 +17,7 @@ use crate::ui_components::{
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, CardAnswer, JapaneseLevel, NativeLanguage, StudyCard, User};
+use origa::domain::{Card, JapaneseLevel, NativeLanguage, StudyCard, User};
 use origa::traits::UserRepository;
 use std::collections::HashMap;
 
@@ -42,6 +42,35 @@ pub struct CardListExtras {
     /// Called whenever the visible (filtered + paginated) card slice
     /// changes — the lazy data-load trigger.
     pub on_visible_cards: Option<VisibleCardsCallback>,
+    /// Page-provided search matcher (#823). The default matching reads
+    /// `Card::question()/answer()`, which for CDN-backed cards (examples)
+    /// resolve only to the word surface — the sentence text is not domain
+    /// data. A matcher lets the page match the query against lazily loaded
+    /// CDN details instead. Receives the ALREADY lowercased and trimmed
+    /// query.
+    pub search_match: Option<SearchMatcher>,
+}
+
+/// Custom search predicate: (card, lowercased query, native language) →
+/// matched. Must be cheap and read only process-global caches — it runs
+/// inside the `filtered_cards` recomputation.
+pub type SearchMatcher = Arc<dyn Fn(&StudyCard, &str, NativeLanguage) -> bool + Send + Sync>;
+
+/// Action callbacks and deletion state of one card list item — they
+/// always travel together from [`CardListContext`]; grouping them keeps
+/// the item components at a sane arity (#823). The id-taking callbacks
+/// are context-level: the item injects its own card id when wiring the
+/// action bar.
+///
+/// `PhraseCardItem` still takes individual props (its 6-arity smell
+/// predates this change; migrating it would trip the same qlty
+/// threshold until its render inputs are grouped too).
+#[derive(Clone, Copy)]
+pub struct CardItemActions {
+    pub on_toggle_favorite: Callback<ulid::Ulid>,
+    pub on_mark_as_known: Callback<ulid::Ulid>,
+    pub on_delete: Callback<DeleteRequest>,
+    pub is_deleting: Signal<bool>,
 }
 
 #[derive(Clone)]
@@ -60,6 +89,18 @@ pub struct CardListContext {
     pub toasts: RwSignal<Vec<ToastData>>,
     pub all_cards: RwSignal<Vec<StudyCard>>,
     pub is_loading: RwSignal<bool>,
+}
+
+impl CardListContext {
+    /// The action bundle shared by every item of the list.
+    pub fn actions(&self) -> CardItemActions {
+        CardItemActions {
+            on_toggle_favorite: self.on_toggle_favorite,
+            on_mark_as_known: self.on_mark_as_known,
+            on_delete: self.on_delete,
+            is_deleting: self.is_deleting,
+        }
+    }
 }
 
 pub fn create_card_list_context(
@@ -189,6 +230,7 @@ where
     let list_ui = use_context::<ListUiStore>().expect("ListUiStore not provided");
     let slot = list_ui.slot(page);
     let search = extras.search.unwrap_or(slot.search);
+    let search_match = extras.search_match;
     let filter = slot.status;
     let jlpt_filter = slot.jlpt;
     let visible_count = slot.visible_count;
@@ -214,7 +256,7 @@ where
     };
 
     let filtered_cards = Memo::new(move |_| {
-        let query = search.get().to_lowercase();
+        let query = search.get().trim().to_lowercase();
         let current_filter = filter.get();
         let current_jlpt = jlpt_filter.get();
         let index = level_index.get();
@@ -224,33 +266,11 @@ where
             .get()
             .into_iter()
             .filter(|card| {
-                let matches_search = query.is_empty() || {
-                    let card_inner = card.card();
-                    let question = card_inner.question(&lang);
-
-                    let matches_question = question
-                        .ok()
-                        .is_some_and(|q| q.text().to_lowercase().contains(&query));
-
-                    let matches_answer = match card_inner.answer(&lang).ok() {
-                        Some(CardAnswer::Vocabulary {
-                            translations,
-                            description,
-                        }) => {
-                            translations
-                                .iter()
-                                .any(|t| t.to_lowercase().contains(&query))
-                                || description
-                                    .as_ref()
-                                    .is_some_and(|d| d.to_lowercase().contains(&query))
-                        },
-                        Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
-                        Some(CardAnswer::GrammarNuances { .. }) => false,
-                        None => false,
+                let matches_search = query.is_empty()
+                    || match search_match.as_ref() {
+                        Some(matcher) => matcher(card, &query, lang),
+                        None => default_card_matches(card, &query, lang),
                     };
-
-                    matches_question || matches_answer
-                };
                 let matches_filter =
                     current_filter.matches(CardStatus::from_study_card(card), card.is_favorite());
                 // JLPT axis — AND with status + search. For Flat pages

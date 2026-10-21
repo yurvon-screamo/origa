@@ -170,7 +170,7 @@ impl KanjiCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
 
     fn setup() {
         init_real_dictionaries();

@@ -1308,6 +1308,150 @@ async fn quiz_result_display_multi_partial_lists_missed_and_wrong() {
     );
 }
 
+#[wasm_bindgen_test]
+async fn quiz_result_display_multi_lenient_pass_is_success_and_lists_missed() {
+    use origa::domain::MultiQuizResult;
+
+    // #822: a lenient pass (≥50% readings, none wrong) counts as a pass
+    // but must NOT claim «все чтения выбраны» — success color, its own
+    // message, and the missed list (たべる = the correct fixture option,
+    // marked missed here).
+    let wrapper = create_wrapper();
+    let (set_lenient_msg, get_lenient_msg) = shared_cell::<String>();
+    let (set_perfect_msg, get_perfect_msg) = shared_cell::<String>();
+    mount_with_i18n(&wrapper, move || {
+        let i18n = crate::i18n::use_i18n();
+        set_lenient_msg.set(Some(
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.multi_lenient_pass)
+                .to_string(),
+        ));
+        set_perfect_msg.set(Some(
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.multi_perfect).to_string(),
+        ));
+        let multi = MultiQuizResult {
+            correct_selections: vec![],
+            missed: vec![0usize],
+            wrong_selections: vec![],
+            is_perfect: false,
+        };
+        view! {
+            <QuizResultDisplay
+                quiz_result=QuizResult::MultiLenientPass
+                multi_result=Some(multi)
+                options=quiz_options_fixture()
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text_el = wrapper.query_selector("p").unwrap().unwrap();
+    let class = text_el.get_attribute("class").unwrap_or_default();
+    assert!(
+        class.contains("text-[var(--success)]"),
+        "lenient pass must be success-styled; got: {class}"
+    );
+    let text = wrapper.text_content().unwrap();
+    assert!(
+        text.contains(get_lenient_msg.take().expect("captured").as_str()),
+        "lenient pass message must render; got: {text}"
+    );
+    assert!(
+        text.contains("たべる"),
+        "missed reading must be listed on a lenient pass; got: {text}"
+    );
+    assert!(
+        !text.contains(get_perfect_msg.take().expect("captured").as_str()),
+        "lenient pass must NOT render the «all readings selected» message; got: {text}"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// KanjiQuizAnswerName (#822)
+// ═══════════════════════════════════════════════════════════════════════
+
+#[wasm_bindgen_test]
+async fn kanji_quiz_answer_name_renders_meaning_label_and_name() {
+    let wrapper = create_wrapper();
+    let (set_label, get_label) = shared_cell::<String>();
+    mount_with_i18n(&wrapper, move || {
+        let i18n = crate::i18n::use_i18n();
+        set_label.set(Some(
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.meaning).to_string(),
+        ));
+        view! {
+            <super::quiz_card::KanjiQuizAnswerName name="день, солнце".to_string() />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text = wrapper.text_content().unwrap();
+    assert!(
+        text.contains(get_label.take().expect("captured").as_str()),
+        "meaning label must render; got: {text}"
+    );
+    assert!(
+        text.contains("день, солнце"),
+        "kanji name must render; got: {text}"
+    );
+}
+
+/// The full quiz view degrades without dictionary data: the wasm test
+/// env has no CDN kanji dictionary, so `card.answer` fails → the name
+/// box must stay hidden (no empty «Значение» box after submit).
+#[wasm_bindgen_test]
+async fn kanji_reading_quiz_without_dictionary_hides_empty_name_box() {
+    use super::quiz_card::{QuizCardView, QuizVariant};
+    use origa::domain::{QuizCard, QuizMode};
+
+    let wrapper = create_wrapper();
+    let (set_label, get_label) = shared_cell::<String>();
+    mount_with_i18n(&wrapper, move || {
+        let i18n = crate::i18n::use_i18n();
+        set_label.set(Some(
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.meaning).to_string(),
+        ));
+        let kanji: origa::domain::Card =
+            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"日"}}}"#)
+                .expect("deserialize kanji card");
+        let quiz = QuizCard::new(
+            kanji,
+            vec![
+                origa::domain::QuizOption::new("ニチ".to_string(), true, None),
+                origa::domain::QuizOption::new("ソチ".to_string(), false, None),
+            ],
+            QuizMode::Multi,
+        );
+        view! {
+            <QuizCardView
+                quiz_card=quiz
+                show_result=Signal::from(true)
+                selected_option=None
+                on_select_option=Callback::new(|_: usize| ())
+                on_dont_know=Callback::new(|_: ()| ())
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(|| HashSet::new())
+                quiz_variant=QuizVariant::Reading
+                selected_options=Signal::derive(|| HashSet::new())
+                multi_submitted=Signal::from(true)
+                multi_result=None
+                on_toggle=Callback::new(|_: usize| ())
+                on_submit=Callback::new(|_: ()| ())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text = wrapper.text_content().unwrap();
+    assert!(
+        !text.contains(get_label.take().expect("captured").as_str()),
+        "empty kanji name must hide the name box; got: {text}"
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // Acquaintance training (режим знакомства — часть основного потока)
 // ═══════════════════════════════════════════════════════════════════════

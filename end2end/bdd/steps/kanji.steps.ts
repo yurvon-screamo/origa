@@ -333,3 +333,34 @@ Then('отображается только группа кандзи уровн
         }
     }
 });
+
+When('пользователь ищет кандзи {string}', async ({ page }, query: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.searchKanji(query);
+});
+
+Then('кандзи {string} отображается в сетке', async ({ page }, kanji: string) => {
+    const kanjiPage = new KanjiPage(page);
+    const card = kanjiPage.kanjiGrid
+        .getByTestId("kanji-card-item")
+        .filter({ hasText: kanji });
+    await expect(card.first()).toBeVisible({ timeout: 10_000 });
+});
+
+When('выбирает уровень кандзи {string} в drawer', async ({ page }, level: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.selectLevel(level as "N5" | "N4" | "N3" | "N2" | "N1");
+});
+
+When('ищет в drawer добавления кандзи {string}', async ({ page }, query: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.searchDrawerKanji(query);
+});
+
+Then('в drawer добавления кандзи отображается {string}', async ({ page }, kanji: string) => {
+    const kanjiPage = new KanjiPage(page);
+    const item = kanjiPage.drawer
+        .getByTestId("kanji-drawer-item")
+        .filter({ hasText: kanji });
+    await expect(item.first()).toBeVisible({ timeout: 10_000 });
+});

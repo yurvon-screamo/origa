@@ -86,7 +86,7 @@ mod tests {
     use super::*;
     use crate::domain::User;
     use crate::domain::value_objects::Question;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
     use crate::use_cases::tests::fixtures::{InMemoryUserRepository, create_test_vocab_card};
 
     fn legacy_user() -> User {

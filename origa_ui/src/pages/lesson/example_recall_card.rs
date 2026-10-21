@@ -16,7 +16,8 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
-use crate::i18n::{t, use_i18n};
+use super::reveal_answer_button::RevealAnswerButton;
+use crate::i18n::{t, t_string, use_i18n};
 use crate::loaders::example_loader::{WordExample, example_audio_path, load_example_detail};
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
@@ -190,22 +191,24 @@ pub fn ExampleRecallCard(
                     }
                     .into_any()
                 }}
-            </div>
 
-            <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
-                {move || {
-                    view! {
-                        <Button
-                            variant=Signal::derive(|| ButtonVariant::Filled)
-                            on_click=Callback::new(move |_| on_show_answer.run(()))
-                            test_id=Signal::derive(|| "lesson-example-reveal".to_string())
-                        >
-                            {t!(i18n, lesson.example_reveal_translation)}
-                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                        </Button>
-                    }
-                }}
-            </Show>
+                // The reveal belongs to the centered group (the
+                // LessonCardShell etalon: content + reveal center
+                // together, #822). A separate flex child of the Card
+                // pinned the button to the bottom edge and dragged the
+                // question off-center.
+                <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
+                    <div class="mt-4 flex justify-center">
+                        <RevealAnswerButton
+                            test_id="lesson-example-reveal"
+                            label=Signal::derive(move || {
+                                t_string!(i18n, lesson.example_reveal_translation).to_string()
+                            })
+                            on_click=on_show_answer
+                        />
+                    </div>
+                </Show>
+            </div>
         </Card>
 
         // Binary self-assessment BELOW the card — the RatingButtons

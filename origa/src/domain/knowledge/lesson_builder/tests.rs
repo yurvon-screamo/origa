@@ -500,7 +500,7 @@ fn init_phrase_index_loads_entries() {
     // OnceLock race and break fixture-based tests. We instead verify the
     // helper is exported and callable, and assert the index contract
     // (entries become retrievable) via the safe fixture path.
-    let _helper: fn() = crate::use_cases::init_phrase_index_from_cdn;
+    let _helper: fn() = crate::test_support::init_phrase_index_from_cdn;
 
     ensure_test_phrase_index();
 

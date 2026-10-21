@@ -292,7 +292,7 @@ mod tests {
     use super::*;
     use crate::domain::knowledge::{KanjiCard, VocabularyCard};
     use crate::domain::value_objects::Question;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
     use chrono::Utc;
 
     fn create_vocab_card(word: &str) -> Card {

@@ -14,6 +14,10 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
+    # Single source of the Linux system packages (GTK speech stack):
+    # consumed by the apt cache step (PR/branch runs) and by the plain
+    # install step (tag runs) — one place to bump, no list drift.
+    GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
 
 permissions:
     contents: read
@@ -290,10 +294,17 @@ jobs:
               if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -400,10 +411,17 @@ jobs:
               if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -476,6 +494,21 @@ jobs:
                   shared-key: origa-ci-v2
                   save-if: false
 
+            # Issue #832: a fresh clone without landing node deps must build.
+            # Runs before setup-node/npm ci, so node_modules cannot exist.
+            # touch() makes the committed landing.processed.css stale, forcing
+            # build.rs off the mtime-fresh skip onto the rebuild path; the
+            # grep asserts the no-deps warning branch, not just a green exit.
+            - name: Build landing without node dependencies
+              # bash gives -eo pipefail (the default shell has no pipefail,
+              # so a failed cargo build would be masked by tee's exit code).
+              shell: bash
+              run: |
+                  test ! -e origa_landing/node_modules
+                  touch origa_landing/style/landing.css
+                  cargo build -p origa_landing 2>&1 | tee /tmp/landing-no-deps-build.log
+                  grep -q "Tailwind CSS not installed" /tmp/landing-no-deps-build.log
+
             - name: Setup Node.js for landing CSS
               uses: actions/setup-node@v7
               with:
@@ -487,6 +520,23 @@ jobs:
             - name: Build landing CSS
               working-directory: origa_landing
               run: npm ci && npm run build:css
+
+            # Freshness gate (#831): the committed landing.processed.css
+            # must match a clean rebuild from landing.css. build.rs skips
+            # the rebuild when mtimes look equal (always true in a fresh
+            # clone), and the Docker image ships the committed file, so a
+            # drifted artifact reaches production with no other net — this
+            # exact hole shipped the #807 footer badge without its CSS.
+            # On drift the step log carries git diff --stat plus the full
+            # diff of the minified (single-line) stylesheet.
+            - name: Verify committed landing CSS is fresh
+              working-directory: origa_landing
+              run: |
+                  if ! git diff --exit-code --stat -- style/landing.processed.css; then
+                      git --no-pager diff -- style/landing.processed.css
+                      echo "::error::origa_landing/style/landing.processed.css is stale — run 'npm ci && npm run build:css' in origa_landing and commit the artifact (see origa_landing/AGENTS.md)"
+                      exit 1
+                  fi
 
             - name: Run landing SSR tests
               run: cargo test -p origa_landing --features ssr
@@ -520,10 +570,17 @@ jobs:
               if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -573,10 +630,17 @@ jobs:
               if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -652,6 +716,12 @@ jobs:
               with:
                   packages: protobuf-compiler
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache).
+              if: github.ref_type == 'tag'
+              run: sudo apt-get install -y --no-install-recommends protobuf-compiler
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -837,7 +907,10 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v7
               with:
-                  node-version: "20"
+                  # Node 22: the screenshot tool runs on type stripping
+                  # (Node >= 22.18) and the unit tests use `node --test`
+                  # on TypeScript sources.
+                  node-version: "22"
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -846,6 +919,14 @@ jobs:
             - name: Verify every BDD scenario runs in CI exactly once
               working-directory: end2end
               run: node scripts/check-ci-matrix.mjs
+
+            - name: Run unit tests
+              working-directory: end2end
+              run: npm run test:unit
+
+            - name: Lint e2e sources
+              working-directory: end2end
+              run: npm run lint
 
     e2e:
         name: E2E ${{ matrix.group }}
@@ -925,6 +1006,13 @@ jobs:
 
             - name: Verify TrailBase
               run: trail --version
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  # Matches the toolchain of the matrix guard job and the
+                  # `engines` field of end2end/package.json.
+                  node-version: "22"
 
             - name: Install Node.js dependencies
               working-directory: end2end

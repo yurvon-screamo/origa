@@ -330,7 +330,7 @@ mod generate_grammar_practice_questions {
 
     #[test]
     fn returns_empty_for_empty_knowledge_set() {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
 
         let rule = create_verb_rule();
         let ks = KnowledgeSet::new();
@@ -341,7 +341,7 @@ mod generate_grammar_practice_questions {
 
     #[test]
     fn practice_questions_have_unique_words() {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
 
         let rule = create_verb_rule();
         let mut ks = KnowledgeSet::new();
@@ -363,7 +363,7 @@ mod generate_grammar_practice_questions {
 
     #[test]
     fn returns_fewer_when_not_enough_words() {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
 
         let rule = create_verb_rule();
         let mut ks = KnowledgeSet::new();
@@ -383,7 +383,7 @@ mod generate_grammar_practice_questions {
 
     #[test]
     fn correct_answer_is_at_correct_index() {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
 
         let rule = create_verb_rule();
         let mut ks = KnowledgeSet::new();
@@ -407,7 +407,7 @@ mod generate_grammar_practice_questions {
 
     #[test]
     fn each_question_has_four_options() {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
 
         let rule = create_verb_rule();
         let mut ks = KnowledgeSet::new();

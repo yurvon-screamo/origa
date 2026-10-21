@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-authors = ["yurvon-screamo <yurvon@ya.ru>"]
+authors = ["yurvon-screamo <yurvon.screamo@gmail.com>"]
 license-file = "LICENSE"
 repository = "https://github.com/yurvon-screamo/origa"
 readme = "README.md"

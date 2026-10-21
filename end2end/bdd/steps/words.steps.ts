@@ -206,3 +206,22 @@ When('загружает аудио для транскрипции', async ({ p
     await wordsPage.selectFirstWord();
     await wordsPage.addSelectedWords();
 });
+
+Given('у пользователя есть добавленное слово {string}', async ({ page }, word: string) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.goto();
+    await wordsPage.expectWordsVisible();
+    await wordsPage.openAddModal();
+    await wordsPage.enterText(word);
+    await wordsPage.analyzeText();
+    await wordsPage.selectFirstWord();
+    await wordsPage.addSelectedWords();
+    await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+});
+
+Then('слово {string} отображается в сетке', async ({ page }, word: string) => {
+    const wordsPage = new WordsPage(page);
+    await expect(wordsPage.cardMatchingWord(word).first()).toBeVisible({ timeout: 10_000 });
+});
+
+

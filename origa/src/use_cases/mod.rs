@@ -31,8 +31,6 @@ mod update_user_profile;
 
 #[cfg(test)]
 mod tests;
-#[cfg(test)]
-pub use tests::fixtures::{init_phrase_index_from_cdn, init_real_dictionaries};
 
 pub use add_counter_cards::AddCounterCardsUseCase;
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};

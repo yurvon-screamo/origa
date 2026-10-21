@@ -108,17 +108,19 @@ describe("kickoffPrompt", () => {
     expect(p).toContain("Что сделано")
     expect(p).toContain(AGENT_MARK)
     expect(p).toContain("Не мержи сам")
-    expect(p).toContain("1280x800")
-    expect(p).toContain("390x844")
   })
   test("все постинги — от бота (gh-as-agent), голый gh для постинга запрещён", () => {
     expect(p).toContain("gh-as-agent")
     expect(p).toContain("uwuwu-agent[bot]")
     expect(p).not.toMatch(/(^|\n)\s*gh (issue comment|pr create|pr checks) \d*/)
   })
-  test("скрины — на CDN в тело ПР, не в репу", () => {
-    expect(p).toContain("s3://origa/pr-screenshots/")
-    expect(p).toContain("s3.origa.uwuwu.net/pr-screenshots/")
+  test("скрины — инструментом, на CDN в тело ПР, не в репу", () => {
+    // The tool owns the viewports, the upload and the key — the prompt
+    // only has to point at it and forbid the bespoke script.
+    expect(p).toContain("npm run shots -- capture")
+    expect(p).toContain("npm run shots -- list")
+    expect(p).toContain("ORIGA_CDN_CACHE_DIR")
+    expect(p).not.toContain("aws s3 cp")
     expect(p).not.toContain(".pr-screenshots/") // папка в репо — больше не существует
     expect(p).toContain("НЕ коммитить")
   })

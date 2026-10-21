@@ -30,7 +30,12 @@ pub fn PageHeader(
     });
 
     view! {
-        <div class="flex items-center gap-3 mb-6" data-testid=move || format!("{}-header", test_id.get())>
+        // flex-wrap: on narrow viewports the actions row wraps below the
+        // title instead of squeezing it into a vertical letter column
+        // (#823 words header carries four actions now). Pages whose header
+        // fits the viewport are unaffected — wrapping only happens on
+        // overflow.
+        <div class="flex flex-wrap items-center gap-3 mb-6" data-testid=move || format!("{}-header", test_id.get())>
             <Show when=move || !back_path.get().is_empty()>
                 <Button
                     variant=ButtonVariant::Ghost

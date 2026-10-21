@@ -1,5 +1,6 @@
 import { type Page } from "@playwright/test";
 import { test as base, createBdd } from "playwright-bdd";
+import { getAppBaseUrl } from "../config";
 import { setupTestUser, uiLogin, type TestUserContext } from "../helpers/auth";
 
 /**
@@ -50,23 +51,24 @@ export const test = base.extend<
     ],
     page: [
         async ({ browser, testUser }, use) => {
-            const context = await browser.newContext();
+            // Base URL belongs to the context (master's change); the inbox
+            // seam init script keeps our origin guard.
+            const context = await browser.newContext({ baseURL: getAppBaseUrl() });
             // Opt this browser context into the inbox test seam (slice IN-1):
             // the app registers the window hook only when this exact
-            // localStorage flag is present, in debug and release builds
-            // alike. Production users never have the flag, so the seam stays
-            // dormant there. Origin-guarded: init scripts also run on
-            // about:blank where localStorage access is a SecurityError.
-            const { APP_BASE_URL } = await import("../playwright.config");
+            // localStorage flag is present. Origin-guarded: init scripts also
+            // run on about:blank where localStorage access is a SecurityError.
             await context.addInitScript((origin) => {
                 if (window.location.origin === origin) {
                     window.localStorage.setItem("__origa_e2e_seam", "1");
                 }
-            }, APP_BASE_URL);
+            }, getAppBaseUrl());
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
             try {
-                await uiLogin(page, testUser.email, testUser.password);
+                await uiLogin(page, testUser.email, testUser.password, {
+                    baseURL: getAppBaseUrl(),
+                });
                 await use(page);
             } finally {
                 await context.close();
@@ -151,12 +153,14 @@ export const test = base.extend<
             // large corpus (remote → local, ADR-045) — the project
             // default 60s aborts it mid-restore.
             const context = await browser.newContext({
-                baseURL: "http://localhost:1420",
+                baseURL: getAppBaseUrl(),
                 locale: "ru-RU",
             });
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
-            await uiLogin(page, testUser.email, testUser.password);
+            await uiLogin(page, testUser.email, testUser.password, {
+                baseURL: getAppBaseUrl(),
+            });
             await use(page);
             await context.close();
         },

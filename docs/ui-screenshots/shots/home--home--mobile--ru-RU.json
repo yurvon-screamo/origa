@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "home",
+  "screen": "home",
+  "route": "/home",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 150568,
+  "sha256": "f0236f4e97d5b4c6f3f60c9b058520284f315582c57e4a4a339e044713314e8c",
+  "capturedAt": "2026-10-21T14:34:18.442Z",
+  "commit": "957843f64ca8cc0e1cb716d73ee4e8331234708d",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8080",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--mobile-f0236f4e.png",
+  "uploadedSha256": "f0236f4e97d5b4c6f3f60c9b058520284f315582c57e4a4a339e044713314e8c",
+  "uploadedAt": "2026-10-21T14:34:22.168Z"
+}

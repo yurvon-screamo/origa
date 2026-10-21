@@ -13,8 +13,11 @@
 | `tauri/icons/`, `tauri/gen/**`, `tauri/msix/Assets/` | Иконки приложений — генерённые | да | сборка Tauri; руками не править |
 | `origa/src/ocr/ocr_example.jpg` | Фикстура OCR-теста (1280×854) | да | `origa/src/ocr/tests.rs` |
 | `cdn/` | Контент для CDN-деплоя: kanji SVG (`kanji_frames/`, `kanji_animations/`), шрифты, словари, грамматика, фразы, pitch, OCR-модель (`ndlocr/`), STT-модель (`whisper/`), артефакты updater (`releases/`), `well_known_set/` | **нет** (правило `cdn` в `.gitignore`) | `scripts/deploy_cdn.py`; `build.rs` берёт шрифты из `cdn/fonts/` |
+| `docs/ui-screenshots/` | Реестр свежих скринов интерфейса: `shots/*.json` (по файлу на снимок) + генерируемый `README.md` | да (только метаданные) | `end2end/shots/` (инструмент снятия, ADR-067); маркетинг и дизайн — источник актуальных картинок |
 
 Картинки интерфейса и лендинга между зонами не дублируются. Лендинг-изображения живут только в `origa_landing/public/images/`.
+
+**Свежие скрины — в `docs/ui-screenshots/`.** Реестр хранит метаданные снимков (что, когда, из какого коммита, ссылка на CDN) — сами PNG в git не идут (#797). Переснять: `cd end2end && npm run shots -- capture --scenario <id> --label <label> --upload`.
 
 ## .media/
 

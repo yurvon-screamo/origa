@@ -13,11 +13,11 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
-        "outDir": "./dist",
-        "rootDir": ".",
+        // The screenshot CLI runs through Node's type stripping, which needs
+        // the explicit `.ts` extension in the import path — the same source
+        // is loaded by Playwright and by `node`.
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
         "baseUrl": ".",
         "paths": {
             "@pages/*": [
@@ -33,7 +33,6 @@
     ],
     "exclude": [
         "node_modules",
-        "dist",
         "test-results",
         "playwright-report",
         ".features-gen"

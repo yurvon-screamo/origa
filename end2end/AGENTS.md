@@ -31,7 +31,9 @@ end2end/
 ├── pages/ {base,login,...}.page.ts → index.ts
 ├── fixtures/                              # admin tokens, test data
 ├── helpers/                               # Navigation, auth, HTTP, cleanup, paths
-└── scripts/check-ci-matrix.mjs            # CI matrix guard
+├── shots/                                 # Screenshot tool: catalog, scenarios, presets
+├── screenshots-spec/                      # Playwright entry points of the scenarios
+├── scripts/shots.ts                       # Screenshot CLI, scripts/check-ci-matrix.mjs
 ```
 
 ## Local Infrastructure
@@ -48,7 +50,7 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 
 **Required `.env`:**
 
-```
+```ini
 ORIGA_ADMIN_EMAIL=admin@localhost
 ORIGA_ADMIN_PASSWORD=secret
 TRAILBASE_URL=http://127.0.0.1:4000
@@ -62,25 +64,56 @@ ORIGA_CDN_BASE_URL=http://localhost:8080
 3. Tests run against all three services
 4. `global-teardown.ts` kills TrailBase process
 
-## Screenshot Specs
+## Screenshot Tool
 
-`end2end/screenshots-spec/` renders the app and captures the visual
-artifacts of a pull request. It runs on its own config:
+`end2end/shots/` owns every UI screenshot of the repository. The CLI is
+the entry point:
 
 ```bash
-npx playwright test --config=playwright.screenshots.config.ts
+npm run shots -- list                                    # the catalog of screens
+npm run shots -- capture --scenario home --label issue-808 [--upload]
+npm run shots -- index                                   # rebuild the registry view
+```
+
+`capture` checks the environment first (`shots/preflight.ts`): a missing
+`cdn/fonts/`, a poisoned `dist/` or an output directory inside the
+repository fail the run before a pixel is written. Then the Playwright
+driver (`screenshots-spec/capture.spec.ts`) takes the screenshots, and the
+CLI writes the captures into the registry
+(`docs/ui-screenshots/shots/`) and prints the markdown block for a pull
+request body.
+
+**Do not write a new capture script.** A new screen is a new entry in the
+catalog:
+
+- `shots/catalog.ts` — the metadata of the screen (id, title, route,
+  locale, viewports, data state). The CLI reads it without loading the
+  browser-side modules.
+- `shots/scenarios/<id>.ts` — the steps that reach the screen. It
+  spreads its catalog descriptor and adds a `run` step.
+- `shots/presets/<id>.ts` — the data state the screen is shown in (a
+  fresh profile, an imported corpus, a seeded ledger). The set is open by
+  design.
+- `shots/scenarios/index.ts` — the map of the implementations.
+
+The screenshots-spec files are thin wrappers around that catalog: they
+exist so a screen can also be captured by hand.
+
+```bash
+npx playwright test --config=playwright.screenshots.config.ts home-insights
 ```
 
 The runner shares the BDD infrastructure: `global-setup.ts` starts
 TrailBase in `end2end/trailbase-fixture` and sets the admin password, the
-CDN is served on 8080, the app on 1420 (`trunk serve` locally, the built
-`origa_ui/dist` when `CI=true`). Captures land in `.pr-screenshots/` at
-the repository root.
+CDN is served on 8080 (or the production CDN when there is no local
+corpus), the app on 1420 (`trunk serve` locally, the built
+`origa_ui/dist` when `CI=true`). The files land in
+`/tmp/opencode/shots/<label>/` — never in the repository (issue #797).
 
 The suite is run by hand for now: its infrastructure no longer depends
 on the developer's machine, but the onboarding flow of a fresh profile is
-not verified in a pipeline yet (ADR-066, "Not Done Here"). The weekly
-job follows that work.
+not verified in a pipeline yet (ADR-066, "Not Done Here"; ADR-067). The
+weekly job follows that work.
 
 ## Test Users
 
@@ -148,3 +181,6 @@ aborts, bounded click loops) live in `helpers/` and are invoked from steps.
 - Web-first assertions: `await expect(locator).toBeVisible()`
 - Tags: `test('name @smoke @critical', ...)`
 - Run `npm run typecheck` before committing — ESLint does NOT catch undefined references in TypeScript. Only `tsc --noEmit` catches missing imports.
+- `import type` for type-only imports in `shots/**` and `scripts/shots.ts` — the tool runs under Node's type stripping as well as under Playwright, and type stripping does NOT remove a type-only import (it becomes a runtime "does not provide an export named" error that `tsc` stays silent about). ESLint enforces it in that zone.
+- Native `*.spec.ts` files are the norm for the screenshot scenarios: they produce artifacts instead of asserting behaviour, so the "everything lives in Gherkin" rule of the BDD suite does not apply to them.
+- The scenarios of `shots/` select by `data-testid` — the same rule as the page objects. A raw CSS selector is allowed only where the markup has no marker (a tag inside a card, a checkbox of a drawer), and the reason is a comment next to it.

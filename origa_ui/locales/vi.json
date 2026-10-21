@@ -301,6 +301,7 @@
     "choose_all_readings": "Chọn tất cả cách đọc của kanji này:",
     "check": "Kiểm tra",
     "multi_perfect": "✓ Đã chọn đủ mọi cách đọc!",
+    "multi_lenient_pass": "✓ Đạt, nhưng chưa chọn đủ mọi cách đọc",
     "multi_partial": "Thiếu cách đọc hoặc chọn thừa tùy chọn",
     "missed_options": "Thiếu:",
     "extra_options": "Thừa:",
@@ -467,6 +468,8 @@
     "words_not_found": "Không tìm thấy từ nào",
     "words_not_found_hint": "Thử tệp khác hoặc cách nhập khác.",
     "decks": "Bộ sưu tập",
+    "phrases": "Mẫu câu",
+    "examples": "Câu ví dụ",
     "tab_text": "Văn bản",
     "tab_image": "Hình ảnh",
     "tab_anki": "Anki",
@@ -706,6 +709,12 @@
     "not_found": "Không tìm thấy mẫu câu nào",
     "hint": "Thẻ mẫu câu được tự động tạo khi bạn học hết các từ trong mẫu câu",
     "search_in_progress": "Đang tìm trong tất cả các câu của bạn — kết quả sẽ tiếp tục xuất hiện…"
+  },
+  "examples": {
+    "title": "Câu ví dụ",
+    "not_found": "Không tìm thấy câu ví dụ",
+    "hint": "Thẻ câu ví dụ xuất hiện ở đây sau khi bạn đánh giá câu ví dụ trong bài học",
+    "search_in_progress": "Đang tìm kiếm tất cả câu ví dụ của bạn — kết quả sẽ tiếp tục xuất hiện…"
   },
   "feedback": {
     "title": "Báo cáo sự cố",

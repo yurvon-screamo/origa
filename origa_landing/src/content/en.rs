@@ -374,7 +374,7 @@ pub const PR_BODY_EN: &str = r#"
 </section>
 <section>
   <h2>Contact</h2>
-  <p>Questions about this policy can be sent to <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+  <p>Questions about this policy can be sent to <a href="mailto:yurvon.screamo@gmail.com">yurvon.screamo@gmail.com</a>.</p>
 </section>
 "#;
 
@@ -421,6 +421,6 @@ pub const TO_BODY_EN: &str = r#"
 </section>
 <section>
   <h2>11. Contact</h2>
-  <p>Questions about these Terms can be sent to <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+  <p>Questions about these Terms can be sent to <a href="mailto:yurvon.screamo@gmail.com">yurvon.screamo@gmail.com</a>.</p>
 </section>
 "#;

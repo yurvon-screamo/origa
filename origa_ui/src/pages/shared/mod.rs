@@ -2,6 +2,7 @@ mod card_answer_helper;
 mod card_counts;
 mod card_filter;
 mod card_list_page;
+mod card_list_page_header;
 mod card_status;
 mod daily_load_list;
 mod daily_load_selector;
@@ -9,6 +10,7 @@ mod delete_callback;
 mod grouped_grid;
 mod grouping;
 mod jlpt_filter;
+pub mod lazy_card_details;
 mod list_scroll;
 mod list_ui_state;
 #[cfg(test)]
@@ -18,6 +20,9 @@ mod mark_as_known_button;
 mod mark_known_callback;
 mod pagination;
 mod resource_download_consent;
+mod search_matching;
+#[cfg(test)]
+mod search_matching_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod shared_wasm_tests;
 mod toggle_favorite_callback;
@@ -26,9 +31,10 @@ pub use card_answer_helper::{format_answer_parts, format_answer_text};
 pub use card_counts::CardCounts;
 pub use card_filter::{Filter, FilterBtn};
 pub use card_list_page::{
-    CardListExtras, CardListViewConfig, CardsLoadedCallback, card_list_view,
-    create_card_list_context,
+    CardItemActions, CardListExtras, CardListViewConfig, CardsLoadedCallback, SearchMatcher,
+    card_list_view, create_card_list_context,
 };
+pub use card_list_page_header::card_list_page_header;
 pub use card_status::CardStatus;
 pub use daily_load_list::DailyLoadList;
 pub use daily_load_selector::DailyLoadSelector;
@@ -36,6 +42,9 @@ pub use delete_callback::{DeleteRequest, create_delete_callback};
 pub use grouped_grid::GroupedGrid;
 pub use grouping::{LevelIndex, ListGrouping, order_cards_by_group};
 pub use jlpt_filter::{JlptCounts, JlptFilter, JlptFilterBtn, jlpt_level_idx};
+pub use lazy_card_details::{
+    BackfillState, LazyDetailHooks, create_search_backfill_effect, create_visible_slice_loader,
+};
 pub use list_scroll::{restore_scroll_when_ready, track_scroll_while_authenticated};
 pub use list_ui_state::{DEFAULT_VISIBLE_COUNT, FirstRunGuard, ListPage, ListUiSlot, ListUiStore};
 pub use load_error_screen::LoadErrorScreen;
@@ -43,4 +52,7 @@ pub use mark_as_known_button::MarkAsKnownButton;
 pub use mark_known_callback::create_mark_as_known_callback;
 pub use pagination::LoadMoreButton;
 pub use resource_download_consent::{ResourceDownloadConsent, is_resource_download_consented};
+pub(crate) use search_matching::{
+    default_card_matches, kanji_search_matcher, readings_match, vocabulary_search_matcher,
+};
 pub use toggle_favorite_callback::create_toggle_favorite_callback;
