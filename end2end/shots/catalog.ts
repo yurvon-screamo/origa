@@ -42,6 +42,14 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded",
     },
+    "lesson-acquaintance-grammar": {
+        id: "lesson-acquaintance-grammar",
+        title: "Урок: ответ знакомства (грамматика)",
+        route: "/lesson",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "acquaintance-hand",
+    },
     "lesson-example": {
         id: "lesson-example",
         title: "Урок: знакомство и ответ",
@@ -49,6 +57,22 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
         preset: "with-word",
+    },
+    "lesson-example-recall": {
+        id: "lesson-example-recall",
+        title: "Урок: карта-пример",
+        route: "/lesson",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "due-examples",
+    },
+    "lesson-reading-quiz": {
+        id: "lesson-reading-quiz",
+        title: "Урок: квиз чтений кандзи",
+        route: "/lesson",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "due-corpus",
     },
     "counter-scoring": {
         id: "counter-scoring",

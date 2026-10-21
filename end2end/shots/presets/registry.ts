@@ -6,6 +6,9 @@
  * is a compile error here and a runtime error in the preset map.
  */
 export const PRESET_IDS = [
+    "acquaintance-hand",
+    "due-corpus",
+    "due-examples",
     "fresh",
     "onboarded",
     "scoring-n5",

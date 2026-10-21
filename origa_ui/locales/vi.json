@@ -300,6 +300,7 @@
         "choose_all_readings": "Chọn tất cả cách đọc của kanji này:",
         "check": "Kiểm tra",
         "multi_perfect": "✓ Đã chọn đủ mọi cách đọc!",
+        "multi_lenient_pass": "✓ Đạt, nhưng chưa chọn đủ mọi cách đọc",
         "multi_partial": "Thiếu cách đọc hoặc chọn thừa tùy chọn",
         "missed_options": "Thiếu:",
         "extra_options": "Thừa:",
