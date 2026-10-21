@@ -120,3 +120,8 @@ end2end/.stitch/
 # PR review screenshots — uploaded to CDN in reports, never committed
 # (binary ballast in git history; see issue #797)
 .pr-screenshots/
+
+# Screenshots of the e2e suite — the tool writes them outside the
+# repository (the capture tool puts them in /tmp/opencode/shots/), so
+# nothing lands in the working tree by accident.
+end2end/screenshots/

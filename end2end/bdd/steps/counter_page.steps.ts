@@ -1,7 +1,8 @@
 import { expect } from "@playwright/test";
+import { getAppBaseUrl } from "../../config";
 import { When, Then } from "../fixtures";
 
-const COUNTERS_URL = "http://localhost:1420/counters";
+const COUNTERS_URL = `${getAppBaseUrl()}/counters`;
 
 When("пользователь открывает страницу счётчиков", async ({ page }) => {
 	await page.goto(COUNTERS_URL);

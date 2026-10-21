@@ -875,7 +875,10 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v7
               with:
-                  node-version: "20"
+                  # Node 22: the screenshot tool runs on type stripping
+                  # (Node >= 22.18) and the unit tests use `node --test`
+                  # on TypeScript sources.
+                  node-version: "22"
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -884,6 +887,14 @@ jobs:
             - name: Verify every BDD scenario runs in CI exactly once
               working-directory: end2end
               run: node scripts/check-ci-matrix.mjs
+
+            - name: Run unit tests
+              working-directory: end2end
+              run: npm run test:unit
+
+            - name: Lint e2e sources
+              working-directory: end2end
+              run: npm run lint
 
     e2e:
         name: E2E ${{ matrix.group }}
@@ -963,6 +974,13 @@ jobs:
 
             - name: Verify TrailBase
               run: trail --version
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  # Matches the toolchain of the matrix guard job and the
+                  # `engines` field of end2end/package.json.
+                  node-version: "22"
 
             - name: Install Node.js dependencies
               working-directory: end2end
