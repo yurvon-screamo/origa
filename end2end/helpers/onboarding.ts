@@ -3,6 +3,24 @@ import { type Page, expect } from "@playwright/test";
 import { OnboardingPage } from "../pages";
 
 /**
+ * Whether the app shows the onboarding wizard.
+ *
+ * The URL is not a reliable signal right after the login: the app lands
+ * on the root route and redirects a fresh profile to /onboarding only
+ * once the app is up — so the wizard marker is what the BDD suite uses
+ * for the same decision. The wait is real: the marker only appears a
+ * moment after the login round-trip.
+ */
+export async function isOnboardingShown(page: Page, timeout = 60_000): Promise<boolean> {
+    try {
+        await page.getByTestId("onboarding-stepper").waitFor({ state: "visible", timeout });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Waits for the scoring step to finish loading.
  * Resolves when either scoring-step-hint (cards ready) or
  * scoring-step-complete (0 new cards) is visible.

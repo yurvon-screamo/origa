@@ -106,6 +106,23 @@ cargo fmt --check && cargo fmt
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
+### SSR-тесты лендинга (ADR-066)
+
+Целевые тесты `origa_landing` требуют фичу `ssr` — без неё они не собираются
+вообще, поэтому `cargo test --workspace` их не выполняет. Отдельная команда:
+
+```powershell
+$env:ORIGA_APP_BASE_URL = "https://app.origa.uwuwu.net"     # build.rs landing паникует без неё
+$env:ORIGA_LANDING_BASE_URL = "https://origa.uwuwu.net"      # вшивается в бинарь (env! в тестах)
+$env:CARGO_PROFILE_DEV_DEBUG = "0"; $env:CARGO_PROFILE_TEST_DEBUG = "0"
+cargo test -p origa_landing --features ssr
+```
+
+`CARGO_PROFILE_*_DEBUG=0` обязателен: крейт встраивает ~120 markdown-файлов
+(`include_str!` в реестрах блога и доков), debug-информация не влезает в линкер
+rust-lld (stable ≥ 1.98) — «relocation out of range» / «section too large».
+Без отладочной информации крейт линкуется за секунды вместо десяти минут.
+
 ## Ключевые зависимости
 
 `rs-fsrs` (FSRS), `ort` + NDLOCR-Lite (OCR), `ort` + `rustfft` (Whisper STT),

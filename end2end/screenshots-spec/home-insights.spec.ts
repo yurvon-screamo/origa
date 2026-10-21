@@ -23,8 +23,9 @@ import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
 import {
     completeOnboardingToScoring,
+    isOnboardingShown,
 } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
+import { generateUniqueEmail, DEFAULT_TEST_PASSWORD, waitForLoginComplete } from "../helpers/auth";
 
 const OUTPUT_DIR = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -195,7 +196,7 @@ async function loginFreshUser(page: Page): Promise<void> {
             await login.fillEmail(email);
             await login.fillPassword(DEFAULT_TEST_PASSWORD);
             await login.submit();
-            await page.waitForURL(/\/(home|onboarding)$/, { timeout: 120_000 });
+            await waitForLoginComplete(page);
             loggedIn = true;
         } catch {
             loggedIn = false;
@@ -203,7 +204,7 @@ async function loginFreshUser(page: Page): Promise<void> {
     }
     expect(loggedIn, "login must succeed within 3 attempts").toBe(true);
 
-    if (page.url().includes("onboarding")) {
+    if (await isOnboardingShown(page)) {
         // Full onboarding: the corpus lands in the knowledge set (cards
         // for the troubled-words top list), finish lands on /home.
         await completeOnboardingToScoring(page, { level: "N4" });

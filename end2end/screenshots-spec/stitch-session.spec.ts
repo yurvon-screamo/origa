@@ -7,6 +7,8 @@ import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { LoginPage } from "../pages/login.page";
+import { waitForLoginComplete } from "../helpers/auth";
+import { getAdminToken, createTestUser } from "../fixtures/admin";
 
 const EMAIL = "insights2@origa.local";
 const PASSWORD = "e2e-test-password-123";
@@ -155,6 +157,17 @@ async function injectSeed(page: Page): Promise<void> {
 }
 
 async function login(page: Page): Promise<void> {
+    // The demo account is not part of the TrailBase fixture — create it so
+    // the spec also runs on a fresh instance (CI). An existing account is
+    // fine: the password is the same one the spec logs in with, and only
+    // that case is tolerated — an auth failure must surface as one.
+    const { token, csrfToken } = await getAdminToken();
+    await createTestUser(token, csrfToken, EMAIL, PASSWORD).catch((e: unknown) => {
+        if (!String(e).includes("already exists")) {
+            throw e;
+        }
+    });
+
     await page.context().addInitScript(() => {
         if (window.location.origin === "http://localhost:1420") {
             window.localStorage.setItem("origa_resource_download_consented", "true");
@@ -181,7 +194,7 @@ async function login(page: Page): Promise<void> {
             const submit = page.getByTestId("login-submit");
             await submit.click({ timeout: 10_000 });
 
-            await page.waitForURL(/\/(home|onboarding)$/, { timeout: 300_000 });
+            await waitForLoginComplete(page);
             loggedIn = true;
         } catch {
             loggedIn = false;
