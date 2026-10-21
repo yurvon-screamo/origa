@@ -8,7 +8,6 @@
         "test": "playwright test",
         "pretest": "bddgen",
         "typecheck": "tsc --noEmit",
-        "lint": "eslint bdd pages helpers fixtures *.ts",
         "bdd:gen": "bddgen",
         "test:bdd": "bddgen && playwright test --project=bdd",
         "test:ui": "playwright test --ui",
@@ -16,7 +15,9 @@
         "test:debug": "playwright test --debug",
         "report": "playwright show-report --host 0.0.0.0 --port 9323",
         "guard:matrix": "node scripts/check-ci-matrix.mjs",
-        "shots": "node scripts/shots.ts"
+        "shots": "node scripts/shots.ts",
+        "test:unit": "node --test \"shots/**/*.test.ts\"",
+        "lint": "eslint bdd pages helpers fixtures shots scripts/shots.ts *.ts --no-error-on-unmatched-pattern"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",

@@ -56,6 +56,11 @@ export function shotFileName(scenario: string, screen: string, viewport: Viewpor
 }
 
 /** Key of a capture inside the registry. */
-export function shotKey(entry: ShotEntry): string {
+export function shotKey(entry: {
+    scenario: string;
+    screen: string;
+    viewport: string;
+    locale: string;
+}): string {
     return `${entry.scenario}--${entry.screen}--${entry.viewport}--${entry.locale}`;
 }
