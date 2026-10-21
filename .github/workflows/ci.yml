@@ -506,6 +506,23 @@ jobs:
               working-directory: origa_landing
               run: npm ci && npm run build:css
 
+            # Freshness gate (#831): the committed landing.processed.css
+            # must match a clean rebuild from landing.css. build.rs skips
+            # the rebuild when mtimes look equal (always true in a fresh
+            # clone), and the Docker image ships the committed file, so a
+            # drifted artifact reaches production with no other net — this
+            # exact hole shipped the #807 footer badge without its CSS.
+            # On drift the step log carries git diff --stat plus the full
+            # diff of the minified (single-line) stylesheet.
+            - name: Verify committed landing CSS is fresh
+              working-directory: origa_landing
+              run: |
+                  if ! git diff --exit-code --stat -- style/landing.processed.css; then
+                      git --no-pager diff -- style/landing.processed.css
+                      echo "::error::origa_landing/style/landing.processed.css is stale — run 'npm ci && npm run build:css' in origa_landing and commit the artifact (see origa_landing/AGENTS.md)"
+                      exit 1
+                  fi
+
             - name: Run landing SSR tests
               run: cargo test -p origa_landing --features ssr
 
