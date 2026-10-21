@@ -205,7 +205,7 @@ async fn rate_card_twice_in_short_term_mode_updates_state() {
 #[case(Rating::Easy)]
 #[tokio::test]
 async fn rate_card_and_create_and_rate_grammar_card_dual_rating(#[case] rating: Rating) {
-    crate::use_cases::init_real_dictionaries();
+    crate::test_support::init_real_dictionaries();
 
     let user = create_user_with_vocab_cards(1);
     let repo = InMemoryUserRepository::with_user(user);

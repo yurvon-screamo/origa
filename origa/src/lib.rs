@@ -6,3 +6,6 @@ pub mod ort_init;
 pub mod stt;
 pub mod traits;
 pub mod use_cases;
+
+#[cfg(test)]
+mod test_support;

@@ -1551,7 +1551,7 @@ fn favorite_card_appears_once_when_due_known() {
 mod companion_vocab_cards {
     use super::*;
     use crate::domain::NativeLanguage;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
 
     #[test]
     fn create_companion_vocab_cards_creates_cards_for_known_kanji() {
@@ -1659,7 +1659,7 @@ mod companion_vocab_cards {
 mod deleted_companion_words {
     use super::*;
     use crate::domain::{NativeLanguage, RateMode, Rating};
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
 
     fn first_companion_word(created: &[StudyCard]) -> String {
         let sc = created.first().expect("at least one companion created");

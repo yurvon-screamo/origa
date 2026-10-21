@@ -218,7 +218,7 @@ async fn mark_known_silences_companion_same_day_returns_next_day() {
     // давно известен и не due — но компаньоны не смотрят на due, поэтому
     // летят в урок (исходная жалоба). «Знаю» на известной карте идёт по
     // refresh-ветке (память не трогается, due не пересоздаётся).
-    crate::use_cases::init_real_dictionaries();
+    crate::test_support::init_real_dictionaries();
     let mut user = User::new(
         "test@example.com".to_string(),
         NativeLanguage::Russian,

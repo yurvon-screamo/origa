@@ -275,7 +275,7 @@ pub fn install_precompute_for_cards<'a>(cards: impl IntoIterator<Item = &'a Voca
 mod tests {
     use super::*;
     use crate::domain::value_objects::Question;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
 
     fn create_vocab_card(word: &str) -> VocabularyCard {
         VocabularyCard {

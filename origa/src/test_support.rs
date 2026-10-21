@@ -1,9 +1,17 @@
+//! Crate-level test fixtures shared by domain and use_cases tests.
+//!
+//! Lives outside `use_cases` so that domain tests can initialize the
+//! process-wide dictionaries without reaching into the layer above them
+//! (the domain → use_cases inversion flagged in issue #796). The fixture
+//! depends only on `crate::dictionary::*`, `crate::domain::*` and std —
+//! moving it here removes the inversion completely, not transitively.
+
 use std::io::Read;
+use std::path::PathBuf;
 use std::sync::Once;
 
 use flate2::read::DeflateDecoder;
 
-use super::get_cdn_dir;
 use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use crate::dictionary::phrase::{init_phrase_index, is_phrases_loaded};
@@ -18,6 +26,14 @@ static RADICALS_INIT: Once = Once::new();
 static GRAMMAR_INIT: Once = Once::new();
 static PHRASE_INDEX_INIT: Once = Once::new();
 
+pub(crate) fn get_cdn_dir() -> PathBuf {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
+    PathBuf::from(manifest_dir)
+        .parent()
+        .expect("Failed to get parent directory of CARGO_MANIFEST_DIR")
+        .join("cdn")
+}
+
 fn decompress(data: Vec<u8>) -> Vec<u8> {
     let mut decoder = DeflateDecoder::new(&data[..]);
     let mut decompressed = Vec::new();
@@ -25,7 +41,7 @@ fn decompress(data: Vec<u8>) -> Vec<u8> {
     decompressed
 }
 
-pub fn init_real_dictionaries() {
+pub(crate) fn init_real_dictionaries() {
     init_tokenizer_dictionary();
     init_vocabulary_dictionary();
     init_kanji_dictionary();
@@ -36,7 +52,7 @@ pub fn init_real_dictionaries() {
 /// Loads `cdn/phrases/phrase_index.json` into the process-wide `PHRASE_INDEX`.
 /// Required by lesson-builder tests because `init_real_dictionaries` intentionally
 /// does not pull the phrase index (production loads it lazily from the CDN).
-pub fn init_phrase_index_from_cdn() {
+pub(crate) fn init_phrase_index_from_cdn() {
     PHRASE_INDEX_INIT.call_once(|| {
         if is_phrases_loaded() {
             return;
