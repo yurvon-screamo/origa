@@ -1,4 +1,5 @@
 import { type Browser, type Page } from "@playwright/test";
+import { getAppBaseUrl } from "../config";
 import {
   getAdminToken,
   createTestUser,
@@ -150,26 +151,38 @@ export async function uiLogin(
   page: Page,
   email: string,
   password: string,
+  options: { baseURL?: string } = {},
 ): Promise<void> {
   const maxRetries = 3;
+  const baseURL = options.baseURL ?? getAppBaseUrl();
+  const appOrigin = new URL(baseURL).origin;
 
   // The first-run resource-download consent screen (App Review 4.2.3(ii))
   // blocks authenticated routes until the user clicks Download. Tests are
   // not about that screen, so pre-approve the download before any app
   // script runs on the app origin. Matches gloo_storage JSON encoding
   // (`LocalStorage::set(key, true)` stores the literal `true`).
-  await page.context().addInitScript(() => {
-    if (window.location.origin === "http://localhost:1420") {
+  //
+  // The origin is a parameter, not the literal 1420: a scenario may run
+  // against another build (a before/after pair on :1421). The write is
+  // guarded because a cross-origin document (an OAuth provider) can throw
+  // a SecurityError on localStorage access.
+  await page.context().addInitScript((origin: string) => {
+    if (window.location.origin !== origin) return;
+    try {
       window.localStorage.setItem("origa_resource_download_consented", "true");
+    } catch {
+      // storage blocked on this origin — the consent screen stays, the
+      // caller decides whether that is fatal
     }
-  });
+  }, appOrigin);
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     // The whole login flow is retried, not just waitForURL: the password
     // toggle and the inputs race the WASM cold load too, and a toggle
     // miss used to escape the retry loop as an immediate failure.
     try {
-      await page.goto("http://localhost:1420", {
+      await page.goto(baseURL, {
         waitUntil: "domcontentloaded",
       });
 
