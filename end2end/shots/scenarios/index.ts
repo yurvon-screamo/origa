@@ -8,6 +8,7 @@ import { jftCardScenario } from "./jft-card.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { stitchSessionScenario } from "./stitch-session.ts";
+import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 
 /**
@@ -25,6 +26,7 @@ export const implementations: Record<string, ShotScenario> = {
     [homeInsightsScenario.id]: homeInsightsScenario,
     [stitchSessionScenario.id]: stitchSessionScenario,
     [feedbackFormScenario.id]: feedbackFormScenario,
+    [tokenPopupScenario.id]: tokenPopupScenario,
     [jftCardScenario.id]: jftCardScenario,
     [lessonUnificationScenario.id]: lessonUnificationScenario,
 };

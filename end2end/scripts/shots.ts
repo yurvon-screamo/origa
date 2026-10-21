@@ -56,31 +56,30 @@ interface Options {
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
 function parseOptions(argv: string[]): Options {
-    const values = new Map<string, string>();
+    // A flag may be repeated: `--scenario a --scenario b` means both.
+    const values = new Map<string, string[]>();
     const flags = new Set<string>();
     for (let index = 0; index < argv.length; index++) {
         const argument = argv[index];
         if (!argument.startsWith("--")) continue;
         const [key, inline] = argument.slice(2).split("=");
-        if (inline !== undefined) {
-            values.set(key, inline);
+        const value = inline ?? (argv[index + 1]?.startsWith("--") ? undefined : argv[++index]);
+        if (value === undefined) {
+            flags.add(key);
             continue;
         }
-        const next = argv[index + 1];
-        if (next === undefined || next.startsWith("--")) {
-            flags.add(key);
-        } else {
-            values.set(key, next);
-            index++;
-        }
+        values.set(key, [...(values.get(key) ?? []), value]);
     }
 
-    const scenario = (values.get("scenario") ?? "")
-        .split(",")
+    const last = (key: string): string | undefined => values.get(key)?.at(-1);
+    const all = (key: string): string[] => values.get(key) ?? [];
+
+    const scenario = all("scenario")
+        .flatMap((value) => value.split(","))
         .map((value) => value.trim())
         .filter(Boolean);
-    const requestedViewports = (values.get("viewports") ?? "")
-        .split(",")
+    const requestedViewports = all("viewports")
+        .flatMap((value) => value.split(","))
         .map((value) => value.trim())
         .filter(Boolean) as ViewportTag[];
     for (const viewport of requestedViewports) {
@@ -88,16 +87,16 @@ function parseOptions(argv: string[]): Options {
             throw new Error(`Unknown viewport "${viewport}". Known: ${Object.keys(VIEWPORTS).join(", ")}`);
         }
     }
-    const label = values.get("label") ?? `shots-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    const label = last("label") ?? `shots-${new Date().toISOString().replace(/[:.]/g, "-")}`;
 
     return {
         scenario,
         viewports: requestedViewports.length > 0 ? requestedViewports : DEFAULT_VIEWPORTS,
-        locale: values.get("locale"),
-        out: values.get("out") ?? join("/tmp/opencode/shots", label),
+        locale: last("locale"),
+        out: last("out") ?? join("/tmp/opencode/shots", label),
         label,
         upload: flags.has("upload"),
-        baseUrl: values.get("base-url"),
+        baseUrl: last("base-url"),
         registry: !flags.has("no-registry"),
     };
 }

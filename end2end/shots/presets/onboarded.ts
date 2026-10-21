@@ -11,7 +11,13 @@ import type { PresetContext } from "./index.ts";
 export async function onboarded(context: PresetContext): Promise<void> {
     if (!(await isOnboardingShown(context.page))) return;
 
-    await completeOnboardingToScoring(context.page, { level: "N4" });
+    // The N4 import creates ~2500 cards; the scoring step appears when it
+    // is done. The default budget of the helper (2 minutes) is too tight
+    // for a cold import on a busy machine.
+    await completeOnboardingToScoring(context.page, {
+        level: "N4",
+        scoringReadyTimeout: 600_000,
+    });
 
     const markAll = context.page.getByTestId("onboarding-mark-all-known");
     if (await markAll.isVisible({ timeout: 10_000 }).catch(() => false)) {

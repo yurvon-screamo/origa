@@ -68,17 +68,41 @@ export interface PreflightOptions {
 export function evaluatePreflight(facts: PreflightFacts): PreflightReport {
     const errors: string[] = [];
     const warnings: string[] = [];
-    const info: string[] = [];
 
-    info.push(`Режим сборки: ${facts.serveMode === "dist" ? "готовый dist" : "сборка из исходников"}`);
-    info.push(`Приложение: ${facts.appBaseUrl}`);
-    info.push(`CDN: ${facts.cdnBaseUrl}`);
-    info.push(`Корпус: ${facts.cdnCacheDir ?? "локального корпуса нет — контент с прод-CDN"}`);
+    errors.push(...checkToolchain(facts));
+    errors.push(...checkBundle(facts));
+    warnings.push(...checkCorpus(facts));
+    warnings.push(...checkPorts(facts));
+    errors.push(...checkUpload(facts));
+    errors.push(...checkOutput(facts));
 
-    if (!facts.nodeModulesPresent) {
-        errors.push("end2end/node_modules отсутствует — выполните `npm ci` в end2end/");
-    }
+    return { errors, warnings, info: describe(facts) };
+}
 
+/** What the run is about to photograph. */
+function describe(facts: PreflightFacts): string[] {
+    return [
+        `Режим сборки: ${facts.serveMode === "dist" ? "готовый dist" : "сборка из исходников"}`,
+        `Приложение: ${facts.appBaseUrl}`,
+        `CDN: ${facts.cdnBaseUrl}`,
+        `Корпус: ${facts.cdnCacheDir ?? "локального корпуса нет — контент с прод-CDN"}`,
+    ];
+}
+
+/** The dependencies of the run itself. */
+function checkToolchain(facts: PreflightFacts): string[] {
+    if (facts.nodeModulesPresent) return [];
+    return ["end2end/node_modules отсутствует — выполните `npm ci` в end2end/"];
+}
+
+/**
+ * The bundle that is about to be photographed.
+ *
+ * Without the branded fonts the screenshots would be sans-serif, and a
+ * poisoned bundle breaks the WASM load mid-capture.
+ */
+function checkBundle(facts: PreflightFacts): string[] {
+    const errors: string[] = [];
     if (facts.serveMode === "build") {
         if (!facts.fontsReady) {
             errors.push(
@@ -86,31 +110,39 @@ export function evaluatePreflight(facts: PreflightFacts): PreflightReport {
                     "Укажите каталог корпуса через ORIGA_CDN_CACHE_DIR (симлинк или копия dictionaries/ + fonts/)",
             );
         }
-        if (!facts.dictPresent) {
-            warnings.push(
-                "нет cdn/dictionaries/sudachidict-20260723/ — токенизатор не будет работать (влияет на разбор слов)",
-            );
-        }
-    } else {
-        if (facts.distPoisoned) {
-            errors.push(
-                "origa_ui/dist/index.html содержит trunk live-reload мост — статическая раздача рвёт загрузку WASM. " +
-                    "Пересоберите: `cd origa_ui && trunk build --release`",
-            );
-        }
-        if (!facts.fontsReady) {
-            errors.push(
-                "в собранном бандле нет @font-face для Cormorant или woff2-файлов — скрины будут в sans-serif",
-            );
-        }
+        return errors;
     }
+    if (facts.distPoisoned) {
+        errors.push(
+            "origa_ui/dist/index.html содержит trunk live-reload мост — статическая раздача рвёт загрузку WASM. " +
+                "Пересоберите: `cd origa_ui && trunk build --release`",
+        );
+    }
+    if (!facts.fontsReady) {
+        errors.push("в собранном бандле нет @font-face для Cormorant или woff2-файлов — скрины будут в sans-serif");
+    }
+    return errors;
+}
 
+/** The corpus the app reads its content from. */
+function checkCorpus(facts: PreflightFacts): string[] {
+    const warnings: string[] = [];
+    if (facts.serveMode === "build" && !facts.dictPresent) {
+        warnings.push(
+            "нет cdn/dictionaries/sudachidict-20260723/ — токенизатор не будет работать (влияет на разбор слов)",
+        );
+    }
     if (facts.corpusProbe && !facts.corpusProbe.present) {
         warnings.push(
             `локальный корпус отстаёт: нет ${facts.corpusProbe.path} — на экране будет контент старше деплоя`,
         );
     }
+    return warnings;
+}
 
+/** The servers of the run: a listener from another checkout is a zombie. */
+function checkPorts(facts: PreflightFacts): string[] {
+    const warnings: string[] = [];
     for (const listener of facts.listeners) {
         if (listener.pid === null || listener.cwd === null) continue;
         if (!isInside(listener.cwd, facts.repoRoot)) {
@@ -119,18 +151,21 @@ export function evaluatePreflight(facts: PreflightFacts): PreflightReport {
             );
         }
     }
+    return warnings;
+}
 
-    if (facts.awsProfilePresent === false) {
-        errors.push("профиль AWS origa-t3 не найден в ~/.aws/credentials — заливка в CDN невозможна");
-    }
+/** The upload needs a profile — a missing one must fail before the run. */
+function checkUpload(facts: PreflightFacts): string[] {
+    if (facts.awsProfilePresent !== false) return [];
+    return ["профиль AWS origa-t3 не найден в ~/.aws/credentials — заливка в CDN невозможна"];
+}
 
-    if (facts.outDirInsideRepo) {
-        errors.push(
-            "каталог вывода внутри репозитория — PNG попадут в историю git (решение #797: скрины в git не коммитим)",
-        );
-    }
-
-    return { errors, warnings, info };
+/** The images must not land in the repository. */
+function checkOutput(facts: PreflightFacts): string[] {
+    if (!facts.outDirInsideRepo) return [];
+    return [
+        "каталог вывода внутри репозитория — PNG попадут в историю git (решение #797: скрины в git не коммитим)",
+    ];
 }
 
 /** Collects the facts and evaluates them. */
