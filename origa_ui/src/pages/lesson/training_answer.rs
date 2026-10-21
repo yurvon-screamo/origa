@@ -145,17 +145,13 @@ pub(super) fn TrainingAnswerSlide(
                                     variant=Signal::derive(|| MarkdownVariant::Compact)
                                 />
                             </Show>
-                            <div class="text-left">
-                                <GrammarDetailsExpand
-                                    rule_id
-                                    is_expanded=is_grammar_expanded
-                                    known_kanji=kk_for_details
-                                    native_language=native_for_details
-                                    test_id=Signal::derive(|| {
-                                        "acquaintance-grammar-details".to_string()
-                                    })
-                                />
-                            </div>
+                            <GrammarDetailsExpand
+                                rule_id
+                                is_expanded=is_grammar_expanded
+                                known_kanji=kk_for_details
+                                native_language=native_for_details
+                                test_id=Signal::derive(|| "acquaintance-grammar-details".to_string())
+                            />
                         }
                             .into_any()
                     },
