@@ -16,15 +16,17 @@
  */
 import { execFile, execFileSync, spawn } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, readFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
 import { listDescriptors } from "../shots/catalog.ts";
 import { SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
+import { renderIndex } from "../shots/index.ts";
 import type { ShotEntry, ShotManifest } from "../shots/manifest.ts";
 import { runPreflight } from "../shots/preflight.ts";
+import { mergeEntry, readRegistry, registryDir, type UploadInfo } from "../shots/registry.ts";
 import { DEFAULT_VIEWPORTS, VIEWPORTS, type ViewportTag } from "../shots/viewports.ts";
 
 const run = promisify(execFile);
@@ -48,6 +50,8 @@ interface Options {
     label: string;
     upload: boolean;
     baseUrl?: string;
+    /** Skip the registry update (a throwaway capture). */
+    registry: boolean;
 }
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
@@ -94,6 +98,7 @@ function parseOptions(argv: string[]): Options {
         label,
         upload: flags.has("upload"),
         baseUrl: values.get("base-url"),
+        registry: !flags.has("no-registry"),
     };
 }
 
@@ -156,20 +161,47 @@ async function captureCommand(options: Options): Promise<number> {
         console.error("Снимки не получены — манифест пуст");
         return 1;
     }
-    const urls = new Map<string, string>();
 
+    const uploads = new Map<string, UploadInfo>();
     if (options.upload) {
         for (const entry of entries) {
-            urls.set(entry.file, await uploadEntry(entry, options.label));
+            const info = await uploadEntry(entry, options.label);
+            uploads.set(entry.file, info);
         }
+    }
+
+    if (options.registry) {
+        const directory = registryDir(repoRoot);
+        for (const entry of entries) {
+            await mergeEntry(directory, entry, uploads.get(entry.file));
+        }
+        await writeIndex(directory);
+        console.log(`\nРеестр обновлён: ${join(repoRoot, "docs", "ui-screenshots")}`);
     }
 
     console.log(`\nСнимки (${entries.length}):`);
     for (const entry of entries) {
         console.log(`  ${entry.scenario}/${entry.screen} [${entry.viewport}] ${entry.width}×${entry.height} ${entry.sha256.slice(0, 8)}`);
     }
-    console.log(`\n${renderMarkdown(entries, urls)}`);
+    console.log(`\n${renderMarkdown(entries, uploads)}`);
     return 0;
+}
+
+/** Regenerates the human-readable index from the registry. */
+async function indexCommand(): Promise<number> {
+    const directory = registryDir(repoRoot);
+    const entries = await readRegistry(directory);
+    await writeIndex(directory);
+    console.log(`Индекс обновлён: ${entries.length} записей`);
+    return 0;
+}
+
+/** Regenerates the human-readable index from the registry. */
+async function writeIndex(directory: string): Promise<void> {
+    const entries = await readRegistry(directory);
+    const target = join(repoRoot, "docs", "ui-screenshots");
+    await mkdir(target, { recursive: true });
+    await writeFile(join(target, "README.md"), renderIndex(entries), "utf-8");
 }
 
 /** Runs the Playwright driver that owns the browser session. */
@@ -222,7 +254,7 @@ async function readManifestEntries(outDir: string): Promise<ShotEntry[]> {
  * URL, a changed capture gets a new one — an edge cache can never serve
  * a picture of an earlier build.
  */
-async function uploadEntry(entry: ShotEntry, label: string): Promise<string> {
+async function uploadEntry(entry: ShotEntry, label: string): Promise<UploadInfo> {
     const key = `pr-screenshots/${label}/${entry.scenario}--${entry.screen}--${entry.viewport}-${entry.sha256.slice(0, 8)}.png`;
     await run(
         "aws",
@@ -242,15 +274,19 @@ async function uploadEntry(entry: ShotEntry, label: string): Promise<string> {
         ],
         { timeout: 120_000 },
     );
-    return `${CDN_HOST}/${key}`;
+    return {
+        url: `${CDN_HOST}/${key}`,
+        sha256: entry.sha256,
+        uploadedAt: new Date().toISOString(),
+    };
 }
 
 /** The markdown block for a pull request body. */
-function renderMarkdown(entries: ShotEntry[], urls: Map<string, string>): string {
+function renderMarkdown(entries: ShotEntry[], uploads: Map<string, UploadInfo>): string {
     return entries
         .map((entry) => {
             const label = `${entry.scenario}/${entry.screen} (${entry.viewport})`;
-            const target = urls.get(entry.file) ?? entry.file;
+            const target = uploads.get(entry.file)?.url ?? entry.file;
             return `![${label}](${target})`;
         })
         .join("\n");
@@ -261,6 +297,7 @@ function usage(): number {
 
   npm run shots -- list
   npm run shots -- capture --scenario <id>[,<id>] [options]
+  npm run shots -- index
 
 Опции capture:
   --scenario <id>      сценарий из каталога (обязательно)
@@ -269,7 +306,8 @@ function usage(): number {
   --out <dir>          каталог файлов (по умолчанию /tmp/opencode/shots/<label>)
   --label <label>      метка запуска, попадает в имя объекта CDN
   --base-url <url>     другой бандл (сборка before/after на другом порту)
-  --upload             залить в CDN и напечатать ссылки`);
+  --upload             залить в CDN и напечатать ссылки
+  --no-registry        не обновлять реестр (разовый прогон)`);
     return 1;
 }
 
@@ -281,6 +319,8 @@ async function main(): Promise<number> {
                 return listCommand();
             case "capture":
                 return await captureCommand(parseOptions(rest));
+            case "index":
+                return await indexCommand();
             default:
                 return usage();
         }
