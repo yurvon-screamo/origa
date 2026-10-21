@@ -5,6 +5,14 @@
  * read the ids, the Playwright side owns the behaviour. A typo in an id
  * is a compile error here and a runtime error in the preset map.
  */
-export const PRESET_IDS = ["fresh"] as const;
+export const PRESET_IDS = [
+    "fresh",
+    "onboarded",
+    "lesson-ready",
+    "scoring-n5",
+    "onboarded-insights",
+    "ledger",
+    "irodori-nyuumon",
+] as const;
 
 export type PresetId = (typeof PRESET_IDS)[number];
