@@ -3,7 +3,7 @@ use crate::domain::StudyCard;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::memory::{Difficulty, MemoryState, Rating, Stability};
-use crate::use_cases::init_real_dictionaries;
+use crate::test_support::init_real_dictionaries;
 use chrono::Utc;
 use rand::{SeedableRng, rngs::StdRng};
 

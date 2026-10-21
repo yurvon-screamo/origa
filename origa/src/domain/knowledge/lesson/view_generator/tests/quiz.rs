@@ -3,7 +3,7 @@ use crate::domain::RatingContext;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::value_objects::NativeLanguage;
-use crate::use_cases::init_real_dictionaries;
+use crate::test_support::init_real_dictionaries;
 use ulid::Ulid;
 
 mod grammar_quiz {
@@ -356,7 +356,7 @@ mod generate_quiz_pos_filter_tests {
     use super::*;
     use crate::domain::knowledge::lesson::types::LessonCardView;
     use crate::domain::value_objects::NativeLanguage;
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
     use std::collections::HashSet;
 
     #[test]

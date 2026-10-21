@@ -90,7 +90,7 @@ mod tests {
         Card, Difficulty, KanjiCard, MemoryState, Rating, Stability, StudyCard, VocabularyCard,
         value_objects::Question,
     };
-    use crate::use_cases::init_real_dictionaries;
+    use crate::test_support::init_real_dictionaries;
 
     fn create_known_study_card_with_kanji(kanji: &str) -> StudyCard {
         let kanji_card = KanjiCard::new_test(kanji.to_string());

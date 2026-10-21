@@ -1,7 +1,7 @@
 use super::*;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::knowledge::lesson::view_generator::transforms;
-use crate::use_cases::init_real_dictionaries;
+use crate::test_support::init_real_dictionaries;
 use rand::{SeedableRng, rngs::StdRng};
 
 #[test]

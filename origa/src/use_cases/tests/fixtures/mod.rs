@@ -1,22 +1,13 @@
 mod file_well_known_set_loader;
 mod in_memory_repository;
-mod real_dictionaries;
 
+pub(crate) use crate::test_support::{
+    get_cdn_dir, init_phrase_index_from_cdn, init_real_dictionaries,
+};
 pub use file_well_known_set_loader::MockCdnProvider;
 pub use in_memory_repository::InMemoryUserRepository;
-pub use real_dictionaries::{init_phrase_index_from_cdn, init_real_dictionaries};
-
-use std::path::PathBuf;
 
 use crate::domain::{Card, NativeLanguage, Question, User, VocabularyCard};
-
-pub fn get_cdn_dir() -> PathBuf {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("Failed to get parent directory of CARGO_MANIFEST_DIR")
-        .join("cdn")
-}
 
 pub fn create_test_vocab_card(word: &str) -> Card {
     Card::Vocabulary(VocabularyCard::new(
