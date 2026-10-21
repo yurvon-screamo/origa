@@ -255,6 +255,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -342,6 +344,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -391,6 +395,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -442,6 +448,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -517,6 +525,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages: protobuf-compiler
@@ -609,7 +619,13 @@ jobs:
                   echo "--- emulator.log (first 15s) ---"
                   tail -n 30 /tmp/emulator.log || true
 
+            # Tag runs must not save caches: entries stored on a tag ref are
+            # unreachable from any other ref, so each release tag used to
+            # deposit ~3.4 GB of shadow copies and exhaust the 10 GB repo
+            # budget (issue #803). Restore on tags is a guaranteed miss today
+            # (no matching keys on master), so the step is skipped entirely.
             - name: Cache Gradle
+              if: github.ref_type != 'tag'
               uses: actions/cache@v6
               with:
                   path: |
@@ -751,6 +767,7 @@ jobs:
                   path: cdn/
 
             - name: Cache TrailBase CLI
+              if: github.ref_type != 'tag'
               id: cache-trailbase
               uses: actions/cache@v6
               with:
@@ -801,6 +818,7 @@ jobs:
               run: npx bddgen
 
             - name: Cache Playwright browsers
+              if: github.ref_type != 'tag'
               id: playwright-cache
               uses: actions/cache@v6
               with:
@@ -874,6 +892,7 @@ jobs:
               run: npm ci
 
             - name: Cache Playwright browsers
+              if: github.ref_type != 'tag'
               id: playwright-cache
               uses: actions/cache@v6
               with:
