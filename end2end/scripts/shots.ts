@@ -322,7 +322,7 @@ function usage(): number {
   --upload             залить в CDN и напечатать ссылки
   --no-registry        не обновлять реестр (разовый прогон)
 
-Переменные окружения сценариев: SHOT_WORD — слово для «word-examples» (あса по умолчанию),
+Переменные окружения сценариев: SHOT_WORD — слово для «word-examples» (あさ по умолчанию),
 SHOT_BASE_URL — другая сборка (before/after на другом порту).`);
     return 1;
 }
