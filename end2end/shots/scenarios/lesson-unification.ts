@@ -66,10 +66,16 @@ async function firstVisible(page: Page, selector: string, timeout = 2_000): Prom
 export const lessonUnificationScenario: ShotScenario = {
     ...descriptors["lesson-unification"],
     async run({ page }, sink) {
+        // The lesson route builds its own hand.
+        await page.goto("/lesson");
+        await page.getByTestId("lesson-page").waitFor({ state: "visible", timeout: 90_000 });
+
         // The hand appears after the lesson data prep — allow a long window.
+        // `acquaintance-view` wraps the whole hand (the first slide may be a
+        // word, kanji, grammar or counter slide).
         const hand = page.getByTestId("acquaintance-view");
         const handVisible = await hand
-            .waitFor({ state: "visible", timeout: 90_000 })
+            .waitFor({ state: "visible", timeout: 180_000 })
             .then(() => true)
             .catch(() => false);
         if (!handVisible) {

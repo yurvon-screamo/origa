@@ -112,7 +112,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         route: "/lesson",
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
-        preset: "lesson-ready",
+        preset: "with-word",
     },
 };
 
