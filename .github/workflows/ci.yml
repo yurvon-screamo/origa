@@ -86,6 +86,10 @@ jobs:
               steps.components.outputs.tauri == 'true' ||
               steps.components.outputs.utils == 'true' ||
               steps.components.outputs.ci == 'true' }}
+            run_landing_test: >-
+              ${{ github.event_name != 'pull_request' ||
+              steps.components.outputs.landing == 'true' ||
+              steps.components.outputs.ci == 'true' }}
             run_wasm_test: >-
               ${{ github.event_name != 'pull_request' ||
               steps.components.outputs.core == 'true' ||
@@ -373,6 +377,67 @@ jobs:
 
             - name: Run tests
               run: cargo test --workspace --exclude origa_landing
+
+    # Landing SSR tests (#800). The 300+ integration tests of
+    # origa_landing were green but invisible to CI: the Test job excludes
+    # the package (`cargo test --workspace --exclude origa_landing`) and
+    # clippy never links it, so the ssr code paths and their tests were
+    # compiled only by the landing Docker image — without tests and
+    # without lints.
+    #
+    # A separate job (not a step in the Test job) on purpose: the landing
+    # crate is the heaviest compile in the workspace, so it gets a runner
+    # of its own and runs in parallel with the rest of the pipeline
+    # instead of queueing behind the workspace tests.
+    landing-test:
+        name: Test (landing SSR)
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_landing_test == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        env:
+            # origa_landing/build.rs panics without the app URL and stamps
+            # the landing URL into the binary (env! in the tests).
+            ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_APP_BASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # origa_landing embeds ~120 markdown files (include_str! in the
+            # blog and docs registries), so its debug-info string table
+            # grows past what rust-lld — the default linker on stable
+            # >= 1.98 — can link: "relocation R_X86_64_32 out of range" /
+            # "section too large" (reproduced locally, issue #800).
+            # Without debug info the crate links and compiles in seconds
+            # instead of minutes, and the rustc peak drops from ~20 GB to
+            # a fraction of it. A package-level profile override would fix
+            # local builds too, but that changes Cargo.toml (ADR-063
+            # follow-up).
+            CARGO_PROFILE_DEV_DEBUG: "0"
+            CARGO_PROFILE_TEST_DEBUG: "0"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  shared-key: origa-ci-v2
+                  save-if: false
+
+            - name: Setup Node.js for landing CSS
+              uses: actions/setup-node@v7
+              with:
+                  node-version: "20"
+
+            # Keeps build.rs from shelling out to `npx tailwindcss` (which
+            # would fetch tailwind from the registry and can fail the
+            # build); mirrors the lint and test jobs.
+            - name: Build landing CSS
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
+
+            - name: Run landing SSR tests
+              run: cargo test -p origa_landing --features ssr
 
     wasm-test:
         name: WASM Component Tests
@@ -1046,6 +1111,7 @@ jobs:
                 macos-check,
                 cdn-download,
                 test,
+                landing-test,
                 wasm-test,
                 e2e-build,
                 e2e-matrix-guard,
@@ -1089,6 +1155,7 @@ jobs:
                   gate "macos-check" "${{ needs.macos-check.result }}" "${{ needs.changes.outputs.run_macos_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
+                  gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
                   gate "wasm-test" "${{ needs.wasm-test.result }}" "${{ needs.changes.outputs.run_wasm_test }}"
                   gate "e2e-build" "${{ needs.e2e-build.result }}" "${{ needs.changes.outputs.run_e2e_build }}"
                   gate "e2e-matrix-guard" "${{ needs.e2e-matrix-guard.result }}" "${{ needs.changes.outputs.run_e2e_matrix_guard }}"
