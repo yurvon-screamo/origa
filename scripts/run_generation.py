@@ -14,7 +14,6 @@ Usage: python scripts/run_generation.py [--workers 64] [--limit N]
 import argparse
 import json
 import os
-import re
 import sys
 import threading
 import time

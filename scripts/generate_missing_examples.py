@@ -19,7 +19,6 @@ import json
 import os
 import re
 import sys
-import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -167,7 +166,6 @@ def main() -> int:
 
     next_sid = max_sid + 1
     generated: list[dict] = []
-    t0 = time.perf_counter()
 
     def gen_one(word: str) -> list[dict]:
         level = level_by_word.get(word, "N3")
