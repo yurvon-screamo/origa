@@ -137,7 +137,7 @@ jobs:
                   cargo binstall tauri-cli cargo-xwin --no-confirm --force
 
             - name: Add cargo bin to PATH
-              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
             - name: Cache cargo-xwin MSVC CRT
               uses: actions/cache@v6
@@ -182,12 +182,12 @@ jobs:
               id: signature
               shell: bash
               run: |
-                  SIG_FILE=$(ls target/x86_64-pc-windows-msvc/release/bundle/nsis/*.sig 2>/dev/null | head -1 || true)
+                  SIG_FILE=$(find target/x86_64-pc-windows-msvc/release/bundle/nsis -maxdepth 1 -name '*.sig' 2>/dev/null | sort | head -1 || true)
                   if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
                     SIG_CONTENT=$(cat "$SIG_FILE")
-                    echo "signature=${SIG_CONTENT}" >> $GITHUB_OUTPUT
+                    echo "signature=${SIG_CONTENT}" >> "$GITHUB_OUTPUT"
                   else
-                    echo "signature=" >> $GITHUB_OUTPUT
+                    echo "signature=" >> "$GITHUB_OUTPUT"
                   fi
 
             - name: Upload Windows artifacts
@@ -276,7 +276,7 @@ jobs:
                   tools: tauri-cli
 
             - name: Add cargo bin to PATH
-              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
             - name: Build Tauri app for Linux
               working-directory: tauri
@@ -316,14 +316,14 @@ jobs:
                   # The deb alias is taken by glob, not by version expansion:
                   # the Linux job rewrites the prerelease '-' to '+' for the
                   # bundler, so the emitted name does not match $VERSION.
-                  DEB_FILE=$(ls deb/Origa_*_amd64.deb 2>/dev/null | head -1 || true)
+                  DEB_FILE=$(find deb -maxdepth 1 -name 'Origa_*_amd64.deb' 2>/dev/null | sort | head -1 || true)
                   if [ -n "$DEB_FILE" ]; then
                     mv "$DEB_FILE" "deb/Origa_amd64.deb"
                     [ -f "${DEB_FILE}.sig" ] && mv "${DEB_FILE}.sig" "deb/Origa_amd64.deb.sig" || true
                   fi
                   # RPM name carries a release suffix (Origa_<version>-1_<arch>.rpm),
                   # so the alias is taken by glob, not by version expansion.
-                  RPM_FILE=$(ls rpm/*.rpm 2>/dev/null | head -1 || true)
+                  RPM_FILE=$(find rpm -maxdepth 1 -name '*.rpm' 2>/dev/null | sort | head -1 || true)
                   if [ -n "$RPM_FILE" ]; then
                     mv "$RPM_FILE" "rpm/Origa_x86_64.rpm"
                     [ -f "${RPM_FILE}.sig" ] && mv "${RPM_FILE}.sig" "rpm/Origa_x86_64.rpm.sig" || true
@@ -339,7 +339,7 @@ jobs:
                   extract_one() {
                     local dir="$1"
                     local SIG_FILE
-                    SIG_FILE=$(ls "target/x86_64-unknown-linux-gnu/release/bundle/${dir}"/*.sig 2>/dev/null | head -1 || true)
+                    SIG_FILE=$(find "target/x86_64-unknown-linux-gnu/release/bundle/${dir}" -maxdepth 1 -name '*.sig' 2>/dev/null | sort | head -1 || true)
                     if [ -n "$SIG_FILE" ] && [ -f "$SIG_FILE" ]; then
                       cat "$SIG_FILE"
                     fi
@@ -466,8 +466,8 @@ jobs:
                       ls -1 "${ANDROID_SDK_ROOT}/ndk/" 2>/dev/null || echo "(ndk directory does not exist)"
                       exit 1
                   fi
-                  echo "NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
-                  echo "ANDROID_NDK_ROOT=$NDK_PATH" >> $GITHUB_ENV
+                  echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+                  echo "ANDROID_NDK_ROOT=$NDK_PATH" >> "$GITHUB_ENV"
 
             - name: Cache Gradle
               uses: actions/cache@v6
@@ -486,7 +486,7 @@ jobs:
                   tools: tauri-cli
 
             - name: Add cargo bin to PATH
-              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
             - name: Decode Android Keystore
               env:

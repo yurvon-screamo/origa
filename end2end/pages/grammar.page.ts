@@ -205,24 +205,6 @@ export class GrammarPage extends BasePage {
         await this.clickCardActionBtn(index, "grammar-card-item-mark-known-btn");
     }
 
-    async getFavoriteButton(index: number): Promise<Locator> {
-        const selector = `[data-testid="grammar-card-item"]:nth-of-type(${index + 1}) [data-testid="grammar-card-item-favorite-btn"]`;
-        return this.page.locator(selector);
-    }
-
-    async isFavorited(index: number): Promise<boolean> {
-        const btn = await this.getFavoriteButton(index);
-        const filledPath = btn.locator('svg path[fill="currentColor"]');
-        return filledPath.isVisible().catch(() => false);
-    }
-
-    async toggleFavoriteByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("grammar-card-item").nth(index);
-        const btn = card.getByTestId("grammar-card-item-favorite-btn");
-        await btn.dispatchEvent("click");
-        await this.page.waitForTimeout(1000);
-    }
-
     private async clickCardActionBtn(index: number, btnTestId: string): Promise<void> {
         const selector = `[data-testid="grammar-card-item"]:nth-of-type(${index + 1}) [data-testid="${btnTestId}"]`;
         await this.page.evaluate((sel: string) => {

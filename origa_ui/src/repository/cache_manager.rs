@@ -17,7 +17,6 @@ use super::dictionary_cache::{DICTIONARY_FILES_CACHE_NAME, VOCABULARY_CACHE_NAME
 #[cfg(target_arch = "wasm32")]
 const MANIFEST_CACHE_KEY: &str = "__origa_cache_manifest__";
 
-#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheManifest {
     pub version: u32,
@@ -290,7 +289,7 @@ async fn get_local_manifest(cache: &web_sys::Cache) -> Option<CacheManifest> {
         .ok()
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+#[cfg(any(target_arch = "wasm32", test))]
 fn find_stale_entries(local: &CacheManifest, remote: &CacheManifest) -> Vec<String> {
     local
         .files

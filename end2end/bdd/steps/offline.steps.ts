@@ -94,12 +94,14 @@ Given('сессия аутентификации сохранена', async ({ p
 });
 
 Given('кэш словарей пуст', async ({ page }) => {
-    await page.evaluate(async () => {
+    // The prefix goes in as an argument: the evaluate body runs in the
+    // browser, where the module scope does not exist.
+    await page.evaluate(async (cachePrefix) => {
         const keys = await caches.keys();
         for (const key of keys) {
-            if (key.startsWith("origa-")) await caches.delete(key);
+            if (key.startsWith(cachePrefix)) await caches.delete(key);
         }
-    });
+    }, ORIGA_CACHE_PREFIX);
 });
 
 Given('кэш словаря слов очищен полностью', async ({ page }) => {

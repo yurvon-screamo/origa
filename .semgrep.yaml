@@ -37,13 +37,11 @@ rules:
     languages: [python]
     message: "Possible hardcoded credential in source — read secrets from env/profile instead"
     severity: ERROR
-    pattern-either:
-      - pattern: $X = "...$PASSWORD..."
-      - pattern: $X = "...$SECRET..."
-      - pattern: $X = "...$API_KEY..."
-    metavariable-regex:
-      metavariable: $X
-      regex: (?i).*(password|secret|api_key|token).*
+    patterns:
+      - pattern: $X = "..."
+      - metavariable-regex:
+          metavariable: $X
+          regex: (?i).*(password|secret|api_key|token).*
 
   - id: python-requests-verify-false
     languages: [python]

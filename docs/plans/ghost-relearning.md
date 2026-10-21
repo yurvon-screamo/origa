@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-file MD029 :: шаг 6 продолжает нумерацию шагов 4-5, упомянутых внутри п.3 -->
 # Добивания (ghost relearning) — план реализации
 
 > **Статус:** план валидирован code-quality-reviewer (`ready`, раунд 2:

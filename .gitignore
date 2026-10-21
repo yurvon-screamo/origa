@@ -116,3 +116,7 @@ end2end/.stitch/
 
 # Local TrailBase artifact from a stray `trail run` at the worktree root
 /traildepot/
+
+# PR review screenshots — uploaded to CDN in reports, never committed
+# (binary ballast in git history; see issue #797)
+.pr-screenshots/

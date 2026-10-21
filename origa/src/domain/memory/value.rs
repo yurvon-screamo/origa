@@ -84,6 +84,15 @@ pub struct Stability {
 
 impl Stability {
     pub fn new(value: f64) -> Result<Self, OrigaError> {
+        if !value.is_finite() {
+            // NaN/infinity can reach the scheduler from a corrupted or
+            // legacy-stored state: rs-fsrs computes `elapsed / stability`,
+            // and a zero stability makes the whole recall branch NaN. Such
+            // a value must never enter the domain as a valid stability.
+            return Err(OrigaError::InvalidStability {
+                reason: "Stability must be a finite number".to_string(),
+            });
+        }
         if value < 0.0 {
             return Err(OrigaError::InvalidStability {
                 reason: "Stability cannot be negative".to_string(),
@@ -110,6 +119,14 @@ pub struct Difficulty {
 
 impl Difficulty {
     pub fn new(value: f64) -> Result<Self, OrigaError> {
+        if !value.is_finite() {
+            // Same contract as `Stability`: a non-finite difficulty makes
+            // the scheduler produce NaN/infinity (rs-fsrs raises the
+            // difficulty to a fractional power).
+            return Err(OrigaError::InvalidDifficulty {
+                reason: "Difficulty must be a finite number".to_string(),
+            });
+        }
         if value < 0.0 {
             return Err(OrigaError::InvalidDifficulty {
                 reason: "Difficulty cannot be negative".to_string(),
@@ -190,6 +207,20 @@ mod tests {
     }
 
     #[test]
+    fn stability_new_nan_fails() {
+        let result = Stability::new(f64::NAN);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::InvalidStability { .. })));
+    }
+
+    #[test]
+    fn stability_new_infinity_fails() {
+        let result = Stability::new(f64::INFINITY);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::InvalidStability { .. })));
+    }
+
+    #[test]
     fn stability_display_formats_to_two_decimals() {
         let stability = Stability::new(0.7).unwrap();
         let display = format!("{}", stability);
@@ -212,6 +243,20 @@ mod tests {
     #[test]
     fn difficulty_new_negative_fails() {
         let result = Difficulty::new(-0.1);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::InvalidDifficulty { .. })));
+    }
+
+    #[test]
+    fn difficulty_new_nan_fails() {
+        let result = Difficulty::new(f64::NAN);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(OrigaError::InvalidDifficulty { .. })));
+    }
+
+    #[test]
+    fn difficulty_new_infinity_fails() {
+        let result = Difficulty::new(f64::INFINITY);
         assert!(result.is_err());
         assert!(matches!(result, Err(OrigaError::InvalidDifficulty { .. })));
     }
