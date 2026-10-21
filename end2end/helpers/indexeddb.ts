@@ -150,14 +150,6 @@ export async function readPersistedUser(page: Page): Promise<PersistedUser | nul
 }
 
 /**
- * How many counter bindings already carry a memory state.
- *
- * A binding starts empty (`current_state: null`); the first review of a
- * binding seeds its memory, so the counter grows from 0 to 1 after a
- * rating. The semantic memory of the card itself is NOT a signal here: a
- * binding review does not touch it.
- */
-/**
  * Numbers of the counter bindings that already carry a memory state.
  *
  * The same signal as {@link countReviewedCounterBindings}, but with the
@@ -176,6 +168,14 @@ export function reviewedCounterBindingNumbers(user: PersistedUser | null): numbe
     );
 }
 
+/**
+ * How many counter bindings already carry a memory state.
+ *
+ * A binding starts empty (`current_state: null`); the first review of a
+ * binding seeds its memory, so the counter grows from 0 to 1 after a
+ * rating. The semantic memory of the card itself is NOT a signal here: a
+ * binding review does not touch it.
+ */
 export function countReviewedCounterBindings(user: PersistedUser | null): number {
     const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
     return cards.reduce((total, card) => {
