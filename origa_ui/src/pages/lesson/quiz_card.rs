@@ -79,6 +79,13 @@ pub fn QuizCardView(
     let multi_result_stored = StoredValue::new(multi_result);
     let base_word_stored = StoredValue::new(grammar_base_word);
 
+    // Kanji reading quiz answer side (#822): the answer must show the
+    // kanji NAME (meaning), like every other answer side. `Card::Kanji`
+    // answers with `CardAnswer::Text` (the name); a lookup failure must
+    // not render an empty box — degrade with a warning instead.
+    let kanji_name = kanji_quiz_answer_name(&card, &lang);
+    let kanji_name_stored = StoredValue::new(kanji_name);
+
     let quiz_result = move || {
         if dont_know_selected.get() && show_result.get() {
             return QuizResult::DontKnow;
@@ -269,6 +276,15 @@ pub fn QuizCardView(
                             })
                     }}
                 </Show>
+                // The kanji NAME on the answer side (#822): same secondary
+                // box style as the single-quiz correct-answer reveal.
+                <Show
+                    when=move || {
+                        multi_submitted.get() && !kanji_name_stored.get_value().is_empty()
+                    }
+                >
+                    <KanjiQuizAnswerName name=kanji_name_stored.get_value() />
+                </Show>
             </Show>
 
             <Show when=move || !is_multi>
@@ -314,6 +330,45 @@ pub fn QuizCardView(
     }
 }
 
+/// The kanji NAME box on the reading-quiz answer side (#822): muted
+/// «Значение» label + the name, styled like the single-quiz
+/// correct-answer reveal. Presentational only — the caller gates it on
+/// submission and a non-empty name.
+#[component]
+pub(super) fn KanjiQuizAnswerName(name: String) -> impl IntoView {
+    let i18n = use_i18n();
+    view! {
+        <div class="mt-3 p-3 bg-[var(--bg-secondary)] text-center">
+            <Text size=TextSize::Default variant=TypographyVariant::Muted class="mb-1 block">
+                {t!(i18n, lesson.meaning)}
+            </Text>
+            <Text size=TextSize::Large class="text-primary">
+                {name}
+            </Text>
+        </div>
+    }
+}
+
+/// Resolve the kanji NAME for the reading-quiz answer side (#822).
+/// `Card::Kanji` answers with `CardAnswer::Text` (the name); other card
+/// kinds have no name here and a lookup failure degrades to an empty
+/// string — with a warning, so a broken dictionary stays visible in
+/// logs instead of silently reproducing the «no kanji name» bug.
+fn kanji_quiz_answer_name(card: &DomainCard, lang: &NativeLanguage) -> String {
+    match card.answer(lang) {
+        Ok(origa::domain::CardAnswer::Text(name)) => name,
+        Ok(_) => String::new(),
+        Err(e) => {
+            tracing::warn!(
+                error = %e,
+                content_key = %card.content_key(),
+                "Failed to resolve kanji name for reading quiz answer"
+            );
+            String::new()
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -334,5 +389,17 @@ mod tests {
             should_speak_reading_selection(variant, is_muted, speech_supported),
             expected
         );
+    }
+
+    /// Non-kanji cards answer with a structured variant (no
+    /// `CardAnswer::Text`), so the name box must stay hidden — the
+    /// multi name box exists only for kanji reading quizzes (#822).
+    #[test]
+    fn non_kanji_card_yields_empty_quiz_answer_name() {
+        let card: DomainCard = serde_json::from_str(
+            r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":null,"pos":null}}"#,
+        )
+        .expect("deserialize vocab card");
+        assert!(kanji_quiz_answer_name(&card, &NativeLanguage::Russian).is_empty());
     }
 }

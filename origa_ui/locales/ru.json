@@ -300,6 +300,7 @@
         "choose_all_readings": "Выберите все чтения этого кандзи:",
         "check": "Проверить",
         "multi_perfect": "✓ Все чтения выбраны!",
+        "multi_lenient_pass": "✓ Зачтено, но не все чтения выбраны",
         "multi_partial": "Есть пропущенные или лишние варианты",
         "missed_options": "Пропущено:",
         "extra_options": "Лишнее:",
