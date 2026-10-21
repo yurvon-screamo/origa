@@ -562,6 +562,32 @@ async fn footer_has_legal_links_on_every_locale() {
 }
 
 #[tokio::test]
+async fn footer_links_to_product_hunt_without_the_badge_artwork() {
+    // The Product Hunt entry is a plain text link in the Resources column.
+    // The official badge artwork froze its upvote counter inside the SVG and
+    // read as a foreign sticker in the paper layout, so both halves are
+    // asserted: the link must render on every locale, and the badge must not
+    // creep back into the footer.
+    for uri in ["/", "/ru", "/ko", "/vi", "/ja"] {
+        let body = get_body(uri).await;
+        assert!(
+            body.contains(
+                r#"href="https://www.producthunt.com/products/origa-app-to-learn-japanese""#
+            ),
+            "footer must link to the Product Hunt product page on {uri}"
+        );
+        assert!(
+            !body.contains("landing-footer__ph"),
+            "the Product Hunt badge block must not render on {uri}"
+        );
+        assert!(
+            !body.contains("badges/product-hunt.svg"),
+            "the Product Hunt badge artwork must not be referenced on {uri}"
+        );
+    }
+}
+
+#[tokio::test]
 async fn ko_vi_landing_have_no_wip_banner() {
     // Korean and Vietnamese support has shipped (KO/VI content release,
     // 2026-09-08). The old site-level "language support is under

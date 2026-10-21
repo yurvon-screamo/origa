@@ -128,6 +128,18 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     >
                         {c.footer_license}
                     </a>
+                    // Product Hunt listing as a plain link, not the official
+                    // badge artwork: the badge froze its upvote counter in the
+                    // SVG and read as a foreign sticker in the paper layout.
+                    // A text link keeps the Resources column uniform.
+                    <a
+                        href="https://www.producthunt.com/products/origa-app-to-learn-japanese"
+                        class="landing-footer__link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        "Product Hunt"
+                    </a>
                 </div>
                 <div>
                     <p class="landing-footer__heading">{c.footer_legal}</p>
@@ -138,26 +150,6 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                         {c.legal_terms_link}
                     </NavLink>
                 </div>
-            </div>
-            // Official unmodified Product Hunt "featured" badge (dark),
-            // self-hosted like the store badges on /download — same
-            // brand-asset exception: built-in artwork, linked to the
-            // product page.
-            <div class="landing-footer__ph">
-                <a
-                    href="https://www.producthunt.com/products/origa-app-to-learn-japanese?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-origa"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Origa on Product Hunt"
-                >
-                    <img
-                        src="/badges/product-hunt.svg"
-                        alt="Origa — Product Hunt"
-                        width="250"
-                        height="54"
-                        loading="lazy"
-                    />
-                </a>
             </div>
         </footer>
     }
