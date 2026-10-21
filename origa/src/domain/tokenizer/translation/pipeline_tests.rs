@@ -4,12 +4,13 @@
 
 use super::test_env::ensure_dictionaries;
 use super::*;
+use crate::domain::tokenizer::tokenize_text;
 
 #[test]
 fn should_translate_bakari() {
     ensure_dictionaries();
     let text = "ばかり";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
     let bakari = results.iter().find(|t| t.surface_form.contains("ばかり"));
     assert!(bakari.is_some(), "「ばかり」token should exist");
@@ -22,7 +23,7 @@ fn should_translate_bakari() {
 fn should_translate_uwa_interjection() {
     ensure_dictionaries();
     let text = "うわー";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
     let uwa = results.iter().find(|t| t.surface_form.contains("うわ"));
     assert!(uwa.is_some(), "「うわー」token should exist");
@@ -35,7 +36,7 @@ fn should_translate_uwa_interjection() {
 fn should_translate_souiu_compound() {
     ensure_dictionaries();
     let text = "そういう";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
     let souiu = results.iter().find(|t| t.surface_form.contains("そういう"));
     assert!(souiu.is_some(), "「そういう」token should exist");
@@ -48,7 +49,7 @@ fn should_translate_souiu_compound() {
 fn should_translate_hodo() {
     ensure_dictionaries();
     let text = "ほど";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
     let hodo = results.iter().find(|t| t.surface_form.contains("ほど"));
     assert!(hodo.is_some(), "「ほど」token should exist");
@@ -113,7 +114,7 @@ fn counter_label_falls_back_to_english_gloss_for_partial_locales() {
 fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
     ensure_dictionaries();
     let text = "さあついたよ、ここだ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
 
     let surfaces: Vec<&str> = results.iter().map(|t| t.surface_form.as_str()).collect();
@@ -145,6 +146,13 @@ fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
         surfaces
     );
 }
+// --- Reproduction / regression tests for translation bugs ---
+// These tests were originally written as failing repro-tests to document
+// concrete root causes across 10 user-reported phrases. After the 6-slice
+// fix they now pass and serve as regression locks. The
+// `should_split_mizunashi_compound` test locks the post-processing
+// splitter that resolves the 水なし over-merge limitation.
+
 // --- Phrase 1: 人はパンのみで生きるにあらずですわよ ---
 // Before the fix, Lindera split the classical negative あらず into あら
 // (Verb, base 有る) + ず (AuxiliaryVerb), and the ず token surfaced base_form
@@ -155,7 +163,7 @@ fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
 fn should_label_or_translate_classical_negative_zu_auxiliary() {
     ensure_dictionaries();
     let text = "人はパンのみで生きるにあらずですわよ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let zu = results
@@ -175,7 +183,7 @@ fn should_label_or_translate_classical_negative_zu_auxiliary() {
 fn should_translate_wa_sentence_final_particle() {
     ensure_dictionaries();
     let text = "生きるにあらずですわよ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let wa = results
@@ -200,7 +208,7 @@ fn should_translate_wa_sentence_final_particle() {
 fn should_split_mizunashi_compound() {
     ensure_dictionaries();
     let text = "水なしでは生きていけない";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let merged = results.iter().find(|t| t.surface_form == "水なし");
@@ -251,7 +259,7 @@ fn should_split_mizunashi_compound() {
 fn should_split_doryokukurai_compound() {
     ensure_dictionaries();
     let text = "努力くらいはしてみるよ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let merged = results.iter().find(|t| t.surface_form == "努力くらい");
@@ -283,7 +291,7 @@ fn should_split_doryokukurai_compound() {
 fn should_tokenize_kakkoii_katakana_as_single_token() {
     ensure_dictionaries();
     let text = "カッコイイの！";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let kakkoii = results.iter().find(|t| t.surface_form == "カッコイイ");
@@ -303,7 +311,7 @@ fn should_tokenize_kakkoii_katakana_as_single_token() {
 fn should_use_kakkoii_dictionary_entry_for_hiragana_compound() {
     ensure_dictionaries();
     let text = "かっこいいですね";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let uses_entry = results
@@ -326,7 +334,7 @@ fn should_use_kakkoii_dictionary_entry_for_hiragana_compound() {
 fn should_tokenize_hitotsu_as_single_token() {
     ensure_dictionaries();
     let text = "心をひとつに";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let hitotsu = results
@@ -347,7 +355,7 @@ fn should_tokenize_hitotsu_as_single_token() {
 fn should_tokenize_yareyare_as_single_token() {
     ensure_dictionaries();
     let text = "やれやれ、無駄なことだよ。";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let yareyare = results.iter().any(|t| t.surface_form == "やれやれ");
@@ -367,7 +375,7 @@ fn should_tokenize_yareyare_as_single_token() {
 fn should_tokenize_monoka_as_single_token() {
     ensure_dictionaries();
     let text = "起きるものか";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let monoka = results.iter().any(|t| t.surface_form == "ものか");
@@ -384,7 +392,7 @@ fn should_tokenize_monoka_as_single_token() {
 fn should_translate_fufu_interjection() {
     ensure_dictionaries();
     let text = "ふふ、ストーブついてますし";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let fufu = results
@@ -407,7 +415,7 @@ fn should_translate_fufu_interjection() {
 fn should_still_extract_iu_base_form_from_mixed_kana_kanji_input() {
     ensure_dictionaries();
     let text = "言っイッてみただけ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
 
     let iu = results.iter().find(|t| t.base_form == "言う");
@@ -428,7 +436,7 @@ fn should_still_extract_iu_base_form_from_mixed_kana_kanji_input() {
 fn should_suppress_homonym_translation_for_particle_shi() {
     ensure_dictionaries();
     let text = "ストーブついてますし、大丈夫ですよ";
-    let tokens = super::super::tokenize_text(text).unwrap();
+    let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
 
     let shi = results

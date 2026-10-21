@@ -95,6 +95,8 @@ mod integration_tests {
     use crate::domain::NativeLanguage;
     use crate::domain::tokenizer::tokenize_text;
 
+    // --- Slice-2 (corpus audit Phase 1): masu-stem continuative/noun ---
+
     // A verb masu-stem standing on its own (next token NOT ます/て/た/ば/...)
     // is a continuative or a noun-ified stem. It must carry the 連用形
     // grammar_label.
@@ -200,6 +202,8 @@ mod integration_tests {
             );
         }
     }
+    // --- Slice-4 (corpus audit Phase 2): honorific suppletive forms ---
+
     // 為さる → なさい (polite imperative). The suppletive form is produced by
     // the VerbToNasai FormatAction variant (matched by lemma only).
     #[test]

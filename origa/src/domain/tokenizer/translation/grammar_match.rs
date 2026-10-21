@@ -720,6 +720,12 @@ mod integration_tests {
             itsu
         );
     }
+    // --- Corpus-audit-driven grammar gaps (56k real conjugations without
+    // grammar_label, dominated by i-adjective forms) ---
+    // These forms have FormatAction variants defined and implemented
+    // (AdjectiveToKu / AdjectiveToKatta / AdjectiveToKute) but NO grammar.json
+    // rule exposes them, so conjugated i-adjectives never pick up a label.
+
     // i-adjective ku-form (adverbial): 早い → 早く. The biggest single gap in
     // the corpus (~10k hits). The ku-form turns an i-adjective into an adverb.
     #[test]
@@ -785,6 +791,13 @@ mod integration_tests {
             oishikute
         );
     }
+    // --- Slice-5 (orphan FormatActions): i-adjective conjugation forms ---
+    // Diagnostic on residual conjugation gaps revealed that several
+    // FormatAction variants are defined and implemented in code but exposed
+    // by NO grammar.json rule — so conjugated i-adjectives never pick up a
+    // label through them. AdjectiveToGaru / Kunai / Kunakatta / Kereba were
+    // all orphans (0 rules).
+
     // AdjectiveToGaru — i-adj stem + がる ("to feel/seem that way").
     // 怖がってる (怖い→怖がる→怖がって). The te-variant is matched via
     // formatted_conjugation_variants.
