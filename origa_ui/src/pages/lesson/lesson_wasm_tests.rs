@@ -1312,7 +1312,7 @@ async fn quiz_result_display_multi_partial_lists_missed_and_wrong() {
 async fn quiz_result_display_multi_lenient_pass_is_success_and_lists_missed() {
     use origa::domain::MultiQuizResult;
 
-    // #822: a lenient pass (>50% readings, none wrong) counts as a pass
+    // #822: a lenient pass (≥50% readings, none wrong) counts as a pass
     // but must NOT claim «все чтения выбраны» — success color, its own
     // message, and the missed list (たべる = the correct fixture option,
     // marked missed here).

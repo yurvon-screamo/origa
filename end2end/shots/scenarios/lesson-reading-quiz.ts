@@ -149,7 +149,11 @@ async function loadKanjiDict(page: Page): Promise<KanjiEntry[]> {
 }
 
 async function captureReadingQuiz(page: Page, sink: { shot(name: string): Promise<unknown> }) {
-    const kanji = ((await page.locator(".display-text").first().textContent()) ?? "").trim();
+    // The quiz renders the kanji through DisplayText with a dedicated
+    // test id (`lesson-quiz-kanji`, quiz_card.rs).
+    const kanji = (
+        (await page.getByTestId("lesson-quiz-kanji").textContent()) ?? ""
+    ).trim();
     const dict = await loadKanjiDict(page);
     const entry = dict.find((k) => k.kanji === kanji);
     // The quiz options: the correct ones are this kanji's readings; the
@@ -185,6 +189,12 @@ async function captureReadingQuiz(page: Page, sink: { shot(name: string): Promis
         .waitFor({ state: "visible", timeout: 20_000 })
         .catch(() => undefined);
     await page.waitForTimeout(700);
+    // The scenario's whole point is the LENIENT pass state (#822): if
+    // the dictionary match missed (perfect) or misfired (partial), the
+    // capture would silently document the wrong state — assert it.
+    await expect(page.getByTestId("lesson-card-root")).toContainText("Зачтено", {
+        timeout: 10_000,
+    });
     await sink.shot("quiz-answer");
 
     await page

@@ -81,7 +81,7 @@ export async function dueExamples(context: PresetContext): Promise<void> {
             is_favorite: false,
             perfect_streak_since_known: 0,
             favorite_changed_at: null,
-        } as unknown as SeedCard;
+        } as SeedCard;
     }
 
     await writeStoredUser(context.page, stored.key, JSON.stringify(user));

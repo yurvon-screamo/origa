@@ -80,9 +80,11 @@ pub fn QuizCardView(
     let base_word_stored = StoredValue::new(grammar_base_word);
 
     // Kanji reading quiz answer side (#822): the answer must show the
-    // kanji NAME (meaning), like every other answer side. `Card::Kanji`
-    // answers with `CardAnswer::Text` (the name); a lookup failure must
-    // not render an empty box — degrade with a warning instead.
+    // kanji NAME (meaning), like every other answer side. Only kanji
+    // cards have a name here — the gate is explicit because nothing in
+    // the type system prevents another multi-quiz producer tomorrow, and
+    // a vocabulary card WITH a reverse side answers `CardAnswer::Text`
+    // (its translation would silently pose as a «kanji name»).
     let kanji_name = kanji_quiz_answer_name(&card, &lang);
     let kanji_name_stored = StoredValue::new(kanji_name);
 
@@ -216,7 +218,7 @@ pub fn QuizCardView(
                             let kanji_clone = kanji.clone();
                             view! {
                                 <div class="mb-3 sm:mb-6">
-                                    <DisplayText>
+                                    <DisplayText test_id="lesson-quiz-kanji">
                                         {kanji}
                                     </DisplayText>
                                 </div>
@@ -350,11 +352,16 @@ pub(super) fn KanjiQuizAnswerName(name: String) -> impl IntoView {
 }
 
 /// Resolve the kanji NAME for the reading-quiz answer side (#822).
-/// `Card::Kanji` answers with `CardAnswer::Text` (the name); other card
-/// kinds have no name here and a lookup failure degrades to an empty
-/// string — with a warning, so a broken dictionary stays visible in
-/// logs instead of silently reproducing the «no kanji name» bug.
+/// Only `Card::Kanji` qualifies — every other card kind yields an empty
+/// string before any lookup (a vocabulary card with a reverse side
+/// answers `CardAnswer::Text`, which must not pose as a kanji name). A
+/// kanji lookup failure degrades to an empty string — with a warning,
+/// so a broken dictionary stays visible in logs instead of silently
+/// reproducing the «no kanji name» bug.
 fn kanji_quiz_answer_name(card: &DomainCard, lang: &NativeLanguage) -> String {
+    if !matches!(card, DomainCard::Kanji(_)) {
+        return String::new();
+    }
     match card.answer(lang) {
         Ok(origa::domain::CardAnswer::Text(name)) => name,
         Ok(_) => String::new(),
@@ -391,13 +398,15 @@ mod tests {
         );
     }
 
-    /// Non-kanji cards answer with a structured variant (no
-    /// `CardAnswer::Text`), so the name box must stay hidden — the
-    /// multi name box exists only for kanji reading quizzes (#822).
+    /// Non-kanji cards never yield a quiz answer name — including the
+    /// strongest case: a vocabulary card WITH a reverse side answers
+    /// `Ok(CardAnswer::Text)` (the translation), which must not pose as
+    /// a kanji name (#822). The explicit kind gate empties it before
+    /// any lookup.
     #[test]
     fn non_kanji_card_yields_empty_quiz_answer_name() {
         let card: DomainCard = serde_json::from_str(
-            r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":null,"pos":null}}"#,
+            r#"{"Vocabulary":{"word":{"text":"test"},"reverse_side":{"text":"тест"},"pos":null}}"#,
         )
         .expect("deserialize vocab card");
         assert!(kanji_quiz_answer_name(&card, &NativeLanguage::Russian).is_empty());
