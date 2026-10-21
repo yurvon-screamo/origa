@@ -123,9 +123,11 @@ mod tests {
     // ── vocabulary readings (furigana dictionary fixture) ────────────
 
     /// One shared fixture for every reading test: the dictionary slot is
-    /// a process-global OnceLock, so the first install wins — all test
-    /// words must live in this single fixture (a foreign install makes
-    /// the reading tests fail loudly, which is the intended loud failure).
+    /// a process-global OnceLock, so the first install wins and all test
+    /// words must live in this single fixture. No other origa_ui test
+    /// installs a furigana dictionary; if one ever does, its entries
+    /// displace these and the reading assertions below fail with a
+    /// word-by-word diff pointing at the fixture conflict.
     const FIXTURE: &str =
         "食べる|たべる|0:た\n大人|おとな|0-1:おとな\n大人|だいにん|0-1:だいにん\n";
 
@@ -151,6 +153,9 @@ mod tests {
     ) {
         ensure_furigana_fixture();
 
+        // Arrange / Act / Assert are collapsed into the matcher call:
+        // the fixture dictionary above is the arrangement, the call is
+        // the act, the comparison is the assertion.
         owner_with(|| {
             let card = card_with_word(word);
             let matcher = vocabulary_search_matcher(RwSignal::new(true));
@@ -163,13 +168,16 @@ mod tests {
     fn vocabulary_matcher_misses_readings_until_the_dictionary_is_ready() {
         ensure_furigana_fixture();
 
+        // Arrange
         owner_with(|| {
             let card = card_with_word("食べる");
             let ready = RwSignal::new(false);
             let matcher = vocabulary_search_matcher(ready);
 
+            // Act + Assert: not ready → the reading arm stays closed…
             assert!(!matcher(&card, "たべる", LANG), "not ready → no match");
 
+            // …and opens the moment the dictionary lands.
             ready.set(true);
             assert!(matcher(&card, "たべる", LANG), "ready → reading matches");
         })
@@ -190,6 +198,8 @@ mod tests {
     fn vocabulary_readings_return_every_dictionary_reading() {
         ensure_furigana_fixture();
 
+        // Arrange: 大人 carries two readings in the fixture.
+        // Act + Assert: both come back, none is dropped.
         let mut readings = vocabulary_readings("大人");
         readings.sort();
 
@@ -197,13 +207,18 @@ mod tests {
     }
 
     #[test]
-    fn vocabulary_readings_second_call_returns_the_cached_result() {
+    fn vocabulary_readings_resolve_the_same_way_after_a_cache_reset() {
         ensure_furigana_fixture();
 
-        let first = vocabulary_readings("食べる");
-        let second = vocabulary_readings("食べる");
+        // Arrange: prime the cache, then drop it.
+        let cached = vocabulary_readings("食べる");
+        crate::pages::shared::search_matching::reset_reading_cache_for_tests();
 
-        assert_eq!(first, second);
-        assert!(first.contains(&"たべる".to_string()));
+        // Act: resolve again straight from the dictionary.
+        let resolved = vocabulary_readings("食べる");
+
+        // Assert: the cache is transparent — both paths answer alike.
+        assert_eq!(cached, resolved);
+        assert!(resolved.contains(&"たべる".to_string()));
     }
 }

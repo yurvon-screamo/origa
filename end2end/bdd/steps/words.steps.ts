@@ -225,21 +225,3 @@ Then('слово {string} отображается в сетке', async ({ page
 });
 
 
-// TEMP debug #837 — remove before commit
-When('пользователь ищет слово с ожиданием {string}', async ({ page }, query: string) => {
-    page.on('console', (msg) => {
-        const text = msg.text();
-        if (/furigana|vocabulary|loading|загруз/i.test(text)) {
-            console.log(`[console] ${text.replace(/\s+/g, ' ').slice(0, 220)}`);
-        }
-    });
-    const wordsPage = new WordsPage(page);
-    await wordsPage.searchInput.fill(query);
-    const start = Date.now();
-    try {
-        await expect(wordsPage.cardMatchingWord("食べる").first()).toBeVisible({ timeout: 90_000 });
-        console.log(`[timing] card visible after ${((Date.now() - start) / 1000).toFixed(1)}s`);
-    } catch {
-        console.log(`[timing] card NOT visible after 90s`);
-    }
-});

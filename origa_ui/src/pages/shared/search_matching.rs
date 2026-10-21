@@ -71,6 +71,16 @@ fn reading_cache() -> &'static Mutex<HashMap<String, Vec<String>>> {
     READING_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+/// Test-only: drop the resolved-readings cache so a test can prove the
+/// dictionary path and the cached path answer alike.
+#[cfg(test)]
+pub(crate) fn reset_reading_cache_for_tests() {
+    reading_cache()
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clear();
+}
+
 /// Hiragana-normalized readings of a vocabulary word via the furigana
 /// dictionary's exact-word lookup (cheap lookups over the immutable rkyv
 /// store — no tokenization on any path). Words the dictionary does not
