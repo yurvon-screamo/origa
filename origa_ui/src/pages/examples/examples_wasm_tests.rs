@@ -1,7 +1,7 @@
-//! WASM render tests for `pages/examples`: `ExamplesHeader` (Router-based
-//! PageHeader with the info tooltip) and `ExampleCardItem` (sentence/
-//! translation degrade without the CDN detail cache). Mirrors the phrases
-//! page tests (#823).
+//! WASM render tests for `pages/examples`: the page header built by
+//! `card_list_page_header` (Router-based PageHeader with the info
+//! tooltip) and `ExampleCardItem` (sentence/translation degrade without
+//! the CDN detail cache). Mirrors the phrases page tests (#823).
 
 #![cfg(all(target_arch = "wasm32", test))]
 

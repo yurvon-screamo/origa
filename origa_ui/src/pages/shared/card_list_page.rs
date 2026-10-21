@@ -60,6 +60,10 @@ pub type SearchMatcher = Arc<dyn Fn(&StudyCard, &str, NativeLanguage) -> bool + 
 /// the item components at a sane arity (#823). The id-taking callbacks
 /// are context-level: the item injects its own card id when wiring the
 /// action bar.
+///
+/// `PhraseCardItem` still takes individual props (its 6-arity smell
+/// predates this change; migrating it would trip the same qlty
+/// threshold until its render inputs are grouped too).
 #[derive(Clone, Copy)]
 pub struct CardItemActions {
     pub on_toggle_favorite: Callback<ulid::Ulid>,
@@ -172,21 +176,14 @@ pub fn create_card_list_context(
     let (is_deleting, on_delete) =
         create_delete_callback(repository.clone(), toasts, refresh_trigger);
 
-    let actions = CardItemActions {
-        on_toggle_favorite,
-        on_mark_as_known,
-        on_delete,
-        is_deleting: is_deleting.into(),
-    };
-
     CardListContext {
         current_user,
         native_lang,
         known_kanji,
-        on_toggle_favorite: actions.on_toggle_favorite,
-        on_mark_as_known: actions.on_mark_as_known,
-        on_delete: actions.on_delete,
-        is_deleting: actions.is_deleting,
+        on_toggle_favorite,
+        on_mark_as_known,
+        on_delete,
+        is_deleting: is_deleting.into(),
         toasts,
         all_cards,
         is_loading,

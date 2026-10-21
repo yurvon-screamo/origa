@@ -53,24 +53,19 @@ export class PhrasesPage extends CardListPage {
     }
 
     async markCardAsKnownByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-mark-known-btn");
+        const btn = this.cardItem.nth(index).getByTestId("phrases-card-item-mark-known-btn");
         await btn.dispatchEvent("click");
     }
 
     async deleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-delete-btn");
-        await btn.dispatchEvent("click");
+        await this.cardItem.nth(index).getByTestId("phrases-card-item-delete-btn").dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteConfirmBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
     }
 
     async cancelDeleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("phrases-card-item").nth(index);
-        const btn = card.getByTestId("phrases-card-item-delete-btn");
-        await btn.dispatchEvent("click");
+        await this.cardItem.nth(index).getByTestId("phrases-card-item-delete-btn").dispatchEvent("click");
         await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
         await this.deleteCancelBtn.click();
         await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });

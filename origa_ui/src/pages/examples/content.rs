@@ -54,7 +54,8 @@ pub fn ExamplesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             loading: search_backfill_loading,
         },
         "examples",
-        hooks,
+        hooks.missing_of,
+        hooks.load_batch,
     );
 
     let ctx = create_card_list_context(

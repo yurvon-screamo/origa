@@ -112,10 +112,14 @@ pub struct BackfillState<T> {
 /// against the complete set. Matching over already-loaded details is
 /// instant — results keep appearing as the batch lands (the browser
 /// serializes the fetches over its connection pool anyway).
+///
+/// Takes only the hooks it uses (`ids_of` is the visible-slice loader's
+/// concern) — the page moves them out of its `LazyDetailHooks` value.
 pub fn create_search_backfill_effect<T>(
     state: BackfillState<T>,
     label: &'static str,
-    hooks: LazyDetailHooks<T>,
+    missing_of: MissingOf<T>,
+    load_batch: LoadBatch<T>,
 ) where
     T: Copy + Send + Sync + 'static,
 {
@@ -125,11 +129,6 @@ pub fn create_search_backfill_effect<T>(
         done,
         loading,
     } = state;
-    let LazyDetailHooks {
-        missing_of,
-        load_batch,
-        ..
-    } = hooks;
     Effect::new(move |_| {
         let query = search.get();
         if query.trim().is_empty() || done.get_untracked() || loading.get_untracked() {
