@@ -206,3 +206,40 @@ When('загружает аудио для транскрипции', async ({ p
     await wordsPage.selectFirstWord();
     await wordsPage.addSelectedWords();
 });
+
+Given('у пользователя есть добавленное слово {string}', async ({ page }, word: string) => {
+    const wordsPage = new WordsPage(page);
+    await wordsPage.goto();
+    await wordsPage.expectWordsVisible();
+    await wordsPage.openAddModal();
+    await wordsPage.enterText(word);
+    await wordsPage.analyzeText();
+    await wordsPage.selectFirstWord();
+    await wordsPage.addSelectedWords();
+    await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+});
+
+Then('слово {string} отображается в сетке', async ({ page }, word: string) => {
+    const wordsPage = new WordsPage(page);
+    await expect(wordsPage.cardMatchingWord(word).first()).toBeVisible({ timeout: 10_000 });
+});
+
+
+// TEMP debug #837 — remove before commit
+When('пользователь ищет слово с ожиданием {string}', async ({ page }, query: string) => {
+    page.on('console', (msg) => {
+        const text = msg.text();
+        if (/furigana|vocabulary|loading|загруз/i.test(text)) {
+            console.log(`[console] ${text.replace(/\s+/g, ' ').slice(0, 220)}`);
+        }
+    });
+    const wordsPage = new WordsPage(page);
+    await wordsPage.searchInput.fill(query);
+    const start = Date.now();
+    try {
+        await expect(wordsPage.cardMatchingWord("食べる").first()).toBeVisible({ timeout: 90_000 });
+        console.log(`[timing] card visible after ${((Date.now() - start) / 1000).toFixed(1)}s`);
+    } catch {
+        console.log(`[timing] card NOT visible after 90s`);
+    }
+});
