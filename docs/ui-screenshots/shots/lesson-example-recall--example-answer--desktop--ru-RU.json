@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-example-recall",
+  "screen": "example-answer",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 272029,
+  "sha256": "4ac9b2227ba1a01294ea68396404978356cfa35e789f1bf2f97caa060f5d8924",
+  "capturedAt": "2026-10-21T19:56:46.118Z",
+  "commit": "4aea02f5c30dade62bceef17dc15f1e03abb1cc7",
+  "baseURL": "http://localhost:1430",
+  "cdnBaseUrl": "http://localhost:8080",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-answer--desktop-4ac9b222.png",
+  "uploadedSha256": "4ac9b2227ba1a01294ea68396404978356cfa35e789f1bf2f97caa060f5d8924",
+  "uploadedAt": "2026-10-21T20:04:09.039Z"
+}
