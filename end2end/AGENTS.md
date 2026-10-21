@@ -77,9 +77,10 @@ CDN is served on 8080, the app on 1420 (`trunk serve` locally, the built
 `origa_ui/dist` when `CI=true`). Captures land in `.pr-screenshots/` at
 the repository root.
 
-The same suite runs weekly in CI (`.github/workflows/weekly-quality.yml`,
-job `screenshots`) and is deliberately outside the CI Gate — a pull
-request is never blocked by it.
+The suite is run by hand for now: its infrastructure no longer depends
+on the developer's machine, but the onboarding flow of a fresh profile is
+not verified in a pipeline yet (ADR-063, "Not Done Here"). The weekly
+job follows that work.
 
 ## Test Users
 

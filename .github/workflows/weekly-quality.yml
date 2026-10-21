@@ -1,0 +1,90 @@
+name: Weekly Quality
+
+# Weekly net for the suites that must not gate a pull request
+# (issue #800, ADR-063):
+#
+#   coverage — llvm-cov report for the `origa` crate. No threshold: the
+#              report is a trend, not a gate.
+#
+# The job runs on the default branch and is deliberately OUTSIDE the CI
+# Gate: a pull request is never blocked by it, and a red weekly run is a
+# signal to look at, not a merge stopper.
+#
+# The screenshot specs (end2end/screenshots-spec) are NOT here yet: their
+# onboarding flow still needs work in a CI-like environment (ADR-063,
+# "Not Done Here").
+on:
+    schedule:
+        # Monday, 04:17 UTC. The minute is deliberately non-zero: GitHub
+        # deprioritizes scheduled workflows that fire at the top of the hour.
+        - cron: "17 4 * * 1"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: weekly-quality
+    cancel-in-progress: true
+
+jobs:
+    coverage:
+        name: Coverage (origa)
+        permissions:
+            contents: read
+        runs-on: ubuntu-24.04
+        timeout-minutes: 60
+        env:
+            ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # Read by the Qlty publish step below. Empty (no secret
+            # configured) = publishing stays off and the trend lives in
+            # the uploaded artifact.
+            QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  shared-key: origa-ci-v2
+                  save-if: false
+
+            # llvm-profdata and llvm-cov ship in the llvm-tools component;
+            # cargo-llvm-cov refuses to run without them.
+            - name: Install llvm-tools
+              run: rustup component add llvm-tools-preview
+
+            # Pinned: an unpinned "latest" already broke this pipeline once
+            # (the wasm-pack action, see ci.yml).
+            - name: Install cargo-llvm-cov
+              run: cargo install cargo-llvm-cov --version 0.9.1 --locked
+
+            # The origa tests read the real dictionaries and phrase corpus
+            # from cdn/ — without the data they fail (and cargo-llvm-cov
+            # writes no report when a test target fails).
+            - name: Download CDN data
+              uses: ./.github/actions/download-cdn
+              with:
+                  cache-key: cdn-data-v15-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+
+            - name: Collect coverage
+              run: cargo llvm-cov -p origa --lcov --output-path lcov.info --summary-only
+
+            - name: Upload coverage report
+              uses: actions/upload-artifact@v7
+              with:
+                  name: coverage-lcov
+                  path: lcov.info
+                  retention-days: 30
+
+            # The Qlty bridge is already configured (.qlty/qlty.toml,
+            # [coverage]); it stays dormant until the repository secret
+            # QLTY_COVERAGE_TOKEN is set.
+            - name: Publish coverage to Qlty
+              if: env.QLTY_COVERAGE_TOKEN != ''
+              run: |
+                  curl -fsSL https://qlty.sh/cli | bash
+                  export PATH="$HOME/.qlty/bin:$PATH"
+                  qlty coverage publish lcov.info --format lcov
