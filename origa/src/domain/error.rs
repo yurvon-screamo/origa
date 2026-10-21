@@ -766,3 +766,5 @@ mod tests {
         assert_eq!(total, 40, "all 40 variants must be covered");
     }
 }
+
+// qlty diff-coverage verification probe (reverted, no functional change)
