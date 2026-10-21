@@ -85,6 +85,10 @@ jobs:
             - name: Publish coverage to Qlty
               if: env.QLTY_COVERAGE_TOKEN != ''
               run: |
-                  curl -fsSL https://qlty.sh/cli | bash
+                  # Canonical installer (the /cli path is a 404). The
+                  # version is asserted right after: a silent CLI change
+                  # must fail loudly instead of changing the report format.
+                  curl -fsSL https://qlty.sh | sh
                   export PATH="$HOME/.qlty/bin:$PATH"
+                  qlty --version
                   qlty coverage publish lcov.info --format lcov

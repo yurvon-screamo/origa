@@ -163,6 +163,13 @@ jobs:
                           - origa_ui/**
                       landing:
                           - origa_landing/**
+                          # The landing crate takes its dependencies from
+                          # the workspace manifest: a leptos/axum/tokio bump
+                          # changes the landing code without touching
+                          # origa_landing/** — the landing tests must run
+                          # for those pull requests too.
+                          - Cargo.toml
+                          - Cargo.lock
                       tauri:
                           - tauri/**
                           - tauri-plugin-aswebauth/**
@@ -396,7 +403,7 @@ jobs:
         needs: [changes]
         if: needs.changes.outputs.run_landing_test == 'true'
         runs-on: ubuntu-24.04
-        timeout-minutes: 30
+        timeout-minutes: 45
         env:
             # origa_landing/build.rs panics without the app URL and stamps
             # the landing URL into the binary (env! in the tests).
@@ -438,6 +445,14 @@ jobs:
 
             - name: Run landing SSR tests
               run: cargo test -p origa_landing --features ssr
+
+            # The ssr code and its test targets were never linted: the
+            # workspace clippy run builds the crate WITHOUT the ssr
+            # feature, so src/server.rs, src/main.rs and the ten ssr
+            # integration test targets are not compiled at all. The crate
+            # is built here anyway, so the check is nearly free.
+            - name: Clippy landing (ssr)
+              run: cargo clippy -p origa_landing --features ssr --all-targets -- -D warnings
 
     wasm-test:
         name: WASM Component Tests
