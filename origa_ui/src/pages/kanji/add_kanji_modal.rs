@@ -2,6 +2,7 @@ use super::add_kanji_modal_handlers::ModalHandlers;
 use super::add_kanji_modal_state::ModalState;
 use super::kanji_list::KanjiList;
 use crate::i18n::{t, use_i18n};
+use crate::pages::shared::readings_match;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Button, ButtonSize, ButtonVariant, Drawer, ErrorAlert, Input, LevelSelector, SelectedCount,
@@ -57,7 +58,7 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
     let handlers = ModalHandlers::new(&state, is_open);
 
     let filtered_kanji = Memo::new(move |_| {
-        let query = state.search_query.get().to_lowercase();
+        let query = state.search_query.get().trim().to_lowercase();
         let kanji_list = state.available_kanji.get();
         let lang = native_language.get();
         if query.is_empty() {
@@ -68,12 +69,10 @@ pub fn AddKanjiModal(is_open: RwSignal<bool>, refresh_trigger: RwSignal<u32>) ->
                 .filter(|k| {
                     let kanji_str = k.kanji().to_string().to_lowercase();
                     let desc = k.description(&lang).to_string().to_lowercase();
-                    let on_readings = k.on_readings().join(" ").to_lowercase();
-                    let kun_readings = k.kun_readings().join(" ").to_lowercase();
                     kanji_str.contains(&query)
                         || desc.contains(&query)
-                        || on_readings.contains(&query)
-                        || kun_readings.contains(&query)
+                        || readings_match(k.on_readings(), &query)
+                        || readings_match(k.kun_readings(), &query)
                 })
                 .collect()
         }
