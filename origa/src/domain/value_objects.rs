@@ -739,6 +739,8 @@ mod tests {
     #[rstest]
     #[case(0, NativeLanguage::English)]
     #[case(1, NativeLanguage::Russian)]
+    #[case(2, NativeLanguage::Korean)]
+    #[case(3, NativeLanguage::Vietnamese)]
     fn native_language_from_i32_success(#[case] input: i32, #[case] expected: NativeLanguage) {
         let result = NativeLanguage::from(input);
         assert_eq!(result, expected);
@@ -756,6 +758,8 @@ mod tests {
     #[rstest]
     #[case(NativeLanguage::English, "English")]
     #[case(NativeLanguage::Russian, "Russian")]
+    #[case(NativeLanguage::Korean, "Korean")]
+    #[case(NativeLanguage::Vietnamese, "Vietnamese")]
     fn native_language_as_str(#[case] lang: NativeLanguage, #[case] expected: &str) {
         assert_eq!(lang.as_str(), expected);
     }
@@ -764,6 +768,8 @@ mod tests {
     #[rstest]
     #[case(NativeLanguage::English, "English")]
     #[case(NativeLanguage::Russian, "Russian")]
+    #[case(NativeLanguage::Korean, "Korean")]
+    #[case(NativeLanguage::Vietnamese, "Vietnamese")]
     fn native_language_display(#[case] lang: NativeLanguage, #[case] expected: &str) {
         assert_eq!(format!("{}", lang), expected);
     }
@@ -784,6 +790,8 @@ mod tests {
     #[rstest]
     #[case(NativeLanguage::English, 0)]
     #[case(NativeLanguage::Russian, 1)]
+    #[case(NativeLanguage::Korean, 2)]
+    #[case(NativeLanguage::Vietnamese, 3)]
     fn native_language_into_i32(#[case] lang: NativeLanguage, #[case] expected: i32) {
         let result: i32 = lang.into();
         assert_eq!(result, expected);

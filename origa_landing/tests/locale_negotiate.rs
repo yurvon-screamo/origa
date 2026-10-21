@@ -57,6 +57,7 @@ fn header_value(headers: &HeaderMap, name: &http::HeaderName) -> Option<String> 
 #[case::ru("ru", "/ru")]
 #[case::ko("ko", "/ko")]
 #[case::vi("vi", "/vi")]
+#[case::ja("ja", "/ja")]
 #[case::ru_region("ru-RU,ru;q=0.9,en;q=0.8", "/ru")]
 #[tokio::test]
 async fn accept_language_redirects_to_localised_root(
@@ -89,6 +90,7 @@ async fn accept_language_redirects_to_localised_root(
 #[case::ru("ru", "/ru")]
 #[case::ko("ko", "/ko")]
 #[case::vi("vi", "/vi")]
+#[case::ja("ja", "/ja")]
 #[tokio::test]
 async fn saved_cookie_redirects_to_localised_root(
     #[case] value: &str,
@@ -117,7 +119,9 @@ async fn saved_cookie_redirects_to_localised_root(
 #[case::en("en")]
 #[case::en_region("en-US,en;q=0.9")]
 #[case::en_primary_with_ru_secondary("en-US,en;q=0.9,ru;q=0.8")]
-#[case::unsupported_ja("ja,en;q=0.5")]
+// "ja" became a supported locale (issue #772); use a genuinely unsupported
+// language as the unsupported-Accept-Language case.
+#[case::unsupported_de("de,en;q=0.5")]
 #[case::ru_not_acceptable("ru;q=0,en")]
 #[case::empty("")]
 #[tokio::test]
@@ -352,9 +356,10 @@ async fn lang_query_param_ru_sets_cookie() {
 
 #[tokio::test]
 async fn invalid_lang_param_ignored() {
-    // An unrecognised ?lang value (not en/ru/ko/vi) must not 500, set a bogus
-    // cookie, or otherwise alter behaviour — it falls through to the normal
-    // cookie / Accept-Language negotiation exactly as if the param were absent.
+    // An unrecognised ?lang value (not one of the supported locales) must
+    // not 500, set a bogus cookie, or otherwise alter behaviour — it falls
+    // through to the normal cookie / Accept-Language negotiation exactly as
+    // if the param were absent.
     let (status, headers) = request("/?lang=xyz", Method::GET, Some("ru"), None).await;
 
     assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);

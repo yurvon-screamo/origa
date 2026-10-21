@@ -11,7 +11,7 @@ use leptos_router::components::A;
 use leptos_router::hooks::{use_navigate, use_params_map};
 
 use crate::i18n::{locale_to_native_language, td_string, use_i18n};
-use crate::loaders::example_loader::{WordExample, load_word_examples};
+use crate::loaders::example_loader::{WordExample, example_audio_path, load_word_examples};
 use crate::pages::shared::{
     CardStatus, DeleteRequest, create_delete_callback, create_mark_as_known_callback,
 };
@@ -374,27 +374,30 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
 
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
-            <div class="word-detail-example-ja">
-                <div class="word-detail-example-ja-row">
+            // One line: the token-translator sentence takes the width
+            // and the play button sits at the RIGHT EDGE of THAT line
+            // (owner UX — sound belongs to the Japanese line).
+            <div class="word-detail-example-ja-line">
+                <div class="word-detail-example-ja">
                     <TranslatorText
                         text=sentence
                         class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
                         test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
                     />
-                    // The play button sits next to THE SENTENCE, not to
-                    // the translation (owner UX).
-                    <AudioButtons
-                        text=detail.text
-                        audio_path=None
-                        test_id=Signal::derive(|| "word-detail-example-audio".to_string())
-                    />
                 </div>
-                <div
-                    class="word-detail-example-translation"
-                    data-testid="word-detail-example-translation"
-                >
-                    {translation}
-                </div>
+                <AudioButtons
+                    text=detail.text
+                    // #528: generated IndexTTS clip for this sentence
+                    // (immutable CDN opus); TTS stays the fallback.
+                    audio_path=Some(example_audio_path(detail.sentence_id))
+                    test_id=Signal::derive(|| "word-detail-example-audio".to_string())
+                />
+            </div>
+            <div
+                class="word-detail-example-translation"
+                data-testid="word-detail-example-translation"
+            >
+                {translation}
             </div>
         </div>
     }

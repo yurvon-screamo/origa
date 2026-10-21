@@ -94,30 +94,29 @@ def _build_sync_dir(root: Path) -> Path:
 
 
 def test_multipart_threshold_forces_multipart_under_cli_default():
-    # The aws CLI's auto-multipart kicks in at 8MB; we must force it down to
-    # 16KB so T3's ~24KB single-PUT limit never applies. A 2MB font (the
-    # failing case) is now well above the threshold -> multipart.
-    assert MULTIPART_THRESHOLD_BYTES == 16 * 1024
+    # The aws CLI's auto-multipart kicks in at 8MB; our threshold matches it
+    # (t3.storage.dev single-PUT verified up to 8MB, 2026-09-19 probes) so
+    # anything larger goes multipart with the same part size. A 2MB font
+    # (the historical failing case) stays single-PUT by design now.
+    assert MULTIPART_THRESHOLD_BYTES == 8 * 1024 * 1024
     cfg = _transfer_config()
-    assert cfg.multipart_threshold == 16 * 1024
-    assert cfg.multipart_chunksize == 16 * 1024
-    assert 2 * 1024 * 1024 > MULTIPART_THRESHOLD_BYTES
+    assert cfg.multipart_threshold == 8 * 1024 * 1024
+    assert cfg.multipart_chunksize == 8 * 1024 * 1024
 
 
 def test_transfer_config_is_cached_per_chunk_size():
-    # Legacy ADR-041 lesson (58MB installer, 8MB parts): the cache must
-    # keyed by chunk_size or a large-file upload would silently reuse the
-    # 16KB config (3.5k sequential PUTs instead of 7).
+    # Legacy ADR-041 lesson (58MB installer, 8MB parts): the cache must be
+    # keyed by chunk_size or a large-file upload would silently reuse a
+    # config built for a different part size.
     _cdn_s3._transfer_configs.clear()
-    cfg_16k = _transfer_config(16 * 1024)
-    cfg_8m = _transfer_config(8 * 1024 * 1024)
+    cfg_small = _transfer_config(16 * 1024)
+    cfg_default = _transfer_config()
 
-    assert cfg_16k is not cfg_8m
-    assert cfg_8m.multipart_threshold == 8 * 1024 * 1024
-    assert cfg_8m.multipart_chunksize == 8 * 1024 * 1024
+    assert cfg_small is not cfg_default
+    assert cfg_default.multipart_threshold == MULTIPART_THRESHOLD_BYTES
+    assert cfg_default.multipart_chunksize == MULTIPART_THRESHOLD_BYTES
     # Repeated requests reuse the cached object.
-    assert _transfer_config(8 * 1024 * 1024) is cfg_8m
-    assert _transfer_config() is cfg_16k
+    assert _transfer_config() is cfg_default
 
 
 # ---------------------------------------------------------------------------

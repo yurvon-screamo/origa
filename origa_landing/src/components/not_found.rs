@@ -28,6 +28,7 @@ pub fn NotFound() -> impl IntoView {
         Some(Locale::Ru) => "Страница не найдена",
         Some(Locale::Ko) => "페이지를 찾을 수 없습니다",
         Some(Locale::Vi) => "Không tìm thấy trang",
+        Some(Locale::Ja) => "ページが見つかりません",
         _ => "Page not found",
     };
 

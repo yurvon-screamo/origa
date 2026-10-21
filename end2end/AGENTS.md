@@ -62,6 +62,26 @@ ORIGA_CDN_BASE_URL=http://localhost:8080
 3. Tests run against all three services
 4. `global-teardown.ts` kills TrailBase process
 
+## Screenshot Specs
+
+`end2end/screenshots-spec/` renders the app and captures the visual
+artifacts of a pull request. It runs on its own config:
+
+```bash
+npx playwright test --config=playwright.screenshots.config.ts
+```
+
+The runner shares the BDD infrastructure: `global-setup.ts` starts
+TrailBase in `end2end/trailbase-fixture` and sets the admin password, the
+CDN is served on 8080, the app on 1420 (`trunk serve` locally, the built
+`origa_ui/dist` when `CI=true`). Captures land in `.pr-screenshots/` at
+the repository root.
+
+The suite is run by hand for now: its infrastructure no longer depends
+on the developer's machine, but the onboarding flow of a fresh profile is
+not verified in a pipeline yet (ADR-066, "Not Done Here"). The weekly
+job follows that work.
+
 ## Test Users
 
 | User | Email | Password | Purpose |

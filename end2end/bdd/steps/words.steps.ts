@@ -89,8 +89,10 @@ Then('страница слов отображается', async ({ page }) => {
 
 When('пользователь ищет слово {string}', async ({ page }, query: string) => {
     const wordsPage = new WordsPage(page);
+    // Шаг-действие: заполнили поиск. Результат проверяет следующий Then
+    // (пустое состояние с авто-ретраем) — фиксированная пауза ничего
+    // не гарантировала.
     await wordsPage.searchInput.fill(query);
-    await page.waitForTimeout(500);
 });
 
 Then('сетка слов пуста', async ({ page }) => {

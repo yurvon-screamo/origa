@@ -7,7 +7,7 @@ use super::on_dont_know::create_on_dont_know;
 use super::on_quiz_select::create_on_quiz_select;
 use super::on_quiz_submit::create_on_quiz_submit;
 use super::on_quiz_toggle::create_on_quiz_toggle;
-use super::on_rate::{create_on_example_advance_callback, create_on_rate_callback};
+use super::on_rate::{create_on_rate_callback, create_rating_free_advance_callback};
 use super::on_yesno_select::create_on_yesno_select;
 use super::phrase_card::PhraseCardView;
 use super::quiz_card::QuizCardView;
@@ -31,6 +31,9 @@ pub fn LessonCardContainer() -> impl IntoView {
     let is_rating = RwSignal::new(None::<Ulid>);
     let known_kanji = lesson_ctx.known_kanji;
     let native_language = lesson_ctx.native_language;
+    // До move `lesson_ctx` в keyboard handler (RwSignal Copy): сигнал мьюта
+    // нужен монтированию пачки связок (#808, озвучка чтения при раскрытии).
+    let is_muted = lesson_ctx.is_muted;
 
     let show_answer = move || {
         lesson_state.update(|state| {
@@ -39,8 +42,8 @@ pub fn LessonCardContainer() -> impl IntoView {
     };
 
     let on_rate_callback = create_on_rate_callback(lesson_state, lesson_ctx.clone(), is_rating);
-    let on_example_advance =
-        create_on_example_advance_callback(lesson_state, lesson_ctx.is_completed);
+    let on_rating_free_advance =
+        create_rating_free_advance_callback(lesson_state, lesson_ctx.is_completed);
 
     let on_quiz_select = create_on_quiz_select(lesson_state);
 
@@ -106,7 +109,7 @@ pub fn LessonCardContainer() -> impl IntoView {
     let on_example_answer = {
         let is_completed = lesson_ctx.is_completed;
         let repository = lesson_ctx.repository.clone();
-        let advance = on_example_advance;
+        let advance = on_rating_free_advance;
         Callback::new(move |understood: bool| {
             if is_rating.get_untracked().is_some() {
                 return;
@@ -262,9 +265,14 @@ pub fn LessonCardContainer() -> impl IntoView {
 
     // Оценка связки пачки: только память ячейки (CounterReview), мимо
     // rate_card — семантика и дневная статистика не затрагиваются.
-    let on_rate_counter_binding =
-        Callback::new(move |(card_id, number, rating): (ulid::Ulid, u8, Rating)| {
+    // is_last сериализует advance ПОСЛЕ сохранения рейтинга (канон и
+    // история бага — док-комментарий prop on_rate_binding сессии).
+    // Продвигаем и при ошибке сохранения: замороженная карта не должна
+    // запирать урок.
+    let on_rate_counter_binding = Callback::new(
+        move |(card_id, number, rating, is_last): (ulid::Ulid, u8, Rating, bool)| {
             let repository = counter_repository.clone();
+            let advance = on_rating_free_advance;
             spawn_local(async move {
                 if let Err(e) = origa::use_cases::RateCounterBindingUseCase::new(&repository)
                     .execute(card_id, number, rating)
@@ -272,8 +280,12 @@ pub fn LessonCardContainer() -> impl IntoView {
                 {
                     tracing::warn!(error = ?e, "Counter binding rating failed");
                 }
+                if is_last {
+                    advance.run(());
+                }
             });
-        });
+        },
+    );
 
     let is_counter_bindings_mode = Memo::new(move |_| {
         current_lesson_card
@@ -292,7 +304,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                             show_answer_sig,
                             Callback::new(move |_| show_answer()),
                             on_rate_callback,
-                            on_example_advance,
+                            on_rating_free_advance,
                             rating_disabled_sig,
                             known_kanji_sig,
                             native_language,
@@ -338,8 +350,8 @@ pub fn LessonCardContainer() -> impl IntoView {
                             lesson_card.into_view()
                         {
                             let on_rate_binding = Callback::new(
-                                move |(number, rating): (u8, Rating)| {
-                                    on_rate_counter_binding.run((card_id, number, rating));
+                                move |(number, rating, is_last): (u8, Rating, bool)| {
+                                    on_rate_counter_binding.run((card_id, number, rating, is_last));
                                 },
                             );
                             Some(view! {
@@ -347,7 +359,7 @@ pub fn LessonCardContainer() -> impl IntoView {
                                     card=card
                                     items=items
                                     on_rate_binding=on_rate_binding
-                                    on_next=Callback::new(move |_| on_next_card.run(()))
+                                    is_muted=is_muted
                                     test_id=Signal::derive(|| "counter-bindings-card".to_string())
                                 />
                             })

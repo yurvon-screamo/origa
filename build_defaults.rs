@@ -11,7 +11,7 @@
 //! `DEFAULT_LANDING` stays local to `tauri/build_config.rs` because only the
 //! `tauri` build script references the landing host (for CSP injection).
 //! Moving it here would create an unused constant inside the `origa_ui` build
-//! binary — and the project forbids `#[allow(dead_code)]` (see `AGENTS.md`).
+//! binary — and the project forbids dead-code allow attributes (see `AGENTS.md`).
 //! See ADR-020 (TRAILBASE) and ADR-023 (CDN) for the full rationale.
 
 /// Production TrailBase URL. Used as the fallback when the `TRAILBASE_URL` env

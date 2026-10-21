@@ -127,6 +127,80 @@ funnel measures honest completions, and skip traffic stays visible as
 pageview drop-off. Programmatic events (`umami.track()` after async
 validation) are a future slice if exact semantics are needed.
 
+#### 5.1. Programmatic onboarding step events (issue #774, 2026-10)
+
+The onboarding funnel (login_submit 370 → onboarding_complete 33 ≈ 8.9%,
+Umami 14.09–13.10) had no intermediate measurement: the seven wizard steps
+are SPA state inside one `/onboarding` pageview, invisible to the tracker.
+The future slice above arrived: `origa_ui/src/core/analytics.rs::track_event`
+wraps the tracker's `umami.track(name, data)` contract (js-sys interop,
+fire-and-forget, warn-and-drop on a failed call). Events fired before the
+tracker script executes (it loads asynchronously; the window covers the
+first hundreds of milliseconds of a page — cold start, the resume jump to
+Scoring) go into a bounded pending queue (FIFO, 10 s give-up) flushed as
+soon as `window.umami` appears — the e2e scenario below caught exactly
+this drop before the queue existed.
+
+**Contract** — every step of `OnboardingStep` emits `start` on entry
+(single Effect memo-gated on the step value: mount, forward/back
+navigation, the resume jump — but NOT intra-step mutations like
+level/app picks, which update the same signal without changing the step)
+and `complete` on its forward action:
+
+| Step enum | slug | start | complete (fired by) |
+|---|---|---|---|
+| Intro | `intro` | `onboarding_intro_start` | Next click |
+| Load (stepper: "pace") | `load` | `onboarding_load_start` | Next click |
+| Jlpt (stepper: "level") | `jlpt` | `onboarding_jlpt_start` | Next click |
+| Apps | `apps` | `onboarding_apps_start` | Next click |
+| Progress | `progress` | `onboarding_progress_start` | Next click |
+| Summary (stepper: "import") | `summary` | `onboarding_summary_start` | successful import checkpoint (both branches) |
+| Scoring | `scoring` | `onboarding_scoring_start` | = existing declarative `onboarding_complete` (NOT duplicated) |
+
+Slugs follow the enum identity, not the localized stepper labels — the
+table above is the mapping. Every event carries event-data properties
+`locale` (`en|ru|ko|vi`, untracked read at fire time) and `device`
+(`mobile|desktop`).
+
+**Semantics:**
+
+- *Attempt semantics*, same as `login_submit`: `complete` fires on the
+  forward action (steps Intro–Progress are synchronous clicks; Summary
+  completes only when the import checkpoint succeeds — a failed import
+  leaves the user on the step and emits nothing). Back-navigation re-fires
+  `start`; funnel tools match first occurrence in order, so repeats do not
+  distort step conversion.
+- *Remount dedup*: the ProtectedRoute sync overlay can unmount and remount
+  the Onboarding component mid-step (an authenticated `save_sync` — e.g.
+  the intro language save) without changing the step. Start events are
+  deduped against the last started step in the page session, so a remount
+  never double-fires the same step's `start`; navigation (step value
+  changed) always emits.
+- *Skip paths stay silent* (unchanged from the declarative contract): skip
+  is visible as drop-off after the last `start`.
+- *Bounce noise*: `intro_start` fires on every `/onboarding` mount,
+  including redirects of users who already completed onboarding (→`/home`)
+  or have no session (→`/login`) — the funnel top is slightly wider than
+  "actually saw the intro".
+- *Cold start*: the tracker script loads asynchronously; events fired
+  before it executes are queued (FIFO, ≤10 s) and flushed on tracker
+  arrival, so no onboarding event is lost to the load race. If the tracker
+  never appears (ad blocker, muted build) the queue is discarded.
+
+**Verification**: local-only BDD scenario «Шаги онбординга доставляются в
+Umami как события» (`smoke.feature`, issue #774) intercepts the real
+`POST /api/send` beacons and asserts the ordered funnel + properties; it
+skips on muted builds (runtime probe), so the e2e matrix invariant holds.
+The standing release checkpoint (Realtime dashboard check below) applies
+unchanged. When reading the funnel in the Umami dashboard, filter out
+hostname `localhost` — dev runs and this scenario legitimately inject
+synthetic funnels into production analytics.
+
+**Volume**: ~2–3K additional events/month estimated (≈300 onboarding
+entries × 7–10 events, abandonment included) — low-frequency relative to
+traffic, but monitor event volume in the dashboard after rollout; at quota
+pressure the options are a plan upgrade or event pruning.
+
 ### 6. Privacy policy
 
 `PR_BODY_EN`/`PR_BODY_RU` gained a "Web analytics" data category, a storage
@@ -140,6 +214,7 @@ listed although the app ships `OAuthProvider::Apple`.
 ## Alternatives Considered
 
 ### Self-hosted Umami
+
 - Pros: no quota, data ownership, no third-party JS host in the CSP.
 - Rejected for now: another always-on service to operate (the project
   already runs Railway services, CDN, Sentry SaaS); the free cloud plan
@@ -147,13 +222,16 @@ listed although the app ships `OAuthProvider::Apple`.
   (`data-website-id`, `data-host-url`) makes self-hosting a config change.
 
 ### Google Analytics
+
 - Rejected: cookies/consent banner required, contradicts privacy positioning.
 
 ### Sentry-based funnel metrics
+
 - Rejected: Sentry is error telemetry (ADR-036); pageview analytics would
   abuse transactions for product metrics and mix concerns.
 
 ### Static tag + Playwright route-abort for CI mute
+
 - Rejected: covers only the browser-based e2e job; the android-smoke
   emulator runs a real WebView that Playwright cannot intercept. A build
   gate covers both uniformly.

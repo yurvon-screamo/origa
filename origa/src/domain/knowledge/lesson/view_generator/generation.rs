@@ -449,17 +449,21 @@ pub(crate) fn generate_grammar_quiz(
     Ok(LessonCardView::GrammarQuiz(grammar_quiz))
 }
 
-/// Состав пачки связок (issue #415): порядок — `CounterCard::binding_showcase`
-/// (due по возрастанию срока, нерегулярные выше, затем новички). Пустая
-/// пачка невозможна при правильной выборке (`is_review_due`); safe-default
-/// показа — семантический Normal.
-pub(crate) fn generate_counter_binding_items(card: &Card) -> Vec<CounterBindingItem> {
+/// Состав пачки связок (issue #415): состав — `CounterCard::binding_showcase`
+/// (due по возрастанию срока, затем новички); ПОРЯДОК показов перемешан
+/// (юзер-репорт 0.8.0-rc: числовой порядок 1..10 был подсказкой «иду по
+/// кругу»). Пустая пачка невозможна при правильной выборке
+/// (`is_review_due`); safe-default показа — семантический Normal.
+pub(crate) fn generate_counter_binding_items(
+    card: &Card,
+    rng: &mut impl Rng,
+) -> Vec<CounterBindingItem> {
     match card {
-        Card::Counter(counter) => counter
-            .binding_showcase()
-            .into_iter()
-            .map(CounterBindingItem::new)
-            .collect(),
+        Card::Counter(counter) => {
+            let mut numbers = counter.binding_showcase();
+            numbers.shuffle(rng);
+            numbers.into_iter().map(CounterBindingItem::new).collect()
+        },
         _ => Vec::new(),
     }
 }

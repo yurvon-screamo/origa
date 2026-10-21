@@ -25,7 +25,7 @@ origa_landing/  — SSR landing site (Leptos 0.8 + Axum)
 tauri/          — Tauri v2 desktop app
 end2end/     — Playwright E2E тесты
 utils/       — CLI утилиты
-packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-058)
+packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-065)
 cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
 scripts/     — Python скрипты обработки данных
 docs/        — документация (decisions/, marketing/)
@@ -53,7 +53,7 @@ $env:TRUNK_BUILD_CARGO_PROFILE = "wasm-dev"
 cd tauri && cargo tauri android dev
 ```
 
-**JNI-контекст (ADR-044):** с Tauri 2.11 (tao 0.35) никто не публикует
+**JNI-контекст (ADR-063):** с Tauri 2.11 (tao 0.35) никто не публикует
 JavaVM/Application в `ndk-context` — инвариант принадлежит
 `tauri/src/android_context.rs` (публикация в `JNI_OnLoad`, Application через
 `ActivityThread.currentApplication()`). Не читайте `ndk_context` до
@@ -105,6 +105,23 @@ cargo fmt --check && cargo fmt
 ```
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
+
+### SSR-тесты лендинга (ADR-066)
+
+Целевые тесты `origa_landing` требуют фичу `ssr` — без неё они не собираются
+вообще, поэтому `cargo test --workspace` их не выполняет. Отдельная команда:
+
+```powershell
+$env:ORIGA_APP_BASE_URL = "https://app.origa.uwuwu.net"     # build.rs landing паникует без неё
+$env:ORIGA_LANDING_BASE_URL = "https://origa.uwuwu.net"      # вшивается в бинарь (env! в тестах)
+$env:CARGO_PROFILE_DEV_DEBUG = "0"; $env:CARGO_PROFILE_TEST_DEBUG = "0"
+cargo test -p origa_landing --features ssr
+```
+
+`CARGO_PROFILE_*_DEBUG=0` обязателен: крейт встраивает ~120 markdown-файлов
+(`include_str!` в реестрах блога и доков), debug-информация не влезает в линкер
+rust-lld (stable ≥ 1.98) — «relocation out of range» / «section too large».
+Без отладочной информации крейт линкуется за секунды вместо десяти минут.
 
 ## Ключевые зависимости
 
@@ -172,9 +189,9 @@ Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
 CI: lint + test + e2e + docker build (2 images: landing + ui).
 CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
-Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-058, supersedes ADR-056), AppImage убран (ADR-056).
+Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-065, supersedes ADR-064), AppImage убран (ADR-064).
 
-**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
+**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
 
 Инварианты (нарушение = silent skip / дырявый gate; канон — доктрина в шапке ci.yml, номера совпадают):
 
@@ -238,3 +255,4 @@ Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с 
 - Перед пушем stable-тега `v*.*.*` заполнить секцию версии в корневом `CHANGELOG.md` (формат — в шапке файла; русский, буллеты, ≤500 символов). Секция обязательна для джобы `upload-rustore`: без неё CI-загрузка в RuStore падает до создания черновика.
 - Тексты `CHANGELOG.md` всегда прогонять через `desloper --lang ru --json CHANGELOG.md` (AI-slop аудит); находки p0/p1/p2 должны быть нулевыми — реальные находки исправлять, ложные срабатывания не править под метрику.
 - Если `upload-rustore` упал на теге — recovery: ручной ресабмит через RuStore Console («Что нового» правится там же). Первая E2E-проверка multiline whatsNew на API RuStore — первый stable-тег после внедрения CHANGELOG-механики.
+- Google Play closed testing (#747): теги stable + prerelease автоматически заливают AAB в трек `alpha` (джоба `upload-google-play`; изолирована от `release.needs` — падение загрузки не роняет GitHub Release). VersionCode для тегов считает `.github/scripts/compute-android-versioncode.sh`: `база×100 + N` для rcN, `+99` для stable — строго монотонно внутри поезда; исторические ручные заливки использовали тауриевскую формулу (максимум 4004), при неожиданной коллизии — бамп версии. Повторный пуш уже доставленного тега невозможен (versionCode burned в Play) — recovery: бамп rc-суффикса или patch. Пустой секрет `PLAY_SERVICE_ACCOUNT_JSON` = красная джоба при зелёном релизе (ожидаемое напоминание). Prerequisites: SA с ролью Release to testing в Play Console, включённый androidpublisher API в GCP-проекте SA, трек с API-именем `alpha`.

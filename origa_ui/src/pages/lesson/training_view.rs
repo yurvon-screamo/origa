@@ -4,13 +4,13 @@ use super::acquaintance_keyboard::{
 use super::acquaintance_state::{
     AcquaintanceContext, AcquaintanceSlideData, resolve_audio_front, should_autoplay_word_audio,
 };
+use super::binary_rating_buttons::BinaryRatingButtons;
 use super::keyboard_handler::is_typing_target;
+use super::reveal_answer_button::RevealAnswerButton;
 use super::training_answer::TrainingAnswerSlide;
 use super::training_front::TrainingFrontSlide;
 use crate::i18n::*;
-use crate::ui_components::{
-    Button, ButtonVariant, is_speech_supported, speak_word, word_audio_available,
-};
+use crate::ui_components::{is_speech_supported, speak_word, word_audio_available};
 use leptos::prelude::*;
 use leptos_use::use_event_listener;
 use origa::domain::{AcquaintanceSubphase, AnswerOutcome};
@@ -370,10 +370,22 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                             />
                         </div>
                         <Show when=move || showing_answer.get() fallback=move || ()>
-                            <div
-                                class="border-t border-[var(--border-light)] my-2"
-                                data-testid="acquaintance-answer-divider"
-                            ></div>
+                            <Show
+                                when=move || !ctx_stored.get_value().audio_front.get()
+                                fallback=move || ()
+                            >
+                                // Front/answer divider: only when the front
+                                // keeps visible content after the reveal. An
+                                // audio front hides its play button post-reveal
+                                // — a divider over nothing reads as a stray
+                                // stripe above the answer (owner remark on the
+                                // #735 screenshots). The ANSWER itself renders
+                                // for every front.
+                                <div
+                                    class="border-t border-[var(--border-light)] my-2"
+                                    data-testid="acquaintance-answer-divider"
+                                ></div>
+                            </Show>
                             <TrainingAnswerSlide
                                 ctx=ctx_stored.get_value()
                                 card_id=card_id
@@ -386,57 +398,45 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
             </div>
             <Show when=move || !showing_answer.get() && !hand_finishing.get() fallback=move || ()>
                 <div class="flex justify-center">
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Filled)
-                        on_click=Callback::new(move |_| {
+                    <RevealAnswerButton
+                        test_id="acquaintance-reveal-btn"
+                        on_click=Callback::new(move |_: ()| {
                             do_reveal(&ctx_stored, &current_id, &showing_answer, muted_now());
                         })
-                        test_id=Signal::derive(|| "acquaintance-reveal-btn".to_string())
-                    >
-                        {t!(i18n, lesson.show_answer)}
-                        // Space = «Показать ответ» на любом фронте
-                        // (единый паттерн урока); повтор аудио — Enter.
-                        <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
-                    </Button>
+                    />
                 </div>
             </Show>
             <Show when=move || showing_answer.get() && !hand_finishing.get() fallback=move || ()>
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                            do_rate(
-                                &ctx_stored,
-                                &current_id,
-                                &showing_answer,
-                                &rotation_index,
-                                &training_order,
-                                false,
-                            );
-                        })
-                        test_id=Signal::derive(|| "acquaintance-rating-dont-know".to_string())
-                    >
-                        {t!(i18n, acquaintance.dont_remember)}
-                        <span class="kbd-hint">"[1]"</span>
-                    </Button>
-                    <Button
-                        variant=Signal::derive(|| ButtonVariant::Olive)
-                        on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
-                            do_rate(
-                                &ctx_stored,
-                                &current_id,
-                                &showing_answer,
-                                &rotation_index,
-                                &training_order,
-                                true,
-                            );
-                        })
-                        test_id=Signal::derive(|| "acquaintance-rating-remember".to_string())
-                    >
-                        {t!(i18n, acquaintance.remember)}
-                        <span class="kbd-hint">"[2] / {t!(i18n, lesson.space_key)}"</span>
-                    </Button>
-                </div>
+                <BinaryRatingButtons
+                    left_label=Signal::derive(move || t_string!(i18n, acquaintance.dont_remember).to_string())
+                    right_label=Signal::derive(move || t_string!(i18n, acquaintance.remember).to_string())
+                    left_test_id="acquaintance-rating-dont-know"
+                    right_test_id="acquaintance-rating-remember"
+                    left_hint="[1]"
+                    right_hint=Signal::derive(move || {
+                        format!("[2] / {}", t_string!(i18n, lesson.space_key))
+                    })
+                    on_left=Callback::new(move |_: ()| {
+                        do_rate(
+                            &ctx_stored,
+                            &current_id,
+                            &showing_answer,
+                            &rotation_index,
+                            &training_order,
+                            false,
+                        );
+                    })
+                    on_right=Callback::new(move |_: ()| {
+                        do_rate(
+                            &ctx_stored,
+                            &current_id,
+                            &showing_answer,
+                            &rotation_index,
+                            &training_order,
+                            true,
+                        );
+                    })
+                />
             </Show>
         </div>
     }

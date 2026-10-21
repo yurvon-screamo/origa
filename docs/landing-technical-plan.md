@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-file MD029 :: сквозная нумерация фаз плана (4./9./11.) намеренна -->
 # Origa Landing — Technical Architecture Plan
 
 > **Status:** Draft (post code-quality-review)  
@@ -45,7 +46,7 @@
 
 **CSS structure:**
 
-```
+```text
 origa_landing/style/
 ├── input.css         ← SYMLINK to ../../origa_ui/input.css
 └── landing.css       ← Landing-specific overrides and trim
@@ -72,7 +73,7 @@ origa_landing/style/
 
 ## Crate Structure
 
-```
+```text
 origa_landing/                        ← NEW workspace member
 ├── Cargo.toml                        ← features: ssr only
 ├── build.rs                          ← CSS processing + symlink verification

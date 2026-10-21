@@ -8,6 +8,7 @@ dependencies = [
     "boto3>=1.35",
     "pytest>=8.0",
     "weasyprint>=70",
+    "xlrd>=2.0",
 ]
 
 [tool.pytest.ini_options]

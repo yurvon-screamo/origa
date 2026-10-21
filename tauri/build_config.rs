@@ -9,7 +9,7 @@
 //! needed by BOTH crates) via the root `build_defaults.rs` `#[path]`-include.
 //! `DEFAULT_LANDING` stays local — `origa_ui` does not reference the landing
 //! host, and moving it to the shared file would create an unused constant there
-//! (the project forbids `#[allow(dead_code)]`). See ADR-020 (TRAILBASE) and
+//! (the project forbids dead-code allow attributes). See ADR-020 (TRAILBASE) and
 //! ADR-023 (CDN) for the full rationale.
 //!
 //! This module is pure (no I/O, no env access) so that it can be unit-tested

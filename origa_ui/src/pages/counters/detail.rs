@@ -58,6 +58,15 @@ fn load_study_card(
     });
 }
 
+/// Многосимвольные суффиксы (切れ, ヶ月): модификатор без столбика.
+fn multi_class(base: &str, multi: &str, suffix: &str) -> String {
+    if suffix.chars().count() > 1 {
+        format!("{base} {multi}")
+    } else {
+        base.to_string()
+    }
+}
+
 #[component]
 pub fn CountersDetail() -> impl IntoView {
     let i18n = use_i18n();
@@ -279,8 +288,16 @@ pub fn CountersDetail() -> impl IntoView {
                         // Hero: знак + глосса + сводка связок
                         <div class="counter-detail-hero-card" data-testid="counters-detail-hero">
                             <div class="counter-detail-hero-header">
-                                <div class="counter-detail-hero-char-box">
-                                    <span class="counter-detail-hero-char">{suffix.clone()}</span>
+                                <div class={multi_class(
+                                    "counter-detail-hero-char-box",
+                                    "counter-detail-hero-char-box--multi",
+                                    &suffix,
+                                )}>
+                                    <span class={multi_class(
+                                        "counter-detail-hero-char",
+                                        "counter-detail-hero-char--multi",
+                                        &suffix,
+                                    )}>{suffix.clone()}</span>
                                 </div>
                                 <div class="counter-detail-hero-info">
                                     <div class="counter-detail-hero-meaning">

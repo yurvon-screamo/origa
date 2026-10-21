@@ -80,7 +80,9 @@ Then('отображается карточка смены пароля', async 
 
 When('вводит старый пароль {string}', async ({ page }, password: string) => {
     await page.getByTestId("profile-password").click();
-    await page.waitForTimeout(500);
+    // Форма смены пароля открывается по клику — ждём её поля ввода,
+    // а не фиксированной паузы.
+    await expect(page.getByTestId("current-password")).toBeVisible({ timeout: 10_000 });
     await page.getByTestId("current-password").fill(password);
 });
 

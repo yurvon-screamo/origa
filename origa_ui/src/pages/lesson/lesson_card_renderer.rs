@@ -1,7 +1,7 @@
+use super::binary_rating_buttons::{BinaryRatingButtons, RatingButtons};
 use super::example_recall_card::ExampleRecallCard;
 use super::lesson_card::LessonCard as LessonCardComponent;
-use super::phrase_rating_buttons::PhraseRatingButtons;
-use super::rating_buttons_view::RatingButtonsView;
+use crate::i18n::*;
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, LessonCard, LessonCardView, NativeLanguage, Rating};
 use std::collections::HashSet;
@@ -135,6 +135,10 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             _ => None,
         };
 
+        // The phrase card speaks the practice vocabulary («понял / не
+        // понял»), normal cards the FSRS pair («Знаю» / «Не знаю») — same
+        // binary row, different labels and test ids.
+        let i18n = use_i18n();
         view! {
             <LessonCardComponent
                 card=params.card
@@ -149,10 +153,16 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             />
 
             <Show when=move || show_answer.get()>
-                <PhraseRatingButtons
-                    on_rate=on_rate_callback
+                <BinaryRatingButtons
+                    left_label=Signal::derive(move || t_string!(i18n, lesson.did_not_understand).to_string())
+                    right_label=Signal::derive(move || t_string!(i18n, lesson.understood).to_string())
+                    left_test_id="lesson-phrase-rating-did-not-understand"
+                    right_test_id="lesson-phrase-rating-understood"
+                    left_hint="[1]"
+                    right_hint="[2]"
                     disabled=disabled
-                    test_id=Signal::derive(|| "lesson-phrase-rating".to_string())
+                    on_left=Callback::new(move |_| on_rate_callback.run(Rating::Again))
+                    on_right=Callback::new(move |_| on_rate_callback.run(Rating::Good))
                 />
             </Show>
         }
@@ -172,10 +182,7 @@ pub(in crate::pages::lesson) fn render_lesson_card(
             />
 
             <Show when=move || show_answer.get()>
-                <RatingButtonsView
-                    on_rate=on_rate_callback
-                    disabled=disabled
-                />
+                <RatingButtons on_rate=on_rate_callback disabled=disabled />
             </Show>
         }
         .into_any()

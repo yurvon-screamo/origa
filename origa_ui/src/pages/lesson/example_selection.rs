@@ -12,8 +12,8 @@
 use std::collections::HashSet;
 
 use origa::dictionary::example::get_word_example_refs;
+use origa::domain::tokenize_text;
 use origa::domain::{Card, LessonCard, LessonCardView};
-use origa::domain::{PartOfSpeech, tokenize_text};
 use origa::traits::UserRepository;
 use tracing::warn;
 
@@ -135,11 +135,4 @@ pub fn prefetch_example_sentences(lesson_cards: &[(ulid::Ulid, LessonCard)]) {
             });
         }
     }
-}
-
-// Keep the unused-import lint honest if PartOfSpeech is only referenced
-// through TokenInfo accessors below.
-#[allow(dead_code)]
-fn _pos_marker(pos: PartOfSpeech) -> bool {
-    pos.is_vocabulary_word()
 }

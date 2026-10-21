@@ -20,15 +20,6 @@ pub struct RecentlyStudiedItem {
     pub short_description: Option<String>,
 }
 
-#[derive(Clone)]
-pub struct ActivityDataPoint {
-    pub date_label: String,
-    pub learned: f64,
-    pub in_progress: f64,
-    pub new_count: f64,
-    pub difficult: f64,
-}
-
 pub fn compute_studied_today(
     knowledge_set: &KnowledgeSet,
     lang: &NativeLanguage,
@@ -122,36 +113,6 @@ pub fn compute_studied_today(
         .collect()
 }
 
-pub fn compute_30day_chart_data(
-    history: &[DailyHistoryItem],
-    lang: &NativeLanguage,
-) -> Vec<ActivityDataPoint> {
-    let mut items: Vec<_> = history.to_vec();
-    items.sort_by_key(|a| a.timestamp());
-
-    let start = items.len().saturating_sub(30);
-    items
-        .into_iter()
-        .skip(start)
-        .map(|item| {
-            let local = chrono::Local.from_utc_datetime(&item.timestamp().naive_utc());
-            let day = local.day();
-            let month_idx = (local.month0() as usize).min(11);
-            let month_str = match lang {
-                NativeLanguage::Russian => RU_MONTHS_SHORT[month_idx],
-                _ => EN_MONTHS_SHORT[month_idx],
-            };
-            ActivityDataPoint {
-                date_label: format!("{} {}", day, month_str),
-                learned: item.known_words() as f64,
-                in_progress: item.in_progress_words() as f64,
-                new_count: item.new_words() as f64,
-                difficult: item.high_difficulty_words() as f64,
-            }
-        })
-        .collect()
-}
-
 #[derive(Clone, Default)]
 pub struct CompletionForecast {
     pub days_remaining: Option<usize>,
@@ -213,10 +174,41 @@ pub fn compute_completion_forecast(
     }
 }
 
+/// Типы карт, которые считает счётчик повторений: слова, кандзи, грамматика
+/// и счётные суффиксы. Фразы и примеры исключены — у них собственные
+/// пайплайны повторения (issue #809).
+///
+/// Разбор исчерпывающий: новый тип карты в домене заставит дописать руку
+/// здесь, а не молча выпасть из счётчика (прецедент `Card::Example`, #528 v3).
+fn is_counted_card_type(card_type: CardType) -> bool {
+    match card_type {
+        CardType::Vocabulary | CardType::Kanji | CardType::Grammar | CardType::Counter => true,
+        CardType::Phrase | CardType::Example => false,
+    }
+}
+
+/// Сколько карт ждут повторения: срок повторения уже наступил.
+///
+/// Предикат — доменный [`MemoryHistory::is_due`]: наступил срок, а статус
+/// карты не важен — помеченные «Уже знаю» тоже считаются (решение
+/// пользователя, issue #809). Новые карты не считаются: срока у них ещё нет.
+pub fn compute_due_count(knowledge_set: &KnowledgeSet) -> usize {
+    knowledge_set
+        .study_cards()
+        .values()
+        .filter(|study_card| is_counted_card_type(CardType::from(study_card.card())))
+        .filter(|study_card| study_card.memory().is_due())
+        .count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use origa::domain::{Card, KnowledgeSet, Question, VocabularyCard};
+    use origa::domain::{
+        Card, CounterCard, ExampleCard, KnowledgeSet, NativeLanguage, PhraseCard, Question,
+        RateMode, Rating, RatingContext, User, VocabularyCard,
+    };
+    use ulid::Ulid;
 
     fn set_with_new_cards(n: usize) -> KnowledgeSet {
         let mut set = KnowledgeSet::new();
@@ -229,26 +221,6 @@ mod tests {
             let _ = set.create_card(Card::Vocabulary(vocab));
         }
         set
-    }
-
-    #[test]
-    fn chart_data_limits_to_thirty_points() {
-        let history = vec![DailyHistoryItem::new(); 45];
-        let data = compute_30day_chart_data(&history, &NativeLanguage::English);
-        assert_eq!(data.len(), 30, "only the last 30 days are charted");
-    }
-
-    #[test]
-    fn chart_data_labels_are_localised() {
-        let history = vec![DailyHistoryItem::new()];
-        let en = compute_30day_chart_data(&history, &NativeLanguage::English);
-        let ru = compute_30day_chart_data(&history, &NativeLanguage::Russian);
-        assert_eq!(en.len(), 1);
-        // Same day → labels share the day number, month abbreviations differ
-        // between locales for most months; both must be non-empty and start
-        // with the day number.
-        assert!(!en[0].date_label.is_empty());
-        assert!(!ru[0].date_label.is_empty());
     }
 
     #[test]
@@ -287,6 +259,192 @@ mod tests {
         assert!(
             items.is_empty(),
             "cards without a review date are not 'studied today'"
+        );
+    }
+
+    // ─── Счётчик повторений (issue #809) ───
+
+    fn user_with_card(card: Card) -> User {
+        let mut user = User::new(
+            "tester@origa.local".to_string(),
+            NativeLanguage::English,
+            None,
+        );
+        user.create_card(card).expect("card must be created");
+        user
+    }
+
+    fn vocabulary_card(word: &str) -> Card {
+        Card::Vocabulary(VocabularyCard::new_with_pos(
+            Question::new(word.to_string()).unwrap(),
+            None,
+            None,
+        ))
+    }
+
+    /// Карта со сроком повторения в прошлом: «Уже знаю» ставит срок вчера.
+    fn known_card(user: &mut User, card_id: ulid::Ulid) {
+        user.mark_card_as_known(card_id)
+            .expect("card must be marked known");
+    }
+
+    #[test]
+    fn due_count_of_empty_set_is_zero() {
+        let set = KnowledgeSet::new();
+        assert_eq!(compute_due_count(&set), 0);
+    }
+
+    #[test]
+    fn due_count_skips_cards_without_review_date() {
+        // Arrange: новая карта — срока повторения ещё нет.
+        let user = user_with_card(vocabulary_card("猫"));
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert
+        assert_eq!(count, 0, "a new card has no review date yet");
+    }
+
+    #[test]
+    fn due_count_skips_cards_with_future_review_date() {
+        // Arrange: карта, изученная в уроке, — следующий срок в будущем.
+        let mut user = user_with_card(vocabulary_card("犬"));
+        let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+        user.rate_card(
+            card_id,
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .expect("card must be rated");
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert
+        assert_eq!(count, 0, "a card scheduled in the future is not due");
+    }
+
+    #[test]
+    fn due_count_counts_known_cards_with_passed_review_date() {
+        // Arrange: «Уже знаю» ставит срок вчера — карта просрочена.
+        let mut user = user_with_card(vocabulary_card("鳥"));
+        let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+        known_card(&mut user, card_id);
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert: статус не важен (решение пользователя, issue #809) —
+        // считаем и карты, помеченные «Уже знаю».
+        assert_eq!(count, 1, "a known card past its review date is due");
+    }
+
+    #[test]
+    fn due_count_mixes_passed_and_future_cards() {
+        // Arrange: два просроченных, одна новая, одна с будущим сроком.
+        let mut user = User::new(
+            "tester@origa.local".to_string(),
+            NativeLanguage::English,
+            None,
+        );
+        let mut created = Vec::new();
+        for word in ["猫", "犬", "鳥", "魚"] {
+            created.push(
+                user.create_card(vocabulary_card(word))
+                    .expect("card created"),
+            );
+        }
+        known_card(&mut user, *created[0].card_id());
+        known_card(&mut user, *created[1].card_id());
+        user.rate_card(
+            *created[3].card_id(),
+            Rating::Good,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .expect("card must be rated");
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert
+        assert_eq!(count, 2, "only the two cards past their date count");
+    }
+
+    #[test]
+    fn due_count_skips_phrase_and_example_cards() {
+        // Arrange: фраза и пример с просроченным сроком — свои пайплайны.
+        let mut user = User::new(
+            "tester@origa.local".to_string(),
+            NativeLanguage::English,
+            None,
+        );
+        let phrase = user
+            .create_card(Card::Phrase(PhraseCard::new(Ulid::new())))
+            .expect("phrase created");
+        let example = user
+            .create_card(Card::Example(ExampleCard::new("猫", 1)))
+            .expect("example created");
+        known_card(&mut user, *phrase.card_id());
+        known_card(&mut user, *example.card_id());
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert
+        assert_eq!(count, 0, "phrases and examples are not counted");
+    }
+
+    #[test]
+    fn due_count_counts_counter_suffix_cards() {
+        // Arrange: счётный суффикс — считаемый тип карты.
+        let mut user = user_with_card(Card::Counter(CounterCard::new("つ")));
+        let card_id = *user.knowledge_set().study_cards().keys().next().unwrap();
+        known_card(&mut user, card_id);
+
+        // Act
+        let count = compute_due_count(user.knowledge_set());
+
+        // Assert
+        assert_eq!(count, 1, "counter suffixes are counted");
+    }
+
+    #[test]
+    fn due_count_never_exceeds_overview_total() {
+        // Arrange: две словарные карты с прошедшим сроком и одна фраза с
+        // прошедшим сроком. Фраза не считается ни счётчиком, ни сводкой —
+        // если она попадёт в счётчик, число (3) превысит «всего» (2).
+        let mut user = User::new(
+            "tester@origa.local".to_string(),
+            NativeLanguage::English,
+            None,
+        );
+        let first = user
+            .create_card(vocabulary_card("猫"))
+            .expect("card created");
+        let second = user
+            .create_card(vocabulary_card("犬"))
+            .expect("card created");
+        let phrase = user
+            .create_card(Card::Phrase(PhraseCard::new(Ulid::new())))
+            .expect("phrase created");
+        known_card(&mut user, *first.card_id());
+        known_card(&mut user, *second.card_id());
+        known_card(&mut user, *phrase.card_id());
+
+        // Act
+        let due = compute_due_count(user.knowledge_set());
+        let total = origa::domain::compute_today_overview(user.knowledge_set(), &[]).total();
+
+        // Assert: счётчик — подмножество «всего» в шапке виджета: каждая
+        // не-фразовая карта попадает ровно в один бакет сводки, а due ⇒
+        // «не новая» ⇒ бакет один из трёх «изученных».
+        assert_eq!(due, 2, "the phrase card is not counted");
+        assert!(
+            due <= total,
+            "due count {due} must not exceed the overview total {total}"
         );
     }
 }

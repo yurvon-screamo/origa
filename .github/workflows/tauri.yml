@@ -77,6 +77,8 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803).
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages:
@@ -89,6 +91,10 @@ jobs:
               with:
                   targets: wasm32-unknown-unknown
                   shared-key: origa-ci-v2
+                  # tauri.yml only triggers on tags and manual dispatch; a
+                  # default save-if would store a fresh cache on the tag ref
+                  # where it is unreachable from any other run (issue #803).
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
@@ -96,7 +102,7 @@ jobs:
                   tools: trunk
 
             - name: Add cargo bin to PATH
-              run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
             - name: Build frontend
               working-directory: origa_ui
@@ -225,13 +231,13 @@ jobs:
                   # Signature is content-based (Minisign), so it stays valid
                   # after the versioned → alias rename in _build-tauri.yml.
                   #
-                  # Linux keys (ADR-058): the plugin searches
+                  # Linux keys (ADR-065): the plugin searches
                   # linux-x86_64-{deb,rpm} FIRST (based on the bundle type
                   # patched into the client binary), then falls back to
                   # linux-x86_64. So: deb clients get the .deb, rpm clients
                   # get the .rpm, and the bare key stays as the fallback for
                   # #627-era clients and unknown bundle types.
-                  # Flatpak has NO entry (ADR-058: channel retired) and no
+                  # Flatpak has NO entry (ADR-065: channel retired) and no
                   # self-updater anyway.
                   # Fail loud on a missing signature for any platform — a
                   # silently empty signature field would publish a manifest
@@ -357,7 +363,7 @@ jobs:
                       - `Origa_x86_64.rpm` — RHEL/Fedora (in-app auto-update;
                         upgrade via pkexec `rpm -U`)
 
-                      ### Migrating from the retired Flatpak channel (ADR-058)
+                      ### Migrating from the retired Flatpak channel (ADR-065)
                       The Flatpak bundle is no longer published. Install the
                       .deb (Debian/Ubuntu), the .rpm (RHEL/Fedora), or the
                       AUR package (Arch), and carry your data over with:
@@ -379,7 +385,7 @@ jobs:
 
                       ## Android
                       - `origa.apk`
-                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle for Google Play Console upload
+                      - `origa-${{ needs.version.outputs.version }}.aab` — App Bundle. Delivery to the Play closed-testing track (alpha) is attempted by the "Upload to Google Play (closed testing)" job of this run — see that job's result for the delivery status. The asset stays attached here as the manual fallback for Play Console / RuStore.
 
                       ## Updater
                       - `latest.json` — Tauri updater manifest (stable releases only)
@@ -414,3 +420,30 @@ jobs:
         secrets:
             rustore-key-id: ${{ secrets.RUSTORE_KEY_ID }}
             rustore-private-key: ${{ secrets.RUSTORE_PRIVATE_KEY }}
+
+    upload-google-play:
+        name: Upload to Google Play (closed testing)
+        # Stable + prerelease: while Origa lives in closed testing, both RC
+        # and stable builds deliver to the same alpha track (RC versionCodes
+        # sort below the stable of the same train — see
+        # .github/scripts/compute-android-versioncode.sh for the scheme).
+        #
+        # Isolation doctrine (mirrors upload-rustore): this job is
+        # intentionally ABSENT from release.needs ([version, build-tauri,
+        # build-apple, generate-latest-json]). Transient Play upload failures
+        # (network, moderation, quota) even on a stable release MUST NOT
+        # block the GitHub Release. Do NOT add upload-google-play to
+        # release.needs — that regresses isolation.
+        if: >
+            always() &&
+            needs.build-tauri.result == 'success' &&
+            startsWith(github.ref, 'refs/tags/v') &&
+            (needs.version.outputs.version_type == 'stable' ||
+             needs.version.outputs.version_type == 'prerelease')
+        needs: [version, build-tauri]
+        uses: ./.github/workflows/_upload-google-play.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+            version_type: ${{ needs.version.outputs.version_type }}
+        secrets:
+            play-service-account-json: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

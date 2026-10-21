@@ -40,3 +40,14 @@ pub fn locale_to_native_language(locale: &Locale) -> NativeLanguage {
         Locale::vi => NativeLanguage::Vietnamese,
     }
 }
+
+/// Stable locale code for telemetry event properties (ADR-054 §5):
+/// `"en"` | `"ru"` | `"ko"` | `"vi"`.
+pub fn locale_code(locale: &Locale) -> &'static str {
+    match locale {
+        Locale::en => "en",
+        Locale::ru => "ru",
+        Locale::ko => "ko",
+        Locale::vi => "vi",
+    }
+}

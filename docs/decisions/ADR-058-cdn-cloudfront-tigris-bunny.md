@@ -1,5 +1,10 @@
 # ADR-058: Move Origa delivery to CloudFront + user-owned Tigris origin, DNS to Bunny
 
+> **Note (2026-10-21, issue #804):** the number 058 was historically issued
+> twice. The Flatpak-channel-retirement decision that briefly shared it now
+> lives at [ADR-065](ADR-065-flatpak-channel-retired.md); this ADR keeps the
+> number (created earlier, 2026-09-19).
+
 ## Status
 
 Accepted (cutover 2026-09-19; old Railway bucket retained as backup)
@@ -13,7 +18,7 @@ Accepted (cutover 2026-09-19; old Railway bucket retained as backup)
 After ADR-057 the delivery chain still routed **every byte of Origa traffic
 through one Aeza VPS** (85.192.63.249):
 
-```
+```text
 Client → Caddy @ Aeza → Railway (API/landing)            [app.origa / origa]
 Client → Caddy @ Aeza → docker s3-proxy → Tigris (CDN)   [s3.origa]
 ```

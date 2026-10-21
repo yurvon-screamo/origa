@@ -3,6 +3,7 @@ use origa::domain::{Card, JapaneseChar, OrigaError, StudyCard};
 
 use leptos::prelude::{GetUntracked, Set};
 
+use crate::loaders::example_loader::example_audio_path;
 use crate::loaders::kanji_art_manifest::{ensure_kanji_art_manifest, kanji_art_exists};
 use crate::loaders::kanji_bundle_store::{KanjiBundleType, is_level_loaded, load_bundle};
 use crate::loaders::precache_loader::{DownloadResult, PreCacheProgress, batch_download};
@@ -90,9 +91,12 @@ fn get_card_cdn_resources(card: &StudyCard) -> Vec<String> {
         Card::Kanji(k) => kanji_svg_resources(k.kanji().text(), Some(&k.jlpt().to_string())),
         Card::Grammar(_) => vec![],
         // Контент счётного суффикса резолвится из реестра в памяти —
-        // CDN-ресурсов у counter-карт нет. Пример (#528 v3) подгружается
-        // лениво на показе карточки — прекешировать нечего.
-        Card::Counter(_) | Card::Example(_) => vec![],
+        // CDN-ресурсов у counter-карт нет. Пример (#528 v3): текст
+        // грузится лениво на показе, но сгенерированное TTS-аудио
+        // (examples/audio/{id}.opus) прекешируем заранее — мгновенный
+        // тап на play, как у фраз.
+        Card::Example(e) => vec![example_audio_path(e.sentence_id())],
+        Card::Counter(_) => vec![],
     }
 }
 
@@ -318,4 +322,19 @@ mod tests {
         let resources = kanji_svg_resources("ネコ", None);
         assert!(resources.is_empty());
     }
+}
+
+/// #528: example cards precache their generated TTS clip — the same
+/// instant-on-play contract phrases have. The path must be the ONLY
+/// resource (the sentence text itself loads lazily on card show).
+#[test]
+fn example_card_precaches_its_tts_clip() {
+    use crate::loaders::example_loader::example_audio_path;
+    use origa::domain::ExampleCard;
+
+    let card = StudyCard::new(Card::Example(ExampleCard::new("猫", 12345)));
+    assert_eq!(
+        get_card_cdn_resources(&card),
+        vec![example_audio_path(12345)]
+    );
 }

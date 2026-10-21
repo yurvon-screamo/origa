@@ -91,7 +91,7 @@ fn handle_i18n() {
 
     let i18n_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("i18n");
 
-    let cfg = leptos_i18n_build::Config::new("en")
+    let mut cfg = leptos_i18n_build::Config::new("en")
         .expect("Failed to create i18n config")
         .add_locale("ru")
         .expect("Failed to add locale")
@@ -99,6 +99,10 @@ fn handle_i18n() {
         .expect("Failed to add locale")
         .add_locale("vi")
         .expect("Failed to add locale");
+    // Interpolated params ({{var}}) in t_string!/td_string! (#749 insight
+    // panels); without this flag the trait impl for string builders is not
+    // generated and parametrized keys fail to compile.
+    cfg.options.interpolate_display = true;
 
     let infos = leptos_i18n_build::TranslationsInfos::parse(cfg)
         .expect("Failed to parse i18n translations");

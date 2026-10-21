@@ -1,6 +1,6 @@
 # Maintainer: yurvon-screamo <yurvon@ya.ru>
 # Origa Linux distribution channels: .deb (Debian/Ubuntu), .rpm
-# (RHEL/Fedora), AUR (Arch) — see docs/decisions/ADR-058.
+# (RHEL/Fedora), AUR (Arch) — see docs/decisions/ADR-065-flatpak-channel-retired.md.
 # In-app self-updater is intentionally disabled on Arch: this package is
 # updated via the AUR helper (`yay -Syu`); the app skips the update check
 # on systems without dpkg/rpm.

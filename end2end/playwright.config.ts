@@ -21,7 +21,11 @@ export default defineConfig({
     },
     fullyParallel: true,
     forbidOnly: isCI,
-    retries: isCI ? 2 : 0,
+    // No retries: the suite waits for states, not for clocks, so a failure
+    // is a real failure. The CI matrix still runs with `--retries=1` on the
+    // command line (the CLI flag wins over this config) — that safety net
+    // stays until the workflow is allowed to drop it.
+    retries: 0,
     workers: isCI ? 2 : 2,
     reporter: isCI
         ? [["blob", { outputDir: "blob-report" }]]

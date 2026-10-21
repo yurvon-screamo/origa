@@ -40,9 +40,9 @@ runs:
               COMMIT_SHORT="${COMMIT_SHA:0:7}"
               BUILD_DATE=$(date -u +'%Y-%m-%d')
 
-              echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
-              echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
-              echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+              echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+              echo "commit_short=${COMMIT_SHORT}" >> "$GITHUB_OUTPUT"
+              echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
 
               REF_TYPE="${{ github.ref_type }}"
               REF_NAME="${{ github.ref_name }}"
@@ -53,9 +53,16 @@ runs:
                 VERSION_BASE="${VERSION}"
                 VERSION_TYPE="stable"
               # Prerelease: vX.Y.Z-rcN — trailing digit required, so a bare
-              # "rc" falls through to alpha. The rc-segment regex accepts both
-              # "rc1" and the dotted "rc.1" / "rc1.2" forms.
-              elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9.]*[0-9]+$ ]]; then
+              # "rc" falls through to alpha. The rc-segment regex accepts ONLY
+              # pure positive digits without leading zeros — the core contract
+              # shared with .github/scripts/compute-android-versioncode.sh
+              # (the Play versionCode offset: leading-zero and dotted forms
+              # would collide or have no monotonic mapping; the script caps
+              # the offset at 98, reserving 99 for the stable of the train).
+              # Exotic TAG forms (rc0/rc01, rc.1, beta1) fall into the alpha
+              # branch and are rejected there fail-loud (see below); branch
+              # builds keep the tolerant describe-based derivation.
+              elif [[ "$REF_TYPE" == "tag" && "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc([1-9][0-9]*)$ ]]; then
                 VERSION="${REF_NAME#v}"
                 VERSION_BASE="${VERSION%%-rc*}"
                 VERSION_TYPE="prerelease"
@@ -72,7 +79,19 @@ runs:
                 else
                   TAG_VERSION="${LATEST_TAG#v}"
 
-                  IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG_VERSION"
+                  # A TAG run reaching the alpha branch carries an
+                  # unrecognized tag form (not vX.Y.Z, not vX.Y.Z-rcN) —
+                  # operator error, reject loud instead of misversioning.
+                  # BRANCH runs must stay tolerant: the latest reachable tag
+                  # may legitimately be an rc (vX.Y.Z-rcN), whose base
+                  # X.Y.(Z+1) is exactly the next alpha train — parsed
+                  # explicitly below instead of by arithmetic accident.
+                  if [[ "$REF_TYPE" == "tag" && ! "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "::error::unrecognized release tag form: '$REF_NAME' (latest tag '$LATEST_TAG' is not vX.Y.Z) — use vX.Y.Z or vX.Y.Z-rcN" >&2
+                    exit 1
+                  fi
+
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "${TAG_VERSION%%-rc*}"
 
                   MAJOR=${MAJOR:-0}
                   MINOR=${MINOR:-0}
@@ -87,6 +106,6 @@ runs:
                 VERSION="${VERSION_BASE}-alpha.${COMMIT_COUNT}"
               fi
 
-              echo "version=${VERSION}" >> $GITHUB_OUTPUT
-              echo "version_base=${VERSION_BASE}" >> $GITHUB_OUTPUT
-              echo "version_type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+              echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+              echo "version_base=${VERSION_BASE}" >> "$GITHUB_OUTPUT"
+              echo "version_type=${VERSION_TYPE}" >> "$GITHUB_OUTPUT"

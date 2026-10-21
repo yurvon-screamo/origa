@@ -10,6 +10,7 @@
 
 pub mod faq;
 pub mod frontmatter;
+pub mod howto;
 pub mod registry;
 pub mod render;
 

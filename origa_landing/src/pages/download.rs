@@ -29,7 +29,7 @@ const DOWNLOAD_LINUX_RPM: &str =
 // AUR registration is paused (2026-09-20), so until the origa-bin package is
 // published the card links the in-repo PKGBUILD (`makepkg -si`). Switch this
 // to https://aur.archlinux.org/packages/origa-bin in a follow-up commit once
-// the package is live (ADR-058 checklist).
+// the package is live (ADR-065 checklist).
 const DOWNLOAD_LINUX_ARCH: &str =
     "https://github.com/yurvon-screamo/origa/tree/master/packaging/aur/origa-bin";
 const DOWNLOAD_ANDROID: &str =
@@ -126,7 +126,7 @@ pub fn DownloadPage() -> impl IntoView {
                             filled: false,
                         },
                         // Arch — the AUR helper is the update channel
-                        // (ADR-058): the in-app updater skips systems without
+                        // (ADR-065): the in-app updater skips systems without
                         // dpkg/rpm, so the button links the in-repo PKGBUILD
                         // until the AUR listing is live.
                         CardAction {
@@ -151,6 +151,11 @@ fn app_store_badge(locale: Locale) -> &'static str {
         Locale::Ru => "/badges/app-store-ru.svg",
         Locale::Ko => "/badges/app-store-ko.svg",
         Locale::Vi => "/badges/app-store-vi.svg",
+        // No official ja-SVG in the repo yet (only Apple's unmodified badge
+        // artwork is allowed); the EN badge is the interim choice, matching
+        // `image_prefix() == "en"` for Ja. Backlog: drop the official
+        // ja badge into `public/badges/app-store-ja.svg` and switch this arm.
+        Locale::Ja => "/badges/app-store-en.svg",
     }
 }
 

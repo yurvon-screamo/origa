@@ -72,6 +72,12 @@ tauri-plugin-process.workspace = true
 [target.'cfg(target_os = "linux")'.dependencies]
 tts.workspace = true
 
+# In-app store review (SKStoreReviewController, ADR-062): raw objc2 bindings —
+# no typed crate needed for two class-method calls, and the version stays
+# pinned by the workspace to the wry/tao objc2 generation.
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+objc2.workspace = true
+
 # device-ai plugin + crate: native ASR/OCR/TTS, primary on macOS/iOS/Android.
 # Excluded on Windows (upstream windows.rs does not compile against windows
 # 0.58 and Windows TTS does not play audio — see root Cargo.toml note) and

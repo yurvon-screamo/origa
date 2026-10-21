@@ -285,6 +285,14 @@ pub static CONTENT: Content = Content {
     terms_h1: "Условия использования",
     terms_last_updated_label: "Обновлено",
     terms_body: TO_BODY_RU,
+
+    // HowTo JSON-LD шаги для /blog/japanese-ocr-app — сжатый пересказ пайплайна
+    // из самой статьи; при правке статьи синхронизировать и эти строки.
+    blog_ocr_howto_name: "Как превратить японский текст в карточки с Origa",
+    blog_ocr_howto_step1: "Сфотографируйте страницу, которую читаете",
+    blog_ocr_howto_step2: "Локальная модель NDLOCR-Lite распознаёт японский текст прямо на устройстве",
+    blog_ocr_howto_step3: "Каждое распознанное слово становится карточкой с чтением, переводом и озвучкой",
+    blog_ocr_howto_step4: "Повторяйте карточки по расписанию FSRS",
 };
 
 const PR_BODY_RU: &str = r#"

@@ -5,7 +5,7 @@ mod auth_store;
 mod install_id;
 // Android JNI context ownership: since Tauri 2.11 (tao 0.35) nothing
 // publishes the JavaVM/Application into `ndk-context`, so this module owns
-// the invariant (JNI_OnLoad capture + publication). See ADR-044.
+// the invariant (JNI_OnLoad capture + publication). See ADR-063.
 #[cfg(target_os = "android")]
 mod android_context;
 // device-ai native file-based speech recognition. macOS-only — the device-ai
@@ -27,11 +27,16 @@ mod share_intake;
 // (GitHub Releases) would conflict with App Store distribution.
 #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
 mod updater_commands;
+// In-app store review prompt (SKStoreReviewController on Apple platforms,
+// no-op elsewhere). Registered unconditionally — the WASM gate invokes it
+// on every platform and keys its cooldown off the `false` return. ADR-062.
+mod store_review;
 
 use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 // `Manager` consumers: single-instance focus (Windows/Linux) and the iOS
 // plugin-state registration (`app.manage`). The macOS path registers no
 // state, so the import stays out of macOS builds.
+use store_review::request_app_review;
 #[cfg(any(windows, target_os = "linux", target_os = "ios"))]
 use tauri::Manager;
 use tauri::{Emitter, Listener};
@@ -74,7 +79,7 @@ pub fn run() {
     // handshake. Without this, the first HTTPS request panics with
     // "Expect rustls-platform-verifier to be initialized" and aborts the
     // process. The JavaVM/Application are published into `ndk-context` by
-    // `JNI_OnLoad` at library load (see `android_context`, ADR-044) — this
+    // `JNI_OnLoad` at library load (see `android_context`, ADR-063) — this
     // call is defense-in-depth for paths where publication has not happened
     // yet, and the verifier init below reads from that publication.
     #[cfg(target_os = "android")]
@@ -202,6 +207,7 @@ pub fn run() {
             auth_store_set,
             auth_store_delete,
             is_store_build,
+            request_app_review,
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
             check_for_update,
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
@@ -463,7 +469,7 @@ fn init_sentry() -> Option<sentry::ClientInitGuard> {
 /// context.
 ///
 /// The JavaVM and Application context come from our own publication in
-/// `android_context` (ADR-044) — `ndk_context::android_context()` is NOT
+/// `android_context` (ADR-063) — `ndk_context::android_context()` is NOT
 /// used here: since Tauri 2.11 (tao 0.35) nothing populates that global and
 /// reading it aborts the process.
 ///
@@ -498,7 +504,7 @@ fn init_platform_verifier_android() {
     match rustls_platform_verifier::android::init_with_env(env, context) {
         Ok(()) => {
             // Both channels on purpose: tracing feeds Sentry in production
-            // (ADR-036), logcat is the CI smoke-test marker (ADR-044).
+            // (ADR-036), logcat is the CI smoke-test marker (ADR-063).
             tracing::info!("[rustls] platform-verifier initialized for Android");
             android_context::logcat_info("[rustls] platform-verifier initialized for Android");
         },

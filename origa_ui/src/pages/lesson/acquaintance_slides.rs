@@ -13,8 +13,6 @@ pub(crate) fn build_acquaintance_slides(
     native_language: origa::domain::NativeLanguage,
     i18n: &crate::i18n::I18nContext<crate::i18n::Locale>,
 ) -> Vec<AcquaintanceSlideData> {
-    use crate::ui_components::ReadingItem;
-
     let answer_text = |answer: origa::domain::CardAnswer| -> String {
         match answer {
             origa::domain::CardAnswer::Vocabulary {
@@ -57,56 +55,20 @@ pub(crate) fn build_acquaintance_slides(
                         .description(&native_language)
                         .map(answer_text)
                         .unwrap_or_default();
-                    let radicals = kanji.radicals_info().ok().map(|infos| {
-                        infos
-                            .iter()
-                            .map(|info| super::kanji_card_details::RadicalDisplay {
-                                symbol: info.radical(),
-                                name: info.name(&native_language).to_string(),
-                                description: info.description(&native_language).to_string(),
-                            })
-                            .collect()
-                    });
-                    let example_words = {
-                        let examples: Vec<_> = kanji
-                            .example_words(&native_language)
-                            .iter()
-                            .map(|entry| (entry.word().to_string(), entry.meaning().to_string()))
-                            .collect();
-                        (!examples.is_empty()).then_some(examples)
-                    };
-                    let on_readings = {
-                        let readings: Vec<ReadingItem> = kanji
-                            .on_readings_with_freq()
-                            .into_iter()
-                            .map(|(reading, freq, is_rare)| ReadingItem {
-                                reading,
-                                freq,
-                                is_rare,
-                            })
-                            .collect();
-                        (!readings.is_empty()).then_some(readings)
-                    };
-                    let kun_readings = {
-                        let readings: Vec<ReadingItem> = kanji
-                            .kun_readings_with_freq()
-                            .into_iter()
-                            .map(|(reading, freq, is_rare)| ReadingItem {
-                                reading,
-                                freq,
-                                is_rare,
-                            })
-                            .collect();
-                        (!readings.is_empty()).then_some(readings)
-                    };
+                    // `?` skips only for non-kanji cards, which cannot
+                    // reach this arm (matched Card::Kanji above).
+                    let data = super::kanji_card_data::extract_kanji_card_data(
+                        study_card.card(),
+                        native_language,
+                    )?;
                     Some(AcquaintanceSlideData::Kanji {
                         card_id: *card_id,
                         kanji: kanji.kanji().text().to_string(),
                         name,
-                        radicals,
-                        example_words,
-                        on_readings,
-                        kun_readings,
+                        radicals: data.radicals,
+                        example_words: data.example_words,
+                        on_readings: data.on_readings,
+                        kun_readings: data.kun_readings,
                     })
                 },
                 Card::Grammar(rule) => Some(AcquaintanceSlideData::Grammar {

@@ -5,7 +5,7 @@ locale: en
 meta_title: "Anki Alternative for Japanese: When to Switch (2026)"
 meta_description: "Anki is powerful, but setup eats your study time. A field guide to when Anki is right for Japanese, when an alternative helps, and what to look for."
 target_keywords: ["anki alternative japanese", "japanese flashcards app", "spaced repetition app japanese free", "anki alternative japanese reddit"]
-lastmod: 2026-09-26
+lastmod: 2026-10-12
 published: 2026-07-19
 status: ready
 ---
@@ -29,25 +29,25 @@ If any of these describe you, Anki is probably the right tool, and you should st
 
 That last point matters. "Free and open" isn't a marketing line for Anki. It's the structural reason the ecosystem has thousands of shared decks and a decade of community maintenance.
 
-## Where Anki gets in the way for Japanese specifically
+## Where Anki gets in the way for Japanese
 
 Anki is a generic engine. Japanese isn't generic. The friction shows up at exactly the places where Japanese differs from a Spanish vocab deck.
 
-**Card creation is manual by default.** To add a word, you typically open a dictionary, copy the word, paste it, copy the reading, paste it, copy the translation, paste it, find audio somewhere, attach it. Do this for a hundred words and you've lost an evening.
+Card creation is manual by default. To add a word, you typically open a dictionary, copy the word, paste it, copy the reading, paste it, copy the translation, paste it, find audio somewhere, attach it. Do this for a hundred words and you've lost an evening.
 
-**Kanji and vocabulary live as separate concerns.** Anki doesn't know that 食べる and 食事 share a kanji, or that you "know" a kanji once you've seen it in five different words. You build that linkage yourself, or you don't get it.
+Kanji and vocabulary live as separate concerns. Anki doesn't know that 食べる and 食事 share a kanji, or that you "know" a kanji once you've seen it in five different words. You build that linkage yourself, or you don't get it.
 
-**Furigana is something you add, not something you have.** Hiding furigana on kanji you've learned (so you're forced to recall the reading) requires a custom setup. Out of the box, furigana is either always on or always off.
+Furigana is something you add, not something you have. Hiding furigana on kanji you've learned (so you're forced to recall the reading) requires a custom setup. Out of the box, furigana is either always on or always off.
 
-**Grammar is a separate app.** Most learners pair Anki with a grammar SRS (Bunpro) or a textbook. Anki has no concept of "explain this grammar point using words I already know," because it has no concept of which words you know.
+Grammar is a separate app. Most learners pair Anki with a grammar SRS (Bunpro) or a textbook. Anki has no concept of "explain this grammar point using words I already know," because it has no concept of which words you know.
 
-**The interface assumes English.** Anki's UI is English-first. There are community translations and Russian community decks, but the app was not designed for someone learning Japanese *through* Russian, Vietnamese, or Korean.
+The interface assumes English. Anki's UI is English-first. There are community translations and Russian community decks, but the app was not designed for someone learning Japanese *through* Russian, Vietnamese, or Korean.
 
 None of this is a flaw in Anki. Anki does exactly what it set out to do. It's a sign that Anki is a general tool and Japanese is a specific problem.
 
 ## What a good alternative should offer
 
-If you're shopping for "an Anki alternative for Japanese," ease alone tells you nothing. Lots of things are easier and worse. The useful question is: **does it remove a specific piece of friction without giving up the parts of Anki that matter?**
+If you're shopping for "an Anki alternative for Japanese," ease alone tells you nothing. Lots of things are easier and worse. The useful question is: *does it remove a specific piece of friction without giving up the parts of Anki that matter?*
 
 A checklist that's actually useful:
 
@@ -58,22 +58,22 @@ A checklist that's actually useful:
 - **OCR or text extraction.** Being able to add words from a photo of a manga page or a textbook screenshot is the difference between studying your content and studying someone else's word list. (See [how Origa handles OCR and text extraction](/docs/capture).)
 - **A grammar path that uses your vocabulary.** Otherwise grammar is a second app again.
 
-If an "alternative" fails the first item (scheduler quality), it's a downgrade wearing a friendlier interface.
+If an "alternative" fails the first item (scheduling quality), it's a downgrade wearing a friendlier interface.
 
 ## How Origa handles this
 
 I build Origa, so I'll be specific and you can check the claims. It exists because the "five apps for one language" problem described above is exactly what its author ran into.
 
-A few concrete differences from Anki, with the caveat that **both use FSRS**. Origa didn't invent the algorithm, and Anki didn't fall behind on it. The scheduling quality is comparable. Where they differ is everything around the scheduler.
+A few concrete differences from Anki, with the caveat that *both use FSRS*. Origa didn't invent the algorithm, and Anki didn't fall behind on it. The scheduling quality is comparable. Where they differ is everything around the scheduler.
 
 | Concern | Anki | Origa |
 | --- | --- | --- |
-| Scheduler | FSRS (added 2023, default for new collections) | FSRS, configured per-deck |
+| Scheduler | FSRS (added 2023, default for new collections) | FSRS, configured per study mode |
 | Adding a word | Manual dictionary lookup + paste | Type a word; built-in bilingual dictionary fills reading, translation, audio |
 | Furigana | Add manually or via template | Generated automatically; hides on learned kanji |
 | Kanji ↔ vocabulary linkage | You build it | Built-in; kanji tracked across the words you've seen |
 | Grammar | Separate app | Structured grammar reference, examples use words you've learned |
-| OCR card creation | Not built-in | Scan a photo; words extracted into cards |
+| OCR card creation | Not built-in | Scan a photo; words extracted into cards ([how the pipeline works](/blog/japanese-ocr-app)) |
 | Interface languages | English (community translations exist) | English, Russian, Korean and Vietnamese |
 | Import from Anki | — | Imports `.anki2` / `.anki21` decks |
 
@@ -81,9 +81,9 @@ That last row matters if you're considering a switch: you don't have to throw aw
 
 ### Known limitations
 
-- **Origa is not as customizable as Anki.** If you live in custom HTML/CSS card templates, Origa won't replace that. It optimizes for low-friction defaults over maximal control.
-- **It's newer.** Anki has a decade-plus of edge-case hardening and a large deck ecosystem. Origa's library of pre-built content is growing but smaller.
-- **The desktop/mobile feature parity is good but not absolute.** Check the current build for your platform before committing.
+- Origa is not as customizable as Anki. If you live in custom HTML/CSS card templates, Origa won't replace that. It optimizes for low-friction defaults over maximal control.
+- It's newer. Anki has a decade-plus of edge-case hardening and a large deck ecosystem. Origa's library of pre-built content is growing but smaller.
+- The desktop/mobile feature parity is good but not absolute. Check the current build for your platform before committing.
 
 If any of those break your workflow, that's a legitimate reason to stay on Anki or run both.
 
@@ -92,7 +92,7 @@ If any of those break your workflow, that's a legitimate reason to stay on Anki 
 Origa isn't the only option, and depending on your bottleneck it may not be the best one for you.
 
 - **For kanji specifically, [WaniKani](https://www.wanikani.com/).** Radical-based, structured order, English interface. Best if you're starting kanji from zero and want a fixed path. It's paid, and its order is its own. You learn what it teaches, not what you encountered today.
-- **For grammar specifically, [Bunpro](https://bunpro.jp/).** Grammar-focused SRS, web-based, English interface. Best if your bottleneck is grammar drilling and you're happy to keep vocabulary in Anki.
+- **For grammar drills, [Bunpro](https://bunpro.jp/).** Grammar-focused SRS, web-based, English interface. Best if your bottleneck is grammar drilling and you're happy to keep vocabulary in Anki.
 - **For absolute beginners, [Duolingo](https://www.duolingo.com/).** Gamified, gentle, shallow. Not a replacement for Anki's retention; a starting point that you outgrow.
 - **For JLPT test simulation, [Migii](https://eup.java-mind.com/).** Timed test practice. Pairs with a retention tool rather than replacing one.
 
@@ -102,9 +102,9 @@ The pattern: most "alternatives" specialize in one slice (kanji, grammar, beginn
 
 Use Anki if you value control, study multiple subjects, or have already invested in a deck system that works. You lose nothing by staying.
 
-Consider Origa if your friction is specifically Japanese card creation, you want furigana and kanji linkage handled for you, you study through a language other than English, or you're tired of stitching grammar onto a vocabulary tool. Import your Anki deck first. If the workflow clicks, keep it; if not, you're back where you started. ([Download Origa](/download).)
+Consider Origa if your friction is Japanese card creation, you want furigana and kanji linkage handled for you, you study through a language other than English, or you're tired of stitching grammar onto a vocabulary tool. Import your Anki deck first. If the workflow clicks, keep it; if not, you're back where you started. ([Download Origa](/download).)
 
-The useful version of "best Anki alternative" is "the one that removes *your* friction." Figure out which step of your current routine eats the most time, and pick the tool that removes that step without dropping the scheduler quality. For a category-by-category selection guide, see [the Japanese learning app overview](/blog/best-japanese-learning-app).
+The useful version of "best Anki alternative" is "the one that removes *your* friction." Figure out which step of your current routine eats the most time, and pick the tool that removes that step without dropping SRS quality. For a category-by-category selection guide, see [the Japanese learning app overview](/blog/best-japanese-learning-app).
 
 ## FAQ
 

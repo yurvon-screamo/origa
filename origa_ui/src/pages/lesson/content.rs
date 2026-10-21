@@ -213,6 +213,14 @@ pub fn LessonContent() -> impl IntoView {
             empty_diagnosis.set(None);
             pending_empty_diagnosis.set(None);
             acq_state_signal.update(|state| *state = Default::default());
+            // A new session starts with an empty lesson state: the previous
+            // session's review_count must not leak into the next completion
+            // screen (stale counts would misrender the stats and falsely
+            // satisfy the store-review card-count guard, ADR-062). Safe
+            // because every reload trigger has already set is_completed=false
+            // — the complete screen is unmounted and no one reads
+            // review_count while is_loading=true.
+            lesson_state.set(LessonState::default());
 
             let jlpt_content = crate::loaders::get_jlpt_content();
 

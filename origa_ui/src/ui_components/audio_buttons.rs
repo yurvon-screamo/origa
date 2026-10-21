@@ -5,7 +5,9 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen_futures::JsFuture;
 
-use super::word_audio::{register_audio, stop_current_audio};
+use super::word_audio::{
+    audio_generation_is_current, current_audio_generation, register_audio, stop_current_audio,
+};
 use crate::repository::cdn_provider::prefetch_blob_url;
 use crate::ui_components::{get_reading_from_text, is_speech_supported, speak_word_with_callback};
 
@@ -45,11 +47,37 @@ pub fn AudioButtons(
                         if let Some(audio_path) = path.get() {
                             // Stop synchronously before the async prefetch so the
                             // currently-playing phrase does not overlap the new
-                            // one during the network round-trip.
+                            // one during the network round-trip. The stop bumps
+                            // the audio generation, arming the staleness checks
+                            // below: a task that loses the race to a newer
+                            // request must neither play nor fall back to TTS
+                            // over the newer audio (the AUDIO_GENERATION
+                            // invariant, see word_audio.rs).
                             stop_current_audio();
                             is_playing.set(true);
+                            let generation = current_audio_generation();
+                            // Keep the text for the degradation path: a failed
+                            // CDN clip (offline, 404) falls back to speech
+                            // synthesis — a silent no-op button reads as broken.
+                            let text_for_fallback = text_signal.get();
                             spawn_local(async move {
-                                play_phrase_audio(&audio_path, is_playing).await;
+                                if !play_phrase_audio(&audio_path, generation, is_playing).await {
+                                    // Only degrade when this request is still
+                                    // the newest one; a superseded task must
+                                    // not speak over the newer audio.
+                                    if audio_generation_is_current(generation)
+                                        && is_speech_supported()
+                                        && !get_reading_from_text(&text_for_fallback).is_empty()
+                                    {
+                                        speak_word_with_callback(
+                                            &text_for_fallback,
+                                            1.0,
+                                            move || is_playing.set(false),
+                                        );
+                                    } else {
+                                        is_playing.set(false);
+                                    }
+                                }
                             });
                         } else if is_speech_supported() {
                             stop_current_audio();
@@ -77,21 +105,30 @@ pub fn AudioButtons(
 /// `HTMLAudioElement`. Updates `is_playing` based on lifecycle events.
 ///
 /// Uses the same promise-absorbing pattern as `AudioPlayer` to avoid Bug B
-/// (`Uncaught (in promise) NotSupportedError`). If the prefetch fails the
-/// signal is reset so the user can retry.
-async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) {
+/// (`Uncaught (in promise) NotSupportedError`). Returns `false` when the
+/// prefetch or element construction failed (signal already reset) — the
+/// caller decides whether to degrade to speech synthesis.
+async fn play_phrase_audio(path: &str, generation: u64, is_playing: RwSignal<bool>) -> bool {
     let blob_url = match prefetch_blob_url(path).await {
         Ok(url) => url,
         Err(e) => {
             tracing::warn!(path = %path, error = ?e, "AudioButtons prefetch failed");
             is_playing.set(false);
-            return;
+            return false;
         },
     };
+    // Lost the race to a newer audio request: registering/playing here
+    // would resurrect the supersede race (the AUDIO_GENERATION invariant,
+    // word_audio.rs). The caller must not fall back to speech either —
+    // the newer audio owns the room.
+    if !audio_generation_is_current(generation) {
+        is_playing.set(false);
+        return false;
+    }
 
     let Ok(audio) = web_sys::HtmlAudioElement::new_with_src(&blob_url) else {
         is_playing.set(false);
-        return;
+        return false;
     };
     let _ = audio.set_attribute("preload", "auto");
 
@@ -129,6 +166,13 @@ async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) {
     // autoplay policy) does not surface as an uncaught rejection. onerror does
     // NOT fire for autoplay-policy NotAllowedError, so we must reset is_playing
     // here to avoid a permanently-disabled button.
+    //
+    // A rejection deliberately does NOT return `false` (no speech fallback):
+    // the pre-registration `stop_current_audio()` above already bumped the
+    // generation past the caller's captured one, so the caller's currency
+    // check would veto the fallback anyway; retry-by-click is the sanctioned
+    // recovery path here (unlike word_audio, whose generation is captured
+    // after its own stop).
     match audio.play() {
         Ok(promise) => {
             if JsFuture::from(promise).await.is_err() {
@@ -139,4 +183,5 @@ async fn play_phrase_audio(path: &str, is_playing: RwSignal<bool>) {
             is_playing.set(false);
         },
     }
+    true
 }

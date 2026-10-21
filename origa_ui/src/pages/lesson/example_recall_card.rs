@@ -17,7 +17,7 @@ use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
 use crate::i18n::{t, use_i18n};
-use crate::loaders::example_loader::{WordExample, load_example_detail};
+use crate::loaders::example_loader::{WordExample, example_audio_path, load_example_detail};
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
     TypographyVariant,
@@ -81,9 +81,11 @@ pub fn ExampleRecallCard(
     let sentence_test_id = Signal::derive(|| "lesson-example-sentence".to_string());
 
     view! {
-        // Tags row above the card — the shared lesson-card pattern: the
-        // card-type tag on the left, the sentence audio button pushed to
-        // the top-right corner.
+        // Tags row above the card — the shared lesson-card pattern:
+        // the card-type tag on the left, the sentence audio button at
+        // the TOP-RIGHT corner (owner request: the question side holds
+        // nothing but the sentence, so the button follows the uniform
+        // top-right placement of every other card).
         <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
             <Tag>{t!(i18n, lesson.example_tag)}</Tag>
             <Show when=move || example.get().is_some()>
@@ -93,7 +95,10 @@ pub fn ExampleRecallCard(
                         view! {
                             <AudioButtons
                                 text=we.detail.text
-                                audio_path=None
+                                // #528: generated IndexTTS clip (immutable
+                                // CDN opus); speech synthesis stays the
+                                // degradation path on prefetch failure.
+                                audio_path=Some(example_audio_path(sentence_id))
                                 test_id=Signal::derive(|| "lesson-example-audio".to_string())
                             />
                         }
@@ -164,8 +169,9 @@ pub fn ExampleRecallCard(
                         }
                         .into_any();
                     }
-                    // Answer side: the sentence again + divider + the
-                    // translation (the LessonCardAnswer phrase etalon).
+                    // Answer side: the token-translator sentence +
+                    // divider + the translation (the LessonCardAnswer
+                    // phrase etalon).
                     view! {
                         <div class="example-recall-ja" data-testid="lesson-example-ja">
                             <TranslatorText
@@ -173,12 +179,12 @@ pub fn ExampleRecallCard(
                                 class=sentence_class
                                 test_id=sentence_test_id
                             />
-                            <div class="border-t border-[var(--border-light)] pt-4 mt-4">
-                                <div class="max-w-max mx-auto">
-                                    <Text size=TextSize::Large variant=TypographyVariant::Primary>
-                                        {translation}
-                                    </Text>
-                                </div>
+                        </div>
+                        <div class="border-t border-[var(--border-light)] pt-4 mt-4">
+                            <div class="max-w-max mx-auto">
+                                <Text size=TextSize::Large variant=TypographyVariant::Primary>
+                                    {translation}
+                                </Text>
                             </div>
                         </div>
                     }

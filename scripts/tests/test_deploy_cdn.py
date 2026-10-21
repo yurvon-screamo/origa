@@ -442,7 +442,8 @@ def test_sync_directories_size_only_for_truly_static_dirs(tmp_path, monkeypatch)
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False,
+                 force=False, exclude_prefixes=None):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
@@ -469,7 +470,8 @@ def test_sync_directories_ignore_mtime_flag_covers_release_and_static(
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False,
+                 force=False, exclude_prefixes=None):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
@@ -497,7 +499,8 @@ def test_sync_directories_force_bypasses_diff_for_all_dirs(tmp_path, monkeypatch
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False,
+                 force=False, exclude_prefixes=None):
         received.append((prefix, force))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)

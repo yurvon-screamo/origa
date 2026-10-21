@@ -5,8 +5,13 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
-import { completeOnboardingToScoring } from "../helpers/onboarding";
-import { generateUniqueEmail, DEFAULT_TEST_PASSWORD } from "../helpers/auth";
+import { completeOnboardingToScoring, isOnboardingShown } from "../helpers/onboarding";
+import {
+    generateUniqueEmail,
+    DEFAULT_TEST_PASSWORD,
+    waitForLoginComplete,
+    restoreDownloadConsent,
+} from "../helpers/auth";
 
 const WORD = process.env.SHOT_WORD || "あさ";
 
@@ -28,28 +33,30 @@ test("word detail screenshots", async ({ page }) => {
 
     // Cold-start flake: the resource-loading overlay can intercept the
     // first form interaction while bundles download — full retries, like
-    // helpers/auth uiLogin. NOTE: the localStorage.clear() below runs
-    // after the app document booted, so the consent flag set by the init
-    // script has already been read — the clear only wipes stale sessions
-    // from earlier manual debugging.
+    // helpers/auth uiLogin.
     const login = new LoginPage(page);
     let loggedIn = false;
     for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
         await page.goto("/", { waitUntil: "domcontentloaded" });
         await page.evaluate(() => localStorage.clear());
+        // The clear above wipes the download consent too — restore it, or
+        // the ~230 MB consent overlay blocks every later step (the overlay
+        // demands an explicit click; the init-script value alone is not
+        // enough after a clear).
+        await restoreDownloadConsent(page);
         try {
             await login.expandPasswordForm();
             await login.fillEmail(email);
             await login.fillPassword(DEFAULT_TEST_PASSWORD);
             await login.submit();
-            await page.waitForURL(/\/(home|onboarding)$/, { timeout: 120_000 });
+            await waitForLoginComplete(page);
             loggedIn = true;
         } catch {
             loggedIn = false;
         }
     }
     expect(loggedIn, "login must succeed within 3 attempts").toBe(true);
-    if (page.url().includes("onboarding")) {
+    if (await isOnboardingShown(page)) {
         await completeOnboardingToScoring(page, { level: "N4" });
         // Fixture depot runs the interactive assessment: mark everything
         // known (with the confirm modal) to reach the finish button.
