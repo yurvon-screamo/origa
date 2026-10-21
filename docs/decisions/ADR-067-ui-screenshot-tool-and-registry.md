@@ -61,9 +61,9 @@ decision are now scenarios of that catalog:
 | `screenshots-spec/home-due-counter.spec.ts` | scenario `home-due-counter` (preset `onboarded`) |
 | `screenshots-spec/home-insights.spec.ts` | scenario `home-insights` (preset `onboarded-insights`) |
 | `screenshots-spec/stitch-session.spec.ts` | scenario `stitch-session` (preset `ledger`) |
-| `scripts/pr-screenshots.mjs` | scenario `feedback-form` (preset `fresh`) |
+| `scripts/pr-screenshots.mjs` | scenario `feedback-form` (preset `with-word`) and `token-popup` (preset `onboarded`) — the script had two modes, a lesson with one word and a catalogue with an imported corpus |
 | `scripts/pr-screenshots-jft.mjs` | scenario `jft-card` (preset `irodori-nyuumon`) |
-| `scripts/pr-screenshots-lesson-unification.mjs` | scenario `lesson-unification` (preset `lesson-ready`) |
+| `scripts/pr-screenshots-lesson-unification.mjs` | scenario `lesson-unification` (preset `with-word`) |
 
 The spec files stay as thin wrappers: they are the Playwright entry point
 of a scenario, and a screen can still be captured by hand. The three
@@ -152,6 +152,12 @@ into the production TrailBase.
 - A capture of a scenario with a heavy preset (the N4 or N5 import) runs
   the preset once per viewport. The counter card of the assessment walks
   the whole card queue, so that capture is slow by nature.
+- Three of the old specs had rotted: they waited for a navigation link
+  named "Words" (the interface is in Russian), they looked for the word
+  slide of a hand that starts with the grammar and kanji cards, and the
+  example line of a slide loads from the CDN asynchronously. The
+  verification run of the migrated scenarios found all three; the
+  scenarios wait for the markers of the screen itself now.
 - The `end2end/screenshots/` directory is no longer tracked. The five
   PNGs that were in it (2.1 MB) are untracked with a backup, in line
   with issue #797.
