@@ -150,6 +150,25 @@ export async function readPersistedUser(page: Page): Promise<PersistedUser | nul
 }
 
 /**
+ * Numbers of the counter bindings that already carry a memory state.
+ *
+ * The same signal as {@link countReviewedCounterBindings}, but with the
+ * digits themselves: the pack order is shuffled, so a step has to know
+ * WHICH binding was rated to compare it with what the pack shows. The
+ * persisted store is the source of truth — `window` does not survive the
+ * lesson reload that follows a rating.
+ */
+export function reviewedCounterBindingNumbers(user: PersistedUser | null): number[] {
+    const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
+    return cards.flatMap((card) =>
+        (card.card?.Counter?.bindings ?? [])
+            .filter((binding) => binding.memory?.current_state != null)
+            .map((binding) => binding.number)
+            .filter((number): number is number => typeof number === "number"),
+    );
+}
+
+/**
  * How many counter bindings already carry a memory state.
  *
  * A binding starts empty (`current_state: null`); the first review of a

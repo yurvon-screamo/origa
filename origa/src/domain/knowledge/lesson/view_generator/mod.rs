@@ -173,7 +173,7 @@ impl<'a> LessonViewGenerator<'a> {
             // показов застопорил бы урок.
             CardType::Counter if is_new => LessonCardView::Normal(card.clone()),
             CardType::Counter => {
-                let items = generation::generate_counter_binding_items(card);
+                let items = generation::generate_counter_binding_items(card, rng);
                 if items.is_empty() {
                     LessonCardView::Normal(card.clone())
                 } else {

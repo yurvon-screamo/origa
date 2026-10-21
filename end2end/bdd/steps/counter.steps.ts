@@ -4,6 +4,7 @@ import { awaitHandVisible } from "../../helpers/lesson";
 import {
 	countReviewedCounterBindings,
 	readPersistedUser,
+	reviewedCounterBindingNumbers,
 } from "../../helpers/indexeddb";
 
 When("пользователь открывает урок напрямую", async ({ page }) => {
@@ -289,6 +290,28 @@ Then('пачка переходит к следующей цифре', async ({ 
 		.toContain("2 / 11");
 });
 
+When('пользователь раскрывает ответ связки', async ({ page }) => {
+	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
+	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	await page.keyboard.press(" ");
+	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
+});
+
+Then('на ответе связки есть фуригана с чтением из реестра', async ({ page }) => {
+	// Фуригана — ruby-подпись чтения из реестра (не по кускам: 1日 =
+	// ついたчи, а не いち+にчи).
+	const rt = page.getByTestId("counter-binding-answer-reading");
+	await rt.waitFor({ timeout: 10_000 });
+	const reading = ((await rt.textContent()) ?? "").trim();
+	expect(reading.length).toBeGreaterThan(0);
+	// Чтение каной (хирагана) — из реестра счётных суффиксов.
+	expect(reading).toMatch(/[\u3040-\u309f]/);
+});
+
+Then('на ответе связки есть кнопка озвучки', async ({ page }) => {
+	await page.getByTestId("counter-binding-audio-btn").waitFor({ timeout: 10_000 });
+});
+
 When('пользователь проходит пачку связок до конца', async ({ page }) => {
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
@@ -296,6 +319,8 @@ When('пользователь проходит пачку связок до к�
 	// связка (何) замораживается; advance сериализован после сейва —
 	// потому ждём экран завершения терпеливо, лишние нажатия гасятся
 	// finished-гейтом сессии.
+	// Граница цикла: 11 связок реестра (1..=10 + 何) + запас на лишние
+	// нажатия. Если в пачку попадут beyond-ten формы — границу поднять.
 	for (let i = 0; i < 15; i++) {
 		if (await page.getByTestId("lesson-complete-screen").isVisible().catch(() => false)) {
 			break;
@@ -340,9 +365,18 @@ When('пользователь перезаходит в урок', async ({ pag
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
 	await page.getByTestId("counter-bindings-card").waitFor({ timeout: 30_000 });
 	await page.getByTestId("counter-binding-front").waitFor({ timeout: 10_000 });
+	// Порядок пачки случайный, а window не переживает перезагрузку
+	// (следующий шаг делает goto) — источник истины: связки с памятью в
+	// IDB (оценённая связка получила current_state).
+	const rated = reviewedCounterBindingNumbers(await readPersistedUser(page));
+	expect(rated.length, "должна быть ровно одна оценённая связка").toBe(1);
 	await expect
-		.poll(async () => page.getByTestId("counter-binding-front").textContent(), { timeout: 15_000 })
-		.not.toContain("1×");
+		.poll(
+			async () =>
+				page.getByTestId("counter-binding-front").locator("span").first().textContent(),
+			{ timeout: 15_000 },
+		)
+		.not.toBe(String(rated[0]));
 	const progress = await page.getByTestId("counter-bindings-progress").textContent();
 	expect(progress).toContain("1 / 10");
 });
