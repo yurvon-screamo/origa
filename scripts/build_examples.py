@@ -35,10 +35,10 @@ CDN = REPO / "cdn"
 EXAMPLES_URL = "https://www.edrdg.org/pub/Nihongo/examples.utf.gz"
 DEFAULT_WORK = Path("/tmp/opencode")
 
-MAX_SENT_CHARS = 60          # textbook register: short, self-contained
+MAX_SENT_CHARS = 60  # textbook register: short, self-contained
 MIN_SENT_CHARS = 6
 MAX_PER_WORD = 3
-CHUNK_SIZE = 1000            # sentences per data chunk
+CHUNK_SIZE = 1000  # sentences per data chunk
 SENT_END = ("。", "？", "！", "！?", "？？")
 
 RE_TOKEN_GROUPS = re.compile(r"[\(\{\[]")
@@ -128,11 +128,16 @@ def ensure_examples_file(path: Path) -> None:
     gz = WORK / "examples.utf.gz"
     if not gz.exists():
         print(f"downloading {EXAMPLES_URL} ...", flush=True)
-        req = urllib.request.Request(EXAMPLES_URL, headers={"User-Agent": "origa-build"})
+        req = urllib.request.Request(
+            EXAMPLES_URL, headers={"User-Agent": "origa-build"}
+        )
         with urllib.request.urlopen(req, timeout=60) as resp, gz.open("wb") as dst:
             while chunk := resp.read(1 << 20):
                 dst.write(chunk)
-    with gzip.open(gz, "rt", encoding="utf-8") as src, path.open("w", encoding="utf-8") as dst:
+    with (
+        gzip.open(gz, "rt", encoding="utf-8") as src,
+        path.open("w", encoding="utf-8") as dst,
+    ):
         while chunk := src.read(1 << 20):
             dst.write(chunk)
 
@@ -205,9 +210,8 @@ def parse_and_match(
                 a_part, _, en_part = raw[3:].partition("\t")
                 ja = a_part.strip()
                 en = clean_en(en_part.strip())
-                ok = (
-                    MIN_SENT_CHARS <= len(ja) <= MAX_SENT_CHARS
-                    and ja.endswith(SENT_END)
+                ok = MIN_SENT_CHARS <= len(ja) <= MAX_SENT_CHARS and ja.endswith(
+                    SENT_END
                 )
                 if ok:
                     sid = len(sentences)
@@ -240,9 +244,7 @@ def select_for_words(
             cand.items(),
             key=lambda kv: (kv[1][0] == -1, len(sentences[kv[0]]["x"]), kv[0]),
         )[:MAX_PER_WORD]
-        sel[w] = [
-            {"sid": s, "start": off[0], "end": off[1]} for s, off in ranked
-        ]
+        sel[w] = [{"sid": s, "start": off[0], "end": off[1]} for s, off in ranked]
     return sel
 
 
@@ -272,7 +274,9 @@ def main() -> int:
     print(f"popular words: {len(words)}", flush=True)
 
     sentences, matches = parse_and_match(words, examples_path)
-    print(f"sentences parsed: {len(sentences)}; words matched: {len(matches)}", flush=True)
+    print(
+        f"sentences parsed: {len(sentences)}; words matched: {len(matches)}", flush=True
+    )
 
     sel = select_for_words(sentences, matches, words)
     covered = len(sel)
@@ -284,7 +288,9 @@ def main() -> int:
     out_sentences = []
     for sid in used_sids:
         s = sentences[sid]
-        out_sentences.append({"i": sid_to_new[sid], "x": s["x"], "en": s["en"], "f": s["f"]})
+        out_sentences.append(
+            {"i": sid_to_new[sid], "x": s["x"], "en": s["en"], "f": s["f"]}
+        )
 
     out_words = {
         w: {
@@ -303,7 +309,8 @@ def main() -> int:
         part = out_sentences[start : start + CHUNK_SIZE]
         p = out_dir / "data" / f"s{chunks:04d}.json"
         p.write_text(
-            json.dumps(part, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+            json.dumps(part, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
         )
         chunks += 1
 
@@ -323,16 +330,17 @@ def main() -> int:
 
     # cache matches for the translation pipeline
     (WORK / "examples_matches.json").write_text(
-        json.dumps(
-            {w: sel[w] for w in sorted(sel)}, ensure_ascii=False
-        ),
+        json.dumps({w: sel[w] for w in sorted(sel)}, ensure_ascii=False),
         encoding="utf-8",
     )
 
     n_chunks = chunks
     size_kb = sum(p.stat().st_size for p in (out_dir / "data").glob("*.json")) // 1024
-    print(f"written: index.json + {n_chunks} chunks ({size_kb} KB), "
-          f"{len(out_sentences)} sentences", flush=True)
+    print(
+        f"written: index.json + {n_chunks} chunks ({size_kb} KB), "
+        f"{len(out_sentences)} sentences",
+        flush=True,
+    )
     return 0
 
 

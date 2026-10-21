@@ -28,14 +28,23 @@ TERM_RENAMES = {
     # old pattern → (EN title, RU title, new pattern)
     "意向形": ("～（よ）う（volitional form）", "～（よ）う（волюнтив）", "～（よ）う"),
     "命令形": ("～ろ／～え（imperative）", "～ろ／～え（императив）", "～ろ／～え"),
-    "尊敬語": ("お～になる／～れる・られる", "お～になる／～れる・られる", "お～になる／～れる・られる"),
+    "尊敬語": (
+        "お～になる／～れる・られる",
+        "お～になる／～れる・られる",
+        "お～になる／～れる・られる",
+    ),
     "謙譲語": ("お～する／～いたす", "お～する／～いたす", "お～する／～いたす"),
     "丁寧語": ("～ます／～です", "～ます／～です", "～ます／～です"),
 }
 
 # patterns after renaming (for the idempotent repair branch)
-RENAMED_PATTERNS = ("～（よ）う", "～ろ／～え", "お～になる／～れる・られる",
-                    "お～する／～いたす", "～ます／～です")
+RENAMED_PATTERNS = (
+    "～（よ）う",
+    "～ろ／～え",
+    "お～になる／～れる・られる",
+    "お～する／～いたす",
+    "～ます／～です",
+)
 
 LOCALES = ("English", "Russian", "Korean", "Vietnamese")
 
@@ -57,7 +66,8 @@ def condense_jnihongo(fact: dict, max_examples_per_usage: int = 2) -> dict:
         "formation": fact.get("formation", []),
         "points": fact.get("points", []),
         "similar": [
-            {"title": s["title"], "level": s["level"]} for s in fact.get("similar", [])[:4]
+            {"title": s["title"], "level": s["level"]}
+            for s in fact.get("similar", [])[:4]
         ],
     }
 
@@ -75,7 +85,9 @@ def condense_hanabira(point: dict) -> dict:
 
 
 def main() -> int:
-    corpus = json.loads((STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8"))
+    corpus = json.loads(
+        (STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8")
+    )
     refs = json.loads((STAGING / "ref_mapping_pruned.json").read_text(encoding="utf-8"))
     facts = json.loads((JNIHONGO / "facts.json").read_text(encoding="utf-8"))
     facts_by_slug = {f["slug"]: f for f in facts}
@@ -91,8 +103,12 @@ def main() -> int:
     # ── 1. term renames (idempotent: fresh pruned corpus OR already-renamed) ──
     renamed = []
     new_patterns = set()
-    en_by_pattern = {new: en for en, _, new in TERM_RENAMES.values()} if TERM_RENAMES else {}
-    ru_by_pattern = {new: ru for _, ru, new in TERM_RENAMES.values()} if TERM_RENAMES else {}
+    en_by_pattern = (
+        {new: en for en, _, new in TERM_RENAMES.values()} if TERM_RENAMES else {}
+    )
+    ru_by_pattern = (
+        {new: ru for _, ru, new in TERM_RENAMES.values()} if TERM_RENAMES else {}
+    )
     for r in corpus["grammar"]:
         pat = r["content"]["English"].get("pattern")
         if pat in TERM_RENAMES:  # fresh corpus: old kana term present
@@ -105,9 +121,7 @@ def main() -> int:
             r["content"]["English"]["title"] = en_by_pattern[pat]
             r["content"]["Russian"]["title"] = ru_by_pattern[pat]
     # uniqueness of new patterns
-    all_patterns = [
-        r["content"]["English"].get("pattern") for r in corpus["grammar"]
-    ]
+    all_patterns = [r["content"]["English"].get("pattern") for r in corpus["grammar"]]
     for np_ in new_patterns:
         if all_patterns.count(np_) > 1:
             print(f"ERROR: renamed pattern {np_!r} collides", file=sys.stderr)
@@ -133,8 +147,13 @@ def main() -> int:
             slug = ref["file"].split("/")[-1].removesuffix(".html")
             fact = facts_by_slug.get(slug)
             if fact:
-                jnihongo_refs.append({"match": ref["title"], "score": ref["score"],
-                                      **condense_jnihongo(fact)})
+                jnihongo_refs.append(
+                    {
+                        "match": ref["title"],
+                        "score": ref["score"],
+                        **condense_jnihongo(fact),
+                    }
+                )
             if len(jnihongo_refs) >= 2:
                 break
 
@@ -144,8 +163,9 @@ def main() -> int:
             if ref["source"] != "hanabira":
                 continue
             core = re.sub(r"\([^)]*\)", "", ref["title"]).strip()
-            cands = [p for p in han_points if p.get("title", "") == ref["title"]] or \
-                    [p for p in han_points if core and core in p.get("title", "")]
+            cands = [p for p in han_points if p.get("title", "") == ref["title"]] or [
+                p for p in han_points if core and core in p.get("title", "")
+            ]
             if cands and ref["score"] > best:
                 han_ref = condense_hanabira(cands[0])
                 best = ref["score"]
@@ -162,10 +182,14 @@ def main() -> int:
                 "keywords": keywords,
                 "format_map_detected": bool(r.get("format_map")),
                 "note": "every JP example MUST contain at least one keyword "
-                        "from EVERY group (AND across groups)" if keywords else
-                        ("form-detection via morphology; write natural examples "
-                         "of the pattern" if r.get("format_map") else
-                         "no detector for this rule; stay strictly on-pattern"),
+                "from EVERY group (AND across groups)"
+                if keywords
+                else (
+                    "form-detection via morphology; write natural examples "
+                    "of the pattern"
+                    if r.get("format_map")
+                    else "no detector for this rule; stay strictly on-pattern"
+                ),
             },
             "reference": {
                 "jnihongo": jnihongo_refs or None,
@@ -187,7 +211,9 @@ def main() -> int:
         n_kw += bool(keywords)
 
     print(f"contexts: {len(corpus['grammar'])} -> {out_dir}")
-    print(f"  with jnihongo facts: {n_refs} | with hanabira: {n_han} | with keywords: {n_kw}")
+    print(
+        f"  with jnihongo facts: {n_refs} | with hanabira: {n_han} | with keywords: {n_kw}"
+    )
     return 0
 
 

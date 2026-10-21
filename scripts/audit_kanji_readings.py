@@ -138,7 +138,11 @@ def reading_matches_kun(kun: str, alive_set: set[str]) -> bool:
 
 
 def word_covers_reading(
-    word: str, kanji: str, reading_hira: str, reading_type: str, furigana_lookup: dict[str, list[tuple[str, str]]]
+    word: str,
+    kanji: str,
+    reading_hira: str,
+    reading_type: str,
+    furigana_lookup: dict[str, list[tuple[str, str]]],
 ) -> bool:
     """Check if a word demonstrates the given reading for the kanji."""
     if kanji not in word:
@@ -151,10 +155,18 @@ def word_covers_reading(
             if word[pos] == kanji:
                 span_hira = span_reading
                 if reading_type == "on":
-                    if span_hira == reading_hira or span_hira.startswith(reading_hira) or reading_hira.startswith(span_hira):
+                    if (
+                        span_hira == reading_hira
+                        or span_hira.startswith(reading_hira)
+                        or reading_hira.startswith(span_hira)
+                    ):
                         return True
                 else:
-                    prefix = reading_hira.split(".")[0] if "." in reading_hira else reading_hira
+                    prefix = (
+                        reading_hira.split(".")[0]
+                        if "." in reading_hira
+                        else reading_hira
+                    )
                     if span_hira.startswith(prefix) or prefix.startswith(span_hira):
                         return True
     return False
@@ -180,7 +192,9 @@ def build_furigana_lookup(path: Path) -> dict[str, list[tuple[str, str]]]:
 
 def main():
     parser = argparse.ArgumentParser(description="Kanji readings audit")
-    parser.add_argument("--apply", action="store_true", help="Apply changes to kanji.json")
+    parser.add_argument(
+        "--apply", action="store_true", help="Apply changes to kanji.json"
+    )
     args = parser.parse_args()
 
     print("=== Kanji Readings Audit ===")
@@ -246,7 +260,14 @@ def main():
                 new_on.append(r)
             else:
                 change["readings_removed"].append({"reading": r, "type": "on"})
-                removed_readings_detail.append({"kanji": kanji, "reading": r, "type": "on", "reason": "dead_in_jmdict"})
+                removed_readings_detail.append(
+                    {
+                        "kanji": kanji,
+                        "reading": r,
+                        "type": "on",
+                        "reason": "dead_in_jmdict",
+                    }
+                )
                 total_on_removed += 1
 
         new_kun = []
@@ -255,7 +276,14 @@ def main():
                 new_kun.append(r)
             else:
                 change["readings_removed"].append({"reading": r, "type": "kun"})
-                removed_readings_detail.append({"kanji": kanji, "reading": r, "type": "kun", "reason": "dead_in_jmdict"})
+                removed_readings_detail.append(
+                    {
+                        "kanji": kanji,
+                        "reading": r,
+                        "type": "kun",
+                        "reason": "dead_in_jmdict",
+                    }
+                )
                 total_kun_removed += 1
 
         # Backup alive readings for safety net (Phase 4b)
@@ -265,20 +293,29 @@ def main():
         # Phase 3a: Remove broken popular_words and non-JLPT words
         new_popular = []
         for w in entry.get("popular_words", []):
-            if w in chunks and chunks[w].get("russian_translation", "").strip() and w in jlpt_word_set:
+            if (
+                w in chunks
+                and chunks[w].get("russian_translation", "").strip()
+                and w in jlpt_word_set
+            ):
                 new_popular.append(w)
             else:
                 change["words_removed"].append(w)
                 total_words_removed += 1
 
         # Phase 4: Smart word selection — JLPT-only, ensure every reading is covered
-        all_remaining_readings = [(r, "on") for r in new_on] + [(r, "kun") for r in new_kun]
+        all_remaining_readings = [(r, "on") for r in new_on] + [
+            (r, "kun") for r in new_kun
+        ]
 
         # Step 1: Check which readings are already covered by existing popular_words
         covered_readings: set[int] = set()
         for i, (reading, rtype) in enumerate(all_remaining_readings):
             r_hira = kata_to_hira(reading) if rtype == "on" else reading
-            if any(word_covers_reading(w, kanji, r_hira, rtype, furigana_lookup) for w in new_popular):
+            if any(
+                word_covers_reading(w, kanji, r_hira, rtype, furigana_lookup)
+                for w in new_popular
+            ):
                 covered_readings.add(i)
 
         # Step 2: Build JLPT-only candidate pool
@@ -286,13 +323,21 @@ def main():
         for lvl in JLPT_ORDER:
             lvl_words = jlpt_lists.get(lvl, [])
             for w in lvl_words:
-                if w in chunks and kanji in w and chunks[w].get("russian_translation", "").strip():
+                if (
+                    w in chunks
+                    and kanji in w
+                    and chunks[w].get("russian_translation", "").strip()
+                ):
                     if w not in new_popular and w not in [c[0] for c in candidates]:
                         priority = abs(jlpt_priority(jlpt) - jlpt_priority(lvl))
                         candidates.append((w, priority))
 
         # Step 3: For each uncovered reading, find the best JLPT covering word
-        uncovered = [(i, r, rt) for i, (r, rt) in enumerate(all_remaining_readings) if i not in covered_readings]
+        uncovered = [
+            (i, r, rt)
+            for i, (r, rt) in enumerate(all_remaining_readings)
+            if i not in covered_readings
+        ]
         for idx, reading, rtype in uncovered:
             r_hira = kata_to_hira(reading) if rtype == "on" else reading
             best_word = None
@@ -311,7 +356,11 @@ def main():
                 covered_readings.add(idx)
 
         # Step 4: Remove readings that STILL have no covering JLPT word
-        still_uncovered = [(i, r, rt) for i, (r, rt) in enumerate(all_remaining_readings) if i not in covered_readings]
+        still_uncovered = [
+            (i, r, rt)
+            for i, (r, rt) in enumerate(all_remaining_readings)
+            if i not in covered_readings
+        ]
         for idx, reading, rtype in still_uncovered:
             if rtype == "on":
                 new_on.remove(reading)
@@ -320,7 +369,14 @@ def main():
                 new_kun.remove(reading)
                 total_kun_removed += 1
             change["readings_removed"].append({"reading": reading, "type": rtype})
-            removed_readings_detail.append({"kanji": kanji, "reading": reading, "type": rtype, "reason": "no_jlpt_covering_word"})
+            removed_readings_detail.append(
+                {
+                    "kanji": kanji,
+                    "reading": reading,
+                    "type": rtype,
+                    "reason": "no_jlpt_covering_word",
+                }
+            )
 
         # Phase 4b: Safety net — never leave a kanji with 0 readings
         if not new_on and not new_kun and (alive_on_backup or alive_kun_backup):
@@ -344,7 +400,9 @@ def main():
         # Phase 5 validation: ensure popular_words >= 1
         if not new_popular:
             fallback = [
-                w for w in chunks if kanji in w and chunks[w].get("russian_translation", "").strip()
+                w
+                for w in chunks
+                if kanji in w and chunks[w].get("russian_translation", "").strip()
             ]
             if fallback:
                 new_popular.append(fallback[0])
@@ -428,13 +486,15 @@ def main():
     # (KnowledgeSet::create_companion_vocab_cards reads the Rust constant
     # origa/src/dictionary/removed_popular_words.rs — sync it manually
     # after an audit run; see the constant's MAINTENANCE note).
-    removed_words = sorted(set(
-        w for ch in changes_by_kanji.values() for w in ch["words_removed"]
-    ))
+    removed_words = sorted(
+        set(w for ch in changes_by_kanji.values() for w in ch["words_removed"])
+    )
     removed_words_path = ROOT / "scripts" / "removed_popular_words.json"
     with open(removed_words_path, "w", encoding="utf-8") as f:
         json.dump(removed_words, f, ensure_ascii=False, indent=2)
-    print(f"Removed words list saved to: {removed_words_path} ({len(removed_words)} words)")
+    print(
+        f"Removed words list saved to: {removed_words_path} ({len(removed_words)} words)"
+    )
 
     if args.apply:
         kanji_data["kanji"] = new_kanji_list

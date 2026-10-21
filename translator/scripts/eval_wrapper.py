@@ -15,6 +15,7 @@ Usage:
   eval_wrapper.py --base google/gemma-4-E2B-it-qat-w4a16-ct \
       --adapter runs/gemma-scale/40k/ep1 --name qat-40k --data data/test_20x4.jsonl
 """
+
 from __future__ import annotations
 
 import argparse
@@ -67,7 +68,9 @@ def detect_language(text: str) -> str:
     }
     vi_marks = len(RE_VI_MARK.findall(t))
     words = [w for w in re.split(r"\s+", t) if w]
-    vi_word_share = (sum(1 for w in words if RE_VI_MARK.search(w)) / len(words)) if words else 0
+    vi_word_share = (
+        (sum(1 for w in words if RE_VI_MARK.search(w)) / len(words)) if words else 0
+    )
 
     if counts["hangul"] / n > 0.2:
         return "ko"
@@ -105,14 +108,20 @@ def generate_one(model, tok, prompt: str, max_new_tokens: int = 96) -> str:
             **enc,
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            pad_token_id=tok.pad_token_id if tok.pad_token_id is not None else tok.eos_token_id,
+            pad_token_id=tok.pad_token_id
+            if tok.pad_token_id is not None
+            else tok.eos_token_id,
         )
-    return tok.decode(out[0][enc["input_ids"].shape[1]:], skip_special_tokens=True).strip()
+    return tok.decode(
+        out[0][enc["input_ids"].shape[1] :], skip_special_tokens=True
+    ).strip()
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", required=True, help="HF repo id or local path (bf16 or QAT w4a16-ct)")
+    ap.add_argument(
+        "--base", required=True, help="HF repo id or local path (bf16 or QAT w4a16-ct)"
+    )
     ap.add_argument("--adapter", default="", help="optional LoRA adapter dir")
     ap.add_argument("--name", required=True, help="run name -> eval/<name>/")
     ap.add_argument("--data", default=str(ROOT / "data" / "test_20x4.jsonl"))
@@ -136,7 +145,10 @@ def main() -> None:
             from compressed_tensors.config import CompressedTensorsConfig
         load_kw["low_cpu_mem_usage"] = False
         load_kw["quantization_config"] = CompressedTensorsConfig(run_compressed=False)
-        print("QAT mode: dequantize-on-load (QAT weight values -> bf16 Linear)", flush=True)
+        print(
+            "QAT mode: dequantize-on-load (QAT weight values -> bf16 Linear)",
+            flush=True,
+        )
     try:
         model = AutoModelForCausalLM.from_pretrained(a.base, **load_kw)
     except Exception as e:  # noqa: BLE001 - report load failure clearly
@@ -145,7 +157,9 @@ def main() -> None:
     if a.adapter:
         model = PeftModel.from_pretrained(model, a.adapter)
     model.eval()
-    print(f"loaded in {time.time()-t0:.0f}s, adapter={a.adapter or 'none'}", flush=True)
+    print(
+        f"loaded in {time.time() - t0:.0f}s, adapter={a.adapter or 'none'}", flush=True
+    )
 
     stats = {"first_try_ok": 0, "retry_ok": 0, "both_failed": 0, "by_lang": {}}
     results = []
@@ -161,11 +175,16 @@ def main() -> None:
             attempts.append({"fmt": fmt, "gen": gen, "detected": detected})
             if detected == lang:
                 break
-        verdict = "first_try" if attempts[0]["detected"] == lang else (
-            "retry_ok" if detected == lang else "routing_failed"
+        verdict = (
+            "first_try"
+            if attempts[0]["detected"] == lang
+            else ("retry_ok" if detected == lang else "routing_failed")
         )
-        stats_key = {"first_try": "first_try_ok", "retry_ok": "retry_ok",
-                     "routing_failed": "both_failed"}[verdict]
+        stats_key = {
+            "first_try": "first_try_ok",
+            "retry_ok": "retry_ok",
+            "routing_failed": "both_failed",
+        }[verdict]
         stats[stats_key] += 1
         stats["by_lang"].setdefault(lang, {"first_try": 0, "retry_ok": 0, "failed": 0})
         lang_st = stats["by_lang"][lang]
@@ -175,10 +194,17 @@ def main() -> None:
             lang_st["retry_ok"] += 1
         else:
             lang_st["failed"] += 1
-        results.append({
-            "i": r["i"], "lang": lang, "x": r["x"], "gold": r["gold"],
-            "attempts": attempts, "verdict": verdict, "final_detected": detected,
-        })
+        results.append(
+            {
+                "i": r["i"],
+                "lang": lang,
+                "x": r["x"],
+                "gold": r["gold"],
+                "attempts": attempts,
+                "verdict": verdict,
+                "final_detected": detected,
+            }
+        )
         print(f"  {n}/{len(rows)} [{lang}] {verdict} (detected={detected})", flush=True)
 
     with open(out_dir / "gens.jsonl", "w", encoding="utf-8") as f:
@@ -192,7 +218,9 @@ def main() -> None:
     print(f"retry fixed  : {stats['retry_ok']}/{len(rows)}")
     print(f"both failed  : {stats['both_failed']}/{len(rows)}")
     for lang, st in stats["by_lang"].items():
-        print(f"  {lang}: first={st['first_try']} retry={st['retry_ok']} failed={st['failed']}")
+        print(
+            f"  {lang}: first={st['first_try']} retry={st['retry_ok']} failed={st['failed']}"
+        )
     print(f"\ngens -> {out_dir / 'gens.jsonl'}")
 
 

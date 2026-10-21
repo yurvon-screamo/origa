@@ -63,9 +63,7 @@ def test_unknown_installer_path_falls_back_to_release_updated():
     # Any unknown path — including legacy installer-shaped ones — falls
     # through to the conservative release-updated default (5-min 304
     # revalidation self-heals overwrites; the PR #182 lesson).
-    assert (
-        cache_control_for("releases/1.2.3/Origa_x64-setup.exe") == RELEASE_UPDATED
-    )
+    assert cache_control_for("releases/1.2.3/Origa_x64-setup.exe") == RELEASE_UPDATED
 
 
 # ---------------------------------------------------------------------------
@@ -150,13 +148,13 @@ def test_furigana_rkyv_blob_is_release_updated_despite_dictionaries_prefix():
 
 
 def test_vocabulary_rkyv_blob_is_release_updated():
-    assert (
-        cache_control_for("dictionary/vocabulary.rkyv") == RELEASE_UPDATED
-    )
+    assert cache_control_for("dictionary/vocabulary.rkyv") == RELEASE_UPDATED
 
 
 def test_sudachidict_files_under_dictionaries_stay_immutable():
-    assert cache_control_for("dictionaries/sudachidict-20260723/dict.words") == IMMUTABLE
+    assert (
+        cache_control_for("dictionaries/sudachidict-20260723/dict.words") == IMMUTABLE
+    )
 
 
 def test_dictionary_singular_vs_dictionaries_plural_differ():

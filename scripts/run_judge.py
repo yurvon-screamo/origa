@@ -55,10 +55,14 @@ def rule_payload(rid: str) -> dict:
         "reference": ctx["reference"],
         "generated": {
             "jp_examples": gen.get("jp_examples"),
-            "English": {k: gen.get("English", {}).get(k)
-                        for k in ("short_description", "explanation", "how_to_form")},
-            "Russian": {k: gen.get("Russian", {}).get(k)
-                        for k in ("short_description", "explanation")},
+            "English": {
+                k: gen.get("English", {}).get(k)
+                for k in ("short_description", "explanation", "how_to_form")
+            },
+            "Russian": {
+                k: gen.get("Russian", {}).get(k)
+                for k in ("short_description", "explanation")
+            },
         },
     }
 
@@ -87,7 +91,9 @@ def judge_batch(batch: list[str], stats: dict) -> None:
             )
             with urllib.request.urlopen(req, timeout=600) as resp:
                 body = json.loads(resp.read())
-            verdicts = extract_json(body["choices"][0]["message"]["content"]).get("verdicts", [])
+            verdicts = extract_json(body["choices"][0]["message"]["content"]).get(
+                "verdicts", []
+            )
             out_dir = STAGING / "judge"
             out_dir.mkdir(exist_ok=True)
             for v in verdicts:
@@ -97,13 +103,25 @@ def judge_batch(batch: list[str], stats: dict) -> None:
                         json.dumps(v, ensure_ascii=False, indent=1), encoding="utf-8"
                     )
             with open(STAGING / "request_log.jsonl", "a", encoding="utf-8") as f:
-                f.write(json.dumps({"ts": time.time(), "kind": "judge-batch",
-                                    "rule_id": ",".join(batch), "ok": True,
-                                    "info": str(len(verdicts))}) + "\n")
+                f.write(
+                    json.dumps(
+                        {
+                            "ts": time.time(),
+                            "kind": "judge-batch",
+                            "rule_id": ",".join(batch),
+                            "ok": True,
+                            "info": str(len(verdicts)),
+                        }
+                    )
+                    + "\n"
+                )
             with threading.Lock():
                 pass
             stats["done"] += len(batch)
-            print(f"[judge] {stats['done']}/{stats['total']} (+{len(verdicts)})", flush=True)
+            print(
+                f"[judge] {stats['done']}/{stats['total']} (+{len(verdicts)})",
+                flush=True,
+            )
             return
         except urllib.error.HTTPError as e:
             if e.code in (429, 502, 503, 529):
@@ -128,20 +146,28 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args()
 
-    corpus = json.loads((STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8"))
+    corpus = json.loads(
+        (STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8")
+    )
     refs = json.loads((STAGING / "ref_mapping_pruned.json").read_text(encoding="utf-8"))
     by_id = {r["rule_id"]: r for r in corpus["grammar"]}
     refs_by_id = {x["rule_id"]: x for x in refs}
 
-    judged = {p.stem for p in (STAGING / "judge").glob("*.json")} if (STAGING / "judge").exists() else set()
+    judged = (
+        {p.stem for p in (STAGING / "judge").glob("*.json")}
+        if (STAGING / "judge").exists()
+        else set()
+    )
     no_ref = [rid for rid in by_id if not refs_by_id.get(rid, {}).get("refs")]
     with_ref = [rid for rid in by_id if refs_by_id.get(rid, {}).get("refs")]
     random.seed(42)
     sample = random.sample(with_ref, len(with_ref) // 10)
     queue = [rid for rid in no_ref + sample if rid not in judged]
     batches = [queue[i : i + args.batch] for i in range(0, len(queue), args.batch)]
-    print(f"judge queue: {len(queue)} rules ({len(no_ref)} no-ref + {len(sample)} sample) "
-          f"-> {len(batches)} requests")
+    print(
+        f"judge queue: {len(queue)} rules ({len(no_ref)} no-ref + {len(sample)} sample) "
+        f"-> {len(batches)} requests"
+    )
 
     stats = {"done": 0, "failed": 0, "total": len(queue)}
     threads = []

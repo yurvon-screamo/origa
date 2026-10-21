@@ -86,9 +86,7 @@ _RELEASE_UPDATED_RULES: Final[frozenset[str]] = frozenset(
     }
 )
 
-_NO_CACHE_RULES: Final[frozenset[str]] = frozenset(
-    {"manifest.json"}
-)
+_NO_CACHE_RULES: Final[frozenset[str]] = frozenset({"manifest.json"})
 
 # Exact paths exempted from an enclosing IMMUTABLE directory rule. The
 # furigana rkyv blob is regenerated together with its source text whenever

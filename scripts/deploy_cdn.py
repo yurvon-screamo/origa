@@ -261,7 +261,9 @@ def validate_grammar_if_changed(changed: list[str]) -> None:
     The `--force-all` recovery path bypasses this gate by design.
     """
     grammar_targets = [
-        p for p in ("grammar/grammar_v2.json", "grammar/grammar_v3.json") if p in changed
+        p
+        for p in ("grammar/grammar_v2.json", "grammar/grammar_v3.json")
+        if p in changed
     ]
     if not grammar_targets:
         return
@@ -312,7 +314,7 @@ def _child_sync_dir_prefixes(dir_name: str) -> list[str]:
     shipped immutable audio with max-age=30 on the first deploy.
     """
     return [
-        f"{d[len(dir_name) + 1:]}/" for d in SYNC_DIRS if d.startswith(dir_name + "/")
+        f"{d[len(dir_name) + 1 :]}/" for d in SYNC_DIRS if d.startswith(dir_name + "/")
     ]
 
 
@@ -507,9 +509,7 @@ def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
     """
     blob = cdn_dir / "phrases/phrase_index.v3.rkyv"
     if not blob.is_file():
-        return [
-            "phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"
-        ]
+        return ["phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"]
     try:
         inflated = inflate_deflated(blob)
     except zlib.error as e:
@@ -640,8 +640,10 @@ def _force_all_deploy(dry_run: bool) -> None:
         # deploy raced against (audio went up with max-age=300 first).
         child_excludes = _child_sync_dir_prefixes(dir_name)
         all_files = [
-            p for p in sorted(local_dir.rglob("*"))
-            if p.is_file() and p.name != "README.md"
+            p
+            for p in sorted(local_dir.rglob("*"))
+            if p.is_file()
+            and p.name != "README.md"
             and not any(
                 p.relative_to(local_dir).as_posix().startswith(e)
                 for e in child_excludes
@@ -701,9 +703,7 @@ def assert_kanji_art_plausible(cdn_dir: Path) -> None:
                 )
                 sys.exit(1)
     if checked:
-        print(
-            f"  kanji art bodies plausible ({checked} files, <svg prolog invariant)"
-        )
+        print(f"  kanji art bodies plausible ({checked} files, <svg prolog invariant)")
 
 
 def generate_kanji_art_manifest(cdn_dir: Path) -> None:
@@ -719,9 +719,7 @@ def generate_kanji_art_manifest(cdn_dir: Path) -> None:
     manifest: dict[str, list[str]] = {}
     for key, folder in (("frames", "kanji_frames"), ("animations", "kanji_animations")):
         dir_path = cdn_dir / folder
-        kanji = sorted(
-            p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1
-        )
+        kanji = sorted(p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1)
         manifest[key] = kanji
         print(f"  kanji_art_manifest {key}: {len(kanji)} kanji")
     out_path = cdn_dir / "kanji_art_manifest.json"
@@ -828,7 +826,9 @@ def main() -> None:
         if script_path.is_file():
             result = subprocess.run(
                 [sys.executable, str(script_path)],
-                capture_output=True, text=True, cwd=str(script_path.parent),
+                capture_output=True,
+                text=True,
+                cwd=str(script_path.parent),
                 check=False,
             )
             if result.returncode != 0:

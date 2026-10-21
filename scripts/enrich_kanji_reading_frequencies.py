@@ -103,9 +103,7 @@ def validate_coverage(
         missing = all_readings - set(freqs.keys())
         extra = set(freqs.keys()) - all_readings
         if missing:
-            errors.append(
-                f"  {kanji}: missing frequencies for {sorted(missing)}"
-            )
+            errors.append(f"  {kanji}: missing frequencies for {sorted(missing)}")
         if extra:
             errors.append(
                 f"  {kanji}: frequency map has stale keys not in readings: {sorted(extra)}"
@@ -162,7 +160,9 @@ def sanity_overcount(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--apply", action="store_true", help="Write enriched kanji.json")
+    parser.add_argument(
+        "--apply", action="store_true", help="Write enriched kanji.json"
+    )
     parser.add_argument(
         "--validate", action="store_true", help="Run validation checks only"
     )
@@ -173,7 +173,9 @@ def main() -> int:
         return 2
 
     print("=== enrich_kanji_reading_frequencies ===")
-    print(f"Mode: {'APPLY' if args.apply else 'VALIDATE' if args.validate else 'DRY-RUN'}")
+    print(
+        f"Mode: {'APPLY' if args.apply else 'VALIDATE' if args.validate else 'DRY-RUN'}"
+    )
     print()
 
     print("Loading kanji.json...")
@@ -199,7 +201,7 @@ def main() -> int:
     print(f"  Total readings covered: {total_readings}")
     print(
         f"  Rare readings (freq <= {RARE_THRESHOLD}): {rare_count} "
-        f"({100*rare_count/total_readings:.1f}%)"
+        f"({100 * rare_count / total_readings:.1f}%)"
     )
 
     print()

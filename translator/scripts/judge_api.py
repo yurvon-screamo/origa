@@ -28,6 +28,7 @@ Usage:
           "instructions": "Is 'I want to go home' a correct translation into English?",
           }, "candidates": ["I want to go home"]})
 """
+
 from __future__ import annotations
 
 import json
@@ -50,8 +51,12 @@ MAX_LEN = 1000  # e5 window guard (512 tokens ~ safe for our locales)
 class Heads(torch.nn.Module):
     def __init__(self, dim):
         super().__init__()
-        self.s = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
-        self.a = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
+        self.s = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
+        self.a = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
 
     def forward(self, sv, av):
         zq = F.normalize(self.s(sv), dim=-1)
@@ -60,8 +65,13 @@ class Heads(torch.nn.Module):
 
 
 class Judge:
-    def __init__(self, heads_path: str = str(HEADS), emb_url: str = EMB_URL,
-                 temperature: float = 0.07, calibration_path: Path = CALIBRATION):
+    def __init__(
+        self,
+        heads_path: str = str(HEADS),
+        emb_url: str = EMB_URL,
+        temperature: float = 0.07,
+        calibration_path: Path = CALIBRATION,
+    ):
         ck = torch.load(heads_path, map_location="cpu")
         self.hs = Heads(ck["dim"])
         self.hs.load_state_dict(ck["heads"])
@@ -71,13 +81,17 @@ class Judge:
         self.heads_path = Path(heads_path)
         self.calibration_path = Path(calibration_path)
         self._calibration: Calibration | None = None
-        self.embedding_model: str | None = None  # served model id, captured on first response
+        self.embedding_model: str | None = (
+            None  # served model id, captured on first response
+        )
 
     def _embed(self, texts: list[str]) -> torch.Tensor:
         texts = [t[:MAX_LEN] for t in texts]
         out = []
         for s in range(0, len(texts), 64):
-            r = requests.post(self.url, json={"model": "e5b", "input": texts[s:s + 64]}, timeout=300)
+            r = requests.post(
+                self.url, json={"model": "e5b", "input": texts[s : s + 64]}, timeout=300
+            )
             r.raise_for_status()
             payload = r.json()
             if self.embedding_model is None:
@@ -123,8 +137,12 @@ class Judge:
         calibration = self._load_calibration()
         entry = calibration.entry(locale)
         score = self.raw_score(state, translation)
-        return {"ok": calibration.decide(locale, score), "score": score,
-                "threshold": entry["threshold"], "locale": locale}
+        return {
+            "ok": calibration.decide(locale, score),
+            "score": score,
+            "threshold": entry["threshold"],
+            "locale": locale,
+        }
 
     def answer(self, state: str, questions: dict) -> dict:
         """One state, many typed questions. CLM layout: context first, question last."""
@@ -135,7 +153,11 @@ class Judge:
             ins = q.get("instructions", "")
             state_text = f"{state}\n\n{ins}" if ins else state
             if t == "noul":
-                cands = [f"Yes. This is true: {ins}", f"No. This is false: {ins}"] if ins else ["true", "false"]
+                cands = (
+                    [f"Yes. This is true: {ins}", f"No. This is false: {ins}"]
+                    if ins
+                    else ["true", "false"]
+                )
                 sc = self._score(state_text, cands)
                 p = torch.softmax(torch.from_numpy(sc) / self.tau, dim=0).numpy()
                 answers[qid] = {"noul": float(p[0])}
@@ -150,8 +172,10 @@ class Judge:
                 crit = q["criteria"]
                 sc = self._score(state_text, [str(c) for c in crit])
                 p = torch.softmax(torch.from_numpy(sc) / self.tau, dim=0).numpy()
-                answers[qid] = {"expected": float(sum(i * v for i, v in enumerate(p))),
-                                "levels": [float(v) for v in p]}
+                answers[qid] = {
+                    "expected": float(sum(i * v for i, v in enumerate(p))),
+                    "levels": [float(v) for v in p],
+                }
             else:
                 raise ValueError(f"unknown question type {t!r}")
         return {"answers": answers}
@@ -160,19 +184,29 @@ class Judge:
 if __name__ == "__main__":
     j = Judge()
     # demo 1: noul — перевод годен?
-    r = j.answer("帰りたいなぁ", {
-        "ok": {"type": "noul",
-               "instructions": "Is 'I want to go home...' a correct and natural English translation of the sentence?"}
-    })
+    r = j.answer(
+        "帰りたいなぁ",
+        {
+            "ok": {
+                "type": "noul",
+                "instructions": "Is 'I want to go home...' a correct and natural English translation of the sentence?",
+            }
+        },
+    )
     print("noul:", json.dumps(r, ensure_ascii=False))
     # demo 2: choice — какой из переводов лучший?
-    r2 = j.answer("その言葉、心に沁みたよ", {
-        "pick": {"type": "choice",
-                 "instructions": "Which translation is the most correct and natural in Russian?",
-                 "criteria": {
-                     "good": "Эти слова запали мне в душу.",
-                     "echo": "その言葉、心に沁みたよ",
-                     "wrong_lang": "These words touched my heart.",
-                 }}
-    })
+    r2 = j.answer(
+        "その言葉、心に沁みたよ",
+        {
+            "pick": {
+                "type": "choice",
+                "instructions": "Which translation is the most correct and natural in Russian?",
+                "criteria": {
+                    "good": "Эти слова запали мне в душу.",
+                    "echo": "その言葉、心に沁みたよ",
+                    "wrong_lang": "These words touched my heart.",
+                },
+            }
+        },
+    )
     print("choice:", json.dumps(r2, ensure_ascii=False))

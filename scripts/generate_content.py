@@ -65,13 +65,15 @@ Output JSON schema (exactly these keys):
 
 
 def build_user_prompt(ctx: dict) -> str:
-    focus = (ctx.get("current", {}).get("English", {}) or {}).get("short_description", "")
+    focus = (ctx.get("current", {}).get("English", {}) or {}).get(
+        "short_description", ""
+    )
     focus_block = (
-        f'\nIMPORTANT — RULE FOCUS: this rule covers ONLY this aspect of the '
+        f"\nIMPORTANT — RULE FOCUS: this rule covers ONLY this aspect of the "
         f'pattern: "{focus}". The pattern is shared by sibling rules '
-        f'(other aspects are separate cards). Do NOT drift into sibling '
-        f'usages: every example and the whole explanation must illustrate '
-        f'exactly this focus.\n'
+        f"(other aspects are separate cards). Do NOT drift into sibling "
+        f"usages: every example and the whole explanation must illustrate "
+        f"exactly this focus.\n"
         if focus
         else ""
     )
@@ -122,7 +124,13 @@ def log_request(kind: str, rule_id: str, ok: bool, info: str = "") -> None:
     with open(STAGING / "request_log.jsonl", "a", encoding="utf-8") as f:
         f.write(
             json.dumps(
-                {"ts": time.time(), "kind": kind, "rule_id": rule_id, "ok": ok, "info": info},
+                {
+                    "ts": time.time(),
+                    "kind": kind,
+                    "rule_id": rule_id,
+                    "ok": ok,
+                    "info": info,
+                },
                 ensure_ascii=False,
             )
             + "\n"
@@ -137,7 +145,9 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    corpus = json.loads((STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8"))
+    corpus = json.loads(
+        (STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8")
+    )
     rules = corpus["grammar"]
     rule = None
     if args.rule:
@@ -161,7 +171,9 @@ def main() -> int:
     user_prompt = build_user_prompt(ctx)
 
     if args.dry_run:
-        print(f"--- SYSTEM ---\n{SYSTEM_PROMPT}\n--- USER ({len(user_prompt)} chars) ---")
+        print(
+            f"--- SYSTEM ---\n{SYSTEM_PROMPT}\n--- USER ({len(user_prompt)} chars) ---"
+        )
         print(user_prompt[:3000] + "\n…")
         return 0
 
@@ -181,7 +193,7 @@ def main() -> int:
     )
     log_request("generate", rid, True, json.dumps(result.get("usage", {})))
     print(
-        f"ok: {rid} in {time.time()-t0:.0f}s | tokens: {result['usage']} "
+        f"ok: {rid} in {time.time() - t0:.0f}s | tokens: {result['usage']} "
         f"-> staging/gen/{rid}.json"
     )
     return 0

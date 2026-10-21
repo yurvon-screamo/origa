@@ -31,7 +31,10 @@ def main() -> int:
     files = sorted(data_dir.glob("p*.json"))
     total = len(files)
     bundle_count = (total + CHUNKS_PER_BUNDLE - 1) // CHUNKS_PER_BUNDLE
-    print(f"Bundling {total} chunks into {bundle_count} files ({CHUNKS_PER_BUNDLE} chunks each)...", flush=True)
+    print(
+        f"Bundling {total} chunks into {bundle_count} files ({CHUNKS_PER_BUNDLE} chunks each)...",
+        flush=True,
+    )
 
     for bundle_idx in range(bundle_count):
         start = bundle_idx * CHUNKS_PER_BUNDLE
@@ -45,7 +48,9 @@ def main() -> int:
 
         out_path = out_dir / f"data_bundle_{bundle_idx}.json"
         out_path.write_text(
-            json.dumps(bundle, sort_keys=True, ensure_ascii=False, separators=(",", ":")),
+            json.dumps(
+                bundle, sort_keys=True, ensure_ascii=False, separators=(",", ":")
+            ),
             encoding="utf-8",
         )
         size_mb = out_path.stat().st_size / (1024 * 1024)

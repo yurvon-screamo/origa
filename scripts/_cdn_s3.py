@@ -130,7 +130,9 @@ def download_remote_manifest(dry_run: bool) -> dict[str, object] | None:
                 if e.response.get("Error", {}).get("Code") in ("NoSuchKey", "404"):
                     print("  Remote manifest not found (first deployment)")
                     return None
-                print(f"ERROR: failed to download remote manifest: {e}", file=sys.stderr)
+                print(
+                    f"ERROR: failed to download remote manifest: {e}", file=sys.stderr
+                )
                 sys.exit(1)
 
         content = tmp_path.read_text(encoding="utf-8")
@@ -312,7 +314,9 @@ def copy_object_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
 
 # Tigris (T3 Storage) single-PUT body limit ~24KB. Files above this must
 # use multipart upload. 16KB threshold/chunk size verified to pass.
-MULTIPART_THRESHOLD_BYTES = 8 * 1024 * 1024  # single-PUT verified on t3.storage.dev (200KB/2MB probes, 2026-09-19); the legacy 24KB single-PUT limit of t3.storageapi.dev is gone
+MULTIPART_THRESHOLD_BYTES = (
+    8 * 1024 * 1024
+)  # single-PUT verified on t3.storage.dev (200KB/2MB probes, 2026-09-19); the legacy 24KB single-PUT limit of t3.storageapi.dev is gone
 
 # Explicit pins for extensions whose canonical type matters and that mimetypes
 # either cannot guess (woff/woff2) or resolves inconsistently across minimal
@@ -362,6 +366,7 @@ def _s3_upload_client() -> BaseClient:
             )
             sys.exit(1)
         from botocore.client import Config as BotoConfig
+
         if os.environ.get("AWS_ACCESS_KEY_ID"):
             session = boto3.Session()
         else:
@@ -577,12 +582,11 @@ def sync_directory(
     # the parent walk must never touch or re-upload them).
     excludes = tuple(exclude_prefixes or [])
     all_files = [
-        p for p in sorted(local_dir.rglob("*"))
-        if p.is_file() and p.name != "README.md"
-        and not any(
-            p.relative_to(local_dir).as_posix().startswith(e)
-            for e in excludes
-        )
+        p
+        for p in sorted(local_dir.rglob("*"))
+        if p.is_file()
+        and p.name != "README.md"
+        and not any(p.relative_to(local_dir).as_posix().startswith(e) for e in excludes)
     ]
     total = len(all_files)
     start = _time.time()
@@ -598,10 +602,7 @@ def sync_directory(
             not force
             and info is not None
             and info.size == stat_result.st_size
-            and (
-                ignore_mtime
-                or stat_result.st_mtime <= info.last_modified_epoch
-            )
+            and (ignore_mtime or stat_result.st_mtime <= info.last_modified_epoch)
         ):
             skipped += 1
         else:

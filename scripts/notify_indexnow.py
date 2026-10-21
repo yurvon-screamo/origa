@@ -136,10 +136,7 @@ def main() -> int:
     for batch_number, batch in enumerate(chunked(urls, BATCH_SIZE), start=1):
         status = submit_batch(batch)
         if status in SUCCESS_STATUS_CODES:
-            print(
-                f"batch {batch_number}: submitted {len(batch)} URLs -> "
-                f"HTTP {status}"
-            )
+            print(f"batch {batch_number}: submitted {len(batch)} URLs -> HTTP {status}")
         else:
             failures += 1
             print(

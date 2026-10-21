@@ -96,9 +96,7 @@ def test_sync_directory_excludes_child_subtree(monkeypatch, examples_tree):
     ]
 
 
-def test_sync_directory_without_excludes_walks_everything(
-    monkeypatch, examples_tree
-):
+def test_sync_directory_without_excludes_walks_everything(monkeypatch, examples_tree):
     uploaded: list[str] = []
 
     def fake_upload_file(local_path, key, cache_control, dry_run):
@@ -108,8 +106,11 @@ def test_sync_directory_without_excludes_walks_everything(
 
     monkeypatch.setattr(_cdn_s3, "upload_file", fake_upload_file)
     sync_directory(
-        examples_tree, "examples", "public, max-age=300",
-        dry_run=False, force=True,
+        examples_tree,
+        "examples",
+        "public, max-age=300",
+        dry_run=False,
+        force=True,
     )
 
     assert len(uploaded) == 6  # nothing excluded
@@ -122,11 +123,11 @@ def test_force_all_path_applies_child_excludes(examples_tree):
     child subtree."""
     excludes = _child_sync_dir_prefixes("examples")
     all_files = [
-        p for p in sorted(examples_tree.rglob("*"))
+        p
+        for p in sorted(examples_tree.rglob("*"))
         if p.is_file()
         and not any(
-            p.relative_to(examples_tree).as_posix().startswith(e)
-            for e in excludes
+            p.relative_to(examples_tree).as_posix().startswith(e) for e in excludes
         )
     ]
     rels = [p.relative_to(examples_tree).as_posix() for p in all_files]

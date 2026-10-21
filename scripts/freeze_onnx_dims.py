@@ -65,7 +65,9 @@ def freeze_model(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("input", type=Path, help="Path to the source .onnx model")
     parser.add_argument(
         "--output",
@@ -130,7 +132,9 @@ def main() -> int:
         out_path = args.input
         print(f"\nBackup saved: {backup}")
     else:
-        out_path = args.output or args.input.with_name(f"{args.input.stem}_frozen{args.input.suffix}")
+        out_path = args.output or args.input.with_name(
+            f"{args.input.stem}_frozen{args.input.suffix}"
+        )
 
     onnx.save(model, str(out_path))
     print(f"Frozen model saved: {out_path}")

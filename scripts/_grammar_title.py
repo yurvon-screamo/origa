@@ -122,9 +122,7 @@ def title_lint_messages(title: str, lang: str) -> list[tuple[str, str]]:
         and not qualifier
         and normalized_pattern not in BARE_PATTERN_ALLOWLIST
     ):
-        issues.append(
-            ("error", f"bare short pattern {title!r}: qualifier is required")
-        )
+        issues.append(("error", f"bare short pattern {title!r}: qualifier is required"))
 
     if _ASCII_PARENS_RE.search(title):
         issues.append(("warn", "ASCII parens in title: use full-width （）"))
@@ -136,9 +134,7 @@ def title_lint_messages(title: str, lang: str) -> list[tuple[str, str]]:
         return issues
 
     if len(qualifier) > MAX_QUALIFIER_LEN:
-        issues.append(
-            ("warn", f"qualifier longer than {MAX_QUALIFIER_LEN} chars")
-        )
+        issues.append(("warn", f"qualifier longer than {MAX_QUALIFIER_LEN} chars"))
     senses = [sense for sense in qualifier.split("・") if sense]
     if len(senses) > MAX_QUALIFIER_SENSES:
         issues.append(
