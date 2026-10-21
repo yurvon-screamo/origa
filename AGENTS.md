@@ -106,6 +106,10 @@ cargo fmt --check && cargo fmt
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
+### Сборка лендинга (`origa_landing`)
+
+Для пересборки CSS лендинга нужны node-зависимости: выполните `npm ci` в `origa_landing/` (альтернатива — `bun install`). Без них `cargo build -p origa_landing` не падает: build-скрипт печатает `cargo:warning` и собирается с закоммиченным `style/landing.processed.css`, который может быть устаревшим. Если CSS-файла нет вовсе — сборка падает с инструкцией. Production Docker не содержит node и всегда использует закоммиченный CSS: изменили `style/landing.css` — пересоберите и закоммитьте `landing.processed.css` (`just css` в `origa_landing/`), иначе правка не попадёт в прод.
+
 ### SSR-тесты лендинга (ADR-066)
 
 Целевые тесты `origa_landing` требуют фичу `ssr` — без неё они не собираются
