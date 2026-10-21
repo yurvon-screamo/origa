@@ -1,14 +1,18 @@
-name: Weekly Quality
+name: Quality Coverage
 
-# Weekly net for the suites that must not gate a pull request
-# (issue #800, ADR-063):
+# Coverage net for the `origa` crate (issue #800, ADR-063). Two modes,
+# one job:
 #
-#   coverage — llvm-cov report for the `origa` crate. No threshold: the
-#              report is a trend, not a gate.
+#   * weekly (Mon 04:17 UTC, default branch) — the coverage trend on
+#     master. No threshold: a trend, not a gate.
+#   * pull_request (core paths only) — uploads coverage for the PR HEAD;
+#     Qlty Cloud turns it into the diff-coverage PR comment (Project
+#     Settings > Comments > Summary Comments). Information only, never
+#     a merge stopper.
 #
-# The job runs on the default branch and is deliberately OUTSIDE the CI
-# Gate: a pull request is never blocked by it, and a red weekly run is a
-# signal to look at, not a merge stopper.
+# The job is deliberately OUTSIDE the CI Gate: a red run is a signal to
+# look at, not a merge blocker. On fork/dependabot PRs the publish step
+# silently degrades (no secrets) — the artifact upload still works.
 #
 # The screenshot specs (end2end/screenshots-spec) are NOT here yet: their
 # onboarding flow still needs work in a CI-like environment (ADR-063,
@@ -19,12 +23,23 @@ on:
         # deprioritizes scheduled workflows that fire at the top of the hour.
         - cron: "17 4 * * 1"
     workflow_dispatch:
+    pull_request:
+        branches: [master]
+        # Coverage of the core crate: only runs when the core itself (or
+        # its dependency manifest) changes. CI/UI-only PRs skip it.
+        paths:
+            - "origa/**"
+            - "Cargo.toml"
+            - "Cargo.lock"
+            - ".github/workflows/weekly-quality.yml"
 
 permissions:
     contents: read
 
 concurrency:
-    group: weekly-quality
+    # PR runs are grouped per PR (a new push cancels the stale analysis);
+    # scheduled and manual runs share the single "default" slot.
+    group: quality-coverage-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || 'default' }}
     cancel-in-progress: true
 
 jobs:

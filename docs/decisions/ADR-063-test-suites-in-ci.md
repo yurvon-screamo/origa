@@ -130,13 +130,24 @@ machine:
 - `stitch-session.spec.ts` creates its demo account through the admin
   API instead of relying on a pre-existing local user.
 
-**3. Coverage is a weekly trend, with no threshold.**
-The same workflow has a `coverage` job:
+**3. Coverage is a weekly trend plus a per-PR diff report, no threshold.**
+The same workflow (`weekly-quality.yml`, display name "Quality Coverage")
+has a `coverage` job:
 `cargo llvm-cov -p origa --lcov --output-path lcov.info --summary-only`,
 plus an upload of `lcov.info` (30 days). Publishing to Qlty Cloud is
-wired but dormant: the step is skipped unless the repository secret
-`QLTY_COVERAGE_TOKEN` exists; the Qlty side is already configured
-(`.qlty/qlty.toml`, `[coverage]`).
+wired behind the repository secret `QLTY_COVERAGE_TOKEN` (set
+2026-10-21, so the weekly trend lands in Qlty Cloud; the Qlty side is
+configured in `.qlty/qlty.toml`, `[coverage]`).
+
+The workflow also runs on `pull_request` against master when core paths
+change (`origa/**`, `Cargo.toml`, `Cargo.lock`, the workflow file
+itself): the same job uploads coverage for the PR HEAD, and Qlty Cloud
+renders the diff-coverage PR comment (Project Settings → Comments →
+Summary Comments must be enabled once in the Qlty UI). It stays
+deliberately outside the CI Gate — information, not a merge blocker. On
+fork/dependabot PRs the publish step degrades silently (secrets are not
+available there); the artifact upload still works. Concurrency is
+grouped per PR, so a fresh push cancels the stale analysis.
 
 **4. `cargo-mutants` is out of scope here.** A calibration run is a
 separate task with its own runtime profile.
