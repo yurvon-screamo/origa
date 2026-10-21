@@ -1,11 +1,15 @@
 """Диагностика утечки: 12 инференсов с замером RSS/GPU/gc после каждого."""
 
-import os, gc, time
+import gc
+import json
+import os
+import time
 
 os.environ.setdefault("HF_HOME", os.path.expanduser("~/.cache/huggingface"))
 
 import soundfile as sf_lib
-import torch, torchaudio
+import torch
+import torchaudio
 
 
 def _sf_load(filepath, *a, **kw):
@@ -32,11 +36,11 @@ def rss_mb():
     return 0
 
 
-import json
-
 corpus = json.load(open("full_corpus.json"))
 
-from indextts.infer_v2_5 import IndexTTS2
+# The monkey-patch above must be in place before IndexTTS2 loads: its
+# internals call torchaudio.load/save.
+from indextts.infer_v2_5 import IndexTTS2  # noqa: E402
 
 tts = IndexTTS2(
     cfg_path="index-tts-src/checkpoints/config.yaml",
