@@ -17,6 +17,8 @@ function facts(overrides: Partial<PreflightFacts> = {}): PreflightFacts {
         cdnCacheDir: "/repo/cdn",
         repoRoot: "/repo",
         awsProfilePresent: null,
+        trailBaseUrlConfigured: true,
+        adminPasswordConfigured: true,
         outDirInsideRepo: false,
         ...overrides,
     };
@@ -66,6 +68,16 @@ test("a missing node_modules fails the capture", () => {
     const report = evaluatePreflight(facts({ nodeModulesPresent: false }));
 
     assert.match(report.errors[0], /npm ci/);
+});
+
+test("a missing e2e configuration fails the capture before the browser starts", () => {
+    const report = evaluatePreflight(
+        facts({ trailBaseUrlConfigured: false, adminPasswordConfigured: false }),
+    );
+
+    assert.equal(report.errors.length, 2);
+    assert.match(report.errors[0], /TRAILBASE_URL/);
+    assert.match(report.errors[1], /ORIGA_ADMIN_PASSWORD/);
 });
 
 test("a missing upload profile fails the capture before it starts", () => {

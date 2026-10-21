@@ -7,8 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| home | home | mobile | ru-RU | 390×844 | 2026-10-21T10:45:09.149Z | 7e5605b4 | не загружен |
-| home | home | desktop | ru-RU | 1280×800 | 2026-10-21T10:44:59.884Z | 7e5605b4 | не загружен |
+| home | home | mobile | ru-RU | 390×844 | 2026-10-21T14:34:18.442Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--mobile-f0236f4e.png) |
+| home | home | desktop | ru-RU | 1280×800 | 2026-10-21T14:33:57.940Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--desktop-f2c0b727.png) |
 
 ## Как обновить
 

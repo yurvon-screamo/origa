@@ -38,6 +38,10 @@ export interface PreflightFacts {
     repoRoot: string;
     /** `null` when the run does not upload. */
     awsProfilePresent: boolean | null;
+    /** The e2e stack has its TrailBase URL. */
+    trailBaseUrlConfigured: boolean;
+    /** The e2e stack has the admin password of the fixture. */
+    adminPasswordConfigured: boolean;
     outDirInsideRepo: boolean;
 }
 
@@ -91,8 +95,21 @@ function describe(facts: PreflightFacts): string[] {
 
 /** The dependencies of the run itself. */
 function checkToolchain(facts: PreflightFacts): string[] {
-    if (facts.nodeModulesPresent) return [];
-    return ["end2end/node_modules отсутствует — выполните `npm ci` в end2end/"];
+    const errors: string[] = [];
+    if (!facts.nodeModulesPresent) {
+        errors.push("end2end/node_modules отсутствует — выполните `npm ci` в end2end/");
+    }
+    if (!facts.trailBaseUrlConfigured) {
+        errors.push(
+            "TRAILBASE_URL не задан — нужен файл end2end/.env (он в .gitignore: скопируй из основного чекаута) или переменная окружения",
+        );
+    }
+    if (!facts.adminPasswordConfigured) {
+        errors.push(
+            "ORIGA_ADMIN_PASSWORD не задан — нужен файл end2end/.env (он в .gitignore: скопируй из основного чекаута) или переменная окружения",
+        );
+    }
+    return errors;
 }
 
 /**
@@ -197,6 +214,8 @@ export async function runPreflight(options: PreflightOptions): Promise<Preflight
         cdnCacheDir: cdnSource.cacheDir,
         repoRoot: options.repoRoot,
         awsProfilePresent: options.upload ? hasAwsProfile("origa-t3") : null,
+        trailBaseUrlConfigured: Boolean(process.env.TRAILBASE_URL),
+        adminPasswordConfigured: Boolean(process.env.ORIGA_ADMIN_PASSWORD),
         outDirInsideRepo: isInside(options.outDir, options.repoRoot),
     };
 

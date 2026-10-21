@@ -78,9 +78,18 @@ the environment cannot produce a meaningful picture: a missing
 screenshots would be sans-serif — a violation of the design rules of the
 repository), a poisoned `dist/` (the trunk live-reload bridge breaks the
 WASM load of a statically served bundle), a missing output directory
-outside the working tree. It warns — and does not fail — when the local
-corpus lags behind the deployment, when a listener on port 1420 comes
-from another checkout, and when the tokenizer dictionary is absent.
+outside the working tree, missing e2e credentials (the `end2end/.env` of
+the fixture is gitignored — a fresh worktree has none). It warns — and
+does not fail — when the local corpus lags behind the deployment, when a
+listener on port 1420 comes from another checkout, and when the tokenizer
+dictionary is absent.
+
+A fresh worktree of the factory has none of the three things a capture
+needs: the corpus (`cdn/` is gitignored), the e2e credentials
+(`end2end/.env` is gitignored) and the node modules. The preflight names
+each of them and the way to provide it (`ORIGA_CDN_CACHE_DIR`, the `.env`
+of the main checkout, `npm ci`) — the alternative was a cryptic failure
+in the middle of the capture.
 
 The build mode has ONE predicate (`SERVE_MODE` in `shots/config.ts`), used
 by the preflight and by the Playwright config alike: a local run builds
