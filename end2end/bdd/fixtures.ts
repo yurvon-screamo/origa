@@ -1,5 +1,6 @@
 import { type Page } from "@playwright/test";
 import { test as base, createBdd } from "playwright-bdd";
+import { getAppBaseUrl } from "../config";
 import { setupTestUser, uiLogin, type TestUserContext } from "../helpers/auth";
 
 /**
@@ -50,11 +51,16 @@ export const test = base.extend<
     ],
     page: [
         async ({ browser, testUser }, use) => {
-            const context = await browser.newContext();
+            // The base URL belongs to the context: page objects navigate with
+            // relative paths, and an absolute URL in a step would otherwise
+            // point at a different origin than the fixture.
+            const context = await browser.newContext({ baseURL: getAppBaseUrl() });
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
             try {
-                await uiLogin(page, testUser.email, testUser.password);
+                await uiLogin(page, testUser.email, testUser.password, {
+                    baseURL: getAppBaseUrl(),
+                });
                 await use(page);
             } finally {
                 await context.close();
@@ -139,12 +145,14 @@ export const test = base.extend<
             // large corpus (remote → local, ADR-045) — the project
             // default 60s aborts it mid-restore.
             const context = await browser.newContext({
-                baseURL: "http://localhost:1420",
+                baseURL: getAppBaseUrl(),
                 locale: "ru-RU",
             });
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
-            await uiLogin(page, testUser.email, testUser.password);
+            await uiLogin(page, testUser.email, testUser.password, {
+                baseURL: getAppBaseUrl(),
+            });
             await use(page);
             await context.close();
         },

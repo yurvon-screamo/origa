@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { When, Then, Given } from "../fixtures";
+import { getAppBaseUrl } from "../../config";
 import { awaitHandVisible } from "../../helpers/lesson";
 import {
 	countReviewedCounterBindings,
@@ -334,7 +335,7 @@ Then('урок завершается экраном прохождения', as
 });
 
 When('пользователь перезаходит в урок', async ({ page }) => {
-	await page.goto("http://localhost:1420/lesson");
+	await page.goto(`${getAppBaseUrl()}/lesson`);
 });
 
 Then('отвеченная связка больше не показывается в пачке', async ({ page }) => {
