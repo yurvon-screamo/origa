@@ -183,6 +183,13 @@ mode = "comment"
 name = "markdownlint"
 mode = "monitor"
 
+# Python: scripts/, tts/, translator/ — ~10k lines with no qlty-side lint
+# (the tts/gen_batch.py conflict-marker breakage of #794 is exactly the
+# class ruff's parse errors would have caught at commit time).
+[[plugin]]
+name = "ruff"
+mode = "comment"
+
 # =============================================================================
 # TRIAGE RULES
 # =============================================================================
