@@ -363,7 +363,9 @@ class TestCliGlue:
             seed=7,
         )
         assert cj.cmd_export(args) == 0
-        rows = [json.loads(l) for l in open(tmp_path / "task.jsonl", encoding="utf-8")]
+        rows = [
+            json.loads(line) for line in open(tmp_path / "task.jsonl", encoding="utf-8")
+        ]
         assert [r["id"] for r in rows[:3]] == ["ko-0001", "ko-0002", "ko-0003"]
         md = (tmp_path / "task.md").read_text(encoding="utf-8")
         assert "### ko-0001 (ko)" in md and "- [ ] good" in md

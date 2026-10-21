@@ -12,7 +12,6 @@ Two synthetic negative families on top of v2:
 import json
 import os
 import random
-import re
 from pathlib import Path
 
 DATA = Path(os.environ.get("ORIGA_JUDGE_DATA", "data/judge"))
@@ -71,7 +70,8 @@ META_JUNK = {
 
 def main():
     rows = [
-        json.loads(l) for l in open(DATA / "judge_train_v2.jsonl", encoding="utf-8")
+        json.loads(line)
+        for line in open(DATA / "judge_train_v2.jsonl", encoding="utf-8")
     ]
     extra = []
     n_inv = n_meta = 0
