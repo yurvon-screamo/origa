@@ -1,5 +1,5 @@
 //! Session-scoped UI state of the card list pages (`/words`, `/kanji`,
-//! `/grammar`, `/phrases`).
+//! `/grammar`, `/phrases`, `/examples`).
 //!
 //! Filter, search and pagination signals live here instead of inside
 //! [`super::card_list_view`], so navigating to a detail page and back keeps
@@ -22,6 +22,7 @@ pub enum ListPage {
     Grammar,
     Phrases,
     Counters,
+    Examples,
 }
 
 /// Reactive state of one list page. Every field is `Copy` and shares the
@@ -46,6 +47,7 @@ pub struct ListUiStore {
     grammar: ListUiSlot,
     phrases: ListUiSlot,
     counters: ListUiSlot,
+    examples: ListUiSlot,
 }
 
 impl Default for ListUiStore {
@@ -64,6 +66,7 @@ impl ListUiStore {
             grammar: Self::make_slot(),
             phrases: Self::make_slot(),
             counters: Self::make_slot(),
+            examples: Self::make_slot(),
         }
     }
 
@@ -86,6 +89,7 @@ impl ListUiStore {
             ListPage::Grammar => self.grammar.clone(),
             ListPage::Phrases => self.phrases.clone(),
             ListPage::Counters => self.counters.clone(),
+            ListPage::Examples => self.examples.clone(),
         }
     }
 
@@ -98,6 +102,7 @@ impl ListUiStore {
             &self.grammar,
             &self.phrases,
             &self.counters,
+            &self.examples,
         ] {
             slot.search.set(String::new());
             slot.status.set(Filter::All);

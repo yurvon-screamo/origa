@@ -42,7 +42,18 @@ pub struct CardListExtras {
     /// Called whenever the visible (filtered + paginated) card slice
     /// changes — the lazy data-load trigger.
     pub on_visible_cards: Option<VisibleCardsCallback>,
+    /// Page-provided search matcher (#823). The default matching reads
+    /// `Card::question()/answer()`, which for CDN-backed cards (examples)
+    /// resolve only to the word surface — the sentence text is not domain
+    /// data. A matcher lets the page match the query against lazily loaded
+    /// CDN details instead. Receives the ALREADY lowercased query.
+    pub search_match: Option<SearchMatcher>,
 }
+
+/// Custom search predicate: (card, lowercased query, native language) →
+/// matched. Must be cheap and read only process-global caches — it runs
+/// inside the `filtered_cards` recomputation.
+pub type SearchMatcher = Arc<dyn Fn(&StudyCard, &str, NativeLanguage) -> bool + Send + Sync>;
 
 #[derive(Clone)]
 pub struct CardListContext {
@@ -189,6 +200,7 @@ where
     let list_ui = use_context::<ListUiStore>().expect("ListUiStore not provided");
     let slot = list_ui.slot(page);
     let search = extras.search.unwrap_or(slot.search);
+    let search_match = extras.search_match;
     let filter = slot.status;
     let jlpt_filter = slot.jlpt;
     let visible_count = slot.visible_count;
@@ -224,33 +236,37 @@ where
             .get()
             .into_iter()
             .filter(|card| {
-                let matches_search = query.is_empty() || {
-                    let card_inner = card.card();
-                    let question = card_inner.question(&lang);
+                let matches_search = query.is_empty()
+                    || match search_match.as_ref() {
+                        Some(matcher) => matcher(card, &query, lang),
+                        None => {
+                            let card_inner = card.card();
+                            let question = card_inner.question(&lang);
 
-                    let matches_question = question
-                        .ok()
-                        .is_some_and(|q| q.text().to_lowercase().contains(&query));
+                            let matches_question = question
+                                .ok()
+                                .is_some_and(|q| q.text().to_lowercase().contains(&query));
 
-                    let matches_answer = match card_inner.answer(&lang).ok() {
-                        Some(CardAnswer::Vocabulary {
-                            translations,
-                            description,
-                        }) => {
-                            translations
-                                .iter()
-                                .any(|t| t.to_lowercase().contains(&query))
-                                || description
-                                    .as_ref()
-                                    .is_some_and(|d| d.to_lowercase().contains(&query))
+                            let matches_answer = match card_inner.answer(&lang).ok() {
+                                Some(CardAnswer::Vocabulary {
+                                    translations,
+                                    description,
+                                }) => {
+                                    translations
+                                        .iter()
+                                        .any(|t| t.to_lowercase().contains(&query))
+                                        || description
+                                            .as_ref()
+                                            .is_some_and(|d| d.to_lowercase().contains(&query))
+                                },
+                                Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
+                                Some(CardAnswer::GrammarNuances { .. }) => false,
+                                None => false,
+                            };
+
+                            matches_question || matches_answer
                         },
-                        Some(CardAnswer::Text(s)) => s.to_lowercase().contains(&query),
-                        Some(CardAnswer::GrammarNuances { .. }) => false,
-                        None => false,
                     };
-
-                    matches_question || matches_answer
-                };
                 let matches_filter =
                     current_filter.matches(CardStatus::from_study_card(card), card.is_favorite());
                 // JLPT axis — AND with status + search. For Flat pages

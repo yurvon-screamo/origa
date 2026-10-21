@@ -1,0 +1,221 @@
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+use super::super::shared::{
+    CardListExtras, CardListViewConfig, CardsLoadedCallback, ListGrouping, ListPage, ListUiStore,
+    SearchMatcher, card_list_view, create_card_list_context,
+};
+use super::example_card_item::ExampleCardItem;
+use super::lazy_details::{load_and_refresh, missing_details, sentence_ids_of};
+use crate::i18n::{td_string, use_i18n};
+use crate::repository::HybridUserRepository;
+use leptos::prelude::*;
+use leptos::task::spawn_local;
+use origa::dictionary::example::get_cached_example_detail;
+use origa::domain::{Card, NativeLanguage, StudyCard};
+
+#[component]
+pub fn ExamplesContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
+    let i18n = use_i18n();
+    let repository =
+        use_context::<HybridUserRepository>().expect("repository context not provided");
+
+    // Data-lazy like the phrases page (#540-В1): the full sentence-id list
+    // is only recorded (for the search-driven backfill); details load per
+    // visible slice.
+    let all_sentence_ids: RwSignal<Vec<u32>> = RwSignal::new(Vec::new());
+    // The search box lives in the session store (same slot `card_list_view`
+    // reads), so a query survives navigating away and back.
+    let search = use_context::<ListUiStore>()
+        .expect("ListUiStore not provided")
+        .slot(ListPage::Examples)
+        .search;
+    let search_backfill_loading: RwSignal<bool> = RwSignal::new(false);
+    let backfill_done: RwSignal<bool> = RwSignal::new(false);
+
+    let on_cards_loaded: CardsLoadedCallback = Arc::new(move |cards: &[StudyCard]| {
+        all_sentence_ids.set(sentence_ids_of(cards));
+    });
+
+    // Visible-slice lazy load: runs on first render, "load more" and
+    // filter/search switches. While a load is in flight, later triggers
+    // only mark a rerun — the loop picks the freshest visible ids after
+    // the current batch lands (no lost tail, no duplicate batches).
+    let visible_ids: RwSignal<Vec<u32>> = RwSignal::new(Vec::new());
+    let visible_load_running = Arc::new(AtomicBool::new(false));
+    let visible_load_rerun = Arc::new(AtomicBool::new(false));
+    // Dispose-сентинел страницы: останавливает visible-loop на верху
+    // следующего прохода после смерти owner'а.
+    let visible_load_disposed = StoredValue::new(());
+    let on_visible_cards = {
+        let refresh = refresh_trigger;
+        let running = visible_load_running.clone();
+        let rerun = visible_load_rerun.clone();
+        let backfill_running = search_backfill_loading;
+        Arc::new(move |cards: &[StudyCard]| {
+            // The search backfill covers EVERY example — a visible-slice
+            // load racing it would only collect Errs on the in-flight
+            // chunks. Skip; the backfill's refresh re-renders the cards.
+            if backfill_running.get_untracked() {
+                return;
+            }
+            let ids = sentence_ids_of(cards);
+            if missing_details(&ids).is_empty() {
+                return;
+            }
+            visible_ids.set(ids);
+            if running.swap(true, Ordering::AcqRel) {
+                rerun.store(true, Ordering::Release);
+                return;
+            }
+            let running = running.clone();
+            let rerun = rerun.clone();
+            // Unscoped with a disposed guard (NOT scoped): the ambient
+            // owner at the spawn point is whatever context the list
+            // component invokes this Arc callback from — unpredictable
+            // for scoping. The loop-top reads `visible_ids` on every
+            // rerun pass (i.e. after an await); the sentinel fence below
+            // stops the task at the top of the next pass once the
+            // examples page is disposed (disposed-signal fix). A snapshot
+            // would defeat the rerun flag — each pass must read the
+            // fresh ids.
+            spawn_local(async move {
+                loop {
+                    if visible_load_disposed.is_disposed() {
+                        return;
+                    }
+                    let ids = visible_ids.get_untracked();
+                    if !ids.is_empty() {
+                        load_and_refresh(ids, refresh).await;
+                    }
+                    if !rerun.swap(false, Ordering::AcqRel) {
+                        break;
+                    }
+                }
+                running.store(false, Ordering::Release);
+            });
+        })
+    };
+
+    // Search semantics parity with the phrases page: matching runs over
+    // the loaded details instantly, while the REST of the user's examples
+    // load once per session. One parallel batch — search results jump to
+    // complete when it lands, the indicator stays visible for the whole
+    // load.
+    {
+        let all_ids = all_sentence_ids;
+        let backfill_done_sig = backfill_done;
+        let loading_sig = search_backfill_loading;
+        let refresh = refresh_trigger;
+        let search_sig = search;
+        Effect::new(move |_| {
+            let query = search_sig.get();
+            if query.trim().is_empty()
+                || backfill_done_sig.get_untracked()
+                || loading_sig.get_untracked()
+            {
+                return;
+            }
+            let missing = missing_details(&all_ids.get_untracked());
+            if missing.is_empty() {
+                backfill_done_sig.set(true);
+                return;
+            }
+            loading_sig.set(true);
+            spawn_local(async move {
+                tracing::info!(
+                    examples = missing.len(),
+                    "Backfilling all example details for search"
+                );
+                load_and_refresh(missing, refresh).await;
+                loading_sig.set(false);
+                backfill_done_sig.set(true);
+            });
+        });
+    }
+
+    let ctx = create_card_list_context(
+        repository,
+        refresh_trigger,
+        |card| matches!(card, Card::Example(_)),
+        Some(on_cards_loaded),
+    );
+
+    let ctx_for_render = ctx.clone();
+    let empty_message =
+        Signal::derive(move || td_string!(i18n.get_locale(), examples.not_found).to_string());
+    let partial_note =
+        move || td_string!(i18n.get_locale(), examples.search_in_progress).to_string();
+
+    // The domain Card for an example carries only the word surface (the
+    // sentence is CDN data), so search matches the word plus the lazily
+    // loaded sentence text/translation through the details cache.
+    let search_match: SearchMatcher = Arc::new(
+        |card: &StudyCard, query: &str, lang: NativeLanguage| match card.card() {
+            Card::Example(ec) => {
+                if ec.word().to_lowercase().contains(query) {
+                    return true;
+                }
+                get_cached_example_detail(ec.sentence_id()).is_some_and(|detail| {
+                    detail.text.to_lowercase().contains(query)
+                        || detail
+                            .translation(&lang)
+                            .is_some_and(|t| t.to_lowercase().contains(query))
+                })
+            },
+            _ => false,
+        },
+    );
+
+    let config = CardListViewConfig {
+        test_id_prefix: "examples",
+        empty_message,
+        grid_classes: Some(
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start",
+        ),
+    };
+    let list = card_list_view(
+        ctx,
+        ListPage::Examples,
+        ListGrouping::Flat,
+        config,
+        CardListExtras {
+            search: Some(search),
+            on_visible_cards: Some(on_visible_cards),
+            search_match: Some(search_match),
+        },
+        move |card| {
+            let ctx = ctx_for_render.clone();
+            let card_id = *card.card_id();
+            view! {
+                <ExampleCardItem
+                    study_card=card
+                    native_language=ctx.native_lang
+                    on_toggle_favorite=ctx.on_toggle_favorite
+                    on_mark_as_known=Callback::new(move |_| ctx.on_mark_as_known.run(card_id))
+                    on_delete=ctx.on_delete
+                    is_deleting=ctx.is_deleting
+                    details_trigger=refresh_trigger
+                />
+            }
+            .into_any()
+        },
+    );
+
+    view! {
+        <div class="space-y-4">
+            <Show when=move || {
+                !search.get().trim().is_empty() && search_backfill_loading.get()
+            }>
+                <div
+                    class="text-sm text-muted-foreground animate-pulse"
+                    data-testid="examples-search-partial"
+                >
+                    {partial_note}
+                </div>
+            </Show>
+            {list}
+        </div>
+    }
+    .into_any()
+}

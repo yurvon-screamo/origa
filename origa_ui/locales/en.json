@@ -446,6 +446,8 @@
         "words_not_found": "No words found",
         "words_not_found_hint": "Try a different file or input method.",
         "decks": "Collections",
+        "phrases": "Phrases",
+        "examples": "Examples",
         "tab_text": "Text",
         "tab_image": "Image",
         "tab_anki": "Anki",
@@ -664,6 +666,12 @@
         "not_found": "No phrases found",
         "hint": "Phrase cards are auto-created when you learn all words in a phrase",
         "search_in_progress": "Searching all your phrases — results will keep appearing…"
+    },
+    "examples": {
+        "title": "Examples",
+        "not_found": "No examples found",
+        "hint": "Example cards appear here after you rate example sentences in lessons",
+        "search_in_progress": "Searching all your examples — results will keep appearing…"
     },
     "feedback": {
         "title": "Report a problem",

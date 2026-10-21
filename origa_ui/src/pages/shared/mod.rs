@@ -26,7 +26,7 @@ pub use card_answer_helper::{format_answer_parts, format_answer_text};
 pub use card_counts::CardCounts;
 pub use card_filter::{Filter, FilterBtn};
 pub use card_list_page::{
-    CardListExtras, CardListViewConfig, CardsLoadedCallback, card_list_view,
+    CardListExtras, CardListViewConfig, CardsLoadedCallback, SearchMatcher, card_list_view,
     create_card_list_context,
 };
 pub use card_status::CardStatus;
