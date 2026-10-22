@@ -2,14 +2,14 @@
  * Geo-steering for Origa (.net zone) — Bunny DNS script 91629 "origa-s3-geo".
  *
  * Attached via NS records (zone 873317, TTL 60): origa, app.origa,
- * s3.origa, content.origa. Nothing else must reach this script: it answers
- * ONLY the four names above and returns undefined for any other hostname —
- * a newly attached name without a branch here must fail loudly (grey
- * answer), not silently resolve to the RF IP.
+ * s3.origa, content.origa, umami.origa. Nothing else must reach this
+ * script: it answers ONLY the names above and returns undefined for any
+ * other hostname — a newly attached name without a branch here must fail
+ * loudly (grey answer), not silently resolve to the RF IP.
  *
- * Current topology (ADR-061, cutover 2026-09-30):
+ * Current topology (ADR-061, cutover 2026-09-30; umami added 2026-10-22):
  *  - RF clients    -> A 193.233.217.243 (RF VM, nginx SNI-demux -> Railway/Tigris)
- *  - world         -> direct: Railway edge (API/landing), CloudFront (CDN)
+ *  - world         -> direct: Railway edge (API/landing/umami), CloudFront (CDN)
  *  - content.origa -> CNAME Tigris custom domain (diagnostic name, no RF branch)
  *
  * s3.origa world branch: CloudFront (free tier) in front of the public
@@ -28,7 +28,8 @@ export default function handleQuery(query) {
     h !== "origa.uwuwu.net" &&
     h !== "app.origa.uwuwu.net" &&
     h !== "s3.origa.uwuwu.net" &&
-    h !== "content.origa.uwuwu.net"
+    h !== "content.origa.uwuwu.net" &&
+    h !== "umami.origa.uwuwu.net"
   ) {
     return undefined; // not ours — do NOT fall through to the RF A-record
   }
@@ -51,6 +52,9 @@ export default function handleQuery(query) {
   }
   if (h === "origa.uwuwu.net") {
     return new CnameRecord("vl080mt6.up.railway.app", 300);
+  }
+  if (h === "umami.origa.uwuwu.net") {
+    return new CnameRecord("07wyrdxw.up.railway.app", 300);
   }
   // unreachable while the guard list above matches the branches; kept as a
   // fail-loud terminal: a name added to the guard without a branch must get
