@@ -118,3 +118,16 @@ Generation notes:
 ## License
 
 Adapter and code: BSL 1.1 ([text](https://github.com/yurvon-screamo/origa/blob/master/LICENSE)). Base model: Apache 2.0. Training corpus: not released.
+
+
+## Chinese locales (added 2026-10-20)
+
+Zero-shot Chinese (Simplified) works out of the box with the same prompt recipe —
+`Translate the following Japanese sentence into Chinese (Simplified):` — no extra
+training. Production results on Origa content (eager mode, single greedy pass):
+156,228 phrases at 99.98% (after subagent cleanup), 97,452 word glosses at 95.6%,
+22,413 usage examples at 99.63%, 2,135 kanji descriptions. Names come out in
+Chinese readings (隼斗, 花怜, 妃爱). Traditional Chinese (Taiwan) should NOT be
+generated with this adapter (mixed script in ~42% of lines) — convert zh-Hans
+output with OpenCC `s2twp` instead. See the
+[runbook](https://github.com/yurvon-screamo/origa/blob/master/translator/docs/RUNBOOK.md).
