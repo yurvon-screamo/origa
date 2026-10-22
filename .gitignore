@@ -125,3 +125,4 @@ end2end/.stitch/
 # repository (the capture tool puts them in /tmp/opencode/shots/), so
 # nothing lands in the working tree by accident.
 end2end/screenshots/
+translator/.venv/
