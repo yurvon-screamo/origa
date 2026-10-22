@@ -107,9 +107,10 @@ Then('страница прокручивается на мобильном ус
 Then('контент заканчивается выше нижней панели навигации', async ({ page }) => {
     const bar = page.getByTestId('bottom-tab');
     await expect(bar).toBeVisible({ timeout: 10_000 });
-    // Max scroll: the reserve matters exactly there.
+    // Max scroll: the reserve matters exactly there. scrollTo is
+    // synchronous and the project sets no smooth scroll-behavior, so the
+    // rects below are measured after the jump without extra waiting.
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.waitForTimeout(300);
     const gap = await page.evaluate(() => {
         const bar = document.querySelector('[data-testid="bottom-tab"]');
         const shell = document.querySelector('[data-testid="app-main"]');

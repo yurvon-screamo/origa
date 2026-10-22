@@ -379,14 +379,11 @@ pub(super) fn ExampleCard(
     // re-renders it without remounting the card. (The token translations
     // inside TranslatorText keep the locale they resolved on mount — a
     // known TranslatorText limitation, see the precompute follow-up.)
-    let translation = Signal::derive({
-        let detail = detail.clone();
-        move || {
-            detail
-                .translation(&native_language.get())
-                .unwrap_or_default()
-                .to_string()
-        }
+    let translation = Signal::derive(move || {
+        detail
+            .translation(&native_language.get())
+            .unwrap_or_default()
+            .to_string()
     });
 
     view! {
@@ -399,9 +396,6 @@ pub(super) fn ExampleCard(
                     <TranslatorText
                         text=sentence.clone()
                         class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
-                        // #845: the language must travel with the card —
-                        // without it the component falls back to the
-                        // plain-text render (no tokens, no furigana).
                         native_language=native_language
                         test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
                     />
