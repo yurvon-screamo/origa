@@ -50,14 +50,14 @@ pub(crate) fn resolve_cdn(env_value: Option<&str>) -> String {
     }
 }
 
-/// Production Umami Cloud website ID.
-///
-/// Website IDs are public identifiers — every visitor's page HTML exposes them
-/// in the tracker tag — so committing the default is safe (unlike, say, an API
-/// key). Used by `resolve_umami` as the fallback when `UMAMI_WEBSITE_ID` is
-/// unset OR empty, mirroring the `resolve_trailbase` empty-handling contract
-/// (ADR-020). See ADR-054 for the analytics integration.
-pub(crate) const DEFAULT_UMAMI_WEBSITE_ID: &str = "0b8b69aa-9c94-41ef-b27a-f928011b797b";
+/// Production website ID on the self-hosted Umami instance (umami.origa.uwuwu.net,
+/// website «Origa»). Website IDs are public identifiers — every visitor's page
+/// HTML exposes them in the tracker tag — so committing the default is safe
+/// (unlike, say, an API key). Used by `resolve_umami` as the fallback when
+/// `UMAMI_WEBSITE_ID` is unset OR empty, mirroring the `resolve_trailbase`
+/// empty-handling contract (ADR-020). See ADR-054 (integration) and §7
+/// (self-host migration, 2026-10).
+pub(crate) const DEFAULT_UMAMI_WEBSITE_ID: &str = "57c7d57f-3bd9-48cf-b9ee-ea02c95d967a";
 
 /// Resolve the Umami Cloud website ID to emit via `cargo:rustc-env`. Returns
 /// an empty string (= analytics compiled out, runtime injection is a no-op)
