@@ -33,7 +33,8 @@ thread_local! {
     /// `stop_current_audio()` (the generation bump) BEFORE `register_audio`.
     /// A direct `register_audio` without the stop resurrects the supersede
     /// race. All current call sites comply: `audio_player`, `audio_buttons`,
-    /// `word_audio`, and the phrase playback in `pages/lesson/lesson_card`.
+    /// `word_audio`, the phrase/example playback in `pages/lesson/
+    /// lesson_card` (shared channel, also stopped by `example_recall_card`).
     static AUDIO_GENERATION: Cell<u64> = const { Cell::new(0) };
 }
 

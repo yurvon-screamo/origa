@@ -72,11 +72,8 @@ pub fn ExampleRecallCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        // #528: the generated IndexTTS clip is the PRIMARY announcement
-        // voice (owner report: the autoplay spoke platform TTS while the
-        // manual button played our clip — two voices for one card). The
-        // shared lesson channel handles the CDN prefetch + the TTS
-        // degradation, so speech-support is no longer a gate here.
+        // #528: the generated clip is the primary announcement voice; the
+        // shared lesson channel owns the CDN prefetch + TTS degradation.
         if !is_muted {
             crate::ui_components::stop_current_audio();
             let path = example_audio_path(sentence_id);
@@ -85,6 +82,25 @@ pub fn ExampleRecallCard(
                 super::lesson_card::play_cdn_audio_with_tts_fallback(&path, &text).await;
             });
         }
+    });
+
+    // Reveal stops the announcement clip (the phrase-card etalon: the
+    // question audio does not play over the shown answer).
+    {
+        let show_answer_stop = show_answer;
+        Effect::new(move |_| {
+            if show_answer_stop.get() {
+                crate::ui_components::stop_current_audio();
+            }
+        });
+    }
+
+    // Unmount teardown (the LessonCard/AudioRecall contract): a card left
+    // mid-clip must not keep playing over the next card — its own stop
+    // waits for a network round-trip (lazy chunk load), leaving a
+    // two-voices window otherwise.
+    on_cleanup(|| {
+        crate::ui_components::stop_current_audio();
     });
 
     let sentence_class = Signal::derive(|| "text-2xl leading-relaxed".to_string());
