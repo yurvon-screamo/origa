@@ -1,4 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Origa</string>
     <string name="main_activity_title">Origa</string>
+    <string name="share_alias_title">Add to Origa</string>
+    <string name="shortcut_audio">Record</string>
+    <string name="shortcut_audio_long">Record audio to add words</string>
+    <string name="shortcut_camera">Camera</string>
+    <string name="shortcut_camera_long">Take a photo to add words</string>
+    <string name="shortcut_text">Text</string>
+    <string name="shortcut_text_long">Type text to add words</string>
 </resources>

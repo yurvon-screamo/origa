@@ -51,10 +51,18 @@ export const test = base.extend<
     ],
     page: [
         async ({ browser, testUser }, use) => {
-            // The base URL belongs to the context: page objects navigate with
-            // relative paths, and an absolute URL in a step would otherwise
-            // point at a different origin than the fixture.
+            // Base URL belongs to the context (master's change); the inbox
+            // seam init script keeps our origin guard.
             const context = await browser.newContext({ baseURL: getAppBaseUrl() });
+            // Opt this browser context into the inbox test seam (slice IN-1):
+            // the app registers the window hook only when this exact
+            // localStorage flag is present. Origin-guarded: init scripts also
+            // run on about:blank where localStorage access is a SecurityError.
+            await context.addInitScript((origin) => {
+                if (window.location.origin === origin) {
+                    window.localStorage.setItem("__origa_e2e_seam", "1");
+                }
+            }, getAppBaseUrl());
             const page = await context.newPage();
             await page.setViewportSize({ width: 1280, height: 720 });
             try {

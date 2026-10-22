@@ -1,3 +1,4 @@
+use crate::core::share_intake::{self, ShareWire};
 use crate::i18n::{t, use_i18n};
 use crate::pages::words::add_words_preview_modal_handlers::create_preview_modal_handlers;
 use crate::pages::words::add_words_preview_modal_state::{
@@ -6,11 +7,21 @@ use crate::pages::words::add_words_preview_modal_state::{
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::anki_import_stage::AnkiImportStage;
 use crate::pages::words::audio_input_stage::AudioInputStage;
+use crate::pages::words::audio_transcribe::{AudioState, cancel_whisper_loading};
 use crate::pages::words::image_input_stage::ImageInputStage;
+use crate::pages::words::inbox::{
+    InboxSeamGuard, InboxSignals, InboxStageView, register_inbox_seam,
+};
+use crate::pages::words::ocr_processing::OcrState;
+use crate::pages::words::transcript::{
+    TranscriptDecision, join_selected, sentence_has_unknown_content, split_sentences,
+    transcript_entry,
+};
+use crate::pages::words::transcript_view::TranscriptStageView;
 use crate::repository::HybridUserRepository;
 use crate::ui_components::{
     Alert, AlertType, Button, ButtonVariant, Drawer, Input, TabItem, Tabs, Text, TextSize,
-    TypographyVariant,
+    ToastContainer, ToastData, ToastType, TypographyVariant,
 };
 use leptos::ev::MouseEvent;
 use leptos::prelude::*;
@@ -18,6 +29,8 @@ use leptos::task::spawn_local;
 use origa::domain::User;
 use origa::traits::UserRepository;
 use origa::use_cases::AnalyzedWord;
+use std::collections::HashSet;
+use std::sync::atomic::Ordering;
 
 #[component]
 pub fn AddWordsPreviewModal(
@@ -62,12 +75,190 @@ pub fn AddWordsPreviewModal(
     let active_tab = state.active_tab;
     let handlers = create_preview_modal_handlers(state.clone(), is_open);
 
+    let inbox = InboxSignals::new();
+    let toasts: RwSignal<Vec<ToastData>> = RwSignal::new(Vec::new());
+
+    // Transcript stage (AU-2): long audio transcriptions land here first so
+    // the user picks which sentences to analyze instead of facing the word
+    // preview of an hour-long text.
+    let transcript_sentences: RwSignal<Option<Vec<String>>> = RwSignal::new(None);
+    let transcript_selected: RwSignal<HashSet<usize>> = RwSignal::new(HashSet::new());
+
     Effect::new({
         let state = state.clone();
         move |_| {
             if !is_open.get() {
                 state.reset();
+                inbox.reset();
+                transcript_sentences.set(None);
+                transcript_selected.set(HashSet::new());
             }
+        }
+    });
+
+    // Transcript stage actions (AU-2). Hoisted before the view: Callback is
+    // Copy, but the inline `state.clone()` moved the non-Copy state into
+    // the view closure and turned it FnOnce.
+    let on_analyze_selected_sentences = Callback::new({
+        let state = state.clone();
+        move |_: ()| {
+            let sentences = transcript_sentences.get().unwrap_or_default();
+            let text = join_selected(&sentences, &transcript_selected.get());
+            transcript_sentences.set(None);
+            transcript_selected.set(HashSet::new());
+            state.set_extracted_text(text);
+        }
+    });
+    let on_use_all_text = Callback::new({
+        let state = state.clone();
+        move |_: ()| {
+            let sentences = transcript_sentences.get().unwrap_or_default();
+            let text = sentences.join("");
+            transcript_sentences.set(None);
+            transcript_selected.set(HashSet::new());
+            state.set_extracted_text(text);
+        }
+    });
+
+    // Audio transcriptions land on the transcript screen; image OCR goes
+    // straight to analysis (a page photo has no sentence-selection value).
+    let on_audio_text_extracted = {
+        let state = state.clone();
+        Callback::new(move |text: String| {
+            let sentences = split_sentences(&text);
+            match transcript_entry(sentences.len()) {
+                TranscriptDecision::DirectAnalysis => {
+                    transcript_sentences.set(None);
+                    state.set_extracted_text(text);
+                },
+                TranscriptDecision::ShowScreen => {
+                    let known = known_kanji.get();
+                    let preselected: HashSet<usize> = sentences
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, sentence)| sentence_has_unknown_content(sentence, &known))
+                        .map(|(index, _)| index)
+                        .collect();
+                    transcript_sentences.set(Some(sentences));
+                    transcript_selected.set(preselected);
+                },
+            }
+        })
+    };
+
+    // External share intake (IN-2/IN-3): consume parked payloads as they
+    // arrive (mount + warm event delivery while the page is open). The
+    // parking slot is non-reactive (thread_local), so a poll interval is
+    // the consumption trigger.
+    static SHARE_ERROR_TOAST_SEQ: std::sync::atomic::AtomicUsize =
+        std::sync::atomic::AtomicUsize::new(0);
+    {
+        let state = state.clone();
+        let disposed = state.disposed;
+        let on_audio_text = on_audio_text_extracted;
+        let i18n_for_share = i18n;
+        leptos::task::spawn_local(async move {
+            loop {
+                gloo_timers::future::TimeoutFuture::new(300).await;
+                // Exit when this modal instance unmounts — otherwise the
+                // loop outlives the page and steals shares from the next
+                // instance's signals (dead instance, no subscribers).
+                if disposed.is_disposed() {
+                    return;
+                }
+                let Some(payload) = share_intake::take_share() else {
+                    continue;
+                };
+                let state = state.clone();
+                let i18n = i18n_for_share;
+                let toasts = toasts;
+                let is_open = is_open;
+                let inbox = inbox;
+                spawn_local(async move {
+                    match payload {
+                        ShareWire::Text { text } => {
+                            let route = crate::pages::words::inbox::wire_route_text(&text);
+                            crate::pages::words::inbox::seam::execute_route(
+                                route,
+                                i18n,
+                                &state,
+                                is_open,
+                                &inbox,
+                                on_audio_text,
+                            );
+                        },
+                        ShareWire::File {
+                            file_name,
+                            mime,
+                            cache_path,
+                        } => match share_intake::read_shared_bytes(&cache_path).await {
+                            Ok(bytes) => {
+                                let kind = crate::pages::words::inbox::wire_route_file(
+                                    &file_name, &mime, bytes,
+                                );
+                                if let Some(kind) = kind {
+                                    let route = crate::pages::words::inbox::route_payload(
+                                        crate::pages::words::inbox::InboxPayload { kind },
+                                    );
+                                    crate::pages::words::inbox::seam::execute_route(
+                                        route,
+                                        i18n,
+                                        &state,
+                                        is_open,
+                                        &inbox,
+                                        on_audio_text,
+                                    );
+                                }
+                            },
+                            Err(e) => {
+                                tracing::warn!(error = %e, "share-intake: file read failed")
+                            },
+                        },
+                        ShareWire::Error { message } => {
+                            tracing::warn!(message = %message, "share-intake: host reported error");
+                            toasts.update(|list| {
+                                list.push(ToastData {
+                                    id: SHARE_ERROR_TOAST_SEQ.fetch_add(1, Ordering::Relaxed),
+                                    toast_type: ToastType::Info,
+                                    title: i18n
+                                        .get_keys_untracked()
+                                        .common()
+                                        .error()
+                                        .inner()
+                                        .to_string(),
+                                    message,
+                                    duration_ms: Some(6000),
+                                    closable: true,
+                                });
+                            });
+                        },
+                        ShareWire::None => {},
+                    }
+                });
+            }
+        });
+    }
+
+    // Shortcut deep-link (L-1): open the drawer on the target tab.
+    if let Some(tab_id) = crate::core::shortcut_links::take_shortcut_tab() {
+        is_open.set(true);
+        active_tab.set(tab_id.to_string());
+    }
+
+    // The e2e seam registers once at mount and unregisters via its guard's
+    // Drop when the drawer component is disposed.
+    let seam_guard = StoredValue::new_local(None::<InboxSeamGuard>);
+    Effect::new({
+        let state = state.clone();
+        move |_| {
+            seam_guard.set_value(register_inbox_seam(
+                state.clone(),
+                is_open,
+                inbox,
+                toasts,
+                i18n,
+                on_audio_text_extracted,
+            ));
         }
     });
 
@@ -131,6 +322,35 @@ pub fn AddWordsPreviewModal(
         })
     };
 
+    // Inbox fallbacks: cancel aborts the zero-tap run and returns to the
+    // source tabs; open-manually does the same after a failure. Cancel must
+    // (a) invalidate the in-flight run — a late OCR/STT result would
+    // otherwise feed the next payload — and (b) clear the OCR state, whose
+    // cancelled pipeline never reaches its own completion branch and would
+    // otherwise report Processing forever, rejecting every next payload.
+    // reset() goes first: it clears cancel_requested, and the flag is then
+    // re-raised so an orphaned OCR run aborted mid-model-download still
+    // stops at its next cancellation checkpoint.
+    let on_inbox_cancel = {
+        Callback::new(move |_: ()| {
+            inbox.generation.update(|g| *g = g.wrapping_add(1));
+            inbox.ocr_loading_state.reset();
+            inbox.ocr_loading_state.cancel_requested.set(true);
+            inbox.ocr_state.set(OcrState::Idle);
+            inbox.audio_state.set(AudioState::Idle);
+            cancel_whisper_loading();
+            inbox.active.set(false);
+            inbox.error.set(None);
+        })
+    };
+
+    let on_inbox_open_manually = {
+        Callback::new(move |_: ()| {
+            inbox.active.set(false);
+            inbox.error.set(None);
+        })
+    };
+
     view! {
         <Drawer
             is_open=is_open
@@ -144,7 +364,9 @@ pub fn AddWordsPreviewModal(
                     match stage {
                         AnalysisStage::Analyzing => view! {
                             <div class="space-y-4">
-                                <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                <Show when=move || !inbox.active.get()>
+                                    <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                </Show>
                                 <div class="flex items-center justify-center py-8">
                                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                         {t!(i18n, words.analyzing)}
@@ -166,7 +388,8 @@ pub fn AddWordsPreviewModal(
                         AnalysisStage::Input => view! {
                             <div class="space-y-4">
                                 {move || {
-                                    if has_analyzed.get() && analyzed_words.get().is_empty() {
+                                    let no_words_after_analysis = has_analyzed.get() && analyzed_words.get().is_empty();
+                                    if no_words_after_analysis || inbox.empty_text.get() {
                                         Some(view! {
                                             <Alert
                                                 alert_type=Signal::derive(|| AlertType::Warning)
@@ -179,43 +402,79 @@ pub fn AddWordsPreviewModal(
                                         None
                                     }
                                 }}
-                                <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
                                 {move || {
-                                    let mode = input_mode.get();
-                                    match mode {
-                                        InputMode::Text => view! {
-                                            <InputStage
-                                                input_text=input_text
-                                                is_analyzing=is_analyzing
-                                                error_message=error_message
-                                                on_analyze=handlers.on_analyze
+                                    if transcript_sentences.get().is_some() {
+                                        view! {
+                                            <TranscriptStageView
+                                                sentences=Signal::derive(move || {
+                                                    transcript_sentences
+                                                        .get()
+                                                        .unwrap_or_default()
+                                                })
+                                                selected=transcript_selected
+                                                on_analyze_selected=on_analyze_selected_sentences
+                                                on_use_all=on_use_all_text
+                                                on_back=Callback::new(move |_: ()| {
+                                                    // Exit the whole zero-tap
+                                                    // run: otherwise the inbox
+                                                    // view shows an eternal
+                                                    // "processing" spinner.
+                                                    inbox.active.set(false);
+                                                    transcript_sentences.set(None);
+                                                    transcript_selected.set(HashSet::new());
+                                                })
                                             />
-                                        }.into_any(),
-                                        InputMode::Anki => {
-                                            view! {
-                                                <AnkiImportStage
-                                                    is_open=is_open
-                                                    refresh_trigger=refresh_trigger
-                                                    test_id=Signal::derive(|| "words-drawer-anki".to_string())
-                                                />
-                                            }.into_any()
-                                        },
-                                        InputMode::Image => view! {
-                                            <ImageInputStage
-                                                is_open=is_open
-                                                on_text_extracted=on_text_extracted
-                                                on_error=on_ocr_error
-                                                on_switch_to_text=on_switch_to_text
+                                        }.into_any()
+                                    } else if inbox.active.get() {
+                                        view! {
+                                            <InboxStageView
+                                                inbox=inbox
+                                                on_cancel=on_inbox_cancel
+                                                on_open_manually=on_inbox_open_manually
                                             />
-                                        }.into_any(),
-                                        InputMode::Audio => view! {
-                                            <AudioInputStage
-                                                is_open=Signal::derive(move || is_open.get())
-                                                on_text_extracted=on_text_extracted
-                                                on_error=on_ocr_error
-                                                on_switch_to_text=on_switch_to_text
-                                            />
-                                        }.into_any(),
+                                        }.into_any()
+                                    } else {
+                                        view! {
+                                            <Tabs tabs=tabs active=active_tab test_id=Signal::derive(|| "words-add-tabs".to_string()) class="tabs--scrollable".to_string() />
+                                            {move || {
+                                                let mode = input_mode.get();
+                                                match mode {
+                                                    InputMode::Text => view! {
+                                                        <InputStage
+                                                            input_text=input_text
+                                                            is_analyzing=is_analyzing
+                                                            error_message=error_message
+                                                            on_analyze=handlers.on_analyze
+                                                        />
+                                                    }.into_any(),
+                                                    InputMode::Anki => {
+                                                        view! {
+                                                            <AnkiImportStage
+                                                                is_open=is_open
+                                                                refresh_trigger=refresh_trigger
+                                                                test_id=Signal::derive(|| "words-drawer-anki".to_string())
+                                                            />
+                                                        }.into_any()
+                                                    },
+                                                    InputMode::Image => view! {
+                                                        <ImageInputStage
+                                                            is_open=is_open
+                                                            on_text_extracted=on_text_extracted
+                                                            on_error=on_ocr_error
+                                                            on_switch_to_text=on_switch_to_text
+                                                        />
+                                                    }.into_any(),
+                                                    InputMode::Audio => view! {
+                                                        <AudioInputStage
+                                                            is_open=Signal::derive(move || is_open.get())
+                                                            on_text_extracted=on_audio_text_extracted
+                                                            on_error=on_ocr_error
+                                                            on_switch_to_text=on_switch_to_text
+                                                        />
+                                                    }.into_any(),
+                                                }
+                                            }}
+                                        }.into_any()
                                     }
                                 }}
                             </div>
@@ -223,6 +482,7 @@ pub fn AddWordsPreviewModal(
                     }
                 }}
             </div>
+            <ToastContainer toasts=toasts duration_ms=4000 />
         </Drawer>
     }
 }

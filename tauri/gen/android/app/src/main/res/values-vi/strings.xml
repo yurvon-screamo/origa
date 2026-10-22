@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="share_alias_title">Thêm vào Origa</string>
+    <string name="shortcut_audio">Ghi âm</string>
+    <string name="shortcut_audio_long">Ghi âm để thêm từ</string>
+    <string name="shortcut_camera">Máy ảnh</string>
+    <string name="shortcut_camera_long">Chụp ảnh để thêm từ</string>
+    <string name="shortcut_text">Văn bản</string>
+    <string name="shortcut_text_long">Nhập văn bản để thêm từ</string>
+</resources>
