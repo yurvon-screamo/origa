@@ -37,8 +37,6 @@ import os
 import sys
 from pathlib import Path
 
-from weasyprint import HTML
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KANJI_JSON = REPO_ROOT / "cdn" / "dictionary" / "kanji.json"
 OUT_ROOT = REPO_ROOT / "origa_landing" / "public" / "jlpt"
@@ -323,6 +321,12 @@ def resolve_source_epoch() -> tuple[int, bool]:
 
 
 def main() -> int:
+    # WeasyPrint is imported here, not at module level: it dlopens pango and
+    # cairo at import time, which the unit tests of the pure logic below do
+    # not need and which a bare CI runner does not have. Rendering stays the
+    # CLI's job (the module docstring of the test says the same).
+    from weasyprint import HTML
+
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--dry-run", action="store_true", help="report planned files only"

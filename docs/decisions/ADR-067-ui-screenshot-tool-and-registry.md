@@ -1,5 +1,10 @@
 # ADR-067: UI screenshot tool and screenshot registry
 
+> ⚠️ Superseded in part by [ADR-068](ADR-068-media-assets-in-cdn.md): the
+> curated screenshots in `.media/` described below have been removed — the
+> store assets moved to the CDN and the rest was deleted. The capture tool
+> and the registry of this document stay in force.
+
 ## Status
 
 Accepted (issue #800 follow-up, ADR-066)
