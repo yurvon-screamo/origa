@@ -2,7 +2,7 @@ use crate::i18n::use_i18n;
 use crate::store::auth_store::AuthStore;
 use crate::ui_components::avatar::AvatarSize;
 use crate::ui_components::nav_config::NavRoute;
-use crate::ui_components::{Avatar, Logo, LogoSize, derive_test_id};
+use crate::ui_components::{Avatar, Logo, LogoSize, derive_test_id, is_nav_hidden_path};
 use crate::utils::display_name::display_name_for;
 use leptos::prelude::*;
 use leptos_icons::Icon;
@@ -18,12 +18,15 @@ pub fn Sidebar(
     let auth_store = use_context::<AuthStore>().expect("AuthStore not provided");
     let location = use_location();
 
+    // One Memo per mount — `is_authenticated()` constructs a fresh Memo on
+    // every call, which inside a Signal::derive would mean a new Memo per
+    // recompute.
+    let is_authenticated = auth_store.is_authenticated();
+
     let is_visible = Signal::derive(move || {
-        let authenticated = auth_store.is_authenticated().get();
         let path = location.pathname.get();
-        let hidden_path = path == "/lesson" || path == "/onboarding";
         let has_user = current_user.with(|u| u.is_some());
-        authenticated && !hidden_path && has_user
+        is_authenticated.get() && !is_nav_hidden_path(&path) && has_user
     });
 
     let test_id_val = move || {
