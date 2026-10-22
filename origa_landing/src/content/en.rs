@@ -311,7 +311,7 @@ pub const PR_BODY_EN: &str = r#"
       <tr><td>Imported sets</td><td>Identifiers of content sets you imported (the set contents themselves are public catalog data).</td></tr>
       <tr><td>Optional profile</td><td>A Telegram user identifier, only if you choose to link a Telegram account.</td></tr>
       <tr><td>Diagnostics</td><td>Crash reports, performance traces, and technical logs, sent to Sentry (sentry.io), a third-party error-monitoring service. They include the app version, operating system version, and device model, and an anonymous installation identifier, a random UUID generated on first launch and used to count installations. These records are not linked to your account, email, or learning progress.</td></tr>
-      <tr><td>Web analytics</td><td>Aggregated pageview statistics for this website and the web app (pages visited, referrer, approximate country, browser and operating system), sent to Umami Cloud (cloud.umami.is), a privacy-focused analytics service. The tracker sets no cookies, uses no cross-site identifiers, does not store IP addresses, and is not linked to your account or the diagnostics identifier. If your browser sends a Do Not Track signal, pageviews are not recorded.</td></tr>
+      <tr><td>Web analytics</td><td>Aggregated pageview statistics for this website and the web app (pages visited, referrer, approximate country, browser and operating system), collected by our self-hosted Umami instance (umami.origa.uwuwu.net), a privacy-focused analytics service operated by Origa. The tracker sets no cookies, uses no cross-site identifiers, does not store IP addresses, and is not linked to your account or the diagnostics identifier. If your browser sends a Do Not Track signal, pageviews are not recorded.</td></tr>
     </tbody>
   </table>
   <p>Origa does <strong>not</strong> collect advertising identifiers, precise location, contacts, or your browsing activity outside Origa services; pageview statistics inside Origa services are aggregated and anonymous, as described above. The on-device machine-learning models (OCR for camera text recognition, Whisper for speech recognition) run entirely on your device; camera frames and audio are processed locally and are never uploaded.</p>
@@ -333,7 +333,7 @@ pub const PR_BODY_EN: &str = r#"
   <ul>
     <li>Account and progress data: the TrailBase server at <code>app.origa.uwuwu.net</code>, hosted in Singapore.</li>
     <li>Crash reports, performance traces and technical logs: Sentry (sentry.io), hosted in the USA. These records are not linked to your account.</li>
-    <li>Aggregated web-analytics statistics: Umami Cloud (cloud.umami.is), operated by Umami. Anonymous records, not linked to your account.</li>
+    <li>Aggregated web-analytics statistics: our self-hosted Umami instance (umami.origa.uwuwu.net), operated by Origa. Anonymous records, not linked to your account.</li>
     <li>Static assets (dictionaries, machine-learning models, phrase audio): the CDN at <code>s3.origa.uwuwu.net</code>. These are public catalog content, not user data.</li>
     <li>OAuth sign-in is handled by Google, Yandex, and Apple according to their respective privacy policies.</li>
   </ul>
@@ -363,7 +363,7 @@ pub const PR_BODY_EN: &str = r#"
     <li>Yandex OAuth (oauth.yandex.ru) — optional sign-in provider.</li>
     <li>Apple OAuth (appleid.apple.com) — optional sign-in provider.</li>
     <li>Sentry (sentry.io) — crash reporting and error monitoring; receives crash reports, performance traces and technical logs, not linked to your account.</li>
-    <li>Umami Cloud (cloud.umami.is) — privacy-focused web analytics; receives anonymous, cookieless pageview statistics, not linked to your account.</li>
+    <li>Umami (umami.origa.uwuwu.net) — privacy-focused web analytics, self-hosted and operated by Origa; receives anonymous, cookieless pageview statistics, not linked to your account.</li>
     <li>Static CDN (s3.origa.uwuwu.net) — public catalog content.</li>
   </ul>
   <p>Origa does not include advertising SDKs or cross-device tracking SDKs, and the data listed above is not used for advertising and is not transferred to data brokers.</p>
