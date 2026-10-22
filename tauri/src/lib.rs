@@ -33,11 +33,11 @@ mod updater_commands;
 mod store_review;
 
 use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
-// `Manager` consumers: single-instance focus (Windows/Linux) and the iOS
-// plugin-state registration (`app.manage`). The macOS path registers no
-// state, so the import stays out of macOS builds.
+// `Manager` consumers: single-instance focus (Windows/Linux). Apple paths
+// register no plugin state and use local imports, so the import stays out
+// of macOS and iOS builds.
 use store_review::request_app_review;
-#[cfg(any(windows, target_os = "linux", target_os = "ios"))]
+#[cfg(any(windows, target_os = "linux"))]
 use tauri::Manager;
 use tauri::{Emitter, Listener};
 use tauri_plugin_deep_link::DeepLinkExt;

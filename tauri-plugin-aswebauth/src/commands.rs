@@ -118,9 +118,6 @@ pub async fn start_auth(_url: String, _callback_scheme: String) -> Result<AuthRe
     Err("ASWebAuthenticationSession is only available on Apple platforms".to_string())
 }
 
-#[cfg(target_os = "ios")]
-use tauri::Runtime;
-
 /// iOS: delegates to the Swift `AsWebAuthPlugin.signInWithApple` via
 /// `PluginHandle::run_mobile_plugin`. The Swift delegate resolves with
 /// `{ "identityToken": ..., "nonce": ... }`.

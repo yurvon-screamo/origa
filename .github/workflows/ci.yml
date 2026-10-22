@@ -31,8 +31,8 @@ permissions:
 # `if: needs.changes.outputs.run_<job> == 'true'`.
 # Non-PR events (release tags, workflow_dispatch) force every run_* to
 # true — the release pipeline is always a full run. Exception:
-# run_macos_check carries the dependabot actor clause and can be false
-# on non-PR events too.
+# run_macos_check and run_ios_check carry the dependabot actor clause and
+# can be false on non-PR events too.
 #
 # Invariants — violate these and CI silently rots:
 # 1. CI Gate: a `skipped` result is legal ONLY when the job's run_* flag
@@ -71,6 +71,12 @@ jobs:
               steps.components.outputs.tts == 'true' ||
               steps.components.outputs.ci == 'true' }}
             run_macos_check: >-
+              ${{ (github.event_name != 'pull_request' ||
+              steps.components.outputs.core == 'true' ||
+              steps.components.outputs.tauri == 'true' ||
+              steps.components.outputs.ci == 'true') &&
+              github.actor != 'dependabot[bot]' }}
+            run_ios_check: >-
               ${{ (github.event_name != 'pull_request' ||
               steps.components.outputs.core == 'true' ||
               steps.components.outputs.tauri == 'true' ||
@@ -269,6 +275,51 @@ jobs:
               run: |
                   cargo test --locked -p tauri-plugin-aswebauth \
                     --target aarch64-apple-darwin
+
+    # Compile gate for iOS-only native code (share intake objc2 bridge,
+    # aswebauth iOS commands): Linux CI never sees `cfg(target_os = "ios")`
+    # code and macos-check only covers `aarch64-apple-darwin`, so without
+    # this check such code first compiled on a release tag — v0.8.0-rc24
+    # failed exactly this way (E0308/E0599 in share_intake.rs). iOS has no
+    # simulator test path here, so this is check/clippy only. Apple-silicon
+    # only — Intel Macs are legacy. Public repo — macos runners are free.
+    ios-check:
+        name: Check (aarch64 iOS)
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_ios_check == 'true'
+        runs-on: macos-15
+        timeout-minutes: 30
+        env:
+            ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # Mirror the release build context (tauri.conf.json bundle/iOS
+            # minimumSystemVersion = 26.0, xcodeproj IPHONEOS_DEPLOYMENT_TARGET
+            # = 26.0). tauri-utils link_swift_library falls back to iOS 13.0
+            # when the env is unset, which false-fails availability on
+            # iOS-15+ APIs in the device-ai plugin's Swift package.
+            IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+            MACOSX_DEPLOYMENT_TARGET: "14.0"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: aarch64-apple-ios
+                  shared-key: origa-ios-check-v1
+                  save-if: ${{ github.ref == 'refs/heads/master' }}
+
+            - name: Check tauri app + aswebauth plugin (iOS)
+              run: |
+                  cargo check --locked -p origa-app -p tauri-plugin-aswebauth \
+                    --target aarch64-apple-ios
+
+            - name: Clippy tauri app + aswebauth plugin (iOS)
+              run: |
+                  cargo clippy --locked -p origa-app -p tauri-plugin-aswebauth \
+                    --target aarch64-apple-ios --all-targets -- -D warnings
 
     lint:
         name: Lint
@@ -1272,6 +1323,7 @@ jobs:
                 changes,
                 lint,
                 macos-check,
+                ios-check,
                 cdn-download,
                 test,
                 landing-test,
@@ -1316,6 +1368,7 @@ jobs:
                   gate "changes" "${{ needs.changes.result }}" "true"
                   gate "lint" "${{ needs.lint.result }}" "${{ needs.changes.outputs.run_lint }}"
                   gate "macos-check" "${{ needs.macos-check.result }}" "${{ needs.changes.outputs.run_macos_check }}"
+                  gate "ios-check" "${{ needs.ios-check.result }}" "${{ needs.changes.outputs.run_ios_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
                   gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
