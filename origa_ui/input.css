@@ -58,6 +58,19 @@
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
 
+    /* Mobile bottom tab bar (ADR-026 §2: the insets are handled once — on
+       the shell and on the fixed elements, never re-derived per page).
+       The icon row keeps its height, the device's bottom inset is padding,
+       and page content reserves the bar's full height plus a gap, so the
+       last line never ends up under the bar (#845). The 8px floor lifts
+       the bar off the screen edge when no inset is reported. */
+    --bottom-nav-height: 60px;
+    --bottom-nav-inset: max(var(--safe-bottom), 8px);
+    --bottom-nav-gap: 24px;
+    --bottom-nav-clearance: calc(
+        var(--bottom-nav-height) + var(--bottom-nav-inset) + var(--bottom-nav-gap)
+    );
+
     /* Spacing */
     --space-xs: 4px;
     --space-sm: 8px;
@@ -1607,11 +1620,13 @@ input[type="submit"],
     bottom: 0;
     left: 0;
     right: 0;
-    /* Compact bar: height fills safe-area for background, but internal
-       padding is minimal so the bar doesn't feel oversized. Icons sit
-       near the bottom, just clearing the home indicator. */
-    height: calc(60px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) * 0.2);
+    /* The icon row keeps its fixed height; the device's bottom inset (iOS
+       home indicator / Android system bar) is PURE PADDING — icons and
+       labels never sit inside the system zone (ADR-026 §2, #845). The old
+       `0.2 * inset` centered the items in `60 + 0.8 * inset` and dropped
+       the labels under the system bar. */
+    height: calc(var(--bottom-nav-height) + var(--bottom-nav-inset));
+    padding-bottom: var(--bottom-nav-inset);
     background: var(--bg-cream);
     border-top: 1px solid var(--border-dark);
     display: flex;
@@ -1817,6 +1832,22 @@ input[type="submit"],
     margin-left: 220px;
     min-height: 100vh;
     min-height: 100dvh;
+}
+
+/* The shell reserves the bottom tab bar's full height plus a breathing
+   gap, so at max scroll the last content line stays above the bar (#845).
+   The class is attached to the shell <main> by the SAME predicate that
+   shows the bar (bottom_nav_visible_for) — the old fixed `pb-20` was
+   smaller than the bar's real height (60px + inset) and let content end
+   UNDER the bar. Reset on ≥1024px, where the bar is lg-hidden. */
+.app-main-with-nav {
+    padding-bottom: var(--bottom-nav-clearance);
+}
+
+@media (min-width: 1024px) {
+    .app-main-with-nav {
+        padding-bottom: 0;
+    }
 }
 
 @media (max-width: 1023px) {
@@ -2469,10 +2500,11 @@ rt {
 }
 
 /* Raise toasts above the bottom tab bar on viewports where it is visible
-   (<lg). On lg+ the bar is hidden (lg:hidden) so the base offset applies. */
+   (<lg). On lg+ the bar is hidden (lg:hidden) so the base offset applies.
+   The offset derives from the same variables as the bar itself (#845). */
 @media (max-width: 1023px) {
     .toast-container {
-        bottom: calc(72px + 16px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(var(--bottom-nav-height) + var(--bottom-nav-inset) + 16px);
     }
 }
 
@@ -4774,8 +4806,8 @@ rt {
 
 .grammar-detail-container {
     padding: 24px 32px;
-    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    /* Bottom tab bar clearance is owned by the shell <main>
+       (.app-main-with-nav) — no per-page reserve. */
 }
 
 .grammar-detail-top-bar {
@@ -5160,8 +5192,8 @@ rt {
 
 .kanji-detail-container {
     padding: 24px 32px;
-    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    /* Bottom tab bar clearance is owned by the shell <main>
+       (.app-main-with-nav) — no per-page reserve. */
 }
 
 /* Breadcrumbs */
@@ -5847,7 +5879,9 @@ rt {
 /* === Counter Detail (mirror of kanji/grammar detail, issue #415) === */
 .counter-detail-container {
     padding: 24px 32px;
-    /* main уже даёт 80px под таббар; здесь без двойного запаса */
+    /* Bottom tab bar clearance: the shell <main> owns it
+       (.app-main-with-nav = var(--bottom-nav-clearance)); no double
+       reserve here. */
 }
 
 .counter-detail-top-bar {
@@ -6901,8 +6935,8 @@ rt {
     max-width: 760px;
     margin: 0 auto;
     padding: 24px 32px;
-    /* Leave room for the bottom tab bar on mobile (60px + safe-area) */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    /* Bottom tab bar clearance is owned by the shell <main>
+       (.app-main-with-nav) — no per-page reserve. */
 }
 
 .word-detail {
@@ -7049,7 +7083,6 @@ rt {
 @media (max-width: 640px) {
     .word-detail-container {
         padding: 16px;
-        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
     .word-detail-hero-word {

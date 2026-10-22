@@ -94,6 +94,40 @@ When('пользователь устанавливает мобильный р�
     await page.setViewportSize({ width: 375, height: 812 });
 });
 
+Then('страница прокручивается на мобильном устройстве', async ({ page }) => {
+    const overflow = await page.evaluate(
+        () => document.documentElement.scrollHeight > document.documentElement.clientHeight,
+    );
+    expect(
+        overflow,
+        'the page must overflow the viewport — otherwise the scroll-reserve assertion would pass vacuously',
+    ).toBe(true);
+});
+
+Then('контент заканчивается выше нижней панели навигации', async ({ page }) => {
+    const bar = page.getByTestId('bottom-tab');
+    await expect(bar).toBeVisible({ timeout: 10_000 });
+    // Max scroll: the reserve matters exactly there. scrollTo is
+    // synchronous and the project sets no smooth scroll-behavior, so the
+    // rects below are measured after the jump without extra waiting.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const gap = await page.evaluate(() => {
+        const bar = document.querySelector('[data-testid="bottom-tab"]');
+        const shell = document.querySelector('[data-testid="app-main"]');
+        if (!bar || !shell) return null;
+        const barTop = bar.getBoundingClientRect().top;
+        const shellStyle = getComputedStyle(shell);
+        const contentBottom =
+            shell.getBoundingClientRect().bottom - parseFloat(shellStyle.paddingBottom || '0');
+        return barTop - contentBottom;
+    });
+    expect(gap).not.toBeNull();
+    // #845: the shell must reserve the bar's full height plus a gap. The
+    // fixed 80px used to be SMALLER than the bar (60px + device inset) and
+    // the last content line ended up under the fixed bar.
+    expect(gap as number).toBeGreaterThanOrEqual(16);
+});
+
 Then('метрики FSRS скрыты на мобильном устройстве', async ({ page }) => {
     await expect(page.getByTestId(/fsrs.*metric/)).not.toBeVisible({ timeout: 5_000 });
 });

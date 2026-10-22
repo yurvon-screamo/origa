@@ -15,9 +15,11 @@ use origa::use_cases::AnalyzedWord;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
+use crate::loaders::example_loader::WordExample;
 use crate::pages::words::WordsHeader;
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
 use crate::pages::words::vocabulary_card_item::VocabularyCardItem;
+use crate::pages::words::word_detail::ExampleCard;
 use crate::test_support::{
     create_wrapper, mount_with_i18n, mount_with_router, mount_with_router_and_stores, shared_cell,
 };
@@ -463,5 +465,51 @@ async fn word_card_link_navigates_the_router_on_click() {
     assert_eq!(
         decoded, "/words/ねこ",
         "clicking the word link must navigate the router"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Word detail example card — the token translator wiring (#845)
+// ═══════════════════════════════════════════════════════════════════════
+
+/// The regression the word page shipped with: `TranslatorText` without a
+/// language falls back to the PLAIN-TEXT render (gray, non-interactive) —
+/// the owner's «нет токенайзера-переводчика» report. With the language
+/// wired, the component must be in the tokenizer phase: no precompute
+/// entry and no dictionary exist in the test environment, so that phase
+/// renders the explicit dictionary loader (`Show` is exclusive — its
+/// presence proves the plain fallback is gone).
+#[wasm_bindgen_test]
+async fn example_card_enters_token_translator_phase() {
+    let fixture = WordExample {
+        detail: origa::dictionary::example::ExampleDetail {
+            sentence_id: 1,
+            text: "これはペンです。".to_string(),
+            translation_en: Some("This is a pen.".to_string()),
+            translation_ru: Some("Это ручка.".to_string()),
+            translation_vi: None,
+            translation_ko: None,
+            ruby: vec![],
+        },
+        start: -1,
+        end: -1,
+    };
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <ExampleCard
+                example=fixture
+                word="ペン".to_string()
+                native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let loader = wrapper.query_selector("[data-testid=\"translator-dict-loading\"]");
+    assert!(
+        loader.unwrap().is_some(),
+        "example sentence must enter the token translator phase, not the no-language plain fallback (#845)"
     );
 }

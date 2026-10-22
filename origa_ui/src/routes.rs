@@ -19,7 +19,9 @@ use crate::pages::{
 use crate::store::auth_store::AuthStore;
 use crate::store::connectivity::ConnectivityStore;
 use crate::store::offline_bundle_store::OfflineBundleStore;
-use crate::ui_components::{BottomTabBar, LoadingOverlay, Sidebar};
+use crate::ui_components::{
+    BottomTabBar, LoadingOverlay, Sidebar, bottom_nav_visible_for, is_nav_hidden_path,
+};
 use crate::utils::now_ms;
 use futures::Future;
 use leptos::prelude::*;
@@ -724,21 +726,33 @@ pub fn AppRoutes() -> impl IntoView {
         }
     });
 
+    // One Memo per mount — `is_authenticated()` constructs a fresh Memo on
+    // every call, which inside a Signal::derive would mean a new Memo per
+    // recompute.
+    let is_authenticated = auth_store.is_authenticated();
+
     let sidebar_visible = Signal::derive(move || {
-        let authenticated = auth_store.is_authenticated().get();
         let path = location.pathname.get();
-        let hidden_path = path == "/lesson" || path == "/onboarding";
         let has_user = current_user.with(|u| u.is_some());
-        authenticated && !hidden_path && has_user
+        is_authenticated.get() && !is_nav_hidden_path(&path) && has_user
     });
 
-    // Non-sidebar <main> is a flex column so pages can fill the shell via flex-1
-    // (e.g., lesson card centering). See ADR-027; height + safe-area stay on the shell.
+    // The bottom-tab clearance follows the BAR's visibility (auth + path),
+    // not the sidebar's (which also requires the loaded user): the bar is
+    // shown right after login, so the reserve must appear with it — a
+    // fixed 80px under a 60px+inset bar left page content underneath (#845).
     let main_class = move || {
-        if sidebar_visible.get() {
-            "paper-texture main-with-sidebar pt-safe-t-half pb-20 lg:pb-0".to_string()
+        let nav_pad = if bottom_nav_visible_for(is_authenticated.get(), &location.pathname.get()) {
+            " app-main-with-nav"
         } else {
-            "paper-texture pt-safe-t-half min-h-[100dvh] flex flex-col".to_string()
+            ""
+        };
+        // Non-sidebar <main> is a flex column so pages can fill the shell via flex-1
+        // (e.g., lesson card centering). See ADR-027; height + safe-area stay on the shell.
+        if sidebar_visible.get() {
+            format!("paper-texture main-with-sidebar pt-safe-t-half{nav_pad}")
+        } else {
+            format!("paper-texture pt-safe-t-half min-h-[100dvh] flex flex-col{nav_pad}")
         }
     };
 
@@ -746,7 +760,7 @@ pub fn AppRoutes() -> impl IntoView {
         <Show when=move || sidebar_visible.get()>
             <Sidebar current_user test_id="sidebar" />
         </Show>
-        <main class=main_class>
+        <main class=main_class data-testid="app-main">
             <Routes fallback=|| view! { <Login/> }>
                 <Route path=path!("/") view=|| view! { <ProtectedRoute><Home/></ProtectedRoute> } />
                 <Route path=path!("login") view=Login />

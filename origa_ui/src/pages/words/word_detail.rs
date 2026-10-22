@@ -310,7 +310,7 @@ pub fn WordDetail() -> impl IntoView {
                                             <ExampleCard
                                                 example=we
                                                 word=word()
-                                                native_lang=native_lang.get()
+                                                native_language=native_lang
                                             />
                                         }
                                     }
@@ -357,20 +357,34 @@ pub fn WordDetail() -> impl IntoView {
 }
 
 #[component]
-fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) -> impl IntoView {
-    let WordExample { detail, start, end } = example;
-    let _ = (&start, &end, &word); // offsets unused by the token translator
-
-    let translation = detail
-        .translation(&native_lang)
-        .unwrap_or_default()
-        .to_string();
-
+pub(super) fn ExampleCard(
+    example: WordExample,
+    word: String,
+    #[prop(into)] native_language: Signal<NativeLanguage>,
+) -> impl IntoView {
     // The word page is reference material — the sentence renders through
     // the TOKEN TRANSLATOR (the phrase-card etalon, owner request): every
     // token is interactive with its own translation. The word highlight
     // and the furigana segments are gone: the hero word sits right above.
+    // #845: the language travels with the card as a SIGNAL — without it
+    // TranslatorText falls back to the plain-text render (no tokens, no
+    // furigana), the exact bug this page shipped with.
+    let WordExample { detail, start, end } = example;
+    let _ = (&start, &end, &word); // offsets unused by the token translator
+
+    let sentence_id = detail.sentence_id;
     let sentence = detail.text.clone();
+
+    // The translation line reads the language reactively: a locale switch
+    // re-renders it without remounting the card. (The token translations
+    // inside TranslatorText keep the locale they resolved on mount — a
+    // known TranslatorText limitation, see the precompute follow-up.)
+    let translation = Signal::derive(move || {
+        detail
+            .translation(&native_language.get())
+            .unwrap_or_default()
+            .to_string()
+    });
 
     view! {
         <div class="word-detail-example-card" data-testid="word-detail-example">
@@ -380,16 +394,17 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
             <div class="word-detail-example-ja-line">
                 <div class="word-detail-example-ja">
                     <TranslatorText
-                        text=sentence
+                        text=sentence.clone()
                         class=Signal::derive(|| "text-2xl leading-relaxed".to_string())
+                        native_language=native_language
                         test_id=Signal::derive(|| "word-detail-example-sentence".to_string())
                     />
                 </div>
                 <AudioButtons
-                    text=detail.text
+                    text=sentence
                     // #528: generated IndexTTS clip for this sentence
                     // (immutable CDN opus); TTS stays the fallback.
-                    audio_path=Some(example_audio_path(detail.sentence_id))
+                    audio_path=Some(example_audio_path(sentence_id))
                     test_id=Signal::derive(|| "word-detail-example-audio".to_string())
                 />
             </div>
@@ -397,7 +412,7 @@ fn ExampleCard(example: WordExample, word: String, native_lang: NativeLanguage) 
                 class="word-detail-example-translation"
                 data-testid="word-detail-example-translation"
             >
-                {translation}
+                {move || translation.get()}
             </div>
         </div>
     }
