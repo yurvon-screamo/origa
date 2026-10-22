@@ -66,7 +66,7 @@ nginx (IaC: `~/rf-proxy-infra` на ноуте и на ВМ, правки чер
   umami (nginx не умеет переменные в `ssl_certificate`, поэтому сниппет
   дублируется);
 - `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
-  + server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
+  - server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
   (`umami-production-5769.up.railway.app`), НЕ кастомный**: серт Railway
   выдаёт на сервисное имя, verify ON проверяет его; приложение получает
   кастомный хост через `Host`. (У app.origa иначе — там кастом-домен
@@ -118,4 +118,3 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
 - Код: revert релизного коммита — трекер возвращается на Cloud (website id
   Cloud `0b8b69aa-9c94-41ef-b27a-f928011b797b` хранится в git-истории до
   деактивации аккаунта).
-
