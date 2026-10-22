@@ -554,8 +554,9 @@ def sync_directory(
 
     Mirrors ``aws s3 sync``: walk local files recursively, skip README.md, and
     upload only objects that are absent remotely, differ in byte size, or whose
-    local mtime is newer than the remote LastModified. Shows a progress bar
-    (count/total + percentage) for each directory.
+    local mtime is newer than the remote LastModified. Prints an upload
+    progress line (done/total, skipped, rate, elapsed) every 500 files
+    for each directory.
 
     ``force`` skips the diff entirely and re-uploads every file — the
     recovery path when a size-only directory (see ``deploy_cdn``) receives a
