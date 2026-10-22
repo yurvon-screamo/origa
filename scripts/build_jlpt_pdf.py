@@ -324,7 +324,9 @@ def resolve_source_epoch() -> tuple[int, bool]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--dry-run", action="store_true", help="report planned files only")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="report planned files only"
+    )
     args = parser.parse_args()
 
     # Binary determinism: anchor the PDF metadata (and the visible footer
@@ -334,9 +336,7 @@ def main() -> int:
     # moves the date and rewrites the manifest alongside the PDFs.
     source_epoch, manifest_changed = resolve_source_epoch()
     os.environ.setdefault("SOURCE_DATE_EPOCH", str(source_epoch))
-    date = dt.datetime.fromtimestamp(source_epoch, dt.timezone.utc).strftime(
-        "%Y-%m-%d"
-    )
+    date = dt.datetime.fromtimestamp(source_epoch, dt.timezone.utc).strftime("%Y-%m-%d")
     by_level = load_levels()
     total = 0
     for level in LEVELS:
@@ -344,7 +344,9 @@ def main() -> int:
             html = build_html(level, locale, by_level[level], date)
             out = OUT_ROOT / level.lower() / f"{locale}.pdf"
             if args.dry_run:
-                print(f"would render {out.relative_to(REPO_ROOT)} ({len(by_level[level])} kanji)")
+                print(
+                    f"would render {out.relative_to(REPO_ROOT)} ({len(by_level[level])} kanji)"
+                )
                 continue
             out.parent.mkdir(parents=True, exist_ok=True)
             HTML(string=html, base_url=str(REPO_ROOT)).write_pdf(str(out))
@@ -352,7 +354,9 @@ def main() -> int:
             total += size
             print(f"rendered {out.relative_to(REPO_ROOT)}: {size / 1024:.0f} KiB")
     if not args.dry_run:
-        print(f"total: {total / 1024 / 1024:.1f} MiB across {len(LEVELS) * len(LOCALES)} files")
+        print(
+            f"total: {total / 1024 / 1024:.1f} MiB across {len(LEVELS) * len(LOCALES)} files"
+        )
         if total > 30 * 1024 * 1024:
             print(
                 "STOP: combined PDF size exceeds the ~30 MiB escalation threshold "

@@ -50,7 +50,13 @@ def log_request(kind: str, rid: str, ok: bool, info: str = "") -> None:
         with open(STAGING / "request_log.jsonl", "a", encoding="utf-8") as f:
             f.write(
                 json.dumps(
-                    {"ts": time.time(), "kind": kind, "rule_id": rid, "ok": ok, "info": info},
+                    {
+                        "ts": time.time(),
+                        "kind": kind,
+                        "rule_id": rid,
+                        "ok": ok,
+                        "info": info,
+                    },
                     ensure_ascii=False,
                 )
                 + "\n"
@@ -92,7 +98,9 @@ def worker(rid: str, pool: list[int], stats: dict) -> None:
             stats["skipped"] += 1
         return
     try:
-        ctx = json.loads((STAGING / "contexts" / f"{rid}.json").read_text(encoding="utf-8"))
+        ctx = json.loads(
+            (STAGING / "contexts" / f"{rid}.json").read_text(encoding="utf-8")
+        )
     except FileNotFoundError:
         say(f"[NOCTX] {rid}")
         with _state_lock:
@@ -108,7 +116,12 @@ def worker(rid: str, pool: list[int], stats: dict) -> None:
             gen_path.write_text(
                 json.dumps(parsed, ensure_ascii=False, indent=1), encoding="utf-8"
             )
-            log_request("generate", rid, True, json.dumps(result["usage"].get("total_tokens", "")))
+            log_request(
+                "generate",
+                rid,
+                True,
+                json.dumps(result["usage"].get("total_tokens", "")),
+            )
             with _state_lock:
                 consecutive_429 = 0
                 stats["done"] += 1
@@ -117,8 +130,12 @@ def worker(rid: str, pool: list[int], stats: dict) -> None:
             mark = "PASS" if checks["ok"] else "FAIL"
             say(
                 f"[{mark}] {n}/{stats['total']} {rid} "
-                f"({time.time()-t0:.0f}s)"
-                + ("" if checks["ok"] else f" issues={checks['schema'] + checks['copy'] + checks['examples_audit']['errors']}")
+                f"({time.time() - t0:.0f}s)"
+                + (
+                    ""
+                    if checks["ok"]
+                    else f" issues={checks['schema'] + checks['copy'] + checks['examples_audit']['errors']}"
+                )
             )
             if not checks["ok"]:
                 with _state_lock:
@@ -154,7 +171,9 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
 
-    corpus = json.loads((STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8"))
+    corpus = json.loads(
+        (STAGING / "grammar_v2.pruned.json").read_text(encoding="utf-8")
+    )
     rids = [r["rule_id"] for r in corpus["grammar"]]
     if args.limit:
         rids = rids[: args.limit]
@@ -169,7 +188,9 @@ def main() -> int:
     i = 0
     while i < len(rids) or active > 0:
         while i < len(rids) and active < pool[0]:
-            t = threading.Thread(target=worker, args=(rids[i], pool, stats), daemon=True)
+            t = threading.Thread(
+                target=worker, args=(rids[i], pool, stats), daemon=True
+            )
             t.start()
             threads.append(t)
             i += 1
@@ -180,7 +201,7 @@ def main() -> int:
 
     dt = time.time() - t0
     say(
-        f"DONE in {dt/60:.1f}min: done={stats['done']} skipped={stats['skipped']} "
+        f"DONE in {dt / 60:.1f}min: done={stats['done']} skipped={stats['skipped']} "
         f"failed={stats['failed']} check_fail={stats['check_fail']}"
     )
     return 0 if stats["failed"] == 0 else 1

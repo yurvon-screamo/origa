@@ -217,8 +217,10 @@ def build_mp3_opus_cache(
                 cache[(source, mp3_file)] = opus_hash
                 matched += 1
 
-    print(f"  Cache: {len(cache)} unique (source, mp3_file) -> opus mappings, "
-          f"{matched} word matches")
+    print(
+        f"  Cache: {len(cache)} unique (source, mp3_file) -> opus mappings, "
+        f"{matched} word matches"
+    )
     return cache
 
 
@@ -256,10 +258,18 @@ def convert_mp3_to_opus(mp3_path: Path) -> tuple[str | None, str]:
     tmp_opus = Path(tmp_opus_file.name)
     try:
         cmd = [
-            "ffmpeg", "-loglevel", "error",
-            "-i", str(mp3_path),
-            "-c:a", "libopus", "-b:a", "32k",
-            "-vn", "-y", str(tmp_opus),
+            "ffmpeg",
+            "-loglevel",
+            "error",
+            "-i",
+            str(mp3_path),
+            "-c:a",
+            "libopus",
+            "-b:a",
+            "32k",
+            "-vn",
+            "-y",
+            str(tmp_opus),
         ]
         proc = subprocess.run(cmd, capture_output=True)
         if proc.returncode != 0:
@@ -339,19 +349,21 @@ def process_all_audio(
 
         # Periodic cache save for resume capability
         if (idx + 1) % CACHE_SAVE_INTERVAL == 0:
-            print(f"  Progress: {idx + 1}/{len(to_convert)} "
-                  f"(converted: {converted}, failed: {failed})")
-            persistent_out = {
-                f"{s}|{f}": h for (s, f), h in file_map.items()
-            }
+            print(
+                f"  Progress: {idx + 1}/{len(to_convert)} "
+                f"(converted: {converted}, failed: {failed})"
+            )
+            persistent_out = {f"{s}|{f}": h for (s, f), h in file_map.items()}
             save_hash_cache(persistent_out)
 
     # Final save
     persistent_out = {f"{s}|{f}": h for (s, f), h in file_map.items()}
     save_hash_cache(persistent_out)
 
-    print(f"  Audio done: {len(file_map)} total mappings, "
-          f"{converted} new conversions, {failed} failures")
+    print(
+        f"  Audio done: {len(file_map)} total mappings, "
+        f"{converted} new conversions, {failed} failures"
+    )
     return file_map
 
 
@@ -456,10 +468,16 @@ def verify_index(
                 if pair in er_lookup:
                     src, fp, pitch = er_lookup[pair]
                     if comp_entry:
-                        status = "OK" if comp_entry["p"] == (pitch if pitch is not None else 0) else "MISMATCH"
-                        print(f"    composite '{composite}': "
-                              f"f={comp_entry['f']}, p={comp_entry['p']} "
-                              f"(expected p={pitch}) [{status}]")
+                        status = (
+                            "OK"
+                            if comp_entry["p"] == (pitch if pitch is not None else 0)
+                            else "MISMATCH"
+                        )
+                        print(
+                            f"    composite '{composite}': "
+                            f"f={comp_entry['f']}, p={comp_entry['p']} "
+                            f"(expected p={pitch}) [{status}]"
+                        )
                         if status == "MISMATCH":
                             all_ok = False
                     else:
@@ -467,7 +485,9 @@ def verify_index(
                         all_ok = False
 
                 if kana_entry:
-                    print(f"    kana '{reading}': f={kana_entry['f']}, p={kana_entry['p']}")
+                    print(
+                        f"    kana '{reading}': f={kana_entry['f']}, p={kana_entry['p']}"
+                    )
                 else:
                     print(f"    kana '{reading}': MISSING (may be expected)")
 

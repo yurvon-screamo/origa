@@ -114,14 +114,29 @@ def main() -> None:
             elif n_rare > 0:
                 kanji_partial += 1
         print(
-            f"  T={t:>3}: rare={rare:>5} ({100*rare/total:5.1f}%), "
+            f"  T={t:>3}: rare={rare:>5} ({100 * rare / total:5.1f}%), "
             f"kept={kept:>5}; kanji all-rare={kanji_all_rare}, "
             f"kanji partial={kanji_partial}"
         )
 
     print()
     print("=== Spotlight: readings breakdown for known tricky kanji ===")
-    for spotlight in ["生", "上", "下", "分", "日", "人", "気", "中", "大", "子", "行", "出", "厳", "咽"]:
+    for spotlight in [
+        "生",
+        "上",
+        "下",
+        "分",
+        "日",
+        "人",
+        "気",
+        "中",
+        "大",
+        "子",
+        "行",
+        "出",
+        "厳",
+        "咽",
+    ]:
         readings = per_kanji.get(spotlight, [])
         if not readings:
             continue

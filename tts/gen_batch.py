@@ -21,6 +21,7 @@ Scattered non-cascade failures get one full retry pass at the end; if any
 remain, the worker exits 1 — an operator signal, NOT a deployable state
 (the corpus must be complete before the immutable CDN upload).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -106,7 +107,8 @@ def main() -> None:
     parser.add_argument("--corpus", default="full_corpus.json")
     parser.add_argument("--pool", default="ref_pool")
     parser.add_argument(
-        "--checkpoints", default="index-tts-src/checkpoints",
+        "--checkpoints",
+        default="index-tts-src/checkpoints",
         help="IndexTTS-2.5 checkpoints dir (config.yaml + weights)",
     )
     parser.add_argument("--out", default="out/batch")
@@ -120,7 +122,10 @@ def main() -> None:
     ref_pool = load_ref_pool(args.pool)
     out_dir = os.path.join(args.out, f"shard_{args.shard}")
     os.makedirs(out_dir, exist_ok=True)
-    print(f"[shard {args.shard}] {len(items)} items, pool={len(ref_pool)} refs", flush=True)
+    print(
+        f"[shard {args.shard}] {len(items)} items, pool={len(ref_pool)} refs",
+        flush=True,
+    )
 
     tts = IndexTTS2(
         cfg_path=os.path.join(args.checkpoints, "config.yaml"),
@@ -129,7 +134,7 @@ def main() -> None:
         device="xpu",
     )
     print(
-        f"[shard {args.shard}] model loaded, VRAM={torch.xpu.memory_allocated()/1e9:.1f}G",
+        f"[shard {args.shard}] model loaded, VRAM={torch.xpu.memory_allocated() / 1e9:.1f}G",
         flush=True,
     )
 
@@ -191,7 +196,7 @@ def main() -> None:
             rate = done / elapsed if elapsed > 0 else 0.0
             print(
                 f"[shard {args.shard}] done={done} fail={fail} "
-                f"rate={rate*60:.0f}/min elapsed={elapsed/60:.0f}min",
+                f"rate={rate * 60:.0f}/min elapsed={elapsed / 60:.0f}min",
                 flush=True,
             )
 
@@ -211,7 +216,7 @@ def main() -> None:
     elapsed = time.perf_counter() - t_start
     print(
         f"[shard {args.shard}] FINISHED: done={done} fail={fail} "
-        f"in {elapsed/60:.1f}min",
+        f"in {elapsed / 60:.1f}min",
         flush=True,
     )
     if fail > 0:

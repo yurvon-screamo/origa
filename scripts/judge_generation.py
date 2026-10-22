@@ -93,8 +93,18 @@ def main() -> int:
         verdict = extract_json(body["choices"][0]["message"]["content"])
     except Exception as e:  # noqa: BLE001
         with open(STAGING / "request_log.jsonl", "a", encoding="utf-8") as f:
-            f.write(json.dumps({"ts": time.time(), "kind": "judge", "rule_id": rid,
-                                "ok": False, "info": str(e)[:200]}) + "\n")
+            f.write(
+                json.dumps(
+                    {
+                        "ts": time.time(),
+                        "kind": "judge",
+                        "rule_id": rid,
+                        "ok": False,
+                        "info": str(e)[:200],
+                    }
+                )
+                + "\n"
+            )
         print(f"JUDGE FAILED: {e}", file=sys.stderr)
         return 1
 
@@ -102,10 +112,21 @@ def main() -> int:
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(verdict, ensure_ascii=False, indent=1), encoding="utf-8")
     with open(STAGING / "request_log.jsonl", "a", encoding="utf-8") as f:
-        f.write(json.dumps({"ts": time.time(), "kind": "judge", "rule_id": rid,
-                            "ok": verdict.get("ok", False),
-                            "info": f"conf={verdict.get('confidence')}"}) + "\n")
-    print(f"verdict ({time.time()-t0:.0f}s): {json.dumps(verdict, ensure_ascii=False)}")
+        f.write(
+            json.dumps(
+                {
+                    "ts": time.time(),
+                    "kind": "judge",
+                    "rule_id": rid,
+                    "ok": verdict.get("ok", False),
+                    "info": f"conf={verdict.get('confidence')}",
+                }
+            )
+            + "\n"
+        )
+    print(
+        f"verdict ({time.time() - t0:.0f}s): {json.dumps(verdict, ensure_ascii=False)}"
+    )
     return 0 if verdict.get("ok") else 2
 
 

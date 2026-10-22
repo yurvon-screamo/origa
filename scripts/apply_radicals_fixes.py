@@ -33,7 +33,9 @@ RADICALS_PATH = _REPO_ROOT / "cdn" / "dictionary" / "radicals.json"
 CYRILLIC = re.compile(r"[\u0400-\u04FF]")
 
 
-def validate(radicals: dict[str, dict], corrections: dict[str, tuple[str, str, str, str]]) -> list[str]:
+def validate(
+    radicals: dict[str, dict], corrections: dict[str, tuple[str, str, str, str]]
+) -> list[str]:
     errors: list[str] = []
     missing = [char for char in corrections if char not in radicals]
     if missing:
@@ -85,7 +87,11 @@ def main() -> int:
 
     before = {
         char: json.dumps(
-            {k: v for k, v in record.items() if k not in {"name", "description", "name_en", "description_en"}},
+            {
+                k: v
+                for k, v in record.items()
+                if k not in {"name", "description", "name_en", "description_en"}
+            },
             sort_keys=True,
             ensure_ascii=False,
         )
@@ -106,7 +112,9 @@ def main() -> int:
             radicals[char]["name_en"] = en_name
             radicals[char]["description_en"] = en_desc
 
-        tmp_fd, tmp_path = tempfile.mkstemp(dir=str(RADICALS_PATH.parent), suffix=".json")
+        tmp_fd, tmp_path = tempfile.mkstemp(
+            dir=str(RADICALS_PATH.parent), suffix=".json"
+        )
         with open(tmp_fd, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent="\t")
             f.write("\n")
@@ -116,7 +124,11 @@ def main() -> int:
     after = json.loads(RADICALS_PATH.read_text(encoding="utf-8"))
     for char, record in after["radicals"].items():
         stripped = json.dumps(
-            {k: v for k, v in record.items() if k not in {"name", "description", "name_en", "description_en"}},
+            {
+                k: v
+                for k, v in record.items()
+                if k not in {"name", "description", "name_en", "description_en"}
+            },
             sort_keys=True,
             ensure_ascii=False,
         )
@@ -129,8 +141,10 @@ def main() -> int:
         for char, (ru_name, _, _, _) in corrections.items()
         if after["radicals"][char]["name"] == ru_name
     )
-    print(f"OK: {changed}/{len(corrections)} corrections applied; "
-          f"{len(after['radicals'])} radicals total")
+    print(
+        f"OK: {changed}/{len(corrections)} corrections applied; "
+        f"{len(after['radicals'])} radicals total"
+    )
     return 0
 
 

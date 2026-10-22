@@ -51,7 +51,9 @@ def clean_word(raw: str) -> str:
         return ""
     full_bracket_prefix = re.compile(r"^（[^）]+）")
     full_bracket_prefix_matches = full_bracket_prefix.match(text)
-    if full_bracket_prefix_matches and len(full_bracket_prefix_matches.group()) == len(text):
+    if full_bracket_prefix_matches and len(full_bracket_prefix_matches.group()) == len(
+        text
+    ):
         return ""
     if text.startswith("（"):
         return full_bracket_prefix.sub("", text).strip()

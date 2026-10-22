@@ -58,6 +58,7 @@ def word_offsets(ja: str, word: str) -> tuple[int, int]:
         return start, start + len(stem)
     return -1, -1
 
+
 GEN_SYS = (
     "You are a Japanese teacher writing textbook example sentences. "
     "Write ONE short, simple, self-contained Japanese sentence that uses "
@@ -86,9 +87,13 @@ def detect_language(text: str) -> str:
     if not t:
         return "empty"
     n = max(len(t), 1)
-    c = {"ko": len(RE_HANGUL.findall(t)), "ru": len(RE_CYR.findall(t)),
-         "ja": len(RE_KANA.findall(t)) + len(RE_CJK.findall(t)),
-         "vi": len(RE_VI_MARK.findall(t)), "en": len(RE_LATIN.findall(t))}
+    c = {
+        "ko": len(RE_HANGUL.findall(t)),
+        "ru": len(RE_CYR.findall(t)),
+        "ja": len(RE_KANA.findall(t)) + len(RE_CJK.findall(t)),
+        "vi": len(RE_VI_MARK.findall(t)),
+        "en": len(RE_LATIN.findall(t)),
+    }
     for k in ("ko", "ru", "ja", "vi"):
         if c[k] / n >= 0.25:
             return k
@@ -98,19 +103,28 @@ def detect_language(text: str) -> str:
 
 
 def call_chat(system: str, user: str, temperature: float = 0.0) -> str:
-    r = requests.post(TR_URL, json={
-        "model": "tr600k",
-        "messages": [{"role": "system", "content": system},
-                     {"role": "user", "content": user}],
-        "temperature": temperature, "max_tokens": 160,
-    }, timeout=180)
+    r = requests.post(
+        TR_URL,
+        json={
+            "model": "tr600k",
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "temperature": temperature,
+            "max_tokens": 160,
+        },
+        timeout=180,
+    )
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
 
 
 def translate_one(ja: str, lang: str) -> str:
-    sys_en = ("You are a skilled Japanese translator. Translate the "
-              "sentence accurately and naturally.")
+    sys_en = (
+        "You are a skilled Japanese translator. Translate the "
+        "sentence accurately and naturally."
+    )
     instr = {
         "ru": f"次の日本語の文をロシア語に翻訳してください:\n{ja}",
         "vi": f"次の日本語の文をベトナム語に翻訳してください:\n{ja}",
@@ -181,8 +195,16 @@ def main() -> int:
             )
             if not ok:
                 continue
-            row = {"i": 0, "x": ja, "en": "", "ru": "", "vi": "", "ko": "",
-                   "f": [], "w": word}
+            row = {
+                "i": 0,
+                "x": ja,
+                "en": "",
+                "ru": "",
+                "vi": "",
+                "ko": "",
+                "f": [],
+                "w": word,
+            }
             for lang in LOCALES:
                 try:
                     row[lang] = translate_one(ja, lang)
@@ -228,8 +250,7 @@ def main() -> int:
         json.dumps(index, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
     )
     filled = sum(1 for w in holes if words.get(w, {}).get("refs"))
-    print(f"generated sentences: {len(generated)} (words filled: {filled})",
-          flush=True)
+    print(f"generated sentences: {len(generated)} (words filled: {filled})", flush=True)
     print(f"total sentences now: {len(all_rows)}", flush=True)
     return 0
 

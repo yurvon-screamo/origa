@@ -45,6 +45,7 @@ cross-validation runs only at >= CV_MIN_PER_CLASS per class (5 stratified folds,
 seed CV_SEED; folds where the policy is infeasible are excluded and folds_used
 records how many survived).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -78,7 +79,11 @@ def heads_path_from_env(environ: dict | None = None) -> Path:
 def calibration_path_from_env(environ: dict | None = None) -> Path:
     """Path to judge_calibration.json (default: translator/calibration/)."""
     environ = os.environ if environ is None else environ
-    default = Path(__file__).resolve().parent.parent / "calibration" / "judge_calibration.json"
+    default = (
+        Path(__file__).resolve().parent.parent
+        / "calibration"
+        / "judge_calibration.json"
+    )
     return Path(environ.get("ORIGA_JUDGE_CALIBRATION", str(default)))
 
 
@@ -107,7 +112,9 @@ class PolicyInfeasible(Exception):
 
     def __init__(self, policy: str, best_value: float):
         self.best_value = best_value
-        super().__init__(f"policy {policy} infeasible: best achievable {best_value:.3f}")
+        super().__init__(
+            f"policy {policy} infeasible: best achievable {best_value:.3f}"
+        )
 
 
 class InsufficientData(Exception):
@@ -167,9 +174,14 @@ def parse_labeled_pair(obj: object, line_no: int) -> LabeledPair:
     if not LOCALE_RE.match(obj["locale"]):
         raise ValidationError(f"line {line_no}: locale must match ^[a-z]{2}$")
     return LabeledPair(
-        id=obj["id"], locale=obj["locale"], state=obj["state"],
-        translation=obj["translation"], label=obj["label"],
-        source=obj.get("source"), annotator=obj.get("annotator"), note=obj.get("note"),
+        id=obj["id"],
+        locale=obj["locale"],
+        state=obj["state"],
+        translation=obj["translation"],
+        label=obj["label"],
+        source=obj.get("source"),
+        annotator=obj.get("annotator"),
+        note=obj.get("note"),
     )
 
 
@@ -196,18 +208,24 @@ def validate_labeled_file(lines: list[str]) -> tuple[list[LabeledPair], list[str
             errors.append(str(exc))
             continue
         if pair.id in seen:
-            errors.append(f"line {line_no}: duplicate id {pair.id!r} (first at line {seen[pair.id]})")
+            errors.append(
+                f"line {line_no}: duplicate id {pair.id!r} (first at line {seen[pair.id]})"
+            )
             continue
         seen[pair.id] = line_no
         if pair.locale not in KNOWN_LOCALES:
-            warnings.append(f"line {line_no}: locale {pair.locale!r} outside {sorted(KNOWN_LOCALES)}")
+            warnings.append(
+                f"line {line_no}: locale {pair.locale!r} outside {sorted(KNOWN_LOCALES)}"
+            )
         pairs.append(pair)
     if errors:
         raise ValidationError(f"{len(errors)} invalid rows:\n" + "\n".join(errors))
     return pairs, warnings
 
 
-def confusion_at(threshold: float, scored: list[tuple[float, str]]) -> tuple[int, int, int, int]:
+def confusion_at(
+    threshold: float, scored: list[tuple[float, str]]
+) -> tuple[int, int, int, int]:
     """Return (tp, fp, tn, fn) for prediction ok = score >= threshold."""
     tp = fp = tn = fn = 0
     for score, label in scored:
@@ -251,9 +269,14 @@ def fit_threshold(scored: list[tuple[float, str]], policy: Policy) -> ThresholdF
     for t in [edge_low, *mids, edge_high]:
         tp, fp, tn, fn = confusion_at(t, scored)
         precision, recall, f1 = _prf(tp, fp, tn, fn)
-        met = policy.minimum is None or _policy_value(policy, precision, recall) >= policy.minimum
+        met = (
+            policy.minimum is None
+            or _policy_value(policy, precision, recall) >= policy.minimum
+        )
         if not met:
-            best_infeasible = max(best_infeasible, _policy_value(policy, precision, recall))
+            best_infeasible = max(
+                best_infeasible, _policy_value(policy, precision, recall)
+            )
             continue
         degenerate = t == edge_low or t == edge_high
         fit = ThresholdFit(t, precision, recall, f1, tp, fp, tn, fn, degenerate)
@@ -271,7 +294,9 @@ def good_scores_stats(scores: list[float]) -> dict[str, float]:
     def quantile(sorted_values: list[float], q: float) -> float:
         pos = (len(sorted_values) - 1) * q
         low, high = int(pos), min(int(pos) + 1, len(sorted_values) - 1)
-        return sorted_values[low] + (sorted_values[high] - sorted_values[low]) * (pos - low)
+        return sorted_values[low] + (sorted_values[high] - sorted_values[low]) * (
+            pos - low
+        )
 
     ordered = sorted(scores)
     return {
@@ -283,19 +308,27 @@ def good_scores_stats(scores: list[float]) -> dict[str, float]:
     }
 
 
-def cross_validate(scored: list[tuple[float, str]], policy: Policy,
-                   folds: int = CV_FOLDS, seed: int = CV_SEED) -> dict:
+def cross_validate(
+    scored: list[tuple[float, str]],
+    policy: Policy,
+    folds: int = CV_FOLDS,
+    seed: int = CV_SEED,
+) -> dict:
     """Stratified k-fold CV of the whole fit procedure (threshold included).
 
     Folds where the policy is infeasible are excluded; folds_used records how
     many survived. Returns the object form or {"status": "unavailable", "reason"}.
     """
     rng = random.Random(seed)
-    by_class = {label: [s for s, l in scored if l == label] for label in ("good", "bad")}
+    by_class = {
+        label: [s for s, l in scored if l == label] for label in ("good", "bad")
+    }
     if min(len(v) for v in by_class.values()) < CV_MIN_PER_CLASS:
         smallest = min(by_class, key=lambda k: len(by_class[k]))
-        return {"status": "unavailable",
-                "reason": f"per-class count {smallest}={len(by_class[smallest])} < {CV_MIN_PER_CLASS}"}
+        return {
+            "status": "unavailable",
+            "reason": f"per-class count {smallest}={len(by_class[smallest])} < {CV_MIN_PER_CLASS}",
+        }
     deal: dict[str, list[list[float]]] = {}
     for label, scores in by_class.items():
         rng.shuffle(scores)
@@ -303,9 +336,21 @@ def cross_validate(scored: list[tuple[float, str]], policy: Policy,
     fold_f1: list[float] = []
     infeasible = 0
     for fold in range(folds):
-        train = [(s, "good") for i, chunk in enumerate(deal["good"]) if i != fold for s in chunk]
-        train += [(s, "bad") for i, chunk in enumerate(deal["bad"]) if i != fold for s in chunk]
-        test = [(s, "good") for s in deal["good"][fold]] + [(s, "bad") for s in deal["bad"][fold]]
+        train = [
+            (s, "good")
+            for i, chunk in enumerate(deal["good"])
+            if i != fold
+            for s in chunk
+        ]
+        train += [
+            (s, "bad")
+            for i, chunk in enumerate(deal["bad"])
+            if i != fold
+            for s in chunk
+        ]
+        test = [(s, "good") for s in deal["good"][fold]] + [
+            (s, "bad") for s in deal["bad"][fold]
+        ]
         try:
             fit = fit_threshold(train, policy)
         except PolicyInfeasible:
@@ -314,7 +359,10 @@ def cross_validate(scored: list[tuple[float, str]], policy: Policy,
         tp, fp, tn, fn = confusion_at(fit.threshold, test)
         fold_f1.append(_prf(tp, fp, tn, fn)[2])
     if not fold_f1:
-        return {"status": "unavailable", "reason": f"policy infeasible in all {folds} folds"}
+        return {
+            "status": "unavailable",
+            "reason": f"policy infeasible in all {folds} folds",
+        }
     return {
         "folds": folds,
         "folds_used": len(fold_f1),
@@ -324,22 +372,26 @@ def cross_validate(scored: list[tuple[float, str]], policy: Policy,
     }
 
 
-def fit_locale(locale: str, pairs: list[LabeledPair], scores: list[float],
-               policy: Policy) -> dict:
+def fit_locale(
+    locale: str, pairs: list[LabeledPair], scores: list[float], policy: Policy
+) -> dict:
     """Fit one locale end-to-end: guard -> threshold -> CV -> stats -> entry dict.
 
     `scores` is parallel to `pairs` (raw judge scores).
     """
     if len(scores) != len(pairs):
-        raise ValueError(f"{locale}: scores ({len(scores)}) and pairs ({len(pairs)}) misaligned")
+        raise ValueError(
+            f"{locale}: scores ({len(scores)}) and pairs ({len(pairs)}) misaligned"
+        )
     if len(pairs) < MIN_PAIRS:
         raise InsufficientData(f"{locale}: {len(pairs)} pairs < {MIN_PAIRS}")
     scored = list(zip(scores, (p.label for p in pairs)))
     n_bad = sum(p.label == "bad" for p in pairs)
     n_good = len(pairs) - n_bad
     if min(n_good, n_bad) < MIN_PER_CLASS:
-        raise InsufficientData(f"{locale}: per-class counts good={n_good} bad={n_bad} "
-                               f"< {MIN_PER_CLASS}")
+        raise InsufficientData(
+            f"{locale}: per-class counts good={n_good} bad={n_bad} < {MIN_PER_CLASS}"
+        )
     fit = fit_threshold(scored, policy)
     good_scores = [s for s, p in zip(scores, pairs) if p.label == "good"]
     return {
@@ -361,7 +413,8 @@ def verify_head_hash(expected_sha256: str, heads_path: Path) -> None:
         raise HeadMismatchError(
             f"calibration was fitted against different judge heads: "
             f"fitted {expected_sha256[:12]}…, loaded {digest[:12]}… ({heads_path}). "
-            f"Re-fit with calibrate_judge.py against this exact .pt file.")
+            f"Re-fit with calibrate_judge.py against this exact .pt file."
+        )
 
 
 class Calibration:
@@ -376,11 +429,14 @@ class Calibration:
             raise CalibrationLoadError(
                 f"calibration file not found: {path}. "
                 f"Fit one with calibrate_judge.py (issue #713); "
-                f"until then use ranking (Best-of-N), not absolute verdicts.")
+                f"until then use ranking (Best-of-N), not absolute verdicts."
+            )
         try:
             doc = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            raise CalibrationLoadError(f"corrupted calibration file {path}: {exc}") from exc
+            raise CalibrationLoadError(
+                f"corrupted calibration file {path}: {exc}"
+            ) from exc
         if not isinstance(doc, dict) or doc.get("format") != FORMAT_VERSION:
             raise CalibrationLoadError(f"unsupported calibration format in {path}")
         if not isinstance(doc.get("heads_sha256"), str):
@@ -389,9 +445,12 @@ class Calibration:
         if not isinstance(locales, dict):
             raise CalibrationLoadError(f"calibration file {path} has no locales map")
         for locale, entry in locales.items():
-            if not isinstance(entry, dict) or not isinstance(entry.get("threshold"), (int, float)):
+            if not isinstance(entry, dict) or not isinstance(
+                entry.get("threshold"), (int, float)
+            ):
                 raise CalibrationLoadError(
-                    f"calibration file {path}: locale {locale!r} has no numeric threshold")
+                    f"calibration file {path}: locale {locale!r} has no numeric threshold"
+                )
         return cls(doc)
 
     def entry(self, locale: str) -> dict:
@@ -400,17 +459,23 @@ class Calibration:
             raise UnknownLocaleError(
                 f"no calibration for locale {locale!r} "
                 f"(fitted: {sorted(locales)}). Sample and label pairs with "
-                f"calibrate_judge.py export/import, then fit (issue #713).")
+                f"calibrate_judge.py export/import, then fit (issue #713)."
+            )
         return locales[locale]
 
     def decide(self, locale: str, score: float) -> bool:
         return score >= self.entry(locale)["threshold"]
 
 
-def build_calibration_doc(locales: dict, policy: Policy, heads_sha256: str,
-                          sampled: int, prevalence_bad: float,
-                          embedding_model: str | None = None,
-                          sampling_provenance: dict | None = None) -> dict:
+def build_calibration_doc(
+    locales: dict,
+    policy: Policy,
+    heads_sha256: str,
+    sampled: int,
+    prevalence_bad: float,
+    embedding_model: str | None = None,
+    sampling_provenance: dict | None = None,
+) -> dict:
     """Assemble the calibration file. `sampling_provenance` carries the
     export-time facts recorded at fit via --seed/--pool-rows (either may be
     absent — then the corresponding value stays null)."""
@@ -418,9 +483,16 @@ def build_calibration_doc(locales: dict, policy: Policy, heads_sha256: str,
     return {
         "format": FORMAT_VERSION,
         "fitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "policy": {"name": policy.name, **({"min": policy.minimum} if policy.minimum is not None else {})},
+        "policy": {
+            "name": policy.name,
+            **({"min": policy.minimum} if policy.minimum is not None else {}),
+        },
         "heads_sha256": heads_sha256,
         "embedding_model": embedding_model,
-        "sampling": {**provenance, "sampled": sampled, "prevalence_bad": prevalence_bad},
+        "sampling": {
+            **provenance,
+            "sampled": sampled,
+            "prevalence_bad": prevalence_bad,
+        },
         "locales": locales,
     }

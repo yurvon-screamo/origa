@@ -50,14 +50,32 @@ B_PHRASE_PATTERNS = [
 B_SD_MARKERS = re.compile(r"overview|総覧|まとめ", re.I)
 
 C_TERMS = [
-    "可能形", "意向形", "命令形", "条件形", "受身形", "使役形",
-    "尊敬語", "謙譲語", "辞書形", "ます形", "て形", "ない形",
-    "た形", "普通形", "可能動詞", "丁寧語", "美化語",
+    "可能形",
+    "意向形",
+    "命令形",
+    "条件形",
+    "受身形",
+    "使役形",
+    "尊敬語",
+    "謙譲語",
+    "辞書形",
+    "ます形",
+    "て形",
+    "ない形",
+    "た形",
+    "普通形",
+    "可能動詞",
+    "丁寧語",
+    "美化語",
 ]
 
 D_LEXICON = [
-    "なかなか", "これ・それ・あれ", "この～・その～・あの～",
-    "ここ・そこ・あそこ", "どこか・何か", "きっと・たぶん・もしかしたら",
+    "なかなか",
+    "これ・それ・あれ",
+    "この～・その～・あの～",
+    "ここ・そこ・あそこ",
+    "どこか・何か",
+    "きっと・たぶん・もしかしたら",
 ]
 
 MERGE_TWINS = [
@@ -98,9 +116,15 @@ def categorize(rule: dict) -> tuple[str, str] | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json"))
-    parser.add_argument("--refs", type=Path, default=Path("/tmp/opencode/ref_mapping.json"))
-    parser.add_argument("--out", type=Path, default=Path("/tmp/opencode/staging/pruning.json"))
+    parser.add_argument(
+        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json")
+    )
+    parser.add_argument(
+        "--refs", type=Path, default=Path("/tmp/opencode/ref_mapping.json")
+    )
+    parser.add_argument(
+        "--out", type=Path, default=Path("/tmp/opencode/staging/pruning.json")
+    )
     args = parser.parse_args()
 
     data = json.loads(args.corpus.read_text(encoding="utf-8"))

@@ -13,6 +13,7 @@ Criteria (tuned on the 156k-phrase anime corpus):
 Usage (from repo root, system python3 + ffmpeg):
     python3 tts/build_ref_pool.py --size 80 --out tts-demo/ref_pool
 """
+
 from __future__ import annotations
 
 import argparse
@@ -69,23 +70,48 @@ def main() -> None:
         dst = out / f"{idx:03d}.wav"
         src = PHRASES_DIR / "audio" / f"{pid}.opus"
         subprocess.run(
-            ["ffmpeg", "-y", "-loglevel", "error", "-i", str(src),
-             "-ar", "24000", "-ac", "1", str(dst)],
+            [
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-i",
+                str(src),
+                "-ar",
+                "24000",
+                "-ac",
+                "1",
+                str(dst),
+            ],
             check=True,
         )
-        dur = float(subprocess.run(
-            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-             "-of", "csv=p=0", str(dst)],
-            capture_output=True, text=True, check=True,
-        ).stdout.strip())
+        dur = float(
+            subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "csv=p=0",
+                    str(dst),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        )
         manifest.append({"idx": idx, "phrase_id": pid, "text": text, "dur": dur})
 
     (out / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8"
     )
     durs = [m["dur"] for m in manifest]
-    print(f"pool: {len(manifest)} refs, dur {min(durs):.1f}–{max(durs):.1f}s (med "
-          f"{sorted(durs)[len(durs) // 2]:.1f}s) → {out}")
+    print(
+        f"pool: {len(manifest)} refs, dur {min(durs):.1f}–{max(durs):.1f}s (med "
+        f"{sorted(durs)[len(durs) // 2]:.1f}s) → {out}"
+    )
 
 
 if __name__ == "__main__":

@@ -23,7 +23,14 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = REPO_ROOT / ".github" / "actions" / "download-cdn" / "scripts" / "verify_cdn_integrity.py"
+SCRIPT = (
+    REPO_ROOT
+    / ".github"
+    / "actions"
+    / "download-cdn"
+    / "scripts"
+    / "verify_cdn_integrity.py"
+)
 
 ALPHA = b"alpha content"
 BETA = b"beta content"
