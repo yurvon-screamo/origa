@@ -131,7 +131,7 @@ fn take_ios_pending() -> Option<ShareWire> {
 #[cfg(target_os = "ios")]
 fn ios_app_cache_share_dir() -> Option<std::path::PathBuf> {
     unsafe {
-        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")?;
+        let manager_class = objc2::runtime::AnyClass::get(c"NSFileManager")?;
         let manager: *mut objc2::runtime::AnyObject =
             objc2::msg_send![manager_class, defaultManager];
         let caches: *mut objc2::runtime::AnyObject = objc2::msg_send![
@@ -146,11 +146,9 @@ fn ios_app_cache_share_dir() -> Option<std::path::PathBuf> {
         if first.is_null() {
             return None;
         }
-        let path: *mut objc2::runtime::AnyObject = objc2::msg_send![first, path];
-        if path.is_null() {
-            return None;
-        }
-        let nsstring = objc2_foundation::NSString::retain(path as *mut _);
+        let nsstring: Option<objc2::rc::Retained<objc2_foundation::NSString>> =
+            objc2::msg_send![first, path];
+        let nsstring = nsstring?;
         Some(std::path::PathBuf::from(nsstring.to_string()).join(SHARE_INTAKE_DIR))
     }
 }
@@ -162,7 +160,7 @@ fn ios_app_group_container() -> Option<std::path::PathBuf> {
     // NSFileManager.containerURL(forSecurityApplicationGroupIdentifier:)
     // Called through the objc2 runtime bridge.
     unsafe {
-        let manager_class = objc2::runtime::AnyClass::get(b"NSFileManager")?;
+        let manager_class = objc2::runtime::AnyClass::get(c"NSFileManager")?;
         let default_sel = objc2::msg_send![manager_class, defaultManager];
         let manager: *mut objc2::runtime::AnyObject = default_sel;
         let group_id = objc2_foundation::NSString::from_str("group.net.uwuwu.origa.share");
@@ -173,11 +171,9 @@ fn ios_app_group_container() -> Option<std::path::PathBuf> {
         if url.is_null() {
             return None;
         }
-        let path: *mut objc2::runtime::AnyObject = objc2::msg_send![url, path];
-        if path.is_null() {
-            return None;
-        }
-        let nsstring = objc2_foundation::NSString::retain(path as *mut _);
+        let nsstring: Option<objc2::rc::Retained<objc2_foundation::NSString>> =
+            objc2::msg_send![url, path];
+        let nsstring = nsstring?;
         Some(std::path::PathBuf::from(nsstring.to_string()))
     }
 }
