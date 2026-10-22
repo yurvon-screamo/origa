@@ -427,38 +427,52 @@ Legal text pages. Minimal styling. No complex layout.
 ## 13. Visual Assets — Final Inventory
 
 Landing images live in `origa_landing/public/images/` and are deployed with the site.
-The repo-wide media map (app screenshots, store assets, brand art) lives in `.media/README.md`.
-Landing images are NOT duplicated in `.media/`.
+The repo-wide media map lives in `docs/media/README.md`; the store assets live in the
+CDN and are listed in `docs/media/store-assets.json` (ADR-068).
+Landing images are NOT duplicated anywhere else.
 
 ### Page images
 
 | File | Usage | Page |
 | --- | --- | --- |
-| `en.hero.png` | Homepage hero image | / (EN) |
-| `ru.hero.png` | Homepage hero image | /ru/ |
+| `en.hero.png` | Homepage hero image and og:image | / (EN) |
+| `ru.hero.png` | Homepage hero image and og:image | /ru/ |
 | `en.all_in_one.png` | Dashboard/overview showcase | /features (EN) |
 | `ru.all_in_one.png` | Dashboard/overview showcase | /features (RU) |
 | `en.learn.png` | Learning interface showcase | /features, Listening section (EN) |
 | `ru.learn.png` | Learning interface showcase | /features, Listening section (RU) |
 | `content.png` | Content sources showcase | /integrations (hero image, EN/RU) |
+| `logo.png` | Header logo | all pages |
 
-### Meta and feature images
+### Application screenshots
 
-| File | Usage | Page | Size |
-| --- | --- | --- | --- |
-| `en.og.png` | Social sharing preview (og:image) | All EN pages (meta) | 1729×910 |
-| `ru.og.png` | Social sharing preview (og:image) | All RU pages (meta) | 1729×910 |
-| `en.kanji.png` | Kanji feature screenshot | /features, Kanji section (EN) | 1448×1086 |
-| `ru.kanji.png` | Kanji feature screenshot | /features, Kanji section (RU) | 1448×1086 |
-| `en.grammar.png` | Grammar feature screenshot | /features, Grammar section (EN) | 1448×1086 |
-| `ru.grammar.png` | Grammar feature screenshot | /features, Grammar section (RU) | 1448×1086 |
+`images/app/*.webp` — the captures the pages build from format strings:
+
+| Pattern | Usage | Page |
+| --- | --- | --- |
+| `app/hero-art.webp`, `app/feat-art.webp` | artwork | /, /features |
+| `app/{en,ru}.writing.webp` | writing showcase | /features |
+| `app/{en,ru}.grammar.webp` | grammar showcase | /features |
+| `app/{en,ru}.phrase.webp` | listening showcase | /features |
+| `app/{en,ru}.car.{main,lesson,grammar,writing,phrases}.webp` | hero carousel | / |
+
+The allowlist of `images/app/` is pinned by `origa_landing/tests/assets.rs`;
+an image without a consumer fails the build.
+
+### Meta images
+
+| File | Usage | Page |
+| --- | --- | --- |
+| `og-image.png` | og:image (JSON-LD), default fallback | all pages |
+| `favicon.png`, `apple-touch-icon.png`, `favicon.ico` | site icons | all pages |
 
 ### Asset → Page Mapping
 
 ```text
-/                → en.hero.png / ru.hero.png (hero), en.og.png / ru.og.png (meta)
-/features        → en.all_in_one.png (overview), en.kanji.png (kanji section),
-                   en.grammar.png (grammar section), en.learn.png (listening section)
+/                → en.hero.png / ru.hero.png (hero), og-image.png (meta),
+                   app/{lang}.car.{main,lesson,grammar,writing,phrases}.webp
+/features        → app/feat-art.webp, app/{lang}.writing.webp,
+                   app/{lang}.grammar.webp, app/{lang}.phrase.webp
 /integrations    → content.png (content sources showcase)
 /compare         → no images (text table)
 /download        → no images (platform icons via CSS/SVG)
@@ -470,5 +484,5 @@ Landing images are NOT duplicated in `.media/`.
 
 - `favicon.png` → copy of `origa_ui/public/logo-32.png`
 - `apple-touch-icon.png`, `favicon.ico`, `browserconfig.xml` → site icons
-- `og-image.png` → alias for `en.og.png` (default fallback)
+- `og-image.png` → og:image for the JSON-LD blocks (`seo.rs`)
 - `robots.txt`, `sitemap.xml` → crawler files

@@ -165,6 +165,18 @@ freshness против исходников. Порядок при релизе:
 
 Манифест (`manifest.json`) содержит SHA256 хеши версионных файлов и позволяет клиенту обнаруживать обновления. Деплоится с `Cache-Control: no-cache`.
 
+### Магазинные ассеты (ADR-068)
+
+Скриншоты App Store, feature graphics Play и маркетинговые креативы живут в CDN под `media/**`, а не в репо. Реестр — `docs/media/store-assets.json` (ключ, хеш, происхождение, флаг `personalData`). Карта зон — `docs/media/README.md`. Бинарник в git не идёт: новый ассет кладётся в `store-assets/` (gitignored) и публикуется скриптом.
+
+```powershell
+python scripts/publish_media.py --dry-run            # план: ключи, размеры, флаги
+python scripts/publish_media.py                      # заливка + обновление реестра
+python scripts/publish_media.py --verify             # сверка реестра с CDN (без AWS-кредов)
+```
+
+Переснятый набор: `python scripts/publish_media.py --source store-assets/<dir> --prefix media/<канал> --kind <kind> --channel <канал>`. Ключ content-addressed — те же байты держат тот же URL. Профиль AWS — `[origa-t3]`.
+
 ### Microsoft Store (MSIX, ADR-042)
 
 Store-дистрибуция — **MSIX-пакет**: Store сам подписывает и хостит его, CA-сертификат не нужен (linked-EXE путь ADR-041 с CDN-зеркалом `releases/` удалён — Store отклонял неподписанный EXE по 10.2.9, а подписка недоступна). Сборка: `tauri/scripts/build-msix.ps1` (единственный источник: store-build `ORIGA_APP_STORE=1` + стейджинг + MakeAppx/signtool с эфемерной самоподписью). CI: job `build-windows-store` в отдельном reusable `_build-windows-store.yml` — stable-теги + `workflow_dispatch` input `force_store_msix` (smoke → версия `0.0.0.<run>`, НЕ сабмитить). Артефакт `.msix` + `.pfx` + пароль живёт 7 дней в Actions.
