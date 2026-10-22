@@ -16,8 +16,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 
 use super::LESSON_CARD_CLASS;
-use super::reveal_answer_button::RevealAnswerButton;
-use crate::i18n::{t, t_string, use_i18n};
+use crate::i18n::{t, use_i18n};
 use crate::loaders::example_loader::{WordExample, example_audio_path, load_example_detail};
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
@@ -73,9 +72,35 @@ pub fn ExampleRecallCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !is_muted && crate::ui_components::is_speech_supported() {
-            let _ = crate::ui_components::speak_tts_text(&we.detail.text, 1.0);
+        // #528: the generated clip is the primary announcement voice; the
+        // shared lesson channel owns the CDN prefetch + TTS degradation.
+        if !is_muted {
+            crate::ui_components::stop_current_audio();
+            let path = example_audio_path(sentence_id);
+            let text = we.detail.text.clone();
+            spawn_local(async move {
+                super::lesson_card::play_cdn_audio_with_tts_fallback(&path, &text).await;
+            });
         }
+    });
+
+    // Reveal stops the announcement clip (the phrase-card etalon: the
+    // question audio does not play over the shown answer).
+    {
+        let show_answer_stop = show_answer;
+        Effect::new(move |_| {
+            if show_answer_stop.get() {
+                crate::ui_components::stop_current_audio();
+            }
+        });
+    }
+
+    // Unmount teardown (the LessonCard/AudioRecall contract): a card left
+    // mid-clip must not keep playing over the next card — its own stop
+    // waits for a network round-trip (lazy chunk load), leaving a
+    // two-voices window otherwise.
+    on_cleanup(|| {
+        crate::ui_components::stop_current_audio();
     });
 
     let sentence_class = Signal::derive(|| "text-2xl leading-relaxed".to_string());
@@ -191,24 +216,22 @@ pub fn ExampleRecallCard(
                     }
                     .into_any()
                 }}
-
-                // The reveal belongs to the centered group (the
-                // LessonCardShell etalon: content + reveal center
-                // together, #822). A separate flex child of the Card
-                // pinned the button to the bottom edge and dragged the
-                // question off-center.
-                <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
-                    <div class="mt-4 flex justify-center">
-                        <RevealAnswerButton
-                            test_id="lesson-example-reveal"
-                            label=Signal::derive(move || {
-                                t_string!(i18n, lesson.example_reveal_translation).to_string()
-                            })
-                            on_click=on_show_answer
-                        />
-                    </div>
-                </Show>
             </div>
+
+            <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
+                {move || {
+                    view! {
+                        <Button
+                            variant=Signal::derive(|| ButtonVariant::Filled)
+                            on_click=Callback::new(move |_| on_show_answer.run(()))
+                            test_id=Signal::derive(|| "lesson-example-reveal".to_string())
+                        >
+                            {t!(i18n, lesson.example_reveal_translation)}
+                            <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
+                        </Button>
+                    }
+                }}
+            </Show>
         </Card>
 
         // Binary self-assessment BELOW the card — the RatingButtons
