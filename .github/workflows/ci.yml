@@ -293,6 +293,13 @@ jobs:
         timeout-minutes: 30
         env:
             ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # Mirror the release build context (tauri.conf.json bundle/iOS
+            # minimumSystemVersion = 26.0, xcodeproj IPHONEOS_DEPLOYMENT_TARGET
+            # = 26.0). tauri-utils link_swift_library falls back to iOS 13.0
+            # when the env is unset, which false-fails availability on
+            # iOS-15+ APIs in the device-ai plugin's Swift package.
+            IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+            MACOSX_DEPLOYMENT_TARGET: "14.0"
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
