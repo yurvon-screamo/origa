@@ -36,20 +36,47 @@ from pathlib import Path
 # rule_ids resolved from patterns at runtime by this script (see PATTERNS).
 DELETE_PATTERNS = {
     # B: textbook phrases / overview
-    "そうです", "そうですか", "そうですね", "～は場所です", "今～時～分です",
-    "～で行く", "何をしますか", "～語で何ですか",
+    "そうです",
+    "そうですか",
+    "そうですね",
+    "～は場所です",
+    "今～時～分です",
+    "～で行く",
+    "何をしますか",
+    "～語で何ですか",
     # B wave 2: phrase/topic lessons surfaced during the detection audit
-    "ありました", "何か心配なこと", "こ・そ", "～時間・約束・用事",
-    "数量の表現", "数量＋名詞", "数量＋で", "数量＋は", "数量＋も",
-    "過去・現在＋名詞・な形容詞", "過去・現在＋い形容詞",
+    "ありました",
+    "何か心配なこと",
+    "こ・そ",
+    "～時間・約束・用事",
+    "数量の表現",
+    "数量＋名詞",
+    "数量＋で",
+    "数量＋は",
+    "数量＋も",
+    "過去・現在＋名詞・な形容詞",
+    "過去・現在＋い形容詞",
     # C: form categories with re-anchored detection
-    "可能形", "受身形", "使役形", "辞書形", "条件形",
+    "可能形",
+    "受身形",
+    "使役形",
+    "辞書形",
+    "条件形",
     # C wave 2: 「の文／使い方」 variants and honorific overview topics
-    "可能形の文", "使役形の文", "命令形の使い方",
-    "敬語", "敬語の種類", "敬語と文体", "敬語の敬語の一致",
+    "可能形の文",
+    "使役形の文",
+    "命令形の使い方",
+    "敬語",
+    "敬語の種類",
+    "敬語と文体",
+    "敬語の敬語の一致",
     # D: lexicon (owner: dictionary translation suffices)
-    "これ・それ・あれ", "この～・その～・あの～", "ここ・そこ・あそこ",
-    "どこか・何か", "なかなか", "きっと・たぶん・もしかしたら",
+    "これ・それ・あれ",
+    "この～・その～・あの～",
+    "ここ・そこ・あそこ",
+    "どこか・何か",
+    "なかなか",
+    "きっと・たぶん・もしかしたら",
 }
 # ～で N4 "four functions overview": identified by sd marker, not pattern
 # (the N5 ～で stays).
@@ -72,7 +99,9 @@ def core(p: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json"))
+    parser.add_argument(
+        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json")
+    )
     parser.add_argument("--staging", type=Path, default=Path("/tmp/opencode/staging"))
     args = parser.parse_args()
 
@@ -132,7 +161,9 @@ def main() -> int:
             if isinstance(twin_rel, list) and isinstance(sur_rel, list):
                 seen = {x.get("rule_id") for x in sur_rel if isinstance(x, dict)}
                 survivor["content"][loc]["related_patterns"] = sur_rel + [
-                    x for x in twin_rel if isinstance(x, dict) and x.get("rule_id") not in seen
+                    x
+                    for x in twin_rel
+                    if isinstance(x, dict) and x.get("rule_id") not in seen
                 ]
         migration[twin["rule_id"]] = survivor["rule_id"]
         merged_away.add(twin["rule_id"])

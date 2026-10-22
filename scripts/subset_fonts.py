@@ -41,13 +41,15 @@ CYRILLIC_UNICODES = "U+0400-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F"
 # Latin-Extended (diacritics for Vietnamese/EA langs) added for IBM Plex Mono,
 # which is the UI body font and must render Vietnamese loanwords / IPA.
 LATIN_EXTENDED_UNICODES = "U+0100-017F,U+1E00-1EFF"
-LATIN_CYRILLIC_UNICODES = f"{LATIN_UNICODES},{LATIN_EXTENDED_UNICODES},{CYRILLIC_UNICODES}"
+LATIN_CYRILLIC_UNICODES = (
+    f"{LATIN_UNICODES},{LATIN_EXTENDED_UNICODES},{CYRILLIC_UNICODES}"
+)
 # Ranges included wholesale into the corpus (small, always needed).
 WHOLESALE_RANGES: tuple[range, ...] = (
-    range(0x3000, 0x3040),   # CJK symbols and punctuation
-    range(0x3040, 0x3100),   # Hiragana + katakana
+    range(0x3000, 0x3040),  # CJK symbols and punctuation
+    range(0x3040, 0x3100),  # Hiragana + katakana
     range(0xFF00, 0xFFEF + 1),  # Halfwidth/Fullwidth forms
-    range(0x0020, 0x007F),   # ASCII
+    range(0x0020, 0x007F),  # ASCII
     # Hangul Compatibility Jamo (ㅋㅋ, ㅡㅡ …). U+3130/U+313F/U+3140 are
     # unassigned in Unicode — no font carries them, so only assigned
     # subranges go in wholesale (the cmap invariant checks exact coverage).
@@ -61,7 +63,7 @@ HANGUL_RANGES: tuple[tuple[int, int], ...] = (
     (0x1100, 0x11FF + 1),  # Hangul Jamo
     (0x3131, 0x313E + 1),  # Hangul Compatibility Jamo (assigned)
     (0x3141, 0x318E + 1),  # Hangul Compatibility Jamo (assigned)
-    (0xAC00, 0xD7A4),      # Hangul Syllables
+    (0xAC00, 0xD7A4),  # Hangul Syllables
 )
 
 
@@ -73,13 +75,11 @@ def _is_hangul(codepoint: int) -> bool:
 # Locale sources scanned for hangul on top of the cdn/ content (the
 # merged cdn/ data itself — vocab chunks, phrase translations, grammar
 # overlay — now carries the bulk of the hangul corpus).
-EXTRA_CORPUS_GLOBS: tuple[str, ...] = (
-    "origa_ui/locales/ko.json",
-)
+EXTRA_CORPUS_GLOBS: tuple[str, ...] = ("origa_ui/locales/ko.json",)
 # Kanji ranges: only codepoints actually present in cdn/ content are kept,
 # otherwise the full ~20k ideograph block would defeat subsetting.
 KANJI_RANGES: tuple[tuple[int, int], ...] = (
-    (0x3400, 0x4DC0),   # CJK Unified Ideographs Extension A
+    (0x3400, 0x4DC0),  # CJK Unified Ideographs Extension A
     (0x4E00, 0x9FFF + 1),  # CJK Unified Ideographs
     (0xF900, 0xFAFF + 1),  # CJK Compatibility Ideographs
 )
@@ -296,7 +296,9 @@ def subset_one(src_path: Path, src: Source, corpus_path: Path) -> Path:
 
 def hash_rename(raw_path: Path) -> Path:
     digest = sha256_file(raw_path)[:8]
-    final = raw_path.with_name(f"{raw_path.name.removesuffix('.raw.woff2')}-{digest}.woff2")
+    final = raw_path.with_name(
+        f"{raw_path.name.removesuffix('.raw.woff2')}-{digest}.woff2"
+    )
     raw_path.replace(final)
     return final
 
@@ -333,7 +335,9 @@ def update_cdn_manifest(font_relative: Iterable[str]) -> None:
 
     block = [start_marker, *sorted(font_relative), end_marker]
     body = "\n".join(outside).rstrip()
-    content = body + "\n\n" + "\n".join(block) + "\n" if body else "\n".join(block) + "\n"
+    content = (
+        body + "\n\n" + "\n".join(block) + "\n" if body else "\n".join(block) + "\n"
+    )
     CDN_MANIFEST.write_text(content, encoding="utf-8")
 
 
@@ -354,7 +358,9 @@ def main() -> None:
             # later from a network with access.
             existing = sorted(FONTS_OUT.glob(f"{src.logical}-*.woff2"))
             if existing:
-                print(f"  SKIP {src.logical}: source unavailable, keeping {existing[0].name}")
+                print(
+                    f"  SKIP {src.logical}: source unavailable, keeping {existing[0].name}"
+                )
                 produced.append(f"fonts/{existing[0].name}")
             else:
                 print(f"  SKIP {src.logical}: source unavailable and no existing woff2")
@@ -381,7 +387,9 @@ MUST_HAVE = "食海語難挨拶あア。、「」ー"
 # Cyrillic glyphs the UI body font MUST render now that Cormorant + IBM Plex
 # Mono subsets include Cyrillic (ADR-030). A failed assertion means the subset
 # unicode range regressed and Cyrillic UI text would fall back to a system font.
-CYRILLIC_MUST_HAVE = "АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя"
+CYRILLIC_MUST_HAVE = (
+    "АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя"
+)
 
 
 def verify_glyph_coverage() -> None:

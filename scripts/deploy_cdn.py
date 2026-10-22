@@ -111,8 +111,10 @@ SYNC_DIRS = [
     # Word examples (#528): index + numbered data chunks, release-updated.
     "examples",
     # Word-example TTS audio (#528): generated opus per sentence id,
-    # immutable — must precede the parent examples/ entry so the exact
-    # prefix matches first (sync walks SYNC_DIRS independently).
+    # immutable. Cache-Control precedence does NOT depend on this list's
+    # order — it lives in _cdn_cache.cache_control_for's if-chain; the
+    # parent examples/ walk excludes this subtree via the child-SYNC_DIR
+    # rule in sync_directories so its header can never leak onto audio.
     "examples/audio",
     "kanji_animations",
     "kanji_frames",
@@ -259,7 +261,9 @@ def validate_grammar_if_changed(changed: list[str]) -> None:
     The `--force-all` recovery path bypasses this gate by design.
     """
     grammar_targets = [
-        p for p in ("grammar/grammar_v2.json", "grammar/grammar_v3.json") if p in changed
+        p
+        for p in ("grammar/grammar_v2.json", "grammar/grammar_v3.json")
+        if p in changed
     ]
     if not grammar_targets:
         return
@@ -301,6 +305,19 @@ def upload_versioned_files(
         _cdn_s3.upload_file(local_path, relative_path, cache_control, dry_run)
 
 
+def _child_sync_dir_prefixes(dir_name: str) -> list[str]:
+    """Exclusion prefixes (relative to ``dir_name``'s local dir) for every
+    SYNC_DIR nested under it. The parent walk must skip child subtrees —
+    they have their own Cache-Control tier, and uploading them from the
+    parent (regular sync or ``--force``/``--force-all``) would stamp the
+    parent's header on them: the examples/ → examples/audio/ race that
+    shipped immutable audio with max-age=30 on the first deploy.
+    """
+    return [
+        f"{d[len(dir_name) + 1 :]}/" for d in SYNC_DIRS if d.startswith(dir_name + "/")
+    ]
+
+
 def sync_directories(
     cdn_dir: Path, dry_run: bool, ignore_mtime: bool = False, force: bool = False
 ) -> None:
@@ -328,11 +345,7 @@ def sync_directories(
         # the parent walk must skip them or --force would re-upload them
         # under the parent's Cache-Control header.
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
-        child_entries = [d for d in SYNC_DIRS if d.startswith(dir_name + "/")]
-        # Exclude prefixes are relative to the parent's local_dir (the
-        # walk yields paths like audio/000123.opus under examples/),
-        # NOT the full SYNC_DIR key.
-        child_excludes = [f"{d[len(dir_name) + 1:]}/" for d in child_entries]
+        child_excludes = _child_sync_dir_prefixes(dir_name)
         effective = ignore_mtime or dir_name in SIZE_ONLY_SYNC_DIRS
         marker = " (size-only)" if effective else ""
         print(f"  {dir_name}/  [{cache_control}]{marker}")
@@ -496,9 +509,7 @@ def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
     """
     blob = cdn_dir / "phrases/phrase_index.v3.rkyv"
     if not blob.is_file():
-        return [
-            "phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"
-        ]
+        return ["phrases/phrase_index.v3.rkyv: missing (run utils build-cdn-rkyv)"]
     try:
         inflated = inflate_deflated(blob)
     except zlib.error as e:
@@ -623,9 +634,20 @@ def _force_all_deploy(dry_run: bool) -> None:
             continue
 
         cache_control = _cdn_cache.cache_control_for(dir_name + "/")
+        # Same child-subtree exclusion as sync_directories: --force-all
+        # must not re-upload a child SYNC_DIR (e.g. examples/audio/) under
+        # the parent's release-updated header — the invariant the first
+        # deploy raced against (audio went up with max-age=300 first).
+        child_excludes = _child_sync_dir_prefixes(dir_name)
         all_files = [
-            p for p in sorted(local_dir.rglob("*"))
-            if p.is_file() and p.name != "README.md"
+            p
+            for p in sorted(local_dir.rglob("*"))
+            if p.is_file()
+            and p.name != "README.md"
+            and not any(
+                p.relative_to(local_dir).as_posix().startswith(e)
+                for e in child_excludes
+            )
         ]
         total = len(all_files)
         if total == 0:
@@ -681,9 +703,7 @@ def assert_kanji_art_plausible(cdn_dir: Path) -> None:
                 )
                 sys.exit(1)
     if checked:
-        print(
-            f"  kanji art bodies plausible ({checked} files, <svg prolog invariant)"
-        )
+        print(f"  kanji art bodies plausible ({checked} files, <svg prolog invariant)")
 
 
 def generate_kanji_art_manifest(cdn_dir: Path) -> None:
@@ -699,9 +719,7 @@ def generate_kanji_art_manifest(cdn_dir: Path) -> None:
     manifest: dict[str, list[str]] = {}
     for key, folder in (("frames", "kanji_frames"), ("animations", "kanji_animations")):
         dir_path = cdn_dir / folder
-        kanji = sorted(
-            p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1
-        )
+        kanji = sorted(p.stem for p in dir_path.glob("*.svg") if len(p.stem) == 1)
         manifest[key] = kanji
         print(f"  kanji_art_manifest {key}: {len(kanji)} kanji")
     out_path = cdn_dir / "kanji_art_manifest.json"
@@ -808,7 +826,9 @@ def main() -> None:
         if script_path.is_file():
             result = subprocess.run(
                 [sys.executable, str(script_path)],
-                capture_output=True, text=True, cwd=str(script_path.parent),
+                capture_output=True,
+                text=True,
+                cwd=str(script_path.parent),
                 check=False,
             )
             if result.returncode != 0:

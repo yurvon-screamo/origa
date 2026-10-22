@@ -5,18 +5,28 @@
 //! (`RateCounterBindingUseCase`, CounterReview); после последней связки
 //! слот завершается штатным advance.
 //!
-//! testid-контракт: `counter-binding-answer` — заголовок-контейнер
-//! ответа («число×суффикс»); текст чтения —
-//! `counter-binding-answer-reading` (не читать чтение с заголовка).
+//! testid-контракт: `counter-binding-answer` — контейнер ответа
+//! («число×суффикс» с ruby-подписью чтения); текст чтения —
+//! `counter-binding-answer-reading` (не читать чтение с заголовка);
+//! кнопка повтора озвучки — `counter-binding-audio-btn`.
 
 use super::binary_rating_buttons::RatingButtons;
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
 use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
-use crate::ui_components::{Button, ButtonVariant, Card};
+use crate::ui_components::{AudioButtons, Button, ButtonVariant, Card, speak_word};
 use leptos::prelude::*;
 use leptos_use::use_event_listener;
 use origa::domain::{Card, CounterBindingItem, Rating};
+
+/// Гейт озвучки чтения связки при раскрытии (#808): мьют урока главнее,
+/// пустое чтение (число вне реестра — защитный случай) молчит. Гейта
+/// TTS-доступности нет сознательно: `speak_word` деградирует безопасно
+/// (pitch-индекс → TTS каны → подавленный `Err`), pitch-only среды
+/// сохраняют CDN-звук.
+fn should_speak_binding_reading(is_muted: bool, reading: &str) -> bool {
+    !is_muted && !reading.is_empty()
+}
 
 /// Лейбл числа: 0 — вопросительное 何, прочие — само число
 /// (лексикализованные исключения реестра несут свой порядок в таблице).
@@ -38,6 +48,10 @@ pub fn CounterBindingsSession(
     /// связки — 何 вечно возвращалась новичком, пачка мелькала каждый
     /// урок). Сама сессия урок не продвигает.
     on_rate_binding: Callback<(u8, Rating, bool)>,
+    /// Мьют урока (тот же сигнал, что глушит автозвук остальных карт):
+    /// озвучка чтения при раскрытии ему подчиняется.
+    #[prop(into)]
+    is_muted: Signal<bool>,
     #[prop(into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -140,6 +154,18 @@ pub fn CounterBindingsSession(
             .unwrap_or(u8::MAX);
         revealed.set(true);
         highlighted_number.set(number);
+        // Озвучка канонического чтения связки (#808): чтение из реестра —
+        // чистая кана, поэтому speak_word резолвит его корректно (pitch-
+        // индекс по возможности, иначе TTS читает кану как есть). Кнопка и
+        // Space/Enter ведут в этот же reveal — один канал звука. Фронт
+        // связки НЕ озвучивается: звучащее чтение выдало бы ответ.
+        let reading = entry
+            .and_then(|e| e.reading_for(number))
+            .unwrap_or_default()
+            .to_string();
+        if should_speak_binding_reading(is_muted.get_untracked(), &reading) {
+            speak_word(&reading, 1.0);
+        }
     };
 
     // Клавиатура слота: Space — показ ответа, 1/2 — «Не знаю»/«Знаю»
@@ -204,18 +230,40 @@ pub fn CounterBindingsSession(
                             .with_value(|rs| rs.iter().find(|(n, _)| *n == number).map(|(_, r)| r.clone()))
                             .unwrap_or_default();
                         view! {
-                            <div class="flex items-center justify-center gap-2" data-testid="counter-binding-answer">
-                                <span class="font-mono text-5xl text-[var(--fg-black)]">
-                                    {number_label(number)}
-                                </span>
-                                <span class="text-3xl text-[var(--fg-muted)]">{"×"}</span>
-                                <span class="font-serif text-7xl text-[var(--fg-black)]">
-                                    {suffix.with_value(String::clone)}
-                                </span>
+                            // Ответ: запись «число×суффикс» с ruby-подписью
+                            // чтения из реестра (фуригана как в карточках
+                            // слов) + кнопка повтора озвучки. Чтение — из
+                            // реестра: конкатенация TTS дала бы неверное
+                            // произношение (10本 → «じゅうほん» вместо
+                            // «じゅппон»), юзер-репорт 0.8.0-rc.
+                            <div class="flex items-center justify-center gap-3">
+                                <ruby class="furigana-ruby" data-testid="counter-binding-answer">
+                                    <span class="flex items-center justify-center gap-2">
+                                        <span class="font-mono text-5xl text-[var(--fg-black)]">
+                                            {number_label(number)}
+                                        </span>
+                                        <span class="text-3xl text-[var(--fg-muted)]">{"×"}</span>
+                                        <span class="font-serif text-7xl text-[var(--fg-black)]">
+                                            {suffix.with_value(String::clone)}
+                                        </span>
+                                    </span>
+                                    <rp>"("</rp>
+                                    <rt class="furigana-rt" data-testid="counter-binding-answer-reading">
+                                        {reading.clone()}
+                                    </rt>
+                                    <rp>")"</rp>
+                                </ruby>
+                                // Кнопка повтора: озвучка при раскрытии уже
+                                // есть (#808), но мьют урока главнее — в
+                                // мьюте кнопки не показываем.
+                                <Show when=move || !is_muted.get()>
+                                    <AudioButtons
+                                        text=reading.clone()
+                                        audio_path=None
+                                        test_id=Signal::derive(|| "counter-binding-audio-btn".to_string())
+                                    />
+                                </Show>
                             </div>
-                            <p class="font-serif text-4xl text-[var(--fg-black)]" data-testid="counter-binding-answer-reading">
-                                {reading}
-                            </p>
                             <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
 
                             // Полная таблица чтений — под «Развернуть»
@@ -248,5 +296,26 @@ pub fn CounterBindingsSession(
                 </Show>
             </div>
         </Card>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    /// #808: мьют глушит озвучку раскрытой связки; пустое чтение (число
+    /// вне реестра) молчит; каноническое чтение при немьюте звучит.
+    #[rstest]
+    #[case(false, "いっぽん", true)]
+    #[case(true, "いっぽん", false)]
+    #[case(false, "", false)]
+    #[case(true, "", false)]
+    fn speak_gate_by_mute_and_reading(
+        #[case] is_muted: bool,
+        #[case] reading: &str,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(should_speak_binding_reading(is_muted, reading), expected);
     }
 }

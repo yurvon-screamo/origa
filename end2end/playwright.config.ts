@@ -3,6 +3,9 @@ import { defineBddConfig } from "playwright-bdd";
 
 const isCI = !!process.env.CI;
 
+/** The app origin the suite runs against; also the inbox seam opt-in scope. */
+export const APP_BASE_URL = "http://localhost:1420";
+
 const bddTestDir = defineBddConfig({
     features: "./bdd/features",
     steps: "./bdd/**/*.ts",
@@ -18,13 +21,17 @@ export default defineConfig({
     },
     fullyParallel: true,
     forbidOnly: isCI,
-    retries: isCI ? 2 : 0,
+    // No retries: the suite waits for states, not for clocks, so a failure
+    // is a real failure. The CI matrix still runs with `--retries=1` on the
+    // command line (the CLI flag wins over this config) — that safety net
+    // stays until the workflow is allowed to drop it.
+    retries: 0,
     workers: isCI ? 2 : 2,
     reporter: isCI
         ? [["blob", { outputDir: "blob-report" }]]
         : [["html", { open: "on-failure", host: "0.0.0.0" }]],
     use: {
-        baseURL: "http://localhost:1420",
+        baseURL: APP_BASE_URL,
         // Tests assert Russian UI copy (BDD features + page objects), and a
         // brand-new profile now inherits the browser locale (see
         // create_new_user_from_session) instead of a hardcoded default. Pin

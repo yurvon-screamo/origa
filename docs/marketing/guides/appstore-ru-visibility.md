@@ -20,7 +20,7 @@
 
 ### Как получить данные
 
-```
+```text
 GET https://itunes.apple.com/search?term=<term>&country=ru&entity=software&limit=50
 GET https://itunes.apple.com/lookup?id=<trackId>&country=ru
 ```
@@ -44,7 +44,7 @@ GET https://itunes.apple.com/lookup?id=<trackId>&country=ru
 
 ## Инструмент 2: iTunes RSS customerreviews
 
-```
+```text
 GET https://itunes.apple.com/RU/rss/customerreviews/id=<appId>/sortby=mostrecent/json
 ```
 

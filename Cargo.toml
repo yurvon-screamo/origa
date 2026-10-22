@@ -5,12 +5,25 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-authors = ["yurvon-screamo <yurvon@ya.ru>"]
+authors = ["yurvon-screamo <yurvon.screamo@gmail.com>"]
 license-file = "LICENSE"
 repository = "https://github.com/yurvon-screamo/origa"
 readme = "README.md"
 
 [workspace.dependencies]
+# Audio decoding (pure Rust, wasm32-compatible): mp3/m4a(aac-lc)/ogg/vorbis/
+# flac/wav via feature-selected codecs. No opus/webm — symphonia 0.5 has no
+# opus decoder. Frontend-only consumer (origa_ui).
+symphonia = { version = "0.5", default-features = false, features = [
+    "aac",
+    "flac",
+    "isomp4",
+    "mp3",
+    "ogg",
+    "pcm",
+    "vorbis",
+    "wav",
+] }
 # System
 tokio = { version = "1.48", default-features = false, features = [
     "rt",
@@ -90,6 +103,10 @@ lexical-sort = "0.3"
 
 # Testing
 rstest = "0.26"
+# Property-based tests for the FSRS wrapper (domain/memory). Only the `std`
+# feature: the default set pulls `fork`/`timeout` (process forking) and
+# `bit-set`, none of which the property tests need.
+proptest = { version = "1.11", default-features = false, features = ["std"] }
 
 # UI
 leptos = { version = "0.8", default-features = false, features = ["csr"] }
@@ -124,6 +141,7 @@ url = "2.5"
 # Tauri
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
 tauri-plugin-tts = "0.1"
 # Version MUST track the `tts` dep of tauri-plugin-tts (currently 0.26.x):
 # the Linux availability probe must exercise the exact same engine init the
@@ -167,6 +185,10 @@ wasm-bindgen-futures = { version = "0.4", features = [
     "futures-core-03-stream",
 ] }
 web-sys = { version = "0.3", features = [
+    "AudioBuffer",
+    "AudioContext",
+    "AudioContextOptions",
+    "AudioProcessingEvent",
     "DedicatedWorkerGlobalScope",
     "DomException",
     "FileSystemDirectoryHandle",
@@ -181,10 +203,15 @@ web-sys = { version = "0.3", features = [
     "FileSystemSyncAccessHandle",
     "FileSystemWritableFileStream",
     "Navigator",
+    "MediaStream",
+    "MediaStreamAudioSourceNode",
+    "MediaStreamTrack",
+    "ScriptProcessorNode",
     "StorageManager",
     "WorkerNavigator",
     "File",
     "FileList",
+    "FilePropertyBag",
     "FileReader",
     "KeyboardEventInit",
     "HtmlInputElement",

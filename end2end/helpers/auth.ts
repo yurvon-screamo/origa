@@ -1,4 +1,5 @@
 import { type Browser, type Page } from "@playwright/test";
+import { getAppBaseUrl } from "../config";
 import {
   getAdminToken,
   createTestUser,
@@ -62,6 +63,49 @@ export async function wipeClientAuthState(page: Page): Promise<void> {
   await page.reload();
 }
 
+/**
+ * Wait until the app finished the login round-trip.
+ *
+ * A URL match alone is not a reliable "logged in" signal: the app settles
+ * on the ROOT route ("/" renders Home) and never moves to /home, so the
+ * terminal-URL wait has to fall back to the content markers — the same
+ * fallback the BDD suite uses (see uiLogin below).
+ *
+ * `timeout` is the budget for the terminal-URL wait. The fallback keeps
+ * its own (short) budget: it only runs when the URL did not settle.
+ * Callers that boot a cold WASM bundle (local `trunk serve`) need a
+ * larger budget than the CI-tuned default.
+ */
+export async function waitForLoginComplete(
+  page: Page,
+  timeout = 90_000,
+): Promise<void> {
+  try {
+    await page.waitForURL(/\/(home|onboarding)$/, { timeout });
+  } catch {
+    const toggle = page.getByTestId("login-password-toggle");
+    await toggle.waitFor({ state: "hidden", timeout: 15_000 });
+    await page
+      .getByTestId("home-page")
+      .or(page.getByTestId("onboarding-stepper"))
+      .waitFor({ state: "visible", timeout: 60_000 });
+  }
+}
+
+/**
+ * Restore the one-time resource-download consent.
+ *
+ * The app shows the ~230 MB download overlay on authenticated routes
+ * until the consent is given, and the overlay blocks every click. The
+ * specs pre-approve it through an init script, but a `localStorage.clear()`
+ * wipes the flag again — so it has to be restored after the clear.
+ */
+export async function restoreDownloadConsent(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    localStorage.setItem("origa_resource_download_consented", "true"),
+  );
+}
+
 export interface TestUserContext {
   email: string;
   password: string;
@@ -107,26 +151,38 @@ export async function uiLogin(
   page: Page,
   email: string,
   password: string,
+  options: { baseURL?: string } = {},
 ): Promise<void> {
   const maxRetries = 3;
+  const baseURL = options.baseURL ?? getAppBaseUrl();
+  const appOrigin = new URL(baseURL).origin;
 
   // The first-run resource-download consent screen (App Review 4.2.3(ii))
   // blocks authenticated routes until the user clicks Download. Tests are
   // not about that screen, so pre-approve the download before any app
   // script runs on the app origin. Matches gloo_storage JSON encoding
   // (`LocalStorage::set(key, true)` stores the literal `true`).
-  await page.context().addInitScript(() => {
-    if (window.location.origin === "http://localhost:1420") {
+  //
+  // The origin is a parameter, not the literal 1420: a scenario may run
+  // against another build (a before/after pair on :1421). The write is
+  // guarded because a cross-origin document (an OAuth provider) can throw
+  // a SecurityError on localStorage access.
+  await page.context().addInitScript((origin: string) => {
+    if (window.location.origin !== origin) return;
+    try {
       window.localStorage.setItem("origa_resource_download_consented", "true");
+    } catch {
+      // storage blocked on this origin — the consent screen stays, the
+      // caller decides whether that is fatal
     }
-  });
+  }, appOrigin);
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     // The whole login flow is retried, not just waitForURL: the password
     // toggle and the inputs race the WASM cold load too, and a toggle
     // miss used to escape the retry loop as an immediate failure.
     try {
-      await page.goto("http://localhost:1420", {
+      await page.goto(baseURL, {
         waitUntil: "domcontentloaded",
       });
 
@@ -169,16 +225,7 @@ export async function uiLogin(
       // without ever matching the terminal URL — for that case accept
       // the root only with explicit CONTENT markers (no login form +
       // home/wizard mounted).
-      try {
-        await page.waitForURL(/\/(home|onboarding)$/, { timeout: 90_000 });
-      } catch {
-        const toggle = page.getByTestId("login-password-toggle");
-        await toggle.waitFor({ state: "hidden", timeout: 15_000 });
-        await page
-          .getByTestId("home-page")
-          .or(page.getByTestId("onboarding-stepper"))
-          .waitFor({ state: "visible", timeout: 60_000 });
-      }
+      await waitForLoginComplete(page);
       return;
     } catch (e) {
       if (attempt === maxRetries) {

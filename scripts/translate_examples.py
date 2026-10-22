@@ -39,9 +39,11 @@ CONC = 15
 SYS_EN = "You are a skilled Japanese translator. Translate the sentence accurately and naturally."
 SYS_JA = "あなたは熟練した日本語翻訳者です。文を正確かつ自然に翻訳してください。"
 INSTR_EN = "Translate the following Japanese sentence into {lname}:\n{x}"
-INSTR_JA = {"vi": "次の日本語の文をベトナム語に翻訳してください:\n{x}",
-            "ru": "次の日本語の文をロシア語に翻訳してください:\n{x}",
-            "ko": "次の日本語の文を韓国語に翻訳してください:\n{x}"}
+INSTR_JA = {
+    "vi": "次の日本語の文をベトナム語に翻訳してください:\n{x}",
+    "ru": "次の日本語の文をロシア語に翻訳してください:\n{x}",
+    "ko": "次の日本語の文を韓国語に翻訳してください:\n{x}",
+}
 LNAME = {"vi": "Vietnamese", "ru": "Russian", "ko": "Korean"}
 
 RE_HANGUL = re.compile(r"[가-힣]")
@@ -59,9 +61,13 @@ def detect_language(text: str) -> str:
     if not t:
         return "empty"
     n = max(len(t), 1)
-    c = {"ko": len(RE_HANGUL.findall(t)), "ru": len(RE_CYR.findall(t)),
-         "ja": len(RE_KANA.findall(t)) + len(RE_CJK.findall(t)),
-         "vi": len(RE_VI_MARK.findall(t)), "en": len(RE_LATIN.findall(t))}
+    c = {
+        "ko": len(RE_HANGUL.findall(t)),
+        "ru": len(RE_CYR.findall(t)),
+        "ja": len(RE_KANA.findall(t)) + len(RE_CJK.findall(t)),
+        "vi": len(RE_VI_MARK.findall(t)),
+        "en": len(RE_LATIN.findall(t)),
+    }
     for k in ("ko", "ru", "ja", "vi"):
         if c[k] / n >= 0.25:
             return k
@@ -75,10 +81,12 @@ class Heads(torch.nn.Module):
 
     def __init__(self, dim):
         super().__init__()
-        self.s = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(),
-                                     torch.nn.Linear(256, 256))
-        self.a = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(),
-                                     torch.nn.Linear(256, 256))
+        self.s = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
+        self.a = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
 
     def forward(self, sv, av):
         zq = F.normalize(self.s(sv), dim=-1)
@@ -88,13 +96,21 @@ class Heads(torch.nn.Module):
 
 def gen_one(x: str, lang: str) -> tuple[str, bool, int]:
     """Generate + language check + JA-retry. Returns (text, lang_ok, retries)."""
+
     def call(system: str, instr: str) -> str:
-        r = requests.post(TR_URL, json={
-            "model": "tr600k",
-            "messages": [{"role": "system", "content": system},
-                         {"role": "user", "content": instr}],
-            "temperature": 0.0, "max_tokens": 200,
-        }, timeout=180)
+        r = requests.post(
+            TR_URL,
+            json={
+                "model": "tr600k",
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": instr},
+                ],
+                "temperature": 0.0,
+                "max_tokens": 200,
+            },
+            timeout=180,
+        )
         r.raise_for_status()
         return r.json()["choices"][0]["message"]["content"].strip()
 
@@ -152,9 +168,7 @@ def main() -> int:
     except Exception as e:  # judge is optional: embeddings server may be down
         print(f"judge unavailable ({e}); running generation-only", flush=True)
 
-    pending = [
-        (r, L) for r in rows for L in LOCALES if (r["i"], L) not in done
-    ]
+    pending = [(r, L) for r in rows for L in LOCALES if (r["i"], L) not in done]
     print(f"to translate: {len(pending)}", flush=True)
     t0 = time.perf_counter()
     n_done = n_retry = n_langfail = n_flag = 0
@@ -180,15 +194,20 @@ def main() -> int:
                     with torch.no_grad():
                         for (r, L), (gen, _, _) in zip(block, gens):
                             q = torch.from_numpy(Vq[r["x"]]).unsqueeze(0)
-                            cands = torch.stack([
-                                torch.from_numpy(Vp[gen]),
-                                torch.from_numpy(Vp[r["en"]]),
-                            ])
+                            cands = torch.stack(
+                                [
+                                    torch.from_numpy(Vp[gen]),
+                                    torch.from_numpy(Vp[r["en"]]),
+                                ]
+                            )
                             sc = heads(q, cands)
                             scores[(r["i"], L)] = (float(sc[0]), float(sc[1]))
                 except (requests.RequestException, RuntimeError) as e:
-                    print(f"judge unavailable ({e.__class__.__name__}); "
-                          "continuing generation-only, will retry later", flush=True)
+                    print(
+                        f"judge unavailable ({e.__class__.__name__}); "
+                        "continuing generation-only, will retry later",
+                        flush=True,
+                    )
                     judge_ok = False
                     judge_retry_at = n_done + JUDGE_RETRY_BLOCKS * BLOCK
             elif not judge_ok and n_done >= judge_retry_at:
@@ -221,8 +240,12 @@ def main() -> int:
                         flags.append("latin_mix")
                 m = scores.get((r["i"], L))
                 rec = {
-                    "i": r["i"], "lang": L, "gen": gen, "lang_ok": lang_ok,
-                    "retries": retries, "flags": flags,
+                    "i": r["i"],
+                    "lang": L,
+                    "gen": gen,
+                    "lang_ok": lang_ok,
+                    "retries": retries,
+                    "flags": flags,
                     "score_gen": round(m[0], 4) if m else None,
                     "score_en": round(m[1], 4) if m else None,
                 }
@@ -238,14 +261,19 @@ def main() -> int:
             n_gen = len(done)
             if n_gen % 480 < BLOCK:
                 el = time.perf_counter() - t0
-                print(f"progress {n_gen}/{len(pending) + len(done)} "
-                      f"({n_gen * 1.0 / max(el, 1):.1f}/s, "
-                      f"langfail={n_langfail}, flagged={n_flag})", flush=True)
+                print(
+                    f"progress {n_gen}/{len(pending) + len(done)} "
+                    f"({n_gen * 1.0 / max(el, 1):.1f}/s, "
+                    f"langfail={n_langfail}, flagged={n_flag})",
+                    flush=True,
+                )
     finally:
         out_f.close()
 
     # merge into data files
-    by_file: dict[Path, list[dict]] = {f: json.loads(f.read_text(encoding="utf-8")) for f in files}
+    by_file: dict[Path, list[dict]] = {
+        f: json.loads(f.read_text(encoding="utf-8")) for f in files
+    }
     for f, part in by_file.items():
         changed = False
         for r in part:
@@ -255,13 +283,19 @@ def main() -> int:
                     r[L] = rec["gen"]
                     changed = True
         if changed:
-            f.write_text(json.dumps(part, ensure_ascii=False, separators=(",", ":")),
-                         encoding="utf-8")
+            f.write_text(
+                json.dumps(part, ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8",
+            )
     filled = sum(
         1 for part in by_file.values() for r in part if all(r.get(L) for L in LOCALES)
     )
-    print(f"merged; sentences with all 3 translations: {filled}/{len(rows)}", flush=True)
-    print(f"stats: retried={n_retry} langfail={n_langfail} flagged={n_flag}", flush=True)
+    print(
+        f"merged; sentences with all 3 translations: {filled}/{len(rows)}", flush=True
+    )
+    print(
+        f"stats: retried={n_retry} langfail={n_langfail} flagged={n_flag}", flush=True
+    )
     return 0
 
 

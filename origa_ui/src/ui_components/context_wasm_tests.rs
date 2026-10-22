@@ -745,13 +745,12 @@ async fn sidebar_authenticated_user_renders_nav_items() {
     });
     tick().await;
 
-    // 5 sidebar routes + profile item
+    // 4 sidebar routes + profile item
     for suffix in [
         "tab-home",
         "tab-words",
         "tab-grammar",
         "tab-kanji",
-        "tab-phrases",
         "tab-profile",
     ] {
         let el = wrapper.query_selector(&format!("[data-testid=\"sb1-{suffix}\"]"));
@@ -792,7 +791,7 @@ async fn bottom_tab_bar_authenticated_renders_six_tabs() {
         .query_selector_all("[data-testid=\"btb1\"] .bottom-tab-item")
         .unwrap()
         .length();
-    assert_eq!(items, 7, "seven nav routes must render; got {items}");
+    assert_eq!(items, 6, "six nav routes must render; got {items}");
 }
 
 #[wasm_bindgen_test]

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
-import { HomePage, PhrasesPage } from "../../pages";
+import { PhrasesPage, WordsPage } from "../../pages";
+import { waitUntilStable } from "../../helpers/wait";
 
 When('пользователь открывает страницу фраз', async ({ page }) => {
     const phrasesPage = new PhrasesPage(page);
@@ -14,8 +15,10 @@ When('ищет фразу {string} на странице фраз', async ({ pag
 });
 
 When('нажимает навигацию к фразам', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.sidebarPhrases.click();
+    // #823: phrases left the nav bars — the entry point is the words
+    // header button now.
+    const wordsPage = new WordsPage(page);
+    await wordsPage.phrasesButton.click({ timeout: 10_000 });
     await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
 });
 
@@ -37,13 +40,6 @@ Then('на странице фраз отображается пустое со�
 Then('отображается поле поиска фраз', async ({ page }) => {
     const phrasesPage = new PhrasesPage(page);
     await expect(phrasesPage.searchInput).toBeVisible();
-});
-
-Then('отображается вкладка фраз в навигации', async ({ page }) => {
-    // Viewport is set up by the 'пользователь устанавливает мобильный размер
-    // экрана' Given step — the bottom-tab nav is mobile-only (lg:hidden).
-    await expect(page.getByTestId("bottom-tab")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId("bottom-tab-tab-phrases")).toBeVisible({ timeout: 10_000 });
 });
 
 When('нажимает кнопку возврата с фраз', async ({ page }) => {
@@ -97,8 +93,11 @@ Then('текст фраз содержит фуригану', async ({ page }) =
 
 When('ищет фразы {string}', async ({ page }, query: string) => {
     const phrasesPage = new PhrasesPage(page);
+    // Шаг-действие: заполнили поиск. Дальше поиск догружает детали фраз
+    // в фоне, и следующий Then сам ждёт результат (toHaveCount с
+    // авто-ретраем) — фиксированная пауза здесь только задерживала
+    // прогон и ничего не гарантировала.
     await phrasesPage.searchPhrases(query);
-    await page.waitForTimeout(500);
 });
 
 Then('на странице фраз нет карточек', async ({ page }) => {
@@ -119,7 +118,7 @@ When('пользователь открывает страницу фраз с �
     await phrasesPage.expectPhrasesVisible();
 });
 
-Then('количество загруженных чанков данных фраз ограничено видимой пачкой', async ({ page }) => {
+Then('количество загруженных чанков данных фраз ограничено видимой пачкой', async () => {
     const chunkUrl = /\/phrases\/data\/p\d{4}\.json/;
     const countNow = () => phrasesRequestLog.filter((url) => chunkUrl.test(url)).length;
 
@@ -128,18 +127,24 @@ Then('количество загруженных чанков данных фр
     // (fetch EVERY chunk of the user's ~6k phrases) kept the stream busy
     // for a long time and would sail far past the bound below; the lazy
     // visible-slice load settles quickly on a few dozen chunks.
-    let previous = -1;
-    for (let i = 0; i < 20; i++) {
-        await page.waitForTimeout(500);
-        const current = countNow();
-        if (current === previous) break;
-        previous = current;
-    }
+    let settleError = "";
+    await waitUntilStable(countNow, {
+        label: "phrase data chunk requests",
+        quietMs: 1_000,
+        timeoutMs: 10_000,
+        pollMs: 500,
+    }).catch((error: unknown) => {
+        // Поток не устоялся — уходим к проверке ниже: она сообщает
+        // фактическое число загруженных чанков, это и есть actionable
+        // сигнал (как и раньше, когда цикл просто исчерпывал итерации).
+        settleError = error instanceof Error ? error.message : String(error);
+    });
 
     const finalCount = countNow();
     expect(
         finalCount,
-        `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}`,
+        `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}` +
+            (settleError ? ` — the request stream never settled: ${settleError}` : ""),
     ).toBeLessThanOrEqual(60);
     // Positive control: data WAS loaded (the preceding step already
     // asserted non-empty card text, this guards against a vacuous zero).

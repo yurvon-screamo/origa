@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { Before, Given, When, Then, test } from "../fixtures";
-import { getTrailBaseUrl } from "../../config";
+import { getAppBaseUrl, getTrailBaseUrl } from "../../config";
 
 /**
  * Offline startup scenarios (ADR-053): the app must open from cache or
@@ -21,7 +21,7 @@ Before('@slow-startup', () => {
 });
 
 const CDN_URL = "http://localhost:8080/**";
-const APP_ORIGIN = "http://localhost:1420";
+const APP_ORIGIN = getAppBaseUrl();
 
 /** Same-origin path used to "freeze" the page before the profile-store
  * wipe: the SPA fallback serves index.html for ANY path, so the freeze
@@ -94,12 +94,14 @@ Given('сессия аутентификации сохранена', async ({ p
 });
 
 Given('кэш словарей пуст', async ({ page }) => {
-    await page.evaluate(async () => {
+    // The prefix goes in as an argument: the evaluate body runs in the
+    // browser, where the module scope does not exist.
+    await page.evaluate(async (cachePrefix) => {
         const keys = await caches.keys();
         for (const key of keys) {
-            if (key.startsWith("origa-")) await caches.delete(key);
+            if (key.startsWith(cachePrefix)) await caches.delete(key);
         }
-    });
+    }, ORIGA_CACHE_PREFIX);
 });
 
 Given('кэш словаря слов очищен полностью', async ({ page }) => {

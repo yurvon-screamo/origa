@@ -70,9 +70,10 @@ class TestResolveSourceEpoch:
         )
         epoch, changed = gen.resolve_source_epoch()
         assert not changed
-        assert dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime(
-            "%Y-%m-%d"
-        ) == "2020-01-01"
+        assert (
+            dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime("%Y-%m-%d")
+            == "2020-01-01"
+        )
 
     def test_changed_sha_moves_date_to_today(self, tmp_path, monkeypatch):
         monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
@@ -83,9 +84,10 @@ class TestResolveSourceEpoch:
         epoch, changed = gen.resolve_source_epoch()
         today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
         assert changed
-        assert dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime(
-            "%Y-%m-%d"
-        ) == today
+        assert (
+            dt.datetime.fromtimestamp(epoch, dt.timezone.utc).strftime("%Y-%m-%d")
+            == today
+        )
 
     def test_missing_manifest_is_first_render(self, tmp_path, monkeypatch):
         monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
@@ -102,9 +104,7 @@ class TestInjectPostTables:
         post.parent.mkdir()
         begin = gen.POST_MARKER_BEGIN.format(level="N5")
         end = gen.POST_MARKER_END.format(level="N5")
-        post.write_text(
-            f"intro\n\n{begin}\n| old |\n{end}\n\ncoda\n", encoding="utf-8"
-        )
+        post.write_text(f"intro\n\n{begin}\n| old |\n{end}\n\ncoda\n", encoding="utf-8")
         monkeypatch.setattr(gen, "POST_DIR", tmp_path)
         levels = self._levels()
         levels["N5"] = [

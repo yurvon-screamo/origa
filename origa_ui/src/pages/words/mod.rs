@@ -5,14 +5,24 @@ mod add_words_preview_modal_state;
 pub(crate) mod analyzed_word_item;
 mod anki_import_stage;
 mod asr_provider;
+mod audio_chunks;
 mod audio_input_stage;
 mod audio_live_recorder;
+mod audio_transcribe;
 mod content;
 mod header;
 mod image_input_stage;
+mod inbox;
+// Long-form recording panel: browser-only, mic capture through the
+// WebAudio graph; native compilation needs no runtime.
+#[cfg(target_arch = "wasm32")]
+mod long_record_panel;
+mod native_file_button;
 mod ocr_device_ai;
 mod ocr_file_utils;
 mod ocr_processing;
+mod transcript;
+mod transcript_view;
 pub(crate) mod vocabulary_card_item;
 mod word_detail;
 #[cfg(all(target_arch = "wasm32", test))]

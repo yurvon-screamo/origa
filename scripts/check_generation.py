@@ -61,7 +61,9 @@ def check_schema(g: dict) -> list[str]:
             errs.append(f"{loc}.nuances: malformed/empty")
     jp = g.get("jp_examples")
     if not isinstance(jp, list) or len(jp) < 3:
-        errs.append(f"jp_examples: {len(jp) if isinstance(jp, list) else 'missing'} < 3")
+        errs.append(
+            f"jp_examples: {len(jp) if isinstance(jp, list) else 'missing'} < 3"
+        )
     return errs
 
 
@@ -109,7 +111,9 @@ def check_copy(g: dict, ctx: dict) -> list[str]:
     pattern_core = re.sub(r"[～〜\s]", "", ctx["rule"].get("pattern") or "")
     stop = [k for k in keywords if k] + ([pattern_core] if pattern_core else [])
     if stop:
-        jp_ref = {gram for gram in jp_ref if not any(s in gram or gram in s for s in stop)}
+        jp_ref = {
+            gram for gram in jp_ref if not any(s in gram or gram in s for s in stop)
+        }
 
     errs = []
     for ex in g.get("jp_examples", []):

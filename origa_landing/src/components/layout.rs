@@ -128,6 +128,16 @@ pub fn Layout(locale: Locale) -> impl IntoView {
                     >
                         {c.footer_license}
                     </a>
+                    // Plain link, not the official badge artwork: the badge
+                    // froze its upvote counter inside the SVG.
+                    <a
+                        href="https://www.producthunt.com/products/origa-app-to-learn-japanese"
+                        class="landing-footer__link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        "Product Hunt"
+                    </a>
                 </div>
                 <div>
                     <p class="landing-footer__heading">{c.footer_legal}</p>

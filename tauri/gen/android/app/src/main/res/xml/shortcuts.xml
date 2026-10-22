@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_camera"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_camera"
+        android:shortcutLongLabel="@string/shortcut_camera_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="origa://add?source=camera"
+            android:targetPackage="net.uwuwu.origa"
+            android:targetClass="net.uwuwu.origa.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_audio"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_audio"
+        android:shortcutLongLabel="@string/shortcut_audio_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="origa://add?source=audio"
+            android:targetPackage="net.uwuwu.origa"
+            android:targetClass="net.uwuwu.origa.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_text"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_text"
+        android:shortcutLongLabel="@string/shortcut_text_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="origa://add?source=text"
+            android:targetPackage="net.uwuwu.origa"
+            android:targetClass="net.uwuwu.origa.MainActivity" />
+    </shortcut>
+</shortcuts>

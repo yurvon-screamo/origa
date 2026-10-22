@@ -73,4 +73,4 @@ pub fn init_analytics() {
 }
 
 #[cfg(test)]
-mod i18n_counter_keys_test;
+mod i18n_parity_test;

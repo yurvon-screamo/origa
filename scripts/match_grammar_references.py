@@ -128,11 +128,17 @@ def load_references(jnihongo: Path | None, hanabira: Path | None) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json"))
-    parser.add_argument("--jnihongo", type=Path, default=Path("/tmp/opencode/jnihongo/catalog.json"))
+    parser.add_argument(
+        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json")
+    )
+    parser.add_argument(
+        "--jnihongo", type=Path, default=Path("/tmp/opencode/jnihongo/catalog.json")
+    )
     parser.add_argument("--hanabira", type=Path, default=Path("/tmp/opencode/hanabira"))
     parser.add_argument("--threshold", type=float, default=0.45)
-    parser.add_argument("--out", type=Path, default=Path("/tmp/opencode/ref_mapping.json"))
+    parser.add_argument(
+        "--out", type=Path, default=Path("/tmp/opencode/ref_mapping.json")
+    )
     args = parser.parse_args()
 
     data = json.loads(args.corpus.read_text(encoding="utf-8"))
@@ -141,7 +147,10 @@ def main() -> int:
 
     mapping = []
     for rule in data["grammar"]:
-        pattern = rule["content"]["English"].get("pattern") or rule["content"]["English"]["title"]
+        pattern = (
+            rule["content"]["English"].get("pattern")
+            or rule["content"]["English"]["title"]
+        )
         matches = []
         for ref in refs:
             score = title_score(pattern, ref["title"])
@@ -164,7 +173,11 @@ def main() -> int:
 
     # Coverage summary
     covered = [m for m in mapping if m["refs"]]
-    both = [m for m in mapping if {r["source"] for r in m["refs"]} == {"jnihongo", "hanabira"}]
+    both = [
+        m
+        for m in mapping
+        if {r["source"] for r in m["refs"]} == {"jnihongo", "hanabira"}
+    ]
     dist = Counter(min(len(m["refs"]), 5) for m in mapping)
     by_level = {}
     for m in mapping:
@@ -172,7 +185,9 @@ def main() -> int:
         by_level.setdefault(key, [0, 0])
         by_level[key][0 if m["refs"] else 1] += 1
     print(f"\nmapping: {len(mapping)} rules -> {args.out}")
-    print(f"with >=1 ref: {len(covered)} ({100 * len(covered) // len(mapping)}%) | both sources: {len(both)} | no ref: {len(mapping) - len(covered)}")
+    print(
+        f"with >=1 ref: {len(covered)} ({100 * len(covered) // len(mapping)}%) | both sources: {len(both)} | no ref: {len(mapping) - len(covered)}"
+    )
     print("refs-per-rule distribution (5+ bucketed):", dict(sorted(dist.items())))
     print("coverage by level (covered / bare):")
     for lvl in sorted(by_level):

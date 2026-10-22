@@ -1,5 +1,10 @@
 # ADR-056: iOS manual signing вместо минта сертификатов на каждом CI-прогоне
 
+> **Примечание (2026-10-21, issue #804):** номер 056 исторически выдавался
+> дважды. Решение о Flatpak-дистрибуции, делившее с этим ADR номер, теперь
+> живёт в [ADR-064](ADR-064-flatpak-linux-distribution.md); этот ADR
+> сохраняет номер (создан раньше, 2026-09-15).
+
 - Статус: Принято
 - Дата: 2026-09-15
 - Контекст: инциденты 0.7.19 — ITMS-90721 «Certificate Revoked» на iOS-билдах
@@ -127,6 +132,7 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
      «has revoked your certificate» на этом шаге — **ожидаемо**, это плановая
      ротация, а не инцидент.
 - **Генерация cert/P12** (работает с любого Linux, ключ не покидает машину):
+
   ```bash
   openssl genrsa -out ci.key 2048
   openssl req -new -key ci.key -out ci.csr -subj "/CN=Origa CI/O=Origa/C=US"
@@ -140,6 +146,7 @@ upload-шаг использует `--apiKey/--apiIssuer`. macOS-джоба не
     -passout file:p12.password.txt
   base64 -w0 ci.p12   # → APPLE_IOS_CERTIFICATE
   ```
+
   Рабочие материалы ротации живут на машине владельца в
   `~/apple-certs-adr056/` (ключ 600, пароль P12 в `p12.password.txt`).
 - **Известная хрупкость**: инъекция `PROVISIONING_PROFILE_SPECIFIER` строит

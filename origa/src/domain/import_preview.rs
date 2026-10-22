@@ -121,7 +121,7 @@ mod tests {
     use crate::domain::{Card, NativeLanguage};
 
     fn user_with_card_for(word: &str) -> User {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
         let mut user = User::new(
             "tester@example.com".to_string(),
             NativeLanguage::Russian,
@@ -136,7 +136,7 @@ mod tests {
     }
 
     fn user_without_cards() -> User {
-        crate::use_cases::init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
         User::new(
             "tester@example.com".to_string(),
             NativeLanguage::Russian,

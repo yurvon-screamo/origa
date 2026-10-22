@@ -4,6 +4,11 @@
 
 ---
 
+[![Code Coverage](https://qlty.sh/badges/f033b9b5-49df-4fa4-8b1f-3ef3947c0d5f/coverage.svg)](https://qlty.sh/gh/yurvon-screamo/projects/origa)
+[![Maintainability](https://qlty.sh/badges/f033b9b5-49df-4fa4-8b1f-3ef3947c0d5f/maintainability.svg)](https://qlty.sh/gh/yurvon-screamo/projects/origa)
+
+[![Origa — Learn Japanese in your own language, all in one app](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1256172&theme=dark)](https://www.producthunt.com/products/origa-app-to-learn-japanese?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-origa)
+
 **Learn Japanese without an English middleman.**
 
 オリガ is an app for learning Japanese and preparing for the JLPT exam.

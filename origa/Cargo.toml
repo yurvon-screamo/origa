@@ -59,6 +59,7 @@ web-sys = { version = "0.3", features = ["Window", "Navigator"] }
 
 [dev-dependencies]
 rstest.workspace = true
+proptest.workspace = true
 tokio = { workspace = true, features = ["rt", "macros", "time", "fs"] }
 tracing-subscriber = { workspace = true, features = ["fmt"] }
 # Integration tests under tests/ build ULIDs from grammar.json rule_ids; ulid

@@ -128,7 +128,7 @@ pub fn SetsContent() -> impl IntoView {
         let level = level_filter.get();
         let type_f = type_filter.get();
         let import_f = import_filter.get();
-        let query = search.get().to_lowercase();
+        let query = search.get().trim().to_lowercase();
 
         sets.get()
             .into_iter()

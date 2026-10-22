@@ -4,6 +4,8 @@
 
 ---
 
+[![Origa — Learn Japanese in your own language, all in one app](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1256172&theme=dark)](https://www.producthunt.com/products/origa-app-to-learn-japanese?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-origa)
+
 **영어 중간 매개 없이 일본어를 배우세요.**
 
 オリガ는 일본어 학습과 JLPT 시험 대비를 위한 올인원 앱입니다.

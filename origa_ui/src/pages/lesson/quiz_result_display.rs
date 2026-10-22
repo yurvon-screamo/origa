@@ -41,7 +41,9 @@ pub fn QuizResultDisplay(
         <div class="mt-6 text-center">
             <Text size=TextSize::Default class=move || {
                 match quiz_result {
-                    QuizResult::Correct | QuizResult::MultiCorrect => {
+                    QuizResult::Correct
+                    | QuizResult::MultiCorrect
+                    | QuizResult::MultiLenientPass => {
                         "text-[var(--success)] font-bold".to_string()
                     },
                     QuizResult::Incorrect | QuizResult::MultiPartial => {
@@ -54,6 +56,9 @@ pub fn QuizResultDisplay(
                 {move || match quiz_result {
                     QuizResult::Correct => t!(i18n, lesson.correct).into_any(),
                     QuizResult::MultiCorrect => t!(i18n, lesson.multi_perfect).into_any(),
+                    QuizResult::MultiLenientPass => {
+                        t!(i18n, lesson.multi_lenient_pass).into_any()
+                    },
                     QuizResult::Incorrect => t!(i18n, lesson.incorrect).into_any(),
                     QuizResult::MultiPartial => t!(i18n, lesson.multi_partial).into_any(),
                     QuizResult::DontKnow => t!(i18n, lesson.dont_know_result).into_any(),
@@ -62,7 +67,10 @@ pub fn QuizResultDisplay(
             </Text>
 
             <Show when=move || {
-                quiz_result == QuizResult::MultiPartial && !missed_texts.get_value().is_empty()
+                matches!(
+                    quiz_result,
+                    QuizResult::MultiPartial | QuizResult::MultiLenientPass
+                ) && !missed_texts.get_value().is_empty()
             }>
                 <div class="mt-2 text-sm text-[var(--fg-muted)]">
                     {t!(i18n, lesson.missed_options)} {" "}

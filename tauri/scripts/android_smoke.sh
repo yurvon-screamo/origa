@@ -9,7 +9,7 @@
 #   3. the ndk-context panic text is absent.
 # Both markers are emitted through android.util.Log (JNI) — the app's only
 # reliable logcat channel: tracing has no logcat backend and native
-# stdout/stderr go to /dev/null regardless of debuggability (ADR-044).
+# stdout/stderr go to /dev/null regardless of debuggability (ADR-063).
 #
 # Usage: android_smoke.sh <apk-path> [package-id]
 # Env: ADB (default "adb"), BOOT_TIMEOUT_S, LAUNCH_TIMEOUT_S, SETTLE_S.

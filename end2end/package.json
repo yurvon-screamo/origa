@@ -14,7 +14,10 @@
         "test:headed": "playwright test --headed",
         "test:debug": "playwright test --debug",
         "report": "playwright show-report --host 0.0.0.0 --port 9323",
-        "guard:matrix": "node scripts/check-ci-matrix.mjs"
+        "guard:matrix": "node scripts/check-ci-matrix.mjs",
+        "shots": "node scripts/shots.ts",
+        "test:unit": "node --test \"shots/**/*.test.ts\"",
+        "lint": "eslint bdd pages helpers fixtures shots scripts/shots.ts *.ts --no-error-on-unmatched-pattern"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -28,6 +31,9 @@
     },
     "dependencies": {
         "dotenv": "^17.4.2"
+    },
+    "engines": {
+        "node": ">=22.18"
     },
     "type": "module"
 }

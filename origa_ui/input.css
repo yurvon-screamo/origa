@@ -7058,47 +7058,14 @@ rt {
 }
 
 /* Example-recall view (#528): sentence question, self-assessment, reveal */
-.example-recall {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    text-align: center;
-    flex: 1;
-    justify-content: center;
-}
 
-/* Translation + self-assessment live in the footer: the answer is
-   revealed first, the understood / didn't-understand choice comes after
-   it (the same order as every other card's reveal → rating pipeline). */
-.example-recall-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-}
-
-/* One line: the Japanese sentence takes the width and the play button
-   sits at the RIGHT EDGE of THAT line (owner UX). */
-.example-recall-ja-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
+/* The Japanese sentence block. No flex-grow: the centered wrapper
+   (flex-1 justify-center in example_recall_card) owns the vertical
+   centering; a growing child pinned the sentence to the top edge and
+   the translation to the bottom one (#822). */
 .example-recall-ja {
-    flex: 1;
     min-width: 0;
     font-size: 26px;
     line-height: 1.7;
     color: var(--fg-black);
-}
-
-.example-recall-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-}
-
-.example-recall-translation {
-    padding-top: 6px;
 }

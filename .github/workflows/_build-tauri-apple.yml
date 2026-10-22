@@ -136,7 +136,7 @@ jobs:
                   # deploymentTarget.iOS: 26.0 requires Xcode 26 with iOS 26 SDK.
                   # GitHub macos-15 runner ships multiple Xcode versions; pick the
                   # newest one and verify it has iphoneos26 SDK before continuing.
-                  LATEST_XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+                  LATEST_XCODE=$(find /Applications -maxdepth 1 -name 'Xcode*.app' | sort -V | tail -1)
                   if [ -z "$LATEST_XCODE" ]; then
                     echo "::error::No Xcode found in /Applications"
                     exit 1
@@ -536,7 +536,7 @@ jobs:
             - name: Select latest Xcode with macOS SDK
               shell: bash
               run: |
-                  LATEST_XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+                  LATEST_XCODE=$(find /Applications -maxdepth 1 -name 'Xcode*.app' | sort -V | tail -1)
                   if [ -z "$LATEST_XCODE" ]; then
                     echo "::error::No Xcode found in /Applications"
                     exit 1

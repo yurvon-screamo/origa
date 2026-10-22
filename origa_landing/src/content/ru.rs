@@ -374,7 +374,7 @@ const PR_BODY_RU: &str = r#"
 </section>
 <section>
   <h2>Контакты</h2>
-  <p>Вопросы по политике можно направлять на <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+  <p>Вопросы по политике можно направлять на <a href="mailto:yurvon.screamo@gmail.com">yurvon.screamo@gmail.com</a>.</p>
 </section>
 "#;
 
@@ -421,6 +421,6 @@ const TO_BODY_RU: &str = r#"
 </section>
 <section>
   <h2>11. Контакты</h2>
-  <p>Вопросы по Условиям можно направлять на <a href="mailto:yurvon@ya.ru">yurvon@ya.ru</a>.</p>
+  <p>Вопросы по Условиям можно направлять на <a href="mailto:yurvon.screamo@gmail.com">yurvon.screamo@gmail.com</a>.</p>
 </section>
 "#;

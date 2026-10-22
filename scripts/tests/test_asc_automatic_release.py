@@ -69,9 +69,7 @@ def test_known_states_partition_is_exhaustive():
     # Every documented state except the fail-closed ones is classified, and
     # the two classification sets don't overlap. A future enum addition by
     # Apple lands in UNKNOWN (exit 1) until classified here.
-    assert PATCH_STATES | NOOP_STATES | FAIL_CLOSED_STATES == (
-        ALL_APP_STORE_STATES
-    )
+    assert PATCH_STATES | NOOP_STATES | FAIL_CLOSED_STATES == (ALL_APP_STORE_STATES)
     assert not PATCH_STATES & NOOP_STATES
 
 

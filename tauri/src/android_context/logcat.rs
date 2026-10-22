@@ -3,7 +3,7 @@
 //! The only reliable observability channel on Android: tracing has no
 //! logcat backend wired in this app (`init_tracing` registers the Sentry
 //! layer only on non-desktop targets) and native stdout goes to /dev/null.
-//! The CI smoke test asserts on these markers (see ADR-044).
+//! The CI smoke test asserts on these markers (see ADR-063).
 
 use super::captured_java_vm;
 

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { Given, When, Then } from "../fixtures";
 import { KanjiPage } from "../../pages";
+import { waitUntilStable } from "../../helpers/wait";
 
 /**
  * Network log across the app-reload When-step of the art-manifest
@@ -34,26 +35,33 @@ When("пользователь перезагружает приложение �
         .waitFor({ state: "hidden", timeout: 120_000 });
 });
 
-When("дождавшись запросов кандзи-арта", async ({ page }) => {
+When("дождавшись запросов кандзи-арта", async () => {
     // Positive control: the pre-cache must reach the kanji art stage —
     // at least one covered kanji produces a request. Without this the
     // negative assertion below could pass vacuously.
-    const deadline = Date.now() + 90_000;
-    while (Date.now() < deadline) {
-        const hasArtRequest = reloadRequestLog.some(
+    const artRequestCount = () =>
+        reloadRequestLog.filter(
             (url) => url.includes("kanji_frames/") || url.includes("kanji_animations/"),
-        );
-        if (hasArtRequest) {
-            // Give the pre-cache a moment to finish its batch so a late
-            // artless request is not missed by the assert below.
-            await page.waitForTimeout(2_000);
-            return;
-        }
-        await page.waitForTimeout(500);
-    }
-    throw new Error(
-        "Positive control failed: no kanji art requests observed — the pre-cache never reached the art stage",
-    );
+        ).length;
+
+    // Сначала сам факт запроса арта: без него счётчик просто «стабилен»
+    // (ноль запросов не меняется), и контроль прошёл бы вхолостую.
+    await expect
+        .poll(artRequestCount, {
+            timeout: 90_000,
+            message:
+                "Positive control failed: no kanji art requests observed — the pre-cache never reached the art stage",
+        })
+        .toBeGreaterThan(0);
+
+    // Затем тихое окно: дать пре-кэшу дописать пачку, чтобы поздний
+    // запрос без арта не проскочил мимо проверки ниже.
+    await waitUntilStable(artRequestCount, {
+        label: "kanji art requests",
+        quietMs: 2_000,
+        timeoutMs: 90_000,
+        pollMs: 500,
+    });
 });
 
 Then("кандзи без арта на CDN не запрашиваются", async () => {
@@ -324,4 +332,35 @@ Then('отображается только группа кандзи уровн
             await expect(page.getByTestId(`kanji-grid-${other}`)).not.toBeVisible();
         }
     }
+});
+
+When('пользователь ищет кандзи {string}', async ({ page }, query: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.searchKanji(query);
+});
+
+Then('кандзи {string} отображается в сетке', async ({ page }, kanji: string) => {
+    const kanjiPage = new KanjiPage(page);
+    const card = kanjiPage.kanjiGrid
+        .getByTestId("kanji-card-item")
+        .filter({ hasText: kanji });
+    await expect(card.first()).toBeVisible({ timeout: 10_000 });
+});
+
+When('выбирает уровень кандзи {string} в drawer', async ({ page }, level: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.selectLevel(level as "N5" | "N4" | "N3" | "N2" | "N1");
+});
+
+When('ищет в drawer добавления кандзи {string}', async ({ page }, query: string) => {
+    const kanjiPage = new KanjiPage(page);
+    await kanjiPage.searchDrawerKanji(query);
+});
+
+Then('в drawer добавления кандзи отображается {string}', async ({ page }, kanji: string) => {
+    const kanjiPage = new KanjiPage(page);
+    const item = kanjiPage.drawer
+        .getByTestId("kanji-drawer-item")
+        .filter({ hasText: kanji });
+    await expect(item.first()).toBeVisible({ timeout: 10_000 });
 });

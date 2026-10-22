@@ -98,7 +98,9 @@ def main() -> int:
             data["radicals"][char]["name_en"] = name_en
             data["radicals"][char]["description_en"] = description_en
 
-        tmp_fd, tmp_path = tempfile.mkstemp(dir=str(RADICALS_PATH.parent), suffix=".json")
+        tmp_fd, tmp_path = tempfile.mkstemp(
+            dir=str(RADICALS_PATH.parent), suffix=".json"
+        )
         with open(tmp_fd, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent="\t")
             f.write("\n")
@@ -119,7 +121,9 @@ def main() -> int:
 
     total = len(after_data["radicals"])
     translated = sum(
-        1 for r in after_data["radicals"].values() if r.get("name_en") and r.get("description_en")
+        1
+        for r in after_data["radicals"].values()
+        if r.get("name_en") and r.get("description_en")
     )
     print(f"OK: {translated}/{total} radicals carry EN name+description")
     return 0

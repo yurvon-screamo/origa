@@ -5,7 +5,7 @@ mod auth_store;
 mod install_id;
 // Android JNI context ownership: since Tauri 2.11 (tao 0.35) nothing
 // publishes the JavaVM/Application into `ndk-context`, so this module owns
-// the invariant (JNI_OnLoad capture + publication). See ADR-044.
+// the invariant (JNI_OnLoad capture + publication). See ADR-063.
 #[cfg(target_os = "android")]
 mod android_context;
 // device-ai native file-based speech recognition. macOS-only — the device-ai
@@ -17,6 +17,8 @@ mod android_context;
 // back to Whisper WASM.
 #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
 mod device_ai_commands;
+mod file_commands;
+mod share_intake;
 // Auto-updater is Windows/Linux-only and is additionally compiled OUT of
 // app-store builds (`ORIGA_APP_STORE=1`): Microsoft Store policy 10.2.5
 // (and Mac App Store 2.4.5(vii)) forbid self-update outside the respective
@@ -77,7 +79,7 @@ pub fn run() {
     // handshake. Without this, the first HTTPS request panics with
     // "Expect rustls-platform-verifier to be initialized" and aborts the
     // process. The JavaVM/Application are published into `ndk-context` by
-    // `JNI_OnLoad` at library load (see `android_context`, ADR-044) — this
+    // `JNI_OnLoad` at library load (see `android_context`, ADR-063) — this
     // call is defense-in-depth for paths where publication has not happened
     // yet, and the verifier init below reads from that publication.
     #[cfg(target_os = "android")]
@@ -113,12 +115,15 @@ pub fn run() {
     // activations to an already-running instance through this plugin.
     #[cfg(any(windows, target_os = "linux"))]
     {
-        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             tracing::info!("[deep-link] single-instance activated (app was already running)");
             let _ = app
                 .get_webview_window("main")
                 .expect("no main window")
                 .set_focus();
+            // File-association opens on a running instance arrive as argv
+            // paths (deep-link URLs are filtered by the parser).
+            share_intake::ingest_argv(app, &args);
         }));
     }
 
@@ -153,6 +158,7 @@ pub fn run() {
 
     builder = builder
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build());
 
@@ -194,7 +200,7 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_device_ai_apis::init());
     }
 
-    builder
+    let app = builder
         .invoke_handler(tauri::generate_handler![
             get_current_deep_link,
             auth_store_get,
@@ -207,7 +213,12 @@ pub fn run() {
             #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
             install_update,
             #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
-            device_ai_commands::device_ai_recognize_file
+            device_ai_commands::device_ai_recognize_file,
+            file_commands::pick_and_read_file,
+            share_intake::get_pending_share,
+            share_intake::share_listener_ready,
+            share_intake::read_share_file,
+            share_intake::delete_share_file
         ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
@@ -281,8 +292,45 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    // Cold-start delivery: file-association launches arrive before any
+    // window exists, so pending collection happens pre-run and the
+    // frontend picks it up via get_pending_share.
+    {
+        let handle = app.handle();
+        share_intake::cleanup_stale_share_files(handle);
+        // Cold start: argv file-association launches arrive before the
+        // webview mounts its listener — the pending slot is the reliable
+        // channel (emit alone returns Ok with no listener and is lost).
+        let argv: Vec<String> = std::env::args().skip(1).collect();
+        for path in share_intake::parse_shared_paths(&argv) {
+            share_intake::ingest_path_cold(handle, &path);
+        }
+    }
+
+    // macOS file-association and reopened-file delivery (both cold and
+    // warm runs surface here as Opened events).
+    app.run(|_app_handle, _event| {
+        #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
+        if let tauri::RunEvent::Opened { urls } = _event {
+            for url in urls {
+                // Deep-link URLs (origa://…) resolve to no file path and
+                // are owned by the deep-link plugin; only files are ours.
+                // Cold (listener not yet mounted): pending slot is the
+                // reliable channel. Warm: emit only — a pending copy
+                // would double-deliver on the next focus poll.
+                if let Ok(path) = url.to_file_path() {
+                    if share_intake::is_listener_ready() {
+                        share_intake::ingest_path(_app_handle, &path);
+                    } else {
+                        share_intake::ingest_path_cold(_app_handle, &path);
+                    }
+                }
+            }
+        }
+    });
 }
 
 /// Starts the Sentry release-health session with the anonymous install id
@@ -421,7 +469,7 @@ fn init_sentry() -> Option<sentry::ClientInitGuard> {
 /// context.
 ///
 /// The JavaVM and Application context come from our own publication in
-/// `android_context` (ADR-044) — `ndk_context::android_context()` is NOT
+/// `android_context` (ADR-063) — `ndk_context::android_context()` is NOT
 /// used here: since Tauri 2.11 (tao 0.35) nothing populates that global and
 /// reading it aborts the process.
 ///
@@ -456,7 +504,7 @@ fn init_platform_verifier_android() {
     match rustls_platform_verifier::android::init_with_env(env, context) {
         Ok(()) => {
             // Both channels on purpose: tracing feeds Sentry in production
-            // (ADR-036), logcat is the CI smoke-test marker (ADR-044).
+            // (ADR-036), logcat is the CI smoke-test marker (ADR-063).
             tracing::info!("[rustls] platform-verifier initialized for Android");
             android_context::logcat_info("[rustls] platform-verifier initialized for Android");
         },

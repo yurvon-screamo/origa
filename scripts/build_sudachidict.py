@@ -29,31 +29,63 @@ from pathlib import Path
 # left/right context ids: 連体詞=5979/5979, 感動詞=5688/5688 (same-POS rows in core_lex).
 RENDAISHI = "5979,5979"
 KANDOUSHI = "5688,5688"
-MEISHI = "5139,5139"   # 普通名詞 contexts (same as KANJI unk rows)
+MEISHI = "5139,5139"  # 普通名詞 contexts (same as KANJI unk rows)
+
 
 def row(surface, pos, reading, ctx, cost=4000):
-    return (f"{surface},{ctx},{cost},{surface},{pos},*,*,*,*,*,"
-            f"{reading},{surface},*,A,*,*,*,*")
+    return (
+        f"{surface},{ctx},{cost},{surface},{pos},*,*,*,*,*,"
+        f"{reading},{surface},*,A,*,*,*,*"
+    )
+
 
 EXTRA_WORDS = [
     # 連体詞 compounds UniDic split (そう+いう); learners see them as one word
-    *[row(w, "連体詞", r, RENDAISHI) for w, r in [
-        ("そういう", "ソウイウ"), ("こういう", "コウイウ"), ("ああいう", "アアイウ"),
-        ("という", "トイウ"), ("ていう", "テイウ"), ("っていう", "ッテイウ"),
-        ("なんていう", "ナンテイウ"), ("といった", "トイッタ"), ("そういった", "ソウイッタ"),
-        ("そういうふうに", "ソウイウフウニ"), ("こういうふうに", "コウイウフウニ"),
-        ("ああいうふうに", "アアイウフウニ"), ("どういうふうに", "ドウイウフウニ"),
-        ("そうした", "ソウシタ"), ("こうした", "コウシタ"), ("ちょっとした", "チョットシタ"),
-        ("ふとした", "フトシタ"), ("れっきとした", "レッキトシタ"),
-        ("他の", "タノ"), ("当の", "トウノ"), ("これらの", "コレラノ"),
-        ("それらの", "ソレラノ"), ("あれらの", "アレラノ"), ("なんらかの", "ナンラカノ"),
-        ("何らかの", "ナンラカノ"), ("まさかの", "マサカノ"), ("あまりの", "アマリノ"),
-        ("たっての", "タッテノ"), ("しかるべき", "シカルベキ"), ("然るべき", "シカルベキ"),
-        ("恐るべき", "オソルベキ"), ("見知らぬ", "ミシラヌ"),
-        ("ありとあらゆる", "アリトアラユル"), ("聖なる", "セイナル"),
-        ("確固たる", "カッコタル"), ("最たる", "サイタル"), ("微々たる", "ビビタル"),
-        ("隠然たる", "インゼンタル"), ("輝ける", "カガヤケル"), ("そうゆう", "ソウユウ"),
-    ]],
+    *[
+        row(w, "連体詞", r, RENDAISHI)
+        for w, r in [
+            ("そういう", "ソウイウ"),
+            ("こういう", "コウイウ"),
+            ("ああいう", "アアイウ"),
+            ("という", "トイウ"),
+            ("ていう", "テイウ"),
+            ("っていう", "ッテイウ"),
+            ("なんていう", "ナンテイウ"),
+            ("といった", "トイッタ"),
+            ("そういった", "ソウイッタ"),
+            ("そういうふうに", "ソウイウフウニ"),
+            ("こういうふうに", "コウイウフウニ"),
+            ("ああいうふうに", "アアイウフウニ"),
+            ("どういうふうに", "ドウイウフウニ"),
+            ("そうした", "ソウシタ"),
+            ("こうした", "コウシタ"),
+            ("ちょっとした", "チョットシタ"),
+            ("ふとした", "フトシタ"),
+            ("れっきとした", "レッキトシタ"),
+            ("他の", "タノ"),
+            ("当の", "トウノ"),
+            ("これらの", "コレラノ"),
+            ("それらの", "ソレラノ"),
+            ("あれらの", "アレラノ"),
+            ("なんらかの", "ナンラカノ"),
+            ("何らかの", "ナンラカノ"),
+            ("まさかの", "マサカノ"),
+            ("あまりの", "アマリノ"),
+            ("たっての", "タッテノ"),
+            ("しかるべき", "シカルベキ"),
+            ("然るべき", "シカルベキ"),
+            ("恐るべき", "オソルベキ"),
+            ("見知らぬ", "ミシラヌ"),
+            ("ありとあらゆる", "アリトアラユル"),
+            ("聖なる", "セイナル"),
+            ("確固たる", "カッコタル"),
+            ("最たる", "サイタル"),
+            ("微々たる", "ビビタル"),
+            ("隠然たる", "インゼンタル"),
+            ("輝ける", "カガヤケル"),
+            ("そうゆう", "ソウユウ"),
+        ]
+    ],
     row("やれやれ", "感動詞", "ヤレヤレ", KANDOUSHI),
     # rewrite Sudachi OOV placeholder rows (-1,-1,0) with real contexts
     row("ひとつ", "名詞", "ヒトツ", MEISHI),
@@ -91,7 +123,9 @@ METADATA = """{
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--src", required=True, help="dir with *_lex.csv + unk.def + char.def")
+    ap.add_argument(
+        "--src", required=True, help="dir with *_lex.csv + unk.def + char.def"
+    )
     ap.add_argument("--lindera", required=True, help="path to lindera CLI executable")
     ap.add_argument("--out", required=True, help="destination dir for built dictionary")
     ap.add_argument("--work", default=None, help="scratch dir (default: <src>-build)")
@@ -133,7 +167,10 @@ def main():
     # 2) align unk.def: insert display_surface placeholder after cost column
     unk_src = src / "unk.def"
     unk_dst = work / "unk.def"
-    with unk_src.open(encoding="utf-8") as f, unk_dst.open("w", encoding="utf-8", newline="") as g:
+    with (
+        unk_src.open(encoding="utf-8") as f,
+        unk_dst.open("w", encoding="utf-8", newline="") as g,
+    ):
         for line in f:
             line = line.rstrip("\r\n")
             if not line:
@@ -149,8 +186,16 @@ def main():
     meta_path.write_text(METADATA, encoding="utf-8")
 
     # 4) build
-    cmd = [args.lindera, "build", "--src", str(work), "--dest", str(out),
-           "--metadata", str(meta_path)]
+    cmd = [
+        args.lindera,
+        "build",
+        "--src",
+        str(work),
+        "--dest",
+        str(out),
+        "--metadata",
+        str(meta_path),
+    ]
     print("+", " ".join(cmd))
     r = subprocess.run(cmd)
     if r.returncode != 0:

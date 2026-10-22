@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-reading-quiz",
+  "screen": "quiz-answer",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 143016,
+  "sha256": "0517dd99fb906df9f70690b1c43476343cff3b5df8a9e0c073344c022f75cddb",
+  "capturedAt": "2026-10-21T20:04:02.961Z",
+  "commit": "4aea02f5c30dade62bceef17dc15f1e03abb1cc7",
+  "baseURL": "http://localhost:1430",
+  "cdnBaseUrl": "http://localhost:8080",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-answer--mobile-0517dd99.png",
+  "uploadedSha256": "0517dd99fb906df9f70690b1c43476343cff3b5df8a9e0c073344c022f75cddb",
+  "uploadedAt": "2026-10-21T20:04:17.205Z"
+}

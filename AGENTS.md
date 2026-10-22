@@ -25,7 +25,7 @@ origa_landing/  — SSR landing site (Leptos 0.8 + Axum)
 tauri/          — Tauri v2 desktop app
 end2end/     — Playwright E2E тесты
 utils/       — CLI утилиты
-packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-058)
+packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-065)
 cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
 scripts/     — Python скрипты обработки данных
 docs/        — документация (decisions/, marketing/)
@@ -53,7 +53,7 @@ $env:TRUNK_BUILD_CARGO_PROFILE = "wasm-dev"
 cd tauri && cargo tauri android dev
 ```
 
-**JNI-контекст (ADR-044):** с Tauri 2.11 (tao 0.35) никто не публикует
+**JNI-контекст (ADR-063):** с Tauri 2.11 (tao 0.35) никто не публикует
 JavaVM/Application в `ndk-context` — инвариант принадлежит
 `tauri/src/android_context.rs` (публикация в `JNI_OnLoad`, Application через
 `ActivityThread.currentApplication()`). Не читайте `ndk_context` до
@@ -106,6 +106,27 @@ cargo fmt --check && cargo fmt
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
+### Сборка лендинга (`origa_landing`)
+
+Для пересборки CSS лендинга нужны node-зависимости: выполните `npm ci` в `origa_landing/` (альтернатива — `bun install`). Без них `cargo build -p origa_landing` не падает: когда требуется пересборка, build-скрипт печатает `cargo:warning` и продолжает с закоммиченным `style/landing.processed.css`, который может быть устаревшим (в свежем клоне закоммиченный CSS обычно свеж и пересборка не нужна вовсе). Если CSS-файла нет вовсе — сборка падает с инструкцией. Production Docker не содержит node и всегда использует закоммиченный CSS: изменили `style/landing.css` — пересоберите и закоммитьте `landing.processed.css` (`just css` в `origa_landing/`), иначе правка не попадёт в прод.
+
+### SSR-тесты лендинга (ADR-066)
+
+Целевые тесты `origa_landing` требуют фичу `ssr` — без неё они не собираются
+вообще, поэтому `cargo test --workspace` их не выполняет. Отдельная команда:
+
+```powershell
+$env:ORIGA_APP_BASE_URL = "https://app.origa.uwuwu.net"     # build.rs landing паникует без неё
+$env:ORIGA_LANDING_BASE_URL = "https://origa.uwuwu.net"      # вшивается в бинарь (env! в тестах)
+$env:CARGO_PROFILE_DEV_DEBUG = "0"; $env:CARGO_PROFILE_TEST_DEBUG = "0"
+cargo test -p origa_landing --features ssr
+```
+
+`CARGO_PROFILE_*_DEBUG=0` обязателен: крейт встраивает ~120 markdown-файлов
+(`include_str!` в реестрах блога и доков), debug-информация не влезает в линкер
+rust-lld (stable ≥ 1.98) — «relocation out of range» / «section too large».
+Без отладочной информации крейт линкуется за секунды вместо десяти минут.
+
 ## Ключевые зависимости
 
 `rs-fsrs` (FSRS), `ort` + NDLOCR-Lite (OCR), `ort` + `rustfft` (Whisper STT),
@@ -116,11 +137,11 @@ cargo fmt --check && cargo fmt
 
 ## CDN / S3
 
-Tigris object storage (S3-compatible, endpoint `t3.storageapi.dev`) под Railway — bucket `adaptable-foodbox-ucep7wx`, раздача через s3-proxy (docker-контейнер `pottava/s3-proxy` на Aeza VPS за Caddy, ADR-057) напрямую в Tigris; Railway-хоп из цепочки убран (ADR-049 — проксирование всех хостов uwuwu.net через VPS): URL `https://s3.origa.uwuwu.net` вшивается через `build.rs`. Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`. Миграция на user-owned Tigris (ADR-037) была откачена в #372 (DPI-throttle на Cloudflare-роутинге для РФ); orphaned-ресурсы той миграции (user-Tigris bucket `origa-cdn` ~4 GB, R2, Worker) ждут cleanup.
+Tigris object storage (S3-compatible, endpoint `https://t3.storage.dev`) — bucket `origa`, раздача через CloudFront (`infra/cloudfront/cf-dist-cdn-net.json`, ADR-058) прямо из Tigris; URL `https://s3.origa.uwuwu.net` вшивается через `build.rs`. Трейт: `origa/src/traits/cdn_provider.rs`, реализация: `origa_ui/src/repository/cdn_provider.rs`. Миграция на user-owned Tigris (ADR-037) была откачена в #372 (DPI-throttle на Cloudflare-роутинге для РФ); orphaned-ресурсы той миграции (user-Tigris bucket `origa-cdn` ~4 GB, R2, Worker) ждут cleanup.
 
 **Доставка из РФ** (ADR-061, 2026-09-30): RF-ветка Bunny geo-split → ВМ Aeza-RU СПб `193.233.217.243` (nginx stream SNI-demux → Railway/Tigris, серты acme.sh DNS-01 Bunny, IaC `~/rf-proxy-infra`). Мир идёт напрямую: CNAME на Railway (origa/app) и CloudFront (s3). Старый Aeza-Frankfurt фронт залочен РКН из РФ целиком (ADR-059 superseded для RF-ветки); для мира pass/uwuwu.ru/xray остаются на нём. План Б при деградации прямого маршрута — цепочка РФ→EU (~30 мин на развёртывание).
 
-Профиль `~/.aws/credentials [origa]` — для `deploy_cdn.py` / `refresh_cache_control.py`. Контракт кредов: env `AWS_ACCESS_KEY_ID` при наличии приоритетнее профиля — CI передаёт scoped-ключи через env.
+Профиль `~/.aws/credentials [origa]` — для `deploy_cdn.py` / `refresh_cache_control.py`. Контракт кредов: env `AWS_ACCESS_KEY_ID` при наличии приоритетнее профиля — CI передаёт scoped-ключи через env. Скрины PR заливаются профилем `[origa-t3]` (endpoint `https://t3.storage.dev`, bucket `origa`) — см. «UI-скриншоты».
 
 Все объекты — статические, но кэшируются по-разному в зависимости от частоты изменений. Политика в `scripts/_cdn_cache.py`, применяется в `deploy_cdn.py`.
 
@@ -166,15 +187,33 @@ python scripts/refresh_cache_control.py             # применить (server
 
 Идемпотентен: обновляются только объекты с неверным Cache-Control. При сбое на середине объект пропускается, скрипт продолжает; повторный запуск дозаполнит остальное. Ключи с shell-метасимволами (потенциальная инъекция через `pwsh -Command`) отбрасываются с предупреждением; CJK-имена kanji-файлов (`一.svg` и т.п.) обрабатываются корректно.
 
+## UI-скриншоты
+
+Скриншоты интерфейса снимает один инструмент — `end2end/shots/` (ADR-067). Свой скрипт снятия НЕ пиши: новый экран = запись в каталог сценариев.
+
+```bash
+cd end2end
+npm run shots -- list                                          # каталог экранов
+npm run shots -- capture --scenario home --label issue-808      # снимок (desktop 1280×800 + mobile 390×844)
+npm run shots -- capture --scenario home --label issue-808 --upload   # + заливка в CDN и ссылки
+npm run shots -- index                                         # пересобрать индекс реестра
+```
+
+- **Проверка окружения до съёмки** (`shots/preflight.ts`): без `cdn/fonts/` бандл соберётся без `@font-face` (скрины уйдут в sans-serif) — это ошибка; отставший локальный корпус, зомби-ворктри на порту 1420 и отсутствие словаря токенизатора — предупреждения.
+- **Куда падают файлы**: `/tmp/opencode/shots/<label>/` — вне репозитория (PNG в git не коммитим, #797).
+- **Реестр**: `docs/ui-screenshots/shots/*.json` (по файлу на снимок) + генерируемый индекс `docs/ui-screenshots/README.md`. В записи — размеры, sha256, время, коммит, адрес сборки и ссылка на CDN.
+- **Заливка**: ключ content-addressed — `pr-screenshots/{label}/{scenario}--{screen}--{viewport}-{sha8}.png`, `immutable` допустим именно потому, что ключ содержит хеш (доктрина `scripts/_cdn_cache.py`, прецедент #182). Профиль AWS — `[origa-t3]`.
+- **Пайп фабрики** требует скрины в отчёте и в теле PR — бери их отсюда, а не пиши свой сценарий.
+
 ## CI/CD
 
 Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
 CI: lint + test + e2e + docker build (2 images: landing + ui).
 CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
-Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-058, supersedes ADR-056), AppImage убран (ADR-056).
+Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-065, supersedes ADR-064), AppImage убран (ADR-064).
 
-**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
+**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
 
 Инварианты (нарушение = silent skip / дырявый gate; канон — доктрина в шапке ci.yml, номера совпадают):
 

@@ -14,6 +14,10 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
+    # Single source of the Linux system packages (GTK speech stack):
+    # consumed by the apt cache step (PR/branch runs) and by the plain
+    # install step (tag runs) — one place to bump, no list drift.
+    GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
 
 permissions:
     contents: read
@@ -64,6 +68,7 @@ jobs:
               steps.components.outputs.landing == 'true' ||
               steps.components.outputs.tauri == 'true' ||
               steps.components.outputs.utils == 'true' ||
+              steps.components.outputs.tts == 'true' ||
               steps.components.outputs.ci == 'true' }}
             run_macos_check: >-
               ${{ (github.event_name != 'pull_request' ||
@@ -85,6 +90,10 @@ jobs:
               steps.components.outputs.wasm == 'true' ||
               steps.components.outputs.tauri == 'true' ||
               steps.components.outputs.utils == 'true' ||
+              steps.components.outputs.ci == 'true' }}
+            run_landing_test: >-
+              ${{ github.event_name != 'pull_request' ||
+              steps.components.outputs.landing == 'true' ||
               steps.components.outputs.ci == 'true' }}
             run_wasm_test: >-
               ${{ github.event_name != 'pull_request' ||
@@ -159,6 +168,13 @@ jobs:
                           - origa_ui/**
                       landing:
                           - origa_landing/**
+                          # The landing crate takes its dependencies from
+                          # the workspace manifest: a leptos/axum/tokio bump
+                          # changes the landing code without touching
+                          # origa_landing/** — the landing tests must run
+                          # for those pull requests too.
+                          - Cargo.toml
+                          - Cargo.lock
                       tauri:
                           - tauri/**
                           - tauri-plugin-aswebauth/**
@@ -167,6 +183,8 @@ jobs:
                           - end2end/**
                       utils:
                           - utils/**
+                      tts:
+                          - tts/**
                       ci:
                           - .github/**
 
@@ -188,6 +206,23 @@ jobs:
               with:
                   fetch-depth: 0
                   filter: blob:none
+
+            - name: Fail on unresolved merge-conflict markers
+              # Incident 3f1353bd → #791: a manual merge committed
+              # unresolved conflict markers and shipped green because the
+              # new tts/ directory was in no path-filter — every job,
+              # Lint included, legally skipped. This job is never
+              # path-filtered (CI invariant #3), so the gate covers every
+              # PR — docs-only and scripts-only included. git grep exit
+              # codes: 0 = found, 1 = clean, >1 = git error (fail loud,
+              # never silently pass).
+              run: |
+                  rc=0
+                  git grep -nE '^(<<<<<<< |>>>>>>> )' || rc=$?
+                  [ "$rc" -le 1 ] || { echo "git grep failed (rc=$rc)" >&2; exit "$rc"; }
+                  [ "$rc" -eq 0 ] || exit 0
+                  echo "::error::Unresolved merge-conflict markers committed — resolve before merge" >&2
+                  exit 1
 
             - name: Calculate version
               id: version
@@ -255,12 +290,21 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -277,6 +321,27 @@ jobs:
             - name: Build landing CSS
               working-directory: origa_landing
               run: npm ci && npm run build:css
+
+            - name: Install shellcheck
+              # noble ships 0.9.0.1 — the version the tts/ scripts are
+              # verified against (koalaman/shellcheck:v0.9.0 locally).
+              run: sudo apt-get install -y --no-install-recommends shellcheck
+
+            - name: Lint tts python scripts
+              # E9 = syntax errors (the incident class: committed conflict
+              # markers), F = pyflakes (undefined names, unused imports).
+              # Version is pinned: ruff's default rule set drifts between
+              # releases. Cosmetic E401/E402/E701 findings in the
+              # GPU-workstation operational code are deliberately out of
+              # scope.
+              uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+              with:
+                  version: "0.17.1"
+                  src: tts
+                  args: check --select E9,F
+
+            - name: Lint tts shell scripts
+              run: shellcheck tts/*.sh
 
             - name: Check formatting
               run: cargo fmt --check --all
@@ -342,12 +407,21 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -374,6 +448,107 @@ jobs:
             - name: Run tests
               run: cargo test --workspace --exclude origa_landing
 
+    # Landing SSR tests (#800). The 300+ integration tests of
+    # origa_landing were green but invisible to CI: the Test job excludes
+    # the package (`cargo test --workspace --exclude origa_landing`) and
+    # clippy never links it, so the ssr code paths and their tests were
+    # compiled only by the landing Docker image — without tests and
+    # without lints.
+    #
+    # A separate job (not a step in the Test job) on purpose: the landing
+    # crate is the heaviest compile in the workspace, so it gets a runner
+    # of its own and runs in parallel with the rest of the pipeline
+    # instead of queueing behind the workspace tests.
+    landing-test:
+        name: Test (landing SSR)
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_landing_test == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 45
+        env:
+            # origa_landing/build.rs panics without the app URL and stamps
+            # the landing URL into the binary (env! in the tests).
+            ORIGA_LANDING_BASE_URL: "https://${{ vars.ORIGA_BASE_URI }}"
+            ORIGA_APP_BASE_URL: "https://${{ vars.ORIGA_APP_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # origa_landing embeds ~120 markdown files (include_str! in the
+            # blog and docs registries), so its debug-info string table
+            # grows past what rust-lld — the default linker on stable
+            # >= 1.98 — can link: "relocation R_X86_64_32 out of range" /
+            # "section too large" (reproduced locally, issue #800).
+            # Without debug info the crate links and compiles in seconds
+            # instead of minutes, and the rustc peak drops from ~20 GB to
+            # a fraction of it. A package-level profile override would fix
+            # local builds too, but that changes Cargo.toml (ADR-066
+            # follow-up).
+            CARGO_PROFILE_DEV_DEBUG: "0"
+            CARGO_PROFILE_TEST_DEBUG: "0"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  shared-key: origa-ci-v2
+                  save-if: false
+
+            # Issue #832: a fresh clone without landing node deps must build.
+            # Runs before setup-node/npm ci, so node_modules cannot exist.
+            # touch() makes the committed landing.processed.css stale, forcing
+            # build.rs off the mtime-fresh skip onto the rebuild path; the
+            # grep asserts the no-deps warning branch, not just a green exit.
+            - name: Build landing without node dependencies
+              # bash gives -eo pipefail (the default shell has no pipefail,
+              # so a failed cargo build would be masked by tee's exit code).
+              shell: bash
+              run: |
+                  test ! -e origa_landing/node_modules
+                  touch origa_landing/style/landing.css
+                  cargo build -p origa_landing 2>&1 | tee /tmp/landing-no-deps-build.log
+                  grep -q "Tailwind CSS not installed" /tmp/landing-no-deps-build.log
+
+            - name: Setup Node.js for landing CSS
+              uses: actions/setup-node@v7
+              with:
+                  node-version: "20"
+
+            # Keeps build.rs from shelling out to `npx tailwindcss` (which
+            # would fetch tailwind from the registry and can fail the
+            # build); mirrors the lint and test jobs.
+            - name: Build landing CSS
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
+
+            # Freshness gate (#831): the committed landing.processed.css
+            # must match a clean rebuild from landing.css. build.rs skips
+            # the rebuild when mtimes look equal (always true in a fresh
+            # clone), and the Docker image ships the committed file, so a
+            # drifted artifact reaches production with no other net — this
+            # exact hole shipped the #807 footer badge without its CSS.
+            # On drift the step log carries git diff --stat plus the full
+            # diff of the minified (single-line) stylesheet.
+            - name: Verify committed landing CSS is fresh
+              working-directory: origa_landing
+              run: |
+                  if ! git diff --exit-code --stat -- style/landing.processed.css; then
+                      git --no-pager diff -- style/landing.processed.css
+                      echo "::error::origa_landing/style/landing.processed.css is stale — run 'npm ci && npm run build:css' in origa_landing and commit the artifact (see origa_landing/AGENTS.md)"
+                      exit 1
+                  fi
+
+            - name: Run landing SSR tests
+              run: cargo test -p origa_landing --features ssr
+
+            # The ssr code and its test targets were never linted: the
+            # workspace clippy run builds the crate WITHOUT the ssr
+            # feature, so src/server.rs, src/main.rs and the ten ssr
+            # integration test targets are not compiled at all. The crate
+            # is built here anyway, so the check is nearly free.
+            - name: Clippy landing (ssr)
+              run: cargo clippy -p origa_landing --features ssr --all-targets -- -D warnings
+
     wasm-test:
         name: WASM Component Tests
         permissions:
@@ -391,12 +566,21 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -442,12 +626,21 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
-                  packages:
-                      libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-                      protobuf-compiler libspeechd-dev
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache): without it they fail with "the system
+              # library glib-2.0 required by crate glib-sys was not found".
+              if: github.ref_type == 'tag'
+              run: >-
+                  sudo apt-get install -y --no-install-recommends
+                  ${{ env.GTK_SYSTEM_PACKAGES }}
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -490,7 +683,7 @@ jobs:
 
     # Runs the Android app on an emulator — the only CI net for the class of
     # startup bugs that compile fine and build fine but crash on launch
-    # (born from the tao 0.35 ndk-context break, ADR-044). Builds a debug
+    # (born from the tao 0.35 ndk-context break, ADR-063). Builds a debug
     # APK for the SAME ABI as the emulator (x86_64); production release
     # builds stay aarch64 via _build-tauri.yml. The WASM frontend is built
     # in-job (self-contained: no artifact cascades, no skip-legal traps).
@@ -517,10 +710,18 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
+              # No tag-ref saves (issue #803) — rationale at Cache Gradle.
+              if: github.ref_type != 'tag'
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages: protobuf-compiler
                   version: 1.1  # bumped: apt cache restored stale .pc files after runner image update (glib-2.0.pc missing)
+            - name: Install system packages (tag runs)
+              # The apt cache action is skipped on tag runs (issue #803) — but
+              # it also INSTALLS the packages, so tag runs need a plain
+              # install (no cache).
+              if: github.ref_type == 'tag'
+              run: sudo apt-get install -y --no-install-recommends protobuf-compiler
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
@@ -609,7 +810,13 @@ jobs:
                   echo "--- emulator.log (first 15s) ---"
                   tail -n 30 /tmp/emulator.log || true
 
+            # Tag runs must not save caches: entries stored on a tag ref are
+            # unreachable from any other ref, so each release tag used to
+            # deposit ~3.4 GB of shadow copies and exhaust the 10 GB repo
+            # budget (issue #803). Restore on tags is a guaranteed miss today
+            # (no matching keys on master), so the step is skipped entirely.
             - name: Cache Gradle
+              if: github.ref_type != 'tag'
               uses: actions/cache@v6
               with:
                   path: |
@@ -700,7 +907,10 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v7
               with:
-                  node-version: "20"
+                  # Node 22: the screenshot tool runs on type stripping
+                  # (Node >= 22.18) and the unit tests use `node --test`
+                  # on TypeScript sources.
+                  node-version: "22"
 
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -709,6 +919,14 @@ jobs:
             - name: Verify every BDD scenario runs in CI exactly once
               working-directory: end2end
               run: node scripts/check-ci-matrix.mjs
+
+            - name: Run unit tests
+              working-directory: end2end
+              run: npm run test:unit
+
+            - name: Lint e2e sources
+              working-directory: end2end
+              run: npm run lint
 
     e2e:
         name: E2E ${{ matrix.group }}
@@ -751,6 +969,7 @@ jobs:
                   path: cdn/
 
             - name: Cache TrailBase CLI
+              if: github.ref_type != 'tag'
               id: cache-trailbase
               uses: actions/cache@v6
               with:
@@ -758,15 +977,15 @@ jobs:
                   key: trailbase-v0.28.3-verified
 
             - name: Add TrailBase to PATH
-              run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
             - name: Validate TrailBase CLI
               id: validate-trailbase
               run: |
                   if command -v trail &> /dev/null && trail --version &> /dev/null; then
-                    echo "valid=true" >> $GITHUB_OUTPUT
+                    echo "valid=true" >> "$GITHUB_OUTPUT"
                   else
-                    echo "valid=false" >> $GITHUB_OUTPUT
+                    echo "valid=false" >> "$GITHUB_OUTPUT"
                   fi
 
             - name: Install TrailBase CLI
@@ -788,6 +1007,13 @@ jobs:
             - name: Verify TrailBase
               run: trail --version
 
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  # Matches the toolchain of the matrix guard job and the
+                  # `engines` field of end2end/package.json.
+                  node-version: "22"
+
             - name: Install Node.js dependencies
               working-directory: end2end
               run: npm ci
@@ -801,6 +1027,7 @@ jobs:
               run: npx bddgen
 
             - name: Cache Playwright browsers
+              if: github.ref_type != 'tag'
               id: playwright-cache
               uses: actions/cache@v6
               with:
@@ -822,7 +1049,7 @@ jobs:
                       ;;
                     words)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(words|sets|phrases)\.feature\.spec\.js"
+                        --grep "features/(words|capture_inbox|sets|phrases)\.feature\.spec\.js"
                       ;;
                     grammar-kanji)
                       npx playwright test --project=bdd --retries=1 \
@@ -874,6 +1101,7 @@ jobs:
               run: npm ci
 
             - name: Cache Playwright browsers
+              if: github.ref_type != 'tag'
               id: playwright-cache
               uses: actions/cache@v6
               with:
@@ -1046,6 +1274,7 @@ jobs:
                 macos-check,
                 cdn-download,
                 test,
+                landing-test,
                 wasm-test,
                 e2e-build,
                 e2e-matrix-guard,
@@ -1089,6 +1318,7 @@ jobs:
                   gate "macos-check" "${{ needs.macos-check.result }}" "${{ needs.changes.outputs.run_macos_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
+                  gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
                   gate "wasm-test" "${{ needs.wasm-test.result }}" "${{ needs.changes.outputs.run_wasm_test }}"
                   gate "e2e-build" "${{ needs.e2e-build.result }}" "${{ needs.changes.outputs.run_e2e_build }}"
                   gate "e2e-matrix-guard" "${{ needs.e2e-matrix-guard.result }}" "${{ needs.changes.outputs.run_e2e_matrix_guard }}"

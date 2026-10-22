@@ -1,6 +1,6 @@
 //! WASM render tests for `pages/home` components: `WelcomeCard`,
 //! `JlptProgressCard`, `JlptSkeleton`, `CategoryProgressGrid`,
-//! `InsightsSection`, `StudiedTodayList`.
+//! `InsightsSection`, `StudiedTodayList`, `TodayOverviewCard`.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -12,11 +12,12 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use crate::pages::home::category_grid::CategoryProgressGrid;
-use crate::pages::home::dashboard_stats::RecentlyStudiedItem;
+use crate::pages::home::dashboard_stats::{CompletionForecast, RecentlyStudiedItem};
 use crate::pages::home::insights::InsightsSection;
 use crate::pages::home::insights::panels_data::InsightsPanels;
 use crate::pages::home::{
-    JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, WelcomeCard,
+    JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, TodayOverviewCard,
+    WelcomeCard,
 };
 use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
 
@@ -641,5 +642,57 @@ async fn jft_readiness_card_visibility_tracks_coverage_signal() {
             .query_selector("[data-testid=\"jft2\"]")
             .is_ok_and(|el| el.is_some()),
         "card must render once coverage arrives"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TodayOverviewCard — счётчик повторений (#809)
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Карточка «Обзор дня» с пустыми данными: для тестов счётчика повторений
+/// важны только проп `overview`/`forecast`, сам счётчик приходит отдельным
+/// пропом.
+fn mount_today_overview_card(wrapper: &web_sys::Element, test_id: &'static str, due_count: usize) {
+    mount_with_i18n(wrapper, move || {
+        view! {
+            <TodayOverviewCard
+                overview=Signal::from(origa::domain::TodayOverview::default())
+                forecast=Signal::from(CompletionForecast::default())
+                due_count=Signal::from(due_count)
+                test_id=test_id
+            />
+        }
+        .into_any()
+    });
+}
+
+#[wasm_bindgen_test]
+async fn today_overview_card_shows_due_count() {
+    let wrapper = create_wrapper();
+    mount_today_overview_card(&wrapper, "tod1", 42);
+    tick().await;
+
+    let due = wrapper
+        .query_selector("[data-testid=\"tod1-due-count\"]")
+        .unwrap()
+        .expect("the due counter must render");
+    let text = due.text_content().unwrap();
+    assert!(
+        text.contains("42"),
+        "counter must show the number; got: {text}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn today_overview_card_hides_due_count_when_nothing_is_due() {
+    let wrapper = create_wrapper();
+    mount_today_overview_card(&wrapper, "tod2", 0);
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"tod2-due-count\"]")
+            .is_ok_and(|el| el.is_none()),
+        "the counter must stay hidden when no card is due"
     );
 }

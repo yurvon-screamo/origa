@@ -10,6 +10,15 @@ use leptos::prelude::*;
 
 use super::scoring_helpers::ScoringCard;
 
+/// Видимость аудио скоринг-карты (кнопка + автозвук): Kanji — чтение есть
+/// сам ответ ассессмента; счётный суффикс (#808) — как в уроке
+/// (см. lesson_card.rs): у голого знака нет единственного чтения,
+/// словарная озвучка учит ошибке. Третья беззвучная поверхность
+/// (kanji, counter + будущая) — повод консолидировать в метод `CardType`.
+fn scoring_audio_available(card_type: CardType) -> bool {
+    !matches!(card_type, CardType::Kanji | CardType::Counter)
+}
+
 /// Single onboarding-scoring card. Split out of `ScoringStep` so the parent
 /// stays under the 200-line file cap and so the question-area branch (kanji
 /// versus the rest) is testable in isolation.
@@ -17,7 +26,10 @@ use super::scoring_helpers::ScoringCard;
 /// Kanji cards intentionally render without [`FuriganaText`] or
 /// [`AudioButtons`]: the reading is what the user is being asked "do you know
 /// this kanji?" about, so revealing it next to the character would defeat the
-/// assessment. Readings + meaning land in the answer area instead.
+/// assessment. Readings + meaning land in the answer area instead. Counter
+/// suffixes render plain + silent for the same class of reason (#808): a
+/// bare sign has no single reading, the dictionary one is wrong when
+/// counting (時 → とき instead of じ).
 #[component]
 pub fn ScoringCardView(
     card: Signal<Option<ScoringCard>>,
@@ -33,14 +45,16 @@ pub fn ScoringCardView(
     };
 
     // Kanji cards are not auto-spoken: hearing the reading would leak the
-    // answer the assessment is asking the user to recall. Stop any
-    // currently-playing audio BEFORE starting the new one so rapid card
-    // transitions don't overlap. The device-ai plugin also flushes natively
-    // (Android QUEUE_FLUSH, iOS stopSpeaking), but this synchronous stop
-    // covers the CDN-audio and Web Speech API paths too.
+    // answer the assessment is asking the user to recall. Counter suffixes
+    // are muted for the same class of reason (#808): a bare sign has no
+    // single reading, the dictionary one (時 → とき) is wrong when counting
+    // (じ). Stop any currently-playing audio BEFORE starting the new one so
+    // rapid card transitions don't overlap. The device-ai plugin also flushes
+    // natively (Android QUEUE_FLUSH, iOS stopSpeaking), but this synchronous
+    // stop covers the CDN-audio and Web Speech API paths too.
     Effect::new(move |_| {
         if let Some(c) = card.get() {
-            if c.card_type != CardType::Kanji && is_speech_supported() {
+            if scoring_audio_available(c.card_type) && is_speech_supported() {
                 stop_current_audio();
                 speak_word(&c.question, 1.0);
             }
@@ -52,6 +66,11 @@ pub fn ScoringCardView(
             {move || {
                 card.get().map(|c| {
                     let is_kanji = matches!(c.card_type, CardType::Kanji);
+                    // Счётный суффикс — несловесная карта: плейн-текст без
+                    // фуриганы (словарное чтение кандзи противоречит счётному
+                    // контексту, #808; тот же паттерн, что is_counter в
+                    // вопросе урока).
+                    let is_counter = matches!(c.card_type, CardType::Counter);
                     let card_type = c.card_type;
                     let question = c.question.clone();
                     let question_for_audio = c.question.clone();
@@ -75,7 +94,7 @@ pub fn ScoringCardView(
                                     {card_type.label(&i18n_for_card)}
                                 </Tag>
                                 {move || {
-                                    if is_kanji {
+                                    if !scoring_audio_available(card_type) {
                                         ().into_any()
                                     } else {
                                         view! {
@@ -99,6 +118,12 @@ pub fn ScoringCardView(
                                     if is_kanji {
                                         view! {
                                             <div class="text-2xl" data-testid="scoring-step-question-kanji">
+                                                {q}
+                                            </div>
+                                        }.into_any()
+                                    } else if is_counter {
+                                        view! {
+                                            <div class="text-2xl" data-testid="scoring-step-question-plain">
                                                 {q}
                                             </div>
                                         }.into_any()
@@ -166,5 +191,24 @@ pub fn ScoringCardView(
                 })
             }}
         </div>
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    /// #808: Kanji и Counter беззвучны в скоринге (чтение — ответ
+    /// ассессмента / у голого суффикса нет единственного чтения);
+    /// словесные и грамматические карты озвучиваются.
+    #[rstest]
+    #[case(CardType::Vocabulary, true)]
+    #[case(CardType::Grammar, true)]
+    #[case(CardType::Phrase, true)]
+    #[case(CardType::Kanji, false)]
+    #[case(CardType::Counter, false)]
+    fn scoring_audio_available_by_card_type(#[case] card_type: CardType, #[case] expected: bool) {
+        assert_eq!(scoring_audio_available(card_type), expected);
     }
 }

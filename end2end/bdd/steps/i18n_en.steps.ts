@@ -22,5 +22,4 @@ Then('боковая навигация на английском', async ({ pag
     const homePage = new HomePage(page);
     await expect(homePage.sidebar).toBeVisible({ timeout: 30_000 });
     await expect(homePage.sidebar).toContainText("Words");
-    await expect(homePage.sidebar).toContainText("Phrases");
 });

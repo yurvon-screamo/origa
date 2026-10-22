@@ -190,7 +190,9 @@ def test_fresh_blobs_produce_no_problems(tmp_path: Path):
     # Arrange
     _sources_with_content(tmp_path, FURIGANA_CONTENT, CHUNK_CONTENT)
     furigana_sha = hashlib.sha256(FURIGANA_CONTENT).digest()
-    _write_blob(tmp_path / "dictionaries/JmdictFurigana.rkyv", RKYV_SCHEMA_VERSION, furigana_sha)
+    _write_blob(
+        tmp_path / "dictionaries/JmdictFurigana.rkyv", RKYV_SCHEMA_VERSION, furigana_sha
+    )
     _write_blob(
         tmp_path / "dictionary/vocabulary.rkyv",
         RKYV_SCHEMA_VERSION,
@@ -379,10 +381,10 @@ class TestAssertKanjiArtPlausible:
 
         animations = tmp_path / "kanji_animations"
         animations.mkdir()
-        (animations / "日.svg").write_text("<svg xmlns=\"x\"/>", encoding="utf-8")
+        (animations / "日.svg").write_text('<svg xmlns="x"/>', encoding="utf-8")
         frames = tmp_path / "kanji_frames"
         frames.mkdir()
-        (frames / "本.svg").write_bytes(b"\xef\xbb\xbf  <svg xmlns=\"x\"/>")
+        (frames / "本.svg").write_bytes(b'\xef\xbb\xbf  <svg xmlns="x"/>')
 
         assert_kanji_art_plausible(tmp_path)  # must not raise
 
@@ -394,7 +396,7 @@ class TestAssertKanjiArtPlausible:
         art = tmp_path / "kanji_animations"
         art.mkdir()
         (art / "日.svg").write_text(
-            "<?xml version=\"1.0\"?><svg xmlns=\"x\"/>", encoding="utf-8"
+            '<?xml version="1.0"?><svg xmlns="x"/>', encoding="utf-8"
         )
 
         with pytest.raises(SystemExit):
@@ -442,7 +444,15 @@ def test_sync_directories_size_only_for_truly_static_dirs(tmp_path, monkeypatch)
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(
+        local_dir,
+        prefix,
+        cache_control,
+        dry_run,
+        ignore_mtime=False,
+        force=False,
+        exclude_prefixes=None,
+    ):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
@@ -469,7 +479,15 @@ def test_sync_directories_ignore_mtime_flag_covers_release_and_static(
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(
+        local_dir,
+        prefix,
+        cache_control,
+        dry_run,
+        ignore_mtime=False,
+        force=False,
+        exclude_prefixes=None,
+    ):
         received.append((prefix, ignore_mtime))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)
@@ -497,7 +515,15 @@ def test_sync_directories_force_bypasses_diff_for_all_dirs(tmp_path, monkeypatch
 
     received: list[tuple[str, bool]] = []
 
-    def fake_sync(local_dir, prefix, cache_control, dry_run, ignore_mtime=False, force=False):
+    def fake_sync(
+        local_dir,
+        prefix,
+        cache_control,
+        dry_run,
+        ignore_mtime=False,
+        force=False,
+        exclude_prefixes=None,
+    ):
         received.append((prefix, force))
 
     monkeypatch.setattr(deploy_cdn._cdn_s3, "sync_directory", fake_sync)

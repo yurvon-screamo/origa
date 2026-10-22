@@ -11,6 +11,7 @@ Outputs:
   bench_4k.jsonl          4k bench set (1000 per locale)
   test_20x4 / test_50x4   eval sets built from the holdout
 """
+
 import json
 import random
 from pathlib import Path
@@ -37,9 +38,11 @@ def main():
         print(f"{L}: {len(pools[L])} rows in pool")
 
     # train sets: take first N per locale, then shuffle with fixed seed
-    for per, fname in ((150_000, "sft_multi_c150k.jsonl"),
-                       (10_000, "sft_multi_c10k.jsonl"),
-                       (125, "sft_multi_500.jsonl")):
+    for per, fname in (
+        (150_000, "sft_multi_c150k.jsonl"),
+        (10_000, "sft_multi_c10k.jsonl"),
+        (125, "sft_multi_500.jsonl"),
+    ):
         out = []
         for L in LOCALES:
             out += pools[L][:per]

@@ -5,7 +5,7 @@ use super::insights::{InsightsPanels, InsightsSection, compute_insights_panels};
 use super::{
     CompletionForecast, JftReadinessCard, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem,
     StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
-    compute_studied_today, compute_today_overview,
+    compute_due_count, compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
 use crate::loaders::JftCandoLoaderImpl;
@@ -176,6 +176,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let insights_panels = RwSignal::new(InsightsPanels::default());
     let today_overview = RwSignal::new(TodayOverview::default());
+    let due_count = RwSignal::new(0usize);
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
     let known_kanji: RwSignal<HashSet<char>> = RwSignal::new(HashSet::new());
     let forecast: RwSignal<CompletionForecast> = RwSignal::new(CompletionForecast::default());
@@ -237,6 +238,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         known_kanji.set(ks.get_known_kanji());
                         insights_panels.set(compute_insights_panels(ks, user.native_language()));
                         today_overview.set(compute_today_overview(ks, ks.lesson_history()));
+                        due_count.set(compute_due_count(ks));
                         recent_studied.set(compute_studied_today(ks, user.native_language()));
                         forecast.set(compute_completion_forecast(
                             ks,
@@ -327,6 +329,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     known_kanji.set(ks.get_known_kanji());
                     insights_panels.set(compute_insights_panels(ks, user.native_language()));
                     today_overview.set(compute_today_overview(ks, ks.lesson_history()));
+                    due_count.set(compute_due_count(ks));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
                     forecast.set(compute_completion_forecast(
                         ks,
@@ -387,6 +390,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     <TodayOverviewCard
                         overview=Signal::derive(move || today_overview.get())
                         forecast=Signal::derive(move || forecast.get())
+                        due_count=Signal::derive(move || due_count.get())
                         test_id=Signal::derive(|| "home-today-overview".to_string())
                     />
 

@@ -71,6 +71,11 @@ required-features = ["ssr"]
 name = "build_config"
 path = "tests/build_config.rs"
 
+# Pure module (no leptos/ssr deps) — CSS rebuild decision for build.rs (#832).
+[[test]]
+name = "css_rebuild"
+path = "tests/css_rebuild.rs"
+
 [[test]]
 name = "blog"
 path = "tests/blog.rs"

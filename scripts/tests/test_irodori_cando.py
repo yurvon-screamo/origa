@@ -22,11 +22,31 @@ from generate_irodori_cando import (
     parse_entries,
 )
 
-HEADER = ["番号", "大", "小", "レベル", "Can-do", "活動", "目標", "技能", "冊／課／活動"]
+HEADER = [
+    "番号",
+    "大",
+    "小",
+    "レベル",
+    "Can-do",
+    "活動",
+    "目標",
+    "技能",
+    "冊／課／活動",
+]
 
 
 def source_row(can_do_id, level, location):
-    return [can_do_id, "大", "小", level, "statement", "活動", "target", "【話】", location]
+    return [
+        can_do_id,
+        "大",
+        "小",
+        level,
+        "statement",
+        "活動",
+        "target",
+        "【話】",
+        location,
+    ]
 
 
 def test_parse_entries_projects_all_columns_and_sorts_by_id():
@@ -40,14 +60,24 @@ def test_parse_entries_projects_all_columns_and_sorts_by_id():
     entries = parse_entries(rows[1:])
 
     assert [e["id"] for e in entries] == [1, 2, 381]
-    assert entries[0] == {"id": 1, "level": "A1", "band": "A1", "lesson": "irodori_nyuumon_13"}
+    assert entries[0] == {
+        "id": 1,
+        "level": "A1",
+        "band": "A1",
+        "lesson": "irodori_nyuumon_13",
+    }
     assert entries[1] == {
         "id": 2,
         "level": "A1",
         "band": "A2.1",
         "lesson": "irodori_shokyuu1_03",
     }
-    assert entries[2] == {"id": 381, "level": "A2", "band": "A2", "lesson": "irodori_shokyuu2_18"}
+    assert entries[2] == {
+        "id": 381,
+        "level": "A2",
+        "band": "A2",
+        "lesson": "irodori_shokyuu2_18",
+    }
 
 
 def test_parse_entries_skips_rows_without_number_or_location():
@@ -66,7 +96,9 @@ def test_parse_entries_skips_rows_without_number_or_location():
 def test_parse_entries_attributes_classroom_can_dos_to_nyuumon_lesson_01():
     entries = parse_entries([source_row(312.0, "A1", CLASSROOM_LOCATION)])
 
-    assert entries == [{"id": 312, "level": "A1", "band": "A1", "lesson": "irodori_nyuumon_01"}]
+    assert entries == [
+        {"id": 312, "level": "A1", "band": "A1", "lesson": "irodori_nyuumon_01"}
+    ]
 
 
 @pytest.mark.parametrize(

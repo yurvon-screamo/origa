@@ -19,6 +19,7 @@ export class KanjiPage extends BasePage {
     readonly drawer: Locator;
     readonly drawerAddBtn: Locator;
     readonly drawerSelectAllBtn: Locator;
+    readonly drawerSearchInput: Locator;
 
     readonly deleteModal: Locator;
     readonly deleteConfirmBtn: Locator;
@@ -47,6 +48,7 @@ export class KanjiPage extends BasePage {
         this.drawer = page.getByTestId("kanji-add-drawer");
         this.drawerAddBtn = page.getByTestId("kanji-drawer-add-btn");
         this.drawerSelectAllBtn = page.getByTestId("kanji-drawer-select-all-btn");
+        this.drawerSearchInput = page.getByTestId("kanji-drawer-search");
 
         this.deleteModal = page.getByTestId("kanji-delete-modal");
         this.deleteConfirmBtn = page.getByTestId("kanji-delete-modal-confirm");
@@ -70,6 +72,10 @@ export class KanjiPage extends BasePage {
 
     async searchKanji(query: string): Promise<void> {
         await this.searchInput.fill(query);
+    }
+
+    async searchDrawerKanji(query: string): Promise<void> {
+        await this.drawerSearchInput.fill(query);
     }
 
     async clickBack(): Promise<void> {
@@ -180,24 +186,6 @@ export class KanjiPage extends BasePage {
 
     async clickLoadMore(): Promise<void> {
         await this.loadMoreButton.click();
-    }
-
-    async getFavoriteButton(index: number): Promise<Locator> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        return card.getByTestId("kanji-card-item-favorite-btn");
-    }
-
-    async isFavorited(index: number): Promise<boolean> {
-        const btn = await this.getFavoriteButton(index);
-        const filledPath = btn.locator('svg path[fill="currentColor"]');
-        return filledPath.isVisible().catch(() => false);
-    }
-
-    async toggleFavoriteByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("kanji-card-item").nth(index);
-        const btn = card.getByTestId("kanji-card-item-favorite-btn");
-        await btn.dispatchEvent("click");
-        await this.page.waitForTimeout(1000);
     }
 
     async deleteFromDetail(): Promise<void> {

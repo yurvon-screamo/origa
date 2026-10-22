@@ -142,7 +142,10 @@ def cmd_prepare(args: argparse.Namespace) -> int:
     for rule in data["grammar"]:
         if rule["level"] not in levels:
             continue
-        pattern = rule["content"]["English"].get("pattern") or rule["content"]["English"]["title"]
+        pattern = (
+            rule["content"]["English"].get("pattern")
+            or rule["content"]["English"]["title"]
+        )
         ref, score = (None, 0.0)
         if refs:
             ref, score = best_reference(pattern, refs)
@@ -176,9 +179,7 @@ def cmd_prepare(args: argparse.Namespace) -> int:
         )
 
     out = Path(args.out)
-    out.write_text(
-        json.dumps(worklist, ensure_ascii=False, indent=1), encoding="utf-8"
-    )
+    out.write_text(json.dumps(worklist, ensure_ascii=False, indent=1), encoding="utf-8")
     by_level = {}
     for w in worklist:
         key = w["level"] + ("/ref" if w["reference"]["title"] else "/no-ref")
@@ -215,9 +216,16 @@ def validate_revision(rev: dict) -> list[str]:
                 continue
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"{loc}.{field}: empty")
-            elif field in ("short_description", "explanation", "how_to_form", "examples"):
+            elif field in (
+                "short_description",
+                "explanation",
+                "how_to_form",
+                "examples",
+            ):
                 if len(value.strip()) < 60:
-                    errors.append(f"{loc}.{field}: too thin ({len(value.strip())} chars)")
+                    errors.append(
+                        f"{loc}.{field}: too thin ({len(value.strip())} chars)"
+                    )
         if "English" in rev and "examples" in rev.get("English", {}):
             jp_lines = [
                 l
@@ -273,8 +281,12 @@ def main() -> int:
     sub = parser.add_subparsers(dest="mode", required=True)
 
     p_prepare = sub.add_parser("prepare", help="build a revision worklist")
-    p_prepare.add_argument("--levels", required=True, help="comma-separated, e.g. N1,N2")
-    p_prepare.add_argument("--hanabira-dir", default=None, help="dir with grammar_N*.json refs")
+    p_prepare.add_argument(
+        "--levels", required=True, help="comma-separated, e.g. N1,N2"
+    )
+    p_prepare.add_argument(
+        "--hanabira-dir", default=None, help="dir with grammar_N*.json refs"
+    )
     p_prepare.add_argument("--out", required=True)
 
     p_apply = sub.add_parser("apply", help="merge a revision batch into the corpus")

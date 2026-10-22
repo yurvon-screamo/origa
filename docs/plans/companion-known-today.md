@@ -18,7 +18,7 @@
 
 Кнопка «Знаю» (`MarkCardAsKnownUseCase` → `KnowledgeSet::mark_card_as_known`)
 сидирует память: `MemoryState(stability 22, difficulty 3, review_date = вчера)`
-+ `apply_review(Rating::Easy)`. Карта становится `is_known_card()`, но факт
+\+ `apply_review(Rating::Easy)`. Карта становится `is_known_card()`, но факт
 отметки из истории не выводим: `apply_review` кладёт `last_review_date`
 моментом вызова (неотличимо от настоящего Easy-ревью) и перетирается любым
 следующим рейтингом; бэктик на день сидированного `MemoryState` сдвигает

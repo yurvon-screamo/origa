@@ -67,11 +67,7 @@ def clean_title(title: str) -> str | None:
         if not (match and is_localized_gloss(match.group(1))):
             break
         title = title[: match.start()].rstrip()
-    if (
-        title == original
-        or not pattern_is_long_enough_to_strip(title)
-        or not title
-    ):
+    if title == original or not pattern_is_long_enough_to_strip(title) or not title:
         return None
     return title
 
@@ -108,9 +104,7 @@ def resolve_locale(rules: list[dict], locale: str) -> tuple[int, list[str]]:
                     changed = True
 
     final_titles = {rid: stripped[rid] or original[rid] for rid in original}
-    changed_count = sum(
-        1 for rid in original if final_titles[rid] != original[rid]
-    )
+    changed_count = sum(1 for rid in original if final_titles[rid] != original[rid])
 
     # Apply and verify global uniqueness.
     for r in rules:
@@ -146,7 +140,9 @@ def main() -> int:
     for locale in LOCALES:
         changed, conflicts = resolve_locale(rules, locale)
         total_changed += changed
-        print(f"{locale}: {changed} titles stripped, {len(conflicts)} kept as disambiguators")
+        print(
+            f"{locale}: {changed} titles stripped, {len(conflicts)} kept as disambiguators"
+        )
         for report in conflicts:
             print(f"  KEPT {report}")
 

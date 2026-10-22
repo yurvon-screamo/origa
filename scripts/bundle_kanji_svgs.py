@@ -38,7 +38,10 @@ def main() -> int:
         if level in by_level:
             by_level[level].append(entry["kanji"])
 
-    for svg_type, src_dir_name in [("kanji_animations", "kanji_animations"), ("kanji_frames", "kanji_frames")]:
+    for svg_type, src_dir_name in [
+        ("kanji_animations", "kanji_animations"),
+        ("kanji_frames", "kanji_frames"),
+    ]:
         src_dir = cdn / src_dir_name
         if not src_dir.is_dir():
             print(f"  {src_dir_name}/ not found, skipping", flush=True)
@@ -58,11 +61,15 @@ def main() -> int:
 
             out_path = cdn / f"{svg_type}_{level}.json"
             out_path.write_text(
-                json.dumps(bundle, sort_keys=True, ensure_ascii=False, separators=(",", ":")),
+                json.dumps(
+                    bundle, sort_keys=True, ensure_ascii=False, separators=(",", ":")
+                ),
                 encoding="utf-8",
             )
             size_kb = out_path.stat().st_size / 1024
-            print(f"  {out_path.name}: {len(bundle)} kanji, {size_kb:.0f} KB", flush=True)
+            print(
+                f"  {out_path.name}: {len(bundle)} kanji, {size_kb:.0f} KB", flush=True
+            )
 
     print("Done.", flush=True)
     return 0

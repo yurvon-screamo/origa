@@ -3,6 +3,7 @@
 
 Run: python -m pytest translator/scripts -q
 """
+
 import argparse
 import json
 
@@ -13,25 +14,43 @@ import pytest
 def make_pairs(n_good: int, n_bad: int, locale: str = "ko") -> list[jc.LabeledPair]:
     pairs = []
     for i in range(n_good):
-        pairs.append(jc.LabeledPair(f"{locale}-g{i}", locale, f"jp {i}", f"good {i}", "good"))
+        pairs.append(
+            jc.LabeledPair(f"{locale}-g{i}", locale, f"jp {i}", f"good {i}", "good")
+        )
     for i in range(n_bad):
-        pairs.append(jc.LabeledPair(f"{locale}-b{i}", locale, f"jp {i}", f"bad {i}", "bad"))
+        pairs.append(
+            jc.LabeledPair(f"{locale}-b{i}", locale, f"jp {i}", f"bad {i}", "bad")
+        )
     return pairs
 
 
 def make_scored(n_good: int, n_bad: int, good_range=(0.6, 1.0), bad_range=(0.0, 0.4)):
     """Well-separated synthetic scores (good above bad)."""
-    scored = [(good_range[0] + (good_range[1] - good_range[0]) * i / max(n_good - 1, 1), "good")
-              for i in range(n_good)]
-    scored += [(bad_range[0] + (bad_range[1] - bad_range[0]) * i / max(n_bad - 1, 1), "bad")
-               for i in range(n_bad)]
+    scored = [
+        (
+            good_range[0] + (good_range[1] - good_range[0]) * i / max(n_good - 1, 1),
+            "good",
+        )
+        for i in range(n_good)
+    ]
+    scored += [
+        (bad_range[0] + (bad_range[1] - bad_range[0]) * i / max(n_bad - 1, 1), "bad")
+        for i in range(n_bad)
+    ]
     return scored
 
 
 class TestParseAndValidate:
     def test_valid_row_parses_with_optional_fields(self):
-        row = {"id": "ko-0001", "locale": "ko", "state": "jp", "translation": "t",
-               "label": "good", "annotator": "kim", "source": "scan"}
+        row = {
+            "id": "ko-0001",
+            "locale": "ko",
+            "state": "jp",
+            "translation": "t",
+            "label": "good",
+            "annotator": "kim",
+            "source": "scan",
+        }
         pair = jc.parse_labeled_pair(row, 1)
         assert pair.annotator == "kim" and pair.source == "scan"
 
@@ -41,29 +60,63 @@ class TestParseAndValidate:
             jc.parse_labeled_pair(row, 1)
 
     def test_unknown_label_rejected(self):
-        row = {"id": "x", "locale": "ko", "state": "s", "translation": "t", "label": "maybe"}
+        row = {
+            "id": "x",
+            "locale": "ko",
+            "state": "s",
+            "translation": "t",
+            "label": "maybe",
+        }
         with pytest.raises(jc.ValidationError, match="label"):
             jc.parse_labeled_pair(row, 3)
 
     def test_non_string_id_rejected(self):
-        row = {"id": 7, "locale": "ko", "state": "s", "translation": "t", "label": "good"}
+        row = {
+            "id": 7,
+            "locale": "ko",
+            "state": "s",
+            "translation": "t",
+            "label": "good",
+        }
         with pytest.raises(jc.ValidationError, match="non-string"):
             jc.parse_labeled_pair(row, 1)
 
     def test_bad_locale_format_rejected(self):
-        row = {"id": "x", "locale": "KOR", "state": "s", "translation": "t", "label": "good"}
+        row = {
+            "id": "x",
+            "locale": "KOR",
+            "state": "s",
+            "translation": "t",
+            "label": "good",
+        }
         with pytest.raises(jc.ValidationError, match="locale"):
             jc.parse_labeled_pair(row, 1)
 
     def test_duplicate_ids_reported_with_both_lines(self):
-        row = json.dumps({"id": "ko-1", "locale": "ko", "state": "s",
-                          "translation": "t", "label": "good"})
-        with pytest.raises(jc.ValidationError, match="line 2.*duplicate id 'ko-1'.*line 1"):
+        row = json.dumps(
+            {
+                "id": "ko-1",
+                "locale": "ko",
+                "state": "s",
+                "translation": "t",
+                "label": "good",
+            }
+        )
+        with pytest.raises(
+            jc.ValidationError, match="line 2.*duplicate id 'ko-1'.*line 1"
+        ):
             jc.validate_labeled_file([row, row])
 
     def test_unknown_known_locale_is_warning_not_error(self):
-        row = json.dumps({"id": "x", "locale": "th", "state": "s",
-                          "translation": "t", "label": "good"})
+        row = json.dumps(
+            {
+                "id": "x",
+                "locale": "th",
+                "state": "s",
+                "translation": "t",
+                "label": "good",
+            }
+        )
         pairs, warnings = jc.validate_labeled_file([row])
         assert len(pairs) == 1
         assert any("'th'" in w for w in warnings)
@@ -79,7 +132,13 @@ class TestFitThreshold:
 
     def test_equal_f1_tie_prefers_higher_threshold(self):
         # cutoffs 0.15 and 0.35 both give F1=2/3 (P=.5,R=1 vs P=1,R=.5) -> higher wins
-        scored = [(0.1, "bad"), (0.2, "bad"), (0.2, "good"), (0.3, "bad"), (0.4, "good")]
+        scored = [
+            (0.1, "bad"),
+            (0.2, "bad"),
+            (0.2, "good"),
+            (0.3, "bad"),
+            (0.4, "good"),
+        ]
         fit = jc.fit_threshold(scored, jc.Policy("max_f1"))
         assert fit.threshold == pytest.approx(0.35)
 
@@ -138,7 +197,9 @@ class TestFitLocale:
 
     def test_full_fit_entry_shape(self):
         pairs = make_pairs(60, 60)
-        scores = [0.9 - 0.005 * i for i in range(60)] + [0.1 + 0.005 * i for i in range(60)]
+        scores = [0.9 - 0.005 * i for i in range(60)] + [
+            0.1 + 0.005 * i for i in range(60)
+        ]
         entry = jc.fit_locale("ko", pairs, scores, jc.Policy("max_f1"))
         assert entry["n_good"] == 60 and entry["n_bad"] == 60
         assert 0.4 < entry["threshold"] < 0.6
@@ -162,13 +223,35 @@ class TestGoodStats:
 class TestCalibration:
     def make_doc(self, heads_sha: str = "a" * 64) -> dict:
         return jc.build_calibration_doc(
-            {"ko": {"threshold": 0.5, "n_good": 100, "n_bad": 100,
+            {
+                "ko": {
+                    "threshold": 0.5,
+                    "n_good": 100,
+                    "n_bad": 100,
                     "metrics": {"precision": 0.9, "recall": 0.9, "f1": 0.9},
                     "confusion": {"tp": 90, "fp": 10, "tn": 90, "fn": 10},
                     "degenerate": False,
-                    "cv": {"folds": 5, "folds_used": 5, "f1_mean": 0.88, "f1_std": 0.02},
-                    "good_stats": {"mean": 0.8, "std": 0.1, "p05": 0.6, "p50": 0.8, "p95": 0.95}}},
-            jc.Policy("max_f1"), heads_sha, 200, 0.5, embedding_model="e5b")
+                    "cv": {
+                        "folds": 5,
+                        "folds_used": 5,
+                        "f1_mean": 0.88,
+                        "f1_std": 0.02,
+                    },
+                    "good_stats": {
+                        "mean": 0.8,
+                        "std": 0.1,
+                        "p05": 0.6,
+                        "p50": 0.8,
+                        "p95": 0.95,
+                    },
+                }
+            },
+            jc.Policy("max_f1"),
+            heads_sha,
+            200,
+            0.5,
+            embedding_model="e5b",
+        )
 
     def test_decide_uses_score_at_least_threshold(self, tmp_path):
         path = tmp_path / "cal.json"
@@ -207,7 +290,9 @@ class TestCalibration:
 
     def test_missing_locales_rejected(self, tmp_path):
         path = tmp_path / "cal.json"
-        path.write_text(json.dumps({"format": 1, "heads_sha256": "a" * 64}), encoding="utf-8")
+        path.write_text(
+            json.dumps({"format": 1, "heads_sha256": "a" * 64}), encoding="utf-8"
+        )
         with pytest.raises(jc.CalibrationLoadError, match="locales"):
             jc.Calibration.load(path)
 
@@ -215,7 +300,9 @@ class TestCalibration:
         path = tmp_path / "cal.json"
         doc = {"format": 1, "heads_sha256": "a" * 64, "locales": {"ko": {}}}
         path.write_text(json.dumps(doc), encoding="utf-8")
-        with pytest.raises(jc.CalibrationLoadError, match="'ko' has no numeric threshold"):
+        with pytest.raises(
+            jc.CalibrationLoadError, match="'ko' has no numeric threshold"
+        ):
             jc.Calibration.load(path)
 
     def test_head_hash_mismatch_fails_loud(self, tmp_path):
@@ -228,6 +315,7 @@ class TestCalibration:
         heads = tmp_path / "heads.pt"
         heads.write_bytes(b"weights-v3")
         import hashlib
+
         jc.verify_head_hash(hashlib.sha256(b"weights-v3").hexdigest(), heads)
 
 
@@ -250,15 +338,30 @@ class TestCliGlue:
         with open(path, "w", encoding="utf-8") as f:
             for lc in ("ko", "vi"):
                 for i in range(n_each):
-                    f.write(json.dumps({"locale": lc, "state": f"jp{i}",
-                                        "translation": f"{lc} {i}"}, ensure_ascii=False) + "\n")
+                    f.write(
+                        json.dumps(
+                            {
+                                "locale": lc,
+                                "state": f"jp{i}",
+                                "translation": f"{lc} {i}",
+                            },
+                            ensure_ascii=False,
+                        )
+                        + "\n"
+                    )
 
     def test_export_writes_sequential_ids_and_md(self, tmp_path, capsys):
         import calibrate_judge as cj
+
         self.write_pool(tmp_path / "pool.jsonl")
-        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="ko,vi",
-                                  n=10, out=str(tmp_path / "task.jsonl"),
-                                  md=str(tmp_path / "task.md"), seed=7)
+        args = argparse.Namespace(
+            pool=str(tmp_path / "pool.jsonl"),
+            locales="ko,vi",
+            n=10,
+            out=str(tmp_path / "task.jsonl"),
+            md=str(tmp_path / "task.md"),
+            seed=7,
+        )
         assert cj.cmd_export(args) == 0
         rows = [json.loads(l) for l in open(tmp_path / "task.jsonl", encoding="utf-8")]
         assert [r["id"] for r in rows[:3]] == ["ko-0001", "ko-0002", "ko-0003"]
@@ -267,64 +370,110 @@ class TestCliGlue:
 
     def test_export_rejects_missing_pool_file(self, tmp_path, capsys):
         import calibrate_judge as cj
-        args = argparse.Namespace(pool=str(tmp_path / "absent.jsonl"), locales="ko",
-                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+
+        args = argparse.Namespace(
+            pool=str(tmp_path / "absent.jsonl"),
+            locales="ko",
+            n=10,
+            out=str(tmp_path / "task.jsonl"),
+            md=None,
+            seed=7,
+        )
         assert cj.cmd_export(args) == 2
         assert "pool file not found" in capsys.readouterr().err
 
     def test_export_rejects_empty_locales(self, tmp_path, capsys):
         import calibrate_judge as cj
+
         self.write_pool(tmp_path / "pool.jsonl")
-        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="",
-                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+        args = argparse.Namespace(
+            pool=str(tmp_path / "pool.jsonl"),
+            locales="",
+            n=10,
+            out=str(tmp_path / "task.jsonl"),
+            md=None,
+            seed=7,
+        )
         assert cj.cmd_export(args) == 2
 
     def test_export_rejects_malformed_pool_json(self, tmp_path, capsys):
         import calibrate_judge as cj
-        (tmp_path / "pool.jsonl").write_text('{"locale": "ko" oops}\n', encoding="utf-8")
-        args = argparse.Namespace(pool=str(tmp_path / "pool.jsonl"), locales="ko",
-                                  n=10, out=str(tmp_path / "task.jsonl"), md=None, seed=7)
+
+        (tmp_path / "pool.jsonl").write_text(
+            '{"locale": "ko" oops}\n', encoding="utf-8"
+        )
+        args = argparse.Namespace(
+            pool=str(tmp_path / "pool.jsonl"),
+            locales="ko",
+            n=10,
+            out=str(tmp_path / "task.jsonl"),
+            md=None,
+            seed=7,
+        )
         assert cj.cmd_export(args) == 2
         assert "line 1" in capsys.readouterr().err
 
     def test_import_reports_counts_and_floor(self, tmp_path, capsys):
         import calibrate_judge as cj
+
         pairs = make_pairs(3, 2)
         path = tmp_path / "l.jsonl"
-        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
+        path.write_text(
+            "".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8"
+        )
         assert cj.cmd_import(argparse.Namespace(labels=str(path))) == 0
         out = capsys.readouterr().out
         assert "ko: good=3 bad=2 -> below fit floor" in out
 
     def test_import_failure_returns_one(self, tmp_path):
         import calibrate_judge as cj
+
         path = tmp_path / "l.jsonl"
         path.write_text('{"id": "x"}\n', encoding="utf-8")
         assert cj.cmd_import(argparse.Namespace(labels=str(path))) == 1
 
     def test_markdown_render_lists_every_pair(self):
         import calibrate_judge as cj
-        rows = [{"id": "ko-0001", "locale": "ko", "state": "jp", "translation": "한국어"}]
+
+        rows = [
+            {"id": "ko-0001", "locale": "ko", "state": "jp", "translation": "한국어"}
+        ]
         md = cj.render_markdown(rows)
         assert "### ko-0001 (ko)" in md and "jp" in md and "한국어" in md
 
     def test_fit_rejects_unknown_policy_before_scoring(self, tmp_path, capsys):
         import calibrate_judge as cj
+
         pairs = make_pairs(2, 2)
         path = tmp_path / "l.jsonl"
-        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
-        args = argparse.Namespace(labels=str(path), policy="nonsense",
-                                  out=str(tmp_path / "c.json"), seed=None, pool_rows=None)
+        path.write_text(
+            "".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8"
+        )
+        args = argparse.Namespace(
+            labels=str(path),
+            policy="nonsense",
+            out=str(tmp_path / "c.json"),
+            seed=None,
+            pool_rows=None,
+        )
         assert cj.cmd_fit(args) == 2
         assert "unknown policy" in capsys.readouterr().err
 
     def test_fit_friendly_error_without_heads(self, tmp_path, capsys, monkeypatch):
         import calibrate_judge as cj
+
         pairs = make_pairs(2, 2)
         path = tmp_path / "l.jsonl"
-        path.write_text("".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8")
+        path.write_text(
+            "".join(json.dumps(vars(p)) + "\n" for p in pairs), encoding="utf-8"
+        )
         monkeypatch.setenv("ORIGA_JUDGE_HEADS", str(tmp_path / "absent.pt"))
-        args = argparse.Namespace(labels=str(path), policy="max_f1",
-                                  out=str(tmp_path / "c.json"), seed=None, pool_rows=None)
+        args = argparse.Namespace(
+            labels=str(path),
+            policy="max_f1",
+            out=str(tmp_path / "c.json"),
+            seed=None,
+            pool_rows=None,
+        )
         assert cj.cmd_fit(args) == 2
         assert "heads file not found" in capsys.readouterr().err

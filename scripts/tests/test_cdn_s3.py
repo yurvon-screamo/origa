@@ -312,9 +312,7 @@ def test_sync_directory_same_size_newer_local_is_reuploaded(tmp_path, monkeypatc
     assert [key for _, key, _, _ in calls] == ["d/x.json"]
 
 
-def test_sync_directory_ignore_mtime_skips_same_size_newer_local(
-    tmp_path, monkeypatch
-):
+def test_sync_directory_ignore_mtime_skips_same_size_newer_local(tmp_path, monkeypatch):
     # The #551 transport path: with ignore_mtime=True (the standing policy for
     # truly-static dirs) a fresh local mtime alone must NOT trigger an upload.
     local_dir = tmp_path / "d"
@@ -334,9 +332,7 @@ def test_sync_directory_ignore_mtime_skips_same_size_newer_local(
     assert calls == []
 
 
-def test_sync_directory_force_uploads_even_matching_remote(
-    tmp_path, monkeypatch
-):
+def test_sync_directory_force_uploads_even_matching_remote(tmp_path, monkeypatch):
     # force skips the diff entirely — the recovery path when a size-only
     # directory receives a same-size content edit the size comparison misses.
     local_dir = tmp_path / "d"
@@ -348,7 +344,9 @@ def test_sync_directory_force_uploads_even_matching_remote(
     monkeypatch.setattr(
         _cdn_s3,
         "list_remote_objects",
-        lambda prefix: {"d/a.opus": RemoteObject(7, 9_999_999_999.0)},  # identical-looking
+        lambda prefix: {
+            "d/a.opus": RemoteObject(7, 9_999_999_999.0)
+        },  # identical-looking
     )
 
     sync_directory(local_dir, "d", "immutable", dry_run=False, force=True)
@@ -623,9 +621,7 @@ def test_stat_object_returns_metadata_and_checksum_mode(monkeypatch):
         checksum_sha256="AbCd+/==",
     )
 
-    checksum_meta = _cdn_s3.stat_object(
-        "content/grammar/n5.json", with_checksum=True
-    )
+    checksum_meta = _cdn_s3.stat_object("content/grammar/n5.json", with_checksum=True)
     assert checksum_meta is not None
     assert checksum_meta.checksum_sha256 == "AbCd+/=="
     assert fake.calls[-1]["ChecksumMode"] == "ENABLED"

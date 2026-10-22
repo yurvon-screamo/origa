@@ -66,7 +66,9 @@ def parse_page(path: Path) -> dict | None:
         r'<section class="example-usage"[^>]*id="usage-(\d+)"[^>]*>', html
     ):
         head = re.search(
-            r"<h3[^>]*>(.*?)</h3>.*?<p[^>]*>(.*?)</p>", html[sec.start() : sec.start() + 2500], re.S
+            r"<h3[^>]*>(.*?)</h3>.*?<p[^>]*>(.*?)</p>",
+            html[sec.start() : sec.start() + 2500],
+            re.S,
         )
         end_match = re.search(r'<section class="example-usage"', html[sec.end() :])
         end = sec.end() + end_match.start() if end_match else len(html)
@@ -80,7 +82,8 @@ def parse_page(path: Path) -> dict | None:
         )
 
     usages: list[dict] = [
-        {"name": name, "desc_ja": desc, "examples": []} for _, _, name, desc in usage_spans
+        {"name": name, "desc_ja": desc, "examples": []}
+        for _, _, name, desc in usage_spans
     ] or [{"name": "general", "desc_ja": "", "examples": []}]
     for row in re.finditer(
         r'<div class="example-row"><div><p>(.*?)</p><small class="example-translation"[^>]*>(.*?)</small>',
@@ -101,15 +104,23 @@ def parse_page(path: Path) -> dict | None:
     m = re.search(r"<table>.*?<tbody>(.*?)</tbody>", html, re.S)
     if m:
         for tr in re.finditer(r"<tr>(.*?)</tr>", m.group(1), re.S):
-            cells = [clean_text(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", tr.group(1), re.S)]
+            cells = [
+                clean_text(c)
+                for c in re.findall(r"<td[^>]*>(.*?)</td>", tr.group(1), re.S)
+            ]
             if len(cells) >= 3:
-                formation.append({"kind": cells[0], "connection": cells[1], "example": cells[2]})
+                formation.append(
+                    {"kind": cells[0], "connection": cells[1], "example": cells[2]}
+                )
 
     # usage points
     points = []
     m = re.search(r'id="usage-points".*?<ul>(.*?)</ul>', html, re.S)
     if m:
-        points = [clean_text(li) for li in re.findall(r"<li[^>]*>(.*?)</li>", m.group(1), re.S)]
+        points = [
+            clean_text(li)
+            for li in re.findall(r"<li[^>]*>(.*?)</li>", m.group(1), re.S)
+        ]
 
     # similar grammar cards
     similar = []

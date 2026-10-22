@@ -61,19 +61,19 @@ NUANCE_TAGS = {"register", "variation", "collocation", "formality", "other"}
 # Deliberately broad; arrows (U+2192 →) and CJK punctuation stay allowed.
 EMOJI_RE = re.compile(
     "["
-    "\U0001F000-\U0001FAFF"  # pictographic blocks (incl. regional indicators, supplemental symbols)
-    "\U00002600-\U000027BF"  # misc symbols + dingbats (incl. check/cross marks and hearts)
-    "\U00002B00-\U00002BFF"  # arrows/stars block
-    "\U0000FE00-\U0000FE0F"  # variation selectors
-    "\U0000200D"             # ZWJ
-    "\U000020E3"             # combining enclosing keycap
+    "\U0001f000-\U0001faff"  # pictographic blocks (incl. regional indicators, supplemental symbols)
+    "\U00002600-\U000027bf"  # misc symbols + dingbats (incl. check/cross marks and hearts)
+    "\U00002b00-\U00002bff"  # arrows/stars block
+    "\U0000fe00-\U0000fe0f"  # variation selectors
+    "\U0000200d"  # ZWJ
+    "\U000020e3"  # combining enclosing keycap
     "]"
 )
 
 # Characters outside JIS X 0213 that legitimately appear in grammar content.
 ALLOWED_NON_JIS = set(
     "～〜…‥ー―‐－—–☺"  # tildes, ellipsis, dashes (em/en included: house style)
-    "→←↔↑↓⇒⇔"          # arrows used in explanations
+    "→←↔↑↓⇒⇔"  # arrows used in explanations
     "<>=+*#`|_\\/~%^&$@!?\"'()[]{}.,;:- "  # ASCII printable (markdown)
     " "
     "（）《》「」『』・，、。：；！？＜＞＝＋＊"
@@ -109,7 +109,9 @@ def validate_rule(
 ) -> None:
     where = f"rule[{idx}]"
     rule_id = rule.get("rule_id")
-    if not isinstance(rule_id, str) or not re.fullmatch(r"[0-9A-HJKMNP-TV-Z]{26}", rule_id):
+    if not isinstance(rule_id, str) or not re.fullmatch(
+        r"[0-9A-HJKMNP-TV-Z]{26}", rule_id
+    ):
         report.error(where, f"invalid ULID rule_id: {rule_id!r}")
     elif rule_id in rule_ids:
         report.error(where, f"duplicate rule_id {rule_id}")
@@ -124,7 +126,9 @@ def validate_rule(
     keywords = rule.get("keywords")
     if keywords is not None and not (
         isinstance(keywords, list)
-        and all(isinstance(k, list) and all(isinstance(t, str) for t in k) for k in keywords)
+        and all(
+            isinstance(k, list) and all(isinstance(t, str) for t in k) for k in keywords
+        )
     ):
         report.error(where, "keywords must be a list of string lists")
 
@@ -160,9 +164,7 @@ def validate_rule(
             report.error(loc, "empty title")
 
         if isinstance(title, str) and title.strip():
-            for level_name, message in _grammar_title.title_lint_messages(
-                title, lang
-            ):
+            for level_name, message in _grammar_title.title_lint_messages(title, lang):
                 if level_name == "error":
                     report.error(loc, f"title: {message}")
                 else:
@@ -210,10 +212,18 @@ def validate_nuances(nuances: object, loc: str, report: Report) -> None:
         if note is not None and not isinstance(note, str):
             report.error(loc, f"common_mistake.note must be string: {m!r}")
     for n in notes:
-        if not isinstance(n, dict) or not isinstance(n.get("text"), str) or not n["text"].strip():
-            report.error(loc, f"note must be {{tag, text}} with non-empty text, got {n!r}")
+        if (
+            not isinstance(n, dict)
+            or not isinstance(n.get("text"), str)
+            or not n["text"].strip()
+        ):
+            report.error(
+                loc, f"note must be {{tag, text}} with non-empty text, got {n!r}"
+            )
         elif n.get("tag") not in NUANCE_TAGS:
-            report.error(loc, f"note.tag must be one of {sorted(NUANCE_TAGS)}, got {n!r}")
+            report.error(
+                loc, f"note.tag must be one of {sorted(NUANCE_TAGS)}, got {n!r}"
+            )
     if not mistakes and not notes:
         # Hollow legacy rules are filled in a dedicated content pass; the
         # validator tracks them as warnings so a pure schema conversion can
@@ -256,7 +266,10 @@ def lint_text_fields(c: dict, loc: str, report: Report) -> None:
         if not isinstance(value, str):
             continue
         for match in EMOJI_RE.finditer(value):
-            report.error(loc, f"emoji in {field!r}: {match.group()!r} (U+{ord(match.group()):04X})")
+            report.error(
+                loc,
+                f"emoji in {field!r}: {match.group()!r} (U+{ord(match.group()):04X})",
+            )
         bad_chars = sorted(
             {
                 ch
@@ -354,7 +367,9 @@ def validate_corpus(
             short = c.get("short_description")
             if isinstance(short, str) and short.strip():
                 pattern_key = _grammar_title.normalize_pattern(
-                    _grammar_title.split_title(title if isinstance(title, str) else "")[0]
+                    _grammar_title.split_title(title if isinstance(title, str) else "")[
+                        0
+                    ]
                 )
                 short_key = (lang, pattern_key, " ".join(short.split()).casefold())
                 seen_shorts.setdefault(short_key, []).append(rid)
@@ -379,7 +394,9 @@ def entry_self_reference(rid: str, related: object) -> bool:
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     as_json = "--json" in sys.argv
-    default_path = Path(__file__).resolve().parents[1] / "cdn" / "grammar" / "grammar_v2.json"
+    default_path = (
+        Path(__file__).resolve().parents[1] / "cdn" / "grammar" / "grammar_v2.json"
+    )
     path = Path(args[0]) if args else default_path
 
     if not path.exists():
@@ -395,7 +412,9 @@ def main() -> int:
 
     report = Report()
     if data.get("schema") not in (2, 3):
-        report.error("corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}")
+        report.error(
+            "corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}"
+        )
     required_langs = REQUIRED_LANGS_V3 if data.get("schema") == 3 else REQUIRED_LANGS
     # Anchor guard is v3-only: the legacy v2 corpus is frozen for released
     # clients and its abstract titles (可能形, 尊敬語…) carry no surface
@@ -422,7 +441,9 @@ def main() -> int:
             print(line)
         for line in report.warnings:
             print(line)
-        print(f"\n{path}: {len(rules)} rules, {len(report.errors)} errors, {len(report.warnings)} warnings")
+        print(
+            f"\n{path}: {len(rules)} rules, {len(report.errors)} errors, {len(report.warnings)} warnings"
+        )
 
     return 1 if report.errors else 0
 

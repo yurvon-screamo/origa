@@ -25,6 +25,20 @@ export default tseslint.config(
         },
     },
     {
+        // The screenshot tool runs under Node's type stripping as well as
+        // under Playwright. Type stripping does NOT remove type-only
+        // imports — `import { Shape } from "./types.ts"` becomes a runtime
+        // "does not provide an export named" error, while `tsc` stays
+        // silent. `import type` is the only form both loaders accept.
+        files: ["shots/**", "scripts/shots.ts"],
+        rules: {
+            "@typescript-eslint/consistent-type-imports": [
+                "error",
+                { prefer: "type-imports", fixStyle: "inline-type-imports" },
+            ],
+        },
+    },
+    {
         // Node scripts (CI matrix guard): plain node globals without
         // pulling the `globals` package in.
         files: ["scripts/**/*.mjs"],

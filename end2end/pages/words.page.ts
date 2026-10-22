@@ -12,6 +12,8 @@ export class WordsPage extends BasePage {
     // Navigation buttons
     readonly backButton: Locator;
     readonly setsButton: Locator;
+    readonly phrasesButton: Locator;
+    readonly examplesButton: Locator;
     readonly addButton: Locator;
 
     // Search
@@ -29,6 +31,16 @@ export class WordsPage extends BasePage {
     readonly drawerCancelBtn: Locator;
     readonly analyzedWordItems: Locator;
     readonly noResultsFeedback: Locator;
+    readonly addTabs: Locator;
+
+    // Inbox (zero-tap intake)
+    readonly inboxError: Locator;
+    readonly inboxOpenManuallyBtn: Locator;
+
+    // Transcript screen (AU-2)
+    readonly transcriptStage: Locator;
+    readonly transcriptSentences: Locator;
+    readonly transcriptAnalyzeBtn: Locator;
 
     // Anki import
     readonly ankiTab: Locator;
@@ -72,6 +84,8 @@ export class WordsPage extends BasePage {
         // Navigation buttons
         this.backButton = page.getByTestId("words-back-btn");
         this.setsButton = page.getByTestId("words-sets-btn");
+        this.phrasesButton = page.getByTestId("words-phrases-btn");
+        this.examplesButton = page.getByTestId("words-examples-btn");
         this.addButton = page.getByTestId("words-add-btn");
 
         // Search
@@ -89,6 +103,22 @@ export class WordsPage extends BasePage {
         this.drawerCancelBtn = page.getByTestId("words-drawer-cancel-btn");
         this.analyzedWordItems = this.drawer.getByTestId("words-drawer-item");
         this.noResultsFeedback = this.drawer.getByTestId("words-no-results");
+        this.addTabs = page.getByTestId("words-add-tabs");
+
+        // Inbox (zero-tap intake)
+        this.inboxError = page.getByTestId("words-inbox-error");
+        this.inboxOpenManuallyBtn = page.getByTestId(
+            "words-inbox-open-manually-btn",
+        );
+
+        // Transcript screen (AU-2)
+        this.transcriptStage = page.getByTestId("words-transcript-stage");
+        this.transcriptSentences = page.getByTestId(
+            "words-transcript-sentence",
+        );
+        this.transcriptAnalyzeBtn = page.getByTestId(
+            "words-transcript-analyze-btn",
+        );
 
         // Anki import
         this.ankiTab = this.drawer.getByText("Anki");
@@ -163,6 +193,14 @@ export class WordsPage extends BasePage {
         await this.setsButton.click();
     }
 
+    async clickPhrases(): Promise<void> {
+        await this.phrasesButton.click();
+    }
+
+    async clickExamples(): Promise<void> {
+        await this.examplesButton.click();
+    }
+
     async openAddModal(): Promise<void> {
         await this.addButton.click();
         await expect(this.drawer).toBeVisible({ timeout: 5000 });
@@ -217,28 +255,6 @@ export class WordsPage extends BasePage {
         ).toBeChecked({ timeout: 2000 });
     }
 
-    async selectAllAnalyzedWords(): Promise<void> {
-        const count = await this.analyzedWordItems.count();
-        for (let i = 0; i < count; i++) {
-            const item = this.analyzedWordItems.nth(i);
-            await item.waitFor({ state: "visible", timeout: 3000 });
-            await item.click();
-            await this.page.waitForTimeout(200);
-        }
-    }
-
-    async markAllCardsAsKnown(): Promise<void> {
-        const count = await this.getCardCount();
-        for (let i = 0; i < count; i++) {
-            const card = this.page.getByTestId("words-card-item").nth(i);
-            const btn = card.getByTestId("words-card-item-mark-known-btn");
-            if (await btn.isVisible().catch(() => false)) {
-                await btn.click();
-                await this.page.waitForTimeout(300);
-            }
-        }
-    }
-
     async addSelectedWords(): Promise<void> {
         await this.drawerAddBtn.click({ timeout: 5000 });
         await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
@@ -246,6 +262,128 @@ export class WordsPage extends BasePage {
 
     async cancelAddModal(): Promise<void> {
         await this.drawerCancelBtn.click();
+    }
+
+    /**
+     * Delivers a text payload through the inbox test seam. The seam is
+     * registered by the app only when the e2e opt-in flag is set (see
+     * fixtures.ts); a missing hook is a hard failure instead of a silent
+     * no-op that would surface as an unrelated assertion later.
+     */
+    async shareText(text: string): Promise<void> {
+        await this.expectInboxSeamAvailable();
+        await this.page.evaluate((payload) => {
+            (
+                window as unknown as Record<string, (p: unknown) => void>
+            ).__ORIGA_TEST_INBOX__(payload);
+        }, { kind: "text", text });
+    }
+
+    /**
+     * Delivers a file payload through the inbox test seam. The app
+     * constructs the `File` in page context from the name/MIME pair — byte
+     * content is irrelevant because format validation keys on the name and
+     * type and fires before any read.
+     */
+    async shareFile(fileName: string, mime: string): Promise<void> {
+        await this.expectInboxSeamAvailable();
+        await this.page.evaluate((payload) => {
+            (
+                window as unknown as Record<string, (p: unknown) => void>
+            ).__ORIGA_TEST_INBOX__(payload);
+        }, { kind: "file", fileName, mime });
+    }
+
+    async shareTranscript(sentenceCount: number): Promise<void> {
+        await this.expectInboxSeamAvailable();
+        const sentences = [
+            "私は本を読みます。",
+            "本は面白いです。",
+            "彼は行きます。",
+        ].slice(0, sentenceCount);
+        await this.page.evaluate((payload) => {
+            (
+                window as unknown as Record<string, (p: unknown) => void>
+            ).__ORIGA_TEST_INBOX__(payload);
+        }, { kind: "transcript", sentences });
+    }
+
+    async expectTranscriptStage(): Promise<void> {
+        await expect(this.transcriptStage).toBeVisible({ timeout: 10_000 });
+    }
+
+    async transcriptCheckedCount(): Promise<number> {
+        const sentences = this.transcriptSentences;
+        const count = await sentences.count();
+        let checked = 0;
+        for (let i = 0; i < count; i++) {
+            // The test id IS the checkbox input.
+            if (await sentences.nth(i).isChecked()) {
+                checked++;
+            }
+        }
+        return checked;
+    }
+
+    async uncheckTranscriptSentence(index: number): Promise<void> {
+        const checkbox = this.transcriptSentences.nth(index);
+        if (await checkbox.isChecked()) {
+            await this.transcriptSentences.nth(index).click();
+        }
+        await expect(checkbox).not.toBeChecked({ timeout: 2000 });
+    }
+
+    async analyzeSelectedSentences(): Promise<void> {
+        await this.transcriptAnalyzeBtn.click({ timeout: 5000 });
+        await this.analyzedWordItems
+            .first()
+            .waitFor({ state: "visible", timeout: 15_000 });
+    }
+
+    private async expectInboxSeamAvailable(): Promise<void> {
+        const registered = await this.page.evaluate(
+            () =>
+                typeof (
+                    window as unknown as Record<string, unknown>
+                ).__ORIGA_TEST_INBOX__ === "function",
+        );
+        if (!registered) {
+            const diagnostics = await this.page.evaluate(() => ({
+                flag: window.localStorage.getItem("__origa_e2e_seam"),
+                origin: window.location.origin,
+                wordsMounted: Boolean(
+                    document.querySelector('[data-testid="words-page"]'),
+                ),
+            }));
+            expect(
+                registered,
+                `inbox e2e seam is not registered — diagnostics: ${JSON.stringify(diagnostics)}`,
+            ).toBe(true);
+        }
+    }
+
+    /** The drawer is open and already showing analyzed words — no tabs. */
+    async expectInboxPreview(): Promise<void> {
+        await expect(this.drawer).toBeVisible({ timeout: 10_000 });
+        await this.analyzedWordItems
+            .first()
+            .waitFor({ state: "visible", timeout: 10_000 });
+    }
+
+    async expectInboxTabsHidden(): Promise<void> {
+        await expect(this.addTabs).not.toBeVisible();
+    }
+
+    async expectInboxTabsVisible(): Promise<void> {
+        await expect(this.addTabs).toBeVisible({ timeout: 5000 });
+    }
+
+    async expectInboxError(): Promise<void> {
+        await expect(this.inboxError).toBeVisible({ timeout: 10_000 });
+    }
+
+    async returnToManualInput(): Promise<void> {
+        await this.inboxOpenManuallyBtn.click();
     }
 
     async switchToAnkiTab(): Promise<void> {
@@ -326,23 +464,5 @@ export class WordsPage extends BasePage {
 
     async clickLoadMore(): Promise<void> {
         await this.loadMoreButton.click();
-    }
-
-    async getFavoriteButton(index: number): Promise<Locator> {
-        const card = this.page.getByTestId("words-card-item").nth(index);
-        return card.getByTestId("words-card-item-favorite-btn");
-    }
-
-    async isFavorited(index: number): Promise<boolean> {
-        const btn = await this.getFavoriteButton(index);
-        const filledPath = btn.locator('svg path[fill="currentColor"]');
-        return filledPath.isVisible().catch(() => false);
-    }
-
-    async toggleFavoriteByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("words-card-item").nth(index);
-        const btn = card.getByTestId("words-card-item-favorite-btn");
-        await btn.dispatchEvent("click");
-        await this.page.waitForTimeout(500);
     }
 }

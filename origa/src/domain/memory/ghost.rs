@@ -16,7 +16,7 @@ use ulid::Ulid;
 use super::{MemoryHistory, Rating};
 
 /// TTL добивания: 30 дней без единого шага — списание (`GhostState::Expired`).
-const GHOST_TTL_DAYS: i64 = 30;
+pub(super) const GHOST_TTL_DAYS: i64 = 30;
 
 /// Шаг лестницы добивания [GhostRung]. Позиция кодирует накопленные
 /// успехи: First = 0, Second = 1, Third = 2; успех на Third закрывает.
@@ -31,7 +31,7 @@ impl GhostRung {
     /// Интервал до показа, который засчитывается на этой ступени:
     /// спавн/рестарт → First (12ч), успех на First → Second (1д),
     /// успех на Second → Third (3д). Успех на Third закрывает добивание.
-    fn interval(self) -> Duration {
+    pub(super) fn interval(self) -> Duration {
         match self {
             GhostRung::First => Duration::hours(12),
             GhostRung::Second => Duration::days(1),
@@ -39,7 +39,7 @@ impl GhostRung {
         }
     }
 
-    fn next(self) -> Option<GhostRung> {
+    pub(super) fn next(self) -> Option<GhostRung> {
         match self {
             GhostRung::First => Some(GhostRung::Second),
             GhostRung::Second => Some(GhostRung::Third),

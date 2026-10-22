@@ -2,7 +2,7 @@ use super::*;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::{LessonCardView, YesNoCard};
 use crate::domain::value_objects::NativeLanguage;
-use crate::use_cases::init_real_dictionaries;
+use crate::test_support::init_real_dictionaries;
 use rand::{SeedableRng, rngs::StdRng};
 use rstest::rstest;
 

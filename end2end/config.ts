@@ -13,3 +13,16 @@ export function getTrailBaseUrl(): string {
     }
     return url;
 }
+
+/**
+ * Base URL of the app under test.
+ *
+ * Deliberately NOT `ORIGA_APP_BASE_URL`: the repository prescribes that
+ * variable as the PRODUCTION app URL (`https://app.origa.uwuwu.net`), and
+ * the e2e stack must never navigate to production — a test account would
+ * land in the production TrailBase. Read at call time, so the dotenv
+ * bootstrap above has already run.
+ */
+export function getAppBaseUrl(): string {
+    return process.env.E2E_APP_BASE_URL ?? "http://localhost:1420";
+}

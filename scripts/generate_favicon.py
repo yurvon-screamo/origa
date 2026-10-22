@@ -41,7 +41,9 @@ def main() -> None:
     apple.save(APPLE_PATH, format="PNG")
 
     print(f"wrote {ICO_PATH.relative_to(REPO_ROOT)} ({ICO_PATH.stat().st_size} bytes)")
-    print(f"wrote {APPLE_PATH.relative_to(REPO_ROOT)} ({APPLE_PATH.stat().st_size} bytes)")
+    print(
+        f"wrote {APPLE_PATH.relative_to(REPO_ROOT)} ({APPLE_PATH.stat().st_size} bytes)"
+    )
 
 
 if __name__ == "__main__":

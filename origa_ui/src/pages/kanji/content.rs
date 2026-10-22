@@ -1,10 +1,11 @@
 use super::super::shared::{
     CardListExtras, CardListViewConfig, ListGrouping, ListPage, card_list_view,
-    create_card_list_context,
+    create_card_list_context, kanji_search_matcher,
 };
 use super::kanji_card_item::KanjiCardItem;
 use crate::i18n::{t_string, use_i18n};
 use crate::repository::HybridUserRepository;
+use crate::store::AuthStore;
 use leptos::prelude::*;
 use origa::domain::{Card, CardType};
 
@@ -20,6 +21,12 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
         |card| matches!(card, Card::Kanji(_)),
         None,
     );
+
+    // On/kun readings resolve through the kanji dictionary; the readiness
+    // signal re-runs a query typed while that dictionary still loads (#837).
+    let kanji_ready = use_context::<AuthStore>()
+        .expect("AuthStore not provided")
+        .is_kanji_loaded;
 
     let ctx_for_render = ctx.clone();
     let empty_message = Signal::derive(move || t_string!(i18n, kanji_page.not_found).to_string());
@@ -38,7 +45,10 @@ pub fn KanjiContent(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             card_type: CardType::Kanji,
         },
         config,
-        CardListExtras::default(),
+        CardListExtras {
+            search_match: Some(kanji_search_matcher(kanji_ready)),
+            ..CardListExtras::default()
+        },
         move |card| {
             let ctx = ctx_for_render.clone();
             let card_id = *card.card_id();
