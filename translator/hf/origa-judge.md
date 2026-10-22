@@ -127,3 +127,12 @@ Deployed in Origa's production content pipeline for dictionary and phrase qualit
 ## License
 
 BSL 1.1 ([text](https://github.com/yurvon-screamo/origa/blob/master/LICENSE)). Base encoder: MIT (per its model card).
+
+
+## Chinese (zh) status — 2026-10-20
+
+Not in training. Zero-shot follows the unseen-locale pattern (my/th/id):
+script-echo and truncation defects are caught; language substitution falls to the
+algorithmic script check; the semantic layer is uncalibrated for zh — do not
+apply the four-locale calibration thresholds to zh scores. Full enablement =
+200–500 labeled pairs plus ~5 minutes of head retraining.
