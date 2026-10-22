@@ -72,8 +72,18 @@ pub fn ExampleRecallCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !is_muted && crate::ui_components::is_speech_supported() {
-            let _ = crate::ui_components::speak_tts_text(&we.detail.text, 1.0);
+        // #528: the generated IndexTTS clip is the PRIMARY announcement
+        // voice (owner report: the autoplay spoke platform TTS while the
+        // manual button played our clip — two voices for one card). The
+        // shared lesson channel handles the CDN prefetch + the TTS
+        // degradation, so speech-support is no longer a gate here.
+        if !is_muted {
+            crate::ui_components::stop_current_audio();
+            let path = example_audio_path(sentence_id);
+            let text = we.detail.text.clone();
+            spawn_local(async move {
+                super::lesson_card::play_cdn_audio_with_tts_fallback(&path, &text).await;
+            });
         }
     });
 
