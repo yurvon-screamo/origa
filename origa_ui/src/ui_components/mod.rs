@@ -92,7 +92,7 @@ pub use avatar::Avatar;
 #[cfg(all(target_arch = "wasm32", test))]
 pub use avatar::AvatarSize;
 pub use boot_splash::hide_boot_splash;
-pub use bottom_nav::BottomTabBar;
+pub use bottom_nav::{BottomTabBar, bottom_nav_visible_for, is_nav_hidden_path};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::Card;
 pub use card_action_bar::CardActionBar;
