@@ -51,8 +51,9 @@ pub fn shell(_options: LeptosOptions) -> impl IntoView {
                 // respects the browser DNT setting.
                 <script
                     defer
-                    src="https://cloud.umami.is/script.js"
-                    data-website-id="0b8b69aa-9c94-41ef-b27a-f928011b797b"
+                    src="https://umami.origa.uwuwu.net/script.js"
+                    data-website-id="57c7d57f-3bd9-48cf-b9ee-ea02c95d967a"
+                    data-host-url="https://umami.origa.uwuwu.net"
                     data-domains="origa.uwuwu.net"
                     data-do-not-track="true"
                 ></script>

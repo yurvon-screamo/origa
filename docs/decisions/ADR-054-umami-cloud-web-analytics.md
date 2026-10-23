@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted (2026-09-13)
+Accepted (2026-09-13). Amended (2026-10-22): the provider moved from Umami
+Cloud to a project-owned self-hosted instance — see §7. The cloud-vs-crypto
+details below (§1–§6) describe how the integration was built and stay
+accurate except for the provider, website id, and CSP hosts, which §7
+replaces.
 
 ## Context
 
@@ -220,6 +224,8 @@ listed although the app ships `OAuthProvider::Apple`.
   already runs Railway services, CDN, Sentry SaaS); the free cloud plan
   covers current volume. Can be migrated later — the tracker contract
   (`data-website-id`, `data-host-url`) makes self-hosting a config change.
+- Revisited 2026-10: the free plan's API/team limits made the "later" real
+  — see §7 for the executed migration.
 
 ### Google Analytics
 
@@ -254,3 +260,93 @@ listed although the app ships `OAuthProvider::Apple`.
   platform must show a visit in the Umami Realtime dashboard before the
   next release is tagged (desktop is the only surface whose CSP × WebView ×
   custom-origin combination is not covered by automated tests).
+
+## §7. Amendment (2026-10-22): Self-hosted Umami on Railway (issue #733)
+
+### Why
+
+Umami Cloud's free plan stopped being workable for a team:
+
+- **API is Pro-only.** Statistics were scraped with a session-cookie
+  workaround that returns only the page shell (`/api/*` = 401; verified
+  2026-10-12); the session token is owner-minted and rots.
+- **No team access.** One owner account; every dashboard visit goes through
+  the owner's browser session.
+- **Silent failures.** The tracker swallows errors (the §3 post-mortem: the
+  desktop lost 100% of beacons to a CSP mismatch, caught only by a manual
+  Realtime check). Cloud endpoints are outside our control, so the
+  recurrence vector (§3) is permanent.
+- **No desktop/web split** in the cloud UI, opaque free-tier limits.
+- **Vendor lock**: data lives on their cloud.
+
+Self-hosting removes the whole class: full API without a subscription, team
+users, our own endpoints and limits, our own data.
+
+### Topology
+
+- **Railway** (project `origa-appuru`, production): service `umami` from the
+  pinned image `umamisoftware/umami:3.4.0` (v3 is PostgreSQL-only) + a
+  Railway PostgreSQL. Env: `DATABASE_URL` (reference to the Postgres
+  service), `APP_SECRET` (random), `CLIENT_IP_HEADER=x-forwarded-for` —
+  without it every Railway-proxied visit shares one IP.
+- **Domain**: `umami.origa.uwuwu.net`, served through the same geo-split as
+  every other `origa.*` name (Bunny DNS script 91629, `infra/bunny-dns/
+  handleQuery.js` gained a fifth guarded name): world → CNAME to the
+  Railway service domain, RF → the RF VM (`193.233.217.243`), because
+  Railway subnets are payload-dropped from RF (ADR-049). The RF VM nginx
+  got a dedicated cert (`acme.sh` DNS-01 via Bunny — this also proved TXT
+  fall-through works for script-attached names, the open question for the
+  November renewals of the existing certs) and a dedicated http `:8443`
+  server block with `proxy_ssl_verify on`, mirroring `app.origa`.
+- Deploy/verify procedure: `docs/runbooks/umami-self-host.md`.
+
+### Tracker changes
+
+- Script origin and collection endpoint are now the same host, and the
+  endpoint is pinned explicitly: `data-host-url="https://umami.origa.uwuwu.net"`
+  on all three injection surfaces (landing static tag, WASM injection, and
+  the CSP it must match in `tauri/build_config.rs` + `tauri.conf.json`).
+  The explicit pin closes the §3 recurrence vector: whatever collection
+  default a future tracker bundle carries, the attribute wins.
+- CSP: the `cloud.umami.is` + `gateway.umami.is` pair is replaced by the
+  single `umami.origa.uwuwu.net` in both `script-src` and `connect-src`
+  (byte-equality drift test unchanged).
+- New website id: `DEFAULT_UMAMI_WEBSITE_ID` points at the website created
+  on the self-hosted instance (same one-website-for-all-surfaces contract
+  as §Decision-1; `data-domains` unchanged).
+- The wasm tests additionally assert that `data-host-url` equals the script
+  origin host.
+- **New cross-crate drift guard** (`origa_ui/tests/umami_hosts.rs`): the
+  tracker constants, the landing tag, the built CSP and the committed
+  `tauri.conf.json` CSP must all name the same analytics host, and the
+  landing tag must carry the same website id as `DEFAULT_UMAMI_WEBSITE_ID`.
+  Before it, nothing tied the desktop CSP to the tracker's endpoint — the
+  exact gap that made the §3 incident silent (a mismatch dropped 100% of
+  desktop beacons with every test still green).
+
+### Privacy policy
+
+The EN/RU privacy pages no longer list Umami as a third-party processor:
+the instance is operated by Origa (§6 wording updated accordingly). The
+data category itself (cookieless, aggregated, IP-discarding, DNT-respecting)
+is unchanged — same Umami software, now on our infrastructure.
+
+### Operations
+
+- Team users: view-only accounts (`umami-ru`, `umami-en`, `umami-ko`,
+  `umami-vi`) for the marketing bots; the owner keeps admin. Credentials
+  follow the access-keys convention (`marketing/.env` + the uwuwu keys
+  inventory). Access uses Umami v3 API keys (long-lived) instead of the
+  login token, which expires.
+- **Default admin**: Umami's `01_init` migration creates `admin`/`umami` —
+  a public password. The runbook makes rotating it the first bootstrap
+  step, before the custom domain is published.
+- History: Umami has no historical-data import. The Cloud CSV export is an
+  owner-run archive; the Cloud account stays alive until self-host data is
+  verified against the Cloud baseline (Realtime + daily aggregates), then
+  the Cloud site is deactivated.
+- The §Consequences release checkpoint (desktop Realtime check) applies
+  unchanged — now against `umami.origa.uwuwu.net`.
+- Accepted operational cost: one more always-on Railway service + Postgres
+  (usage-billed), backups now our responsibility (Railway Postgres backups
+  enabled).

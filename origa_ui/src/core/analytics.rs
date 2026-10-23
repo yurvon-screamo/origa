@@ -1,16 +1,27 @@
-//! Umami Cloud analytics: runtime tracker injection.
+//! Self-hosted Umami analytics: runtime tracker injection.
 //!
 //! The tracker `<script>` is injected from WASM instead of being hardcoded in
 //! `index.html` so that CI builds can compile it out: `build.rs` emits an
 //! empty `UMAMI_WEBSITE_ID` when `UMAMI_DISABLED=1` is set (e2e headless runs,
 //! android-smoke emulator), and an empty value makes [`inject_umami`] a no-op.
 //! A static tag cannot be muted per build and would leak CI's
-//! localhost/tauri.localhost traffic into production analytics. See ADR-054.
+//! localhost/tauri.localhost traffic into production analytics. See ADR-054
+//! (injection mechanism) and its 2026-10 self-host amendment (the provider
+//! moved from Umami Cloud to the project-owned instance on Railway).
 
-/// Umami Cloud tracker script. The host is pinned exactly (no wildcard) — it
-/// is also allow-listed verbatim in the Tauri CSP (`tauri/build_config.rs::
+/// Self-hosted Umami tracker script (`umami.origa.uwuwu.net`, ADR-054
+/// amendment). The host is pinned exactly (no wildcard) — it is also
+/// allow-listed verbatim in the Tauri CSP (`tauri/build_config.rs::
 /// build_csp`), where the same origin executes with Tauri IPC in reach.
-pub(crate) const UMAMI_SCRIPT_SRC: &str = "https://cloud.umami.is/script.js";
+pub(crate) const UMAMI_SCRIPT_SRC: &str = "https://umami.origa.uwuwu.net/script.js";
+
+/// Collection endpoint pinned via `data-host-url`. On a self-hosted instance
+/// the tracker's built-in default already equals the script origin, but the
+/// ADR-054 post-mortem (the cloud tracker silently shipped beacons to
+/// `gateway.umami.is` while the CSP pinned `cloud.umami.is`) makes an
+/// explicit pin the standing discipline: the CSP and this attribute must
+/// name the same host, whatever the bundled tracker's default drifts to.
+pub(crate) const UMAMI_HOST_URL: &str = "https://umami.origa.uwuwu.net";
 
 /// Inject the Umami tracker `<script>` into `<head>` before the app
 /// mounts, so auto-tracking catches the initial pageview and (the tracker
@@ -45,6 +56,7 @@ pub(crate) fn inject_umami() {
     let attrs = [
         ("src", UMAMI_SCRIPT_SRC),
         ("data-website-id", website_id),
+        ("data-host-url", UMAMI_HOST_URL),
         ("data-domains", &umami_data_domains()),
         ("data-do-not-track", "true"),
     ];
