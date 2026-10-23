@@ -321,7 +321,7 @@ def cross_validate(
     """
     rng = random.Random(seed)
     by_class = {
-        label: [s for s, l in scored if l == label] for label in ("good", "bad")
+        label: [s for s, lbl in scored if lbl == label] for label in ("good", "bad")
     }
     if min(len(v) for v in by_class.values()) < CV_MIN_PER_CLASS:
         smallest = min(by_class, key=lambda k: len(by_class[k]))

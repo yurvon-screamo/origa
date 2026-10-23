@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime as _dt
 import datetime as dt
 
 import build_jlpt_pdf as gen

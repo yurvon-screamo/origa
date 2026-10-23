@@ -128,7 +128,7 @@ def main() -> None:
     ap.add_argument("--max-new", type=int, default=96)
     a = ap.parse_args()
 
-    rows = [json.loads(l) for l in open(a.data, encoding="utf-8")]
+    rows = [json.loads(line) for line in open(a.data, encoding="utf-8")]
     out_dir = ROOT / "eval" / a.name
     out_dir.mkdir(parents=True, exist_ok=True)
 

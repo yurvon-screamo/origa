@@ -53,7 +53,8 @@ def main() -> None:
     a = ap.parse_args()
 
     rows = [
-        json.loads(l) for l in open(ROOT / "data/holdout_500x4.jsonl", encoding="utf-8")
+        json.loads(line)
+        for line in open(ROOT / "data/holdout_500x4.jsonl", encoding="utf-8")
     ]
     by_lang: dict[str, list] = defaultdict(list)
     for r in rows:

@@ -5,6 +5,7 @@ those phrases cleanly; re-verify zh_ok with detect_zh v2.
 
 Run ONLY after the bulk completes (no concurrent writers).
 """
+
 import json
 import sys
 from pathlib import Path
@@ -17,7 +18,10 @@ GARBAGE_LO, GARBAGE_HI = 1024, 1216  # 0-based [lo, hi) — bit-graph era
 
 
 def main():
-    rows = [json.loads(l) for l in open(OUT / "zh_translations.jsonl", encoding="utf-8")]
+    rows = [
+        json.loads(line)
+        for line in open(OUT / "zh_translations.jsonl", encoding="utf-8")
+    ]
     print(f"загружено {len(rows)}; мусорная эпоха [{GARBAGE_LO}:{GARBAGE_HI})")
 
     # порядок = порядок cdn (bulk шёл по списку) — сверяем id
@@ -33,8 +37,14 @@ def main():
     for k in range(GARBAGE_LO, GARBAGE_HI):
         p = phrases[k]
         zh, retr = gen_one(p["x"])
-        rows[k] = {"i": p["i"], "x": p["x"], "zh": zh, "retries": retr,
-                   "zh_ok": detect_zh(zh, p["x"]), "era": "regen"}
+        rows[k] = {
+            "i": p["i"],
+            "x": p["x"],
+            "zh": zh,
+            "retries": retr,
+            "zh_ok": detect_zh(zh, p["x"]),
+            "era": "regen",
+        }
         fixed += 1
 
     # перемаркировка zh_ok v2 по всему корпусу (без перегенерации)
@@ -47,8 +57,10 @@ def main():
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
     json.dump({"done": len(rows)}, open(OUT / "progress.json", "w"))
     fails = sum(1 for r in rows if not r["zh_ok"])
-    print(f"перегенерировано {fixed}; перемаркировано v2-детектором {remark}; "
-          f"итоговых zh_ok=False: {fails}/{len(rows)} ({100*fails/len(rows):.2f}%)")
+    print(
+        f"перегенерировано {fixed}; перемаркировано v2-детектором {remark}; "
+        f"итоговых zh_ok=False: {fails}/{len(rows)} ({100 * fails / len(rows):.2f}%)"
+    )
 
 
 if __name__ == "__main__":

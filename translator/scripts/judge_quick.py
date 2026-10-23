@@ -7,6 +7,7 @@ Pooling / format handling:
   e5-large-instruct             -> mean pooling, "Instruct+Query" state, plain candidate
   granite-embedding (BERT-arch) -> mean pooling, plain text
 """
+
 import argparse
 import json
 import random
@@ -44,7 +45,9 @@ class Heads(nn.Module):
 
     def forward(self, sv, avs):
         zq = F.normalize(self.s(sv), dim=-1)
-        zc = F.normalize(self.a(avs.reshape(-1, avs.shape[-1])), dim=-1).view(avs.shape[0], avs.shape[1], -1)
+        zc = F.normalize(self.a(avs.reshape(-1, avs.shape[-1])), dim=-1).view(
+            avs.shape[0], avs.shape[1], -1
+        )
         return torch.einsum("bd,bkd->bk", zq, zc)
 
 
@@ -62,8 +65,9 @@ def main():
     model_id, mode = ENCODERS[a.encoder]
     tok = AutoTokenizer.from_pretrained(model_id)
     if a.encoder == "gemma":
-        model = AutoModel.from_pretrained(model_id, torch_dtype=torch.bfloat16,
-                                          device_map={"": "xpu"}).eval()
+        model = AutoModel.from_pretrained(
+            model_id, torch_dtype=torch.bfloat16, device_map={"": "xpu"}
+        ).eval()
         for name in ("vision_tower", "audio_tower"):
             for holder in (model, getattr(model, "model", None)):
                 tower = getattr(holder, name, None) if holder is not None else None
@@ -72,21 +76,28 @@ def main():
                     break
     else:
         try:
-            model = AutoModel.from_pretrained(model_id, dtype=torch.bfloat16,
-                                              device_map={"": "xpu"}).eval()
+            model = AutoModel.from_pretrained(
+                model_id, dtype=torch.bfloat16, device_map={"": "xpu"}
+            ).eval()
         except TypeError:  # transformers regression: dtype kwarg rejected by XLMRoberta
-            model = AutoModel.from_pretrained(model_id).to(torch.bfloat16).to("xpu").eval()
-    E5Q = ("Instruct: Given a Japanese sentence, select its correct translation "
-           "among candidates\nQuery: {t}")
-    QWQ = ("Instruct: Given a Japanese sentence, select its correct translation "
-           "among candidates\nQuery:{t}")
+            model = (
+                AutoModel.from_pretrained(model_id).to(torch.bfloat16).to("xpu").eval()
+            )
+    E5Q = (
+        "Instruct: Given a Japanese sentence, select its correct translation "
+        "among candidates\nQuery: {t}"
+    )
+    QWQ = (
+        "Instruct: Given a Japanese sentence, select its correct translation "
+        "among candidates\nQuery:{t}"
+    )
 
     @torch.no_grad()
     def embed(texts, is_state):
         out = []
         for s in range(0, len(texts), 32):
             chunk = []
-            for t in texts[s:s + 32]:
+            for t in texts[s : s + 32]:
                 if mode == "e5" and is_state:
                     t = E5Q.format(t=t)
                 elif mode == "e5base":
@@ -94,8 +105,13 @@ def main():
                 elif mode == "qwen_ins" and is_state:
                     t = QWQ.format(t=t)
                 chunk.append(t)
-            enc = tok(chunk, return_tensors="pt", padding=True, truncation=True,
-                      max_length=512).to("xpu")
+            enc = tok(
+                chunk,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512,
+            ).to("xpu")
             h = model(**enc).last_hidden_state
             if mode in ("last", "qwen_ins"):
                 idx = enc["attention_mask"].sum(1) - 1
@@ -105,14 +121,16 @@ def main():
             else:  # mean
                 m = enc["attention_mask"].unsqueeze(-1).to(h.dtype)
                 vecs = (h * m).sum(1) / m.sum(1).clamp(min=1)
-            vecs = F.normalize(vecs.float(), dim=-1)   # L2: raw norms (30-90+) explode heads
+            vecs = F.normalize(
+                vecs.float(), dim=-1
+            )  # L2: raw norms (30-90+) explode heads
             out += [v.cpu().numpy() for v in vecs]
         return out
 
-    train = [json.loads(l) for l in open(DATA / a.train_file, encoding="utf-8")]
+    train = [json.loads(line) for line in open(DATA / a.train_file, encoding="utf-8")]
     rng.shuffle(train)
-    train = train[:a.train_n]
-    golden = [json.loads(l) for l in open(DATA / a.golden_file, encoding="utf-8")]
+    train = train[: a.train_n]
+    golden = [json.loads(line) for line in open(DATA / a.golden_file, encoding="utf-8")]
     print(f"[{a.encoder}] train {len(train)} | golden {len(golden)}", flush=True)
 
     t0 = time.perf_counter()
@@ -130,7 +148,7 @@ def main():
     GS = {t: v for t, v in zip(g_states, embed(g_states, True))}
     GG = {t: v for t, v in zip(g_good, embed(g_good, False))}
     GB = {t: v for t, v in zip(g_bad, embed(g_bad, False))}
-    print(f"embedded in {time.perf_counter()-t0:.0f}s", flush=True)
+    print(f"embedded in {time.perf_counter() - t0:.0f}s", flush=True)
     dim = len(next(iter(CV.values())))
 
     # tensors
@@ -154,13 +172,15 @@ def main():
         idx = torch.randperm(len(TR[0]))
         tot = 0.0
         for s in range(0, len(idx), 256):
-            b = idx[s:s + 256]
+            b = idx[s : s + 256]
             sv, av, msk = TR[0][b], TR[1][b], TR[2][b]
             sc = hs(sv, av).masked_fill(~msk, -1e9) / 0.07
             loss = F.cross_entropy(sc, sv.new_zeros(len(b)).long())
-            opt.zero_grad(); loss.backward(); opt.step()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
             tot += loss.item() * len(b)
-        print(f"  epoch {ep}: loss={tot/len(TR[0]):.4f}", flush=True)
+        print(f"  epoch {ep}: loss={tot / len(TR[0]):.4f}", flush=True)
 
     # golden eval
     hs.eval()
@@ -168,8 +188,9 @@ def main():
     with torch.no_grad():
         for r in golden:
             sv = torch.from_numpy(GS[r["state"]]).unsqueeze(0)
-            av = torch.stack([torch.from_numpy(GG[r["good"]]),
-                              torch.from_numpy(GB[r["bad"]])]).unsqueeze(0)
+            av = torch.stack(
+                [torch.from_numpy(GG[r["good"]]), torch.from_numpy(GB[r["bad"]])]
+            ).unsqueeze(0)
             sc = hs(sv, av)[0]
             good = sc[0].item() > sc[1].item()
             ok_by_type.setdefault(r["type"], []).append(good)
@@ -177,12 +198,23 @@ def main():
     print(f"\n=== [{a.encoder}] GOLDEN: {sum(total)}/{len(total)} ===", flush=True)
     for t, vs in sorted(ok_by_type.items()):
         print(f"  {t:<18} {sum(vs)}/{len(vs)}")
-    hard = [v for t, vs in ok_by_type.items() if t not in ("cross_locale", "jp_echo", "truncate", "blind_soft")
-            for v in vs]
+    hard = [
+        v
+        for t, vs in ok_by_type.items()
+        if t not in ("cross_locale", "jp_echo", "truncate", "blind_soft")
+        for v in vs
+    ]
     print(f"  HARD-subset: {sum(hard)}/{len(hard)}", flush=True)
     if a.save_heads:
-        torch.save({"heads": hs.state_dict(), "dim": dim, "encoder": model_id,
-                    "pooling": mode}, f"judge_heads_{a.encoder}_full.pt")
+        torch.save(
+            {
+                "heads": hs.state_dict(),
+                "dim": dim,
+                "encoder": model_id,
+                "pooling": mode,
+            },
+            f"judge_heads_{a.encoder}_full.pt",
+        )
         print(f"saved judge_heads_{a.encoder}_full.pt", flush=True)
 
 

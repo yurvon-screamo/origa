@@ -4,6 +4,7 @@
 Output per word: 1-3 short dictionary glosses (semicolon-separated),
 parsed into a t-list compatible with cdn dictionary schema.
 """
+
 import json
 import os
 import re
@@ -20,16 +21,18 @@ URL = "http://127.0.0.1:8091/v1/chat/completions"
 BLOCK, CONC = 64, 12
 
 SYS = "You are a skilled Japanese lexicographer. Give concise, natural dictionary translations."
-INSTR = ("Translate the Japanese word/expression into Chinese (Simplified). "
-         "Give 1-3 short dictionary glosses separated by ';', most common first. "
-         "No explanations, no romanization, Chinese only:\n{x}")
+INSTR = (
+    "Translate the Japanese word/expression into Chinese (Simplified). "
+    "Give 1-3 short dictionary glosses separated by ';', most common first. "
+    "No explanations, no romanization, Chinese only:\n{x}"
+)
 
 RE_HAN = re.compile(r"[一-鿿]")
 RE_KANA = re.compile(r"[ぁ-ゖァ-ヺーｦ-ﾟゝゞ]")
 
 
 def parse_glosses(out: str, word: str):
-    parts = [p.strip(' 。.．、\t') for p in re.split(r'[;；]', out)]
+    parts = [p.strip(" 。.．、\t") for p in re.split(r"[;；]", out)]
     parts = [p for p in parts if p]
     glosses = []
     seen = set()
@@ -46,11 +49,19 @@ def parse_glosses(out: str, word: str):
 
 
 def gen_one(word: str):
-    r = requests.post(URL, json={
-        "model": "tr600k",
-        "messages": [{"role": "system", "content": SYS},
-                     {"role": "user", "content": INSTR.format(x=word)}],
-        "temperature": 0.0, "max_tokens": 80}, timeout=120)
+    r = requests.post(
+        URL,
+        json={
+            "model": "tr600k",
+            "messages": [
+                {"role": "system", "content": SYS},
+                {"role": "user", "content": INSTR.format(x=word)},
+            ],
+            "temperature": 0.0,
+            "max_tokens": 80,
+        },
+        timeout=120,
+    )
     r.raise_for_status()
     out = r.json()["choices"][0]["message"]["content"].strip()
     return parse_glosses(out, word)
@@ -104,7 +115,7 @@ def main():
     t0 = time.perf_counter()
     n = empty = 0
     for start in range(done, len(words), BLOCK):
-        block = words[start:start + BLOCK]
+        block = words[start : start + BLOCK]
         with ThreadPoolExecutor(CONC) as ex:
             gens = list(ex.map(gen_one, block))
         for w, gl in zip(block, gens):
@@ -118,8 +129,11 @@ def main():
         done += len(block)
         dt = time.perf_counter() - t0
         if (start // BLOCK) % 20 == 0:
-            print(f"[{time.strftime('%H:%M:%S')}] {done}/{len(words)} | {n/max(dt,1):.2f} w/s "
-                  f"| empty {empty}", flush=True)
+            print(
+                f"[{time.strftime('%H:%M:%S')}] {done}/{len(words)} | {n / max(dt, 1):.2f} w/s "
+                f"| empty {empty}",
+                flush=True,
+            )
     print("COMPLETE", flush=True)
 
 
