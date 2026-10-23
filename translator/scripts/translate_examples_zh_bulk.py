@@ -4,6 +4,7 @@
 Input rows: {"i": int, "x": "JP sentence", "en"/"ru"/"vi"/"ko": ..., "f": furigana}
 Output: ex_zh.jsonl {"i", "x", "zh", "zh_ok"}
 """
+
 import json
 import os
 import re
@@ -24,7 +25,9 @@ INSTR = "Translate the following Japanese sentence into Chinese (Simplified):\n{
 
 RE_HAN = re.compile(r"[一-鿿㐀-䶿]")
 RE_KANA = re.compile(r"[ぁ-ゖァ-ヺーｦ-ﾟゝゞヽヾ]")
-RE_TRAD_ONLY = re.compile(r"[們來時說話氣車馬鳥龍門問間東書長開關電語體歡戀絕豐廣歸續點實現覺識斷]")
+RE_TRAD_ONLY = re.compile(
+    r"[們來時說話氣車馬鳥龍門問間東書長開關電語體歡戀絕豐廣歸續點實現覺識斷]"
+)
 
 
 def detect_zh(text: str, jp: str = "") -> bool:
@@ -45,11 +48,19 @@ def detect_zh(text: str, jp: str = "") -> bool:
 
 
 def gen_one(x: str):
-    r = requests.post(URL, json={
-        "model": "tr600k",
-        "messages": [{"role": "system", "content": SYS},
-                     {"role": "user", "content": INSTR.format(x=x)}],
-        "temperature": 0.0, "max_tokens": 200}, timeout=180)
+    r = requests.post(
+        URL,
+        json={
+            "model": "tr600k",
+            "messages": [
+                {"role": "system", "content": SYS},
+                {"role": "user", "content": INSTR.format(x=x)},
+            ],
+            "temperature": 0.0,
+            "max_tokens": 200,
+        },
+        timeout=180,
+    )
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
 
@@ -102,13 +113,18 @@ def main():
     t0 = time.perf_counter()
     n = fails = 0
     for start in range(done, len(rows), BLOCK):
-        block = rows[start:start + BLOCK]
+        block = rows[start : start + BLOCK]
         with ThreadPoolExecutor(CONC) as ex:
             gens = list(ex.map(lambda r: gen_one(r["x"]), block))
         for r, zh in zip(block, gens):
             ok = detect_zh(zh, r["x"])
-            fh.write(json.dumps({"i": r["i"], "x": r["x"], "zh": zh, "zh_ok": ok},
-                                ensure_ascii=False) + "\n")
+            fh.write(
+                json.dumps(
+                    {"i": r["i"], "x": r["x"], "zh": zh, "zh_ok": ok},
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
             n += 1
             if not ok:
                 fails += 1
@@ -118,8 +134,11 @@ def main():
         done += len(block)
         dt = time.perf_counter() - t0
         if (start // BLOCK) % 10 == 0:
-            print(f"[{time.strftime('%H:%M:%S')}] {done}/{len(rows)} | {n/max(dt,1):.2f} ex/s "
-                  f"| fails {fails}", flush=True)
+            print(
+                f"[{time.strftime('%H:%M:%S')}] {done}/{len(rows)} | {n / max(dt, 1):.2f} ex/s "
+                f"| fails {fails}",
+                flush=True,
+            )
     print("COMPLETE", flush=True)
 
 

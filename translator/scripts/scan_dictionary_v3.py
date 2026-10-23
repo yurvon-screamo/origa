@@ -6,6 +6,7 @@ Output: per-locale score distributions + dual-confirmation suspects
 (percentile-in-locale x reliable algo flags: paren-gigo, semicolon lists,
 jp-in-translation, duplicates, runaway). Assessment only — no fixes.
 """
+
 import json
 import re
 import time
@@ -30,30 +31,41 @@ POOL, BATCH, MAXLEN = 32, 64, 1000
 class Heads(torch.nn.Module):
     def __init__(self, dim):
         super().__init__()
-        self.s = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
-        self.a = torch.nn.Sequential(torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256))
+        self.s = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
+        self.a = torch.nn.Sequential(
+            torch.nn.Linear(dim, 256), torch.nn.GELU(), torch.nn.Linear(256, 256)
+        )
 
     def forward(self, sv, avs):
         zq = F.normalize(self.s(sv), dim=-1)
-        zc = F.normalize(self.a(avs.reshape(-1, avs.shape[-1])), dim=-1).view(avs.shape[0], avs.shape[1], -1)
+        zc = F.normalize(self.a(avs.reshape(-1, avs.shape[-1])), dim=-1).view(
+            avs.shape[0], avs.shape[1], -1
+        )
         return torch.einsum("bd,bkd->bk", zq, zc)
 
 
-RE_JP = re.compile(r'[ひ-んア-ン一-龥ぁ-ゖァ-ヺー]')
-RE_PAREN = re.compile(r'[({\[].{25,}[)}\]]')
-RE_SEMI = re.compile(r'.+;.+;.+')
-RE_SHORT_PAREN = re.compile(r'[({\[][^)）\]}]{12,}[)}\]]')
+RE_JP = re.compile(r"[ひ-んア-ン一-龥ぁ-ゖァ-ヺー]")
+RE_PAREN = re.compile(r"[({\[].{25,}[)}\]]")
+RE_SEMI = re.compile(r".+;.+;.+")
+RE_SHORT_PAREN = re.compile(r"[({\[][^)）\]}]{12,}[)}\]]")
 
 
 def algo_flags(tlist):
     """Reliable dictionary-content flags on the whole t-list of one (word, lang)."""
     f = []
-    joined = ' | '.join(tlist)
-    if any(RE_JP.search(t) for t in tlist): f.append('jp_in_t')
-    if any(RE_PAREN.search(t) for t in tlist): f.append('paren_gigo')
-    if any(RE_SEMI.search(t) for t in tlist): f.append('semicolon_list')
-    if len(set(x.strip() for x in tlist)) < len(tlist): f.append('dup_t')
-    if len(joined) > 400: f.append('runaway')
+    joined = " | ".join(tlist)
+    if any(RE_JP.search(t) for t in tlist):
+        f.append("jp_in_t")
+    if any(RE_PAREN.search(t) for t in tlist):
+        f.append("paren_gigo")
+    if any(RE_SEMI.search(t) for t in tlist):
+        f.append("semicolon_list")
+    if len(set(x.strip() for x in tlist)) < len(tlist):
+        f.append("dup_t")
+    if len(joined) > 400:
+        f.append("runaway")
     return f
 
 
@@ -64,7 +76,9 @@ def main():
     print(f"dictionary: {len(words)} words", flush=True)
 
     ck = torch.load(HEADS, map_location="cpu")
-    hs = Heads(ck["dim"]); hs.load_state_dict(ck["heads"]); hs.eval()
+    hs = Heads(ck["dim"])
+    hs.load_state_dict(ck["heads"])
+    hs.eval()
 
     # collect pairs
     meta = []  # (word, lang, tlist)
@@ -91,24 +105,34 @@ def main():
     if V is None:
         state_keys = list(uniq_states)
         cand_keys = list(uniq_cands)
-        jobs = [("query: " + s, s) for s in state_keys] + [("passage: " + t, t) for t in cand_keys]
+        jobs = [("query: " + s, s) for s in state_keys] + [
+            ("passage: " + t, t) for t in cand_keys
+        ]
 
         def fetch(chunk):
             payload = [p[:MAXLEN] for p, _ in chunk]
             r = requests.post(EMB, json={"model": "e5b", "input": payload}, timeout=600)
             r.raise_for_status()
-            return [(raw, np.asarray(d["embedding"], dtype=np.float32))
-                    for (_, raw), d in zip(chunk, r.json()["data"])]
+            return [
+                (raw, np.asarray(d["embedding"], dtype=np.float32))
+                for (_, raw), d in zip(chunk, r.json()["data"])
+            ]
 
-        chunks = [jobs[i:i + BATCH] for i in range(0, len(jobs), BATCH)]
+        chunks = [jobs[i : i + BATCH] for i in range(0, len(jobs), BATCH)]
         V = {}
         with ThreadPoolExecutor(POOL) as ex:
             for res in ex.map(fetch, chunks):
                 for k, v in res:
                     V[k] = v
-        print(f"embedded {len(V)} in {(time.perf_counter()-t0)/60:.1f} min", flush=True)
-        np.savez(cache_p, keys=np.array(list(V.keys())),
-                 vecs=np.stack(list(V.values())).astype(np.float16))
+        print(
+            f"embedded {len(V)} in {(time.perf_counter() - t0) / 60:.1f} min",
+            flush=True,
+        )
+        np.savez(
+            cache_p,
+            keys=np.array(list(V.keys())),
+            vecs=np.stack(list(V.values())).astype(np.float16),
+        )
         print(f"cache saved: {cache_p.name}", flush=True)
 
     # score: best-of-t
@@ -117,7 +141,7 @@ def main():
     with torch.no_grad():
         B = 512
         for s in range(0, len(meta), B):
-            block = meta[s:s + B]
+            block = meta[s : s + B]
             svs, avs, msk = [], [], []
             for w, L, tl in block:
                 svs.append(V[f"Japanese word: {w}"])
@@ -125,8 +149,12 @@ def main():
                 msk.append([True] * len(tl))
             K = max(a.shape[0] for a in avs)
             sv = torch.from_numpy(np.stack(svs))
-            av = torch.stack([F.pad(torch.from_numpy(a), (0, 0, 0, K - a.shape[0])) for a in avs])
-            m = torch.stack([F.pad(torch.tensor(x), (0, K - len(x)), value=False) for x in msk])
+            av = torch.stack(
+                [F.pad(torch.from_numpy(a), (0, 0, 0, K - a.shape[0])) for a in avs]
+            )
+            m = torch.stack(
+                [F.pad(torch.tensor(x), (0, K - len(x)), value=False) for x in msk]
+            )
             sc = hs(sv, av).masked_fill(~m, -1e9)
             best = sc.max(1).values.numpy()
             for (w, L, tl), b in zip(block, best):
@@ -144,8 +172,11 @@ def main():
     for L in LANGS:
         v = np.array(sorted(scores[L]))
         pct[L] = v
-        print(f"  [{L}] n={len(v)} | mean {v.mean():.3f} | p50 {np.median(v):.3f} "
-              f"| p5 {np.percentile(v,5):.3f} | p1 {np.percentile(v,1):.3f} | min {v.min():.3f}", flush=True)
+        print(
+            f"  [{L}] n={len(v)} | mean {v.mean():.3f} | p50 {np.median(v):.3f} "
+            f"| p5 {np.percentile(v, 5):.3f} | p1 {np.percentile(v, 1):.3f} | min {v.min():.3f}",
+            flush=True,
+        )
 
     # dual confirmation
     def prank(L, v):
@@ -163,25 +194,40 @@ def main():
         flags = word_lang_flags[key]
         rank = prank(L, r["score"])
         if rank < 1.5 or flags:
-            suspects.append({"word": w, "lang": L, "rank": round(float(rank), 2),
-                             "score": r["score"], "flags": flags or ["low_pct"]})
+            suspects.append(
+                {
+                    "word": w,
+                    "lang": L,
+                    "rank": round(float(rank), 2),
+                    "score": r["score"],
+                    "flags": flags or ["low_pct"],
+                }
+            )
 
     both = [x for x in suspects if x["rank"] < 1.5 and x["flags"] != ["low_pct"]]
-    print(f"\nподозрений (p<1.5 ИЛИ флаг): {len(suspects)} ({100*len(suspects)/len(rows):.1f}%)")
+    print(
+        f"\nподозрений (p<1.5 ИЛИ флаг): {len(suspects)} ({100 * len(suspects) / len(rows):.1f}%)"
+    )
     print(f"ДВОЙНОЕ подтверждение: {len(both)}")
-    print("по флагам:", dict(Counter(f for x in suspects for f in x['flags'])))
-    print("по локалям (двойные):", dict(Counter(x['lang'] for x in both)))
-    json.dump(suspects, open(OUT / "dict_suspects_v3.json", "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
+    print("по флагам:", dict(Counter(f for x in suspects for f in x["flags"])))
+    print("по локалям (двойные):", dict(Counter(x["lang"] for x in both)))
+    json.dump(
+        suspects,
+        open(OUT / "dict_suspects_v3.json", "w", encoding="utf-8"),
+        ensure_ascii=False,
+        indent=1,
+    )
 
     print("\nглаза: 6 двойных:")
     seen = set()
     n = 0
     for x in both:
         k = (x["word"], x["lang"])
-        if k in seen: continue
+        if k in seen:
+            continue
         seen.add(k)
-        if n >= 6: break
+        if n >= 6:
+            break
         entry = words.get(x["word"], {}).get(x["lang"]) or {}
         print(f"  [{x['lang']}] rank={x['rank']} {x['flags']}")
         print(f"    word: {x['word']}")

@@ -8,6 +8,7 @@ v2 (post code-review a5c18bc):
 - detect_zh v2: kanji-echo guard (zh too similar to JP input),
   Traditional-only chars detection, halfwidth kana, CJK Ext-A
 """
+
 import json
 import os
 import re
@@ -31,7 +32,9 @@ INSTR_JA = "次の日本語の文を中国語（簡体字）に翻訳してく�
 # ranges: CJK Unified (incl. ext ranges) / kana incl. halfwidth & iteration marks
 RE_HAN = re.compile(r"[一-鿿㐀-䶿]")
 RE_KANA = re.compile(r"[ぁ-ゖァ-ヺーｦ-ﾟゝゞヽヾ]")
-RE_TRAD_ONLY = re.compile(r"[們來時說話氣車馬鳥龍門問間東書長開關電語體歡戀絕豐廣歸續點實現覺識斷]")
+RE_TRAD_ONLY = re.compile(
+    r"[們來時說話氣車馬鳥龍門問間東書長開關電語體歡戀絕豐廣歸續點實現覺識斷]"
+)
 RE_LATIN = re.compile(r"[A-Za-z]")
 
 
@@ -57,24 +60,32 @@ def detect_zh(text: str, jp: str = "") -> bool:
     t = (text or "").strip()
     if not t:
         return False
-    if _kana_ratio(t) >= 0.02:          # any real kana presence -> not zh
+    if _kana_ratio(t) >= 0.02:  # any real kana presence -> not zh
         return False
-    if _zh_ratio(t) <= 0.15:            # mostly non-CJK junk
+    if _zh_ratio(t) <= 0.15:  # mostly non-CJK junk
         return False
-    if RE_TRAD_ONLY.search(t):          # Traditional chars in a Simplified run
+    if RE_TRAD_ONLY.search(t):  # Traditional chars in a Simplified run
         return False
     if jp and _echo_ratio(t, jp) >= 0.8 and len(t) <= len(jp) * 1.6:
-        return False                     # kanji echo of the input
+        return False  # kanji echo of the input
     return True
 
 
 def gen_one(x: str):
     def call(sys, instr):
-        r = requests.post(URL, json={
-            "model": "tr600k",
-            "messages": [{"role": "system", "content": sys},
-                         {"role": "user", "content": instr.format(x=x)}],
-            "temperature": 0.0, "max_tokens": 200}, timeout=180)
+        r = requests.post(
+            URL,
+            json={
+                "model": "tr600k",
+                "messages": [
+                    {"role": "system", "content": sys},
+                    {"role": "user", "content": instr.format(x=x)},
+                ],
+                "temperature": 0.0,
+                "max_tokens": 200,
+            },
+            timeout=180,
+        )
         r.raise_for_status()
         return r.json()["choices"][0]["message"]["content"].strip()
 
@@ -83,7 +94,9 @@ def gen_one(x: str):
     if not detect_zh(out, x):
         out2 = call(SYS_JA, INSTR_JA)
         retries = 1
-        if detect_zh(out2, x) or (len(out2) >= len(out) * 0.5 and not detect_zh(out, x)):
+        if detect_zh(out2, x) or (
+            len(out2) >= len(out) * 0.5 and not detect_zh(out, x)
+        ):
             out = out2
     return out, retries
 
@@ -120,8 +133,10 @@ def reconcile() -> int:
     if pp.exists():
         prog = json.loads(pp.read_text())["done"]
     if prog > n:
-        raise SystemExit(f"FATAL: progress={prog} > валидных строк={n}; "
-                         "битый чекпоинт — починить вручную (см. ревью a5c18bc High-1)")
+        raise SystemExit(
+            f"FATAL: progress={prog} > валидных строк={n}; "
+            "битый чекпоинт — починить вручную (см. ревью a5c18bc High-1)"
+        )
     if prog < n:
         print(f"resume: прогресс {prog} < строк {n} — выравниваю по строкам")
         atomic_checkpoint(n)
@@ -142,24 +157,38 @@ def main():
     t0 = time.perf_counter()
     n = retries = langfail = 0
     for start in range(done, len(phrases), BLOCK):
-        block = phrases[start:start + BLOCK]
+        block = phrases[start : start + BLOCK]
         with ThreadPoolExecutor(CONC) as ex:
             gens = list(ex.map(lambda p: gen_one(p["x"]), block))
         for p, (zh, r) in zip(block, gens):
-            fh.write(json.dumps({"i": p["i"], "x": p["x"], "zh": zh, "retries": r,
-                                 "zh_ok": detect_zh(zh, p["x"])}, ensure_ascii=False) + "\n")
+            fh.write(
+                json.dumps(
+                    {
+                        "i": p["i"],
+                        "x": p["x"],
+                        "zh": zh,
+                        "retries": r,
+                        "zh_ok": detect_zh(zh, p["x"]),
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
             n += 1
             retries += r
             if not detect_zh(zh, p["x"]):
                 langfail += 1
         fh.flush()
-        os.fsync(fh.fileno())            # data durable BEFORE checkpoint
+        os.fsync(fh.fileno())  # data durable BEFORE checkpoint
         atomic_checkpoint(done + len(block))
         done += len(block)
         dt = time.perf_counter() - t0
         if (start // BLOCK) % 10 == 0:
-            print(f"[{time.strftime('%H:%M:%S')}] {done}/{len(phrases)} | {n/max(dt,1):.2f} ph/s "
-                  f"| retry {retries} langfail {langfail}", flush=True)
+            print(
+                f"[{time.strftime('%H:%M:%S')}] {done}/{len(phrases)} | {n / max(dt, 1):.2f} ph/s "
+                f"| retry {retries} langfail {langfail}",
+                flush=True,
+            )
     print("COMPLETE", flush=True)
 
 
