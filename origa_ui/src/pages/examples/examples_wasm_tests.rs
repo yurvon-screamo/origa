@@ -47,7 +47,12 @@ async fn examples_header_renders_title_and_info_tooltip() {
 
 fn example_study_card() -> origa::domain::StudyCard {
     use origa::domain::{Card, ExampleCard, StudyCard};
-    StudyCard::new(Card::Example(ExampleCard::new("たべる", 1)))
+    // A sentence_id no test fetches: the wasm suite shares one browser
+    // page, and in-flight CDN detail loads from other tests (e.g. the
+    // lesson autoplay probe's live fetch) must never populate this card's
+    // cache entry — the skeleton render this suite pins depends on the
+    // detail cache staying empty for THIS id.
+    StudyCard::new(Card::Example(ExampleCard::new("たべる", u32::MAX)))
 }
 
 #[wasm_bindgen_test]
