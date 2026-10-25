@@ -239,11 +239,9 @@ fn install_card_precompute(card: &VocabularyCard) {
 }
 
 /// Installs the precompute store for already-persisted cards after the
-/// user loads. Cards created since #521 carry persisted `tokens`; legacy
-/// cards are synthesized without lindera when they cached a part of
-/// speech: `surface = base = word`, the reading comes from the furigana
-/// dictionary (katakana-normalized like the annotator does). A legacy
-/// card without `pos` yields no entry — the live paths keep serving it.
+/// user loads. Only cards carrying persisted `tokens` (#521) yield an
+/// entry; older shapes — with or without a POS cache — are skipped and
+/// keep rendering through the live tokenization fallback (#524).
 pub fn install_precompute_for_cards<'a>(cards: impl IntoIterator<Item = &'a VocabularyCard>) {
     let entries = cards
         .into_iter()

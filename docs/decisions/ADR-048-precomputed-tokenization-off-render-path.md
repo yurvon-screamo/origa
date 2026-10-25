@@ -48,6 +48,13 @@ Split by content lifecycle instead of by component:
    and becomes a no-op; renders answer from the persistent cache, and
    until the pass completes legacy cards simply use the live-path
    fallback.
+
+   > ⚠️ **Superseded (2026-10-25, issue #524):** the one-time startup
+   > backfill pass (`BackfillCardTokensUseCase`) is removed. By the
+   > cleanup every active client carried persisted caches, and rare
+   > tokenless cards (long-absent returning users) render through the
+   > live-path fallback, which stays forever. The rest of this ADR —
+   > precompute blobs, fast paths, on-demand gates — remains in force.
 3. **Everything else → fast paths + on-demand gate.**
    `furiganize_segments` resolves kanji-free text as one plain segment
    (no dictionary at all), consults the precompute store, then tries a

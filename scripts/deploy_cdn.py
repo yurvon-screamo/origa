@@ -392,24 +392,26 @@ RKYV_BLOB_SOURCES: dict[str, list[str]] = {
 SUDACHIDICT_DIR_NAME = "sudachidict-20260723"
 
 
-def grammar_precompute_source(cdn_dir: Path) -> bytes | None:
-    """Byte string the grammar precompute header hash binds to.
+def grammar_precompute_source(cdn_dir: Path) -> tuple[bytes, bytes] | None:
+    """Byte strings the grammar precompute header binds to.
 
-    Mirrors utils build-grammar-precompute: grammar_v3.json plus
-    `|sudachidict:<dir>|furigana:<sha256(JmdictFurigana.txt)>`.
-    Returns None when an input file is missing (reported as a problem).
+    Mirrors utils build-grammar-precompute: builder source = grammar_v3.json
+    plus `|sudachidict:<dir>|furigana:<sha256(JmdictFurigana.txt)>`; the
+    grammar JSON bytes are also returned separately for the client-side
+    manifest_guard check. Returns None when an input file is missing
+    (reported as a problem).
     """
-    parts: list[bytes] = []
-    grammar = cdn_dir / "grammar/grammar_v3.json"
-    if not grammar.is_file():
+    grammar_path = cdn_dir / "grammar/grammar_v3.json"
+    if not grammar_path.is_file():
         return None
-    parts.append(grammar.read_bytes())
+    grammar = grammar_path.read_bytes()
     furigana = cdn_dir / "dictionaries/JmdictFurigana.txt"
     if not furigana.is_file():
         return None
+    parts: list[bytes] = [grammar]
     parts.append(b"|sudachidict:" + SUDACHIDICT_DIR_NAME.encode())
     parts.append(b"|furigana:" + hashlib.sha256(furigana.read_bytes()).digest())
-    return b"".join(parts)
+    return b"".join(parts), grammar
 
 
 def inflate_deflated(blob_path: Path) -> bytes:
@@ -490,15 +492,14 @@ def grammar_precompute_freshness_problems(cdn_dir: Path) -> list[str]:
     source = grammar_precompute_source(cdn_dir)
     if source is None:
         return ["grammar/grammar_precompute_v3.rkyv: source inputs missing"]
-    if hashlib.sha256(source).digest() != inflated[8:40]:
+    source_bytes, grammar_bytes = source
+    if hashlib.sha256(source_bytes).digest() != inflated[8:40]:
         return ["grammar/grammar_precompute_v3.rkyv: stale relative to its sources"]
     # Client-side symmetry: the builder embeds
     # manifest_guard = sha256(hex(sha256(grammar_v3.json))) — exactly what a
     # fetched-manifest client verifies (cdn_blob::manifest_guard_from_hex_hashes).
     expected_guard = hashlib.sha256(
-        hashlib.sha256((cdn_dir / "grammar/grammar_v3.json").read_bytes())
-        .hexdigest()
-        .encode()
+        hashlib.sha256(grammar_bytes).hexdigest().encode()
     ).digest()
     if expected_guard != inflated[40:72]:
         return ["grammar/grammar_precompute_v3.rkyv: manifest_guard mismatch"]
