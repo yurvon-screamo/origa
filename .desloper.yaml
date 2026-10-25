@@ -11,7 +11,10 @@ suppress:
   # Source: cdn/grammar/grammar_v3.json
   # Extract to: /tmp/opencode/grammar-audit/{en,ru,ko,vi}/grammar.md
   # ============================================================
-  # Corpus manually verified 2026-09-14: all 140 findings are genre FPs.
+  # Corpus manually verified 2026-09-14 on the retired v2+overlay corpus
+  # (all 140 findings are genre FPs); v3 (677 articles) carries the same
+  # article content over, so the FP verdicts below carry over as context —
+  # re-verify before relying on this suppression for new content.
   # - "in order to" teaches ために/ように; "не только" teaches だけでなく
   # - "Synergy" is the translation of と相まって; "could not be happier"
   #   translates うれしい限りだ; "Việc" translates the こと-nominalizer

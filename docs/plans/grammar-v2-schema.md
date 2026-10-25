@@ -7,7 +7,8 @@
 > live on in `scripts/validate_grammar_v3.py` (schema marker must be 3).
 > Kept for provenance per the docs convention.
 
-Status: superseded by the v3 corpus. Supersedes `cdn/grammar/grammar.json` (v1, removed).
+Superseded by the v3 corpus (2026-10-25); the text below documents the
+retired v2 schema and its provenance — do not edit as a live spec.
 
 ## File layout
 
