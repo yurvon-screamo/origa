@@ -10,6 +10,7 @@
  */
 import { test } from "@playwright/test";
 
+import { createExaminerFromEnv } from "../shots/examiner/examine.ts";
 import { runScenarioWithManifest } from "../shots/runner.ts";
 import type { ViewportTag } from "../shots/viewports.ts";
 
@@ -38,6 +39,7 @@ test.describe("screenshot scenarios", () => {
         test(`shots: ${id}`, async ({ browser }) => {
             // A capture drives the whole app: login, onboarding, navigation.
             test.setTimeout(1_200_000);
+            const examiner = await createExaminerFromEnv(process.env, outDir);
             await runScenarioWithManifest(browser, id, {
                 outDir,
                 label,
@@ -46,6 +48,7 @@ test.describe("screenshot scenarios", () => {
                 viewports: viewports.length > 0 ? viewports : undefined,
                 locale: locale || undefined,
                 baseURL: baseUrl || undefined,
+                examiner: examiner ?? undefined,
             });
         });
     }

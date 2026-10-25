@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 
+import type { Examiner } from "./examiner/examine.ts";
 import { readPngSize, sha256Hex, shotFileName, type ShotEntry } from "./manifest.ts";
 import type { ShotSink } from "./types.ts";
 import type { ViewportTag } from "./viewports.ts";
@@ -16,6 +17,8 @@ export interface SinkOptions {
     baseURL: string;
     cdnBaseUrl: string;
     commit: string;
+    /** When set, every captured screen is also examined by the d3 decision model. */
+    examiner?: Examiner;
 }
 
 /**
@@ -56,6 +59,11 @@ export function createSink(page: Page, options: SinkOptions): ShotSink {
                 cdnBaseUrl: options.cdnBaseUrl,
             };
             entries.push(entry);
+            // The exam never breaks the capture: examineScreen records
+            // its own failures and returns null for unexamined screens.
+            if (options.examiner) {
+                await options.examiner.examineScreen(page, entry);
+            }
             return entry;
         },
     };

@@ -115,6 +115,43 @@ on the developer's machine, but the onboarding flow of a fresh profile is
 not verified in a pipeline yet (ADR-066, "Not Done Here"; ADR-067). The
 weekly job follows that work.
 
+### Screen examiner (`--examine`, pre-release manual testing)
+
+`capture --examine` sends every captured screen through a local d3
+decision model (Ollama, `/v1/systemone`): the model answers typed
+yes/no questions about static visual defects (layout overlap, clipping,
+tofu glyphs, brand fonts, empty states) with probabilities. Behavior,
+hover and flow defects are out of scope — the examiner sees a still
+screenshot.
+
+```bash
+cd end2end
+OLLAMA_URL=http://localhost:11434 npm run shots -- capture --scenario home --label rc-0.7.1 --examine
+npm run shots -- capture --scenario home --label rc-0.7.1 --examine --upload --file-issues
+npm run exam:canary   # proves the examiner catches defects (needs live Ollama, never CI)
+```
+
+- `shots/examiner/model.json` — the test model (which screens get
+  examined). Committed: the knowledge is versioned next to the code.
+  A screen absent from the model is skipped, not an error.
+- `shots/examiner/questions.ts` — the defect checklist (clear distinct
+  criteria matter: the model only answers what it is asked).
+- Traces: `exam.<scenario>.jsonl` + `exam-report.md` next to the
+  captures (outside the repo). A finding is a probability, not a
+  verdict — every flag needs manual triage.
+- `--file-issues` requires `--upload` (an issue needs public evidence);
+  dedup by `fingerprint:` line, label `ai-manual-test`.
+- Runtime failures of the model are recorded per screen and fail the
+  run loudly; the captures themselves survive.
+- The canary (`screenshots-spec/exam-canary.spec.ts`) injects synthetic
+  defects into the live home screen and must catch each one in two
+  consecutive passes, with the clean screen staying unflagged. The
+  measured blind spots of the current d3 builds (clipping, misalignment,
+  typeface) are documented in the spec header and in
+  `questions.ts` — those questions stay out of the committed screen
+  model until a model or formulation clears its canary. It is NOT part
+  of `npm test` or the CI matrix — it needs a live Ollama.
+
 ## Test Users
 
 | User | Email | Password | Purpose |

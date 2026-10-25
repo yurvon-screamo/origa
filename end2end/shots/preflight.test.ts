@@ -20,6 +20,10 @@ function facts(overrides: Partial<PreflightFacts> = {}): PreflightFacts {
         trailBaseUrlConfigured: true,
         adminPasswordConfigured: true,
         outDirInsideRepo: false,
+        examinerEnabled: false,
+        examModelTag: "d3:2b",
+        ollamaUrl: "http://localhost:11434",
+        ollamaModels: null,
         ...overrides,
     };
 }
@@ -100,4 +104,28 @@ test("a listener of the same checkout is not reported", () => {
     );
 
     assert.deepEqual(report.warnings, []);
+});
+
+test("an unreachable Ollama fails an examining run before a pixel is written", () => {
+    const report = evaluatePreflight(facts({ examinerEnabled: true, ollamaModels: null }));
+
+    assert.equal(report.errors.length, 1);
+    assert.match(report.errors[0], /Ollama недоступен/);
+});
+
+test("a missing exam model fails an examining run", () => {
+    const report = evaluatePreflight(
+        facts({ examinerEnabled: true, ollamaModels: ["d3:2b", "d3:4b"], examModelTag: "d3:9b" }),
+    );
+
+    assert.equal(report.errors.length, 1);
+    assert.match(report.errors[0], /ollama pull d3:9b/);
+});
+
+test("an examining run with the model pulled passes", () => {
+    const report = evaluatePreflight(
+        facts({ examinerEnabled: true, ollamaModels: ["d3:2b"], examModelTag: "d3:2b" }),
+    );
+
+    assert.deepEqual(report.errors, []);
 });

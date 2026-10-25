@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "defaults": {
+    "threshold": 0.75
+  },
+  "screens": {
+    "home:home": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "home-insights:insights": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "home-due-counter:due-counter": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "lesson-example:acquaintance-example": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "lesson-example:answer-example": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "token-popup:token-popup-report": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    }
+  }
+}

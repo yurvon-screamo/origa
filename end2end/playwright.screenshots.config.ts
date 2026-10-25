@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { SERVE_MODE, resolveCdnSource } from "./shots/config.ts";
+import { LOCAL_CDN_PORT, SERVE_MODE, resolveCdnSource } from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
 
@@ -75,8 +75,8 @@ export default defineConfig({
         ...(cdnSource.serveLocally
             ? [
                   {
-                      command: "npx serve ../cdn -p 8080 --no-clipboard --cors",
-                      port: 8080,
+                      command: `npx serve ../cdn -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+                      port: LOCAL_CDN_PORT,
                       reuseExistingServer: !isCI,
                       timeout: 30_000,
                   },

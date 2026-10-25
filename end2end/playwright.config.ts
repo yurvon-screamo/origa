@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
+import { LOCAL_CDN_PORT } from "./shots/config.ts";
+
 const isCI = !!process.env.CI;
 
 /** The app origin the suite runs against; also the inbox seam opt-in scope. */
@@ -69,8 +71,8 @@ export default defineConfig({
     ],
     webServer: [
         {
-            command: "npx serve ../cdn -p 8080 --no-clipboard --cors",
-            port: 8080,
+            command: `npx serve ../cdn -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            port: LOCAL_CDN_PORT,
             reuseExistingServer: !isCI,
             timeout: 30000,
             stdout: "pipe",
@@ -86,7 +88,7 @@ export default defineConfig({
             stdout: "pipe",
             stderr: "pipe",
             env: {
-                ORIGA_CDN_BASE_URL: "http://localhost:8080",
+                ORIGA_CDN_BASE_URL: `http://localhost:${LOCAL_CDN_PORT}`,
                 TRAILBASE_URL: "http://127.0.0.1:4000",
             },
         },
