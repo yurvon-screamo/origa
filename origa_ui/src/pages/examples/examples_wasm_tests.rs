@@ -52,6 +52,14 @@ fn example_study_card() -> origa::domain::StudyCard {
 
 #[wasm_bindgen_test]
 async fn example_card_item_without_store_renders_skeleton_and_status() {
+    // Global-cache isolation: the wasm suite shares one browser page, and a
+    // prior test may have fetched real example details from the CDN (the
+    // lesson autoplay probe does a live `load_example_detail`). A populated
+    // cache renders the sentence instead of the skeleton this test pins —
+    // reset it for a deterministic start.
+    origa::dictionary::example::reset_example_data_for_test();
+    origa::dictionary::example::reset_example_index_for_test();
+
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
         let trigger = RwSignal::new(0u32);
