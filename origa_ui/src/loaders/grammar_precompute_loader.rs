@@ -11,7 +11,7 @@ use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
 
 pub const GRAMMAR_PRECOMPUTE_PATH: &str = "grammar/grammar_precompute_v3.rkyv";
-const GRAMMAR_SOURCES: [&str; 2] = ["grammar/grammar_v2.json", "grammar/grammar_ko_vi.json"];
+const GRAMMAR_SOURCES: [&str; 1] = ["grammar/grammar_v3.json"];
 
 pub async fn load_grammar_precompute() -> Result<(), OrigaError> {
     load_grammar_precompute_via(cdn_provider()).await
@@ -89,7 +89,7 @@ mod tests {
         }
     }
 
-    fn valid_blob(grammar_json: &str, overlay_json: &str) -> Vec<u8> {
+    fn valid_blob(grammar_json: &str) -> Vec<u8> {
         let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
             entries: BTreeMap::from([(
                 "私は学生です。".to_string(),
@@ -104,16 +104,10 @@ mod tests {
             )]),
         })
         .unwrap();
-        let guard = manifest_guard_from_hex_hashes(&[
-            &sha256_bytes(grammar_json.as_bytes())
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect::<String>(),
-            &sha256_bytes(overlay_json.as_bytes())
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect::<String>(),
-        ]);
+        let guard = manifest_guard_from_hex_hashes(&[&sha256_bytes(grammar_json.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()]);
         let header = BlobHeader {
             schema_version: SCHEMA_VERSION,
             source_sha256: sha256_bytes(b"sources with ingredients"),
@@ -125,7 +119,7 @@ mod tests {
     #[tokio::test]
     async fn valid_blob_installs_and_answers_lookups() {
         // Arrange
-        let provider = MockCdn::with_blob(Some(valid_blob("{}", "{}")));
+        let provider = MockCdn::with_blob(Some(valid_blob("{}")));
 
         // Act
         load_grammar_precompute_via(&provider).await.unwrap();
@@ -146,7 +140,7 @@ mod tests {
     #[tokio::test]
     async fn corrupted_header_is_rejected() {
         // Arrange
-        let mut blob = valid_blob("{}", "{}");
+        let mut blob = valid_blob("{}");
         blob[0] = b'X';
         let provider = MockCdn::with_blob(Some(blob));
 

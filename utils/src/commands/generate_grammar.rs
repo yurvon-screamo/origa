@@ -14,7 +14,7 @@ fn resolve_grammar_path(custom_path: Option<&PathBuf>) -> PathBuf {
         None => get_base_path()
             .join("cdn")
             .join("grammar")
-            .join("grammar_v2.json"),
+            .join("grammar_v3.json"),
     }
 }
 

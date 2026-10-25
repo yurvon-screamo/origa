@@ -21,7 +21,7 @@ pub(crate) const DEFAULT_TRAILBASE: &str = "https://app.origa.uwuwu.net";
 
 /// Production CDN base URL. Used as the fallback when the
 /// `ORIGA_CDN_BASE_URL` env var is unset OR empty. An empty value previously
-/// produced relative fetch URLs (`/grammar/grammar.json`) that the WebView
+/// produced relative fetch URLs (`/grammar/grammar_v3.json`) that the WebView
 /// resolved against its own origin (`tauri.localhost`) instead of the CDN,
 /// causing resources to be served from the local bundle and wrapped in blob
 /// URLs by `CacheFirstCdnProvider`. See ADR-023.
