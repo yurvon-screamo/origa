@@ -178,21 +178,11 @@ impl VocabularyCard {
         self.pos.clone()
     }
 
-    /// Persisted token precompute for the card word. `None` on legacy
-    /// cards created before #521 — the startup
-    /// [`BackfillCardTokensUseCase`](crate::use_cases::BackfillCardTokensUseCase)
-    /// migrates them once.
+    /// Persisted token precompute for the card word. `None` on cards
+    /// created before #521 — the live tokenization path renders those
+    /// until the card content is recreated.
     pub fn tokens(&self) -> Option<&[PrecomputedToken]> {
         self.tokens.as_deref()
-    }
-
-    /// The same card with a token cache attached — the migration's
-    /// replacement form.
-    pub fn with_tokens(self, tokens: Vec<PrecomputedToken>) -> Self {
-        Self {
-            tokens: Some(tokens),
-            ..self
-        }
     }
 
     pub fn with_grammar_rule(

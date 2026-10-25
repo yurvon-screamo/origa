@@ -1,6 +1,5 @@
 mod add_counter_cards;
 mod analyze_text_for_cards;
-mod backfill_card_tokens;
 mod complete_acquaintance_hand;
 mod complete_onboarding_scoring;
 mod create_cards_from_analysis;
@@ -34,7 +33,6 @@ mod tests;
 
 pub use add_counter_cards::AddCounterCardsUseCase;
 pub use analyze_text_for_cards::{AnalyzeTextForCardsUseCase, AnalyzeTextResult, AnalyzedWord};
-pub use backfill_card_tokens::BackfillCardTokensUseCase;
 pub use complete_acquaintance_hand::CompleteAcquaintanceHandUseCase;
 pub use complete_onboarding_scoring::CompleteOnboardingScoringUseCase;
 pub use create_cards_from_analysis::{
