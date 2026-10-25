@@ -492,6 +492,16 @@ def grammar_precompute_freshness_problems(cdn_dir: Path) -> list[str]:
         return ["grammar/grammar_precompute_v3.rkyv: source inputs missing"]
     if hashlib.sha256(source).digest() != inflated[8:40]:
         return ["grammar/grammar_precompute_v3.rkyv: stale relative to its sources"]
+    # Client-side symmetry: the builder embeds
+    # manifest_guard = sha256(hex(sha256(grammar_v3.json))) — exactly what a
+    # fetched-manifest client verifies (cdn_blob::manifest_guard_from_hex_hashes).
+    expected_guard = hashlib.sha256(
+        hashlib.sha256((cdn_dir / "grammar/grammar_v3.json").read_bytes())
+        .hexdigest()
+        .encode()
+    ).digest()
+    if expected_guard != inflated[40:72]:
+        return ["grammar/grammar_precompute_v3.rkyv: manifest_guard mismatch"]
     return []
 
 

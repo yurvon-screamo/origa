@@ -42,15 +42,17 @@ mod tests {
     use std::future::Future;
 
     use super::*;
+    use crate::repository::cache_manager::{CacheManifest, guard_expectation_from_manifest};
     use origa::dictionary::cdn_blob::{
-        BlobHeader, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes, sha256_bytes,
+        BlobHeader, GuardExpectation, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes,
+        sha256_bytes,
     };
     use origa::dictionary::precompute_blob::{
         PrecomputeBlob, deflate_blob, installed_precompute_views_len,
         serialize_precompute_blob_to_rkyv,
     };
     use origa::domain::lookup_precomputed;
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, HashMap};
 
     /// Recording mock over the external CDN boundary.
     struct MockCdn {
@@ -161,5 +163,43 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
+    }
+
+    /// The #582 regression class: the builder derives the blob's
+    /// `manifest_guard` from the manifest hashes of exactly GRAMMAR_SOURCES.
+    /// A drifted source list (here or in the builder) must break this
+    /// symmetry pin instead of silently rejecting every blob — the
+    /// v0.7.27..0.7.37 behavior where the loader expected the retired
+    /// v2/overlay pair and the precompute never installed.
+    #[test]
+    fn manifest_expectation_mirrors_builder_guard() {
+        // Arrange: a manifest listing every loader source with the hash the
+        // builder would compute for it.
+        let hash = "a".repeat(64);
+        let manifest = CacheManifest {
+            version: 1,
+            files: HashMap::from([(GRAMMAR_SOURCES[0].to_string(), hash.clone())]),
+        };
+
+        // Act: the loader-side expectation over the same constant.
+        let expectation = guard_expectation_from_manifest(Some(&manifest), &GRAMMAR_SOURCES);
+
+        // Assert: Expect(guard) equal to the builder formula.
+        let GuardExpectation::Expect(guard) = expectation else {
+            panic!("manifest lists every GRAMMAR_SOURCES entry — expectation must be Expect");
+        };
+        assert_eq!(guard, manifest_guard_from_hex_hashes(&[&hash]));
+
+        // A foreign hash (or a source missing from the manifest) must not
+        // satisfy the check.
+        assert_ne!(guard, manifest_guard_from_hex_hashes(&[&"b".repeat(64)]));
+        let manifest_without_source = CacheManifest {
+            version: 1,
+            files: HashMap::new(),
+        };
+        assert!(matches!(
+            guard_expectation_from_manifest(Some(&manifest_without_source), &GRAMMAR_SOURCES),
+            GuardExpectation::Mismatch
+        ));
     }
 }
