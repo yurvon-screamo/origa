@@ -238,7 +238,7 @@ fn install_card_precompute(card: &VocabularyCard) {
     }
 }
 
-/// Backfills the precompute store for already-persisted cards after the
+/// Installs the precompute store for already-persisted cards after the
 /// user loads. Cards created since #521 carry persisted `tokens`; legacy
 /// cards are synthesized without lindera when they cached a part of
 /// speech: `surface = base = word`, the reading comes from the furigana
@@ -582,7 +582,7 @@ mod tests {
             .unwrap_or_else(|e| e.into_inner());
         crate::domain::reset_precomputed_store();
         // Legacy shapes — with or without a POS cache — have no tokens and
-        // yield no entry; the startup backfill migrates them instead.
+        // yield no entry; the live tokenization path serves those renders.
         let with_pos = VocabularyCard::new_with_pos(
             Question::new("猫".to_string()).unwrap(),
             Some(PartOfSpeech::Noun),
