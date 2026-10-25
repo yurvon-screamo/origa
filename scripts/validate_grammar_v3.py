@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Schema v2 validator + slop-linter for Origa grammar data.
+"""Schema v3 validator + slop-linter for Origa grammar data.
 
 Usage:
-    python scripts/validate_grammar_v2.py [path]      # default: cdn/grammar/grammar_v2.json
-    python scripts/validate_grammar_v2.py --json      # machine-readable output
+    python scripts/validate_grammar_v3.py [path]      # default: cdn/grammar/grammar_v3.json
+    python scripts/validate_grammar_v3.py --json      # machine-readable output
 
 Exit code 0 = valid, 1 = errors found.
 
 Checks (ERROR = blocking):
-  structure : schema marker, rule shape, required fields, ULID validity/uniqueness
+  structure : schema marker (v3 only), rule shape, required fields,
+              ULID validity/uniqueness
   slop      : emoji anywhere (data must be render-neutral), simplified-Chinese
               characters outside JIS X 0213 + allowlist
   format    : examples must be fenced code blocks; how_to_form must contain a
@@ -18,9 +19,11 @@ Checks (ERROR = blocking):
   titles    : per-language uniqueness (dup_key preserves qualifiers — see
               _grammar_title), qualifier required for short bare patterns,
               identical short_description across rules sharing a pattern
-  anchors   : (schema v3 only) format_map chains must produce kana visible
-              in the rule's pattern — tripwire for anchor/content drift
-              from the v2→v3 migration (_format_map_check)
+  locales   : all four languages required (the client's locale fallback is
+              gone — a missing section would ship an empty terminal)
+  anchors   : format_map chains must produce kana visible in the rule's
+              pattern — tripwire for anchor/content drift from the v2→v3
+              migration (_format_map_check)
 
 Checks (WARN = non-blocking, tracked for cleanup):
   legacy format anomalies, title style lint (ASCII parens, space before
@@ -41,11 +44,10 @@ import _grammar_title
 
 LEVELS = {"N5", "N4", "N3", "N2", "N1"}
 LANGS = {"English", "Russian", "Korean", "Vietnamese"}
-REQUIRED_LANGS = {"English", "Russian"}
 # v3 mandates all four locales: the client's locale fallback was removed
 # (#503 content pass), so a missing Korean/Vietnamese section would ship
 # an empty terminal to those users instead of the old English projection.
-REQUIRED_LANGS_V3 = {"English", "Russian", "Korean", "Vietnamese"}
+REQUIRED_LANGS = {"English", "Russian", "Korean", "Vietnamese"}
 REQUIRED_TEXT_FIELDS = (
     "title",
     "short_description",
@@ -314,7 +316,7 @@ def is_cjk_ideograph(ch: str) -> bool:
 
 
 def validate_corpus(
-    data: dict, report: Report, required_langs: set[str], check_anchors: bool = False
+    data: dict, report: Report, required_langs: set[str], check_anchors: bool = True
 ) -> None:
     rules = data.get("grammar")
     if not isinstance(rules, list) or not rules:
@@ -395,7 +397,7 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     as_json = "--json" in sys.argv
     default_path = (
-        Path(__file__).resolve().parents[1] / "cdn" / "grammar" / "grammar_v2.json"
+        Path(__file__).resolve().parents[1] / "cdn" / "grammar" / "grammar_v3.json"
     )
     path = Path(args[0]) if args else default_path
 
@@ -411,16 +413,11 @@ def main() -> int:
         return 1
 
     report = Report()
-    if data.get("schema") not in (2, 3):
-        report.error(
-            "corpus", f"schema marker must be 2 or 3, got {data.get('schema')!r}"
-        )
-    required_langs = REQUIRED_LANGS_V3 if data.get("schema") == 3 else REQUIRED_LANGS
-    # Anchor guard is v3-only: the legacy v2 corpus is frozen for released
-    # clients and its abstract titles (可能形, 尊敬語…) carry no surface
-    # kana the heuristic could match against.
-    check_anchors = data.get("schema") == 3
-    validate_corpus(data, report, required_langs, check_anchors)
+    if data.get("schema") != 3:
+        report.error("corpus", f"schema marker must be 3, got {data.get('schema')!r}")
+    # Anchor guard: the legacy v2 corpus is retired; every shipped corpus
+    # is v3 and carries surface kana patterns the heuristic can match.
+    validate_corpus(data, report, REQUIRED_LANGS, check_anchors=True)
 
     rules = data.get("grammar") or []
     if as_json:

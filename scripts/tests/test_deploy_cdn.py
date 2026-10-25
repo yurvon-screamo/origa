@@ -68,8 +68,8 @@ def test_force_marks_all_files_changed_with_none_remote():
 
 
 def test_force_ignores_hash_mismatch_with_remote():
-    local = _manifest({"grammar/grammar.json": "local_hash"})
-    remote = _manifest({"grammar/grammar.json": "remote_hash"})
+    local = _manifest({"grammar/grammar_v3.json": "local_hash"})
+    remote = _manifest({"grammar/grammar_v3.json": "remote_hash"})
 
     changed, unchanged = compute_files_to_upload(local, remote, force=True)
 
@@ -92,7 +92,7 @@ def test_default_with_none_remote_treats_all_as_changed():
 
 
 def test_default_reports_only_hash_diff_as_changed():
-    changed_path = "grammar/grammar.json"
+    changed_path = "grammar/grammar_v3.json"
     local = _manifest({changed_path: "new_hash"})
     remote = _manifest()
 

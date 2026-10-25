@@ -27,7 +27,7 @@ stays unique across the locale. Idempotent.
 
 Usage:
     python scripts/clean_grammar_titles.py --dry-run   # report only
-    python scripts/clean_grammar_titles.py             # rewrite grammar_v2.json
+    python scripts/clean_grammar_titles.py             # rewrite grammar_v3.json
 """
 
 import argparse
@@ -127,8 +127,8 @@ def main() -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=Path("cdn/grammar/grammar_v2.json"),
-        help="path to the grammar store (default: cdn/grammar/grammar_v2.json)",
+        default=Path("cdn/grammar/grammar_v3.json"),
+        help="path to the grammar store (default: cdn/grammar/grammar_v3.json)",
     )
     args = parser.parse_args()
 

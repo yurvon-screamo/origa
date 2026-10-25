@@ -7,8 +7,8 @@
 
 suppress:
   # ============================================================
-  # GENRE: Japanese grammar textbook (720 articles × EN/RU/KO/VI)
-  # Source: cdn/grammar/grammar_v2.json + grammar_ko_vi.json
+  # GENRE: Japanese grammar textbook (677 articles × EN/RU/KO/VI)
+  # Source: cdn/grammar/grammar_v3.json
   # Extract to: /tmp/opencode/grammar-audit/{en,ru,ko,vi}/grammar.md
   # ============================================================
   # Corpus manually verified 2026-09-14: all 140 findings are genre FPs.

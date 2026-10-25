@@ -32,7 +32,7 @@ import re
 import sys
 from pathlib import Path
 
-CORPUS = Path("cdn/grammar/grammar_v2.json")
+CORPUS = Path("cdn/grammar/grammar_v3.json")
 CONTENT_FIELDS = (
     "short_description",
     "explanation",
