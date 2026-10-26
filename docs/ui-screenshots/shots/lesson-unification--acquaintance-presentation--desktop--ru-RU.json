@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-unification",
+  "screen": "acquaintance-presentation",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 241129,
+  "sha256": "5e2afc497fdc6ab8b925311a64f12c3d1813661a3b0554a6708326618474c0db",
+  "capturedAt": "2026-10-26T19:49:21.061Z",
+  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-presentation--desktop-5e2afc49.png",
+  "uploadedSha256": "5e2afc497fdc6ab8b925311a64f12c3d1813661a3b0554a6708326618474c0db",
+  "uploadedAt": "2026-10-26T19:49:48.627Z"
+}

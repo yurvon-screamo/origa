@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 293323,
-  "sha256": "258f504c3502e7d723747eb3d055a432e9523a87ecae3c2dff36a5dd31c56b3e",
-  "capturedAt": "2026-10-21T19:56:43.790Z",
-  "commit": "4aea02f5c30dade62bceef17dc15f1e03abb1cc7",
-  "baseURL": "http://localhost:1430",
-  "cdnBaseUrl": "http://localhost:8080",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--desktop-258f504c.png",
-  "uploadedSha256": "258f504c3502e7d723747eb3d055a432e9523a87ecae3c2dff36a5dd31c56b3e",
-  "uploadedAt": "2026-10-21T20:04:07.775Z"
+  "bytes": 285311,
+  "sha256": "1f58c338d19e020a1897ffbbee391281fe2214bbb521923411d2acc88ac82dc1",
+  "capturedAt": "2026-10-26T19:47:23.996Z",
+  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-example-recall--example-question--desktop-1f58c338.png",
+  "uploadedSha256": "1f58c338d19e020a1897ffbbee391281fe2214bbb521923411d2acc88ac82dc1",
+  "uploadedAt": "2026-10-26T19:49:41.368Z"
 }
