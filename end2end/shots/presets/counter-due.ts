@@ -8,7 +8,7 @@ const day = 24 * 60 * 60 * 1000;
 const iso = (ms: number) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 
 /** Valid ULID for the injected card. */
-const COUNTER_CARD_ID = "01JCBZ8QK0COUNTERDUE000000001";
+const COUNTER_CARD_ID = "01JCBZ8QK0AX4W7YH2Z5P9T3GE";
 
 /** The bindings the pack will ask (numbers of the 本 registry). */
 const BINDING_NUMBERS = [1, 2, 3, 0];
