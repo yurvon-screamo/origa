@@ -49,7 +49,25 @@ pub(super) fn display_progress(
         .take(state.current_index)
         .map(steps_of)
         .sum();
-    let current = steps_before + binding_step.unwrap_or(0) + 1;
+    // The step only applies while the CURRENT slot is the pack. The
+    // container advances `current_index` before the session unmounts, so
+    // one render tick can see a stale `Some(k)` against an already-next
+    // card — without the gate the pack's steps would double for that
+    // frame («23/13»). The clamp guards the frozen last binding (k is at
+    // most pack_size − 1 by construction).
+    let pack_steps = state
+        .card_ids
+        .get(state.current_index)
+        .and_then(|id| state.cards.get(id))
+        .and_then(|card| match card.view() {
+            LessonCardView::CounterBindings { items, .. } => Some(items.len().max(1)),
+            _ => None,
+        });
+    let step_in_pack = binding_step
+        .filter(|_| pack_steps.is_some())
+        .map(|k| k.min(pack_steps.unwrap_or(1).saturating_sub(1)))
+        .unwrap_or(0);
+    let current = steps_before + step_in_pack + 1;
     (current, total, core)
 }
 
@@ -280,5 +298,35 @@ mod tests {
         let mut mid = state.clone();
         mid.current_index = 0;
         assert_eq!(display_progress(&mid, None), (1, 2, 2));
+    }
+
+    /// The advance transition tick: the container has already moved
+    /// `current_index` onto the NEXT card while the session's cleanup
+    /// has not reset the step yet — the stale `Some(k)` must be ignored
+    /// (not folded into the next card's position), otherwise the pack's
+    /// steps double for one frame.
+    #[test]
+    fn stale_step_against_advanced_index_is_ignored() {
+        let slots = vec![pack_slot(11), normal_slot("после")];
+        let state = state_from(slots, 2);
+        let mut transition = state.clone();
+        transition.current_index = 1;
+        assert_eq!(
+            display_progress(&transition, Some(10)),
+            (12, 12, 12),
+            "a step published by the unmounted pack must not leak into the next card"
+        );
+    }
+
+    /// The step is clamped to the pack's own size: a hypothetically
+    /// out-of-range value cannot push `current` past the pack's last
+    /// binding.
+    #[test]
+    fn step_is_clamped_to_pack_size() {
+        let slots = vec![pack_slot(4), normal_slot("после")];
+        let state = state_from(slots, 2);
+        let mut mid = state.clone();
+        mid.current_index = 0;
+        assert_eq!(display_progress(&mid, Some(99)), (4, 5, 5));
     }
 }

@@ -5492,7 +5492,9 @@ mod counter_pack_contract {
         click("[data-testid=\"counter-binding-show-answer-btn\"]");
         tick().await;
 
-        // Ответ — чтение каной из реестра (1×本 → いっぽん).
+        // Ответ — чтение из реестра для первой связки (какой реестр ни
+        // зафиксировала OnceLock-гонка соседних тестов — полный из CDN
+        // JSON, minimal или латиница фикстуры таблицы — источник один).
         let reading = wrapper
             .query_selector("[data-testid=\"counter-binding-answer-reading\"]")
             .unwrap()
@@ -5500,12 +5502,17 @@ mod counter_pack_contract {
             .text_content()
             .unwrap_or_default();
         let trimmed = reading.trim().to_string();
-        assert!(!trimmed.is_empty(), "the reading is the answer's main text");
+        let expected = origa::dictionary::counters::get_counter("本")
+            .and_then(|e| e.reading_for(1))
+            .unwrap_or_default()
+            .to_string();
         assert!(
-            trimmed
-                .chars()
-                .any(|c| ('\u{3040}'..='\u{309f}').contains(&c)),
-            "the answer reading is kana from the registry: {trimmed}"
+            !expected.is_empty(),
+            "test registry must carry the 本 first binding"
+        );
+        assert_eq!(
+            trimmed, expected,
+            "the answer's main text is the registry reading (1×本)"
         );
 
         // Никакой фуриганы: ни ruby-подписи, ни furigana-класса.
@@ -5598,21 +5605,23 @@ mod counter_pack_contract {
                 .unwrap()
                 .click();
         };
-        for expected in 1..2 {
-            click("[data-testid=\"counter-binding-show-answer-btn\"]");
-            tick().await;
-            click("[data-testid=\"lesson-rating-btn-good\"]");
-            tick().await;
-            assert_eq!(
-                wrapper
-                    .query_selector("[data-testid=\"step-probe\"]")
-                    .unwrap()
-                    .expect("probe")
-                    .text_content()
-                    .unwrap(),
-                format!("Some({expected})"),
-                "the common counter step follows the pack"
-            );
-        }
+
+        // Первый ответ пачки: шаг обязан стать Some(1). Дальнейшие шаги
+        // покрыты нативными тестами display_progress — здесь проверяем
+        // ровно один живой переход смонтированной сессии.
+        click("[data-testid=\"counter-binding-show-answer-btn\"]");
+        tick().await;
+        click("[data-testid=\"lesson-rating-btn-good\"]");
+        tick().await;
+        assert_eq!(
+            wrapper
+                .query_selector("[data-testid=\"step-probe\"]")
+                .unwrap()
+                .expect("probe")
+                .text_content()
+                .unwrap(),
+            "Some(1)",
+            "the common counter step follows the pack"
+        );
     }
 }

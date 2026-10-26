@@ -147,6 +147,22 @@ pub fn CounterBindingsSession(
                 .collect::<Vec<_>>()
         }));
 
+    // Единственный резолв «текущая связка → чтение реестра»: ответ,
+    // кнопка озвучки в строке тегов и озвучка reveal читают один сигнал
+    // (рассинхрон трёх копий озвучил бы не то чтение, что на экране).
+    let current_reading = Signal::derive(move || {
+        let number = items
+            .with_value(|i| i.get(current.get()).map(|it| it.number()))
+            .unwrap_or(u8::MAX);
+        readings
+            .with_value(|rs| {
+                rs.iter()
+                    .find(|(n, _)| *n == number)
+                    .map(|(_, r)| r.clone())
+            })
+            .unwrap_or_default()
+    });
+
     let rate = move |rating: Rating| {
         if !revealed.get_untracked() || finished.get_untracked() {
             return;
@@ -192,10 +208,7 @@ pub fn CounterBindingsSession(
         // индекс по возможности, иначе TTS читает кану как есть). Кнопка и
         // Space/Enter ведут в этот же reveal — один канал звука. Фронт
         // связки НЕ озвучивается: звучащее чтение выдало бы ответ.
-        let reading = entry
-            .and_then(|e| e.reading_for(number))
-            .unwrap_or_default()
-            .to_string();
+        let reading = current_reading.get_untracked();
         if should_speak_binding_reading(is_muted.get_untracked(), &reading) {
             speak_word(&reading, 1.0);
         }
@@ -239,14 +252,9 @@ pub fn CounterBindingsSession(
             </Tag>
             <Show when=move || revealed.get() && !is_muted.get()>
                 {move || {
-                    let number = items
-                        .with_value(|i| i.get(current.get()).map(|it| it.number()))
-                        .unwrap_or(u8::MAX);
-                    let reading = readings
-                        .with_value(|rs| rs.iter().find(|(n, _)| *n == number).map(|(_, r)| r.clone()))
-                        .unwrap_or_default();
                     // AudioButtons не берёт реактивный text — компонент
                     // пересоздаётся замыканием на каждой смене связки.
+                    let reading = current_reading.get();
                     view! {
                         <div class="ml-auto">
                             <AudioButtons
@@ -285,12 +293,7 @@ pub fn CounterBindingsSession(
                     if !revealed.get() {
                         return ().into_any();
                     }
-                    let number = items
-                        .with_value(|i| i.get(current.get()).map(|it| it.number()))
-                        .unwrap_or(u8::MAX);
-                    let reading = readings
-                        .with_value(|rs| rs.iter().find(|(n, _)| *n == number).map(|(_, r)| r.clone()))
-                        .unwrap_or_default();
+                    let reading = current_reading.get();
                     view! {
                         // Ответ: ГЛАВНЫЙ текст — чтение из реестра (чистая
                         // кана) вместо «число×суффикс» с ruby-фуриганой

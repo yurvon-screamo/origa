@@ -13,21 +13,41 @@ const COUNTER_CARD_ID = "01JCBZ8QK0AX4W7YH2Z5P9T3GE";
 /** The bindings the pack will ask (numbers of the 本 registry). */
 const BINDING_NUMBERS = [1, 2, 3, 0];
 
+/**
+ * The wire shape of a due review memory (the same contract the BDD
+ * counter fixture injects — see end2end/bdd/steps/counter.steps.ts —
+ * and the seeded ledger/example cards use; the fields beyond the read
+ * interface are serde defaults the app fills in).
+ */
+interface DueMemory {
+    current_state: {
+        stability: { value: number };
+        difficulty: { value: number };
+        next_review_date: string;
+        card_state: string;
+    };
+    reps: number;
+    lapses: number;
+    easy_count: number;
+    good_count: number;
+    last_review_date: string;
+    last_rating: string;
+    consecutive_again: number;
+    ghost: null;
+    marked_known_at: null;
+}
+
 interface SeedCard {
     card_id?: string;
     card?: Record<string, unknown>;
-    memory_history?: {
-        current_state?: Record<string, unknown> | null;
-        last_review_date?: string | null;
-    } | null;
+    memory_history?: DueMemory | null;
     is_favorite?: boolean;
     perfect_streak_since_known?: number;
     favorite_changed_at?: string | null;
 }
 
-/** A due review memory for a binding (the same wire shape the BDD
- * counter fixture injects — see end2end/bdd/steps/counter.steps.ts). */
-function dueBindingMemory(now: number, stamp: string) {
+/** A due review memory (yesterday's review date). */
+function dueMemory(now: number, stamp: string): DueMemory {
     return {
         current_state: {
             stability: { value: 3.0 },
@@ -76,28 +96,24 @@ export async function counterDue(context: PresetContext): Promise<void> {
     for (const card of Object.values(cards)) {
         const state = card?.memory_history?.current_state;
         if (!state) continue;
-        if (typeof state === "object") {
-            state.next_review_date = iso(now + 30 * day);
-        }
+        state.next_review_date = iso(now + 30 * day);
         if (card.memory_history) card.memory_history.last_review_date = stamp;
     }
 
+    const memory = dueMemory(now, stamp);
     cards[COUNTER_CARD_ID] = {
         card_id: COUNTER_CARD_ID,
         card: {
             Counter: {
                 suffix: "本",
-                bindings: BINDING_NUMBERS.map((number) => ({
-                    number,
-                    memory: dueBindingMemory(now, stamp),
-                })),
+                bindings: BINDING_NUMBERS.map((number) => ({ number, memory })),
             },
         },
-        memory_history: dueBindingMemory(now, stamp) as SeedCard["memory_history"],
+        memory_history: memory,
         is_favorite: false,
         perfect_streak_since_known: 0,
         favorite_changed_at: null,
-    } as SeedCard;
+    };
 
     await writeStoredUser(context.page, stored.key, JSON.stringify(user));
     await context.page.reload({ waitUntil: "domcontentloaded" });
