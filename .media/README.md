@@ -7,7 +7,7 @@
 | Путь | Содержимое | В git | Кто использует |
 | --- | --- | --- | --- |
 | `.media/` | Скрины приложений, стор-ассеты, баннеры, бренд-графика | да | `docs/landing-content-plan.md` (указатель на карту); стор- и маркетинг-материалы по конвенциям ниже |
-| `docs/marketing/` | Стратегии, исследования, блог-черновики, визитка `ru.page.png`, арт маскота в `draft_img/` | да | `docs/decisions/*`, `.qlty/qlty.toml` (secrets-scan excludes) |
+| `docs/marketing/` | Стратегии, исследования, блог-черновики, визитка `ru.page.png`, арт маскота в `draft_img/` | да | ADR в вики uwuwu, `.qlty/qlty.toml` (secrets-scan excludes) |
 | `origa_landing/public/` | Деплой-ассеты лендинга: page images, og-image, favicon | да | `origa_landing/src` (`home.rs`, `features.rs`, `seo.rs`, `integrations.rs`), корневые README |
 | `origa_ui/public/` | Лого приложения (1024/128/32) + `external_icons/` — лого конкурентов | да | `origa_ui` (лого); favicon лендинга — байт-в-байт копия `logo-32.png` |
 | `tauri/icons/`, `tauri/gen/**`, `tauri/msix/Assets/` | Иконки приложений — генерённые | да | сборка Tauri; руками не править |

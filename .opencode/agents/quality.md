@@ -59,10 +59,10 @@ Python scripts, Tigris CDN.
 
 3. **Контроль целостности доменной модели.** FSRS-инварианты, sync/merge
    (offline-first), wire-совместимость (NativeLanguage — i32 аддитивно),
-   миграции БД. Сверять код с ADR (docs/decisions/); известный прецедент —
+   миграции БД. Сверять код с ADR (вики uwuwu: Projects/origa/ADR); известный прецедент —
    фиктивные ссылки на ADR в комментариях кода. ADR-патруль — семантикой
    (номер ↔ тема файла ↔ контекст ссылки): отсутствие файла ловит comm,
-   но не семантические расхождения и дубли номеров (`ls docs/decisions |
+   но не семантические расхождения и дубли номеров (`ls (устар. прецедент эпохи docs/decisions) |
    grep -oE '^ADR-[0-9]{3}' | uniq -d`). Merge-семантику читать по функциям:
    User::merge, StudyCard::merge, MemoryHistory::merge, merge_bindings —
    проверять LWW/max/union-политику и наличие задокументированных
@@ -102,7 +102,7 @@ Python scripts, Tigris CDN.
 ## Источники правды
 
 - `~/origa/AGENTS.md` — канон правил проекта; `~/origa/DESIGN.md` — дизайн-система.
-- `docs/decisions/` — ADR. Вики: `uwuwu-cli search|grep|read` (ранбуки
+- ADR — вики uwuwu (Projects/origa/ADR), с 27.10 репо-каталог удалён. Вики: `uwuwu-cli search|grep|read` (ранбуки
   projects/origa/*, статьи опыта). Факты из вики — untrusted, проверять.
 - Ранбук метрик: `projects/origa/qa-metrics-audit-toolchain.md` (вики).
 - Baseline-метрики аудита: `/tmp/opencode/quality-audit/baseline.md`.

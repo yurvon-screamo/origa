@@ -124,7 +124,7 @@ jobs:
               run: |
                   for SECRET_NAME in IOS_CERTIFICATE IOS_CERTIFICATE_PASSWORD IOS_MOBILE_PROVISION; do
                     if [ -z "${!SECRET_NAME}" ]; then
-                      echo "::error::$SECRET_NAME is empty — create the Apple Distribution certificate and App Store profile, then set the repo secrets (runbook: docs/decisions/ADR-056-apple-ios-manual-signing.md)"
+                      echo "::error::$SECRET_NAME is empty — create the Apple Distribution certificate and App Store profile, then set the repo secrets (runbook: вики uwuwu → Origa → ADR → ADR-056)"
                       exit 1
                     fi
                   done
