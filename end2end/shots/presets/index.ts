@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 
 import { acquaintanceHand } from "./acquaintance-hand.ts";
+import { counterDue } from "./counter-due.ts";
 import { dueCorpus } from "./due-corpus.ts";
 import { dueExamples } from "./due-examples.ts";
 import { fresh } from "./fresh.ts";
@@ -31,6 +32,7 @@ export type Preset = (context: PresetContext) => Promise<void>;
 export const presets: Record<PresetId, Preset> = {
     fresh,
     "acquaintance-hand": acquaintanceHand,
+    "counter-due": counterDue,
     "due-corpus": dueCorpus,
     "due-examples": dueExamples,
     onboarded,
