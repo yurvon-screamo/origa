@@ -1,20 +1,33 @@
 //! Пачка связок счётного суффикса (issue #415): каждая цифра × суффикс —
 //! отдельный показ классическим «знаю / не знаю». Фронт — «8×本»,
-//! ответ — чтение + глосса + таблица всех чтений с акцентом отвеченной
-//! строки. Рейтинг уходит ТОЛЬКО в память этой связки
+//! ответ — чтение из реестра + глосса + таблица всех чтений с акцентом
+//! отвеченной строки. Рейтинг уходит ТОЛЬКО в память этой связки
 //! (`RateCounterBindingUseCase`, CounterReview); после последней связки
 //! слот завершается штатным advance.
 //!
-//! testid-контракт: `counter-binding-answer` — контейнер ответа
-//! («число×суффикс» с ruby-подписью чтения); текст чтения —
-//! `counter-binding-answer-reading` (не читать чтение с заголовка);
-//! кнопка повтора озвучки — `counter-binding-audio-btn`.
+//! Прогресс пачки живёт в ОБЩЕМ счётчике урока (юзер-репорт: вложенный
+//! «k / N» неудобен) — сессия публикует свой шаг в
+//! `LessonContext::counter_binding_step`, хедер сворачивает его в
+//! `lesson-progress-text`; собственной шкалы у карточки нет.
+//!
+//! Компоновка — эталон прочих карточек урока: тег типа + кнопка
+//! озвучки чтения в строке тегов НАД карточкой (кнопка — справа,
+//! ответная сторона: фронт молчит, звук выдал бы ответ); тело карточки
+//! центрировано (`flex-1 justify-center`); пара «Не знаю / Знаю» — ПОД
+//! карточкой, как у RatingButtons остальных карт.
+//!
+//! testid-контракт: `counter-binding-answer` — контейнер ответа, его
+//! текст чтения — `counter-binding-answer-reading` (чтение — ГЛАВНЫЙ
+//! текст ответа вместо «число×суффикс», фуриганы/ruby нет — юзер-репорт);
+//! кнопка повтора озвучки — `counter-binding-audio-btn` (в строке тегов).
 
 use super::binary_rating_buttons::RatingButtons;
+use super::card_type::CardType;
 use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
+use super::lesson_card_header::LessonTagsRow;
 use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
-use crate::ui_components::{AudioButtons, Button, ButtonVariant, Card, speak_word};
+use crate::ui_components::{AudioButtons, Button, ButtonVariant, Card, Tag, speak_word};
 use leptos::prelude::*;
 use leptos_use::use_event_listener;
 use origa::domain::{Card, CounterBindingItem, Rating};
@@ -22,7 +35,7 @@ use origa::domain::{Card, CounterBindingItem, Rating};
 /// Гейт озвучки чтения связки при раскрытии (#808): мьют урока главнее,
 /// пустое чтение (число вне реестра — защитный случай) молчит. Гейта
 /// TTS-доступности нет сознательно: `speak_word` деградирует безопасно
-/// (pitch-индекс → TTS каны → подавленный `Err`), pitch-only среды
+/// (pitch-индекс → TTS-каны → подавленный `Err`), pitch-only среды
 /// сохраняют CDN-звук.
 fn should_speak_binding_reading(is_muted: bool, reading: &str) -> bool {
     !is_muted && !reading.is_empty()
@@ -55,6 +68,7 @@ pub fn CounterBindingsSession(
     #[prop(into)] test_id: Signal<String>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    let card_type = CardType::Counter;
     let current = RwSignal::new(0usize);
     let revealed = RwSignal::new(false);
     // Завершение пачки: повторные 1/2/клики на замороженном ответе
@@ -72,6 +86,20 @@ pub fn CounterBindingsSession(
     // StoredValue (Copy): Fn-замыкания view и клавиатуры получают копию
     // хендла, не владея Vec (паттерн translator.rs).
     let items = StoredValue::new(items);
+
+    // Публикация шага пачки в общий счётчик хедера (юзер-репорт: без
+    // вложенного «k / N»); headless-монтирования без LessonContext
+    // (wasm-тесты) работают как раньше — паттерн example_recall_card.
+    let lesson_ctx = use_context::<super::LessonContext>();
+    let step_ctx = lesson_ctx.clone();
+    if let Some(ctx) = step_ctx.as_ref() {
+        ctx.counter_binding_step.set(Some(0));
+    }
+    on_cleanup(move || {
+        if let Some(ctx) = lesson_ctx.as_ref() {
+            ctx.counter_binding_step.set(None);
+        }
+    });
 
     // Чтения и глосса — реестр (истина датасета).
     let entry = match &card {
@@ -119,6 +147,22 @@ pub fn CounterBindingsSession(
                 .collect::<Vec<_>>()
         }));
 
+    // Единственный резолв «текущая связка → чтение реестра»: ответ,
+    // кнопка озвучки в строке тегов и озвучка reveal читают один сигнал
+    // (рассинхрон трёх копий озвучил бы не то чтение, что на экране).
+    let current_reading = Signal::derive(move || {
+        let number = items
+            .with_value(|i| i.get(current.get()).map(|it| it.number()))
+            .unwrap_or(u8::MAX);
+        readings
+            .with_value(|rs| {
+                rs.iter()
+                    .find(|(n, _)| *n == number)
+                    .map(|(_, r)| r.clone())
+            })
+            .unwrap_or_default()
+    });
+
     let rate = move |rating: Rating| {
         if !revealed.get_untracked() || finished.get_untracked() {
             return;
@@ -141,6 +185,11 @@ pub fn CounterBindingsSession(
             revealed.set(false);
             highlighted_number.set(u8::MAX);
             current.set(index + 1);
+            // Общий счётчик шагает вместе с пачкой (вложенной шкалы
+            // больше нет — шаг уходит в хедер).
+            if let Some(ctx) = step_ctx.as_ref() {
+                ctx.counter_binding_step.set(Some(index + 1));
+            }
         }
     };
     let on_rate = Callback::new(move |rating: Rating| rate(rating));
@@ -159,10 +208,7 @@ pub fn CounterBindingsSession(
         // индекс по возможности, иначе TTS читает кану как есть). Кнопка и
         // Space/Enter ведут в этот же reveal — один канал звука. Фронт
         // связки НЕ озвучивается: звучащее чтение выдало бы ответ.
-        let reading = entry
-            .and_then(|e| e.reading_for(number))
-            .unwrap_or_default()
-            .to_string();
+        let reading = current_reading.get_untracked();
         if should_speak_binding_reading(is_muted.get_untracked(), &reading) {
             speak_word(&reading, 1.0);
         }
@@ -194,16 +240,36 @@ pub fn CounterBindingsSession(
         }
     });
 
-    let progress = Signal::derive(move || format!("{} / {}", current.get() + 1, total));
-
     view! {
-        <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id=test_id>
-            <div class="flex flex-col gap-4 text-center">
-                <p class="font-mono text-[var(--text-label-sm)] uppercase tracking-[0.1em] text-[var(--fg-muted)]"
-                   data-testid="counter-bindings-progress">
-                    {move || progress.get()}
-                </p>
+        // Строка тегов над карточкой — общий паттерн урока: тег типа
+        // слева; кнопка повтора озвучки чтения — справа (top-right, как
+        // у остальных карт; юзер-репорт про «плеер по центру»). Кнопка
+        // только на ответе и только вне мьюта: фронт молчит (звук раскрыл
+        // бы ответ), мьют главнее (тот же контракт, что до реструктуризации).
+        <LessonTagsRow>
+            <Tag variant=Signal::derive(move || card_type.tag_variant())>
+                {card_type.label(&i18n)}
+            </Tag>
+            <Show when=move || revealed.get() && !is_muted.get()>
+                {move || {
+                    // AudioButtons не берёт реактивный text — компонент
+                    // пересоздаётся замыканием на каждой смене связки.
+                    let reading = current_reading.get();
+                    view! {
+                        <div class="ml-auto">
+                            <AudioButtons
+                                text=reading
+                                audio_path=None
+                                test_id=Signal::derive(|| "counter-binding-audio-btn".to_string())
+                            />
+                        </div>
+                    }
+                }}
+            </Show>
+        </LessonTagsRow>
 
+        <Card class=Signal::derive(|| super::LESSON_CARD_CLASS.to_string()) shadow=true test_id=test_id>
+            <div class="flex-1 flex flex-col justify-center text-center gap-4">
                 <Show when=move || !revealed.get()>
                     <div class="flex items-center justify-center gap-2" data-testid="counter-binding-front">
                         <span class="font-mono text-5xl text-[var(--fg-black)]">
@@ -223,79 +289,64 @@ pub fn CounterBindingsSession(
                     </div>
                 </Show>
 
-                <Show when=move || revealed.get()>
-                    {move || {
-                        let number = items.with_value(|i| i.get(current.get()).map(|it| it.number())).unwrap_or(u8::MAX);
-                        let reading = readings
-                            .with_value(|rs| rs.iter().find(|(n, _)| *n == number).map(|(_, r)| r.clone()))
-                            .unwrap_or_default();
-                        view! {
-                            // Ответ: запись «число×суффикс» с ruby-подписью
-                            // чтения из реестра (фуригана как в карточках
-                            // слов) + кнопка повтора озвучки. Чтение — из
-                            // реестра: конкатенация TTS дала бы неверное
-                            // произношение (10本 → «じゅうほん» вместо
-                            // «じゅппон»), юзер-репорт 0.8.0-rc.
-                            <div class="flex items-center justify-center gap-3">
-                                <ruby class="furigana-ruby" data-testid="counter-binding-answer">
-                                    <span class="flex items-center justify-center gap-2">
-                                        <span class="font-mono text-5xl text-[var(--fg-black)]">
-                                            {number_label(number)}
-                                        </span>
-                                        <span class="text-3xl text-[var(--fg-muted)]">{"×"}</span>
-                                        <span class="font-serif text-7xl text-[var(--fg-black)]">
-                                            {suffix.with_value(String::clone)}
-                                        </span>
-                                    </span>
-                                    <rp>"("</rp>
-                                    <rt class="furigana-rt" data-testid="counter-binding-answer-reading">
-                                        {reading.clone()}
-                                    </rt>
-                                    <rp>")"</rp>
-                                </ruby>
-                                // Кнопка повтора: озвучка при раскрытии уже
-                                // есть (#808), но мьют урока главнее — в
-                                // мьюте кнопки не показываем.
-                                <Show when=move || !is_muted.get()>
-                                    <AudioButtons
-                                        text=reading.clone()
-                                        audio_path=None
-                                        test_id=Signal::derive(|| "counter-binding-audio-btn".to_string())
-                                    />
-                                </Show>
-                            </div>
-                            <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
+                {move || {
+                    if !revealed.get() {
+                        return ().into_any();
+                    }
+                    let reading = current_reading.get();
+                    view! {
+                        // Ответ: ГЛАВНЫЙ текст — чтение из реестра (чистая
+                        // кана) вместо «число×суффикс» с ruby-фуриганой
+                        // (юзер-репорт: фуригану не хочу, хочу только
+                        // чтение). Число×суффикс уже был фронтом; чтение
+                        // конкатенацией TTS дала бы неверное произношение
+                        // (10本 → «じゅうほん» вместо «じゅっぽん») — только
+                        // реестр.
+                        <p
+                            class="font-serif text-6xl text-[var(--fg-black)] break-words"
+                            data-testid="counter-binding-answer"
+                        >
+                            <span data-testid="counter-binding-answer-reading">
+                                {reading}
+                            </span>
+                        </p>
+                        <p class="font-mono text-[var(--fg-muted)]">{gloss.get_value()}</p>
 
-                            // Полная таблица чтений — под «Развернуть»
-                            // (expand/collapse как у объёмных ответов урока);
-                            // по умолчанию юзер видит только ответ.
-                            <Show when=move || table_expanded.get()>
-                                <div data-testid="counter-binding-mutations">
-                                    <CounterReadingsTable
-                                        rows=rows.get_value()
-                                        suffix=suffix.with_value(String::clone)
-                                        highlight=highlighted_number
-                                        test_id=Signal::derive(|| "counter-binding-mutations-table".to_string())
-                                    />
-                                </div>
-                            </Show>
-                            <div class="flex justify-center">
-                                <Button
-                                    variant=ButtonVariant::Ghost
-                                    on_click=Callback::new(move |_| table_expanded.update(|v| *v = !*v))
-                                    test_id=Signal::derive(|| "counter-binding-mutations-toggle".to_string())
-                                >
-                                    {move || if table_expanded.get() { t!(i18n, common.collapse).into_any() } else { t!(i18n, common.expand).into_any() }}
-                                </Button>
+                        // Полная таблица чтений — под «Развернуть»
+                        // (expand/collapse как у объёмных ответов урока);
+                        // по умолчанию юзер видит только ответ.
+                        <Show when=move || table_expanded.get()>
+                            <div data-testid="counter-binding-mutations">
+                                <CounterReadingsTable
+                                    rows=rows.get_value()
+                                    suffix=suffix.with_value(String::clone)
+                                    highlight=highlighted_number
+                                    test_id=Signal::derive(|| "counter-binding-mutations-table".to_string())
+                                />
                             </div>
-                            <div class="flex justify-center">
-                                <RatingButtons on_rate=on_rate />
-                            </div>
-                        }
-                    }}
-                </Show>
+                        </Show>
+                        <div class="flex justify-center">
+                            <Button
+                                variant=ButtonVariant::Ghost
+                                on_click=Callback::new(move |_| table_expanded.update(|v| *v = !*v))
+                                test_id=Signal::derive(|| "counter-binding-mutations-toggle".to_string())
+                            >
+                                {move || if table_expanded.get() { t!(i18n, common.collapse).into_any() } else { t!(i18n, common.expand).into_any() }}
+                            </Button>
+                        </div>
+                    }
+                    .into_any()
+                }}
             </div>
         </Card>
+
+        // Пара «Не знаю / Знаю» ПОД карточкой — эталон RatingButtons
+        // остальных карт (юзер-репорт: кнопки почти по центру карточки).
+        // На замороженном последнем ответе остаются видимыми: клики гасит
+        // finished-гейт rate().
+        <Show when=move || revealed.get()>
+            <RatingButtons on_rate=on_rate />
+        </Show>
     }
 }
 

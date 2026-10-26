@@ -243,7 +243,9 @@ When('пользователь жмёт {string} отвечая {string}', async
 		await page.keyboard.press(" ");
 		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 	}
-	const progress = page.getByTestId("counter-bindings-progress");
+	// Прогресс пачки живёт в ОБЩЕМ счётчике хедера (вложенной шкалы
+	// больше нет): шаг внутри пачки двигает именно его.
+	const progress = page.getByTestId("lesson-progress-text");
 	const before = await progress
 		.textContent({ timeout: 2_000 })
 		.catch(() => null);
@@ -255,7 +257,9 @@ When('пользователь жмёт {string} отвечая {string}', async
 	// Пачка переходит локально мгновенно, а запись оценки асинхронна
 	// (spawn_local → save): дожидаемся перехода по прогрессу и флеша
 	// сохранения, иначе быстрый goto перезахода проигрывает запись.
-	// Последняя связка пачки завершает слот — прогресс исчезает.
+	// Последняя связка пачки завершает слот — урок уходит с экрана
+	// карточки (следующая карта или экран завершения), прогресс меняется
+	// или исчезает вместе с хедером.
 	if (before === null) {
 		return;
 	}
@@ -285,10 +289,13 @@ When('пользователь жмёт {string} отвечая {string}', async
 });
 
 Then('пачка переходит к следующей цифре', async ({ page }) => {
-	const progress = page.getByTestId("counter-bindings-progress");
+	// Общий счётчик шагает вместе со связками: «2/11» — вторая связка
+	// пачки из 11 (формат хедера — без пробелов, якорь от начала строки:
+	// «12/…» не должно матчиться под «2/…»).
+	const progress = page.getByTestId("lesson-progress-text");
 	await expect
 		.poll(async () => progress.textContent(), { timeout: 15_000 })
-		.toContain("2 / 11");
+		.toMatch(/^2\//);
 });
 
 When('пользователь раскрывает ответ связки', async ({ page }) => {
@@ -298,15 +305,19 @@ When('пользователь раскрывает ответ связки', as
 	await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 });
 
-Then('на ответе связки есть фуригана с чтением из реестра', async ({ page }) => {
-	// Фуригана — ruby-подпись чтения из реестра (не по кускам: 1日 =
-	// ついたчи, а не いち+にчи).
+Then('на ответе связки показывается чтение из реестра', async ({ page }) => {
+	// Ответ — ЧТЕНИЕ каной из реестра как главный текст (юзер-репорт:
+	// фуригану не хочу, хочу только чтение вместо «цифра×кандзи»; чтение
+	// цельное, не по кускам: 1日 = ついたち, а не いち+にち).
 	const rt = page.getByTestId("counter-binding-answer-reading");
 	await rt.waitFor({ timeout: 10_000 });
 	const reading = ((await rt.textContent()) ?? "").trim();
 	expect(reading.length).toBeGreaterThan(0);
 	// Чтение каной (хирагана) — из реестра счётных суффиксов.
 	expect(reading).toMatch(/[\u3040-\u309f]/);
+	// Никакой ruby-фуриганы на карточке.
+	await expect(page.locator("rt")).toHaveCount(0);
+	await expect(page.locator(".furigana-ruby")).toHaveCount(0);
 });
 
 Then('на ответе связки есть кнопка озвучки', async ({ page }) => {
@@ -329,22 +340,22 @@ When('пользователь проходит пачку связок до к�
 		await page.keyboard.press(" ");
 		await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
 		const progressBefore = await page
-			.getByTestId("counter-bindings-progress")
+			.getByTestId("lesson-progress-text")
 			.textContent({ timeout: 2_000 })
 			.catch(() => null);
 		await page.keyboard.press("2");
 		if (progressBefore === null) {
-			// Счётчика прогресса не было — ждать нечего.
+			// Хедера на экране нет — ждать нечего.
 			continue;
 		}
-		// Сессия переходит к следующей связке: растёт счётчик прогресса.
-		// Последняя связка закрывает пачку — элемент прогресса исчезает,
-		// и это тоже переход.
+		// Сессия переходит к следующей связке: шагает общий счётчик
+		// хедера. Последняя связка закрывает пачку — урок уходит со слота
+		// (следующая карта или экран завершения), и это тоже переход.
 		await expect
 			.poll(
 				async () => {
 					const advanced = await page
-						.getByTestId("counter-bindings-progress")
+						.getByTestId("lesson-progress-text")
 						.textContent({ timeout: 2_000 })
 						.catch(() => null);
 					return advanced !== progressBefore;
@@ -378,8 +389,10 @@ Then('отвеченная связка больше не показываетс
 			{ timeout: 15_000 },
 		)
 		.not.toBe(String(rated[0]));
-	const progress = await page.getByTestId("counter-bindings-progress").textContent();
-	expect(progress).toContain("1 / 10");
+	// Общий счётчик: перезаходящая пачка без отвеченной связки — 10
+	// шагов, первая связка на позиции 1 (формат хедера без пробелов).
+	const progress = await page.getByTestId("lesson-progress-text").textContent();
+	expect(progress).toMatch(/^1\/10( |$)/);
 });
 
 When('пользователь жмёт пробел для ответа первой связки', async ({ page }) => {

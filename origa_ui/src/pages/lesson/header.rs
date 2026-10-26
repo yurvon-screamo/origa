@@ -19,7 +19,6 @@ pub fn LessonHeader() -> impl IntoView {
     let feedback = use_context::<FeedbackContext>();
     let is_muted = lesson_ctx.is_muted;
     let lesson_state = lesson_ctx.lesson_state;
-    let core_count = lesson_ctx.core_count;
 
     // Во время руки знакомства место LessonProgress занимает полоса руки:
     // прогресс живёт в общем хедере и не съедает полезную высоту карточки
@@ -47,9 +46,18 @@ pub fn LessonHeader() -> impl IntoView {
         }
     };
 
-    let current = Signal::derive(move || lesson_state.get().current_index + 1);
-    let total = Signal::derive(move || lesson_state.get().card_ids.len());
-    let core_count_signal = Signal::derive(move || core_count.get());
+    // The counter-bindings pack lives in the COMMON counter (owner UX
+    // request, issue #415): the display numbers count every binding of
+    // the current pack as a step — `display_progress` folds the
+    // session-published binding index in. Pack-free lessons keep the
+    // legacy slot numbers byte-for-byte (guarded by unit tests).
+    let binding_step = lesson_ctx.counter_binding_step;
+    let display = Memo::new(move |_| {
+        super::lesson_progress::display_progress(&lesson_state.get(), binding_step.get())
+    });
+    let current = Signal::derive(move || display.get().0);
+    let total = Signal::derive(move || display.get().1);
+    let core_count_signal = Signal::derive(move || display.get().2);
 
     // Report entry (ADR-055): active in every card phase. Spoiler guard: the
     // subject is built from the revealed answer only after the reveal; on the

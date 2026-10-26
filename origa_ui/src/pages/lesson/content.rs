@@ -85,7 +85,6 @@ pub fn LessonContent() -> impl IntoView {
     let native_language = RwSignal::new(crate::i18n::locale_to_native_language(
         &i18n.get_locale_untracked(),
     ));
-    let core_count_signal = RwSignal::new(0usize);
 
     let is_disposed = StoredValue::new(());
     provide_context(is_disposed);
@@ -113,8 +112,8 @@ pub fn LessonContent() -> impl IntoView {
         is_muted,
         known_kanji,
         native_language,
-        core_count: core_count_signal,
         audio_mode_active,
+        counter_binding_step: RwSignal::new(None),
     };
     provide_context(lesson_ctx);
 
@@ -380,7 +379,6 @@ pub fn LessonContent() -> impl IntoView {
                     let card_ids = lesson_data.card_ids();
                     let cards = lesson_data.cards_map();
                     let core_count = lesson_data.core_count;
-                    core_count_signal.set(core_count);
                     if cards.is_empty() {
                         // `lesson.no_cards` remains the fallback ONLY for
                         // feature-gated modes (grammar practice): their
