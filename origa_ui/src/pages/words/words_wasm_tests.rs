@@ -22,6 +22,7 @@ use crate::pages::words::vocabulary_card_item::VocabularyCardItem;
 use crate::pages::words::word_detail::ExampleCard;
 use crate::test_support::{
     create_wrapper, mount_with_i18n, mount_with_router, mount_with_router_and_stores, shared_cell,
+    wait_until,
 };
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -507,9 +508,25 @@ async fn example_card_enters_token_translator_phase() {
     });
     tick().await;
 
-    let loader = wrapper.query_selector("[data-testid=\"translator-dict-loading\"]");
+    // The translator phase is ASYNC: the card resolves the sentence
+    // languages before the dictionary loader renders, and one `tick()`
+    // races that first microtask on a loaded runner (the v0.8.0-rc27 tag
+    // run failed this assert twice in a row while the PR runs passed).
+    // Poll for the phase — a genuine plain fallback stays absent for the
+    // full budget and the assert fires as before.
+    let entered_translator_phase = wait_until(
+        || {
+            wrapper
+                .query_selector("[data-testid=\"translator-dict-loading\"]")
+                .unwrap()
+                .is_some()
+        },
+        40,
+        250,
+    )
+    .await;
     assert!(
-        loader.unwrap().is_some(),
+        entered_translator_phase,
         "example sentence must enter the token translator phase, not the no-language plain fallback (#845)"
     );
 }
