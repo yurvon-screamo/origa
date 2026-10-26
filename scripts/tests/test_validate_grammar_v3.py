@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 
 from _format_map_check import check_rule_format_map, pattern_substrings
-from validate_grammar_v2 import REQUIRED_LANGS_V3, Report, validate_corpus
+from validate_grammar_v3 import REQUIRED_LANGS, Report, validate_corpus
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -60,7 +60,7 @@ def _full_rule(rule_id: str, pattern: str, format_map: dict | None) -> dict:
     rule: dict = {
         "rule_id": rule_id,
         "level": "N4",
-        "content": {lang: dict(content) for lang in REQUIRED_LANGS_V3},
+        "content": {lang: dict(content) for lang in REQUIRED_LANGS},
     }
     if format_map is not None:
         rule["format_map"] = format_map
@@ -246,24 +246,43 @@ def test_malformed_postfix_payload_is_an_error_not_table_rot():
 # ---------------------------------------------------------------------------
 
 
-def test_anchor_check_runs_only_on_schema_v3():
-    from validate_grammar_v2 import REQUIRED_LANGS
+def test_schema_other_than_three_is_rejected(tmp_path, monkeypatch, capsys):
+    """The validator is v3-only: the legacy v2 corpus is retired, so any
+    other schema marker is a corpus error (the old two-lang v2 mode is
+    gone with it)."""
+    from validate_grammar_v3 import main
 
+    corpus = tmp_path / "grammar.json"
+    data = {
+        "schema": 2,
+        "grammar": [_full_rule("01G000000000000000ZW000000", "～ます／～です", None)],
+    }
+    corpus.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["validate_grammar_v3.py", str(corpus)])
+
+    exit_code = main()
+
+    assert exit_code == 1
+    assert any(
+        "schema marker must be 3" in line
+        for line in capsys.readouterr().out.splitlines()
+    )
+
+
+def test_anchor_check_runs_on_the_v3_corpus():
     format_map = {"Verb": [{"VerbToOKudasai": {}}]}
-    for schema, expect_anchor_error in ((3, True), (2, False)):
-        data = {
-            "schema": schema,
-            "grammar": [
-                _full_rule("01G000000000000000ZW000000", "～ます／～です", format_map)
-            ],
-        }
-        required = REQUIRED_LANGS_V3 if schema == 3 else REQUIRED_LANGS
-        report = Report()
-        validate_corpus(data, report, required, check_anchors=schema == 3)
-        anchor_errors = [e for e in report.errors if "share no kana run" in e]
-        # The anchor guard — not structural validation — decides the outcome.
-        assert bool(anchor_errors) == expect_anchor_error, f"schema={schema}"
-        assert len(report.errors) == len(anchor_errors), f"schema={schema}"
+    data = {
+        "schema": 3,
+        "grammar": [
+            _full_rule("01G000000000000000ZW000000", "～ます／～です", format_map)
+        ],
+    }
+    report = Report()
+    validate_corpus(data, report, REQUIRED_LANGS, check_anchors=True)
+    anchor_errors = [e for e in report.errors if "share no kana run" in e]
+    # The anchor guard — not structural validation — decides the outcome.
+    assert anchor_errors
+    assert len(report.errors) == len(anchor_errors)
 
 
 def test_shipped_v3_corpus_has_no_anchor_errors():
@@ -276,7 +295,7 @@ def test_shipped_v3_corpus_has_no_anchor_errors():
         pytest.skip("gitignored cdn/grammar/grammar_v3.json not present")
     data = json.loads(corpus.read_text(encoding="utf-8").lstrip("﻿"))
     report = Report()
-    validate_corpus(data, report, REQUIRED_LANGS_V3, check_anchors=True)
+    validate_corpus(data, report, REQUIRED_LANGS, check_anchors=True)
     assert report.errors == []
 
 

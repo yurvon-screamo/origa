@@ -23,7 +23,7 @@ without re-anchoring the detector (～そうだ combined carries VerbToSou).
 
 Usage:
     python scripts/audit_grammar_pruning.py \
-        [--corpus cdn/grammar/grammar_v2.json] \
+        [--corpus cdn/grammar/grammar_v3.json] \
         [--refs /tmp/opencode/ref_mapping.json] \
         [--out /tmp/opencode/staging/pruning.json]
 """
@@ -117,7 +117,7 @@ def categorize(rule: dict) -> tuple[str, str] | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json")
+        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v3.json")
     )
     parser.add_argument(
         "--refs", type=Path, default=Path("/tmp/opencode/ref_mapping.json")

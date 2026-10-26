@@ -39,7 +39,7 @@ pub(crate) fn resolve_trailbase(env_value: Option<&str>) -> String {
 /// (ADR-020). `env!()` panics only when an env var is UNSET; for a var SET to
 /// an empty string it silently returns `""`. That empty value flowed into
 /// `cdn_url()` (`config.rs:57`) and `build_manifest_url()`
-/// (`cache_manager.rs:89`), producing relative URLs (`/grammar/grammar.json`)
+/// (`cache_manager.rs:89`), producing relative URLs (`/grammar/grammar_v3.json`)
 /// that the WebView resolved against its own origin (`tauri.localhost`)
 /// instead of the CDN, causing `CacheFirstCdnProvider` to wrap locally-served
 /// resources in blob URLs. See ADR-023.

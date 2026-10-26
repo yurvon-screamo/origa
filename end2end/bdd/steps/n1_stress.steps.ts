@@ -151,10 +151,10 @@ When('открывается раздел грамматики уровня N2',
     const grammar = new GrammarPage(page);
     await grammar.goto();
     await expect(grammar.grammarPage).toBeVisible();
-    // N2, not N1: the production grammar content (grammar.json) ships 515
-    // rules covering N5–N2 and ZERO N1 rules — N1 grammar only exists in
-    // the not-yet-merged grammar_v2.json (205 rules). Switch this back to
-    // N1 when that content lands.
+    // N2, not N1: the test predates the N1 grammar batch (which shipped in
+    // the v2/v3 corpora); N1 grammar content has since landed, but the
+    // scenario keeps exercising N2 — switching the level is a separate
+    // decision from this cleanup.
     await grammar.selectJlptFilter("N2");
 });
 

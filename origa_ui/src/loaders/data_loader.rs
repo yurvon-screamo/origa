@@ -239,8 +239,8 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
 
     let cdn = cdn_provider();
     // v3 corpus (#503 content pass): 677 rules, all four locales in one
-    // file. The v2 + KO/VI overlay pair stays on the CDN for released
-    // clients (see the cleanup issue); new clients never read it.
+    // file — the only grammar format on the CDN since the legacy
+    // retirement (#583/#507/#482 removed v1, v2 and the KO/VI overlay).
     let json = cdn.fetch_text("grammar/grammar_v3.json").await?;
     let data = GrammarData { grammar_json: json };
 

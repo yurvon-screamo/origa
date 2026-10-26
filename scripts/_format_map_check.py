@@ -20,9 +20,9 @@ import re
 from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    # Runtime import would be circular (validate_grammar_v2 imports this
+    # Runtime import would be circular (validate_grammar_v3 imports this
     # module); the Report type is annotation-only.
-    from validate_grammar_v2 import Report
+    from validate_grammar_v3 import Report
 
 # Kana a FormatAction contributes to the produced form. Mirrors the Rust
 # enum ``FormatAction`` (origa/src/dictionary/grammar.rs) — keep in sync:

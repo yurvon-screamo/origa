@@ -74,7 +74,7 @@ def test_unknown_installer_path_falls_back_to_release_updated():
 @pytest.mark.parametrize(
     "path",
     [
-        "grammar/grammar.json",
+        "grammar/grammar_v3.json",
         "dictionary/chunk_01.json",
         "dictionary/chunk_11.json",
         "dictionary/kanji.json",
@@ -94,7 +94,7 @@ def test_release_updated_content(path: str):
 
 def test_grammar_is_not_immutable():
     # PR #182 root cause: grammar.json got immutable, edge cache poisoned.
-    assert cache_control_for("grammar/grammar.json") != IMMUTABLE
+    assert cache_control_for("grammar/grammar_v3.json") != IMMUTABLE
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +229,7 @@ def test_immutable_and_release_rules_are_disjoint():
 def test_only_manifest_uses_no_cache():
     # no-cache is reserved for the change-detection beacon alone; if another
     # path ever needs it, that decision should be made deliberately.
-    assert cache_control_for("grammar/grammar.json") != NO_CACHE
+    assert cache_control_for("grammar/grammar_v3.json") != NO_CACHE
     assert cache_control_for("dictionaries/dict.words") != NO_CACHE
 
 

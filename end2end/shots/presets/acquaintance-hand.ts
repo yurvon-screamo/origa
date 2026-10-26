@@ -14,7 +14,7 @@ import type { PresetContext } from "./index.ts";
  * builds in seconds, not minutes.
  *
  * The grammar rule ids come from the CDN grammar registry
- * (`grammar/grammar.json`, N5 section) — the lesson resolves the slide
+ * (`grammar/grammar_v3.json`, N5 section) — the lesson resolves the slide
  * content from the registry by the card's rule_id.
  */
 const SEEDED_CARDS: Array<{ id: string; card: Record<string, unknown> }> = [

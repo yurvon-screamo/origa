@@ -12,7 +12,7 @@
 //!   notes, related pattern titles) becomes a whole-string key — the
 //!   `FuriganaText` path.
 //!
-//! One deterministic blob is written to `grammar/grammar_precompute.rkyv`.
+//! One deterministic blob is written to `grammar/grammar_precompute_v3.rkyv`.
 //! The pipeline below (pulldown-cmark options, ammonia defaults, scraper
 //! traversal with the ruby/rt/rp skip) must stay in lockstep with
 //! `origa_ui/src/ui_components/markdown.rs` — the fixed-expectation tests

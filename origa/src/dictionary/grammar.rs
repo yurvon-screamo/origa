@@ -946,7 +946,7 @@ mod tests_language_fallback {
 
     #[test]
     fn korean_and_vietnamese_content_resolve_directly() {
-        // The merged grammar_v2 corpus ships Korean/Vietnamese content maps;
+        // The v3 corpus ships Korean/Vietnamese content maps inline;
         // the resolution chain must prefer them over the English fallback.
         let json = r#"{
             "rule_id": "01J9TESTTESTTESTTESTTESTTE",
