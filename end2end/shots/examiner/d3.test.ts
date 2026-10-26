@@ -27,8 +27,8 @@ test("askD3 sends one batched noul request with num_ctx and base64 images", asyn
         state: "state text",
         images: ["aGk="],
         questions: new Map([
-            ["overlap", { instructions: "i", criteria: { true: "t", false: "f" } }],
-            ["clipped", { instructions: "i", criteria: { true: "t", false: "f" } }],
+            ["overlap", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }],
+            ["clipped", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }],
         ]),
         numCtx: 16_384,
         fetchImpl,
@@ -44,7 +44,8 @@ test("askD3 sends one batched noul request with num_ctx and base64 images", asyn
     // Two questions were asked in one request.
     assert.equal(Object.keys(body.questions).length, 2);
 
-    assert.equal(result.answers.get("overlap")?.pTrue, 0.9);
+    const overlap = result.answers.get("overlap");
+    assert.equal(overlap?.kind === "noul" && overlap.pTrue, 0.9);
     // The model left the second question unanswered — it is simply absent.
     assert.equal(result.answers.has("clipped"), false);
     assert.equal(result.usage?.inputTokens, 1500);
@@ -60,7 +61,7 @@ test("askD3 omits images when none are attached", async () => {
         ollamaUrl: "http://x",
         model: "d3:2b",
         state: "s",
-        questions: new Map([["q", { instructions: "i", criteria: { true: "t", false: "f" } }]]),
+        questions: new Map([["q", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }]]),
         numCtx: 4096,
         fetchImpl,
     });
@@ -74,7 +75,7 @@ test("askD3 turns a non-2xx response into a D3Error with the body detail", async
             ollamaUrl: "http://x",
             model: "nope",
             state: "s",
-            questions: new Map([["q", { instructions: "i", criteria: { true: "t", false: "f" } }]]),
+            questions: new Map([["q", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }]]),
             numCtx: 4096,
             fetchImpl,
         }),
@@ -91,7 +92,7 @@ test("askD3 reports a network failure as a D3Error", async () => {
             ollamaUrl: "http://x",
             model: "d3:2b",
             state: "s",
-            questions: new Map([["q", { instructions: "i", criteria: { true: "t", false: "f" } }]]),
+            questions: new Map([["q", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }]]),
             numCtx: 4096,
             fetchImpl,
         }),
@@ -101,17 +102,30 @@ test("askD3 reports a network failure as a D3Error", async () => {
 
 test("askD3 ignores malformed noul values instead of crashing", async () => {
     const fetchImpl: typeof fetch = async () =>
-        jsonResponse({ answers: { good: { noul: 0.5 }, bad: { noul: "yes" }, worse: {} } });
+        jsonResponse({
+            answers: {
+                good: { type: "noul", noul: 0.5 },
+                bad: { type: "noul", noul: "yes" },
+                worse: { type: "noul" },
+                stray: { type: "choice", choice: "x", probabilities: { x: 1 } },
+            },
+        });
     const result = await askD3({
         ollamaUrl: "http://x",
         model: "d3:2b",
         state: "s",
-        questions: new Map([["good", { instructions: "i", criteria: { true: "t", false: "f" } }]]),
+        questions: new Map([["good", { kind: "noul", instructions: "i", criteria: { true: "t", false: "f" } }]]),
         numCtx: 4096,
         fetchImpl,
     });
-    assert.equal(result.answers.size, 1);
-    assert.equal(result.answers.get("good")?.pTrue, 0.5);
+    // The parser keeps every well-formed answer (the verdict mapping
+    // iterates the questions, so a stray answer cannot sneak in); the
+    // malformed ones are dropped.
+    assert.equal(result.answers.size, 2);
+    const good = result.answers.get("good");
+    assert.equal(good?.kind === "noul" && good.pTrue, 0.5);
+    const stray = result.answers.get("stray");
+    assert.equal(stray?.kind === "choice" && stray.choiceId, "x");
 });
 
 test("listOllamaModels returns the pulled tags", async () => {

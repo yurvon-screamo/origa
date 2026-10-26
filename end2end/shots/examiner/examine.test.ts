@@ -9,15 +9,15 @@ import { createExaminerFromEnv, isContextOverflow, mapVerdicts, parsePositiveInt
 import { collectUnanswered } from "./report.ts";
 
 const QUESTIONS = [
-    { id: "q-flagged", label: "Флаг", threshold: 0.75 },
-    { id: "q-calm", label: "Спокойно", threshold: 0.75 },
-    { id: "q-silent", label: "Молчание", threshold: 0.75 },
+    { kind: "noul", id: "q-flagged", label: "Флаг", instructions: "i", criteria: { true: "t", false: "f" }, threshold: 0.75 },
+    { kind: "noul", id: "q-calm", label: "Спокойно", instructions: "i", criteria: { true: "t", false: "f" }, threshold: 0.75 },
+    { kind: "noul", id: "q-silent", label: "Молчание", instructions: "i", criteria: { true: "t", false: "f" }, threshold: 0.75 },
 ] as const;
 
 test("mapVerdicts flags above the threshold and keeps the rest calm", () => {
     const answers = new Map([
-        ["q-flagged", { pTrue: 0.91 }],
-        ["q-calm", { pTrue: 0.2 }],
+        ["q-flagged", { kind: "noul" as const, pTrue: 0.91 }],
+        ["q-calm", { kind: "noul" as const, pTrue: 0.2 }],
     ]);
     const verdicts = mapVerdicts(QUESTIONS, answers);
     assert.deepEqual(
@@ -25,11 +25,12 @@ test("mapVerdicts flags above the threshold and keeps the rest calm", () => {
         [["q-flagged", true], ["q-calm", false], ["q-silent", false]],
     );
     // The unanswered question is never flagged and keeps pTrue null.
-    assert.equal(verdicts[2].pTrue, null);
+    assert.equal(verdicts[2].kind, "noul");
+    assert.equal((verdicts[2] as { pTrue: number | null }).pTrue, null);
 });
 
 test("unanswered verdicts surface in the report data", () => {
-    const verdicts = mapVerdicts(QUESTIONS, new Map([["q-calm", { pTrue: 0.1 }]]));
+    const verdicts = mapVerdicts(QUESTIONS, new Map([["q-calm", { kind: "noul" as const, pTrue: 0.1 }]]));
     const unanswered = collectUnanswered([
         {
             capturedAt: "now",
@@ -45,6 +46,39 @@ test("unanswered verdicts surface in the report data", () => {
     ]);
     assert.equal(unanswered.length, 2);
     assert.deepEqual(unanswered.map((item) => item.questionId).sort(), ["q-flagged", "q-silent"]);
+});
+
+test("mapVerdicts flags a choice question when the winner is unexpected", () => {
+    const questions = [
+        {
+            kind: "choice",
+            id: "stage",
+            label: "Стадия урока",
+            instructions: "Which stage?",
+            options: { presentation: "p", complete: "c" },
+        },
+    ] as const;
+    const answers = new Map([["stage", { kind: "choice" as const, choiceId: "complete", probabilities: { presentation: 0.2, complete: 0.8 } }]]);
+
+    const pass = mapVerdicts(questions, answers, { stage: ["complete"] });
+    assert.equal(pass[0].kind, "choice");
+    assert.equal((pass[0] as { flagged: boolean }).flagged, false);
+
+    const fail = mapVerdicts(questions, answers, { stage: ["presentation"] });
+    assert.equal((fail[0] as { flagged: boolean }).flagged, true);
+    assert.equal((fail[0] as { actual: string | null }).actual, "complete");
+    // pExpected is the probability of the expected option, not the winner.
+    assert.equal((fail[0] as { pExpected: number | null }).pExpected, 0.2);
+});
+
+test("a choice question without an expectation is never flagged", () => {
+    const questions = [
+        { kind: "choice" as const, id: "stage", label: "Стадия", instructions: "Which?", options: { a: "a", b: "b" } },
+    ];
+    const answers = new Map([["stage", { kind: "choice" as const, choiceId: "b", probabilities: { a: 0.1, b: 0.9 } }]]);
+    const verdicts = mapVerdicts(questions, answers);
+    assert.equal(verdicts[0].kind, "choice");
+    assert.equal((verdicts[0] as { flagged: boolean }).flagged, false);
 });
 
 test("isContextOverflow trips at 90% of the window", () => {

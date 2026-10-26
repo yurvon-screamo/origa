@@ -21,16 +21,33 @@
  * measured usage against it.
  */
 
+/** A yes/no question: d3 returns the probability that the answer is true. */
+export interface NoulQuestionSpec {
+    readonly kind: "noul";
+    readonly instructions: string;
+    readonly criteria: { readonly true: string; readonly false: string };
+}
+
+/** A choice question: d3 scores every option, one wins. */
+export interface ChoiceQuestionSpec {
+    readonly kind: "choice";
+    readonly instructions: string;
+    /** Option id → when this option is the right pick. */
+    readonly criteria: Readonly<Record<string, string>>;
+}
+
+export type QuestionSpec = NoulQuestionSpec | ChoiceQuestionSpec;
+
 /** Token accounting of one request, as measured by Ollama. */
 export interface D3Usage {
     readonly inputTokens: number;
     readonly outputTokens: number;
 }
 
-export interface D3Answer {
-    /** Probability that the criteria for `true` hold, 0..1. */
-    readonly pTrue: number;
-}
+/** The answer of one question: a probability (noul) or a scored pick (choice). */
+export type D3Answer =
+    | { readonly kind: "noul"; readonly pTrue: number }
+    | { readonly kind: "choice"; readonly choiceId: string; readonly probabilities: Readonly<Record<string, number>> };
 
 export interface AskD3Options {
     /** Ollama base URL, e.g. `http://localhost:11434`. */
@@ -40,8 +57,8 @@ export interface AskD3Options {
     readonly state: string;
     /** Base64-encoded PNG screenshots (no data: prefix). */
     readonly images?: readonly string[];
-    /** Question id → noul question. Sent as one batched request. */
-    readonly questions: ReadonlyMap<string, { readonly instructions: string; readonly criteria: { readonly true: string; readonly false: string } }>;
+    /** Question id → question spec (noul or choice). Sent as one batched request. */
+    readonly questions: ReadonlyMap<string, QuestionSpec>;
     /** Context window the request runs in; guards against silent truncation. */
     readonly numCtx: number;
     readonly timeoutMs?: number;
@@ -65,7 +82,7 @@ export class D3Error extends Error {
 interface SystemOneResponse {
     model?: string;
     error?: string;
-    answers?: Record<string, { type?: string; noul?: number }>;
+    answers?: Record<string, { type?: string; noul?: number; choice?: string; probabilities?: Record<string, number> }>;
     usage?: { input_tokens?: number; output_tokens?: number };
 }
 
@@ -73,11 +90,19 @@ interface SystemOneResponse {
 export async function askD3(options: AskD3Options): Promise<AskD3Result> {
     const questions: Record<string, unknown> = {};
     for (const [id, question] of options.questions) {
-        questions[id] = {
-            type: "noul",
-            instructions: question.instructions,
-            criteria: { true: question.criteria.true, false: question.criteria.false },
-        };
+        if (question.kind === "noul") {
+            questions[id] = {
+                type: "noul",
+                instructions: question.instructions,
+                criteria: { true: question.criteria.true, false: question.criteria.false },
+            };
+        } else {
+            questions[id] = {
+                type: "choice",
+                instructions: question.instructions,
+                criteria: question.criteria,
+            };
+        }
     }
 
     const body = JSON.stringify({
@@ -119,8 +144,13 @@ export async function askD3(options: AskD3Options): Promise<AskD3Result> {
 
     const answers = new Map<string, D3Answer>();
     for (const [id, answer] of Object.entries(payload.answers ?? {})) {
-        if (typeof answer?.noul === "number" && Number.isFinite(answer.noul)) {
-            answers.set(id, { pTrue: answer.noul });
+        if (answer?.type === "noul" && typeof answer.noul === "number" && Number.isFinite(answer.noul)) {
+            answers.set(id, { kind: "noul", pTrue: answer.noul });
+        } else if (answer?.type === "choice" && typeof answer.choice === "string") {
+            const probabilities = Object.fromEntries(
+                Object.entries(answer.probabilities ?? {}).filter(([, p]) => Number.isFinite(p)),
+            );
+            answers.set(id, { kind: "choice", choiceId: answer.choice, probabilities });
         }
     }
 

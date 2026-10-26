@@ -33,13 +33,18 @@ const ALL_QUESTIONS = DEFECT_CHECKLIST.map((question) => question.id);
 const CANARY_MODEL = parseExamModel({
     version: 1,
     defaults: { threshold: 0.75 },
-    screens: Object.fromEntries(
-        [
-            "clean",
-            "overlap",
-            "broken",
-        ].map((screen) => [`canary:${screen}`, { questions: ALL_QUESTIONS }]),
-    ),
+    screens: {
+        ...Object.fromEntries(
+            ["clean", "overlap", "broken"].map((screen) => [`canary:${screen}`, { questions: ALL_QUESTIONS }]),
+        ),
+        // Negative control of the stage oracle: a HOME screenshot with an
+        // expectation of a quiz stage. If the model rubber-stamped any
+        // expectation, this case would pass — it must NOT.
+        "canary:home-as-quiz": {
+            questions: ["lesson-stage"],
+            expect: { "lesson-stage": ["quiz-question"] },
+        },
+    },
 });
 
 const OUT_DIR = "/tmp/opencode/exam-canary";
@@ -124,7 +129,11 @@ async function captureEntry(page: Page, screen: string, viewport: ViewportTag): 
 function describeRecord(record: ExamRecord): string {
     if (record.error) return `error: ${record.error}`;
     return record.verdicts
-        .map((verdict) => `${verdict.questionId}=${verdict.pTrue?.toFixed(3) ?? "?"}`)
+        .map((verdict) =>
+            verdict.kind === "noul"
+                ? `${verdict.questionId}=${verdict.pTrue?.toFixed(3) ?? "?"}`
+                : `${verdict.questionId}=${verdict.actual ?? "?"}`,
+        )
         .join(", ");
 }
 
@@ -199,4 +208,25 @@ test.describe("examiner canary", () => {
             }
         });
     }
+
+    test("the stage oracle refuses a wrong expectation (a home screen is not a quiz)", async ({ browser }) => {
+        test.setTimeout(600_000);
+        const session = await openHome(browser, "desktop");
+        try {
+            const record = await examOnce(session.page, "home-as-quiz", "desktop", null);
+            const verdict = record.verdicts.find((v) => v.questionId === "lesson-stage");
+            if (!verdict || verdict.kind !== "choice") {
+                throw new Error(`no stage verdict — ${describeRecord(record)}`);
+            }
+            if (!verdict.flagged) {
+                // The model picked quiz-question on a home screen: the
+                // oracle agrees with any expectation it is handed.
+                throw new Error(
+                    `stage oracle rubber-stamped quiz-question on a home screen (p=${verdict.pExpected?.toFixed(3)}) — ${describeRecord(record)}`,
+                );
+            }
+        } finally {
+            await session.close();
+        }
+    });
 });

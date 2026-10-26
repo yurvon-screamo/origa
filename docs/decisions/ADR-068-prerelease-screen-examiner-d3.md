@@ -39,12 +39,30 @@ text + screenshot + all questions of the screen):
   presets are not touched; the sink calls the examiner after every
   `shot()`.
 - The test model (`examiner/model.json`) is committed: which screens are
-  examined. A screen outside the model is skipped loudly (the CLI prints
-  the coverage), a typo in a scenario id fails the unit tests.
+  examined and with which questions, full coverage of the catalog
+  enforced by a unit test (a new scenario without an examined screen
+  fails the suite). A screen key may end with `*` — a prefix match for
+  dynamically named captures (`review-body-<kind>-<card>`). A screen
+  outside the model is skipped loudly (the CLI prints the coverage).
 - The defect checklist (`examiner/questions.ts`) holds typed `noul`
   questions about static visual defects: overlap, clipping, tofu glyphs,
   misalignment, empty states, wrong typeface. Behavior, hover and flow
-  are out of scope — the examiner sees a still image.
+  are out of scope of the defect checklist — the flow side is covered by
+  the semantic oracle below.
+- **The semantic oracle over the lesson flow.** Beyond defect questions,
+  the model asks `choice` questions — the workhorse is `lesson-stage`:
+  the test model states which lesson stage a healthy screen must show
+  (`expect` in model.json), and the model picks one of the named
+  options with per-option probabilities. The randomization of the
+  scheduler (card kinds, distractors, order) does not matter to a
+  semantic question — «which stage is this?» — which is exactly the
+  hole the scripted asserts cannot cover. A mismatch is a finding
+  («ждали X, увидели Y»). The negative canary proves the oracle does
+  not rubber-stamp: a home screen must NOT read as a quiz stage.
+- The lesson coverage: the whole catalog (every screen of every
+  scenario, fullPage included) plus the review body walk
+  (`lesson-review-body` scenario on the `due-corpus` preset) with a
+  wildcard model entry expecting one of the revealed-card stages.
 - Every request passes an explicit `num_ctx`: a measured 1280×800
   screenshot costs over 11k vision tokens, which the Modelfile default
   (4096) truncates silently. The measured usage is recorded; a prompt

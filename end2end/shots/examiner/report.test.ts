@@ -24,9 +24,9 @@ function record(overrides: Partial<ExamRecord> = {}): ExamRecord {
         usage: { inputTokens: 1500, outputTokens: 0 },
         latencyMs: 4200,
         verdicts: [
-            { questionId: "text-overlap", label: "Наложение текста или элементов", pTrue: 0.91, threshold: 0.75, flagged: true },
-            { questionId: "tofu-glyphs", label: "Битые глифы (тофу)", pTrue: 0.2, threshold: 0.75, flagged: false },
-            { questionId: "broken-state", label: "Пустой или сломанный экран", pTrue: null, threshold: 0.75, flagged: false },
+            { kind: "noul", questionId: "text-overlap", label: "Наложение текста или элементов", pTrue: 0.91, threshold: 0.75, flagged: true },
+            { kind: "noul", questionId: "tofu-glyphs", label: "Битые глифы (тофу)", pTrue: 0.2, threshold: 0.75, flagged: false },
+            { kind: "noul", questionId: "broken-state", label: "Пустой или сломанный экран", pTrue: null, threshold: 0.75, flagged: false },
         ],
         contextOverflow: false,
         error: null,
@@ -48,6 +48,19 @@ test("the fingerprint ignores everything but screen and question", () => {
     assert.notEqual(
         left,
         findingFingerprint({ scenario: "home", screen: "home", viewport: "mobile", locale: "ru-RU", questionId: "text-overlap" }),
+    );
+});
+
+test("the fingerprint ignores the dynamic card index of a wildcard screen", () => {
+    const base = { scenario: "lesson-review-body", viewport: "desktop", locale: "ru-RU", questionId: "text-overlap" };
+    assert.equal(
+        findingFingerprint({ ...base, screen: "review-body-quiz-1" }),
+        findingFingerprint({ ...base, screen: "review-body-quiz-7" }),
+    );
+    // The kind still separates defect classes.
+    assert.notEqual(
+        findingFingerprint({ ...base, screen: "review-body-quiz-1" }),
+        findingFingerprint({ ...base, screen: "review-body-normal-2" }),
     );
 });
 

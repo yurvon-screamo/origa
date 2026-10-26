@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 
 import { askD3, D3Error, type AskD3Result, type D3Answer, type D3Usage } from "./d3.ts";
 import { loadExamModel, questionsForScreen, type ExamModel, type ScreenExamPlan } from "./model.ts";
-import { DEFECT_CHECKLIST } from "./questions.ts";
+import { DEFECT_CHECKLIST, type ExamQuestion } from "./questions.ts";
 import { formatDomSnapshot, observeVisibleNodes, type ObservedNode } from "./observe.ts";
 import type { ShotEntry } from "../manifest.ts";
 
@@ -24,13 +24,27 @@ export function checklistFingerprint(): string {
     return createHash("sha256").update(JSON.stringify(DEFECT_CHECKLIST)).digest("hex").slice(0, 16);
 }
 
-export interface ExamVerdict {
-    readonly questionId: string;
-    readonly label: string;
-    readonly pTrue: number | null;
-    readonly threshold: number;
-    readonly flagged: boolean;
-}
+export type ExamVerdict =
+    | {
+          readonly kind: "noul";
+          readonly questionId: string;
+          readonly label: string;
+          readonly pTrue: number | null;
+          readonly threshold: number;
+          readonly flagged: boolean;
+      }
+    | {
+          readonly kind: "choice";
+          readonly questionId: string;
+          readonly label: string;
+          readonly expected: readonly string[];
+          readonly actual: string | null;
+          /** Probability the model gave to the winning option. */
+          readonly pWinner: number | null;
+          /** Probability the model gave to the expected option(s). */
+          readonly pExpected: number | null;
+          readonly flagged: boolean;
+      };
 
 export interface ExamRecord {
     readonly capturedAt: string;
@@ -178,7 +192,14 @@ async function runExam(
         });
         const imageBase64 = (await readFile(entry.file)).toString("base64");
 
-        const questions = new Map(plan.questions.map((question) => [question.id, question]));
+        const questions = new Map(
+            plan.questions.map((question) => [
+                question.id,
+                question.kind === "noul"
+                    ? { kind: "noul" as const, instructions: question.instructions, criteria: question.criteria }
+                    : { kind: "choice" as const, instructions: question.instructions, criteria: question.options },
+            ]),
+        );
         const result = await withRetry(() =>
             askD3({
                 ollamaUrl: options.ollamaUrl,
@@ -190,7 +211,7 @@ async function runExam(
             }),
         );
 
-        const verdicts = mapVerdicts(plan.questions, result.answers);
+        const verdicts = mapVerdicts(plan.questions, result.answers, plan.expect);
 
         return {
             ...base,
@@ -227,22 +248,49 @@ export async function withRetry(request: () => Promise<AskD3Result>): Promise<As
 /**
  * Turns the model answers into verdicts.
  *
- * A question the model left unanswered keeps `pTrue: null` and is never
- * flagged — the report and the CLI surface such verdicts separately,
- * because a silently skipped question would read as «no defect».
+ * A noul question the model left unanswered keeps `pTrue: null` and is
+ * never flagged — the report and the CLI surface such verdicts
+ * separately, because a silently skipped question would read as «no
+ * defect». A choice question is flagged when the winning option is not
+ * one of the expected ones.
  */
 export function mapVerdicts(
-    questions: readonly { id: string; label: string; threshold: number }[],
+    questions: readonly ExamQuestion[],
     answers: ReadonlyMap<string, D3Answer>,
+    expect: Readonly<Record<string, readonly string[]>> = {},
 ): ExamVerdict[] {
     return questions.map((question) => {
         const answer = answers.get(question.id);
-        const flagged = answer !== undefined && answer.pTrue >= question.threshold;
+        if (question.kind === "noul") {
+            const flagged = answer?.kind === "noul" && answer.pTrue !== undefined && answer.pTrue >= question.threshold;
+            return {
+                kind: "noul" as const,
+                questionId: question.id,
+                label: question.label,
+                pTrue: answer?.kind === "noul" ? (answer.pTrue ?? null) : null,
+                threshold: question.threshold,
+                flagged,
+            };
+        }
+        const expected = expect[question.id] ?? [];
+        const actual = answer?.kind === "choice" ? (answer.choiceId ?? null) : null;
+        const pWinner =
+            answer?.kind === "choice" && answer.choiceId !== undefined
+                ? (answer.probabilities?.[answer.choiceId] ?? null)
+                : null;
+        const pExpected =
+            answer?.kind === "choice" && answer.probabilities
+                ? Math.max(0, ...expected.map((option) => answer.probabilities?.[option] ?? 0))
+                : null;
+        const flagged = expected.length > 0 && actual !== null && !expected.includes(actual);
         return {
+            kind: "choice" as const,
             questionId: question.id,
             label: question.label,
-            pTrue: answer?.pTrue ?? null,
-            threshold: question.threshold,
+            expected,
+            actual,
+            pWinner,
+            pExpected,
             flagged,
         };
     });
