@@ -1,5 +1,6 @@
 use crate::repository::HybridUserRepository;
 use leptos::{prelude::*, task::spawn_local};
+use origa::dictionary::grammar::{CommonMistake, NuanceNote};
 use origa::domain::{AcquaintanceHand, AcquaintanceSubphase, NativeLanguage};
 use origa::use_cases::CompleteAcquaintanceHandUseCase;
 use std::collections::HashSet;
@@ -156,7 +157,12 @@ pub enum AcquaintanceSlideData {
         how_to_form: String,
         examples: String,
         explanation: String,
-        nuances: String,
+        /// Структурные нюансы (schema v2) — рендерятся нативно через
+        /// NuancesSection, как на странице грамматики. Компактная проекция
+        /// text_projection на слайде не используется: 5+ notes склеивались
+        /// в один абзац с '.;'-разделителями (юзер-репорт).
+        common_mistakes: Vec<CommonMistake>,
+        notes: Vec<NuanceNote>,
     },
     /// Счётный суффикс (issue #415): показ — знак + глосс + вся таблица
     /// чтений (нерегулярные подсвечены); тренировка — фронт знак, ответ

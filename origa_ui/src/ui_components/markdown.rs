@@ -134,6 +134,49 @@ fn render_markdown(content: &str) -> String {
 // fence dependency.
 const SKIP_TAGS: &[&str] = &["ruby", "rt", "rp"];
 
+/// HTML void elements: no content model, no closing tag. Emitting one is
+/// not merely invalid — Chromium's HTML parser acts on an end tag `</br>`
+/// as a `<br>` start tag (HTML5 §in-body), so `add_furigana_to_html`'s
+/// round-trip used to double every hard break (the "false indents" bug:
+/// an empty line appeared between the JP example line and its translation).
+const VOID_TAGS: &[&str] = &[
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
+    "track", "wbr",
+];
+
+fn is_void_element(tag: &str) -> bool {
+    VOID_TAGS.contains(&tag)
+}
+
+/// Serializes the opening tag. Attribute values come from the sanitized
+/// markdown render (ammonia/pulldown-cmark output) and are written verbatim.
+fn write_element_start(elem: &scraper::node::Element, output: &mut String) {
+    output.push_str(&format!("<{}", elem.name()));
+    for (name, value) in elem.attrs() {
+        output.push_str(&format!(" {}=\"{}\"", name, value));
+    }
+    output.push('>');
+}
+
+/// Appends the text node: furigana markup when tokenization is available,
+/// the raw text otherwise. Skipped subtrees (existing ruby markup) pass
+/// through verbatim.
+fn write_text_node(text: &str, in_skip: bool, known_kanji: &HashSet<char>, output: &mut String) {
+    if in_skip {
+        output.push_str(text);
+        return;
+    }
+    // Precompute path first (#521): grammar markdown text nodes were keyed
+    // offline; the live tokenizer path stays as the fallback for anything
+    // else.
+    let furigana = furiganize_text_precomputed(text, known_kanji)
+        .or_else(|| furiganize_text(text, known_kanji).ok());
+    match furigana {
+        Some(furigana) => output.push_str(&furigana),
+        None => output.push_str(text),
+    }
+}
+
 fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {
     let document = Html::parse_document(html);
     let mut result = String::new();
@@ -146,30 +189,17 @@ fn add_furigana_to_html(html: &str, known_kanji: &HashSet<char>) -> String {
     ) {
         match node_ref.value() {
             Node::Text(text) => {
-                let text_str: &str = text;
-                if in_skip {
-                    output.push_str(text_str);
-                } else {
-                    // Precompute path first (#521): grammar markdown text
-                    // nodes were keyed offline; the live tokenizer path
-                    // stays as the fallback for anything else.
-                    let furigana = furiganize_text_precomputed(text_str, known_kanji)
-                        .or_else(|| furiganize_text(text_str, known_kanji).ok());
-                    match furigana {
-                        Some(furigana) => output.push_str(&furigana),
-                        None => output.push_str(text_str),
-                    }
-                }
+                write_text_node(text, in_skip, known_kanji, output);
             },
             Node::Element(elem) => {
                 let tag = elem.name();
                 let should_skip = in_skip || SKIP_TAGS.contains(&tag);
 
-                output.push_str(&format!("<{}", tag));
-                for (name, value) in elem.attrs() {
-                    output.push_str(&format!(" {}=\"{}\"", name, value));
+                write_element_start(elem, output);
+                if is_void_element(tag) {
+                    // Void elements have no children and no closing tag.
+                    return;
                 }
-                output.push('>');
 
                 for child in node_ref.children() {
                     process_node(child, output, should_skip, known_kanji);
@@ -241,6 +271,7 @@ pub fn MarkdownText(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ui_components::example_fences_to_paragraphs;
 
     #[test]
     fn test_render_basic_markdown() {
@@ -459,6 +490,63 @@ mod tests {
             output.contains("<br"),
             "Expected hard break, got: {}",
             output
+        );
+    }
+
+    #[test]
+    fn furigana_pass_serializes_hard_break_without_closing_tag() {
+        // Regression for the "false indents" bug report (task VwvKYcJQHp):
+        // the furigana DOM round-trip used to emit `</br>` for the hard
+        // break. Chromium's HTML parser treats an end tag `</br>` as another
+        // `<br>` start tag (HTML5 §in-body: parse error acted on as a br
+        // start token), so every hard break rendered as TWO breaks with an
+        // empty line between the JP example line and its translation.
+        let html = "<p>line1<br />\nline2</p>";
+        let output = add_furigana_to_html(html, &HashSet::new());
+        assert!(
+            !output.contains("</br>"),
+            "void <br> must not get a closing tag (it re-parses as a second <br>); got: {output}"
+        );
+        assert_eq!(
+            output.matches("<br").count(),
+            1,
+            "exactly one break must survive the round-trip; got: {output}"
+        );
+    }
+
+    #[test]
+    fn furigana_pass_serializes_thematic_break_without_closing_tag() {
+        // Same void-serialization contract for <hr>.
+        let html = "<p>a</p>\n<hr />\n<p>b</p>";
+        let output = add_furigana_to_html(html, &HashSet::new());
+        assert!(
+            !output.contains("</hr>"),
+            "void <hr> must not get a closing tag; got: {output}"
+        );
+        assert!(output.contains("<hr"), "got: {output}");
+    }
+
+    #[test]
+    fn furigana_pass_keeps_example_fences_break_count() {
+        // Full grammar-examples pipeline: three JP/RU fences become three
+        // paragraphs, each with exactly one hard break — no phantom empty
+        // lines from re-parsed `</br>` end tags.
+        let fences = "```\nこの荷物の重さは三キロです。\nЭтот багаж весит три килограмма.\n```\n\n```\nこのジャムの甘さはちょうどいいです。\nЭтот джем в меру сладкий.\n```\n\n```\n図書館の静かさに驚きました。\nМеня удивило, насколько тихо было в библиотеке.\n```";
+        let rendered = render_markdown(&example_fences_to_paragraphs(fences));
+        let output = add_furigana_to_html(&rendered, &HashSet::new());
+        assert_eq!(
+            output.matches("<p>").count(),
+            3,
+            "each fence stays its own paragraph; got: {output}"
+        );
+        assert_eq!(
+            output.matches("<br").count(),
+            3,
+            "one break per example pair; got: {output}"
+        );
+        assert!(
+            !output.contains("</br>"),
+            "no re-parseable br end tags; got: {output}"
         );
     }
 }

@@ -2795,7 +2795,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
@@ -2837,7 +2838,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
@@ -2890,7 +2892,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: String::new(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
@@ -2931,7 +2934,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
@@ -2982,7 +2986,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act: раскрыть ответ, затем нажать «Подробнее»
@@ -3731,8 +3736,8 @@ mod acquaintance_presentation {
     }
 
     #[wasm_bindgen_test]
-    async fn grammar_slide_renders_explanation_and_nuances_as_markdown() {
-        // Arrange: explanation и nuances с markdown-разметкой
+    async fn grammar_slide_renders_explanation_as_markdown() {
+        // Arrange: explanation с markdown-разметкой
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
         ctx.state
@@ -3745,7 +3750,8 @@ mod acquaintance_presentation {
             how_to_form: String::new(),
             examples: String::new(),
             explanation: "**сильное** желание".to_string(),
-            nuances: "> ⚠️ **Важно:** нюанс".to_string(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
@@ -3758,24 +3764,138 @@ mod acquaintance_presentation {
         tick().await;
 
         // Assert: markdown рендерится, сырая разметка не показывается
-        for test_id in [
-            "acquaintance-grammar-explanation",
-            "acquaintance-grammar-nuances",
+        let block = wrapper
+            .query_selector("[data-testid=\"acquaintance-grammar-explanation\"]")
+            .unwrap()
+            .unwrap_or_else(|| panic!("acquaintance-grammar-explanation блок отрендерен"));
+        let html = block.inner_html();
+        assert!(
+            html.contains("<strong>"),
+            "объяснение: жирный текст отрендерен, got: {html}"
+        );
+        assert!(
+            !html.contains("**"),
+            "объяснение: сырая markdown-разметка скрыта, got: {html}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn grammar_slide_renders_nuances_as_structured_list() {
+        // Arrange: структурные нюансы (schema v2) — пара wrong/correct и
+        // свободные notes. Юзер-репорт: прежняя склейка через '; '
+        // превращала 5 notes в один абзац с '.;'-разделителями.
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state
+            .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
+        let mistake = serde_json::from_str::<origa::dictionary::grammar::CommonMistake>(
+            r#"{"wrong": "重いさ", "correct": "重さ"}"#,
+        )
+        .unwrap();
+        let note_one = serde_json::from_str::<origa::dictionary::grammar::NuanceNote>(
+            r#"{"tag": "variation", "text": "～さ образует существительное"}"#,
+        )
+        .unwrap();
+        let note_two = serde_json::from_str::<origa::dictionary::grammar::NuanceNote>(
+            r#"{"tag": "other", "text": "Качество можно измерять"}"#,
+        )
+        .unwrap();
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～さ".to_string(),
+            short_description: "суффикс степени".to_string(),
+            how_to_form: String::new(),
+            examples: String::new(),
+            explanation: String::new(),
+            common_mistakes: vec![mistake],
+            notes: vec![note_one, note_two],
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert: нюансы рендерятся структурой, не склейкой в строку
+        let nuances = wrapper
+            .query_selector("[data-testid=\"acquaintance-grammar-nuances\"]")
+            .unwrap()
+            .unwrap_or_else(|| panic!("acquaintance-grammar-nuances блок отрендерен"));
+        let text = nuances.text_content().unwrap();
+        for fragment in [
+            "重いさ",
+            "重さ",
+            "～さ образует существительное",
+            "Качество можно измерять",
         ] {
-            let block = wrapper
-                .query_selector(&format!("[data-testid=\"{test_id}\"]"))
-                .unwrap()
-                .unwrap_or_else(|| panic!("{test_id} блок отрендерен"));
-            let html = block.inner_html();
             assert!(
-                html.contains("<strong>"),
-                "{test_id}: жирный текст отрендерен, got: {html}"
-            );
-            assert!(
-                !html.contains("**"),
-                "{test_id}: сырая markdown-разметка скрыта, got: {html}"
+                text.contains(fragment),
+                "фрагмент «{fragment}» присутствует, got: {text}"
             );
         }
+        assert!(
+            !text.contains("; "),
+            "склейка '; ' не используется, got: {text}"
+        );
+        // Пара wrong → correct рендерится со стрелкой
+        let html = nuances.inner_html();
+        assert!(
+            html.contains("grammar-nuance-arrow"),
+            "стрелка wrong→correct отрендерена, got: {html}"
+        );
+        // Каждая note — отдельный элемент списка
+        let note_items = nuances
+            .query_selector_all(".grammar-nuance-note-item")
+            .unwrap();
+        assert_eq!(
+            note_items.length(),
+            2,
+            "каждая note — отдельный <li>, got: {text}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn grammar_slide_hides_nuances_block_when_no_nuances() {
+        // Arrange: оба списка нюансов пусты
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state
+            .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～は～です".to_string(),
+            short_description: "Базовый паттерн".to_string(),
+            how_to_form: String::new(),
+            examples: String::new(),
+            explanation: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert: блок нюансов не смонтирован — пустой контейнер с
+        // классом .grammar-nuances не должен попадать в DOM
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-grammar-nuances\"]")
+                .unwrap()
+                .is_none(),
+            "пустые нюансы не рендерят блок"
+        );
     }
 
     // Порядок контент-блоков грам-слайда (спека §8.2): определение
@@ -3797,7 +3917,13 @@ mod acquaintance_presentation {
             how_to_form: "| Элемент |".to_string(),
             examples: "```\n私は学生です。\n```".to_string(),
             explanation: "Фундаментальная конструкция".to_string(),
-            nuances: "нюанс".to_string(),
+            common_mistakes: Vec::new(),
+            notes: vec![
+                serde_json::from_str::<origa::dictionary::grammar::NuanceNote>(
+                    r#"{"tag": "other", "text": "нюанс"}"#,
+                )
+                .unwrap(),
+            ],
         }]);
 
         // Act

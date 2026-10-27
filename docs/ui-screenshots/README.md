@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-27T02:44:12.629Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png) |
+| grammar-presentation | lesson-acquaintance-grammar | mobile | ru-RU | 390×1974 | 2026-10-27T02:44:10.360Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-presentation--mobile-25574127.png) |
+| grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-10-27T02:43:58.500Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--desktop-0616f849.png) |
+| grammar-presentation | lesson-acquaintance-grammar | desktop | ru-RU | 1280×1241 | 2026-10-27T02:43:56.204Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-presentation--desktop-638b2ab7.png) |
 | lesson-complete | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:34.005Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--lesson-complete--desktop-0d67a625.png) |
 | acquaintance-training-answer-2 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:23.835Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-2--desktop-321b203a.png) |
 | acquaintance-training-answer-1 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:22.831Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png) |
@@ -22,8 +26,6 @@
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-21T20:04:02.045Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-question--mobile-ea401aaa.png) |
 | example-answer | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:58.703Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-answer--mobile-9b884952.png) |
 | example-question | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:56.384Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--mobile-0378ade9.png) |
-| grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-21T17:52:20.546Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-acquaintance-grammar--grammar-answer--mobile-76f5ab88.png) |
-| grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-10-21T17:51:51.374Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-acquaintance-grammar--grammar-answer--desktop-331c388d.png) |
 | home | home | mobile | ru-RU | 390×844 | 2026-10-21T14:34:18.442Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--mobile-f0236f4e.png) |
 | home | home | desktop | ru-RU | 1280×800 | 2026-10-21T14:33:57.940Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--desktop-f2c0b727.png) |
 

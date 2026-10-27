@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 125165,
-  "sha256": "76f5ab885543f3cc476e4f22b322dcfa4e285ab118f64d829df3c8f2411f77e9",
-  "capturedAt": "2026-10-21T17:52:20.546Z",
-  "commit": "4aea02f5c30dade62bceef17dc15f1e03abb1cc7",
+  "bytes": 100101,
+  "sha256": "bdf1253be73276659ba68f1f4c6b6e8161df6b5793fadf29b76de79ea1a136f4",
+  "capturedAt": "2026-10-27T02:44:12.629Z",
+  "commit": "17f9de0746bb1f30dd91d3718a1053c373f60d88",
   "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8080",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-acquaintance-grammar--grammar-answer--mobile-76f5ab88.png",
-  "uploadedSha256": "76f5ab885543f3cc476e4f22b322dcfa4e285ab118f64d829df3c8f2411f77e9",
-  "uploadedAt": "2026-10-21T20:04:06.525Z"
+  "cdnBaseUrl": "unknown (dist)",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png",
+  "uploadedSha256": "bdf1253be73276659ba68f1f4c6b6e8161df6b5793fadf29b76de79ea1a136f4",
+  "uploadedAt": "2026-10-27T02:44:19.622Z"
 }
