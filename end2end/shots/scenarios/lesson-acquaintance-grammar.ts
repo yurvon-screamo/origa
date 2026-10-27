@@ -26,7 +26,10 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
         const hand = page.getByTestId("acquaintance-view");
         await hand.waitFor({ state: "visible", timeout: 180_000 });
 
-        // Presentation → «Дальше» until the training takes over.
+        // Presentation → «Дальше» until the training takes over. The grammar
+        // slide of the hand is captured on the way — the screen the markdown
+        // layout bug report (task VwvKYcJQHp) was about: example fences with
+        // phantom empty lines and the nuances blob.
         const next = page.getByTestId("acquaintance-next-btn");
         let presentationShot = false;
         for (let index = 0; index < 12; index++) {
@@ -36,9 +39,9 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
                 .catch(() => false);
             if (training) break;
             // The grammar slide carries the header audio button since
-            // 8KdX3bW3dt (autoplay + replay of the pattern): capture it
-            // when the hand shows it. Optional — the mandatory artifact
-            // of this scenario is the grammar answer below.
+            // 8KdX3bW3dt (autoplay + replay of the pattern), and it is the
+            // screen the markdown layout bug report (task VwvKYcJQHp) was
+            // about — capture it whenever the hand shows it.
             if (
                 !presentationShot &&
                 (await page
@@ -46,13 +49,25 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
                     .isVisible()
                     .catch(() => false))
             ) {
+                // Let the furigana pass settle before the capture. Full page:
+                // the nuances list sits below the fold — the structured
+                // rendering (the VwvKYcJQHp fix) must be visible in the shot.
                 await page.waitForTimeout(700);
-                await sink.shot("grammar-presentation");
+                await sink.shot("grammar-presentation", { fullPage: true });
                 presentationShot = true;
             }
             await next.click({ timeout: 2_000 }).catch(() => undefined);
             await page.waitForTimeout(500);
         }
+        if (!presentationShot) {
+            console.log(
+                "[shots] no grammar presentation slide captured, visible test ids:",
+                JSON.stringify(await visibleTestIds(page)),
+            );
+        }
+        expect(presentationShot, "the hand must show the grammar presentation slide").toBe(
+            true,
+        );
 
         // Training rounds: reveal each answer; keep the grammar one,
         // rate «помню» to move the rotation forward. The whole training

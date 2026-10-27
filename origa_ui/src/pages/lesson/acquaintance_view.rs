@@ -11,6 +11,7 @@ use super::keyboard_handler::is_typing_target;
 use super::training_view::TrainingBody;
 use super::word_example_line::WordExampleLine;
 use crate::i18n::*;
+use crate::pages::grammar::nuances_section::NuancesSection;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, ConfirmModal, FuriganaText, KanjiAnimation,
     MarkdownText, MarkdownVariant, ReadingItem, Tag, example_fences_to_paragraphs,
@@ -19,6 +20,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
+use origa::dictionary::grammar::{CommonMistake, NuanceNote};
 use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
 use origa::use_cases::{MarkCardAsKnownUseCase, TakeAcquaintanceReplacementUseCase};
@@ -503,7 +505,8 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                 how_to_form,
                 examples,
                 explanation,
-                nuances,
+                common_mistakes,
+                notes,
                 ..
             } => view! {
                 <GrammarSlide
@@ -512,7 +515,8 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                     how_to_form=how_to_form.clone()
                     examples=examples.clone()
                     explanation=explanation.clone()
-                    nuances=nuances.clone()
+                    common_mistakes=common_mistakes.clone()
+                    notes=notes.clone()
                     known_kanji=ctx.known_kanji
                 />
             }
@@ -652,7 +656,8 @@ fn GrammarSlide(
     how_to_form: String,
     examples: String,
     explanation: String,
-    nuances: String,
+    common_mistakes: Vec<CommonMistake>,
+    notes: Vec<NuanceNote>,
     known_kanji: RwSignal<HashSet<char>>,
 ) -> impl IntoView {
     let stored_pattern = StoredValue::new(pattern);
@@ -660,7 +665,8 @@ fn GrammarSlide(
     let stored_how_to = StoredValue::new(how_to_form);
     let stored_examples = StoredValue::new(examples);
     let stored_explanation = StoredValue::new(explanation);
-    let stored_nuances = StoredValue::new(nuances);
+    let stored_mistakes = StoredValue::new(common_mistakes);
+    let stored_notes = StoredValue::new(notes);
     let kk = known_kanji.get_untracked();
     let kk_for_how_to = kk.clone();
     let kk_for_examples = kk.clone();
@@ -714,14 +720,17 @@ fn GrammarSlide(
                     />
                 </div>
             </Show>
-            <Show when=move || !stored_nuances.get_value().is_empty()>
-                <div data-testid="acquaintance-grammar-nuances">
-                    <MarkdownText
-                        content=Signal::derive(move || stored_nuances.get_value())
-                        known_kanji=kk_for_nuances.clone()
-                        variant=Signal::derive(|| MarkdownVariant::Default)
-                    />
-                </div>
+            <Show
+                when=move || {
+                    !stored_mistakes.get_value().is_empty() || !stored_notes.get_value().is_empty()
+                }
+            >
+                <NuancesSection
+                    common_mistakes=stored_mistakes.get_value()
+                    notes=stored_notes.get_value()
+                    known_kanji=kk_for_nuances.clone()
+                    test_id=Signal::derive(|| "acquaintance-grammar-nuances".to_string())
+                />
             </Show>
         </div>
     }

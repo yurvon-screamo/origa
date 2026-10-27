@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-acquaintance-grammar",
+  "screen": "grammar-presentation",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 1241,
+  "fullPage": true,
+  "bytes": 305553,
+  "sha256": "638b2ab7428674b4380e09c3d2b21b450f9e836e1648338d90cc02261510d198",
+  "capturedAt": "2026-10-27T02:43:56.204Z",
+  "commit": "17f9de0746bb1f30dd91d3718a1053c373f60d88",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "unknown (dist)",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-presentation--desktop-638b2ab7.png",
+  "uploadedSha256": "638b2ab7428674b4380e09c3d2b21b450f9e836e1648338d90cc02261510d198",
+  "uploadedAt": "2026-10-27T02:44:14.947Z"
+}
