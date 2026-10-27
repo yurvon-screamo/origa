@@ -111,9 +111,12 @@ pub fn AcquaintanceView() -> impl IntoView {
             .and_then(|slide| slide.pos_label().map(str::to_string))
     });
 
-    // Слово текущей карты: в показе — слайд по индексу, в тренировке —
-    // карта из сигнала контекста.
-    let current_word = Signal::derive(move || {
+    // Озвучка текущей карты: (вид, текст) — единый аксессор слайда.
+    // В показе — слайд по индексу, в тренировке — карта из сигнала
+    // контекста. Слово — у словарной карты, паттерн — у грамматики в
+    // показе, фронт-пример — у грамматики в тренировке; беззвучные карты
+    // дают None.
+    let current_audio = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
         let card_id = match state.stage {
@@ -123,29 +126,30 @@ pub fn AcquaintanceView() -> impl IntoView {
                 .get(state.slide_index)
                 .map(|slide| slide.card_id()),
             _ => ctx.current_card.get(),
-        };
-        card_id.and_then(|id| {
-            ctx.slides
-                .get()
-                .iter()
-                .find(|slide| slide.card_id() == id)
-                .and_then(|slide| slide.word().map(str::to_string))
-        })
+        }?;
+        ctx.slides
+            .get()
+            .iter()
+            .find(|slide| slide.card_id() == card_id)
+            .and_then(|slide| slide.audio(state.stage))
     });
 
-    // Кнопка озвучки видна, когда японская сторона слова не подсказывает
-    // ответ: Reverse-фронт и аудио-фронт Forward (до раскрытия) прячут её;
-    // на стороне ответа аудио-фронта слово уже на экране — кнопка видна
-    // (повтор в теле фронта на ответе убран, дубля нет).
+    // Кнопка озвучки видна, когда японская строка карты не подсказывает
+    // ответ: у слов Reverse-фронт и аудио-фронт Forward (до раскрытия)
+    // прячут её; грамматика (JP-строка фронта) видна всегда — кнопка тоже;
+    // беззвучные карты (кандзи/счётные) кнопку не получают.
     let audio_visible = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
+        let Some((voiced, _)) = current_audio.get() else {
+            return false;
+        };
         audio_button_visible(
             state.stage,
             state.hand.as_ref().and_then(|hand| hand.subphase()),
             ctx.audio_front.get(),
             ctx.showing_answer.get(),
-            current_word.get().is_some(),
+            Some(voiced),
         )
     });
 
@@ -186,18 +190,18 @@ pub fn AcquaintanceView() -> impl IntoView {
                 </Show>
 
                 // Кнопка озвучки — правый край ряда тегов, как в обычном
-                // уроке (LessonCardTags: ml-auto). Замыкание по слову:
-                // AudioButtons берёт текст при монтировании, смена слова
-                // пересоздаёт кнопку (паттерн lesson_card_header).
+                // уроке (LessonCardTags: ml-auto). Замыкание по тексту
+                // карты: AudioButtons берёт текст при монтировании, смена
+                // карты пересоздаёт кнопку (паттерн lesson_card_header).
                 {move || {
-                    current_word
+                    current_audio
                         .get()
                         .filter(|_| audio_visible.get())
-                        .map(|word| {
+                        .map(|(_, text)| {
                             view! {
                                 <div class="ml-auto shrink-0">
                                     <AudioButtons
-                                        text=word
+                                        text=text
                                         audio_path=None
                                         test_id=Signal::derive(|| {
                                             "acquaintance-audio-btn".to_string()
@@ -419,7 +423,9 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
     // без смены карты (полный rebuild slides.set) тоже молчит.
     // Тот же канал, что и автозвук обычного урока (speak_word): сначала
     // CDN pitch-аудио файла, TTS — только fallback (юзер-репорт: в
-    // знакомстве звучал TTS вместо аудиофайла).
+    // знакомстве звучал TTS вместо аудиофайла). Озвучивается слово
+    // словарной карты и паттерн грамматики (паритет с обычным уроком,
+    // где вопрос grammar-карты = паттерн); кандзи/счётные беззвучны.
     let is_muted =
         use_context::<super::lesson_state::LessonContext>().map(|lesson_ctx| lesson_ctx.is_muted);
     let autoplay_card_id = Memo::new(move |_| {
@@ -439,14 +445,15 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
         if !should_autoplay_word_audio(muted, is_speech_supported()) {
             return;
         }
-        let word = ctx
+        let text = ctx
             .slides
             .get_untracked()
             .iter()
             .find(|slide| slide.card_id() == card_id)
-            .and_then(|slide| slide.word().map(str::to_string));
-        if let Some(word) = word {
-            speak_word(&word, 1.0);
+            .and_then(|slide| slide.audio(AcquaintanceStage::Presentation))
+            .map(|(_, text)| text);
+        if let Some(text) = text {
+            speak_word(&text, 1.0);
         }
     });
 

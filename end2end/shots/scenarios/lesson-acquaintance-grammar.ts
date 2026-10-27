@@ -11,6 +11,10 @@ import type { ShotScenario } from "../scenario.ts";
  * criterion. The walk reveals every answer and keeps the one with the
  * grammar details toggle — the «Подробнее» trigger that issue #822
  * centered (it used to be pinned left by a text-left wrapper).
+ *
+ * 8KdX3bW3dt: the grammar cards are voiced now (header audio button in
+ * the presentation and in the training), so the walk also keeps the
+ * grammar presentation slide with its button.
  */
 export const lessonAcquaintanceGrammarScenario: ShotScenario = {
     ...descriptors["lesson-acquaintance-grammar"],
@@ -34,6 +38,10 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
                 .isVisible({ timeout: 1_000 })
                 .catch(() => false);
             if (training) break;
+            // The grammar slide carries the header audio button since
+            // 8KdX3bW3dt (autoplay + replay of the pattern), and it is the
+            // screen the markdown layout bug report (task VwvKYcJQHp) was
+            // about — capture it whenever the hand shows it.
             if (
                 !presentationShot &&
                 (await page
