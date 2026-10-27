@@ -565,7 +565,8 @@
       "selected_count": "Đã chọn: {}",
       "analyze_selected": "Phân tích mục đã chọn",
       "use_all_text": "Dùng toàn bộ văn bản"
-    }
+    },
+    "add_to_deck": "+ Thêm vào bộ thẻ"
   },
   "grammar_page": {
     "add_grammar": "Thêm ngữ pháp",

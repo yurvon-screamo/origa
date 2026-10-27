@@ -565,7 +565,8 @@
       "selected_count": "Выбрано: {}",
       "analyze_selected": "Анализировать выбранное",
       "use_all_text": "Весь текст"
-    }
+    },
+    "add_to_deck": "+ В колоду"
   },
   "grammar_page": {
     "add_grammar": "Добавить грамматику",

@@ -565,7 +565,8 @@
       "selected_count": "Selected: {}",
       "analyze_selected": "Analyze selected",
       "use_all_text": "Use all text"
-    }
+    },
+    "add_to_deck": "+ Add to deck"
   },
   "grammar_page": {
     "add_grammar": "Add grammar",

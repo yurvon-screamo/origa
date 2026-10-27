@@ -2088,7 +2088,9 @@ rt {
     margin: 12px -4px 0;
 }
 
-.token-popup-report {
+/* Quick-add and report share the popup action style (#528+). */
+.token-popup-report,
+.token-popup-add {
     font-family: var(--font-mono);
     font-size: var(--text-label-sm);
     letter-spacing: 0.15em;
@@ -2104,13 +2106,15 @@ rt {
     transition: color 0.2s ease;
 }
 
-.token-popup-report:hover {
+.token-popup-report:hover,
+.token-popup-add:hover {
     color: var(--fg-black);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
 
-.token-popup-report:active {
+.token-popup-report:active,
+.token-popup-add:active {
     transform: translateY(1px);
 }
 

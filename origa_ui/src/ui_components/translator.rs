@@ -13,6 +13,21 @@ use origa::domain::{
 use crate::feedback::{FeedbackCategory, FeedbackContext, FeedbackSource, FeedbackSubject};
 use crate::i18n::{t, use_i18n};
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
+use crate::repository::HybridUserRepository;
+use origa::use_cases::CreateVocabularyCardUseCase;
+
+/// The word a quick-add click creates a card for: the dictionary form
+/// (base_form) — the tokenizer guarantees a non-empty base for vocabulary
+/// tokens (surface when normalized is `*`/empty); the surface fallback is
+/// a defensive guard, not an expected path.
+fn add_word_target(base_form: &str, surface: &str) -> String {
+    let base = base_form.trim();
+    if base.is_empty() {
+        surface.to_string()
+    } else {
+        base.to_string()
+    }
+}
 
 fn has_kanji(text: &str) -> bool {
     text.chars().any(|c| {
@@ -66,6 +81,10 @@ pub fn TranslatorText(
     // StoredValue (Copy) so the per-token `children` closure can capture it
     // without moving the Option out of the root children closure (Fn bound).
     let feedback_context = StoredValue::new(use_context::<FeedbackContext>());
+    // Quick-add (#528+): repository comes from the app shell like
+    // FeedbackContext — isolated component mounts see no add button.
+    // StoredValue (Copy) keeps the per-token `children` closure Fn-safe.
+    let repository = StoredValue::new(use_context::<HybridUserRepository>());
     // StoredValue (Copy) so the per-token `children` closure can capture it
     // without moving the String out of the root children closure (Fn bound).
     let source_line = StoredValue::new(text.clone());
@@ -245,6 +264,65 @@ pub fn TranslatorText(
                             })
                         });
 
+                        // Quick-add (#528+): vocabulary tokens only — a
+                        // particle/grammar token is not a deck candidate.
+                        // Zero-state button (owner decision): no loading/
+                        // added/duplicate states — the use case dedups,
+                        // a double click is a harmless skip.
+                        let on_add_word = repository.with_value(|repo| {
+                            repo.as_ref()
+                                .filter(|_| token.pos.is_vocabulary_word())
+                                .map(|repo| {
+                                    let repository = repo.clone();
+                                    let target = add_word_target(&base_form, &surface);
+                                    Callback::new(move |()| {
+                                        let repository = repository.clone();
+                                        let word = target.clone();
+                                        // Close first (the report-button
+                                        // pattern): the action is fired,
+                                        // the sentence stays readable.
+                                        expanded.set(None);
+                                        spawn_local(async move {
+                                            // The precomputed render path
+                                            // shows tokens BEFORE the
+                                            // background tokenizer load
+                                            // finishes; from_text silently
+                                            // swallows TokenizerError, so
+                                            // an un-gated click would lose
+                                            // the word with zero signals.
+                                            // Gate first (the add_word_modal
+                                            // pattern).
+                                            if let Err(e) =
+                                                ensure_tokenizer_loaded().await
+                                            {
+                                                tracing::warn!(
+                                                    error = %e,
+                                                    word = %word,
+                                                    "tokenizer gate failed, word not added"
+                                                );
+                                                return;
+                                            }
+                                            let use_case = CreateVocabularyCardUseCase::new(
+                                                &repository,
+                                            );
+                                            // Skipped results (no
+                                            // translation / duplicate)
+                                            // are logged by the use
+                                            // case itself — the zero-
+                                            // state UI (owner decision)
+                                            // needs nothing here.
+                                            if let Err(e) = use_case.execute(word.clone()).await {
+                                                tracing::warn!(
+                                                    error = %e,
+                                                    word = %word,
+                                                    "quick-add card creation failed"
+                                                );
+                                            }
+                                        });
+                                    })
+                                })
+                        });
+
                         if clickable {
                             view! {
                                 <span class=move || {
@@ -285,6 +363,7 @@ pub fn TranslatorText(
                                                     grammar_label=Signal::derive(move || gl.clone())
                                                     grammar_description=Signal::derive(move || gd.clone())
                                                     translation_text=Signal::derive(move || tt.clone())
+                                                    on_add_word=on_add_word
                                                     on_report=on_report
                                                 />
                                             }.into_any()
@@ -316,6 +395,10 @@ fn TokenPopup(
     #[prop(optional, into)] grammar_label: Signal<Option<String>>,
     #[prop(optional, into)] grammar_description: Signal<Option<String>>,
     #[prop(optional, into)] translation_text: Signal<Option<String>>,
+    /// #528+ quick-add: fires the deck-creation flow for the dictionary
+    /// form; `None` when the repository context is down (isolated tests)
+    /// or the token is not a vocabulary word — the button is not rendered.
+    on_add_word: Option<Callback<()>>,
     on_report: Option<Callback<()>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
@@ -378,6 +461,24 @@ fn TokenPopup(
                 }).unwrap_or_else(|| ().into_any())
             }}
             {move || {
+                on_add_word.as_ref().map(|add| {
+                    let add = *add;
+                    view! {
+                        <div class="token-popup-report-sep" aria-hidden="true"></div>
+                        <button
+                            class="token-popup-add"
+                            data-testid="token-popup-add-word"
+                            on:click=move |ev: leptos::ev::MouseEvent| {
+                                ev.stop_propagation();
+                                add.run(());
+                            }
+                        >
+                            {t!(i18n, words.add_to_deck)}
+                        </button>
+                    }.into_any()
+                }).unwrap_or_else(|| ().into_any())
+            }}
+            {move || {
                 on_report.as_ref().map(|report| {
                     let report = *report;
                     view! {
@@ -396,5 +497,25 @@ fn TokenPopup(
                 }).unwrap_or_else(|| ().into_any())
             }}
         </div>
+    }
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::add_word_target;
+
+    /// The quick-add target is the dictionary form (base); the surface
+    /// fallback is a defensive guard — the tokenizer guarantees a
+    /// non-empty base for vocabulary tokens.
+    #[test]
+    fn add_word_target_prefers_base_form() {
+        assert_eq!(add_word_target("食べる", "食べた"), "食べる");
+        assert_eq!(add_word_target("魚", "魚"), "魚");
+    }
+
+    #[test]
+    fn add_word_target_falls_back_to_surface() {
+        assert_eq!(add_word_target("", "食べた"), "食べた");
+        assert_eq!(add_word_target("  ", "魚"), "魚");
     }
 }

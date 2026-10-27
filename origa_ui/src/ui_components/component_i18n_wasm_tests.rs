@@ -19,7 +19,9 @@ use wasm_bindgen_test::*;
 
 use crate::i18n::Locale;
 use crate::test_support::{create_wrapper, mount_to_wrapper};
-use crate::ui_components::{FuriganaText, LevelSelector, Stepper, StepperStep, WordTranslations};
+use crate::ui_components::{
+    FuriganaText, LevelSelector, Stepper, StepperStep, TranslatorText, WordTranslations,
+};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -619,4 +621,146 @@ async fn i18n_locale_switch_renders_korean_and_vietnamese() {
     i18n.set_locale(Locale::en);
     tick().await;
     cell_text("Cancel");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TranslatorText — quick-add button (#528+)
+// ═══════════════════════════════════════════════════════════════════════
+
+mod translator_quick_add {
+    use super::*;
+    use crate::test_support::{mount_with_router_and_stores, test_user};
+
+    /// Offline precomputed entry: 魚 (Noun, vocabulary word) + が
+    /// (Particle, grammar token) — the two gate sides of the quick-add
+    /// button in one string.
+    fn install_entry() {
+        use origa::domain::{
+            PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+        };
+        install_precomputed_entry(
+            "魚が",
+            PrecomputedEntry {
+                furigana_spans: vec![],
+                tokens: vec![
+                    PrecomputedToken {
+                        surface: "魚".to_string(),
+                        base: "魚".to_string(),
+                        reading: "さかな".to_string(),
+                        pos: PartOfSpeech::Noun,
+                    },
+                    PrecomputedToken {
+                        surface: "が".to_string(),
+                        base: "が".to_string(),
+                        reading: "が".to_string(),
+                        pos: PartOfSpeech::Particle,
+                    },
+                ],
+            },
+        );
+    }
+
+    async fn wait_for_tokens(wrapper: &web_sys::Element) {
+        for _ in 0..10 {
+            tick().await;
+            if wrapper.query_selector(".token-surface").unwrap().is_some() {
+                return;
+            }
+            crate::utils::yield_to_browser().await;
+        }
+        panic!("translator tokens did not render");
+    }
+
+    async fn open_popup(wrapper: &web_sys::Element, surface: &str) {
+        use wasm_bindgen::JsCast;
+        let tokens = wrapper.query_selector_all(".token-surface").unwrap();
+        for i in 0..tokens.length() {
+            let el = tokens.get(i).expect("token element");
+            if el
+                .text_content()
+                .as_deref()
+                .is_some_and(|t| t.contains(surface))
+                && let Some(html_el) = el.dyn_ref::<web_sys::HtmlElement>()
+            {
+                html_el.click();
+                tick().await;
+                return;
+            }
+        }
+        panic!("token surface not found: {surface}");
+    }
+
+    /// Without the repository context (isolated mount) the add button is
+    /// absent — the FeedbackContext pattern: no shell, no action buttons.
+    #[wasm_bindgen_test]
+    async fn quick_add_absent_without_repository_context() {
+        install_entry();
+        let wrapper = create_wrapper();
+        mount_with_i18n(&wrapper, || {
+            view! {
+                <TranslatorText
+                    text="魚が"
+                    native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+                />
+            }
+            .into_any()
+        });
+        wait_for_tokens(&wrapper).await;
+        open_popup(&wrapper, "魚").await;
+
+        let btn = wrapper.query_selector("[data-testid=\"token-popup-add-word\"]");
+        assert!(
+            btn.unwrap().is_none(),
+            "no repository context → no quick-add button"
+        );
+    }
+
+    /// With the repository context the button renders for a vocabulary
+    /// token (Noun) — and NOT for the grammar token (Particle) in the
+    /// same popup pipeline: pos.is_vocabulary_word() is the gate.
+    #[wasm_bindgen_test]
+    async fn quick_add_renders_for_vocabulary_token_only() {
+        install_entry();
+        let wrapper = create_wrapper();
+        // Disposable mount: the handle must stay alive through the
+        // assertions — dropping it unmounts the router tree immediately.
+        let _mount = mount_with_router_and_stores(&wrapper, Some(test_user("quickadd")), || {
+            view! {
+                <TranslatorText
+                    text="魚が"
+                    native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+                />
+            }
+            .into_any()
+        });
+        wait_for_tokens(&wrapper).await;
+
+        // Vocabulary token (Noun 魚): the button renders.
+        open_popup(&wrapper, "魚").await;
+        let popup = wrapper.query_selector(".token-popup").unwrap();
+        assert!(popup.is_some(), "popup opened after the token click");
+        let vocab_btn = wrapper
+            .query_selector("[data-testid=\"token-popup-add-word\"]")
+            .unwrap();
+        assert!(
+            vocab_btn.is_some(),
+            "vocabulary token shows the quick-add button"
+        );
+
+        // Grammar token (Particle が): `clickable` requires a vocabulary
+        // POS or a grammar label — a bare particle renders as plain text
+        // (no .token-surface, no popup, structurally no button). That is
+        // the grammar side of the quick-add gate.
+        let particle = wrapper
+            .query_selector(".token-plain")
+            .unwrap()
+            .expect("particle renders as a plain token");
+        assert!(
+            particle
+                .text_content()
+                .as_deref()
+                .is_some_and(|t| t.contains('が')),
+            "the plain token is the particle"
+        );
+    }
 }
