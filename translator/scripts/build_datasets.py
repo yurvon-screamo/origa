@@ -21,7 +21,7 @@ LOCALES = ("en", "vi", "ru", "ko")
 
 
 def load(p):
-    return [json.loads(l) for l in open(p, encoding="utf-8")]
+    return [json.loads(line) for line in open(p, encoding="utf-8")]
 
 
 def locale_of(row):

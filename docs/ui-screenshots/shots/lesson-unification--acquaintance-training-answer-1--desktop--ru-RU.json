@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-unification",
+  "screen": "acquaintance-training-answer-1",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 236973,
+  "sha256": "3051be29957c13e0204e4f62f7f90c6727aaa3296572497cc845dfd03c9972eb",
+  "capturedAt": "2026-10-26T19:49:22.831Z",
+  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png",
+  "uploadedSha256": "3051be29957c13e0204e4f62f7f90c6727aaa3296572497cc845dfd03c9972eb",
+  "uploadedAt": "2026-10-26T19:49:49.904Z"
+}

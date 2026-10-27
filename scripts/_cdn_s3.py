@@ -554,8 +554,9 @@ def sync_directory(
 
     Mirrors ``aws s3 sync``: walk local files recursively, skip README.md, and
     upload only objects that are absent remotely, differ in byte size, or whose
-    local mtime is newer than the remote LastModified. Shows a progress bar
-    (count/total + percentage) for each directory.
+    local mtime is newer than the remote LastModified. Prints an upload
+    progress line (done/total, skipped, rate, elapsed) every 500 files
+    for each directory.
 
     ``force`` skips the diff entirely and re-uploads every file — the
     recovery path when a size-only directory (see ``deploy_cdn``) receives a
@@ -577,9 +578,9 @@ def sync_directory(
     # (a minute+ of pagination across 100k+ objects on the recovery path).
     remote = {} if force else list_remote_objects(prefix)
 
-    # Count total files first for progress bar; drop excluded subtrees
-    # (child SYNC_DIRS entries with their own Cache-Control policy —
-    # the parent walk must never touch or re-upload them).
+    # Drop excluded subtrees (child SYNC_DIRS entries with their own
+    # Cache-Control policy — the parent walk must never touch or re-upload
+    # them).
     excludes = tuple(exclude_prefixes or [])
     all_files = [
         p
@@ -588,7 +589,6 @@ def sync_directory(
         and p.name != "README.md"
         and not any(p.relative_to(local_dir).as_posix().startswith(e) for e in excludes)
     ]
-    total = len(all_files)
     start = _time.time()
 
     # Diff pass (cheap, local + in-memory remote listing)

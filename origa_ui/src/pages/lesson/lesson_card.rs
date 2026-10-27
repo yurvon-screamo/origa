@@ -151,7 +151,7 @@ pub fn LessonCard(
                 let question_val = question.get_value();
                 // Bug A fix: prefetch CDN bytes into a blob: URL before playback.
                 spawn_local(async move {
-                    play_phrase_in_lesson(&path_owned, &question_val).await;
+                    play_cdn_audio_with_tts_fallback(&path_owned, &question_val).await;
                 });
             }
         } else if is_phrase || show_answer.get() {
@@ -280,10 +280,13 @@ pub fn LessonCard(
     }
 }
 
-/// Prefetch the phrase audio into a `blob:` URL and play it through a
-/// fresh `HTMLAudioElement`, falling back to TTS on any failure. See
-/// `cdn_provider::resolve_audio_url` for the Bug A/B root cause.
-async fn play_phrase_in_lesson(path: &str, question_text: &str) {
+/// Prefetch CDN audio into a `blob:` URL and play it through a fresh
+/// `HTMLAudioElement`, falling back to TTS on any failure. The shared
+/// announcement channel of the lesson: phrases AND example sentences
+/// (#528 — the generated IndexTTS clip is the primary voice, platform
+/// TTS only the degradation). See `cdn_provider::resolve_audio_url`
+/// for the Bug A/B root cause.
+pub(super) async fn play_cdn_audio_with_tts_fallback(path: &str, question_text: &str) {
     use wasm_bindgen_futures::JsFuture;
 
     // Shared single-shot TTS fallback used by the drain-pattern below.

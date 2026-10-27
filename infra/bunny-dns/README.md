@@ -1,16 +1,17 @@
 # Bunny Scriptable DNS: geo-steering for RF (script ID 91629)
 
 `handleQuery.js` is deployed as Bunny DNS script `origa-s3-geo` (ID 91629) and
-attached (via NS records, TTL 60) to **four** names in the `uwuwu.net` zone
+attached (via NS records, TTL 60) to **five** names in the `uwuwu.net` zone
 (873317):
 
 - `origa`         → RF: A 193.233.217.243 (RF VM, nginx), world: CNAME vl080mt6.up.railway.app
 - `app.origa`     → RF: A 193.233.217.243, world: CNAME 9v15a3ov.up.railway.app
 - `s3.origa`      → RF: A 193.233.217.243, world: CNAME d3gbi3wo8j4c2w.cloudfront.net
 - `content.origa` → CNAME origa.t3.tigrisbucket.io for everyone (diagnostic name, no RF branch)
+- `umami.origa`   → RF: A 193.233.217.243, world: CNAME 07wyrdxw.up.railway.app (self-hosted Umami, ADR-054 §7)
 
 `pass` is a plain A record (85.192.63.249, TTL 300) and is **not** attached to
-the script. The script answers only the four names above (hostname guard) and
+the script. The script answers only the five names above (hostname guard) and
 returns `undefined` for anything else — a newly attached name without a branch
 fails loudly instead of silently resolving to the RF IP. (Semantics note:
 Bunny treats a script answer of `undefined` as "no record" — grey answer.
@@ -41,6 +42,14 @@ directly); renewal via the acme.sh crontab on the VM. Upstream hostnames are
 resolved once at start/reload — after any Railway edge change run `dig` first,
 then `nginx -s reload` (reload fails closed with "host not found in upstream"
 if DNS is unreachable).
+
+`umami.origa` has its own certificate (SAN `umami.origa.uwuwu.net`, acme.sh
+DNS-01) and its own `rf-proxy-common-umami.conf` snippet — nginx does not
+support variables in `ssl_certificate`, so the shared snippet (which pins the
+`origa.uwuwu.net` cert) cannot be reused for a second host. DNS-01 TXT records
+under a script-attached name resolve through the zone's own records
+(verified 2026-10-22 when the `umami` cert was issued while `umami.origa` was
+already attached to the script).
 
 Legacy reference (superseded 2026-09-30, host TSPU-blocked from RF): the old
 Aeza Frankfurt VPS (85.192.63.249) served the same RF branch via Caddy with

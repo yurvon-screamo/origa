@@ -15,8 +15,8 @@ use crate::repository::{
 
 /// Installs the loaded user's card-token precompute (#521): word and
 /// lesson renders then answer from the store instead of the tokenizer
-/// dictionary. Legacy cards without persisted tokens are synthesized from
-/// their cached part of speech.
+/// dictionary. Cards without a persisted cache are skipped — their
+/// renders use the live tokenization fallback (#524).
 fn install_user_card_precompute(user: &User) {
     let vocabulary_cards: Vec<&origa::domain::VocabularyCard> = user
         .knowledge_set()

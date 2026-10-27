@@ -1,4 +1,4 @@
-"""Title convention for grammar_v2 titles (issue #501).
+"""Title convention for grammar titles (issue #501).
 
 Convention (documented in docs/plans/grammar-v2-schema.md, "Title
 convention"):

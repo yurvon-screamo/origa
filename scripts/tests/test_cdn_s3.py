@@ -184,12 +184,12 @@ def test_upload_file_dry_run_skips_client(tmp_path, monkeypatch, capsys):
     fake = _FakeUploadClient()
     monkeypatch.setattr(_cdn_s3, "_s3_upload_client", lambda: fake)
 
-    upload_file(local, "grammar/grammar.json", "no-cache", dry_run=True)
+    upload_file(local, "grammar/grammar_v3.json", "no-cache", dry_run=True)
 
     assert fake.calls == []
     out = capsys.readouterr().out
     assert "[DRY-RUN]" in out
-    assert "grammar/grammar.json" in out
+    assert "grammar/grammar_v3.json" in out
     assert "application/json" in out
     assert "no-cache" in out
 

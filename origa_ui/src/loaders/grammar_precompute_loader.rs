@@ -11,7 +11,7 @@ use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
 
 pub const GRAMMAR_PRECOMPUTE_PATH: &str = "grammar/grammar_precompute_v3.rkyv";
-const GRAMMAR_SOURCES: [&str; 2] = ["grammar/grammar_v2.json", "grammar/grammar_ko_vi.json"];
+const GRAMMAR_SOURCES: [&str; 1] = ["grammar/grammar_v3.json"];
 
 pub async fn load_grammar_precompute() -> Result<(), OrigaError> {
     load_grammar_precompute_via(cdn_provider()).await
@@ -42,15 +42,17 @@ mod tests {
     use std::future::Future;
 
     use super::*;
+    use crate::repository::cache_manager::{CacheManifest, guard_expectation_from_manifest};
     use origa::dictionary::cdn_blob::{
-        BlobHeader, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes, sha256_bytes,
+        BlobHeader, GuardExpectation, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes,
+        sha256_bytes,
     };
     use origa::dictionary::precompute_blob::{
         PrecomputeBlob, deflate_blob, installed_precompute_views_len,
         serialize_precompute_blob_to_rkyv,
     };
     use origa::domain::lookup_precomputed;
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, HashMap};
 
     /// Recording mock over the external CDN boundary.
     struct MockCdn {
@@ -89,7 +91,7 @@ mod tests {
         }
     }
 
-    fn valid_blob(grammar_json: &str, overlay_json: &str) -> Vec<u8> {
+    fn valid_blob(grammar_json: &str) -> Vec<u8> {
         let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
             entries: BTreeMap::from([(
                 "私は学生です。".to_string(),
@@ -104,16 +106,10 @@ mod tests {
             )]),
         })
         .unwrap();
-        let guard = manifest_guard_from_hex_hashes(&[
-            &sha256_bytes(grammar_json.as_bytes())
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect::<String>(),
-            &sha256_bytes(overlay_json.as_bytes())
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect::<String>(),
-        ]);
+        let guard = manifest_guard_from_hex_hashes(&[&sha256_bytes(grammar_json.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()]);
         let header = BlobHeader {
             schema_version: SCHEMA_VERSION,
             source_sha256: sha256_bytes(b"sources with ingredients"),
@@ -125,7 +121,7 @@ mod tests {
     #[tokio::test]
     async fn valid_blob_installs_and_answers_lookups() {
         // Arrange
-        let provider = MockCdn::with_blob(Some(valid_blob("{}", "{}")));
+        let provider = MockCdn::with_blob(Some(valid_blob("{}")));
 
         // Act
         load_grammar_precompute_via(&provider).await.unwrap();
@@ -146,7 +142,7 @@ mod tests {
     #[tokio::test]
     async fn corrupted_header_is_rejected() {
         // Arrange
-        let mut blob = valid_blob("{}", "{}");
+        let mut blob = valid_blob("{}");
         blob[0] = b'X';
         let provider = MockCdn::with_blob(Some(blob));
 
@@ -167,5 +163,43 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
+    }
+
+    /// The #582 regression class: the builder derives the blob's
+    /// `manifest_guard` from the manifest hashes of exactly GRAMMAR_SOURCES.
+    /// A drifted source list (here or in the builder) must break this
+    /// symmetry pin instead of silently rejecting every blob — the
+    /// v0.7.27..0.7.37 behavior where the loader expected the retired
+    /// v2/overlay pair and the precompute never installed.
+    #[test]
+    fn manifest_expectation_mirrors_builder_guard() {
+        // Arrange: a manifest listing every loader source with the hash the
+        // builder would compute for it.
+        let hash = "a".repeat(64);
+        let manifest = CacheManifest {
+            version: 1,
+            files: HashMap::from([(GRAMMAR_SOURCES[0].to_string(), hash.clone())]),
+        };
+
+        // Act: the loader-side expectation over the same constant.
+        let expectation = guard_expectation_from_manifest(Some(&manifest), &GRAMMAR_SOURCES);
+
+        // Assert: Expect(guard) equal to the builder formula.
+        let GuardExpectation::Expect(guard) = expectation else {
+            panic!("manifest lists every GRAMMAR_SOURCES entry — expectation must be Expect");
+        };
+        assert_eq!(guard, manifest_guard_from_hex_hashes(&[&hash]));
+
+        // A foreign hash (or a source missing from the manifest) must not
+        // satisfy the check.
+        assert_ne!(guard, manifest_guard_from_hex_hashes(&[&"b".repeat(64)]));
+        let manifest_without_source = CacheManifest {
+            version: 1,
+            files: HashMap::new(),
+        };
+        assert!(matches!(
+            guard_expectation_from_manifest(Some(&manifest_without_source), &GRAMMAR_SOURCES),
+            GuardExpectation::Mismatch
+        ));
     }
 }

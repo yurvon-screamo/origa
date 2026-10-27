@@ -12,9 +12,21 @@ store, the network, or AWS credentials.
 
 from __future__ import annotations
 
+import hashlib
 import json
+from pathlib import Path
 
-from deploy_cdn import VERSIONED_FILES, compare_manifests, compute_files_to_upload
+import pytest
+
+from deploy_cdn import (
+    RKYV_BLOB_SOURCES,
+    RKYV_SCHEMA_VERSION,
+    VERSIONED_FILES,
+    compare_manifests,
+    compute_files_to_upload,
+    parse_rkyv_header,
+    rkyv_blob_freshness_problems,
+)
 from _cdn_verify import MANIFEST_ERROR
 
 
@@ -56,8 +68,8 @@ def test_force_marks_all_files_changed_with_none_remote():
 
 
 def test_force_ignores_hash_mismatch_with_remote():
-    local = _manifest({"grammar/grammar.json": "local_hash"})
-    remote = _manifest({"grammar/grammar.json": "remote_hash"})
+    local = _manifest({"grammar/grammar_v3.json": "local_hash"})
+    remote = _manifest({"grammar/grammar_v3.json": "remote_hash"})
 
     changed, unchanged = compute_files_to_upload(local, remote, force=True)
 
@@ -80,7 +92,7 @@ def test_default_with_none_remote_treats_all_as_changed():
 
 
 def test_default_reports_only_hash_diff_as_changed():
-    changed_path = "grammar/grammar.json"
+    changed_path = "grammar/grammar_v3.json"
     local = _manifest({changed_path: "new_hash"})
     remote = _manifest()
 
@@ -140,19 +152,6 @@ def test_manifest_error_sentinel_is_distinct_from_problem_counts():
 # ---------------------------------------------------------------------------
 # rkyv blob freshness (deploy-time guard against stale pre-parsed blobs)
 # ---------------------------------------------------------------------------
-
-import hashlib
-from pathlib import Path
-
-import pytest
-
-from deploy_cdn import (
-    RKYV_BLOB_SOURCES,
-    RKYV_HEADER_LEN,
-    RKYV_SCHEMA_VERSION,
-    parse_rkyv_header,
-    rkyv_blob_freshness_problems,
-)
 
 
 def _write_blob(path: Path, schema_version: int, source_sha: bytes) -> None:
@@ -544,7 +543,6 @@ def test_size_only_sync_dirs_are_immutable_tier():
     and _cdn_cache but forgotten in SIZE_ONLY_SYNC_DIRS silently
     re-introduces the #551 mtime-skew re-upload for that directory.
     """
-    import deploy_cdn
     from _cdn_cache import IMMUTABLE, cache_control_for
 
     from deploy_cdn import SIZE_ONLY_SYNC_DIRS, SYNC_DIRS

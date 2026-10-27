@@ -292,7 +292,7 @@ Detects grammar rules in phrases and writes an enriched phrase index.
 utils enrich-phrases-with-grammar \
   -i cdn/phrases/phrase_index.json \
   --chunks-dir cdn/phrases/data/ \
-  -g cdn/grammar/grammar_v2.json \
+  -g cdn/grammar/grammar_v3.json \
   -o cdn/phrases/phrase_index_enriched.json
 ```
 

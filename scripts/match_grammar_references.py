@@ -22,7 +22,7 @@ Matching model:
 
 Usage:
     python scripts/match_grammar_references.py \
-        [--corpus cdn/grammar/grammar_v2.json] \
+        [--corpus cdn/grammar/grammar_v3.json] \
         [--jnihongo /tmp/opencode/jnihongo/catalog.json] \
         [--hanabira /tmp/opencode/hanabira] \
         [--threshold 0.45] \
@@ -129,7 +129,7 @@ def load_references(jnihongo: Path | None, hanabira: Path | None) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v2.json")
+        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v3.json")
     )
     parser.add_argument(
         "--jnihongo", type=Path, default=Path("/tmp/opencode/jnihongo/catalog.json")

@@ -11,6 +11,7 @@ use super::keyboard_handler::is_typing_target;
 use super::training_view::TrainingBody;
 use super::word_example_line::WordExampleLine;
 use crate::i18n::*;
+use crate::pages::grammar::nuances_section::NuancesSection;
 use crate::ui_components::{
     AudioButtons, Button, ButtonVariant, Card, ConfirmModal, FuriganaText, KanjiAnimation,
     MarkdownText, MarkdownVariant, ReadingItem, Tag, example_fences_to_paragraphs,
@@ -19,6 +20,7 @@ use crate::ui_components::{
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
+use origa::dictionary::grammar::{CommonMistake, NuanceNote};
 use origa::domain::NativeLanguage;
 use origa::traits::UserRepository;
 use origa::use_cases::{MarkCardAsKnownUseCase, TakeAcquaintanceReplacementUseCase};
@@ -109,9 +111,12 @@ pub fn AcquaintanceView() -> impl IntoView {
             .and_then(|slide| slide.pos_label().map(str::to_string))
     });
 
-    // Слово текущей карты: в показе — слайд по индексу, в тренировке —
-    // карта из сигнала контекста.
-    let current_word = Signal::derive(move || {
+    // Озвучка текущей карты: (вид, текст) — единый аксессор слайда.
+    // В показе — слайд по индексу, в тренировке — карта из сигнала
+    // контекста. Слово — у словарной карты, паттерн — у грамматики в
+    // показе, фронт-пример — у грамматики в тренировке; беззвучные карты
+    // дают None.
+    let current_audio = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
         let card_id = match state.stage {
@@ -121,29 +126,30 @@ pub fn AcquaintanceView() -> impl IntoView {
                 .get(state.slide_index)
                 .map(|slide| slide.card_id()),
             _ => ctx.current_card.get(),
-        };
-        card_id.and_then(|id| {
-            ctx.slides
-                .get()
-                .iter()
-                .find(|slide| slide.card_id() == id)
-                .and_then(|slide| slide.word().map(str::to_string))
-        })
+        }?;
+        ctx.slides
+            .get()
+            .iter()
+            .find(|slide| slide.card_id() == card_id)
+            .and_then(|slide| slide.audio(state.stage))
     });
 
-    // Кнопка озвучки видна, когда японская сторона слова не подсказывает
-    // ответ: Reverse-фронт и аудио-фронт Forward (до раскрытия) прячут её;
-    // на стороне ответа аудио-фронта слово уже на экране — кнопка видна
-    // (повтор в теле фронта на ответе убран, дубля нет).
+    // Кнопка озвучки видна, когда японская строка карты не подсказывает
+    // ответ: у слов Reverse-фронт и аудио-фронт Forward (до раскрытия)
+    // прячут её; грамматика (JP-строка фронта) видна всегда — кнопка тоже;
+    // беззвучные карты (кандзи/счётные) кнопку не получают.
     let audio_visible = Signal::derive(move || {
         let ctx = ctx_stored.get_value();
         let state = ctx.state.get();
+        let Some((voiced, _)) = current_audio.get() else {
+            return false;
+        };
         audio_button_visible(
             state.stage,
             state.hand.as_ref().and_then(|hand| hand.subphase()),
             ctx.audio_front.get(),
             ctx.showing_answer.get(),
-            current_word.get().is_some(),
+            Some(voiced),
         )
     });
 
@@ -184,18 +190,18 @@ pub fn AcquaintanceView() -> impl IntoView {
                 </Show>
 
                 // Кнопка озвучки — правый край ряда тегов, как в обычном
-                // уроке (LessonCardTags: ml-auto). Замыкание по слову:
-                // AudioButtons берёт текст при монтировании, смена слова
-                // пересоздаёт кнопку (паттерн lesson_card_header).
+                // уроке (LessonCardTags: ml-auto). Замыкание по тексту
+                // карты: AudioButtons берёт текст при монтировании, смена
+                // карты пересоздаёт кнопку (паттерн lesson_card_header).
                 {move || {
-                    current_word
+                    current_audio
                         .get()
                         .filter(|_| audio_visible.get())
-                        .map(|word| {
+                        .map(|(_, text)| {
                             view! {
                                 <div class="ml-auto shrink-0">
                                     <AudioButtons
-                                        text=word
+                                        text=text
                                         audio_path=None
                                         test_id=Signal::derive(|| {
                                             "acquaintance-audio-btn".to_string()
@@ -417,7 +423,9 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
     // без смены карты (полный rebuild slides.set) тоже молчит.
     // Тот же канал, что и автозвук обычного урока (speak_word): сначала
     // CDN pitch-аудио файла, TTS — только fallback (юзер-репорт: в
-    // знакомстве звучал TTS вместо аудиофайла).
+    // знакомстве звучал TTS вместо аудиофайла). Озвучивается слово
+    // словарной карты и паттерн грамматики (паритет с обычным уроком,
+    // где вопрос grammar-карты = паттерн); кандзи/счётные беззвучны.
     let is_muted =
         use_context::<super::lesson_state::LessonContext>().map(|lesson_ctx| lesson_ctx.is_muted);
     let autoplay_card_id = Memo::new(move |_| {
@@ -437,14 +445,15 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
         if !should_autoplay_word_audio(muted, is_speech_supported()) {
             return;
         }
-        let word = ctx
+        let text = ctx
             .slides
             .get_untracked()
             .iter()
             .find(|slide| slide.card_id() == card_id)
-            .and_then(|slide| slide.word().map(str::to_string));
-        if let Some(word) = word {
-            speak_word(&word, 1.0);
+            .and_then(|slide| slide.audio(AcquaintanceStage::Presentation))
+            .map(|(_, text)| text);
+        if let Some(text) = text {
+            speak_word(&text, 1.0);
         }
     });
 
@@ -496,7 +505,8 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                 how_to_form,
                 examples,
                 explanation,
-                nuances,
+                common_mistakes,
+                notes,
                 ..
             } => view! {
                 <GrammarSlide
@@ -505,7 +515,8 @@ fn PresentationBody(ctx: AcquaintanceContext) -> impl IntoView {
                     how_to_form=how_to_form.clone()
                     examples=examples.clone()
                     explanation=explanation.clone()
-                    nuances=nuances.clone()
+                    common_mistakes=common_mistakes.clone()
+                    notes=notes.clone()
                     known_kanji=ctx.known_kanji
                 />
             }
@@ -645,7 +656,8 @@ fn GrammarSlide(
     how_to_form: String,
     examples: String,
     explanation: String,
-    nuances: String,
+    common_mistakes: Vec<CommonMistake>,
+    notes: Vec<NuanceNote>,
     known_kanji: RwSignal<HashSet<char>>,
 ) -> impl IntoView {
     let stored_pattern = StoredValue::new(pattern);
@@ -653,7 +665,8 @@ fn GrammarSlide(
     let stored_how_to = StoredValue::new(how_to_form);
     let stored_examples = StoredValue::new(examples);
     let stored_explanation = StoredValue::new(explanation);
-    let stored_nuances = StoredValue::new(nuances);
+    let stored_mistakes = StoredValue::new(common_mistakes);
+    let stored_notes = StoredValue::new(notes);
     let kk = known_kanji.get_untracked();
     let kk_for_how_to = kk.clone();
     let kk_for_examples = kk.clone();
@@ -707,14 +720,17 @@ fn GrammarSlide(
                     />
                 </div>
             </Show>
-            <Show when=move || !stored_nuances.get_value().is_empty()>
-                <div data-testid="acquaintance-grammar-nuances">
-                    <MarkdownText
-                        content=Signal::derive(move || stored_nuances.get_value())
-                        known_kanji=kk_for_nuances.clone()
-                        variant=Signal::derive(|| MarkdownVariant::Default)
-                    />
-                </div>
+            <Show
+                when=move || {
+                    !stored_mistakes.get_value().is_empty() || !stored_notes.get_value().is_empty()
+                }
+            >
+                <NuancesSection
+                    common_mistakes=stored_mistakes.get_value()
+                    notes=stored_notes.get_value()
+                    known_kanji=kk_for_nuances.clone()
+                    test_id=Signal::derive(|| "acquaintance-grammar-nuances".to_string())
+                />
             </Show>
         </div>
     }

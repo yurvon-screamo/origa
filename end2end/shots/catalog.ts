@@ -130,6 +130,14 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         viewports: DEFAULT_VIEWPORTS,
         preset: "irodori-nyuumon",
     },
+    "lesson-counter-pack": {
+        id: "lesson-counter-pack",
+        title: "Пачка связок счётного суффикса в уроке",
+        route: "/lesson",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "counter-due",
+    },
     "lesson-unification": {
         id: "lesson-unification",
         title: "Единый урок: знакомство, тренировка, тело",

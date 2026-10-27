@@ -20,7 +20,7 @@ deploy validator, single source of truth. Idempotent.
 
 Usage:
     python scripts/add_grammar_pattern.py --dry-run   # report only
-    python scripts/add_grammar_pattern.py             # rewrite grammar_v2.json
+    python scripts/add_grammar_pattern.py             # rewrite grammar_v3.json
 """
 
 import argparse
@@ -52,8 +52,8 @@ def main() -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=Path("cdn/grammar/grammar_v2.json"),
-        help="path to the grammar store (default: cdn/grammar/grammar_v2.json)",
+        default=Path("cdn/grammar/grammar_v3.json"),
+        help="path to the grammar store (default: cdn/grammar/grammar_v3.json)",
     )
     args = parser.parse_args()
 

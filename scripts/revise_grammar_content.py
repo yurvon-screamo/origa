@@ -32,7 +32,7 @@ import re
 import sys
 from pathlib import Path
 
-CORPUS = Path("cdn/grammar/grammar_v2.json")
+CORPUS = Path("cdn/grammar/grammar_v3.json")
 CONTENT_FIELDS = (
     "short_description",
     "explanation",
@@ -114,7 +114,7 @@ def load_references(hanabira_dir: Path | None) -> list[dict]:
 
 
 def _example_jp_count(examples: str) -> int:
-    return len([l for l in examples.split("\n") if re.search(r"[ぁ-ヿ]", l)])
+    return len([line for line in examples.split("\n") if re.search(r"[ぁ-ヿ]", line)])
 
 
 def _quality_flag(our: dict) -> str:
@@ -126,8 +126,12 @@ def _quality_flag(our: dict) -> str:
             flags.append(f"thin-explanation/{loc[:2].lower()}")
         if _example_jp_count(c["examples"]) < MIN_EXAMPLES:
             flags.append(f"few-examples/{loc[:2].lower()}")
-        jp = [l for l in c["examples"].split("\n") if re.search(r"[ぁ-ヿ]", l)]
-        tr = [l for l in c["examples"].split("\n") if re.search(r"[а-яА-Яa-z]", l)]
+        jp = [line for line in c["examples"].split("\n") if re.search(r"[ぁ-ヿ]", line)]
+        tr = [
+            line
+            for line in c["examples"].split("\n")
+            if re.search(r"[а-яА-Яa-z]", line)
+        ]
         if jp and len(jp) > len(tr):
             flags.append(f"untranslated-examples/{loc[:2].lower()}")
     return ",".join(sorted(set(flags)))
@@ -228,9 +232,9 @@ def validate_revision(rev: dict) -> list[str]:
                     )
         if "English" in rev and "examples" in rev.get("English", {}):
             jp_lines = [
-                l
-                for l in rev["English"]["examples"].split("\n")
-                if re.search(r"[ぁ-ヿ]", l)
+                line
+                for line in rev["English"]["examples"].split("\n")
+                if re.search(r"[ぁ-ヿ]", line)
             ]
             if len(jp_lines) < MIN_EXAMPLES:
                 errors.append(

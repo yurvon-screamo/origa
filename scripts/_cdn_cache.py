@@ -56,6 +56,20 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
         # release-updated examples/ rule, and IMMUTABLE is checked first.
         "examples/audio/",
         "whisper/",
+        # Store assets published by scripts/publish_media.py (ADR-068).
+        # Every key carries the SHA256 of the file, so a changed asset gets a
+        # new URL and an immutable copy can never serve a stale picture.
+        # The prefixes are listed one by one on purpose: a blanket "media/"
+        # rule would make every future object under that prefix immutable,
+        # including content that does not carry a hash.
+        "media/app-store-iphone-en/",
+        "media/app-store-iphone-ru/",
+        "media/app-store-ipad/",
+        "media/store-creative-en/",
+        "media/store-creative-ru/",
+        "media/play-feature-graphic/",
+        "media/social-poster/",
+        "media/marketing-visual/",
     }
 )
 

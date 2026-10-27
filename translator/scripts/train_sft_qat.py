@@ -47,7 +47,7 @@ PROJ = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_pr
 
 
 def load_jsonl(p: Path) -> list[dict]:
-    return [json.loads(l) for l in open(p, encoding="utf-8")]
+    return [json.loads(line) for line in open(p, encoding="utf-8")]
 
 
 def encode_example(tok, messages):

@@ -76,6 +76,12 @@ path = "tests/build_config.rs"
 name = "css_rebuild"
 path = "tests/css_rebuild.rs"
 
+# Pure module (no leptos/ssr deps) — the static images of public/images/
+# against the pages that reference them (ADR-068).
+[[test]]
+name = "assets"
+path = "tests/assets.rs"
+
 [[test]]
 name = "blog"
 path = "tests/blog.rs"

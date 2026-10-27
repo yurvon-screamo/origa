@@ -1,6 +1,14 @@
 # Grammar Data v2 — Schema and Provenance
 
-Status: active (schema v2). Supersedes `cdn/grammar/grammar.json` (v1, frozen).
+> ⚠️ **Superseded (2026-10-25).** The v1 (`grammar.json`), v2
+> (`grammar_v2.json`) and KO/VI overlay (`grammar_ko_vi.json`) corpora are
+> retired from the CDN — all clients read the v3 corpus
+> (`grammar/grammar_v3.json`, 4 locales inline). The schema rules below
+> live on in `scripts/validate_grammar_v3.py` (schema marker must be 3).
+> Kept for provenance per the docs convention.
+
+Superseded by the v3 corpus (2026-10-25); the text below documents the
+retired v2 schema and its provenance — do not edit as a live spec.
 
 ## File layout
 

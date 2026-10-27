@@ -97,7 +97,6 @@ def main() -> int:
         for item in json.loads(path.read_text(encoding="utf-8")):
             han_points.append(item)
 
-    by_id = {r["rule_id"]: r for r in corpus["grammar"]}
     refs_by_id = {x["rule_id"]: x for x in refs}
 
     # ── 1. term renames (idempotent: fresh pruned corpus OR already-renamed) ──

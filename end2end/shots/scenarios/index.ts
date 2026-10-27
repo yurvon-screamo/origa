@@ -6,6 +6,7 @@ import { homeInsightsScenario } from "./home-insights.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
+import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
 import { lessonExampleRecallScenario } from "./lesson-example-recall.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
 import { lessonReadingQuizScenario } from "./lesson-reading-quiz.ts";
@@ -37,6 +38,7 @@ export const implementations: Record<string, ShotScenario> = {
     [lessonUnificationScenario.id]: lessonUnificationScenario,
     [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
     [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
+    [lessonCounterPackScenario.id]: lessonCounterPackScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

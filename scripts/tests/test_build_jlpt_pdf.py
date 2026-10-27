@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime as _dt
 import datetime as dt
+
+import pytest
 
 import build_jlpt_pdf as gen
 
@@ -61,9 +62,22 @@ class TestMarkdownTable:
 
 
 class TestResolveSourceEpoch:
-    def test_matching_sha_reuses_manifest_date(self, tmp_path, monkeypatch):
+    @pytest.fixture
+    def kanji_json_stub(self, tmp_path, monkeypatch):
+        # cdn/ is gitignored: a CI runner has no CDN sync, so the epoch
+        # logic runs against a stub source file. resolve_source_epoch
+        # only hashes the bytes, a stub is behaviorally identical — no
+        # skip needed (unlike the corpus tests in test_validate_grammar_v2).
+        stub = tmp_path / "kanji.json"
+        stub.write_bytes(b'{"kanji": []}')
+        monkeypatch.setattr(gen, "KANJI_JSON", stub)
+        return stub
+
+    def test_matching_sha_reuses_manifest_date(
+        self, tmp_path, monkeypatch, kanji_json_stub
+    ):
         monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
-        sha = hashlib.sha256(gen.KANJI_JSON.read_bytes()).hexdigest()
+        sha = hashlib.sha256(kanji_json_stub.read_bytes()).hexdigest()
         (tmp_path / "MANIFEST.json").write_text(
             json.dumps({"kanji_sha256": sha, "generated_from": "2020-01-01"}),
             encoding="utf-8",
@@ -75,7 +89,9 @@ class TestResolveSourceEpoch:
             == "2020-01-01"
         )
 
-    def test_changed_sha_moves_date_to_today(self, tmp_path, monkeypatch):
+    def test_changed_sha_moves_date_to_today(
+        self, tmp_path, monkeypatch, kanji_json_stub
+    ):
         monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
         (tmp_path / "MANIFEST.json").write_text(
             json.dumps({"kanji_sha256": "stale", "generated_from": "2020-01-01"}),
@@ -89,7 +105,9 @@ class TestResolveSourceEpoch:
             == today
         )
 
-    def test_missing_manifest_is_first_render(self, tmp_path, monkeypatch):
+    def test_missing_manifest_is_first_render(
+        self, tmp_path, monkeypatch, kanji_json_stub
+    ):
         monkeypatch.setattr(gen, "MANIFEST_PATH", tmp_path / "MANIFEST.json")
         _, changed = gen.resolve_source_epoch()
         assert changed

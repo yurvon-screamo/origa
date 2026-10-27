@@ -89,7 +89,6 @@ pub struct LessonContext {
     pub is_muted: RwSignal<bool>,
     pub known_kanji: RwSignal<HashSet<char>>,
     pub native_language: RwSignal<NativeLanguage>,
-    pub core_count: RwSignal<usize>,
     /// Whether the CURRENT showing is a live audio-driven card (an
     /// AudioRecall view with audio available, or a PhraseListen quiz) —
     /// the view says audio AND the mode was sampled available for this
@@ -99,6 +98,17 @@ pub struct LessonContext {
     /// card renders and behaves as its base view everywhere (render,
     /// keyboard, rating) — a single source of truth, no split-brain.
     pub audio_mode_active: Memo<bool>,
+    /// 0-based index of the binding the counter-bindings pack is asking
+    /// right now (issue #415, owner UX request): the pack lives in the
+    /// COMMON lesson counter instead of a nested one, so the mounted
+    /// session publishes its step here and the header progress folds it
+    /// into `current`. `None` outside a pack (incl. the frozen last
+    /// binding — its value is the pack size minus one, kept until the
+    /// container advances and the session unmounts → cleanup resets to
+    /// `None`). A dedicated signal, not a `LessonState` write: state
+    /// writes re-run the `audio_mode_active` showing-slot memo on every
+    /// binding.
+    pub counter_binding_step: RwSignal<Option<usize>>,
 }
 
 /// Builds the per-showing audio-mode signal (see

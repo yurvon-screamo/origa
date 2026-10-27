@@ -43,6 +43,24 @@ fn inject_umami_appends_tracker_script_to_head() {
     );
 }
 
+/// ADR-054 post-mortem discipline: the collection endpoint must be pinned
+/// explicitly and must equal the script origin's host, so the CSP host
+/// (`tauri/build_config.rs`) and the beacons can never drift apart again.
+#[wasm_bindgen_test]
+fn inject_umami_pins_collection_endpoint_to_script_origin() {
+    let script = fresh_tracker_script();
+
+    let host_url = script
+        .get_attribute("data-host-url")
+        .expect("data-host-url attribute present");
+    assert_eq!(host_url, "https://umami.origa.uwuwu.net");
+    let src = script.get_attribute("src").expect("src attribute present");
+    assert!(
+        src.starts_with(&format!("{host_url}/")),
+        "script {src} must be served from the pinned collection host {host_url}"
+    );
+}
+
 #[wasm_bindgen_test]
 fn inject_umami_sets_domain_allowlist_and_do_not_track() {
     let script = fresh_tracker_script();

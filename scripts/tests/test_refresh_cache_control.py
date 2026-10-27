@@ -85,7 +85,7 @@ def test_normalize_strips_spaces_and_lowercases():
     "key",
     [
         "manifest.json",
-        "grammar/grammar.json",
+        "grammar/grammar_v3.json",
         "dictionaries/char_def.bin",
         # Real kanji filenames use the kanji themselves (CJK) — must be
         # accepted, not rejected as "non-ASCII". This is the regression that
@@ -179,7 +179,7 @@ def test_collect_targets_default_uses_manifest_files(monkeypatch):
 
     def fake_manifest() -> tuple[list[str], int]:
         called["manifest"] = True
-        return ["manifest.json", "grammar/grammar.json"], 0
+        return ["manifest.json", "grammar/grammar_v3.json"], 0
 
     def fake_list(prefix: str | None = None) -> tuple[list[str], int]:
         called["list_keys"] = True
@@ -192,7 +192,7 @@ def test_collect_targets_default_uses_manifest_files(monkeypatch):
 
     assert called["manifest"] is True
     assert called["list_keys"] is False
-    assert keys == ["manifest.json", "grammar/grammar.json"]
+    assert keys == ["manifest.json", "grammar/grammar_v3.json"]
     assert dropped == 0
 
 
@@ -201,7 +201,7 @@ def test_collect_targets_light_prefix_skips_confirmation(monkeypatch):
 
     def fake_list(prefix: str | None = None) -> tuple[list[str], int]:
         captured["prefix"] = prefix
-        return ["grammar/grammar.json"], 0
+        return ["grammar/grammar_v3.json"], 0
 
     monkeypatch.setattr(rcc, "list_keys", fake_list)
     monkeypatch.setattr(
@@ -211,7 +211,7 @@ def test_collect_targets_light_prefix_skips_confirmation(monkeypatch):
     keys, _ = rcc.collect_targets(_args(prefix="grammar/"))
 
     assert captured["prefix"] == "grammar/"
-    assert keys == ["grammar/grammar.json"]
+    assert keys == ["grammar/grammar_v3.json"]
 
 
 def test_collect_targets_heavy_prefix_prompts(monkeypatch):
@@ -371,7 +371,7 @@ def test_load_manifest_files_returns_manifest_keys_plus_manifest_itself(monkeypa
     manifest = {
         "version": 1,
         "files": {
-            "grammar/grammar.json": "h1",
+            "grammar/grammar_v3.json": "h1",
             "dictionary/chunk_01.json": "h2",
         },
     }
@@ -382,7 +382,7 @@ def test_load_manifest_files_returns_manifest_keys_plus_manifest_itself(monkeypa
     # manifest.json is tracked nowhere in its own files dict but still needs
     # its no-cache header refreshed.
     assert "manifest.json" in keys
-    assert "grammar/grammar.json" in keys
+    assert "grammar/grammar_v3.json" in keys
     assert "dictionary/chunk_01.json" in keys
     assert dropped == 0
 

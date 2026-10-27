@@ -73,9 +73,35 @@ pub fn ExampleRecallCard(
             .as_ref()
             .map(|ctx| ctx.is_muted.get_untracked())
             .unwrap_or(false);
-        if !is_muted && crate::ui_components::is_speech_supported() {
-            let _ = crate::ui_components::speak_tts_text(&we.detail.text, 1.0);
+        // #528: the generated clip is the primary announcement voice; the
+        // shared lesson channel owns the CDN prefetch + TTS degradation.
+        if !is_muted {
+            crate::ui_components::stop_current_audio();
+            let path = example_audio_path(sentence_id);
+            let text = we.detail.text.clone();
+            spawn_local(async move {
+                super::lesson_card::play_cdn_audio_with_tts_fallback(&path, &text).await;
+            });
         }
+    });
+
+    // Reveal stops the announcement clip (the phrase-card etalon: the
+    // question audio does not play over the shown answer).
+    {
+        let show_answer_stop = show_answer;
+        Effect::new(move |_| {
+            if show_answer_stop.get() {
+                crate::ui_components::stop_current_audio();
+            }
+        });
+    }
+
+    // Unmount teardown (the LessonCard/AudioRecall contract): a card left
+    // mid-clip must not keep playing over the next card — its own stop
+    // waits for a network round-trip (lazy chunk load), leaving a
+    // two-voices window otherwise.
+    on_cleanup(|| {
+        crate::ui_components::stop_current_audio();
     });
 
     let sentence_class = Signal::derive(|| "text-2xl leading-relaxed".to_string());
@@ -190,13 +216,15 @@ pub fn ExampleRecallCard(
                         </div>
                     }
                     .into_any()
-                }}
+                 }}
 
                 // The reveal belongs to the centered group (the
                 // LessonCardShell etalon: content + reveal center
                 // together, #822). A separate flex child of the Card
                 // pinned the button to the bottom edge and dragged the
-                // question off-center.
+                // sentence off-center — the exact regression #856
+                // reintroduced by an auto-merge; keep the wasm guard
+                // (example reveal inside the centered container) green.
                 <Show when=move || !show_answer.get() && !load_failed.get() && example.get().is_some()>
                     <div class="mt-4 flex justify-center">
                         <RevealAnswerButton

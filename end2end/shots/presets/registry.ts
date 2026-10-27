@@ -7,6 +7,7 @@
  */
 export const PRESET_IDS = [
     "acquaintance-hand",
+    "counter-due",
     "due-corpus",
     "due-examples",
     "fresh",

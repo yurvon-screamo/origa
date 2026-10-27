@@ -178,21 +178,11 @@ impl VocabularyCard {
         self.pos.clone()
     }
 
-    /// Persisted token precompute for the card word. `None` on legacy
-    /// cards created before #521 — the startup
-    /// [`BackfillCardTokensUseCase`](crate::use_cases::BackfillCardTokensUseCase)
-    /// migrates them once.
+    /// Persisted token precompute for the card word. `None` on cards
+    /// created before #521 — the live tokenization path renders those
+    /// until the card content is recreated.
     pub fn tokens(&self) -> Option<&[PrecomputedToken]> {
         self.tokens.as_deref()
-    }
-
-    /// The same card with a token cache attached — the migration's
-    /// replacement form.
-    pub fn with_tokens(self, tokens: Vec<PrecomputedToken>) -> Self {
-        Self {
-            tokens: Some(tokens),
-            ..self
-        }
     }
 
     pub fn with_grammar_rule(
@@ -248,12 +238,10 @@ fn install_card_precompute(card: &VocabularyCard) {
     }
 }
 
-/// Backfills the precompute store for already-persisted cards after the
-/// user loads. Cards created since #521 carry persisted `tokens`; legacy
-/// cards are synthesized without lindera when they cached a part of
-/// speech: `surface = base = word`, the reading comes from the furigana
-/// dictionary (katakana-normalized like the annotator does). A legacy
-/// card without `pos` yields no entry — the live paths keep serving it.
+/// Installs the precompute store for already-persisted cards after the
+/// user loads. Only cards carrying persisted `tokens` (#521) yield an
+/// entry; older shapes — with or without a POS cache — are skipped and
+/// keep rendering through the live tokenization fallback (#524).
 pub fn install_precompute_for_cards<'a>(cards: impl IntoIterator<Item = &'a VocabularyCard>) {
     let entries = cards
         .into_iter()
@@ -592,7 +580,7 @@ mod tests {
             .unwrap_or_else(|e| e.into_inner());
         crate::domain::reset_precomputed_store();
         // Legacy shapes — with or without a POS cache — have no tokens and
-        // yield no entry; the startup backfill migrates them instead.
+        // yield no entry; the live tokenization path serves those renders.
         let with_pos = VocabularyCard::new_with_pos(
             Question::new("猫".to_string()).unwrap(),
             Some(PartOfSpeech::Noun),

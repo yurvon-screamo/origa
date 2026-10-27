@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-counter-pack",
+  "screen": "pack-front",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 287864,
+  "sha256": "33561b143a2a2f3868bf4fc9fe2ca040630cf4ee255c20cb6a94f9b615d0a9b1",
+  "capturedAt": "2026-10-26T19:47:01.649Z",
+  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-front--desktop-33561b14.png",
+  "uploadedSha256": "33561b143a2a2f3868bf4fc9fe2ca040630cf4ee255c20cb6a94f9b615d0a9b1",
+  "uploadedAt": "2026-10-26T19:49:36.348Z"
+}

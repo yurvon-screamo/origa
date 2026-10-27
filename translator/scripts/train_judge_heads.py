@@ -64,9 +64,12 @@ class Heads(nn.Module):
 def main():
     rng = random.Random(SEED)
     train = [
-        json.loads(l) for l in open(DATA / "judge_train_v3.jsonl", encoding="utf-8")
+        json.loads(line)
+        for line in open(DATA / "judge_train_v3.jsonl", encoding="utf-8")
     ]
-    val = [json.loads(l) for l in open(DATA / "judge_val.jsonl", encoding="utf-8")]
+    val = [
+        json.loads(line) for line in open(DATA / "judge_val.jsonl", encoding="utf-8")
+    ]
     rng.shuffle(train)
     val = rng.sample(val, 800)
     print(f"train {len(train)} | val {len(val)}", flush=True)
@@ -137,8 +140,8 @@ def main():
     print("saved judge_heads.pt", flush=True)
 
     test50 = [
-        json.loads(l)
-        for l in open(
+        json.loads(line)
+        for line in open(
             os.environ.get("ORIGA_JUDGE_DATA", "data/judge") + "/../test_50x4.jsonl",
             encoding="utf-8",
         )

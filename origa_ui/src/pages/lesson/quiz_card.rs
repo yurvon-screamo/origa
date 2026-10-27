@@ -1,8 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    DisplayText, FuriganaText, Heading, HeadingLevel, KanjiViewMode, KanjiWritingSection,
-    MarkdownText, MarkdownVariant, Text, TextSize, TypographyVariant, is_speech_supported,
-    speak_word, stop_current_audio,
+    DisplayText, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant, Text,
+    TextSize, TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
@@ -105,7 +104,7 @@ pub fn QuizCardView(
         QuizResult::None
     };
 
-    let kanji_for_animation: StoredValue<Option<String>> = StoredValue::new(match &card {
+    let quiz_kanji_glyph: StoredValue<Option<String>> = StoredValue::new(match &card {
         DomainCard::Kanji(_) => Some(card_question_text(&card, &lang, card_type)),
         _ => None,
     });
@@ -186,7 +185,7 @@ pub fn QuizCardView(
             test_id="lesson-card-root"
         >
         <div class="text-center mb-0.5 sm:mb-1">
-                <Show when=move || kanji_for_animation.get_value().is_none()>
+                <Show when=move || quiz_kanji_glyph.get_value().is_none()>
                     <div class="mb-4">
                         <Heading level=HeadingLevel::H2>
                             <FuriganaText text=display_question.get_value() known_kanji=known_kanji.get() native_language=native_language with_kanji_tooltip=true/>
@@ -212,17 +211,21 @@ pub fn QuizCardView(
                     </Show>
                 </Show>
 
-                <Show when=move || kanji_for_animation.get_value().is_some()>
+                <Show when=move || quiz_kanji_glyph.get_value().is_some()>
                     {move || {
-                        kanji_for_animation.get_value().map(|kanji: String| {
-                            let kanji_clone = kanji.clone();
+                        quiz_kanji_glyph.get_value().map(|kanji: String| {
+                            // The reading-quiz answer side must fit the
+                            // result block, the correct answer and the
+                            // kanji name (#822) — the writing animation
+                            // under the big glyph ate that space (owner
+                            // request: just remove it). The question side
+                            // keeps the same big glyph, no animation.
                             view! {
                                 <div class="mb-3 sm:mb-6">
                                     <DisplayText test_id="lesson-quiz-kanji">
                                         {kanji}
                                     </DisplayText>
                                 </div>
-                                <KanjiWritingSection kanji=kanji_clone mode=KanjiViewMode::Animation />
                             }
                         })
                     }}

@@ -24,9 +24,27 @@ pub(crate) fn build_acquaintance_slides(
                 }
                 translations.join(", ")
             },
-            // Text and structured GrammarNuances share the compact
-            // text projection on the acquaintance slides.
+            // All remaining slide fields are plain text: the compact
+            // projection passes them through verbatim.
             other => other.text_projection(),
+        }
+    };
+
+    // Structured nuances (schema v2): matched out of the answer variant so
+    // the slide can render them natively (NuancesSection) instead of the
+    // compact `"; "`-joined projection. `Err` (the rule has no nuances) and
+    // any non-`GrammarNuances` variant fall back to empty vectors — the
+    // same "no nuances" semantics as the former `unwrap_or_default()`.
+    let nuance_vectors = |answer: Result<origa::domain::CardAnswer, _>| -> (
+        Vec<origa::dictionary::grammar::CommonMistake>,
+        Vec<origa::dictionary::grammar::NuanceNote>,
+    ) {
+        match answer {
+            Ok(origa::domain::CardAnswer::GrammarNuances {
+                common_mistakes,
+                notes,
+            }) => (common_mistakes, notes),
+            _ => (Vec::new(), Vec::new()),
         }
     };
 
@@ -71,34 +89,35 @@ pub(crate) fn build_acquaintance_slides(
                         kun_readings: data.kun_readings,
                     })
                 },
-                Card::Grammar(rule) => Some(AcquaintanceSlideData::Grammar {
-                    card_id: *card_id,
-                    rule_id: *rule.rule_id(),
-                    pattern: rule
-                        .pattern(&native_language)
-                        .map(|question| question.text().to_string())
-                        .unwrap_or_default(),
-                    short_description: rule
-                        .short_description(&native_language)
-                        .map(answer_text)
-                        .unwrap_or_default(),
-                    how_to_form: rule
-                        .how_to_form(&native_language)
-                        .map(answer_text)
-                        .unwrap_or_default(),
-                    examples: rule
-                        .examples(&native_language)
-                        .map(answer_text)
-                        .unwrap_or_default(),
-                    explanation: rule
-                        .explanation(&native_language)
-                        .map(answer_text)
-                        .unwrap_or_default(),
-                    nuances: rule
-                        .nuances(&native_language)
-                        .map(answer_text)
-                        .unwrap_or_default(),
-                }),
+                Card::Grammar(rule) => {
+                    let (common_mistakes, notes) = nuance_vectors(rule.nuances(&native_language));
+                    Some(AcquaintanceSlideData::Grammar {
+                        card_id: *card_id,
+                        rule_id: *rule.rule_id(),
+                        pattern: rule
+                            .pattern(&native_language)
+                            .map(|question| question.text().to_string())
+                            .unwrap_or_default(),
+                        short_description: rule
+                            .short_description(&native_language)
+                            .map(answer_text)
+                            .unwrap_or_default(),
+                        how_to_form: rule
+                            .how_to_form(&native_language)
+                            .map(answer_text)
+                            .unwrap_or_default(),
+                        examples: rule
+                            .examples(&native_language)
+                            .map(answer_text)
+                            .unwrap_or_default(),
+                        explanation: rule
+                            .explanation(&native_language)
+                            .map(answer_text)
+                            .unwrap_or_default(),
+                        common_mistakes,
+                        notes,
+                    })
+                },
                 Card::Counter(counter) => {
                     // Один резолв реестра на слайд (не на каждую связь).
                     let entry = origa::dictionary::counters::get_counter(counter.suffix());
