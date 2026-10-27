@@ -228,13 +228,18 @@ impl AcquaintanceSlideData {
     /// examples бывают пустыми.
     pub fn audio(&self, stage: AcquaintanceStage) -> Option<(VoicedKind, String)> {
         match self {
-            Self::Vocabulary { word, .. } => Some((VoicedKind::Word, word.clone())),
+            Self::Vocabulary { word, .. } => {
+                (!word.is_empty()).then_some((VoicedKind::Word, word.clone()))
+            },
             Self::Grammar {
                 pattern, examples, ..
             } => {
                 let text = match stage {
                     AcquaintanceStage::Presentation => pattern.clone(),
-                    _ => grammar_training_front_text(pattern, examples),
+                    AcquaintanceStage::Training => grammar_training_front_text(pattern, examples),
+                    // Стадии без фронта — структурная тишина: контракт
+                    // «вид и текст согласованы» остаётся тотальным.
+                    AcquaintanceStage::Completed | AcquaintanceStage::Inactive => return None,
                 };
                 (!text.is_empty()).then_some((VoicedKind::FrontAlwaysVisible, text))
             },
