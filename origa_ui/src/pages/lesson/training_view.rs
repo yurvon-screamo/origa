@@ -2,7 +2,8 @@ use super::acquaintance_keyboard::{
     AcquaintanceKeyboardActions, create_acquaintance_keyboard_handler,
 };
 use super::acquaintance_state::{
-    AcquaintanceContext, AcquaintanceSlideData, resolve_audio_front, should_autoplay_word_audio,
+    AcquaintanceContext, AcquaintanceSlideData, AcquaintanceStage, VoicedKind, resolve_audio_front,
+    should_autoplay_word_audio,
 };
 use super::binary_rating_buttons::BinaryRatingButtons;
 use super::keyboard_handler::is_typing_target;
@@ -198,13 +199,15 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
     // Автозвук фронта — один на СМЕНУ карты: Memo по card_id
     // молчит при перезапусках рендер-замыкания с той же картой (запись
     // ответа, пересборка slides), звучит только новой карте. Озвучивается
-    // любой фронт Forward-подфазы: текстовый (слово на экране) и
-    // аудио-фронт (слово только звучит) — одинаково через speak_word,
-    // монета на автозвук не влияет. Reverse-фронт не звучит: слово
-    // прозвучит при раскрытии ответа (speak_reverse_answer).
-    // Тот же канал, что и автозвук обычного урока (speak_word): сначала
-    // CDN pitch-аудио файла, TTS — только fallback (юзер-репорт: в
-    // знакомстве звучал TTS вместо аудиофайла).
+    // текстовый фронт Forward-подфазы слова и фронт-пример грамматики —
+    // одинаково через speak_word, монета на автозвук не влияет.
+    // Reverse-гейт — защита в глубину: в Reverse-ротации только слова
+    // (rotation_candidates), и слово прозвучит при раскрытии ответа;
+    // фронт-пример грамматики одинаков в обеих подфазах, а до Reverse она
+    // физически не доживает (критерий несловесных закрывается до смены
+    // подфазы). Тот же канал, что и автозвук обычного урока (speak_word):
+    // сначала CDN pitch-аудио файла, TTS — только fallback (юзер-репорт:
+    // в знакомстве звучал TTS вместо аудиофайла).
     let autoplay_ctx = ctx_stored;
     Effect::new(move |_| {
         let card_id = current_id.get();
@@ -216,28 +219,28 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
             .state
             .with_untracked(|state| state.hand.as_ref().and_then(|h| h.subphase()))
             == Some(AcquaintanceSubphase::Reverse);
-        if reverse {
-            return;
-        }
-        let word = ctx
+        let audio = ctx
             .slides
             .get_untracked()
             .iter()
             .find(|slide| slide.card_id() == card_id)
-            .and_then(|slide| slide.word().map(str::to_string));
-        let Some(word) = word else {
+            .and_then(|slide| slide.audio(AcquaintanceStage::Training));
+        let Some((voiced, text)) = audio else {
             return;
         };
+        if reverse && voiced == VoicedKind::Word {
+            return;
+        }
         let muted = is_muted
             .as_ref()
             .map(|signal| signal.get_untracked())
             .unwrap_or(false);
         // Availability = pitch audio OR TTS (not TTS-only): in pitch-only
         // environments the audio front must still autoplay.
-        if !should_autoplay_word_audio(muted, word_audio_available(&word)) {
+        if !should_autoplay_word_audio(muted, word_audio_available(&text)) {
             return;
         }
-        speak_word(&word, 1.0);
+        speak_word(&text, 1.0);
     });
 
     // Текущая карта тренировки для тега типа в шапке: отдельный сигнал,
@@ -280,20 +283,24 @@ pub fn TrainingBody(ctx: AcquaintanceContext) -> impl IntoView {
                 }),
                 on_replay_audio: Box::new(move || {
                     // Явное действие пользователя: мьют не гейтит повтор
-                    // (безтекстовый фронт без звука нерешаем).
+                    // (безтекстовый фронт без звука нерешаем). Enter
+                    // назначен только аудио-фронтам слов (resolve_key_action),
+                    // здесь доходит лишь слово; текст фронта — единый
+                    // аксессор (слово или фронт-пример грамматики).
                     let card_id = current_id.get_untracked();
                     if card_id.is_nil() {
                         return;
                     }
                     let ctx = c.get_value();
-                    if let Some(word) = ctx
+                    if let Some(text) = ctx
                         .slides
                         .get_untracked()
                         .iter()
                         .find(|slide| slide.card_id() == card_id)
-                        .and_then(|slide| slide.word().map(str::to_string))
+                        .and_then(|slide| slide.audio(AcquaintanceStage::Training))
+                        .map(|(_, text)| text)
                     {
-                        speak_word(&word, 1.0);
+                        speak_word(&text, 1.0);
                     }
                 }),
             },

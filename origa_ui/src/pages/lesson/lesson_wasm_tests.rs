@@ -2602,6 +2602,7 @@ mod acquaintance_training_fronts {
     use crate::pages::lesson::acquaintance_state::{
         AcquaintanceContext, AcquaintanceSlideData, AcquaintanceStage, AcquaintanceState,
     };
+    use crate::pages::lesson::acquaintance_view::{AcquaintanceHeaderStrip, AcquaintanceView};
     use crate::pages::lesson::training_view::TrainingBody;
     use crate::ui_components::ReadingItem;
     use ulid::Ulid;
@@ -2952,6 +2953,72 @@ mod acquaintance_training_fronts {
         assert!(
             wrapper.query_selector(".front-dimmed").unwrap().is_none(),
             "фронт грамматики не приглушается на стороне ответа"
+        );
+    }
+
+    /// Озвучка грамматики в тренировке (юзер-репорт: карточка с примером
+    /// без озвучки): JP-строка фронта на экране и до, и после раскрытия —
+    /// кнопка шапки доступна в обоих состояниях. Рука без слов проходит
+    /// тренировку с subphase = None — видимость от подфазы не зависит.
+    #[wasm_bindgen_test]
+    async fn grammar_training_audio_button_visible_on_front_and_answer() {
+        // Arrange
+        let ctx = acq_context();
+        let card_id = Ulid::new();
+        ctx.state.update(|state| {
+            state.hand = Some(
+                origa::domain::AcquaintanceHand::new(vec![(
+                    card_id,
+                    origa::domain::CardType::Grammar,
+                )])
+                .unwrap(),
+            )
+        });
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～は～です".to_string(),
+            short_description: "утверждение с です".to_string(),
+            how_to_form: String::new(),
+            examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
+            explanation: String::new(),
+            nuances: String::new(),
+        }]);
+
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert: фронт — JP-пример на экране, кнопка озвучки доступна
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "фронт грамматики: JP-пример на экране — кнопка озвучки видна"
+        );
+
+        // Act: раскрыть ответ (кнопка и Space делят хендлер do_reveal)
+        wrapper
+            .query_selector("[data-testid=\"acquaintance-reveal-btn\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+            .click();
+        tick().await;
+
+        // Assert: пример остаётся на экране рядом с ответом — кнопка тоже
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "ответ грамматики: фронт-пример не скрыт — кнопка остаётся"
         );
     }
 
@@ -3567,6 +3634,46 @@ mod acquaintance_presentation {
                 .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
                 .unwrap()
                 .is_none()
+        );
+    }
+
+    /// Озвучка грамматики в показе (юзер-репорт: карточка с примером
+    /// без озвучки): паттерн — визуальный якорь слайда, доступен кнопкой
+    /// в ряду тегов так же, как слово у словарной карты.
+    #[wasm_bindgen_test]
+    async fn tags_row_audio_button_visible_on_grammar_slide() {
+        // Arrange
+        let ctx = acq_context(AcquaintanceStage::Presentation);
+        let card_id = Ulid::new();
+        ctx.state
+            .update(|state| state.hand = Some(hand_of(card_id, origa::domain::CardType::Grammar)));
+        ctx.slides.set(vec![AcquaintanceSlideData::Grammar {
+            card_id,
+            rule_id: Ulid::new(),
+            pattern: "～は～です".to_string(),
+            short_description: "утверждение с です".to_string(),
+            how_to_form: String::new(),
+            examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
+            explanation: String::new(),
+            nuances: String::new(),
+        }]);
+
+        // Act
+        let wrapper = create_wrapper();
+        let c2 = ctx.clone();
+        mount_with_i18n(&wrapper, move || {
+            provide_context(c2.clone());
+            view! { <div><AcquaintanceHeaderStrip /><AcquaintanceView /></div> }.into_any()
+        });
+        tick().await;
+
+        // Assert
+        assert!(
+            wrapper
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "кнопка озвучки паттерна в ряду тегов слайда грамматики"
         );
     }
 
