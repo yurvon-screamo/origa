@@ -14,7 +14,6 @@ use crate::feedback::{FeedbackCategory, FeedbackContext, FeedbackSource, Feedbac
 use crate::i18n::{t, use_i18n};
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
 use crate::repository::HybridUserRepository;
-use origa::use_cases::CreateVocabularyCardUseCase;
 
 /// The word a quick-add click creates a card for: the dictionary form
 /// (base_form) — the tokenizer guarantees a non-empty base for vocabulary
@@ -283,35 +282,21 @@ pub fn TranslatorText(
                                         // the sentence stays readable.
                                         expanded.set(None);
                                         spawn_local(async move {
-                                            // The precomputed render path
-                                            // shows tokens BEFORE the
-                                            // background tokenizer load
-                                            // finishes; from_text silently
-                                            // swallows TokenizerError, so
-                                            // an un-gated click would lose
-                                            // the word with zero signals.
-                                            // Gate first (the add_word_modal
-                                            // pattern).
-                                            if let Err(e) =
-                                                ensure_tokenizer_loaded().await
-                                            {
-                                                tracing::warn!(
-                                                    error = %e,
-                                                    word = %word,
-                                                    "tokenizer gate failed, word not added"
-                                                );
-                                                return;
-                                            }
-                                            let use_case = CreateVocabularyCardUseCase::new(
-                                                &repository,
-                                            );
-                                            // Skipped results (no
-                                            // translation / duplicate)
-                                            // are logged by the use
-                                            // case itself — the zero-
+                                            // The shared creation entry
+                                            // point (tokenizer gate + the
+                                            // domain use case). Skipped
+                                            // results (no translation /
+                                            // duplicate) are logged by
+                                            // the use case — the zero-
                                             // state UI (owner decision)
                                             // needs nothing here.
-                                            if let Err(e) = use_case.execute(word.clone()).await {
+                                            if let Err(e) =
+                                                crate::loaders::word_creation::add_word_to_deck(
+                                                    &repository,
+                                                    &word,
+                                                )
+                                                .await
+                                            {
                                                 tracing::warn!(
                                                     error = %e,
                                                     word = %word,
