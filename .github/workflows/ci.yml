@@ -404,11 +404,16 @@ jobs:
 
             - name: Run pytest
               # scripts/tests — the CDN tooling suites (including the media
-              # registry guards); translator/scripts — the judge calibration
-              # suite. Both are pure-python and need no system packages:
-              # the WeasyPrint import in build_jlpt_pdf.py is lazy, so the
-              # collection does not need pango/cairo.
-              run: uv run --project scripts pytest scripts/tests translator/scripts
+              # registry guards); translator/scripts/test_judge_calibration.py —
+              # the judge calibration suite. Both are pure-python and need no
+              # system packages: the WeasyPrint import in build_jlpt_pdf.py is
+              # lazy, so the collection does not need pango/cairo.
+              #
+              # The translator side is pinned to the explicit calibration
+              # module: sibling test_*.py files there are live-eval scripts
+              # (local LLM server, machine-specific data paths — #847) that
+              # crash collection on a runner and must not be picked up.
+              run: uv run --project scripts pytest scripts/tests translator/scripts/test_judge_calibration.py
 
     cdn-download:
         name: Download CDN
