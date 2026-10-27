@@ -41,7 +41,7 @@ pub use create_cards_from_analysis::{
 pub use create_grammar_card::CreateGrammarCardUseCase;
 pub use create_kanji_card::CreateKanjiCardUseCase;
 pub use create_phrase_card::CreatePhraseCardUseCase;
-pub use create_vocabulary_card::CreateVocabularyCardUseCase;
+pub use create_vocabulary_card::{CreateVocabularyCardResult, CreateVocabularyCardUseCase};
 pub use delete_card::DeleteCardUseCase;
 pub use extract_text_from_image::ExtractTextFromImageUseCase;
 pub use import_anki_pack::{

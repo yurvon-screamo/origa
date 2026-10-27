@@ -20,6 +20,7 @@ pub mod precache_loader;
 pub mod well_known_set_loader;
 #[cfg(target_arch = "wasm32")]
 pub mod whisper_model_loader;
+pub mod word_creation;
 
 pub use jft_cando_loader::JftCandoLoaderImpl;
 pub use jlpt_content_loader::{get_jlpt_content, recalculate_user_jlpt_progress};
