@@ -449,7 +449,8 @@ mod slide_audio_tests {
             how_to_form: String::new(),
             examples: examples.to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }
     }
 

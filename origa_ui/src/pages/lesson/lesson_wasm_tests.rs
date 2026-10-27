@@ -2986,7 +2986,8 @@ mod acquaintance_training_fronts {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         let wrapper = create_wrapper();
@@ -3660,7 +3661,8 @@ mod acquaintance_presentation {
             how_to_form: String::new(),
             examples: "```\n私は学生です。\nI am a student.\n```".to_string(),
             explanation: String::new(),
-            nuances: String::new(),
+            common_mistakes: Vec::new(),
+            notes: Vec::new(),
         }]);
 
         // Act
