@@ -146,6 +146,17 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         viewports: DEFAULT_VIEWPORTS,
         preset: "with-word",
     },
+    "lesson-review-body": {
+        id: "lesson-review-body",
+        title: "Тело повторения урока (due-профиль)",
+        route: "/lesson",
+        locale: "ru-RU",
+        // Desktop only: each capture is also examined by the local model
+        // (~a minute per screen on CPU), and the 20-minute test budget
+        // does not fit two viewports of a six-card walk.
+        viewports: ["desktop"],
+        preset: "due-corpus",
+    },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {

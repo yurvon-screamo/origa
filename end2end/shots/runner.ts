@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { detectCdnBaseUrl } from "./bundle.ts";
 import { createSink } from "./capture.ts";
+import type { Examiner } from "./examiner/examine.ts";
 import type { ShotEntry, ShotManifest } from "./manifest.ts";
 import { openShotSession } from "./session.ts";
 import { getImplementation } from "./scenarios/index.ts";
@@ -19,6 +20,8 @@ export interface RunOptions {
     viewports?: ViewportTag[];
     locale?: string;
     baseURL?: string;
+    /** Examines every captured screen with the d3 decision model when set. */
+    examiner?: Examiner;
 }
 
 /**
@@ -54,6 +57,7 @@ export async function runScenario(
                 baseURL,
                 cdnBaseUrl,
                 commit: options.commit,
+                examiner: options.examiner,
             });
             await scenario.run({ page: session.page, context: session.context, baseURL, locale, viewport }, sink);
             entries.push(...sink.entries);

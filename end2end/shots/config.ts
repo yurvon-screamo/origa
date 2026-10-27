@@ -26,8 +26,23 @@ export const SERVE_MODE: ServeMode = process.env.CI ? "dist" : "build";
 /** Production CDN endpoint — read-only, safe as a content source. */
 export const DEFAULT_PROD_CDN_URL = "https://s3.origa.uwuwu.net";
 
-/** Port the local corpus server listens on (the app points at it). */
-export const LOCAL_CDN_PORT = 8080;
+/**
+ * Port the local corpus server listens on.
+ *
+ * Overridable (`E2E_CDN_PORT`): a developer machine may run its own
+ * service on 8080 (a local llama-server, say) — Playwright would then
+ * "reuse" that stranger as its CDN server and the app would download
+ * its dictionaries from it.
+ */
+export const LOCAL_CDN_PORT = parsePort("E2E_CDN_PORT", process.env.E2E_CDN_PORT ?? 8080);
+
+function parsePort(name: string, raw: string | number): number {
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value <= 0 || value > 65535) {
+        throw new Error(`${name} должно быть целым портом 1..65535, получено: "${raw}"`);
+    }
+    return value;
+}
 
 /** Port the app is served on. */
 export const APP_PORT = 1420;

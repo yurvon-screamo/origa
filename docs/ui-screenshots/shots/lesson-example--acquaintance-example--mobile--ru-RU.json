@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-example",
+  "screen": "acquaintance-example",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 123321,
+  "sha256": "688aa3fcd8539e4b3f4aaf4559a4181291f92230fb611301017fc51de22b6892",
+  "capturedAt": "2026-10-25T17:17:45.342Z",
+  "commit": "73ae147e32e10892ddff4bf288a0bf83eb9a163f",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--mobile-688aa3fc.png",
+  "uploadedSha256": "688aa3fcd8539e4b3f4aaf4559a4181291f92230fb611301017fc51de22b6892",
+  "uploadedAt": "2026-10-25T17:22:28.176Z"
+}

@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { listOllamaModels } from "./examiner/d3.ts";
 import {
     APP_PORT,
     LOCAL_CDN_PORT,
@@ -43,6 +44,12 @@ export interface PreflightFacts {
     /** The e2e stack has the admin password of the fixture. */
     adminPasswordConfigured: boolean;
     outDirInsideRepo: boolean;
+    /** The run examines captures with d3; null facts mean Ollama is unreachable. */
+    examinerEnabled: boolean;
+    examModelTag: string;
+    ollamaUrl: string;
+    /** `null` — Ollama unreachable (an error when the run examines). */
+    ollamaModels: string[] | null;
 }
 
 export interface PreflightReport {
@@ -61,6 +68,9 @@ export interface PreflightOptions {
     cdnSource: CdnSource;
     outDir: string;
     upload: boolean;
+    examine: boolean;
+    examModelTag: string;
+    ollamaUrl: string;
 }
 
 /**
@@ -79,6 +89,7 @@ export function evaluatePreflight(facts: PreflightFacts): PreflightReport {
     warnings.push(...checkPorts(facts));
     errors.push(...checkUpload(facts));
     errors.push(...checkOutput(facts));
+    errors.push(...checkExaminer(facts));
 
     return { errors, warnings, info: describe(facts) };
 }
@@ -185,6 +196,25 @@ function checkOutput(facts: PreflightFacts): string[] {
     ];
 }
 
+/**
+ * The exam needs a local Ollama with the decision model pulled.
+ *
+ * A missing model or a dead Ollama must fail the run before a pixel is
+ * written: a silent skip would look like «no defects found».
+ */
+function checkExaminer(facts: PreflightFacts): string[] {
+    if (!facts.examinerEnabled) return [];
+    if (facts.ollamaModels === null) {
+        return [
+            `Ollama недоступен по ${facts.ollamaUrl} — прогон --examine невозможен (ollama serve)`,
+        ];
+    }
+    if (!facts.ollamaModels.includes(facts.examModelTag)) {
+        return [`модель ${facts.examModelTag} не скачана — выполните ollama pull ${facts.examModelTag}`];
+    }
+    return [];
+}
+
 /** Collects the facts and evaluates them. */
 export async function runPreflight(options: PreflightOptions): Promise<PreflightReport> {
     const { cdnSource } = options;
@@ -197,6 +227,12 @@ export async function runPreflight(options: PreflightOptions): Promise<Preflight
     const listeners = (
         await Promise.all([APP_PORT, LOCAL_CDN_PORT, TRAILBASE_PORT].map((port) => listListeners(port)))
     ).flat();
+
+    // A dead Ollama is only an error when the run examines; the probe
+    // still reports null so the verdicts stay pure and testable.
+    const ollamaModels = options.examine
+        ? await listOllamaModels(options.ollamaUrl).catch(() => null)
+        : null;
 
     const facts: PreflightFacts = {
         serveMode: options.serveMode,
@@ -217,6 +253,10 @@ export async function runPreflight(options: PreflightOptions): Promise<Preflight
         trailBaseUrlConfigured: Boolean(process.env.TRAILBASE_URL),
         adminPasswordConfigured: Boolean(process.env.ORIGA_ADMIN_PASSWORD),
         outDirInsideRepo: isInside(options.outDir, options.repoRoot),
+        examinerEnabled: options.examine,
+        examModelTag: options.examModelTag,
+        ollamaUrl: options.ollamaUrl,
+        ollamaModels,
     };
 
     return evaluatePreflight(facts);
