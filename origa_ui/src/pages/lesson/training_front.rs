@@ -1,7 +1,7 @@
 use super::acquaintance_state::{AcquaintanceContext, AcquaintanceSlideData};
-use super::grammar_example::grammar_example_front;
+use super::grammar_example::grammar_training_front_text;
 use crate::i18n::*;
-use crate::ui_components::{FuriganaText, TranslatorText, speak_word, strip_emphasis_markers};
+use crate::ui_components::{FuriganaText, TranslatorText, speak_word};
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use origa::domain::NativeLanguage;
@@ -134,12 +134,10 @@ pub(super) fn TrainingFrontSlide(
                         // Пустые examples — фронт вырождается в заголовок
                         // конструкции («знак» правила, не смысл).
                         // TranslatorText — тот же компонент, что во фразах:
-                        // фуригана на токенах и словарные попапы; маркеры
-                        // emphasis из examples зачищаются (плоский текст
-                        // фронта их не рендерит).
-                        let front = grammar_example_front(&examples)
-                            .map(|line| strip_emphasis_markers(&line))
-                            .unwrap_or_else(|| pattern.clone());
+                        // фуригана на токенах и словарные попапы. Текст —
+                        // единый источник фронта: озвучка карты звучит
+                        // ровно то, что здесь рендерится.
+                        let front = grammar_training_front_text(&pattern, &examples);
                         let native_lang: Signal<NativeLanguage> = ctx.native_language.into();
                         let front_class = "font-serif text-3xl text-[var(--fg-black)] leading-relaxed";
                         view! {

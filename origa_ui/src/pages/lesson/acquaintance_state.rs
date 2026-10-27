@@ -5,6 +5,7 @@ use origa::use_cases::CompleteAcquaintanceHandUseCase;
 use std::collections::HashSet;
 use ulid::Ulid;
 
+use super::grammar_example::grammar_training_front_text;
 use super::kanji_card_details::RadicalDisplay;
 use crate::ui_components::ReadingItem;
 
@@ -26,6 +27,20 @@ pub fn resolve_audio_front(
     audio_available: bool,
 ) -> bool {
     is_word && subphase == Some(AcquaintanceSubphase::Forward) && roll && audio_available
+}
+
+/// Вид озвучиваемой карты: управляет видимостью кнопки озвучки в
+/// тренировке. У слова японская сторона может скрываться фронтом
+/// (Reverse, аудио-фронт Forward — кнопка подсказывала бы ответ голосом);
+/// у грамматики JP-строка фронта (пример/паттерн) видна в любой подфазе
+/// и на ответе. Кандзи и счётные суффиксы беззвучны (#808) — до вида не
+/// доходят: [`AcquaintanceSlideData::audio`] даёт для них `None`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VoicedKind {
+    /// Слово: JP-сторону скрывают Reverse-фронт и аудио-фронт Forward.
+    Word,
+    /// Грамматика: JP-строка фронта на экране всегда.
+    FrontAlwaysVisible,
 }
 
 /// Стадии руки знакомства на странице урока (docs/acquaintance-mode.md):
@@ -66,29 +81,39 @@ pub fn should_autoplay_word_audio(is_muted: bool, speech_supported: bool) -> boo
 }
 
 /// Видимость кнопки озвучки в шапке руки: кнопка озвучивает японскую
-/// сторону слова — она доступна, только когда JP не подсказывает ответ.
-/// Reverse-фронт показывает перевод (JP скрыта) — кнопка появляется
-/// только на ответе. Аудио-фронт Forward-подфазы прячет JP до раскрытия;
-/// на стороне ответа слово уже на экране — кнопка видна, повтор из тела
-/// фронта убран (дубль афордансов). Несловесные карты озвучивать нечем.
+/// строку текущей карты — доступна, только когда JP на экране.
+/// `voiced = None` (кандзи/счётные — беззвучные карты) прячет кнопку
+/// целиком. Word: Reverse-фронт показывает перевод, аудио-фронт Forward
+/// прячет JP до раскрытия — кнопку не показывать (подсказка голосом);
+/// на стороне ответа JP видна — кнопка возвращается. FrontAlwaysVisible
+/// (грамматика): JP-строка фронта на экране в любой подфазе и на ответе —
+/// кнопка видна всегда (в том числе при `subphase = None` — рука без слов,
+/// грамматика проходит её насквозь; монета аудио-фронтов несловесным картам
+/// не выпадает — инвариант `resolve_audio_front`, поэтому audio_front
+/// фронтовидом не гейтится).
 pub fn audio_button_visible(
     stage: AcquaintanceStage,
     subphase: Option<AcquaintanceSubphase>,
     audio_front: bool,
     showing_answer: bool,
-    is_word: bool,
+    voiced: Option<VoicedKind>,
 ) -> bool {
-    if !is_word {
+    let Some(kind) = voiced else {
         return false;
-    }
+    };
     match stage {
+        // Показ: японская строка (слово/паттерн) всегда на экране.
         AcquaintanceStage::Presentation => true,
-        AcquaintanceStage::Training => match subphase {
-            Some(AcquaintanceSubphase::Reverse) => showing_answer,
-            Some(AcquaintanceSubphase::Forward) => !audio_front || showing_answer,
-            // Рука без подфаз не содержит слов: ветка недостижима при
-            // is_word = true, значение сохранено из прежней логики.
-            None => true,
+        AcquaintanceStage::Training => match kind {
+            VoicedKind::FrontAlwaysVisible => true,
+            VoicedKind::Word => match subphase {
+                Some(AcquaintanceSubphase::Reverse) => showing_answer,
+                Some(AcquaintanceSubphase::Forward) => !audio_front || showing_answer,
+                // Рука без подфаз не содержит слов: ветка недостижима при
+                // kind = Word (подфаза None только у рук без слов — см.
+                // AcquaintanceHand::new), значение сохранено из прежней логики.
+                None => true,
+            },
         },
         AcquaintanceStage::Completed | AcquaintanceStage::Inactive => false,
     }
@@ -189,6 +214,34 @@ impl AcquaintanceSlideData {
         }
     }
 
+    /// Озвучка слайда на данном этапе руки: вид (управляет видимостью
+    /// кнопки в тренировке) и японская строка. Единый аксессор — вид и
+    /// текст согласованы структурно: кнопка не может остаться без текста
+    /// или появиться у беззвучной карты.
+    ///
+    /// Vocabulary: слово на обоих этапах. Grammar: показ — паттерн
+    /// (визуальный якорь слайда, паритет с обычным уроком, где вопрос
+    /// грамматической карты = паттерн), тренировка — текст фронта
+    /// (`grammar_training_front_text`, ровно то, что рендерится).
+    /// Кандзи и счётный суффикс беззвучны (#808). Пустые данные
+    /// деградируют в тишину: pattern построен с `unwrap_or_default`,
+    /// examples бывают пустыми.
+    pub fn audio(&self, stage: AcquaintanceStage) -> Option<(VoicedKind, String)> {
+        match self {
+            Self::Vocabulary { word, .. } => Some((VoicedKind::Word, word.clone())),
+            Self::Grammar {
+                pattern, examples, ..
+            } => {
+                let text = match stage {
+                    AcquaintanceStage::Presentation => pattern.clone(),
+                    _ => grammar_training_front_text(pattern, examples),
+                };
+                (!text.is_empty()).then_some((VoicedKind::FrontAlwaysVisible, text))
+            },
+            Self::Kanji { .. } | Self::Counter { .. } => None,
+        }
+    }
+
     /// Часть речи слайда слова — тег в шапке.
     pub fn pos_label(&self) -> Option<&str> {
         match self {
@@ -286,7 +339,9 @@ impl AcquaintanceContext {
 mod audio_button_visible_tests {
     use super::*;
 
-    const WORD: bool = true;
+    const WORD: Option<VoicedKind> = Some(VoicedKind::Word);
+    const GRAMMAR: Option<VoicedKind> = Some(VoicedKind::FrontAlwaysVisible);
+    const SILENT: Option<VoicedKind> = None;
 
     #[rstest::rstest]
     #[case::presentation(true, None, false, false)]
@@ -321,20 +376,177 @@ mod audio_button_visible_tests {
         );
     }
 
+    /// Грамматика: JP-строка фронта (пример/паттерн) на экране в любой
+    /// подфазе и на ответе — кнопка видна всегда. Рука без слов (только
+    /// кандзи/грамматика) проходит тренировку с subphase = None — тот же
+    /// «всегда видна». Монета аудио-фронтов несловесным картам не
+    /// выпадает (инвариант resolve_audio_front), поэтому audio_front не
+    /// гейтит вид.
     #[rstest::rstest]
-    #[case::presentation_word(AcquaintanceStage::Presentation, true, true)]
-    #[case::presentation_non_word(AcquaintanceStage::Presentation, false, false)]
-    #[case::inactive_word(AcquaintanceStage::Inactive, true, false)]
-    #[case::completed_word(AcquaintanceStage::Completed, true, false)]
+    #[case::forward_front(true, Some(AcquaintanceSubphase::Forward), false, false)]
+    #[case::forward_answer(true, Some(AcquaintanceSubphase::Forward), false, true)]
+    #[case::reverse_front(true, Some(AcquaintanceSubphase::Reverse), false, false)]
+    #[case::reverse_answer(true, Some(AcquaintanceSubphase::Reverse), false, true)]
+    #[case::wordless_hand_no_subphase(true, None, false, false)]
+    #[case::audio_front_flag_ignored(true, Some(AcquaintanceSubphase::Forward), true, false)]
+    fn grammar_front_is_always_visible(
+        #[case] expected: bool,
+        #[case] subphase: Option<AcquaintanceSubphase>,
+        #[case] audio_front: bool,
+        #[case] showing_answer: bool,
+    ) {
+        assert_eq!(
+            audio_button_visible(
+                AcquaintanceStage::Training,
+                subphase,
+                audio_front,
+                showing_answer,
+                GRAMMAR,
+            ),
+            expected
+        );
+    }
+
+    #[rstest::rstest]
+    #[case::presentation_word(AcquaintanceStage::Presentation, WORD, true)]
+    #[case::presentation_silent(AcquaintanceStage::Presentation, SILENT, false)]
+    #[case::inactive_word(AcquaintanceStage::Inactive, WORD, false)]
+    #[case::completed_word(AcquaintanceStage::Completed, WORD, false)]
+    #[case::completed_grammar(AcquaintanceStage::Completed, GRAMMAR, false)]
     fn non_training_stages(
         #[case] stage: AcquaintanceStage,
-        #[case] is_word: bool,
+        #[case] voiced: Option<VoicedKind>,
         #[case] expected: bool,
     ) {
         assert_eq!(
-            audio_button_visible(stage, None, false, false, is_word),
+            audio_button_visible(stage, None, false, false, voiced),
             expected
         );
+    }
+}
+
+#[cfg(test)]
+mod slide_audio_tests {
+    use super::*;
+
+    fn grammar_slide(pattern: &str, examples: &str) -> AcquaintanceSlideData {
+        AcquaintanceSlideData::Grammar {
+            card_id: Ulid::new(),
+            rule_id: Ulid::new(),
+            pattern: pattern.to_string(),
+            short_description: String::new(),
+            how_to_form: String::new(),
+            examples: examples.to_string(),
+            explanation: String::new(),
+            nuances: String::new(),
+        }
+    }
+
+    fn vocab_slide(word: &str) -> AcquaintanceSlideData {
+        AcquaintanceSlideData::Vocabulary {
+            card_id: Ulid::new(),
+            word: word.to_string(),
+            pos_label: None,
+            translations: vec!["читать".to_string()],
+        }
+    }
+
+    /// Вид и текст согласованы структурно (единый аксессор): матрица
+    /// фиксирует пару (kind, text) для каждого слайда и этапа.
+    #[rstest::rstest]
+    #[case::vocab_presentation(
+        AcquaintanceStage::Presentation,
+        Some((VoicedKind::Word, "読む".to_string()))
+    )]
+    #[case::vocab_training(
+        AcquaintanceStage::Training,
+        Some((VoicedKind::Word, "読む".to_string()))
+    )]
+    fn vocabulary_sounds_the_word_on_both_stages(
+        #[case] stage: AcquaintanceStage,
+        #[case] expected: Option<(VoicedKind, String)>,
+    ) {
+        // Arrange / Act / Assert
+        assert_eq!(vocab_slide("読む").audio(stage), expected);
+    }
+
+    #[test]
+    fn grammar_presentation_sounds_the_pattern() {
+        // Arrange / Act / Assert
+        assert_eq!(
+            grammar_slide("～は～です", "```\n私は学生です。\nI am a student.\n```")
+                .audio(AcquaintanceStage::Presentation),
+            Some((VoicedKind::FrontAlwaysVisible, "～は～です".to_string()))
+        );
+    }
+
+    #[test]
+    fn grammar_training_sounds_the_rendered_front_text() {
+        // Arrange: фронт тренировки — JP-строка первого примера без
+        // emphasis-маркеров; озвучка обязана совпадать с рендером
+        // Act / Assert
+        assert_eq!(
+            grammar_slide(
+                "～は～です",
+                "```\n彼は**学生**です。\nHe is a student.\n```"
+            )
+            .audio(AcquaintanceStage::Training),
+            Some((VoicedKind::FrontAlwaysVisible, "彼は学生です。".to_string()))
+        );
+    }
+
+    #[test]
+    fn grammar_training_without_examples_falls_back_to_pattern() {
+        // Arrange / Act / Assert
+        assert_eq!(
+            grammar_slide("～たことがある", "").audio(AcquaintanceStage::Training),
+            Some((VoicedKind::FrontAlwaysVisible, "～たことがある".to_string()))
+        );
+    }
+
+    #[rstest::rstest]
+    #[case::empty_pattern_presentation(AcquaintanceStage::Presentation)]
+    #[case::empty_everything_training(AcquaintanceStage::Training)]
+    fn grammar_with_no_speakable_text_is_silent(#[case] stage: AcquaintanceStage) {
+        // Arrange: pattern построен с unwrap_or_default, examples бывают
+        // пустыми — пустая строка деградирует в тишину
+        // Act / Assert
+        assert_eq!(grammar_slide("", "").audio(stage), None);
+    }
+
+    /// Кандзи и счётный суффикс беззвучны на обоих этапах (#808): у
+    /// голого знака нет единственного чтения.
+    #[rstest::rstest]
+    #[case::kanji_presentation(kanji_slide(), AcquaintanceStage::Presentation)]
+    #[case::kanji_training(kanji_slide(), AcquaintanceStage::Training)]
+    #[case::counter_presentation(counter_slide(), AcquaintanceStage::Presentation)]
+    #[case::counter_training(counter_slide(), AcquaintanceStage::Training)]
+    fn non_word_cards_are_silent(
+        #[case] slide: AcquaintanceSlideData,
+        #[case] stage: AcquaintanceStage,
+    ) {
+        assert_eq!(slide.audio(stage), None);
+    }
+
+    fn kanji_slide() -> AcquaintanceSlideData {
+        AcquaintanceSlideData::Kanji {
+            card_id: Ulid::new(),
+            kanji: "読".to_string(),
+            name: "читать".to_string(),
+            radicals: None,
+            example_words: None,
+            on_readings: None,
+            kun_readings: None,
+        }
+    }
+
+    fn counter_slide() -> AcquaintanceSlideData {
+        AcquaintanceSlideData::Counter {
+            card_id: Ulid::new(),
+            suffix: "枚".to_string(),
+            meaning: "плоские предметы".to_string(),
+            table: Vec::new(),
+        }
     }
 }
 

@@ -11,6 +11,10 @@ import type { ShotScenario } from "../scenario.ts";
  * criterion. The walk reveals every answer and keeps the one with the
  * grammar details toggle — the «Подробнее» trigger that issue #822
  * centered (it used to be pinned left by a text-left wrapper).
+ *
+ * 8KdX3bW3dt: the grammar cards are voiced now (header audio button in
+ * the presentation and in the training), so the walk also keeps the
+ * grammar presentation slide with its button.
  */
 export const lessonAcquaintanceGrammarScenario: ShotScenario = {
     ...descriptors["lesson-acquaintance-grammar"],
@@ -24,12 +28,28 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
 
         // Presentation → «Дальше» until the training takes over.
         const next = page.getByTestId("acquaintance-next-btn");
+        let presentationShot = false;
         for (let index = 0; index < 12; index++) {
             const training = await page
                 .getByTestId("acquaintance-training")
                 .isVisible({ timeout: 1_000 })
                 .catch(() => false);
             if (training) break;
+            // The grammar slide carries the header audio button since
+            // 8KdX3bW3dt (autoplay + replay of the pattern): capture it
+            // when the hand shows it. Optional — the mandatory artifact
+            // of this scenario is the grammar answer below.
+            if (
+                !presentationShot &&
+                (await page
+                    .getByTestId("acquaintance-grammar-slide")
+                    .isVisible()
+                    .catch(() => false))
+            ) {
+                await page.waitForTimeout(700);
+                await sink.shot("grammar-presentation");
+                presentationShot = true;
+            }
             await next.click({ timeout: 2_000 }).catch(() => undefined);
             await page.waitForTimeout(500);
         }
