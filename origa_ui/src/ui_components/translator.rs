@@ -13,6 +13,8 @@ use origa::domain::{
 use crate::feedback::{FeedbackCategory, FeedbackContext, FeedbackSource, FeedbackSubject};
 use crate::i18n::{t, use_i18n};
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
+use crate::repository::HybridUserRepository;
+use origa::use_cases::CreateVocabularyCardUseCase;
 
 /// The word a quick-add click creates a card for: the dictionary form
 /// (base_form) — the tokenizer guarantees a non-empty base for vocabulary
@@ -82,7 +84,7 @@ pub fn TranslatorText(
     // Quick-add (#528+): repository comes from the app shell like
     // FeedbackContext — isolated component mounts see no add button.
     // StoredValue (Copy) keeps the per-token `children` closure Fn-safe.
-    let repository = StoredValue::new(use_context::<crate::repository::HybridUserRepository>());
+    let repository = StoredValue::new(use_context::<HybridUserRepository>());
     // StoredValue (Copy) so the per-token `children` closure can capture it
     // without moving the String out of the root children closure (Fn bound).
     let source_line = StoredValue::new(text.clone());
@@ -268,9 +270,10 @@ pub fn TranslatorText(
                         // added/duplicate states — the use case dedups,
                         // a double click is a harmless skip.
                         let on_add_word = repository.with_value(|repo| {
-                            (repo.is_some() && token.pos.is_vocabulary_word())
-                                .then(|| {
-                                    let repository = repo.clone().unwrap();
+                            repo.as_ref()
+                                .filter(|_| token.pos.is_vocabulary_word())
+                                .map(|repo| {
+                                    let repository = repo.clone();
                                     let target = add_word_target(&base_form, &surface);
                                     Callback::new(move |()| {
                                         let repository = repository.clone();
@@ -299,38 +302,21 @@ pub fn TranslatorText(
                                                 );
                                                 return;
                                             }
-                                            let use_case = origa::use_cases::CreateVocabularyCardUseCase::new(
+                                            let use_case = CreateVocabularyCardUseCase::new(
                                                 &repository,
                                             );
-                                            match use_case.execute(word.clone()).await {
-                                                Ok(result) => {
-                                                    // Zero-state UI (owner
-                                                    // decision); skipped
-                                                    // results are still
-                                                    // worth a trace — the
-                                                    // interjection/masu-stem
-                                                    // class resolves
-                                                    // differently in
-                                                    // from_text than in the
-                                                    // popup lookup.
-                                                    if !result.skipped_no_translation.is_empty() {
-                                                        tracing::warn!(
-                                                            word = %word,
-                                                            "word skipped: no dictionary translation"
-                                                        );
-                                                    }
-                                                    if !result.skipped_duplicates.is_empty() {
-                                                        tracing::debug!(
-                                                            word = %word,
-                                                            "word skipped: already in deck"
-                                                        );
-                                                    }
-                                                },
-                                                Err(e) => tracing::warn!(
+                                            // Skipped results (no
+                                            // translation / duplicate)
+                                            // are logged by the use
+                                            // case itself — the zero-
+                                            // state UI (owner decision)
+                                            // needs nothing here.
+                                            if let Err(e) = use_case.execute(word.clone()).await {
+                                                tracing::warn!(
                                                     error = %e,
                                                     word = %word,
                                                     "quick-add card creation failed"
-                                                ),
+                                                );
                                             }
                                         });
                                     })

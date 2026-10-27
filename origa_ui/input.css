@@ -2088,6 +2088,8 @@ rt {
     margin: 12px -4px 0;
 }
 
+/* Quick-add and report share the popup action style (#528+). */
+.token-popup-report,
 .token-popup-add {
     font-family: var(--font-mono);
     font-size: var(--text-label-sm);
@@ -2104,33 +2106,15 @@ rt {
     transition: color 0.2s ease;
 }
 
+.token-popup-report:hover,
 .token-popup-add:hover {
-    color: var(--fg-default);
-}
-
-.token-popup-report {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    background: none;
-    border: none;
-    padding: 8px 4px;
-    margin-top: 4px;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.token-popup-report:hover {
     color: var(--fg-black);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
 
-.token-popup-report:active {
+.token-popup-report:active,
+.token-popup-add:active {
     transform: translateY(1px);
 }
 
