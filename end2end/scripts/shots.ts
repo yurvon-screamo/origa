@@ -23,6 +23,8 @@ import { config as loadDotenv } from "dotenv";
 
 import { listDescriptors } from "../shots/catalog.ts";
 import { SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
+import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
+import { collectFindings, collectUnanswered, renderIssueDraft, renderReport } from "../shots/examiner/report.ts";
 import { renderIndex } from "../shots/index.ts";
 import type { ShotEntry, ShotManifest } from "../shots/manifest.ts";
 import { runPreflight } from "../shots/preflight.ts";
@@ -52,6 +54,12 @@ interface Options {
     baseUrl?: string;
     /** Skip the registry update (a throwaway capture). */
     registry: boolean;
+    /** Examine every captured screen with the local d3 decision model. */
+    examine: boolean;
+    /** d3 model tag the exam runs on. */
+    examModel: string;
+    /** File a GitHub issue per finding (requires --upload for evidence links). */
+    fileIssues: boolean;
 }
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
@@ -104,6 +112,9 @@ function parseOptions(argv: string[]): Options {
         upload: flags.has("upload"),
         baseUrl: last("base-url"),
         registry: !flags.has("no-registry"),
+        examine: flags.has("examine"),
+        examModel: last("exam-model") ?? process.env.OLLAMA_MODEL ?? "d3:2b",
+        fileIssues: flags.has("file-issues"),
     };
 }
 
@@ -135,7 +146,12 @@ async function captureCommand(options: Options): Promise<number> {
         console.error(`Неизвестные сценарии: ${unknown.join(", ")}. Известные: ${[...known].join(", ")}`);
         return 1;
     }
+    if (options.fileIssues && !options.upload) {
+        console.error("--file-issues требует --upload: ишью нужна публичная ссылка на скрин из CDN");
+        return 1;
+    }
 
+    const ollamaUrl = process.env.OLLAMA_URL ?? "http://localhost:11434";
     const cdnSource = resolveCdnSource();
     const appBaseUrl = options.baseUrl ?? process.env.E2E_APP_BASE_URL ?? DEFAULT_APP_BASE_URL;
     const report = await runPreflight({
@@ -148,6 +164,9 @@ async function captureCommand(options: Options): Promise<number> {
         cdnSource,
         outDir: options.out,
         upload: options.upload,
+        examine: options.examine,
+        examModelTag: options.examModel,
+        ollamaUrl,
     });
 
     for (const line of report.info) console.log(`  ${line}`);
@@ -158,7 +177,13 @@ async function captureCommand(options: Options): Promise<number> {
     }
 
     await mkdir(options.out, { recursive: true });
-    const exitCode = await runDriver(options, appBaseUrl, cdnSource.baseUrl);
+    if (options.examine) {
+        // The trace appends while the manifest overwrites: without the
+        // reset a re-run with the same label would resurrect the
+        // previous run's findings in the report and in --file-issues.
+        await resetExamTraces(options.out, options.scenario);
+    }
+    const exitCode = await runDriver(options, appBaseUrl, cdnSource.baseUrl, ollamaUrl);
     if (exitCode !== 0) return exitCode;
 
     const entries = await readManifestEntries(options.out);
@@ -198,7 +223,111 @@ async function captureCommand(options: Options): Promise<number> {
             console.log(`  ${entry.file}`);
         }
     }
+
+    if (options.examine) {
+        const examExit = await examReportCommand(options, uploads, entries);
+        if (examExit !== 0) return examExit;
+    }
     return 0;
+}
+
+/** Renders the exam report, prints the summary and files issues when asked. */
+async function examReportCommand(
+    options: Options,
+    uploads: Map<string, UploadInfo>,
+    entries: ShotEntry[],
+): Promise<number> {
+    const records = await readExamRecords(options.out);
+    if (records.length === 0) {
+        console.error("Экзамен включён, но трейс пуст — ни один снятый экран не входит в тест-модель (shots/examiner/model.json)");
+        return 1;
+    }
+    // A typo in a model.json key silently skips a screen; showing the
+    // coverage makes the skip visible without failing the run.
+    const skipped = entries.length - records.length;
+    if (skipped > 0) {
+        console.warn(`  ! ${skipped} снимок(ков) вне тест-модели — не экзаменованы (см. shots/examiner/model.json)`);
+    }
+    const markdown = renderReport(records, { label: options.label, modelTag: options.examModel });
+    const reportPath = join(options.out, "exam-report.md");
+    await writeFile(reportPath, markdown, "utf-8");
+
+    const findings = collectFindings(records);
+    const errors = records.filter((record) => record.error !== null);
+    const unanswered = collectUnanswered(records);
+    const overflow = records.filter((record) => record.contextOverflow);
+    console.log(`\nЭкзамен: экранов ${records.length}, находок ${findings.length}, ошибок ${errors.length}, вопросов без ответа ${unanswered.length}`);
+    for (const finding of findings) {
+        console.log(
+            `  ⚑ ${finding.scenario}/${finding.screen} [${finding.viewport}] ${finding.questionLabel} (p=${finding.pTrue.toFixed(3)})`,
+        );
+    }
+    for (const item of unanswered) {
+        console.error(`  ✗ ${item.scenario}/${item.screen} [${item.viewport}]: модель не ответила на «${item.questionLabel}»`);
+    }
+    for (const record of errors) {
+        console.error(`  ✗ экзамен ${record.screen.scenario}/${record.screen.screen} упал: ${record.error}`);
+    }
+    if (overflow.length > 0) {
+        console.warn(`  ! ${overflow.length} экран(ов) близки к лимиту контекста модели — см. отчёт`);
+    }
+    console.log(`Отчёт: ${reportPath}`);
+
+    if (options.fileIssues) {
+        const filed = await fileFindings(findings, uploads, options.label);
+        console.log(`Ишью: создано ${filed.created}, пропущено как дубли ${filed.skipped}`);
+    }
+
+    // Model errors and unanswered questions are tool failures, not
+    // defects — fail the run loudly (the captures survive).
+    return errors.length > 0 || unanswered.length > 0 ? 1 : 0;
+}
+
+interface FiledCount {
+    created: number;
+    skipped: number;
+}
+
+/** Files one issue per finding unless its fingerprint is already open. */
+async function fileFindings(
+    findings: ReturnType<typeof collectFindings>,
+    uploads: Map<string, UploadInfo>,
+    label: string,
+): Promise<FiledCount> {
+    let open: Set<string>;
+    try {
+        const { stdout } = await run(
+            "gh",
+            ["issue", "list", "--state", "open", "--label", "ai-manual-test", "--json", "body", "--limit", "500"],
+            { timeout: 30_000 },
+        );
+        open = new Set([...stdout.matchAll(/fingerprint: ([0-9a-f]{16})/g)].map((match) => match[1]));
+    } catch (error) {
+        throw new Error(
+            `gh недоступен — нельзя проверить открытые ишью: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error },
+        );
+    }
+
+    const result: FiledCount = { created: 0, skipped: 0 };
+    for (const finding of findings) {
+        if (open.has(finding.fingerprint)) {
+            result.skipped += 1;
+            continue;
+        }
+        const evidence = uploads.get(finding.imageFile);
+        if (!evidence) {
+            throw new Error(`нет загруженного евиденса для ${finding.imageFile} — ишью без скрина не создаём`);
+        }
+        const draft = renderIssueDraft(finding, evidence.url, label);
+        await run(
+            "gh",
+            ["issue", "create", "--title", draft.title, "--body", draft.body, "--label", "ai-manual-test"],
+            { timeout: 30_000 },
+        );
+        result.created += 1;
+    }
+    return result;
 }
 
 /** Regenerates the human-readable index from the registry. */
@@ -218,7 +347,12 @@ async function writeIndex(directory: string, entries: RegistryShot[]): Promise<v
 }
 
 /** Runs the Playwright driver that owns the browser session. */
-async function runDriver(options: Options, appBaseUrl: string, cdnBaseUrl: string): Promise<number> {
+async function runDriver(
+    options: Options,
+    appBaseUrl: string,
+    cdnBaseUrl: string,
+    ollamaUrl: string,
+): Promise<number> {
     const binary = join(
         end2endRoot,
         "node_modules",
@@ -241,6 +375,13 @@ async function runDriver(options: Options, appBaseUrl: string, cdnBaseUrl: strin
                 SHOT_CDN_BASE_URL: cdnBaseUrl,
                 SHOT_COMMIT: headCommit(),
                 E2E_APP_BASE_URL: appBaseUrl,
+                ...(options.examine
+                    ? {
+                          SHOT_EXAMINE: "1",
+                          SHOT_EXAM_MODEL: options.examModel,
+                          SHOT_EXAM_OLLAMA_URL: ollamaUrl,
+                      }
+                    : {}),
             },
         },
     );
@@ -321,9 +462,18 @@ function usage(): number {
   --base-url <url>     другой бандл (сборка before/after на другом порту)
   --upload             залить в CDN и напечатать ссылки
   --no-registry        не обновлять реестр (разовый прогон)
+  --examine            экзамен каждого снятого экрана локальной d3 (shots/examiner)
+  --exam-model <tag>   тег модели d3 (по умолчанию d3:2b)
+  --file-issues        завести ишью по находкам (требует --upload; метка ai-manual-test)
+
+Экзамен (pre-release manual testing): снимки существующих сценариев прогоняются
+через локальную decision-модель d3 (Ollama, /v1/systemone) — статичные визуальные
+дефекты: вёрстка, глифы, шрифты. Тест-модель экранов — shots/examiner/model.json.
+Канарка экзаменатора: npm run exam:canary (нужен живой Ollama).
 
 Переменные окружения сценариев: SHOT_WORD — слово для «word-examples» (あさ по умолчанию),
-SHOT_BASE_URL — другая сборка (before/after на другом порту).`);
+SHOT_BASE_URL — другая сборка (before/after на другом порту). OLLAMA_URL — Ollama
+для --examine (по умолчанию http://localhost:11434).`);
     return 1;
 }
 

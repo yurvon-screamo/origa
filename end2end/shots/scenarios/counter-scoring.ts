@@ -15,8 +15,11 @@ const COUNTER_TAG = "Счётный суффикс";
 export const counterScoringScenario: ShotScenario = {
     ...descriptors["counter-scoring"],
     async run({ page }, sink) {
-        const label = process.env.SHOT_LABEL ?? "after";
-        const isBefore = label === "before";
+        // The screen name must not depend on the run label: the exam model
+        // and the registry address screens by `scenario:screen`, and
+        // `card-${SHOT_LABEL}` made the key different on every run.
+        const variant = process.env.SHOT_COUNTER_VARIANT ?? "after";
+        const isBefore = variant === "before";
 
         const step = page.getByTestId("onboarding-scoring-step");
         const tag = step.locator("span.tag").first();
@@ -46,6 +49,6 @@ export const counterScoringScenario: ShotScenario = {
         }
 
         await page.waitForTimeout(500);
-        await sink.shot(`card-${label}`);
+        await sink.shot(`card-${variant}`);
     },
 };
