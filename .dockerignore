@@ -20,4 +20,5 @@ models/
 docs/
 scripts/
 end2end/
+store-assets/
 test-dockerfile/

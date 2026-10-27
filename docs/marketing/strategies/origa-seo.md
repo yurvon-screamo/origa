@@ -193,7 +193,7 @@ Rationale: front-load "Learn Japanese" (head keyword), include feature keywords,
 ### Other repo signals (recommendations, not auto-applied)
 
 - **Discussions:** currently `has_discussions: false`, but README invites to Discussions. Either enable Discussions or remove the README mention. (Recommend: enable — community signal + SEO surface.)
-- **Social preview image:** API cannot confirm; recommend setting repo Settings → Social Preview to `en.og.png` (1200×630) so GitHub link previews are branded.
+- **Social preview image:** API cannot confirm; recommend setting repo Settings → Social Preview to `origa_landing/public/og-image.png` (1729×910) so GitHub link previews are branded.
 - **License:** `NOASSERTION` is expected for BSL 1.1 (GitHub doesn't auto-detect BSL). No action needed.
 
 ---

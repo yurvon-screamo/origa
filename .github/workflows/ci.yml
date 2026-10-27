@@ -150,6 +150,10 @@ jobs:
               steps.components.outputs.core == 'true' ||
               steps.components.outputs.wasm == 'true' ||
               steps.components.outputs.ci == 'true' }}
+            run_python_tests: >-
+              ${{ github.event_name != 'pull_request' ||
+              steps.components.outputs.python == 'true' ||
+              steps.components.outputs.ci == 'true' }}
         steps:
             # PR-only: on tags/dispatch the step is skipped, its outputs
             # stay empty, and the `github.event_name != 'pull_request'`
@@ -191,6 +195,12 @@ jobs:
                           - utils/**
                       tts:
                           - tts/**
+                      python:
+                          # Python test suites that live outside scripts/:
+                          # scripts/tests (CDN tooling) and translator/scripts
+                          # (judge calibration). The pytest job runs both.
+                          - scripts/**
+                          - translator/**
                       ci:
                           - .github/**
 
@@ -412,6 +422,49 @@ jobs:
               # this check, regressions in the gated code path surface only
               # at tag-push on macos-15 (~30 min, blocks release).
               run: ORIGA_APP_STORE=1 cargo check -p origa-app
+
+    python-tests:
+        name: Python tests
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_python_tests == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+              with:
+                  # Full history: the publisher derives addedAt/sourceCommit
+                  # from `git log --diff-filter=A` — a shallow clone would
+                  # report HEAD instead of the commit that added the asset,
+                  # and the registry provenance test would fail.
+                  fetch-depth: 0
+
+            - name: Setup uv
+              # The runner image ships Python but not uv; the dependency set
+              # of scripts/pyproject.toml (pytest, boto3, awscli) is locked in
+              # scripts/uv.lock and installed by `uv sync --frozen`.
+              uses: astral-sh/setup-uv@18d369b23da25a81e9458561248e1aafff6a70fa # v10.3.1
+              with:
+                  enable-cache: true
+                  cache-dependency-glob: scripts/uv.lock
+
+            - name: Install dependencies
+              run: uv sync --frozen --project scripts
+
+            - name: Run pytest
+              # scripts/tests — the CDN tooling suites (including the media
+              # registry guards); translator/scripts/test_judge_calibration.py —
+              # the judge calibration suite. Both are pure-python and need no
+              # system packages: the WeasyPrint import in build_jlpt_pdf.py is
+              # lazy, so the collection does not need pango/cairo.
+              #
+              # The translator side is pinned to the explicit calibration
+              # module: sibling test_*.py files there are live-eval scripts
+              # (local LLM server, machine-specific data paths — #847) that
+              # crash collection on a runner and must not be picked up.
+              run: uv run --project scripts pytest scripts/tests translator/scripts/test_judge_calibration.py
 
     cdn-download:
         name: Download CDN
@@ -1325,6 +1378,7 @@ jobs:
                 macos-check,
                 ios-check,
                 cdn-download,
+                python-tests,
                 test,
                 landing-test,
                 wasm-test,
@@ -1370,6 +1424,7 @@ jobs:
                   gate "macos-check" "${{ needs.macos-check.result }}" "${{ needs.changes.outputs.run_macos_check }}"
                   gate "ios-check" "${{ needs.ios-check.result }}" "${{ needs.changes.outputs.run_ios_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
+                  gate "python-tests" "${{ needs.python-tests.result }}" "${{ needs.changes.outputs.run_python_tests }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
                   gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
                   gate "wasm-test" "${{ needs.wasm-test.result }}" "${{ needs.changes.outputs.run_wasm_test }}"
