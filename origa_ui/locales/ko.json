@@ -565,7 +565,8 @@
       "selected_count": "선택됨: {}",
       "analyze_selected": "선택한 항목 분석",
       "use_all_text": "전체 텍스트 사용"
-    }
+    },
+    "add_to_deck": "+ 덱에 추가"
   },
   "grammar_page": {
     "add_grammar": "문법 추가",
