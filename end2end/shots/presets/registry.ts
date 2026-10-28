@@ -13,7 +13,7 @@ export const PRESET_IDS = [
     "fresh",
     "onboarded",
     "scoring-n5",
-    "onboarded-insights",
+    "onboarded-history",
     "irodori-nyuumon",
     "with-word",
 ] as const;

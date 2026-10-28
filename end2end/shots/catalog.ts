@@ -104,7 +104,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         route: "/home",
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded-insights",
+        preset: "onboarded-history",
     },
     "feedback-form": {
         id: "feedback-form",

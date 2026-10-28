@@ -32,6 +32,13 @@
         "broken-state"
       ]
     },
+    "home-accuracy-chart:accuracy-chart": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
     "home-due-counter:due-counter": {
       "questions": [
         "text-overlap",
@@ -281,13 +288,6 @@
       ]
     },
     "word-examples:detail-viewport": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
-    },
-    "home-accuracy-chart:accuracy-chart": {
       "questions": [
         "text-overlap",
         "tofu-glyphs",

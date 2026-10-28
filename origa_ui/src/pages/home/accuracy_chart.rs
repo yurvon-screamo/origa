@@ -100,6 +100,10 @@ pub fn AccuracyChartCard(
                         viewBox=format!("0 0 {VIEW_W} {VIEW_H}")
                         class="w-full h-auto"
                         role="img"
+                        aria-label=move || {
+                            let locale = i18n.get_locale();
+                            td_string!(locale, chart.section_title)
+                        }
                         data-testid=move || format!("{}-svg", section_prefix())
                     >
                         // Сетка 0/50/100%.

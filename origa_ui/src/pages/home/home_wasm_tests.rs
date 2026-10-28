@@ -269,7 +269,6 @@ fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeri
             DayAccuracy {
                 days_ago,
                 accuracy_pct: review.map(|(_, pct)| *pct),
-                total_ratings: review.map(|_| 10).unwrap_or(0),
             }
         })
         .collect();

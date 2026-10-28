@@ -406,7 +406,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     />
 
                     <AccuracyChartCard
-                        series=Signal::derive(move || accuracy_series.get())
+                        series=accuracy_series.into()
                         test_id=Signal::derive(|| "home-accuracy-chart".to_string())
                     />
 

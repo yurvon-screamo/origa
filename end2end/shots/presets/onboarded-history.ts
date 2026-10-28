@@ -10,7 +10,7 @@ import { withSeededUser } from "./seeded.ts";
  * seed adds the month of daily ratings the accuracy chart draws and the
  * lapses behind the difficult counter.
  */
-export async function onboardedInsights(context: PresetContext): Promise<void> {
+export async function onboardedHistory(context: PresetContext): Promise<void> {
     await onboarded(context);
     await withSeededUser(context, seedTypicalUserState);
 }

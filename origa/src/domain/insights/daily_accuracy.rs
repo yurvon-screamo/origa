@@ -13,8 +13,6 @@ pub struct DayAccuracy {
     pub days_ago: u32,
     /// Доля позитивных оценок дня в процентах; `None` — оценок не было.
     pub accuracy_pct: Option<u8>,
-    /// Сколько оценок стояло за днём (для подсказок у точки).
-    pub total_ratings: u32,
 }
 
 /// Ряд точности по дням от старых к новым; всегда ровно [`CHART_DAYS`]
@@ -72,7 +70,6 @@ pub fn compute_daily_accuracy(
                 .checked_mul(100)
                 .and_then(|scaled| scaled.checked_div(total))
                 .map(|pct| pct as u8),
-            total_ratings: total as u32,
         });
     }
     AccuracySeries { days }

@@ -14,7 +14,7 @@ import type { ShotScenario } from "../scenario.ts";
  * covers the bottom of the frame — it is hidden for the capture.
  *
  * The profile behind the screen is a seeded typical user (see the
- * `onboarded-insights` preset) — its daily history draws the line.
+ * `onboarded-history` preset) — its daily history draws the line.
  */
 export const homeAccuracyChartScenario: ShotScenario = {
     ...descriptors["home-accuracy-chart"],
