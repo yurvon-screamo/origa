@@ -6,7 +6,9 @@ Accepted (2026-09-13). Amended (2026-10-22): the provider moved from Umami
 Cloud to a project-owned self-hosted instance — see §7. The cloud-vs-crypto
 details below (§1–§6) describe how the integration was built and stay
 accurate except for the provider, website id, and CSP hosts, which §7
-replaces.
+replaces. Amended again (2026-10-29): while Railway's custom-domain
+certificate issuance is broken, `umami.origa` routes through the RF VM for
+both geo branches — see §7, Domain.
 
 ## Context
 
