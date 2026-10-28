@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-acquaintance-kanji",
+  "screen": "kanji-presentation",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 1249,
+  "fullPage": true,
+  "bytes": 205454,
+  "sha256": "498bd1fec503d6f859b85a5880f7d641d8fed58d6966090e129af7b43539224c",
+  "capturedAt": "2026-10-28T12:53:48.881Z",
+  "commit": "1309d237181db4fbcf111865e8f2d415db383ffe",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--desktop-498bd1fe.png",
+  "uploadedSha256": "498bd1fec503d6f859b85a5880f7d641d8fed58d6966090e129af7b43539224c",
+  "uploadedAt": "2026-10-28T12:54:22.571Z"
+}
