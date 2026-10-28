@@ -45,6 +45,13 @@ VERSIONED_FILES: list[str] = [
     "dictionary/kanji.json",
     "dictionary/radicals.json",
     "grammar/grammar_v3.json",
+    # Counter-word registry (issue #415): a hand-edited data file, like
+    # grammar/ — release-updated tier in _cdn_cache. Manifest tracking is
+    # what reaches existing clients: the WASM cache is cache-first without
+    # TTL, and the only invalidation path is the manifest hash diff
+    # (cache_manager::check_and_invalidate), so this entry must stay here
+    # and not in SYNC_DIRS.
+    "counters/counters.json",
     # Tokenization precompute for grammar (#521) — freshness includes the
     # tokenizer inputs, see grammar_precompute_source()
     "grammar/grammar_precompute_v3.rkyv",
@@ -136,12 +143,6 @@ SYNC_DIRS = [
     "well_known_set/minna_n3",
     "well_known_set/minna_n2",
     "well_known_set/spy_family",
-    # Counter-word registry (issue #415): a single hand-edited data file
-    # (counters/counters.json, release-updated tier in _cdn_cache). Lived
-    # outside SYNC_DIRS since the original deploy, so reading fixes reached
-    # the bucket only through manual uploads — sync it like the other
-    # content dirs instead.
-    "counters",
 ]
 
 # Sync dirs whose content is truly static (immutable Cache-Control tier in
