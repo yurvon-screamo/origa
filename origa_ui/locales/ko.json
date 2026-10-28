@@ -1,6 +1,7 @@
 {
   "chart": {
     "section_title": "한 달간 정확도",
+    "line_label": "정확도",
     "empty": "첫 복습 후에 표시됩니다",
     "today": "오늘",
     "month_ago": "30일 전"
