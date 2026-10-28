@@ -6,6 +6,7 @@ import { homeInsightsScenario } from "./home-insights.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
+import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
 import { lessonExampleRecallScenario } from "./lesson-example-recall.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
@@ -35,6 +36,7 @@ export const implementations: Record<string, ShotScenario> = {
     [tokenPopupScenario.id]: tokenPopupScenario,
     [jftCardScenario.id]: jftCardScenario,
     [lessonAcquaintanceGrammarScenario.id]: lessonAcquaintanceGrammarScenario,
+    [lessonAcquaintanceKanjiScenario.id]: lessonAcquaintanceKanjiScenario,
     [lessonUnificationScenario.id]: lessonUnificationScenario,
     [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
     [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,

@@ -73,6 +73,7 @@ pub fn KanjiCardDetails(
         <div class="mt-3">
             <button
                 class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
+                data-testid="kanji-details-toggle"
                 on:click=move |_| details_expanded.update(|v| *v = !*v)
             >
                 {move || if details_expanded.get() { collapse_text.get() } else { more_text.get() }}
