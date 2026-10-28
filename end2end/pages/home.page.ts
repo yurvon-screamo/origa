@@ -26,7 +26,7 @@ export class HomePage extends BasePage {
 
   // Accuracy chart (fl2O037UR7)
   readonly accuracyChart: Locator;
-  readonly accuracyChartSvg: Locator;
+  readonly accuracyChartPlot: Locator;
 
   // Recent Study
   readonly recentStudy: Locator;
@@ -70,7 +70,7 @@ export class HomePage extends BasePage {
 
     // Accuracy chart (fl2O037UR7)
     this.accuracyChart = page.getByTestId("home-accuracy-chart");
-    this.accuracyChartSvg = page.getByTestId("home-accuracy-chart-svg");
+    this.accuracyChartPlot = page.getByTestId("home-accuracy-chart-chart");
 
     // Recent Study
     this.recentStudy = page.getByTestId("home-recent-study");

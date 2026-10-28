@@ -22,6 +22,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use origa::domain::JftCoverage;
 use origa::domain::JlptProgress;
+use origa::domain::NativeLanguage;
 use origa::domain::insights::{AccuracySeries, compute_daily_accuracy};
 use origa::domain::local_day;
 use origa::traits::UserRepository;
@@ -178,6 +179,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let accuracy_series = RwSignal::new(AccuracySeries { days: Vec::new() });
+    let native_language = RwSignal::new(NativeLanguage::English);
     let today_overview = RwSignal::new(TodayOverview::default());
     let due_count = RwSignal::new(0usize);
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
@@ -244,6 +246,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             local_day::local_offset(),
                             Utc::now(),
                         ));
+                        native_language.set(*user.native_language());
                         today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                         due_count.set(compute_due_count(ks));
                         recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -339,6 +342,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         local_day::local_offset(),
                         Utc::now(),
                     ));
+                    native_language.set(*user.native_language());
                     today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     due_count.set(compute_due_count(ks));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -407,6 +411,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
                     <AccuracyChartCard
                         series=accuracy_series.into()
+                        lang=native_language.into()
                         test_id=Signal::derive(|| "home-accuracy-chart".to_string())
                     />
 
