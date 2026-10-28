@@ -9,8 +9,10 @@
  *
  * Current topology (ADR-061, cutover 2026-09-30; umami added 2026-10-22):
  *  - RF clients    -> A 193.233.217.243 (RF VM, nginx SNI-demux -> Railway/Tigris)
- *  - world         -> direct: Railway edge (API/landing/umami), CloudFront (CDN)
+ *  - world         -> direct: Railway edge (API/landing), CloudFront (CDN)
  *  - content.origa -> CNAME Tigris custom domain (diagnostic name, no RF branch)
+ *  - umami.origa   -> A 193.233.217.243 for EVERYONE (temporary; see the
+ *                     umami branch below — Railway cert issuance is broken)
  *
  * s3.origa world branch: CloudFront (free tier) in front of the public
  * Tigris bucket. The direct Tigris custom domain (origa.t3.tigrisbucket.io)
@@ -38,6 +40,19 @@ export default function handleQuery(query) {
     return new CnameRecord("origa.t3.tigrisbucket.io", 300);
   }
 
+  // Temporary (2026-10-29, issue #733): Railway's custom-domain certificate
+  // issuance fails repeatedly with an internal error (4+ retries over two
+  // days), so the edge serves the wildcard *.up.railway.app cert for this
+  // SNI and world browsers fail the TLS handshake. The RF VM holds a valid
+  // Let's Encrypt cert for the name, so BOTH geo branches go through it.
+  // Beacon/script volume is tiny — the VM easily carries it. Flip back to
+  // the geo-split (move this branch below isRF, world -> CnameRecord
+  // Railway edge name) once Railway's domain-status reports a VALID
+  // certificate. ADR-054 §7.
+  if (h === "umami.origa.uwuwu.net") {
+    return new ARecord("193.233.217.243", 60);
+  }
+
   var geo = query.request.geoLocation;
   var isRF = geo && geo.country === "RU";
   if (isRF) {
@@ -52,9 +67,6 @@ export default function handleQuery(query) {
   }
   if (h === "origa.uwuwu.net") {
     return new CnameRecord("vl080mt6.up.railway.app", 300);
-  }
-  if (h === "umami.origa.uwuwu.net") {
-    return new CnameRecord("07wyrdxw.up.railway.app", 300);
   }
   // unreachable while the guard list above matches the branches; kept as a
   // fail-loud terminal: a name added to the guard without a branch must get

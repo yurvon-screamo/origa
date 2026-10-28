@@ -289,15 +289,23 @@ users, our own endpoints and limits, our own data.
   Railway PostgreSQL. Env: `DATABASE_URL` (reference to the Postgres
   service), `APP_SECRET` (random), `CLIENT_IP_HEADER=x-forwarded-for` —
   without it every Railway-proxied visit shares one IP.
-- **Domain**: `umami.origa.uwuwu.net`, served through the same geo-split as
-  every other `origa.*` name (Bunny DNS script 91629, `infra/bunny-dns/
-  handleQuery.js` gained a fifth guarded name): world → CNAME to the
-  Railway service domain, RF → the RF VM (`193.233.217.243`), because
-  Railway subnets are payload-dropped from RF (ADR-049). The RF VM nginx
-  got a dedicated cert (`acme.sh` DNS-01 via Bunny — this also proved TXT
-  fall-through works for script-attached names, the open question for the
-  November renewals of the existing certs) and a dedicated http `:8443`
+- **Domain**: `umami.origa.uwuwu.net`. Originally served through the same
+  geo-split as every other `origa.*` name (Bunny DNS script 91629,
+  `infra/bunny-dns/handleQuery.js` gained a fifth guarded name): world →
+  CNAME to the Railway edge name, RF → the RF VM (`193.233.217.243`),
+  because Railway subnets are payload-dropped from RF (ADR-049). The RF VM
+  nginx got a dedicated cert (`acme.sh` DNS-01 via Bunny — this also proved
+  TXT fall-through works for script-attached names, the open question for
+  the November renewals of the existing certs) and a dedicated http `:8443`
   server block with `proxy_ssl_verify on`, mirroring `app.origa`.
+  **Amendment (2026-10-29):** Railway's custom-domain certificate issuance
+  fails persistently with an internal error (4+ retries over two days; the
+  domain is Verified and routing works, but the edge serves the wildcard
+  `*.up.railway.app` cert, failing world browsers' TLS). Until Railway
+  fixes the pipeline, the script routes **both geo branches through the RF
+  VM** — it holds a valid Let's Encrypt cert for the name and the
+  beacon/script volume is trivial. Flip back to the geo-split (one script
+  deploy, TTL 60) once `domain-status` reports a VALID certificate.
 - Deploy/verify procedure: `docs/runbooks/umami-self-host.md`.
 
 ### Tracker changes
