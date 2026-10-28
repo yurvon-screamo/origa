@@ -2,7 +2,7 @@ import type { ShotScenario } from "../scenario.ts";
 import { counterScoringScenario } from "./counter-scoring.ts";
 import { feedbackFormScenario } from "./feedback-form.ts";
 import { homeDueCounterScenario } from "./home-due-counter.ts";
-import { homeInsightsScenario } from "./home-insights.ts";
+import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
@@ -13,7 +13,6 @@ import { lessonExampleScenario } from "./lesson-example.ts";
 import { lessonReadingQuizScenario } from "./lesson-reading-quiz.ts";
 import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
-import { stitchSessionScenario } from "./stitch-session.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 
@@ -30,8 +29,7 @@ export const implementations: Record<string, ShotScenario> = {
     [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
     [counterScoringScenario.id]: counterScoringScenario,
     [homeDueCounterScenario.id]: homeDueCounterScenario,
-    [homeInsightsScenario.id]: homeInsightsScenario,
-    [stitchSessionScenario.id]: stitchSessionScenario,
+    [homeAccuracyChartScenario.id]: homeAccuracyChartScenario,
     [feedbackFormScenario.id]: feedbackFormScenario,
     [tokenPopupScenario.id]: tokenPopupScenario,
     [jftCardScenario.id]: jftCardScenario,

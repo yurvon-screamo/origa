@@ -1,9 +1,9 @@
+pub(crate) mod accuracy_chart;
 pub(crate) mod category_grid;
 pub mod content;
 pub(crate) mod content_sync;
 pub mod dashboard_stats;
 pub mod home_skeleton;
-pub mod insights;
 pub mod jft_readiness_card;
 pub mod jlpt_progress_card;
 pub mod recent_study;
@@ -13,6 +13,7 @@ pub mod welcome_card;
 #[cfg(all(target_arch = "wasm32", test))]
 mod home_wasm_tests;
 
+pub use accuracy_chart::AccuracyChartCard;
 pub use content::HomeContent;
 pub use dashboard_stats::{
     CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_due_count,

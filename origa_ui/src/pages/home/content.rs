@@ -1,7 +1,7 @@
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::insights::{InsightsPanels, InsightsSection, compute_insights_panels};
+use super::AccuracyChartCard;
 use super::{
     CompletionForecast, JftReadinessCard, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem,
     StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
@@ -19,8 +19,11 @@ use crate::ui_components::{ToastContainer, ToastData};
 use crate::utils::display_name::display_name_for;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use chrono::Utc;
 use origa::domain::JftCoverage;
 use origa::domain::JlptProgress;
+use origa::domain::insights::{AccuracySeries, compute_daily_accuracy};
+use origa::domain::local_day;
 use origa::traits::UserRepository;
 
 use std::collections::HashSet;
@@ -174,7 +177,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
         use_context::<HybridUserRepository>().expect("repository context not provided");
 
     let jlpt_progress = RwSignal::new(JlptProgress::new());
-    let insights_panels = RwSignal::new(InsightsPanels::default());
+    let accuracy_series = RwSignal::new(AccuracySeries { days: Vec::new() });
     let today_overview = RwSignal::new(TodayOverview::default());
     let due_count = RwSignal::new(0usize);
     let recent_studied = RwSignal::new(Vec::<RecentlyStudiedItem>::new());
@@ -236,7 +239,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         let ks = user.knowledge_set();
                         jlpt_progress.set(user.jlpt_progress().clone());
                         known_kanji.set(ks.get_known_kanji());
-                        insights_panels.set(compute_insights_panels(ks, user.native_language()));
+                        accuracy_series.set(compute_daily_accuracy(
+                            ks.lesson_history(),
+                            local_day::local_offset(),
+                            Utc::now(),
+                        ));
                         today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                         due_count.set(compute_due_count(ks));
                         recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -327,7 +334,11 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     let ks = user.knowledge_set();
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
-                    insights_panels.set(compute_insights_panels(ks, user.native_language()));
+                    accuracy_series.set(compute_daily_accuracy(
+                            ks.lesson_history(),
+                            local_day::local_offset(),
+                            Utc::now(),
+                        ));
                     today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     due_count.set(compute_due_count(ks));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -394,9 +405,9 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         test_id=Signal::derive(|| "home-today-overview".to_string())
                     />
 
-                    <InsightsSection
-                        panels=insights_panels
-                        test_id=Signal::derive(|| "home-insights".to_string())
+                    <AccuracyChartCard
+                        series=Signal::derive(move || accuracy_series.get())
+                        test_id=Signal::derive(|| "home-accuracy-chart".to_string())
                     />
 
                     <StudiedTodayList

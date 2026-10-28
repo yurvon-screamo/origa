@@ -83,10 +83,10 @@ function daysFromNow(days: number, hourUtc = 12): string {
 }
 
 /**
- * Seeds a typical active-user state into the stored user JSON: three
- * weeks of daily ratings (both pace windows populated), insight buckets
- * whose worst window is the evening, an overdue price, and a couple of
- * troubled words (lapses) for the top list.
+ * Seeds a typical active-user state into the stored user JSON: daily
+ * ratings spread across the month (today intentionally absent — a partial
+ * day would draw a misleading last point), and a couple of troubled words
+ * (lapses) for the difficult counter.
  *
  * All values follow the domain serialization the app itself writes.
  */
@@ -94,10 +94,9 @@ export function seedTypicalUserState(userJson: string): string {
     const user = JSON.parse(userJson);
     const knowledgeSet = user.knowledge_set;
 
-    // Daily history: ratings on ~13 days spread over both pace windows
-    // (1..=14 and 15..=28 days back). Today is intentionally absent — the
-    // featured verdict window includes today, but the pace windows must
-    // stay full-day. StatsTracker is #[serde(flatten)] inside
+    // Daily history: ratings on ~13 days spread over the month.
+    // Today is intentionally absent — a partial day reads as a dip on the
+    // accuracy chart. StatsTracker is #[serde(flatten)] inside
     // KnowledgeSet, so lesson_history sits at the TOP level of the
     // knowledge_set JSON — there is no "stats" key on the wire.
     const history: Array<Record<string, unknown>> = Array.isArray(knowledgeSet.lesson_history)
@@ -125,15 +124,6 @@ export function seedTypicalUserState(userJson: string): string {
     }
     knowledgeSet.lesson_history = history;
 
-    // Insight buckets: evening (bucket 5) is the worst window with a
-    // solid sample; overdue reviews lose ~34 p.p. against on-time.
-    knowledgeSet.insights = {
-        hour_attempts: [2, 4, 8, 14, 30, 26],
-        hour_correct: [2, 4, 7, 12, 22, 13],
-        delay_attempts: [60, 20, 8, 4],
-        delay_correct: [52, 13, 4, 1],
-    };
-
     // Troubled words: a realistic slice of the corpus (roughly one in
     // twenty-five) carries lapses so the share reads as "normal wear".
     const cards = knowledgeSet.study_cards ?? {};
@@ -152,116 +142,6 @@ export function seedTypicalUserState(userJson: string): string {
     return JSON.stringify(user);
 }
 
-/**
- * Seeds a small synthetic corpus with the insight ledger filled.
- *
- * Unlike the typical-user state this one replaces the corpus: the cards
- * are written from scratch, so the screen shows exactly the words of the
- * demo set.
- */
-export function seedLedgerState(userJson: string): string {
-    const user = JSON.parse(userJson);
-    const knowledgeSet = user.knowledge_set;
-    const now = Date.now();
-    const day = 24 * 60 * 60 * 1000;
-    const iso = (ms: number) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
-
-    const history = Array.isArray(knowledgeSet.lesson_history) ? knowledgeSet.lesson_history : [];
-    for (const days of [2, 4, 6, 8, 10, 12, 15, 18, 21, 24, 27]) {
-        const positive = 8 + ((days * 3) % 4);
-        const negative = 2 + (days % 3);
-        history.push({
-            timestamp: iso(now - days * day),
-            avg_stability: 12.4,
-            avg_difficulty: 4.6,
-            total_words: 24,
-            new_words: 2,
-            known_words: 10,
-            in_progress_words: 10,
-            high_difficulty_words: 2,
-            new_cards_studied_today: 2,
-            phrase_cards_studied_today: 1,
-            lessons_completed: 1,
-            positive_ratings: positive,
-            negative_ratings: negative,
-            total_ratings: positive + negative,
-        });
-    }
-    knowledgeSet.lesson_history = history;
-
-    knowledgeSet.insights = {
-        hour_attempts: [2, 4, 8, 14, 30, 26],
-        hour_correct: [2, 4, 7, 12, 22, 13],
-        delay_attempts: [60, 20, 8, 4],
-        delay_correct: [52, 13, 4, 1],
-    };
-
-    const words: Array<[string, string]> = [
-        ["結局", "in the end"],
-        ["つまり", "in short"],
-        ["それでも", "even so"],
-        ["たとえば", "for example"],
-        ["すなわち", "namely"],
-        ["おそらく", "probably"],
-        ["どうやって", "how"],
-        ["やはり", "as expected"],
-        ["もう一度", "once more"],
-        ["できるだけ", "as much as possible"],
-        ["やっぱり", "still"],
-        ["けっこう", "considerably"],
-        ["びっくり", "surprise"],
-        ["ゆっくり", "slowly"],
-        ["たぶん", "probably"],
-        ["ほとんど", "mostly"],
-        ["ちゃんと", "properly"],
-        ["やっと", "at last"],
-        ["きっと", "surely"],
-        ["あまり", "not much"],
-        ["とても", "very"],
-        ["たくさん", "a lot"],
-        ["少し", "a little"],
-        ["みんな", "everyone"],
-    ];
-    words.forEach(([word, gloss], index) => {
-        const ulid = `01J${String(index + 1).padStart(5, "0")}${"A".repeat(18)}`;
-        const troubled = index < 2;
-        const overdue = index % 2 === 0;
-        const lastReview = now - (overdue ? 12 : 2) * day;
-        knowledgeSet.study_cards[ulid] = {
-            card_id: ulid,
-            card: {
-                Vocabulary: {
-                    word: { text: word },
-                    reverse_side: { text: gloss },
-                    pos: null,
-                    tokens: null,
-                },
-            },
-            memory_history: {
-                current_state: {
-                    stability: { value: troubled ? 4.2 : 14.8 },
-                    difficulty: { value: troubled ? 7.4 : 4.6 },
-                    next_review_date: iso(overdue ? lastReview + day : now + 5 * day),
-                    card_state: "Review",
-                },
-                reps: troubled ? 9 : 6,
-                lapses: troubled ? 4 : 0,
-                easy_count: troubled ? 0 : 2,
-                good_count: troubled ? 3 : 4,
-                last_review_date: iso(lastReview),
-                last_rating: troubled ? "Again" : "Good",
-                consecutive_again: 0,
-                ghost: null,
-                marked_known_at: null,
-            },
-            is_favorite: false,
-            perfect_streak_since_known: 0,
-            favorite_changed_at: null,
-        };
-    });
-
-    return JSON.stringify(user);
-}
 
 /** Phrases and examples are not counted by the due counter (issue #809). */
 function isCountedType(card: Record<string, unknown>): boolean {

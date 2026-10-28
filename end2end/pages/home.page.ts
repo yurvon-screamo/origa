@@ -24,13 +24,9 @@ export class HomePage extends BasePage {
   // Lesson
   readonly lessonButton: Locator;
 
-  // Insights (#749)
-  readonly insights: Locator;
-  readonly insightsWeekVerdict: Locator;
-  readonly insightsPace: Locator;
-  readonly insightsTimeOfDay: Locator;
-  readonly insightsOverdue: Locator;
-  readonly insightsHardestWords: Locator;
+  // Accuracy chart (fl2O037UR7)
+  readonly accuracyChart: Locator;
+  readonly accuracyChartSvg: Locator;
 
   // Recent Study
   readonly recentStudy: Locator;
@@ -72,13 +68,9 @@ export class HomePage extends BasePage {
     // Lesson
     this.lessonButton = page.getByTestId("home-welcome-lesson");
 
-    // Insights (#749)
-    this.insights = page.getByTestId("home-insights");
-    this.insightsWeekVerdict = page.getByTestId("home-insights-week-verdict");
-    this.insightsPace = page.getByTestId("home-insights-pace");
-    this.insightsTimeOfDay = page.getByTestId("home-insights-time-of-day");
-    this.insightsOverdue = page.getByTestId("home-insights-overdue");
-    this.insightsHardestWords = page.getByTestId("home-insights-hardest-words");
+    // Accuracy chart (fl2O037UR7)
+    this.accuracyChart = page.getByTestId("home-accuracy-chart");
+    this.accuracyChartSvg = page.getByTestId("home-accuracy-chart-svg");
 
     // Recent Study
     this.recentStudy = page.getByTestId("home-recent-study");
