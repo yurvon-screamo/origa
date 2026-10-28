@@ -19,7 +19,7 @@ import type { ShotScenario } from "../scenario.ts";
 export const homeAccuracyChartScenario: ShotScenario = {
     ...descriptors["home-accuracy-chart"],
     async run({ page }, sink) {
-        const chart = page.getByTestId("home-accuracy-chart-svg");
+        const chart = page.getByTestId("home-accuracy-chart-chart");
         await expect(chart).toBeVisible({ timeout: 120_000 });
 
         // Frame the whole section: its title at the top of the viewport,
