@@ -7,10 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| acquaintance-example | lesson-example | mobile | ru-RU | 390×844 | 2026-10-25T17:17:45.342Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--mobile-688aa3fc.png) |
-| acquaintance-example | lesson-example | desktop | ru-RU | 1280×800 | 2026-10-25T17:12:34.714Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--desktop-5e2afc49.png) |
-| home | home | mobile | ru-RU | 390×844 | 2026-10-25T17:11:58.113Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
-| home | home | desktop | ru-RU | 1280×800 | 2026-10-25T17:11:35.697Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
+| kanji-presentation | lesson-acquaintance-kanji | mobile | ru-RU | 390×1502 | 2026-10-28T12:54:20.306Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--mobile-3e705948.png) |
+| kanji-presentation | lesson-acquaintance-kanji | desktop | ru-RU | 1280×1249 | 2026-10-28T12:53:48.881Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--desktop-498bd1fe.png) |
 | grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-27T02:44:12.629Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png) |
 | grammar-presentation | lesson-acquaintance-grammar | mobile | ru-RU | 390×1974 | 2026-10-27T02:44:10.360Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-presentation--mobile-25574127.png) |
 | grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-10-27T02:43:58.500Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--desktop-0616f849.png) |
@@ -26,16 +24,14 @@
 | pack-answer-table | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:03.609Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-answer-table--desktop-455da11a.png) |
 | pack-answer | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:02.614Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-answer--desktop-9d15945b.png) |
 | pack-front | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:01.649Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-front--desktop-33561b14.png) |
+| acquaintance-example | lesson-example | mobile | ru-RU | 390×844 | 2026-10-25T17:17:45.342Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--mobile-688aa3fc.png) |
+| acquaintance-example | lesson-example | desktop | ru-RU | 1280×800 | 2026-10-25T17:12:34.714Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--desktop-5e2afc49.png) |
+| home | home | mobile | ru-RU | 390×844 | 2026-10-25T17:11:58.113Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
+| home | home | desktop | ru-RU | 1280×800 | 2026-10-25T17:11:35.697Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-21T20:04:02.961Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-answer--mobile-0517dd99.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-21T20:04:02.045Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-question--mobile-ea401aaa.png) |
 | example-answer | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:58.703Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-answer--mobile-9b884952.png) |
 | example-question | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:56.384Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--mobile-0378ade9.png) |
-| example-answer | lesson-example-recall | desktop | ru-RU | 1280×800 | 2026-10-21T19:56:46.118Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-answer--desktop-4ac9b222.png) |
-| example-question | lesson-example-recall | desktop | ru-RU | 1280×800 | 2026-10-21T19:56:43.790Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--desktop-258f504c.png) |
-| grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-21T17:52:20.546Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-acquaintance-grammar--grammar-answer--mobile-76f5ab88.png) |
-| grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-10-21T17:51:51.374Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-acquaintance-grammar--grammar-answer--desktop-331c388d.png) |
-| home | home | mobile | ru-RU | 390×844 | 2026-10-21T14:34:18.442Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--mobile-f0236f4e.png) |
-| home | home | desktop | ru-RU | 1280×800 | 2026-10-21T14:33:57.940Z | 957843f6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/pr-adr067/home--home--desktop-f2c0b727.png) |
 
 ## Как обновить
 

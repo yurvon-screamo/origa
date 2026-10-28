@@ -3711,8 +3711,15 @@ rt {
     min-width: 0;
 }
 
+/* Label column of a reading row. Content-fitted (min-content) with a
+   64px floor: long ru labels wrap at the space before the bracketed
+   transliteration («音読み [онъёми]») instead of bleeding into the tags
+   column — a fixed 64px let «[кунъёми]» overflow and collide with the
+   wrapped reading tags (task I7_9cVuw6e). Shorter locales (en/ko/vi,
+   «ОН/КУН») keep the 64px baseline through min-width. */
 .reading-kanji {
-    width: 64px;
+    width: min-content;
+    min-width: 64px;
     flex-shrink: 0;
     padding-top: 4px;
 }
@@ -3737,6 +3744,16 @@ rt {
     background: transparent;
     color: var(--fg-muted);
     border: 1px solid var(--border-light);
+}
+
+/* Label column of the lesson kanji card rows (meaning / radicals /
+   writing): same recipe as .reading-kanji — content-fitted with a 64px
+   floor. A fixed w-16 (64px) let mono labels like «Значение» / «Написание»
+   (75-86px) overflow and glue to the value column (task I7_9cVuw6e). */
+.lesson-detail-label {
+    width: min-content;
+    min-width: 64px;
+    flex-shrink: 0;
 }
 
 .reading-rare-hint {
@@ -5465,15 +5482,16 @@ rt {
         display: none;
     }
 
-    /* Compact reading groups on phones: shrink the ON/KUN label column so
-       reading tags have room to sit side-by-side in a row instead of
-       stacking one-per-line. */
+    /* Compact reading groups on phones: shrink the ON/KUN label column floor
+       so reading tags have room to sit side-by-side in a row instead of
+       stacking one-per-line. The column stays content-fitted (min-content
+       from the base rule) — the floor only matters for short labels. */
     .kanji-detail-hero-readings .reading-group {
         gap: 8px;
     }
 
     .kanji-detail-hero-readings .reading-kanji {
-        width: 36px;
+        min-width: 36px;
     }
 
     .kanji-detail-hero-readings .reading-furigana {

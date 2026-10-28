@@ -88,6 +88,13 @@
         ]
       }
     },
+    "lesson-acquaintance-kanji:kanji-presentation": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
     "lesson-counter-pack:pack-answer": {
       "questions": [
         "text-overlap",

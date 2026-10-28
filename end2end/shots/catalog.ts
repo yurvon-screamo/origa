@@ -50,6 +50,14 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         viewports: DEFAULT_VIEWPORTS,
         preset: "acquaintance-hand",
     },
+    "lesson-acquaintance-kanji": {
+        id: "lesson-acquaintance-kanji",
+        title: "Урок: слайд знакомства (кандзи)",
+        route: "/lesson",
+        locale: "ru-RU",
+        viewports: DEFAULT_VIEWPORTS,
+        preset: "acquaintance-hand",
+    },
     "lesson-example": {
         id: "lesson-example",
         title: "Урок: знакомство и ответ",
