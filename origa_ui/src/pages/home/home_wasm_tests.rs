@@ -1,6 +1,6 @@
 //! WASM render tests for `pages/home` components: `WelcomeCard`,
 //! `JlptProgressCard`, `JlptSkeleton`, `CategoryProgressGrid`,
-//! `InsightsSection`, `StudiedTodayList`, `TodayOverviewCard`.
+//! `AccuracyChartCard`, `StudiedTodayList`, `TodayOverviewCard`.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -11,10 +11,9 @@ use leptos::task::tick;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
+use crate::pages::home::accuracy_chart::AccuracyChartCard;
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::{CompletionForecast, RecentlyStudiedItem};
-use crate::pages::home::insights::InsightsSection;
-use crate::pages::home::insights::panels_data::InsightsPanels;
 use crate::pages::home::{
     JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, TodayOverviewCard,
     WelcomeCard,
@@ -257,217 +256,83 @@ async fn category_progress_grid_shows_percentage_per_card() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// InsightsSection (#749)
+// AccuracyChartCard (fl2O037UR7)
 // ═══════════════════════════════════════════════════════════════════════
 
+/// Ряд из CHART_DAYS дней с оценками в выбранных позициях (от старых к новым).
+fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeries {
+    use origa::domain::insights::{CHART_DAYS, DayAccuracy};
+    let days = (0..CHART_DAYS)
+        .map(|index| {
+            let days_ago = (CHART_DAYS - 1 - index) as u32;
+            let review = reviews.iter().find(|(idx, _)| *idx == index);
+            DayAccuracy {
+                days_ago,
+                accuracy_pct: review.map(|(_, pct)| *pct),
+            }
+        })
+        .collect();
+    origa::domain::insights::AccuracySeries { days }
+}
+
 #[wasm_bindgen_test]
-async fn insights_section_renders_five_ledger_rows() {
+async fn accuracy_chart_empty_series_shows_guidance_without_svg() {
     let wrapper = create_wrapper();
-    let panels = RwSignal::new(InsightsPanels::default());
+    let series = RwSignal::new(series_with(&[]));
     mount_with_i18n(&wrapper, move || {
-        view! { <InsightsSection panels=panels test_id="is1" /> }.into_any()
+        view! { <AccuracyChartCard series=series.into() test_id="ac1" /> }.into_any()
     });
     tick().await;
 
-    let section = wrapper.query_selector("[data-testid=\"is1\"]").unwrap();
-    assert!(section.is_some(), "insights section must render");
+    let section = wrapper.query_selector("[data-testid=\"ac1\"]").unwrap();
+    assert!(section.is_some(), "chart section must render");
 
-    for row in [
-        "is1-week-verdict",
-        "is1-pace",
-        "is1-time-of-day",
-        "is1-overdue",
-        "is1-hardest-words",
-    ] {
-        let node = wrapper.query_selector(&format!("[data-testid=\"{row}\"]"));
-        assert!(
-            node.is_ok_and(|n| n.is_some()),
-            "{row} ledger row must render"
-        );
+    let empty = wrapper
+        .query_selector("[data-testid=\"ac1-empty\"]")
+        .unwrap()
+        .is_some();
+    assert!(empty, "empty series must show the guidance line");
+
+    let svg = wrapper
+        .query_selector("[data-testid=\"ac1-svg\"]")
+        .unwrap()
+        .is_some();
+    assert!(!svg, "empty series must not render the svg");
+}
+
+#[wasm_bindgen_test]
+async fn accuracy_chart_with_data_renders_segments_dots_and_axis() {
+    // Оценки в трёх днях с разрывом посередине: два сегмента линии.
+    let wrapper = create_wrapper();
+    let series = RwSignal::new(series_with(&[(2, 90), (3, 80), (10, 60)]));
+    mount_with_i18n(&wrapper, move || {
+        view! { <AccuracyChartCard series=series.into() test_id="ac2" /> }.into_any()
+    });
+    tick().await;
+
+    let svg = wrapper
+        .query_selector("[data-testid=\"ac2-svg\"]")
+        .unwrap()
+        .unwrap();
+    let empty = wrapper
+        .query_selector("[data-testid=\"ac2-empty\"]")
+        .unwrap()
+        .is_some();
+    assert!(!empty, "data series must not show the guidance line");
+
+    let html = svg.outer_html();
+    let polyline_count = html.matches("<polyline").count();
+    assert_eq!(
+        polyline_count, 2,
+        "a gap between reviewed days must split the line into two segments"
+    );
+
+    let dot_count = html.matches("<circle").count();
+    assert_eq!(dot_count, 3, "every reviewed day must draw a dot");
+
+    for label in ["0%", "50%", "100%"] {
+        assert!(html.contains(label), "y-axis label {label} must render");
     }
-}
-
-#[wasm_bindgen_test]
-async fn insights_section_empty_data_shows_guidance_phrases() {
-    let wrapper = create_wrapper();
-    let panels = RwSignal::new(InsightsPanels::default());
-    mount_with_i18n(&wrapper, move || {
-        view! { <InsightsSection panels=panels test_id="is2" /> }.into_any()
-    });
-    tick().await;
-
-    let text = wrapper
-        .query_selector("[data-testid=\"is2-week-verdict\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        !text.is_empty(),
-        "the verdict row must show a guidance phrase"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn insights_section_with_full_data_renders_concrete_verdicts() {
-    // Типичное состояние активного юзера: все пять строк с данными.
-    let wrapper = create_wrapper();
-    let panels = RwSignal::new(InsightsPanels {
-        week: Some(origa::domain::insights::WeekVerdict {
-            week_accuracy_pct: 84,
-            month_accuracy_pct: Some(70),
-            kind: origa::domain::insights::WeekVerdictKind::Holding,
-        }),
-        month: Some(origa::domain::insights::WeekVerdict {
-            week_accuracy_pct: 79,
-            month_accuracy_pct: Some(70),
-            kind: origa::domain::insights::WeekVerdictKind::Holding,
-        }),
-        pace: Some(origa::domain::insights::PaceInsight {
-            per_day: 67,
-            delta: 12,
-            recent_total: 938,
-            previous_total: 770,
-        }),
-        time_of_day: Some(origa::domain::insights::TimeOfDayInsight {
-            worst_bucket: 5,
-            accuracy_pct: 52,
-            attempts: 23,
-        }),
-        overdue: Some(origa::domain::insights::OverdueInsight {
-            accuracy_drop_pp: 14,
-            ontime_accuracy_pct: 86,
-            late_accuracy_pct: 72,
-        }),
-        hardest_words: Some(origa::domain::insights::HardestWordsInsight {
-            one_in: 38,
-            troubled_count: 2,
-            studied_total: 76,
-            top: vec![origa::domain::insights::HardWord {
-                japanese: "\u{7d50}\u{5c40}".to_string(),
-                meaning: "in the end".to_string(),
-                lapses: 4,
-            }],
-        }),
-    });
-    mount_with_i18n(&wrapper, move || {
-        view! { <InsightsSection panels=panels test_id="is4" /> }.into_any()
-    });
-    tick().await;
-
-    // Вердикт недели: фраза-статус + subline с точностью обоих окон.
-    let verdict_text = wrapper
-        .query_selector("[data-testid=\"is4-week-verdict\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        verdict_text.contains("Accuracy is steady")
-            && verdict_text.contains("84")
-            && verdict_text.contains("70"),
-        "week verdict row must show the status phrase and both windows; got: {verdict_text}"
-    );
-
-    // Темп: число повторений и дельта.
-    let pace_text = wrapper
-        .query_selector("[data-testid=\"is4-pace\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        pace_text.contains("Reviews per day: 67") && pace_text.contains("+12"),
-        "pace row must show the per-day count and the delta sub-line; got: {pace_text}"
-    );
-
-    // Худшее время: окно после 20:00.
-    let time_text = wrapper
-        .query_selector("[data-testid=\"is4-time-of-day\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        time_text.contains("after 20:00") && time_text.contains("23 answers"),
-        "time row must name the worst window and the sample sub-line; got: {time_text}"
-    );
-
-    // Просрочка: потеря пунктов.
-    let overdue_text = wrapper
-        .query_selector("[data-testid=\"is4-overdue\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        overdue_text.contains("14 p.p.") && overdue_text.contains("72%"),
-        "overdue row must show the drop and the late-vs-ontime sub-line; got: {overdue_text}"
-    );
-
-    // Тяжёлые слова: доля.
-    let words_text = wrapper
-        .query_selector("[data-testid=\"is4-hardest-words\"]")
-        .unwrap()
-        .unwrap()
-        .text_content()
-        .unwrap();
-    assert!(
-        words_text.contains("2 hard words of 76") && words_text.contains("38"),
-        "hard-words row must show the share and the one-in-N sub-line; got: {words_text}"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn insights_section_period_switch_swaps_the_verdict() {
-    let wrapper = create_wrapper();
-    let panels = RwSignal::new(InsightsPanels {
-        week: Some(origa::domain::insights::WeekVerdict {
-            week_accuracy_pct: 84,
-            month_accuracy_pct: Some(70),
-            kind: origa::domain::insights::WeekVerdictKind::Holding,
-        }),
-        month: Some(origa::domain::insights::WeekVerdict {
-            week_accuracy_pct: 74,
-            month_accuracy_pct: Some(61),
-            kind: origa::domain::insights::WeekVerdictKind::Dipping,
-        }),
-        ..InsightsPanels::default()
-    });
-    mount_with_i18n(&wrapper, move || {
-        view! { <InsightsSection panels=panels test_id="is5" /> }.into_any()
-    });
-    tick().await;
-
-    let verdict_text = |wrapper: &web_sys::Element| {
-        wrapper
-            .query_selector("[data-testid=\"is5-week-verdict\"]")
-            .unwrap()
-            .unwrap()
-            .text_content()
-            .unwrap()
-    };
-    assert!(
-        verdict_text(&wrapper).contains("84"),
-        "week mode must show the week verdict; got: {}",
-        verdict_text(&wrapper)
-    );
-
-    let month_chip = wrapper
-        .query_selector("[data-testid=\"is5-period-month\"]")
-        .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::HtmlElement>()
-        .unwrap();
-    month_chip.click();
-    tick().await;
-
-    assert!(
-        verdict_text(&wrapper).contains("Accuracy has dropped")
-            && !verdict_text(&wrapper).contains("Accuracy is steady"),
-        "month mode must swap to the month verdict; got: {}",
-        verdict_text(&wrapper)
-    );
 }
 
 // ═══════════════════════════════════════════════════════════════════════

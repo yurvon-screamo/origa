@@ -6,9 +6,8 @@ import { dueCorpus } from "./due-corpus.ts";
 import { dueExamples } from "./due-examples.ts";
 import { fresh } from "./fresh.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
-import { ledger } from "./ledger.ts";
 import { onboarded } from "./onboarded.ts";
-import { onboardedInsights } from "./onboarded-insights.ts";
+import { onboardedHistory } from "./onboarded-history.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
 import { withWord } from "./with-word.ts";
@@ -37,8 +36,7 @@ export const presets: Record<PresetId, Preset> = {
     "due-examples": dueExamples,
     onboarded,
     "scoring-n5": scoringN5,
-    "onboarded-insights": onboardedInsights,
-    ledger,
+    "onboarded-history": onboardedHistory,
     "irodori-nyuumon": irodoriNyuumon,
     "with-word": withWord,
 };

@@ -98,21 +98,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded",
     },
-    "home-insights": {
-        id: "home-insights",
-        title: "Панели наблюдений",
+    "home-accuracy-chart": {
+        id: "home-accuracy-chart",
+        title: "График точности за месяц",
         route: "/home",
         locale: "ru-RU",
         viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded-insights",
-    },
-    "stitch-session": {
-        id: "stitch-session",
-        title: "Леджер наблюдений целиком",
-        route: "/home",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "ledger",
+        preset: "onboarded-history",
     },
     "feedback-form": {
         id: "feedback-form",
