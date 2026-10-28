@@ -94,15 +94,17 @@ export function seedTypicalUserState(userJson: string): string {
     const user = JSON.parse(userJson);
     const knowledgeSet = user.knowledge_set;
 
-    // Daily history: ratings on ~13 days spread over the month.
-    // Today is intentionally absent — a partial day reads as a dip on the
-    // accuracy chart. StatsTracker is #[serde(flatten)] inside
+    // Daily history: ratings across the month, with a few runs of
+    // consecutive days so the accuracy chart draws connected segments
+    // (isolated points render as dots without a line). Today is
+    // intentionally absent — a partial day reads as a dip on the chart.
+    // StatsTracker is #[serde(flatten)] inside
     // KnowledgeSet, so lesson_history sits at the TOP level of the
     // knowledge_set JSON — there is no "stats" key on the wire.
     const history: Array<Record<string, unknown>> = Array.isArray(knowledgeSet.lesson_history)
         ? knowledgeSet.lesson_history
         : [];
-    for (const days of [2, 4, 6, 8, 10, 12, 15, 18, 21, 24, 27]) {
+    for (const days of [2, 4, 6, 8, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 26, 27, 28]) {
         const positive = 8 + ((days * 3) % 4);
         const negative = 2 + (days % 3);
         history.push({

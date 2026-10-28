@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "home-accuracy-chart",
+  "screen": "accuracy-chart",
+  "route": "/home",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 124857,
+  "sha256": "9401f2eda2898e2a5b34df7b2f5f3e983ca611977689ff0f6253e6c7be5d0ce2",
+  "capturedAt": "2026-10-28T17:15:25.475Z",
+  "commit": "bee4e0f7311ebddd746662a578d372e3a08bb6d0",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8088",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--mobile-9401f2ed.png",
+  "uploadedSha256": "9401f2eda2898e2a5b34df7b2f5f3e983ca611977689ff0f6253e6c7be5d0ce2",
+  "uploadedAt": "2026-10-28T17:15:29.769Z"
+}

@@ -66,9 +66,7 @@ pub fn AccuracyChartCard(
             .days
             .iter()
             .enumerate()
-            .filter_map(|(index, day)| {
-                day.accuracy_pct.map(|pct| (x_for(index), y_for(pct)))
-            })
+            .filter_map(|(index, day)| day.accuracy_pct.map(|pct| (x_for(index), y_for(pct))))
             .collect()
     });
 

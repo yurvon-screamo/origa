@@ -1,7 +1,7 @@
+use super::AccuracyChartCard;
 use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
-use super::AccuracyChartCard;
 use super::{
     CompletionForecast, JftReadinessCard, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem,
     StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
@@ -17,9 +17,9 @@ use crate::store::lesson_handoff::{
 };
 use crate::ui_components::{ToastContainer, ToastData};
 use crate::utils::display_name::display_name_for;
+use chrono::Utc;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use chrono::Utc;
 use origa::domain::JftCoverage;
 use origa::domain::JlptProgress;
 use origa::domain::insights::{AccuracySeries, compute_daily_accuracy};
@@ -335,10 +335,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                     jlpt_progress.set(user.jlpt_progress().clone());
                     known_kanji.set(ks.get_known_kanji());
                     accuracy_series.set(compute_daily_accuracy(
-                            ks.lesson_history(),
-                            local_day::local_offset(),
-                            Utc::now(),
-                        ));
+                        ks.lesson_history(),
+                        local_day::local_offset(),
+                        Utc::now(),
+                    ));
                     today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     due_count.set(compute_due_count(ks));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));

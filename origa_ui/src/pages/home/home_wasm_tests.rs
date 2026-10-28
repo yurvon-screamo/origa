@@ -11,8 +11,8 @@ use leptos::task::tick;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::accuracy_chart::AccuracyChartCard;
+use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::{CompletionForecast, RecentlyStudiedItem};
 use crate::pages::home::{
     JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, TodayOverviewCard,
