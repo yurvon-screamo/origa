@@ -136,6 +136,12 @@ SYNC_DIRS = [
     "well_known_set/minna_n3",
     "well_known_set/minna_n2",
     "well_known_set/spy_family",
+    # Counter-word registry (issue #415): a single hand-edited data file
+    # (counters/counters.json, release-updated tier in _cdn_cache). Lived
+    # outside SYNC_DIRS since the original deploy, so reading fixes reached
+    # the bucket only through manual uploads — sync it like the other
+    # content dirs instead.
+    "counters",
 ]
 
 # Sync dirs whose content is truly static (immutable Cache-Control tier in
