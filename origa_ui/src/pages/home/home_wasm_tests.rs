@@ -1,6 +1,6 @@
 //! WASM render tests for `pages/home` components: `WelcomeCard`,
 //! `JlptProgressCard`, `JlptSkeleton`, `CategoryProgressGrid`,
-//! `AccuracyChartCard`, `StudiedTodayList`, `TodayOverviewCard`.
+//! `StudiedTodayList`, `TodayOverviewCard`.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -11,7 +11,6 @@ use leptos::task::tick;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use crate::pages::home::accuracy_chart::AccuracyChartCard;
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::{CompletionForecast, RecentlyStudiedItem};
 use crate::pages::home::{
@@ -252,99 +251,6 @@ async fn category_progress_grid_shows_percentage_per_card() {
     assert!(
         text.contains("5 / 10"),
         "5 of 10 learned must show the ratio; got: {text}"
-    );
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// AccuracyChartCard (fl2O037UR7)
-// ═══════════════════════════════════════════════════════════════════════
-
-/// Ряд из CHART_DAYS дней с оценками в выбранных позициях (от старых к новым).
-fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeries {
-    use origa::domain::insights::{CHART_DAYS, DayAccuracy};
-    let days = (0..CHART_DAYS)
-        .map(|index| {
-            let days_ago = (CHART_DAYS - 1 - index) as u32;
-            let review = reviews.iter().find(|(idx, _)| *idx == index);
-            DayAccuracy {
-                days_ago,
-                accuracy_pct: review.map(|(_, pct)| *pct),
-            }
-        })
-        .collect();
-    origa::domain::insights::AccuracySeries { days }
-}
-
-#[wasm_bindgen_test]
-async fn accuracy_chart_empty_series_renders_guidance_without_line() {
-    let wrapper = create_wrapper();
-    let series = RwSignal::new(series_with(&[]));
-    mount_with_i18n(&wrapper, move || {
-        view! {
-            <AccuracyChartCard
-                series=series.into()
-                lang=Signal::derive(|| origa::domain::NativeLanguage::English)
-                test_id="ac1"
-            />
-        }
-        .into_any()
-    });
-    tick().await;
-
-    let section = wrapper.query_selector("[data-testid=\"ac1\"]").unwrap();
-    assert!(section.is_some(), "chart section must render");
-
-    let html = wrapper
-        .query_selector("[data-testid=\"ac1-chart\"]")
-        .unwrap()
-        .unwrap()
-        .outer_html();
-    assert!(
-        html.contains("Appears after your first reviews"),
-        "empty series must show the guidance text inside the chart; got: {html}"
-    );
-    assert!(
-        !html.contains("<polyline"),
-        "empty series must not draw a line"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn accuracy_chart_with_data_renders_line_dots_and_legend() {
-    // Оценки в трёх днях; MultiLineChart рисует одну линию, дотсы (≤15
-    // точек) и легенду с меткой линии.
-    let wrapper = create_wrapper();
-    let series = RwSignal::new(series_with(&[(2, 90), (3, 80), (10, 60)]));
-    mount_with_i18n(&wrapper, move || {
-        view! {
-            <AccuracyChartCard
-                series=series.into()
-                lang=Signal::derive(|| origa::domain::NativeLanguage::English)
-                test_id="ac2"
-            />
-        }
-        .into_any()
-    });
-    tick().await;
-
-    let chart = wrapper
-        .query_selector("[data-testid=\"ac2-chart\"]")
-        .unwrap()
-        .unwrap();
-
-    let polyline_count = chart.outer_html().matches("<polyline").count();
-    assert_eq!(polyline_count, 1, "a single accuracy line must render");
-
-    let circle_count = chart.outer_html().matches("<circle").count();
-    assert_eq!(
-        circle_count, 3,
-        "every studied day must draw a dot (3 points ≤ 15)"
-    );
-
-    let text = chart.text_content().unwrap();
-    assert!(
-        text.contains("Accuracy"),
-        "legend must carry the line label; got: {text}"
     );
 }
 

@@ -7,8 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-28T22:59:21.508Z | 5897950f | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--mobile-69653a18.png) |
-| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-28T22:58:42.734Z | 5897950f | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--desktop-3e79bf55.png) |
+| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-28T23:15:52.934Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--mobile-ebff34b1.png) |
+| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-28T23:15:08.781Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--desktop-17b49484.png) |
 | kanji-presentation | lesson-acquaintance-kanji | mobile | ru-RU | 390×1502 | 2026-10-28T12:54:20.306Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--mobile-3e705948.png) |
 | kanji-presentation | lesson-acquaintance-kanji | desktop | ru-RU | 1280×1249 | 2026-10-28T12:53:48.881Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--desktop-498bd1fe.png) |
 | grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-27T02:44:12.629Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png) |
