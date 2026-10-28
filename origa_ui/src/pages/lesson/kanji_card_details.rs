@@ -57,7 +57,7 @@ pub fn KanjiCardDetails(
             />
 
             <div class="flex gap-4 items-start text-left">
-                <div class="w-16 shrink-0">
+                <div class="lesson-detail-label">
                     <Text size=TextSize::Default variant=TypographyVariant::Muted>
                         {t!(i18n, lesson.meaning)}
                     </Text>
@@ -84,7 +84,7 @@ pub fn KanjiCardDetails(
             <div class="my-6 space-y-4 max-w-max mx-auto">
                 <Show when=move || radicals_stored.get_value().is_some()>
                     <div class="flex gap-4 items-start text-left">
-                        <div class="w-16 shrink-0">
+                        <div class="lesson-detail-label">
                             <Text size=TextSize::Default variant=TypographyVariant::Muted>
                                 {t!(i18n, lesson.radicals)}
                             </Text>
@@ -136,7 +136,7 @@ pub fn KanjiCardDetails(
                 </Show>
 
                 <div class="flex gap-4 items-start text-left">
-                    <div class="w-16 shrink-0">
+                    <div class="lesson-detail-label">
                         <Text size=TextSize::Default variant=TypographyVariant::Muted>
                             {t!(i18n, lesson.writing)}
                         </Text>
