@@ -1,11 +1,17 @@
 # Runbook: Umami self-host на Railway (ADR-054 §7, issue #733)
 
 Топология: трекеры (лендинг / веб-приложение / десктоп Tauri) шлют биконы на
-`umami.origa.uwuwu.net`. Имя резолвится через Bunny scriptable DNS
-(скрипт 91629): мир → CNAME на edge-имя Railway `07wyrdxw.up.railway.app`
-(кастом-домен `umami.origa.uwuwu.net` приаттачен к сервису), РФ → RF VM nginx
-(Railway-подсети из РФ дропаются, ADR-049). Сервис — Umami v3.4.0
-(PostgreSQL-only) + Railway Postgres + Valkey (Redis из шаблона, опционален).
+`umami.origa.uwuwu.net`. **С 2026-10-29 обе geo-ветки идут через RF VM**
+(временная схема): Railway не может выпустить серт для кастом-домена
+(internal error при issuance, 4+ ретрая за двое суток), edge отвечает
+wildcard `*.up.railway.app` — браузеры мир-ветки не проходят TLS. У ВМ есть
+валидный серт Let's Encrypt на это имя, поэтому мир-ветка тоже ведём через
+неё (объём биконов мизерный). Откат на geo-split (мир → CNAME edge-имени
+Railway `07wyrdxw.up.railway.app`) — когда domain-status Railway покажет
+VALID-серт: ветка umami в скрипте переезжает ниже isRF-блока, деплой
+скрипта, TTL 60. Сервис — Umami v3.4.0 (PostgreSQL-only) + Railway Postgres
+
++ Valkey (Redis из шаблона, опционален).
 
 Развёрнуто 2026-10-22. Фактические значения:
 
@@ -60,13 +66,13 @@ mkdir -p /etc/nginx/ssl/umami.origa.uwuwu.net
 nginx (IaC: `~/rf-proxy-infra` на ноуте и на ВМ, правки через git;
 бэкап 2026-10-22 — `/root/nginx-backup-20261022/`):
 
-- `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
++ `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
   `map $ssl_preread_server_name`;
-- `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
++ `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
   umami (nginx не умеет переменные в `ssl_certificate`, поэтому сниппет
   дублируется);
-- `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
-  - server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
++ `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
+  + server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
   (`umami-production-5769.up.railway.app`), НЕ кастомный**: серт Railway
   выдаёт на сервисное имя, verify ON проверяет его; приложение получает
   кастомный хост через `Host`. (У app.origa иначе — там кастом-домен
@@ -85,14 +91,19 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
 
 1. Кастом-домен приаттачен к сервису (`railway domain umami.origa.uwuwu.net`),
    Railway даёт edge-CNAME: `umami.origa → 07wyrdxw.up.railway.app`.
-2. В зоне — обычная CNAME-запись `umami.origa → 07wyrdxw.up.railway.app`
-   (до деплоя скрипта ответ идёт через fallthrough: скрипт возвращает
-   undefined, Bunny отдаёт записи зоны). Railway верифицирует домен,
-   выпускает серт, edge начинает маршрутизацию. Без этой записи мир-ветка
-   отдаёт `x-railway-fallback` 404, а РФ-ветка — 502 с edge.
+2. Верификация — TXT-записью `_railway-verify.umami.origa` (токен виден в
+   `domain-status` MCP/CLI); зоновая CNAME с тем же именем, что и NS-аттач
+   скрипта, НЕ создаётся — Bunny отказывает (имя занято делегацией).
+   После TXT домен становится Verified, CNAME-ответ скрипта — PROPAGATED.
+   Гоча: выпуск самого серта у Railway может падать с internal error
+   неделями (наблюдалось 28–29.10.2026) — маршрутизация при этом работает
+   (curl -k → 200), но браузерам нужен именованный серт; лечится
+   `retry-domain-certificate` либо обходом через ВМ (см. ниже).
 3. Ветка в скрипте (репо `infra/bunny-dns/handleQuery.js`): имя в
    guard-список + мир-ветка `CnameRecord("07wyrdxw.up.railway.app", 300)`
-   (РФ обслуживается общим `isRF`-блоком). Деплой:
+   (РФ обслуживается общим `isRF`-блоком). **Текущее состояние
+   (2026-10-29): из-за сломанного issuance у Railway ветка umami отдаёт
+   A-record ВМ для всех** — пока серт Railway не станет VALID. Деплой:
    `bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629`.
    После деплоя скрипт отвечает раньше записей зоны — зоновую CNAME можно
    оставить как страховку (не конфликтует).
@@ -113,8 +124,8 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
 
 ## Откат
 
-- Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
-- Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
-- Код: revert релизного коммита — трекер возвращается на Cloud (website id
++ Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
++ Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
++ Код: revert релизного коммита — трекер возвращается на Cloud (website id
   Cloud `0b8b69aa-9c94-41ef-b27a-f928011b797b` хранится в git-истории до
   деактивации аккаунта).

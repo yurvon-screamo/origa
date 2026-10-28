@@ -8,7 +8,11 @@ attached (via NS records, TTL 60) to **five** names in the `uwuwu.net` zone
 - `app.origa`     → RF: A 193.233.217.243, world: CNAME 9v15a3ov.up.railway.app
 - `s3.origa`      → RF: A 193.233.217.243, world: CNAME d3gbi3wo8j4c2w.cloudfront.net
 - `content.origa` → CNAME origa.t3.tigrisbucket.io for everyone (diagnostic name, no RF branch)
-- `umami.origa`   → RF: A 193.233.217.243, world: CNAME 07wyrdxw.up.railway.app (self-hosted Umami, ADR-054 §7)
+- `umami.origa`   → A 193.233.217.243 for everyone (temporary, 2026-10-29: Railway custom-domain
+  cert issuance fails with an internal error, the edge serves the wildcard cert for this SNI;
+  the VM holds a valid cert, so both geo branches go through it. Flip back to the geo-split —
+  world CNAME 07wyrdxw.up.railway.app — once Railway's domain-status shows a VALID certificate.
+  Self-hosted Umami, ADR-054 §7)
 
 `pass` is a plain A record (85.192.63.249, TTL 300) and is **not** attached to
 the script. The script answers only the five names above (hostname guard) and
