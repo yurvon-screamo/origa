@@ -11,7 +11,7 @@ Railway `07wyrdxw.up.railway.app`) — когда domain-status Railway пока
 VALID-серт: ветка umami в скрипте переезжает ниже isRF-блока, деплой
 скрипта, TTL 60. Сервис — Umami v3.4.0 (PostgreSQL-only) + Railway Postgres
 
-+ Valkey (Redis из шаблона, опционален).
+- Valkey (Redis из шаблона, опционален).
 
 Развёрнуто 2026-10-22. Фактические значения:
 
@@ -66,13 +66,13 @@ mkdir -p /etc/nginx/ssl/umami.origa.uwuwu.net
 nginx (IaC: `~/rf-proxy-infra` на ноуте и на ВМ, правки через git;
 бэкап 2026-10-22 — `/root/nginx-backup-20261022/`):
 
-+ `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
+- `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
   `map $ssl_preread_server_name`;
-+ `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
+- `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
   umami (nginx не умеет переменные в `ssl_certificate`, поэтому сниппет
   дублируется);
-+ `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
-  + server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
+- `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
+  и server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
   (`umami-production-5769.up.railway.app`), НЕ кастомный**: серт Railway
   выдаёт на сервисное имя, verify ON проверяет его; приложение получает
   кастомный хост через `Host`. (У app.origa иначе — там кастом-домен
@@ -105,12 +105,15 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
    (2026-10-29): из-за сломанного issuance у Railway ветка umami отдаёт
    A-record ВМ для всех** — пока серт Railway не станет VALID. Деплой:
    `bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629`.
-   После деплоя скрипт отвечает раньше записей зоны — зоновую CNAME можно
-   оставить как страховку (не конфликтует).
 4. Проверка обеих веток:
    `curl -fsS https://umami.origa.uwuwu.net/script.js -o /dev/null -w '%{http_code}'`
    (мир) и через `--resolve ...:193.233.217.243` (РФ).
-5. Rollback скрипта: `git revert` + редеплой (TTL 60).
+5. Rollback — к целевому состоянию, не голым revert (у ветки umami уже два
+   коммита: добавление 2026-10-22 и флип на ВМ 2026-10-29; revert не того
+   вернёт сломанную мир-ветку на wildcard Railway). Целевые состояния:
+   geo-split — ветка umami ниже isRF-блока, мир →
+   `CnameRecord("07wyrdxw.up.railway.app", 300)`; всё-через-ВМ — как сейчас
+   (ветка выше isRF, A-record). После правки — деплой скрипта, TTL 60.
 
 ## 4. Переключение и проверка
 
@@ -124,8 +127,8 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
 
 ## Откат
 
-+ Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
-+ Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
-+ Код: revert релизного коммита — трекер возвращается на Cloud (website id
+- Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
+- Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
+- Код: revert релизного коммита — трекер возвращается на Cloud (website id
   Cloud `0b8b69aa-9c94-41ef-b27a-f928011b797b` хранится в git-истории до
   деактивации аккаунта).
