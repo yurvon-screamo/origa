@@ -512,21 +512,40 @@ async fn example_card_enters_token_translator_phase() {
     // languages before the dictionary loader renders, and one `tick()`
     // races that first microtask on a loaded runner (the v0.8.0-rc27 tag
     // run failed this assert twice in a row while the PR runs passed).
-    // Poll for the phase — a genuine plain fallback stays absent for the
-    // full budget and the assert fires as before.
-    let entered_translator_phase = wait_until(
+    // The phase STARTS at WaitingDictionary, so on a warm dictionary the
+    // marker can resolve away before the first poll — poll for the
+    // RESOLUTION (the marker disappears), then assert the outcome is
+    // not the #845 no-language plain fallback.
+    let settled = wait_until(
         || {
             wrapper
                 .query_selector("[data-testid=\"translator-dict-loading\"]")
                 .unwrap()
-                .is_some()
+                .is_none()
         },
         40,
         250,
     )
     .await;
     assert!(
-        entered_translator_phase,
+        settled,
+        "the translator must resolve the sentence languages (dict loading must finish)"
+    );
+    // The #845 plain fallback is the bare serif span with the sentence
+    // text; the engaged pipeline renders either the dict loader (gone
+    // by now) or the token markup instead.
+    let plain_fallback = wrapper
+        .query_selector("span.translator-loading.font-serif")
+        .ok()
+        .flatten()
+        .map(|el| {
+            el.text_content()
+                .unwrap_or_default()
+                .contains("これはペンです")
+        })
+        .unwrap_or(false);
+    assert!(
+        !plain_fallback,
         "example sentence must enter the token translator phase, not the no-language plain fallback (#845)"
     );
 }
