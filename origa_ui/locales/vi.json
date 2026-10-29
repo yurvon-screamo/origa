@@ -1,6 +1,7 @@
 {
   "chart": {
     "section_title": "Độ chính xác trong tháng",
+    "line_label": "Độ chính xác",
     "empty": "Xuất hiện sau lần ôn tập đầu tiên",
     "today": "hôm nay",
     "month_ago": "30 ngày trước"

@@ -1,6 +1,7 @@
 {
   "chart": {
     "section_title": "Accuracy over the month",
+    "line_label": "Accuracy",
     "empty": "Appears after your first reviews",
     "today": "today",
     "month_ago": "30 days ago"

@@ -35,6 +35,7 @@ mod logo;
 mod markdown;
 mod markdown_examples;
 mod modal;
+mod multi_line_chart;
 mod nav_config;
 mod ocr_loading_stage;
 mod offline_bundle_card;
@@ -123,6 +124,7 @@ pub use logo::{Logo, LogoSize};
 pub use markdown::{MarkdownText, MarkdownVariant};
 pub use markdown_examples::{example_fences_to_paragraphs, strip_emphasis_markers};
 pub use modal::Modal;
+pub use multi_line_chart::{ChartLine, MultiLineChart};
 #[expect(unused_imports, reason = "prepared for future navigation")]
 pub use nav_config::NavRoute;
 pub use ocr_loading_stage::{
