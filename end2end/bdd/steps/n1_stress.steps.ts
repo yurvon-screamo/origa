@@ -295,7 +295,7 @@ Then('карточки статистики главной страницы от
     // completion forecast) render inside these cards on an 11k-card
     // corpus — visible cards prove the renders completed. The accuracy
     // chart is the perf canary for the dashboard render path.
-    await expect(home.accuracyChart).toBeVisible({ timeout: 60_000 });
+    await expect(home.statsAccordionToggle).toBeVisible({ timeout: 60_000 });
     await home.statsAccordionToggle.click();
     await expect(home.accuracyChartPlot).toBeVisible({ timeout: 60_000 });
     await expect(home.jlptProgress).toBeVisible({ timeout: 60_000 });
