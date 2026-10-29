@@ -22,8 +22,12 @@ pub fn QuizOptionsMulti(
                 .iter()
                 .enumerate()
                 .map(|(index, option): (usize, &QuizOption)| {
+                    // Bare digit hint (no brackets): the scenario
+                    // lesson-reading-quiz matches option TEXT against
+                    // the kanji dictionary after stripping digits and
+                    // whitespace — brackets would break the match.
                     let option_text = option.text().to_string();
-                    let key_hint = format!("[{}]", index + 1);
+                    let key_hint = format!("{}", index + 1);
 
                     view! {
                         <MultiOptionButton
