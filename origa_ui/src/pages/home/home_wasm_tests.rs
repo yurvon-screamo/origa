@@ -279,7 +279,11 @@ fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeri
 async fn accuracy_chart_empty_series_renders_guidance_without_line() {
     let wrapper = create_wrapper();
     let series = RwSignal::new(series_with(&[]));
-    mount_with_i18n(&wrapper, move || {
+    // Disposable mount: a leaked chart scope freezes the later
+    // translator-dictionary test on CI (empirically 7/7 red with leaked
+    // mounts, green without any mount — D1 diag). Dispose at test end.
+    let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
+        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
         view! {
             <AccuracyChartCard
                 series=series.into()
@@ -312,10 +316,11 @@ async fn accuracy_chart_empty_series_renders_guidance_without_line() {
 #[wasm_bindgen_test]
 async fn accuracy_chart_with_data_renders_line_dots_and_legend() {
     // Оценки в трёх днях; MultiLineChart рисует одну линию, дотсы (≤15
-    // точек) и легенду с меткой линии.
+    // точек) и легенду с меткой линии. Disposable mount — см. пустой тест.
     let wrapper = create_wrapper();
     let series = RwSignal::new(series_with(&[(2, 90), (3, 80), (10, 60)]));
-    mount_with_i18n(&wrapper, move || {
+    let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
+        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
         view! {
             <AccuracyChartCard
                 series=series.into()
