@@ -9,12 +9,7 @@ use leptos::prelude::*;
 use origa::domain::NativeLanguage;
 use origa::domain::insights::AccuracySeries;
 
-const RU_MONTHS_SHORT: [&str; 12] = [
-    "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
-];
-const EN_MONTHS_SHORT: [&str; 12] = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+use super::dashboard_stats::{EN_MONTHS_SHORT, RU_MONTHS_SHORT};
 
 /// Подпись дня на оси X: «14 окт» / «14 Oct» — как в старом activity chart.
 fn day_label(days_ago: u32, lang: &NativeLanguage) -> String {

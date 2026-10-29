@@ -353,6 +353,58 @@ async fn accuracy_chart_with_data_renders_line_dots_and_legend() {
     );
 }
 
+#[wasm_bindgen_test]
+async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
+    use crate::pages::home::StatsSection;
+
+    let wrapper = create_wrapper();
+    let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
+        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        view! {
+            <StatsSection test_id="ss1">
+                <p data-testid="ss1-inner">"inner content"</p>
+            </StatsSection>
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let section = wrapper
+        .query_selector("[data-testid=\"ss1\"]")
+        .unwrap()
+        .unwrap();
+    let content = wrapper
+        .query_selector("[data-testid=\"ss1-content\"]")
+        .unwrap()
+        .unwrap();
+
+    let collapsed_class = content.class_name();
+    assert!(
+        collapsed_class.contains("hidden"),
+        "stats section must start collapsed; got: {collapsed_class}"
+    );
+
+    let toggle = wrapper
+        .query_selector("[data-testid=\"ss1-toggle\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    toggle.click();
+    tick().await;
+
+    let expanded_class = content.class_name();
+    assert!(
+        !expanded_class.contains("hidden"),
+        "toggle must expand the section; got: {expanded_class}"
+    );
+    assert!(
+        content.text_content().unwrap().contains("inner content"),
+        "children must render inside the section"
+    );
+    let _ = section;
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // StudiedTodayList
 // ═══════════════════════════════════════════════════════════════════════
