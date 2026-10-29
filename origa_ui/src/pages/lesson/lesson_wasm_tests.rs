@@ -809,10 +809,12 @@ async fn yesno_card_view_correct_answer_still_shows_the_answer() {
     );
 }
 
-// The "Correct answer: Да/Нет" line must appear only as feedback on a miss.
-// Locale note: `mount_with_i18n` provides the context without an explicit
-// locale, so the default from build.rs (`Config::new("en")`) applies —
-// assert against the en string (locales/en.json "correct_answer").
+// Direction B (task 3SekkMiYYW): the in-card «Correct answer: Да/Нет»
+// line is gone — the ledger strip's «Правильный ответ» row reveals the
+// truth on a miss. Locale note: `mount_with_i18n` provides the context
+// without an explicit locale, so the default from build.rs
+// (`Config::new("en")`) applies — assert against the en string
+// (locales/en.json "ledger_row_correct_answer").
 #[wasm_bindgen_test]
 async fn yesno_card_view_correct_hides_correct_answer_line() {
     let wrapper = create_wrapper();

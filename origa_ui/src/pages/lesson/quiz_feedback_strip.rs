@@ -1,5 +1,7 @@
 use crate::i18n::*;
+use crate::ui_components::{MarkdownText, MarkdownVariant};
 use leptos::prelude::*;
+use std::collections::HashSet;
 
 use super::quiz_ledger::{LedgerRow, LedgerRowKind, LedgerVerdict};
 use super::quiz_ledger_labels::{row_label, verdict_label};
@@ -20,6 +22,10 @@ pub fn QuizFeedbackStrip(
     #[prop(default = None)]
     count: Option<(usize, usize)>,
     rows: Vec<LedgerRow>,
+    /// Known-kanji set for the row text renderer — the same furigana
+    /// suppression the options grid uses for the very same strings.
+    #[prop(into)]
+    known_kanji: Signal<HashSet<char>>,
     #[prop(default = Signal::derive(|| "quiz-feedback-strip".to_string()), into)] test_id: Signal<
         String,
     >,
@@ -30,12 +36,14 @@ pub fn QuizFeedbackStrip(
         LedgerVerdict::Errors | LedgerVerdict::Incorrect => "var(--error)",
         LedgerVerdict::NotAnswered => "var(--fg-muted)",
     };
-    let rows_view = (!rows.is_empty()).then(|| {
+    let rows_view = (!rows.is_empty()).then(move || {
         view! {
             <div>
                 {rows
                     .into_iter()
-                    .map(|row| view! { <LedgerTableRow row /> })
+                    .map(|row| {
+                        view! { <LedgerTableRow row known_kanji /> }
+                    })
                     .collect_view()
                 }
             </div>
@@ -76,7 +84,10 @@ pub fn QuizFeedbackStrip(
 }
 
 #[component]
-fn LedgerTableRow(row: LedgerRow) -> impl IntoView {
+fn LedgerTableRow(
+    row: LedgerRow,
+    #[prop(into)] known_kanji: Signal<HashSet<char>>,
+) -> impl IntoView {
     let i18n = use_i18n();
     let is_dashed = row.kind == LedgerRowKind::Missed;
     let is_cross = matches!(
@@ -131,8 +142,15 @@ fn LedgerTableRow(row: LedgerRow) -> impl IntoView {
             class=format!("flex items-center justify-between gap-2 px-3 py-2 border-t border-[var(--border-dark)] {dashed_border}")
             style=row_accent
         >
-            <span class="flex items-center gap-2 min-w-0">
-                <span class=format!("text-lg {strike}")>{text}</span>
+            <span class=format!("flex items-center gap-2 min-w-0 {strike}")>
+                <span class="text-lg">
+                    <MarkdownText
+                        content=Signal::derive(move || text.clone())
+                        variant=MarkdownVariant::Default
+                        known_kanji=known_kanji.get()
+                        glue_punctuation=true
+                    />
+                </span>
                 {tag_view}
             </span>
             <span class="flex items-center gap-1.5 shrink-0">

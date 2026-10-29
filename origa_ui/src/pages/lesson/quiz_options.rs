@@ -11,7 +11,6 @@ use std::collections::HashSet;
 pub fn QuizOptions(
     options: Vec<QuizOption>,
     selected_option: Option<usize>,
-    show_result: Signal<bool>,
     on_select_option: Callback<usize>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
@@ -22,20 +21,21 @@ pub fn QuizOptions(
                     .iter()
                     .enumerate()
                     .map(|(index, option): (usize, &QuizOption)| {
+                        // Bare digit hint (no brackets): the
+                        // lesson-reading-quiz scenario matches option
+                        // TEXT against the kanji dictionary after
+                        // stripping digits and whitespace — brackets
+                        // would break the match. Uniform with the
+                        // multi-quiz grid.
                         let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem] quiz-option-neutral";
-                        let selected_ring = if selected_option == Some(index) && !show_result.get() {
+                        let selected_ring = if selected_option == Some(index) {
                             "ring-2 ring-[var(--accent-olive)]"
                         } else {
                             ""
                         };
 
-                        let class = format!(
-                            "{} {} {}",
-                            base_class,
-                            selected_ring,
-                            if show_result.get() { "pointer-events-none" } else { "" }
-                        );
-                        let key_hint = format!("[{}]", index + 1);
+                        let class = format!("{} {}", base_class, selected_ring);
+                        let key_hint = format!("{}", index + 1);
                         let option_text = option.text().to_string();
 
                         view! {
@@ -43,9 +43,7 @@ pub fn QuizOptions(
                                 class=class
                                 data-testid=format!("quiz-option-{}", index)
                                 on:click=move |_| {
-                                    if !show_result.get() {
-                                        on_select_option.run(index);
-                                    }
+                                    on_select_option.run(index);
                                 }
                             >
                                 <Text size=TextSize::Default>

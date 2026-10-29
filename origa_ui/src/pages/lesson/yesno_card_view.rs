@@ -15,7 +15,7 @@ use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
 use super::quiz_feedback_strip::QuizFeedbackStrip;
-use super::quiz_ledger::yesno_ledger_rows;
+use super::quiz_ledger::{single_verdict, yesno_ledger_rows};
 use super::quiz_ledger_labels::yesno_label;
 use super::quiz_result::QuizResult;
 
@@ -180,9 +180,7 @@ pub fn YesNoCardView(
             <Show when=move || show_result.get()>
                 {move || {
                     let result = QuizResult::from(yesno_result());
-                    if matches!(result, QuizResult::None) {
-                        return None;
-                    }
+                    let verdict = single_verdict(result)?;
                     let rows = yesno_ledger_rows(
                         result,
                         selected_answer,
@@ -191,7 +189,7 @@ pub fn YesNoCardView(
                         &yesno_label(i18n, false),
                     );
                     Some(view! {
-                        <QuizFeedbackStrip verdict=verdict_of(result) rows />
+                        <QuizFeedbackStrip verdict rows known_kanji />
                     })
                 }}
             </Show>
@@ -302,13 +300,5 @@ pub fn YesNoCardView(
                 />
             </Show>
         </LessonCardShell>
-    }
-}
-
-fn verdict_of(result: QuizResult) -> super::quiz_ledger::LedgerVerdict {
-    match result {
-        QuizResult::Correct => super::quiz_ledger::LedgerVerdict::Correct,
-        QuizResult::Incorrect => super::quiz_ledger::LedgerVerdict::Incorrect,
-        _ => super::quiz_ledger::LedgerVerdict::NotAnswered,
     }
 }

@@ -3,9 +3,14 @@ use std::collections::HashSet;
 
 use super::quiz_result::QuizResult;
 
-/// Feedback triple of a submitted multi-quiz: verdict, optional «K/N»
-/// counter and the ledger rows.
-pub(crate) type MultiFeedback = (LedgerVerdict, Option<(usize, usize)>, Vec<LedgerRow>);
+/// Feedback bundle of a submitted multi-quiz: the verdict, the
+/// optional «K/N» counter (selected-correct over total correct) and
+/// the ledger rows.
+pub(crate) struct MultiFeedback {
+    pub(crate) verdict: LedgerVerdict,
+    pub(crate) count: Option<(usize, usize)>,
+    pub(crate) rows: Vec<LedgerRow>,
+}
 
 /// One ruled row of the quiz answer ledger (task 3SekkMiYYW): the
 /// structured replacement for the old «verdict + missed + extra» text
@@ -167,11 +172,18 @@ pub(crate) fn yesno_ledger_rows(
             })
             .unwrap_or_default(),
         QuizResult::Incorrect => {
-            let mut rows = vec![LedgerRow {
-                text: label(picked.unwrap_or(!correct)),
-                tag: None,
-                kind: LedgerRowKind::YourAnswerWrong,
-            }];
+            // Honest degradation: an Incorrect verdict without a pick
+            // (invariant break) still reveals the truth — no fabricated
+            // «user answer» row.
+            let mut rows = picked
+                .map(|v| {
+                    vec![LedgerRow {
+                        text: label(v),
+                        tag: None,
+                        kind: LedgerRowKind::YourAnswerWrong,
+                    }]
+                })
+                .unwrap_or_default();
             rows.push(LedgerRow {
                 text: label(correct),
                 tag: None,

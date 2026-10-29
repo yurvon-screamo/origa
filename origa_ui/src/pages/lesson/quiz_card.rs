@@ -197,7 +197,7 @@ pub fn QuizCardView(
                         let verdict = single_verdict(result)?;
                         let rows = single_ledger_rows(result, &options.get_value(), selected_option);
                         Some(view! {
-                            <QuizFeedbackStrip verdict count=None rows />
+                            <QuizFeedbackStrip verdict count=None rows known_kanji />
                         })
                     }}
                 </Show>
@@ -218,8 +218,15 @@ pub fn QuizCardView(
                             &options.get_value(),
                             &selected_options.get(),
                         )
-                        .map(|(verdict, count, rows)| {
-                            view! { <QuizFeedbackStrip verdict count rows /> }
+                        .map(|fb| {
+                            view! {
+                                <QuizFeedbackStrip
+                                    verdict=fb.verdict
+                                    count=fb.count
+                                    rows=fb.rows
+                                    known_kanji
+                                />
+                            }
                         })
                     }}
                 </Show>
@@ -371,7 +378,6 @@ pub fn QuizCardView(
                 <QuizOptions
                     options=options.get_value()
                     selected_option=selected_option
-                    show_result=show_result
                     on_select_option=on_select_with_speech
                     known_kanji=known_kanji
                 />
@@ -391,13 +397,12 @@ fn multi_feedback_data(
     options: &[origa::domain::QuizOption],
     selected: &HashSet<usize>,
 ) -> Option<MultiFeedback> {
-    let opts_owned = options.to_vec();
     if dont_know {
-        return Some((
-            LedgerVerdict::NotAnswered,
-            None,
-            multi_dont_know_rows(&opts_owned),
-        ));
+        return Some(MultiFeedback {
+            verdict: LedgerVerdict::NotAnswered,
+            count: None,
+            rows: multi_dont_know_rows(options),
+        });
     }
     let multi = multi_result?;
     let result = if lenient_grading {
@@ -408,11 +413,15 @@ fn multi_feedback_data(
     let verdict = multi_verdict(result)?;
     let count = match verdict {
         LedgerVerdict::Correct | LedgerVerdict::LenientPass | LedgerVerdict::Errors => {
-            Some(multi_score(&multi, &opts_owned))
+            Some(multi_score(&multi, options))
         },
         _ => None,
     };
-    Some((verdict, count, multi_ledger_rows(&multi, options, selected)))
+    Some(MultiFeedback {
+        verdict,
+        count,
+        rows: multi_ledger_rows(&multi, options, selected),
+    })
 }
 
 /// The kanji NAME box on the reading-quiz answer side (#822): muted
@@ -501,12 +510,11 @@ mod tests {
             origa::domain::QuizOption::new_simple("a".to_string(), true),
             origa::domain::QuizOption::new_simple("b".to_string(), false),
         ];
-        let (verdict, count, rows) =
-            multi_feedback_data(true, None, false, &options, &HashSet::new())
-                .expect("dont know must yield feedback");
-        assert_eq!(verdict, LedgerVerdict::NotAnswered);
-        assert_eq!(count, None);
-        assert_eq!(rows.len(), 1, "only the correct option is revealed");
+        let fb = multi_feedback_data(true, None, false, &options, &HashSet::new())
+            .expect("dont know must yield feedback");
+        assert_eq!(fb.verdict, LedgerVerdict::NotAnswered);
+        assert_eq!(fb.count, None);
+        assert_eq!(fb.rows.len(), 1, "only the correct option is revealed");
     }
 
     #[test]
@@ -531,11 +539,10 @@ mod tests {
         let mut selected = HashSet::new();
         selected.insert(0);
         selected.insert(2);
-        let (verdict, count, rows) =
-            multi_feedback_data(false, Some(multi), true, &options, &selected)
-                .expect("partial must yield feedback");
-        assert_eq!(verdict, LedgerVerdict::Errors);
-        assert_eq!(count, Some((1, 2)));
-        assert_eq!(rows.len(), 3, "selected + missed + extra rows");
+        let fb = multi_feedback_data(false, Some(multi), true, &options, &selected)
+            .expect("partial must yield feedback");
+        assert_eq!(fb.verdict, LedgerVerdict::Errors);
+        assert_eq!(fb.count, Some((1, 2)));
+        assert_eq!(fb.rows.len(), 3, "selected + missed + extra rows");
     }
 }

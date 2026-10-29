@@ -177,7 +177,7 @@ async function captureReadingQuiz(
     const correctIdxs: number[] = [];
     for (let i = 0; i < count; i++) {
         const raw = (await page.getByTestId(`quiz-option-${i}`).textContent()) ?? "";
-        const text = raw.replace(/[\s0-9]/g, "");
+        const text = raw.replace(/[\s0-9\[\]]/g, "");
         if (readings.has(text)) correctIdxs.push(i);
     }
 

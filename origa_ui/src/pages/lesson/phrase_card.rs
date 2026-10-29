@@ -74,7 +74,7 @@ pub fn PhraseCardView(
                     let rows =
                         single_ledger_rows(result, &options_stored.get_value(), selected_option);
                     Some(view! {
-                        <QuizFeedbackStrip verdict count=None rows />
+                        <QuizFeedbackStrip verdict count=None rows known_kanji />
                     })
                 }}
             </Show>
@@ -123,7 +123,6 @@ pub fn PhraseCardView(
                 <QuizOptions
                     options=options_stored.get_value()
                     selected_option=selected_option
-                    show_result=show_result
                     on_select_option=on_select_option
                     known_kanji=known_kanji
                 />
