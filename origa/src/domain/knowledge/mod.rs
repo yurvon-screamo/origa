@@ -26,7 +26,7 @@ pub use daily_history::{DailyHistoryItem, estimate_completion_date};
 pub use empty_diagnosis::{LessonEmptyDiagnosis, diagnose_empty_lesson};
 pub use example_card::ExampleCard;
 pub use grammar::GrammarRuleCard;
-pub use insights_log::InsightsLog;
+pub use insights_log::{HOUR_BUCKET_COUNT, InsightsLog};
 pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
@@ -214,9 +214,7 @@ impl KnowledgeSet {
         self.stats.history()
     }
 
-    /// Сырой лог ревью (бакеты по часам/просрочке). Пишется доменом при
-    /// каждом ревью слова независимо от UI; UI его сейчас не читает —
-    /// данные хранятся ради будущей аналитики.
+    /// Агрегаты точности для панелей-инсайтов (только чтение).
     pub fn insights(&self) -> &InsightsLog {
         &self.insights
     }

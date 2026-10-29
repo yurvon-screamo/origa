@@ -32,13 +32,6 @@
         "broken-state"
       ]
     },
-    "home-accuracy-chart:accuracy-chart": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
-    },
     "home-due-counter:due-counter": {
       "questions": [
         "text-overlap",
@@ -47,6 +40,13 @@
       ]
     },
     "home-due-counter:due-day-one": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
+    },
+    "home-insights:insights": {
       "questions": [
         "text-overlap",
         "tofu-glyphs",
@@ -272,6 +272,13 @@
           "complete"
         ]
       }
+    },
+    "stitch-session:ledger": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state"
+      ]
     },
     "token-popup:token-popup-report": {
       "questions": [

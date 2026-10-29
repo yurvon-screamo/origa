@@ -1,7 +1,11 @@
 use super::*;
-use crate::domain::knowledge::{DailyHistoryItem, DailyStatsUpdate};
-
-use crate::domain::Rating;
+use crate::domain::InsightsLog;
+use crate::domain::knowledge::DailyStatsUpdate;
+use crate::domain::value_objects::Question;
+use crate::domain::{
+    Card, DailyHistoryItem, KnowledgeSet, NativeLanguage, RateMode, Rating, RatingContext,
+    VocabularyCard,
+};
 use chrono::{DateTime, FixedOffset, TimeZone, Utc};
 
 fn offset(hours: i32) -> FixedOffset {
@@ -49,120 +53,418 @@ fn history_item(days_ago: i64, positive: usize, negative: usize) -> DailyHistory
     item
 }
 
-fn accuracy_at(series: &AccuracySeries, days_ago: u32) -> Option<u8> {
-    series
-        .days
-        .iter()
-        .find(|day| day.days_ago == days_ago)
-        .and_then(|day| day.accuracy_pct)
-}
-
-// --- Структура ряда ---
+// --- Вердикт недели ---
 
 #[test]
-fn series_has_exactly_chart_days_oldest_first() {
-    let series = compute_daily_accuracy(&[], offset(3), moscow_now());
-    assert_eq!(series.days.len(), CHART_DAYS);
-    assert_eq!(series.days.first().unwrap().days_ago, 29);
-    assert_eq!(series.days.last().unwrap().days_ago, 0);
-}
-
-#[test]
-fn empty_history_is_all_none_without_data() {
-    let series = compute_daily_accuracy(&[], offset(3), moscow_now());
-    assert!(!series.has_data());
-    assert!(series.days.iter().all(|day| day.accuracy_pct.is_none()));
-}
-
-// --- Точность дня ---
-
-#[test]
-fn day_accuracy_is_positive_share_of_that_day() {
-    // Arrange: сегодня 3 из 4 (75%), 5 дней назад 1 из 2 (50%)
-    let history = vec![history_item(0, 3, 1), history_item(5, 1, 1)];
-
-    // Act
-    let series = compute_daily_accuracy(&history, offset(3), moscow_now());
-
-    // Assert
-    assert_eq!(accuracy_at(&series, 0), Some(75));
-    assert_eq!(accuracy_at(&series, 5), Some(50));
-    assert!(series.has_data());
-}
-
-#[test]
-fn days_without_reviews_are_gaps() {
-    // Arrange: оценки только сегодня и 29 дней назад; дни между — разрывы
-    let history = vec![history_item(0, 2, 0), history_item(29, 1, 1)];
-
-    // Act
-    let series = compute_daily_accuracy(&history, offset(3), moscow_now());
-
-    // Assert
-    assert_eq!(accuracy_at(&series, 0), Some(100));
-    assert_eq!(accuracy_at(&series, 29), Some(50));
-    assert_eq!(accuracy_at(&series, 1), None);
-    assert_eq!(accuracy_at(&series, 28), None);
-}
-
-#[test]
-fn ratings_outside_the_window_are_ignored() {
-    // Arrange: день ровно на границе окна и день за ним
-    let history = vec![history_item(29, 2, 2), history_item(30, 0, 10)];
-
-    // Act
-    let series = compute_daily_accuracy(&history, offset(3), moscow_now());
-
-    // Assert: 30-й день не входит в окно, граничный — входит
-    assert_eq!(accuracy_at(&series, 29), Some(50));
-    assert!(series.days.iter().all(|day| day.days_ago <= 29));
-}
-
-// --- Локальная зона ---
-
-#[test]
-fn local_offset_shifts_the_day_boundary() {
-    // Arrange: ревью в 2026-10-12 21:00 UTC. При зоне UTC+3 это 13-е
-    // (сегодня, days_ago = 0), при зоне UTC-8 — всё ещё 12-е (days_ago = 1).
-    let review = instant("2026-10-12", 21);
-    let mut item = DailyHistoryItem::new();
-    item.set_timestamp_for_test(review);
-    item.update(minimal_stats_update(), Rating::Good);
-    let history = vec![item];
-
-    // Act
-    let east = compute_daily_accuracy(&history, offset(3), instant("2026-10-13", 12));
-    let west = compute_daily_accuracy(&history, offset(-8), instant("2026-10-13", 12));
-
-    // Assert
-    assert_eq!(accuracy_at(&east, 0), Some(100));
-    assert_eq!(accuracy_at(&west, 0), None);
-    assert_eq!(accuracy_at(&west, 1), Some(100));
-}
-
-// --- Канонизация дублей ---
-
-#[test]
-fn legacy_duplicates_canonicalize_to_the_last_item_of_the_day() {
-    // Arrange: легаси-дубли одного дня. Победитель — последний по
-    // timestamp (у писателя счётчики дня копятся в одном айтеме, последний
-    // несёт самые полные значения), а не слияние счётчиков.
-    let day_start = moscow_now() - chrono::Duration::days(3);
-    let mut partial = DailyHistoryItem::new();
-    partial.set_timestamp_for_test(day_start - chrono::Duration::hours(1));
-    partial.update(minimal_stats_update(), Rating::Again);
-
-    let mut full = DailyHistoryItem::new();
-    full.set_timestamp_for_test(day_start + chrono::Duration::hours(1));
-    for _ in 0..4 {
-        full.update(minimal_stats_update(), Rating::Good);
+fn week_verdict_holding_when_week_not_worse_than_month() {
+    // Arrange: неделя 80% (4 из 5 в день), месяц 60% (3 из 5 в день)
+    let mut history = Vec::new();
+    for days_ago in 0..7 {
+        history.push(history_item(days_ago, 4, 1));
     }
-    // Вход в «неправильном» порядке: полный раньше неполного по времени.
-    let history = vec![full, partial];
+    for days_ago in 7..37 {
+        history.push(history_item(days_ago, 3, 2));
+    }
 
     // Act
-    let series = compute_daily_accuracy(&history, offset(3), moscow_now());
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now()).unwrap();
 
-    // Assert: победил последний по timestamp — 4/4, а не сумма 4/5
-    assert_eq!(accuracy_at(&series, 3), Some(100));
+    // Assert
+    assert_eq!(verdict.week_accuracy_pct, 80);
+    assert_eq!(verdict.month_accuracy_pct, Some(60));
+    assert_eq!(verdict.kind, WeekVerdictKind::Holding);
+}
+
+#[test]
+fn week_verdict_dipping_when_week_worse_than_month() {
+    // Arrange: неделя 40%, месяц 80%
+    let mut history = Vec::new();
+    for days_ago in 0..7 {
+        history.push(history_item(days_ago, 2, 3));
+    }
+    for days_ago in 7..37 {
+        history.push(history_item(days_ago, 4, 1));
+    }
+
+    // Act
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert
+    assert_eq!(verdict.kind, WeekVerdictKind::Dipping);
+}
+
+#[test]
+fn week_verdict_holding_when_month_has_no_ratings() {
+    // Arrange: оценки только на этой неделе
+    let history = vec![history_item(1, 3, 1)];
+
+    // Act
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert: месяца нет — вердикт без сравнения, Holding
+    assert_eq!(verdict.month_accuracy_pct, None);
+    assert_eq!(verdict.kind, WeekVerdictKind::Holding);
+}
+
+#[test]
+fn week_verdict_none_without_any_ratings() {
+    // Arrange: пустая история
+    let history: Vec<DailyHistoryItem> = vec![];
+
+    // Act
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now());
+
+    // Assert
+    assert_eq!(verdict, None);
+}
+
+#[test]
+fn week_verdict_today_partial_day_counts_into_week() {
+    // Arrange: единственный день — сегодняшний (days_ago = 0)
+    let history = vec![history_item(0, 1, 0)];
+
+    // Act
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert
+    assert_eq!(verdict.week_accuracy_pct, 100);
+}
+
+// --- Темп ---
+
+#[test]
+fn pace_averages_over_calendar_days_excluding_today() {
+    // Arrange: в окне 1..=14 — 140 оценок (10/день), в 15..=28 — 70 (5/день)
+    let mut history = Vec::new();
+    for days_ago in 1..=14 {
+        history.push(history_item(days_ago, 10, 0));
+    }
+    for days_ago in 15..=28 {
+        history.push(history_item(days_ago, 5, 0));
+    }
+
+    // Act
+    let pace = compute_pace(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert
+    assert_eq!(pace.per_day, 10);
+    assert_eq!(pace.delta, 5);
+}
+
+#[test]
+fn pace_delta_negative_when_pace_dropped() {
+    // Arrange: свежее окно беднее предыдущего
+    let mut history = Vec::new();
+    for days_ago in 1..=14 {
+        history.push(history_item(days_ago, 2, 0));
+    }
+    for days_ago in 15..=28 {
+        history.push(history_item(days_ago, 8, 0));
+    }
+
+    // Act
+    let pace = compute_pace(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert
+    assert_eq!(pace.per_day, 2);
+    assert_eq!(pace.delta, -6);
+}
+
+#[test]
+fn pace_counts_days_without_study_as_zero() {
+    // Arrange: активность только через день — знаменатель календарный
+    let mut history = Vec::new();
+    for days_ago in (1..=14).step_by(2) {
+        history.push(history_item(days_ago, 10, 0));
+    }
+
+    // Act
+    let pace = compute_pace(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert: 7 активных дней × 10 = 70 оценок на 14 календарных дней
+    assert_eq!(pace.per_day, 5);
+}
+
+#[test]
+fn pace_none_without_any_ratings_in_both_windows() {
+    // Arrange: одна оценка сегодня — оба окна темпа пусты
+    let history = vec![history_item(0, 1, 0)];
+
+    // Act
+    let pace = compute_pace(&history, offset(3), moscow_now());
+
+    // Assert
+    assert_eq!(pace, None);
+}
+
+#[test]
+fn pace_none_on_empty_history() {
+    // Arrange
+    let history: Vec<DailyHistoryItem> = vec![];
+
+    // Act
+    let pace = compute_pace(&history, offset(3), moscow_now());
+
+    // Assert
+    assert_eq!(pace, None);
+}
+
+// --- Канонизация дней ---
+
+#[test]
+fn duplicate_day_items_count_once() {
+    // Arrange: легаси-дубли одного дня — берётся последний по timestamp.
+    // Ранний: 1 из 2; поздний: пустой; сегодня: 1 из 1.
+    let mut early = history_item(1, 1, 1);
+    early.set_timestamp_for_test(
+        moscow_now() - chrono::Duration::days(1) - chrono::Duration::hours(3),
+    );
+    let late = history_item(1, 0, 0);
+    let history = vec![early, late, history_item(0, 1, 0)];
+
+    // Act
+    let verdict = compute_week_verdict(&history, offset(3), moscow_now()).unwrap();
+
+    // Assert: поздний айтем дня (0 оценок) каноничен; задвоение дало бы 67%
+    assert_eq!(verdict.week_accuracy_pct, 100);
+}
+
+// --- Время суток ---
+
+fn insights_with_hour(bucket: usize, attempts: u32, correct: u32) -> InsightsLog {
+    let stamp = instant("2026-10-10", (bucket * 4 + 2) as u32);
+    let mut log = InsightsLog::default();
+    for i in 0..attempts {
+        let rating = if i < correct {
+            Rating::Good
+        } else {
+            Rating::Again
+        };
+        log.record(offset(0), stamp, None, rating);
+    }
+    log
+}
+
+#[test]
+fn time_of_day_finds_worst_window_with_enough_sample() {
+    // Arrange: окно 4 (16–20) — 50%, окно 2 (08–12) — 100%; дизъюнктные
+    // бакеты соединяются max-мержем
+    let mut log = insights_with_hour(4, 10, 5);
+    log.merge(&insights_with_hour(2, 10, 10));
+
+    // Act
+    let insight = compute_time_of_day(&log).unwrap();
+
+    // Assert
+    assert_eq!(insight.worst_bucket, 4);
+    assert_eq!(insight.accuracy_pct, 50);
+    assert_eq!(insight.attempts, 10);
+}
+
+#[test]
+fn time_of_day_none_below_min_sample() {
+    // Arrange: 9 попыток в единственном окне — меньше MIN_BUCKET_SAMPLE
+    let log = insights_with_hour(2, 9, 5);
+
+    // Act
+    let insight = compute_time_of_day(&log);
+
+    // Assert
+    assert_eq!(insight, None);
+}
+
+#[test]
+fn time_of_day_ties_keep_first_bucket() {
+    // Arrange: два окна с одинаковой точностью
+    let mut log = insights_with_hour(1, 10, 5);
+    log.merge(&insights_with_hour(4, 10, 5));
+
+    // Act
+    let insight = compute_time_of_day(&log).unwrap();
+
+    // Assert
+    assert_eq!(insight.worst_bucket, 1);
+}
+
+// --- Цена просрочки ---
+
+fn insights_with_delay(ontime: (u32, u32), late: (u32, u32)) -> InsightsLog {
+    let now = instant("2026-10-10", 12);
+    let mut log = InsightsLog::default();
+    for i in 0..ontime.0 {
+        let rating = if i < ontime.1 {
+            Rating::Good
+        } else {
+            Rating::Again
+        };
+        log.record(
+            offset(0),
+            now,
+            Some(now - chrono::Duration::hours(1)),
+            rating,
+        );
+    }
+    for i in 0..late.0 {
+        let rating = if i < late.1 {
+            Rating::Good
+        } else {
+            Rating::Again
+        };
+        log.record(
+            offset(0),
+            now,
+            Some(now - chrono::Duration::days(2)),
+            rating,
+        );
+    }
+    log
+}
+
+#[test]
+fn overdue_measures_accuracy_drop_in_pp() {
+    // Arrange: вовремя 90%, просрочка 50%
+    let log = insights_with_delay((10, 9), (10, 5));
+
+    // Act
+    let insight = compute_overdue(&log).unwrap();
+
+    // Assert
+    assert_eq!(insight.ontime_accuracy_pct, 90);
+    assert_eq!(insight.late_accuracy_pct, 50);
+    assert_eq!(insight.accuracy_drop_pp, 40);
+}
+
+#[test]
+fn overdue_reports_drop_even_when_late_accuracy_higher() {
+    // Arrange: просрочка точнее вовремя — «цена» отражает модуль разницы
+    let log = insights_with_delay((10, 5), (10, 9));
+
+    // Act
+    let insight = compute_overdue(&log).unwrap();
+
+    // Assert
+    assert_eq!(insight.ontime_accuracy_pct, 50);
+    assert_eq!(insight.late_accuracy_pct, 90);
+    assert_eq!(insight.accuracy_drop_pp, 40);
+}
+
+#[test]
+fn overdue_none_without_late_sample() {
+    // Arrange: просроченных попыток меньше порога
+    let log = insights_with_delay((10, 9), (9, 5));
+
+    // Act
+    let insight = compute_overdue(&log);
+
+    // Assert
+    assert_eq!(insight, None);
+}
+
+#[test]
+fn overdue_none_without_ontime_sample() {
+    // Arrange: нет группы «вовремя»
+    let log = insights_with_delay((0, 0), (10, 5));
+
+    // Act
+    let insight = compute_overdue(&log);
+
+    // Assert
+    assert_eq!(insight, None);
+}
+
+// --- Дорогие слова ---
+
+fn vocab_card(word: &str) -> Card {
+    // Глосс через new_with_pos: в unit-тестах переводный словарь не
+    // загружен, а hard_word_of пропускает карты без ответа (answer(lang)
+    // без reverse_side требует словарь).
+    let card = VocabularyCard::new_with_pos(
+        Question::new(word.to_string()).unwrap(),
+        None,
+        Some(Question::new(format!("{word}-gloss")).unwrap()),
+    );
+    Card::Vocabulary(card)
+}
+
+fn seed_troubled_card(set: &mut KnowledgeSet, card: Card, again_streak: u8) {
+    let study_card = set.create_card(card).unwrap();
+    let card_id = *study_card.card_id();
+    set.rate_card(
+        card_id,
+        Rating::Good,
+        RateMode::StandardLesson,
+        RatingContext::Explicit,
+    )
+    .unwrap();
+    for _ in 0..again_streak {
+        set.rate_card(
+            card_id,
+            Rating::Again,
+            RateMode::StandardLesson,
+            RatingContext::Explicit,
+        )
+        .unwrap();
+    }
+}
+
+#[test]
+fn hardest_words_counts_troubled_share_and_top() {
+    // Arrange: 4 изученных слова; у «鳥» 3 провала, у «魚» — 2, остальные здоровы
+    let mut set = KnowledgeSet::new();
+    seed_troubled_card(&mut set, vocab_card("猫"), 0);
+    seed_troubled_card(&mut set, vocab_card("犬"), 0);
+    seed_troubled_card(&mut set, vocab_card("鳥"), 3);
+    seed_troubled_card(&mut set, vocab_card("魚"), 2);
+
+    // Act
+    let insight = compute_hardest_words(&set, &NativeLanguage::English).unwrap();
+
+    // Assert: топ сортирован по убыванию провалов
+    assert_eq!(insight.studied_total, 4);
+    assert_eq!(insight.troubled_count, 2);
+    assert_eq!(insight.one_in, 2);
+    assert_eq!(insight.top.len(), 2);
+    assert_eq!(insight.top[0].japanese, "鳥");
+    assert_eq!(insight.top[0].lapses, 3);
+    assert_eq!(insight.top[1].japanese, "魚");
+}
+
+#[test]
+fn hardest_words_none_when_all_words_healthy() {
+    // Arrange
+    let mut set = KnowledgeSet::new();
+    seed_troubled_card(&mut set, vocab_card("猫"), 0);
+
+    // Act
+    let insight = compute_hardest_words(&set, &NativeLanguage::English);
+
+    // Assert
+    assert_eq!(insight, None);
+}
+
+#[test]
+fn hardest_words_none_without_studied_words() {
+    // Arrange: только новая карта
+    let mut set = KnowledgeSet::new();
+    set.create_card(vocab_card("猫")).unwrap();
+
+    // Act
+    let insight = compute_hardest_words(&set, &NativeLanguage::English);
+
+    // Assert
+    assert_eq!(insight, None);
+}
+
+#[test]
+fn hardest_words_new_cards_not_counted_in_total() {
+    // Arrange: изученное проблемное + новая; новая не в знаменателе
+    let mut set = KnowledgeSet::new();
+    seed_troubled_card(&mut set, vocab_card("猫"), 2);
+    set.create_card(vocab_card("犬")).unwrap();
+
+    // Act
+    let insight = compute_hardest_words(&set, &NativeLanguage::English).unwrap();
+
+    // Assert
+    assert_eq!(insight.studied_total, 1);
 }
