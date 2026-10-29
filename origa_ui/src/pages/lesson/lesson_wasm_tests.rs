@@ -623,7 +623,6 @@ async fn quiz_options_click_selects_index() {
             <QuizOptions
                 options=quiz_options_fixture()
                 selected_option=None
-                show_result=Signal::from(false)
                 on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
                 known_kanji=Signal::derive(|| HashSet::new())
             />
@@ -661,7 +660,6 @@ async fn quiz_options_locked_when_result_shown() {
             <QuizOptions
                 options=quiz_options_fixture()
                 selected_option=None
-                show_result=Signal::from(true)
                 on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
                 known_kanji=Signal::derive(|| HashSet::new())
             />
@@ -1233,6 +1231,7 @@ async fn feedback_strip_correct_shows_success_accent() {
                     tag: None,
                     kind: LedgerRowKind::YourAnswerCorrect,
                 }]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
@@ -1275,6 +1274,7 @@ async fn feedback_strip_errors_lists_missed_and_wrong_rows() {
                         kind: LedgerRowKind::ExtraSelected,
                     },
                 ]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
@@ -1317,6 +1317,7 @@ async fn feedback_strip_lenient_pass_is_success_and_lists_missed() {
                     tag: Some("ON".to_string()),
                     kind: LedgerRowKind::Missed,
                 }]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
@@ -1355,6 +1356,7 @@ async fn feedback_strip_not_answered_reveals_correct_answer() {
                     tag: None,
                     kind: LedgerRowKind::CorrectAnswer,
                 }]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
