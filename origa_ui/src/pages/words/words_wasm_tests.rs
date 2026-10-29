@@ -483,7 +483,7 @@ async fn word_card_link_navigates_the_router_on_click() {
 /// so an inherited cold/failed state would make the post-mount phase
 /// nondeterministic (v0.8.0-rc27, #876 CI flakes).
 #[wasm_bindgen_test]
-async fn example_card_enters_token_translator_phase() {
+async fn example_card_with_wired_language_renders_translator_tokens() {
     let fixture = WordExample {
         detail: origa::dictionary::example::ExampleDetail {
             sentence_id: 1,
