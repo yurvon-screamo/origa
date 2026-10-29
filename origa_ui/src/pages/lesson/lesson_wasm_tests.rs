@@ -649,40 +649,11 @@ async fn quiz_options_click_selects_index() {
 // replaces the per-tile marks entirely. The old per-tile result marks
 // (quiz-option-correct/wrong/anima-shake) are gone with it; the
 // QuizFeedbackStrip tests below cover the post-answer presentation.
-#[wasm_bindgen_test]
-async fn quiz_options_locked_when_result_shown() {
-    let wrapper = create_wrapper();
-    let (set_sel, get_sel) = shared_cell::<RwSignal<Option<usize>>>();
-    mount_with_i18n(&wrapper, move || {
-        let selected = RwSignal::new(None);
-        set_sel.set(Some(selected));
-        view! {
-            <QuizOptions
-                options=quiz_options_fixture()
-                selected_option=None
-                on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
-                known_kanji=Signal::derive(|| HashSet::new())
-            />
-        }
-        .into_any()
-    });
-    let selected = get_sel.get().expect("captured");
-    tick().await;
-
-    wrapper
-        .query_selector("[data-testid=\"quiz-option-0\"]")
-        .unwrap()
-        .unwrap()
-        .unchecked_into::<web_sys::HtmlElement>()
-        .click();
-    tick().await;
-
-    assert!(
-        selected.get().is_none(),
-        "clicks must be ignored while the result is shown"
-    );
-}
-
+// The «grid locked while the result is shown» guard moved UP a level
+// (direction B, task 3SekkMiYYW): quiz_card.rs unmounts the grid for the
+// result side (`Show when=!show_result`), so a result-state QuizOptions
+// never exists to lock. The ledger strip below the card is the
+// result-side presentation — covered by the QuizFeedbackStrip tests.
 // ═══════════════════════════════════════════════════════════════════════
 // QuizOptionsMulti
 // ═══════════════════════════════════════════════════════════════════════
