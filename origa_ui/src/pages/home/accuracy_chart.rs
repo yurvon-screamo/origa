@@ -96,14 +96,9 @@ pub fn AccuracyChartCard(
     let lines = Signal::derive(move || {
         let lang = lang.get();
         let today = chrono::Local::now().date_naive();
-        let data = series
-            .get()
-            .days
-            .iter()
-            .filter_map(|day| {
-                day.accuracy_pct
-                    .map(|pct| (day_label(day.days_ago, &lang, today), f64::from(pct)))
-            })
+        let data = chart_points(&series.get())
+            .into_iter()
+            .map(|(days_ago, pct)| (day_label(days_ago, &lang, today), f64::from(pct)))
             .collect();
         vec![ChartLine {
             data,

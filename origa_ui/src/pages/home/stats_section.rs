@@ -24,7 +24,7 @@ pub fn StatsSection(
     // Children — FnOnce: рендерим контент один раз, видимость переключаем
     // классом (графики маунтятся сразу, показываются по клику).
     let content = children();
-    let hidden = move || (!expanded.get()).then_some("hidden").unwrap_or_default();
+    let hidden = move || if expanded.get() { "" } else { "hidden" };
 
     view! {
         <section data-testid=move || test_id.get()>
