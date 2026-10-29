@@ -341,7 +341,17 @@
     "example_unavailable": "Example unavailable — continue with the next card",
     "example_reveal_translation": "Reveal translation",
     "example_tag": "Example",
-    "example_listen": "Listen to the sentence"
+    "example_listen": "Listen to the sentence",
+    "verdict_correct": "Correct",
+    "verdict_incorrect": "Incorrect",
+    "verdict_errors": "Mistakes found",
+    "verdict_lenient": "Passed with gaps",
+    "verdict_not_answered": "Not answered",
+    "ledger_row_correct": "Correct",
+    "ledger_row_missed": "Missed",
+    "ledger_row_extra": "Extra",
+    "ledger_row_yours": "Your answer",
+    "ledger_row_correct_answer": "Correct answer"
   },
   "home": {
     "loading": "Loading...",

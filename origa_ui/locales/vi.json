@@ -341,7 +341,17 @@
     "example_unavailable": "Ví dụ hiện không khả dụng — hãy tiếp tục với thẻ tiếp theo",
     "example_reveal_translation": "Hiện bản dịch",
     "example_tag": "Ví dụ",
-    "example_listen": "Nghe câu"
+    "example_listen": "Nghe câu",
+    "verdict_correct": "Chính xác",
+    "verdict_incorrect": "Sai",
+    "verdict_errors": "Có lỗi",
+    "verdict_lenient": "Đạt có thiếu",
+    "verdict_not_answered": "Chưa trả lời",
+    "ledger_row_correct": "Đúng",
+    "ledger_row_missed": "Bỏ sót",
+    "ledger_row_extra": "Thừa",
+    "ledger_row_yours": "Câu trả lời",
+    "ledger_row_correct_answer": "Đáp án đúng"
   },
   "home": {
     "loading": "Đang tải...",

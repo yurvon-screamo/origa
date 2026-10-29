@@ -341,7 +341,17 @@
     "example_unavailable": "Пример недоступен — перейдите к следующей карточке",
     "example_reveal_translation": "Показать перевод",
     "example_tag": "Пример",
-    "example_listen": "Прослушайте предложение"
+    "example_listen": "Прослушайте предложение",
+    "verdict_correct": "Верно",
+    "verdict_incorrect": "Неверно",
+    "verdict_errors": "Есть ошибки",
+    "verdict_lenient": "Нестрогий зачёт",
+    "verdict_not_answered": "Не отвечено",
+    "ledger_row_correct": "Верно",
+    "ledger_row_missed": "Пропущено",
+    "ledger_row_extra": "Лишнее",
+    "ledger_row_yours": "Ваш ответ",
+    "ledger_row_correct_answer": "Правильный ответ"
   },
   "home": {
     "loading": "Загрузка...",

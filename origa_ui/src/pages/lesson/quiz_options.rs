@@ -3,18 +3,16 @@ use leptos::prelude::*;
 use origa::domain::QuizOption;
 use std::collections::HashSet;
 
-use super::dont_know_button::DontKnowButton;
-use super::quiz_result::QuizResult;
-
+/// The options grid of a single-choice quiz. Rendered on the question
+/// side only — after an answer the grid is replaced by the answer
+/// ledger strip below the card (direction B, task 3SekkMiYYW), so the
+/// per-option result states never render.
 #[component]
 pub fn QuizOptions(
     options: Vec<QuizOption>,
     selected_option: Option<usize>,
     show_result: Signal<bool>,
-    quiz_result: QuizResult,
     on_select_option: Callback<usize>,
-    on_dont_know: Callback<()>,
-    dont_know_selected: Signal<bool>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
 ) -> impl IntoView {
     view! {
@@ -24,24 +22,19 @@ pub fn QuizOptions(
                     .iter()
                     .enumerate()
                     .map(|(index, option): (usize, &QuizOption)| {
-                        let is_correct = option.is_correct();
-                        let is_selected = selected_option == Some(index);
-                        let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem]";
-                        let disabled_class = if show_result.get() { "pointer-events-none" } else { "" };
-                        let result_class = quiz_result.option_class(is_correct, is_selected);
-                        let selected_ring = if is_selected && !show_result.get() {
+                        let base_class = "p-2 sm:p-4 border text-left transition-all cursor-pointer relative flex flex-col justify-center min-h-[4rem] quiz-option-neutral";
+                        let selected_ring = if selected_option == Some(index) && !show_result.get() {
                             "ring-2 ring-[var(--accent-olive)]"
                         } else {
                             ""
                         };
 
-                        let shake_class = if show_result.get() && is_selected && matches!(quiz_result, QuizResult::Incorrect) {
-                            "anima-shake"
-                        } else {
-                            ""
-                        };
-
-                        let class = format!("{} {} {} {} {}", base_class, disabled_class, result_class, selected_ring, shake_class);
+                        let class = format!(
+                            "{} {} {}",
+                            base_class,
+                            selected_ring,
+                            if show_result.get() { "pointer-events-none" } else { "" }
+                        );
                         let key_hint = format!("[{}]", index + 1);
                         let option_text = option.text().to_string();
 
@@ -63,17 +56,14 @@ pub fn QuizOptions(
                                         glue_punctuation=true
                                     />
                                 </Text>
-                                <Show when=move || !show_result.get()>
-                                    <span class="kbd-hint absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
-                                        {key_hint.clone()}
-                                    </span>
-                                </Show>
+                                <span class="kbd-hint absolute top-1 right-2 text-[var(--fg-muted)] text-xs font-mono opacity-50 pointer-events-none">
+                                    {key_hint}
+                                </span>
                             </button>
                         }
                     })
                     .collect::<Vec<_>>()
             }}
         </div>
-        <DontKnowButton dont_know_selected disabled=show_result on_click=on_dont_know />
     }
 }

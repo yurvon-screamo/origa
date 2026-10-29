@@ -341,7 +341,17 @@
     "example_unavailable": "예문을 사용할 수 없습니다 — 다음 카드로 계속하세요",
     "example_reveal_translation": "번역 보기",
     "example_tag": "예문",
-    "example_listen": "문장을 들어보세요"
+    "example_listen": "문장을 들어보세요",
+    "verdict_correct": "정답",
+    "verdict_incorrect": "오답",
+    "verdict_errors": "오류 있음",
+    "verdict_lenient": "조건부 통과",
+    "verdict_not_answered": "답변 없음",
+    "ledger_row_correct": "정답",
+    "ledger_row_missed": "빠진 선택",
+    "ledger_row_extra": "잘못 선택",
+    "ledger_row_yours": "선택한 답",
+    "ledger_row_correct_answer": "정답"
   },
   "home": {
     "loading": "불러오는 중...",
