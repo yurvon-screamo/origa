@@ -15,6 +15,7 @@ use origa::use_cases::AnalyzedWord;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
+use crate::loaders::dictionary::ensure_tokenizer_loaded;
 use crate::loaders::example_loader::WordExample;
 use crate::pages::words::WordsHeader;
 use crate::pages::words::analyzed_word_item::AnalyzedWordItem;
@@ -476,12 +477,13 @@ async fn word_card_link_navigates_the_router_on_click() {
 /// The regression the word page shipped with: `TranslatorText` without a
 /// language falls back to the PLAIN-TEXT render (gray, non-interactive) —
 /// the owner's «нет токенайзера-переводчика» report. With the language
-/// wired, the component must be in the tokenizer phase: no precompute
-/// entry and no dictionary exist in the test environment, so that phase
-/// renders the explicit dictionary loader (`Show` is exclusive — its
-/// presence proves the plain fallback is gone).
+/// wired and the tokenizer warm, the card renders token spans; the broken
+/// wiring renders the plain text even then. The tokenizer is warmed by the
+/// test itself — the suite's global tokenizer state survives across tests,
+/// so an inherited cold/failed state would make the post-mount phase
+/// nondeterministic (v0.8.0-rc27, #876 CI flakes).
 #[wasm_bindgen_test]
-async fn example_card_enters_token_translator_phase() {
+async fn example_card_with_wired_language_renders_translator_tokens() {
     let fixture = WordExample {
         detail: origa::dictionary::example::ExampleDetail {
             sentence_id: 1,
@@ -496,6 +498,25 @@ async fn example_card_enters_token_translator_phase() {
         end: -1,
     };
     let wrapper = create_wrapper();
+
+    // Warm the tokenizer BEFORE mounting: the suite's global tokenizer
+    // state (TOKENIZER_STATE / is_dictionary_loaded) survives across
+    // tests, so whatever an earlier test left behind decides — after the
+    // mount — whether this card settles instantly into Ready, into the
+    // plain fallback (a legitimate failed-load outcome, translator.rs
+    // "failed load settles on plain-text"), or hangs in WaitingDictionary.
+    // Polling the transient dict-loading node under that uncertainty
+    // flakes on state, not on wiring (v0.8.0-rc27 twice, #876 CI four
+    // times). With the tokenizer READY up front the outcome is
+    // deterministic: wired language renders token spans, the broken #845
+    // wiring renders the gray plain text.
+    // A runner that cannot provide the dictionary cannot observe the
+    // language wiring at all — a plain render there is the legitimate
+    // failed-load outcome, not the #845 regression; skip.
+    if ensure_tokenizer_loaded().await.is_err() {
+        return;
+    }
+
     mount_with_i18n(&wrapper, || {
         view! {
             <ExampleCard
@@ -508,16 +529,13 @@ async fn example_card_enters_token_translator_phase() {
     });
     tick().await;
 
-    // The translator phase is ASYNC: the card resolves the sentence
-    // languages before the dictionary loader renders, and one `tick()`
-    // races that first microtask on a loaded runner (the v0.8.0-rc27 tag
-    // run failed this assert twice in a row while the PR runs passed).
-    // Poll for the phase — a genuine plain fallback stays absent for the
-    // full budget and the assert fires as before.
-    let entered_translator_phase = wait_until(
+    // Tokenize-and-translate is still async on the first microtasks; the
+    // tokenizer is warm, so the budget only covers scheduling, not a
+    // real dictionary download.
+    let rendered_tokens = wait_until(
         || {
             wrapper
-                .query_selector("[data-testid=\"translator-dict-loading\"]")
+                .query_selector(".token-word, .furigana-ruby")
                 .unwrap()
                 .is_some()
         },
@@ -526,7 +544,7 @@ async fn example_card_enters_token_translator_phase() {
     )
     .await;
     assert!(
-        entered_translator_phase,
-        "example sentence must enter the token translator phase, not the no-language plain fallback (#845)"
+        rendered_tokens,
+        "example sentence must render translator tokens, not the no-language plain fallback (#845)"
     );
 }

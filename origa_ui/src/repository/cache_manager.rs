@@ -54,6 +54,15 @@ pub fn guard_expectation_from_manifest(
     guard_expectation(hashes_by_path.as_deref())
 }
 
+/// Manifest hash for `path` from the remote manifest fetched by the last
+/// `check_and_invalidate` run. `None` when no manifest is available
+/// (native build, offline start, failed fetch) or the path is untracked —
+/// callers must treat it as "cannot verify, trust the cache".
+pub fn remote_hash_for(path: &str) -> Option<&'static str> {
+    let manifest = REMOTE_MANIFEST.get()?;
+    manifest.files.get(path).map(String::as_str)
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn check_and_invalidate() -> Result<(), OrigaError> {
     Ok(())
@@ -418,6 +427,14 @@ async fn save_local_manifest(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn remote_hash_for_is_none_without_fetched_manifest() {
+        // Native builds never populate REMOTE_MANIFEST (check_and_invalidate
+        // is a no-op there) — the accessor must degrade to "cannot verify",
+        // which fetch_text_verified maps to "trust the cache".
+        assert_eq!(remote_hash_for("counters/counters.json"), None);
+    }
 
     #[test]
     fn find_stale_entries_detects_changed_hash() {
