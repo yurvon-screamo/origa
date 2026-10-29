@@ -812,19 +812,21 @@ mod tests {
     // fetch_text_verified — a body matching the manifest hash is current,
     // a tracked file with a divergent hash is stale, and a missing hash
     // (offline start, untracked path) leaves the cache trusted.
+    // Inputs are grouped into one case tuple: qlty counts rstest's
+    // generated case-meta arguments as function parameters, and three
+    // naked #[case] arguments cross the project threshold (6).
     #[rstest]
     #[case::hash_matches_body_is_verified(
-        "abc",
-        Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"),
+        ("abc", Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")),
         TextFreshness::Verified
     )]
-    #[case::hash_divergence_is_stale("abc", Some("deadbeef"), TextFreshness::Stale)]
-    #[case::missing_hash_is_unverified("abc", None, TextFreshness::Unverified)]
+    #[case::hash_divergence_is_stale(("abc", Some("deadbeef")), TextFreshness::Stale)]
+    #[case::missing_hash_is_unverified(("abc", None), TextFreshness::Unverified)]
     fn text_freshness_classifies_body_against_manifest_hash(
-        #[case] body: &str,
-        #[case] manifest_hash: Option<&str>,
+        #[case] input: (&str, Option<&str>),
         #[case] expected: TextFreshness,
     ) {
+        let (body, manifest_hash) = input;
         assert_eq!(text_freshness(body, manifest_hash), expected);
     }
 
