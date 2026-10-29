@@ -20,9 +20,7 @@ pub(crate) fn verdict_label(
 /// Localized status label of a ledger row («Верно», «Пропущено», …).
 pub(crate) fn row_label(i18n: I18nContext<crate::i18n::Locale>, kind: LedgerRowKind) -> String {
     match kind {
-        LedgerRowKind::SelectedCorrect => {
-            t_string!(i18n, lesson.ledger_row_correct).to_string()
-        },
+        LedgerRowKind::SelectedCorrect => t_string!(i18n, lesson.ledger_row_correct).to_string(),
         LedgerRowKind::YourAnswerCorrect | LedgerRowKind::YourAnswerWrong => {
             t_string!(i18n, lesson.ledger_row_yours).to_string()
         },

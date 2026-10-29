@@ -17,10 +17,12 @@ use super::quiz_ledger_labels::{row_label, verdict_label};
 pub fn QuizFeedbackStrip(
     verdict: LedgerVerdict,
     /// Optional «K/N» counter after the verdict label (multi quizzes).
-    #[prop(default = None)] count: Option<(usize, usize)>,
+    #[prop(default = None)]
+    count: Option<(usize, usize)>,
     rows: Vec<LedgerRow>,
-    #[prop(default = Signal::derive(|| "quiz-feedback-strip".to_string()), into)]
-    test_id: Signal<String>,
+    #[prop(default = Signal::derive(|| "quiz-feedback-strip".to_string()), into)] test_id: Signal<
+        String,
+    >,
 ) -> impl IntoView {
     let i18n = use_i18n();
     let accent = match verdict {
@@ -95,7 +97,11 @@ fn LedgerTableRow(row: LedgerRow) -> impl IntoView {
     } else {
         ("", "var(--fg-muted)")
     };
-    let strike = if is_cross { "line-through decoration-2" } else { "" };
+    let strike = if is_cross {
+        "line-through decoration-2"
+    } else {
+        ""
+    };
     let text = row.text.clone();
     let tag = row.tag.clone();
     let dashed_border = if is_dashed {
