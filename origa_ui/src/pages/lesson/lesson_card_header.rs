@@ -1,5 +1,5 @@
 use crate::i18n::{t, use_i18n};
-use crate::ui_components::{AudioButtons, Tag, TagVariant};
+use crate::ui_components::{AudioButtons, Tag};
 use leptos::prelude::*;
 use origa::domain::{Card, GrammarInfo, PartOfSpeech};
 
@@ -162,17 +162,20 @@ pub fn LessonCardTagsQuiz(
                 {move || {
                     match quiz_variant {
                         QuizVariant::Meaning => view! {
-                            <Tag variant=Signal::derive(move || TagVariant::Filled)>
+                            // Outlined (default Tag) per the direction-B
+                            // frame: the colored filled tag is the card
+                            // TYPE; every secondary tag stays outlined.
+                            <Tag>
                                 {t!(i18n, lesson.quiz)}
                             </Tag>
                         }.into_any(),
                         QuizVariant::Reading => view! {
-                            <Tag variant=Signal::derive(move || TagVariant::Filled)>
+                            <Tag>
                                 {t!(i18n, lesson.reading)}
                             </Tag>
                         }.into_any(),
                         QuizVariant::Grammar => view! {
-                            <Tag variant=Signal::derive(move || TagVariant::Filled)>
+                            <Tag>
                                 {t!(i18n, lesson.grammar)}
                             </Tag>
                         }.into_any(),

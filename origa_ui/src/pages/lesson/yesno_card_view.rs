@@ -14,8 +14,10 @@ use super::dont_know_button::DontKnowButton;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
+use super::quiz_feedback_strip::QuizFeedbackStrip;
+use super::quiz_ledger::{single_verdict, yesno_ledger_rows};
+use super::quiz_ledger_labels::yesno_label;
 use super::quiz_result::QuizResult;
-use super::quiz_result_display::QuizResultDisplay;
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub enum YesNoResult {
@@ -154,59 +156,6 @@ pub fn YesNoCardView(
         )
     };
 
-    let yes_selected = selected_answer == Some(true);
-    let no_selected = selected_answer == Some(false);
-
-    let no_btn_class = Signal::derive(move || {
-        if show_result.get() {
-            if !is_statement_correct {
-                "quiz-option-correct".to_string()
-            } else if no_selected {
-                "quiz-option-wrong anima-shake".to_string()
-            } else {
-                "quiz-option-dimmed".to_string()
-            }
-        } else {
-            String::new()
-        }
-    });
-
-    let yes_btn_class = Signal::derive(move || {
-        if show_result.get() {
-            if is_statement_correct {
-                "quiz-option-correct".to_string()
-            } else if yes_selected {
-                "quiz-option-wrong anima-shake".to_string()
-            } else {
-                "quiz-option-dimmed".to_string()
-            }
-        } else {
-            String::new()
-        }
-    });
-
-    let yes_variant = Signal::derive(move || {
-        if show_result.get() {
-            ButtonVariant::Default
-        } else {
-            ButtonVariant::Olive
-        }
-    });
-
-    let correct_answer_text = move || {
-        if is_statement_correct {
-            i18n.get_keys().lesson().yes().inner().to_string()
-        } else {
-            i18n.get_keys().lesson().no().inner().to_string()
-        }
-    };
-
-    // The "Correct answer: Да/Нет" line is feedback for a miss: on a correct
-    // answer it only repeats the verdict the learner already knows. Hidden
-    // when Correct, shown for Incorrect and Don't Know.
-    let show_correct_answer_line =
-        move || show_result.get() && !matches!(yesno_result(), YesNoResult::Correct);
-
     let tags_row: ChildrenFn = std::sync::Arc::new(move || {
         view! {
                 <LessonCardTagsQuiz
@@ -223,9 +172,75 @@ pub fn YesNoCardView(
         .into_any()
     });
 
+    // Feedback strip below the card (direction B, task 3SekkMiYYW):
+    // verdict + Да/Нет ledger rows. Replaces the old in-card verdict
+    // text + «Correct answer: Да/Нет» line.
+    let feedback_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+            <Show when=move || show_result.get()>
+                {move || {
+                    let result = QuizResult::from(yesno_result());
+                    let verdict = single_verdict(result)?;
+                    let rows = yesno_ledger_rows(
+                        result,
+                        selected_answer,
+                        is_statement_correct,
+                        &yesno_label(i18n, true),
+                        &yesno_label(i18n, false),
+                    );
+                    Some(view! {
+                        <QuizFeedbackStrip verdict rows known_kanji />
+                    })
+                }}
+            </Show>
+        }
+        .into_any()
+    });
+
+    // Action footer: Да/Нет + «не знаю» on the question side, the
+    // next-card button on the result side.
+    let footer_row: ChildrenFn = std::sync::Arc::new(move || {
+        view! {
+            <Show when=move || !show_result.get()>
+                <div class="grid grid-cols-2 gap-3">
+                    <Button
+                        test_id=Signal::derive(|| "yesno-no-btn".to_string())
+                        variant=Signal::derive(|| ButtonVariant::Default)
+                        disabled=Signal::derive(move || show_result.get())
+                        on_click=Callback::new(move |_| on_answer.run(false))
+                    >
+                        {t!(i18n, lesson.no)} <span class="kbd-hint">"[1]"</span>
+                    </Button>
+
+                    <Button
+                        test_id=Signal::derive(|| "yesno-yes-btn".to_string())
+                        variant=Signal::derive(|| ButtonVariant::Olive)
+                        disabled=Signal::derive(move || show_result.get())
+                        on_click=Callback::new(move |_| on_answer.run(true))
+                    >
+                        {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
+                    </Button>
+                </div>
+                <DontKnowButton
+                    dont_know_selected
+                    disabled=show_result
+                    test_id="yesno-dont-know-btn"
+                    on_click=on_dont_know
+                />
+            </Show>
+
+            <Show when=move || waiting_for_next.get() && show_result.get()>
+                <NextCardButton on_next_card=on_next_card />
+            </Show>
+        }
+        .into_any()
+    });
+
     view! {
         <LessonCardShell
             tags=tags_row
+            feedback=feedback_row
+            footer=footer_row
             test_id="lesson-card-root"
         >
         <div class="text-center mb-3 sm:mb-6">
@@ -273,54 +288,6 @@ pub fn YesNoCardView(
                 </Show>
             </div>
 
-            <Show when=move || !show_result.get()>
-                <div class="grid grid-cols-2 gap-3">
-                    <Button
-                        test_id=Signal::derive(|| "yesno-no-btn".to_string())
-                        variant=Signal::derive(|| ButtonVariant::Default)
-                        class=no_btn_class
-                        disabled=Signal::derive(move || show_result.get())
-                        on_click=Callback::new(move |_| on_answer.run(false))
-                    >
-                        {t!(i18n, lesson.no)} <span class="kbd-hint">"[1]"</span>
-                    </Button>
-
-                    <Button
-                        test_id=Signal::derive(|| "yesno-yes-btn".to_string())
-                        variant=yes_variant
-                        class=yes_btn_class
-                        disabled=Signal::derive(move || show_result.get())
-                        on_click=Callback::new(move |_| on_answer.run(true))
-                    >
-                        {t!(i18n, lesson.yes)} <span class="kbd-hint">"[2]"</span>
-                    </Button>
-                </div>
-                <DontKnowButton
-                    dont_know_selected
-                    disabled=show_result
-                    test_id="yesno-dont-know-btn"
-                    on_click=on_dont_know
-                />
-            </Show>
-
-            <Show when=move || show_result.get()>
-                <QuizResultDisplay quiz_result=QuizResult::from(yesno_result()) />
-
-                // The correct answer (Да/Нет) is feedback for a miss:
-                // shown only when the learner did not answer correctly,
-                // same pattern as the single-quiz card.
-                <Show when=show_correct_answer_line>
-                    <div class="mt-2 text-center">
-                        <Text size=TextSize::Small variant=TypographyVariant::Muted>
-                            {t!(i18n, lesson.correct_answer)}
-                            <span class="font-semibold">
-                                {correct_answer_text}
-                            </span>
-                        </Text>
-                    </div>
-                </Show>
-            </Show>
-
             // The yes/no verdict alone is not the answer the learner
             // wants — the actual card answer (translation / meaning /
             // description) is revealed on every result, correct or not.
@@ -331,10 +298,6 @@ pub fn YesNoCardView(
                     text=Signal::derive(move || answer_text_display_stored.get_value())
                     known_kanji=known_kanji
                 />
-            </Show>
-
-            <Show when=move || waiting_for_next.get() && show_result.get()>
-                <NextCardButton on_next_card=on_next_card />
             </Show>
         </LessonCardShell>
     }

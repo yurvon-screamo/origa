@@ -358,6 +358,117 @@ pub async fn fetch_text_bypassing_cache(path: &str) -> Result<String, OrigaError
     Ok(text)
 }
 
+/// Verdict of comparing a cache-served text body against the manifest
+/// hash of its path.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TextFreshness {
+    /// Body hash equals the manifest hash — the cache is current.
+    Verified,
+    /// The manifest tracks the file and the hash differs — stale body.
+    Stale,
+    /// No manifest hash available (native build, offline start, untracked
+    /// path) — unverifiable, the cache is trusted at the usual level.
+    Unverified,
+}
+
+/// Pure decision core of [`fetch_text_verified`]: sha256-hex of the body
+/// vs the manifest hash (lowercase hex, as the deploy manifest stores it).
+/// The comparison is ASCII-case-insensitive so a future producer emitting
+/// uppercase hex cannot turn every fetch into a perpetual divergence.
+pub fn text_freshness(text: &str, manifest_hash: Option<&str>) -> TextFreshness {
+    let Some(expected) = manifest_hash else {
+        return TextFreshness::Unverified;
+    };
+    let actual: String = origa::dictionary::cdn_blob::sha256_bytes(text.as_bytes())
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    if actual.eq_ignore_ascii_case(expected) {
+        TextFreshness::Verified
+    } else {
+        TextFreshness::Stale
+    }
+}
+
+/// Injectable orchestration of [`fetch_text_verified`]: cache-first text
+/// from any [`CdnProvider`], freshness verified against `manifest_hash`,
+/// fresh refetch delegated to the `refetch` closure (the real one
+/// overwrites the cache entry; tests inject a stub — the production bypass
+/// needs the browser Cache API and cannot run in native tests).
+///
+/// Fail-open contract: a refetch failure keeps the already-fetched (stale)
+/// body. That is exactly what callers got before this heal existed — an
+/// unreachable network must degrade to a working stale resource, not
+/// convert it into a loader error. The divergence persists and the next
+/// start re-attempts the heal. A refetched body that STILL diverges is
+/// served too (best available) and logged — an edge/origin persistently
+/// serving divergent content stays visible in the logs instead of
+/// silently looping detect→refetch on every start.
+///
+/// `Unverified` (no manifest hash — native build, offline start, untracked
+/// path) intentionally trusts the cache. This is the opposite verdict of
+/// the blob-guard family (`GuardExpectation::Mismatch` for a missing
+/// path) and cannot be unified: an rkyv blob carries its guard in the
+/// header, so an untracked path IS detectably anomalous; a plain text body
+/// has nothing to compare against a manifest entry that does not exist —
+/// trusting the cache is the only coherent option.
+///
+/// The hash cost is paid per call — keep this for kilobyte-scale content
+/// files, not multi-megabyte blobs.
+async fn resolve_verified_text<P, F, Fut>(
+    cdn: &P,
+    path: &str,
+    manifest_hash: Option<&str>,
+    refetch: F,
+) -> Result<String, OrigaError>
+where
+    P: CdnProvider,
+    F: FnOnce() -> Fut,
+    Fut: std::future::Future<Output = Result<String, OrigaError>>,
+{
+    let text = cdn.fetch_text(path).await?;
+    match text_freshness(&text, manifest_hash) {
+        TextFreshness::Verified | TextFreshness::Unverified => Ok(text),
+        TextFreshness::Stale => match refetch().await {
+            Ok(fresh) => {
+                if text_freshness(&fresh, manifest_hash) == TextFreshness::Stale {
+                    tracing::warn!(
+                        path = %path,
+                        "Refetched body still diverges from manifest — serving it anyway"
+                    );
+                }
+                Ok(fresh)
+            },
+            Err(e) => {
+                tracing::warn!(
+                    path = %path,
+                    error = ?e,
+                    "Cached body diverges from manifest and refetch failed — keeping the stale body"
+                );
+                Ok(text)
+            },
+        },
+    }
+}
+
+/// Cache-first text fetch with manifest verification. A cache hit whose
+/// body hash diverges from the remote manifest is refetched over the
+/// network, overwriting the cache entry (via [`fetch_text_bypassing_cache`]).
+///
+/// The divergence is reachable for installs whose cache predates the
+/// file's manifest tracking: the manifest diff cannot invalidate those
+/// (cache_manager::find_stale_entries walks local entries only, and the
+/// first post-deploy run already synced the local manifest). Without the
+/// check a body edited on the CDN would serve stale forever — the stale
+/// counter readings bug (uwuwu origa mJvjEgSqp0).
+pub async fn fetch_text_verified(path: &str) -> Result<String, OrigaError> {
+    let manifest_hash = super::cache_manager::remote_hash_for(path);
+    resolve_verified_text(cdn(), path, manifest_hash, || {
+        fetch_text_bypassing_cache(path)
+    })
+    .await
+}
+
 pub fn get_cached_blob_url(path: &str) -> Option<String> {
     let key = ensure_leading_slash(path);
     let cache = blob_url_cache().lock().ok()?;
@@ -525,6 +636,199 @@ mod cdn_offline_wasm_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
+    use std::cell::RefCell;
+
+    /// Recording stub provider: serves a canned text and counts
+    /// `fetch_text` calls (external CDN boundary — a mock is appropriate).
+    struct StubCdn {
+        body: String,
+        calls: RefCell<Vec<String>>,
+    }
+
+    impl StubCdn {
+        fn serving(body: &str) -> Self {
+            Self {
+                body: body.to_string(),
+                calls: RefCell::new(Vec::new()),
+            }
+        }
+
+        fn requested_paths(&self) -> Vec<String> {
+            self.calls.borrow().clone()
+        }
+    }
+
+    impl CdnProvider for StubCdn {
+        fn fetch_text(&self, path: &str) -> impl Future<Output = Result<String, OrigaError>> {
+            let path = path.to_string();
+            async move {
+                self.calls.borrow_mut().push(path);
+                Ok(self.body.clone())
+            }
+        }
+
+        async fn fetch_bytes(&self, _path: &str) -> Result<Vec<u8>, OrigaError> {
+            Err(OrigaError::NetworkError {
+                url: "stub".to_string(),
+                reason: "not implemented".to_string(),
+            })
+        }
+    }
+
+    fn fresh_refetch(
+        body: &'static str,
+    ) -> impl FnOnce() -> futures::future::Ready<Result<String, OrigaError>> {
+        move || futures::future::ready(Ok(body.to_string()))
+    }
+
+    fn failed_refetch() -> impl FnOnce() -> futures::future::Ready<Result<String, OrigaError>> {
+        move || {
+            futures::future::ready(Err(OrigaError::NetworkError {
+                url: "refetch".to_string(),
+                reason: "HTTP 503".to_string(),
+            }))
+        }
+    }
+
+    const STALE_BODY: &str = "stale registry";
+    const STALE_HASH: &str = "1111111111111111111111111111111111111111111111111111111111111111";
+    const FRESH_BODY: &str = "fresh registry";
+
+    #[tokio::test]
+    async fn diverged_cache_body_refetches_fresh_from_cdn() {
+        // Arrange: a stale body in the cache, a manifest hash for the fixed
+        // file, a working fresh refetch.
+        let cdn = StubCdn::serving(STALE_BODY);
+
+        // Act
+        let resolved = resolve_verified_text(
+            &cdn,
+            "counters/counters.json",
+            Some(STALE_HASH),
+            fresh_refetch(FRESH_BODY),
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(resolved, FRESH_BODY);
+        assert_eq!(cdn.requested_paths(), vec!["counters/counters.json"]);
+    }
+
+    #[tokio::test]
+    async fn failed_refetch_keeps_stale_body_without_error() {
+        // Arrange: a diverged body and a failing network — the pre-heal
+        // behavior for this user was "working stale data", and the heal
+        // must not turn it into a loader error.
+        let cdn = StubCdn::serving(STALE_BODY);
+
+        // Act
+        let resolved = resolve_verified_text(
+            &cdn,
+            "counters/counters.json",
+            Some(STALE_HASH),
+            failed_refetch(),
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(resolved, STALE_BODY);
+    }
+
+    #[tokio::test]
+    async fn refetched_body_that_still_diverges_is_served() {
+        // Arrange: even the fresh network answer diverges (edge poisoning
+        // class) — the best available body is still served, the divergence
+        // is only logged.
+        let cdn = StubCdn::serving(STALE_BODY);
+
+        // Act
+        let resolved = resolve_verified_text(
+            &cdn,
+            "counters/counters.json",
+            Some(STALE_HASH),
+            fresh_refetch(STALE_BODY),
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(resolved, STALE_BODY);
+    }
+
+    #[tokio::test]
+    async fn verified_cache_body_skips_the_refetch() {
+        // Arrange: body hash matches the manifest — the refetch closure
+        // panics if invoked (zero-call assertion via panic = the refetch
+        // must not run on the happy path).
+        let body = "current registry";
+        let hash: String = origa::dictionary::cdn_blob::sha256_bytes(body.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        let cdn = StubCdn::serving(body);
+
+        // Act
+        let resolved = resolve_verified_text(
+            &cdn,
+            "counters/counters.json",
+            Some(&hash),
+            || -> futures::future::Ready<Result<String, OrigaError>> {
+                panic!("refetch must not run for a verified body")
+            },
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(resolved, body);
+    }
+
+    #[tokio::test]
+    async fn unverified_body_without_manifest_hash_skips_the_refetch() {
+        // Arrange: no manifest available (offline start / native build) —
+        // the cache is trusted at the pre-heal level.
+        let cdn = StubCdn::serving(STALE_BODY);
+
+        // Act
+        let resolved = resolve_verified_text(
+            &cdn,
+            "counters/counters.json",
+            None,
+            || -> futures::future::Ready<Result<String, OrigaError>> {
+                panic!("refetch must not run without a manifest hash")
+            },
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(resolved, STALE_BODY);
+    }
+
+    // text_freshness: the pure decision core of the self-heal in
+    // fetch_text_verified — a body matching the manifest hash is current,
+    // a tracked file with a divergent hash is stale, and a missing hash
+    // (offline start, untracked path) leaves the cache trusted.
+    // Inputs are grouped into one case tuple: qlty counts rstest's
+    // generated case-meta arguments as function parameters, and three
+    // naked #[case] arguments cross the project threshold (6).
+    #[rstest]
+    #[case::hash_matches_body_is_verified(
+        ("abc", Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")),
+        TextFreshness::Verified
+    )]
+    #[case::hash_divergence_is_stale(("abc", Some("deadbeef")), TextFreshness::Stale)]
+    #[case::missing_hash_is_unverified(("abc", None), TextFreshness::Unverified)]
+    fn text_freshness_classifies_body_against_manifest_hash(
+        #[case] input: (&str, Option<&str>),
+        #[case] expected: TextFreshness,
+    ) {
+        let (body, manifest_hash) = input;
+        assert_eq!(text_freshness(body, manifest_hash), expected);
+    }
 
     // Bug A — root cause (proven via curl by the architect):
     //

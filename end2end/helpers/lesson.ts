@@ -242,7 +242,7 @@ export async function completeLessonFlexible(
         // "Next" (or press Space/Enter). The check MUST run before the
         // `anyInteractive` wait below: on VOCABULARY quiz cards the options
         // are hidden once the result is shown (quiz_card.rs renders either
-        // QuizOptions or QuizResultDisplay, never both), so during the
+        // QuizOptions or the quiz feedback strip (answer ledger), never both), so during the
         // feedback phase NO interactive element from `anyInteractive` is
         // visible and the wait would time out. Phrase quizzes keep their
         // options visible — hence the separate check (never both in one

@@ -7,8 +7,14 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-29T20:14:23.362Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-answer--mobile-43463f93.png) |
+| quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-29T20:14:22.485Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-question--mobile-be881e1a.png) |
+| quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-29T20:13:04.708Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-answer--desktop-86fae252.png) |
+| quiz-question | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-29T20:13:03.722Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-question--desktop-48aaa768.png) |
 | accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-29T14:51:48.802Z | 46e1d32c | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-a478ff61.png) |
 | accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-29T14:51:15.971Z | 46e1d32c | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--desktop-5ecc169d.png) |
+| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-28T23:15:52.934Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--mobile-ebff34b1.png) |
+| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-28T23:15:08.781Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--desktop-17b49484.png) |
 | kanji-presentation | lesson-acquaintance-kanji | mobile | ru-RU | 390×1502 | 2026-10-28T12:54:20.306Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--mobile-3e705948.png) |
 | kanji-presentation | lesson-acquaintance-kanji | desktop | ru-RU | 1280×1249 | 2026-10-28T12:53:48.881Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--desktop-498bd1fe.png) |
 | grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-27T02:44:12.629Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png) |
@@ -19,8 +25,6 @@
 | acquaintance-training-answer-2 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:23.835Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-2--desktop-321b203a.png) |
 | acquaintance-training-answer-1 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:22.831Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png) |
 | acquaintance-presentation | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-26T19:49:21.061Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-presentation--desktop-5e2afc49.png) |
-| quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-26T19:48:47.391Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-reading-quiz--quiz-answer--desktop-58a0c3e9.png) |
-| quiz-question | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-26T19:48:46.411Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-reading-quiz--quiz-question--desktop-f25de93e.png) |
 | example-answer | lesson-example-recall | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:26.302Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-example-recall--example-answer--desktop-2861aea3.png) |
 | example-question | lesson-example-recall | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:23.996Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-example-recall--example-question--desktop-1f58c338.png) |
 | pack-answer-table | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-26T19:47:03.609Z | 6b5cd1c3 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-answer-table--desktop-455da11a.png) |
@@ -30,8 +34,6 @@
 | acquaintance-example | lesson-example | desktop | ru-RU | 1280×800 | 2026-10-25T17:12:34.714Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--desktop-5e2afc49.png) |
 | home | home | mobile | ru-RU | 390×844 | 2026-10-25T17:11:58.113Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
 | home | home | desktop | ru-RU | 1280×800 | 2026-10-25T17:11:35.697Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
-| quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-21T20:04:02.961Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-answer--mobile-0517dd99.png) |
-| quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-21T20:04:02.045Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-reading-quiz--quiz-question--mobile-ea401aaa.png) |
 | example-answer | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:58.703Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-answer--mobile-9b884952.png) |
 | example-question | lesson-example-recall | mobile | ru-RU | 390×844 | 2026-10-21T19:56:56.384Z | 4aea02f5 | [png](https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--mobile-0378ade9.png) |
 
