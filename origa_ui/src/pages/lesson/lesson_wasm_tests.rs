@@ -21,10 +21,11 @@ use super::lesson_card_question::LessonCardQuestion;
 use super::lesson_progress::LessonProgress;
 use super::next_card_button::NextCardButton;
 use super::phrase_card::PhraseCardView;
+use super::quiz_feedback_strip::QuizFeedbackStrip;
+use super::quiz_ledger::{LedgerRow, LedgerRowKind, LedgerVerdict};
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
-use super::quiz_result_display::QuizResultDisplay;
 use super::yesno_card_view::YesNoCardView;
 use crate::test_support::{
     create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
@@ -622,11 +623,7 @@ async fn quiz_options_click_selects_index() {
             <QuizOptions
                 options=quiz_options_fixture()
                 selected_option=None
-                show_result=Signal::from(false)
-                quiz_result=QuizResult::None
                 on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
-                on_dont_know=Callback::new(|()| {})
-                dont_know_selected=Signal::from(false)
                 known_kanji=Signal::derive(|| HashSet::new())
             />
         }
@@ -647,87 +644,16 @@ async fn quiz_options_click_selects_index() {
     assert_eq!(selected.get(), Some(1), "click must select index 1");
 }
 
-#[wasm_bindgen_test]
-async fn quiz_options_show_result_marks_correct_and_wrong() {
-    let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
-        view! {
-            <QuizOptions
-                options=quiz_options_fixture()
-                selected_option=Some(1)
-                show_result=Signal::from(true)
-                quiz_result=QuizResult::Incorrect
-                on_select_option=Callback::new(|_: usize| {})
-                on_dont_know=Callback::new(|()| {})
-                dont_know_selected=Signal::from(false)
-                known_kanji=Signal::derive(|| HashSet::new())
-            />
-        }
-        .into_any()
-    });
-    tick().await;
-
-    let correct = wrapper
-        .query_selector("[data-testid=\"quiz-option-0\"]")
-        .unwrap()
-        .unwrap()
-        .get_attribute("class")
-        .unwrap_or_default();
-    assert!(
-        correct.contains("quiz-option-correct"),
-        "correct option must be marked; got: {correct}"
-    );
-
-    let wrong = wrapper
-        .query_selector("[data-testid=\"quiz-option-1\"]")
-        .unwrap()
-        .unwrap()
-        .get_attribute("class")
-        .unwrap_or_default();
-    assert!(
-        wrong.contains("quiz-option-wrong") && wrong.contains("anima-shake"),
-        "selected wrong option must be marked and shake; got: {wrong}"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn quiz_options_locked_when_result_shown() {
-    let wrapper = create_wrapper();
-    let (set_sel, get_sel) = shared_cell::<RwSignal<Option<usize>>>();
-    mount_with_i18n(&wrapper, move || {
-        let selected = RwSignal::new(None);
-        set_sel.set(Some(selected));
-        view! {
-            <QuizOptions
-                options=quiz_options_fixture()
-                selected_option=None
-                show_result=Signal::from(true)
-                quiz_result=QuizResult::Correct
-                on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
-                on_dont_know=Callback::new(|()| {})
-                dont_know_selected=Signal::from(false)
-                known_kanji=Signal::derive(|| HashSet::new())
-            />
-        }
-        .into_any()
-    });
-    let selected = get_sel.get().expect("captured");
-    tick().await;
-
-    wrapper
-        .query_selector("[data-testid=\"quiz-option-0\"]")
-        .unwrap()
-        .unwrap()
-        .unchecked_into::<web_sys::HtmlElement>()
-        .click();
-    tick().await;
-
-    assert!(
-        selected.get().is_none(),
-        "clicks must be ignored while the result is shown"
-    );
-}
-
+// Direction B (task 3SekkMiYYW): the options grid renders on the
+// QUESTION side only — after an answer the ledger strip below the card
+// replaces the per-tile marks entirely. The old per-tile result marks
+// (quiz-option-correct/wrong/anima-shake) are gone with it; the
+// QuizFeedbackStrip tests below cover the post-answer presentation.
+// The «grid locked while the result is shown» guard moved UP a level
+// (direction B, task 3SekkMiYYW): quiz_card.rs unmounts the grid for the
+// result side (`Show when=!show_result`), so a result-state QuizOptions
+// never exists to lock. The ledger strip below the card is the
+// result-side presentation — covered by the QuizFeedbackStrip tests.
 // ═══════════════════════════════════════════════════════════════════════
 // QuizOptionsMulti
 // ═══════════════════════════════════════════════════════════════════════
@@ -743,17 +669,11 @@ async fn quiz_options_multi_toggle_selects() {
             <QuizOptionsMulti
                 options=quiz_options_fixture()
                 selected_options=HashSet::new()
-                show_result=Signal::from(false)
-                multi_submitted=Signal::from(false)
-                multi_result=None
                 on_toggle=Callback::new(move |i: usize| {
                     selected.update(|s| {
                         if s.contains(&i) { s.remove(&i); } else { s.insert(i); }
                     });
                 })
-                on_submit=Callback::new(|()| {})
-                on_dont_know=Callback::new(|()| {})
-                dont_know_selected=Signal::from(false)
                 known_kanji=Signal::derive(|| HashSet::new())
             />
         }
@@ -858,10 +778,12 @@ async fn yesno_card_view_correct_answer_still_shows_the_answer() {
     );
 }
 
-// The "Correct answer: Да/Нет" line must appear only as feedback on a miss.
-// Locale note: `mount_with_i18n` provides the context without an explicit
-// locale, so the default from build.rs (`Config::new("en")`) applies —
-// assert against the en string (locales/en.json "correct_answer").
+// Direction B (task 3SekkMiYYW): the in-card «Correct answer: Да/Нет»
+// line is gone — the ledger strip's «Правильный ответ» row reveals the
+// truth on a miss. Locale note: `mount_with_i18n` provides the context
+// without an explicit locale, so the default from build.rs
+// (`Config::new("en")`) applies — assert against the en string
+// (locales/en.json "ledger_row_correct_answer").
 #[wasm_bindgen_test]
 async fn yesno_card_view_correct_hides_correct_answer_line() {
     let wrapper = create_wrapper();
@@ -978,10 +900,15 @@ async fn yesno_card_view_incorrect_shows_correct_answer_line() {
     });
     tick().await;
 
-    let page = wrapper.text_content().unwrap_or_default();
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .ok()
+        .flatten()
+        .expect("an incorrect answer must render the feedback strip");
+    let text = strip.text_content().unwrap_or_default();
     assert!(
-        page.contains("Correct answer"),
-        "an incorrect answer must reveal the correct Да/Нет; got: {page}"
+        text.contains("Yes"),
+        "an incorrect answer must reveal the correct Да/Нет row; got: {text}"
     );
 }
 
@@ -1005,10 +932,15 @@ async fn yesno_card_view_dont_know_shows_correct_answer_line() {
     });
     tick().await;
 
-    let page = wrapper.text_content().unwrap_or_default();
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .ok()
+        .flatten()
+        .expect("a don't-know answer must render the feedback strip");
+    let text = strip.text_content().unwrap_or_default();
     assert!(
-        page.contains("Correct answer"),
-        "a don't-know answer must reveal the correct Да/Нет; got: {page}"
+        text.contains("Yes"),
+        "a don't-know answer must reveal the correct Да/Нет row; got: {text}"
     );
 }
 
@@ -1255,114 +1187,166 @@ async fn phrase_rating_row_disabled_blocks_dispatch() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// QuizResultDisplay
+// QuizFeedbackStrip (the direction-B answer ledger)
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn quiz_result_display_correct_shows_success_styling() {
+async fn feedback_strip_correct_shows_success_accent() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, || {
-        view! { <QuizResultDisplay quiz_result=QuizResult::Correct /> }.into_any()
-    });
-    tick().await;
-
-    let text_el = wrapper.query_selector("p").unwrap().unwrap();
-    let class = text_el.get_attribute("class").unwrap_or_default();
-    assert!(
-        class.contains("text-[var(--success)]"),
-        "correct result must be success-styled; got: {class}"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn quiz_result_display_multi_partial_lists_missed_and_wrong() {
-    use origa::domain::MultiQuizResult;
-
-    let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
-        let multi = MultiQuizResult {
-            correct_selections: vec![],
-            missed: vec![0usize],
-            wrong_selections: vec![1usize],
-            is_perfect: false,
-        };
         view! {
-            <QuizResultDisplay
-                quiz_result=QuizResult::MultiPartial
-                multi_result=Some(multi)
-                options=quiz_options_fixture()
+            <QuizFeedbackStrip
+                verdict=LedgerVerdict::Correct
+                rows=vec![LedgerRow {
+                    text: "たべる".to_string(),
+                    tag: None,
+                    kind: LedgerRowKind::YourAnswerCorrect,
+                }]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
     });
     tick().await;
 
-    let text = wrapper.text_content().unwrap();
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .unwrap()
+        .expect("strip must render");
+    let style = strip.get_attribute("style").unwrap_or_default();
     assert!(
-        text.contains("のむ"),
-        "missed option text must be listed; got: {text}"
+        style.contains("var(--success)"),
+        "correct verdict must use the success accent; got: {style}"
     );
+    let text = wrapper.text_content().unwrap_or_default();
     assert!(
         text.contains("たべる"),
-        "wrong selection text must be listed; got: {text}"
+        "the answer row must render; got: {text}"
     );
 }
 
 #[wasm_bindgen_test]
-async fn quiz_result_display_multi_lenient_pass_is_success_and_lists_missed() {
-    use origa::domain::MultiQuizResult;
-
-    // #822: a lenient pass (≥50% readings, none wrong) counts as a pass
-    // but must NOT claim «все чтения выбраны» — success color, its own
-    // message, and the missed list (たべる = the correct fixture option,
-    // marked missed here).
+async fn feedback_strip_errors_lists_missed_and_wrong_rows() {
     let wrapper = create_wrapper();
-    let (set_lenient_msg, get_lenient_msg) = shared_cell::<String>();
-    let (set_perfect_msg, get_perfect_msg) = shared_cell::<String>();
-    mount_with_i18n(&wrapper, move || {
-        let i18n = crate::i18n::use_i18n();
-        set_lenient_msg.set(Some(
-            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.multi_lenient_pass)
-                .to_string(),
-        ));
-        set_perfect_msg.set(Some(
-            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.multi_perfect).to_string(),
-        ));
-        let multi = MultiQuizResult {
-            correct_selections: vec![],
-            missed: vec![0usize],
-            wrong_selections: vec![],
-            is_perfect: false,
-        };
+    mount_with_i18n(&wrapper, || {
         view! {
-            <QuizResultDisplay
-                quiz_result=QuizResult::MultiLenientPass
-                multi_result=Some(multi)
-                options=quiz_options_fixture()
+            <QuizFeedbackStrip
+                verdict=LedgerVerdict::Errors
+                count=Some((1, 2))
+                rows=vec![
+                    LedgerRow {
+                        text: "たべる".to_string(),
+                        tag: None,
+                        kind: LedgerRowKind::SelectedCorrect,
+                    },
+                    LedgerRow {
+                        text: "のむ".to_string(),
+                        tag: None,
+                        kind: LedgerRowKind::ExtraSelected,
+                    },
+                ]
+                known_kanji=Signal::derive(|| HashSet::new())
             />
         }
         .into_any()
     });
     tick().await;
 
-    let text_el = wrapper.query_selector("p").unwrap().unwrap();
-    let class = text_el.get_attribute("class").unwrap_or_default();
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .unwrap()
+        .expect("strip must render");
+    let style = strip.get_attribute("style").unwrap_or_default();
     assert!(
-        class.contains("text-[var(--success)]"),
-        "lenient pass must be success-styled; got: {class}"
+        style.contains("var(--error)"),
+        "errors verdict must use the error accent; got: {style}"
     );
-    let text = wrapper.text_content().unwrap();
+    let text = wrapper.text_content().unwrap_or_default();
     assert!(
-        text.contains(get_lenient_msg.take().expect("captured").as_str()),
-        "lenient pass message must render; got: {text}"
+        text.contains("たべる"),
+        "selected row must render; got: {text}"
     );
+    assert!(text.contains("のむ"), "extra row must render; got: {text}");
+    assert!(
+        text.contains("1/2"),
+        "the K/N counter must render on the verdict line; got: {text}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn feedback_strip_lenient_pass_is_success_and_lists_missed() {
+    // #822: a lenient pass counts as a pass but must show WHAT was
+    // missed — success accent + the missed reading as a dashed row.
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <QuizFeedbackStrip
+                verdict=LedgerVerdict::LenientPass
+                count=Some((1, 2))
+                rows=vec![LedgerRow {
+                    text: "たべる".to_string(),
+                    tag: Some("ON".to_string()),
+                    kind: LedgerRowKind::Missed,
+                }]
+                known_kanji=Signal::derive(|| HashSet::new())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .unwrap()
+        .expect("strip must render");
+    let style = strip.get_attribute("style").unwrap_or_default();
+    assert!(
+        style.contains("var(--success)"),
+        "lenient pass must be success-styled; got: {style}"
+    );
+    let text = wrapper.text_content().unwrap_or_default();
     assert!(
         text.contains("たべる"),
         "missed reading must be listed on a lenient pass; got: {text}"
     );
     assert!(
-        !text.contains(get_perfect_msg.take().expect("captured").as_str()),
-        "lenient pass must NOT render the «all readings selected» message; got: {text}"
+        text.contains("ON"),
+        "the reading-type tag must render in the ledger row; got: {text}"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn feedback_strip_not_answered_reveals_correct_answer() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <QuizFeedbackStrip
+                verdict=LedgerVerdict::NotAnswered
+                rows=vec![LedgerRow {
+                    text: "たべる".to_string(),
+                    tag: None,
+                    kind: LedgerRowKind::CorrectAnswer,
+                }]
+                known_kanji=Signal::derive(|| HashSet::new())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .unwrap()
+        .expect("strip must render");
+    let style = strip.get_attribute("style").unwrap_or_default();
+    assert!(
+        style.contains("var(--fg-muted)"),
+        "not-answered verdict must be muted; got: {style}"
+    );
+    let text = wrapper.text_content().unwrap_or_default();
+    assert!(
+        text.contains("たべる"),
+        "the correct answer must be revealed on dont-know; got: {text}"
     );
 }
 

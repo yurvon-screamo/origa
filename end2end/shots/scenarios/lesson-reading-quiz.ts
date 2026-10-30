@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
+import { LOCAL_CDN_PORT } from "../config.ts";
 import type { ShotScenario } from "../scenario.ts";
 
 /**
@@ -131,9 +132,14 @@ let kanjiDict: KanjiEntry[] | null = null;
 
 async function loadKanjiDict(page: Page): Promise<KanjiEntry[]> {
     if (kanjiDict) return kanjiDict;
-    // The same corpus the bundle reads: the local server on :8080 when a
-    // cdn/ checkout exists, the production CDN otherwise.
-    for (const base of ["http://localhost:8080", "https://s3.origa.uwuwu.net"]) {
+    // The same corpus the bundle reads: the local server on the
+    // configured corpus port (config.ts LOCAL_CDN_PORT — a developer
+    // machine may run its own service on the default 8080, hence the
+    // E2E_CDN_PORT override), the production CDN otherwise.
+    for (const base of [
+        `http://localhost:${LOCAL_CDN_PORT}`,
+        "https://s3.origa.uwuwu.net",
+    ]) {
         const entries = await page.evaluate(async (url) => {
             try {
                 const res = await fetch(url);
@@ -171,7 +177,7 @@ async function captureReadingQuiz(
     const correctIdxs: number[] = [];
     for (let i = 0; i < count; i++) {
         const raw = (await page.getByTestId(`quiz-option-${i}`).textContent()) ?? "";
-        const text = raw.replace(/[\s0-9]/g, "");
+        const text = raw.replace(/[\s0-9[\]]/g, "");
         if (readings.has(text)) correctIdxs.push(i);
     }
 
@@ -198,12 +204,28 @@ async function captureReadingQuiz(
         .waitFor({ state: "visible", timeout: 20_000 })
         .catch(() => undefined);
     await page.waitForTimeout(700);
-    // The scenario's whole point is the LENIENT pass state (#822): if
-    // the dictionary match missed (perfect) or misfired (partial), the
-    // capture would silently document the wrong state — assert it.
-    await expect(page.getByTestId("lesson-card-root")).toContainText("Зачтено", {
-        timeout: 10_000,
-    });
+
+    // The scenario's whole point is the LENIENT pass state (#822): the
+    // ledger strip (task 3SekkMiYYW) shows «Нестрогий зачёт» with the
+    // missed readings as dashed rows. A dictionary over-match (the
+    // generator caps the correct options, so a distractor can share a
+    // dict reading) yields a partial state instead — that run is not
+    // the state this scenario documents: advance and reroll.
+    const stripText =
+        (await page
+            .getByTestId("quiz-feedback-strip")
+            .textContent()
+            .catch(() => "")) ?? "";
+    if (!stripText.includes("Нестрогий зачёт")) {
+        console.log(
+            `[shots] not a lenient state (${stripText.slice(0, 40)}...), reroll`,
+        );
+        await page
+            .getByTestId("lesson-card-next-btn")
+            .click({ timeout: 8_000 })
+            .catch(() => undefined);
+        return false;
+    }
     await sink.shot("quiz-answer");
 
     await page

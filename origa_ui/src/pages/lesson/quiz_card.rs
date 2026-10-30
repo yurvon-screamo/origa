@@ -1,7 +1,7 @@
 use crate::i18n::*;
 use crate::ui_components::{
-    DisplayText, FuriganaText, Heading, HeadingLevel, MarkdownText, MarkdownVariant, Text,
-    TextSize, TypographyVariant, is_speech_supported, speak_word, stop_current_audio,
+    DisplayText, FuriganaText, Heading, HeadingLevel, Text, TextSize, TypographyVariant,
+    is_speech_supported, speak_word, stop_current_audio,
 };
 use leptos::prelude::*;
 use origa::domain::{Card as DomainCard, MultiQuizResult, NativeLanguage, QuizCard, QuizMode};
@@ -9,13 +9,18 @@ use std::collections::HashSet;
 
 use super::card_text::{card_question_text, display_question_text};
 use super::card_type::CardType;
+use super::dont_know_button::DontKnowButton;
 use super::lesson_card_header::{CardHeaderAudio, LessonCardTagsQuiz};
 use super::lesson_card_shell::LessonCardShell;
 use super::next_card_button::NextCardButton;
+use super::quiz_feedback_strip::QuizFeedbackStrip;
+use super::quiz_ledger::{
+    LedgerVerdict, MultiFeedback, multi_dont_know_rows, multi_ledger_rows, multi_score,
+    multi_verdict, single_ledger_rows, single_verdict,
+};
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
 use super::quiz_result::QuizResult;
-use super::quiz_result_display::QuizResultDisplay;
 
 #[derive(Clone, Copy, Default, PartialEq)]
 pub enum QuizVariant {
@@ -179,9 +184,113 @@ pub fn QuizCardView(
         .into_any()
     });
 
+    // Feedback strip below the card (direction B, task 3SekkMiYYW):
+    // the verdict line + structured answer ledger, shown after the
+    // answer replaces the old in-card verdict text flow. Reading order:
+    // question (card) → feedback (strip) → action (footer).
+    let single_feedback: ChildrenFn = {
+        std::sync::Arc::new(move || {
+            view! {
+                <Show when=move || show_result.get()>
+                    {move || {
+                        let result = quiz_result();
+                        let verdict = single_verdict(result)?;
+                        let rows = single_ledger_rows(result, &options.get_value(), selected_option);
+                        Some(view! {
+                            <QuizFeedbackStrip verdict count=None rows known_kanji />
+                        })
+                    }}
+                </Show>
+            }
+            .into_any()
+        })
+    };
+
+    let multi_feedback: ChildrenFn = {
+        std::sync::Arc::new(move || {
+            view! {
+                <Show when=move || show_result.get() && multi_submitted.get()>
+                    {move || {
+                        multi_feedback_data(
+                            dont_know_selected.get(),
+                            multi_result_stored.get_value(),
+                            lenient_grading,
+                            &options.get_value(),
+                            &selected_options.get(),
+                        )
+                        .map(|fb| {
+                            view! {
+                                <QuizFeedbackStrip
+                                    verdict=fb.verdict
+                                    count=fb.count
+                                    rows=fb.rows
+                                    known_kanji
+                                />
+                            }
+                        })
+                    }}
+                </Show>
+            }
+            .into_any()
+        })
+    };
+
+    let feedback_row: ChildrenFn = if is_multi {
+        multi_feedback
+    } else {
+        single_feedback
+    };
+
+    // Action footer below the card and the feedback strip: the only
+    // home of quiz buttons (direction B). Question side shows the
+    // submission action; result side shows the next-card button.
+    let footer_row: ChildrenFn = {
+        std::sync::Arc::new(move || {
+            view! {
+                <Show when=move || !show_result.get() && !is_multi>
+                    <DontKnowButton
+                        dont_know_selected
+                        disabled=show_result
+                        on_click=on_dont_know
+                    />
+                </Show>
+                <Show when=move || !show_result.get() && is_multi>
+                    <button
+                        data-testid="quiz-submit-btn"
+                        class="w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 font-serif font-medium border-[var(--fg-black)] bg-[var(--fg-black)] hover:opacity-80"
+                        style="color: var(--bg-paper)"
+                        on:click=move |_| {
+                            if selected_options.get().is_empty() {
+                                on_dont_know.run(());
+                            } else {
+                                on_submit.run(());
+                            }
+                        }
+                    >
+                        <Show when=move || selected_options.get().is_empty()>
+                            <span>{t!(i18n, lesson.dont_know)}</span>
+                        </Show>
+                        <Show when=move || !selected_options.get().is_empty()>
+                            <span>{t!(i18n, lesson.check)}</span>
+                        </Show>
+                        <span class="kbd-hint text-xs font-mono opacity-50">
+                            {t!(i18n, lesson.space_key)}
+                        </span>
+                    </button>
+                </Show>
+                <Show when=move || waiting_for_next.get() && show_result.get()>
+                    <NextCardButton on_next_card=on_next_card />
+                </Show>
+            }
+            .into_any()
+        })
+    };
+
     view! {
         <LessonCardShell
             tags=tags_row
+            feedback=feedback_row
+            footer=footer_row
             test_id="lesson-card-root"
         >
         <div class="text-center mb-0.5 sm:mb-1">
@@ -231,7 +340,7 @@ pub fn QuizCardView(
                     }}
                 </Show>
 
-                <Show when=move || !show_result.get()>
+                <Show when=move || !show_result.get() && !multi_submitted.get()>
                     <Text size=TextSize::Default variant=TypographyVariant::Muted class="mt-4">
                         {if is_multi && quiz_variant == QuizVariant::Reading {
                             t!(i18n, lesson.choose_all_readings).into_any()
@@ -246,99 +355,79 @@ pub fn QuizCardView(
                 </Show>
             </div>
 
-            <Show when=move || is_multi>
+            <Show when=move || is_multi && !multi_submitted.get()>
                 <QuizOptionsMulti
                     options=options.get_value()
                     selected_options=selected_options.get()
-                    show_result=show_result
-                    multi_submitted=multi_submitted
-                    multi_result=multi_result_stored.get_value()
                     on_toggle=on_toggle_with_speech
-                    on_submit=on_submit
-                    on_dont_know=on_dont_know
-                    dont_know_selected=dont_know_selected
                     known_kanji=known_kanji
-                    waiting_for_next=waiting_for_next
-                    on_next_card=on_next_card
                 />
-                <Show when=move || multi_submitted.get()>
-                    {move || {
-                        multi_result_stored
-                            .get_value()
-                            .map(|r| {
-                                let result = if lenient_grading {
-                                    QuizResult::from_multi_result_lenient(&r)
-                                } else {
-                                    QuizResult::from_multi_result(&r)
-                                };
-                                view! {
-                                    <QuizResultDisplay
-                                        quiz_result=result
-                                        multi_result=multi_result_stored.get_value()
-                                        options=options.get_value()
-                                    />
-                                }
-                            })
-                    }}
-                </Show>
-                // The kanji NAME on the answer side (#822): same secondary
-                // box style as the single-quiz correct-answer reveal.
-                <Show
-                    when=move || {
-                        multi_submitted.get() && !kanji_name_stored.get_value().is_empty()
-                    }
-                >
-                    <KanjiQuizAnswerName name=kanji_name_stored.get_value() />
-                </Show>
             </Show>
 
-            <Show when=move || !is_multi>
-                <Show when=move || !show_result.get()>
-                    <QuizOptions
-                        options=options.get_value()
-                        selected_option=selected_option
-                        show_result=show_result
-                        quiz_result=quiz_result()
-                        on_select_option=on_select_with_speech
-                        on_dont_know=on_dont_know
-                        dont_know_selected=dont_know_selected
-                        known_kanji=known_kanji
-                    />
-                </Show>
+            // The kanji NAME on the answer side (#822): card content of
+            // the result side, rendered in the card above the ledger.
+            <Show
+                when=move || {
+                    multi_submitted.get() && !kanji_name_stored.get_value().is_empty()
+                }
+            >
+                <KanjiQuizAnswerName name=kanji_name_stored.get_value() />
+            </Show>
 
-                <Show when=move || show_result.get()>
-                    <QuizResultDisplay quiz_result=quiz_result() />
-
-                    // Show the correct answer so the user can learn from
-                    // mistakes or confirm their choice.
-                    <div class="mt-3 p-3 bg-[var(--bg-secondary)] text-center">
-                        <MarkdownText
-                            content=Signal::derive(move || {
-                                options
-                                    .get_value()
-                                    .iter()
-                                    .find(|o| o.is_correct())
-                                    .map(|o| o.text().to_string())
-                                    .unwrap_or_default()
-                            })
-                            variant=MarkdownVariant::Default
-                            known_kanji=known_kanji.get()
-                        />
-                    </div>
-                </Show>
-
-                <Show when=move || waiting_for_next.get() && show_result.get()>
-                    <NextCardButton on_next_card=on_next_card />
-                </Show>
+            <Show when=move || !is_multi && !show_result.get()>
+                <QuizOptions
+                    options=options.get_value()
+                    selected_option=selected_option
+                    on_select_option=on_select_with_speech
+                    known_kanji=known_kanji
+                />
             </Show>
         </LessonCardShell>
     }
 }
 
+/// The multi-quiz feedback triple: verdict, optional «K/N» counter and
+/// ledger rows. `None` while unanswered. The «не знаю» submission
+/// (no picks) yields a NotAnswered verdict with every correct option
+/// revealed — a state the old in-card flow left without any feedback.
+fn multi_feedback_data(
+    dont_know: bool,
+    multi_result: Option<MultiQuizResult>,
+    lenient_grading: bool,
+    options: &[origa::domain::QuizOption],
+    selected: &HashSet<usize>,
+) -> Option<MultiFeedback> {
+    if dont_know {
+        return Some(MultiFeedback {
+            verdict: LedgerVerdict::NotAnswered,
+            count: None,
+            rows: multi_dont_know_rows(options),
+        });
+    }
+    let multi = multi_result?;
+    let result = if lenient_grading {
+        QuizResult::from_multi_result_lenient(&multi)
+    } else {
+        QuizResult::from_multi_result(&multi)
+    };
+    let verdict = multi_verdict(result)?;
+    let count = match verdict {
+        LedgerVerdict::Correct | LedgerVerdict::LenientPass | LedgerVerdict::Errors => {
+            Some(multi_score(&multi, options))
+        },
+        _ => None,
+    };
+    Some(MultiFeedback {
+        verdict,
+        count,
+        rows: multi_ledger_rows(&multi, options, selected),
+    })
+}
+
 /// The kanji NAME box on the reading-quiz answer side (#822): muted
-/// «Значение» label + the name, styled like the single-quiz
-/// correct-answer reveal. Presentational only — the caller gates it on
-/// submission and a non-empty name.
+/// «Значение» label + the name, rendered as the result-side card
+/// content above the ledger strip. Presentational only — the caller
+/// gates it on submission and a non-empty name.
 #[component]
 pub(super) fn KanjiQuizAnswerName(name: String) -> impl IntoView {
     let i18n = use_i18n();
@@ -413,5 +502,47 @@ mod tests {
         )
         .expect("deserialize vocab card");
         assert!(kanji_quiz_answer_name(&card, &NativeLanguage::Russian).is_empty());
+    }
+
+    #[test]
+    fn multi_feedback_on_dont_know_reveals_correct_options() {
+        let options = vec![
+            origa::domain::QuizOption::new_simple("a".to_string(), true),
+            origa::domain::QuizOption::new_simple("b".to_string(), false),
+        ];
+        let fb = multi_feedback_data(true, None, false, &options, &HashSet::new())
+            .expect("dont know must yield feedback");
+        assert_eq!(fb.verdict, LedgerVerdict::NotAnswered);
+        assert_eq!(fb.count, None);
+        assert_eq!(fb.rows.len(), 1, "only the correct option is revealed");
+    }
+
+    #[test]
+    fn multi_feedback_without_result_and_dont_know_is_none() {
+        let options = vec![origa::domain::QuizOption::new_simple("a".to_string(), true)];
+        assert!(multi_feedback_data(false, None, false, &options, &HashSet::new()).is_none());
+    }
+
+    #[test]
+    fn multi_feedback_partial_carries_counter_and_rows() {
+        let options = vec![
+            origa::domain::QuizOption::new_simple("a".to_string(), true),
+            origa::domain::QuizOption::new_simple("b".to_string(), true),
+            origa::domain::QuizOption::new_simple("c".to_string(), false),
+        ];
+        let multi = MultiQuizResult {
+            correct_selections: vec![0],
+            missed: vec![1],
+            wrong_selections: vec![2],
+            is_perfect: false,
+        };
+        let mut selected = HashSet::new();
+        selected.insert(0);
+        selected.insert(2);
+        let fb = multi_feedback_data(false, Some(multi), true, &options, &selected)
+            .expect("partial must yield feedback");
+        assert_eq!(fb.verdict, LedgerVerdict::Errors);
+        assert_eq!(fb.count, Some((1, 2)));
+        assert_eq!(fb.rows.len(), 3, "selected + missed + extra rows");
     }
 }
