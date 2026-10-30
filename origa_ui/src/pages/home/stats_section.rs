@@ -29,8 +29,9 @@ pub fn StatsSection(
     view! {
         <section data-testid=move || test_id.get()>
             <button
-                class="flex w-full items-center justify-between cursor-pointer"
+                class="flex w-full items-center justify-between cursor-pointer select-none"
                 on:click=move |_| expanded.update(|v| *v = !*v)
+                aria-expanded=move || expanded.get()
                 data-testid=move || format!("{}-toggle", section_prefix())
             >
                 <span class="text-xs text-[var(--fg-muted)] uppercase tracking-widest">
@@ -39,8 +40,8 @@ pub fn StatsSection(
                         td_string!(locale, home.stats_section_title)
                     }}
                 </span>
-                <span class="font-mono text-xs text-[var(--fg-muted)]">
-                    {move || if expanded.get() { "▾" } else { "▸" }}
+                <span class="text-sm transition-transform" class:rotate-180=expanded aria-hidden="true">
+                    "▼"
                 </span>
             </button>
 
