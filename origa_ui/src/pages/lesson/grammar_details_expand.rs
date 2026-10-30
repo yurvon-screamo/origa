@@ -10,6 +10,8 @@ use ulid::Ulid;
 use crate::pages::grammar::grammar_warnings::GrammarWarnings;
 use crate::pages::grammar::nuances_section::NuancesSection;
 
+use super::details_toggle::LessonDetailsToggle;
+
 #[component]
 pub fn GrammarDetailsExpand(
     rule_id: Ulid,
@@ -22,11 +24,6 @@ pub fn GrammarDetailsExpand(
     let known_kanji_stored = StoredValue::new(known_kanji);
 
     let rule = StoredValue::new(get_rule_by_id(&rule_id));
-
-    let more_text =
-        Signal::derive(move || i18n.get_keys().common().more_details().inner().to_string());
-    let collapse_text =
-        Signal::derive(move || i18n.get_keys().common().collapse().inner().to_string());
 
     let explanation_title = Signal::derive(move || {
         i18n.get_keys()
@@ -56,14 +53,7 @@ pub fn GrammarDetailsExpand(
 
     view! {
         <div class="mt-3" data-testid=move || test_id.get()>
-            <div class="flex justify-center">
-                <button
-                    class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
-                    on:click=move |_| is_expanded.update(|v| *v = !*v)
-                >
-                    {move || if is_expanded.get() { collapse_text.get() } else { more_text.get() }}
-                </button>
-            </div>
+            <LessonDetailsToggle expanded=is_expanded />
 
             <Show when=move || is_expanded.get()>
                 {move || {

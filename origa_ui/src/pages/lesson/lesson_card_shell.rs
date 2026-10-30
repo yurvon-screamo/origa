@@ -3,8 +3,9 @@ use leptos::prelude::*;
 
 use super::LESSON_CARD_CLASS;
 
-/// Shared scaffold of a lesson card view: the paper card pinned to the
-/// stable ADR-031 height (`LESSON_CARD_CLASS`) with a vertically centered
+/// Shared scaffold of a lesson card view: the paper card (stable ADR-031
+/// height via `LESSON_CARD_CLASS` by default; the quiz family overrides
+/// it with the compact content-hugging class) with a vertically centered
 /// body, plus an optional tags row rendered ABOVE the card border
 /// (card-type tag, POS, quiz variant, header audio).
 ///

@@ -7,6 +7,8 @@ use leptos::prelude::*;
 use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
+use super::details_toggle::LessonDetailsToggle;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct RadicalDisplay {
     pub symbol: char,
@@ -34,10 +36,6 @@ pub fn KanjiCardDetails(
     let kun_readings_stored = StoredValue::new(kun_readings);
 
     let details_expanded = RwSignal::new(false);
-    let more_text =
-        Signal::derive(move || i18n.get_keys().common().more_details().inner().to_string());
-    let collapse_text =
-        Signal::derive(move || i18n.get_keys().common().collapse().inner().to_string());
 
     view! {
         <div class="my-6 space-y-4 max-w-max mx-auto">
@@ -70,14 +68,8 @@ pub fn KanjiCardDetails(
             </div>
         </div>
 
-        <div class="mt-3 flex justify-center">
-            <button
-                class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
-                data-testid="kanji-details-toggle"
-                on:click=move |_| details_expanded.update(|v| *v = !*v)
-            >
-                {move || if details_expanded.get() { collapse_text.get() } else { more_text.get() }}
-            </button>
+        <div class="mt-3">
+            <LessonDetailsToggle expanded=details_expanded test_id="kanji-details-toggle" />
         </div>
 
         <Show when=move || details_expanded.get()>

@@ -17,6 +17,7 @@ use super::audio_recall_card::AudioRecallCardView;
 use super::binary_rating_buttons::{BinaryRatingButtons, RatingButtons};
 use super::grammar_info_badge::GrammarInfoBadge;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
+use super::lesson_card_answer::LessonCardAnswer;
 use super::lesson_card_question::LessonCardQuestion;
 use super::lesson_progress::LessonProgress;
 use super::next_card_button::NextCardButton;
@@ -5269,6 +5270,116 @@ async fn counter_readings_table_orders_numbers_what_last() {
     assert!(
         !first.class_list().contains("ring-inset"),
         "no accent without a highlight signal"
+    );
+}
+
+/// Раскрытие «Подробнее» на обычной карточке счётного суффикса (owner
+/// request, U0IjxQ8I2d): тоггл свёрнут по умолчанию, клик раскрывает
+/// полную таблицу чтений реестра. Зарегистрированный суффикс — тоггл
+/// есть; незарегистрированный — раскрытия нет вовсе (контракт
+/// rows_for_suffix: пустой резолв не рендерится).
+#[wasm_bindgen_test]
+async fn counter_answer_details_toggle_reveals_registry_readings() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        view! {
+            <LessonCardAnswer
+                question_text="本".to_string()
+                answer_text="длинные предметы".to_string()
+                answer_translations=None
+                answer_description=None
+                is_expanded=RwSignal::new(true)
+                needs_collapse=RwSignal::new(false)
+                content_ref=NodeRef::new()
+                on_toggle=Callback::new(|_: ()| {})
+                is_kanji=false
+                is_phrase=false
+                is_reversed=false
+                is_counter=true
+                on_readings=None
+                kun_readings=None
+                radicals=None
+                example_words=None
+                grammar_info=None
+                known_kanji=Signal::from(HashSet::new())
+                native_language=origa::domain::NativeLanguage::Russian
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    // Свёрнуто: тоггл есть, таблицы нет.
+    let toggle = wrapper
+        .query_selector("[data-testid=\"counter-details-toggle\"]")
+        .expect("query ok")
+        .expect("the details toggle must render for a registered suffix");
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"counter-readings-table\"]")
+            .expect("query ok")
+            .is_none(),
+        "the readings table must stay collapsed until the toggle is clicked"
+    );
+
+    toggle
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("toggle is an element")
+        .click();
+    tick().await;
+
+    let table = wrapper
+        .query_selector("[data-testid=\"counter-readings-table\"]")
+        .expect("query ok")
+        .expect("the readings table must render after the toggle click");
+    let rows = table
+        .query_selector_all("[data-testid=\"counter-mutations-row\"]")
+        .unwrap();
+    // Реестр фикстуры: 1..=10 + вопросительное 何.
+    assert_eq!(rows.length(), 11, "every registry reading renders");
+}
+
+/// Незарегистрированный суффикс: раскрытия нет вовсе — пустая таблица не
+/// рендерится, тоггл не показывается (контракт rows_for_suffix).
+#[wasm_bindgen_test]
+async fn counter_answer_without_registry_entry_hides_details_disclosure() {
+    origa::dictionary::counters::init_counters(&counter_registry_json()).unwrap();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        view! {
+            <LessonCardAnswer
+                question_text="匹".to_string()
+                answer_text="мелкие животные".to_string()
+                answer_translations=None
+                answer_description=None
+                is_expanded=RwSignal::new(true)
+                needs_collapse=RwSignal::new(false)
+                content_ref=NodeRef::new()
+                on_toggle=Callback::new(|_: ()| {})
+                is_kanji=false
+                is_phrase=false
+                is_reversed=false
+                is_counter=true
+                on_readings=None
+                kun_readings=None
+                radicals=None
+                example_words=None
+                grammar_info=None
+                known_kanji=Signal::from(HashSet::new())
+                native_language=origa::domain::NativeLanguage::Russian
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"counter-details-toggle\"]")
+            .expect("query ok")
+            .is_none(),
+        "an unregistered suffix must not render the details disclosure"
     );
 }
 

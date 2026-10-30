@@ -448,6 +448,11 @@ input[type="submit"],
     text-overflow: ellipsis;
 }
 
+.lesson-tags-row .grammar-badge-pattern {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Clickable Tag — интерактивный фильтр/chip */
 .tag-clickable {
     border-color: var(--border-dark);
@@ -4978,7 +4983,11 @@ rt {
 
 /* Single separator per section: the title underline is the only rule —
     the former section border-top sandwiched every title between two
-    lines (owner request). Spacing (padding/margin) stays. */
+    lines (owner request). Spacing (padding/margin) stays.
+    NOTE the blast radius: the class is shared by the lesson grammar
+    expand (GrammarDetailsExpand) AND the /grammar/[id] detail page
+    (grammar_detail[_mobile].rs) — both surfaces get the same
+    unification, that is conscious, not an accident. */
 .grammar-detail-section {
     padding-top: 24px;
     margin-top: 24px;
