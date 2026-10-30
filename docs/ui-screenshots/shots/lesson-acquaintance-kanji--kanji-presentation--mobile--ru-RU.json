@@ -6,15 +6,15 @@
   "viewport": "mobile",
   "locale": "ru-RU",
   "width": 390,
-  "height": 1502,
+  "height": 1496,
   "fullPage": true,
-  "bytes": 114705,
-  "sha256": "3e705948a1b4dcf43e6f56a61938c2cdc30b5dabe07e11c183f36afcbca04f21",
-  "capturedAt": "2026-10-28T12:54:20.306Z",
-  "commit": "1309d237181db4fbcf111865e8f2d415db383ffe",
+  "bytes": 114778,
+  "sha256": "f34e0b497202246f2e085e01ce334a4bd7b96167f0fe60ce4c904090a967a9be",
+  "capturedAt": "2026-10-30T18:53:02.235Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--mobile-3e705948.png",
-  "uploadedSha256": "3e705948a1b4dcf43e6f56a61938c2cdc30b5dabe07e11c183f36afcbca04f21",
-  "uploadedAt": "2026-10-28T12:54:24.098Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-kanji--kanji-presentation--mobile-f34e0b49.png",
+  "uploadedSha256": "f34e0b497202246f2e085e01ce334a4bd7b96167f0fe60ce4c904090a967a9be",
+  "uploadedAt": "2026-10-30T19:01:23.622Z"
 }

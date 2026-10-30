@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-unification",
+  "screen": "acquaintance-training-answer-2",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 126881,
+  "sha256": "4eaf021612ee4e79ffe862f7f41f7a5294d92432578c082b59b720c072791ff2",
+  "capturedAt": "2026-10-30T18:35:16.528Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--acquaintance-training-answer-2--mobile-4eaf0216.png",
+  "uploadedSha256": "4eaf021612ee4e79ffe862f7f41f7a5294d92432578c082b59b720c072791ff2",
+  "uploadedAt": "2026-10-30T19:02:11.104Z"
+}

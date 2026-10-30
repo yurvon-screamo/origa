@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 100101,
-  "sha256": "bdf1253be73276659ba68f1f4c6b6e8161df6b5793fadf29b76de79ea1a136f4",
-  "capturedAt": "2026-10-27T02:44:12.629Z",
-  "commit": "17f9de0746bb1f30dd91d3718a1053c373f60d88",
+  "bytes": 96862,
+  "sha256": "84643cf93078d3b61802e137b9667c4c1f17ce9f1a942437083f48bf8c2b163e",
+  "capturedAt": "2026-10-30T18:53:31.799Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
   "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "unknown (dist)",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png",
-  "uploadedSha256": "bdf1253be73276659ba68f1f4c6b6e8161df6b5793fadf29b76de79ea1a136f4",
-  "uploadedAt": "2026-10-27T02:44:19.622Z"
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-answer--mobile-84643cf9.png",
+  "uploadedSha256": "84643cf93078d3b61802e137b9667c4c1f17ce9f1a942437083f48bf8c2b163e",
+  "uploadedAt": "2026-10-30T19:01:19.759Z"
 }

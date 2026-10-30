@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-review-body",
+  "screen": "review-body-yesno-2",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 237590,
+  "sha256": "8ae96e94873e4e77655a064b2dd51ae6413663c3e4f6dc0f30801c5f785445c2",
+  "capturedAt": "2026-10-30T18:20:18.330Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-yesno-2--mobile-8ae96e94.png",
+  "uploadedSha256": "8ae96e94873e4e77655a064b2dd51ae6413663c3e4f6dc0f30801c5f785445c2",
+  "uploadedAt": "2026-10-30T18:56:39.009Z"
+}

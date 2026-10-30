@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-reading-quiz",
+  "screen": "writing-card",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 283925,
+  "sha256": "bc8149a4a16103a8b562fffac154818060ba20f81252991c5d8a28959a2c1529",
+  "capturedAt": "2026-10-30T18:53:58.884Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--desktop-bc8149a4.png",
+  "uploadedSha256": "bc8149a4a16103a8b562fffac154818060ba20f81252991c5d8a28959a2c1529",
+  "uploadedAt": "2026-10-30T19:01:43.122Z"
+}

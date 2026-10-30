@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 259908,
-  "sha256": "2861aea3e67cf1cb02f83094e74f181af13bd8fd38fbb10e4f615f978a768e67",
-  "capturedAt": "2026-10-26T19:47:26.302Z",
-  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "bytes": 272029,
+  "sha256": "4ac9b2227ba1a01294ea68396404978356cfa35e789f1bf2f97caa060f5d8924",
+  "capturedAt": "2026-10-30T18:55:41.035Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
   "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-example-recall--example-answer--desktop-2861aea3.png",
-  "uploadedSha256": "2861aea3e67cf1cb02f83094e74f181af13bd8fd38fbb10e4f615f978a768e67",
-  "uploadedAt": "2026-10-26T19:49:42.700Z"
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example-recall--example-answer--desktop-4ac9b222.png",
+  "uploadedSha256": "4ac9b2227ba1a01294ea68396404978356cfa35e789f1bf2f97caa060f5d8924",
+  "uploadedAt": "2026-10-30T19:01:35.535Z"
 }

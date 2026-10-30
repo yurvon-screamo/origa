@@ -119,6 +119,18 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
             ) {
                 await page.waitForTimeout(700);
                 await sink.shot("grammar-answer");
+
+                // The expanded «Подробнее» body: the unified section frames
+                // (Примеры/Нюансы/Совет) with the single title underline.
+                // The toggle is the first button of the details container —
+                // the same GrammarDetailsExpand the lesson answer renders.
+                const detailsToggle = page
+                    .getByTestId("acquaintance-grammar-details")
+                    .locator("button")
+                    .first();
+                await detailsToggle.click({ timeout: 3_000 }).catch(() => undefined);
+                await page.waitForTimeout(700);
+                await sink.shot("grammar-details", { fullPage: true });
                 grammarShot = true;
                 break;
             }
