@@ -5336,8 +5336,20 @@ async fn counter_answer_details_toggle_reveals_registry_readings() {
     let rows = table
         .query_selector_all("[data-testid=\"counter-mutations-row\"]")
         .unwrap();
-    // Реестр фикстуры: 1..=10 + вопросительное 何.
-    assert_eq!(rows.length(), 11, "every registry reading renders");
+    // Реестр — общий OnceLock всей браузерной сессии: другой тест мог
+    // засидить минимальный набор раньше фикстуры (CI гоняет полную
+    // сессию). Количество строк сверяем с актуальным состоянием
+    // реестра; порядок (возрастание, 何 последней) покрывает соседний
+    // тест таблицы.
+    let expected = origa::dictionary::counters::get_counter("本")
+        .map(|entry| entry.readings().len())
+        .unwrap_or_default();
+    assert!(expected > 0, "the fixture must have seeded 本");
+    assert_eq!(
+        rows.length() as usize,
+        expected,
+        "every registry reading renders"
+    );
 }
 
 /// Незарегистрированный суффикс: раскрытия нет вовсе — пустая таблица не
