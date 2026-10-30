@@ -271,8 +271,9 @@ pub async fn load_counters() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("🔢 Loading counters...");
 
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("counters/counters.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("counters/counters.json").await?;
 
     yield_to_browser().await;
     origa::dictionary::counters::init_counters(&json).map_err(|e| OrigaError::RepositoryError {
