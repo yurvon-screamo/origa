@@ -1,6 +1,6 @@
 //! Таблица чтений счётного суффикса (issue #415): единый рендер для слайда
-//! показа и ответа тренировки. Числа по возрастанию, 何 последней,
-//! нерегулярные строки подсвечены.
+//! показа, ответа тренировки и раскрытия «Подробнее» обычной карточки.
+//! Числа по возрастанию, 何 последней, нерегулярные строки подсвечены.
 
 use leptos::prelude::*;
 
@@ -11,6 +11,36 @@ pub(in crate::pages::lesson) struct CounterReadingRow {
     pub number_label: String,
     pub reading: String,
     pub irregular: bool,
+}
+
+/// Лейбл числа: 0 — вопросительное 何, прочие — само число
+/// (лексикализованные исключения реестра несут свой порядок в таблице).
+pub(in crate::pages::lesson) fn number_label(number: u8) -> String {
+    match number {
+        0 => "何".to_string(),
+        n => n.to_string(),
+    }
+}
+
+/// Резолв строк таблицы из реестра по суффиксу. Пустой вектор — суффикса
+/// нет в реестре (таблица не рендерится). Единственный мост
+/// реестр → строки: пачка связок и раскрытие «Подробнее» обычной
+/// карточки читают один и тот же контент.
+pub(in crate::pages::lesson) fn rows_for_suffix(suffix: &str) -> Vec<CounterReadingRow> {
+    origa::dictionary::counters::get_counter(suffix)
+        .map(|entry| {
+            entry
+                .readings()
+                .iter()
+                .map(|r| CounterReadingRow {
+                    number: r.number(),
+                    number_label: number_label(r.number()),
+                    reading: r.reading().to_string(),
+                    irregular: r.irregular(),
+                })
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 /// Порядок таблицы: числа по возрастанию, лексикализованные исключения

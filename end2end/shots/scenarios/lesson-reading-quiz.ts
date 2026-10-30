@@ -24,6 +24,7 @@ export const lessonReadingQuizScenario: ShotScenario = {
     ...descriptors["lesson-reading-quiz"],
     async run({ page }, sink) {
         let quizShot = false;
+        let writingShot = false;
         for (let attempt = 0; attempt < 8 && !quizShot; attempt++) {
             await page.goto("/lesson");
             await page
@@ -45,6 +46,23 @@ export const lessonReadingQuizScenario: ShotScenario = {
                     // state — the capture was skipped, reroll.
                     await page.waitForTimeout(400);
                     break;
+                }
+
+                // The writing card (stroke practice) on the way: capture it
+                // once — the corner stroke-progress label and the drawing
+                // canvas are lesson-card UI this catalog otherwise misses.
+                // Class selector: the writing card mounts the practice
+                // without a test_id, so the canvas carries no testid.
+                if (
+                    !writingShot &&
+                    (await page
+                        .locator("canvas.kanji-drawing-canvas")
+                        .isVisible()
+                        .catch(() => false))
+                ) {
+                    await page.waitForTimeout(700);
+                    await sink.shot("writing-card");
+                    writingShot = true;
                 }
 
                 // Meaning quiz (single-select): answer, take the Next.

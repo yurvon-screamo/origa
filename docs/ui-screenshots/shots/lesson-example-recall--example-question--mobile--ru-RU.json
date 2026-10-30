@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 171349,
   "sha256": "0378ade9a79468891ba76c26adfe5dc876a7208170212cced5d276b2c09f7d77",
-  "capturedAt": "2026-10-21T19:56:56.384Z",
-  "commit": "4aea02f5c30dade62bceef17dc15f1e03abb1cc7",
-  "baseURL": "http://localhost:1430",
-  "cdnBaseUrl": "http://localhost:8080",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/issue-822/lesson-example-recall--example-question--mobile-0378ade9.png",
+  "capturedAt": "2026-10-30T18:55:51.296Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example-recall--example-question--mobile-0378ade9.png",
   "uploadedSha256": "0378ade9a79468891ba76c26adfe5dc876a7208170212cced5d276b2c09f7d77",
-  "uploadedAt": "2026-10-21T20:04:10.735Z"
+  "uploadedAt": "2026-10-30T19:44:09.475Z"
 }

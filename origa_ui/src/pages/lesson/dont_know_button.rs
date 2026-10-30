@@ -24,7 +24,7 @@ pub fn DontKnowButton(
         <button
             data-testid=test_id
             class=move || {
-                let base = "w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
+                let base = "w-full mt-4 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2";
                 if dont_know_selected.get() {
                     format!("{} quiz-option-neutral ring-2 ring-[var(--accent-olive)]", base)
                 } else {

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-acquaintance-grammar",
+  "screen": "grammar-details",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 2762,
+  "fullPage": true,
+  "bytes": 232029,
+  "sha256": "e362dc42e0d9e70ef8b4c10cbc58d4a89d3efa054e09a13540cef767e3438682",
+  "capturedAt": "2026-10-30T19:42:15.900Z",
+  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-details--mobile-e362dc42.png",
+  "uploadedSha256": "e362dc42e0d9e70ef8b4c10cbc58d4a89d3efa054e09a13540cef767e3438682",
+  "uploadedAt": "2026-10-30T19:43:52.778Z"
+}

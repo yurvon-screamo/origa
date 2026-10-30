@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 236973,
   "sha256": "3051be29957c13e0204e4f62f7f90c6727aaa3296572497cc845dfd03c9972eb",
-  "capturedAt": "2026-10-26T19:49:22.831Z",
-  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "capturedAt": "2026-10-30T18:34:48.930Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
   "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png",
   "uploadedSha256": "3051be29957c13e0204e4f62f7f90c6727aaa3296572497cc845dfd03c9972eb",
-  "uploadedAt": "2026-10-26T19:49:49.904Z"
+  "uploadedAt": "2026-10-30T19:44:37.560Z"
 }

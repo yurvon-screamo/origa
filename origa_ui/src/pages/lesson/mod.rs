@@ -11,6 +11,7 @@ pub(crate) mod complete_screen;
 mod content;
 mod counter_bindings_session;
 mod counter_readings_table;
+mod details_toggle;
 mod dont_know_button;
 mod empty_state_view;
 mod example_recall_card;
@@ -72,6 +73,13 @@ use leptos::prelude::*;
 /// fill the available `lesson-content` rectangle. See ADR-031.
 pub(in crate::pages::lesson) const LESSON_CARD_CLASS: &str =
     "p-4 sm:p-6 min-h-[60svh] sm:min-h-[70svh] flex flex-col grow";
+
+/// Quiz-family cards opt out of the ADR-031 stable floor (owner decision,
+/// task U0IjxQ8I2d): the card hugs its content, so the options grid no
+/// longer floats above a stretch void. The height now varies between card
+/// types by design — the floor's anti-jump guarantee stays with
+/// `LESSON_CARD_CLASS` for the other views.
+pub(in crate::pages::lesson) const LESSON_CARD_CLASS_COMPACT: &str = "p-4 sm:p-6 flex flex-col";
 
 #[component]
 pub fn Lesson() -> impl IntoView {

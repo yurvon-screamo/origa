@@ -119,6 +119,27 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
             ) {
                 await page.waitForTimeout(700);
                 await sink.shot("grammar-answer");
+
+                // The expanded «Подробнее» body: the unified section frames
+                // (Примеры/Нюансы/Совет) with the single title underline.
+                // The toggle is the first button of the details container —
+                // the same GrammarDetailsExpand the lesson answer renders.
+                const detailsToggle = page
+                    .getByTestId("acquaintance-grammar-details")
+                    .locator("button")
+                    .first();
+                await detailsToggle.click({ timeout: 3_000 }).catch(() => undefined);
+                // The capture must show the EXPANDED body: assert a section
+                // frame rendered, else the shot would silently duplicate
+                // the collapsed grammar-answer screen.
+                await expect(
+                    page
+                        .getByTestId("acquaintance-grammar-details")
+                        .locator(".grammar-detail-section")
+                        .first(),
+                ).toBeVisible({ timeout: 5_000 });
+                await page.waitForTimeout(700);
+                await sink.shot("grammar-details", { fullPage: true });
                 grammarShot = true;
                 break;
             }

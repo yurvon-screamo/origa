@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-counter-pack",
+  "screen": "pack-front",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 169540,
+  "sha256": "a5dd3d9a157c39bbe64a8d2ed73125e6504603034679c04c5e3581ce815c2267",
+  "capturedAt": "2026-10-30T19:43:42.102Z",
+  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-counter-pack--pack-front--mobile-a5dd3d9a.png",
+  "uploadedSha256": "a5dd3d9a157c39bbe64a8d2ed73125e6504603034679c04c5e3581ce815c2267",
+  "uploadedAt": "2026-10-30T19:44:01.408Z"
+}

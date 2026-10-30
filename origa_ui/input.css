@@ -423,6 +423,36 @@ input[type="submit"],
     border-color: var(--accent-sage);
 }
 
+/* Uniform tag height in the lesson tags row (owner request: rows jumped
+   between cards because the grammar badge — serif, non-uppercase — is
+   taller than the mono tags). One fixed height for every tag in the row;
+   an overlong badge truncates with an ellipsis instead of growing the
+   row. Scoped to .lesson-tags-row: Tags outside the lesson keep their
+   intrinsic sizing. */
+.lesson-tags-row .tag {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.lesson-tags-row .tag > * {
+    min-width: 0;
+}
+
+.lesson-tags-row .grammar-badge-meaning {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lesson-tags-row .grammar-badge-pattern {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Clickable Tag — интерактивный фильтр/chip */
 .tag-clickable {
     border-color: var(--border-dark);
@@ -2687,6 +2717,7 @@ rt {
 
 /* === Kанадзи Drawing Container === */
 .kanji-drawing-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2709,67 +2740,22 @@ rt {
     height: min(320px, 85vw);
 }
 
+/* Stroke-progress label pinned to the top-right corner of the drawing
+    block (owner request: the centered full-width row ate vertical space).
+    Absolute + pointer-events-none: it overlays the canvas corner without
+    intercepting strokes; the drawing SVG keeps its inner margins, so the
+    label never collides with the glyph. */
 .kanji-drawing-info {
-    text-align: center;
-    margin: 15px 0;
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-}
-
-.kanji-drawing-success {
-    color: var(--success);
-    font-size: var(--text-sm);
-    font-family: var(--font-mono);
-}
-
-.kanji-drawing-progress {
-    color: var(--fg-muted);
-}
-
-.kanji-drawing-controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 8px;
-}
-
-.kanji-drawing-reset-btn {
-    position: relative;
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 12px 24px;
-    border: 1px solid var(--border-dark);
-    background: var(--bg-paper);
-    color: var(--fg-black);
-    cursor: pointer;
-    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper), color var(--anima-duration-normal) var(--anima-ease-paper);
-}
-
-.kanji-drawing-reset-btn:hover {
-    background: var(--fg-black);
-    color: var(--bg-paper);
-}
-
-.kanji-drawing-reset-btn::before {
-    content: "";
     position: absolute;
-    inset: 4px;
-    border: 1px solid var(--border-dark);
+    top: 6px;
+    right: 6px;
+    z-index: 1;
     pointer-events: none;
-}
-
-.kanji-drawing-loading {
-    text-align: center;
-    padding: 40px;
-    color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: var(--text-label);
-    letter-spacing: 0.15em;
+    font-size: var(--text-label-sm);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--fg-muted);
 }
 
 .kanji-drawing-error {
@@ -4995,10 +4981,16 @@ rt {
     border-bottom: 1px solid var(--border-light);
 }
 
+/* Single separator per section: the title underline is the only rule —
+    the former section border-top sandwiched every title between two
+    lines (owner request). Spacing (padding/margin) stays.
+    NOTE the blast radius: the class is shared by the lesson grammar
+    expand (GrammarDetailsExpand) AND the /grammar/[id] detail page
+    (grammar_detail[_mobile].rs) — both surfaces get the same
+    unification, that is conscious, not an accident. */
 .grammar-detail-section {
     padding-top: 24px;
     margin-top: 24px;
-    border-top: 1px solid var(--border-light);
 }
 
 /* Structured grammar nuances (schema v2): wrong → correct pairs + notes.

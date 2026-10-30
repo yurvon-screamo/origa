@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-unification",
+  "screen": "lesson-complete",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 292804,
+  "sha256": "3212082dc53ea3a0a788dfd2a925a0f3d21200347679b500043bbc26704a7459",
+  "capturedAt": "2026-10-30T18:35:26.547Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--lesson-complete--mobile-3212082d.png",
+  "uploadedSha256": "3212082dc53ea3a0a788dfd2a925a0f3d21200347679b500043bbc26704a7459",
+  "uploadedAt": "2026-10-30T19:44:47.341Z"
+}

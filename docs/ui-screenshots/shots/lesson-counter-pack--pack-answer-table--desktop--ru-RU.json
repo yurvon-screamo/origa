@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 250239,
-  "sha256": "455da11adc79e826d593915ebf5eb83a75240e34dbfacb4c4c36bea0af827c4a",
-  "capturedAt": "2026-10-26T19:47:03.609Z",
-  "commit": "6b5cd1c33e947b53a621984e183a699e7ed49d99",
+  "bytes": 249525,
+  "sha256": "3b39b9da8ac6f1cbac65ca84f3eec89cca8844357303b851f0e23d4a8ce9cb5d",
+  "capturedAt": "2026-10-30T19:43:34.106Z",
+  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
   "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "https://s3.origa.uwuwu.net",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-ux-after/lesson-counter-pack--pack-answer-table--desktop-455da11a.png",
-  "uploadedSha256": "455da11adc79e826d593915ebf5eb83a75240e34dbfacb4c4c36bea0af827c4a",
-  "uploadedAt": "2026-10-26T19:49:39.805Z"
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-counter-pack--pack-answer-table--desktop-3b39b9da.png",
+  "uploadedSha256": "3b39b9da8ac6f1cbac65ca84f3eec89cca8844357303b851f0e23d4a8ce9cb5d",
+  "uploadedAt": "2026-10-30T19:44:00.166Z"
 }

@@ -241,6 +241,7 @@ pub fn YesNoCardView(
             tags=tags_row
             feedback=feedback_row
             footer=footer_row
+            card_class=Signal::derive(|| super::LESSON_CARD_CLASS_COMPACT.to_string())
             test_id="lesson-card-root"
         >
         <div class="text-center mb-3 sm:mb-6">

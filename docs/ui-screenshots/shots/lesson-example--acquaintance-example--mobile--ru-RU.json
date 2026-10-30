@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 123321,
   "sha256": "688aa3fcd8539e4b3f4aaf4559a4181291f92230fb611301017fc51de22b6892",
-  "capturedAt": "2026-10-25T17:17:45.342Z",
-  "commit": "73ae147e32e10892ddff4bf288a0bf83eb9a163f",
+  "capturedAt": "2026-10-30T18:27:21.429Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/lesson-example--acquaintance-example--mobile-688aa3fc.png",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--mobile-688aa3fc.png",
   "uploadedSha256": "688aa3fcd8539e4b3f4aaf4559a4181291f92230fb611301017fc51de22b6892",
-  "uploadedAt": "2026-10-25T17:22:28.176Z"
+  "uploadedAt": "2026-10-30T19:44:14.683Z"
 }

@@ -1,3 +1,5 @@
+use super::counter_readings_table::{CounterReadingsTable, rows_for_suffix};
+use super::details_toggle::LessonDetailsToggle;
 use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::word_example_line::WordExampleLine;
@@ -23,6 +25,10 @@ pub fn LessonCardAnswer(
     is_kanji: bool,
     is_phrase: bool,
     is_reversed: bool,
+    /// Счётный суффикс: ответ получает раскрытие «Подробнее» с таблицей
+    /// чтений из реестра (owner request: у кандзи и грамматики раскрытие
+    /// есть, у обычных карточек суффиксов не было — разнобой типов).
+    is_counter: bool,
     on_readings: Option<Vec<crate::ui_components::ReadingItem>>,
     kun_readings: Option<Vec<crate::ui_components::ReadingItem>>,
     radicals: Option<Vec<RadicalDisplay>>,
@@ -43,6 +49,19 @@ pub fn LessonCardAnswer(
     let grammar_info_stored = StoredValue::new(grammar_info);
     // Only meaningful when grammar_info contains a rule_id — controls "More details" expand
     let is_grammar_expanded = RwSignal::new(false);
+
+    // Счётный суффикс: «Подробнее» раскрывает полную таблицу чтений из
+    // реестра (тот же контент, что у «Развернуть» пачки связок). Вопрос
+    // counter-карты — сам суффикс, он же ключ резолва. Раскрытие
+    // локально на показ; строки резолвятся один раз на маунт. Пустой
+    // резолв (суффикса нет в реестре) глушит раскрытие целиком — пустая
+    // таблица не рендерится (контракт rows_for_suffix).
+    let counter_rows = StoredValue::new(if is_counter {
+        rows_for_suffix(&question.get_value())
+    } else {
+        Vec::new()
+    });
+    let counter_expanded = RwSignal::new(false);
 
     view! {
         <div class="text-center">
@@ -210,6 +229,21 @@ pub fn LessonCardAnswer(
                             }
                         })
                 }}
+            </Show>
+
+            <Show when=move || is_counter && !counter_rows.get_value().is_empty()>
+                <div class="mt-3">
+                    <LessonDetailsToggle expanded=counter_expanded test_id="counter-details-toggle" />
+                    <Show when=move || counter_expanded.get()>
+                        <div class="mt-4 max-w-max mx-auto" data-testid="counter-details-body">
+                            <CounterReadingsTable
+                                rows=counter_rows.get_value()
+                                suffix=question.get_value()
+                                test_id=Signal::derive(|| "counter-readings-table".to_string())
+                            />
+                        </div>
+                    </Show>
+                </div>
             </Show>
         </div>
     }

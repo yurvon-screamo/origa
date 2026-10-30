@@ -4,6 +4,8 @@
 
 Accepted — supersedes the fill-via-`grow`-only mechanism in [ADR-029](./ADR-029-lesson-card-fill-over-vertical-centering.md). ADR-029's `grow` on the Card stays in force as a secondary stretch mechanism; the **stable minimum height** introduced here is the primary fix for the residual card-resizing bug. ADR-027's height-chain (`<main>` flex-col → page `flex-1` → `lesson-content` `flex-1`) remains unchanged.
 
+**Amended 2026-10-31:** the quiz family (`QuizCardView`, `YesNoCardView`) opts out of the stable floor via `LESSON_CARD_CLASS_COMPACT` (no `min-h`, no `grow`) — owner decision: the centered-content distribution left a stretch void between the options grid and the card's bottom border, read as wasted space. Quiz cards now hug their content; height variance — between card types AND between the states of one quiz card (question → result grows) — is accepted for this family. The floor stays in force for every other card view.
+
 ## Date
 
 2026-07-07

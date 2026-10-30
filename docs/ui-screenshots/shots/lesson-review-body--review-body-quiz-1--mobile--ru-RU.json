@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-review-body",
+  "screen": "review-body-quiz-1",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 255857,
+  "sha256": "c0e04337c965b6f80de28dc4e092cad678b2de0dd7bf81a53c6ad2a4ebf4fba3",
+  "capturedAt": "2026-10-30T18:20:07.283Z",
+  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-1--mobile-c0e04337.png",
+  "uploadedSha256": "c0e04337c965b6f80de28dc4e092cad678b2de0dd7bf81a53c6ad2a4ebf4fba3",
+  "uploadedAt": "2026-10-30T18:56:37.429Z"
+}
