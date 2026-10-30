@@ -19,12 +19,17 @@ import type { ShotScenario } from "../scenario.ts";
 export const homeAccuracyChartScenario: ShotScenario = {
     ...descriptors["home-accuracy-chart"],
     async run({ page }, sink) {
+        // The charts live inside the collapsed «Статистика» accordion —
+        // expand it first.
+        await page.getByTestId("home-stats-toggle").click();
         const chart = page.getByTestId("home-accuracy-chart-chart");
         await expect(chart).toBeVisible({ timeout: 120_000 });
 
-        // Frame the whole section: its title at the top of the viewport,
-        // the full card below (minimal scroll would cut the card).
-        await page.getByTestId("home-accuracy-chart").evaluate((el) => {
+        // Frame the whole accordion: its header at the top of the
+        // viewport, both charts below (the pair is ~2 viewport heights, so
+        // the shot shows the header + the activity chart and the top of
+        // the accuracy chart).
+        await page.getByTestId("home-stats").evaluate((el) => {
             const top = el.getBoundingClientRect().top + window.scrollY - 24;
             window.scrollTo({ top });
         });

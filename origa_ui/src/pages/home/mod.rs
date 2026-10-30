@@ -1,4 +1,5 @@
 pub(crate) mod accuracy_chart;
+pub mod activity_chart;
 pub(crate) mod category_grid;
 pub mod content;
 pub(crate) mod content_sync;
@@ -7,6 +8,7 @@ pub mod home_skeleton;
 pub mod jft_readiness_card;
 pub mod jlpt_progress_card;
 pub mod recent_study;
+pub(crate) mod stats_section;
 pub mod today_overview;
 pub mod welcome_card;
 
@@ -14,16 +16,18 @@ pub mod welcome_card;
 mod home_wasm_tests;
 
 pub use accuracy_chart::AccuracyChartCard;
+pub use activity_chart::ActivityChart;
 pub use content::HomeContent;
 pub use dashboard_stats::{
-    CompletionForecast, RecentlyStudiedItem, compute_completion_forecast, compute_due_count,
-    compute_studied_today,
+    ActivityDataPoint, CompletionForecast, RecentlyStudiedItem, compute_30day_chart_data,
+    compute_completion_forecast, compute_due_count, compute_studied_today,
 };
 pub use home_skeleton::JlptSkeleton;
 pub use jft_readiness_card::JftReadinessCard;
 pub use jlpt_progress_card::JlptProgressCard;
 pub use origa::domain::{TodayOverview, compute_today_overview};
 pub use recent_study::StudiedTodayList;
+pub use stats_section::StatsSection;
 pub use today_overview::TodayOverviewCard;
 pub use welcome_card::WelcomeCard;
 

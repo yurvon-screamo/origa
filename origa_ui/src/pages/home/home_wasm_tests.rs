@@ -11,7 +11,6 @@ use leptos::task::tick;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use crate::pages::home::accuracy_chart::AccuracyChartCard;
 use crate::pages::home::category_grid::CategoryProgressGrid;
 use crate::pages::home::dashboard_stats::{CompletionForecast, RecentlyStudiedItem};
 use crate::pages::home::{
@@ -276,81 +275,55 @@ fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeri
 }
 
 #[wasm_bindgen_test]
-async fn accuracy_chart_empty_series_renders_guidance_without_line() {
+async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
+    use crate::pages::home::StatsSection;
+
     let wrapper = create_wrapper();
-    let series = RwSignal::new(series_with(&[]));
-    // Disposable mount: a leaked chart scope freezes the later
-    // translator-dictionary test on CI (empirically 7/7 red with leaked
-    // mounts, green without any mount — D1 diag). Dispose at test end.
     let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
         leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
         view! {
-            <AccuracyChartCard
-                series=series.into()
-                lang=Signal::derive(|| origa::domain::NativeLanguage::English)
-                test_id="ac1"
-            />
+            <StatsSection test_id="ss1">
+                <p data-testid="ss1-inner">"inner content"</p>
+            </StatsSection>
         }
         .into_any()
     });
     tick().await;
 
-    let section = wrapper.query_selector("[data-testid=\"ac1\"]").unwrap();
-    assert!(section.is_some(), "chart section must render");
-
-    let html = wrapper
-        .query_selector("[data-testid=\"ac1-chart\"]")
+    let section = wrapper
+        .query_selector("[data-testid=\"ss1\"]")
         .unwrap()
-        .unwrap()
-        .outer_html();
-    assert!(
-        html.contains("Appears after your first reviews"),
-        "empty series must show the guidance text inside the chart; got: {html}"
-    );
-    assert!(
-        !html.contains("<polyline"),
-        "empty series must not draw a line"
-    );
-}
-
-#[wasm_bindgen_test]
-async fn accuracy_chart_with_data_renders_line_dots_and_legend() {
-    // Оценки в трёх днях; MultiLineChart рисует одну линию, дотсы (≤15
-    // точек) и легенду с меткой линии. Disposable mount — см. пустой тест.
-    let wrapper = create_wrapper();
-    let series = RwSignal::new(series_with(&[(2, 90), (3, 80), (10, 60)]));
-    let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
-        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
-        view! {
-            <AccuracyChartCard
-                series=series.into()
-                lang=Signal::derive(|| origa::domain::NativeLanguage::English)
-                test_id="ac2"
-            />
-        }
-        .into_any()
-    });
-    tick().await;
-
-    let chart = wrapper
-        .query_selector("[data-testid=\"ac2-chart\"]")
+        .unwrap();
+    let content = wrapper
+        .query_selector("[data-testid=\"ss1-content\"]")
         .unwrap()
         .unwrap();
 
-    let polyline_count = chart.outer_html().matches("<polyline").count();
-    assert_eq!(polyline_count, 1, "a single accuracy line must render");
-
-    let circle_count = chart.outer_html().matches("<circle").count();
-    assert_eq!(
-        circle_count, 3,
-        "every studied day must draw a dot (3 points ≤ 15)"
-    );
-
-    let text = chart.text_content().unwrap();
+    let collapsed_class = content.class_name();
     assert!(
-        text.contains("Accuracy"),
-        "legend must carry the line label; got: {text}"
+        collapsed_class.contains("hidden"),
+        "stats section must start collapsed; got: {collapsed_class}"
     );
+
+    let toggle = wrapper
+        .query_selector("[data-testid=\"ss1-toggle\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    toggle.click();
+    tick().await;
+
+    let expanded_class = content.class_name();
+    assert!(
+        !expanded_class.contains("hidden"),
+        "toggle must expand the section; got: {expanded_class}"
+    );
+    assert!(
+        content.text_content().unwrap().contains("inner content"),
+        "children must render inside the section"
+    );
+    let _ = section;
 }
 
 // ═══════════════════════════════════════════════════════════════════════

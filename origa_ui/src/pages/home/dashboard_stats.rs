@@ -3,10 +3,10 @@ use origa::domain::{Card, CardAnswer, CardType, DailyHistoryItem, KnowledgeSet, 
 
 use crate::pages::shared::format_answer_text;
 
-const RU_MONTHS_SHORT: [&str; 12] = [
+pub(crate) const RU_MONTHS_SHORT: [&str; 12] = [
     "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
 ];
-const EN_MONTHS_SHORT: [&str; 12] = [
+pub(crate) const EN_MONTHS_SHORT: [&str; 12] = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
@@ -18,6 +18,48 @@ pub struct RecentlyStudiedItem {
     pub meaning: String,
     pub reading: Option<String>,
     pub short_description: Option<String>,
+}
+
+/// Один день графика активности (30-дневный MultiLineChart на home).
+#[derive(Clone)]
+pub struct ActivityDataPoint {
+    pub date_label: String,
+    pub learned: f64,
+    pub in_progress: f64,
+    pub new_count: f64,
+    pub difficult: f64,
+}
+
+/// Активность по последним 30 дням истории: только дни с записями,
+/// подписи «14 окт» / «14 Oct» в языке юзера (наработка #528-era).
+pub fn compute_30day_chart_data(
+    history: &[DailyHistoryItem],
+    lang: &NativeLanguage,
+) -> Vec<ActivityDataPoint> {
+    let mut items: Vec<_> = history.to_vec();
+    items.sort_by_key(|a| a.timestamp());
+
+    let start = items.len().saturating_sub(30);
+    items
+        .into_iter()
+        .skip(start)
+        .map(|item| {
+            let local = chrono::Local.from_utc_datetime(&item.timestamp().naive_utc());
+            let day = local.day();
+            let month_idx = (local.month0() as usize).min(11);
+            let month_str = match lang {
+                NativeLanguage::Russian => RU_MONTHS_SHORT[month_idx],
+                _ => EN_MONTHS_SHORT[month_idx],
+            };
+            ActivityDataPoint {
+                date_label: format!("{} {}", day, month_str),
+                learned: item.known_words() as f64,
+                in_progress: item.in_progress_words() as f64,
+                new_count: item.new_words() as f64,
+                difficult: item.high_difficulty_words() as f64,
+            }
+        })
+        .collect()
 }
 
 pub fn compute_studied_today(

@@ -59,6 +59,8 @@ Then('отображается призрачный прогресс', async ({ 
 
 Then('отображается график точности', async ({ page }) => {
     const homePage = new HomePage(page);
+    // Графики живут в свёрнутом аккордеоне «Статистика» — раскрываем.
+    await homePage.statsAccordionToggle.click();
     await expect(homePage.accuracyChart).toBeVisible();
 });
 

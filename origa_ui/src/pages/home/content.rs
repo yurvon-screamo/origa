@@ -3,8 +3,9 @@ use super::content_sync::{
     run_sync, show_sync_error_toast, show_sync_success_toast, show_sync_toast,
 };
 use super::{
-    CompletionForecast, JftReadinessCard, JlptProgressCard, JlptSkeleton, RecentlyStudiedItem,
-    StudiedTodayList, TodayOverview, TodayOverviewCard, WelcomeCard, compute_completion_forecast,
+    ActivityChart, ActivityDataPoint, CompletionForecast, JftReadinessCard, JlptProgressCard,
+    JlptSkeleton, RecentlyStudiedItem, StatsSection, StudiedTodayList, TodayOverview,
+    TodayOverviewCard, WelcomeCard, compute_30day_chart_data, compute_completion_forecast,
     compute_due_count, compute_studied_today, compute_today_overview,
 };
 use crate::i18n::use_i18n;
@@ -179,6 +180,7 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
 
     let jlpt_progress = RwSignal::new(JlptProgress::new());
     let accuracy_series = RwSignal::new(AccuracySeries { days: Vec::new() });
+    let activity_data = RwSignal::new(Vec::<ActivityDataPoint>::new());
     let native_language = RwSignal::new(NativeLanguage::English);
     let today_overview = RwSignal::new(TodayOverview::default());
     let due_count = RwSignal::new(0usize);
@@ -247,6 +249,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                             Utc::now(),
                         ));
                         native_language.set(*user.native_language());
+                        activity_data.set(compute_30day_chart_data(
+                            ks.lesson_history(),
+                            user.native_language(),
+                        ));
                         today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                         due_count.set(compute_due_count(ks));
                         recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -343,6 +349,10 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         Utc::now(),
                     ));
                     native_language.set(*user.native_language());
+                    activity_data.set(compute_30day_chart_data(
+                        ks.lesson_history(),
+                        user.native_language(),
+                    ));
                     today_overview.set(compute_today_overview(ks, ks.lesson_history()));
                     due_count.set(compute_due_count(ks));
                     recent_studied.set(compute_studied_today(ks, user.native_language()));
@@ -409,11 +419,18 @@ pub fn HomeContent(#[prop(optional, into)] test_id: Signal<String>) -> impl Into
                         test_id=Signal::derive(|| "home-today-overview".to_string())
                     />
 
-                    <AccuracyChartCard
-                        series=accuracy_series.into()
-                        lang=native_language.into()
-                        test_id=Signal::derive(|| "home-accuracy-chart".to_string())
-                    />
+                    <StatsSection test_id=Signal::derive(|| "home-stats".to_string())>
+                        <ActivityChart
+                            chart_data=Signal::derive(move || activity_data.get())
+                            test_id=Signal::derive(|| "home-activity-chart".to_string())
+                        />
+
+                        <AccuracyChartCard
+                            series=accuracy_series.into()
+                            lang=native_language.into()
+                            test_id=Signal::derive(|| "home-accuracy-chart".to_string())
+                        />
+                    </StatsSection>
 
                     <StudiedTodayList
                         items=Signal::derive(move || recent_studied.get())
