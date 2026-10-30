@@ -7,14 +7,12 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-30T14:05:31.089Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-280a170a.png) |
+| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-30T14:04:49.794Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--desktop-6c44a263.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-29T20:14:23.362Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-answer--mobile-43463f93.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-29T20:14:22.485Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-question--mobile-be881e1a.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-29T20:13:04.708Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-answer--desktop-86fae252.png) |
 | quiz-question | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-29T20:13:03.722Z | ccb49fff | [png](https://s3.origa.uwuwu.net/pr-screenshots/quiz-ledger-final/lesson-reading-quiz--quiz-question--desktop-48aaa768.png) |
-| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-29T14:51:48.802Z | 46e1d32c | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-a478ff61.png) |
-| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-29T14:51:15.971Z | 46e1d32c | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--desktop-5ecc169d.png) |
-| accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-28T23:15:52.934Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--mobile-ebff34b1.png) |
-| accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-28T23:15:08.781Z | 84dffd9a | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-accuracy-chart/home-accuracy-chart--accuracy-chart--desktop-17b49484.png) |
 | kanji-presentation | lesson-acquaintance-kanji | mobile | ru-RU | 390×1502 | 2026-10-28T12:54:20.306Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--mobile-3e705948.png) |
 | kanji-presentation | lesson-acquaintance-kanji | desktop | ru-RU | 1280×1249 | 2026-10-28T12:53:48.881Z | 1309d237 | [png](https://s3.origa.uwuwu.net/pr-screenshots/kanji-card-labels-after/lesson-acquaintance-kanji--kanji-presentation--desktop-498bd1fe.png) |
 | grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-27T02:44:12.629Z | 17f9de07 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-VwvKYcJQHp/lesson-acquaintance-grammar--grammar-answer--mobile-bdf1253b.png) |
