@@ -10,11 +10,11 @@
   "fullPage": true,
   "bytes": 183825,
   "sha256": "fb79148773fbf0bbad8f8e9ecc932308a4a464c9dcfecbea3f90a936c7aad1e9",
-  "capturedAt": "2026-10-30T18:53:29.568Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "capturedAt": "2026-10-30T19:42:12.905Z",
+  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8081",
   "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-presentation--mobile-fb791487.png",
   "uploadedSha256": "fb79148773fbf0bbad8f8e9ecc932308a4a464c9dcfecbea3f90a936c7aad1e9",
-  "uploadedAt": "2026-10-30T19:01:18.498Z"
+  "uploadedAt": "2026-10-30T19:43:50.387Z"
 }

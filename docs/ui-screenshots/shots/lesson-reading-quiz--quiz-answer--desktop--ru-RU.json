@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 403955,
-  "sha256": "3507a30920ca834876407cb2c0b32d105aba18535dfcad007926aec0dcc7eccb",
-  "capturedAt": "2026-10-30T18:54:10.985Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "bytes": 373881,
+  "sha256": "c3777f3239d75f612577b1fd9dba9353a66708a5b7ff4460b8c8c8c53805ddf5",
+  "capturedAt": "2026-10-30T19:42:50.856Z",
+  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-3507a309.png",
-  "uploadedSha256": "3507a30920ca834876407cb2c0b32d105aba18535dfcad007926aec0dcc7eccb",
-  "uploadedAt": "2026-10-30T19:01:46.180Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png",
+  "uploadedSha256": "c3777f3239d75f612577b1fd9dba9353a66708a5b7ff4460b8c8c8c53805ddf5",
+  "uploadedAt": "2026-10-30T19:44:20.318Z"
 }
