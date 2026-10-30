@@ -26,13 +26,18 @@ pub fn LessonCardShell(
     /// Action zone below the card and the feedback strip (buttons).
     #[prop(optional)]
     footer: Option<ChildrenFn>,
+    /// Card class override: the quiz family passes
+    /// `LESSON_CARD_CLASS_COMPACT` (no ADR-031 floor — owner decision);
+    /// everything else keeps the shared stable-height default.
+    #[prop(default = Signal::derive(|| LESSON_CARD_CLASS.to_string()), into)]
+    card_class: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
     children: Children,
 ) -> impl IntoView {
     view! {
         <div class="flex flex-col">
             {tags.map(|tags| tags())}
-            <Card class=Signal::derive(|| LESSON_CARD_CLASS.to_string()) shadow=true test_id=Signal::derive(move || test_id.get())>
+            <Card class=Signal::derive(move || card_class.get()) shadow=true test_id=Signal::derive(move || test_id.get())>
                 <div class="flex-1 flex flex-col justify-center">
                     {children()}
                 </div>

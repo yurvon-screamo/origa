@@ -56,12 +56,14 @@ pub fn GrammarDetailsExpand(
 
     view! {
         <div class="mt-3" data-testid=move || test_id.get()>
-            <button
-                class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
-                on:click=move |_| is_expanded.update(|v| *v = !*v)
-            >
-                {move || if is_expanded.get() { collapse_text.get() } else { more_text.get() }}
-            </button>
+            <div class="flex justify-center">
+                <button
+                    class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
+                    on:click=move |_| is_expanded.update(|v| *v = !*v)
+                >
+                    {move || if is_expanded.get() { collapse_text.get() } else { more_text.get() }}
+                </button>
+            </div>
 
             <Show when=move || is_expanded.get()>
                 {move || {
@@ -95,16 +97,22 @@ pub fn GrammarDetailsExpand(
                                         content=example_fences_to_paragraphs(content.examples())
                                         known_kanji=known_kanji_stored.get_value()
                                     />
-                                    <div>
-                                        <div class="font-mono text-xs text-[var(--fg-muted)] mb-2">
-                                            {nuances_title.get()}
+                                    // Same section frame as «Примеры»/«Совет»
+                                    // (owner request: the ad-hoc title div
+                                    // rendered a third style); the content
+                                    // stays the structured NuancesSection.
+                                    <div class="grammar-detail-section">
+                                        <div class="grammar-detail-section-card">
+                                            <div class="grammar-detail-section-title">
+                                                {nuances_title.get()}
+                                            </div>
+                                            <NuancesSection
+                                                common_mistakes=content.nuances().common_mistakes().to_vec()
+                                                notes=content.nuances().notes().to_vec()
+                                                known_kanji=known_kanji_stored.get_value()
+                                                test_id=Signal::derive(|| "grammar-expand-nuances".to_string())
+                                            />
                                         </div>
-                                        <NuancesSection
-                                            common_mistakes=content.nuances().common_mistakes().to_vec()
-                                            notes=content.nuances().notes().to_vec()
-                                            known_kanji=known_kanji_stored.get_value()
-                                            test_id=Signal::derive(|| "grammar-expand-nuances".to_string())
-                                        />
                                     </div>
                                     <GrammarSection
                                         title=pro_tip_title.get()

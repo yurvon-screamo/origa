@@ -1,3 +1,4 @@
+use super::counter_readings_table::{CounterReadingsTable, rows_for_suffix};
 use super::grammar_details_expand::GrammarDetailsExpand;
 use super::kanji_card_details::{KanjiCardDetails, RadicalDisplay};
 use super::word_example_line::WordExampleLine;
@@ -23,6 +24,10 @@ pub fn LessonCardAnswer(
     is_kanji: bool,
     is_phrase: bool,
     is_reversed: bool,
+    /// Счётный суффикс: ответ получает раскрытие «Подробнее» с таблицей
+    /// чтений из реестра (owner request: у кандзи и грамматики раскрытие
+    /// есть, у обычных карточек суффиксов не было — разнобой типов).
+    is_counter: bool,
     on_readings: Option<Vec<crate::ui_components::ReadingItem>>,
     kun_readings: Option<Vec<crate::ui_components::ReadingItem>>,
     radicals: Option<Vec<RadicalDisplay>>,
@@ -43,6 +48,21 @@ pub fn LessonCardAnswer(
     let grammar_info_stored = StoredValue::new(grammar_info);
     // Only meaningful when grammar_info contains a rule_id — controls "More details" expand
     let is_grammar_expanded = RwSignal::new(false);
+
+    // Счётный суффикс: «Подробнее» раскрывает полную таблицу чтений из
+    // реестра (тот же контент, что у «Развернуть» пачки связок). Вопрос
+    // counter-карты — сам суффикс, он же ключ резолва. Раскрытие
+    // локально на показ; строки резолвятся один раз на маунт.
+    let counter_rows = StoredValue::new(if is_counter {
+        rows_for_suffix(&question.get_value())
+    } else {
+        Vec::new()
+    });
+    let counter_expanded = RwSignal::new(false);
+    let counter_more_text =
+        Signal::derive(move || i18n.get_keys().common().more_details().inner().to_string());
+    let counter_collapse_text =
+        Signal::derive(move || i18n.get_keys().common().collapse().inner().to_string());
 
     view! {
         <div class="text-center">
@@ -210,6 +230,35 @@ pub fn LessonCardAnswer(
                             }
                         })
                 }}
+            </Show>
+
+            <Show when=move || is_counter>
+                <div class="mt-3">
+                    <div class="flex justify-center">
+                        <button
+                            class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
+                            data-testid="counter-details-toggle"
+                            on:click=move |_| counter_expanded.update(|v| *v = !*v)
+                        >
+                            {move || {
+                                if counter_expanded.get() {
+                                    counter_collapse_text.get()
+                                } else {
+                                    counter_more_text.get()
+                                }
+                            }}
+                        </button>
+                    </div>
+                    <Show when=move || counter_expanded.get()>
+                        <div class="mt-4 max-w-max mx-auto" data-testid="counter-details-body">
+                            <CounterReadingsTable
+                                rows=counter_rows.get_value()
+                                suffix=question.get_value()
+                                test_id=Signal::derive(|| "counter-readings-table".to_string())
+                            />
+                        </div>
+                    </Show>
+                </div>
             </Show>
         </div>
     }

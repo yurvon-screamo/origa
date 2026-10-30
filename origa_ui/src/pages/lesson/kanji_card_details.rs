@@ -70,7 +70,7 @@ pub fn KanjiCardDetails(
             </div>
         </div>
 
-        <div class="mt-3">
+        <div class="mt-3 flex justify-center">
             <button
                 class="font-mono text-sm text-[var(--fg-muted)] cursor-pointer hover:text-[var(--fg-black)] underline underline-offset-4 decoration-[var(--border-light)]"
                 data-testid="kanji-details-toggle"

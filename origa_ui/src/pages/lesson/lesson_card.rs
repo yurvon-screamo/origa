@@ -267,6 +267,7 @@ pub fn LessonCard(
                 is_kanji=card_type == CardType::Kanji
                 is_phrase
                 is_reversed=is_reversed
+                is_counter=card_type == CardType::Counter
                 on_readings=on_readings_stored.get_value()
                 kun_readings=kun_readings_stored.get_value()
                 radicals=radicals_stored.get_value()

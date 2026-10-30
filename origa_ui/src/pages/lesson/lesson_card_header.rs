@@ -40,7 +40,7 @@ pub struct CardHeaderAudio {
 #[component]
 pub fn LessonTagsRow(children: Children) -> impl IntoView {
     view! {
-        <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
+        <div class="lesson-tags-row flex items-center gap-2 flex-wrap min-w-0 mb-2 px-1">
             {children()}
         </div>
     }

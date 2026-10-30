@@ -23,7 +23,7 @@
 
 use super::binary_rating_buttons::RatingButtons;
 use super::card_type::CardType;
-use super::counter_readings_table::{CounterReadingRow, CounterReadingsTable};
+use super::counter_readings_table::{CounterReadingsTable, number_label, rows_for_suffix};
 use super::lesson_card_header::LessonTagsRow;
 use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
@@ -39,15 +39,6 @@ use origa::domain::{Card, CounterBindingItem, Rating};
 /// сохраняют CDN-звук.
 fn should_speak_binding_reading(is_muted: bool, reading: &str) -> bool {
     !is_muted && !reading.is_empty()
-}
-
-/// Лейбл числа: 0 — вопросительное 何, прочие — само число
-/// (лексикализованные исключения реестра несут свой порядок в таблице).
-fn number_label(number: u8) -> String {
-    match number {
-        0 => "何".to_string(),
-        n => n.to_string(),
-    }
 }
 
 #[component]
@@ -101,7 +92,9 @@ pub fn CounterBindingsSession(
         }
     });
 
-    // Чтения и глосса — реестр (истина датасета).
+    // Чтения и глосса — реестр (истина датасета); строки таблицы — общий
+    // резолв counter_readings_table::rows_for_suffix (тот же контент, что
+    // у раскрытия «Подробнее» обычной карточки).
     let entry = match &card {
         Card::Counter(counter) => origa::dictionary::counters::get_counter(counter.suffix()),
         _ => None,
@@ -110,20 +103,7 @@ pub fn CounterBindingsSession(
         Card::Counter(counter) => counter.suffix().to_string(),
         _ => String::new(),
     });
-    let rows: Vec<CounterReadingRow> = entry
-        .map(|e| {
-            e.readings()
-                .iter()
-                .map(|r| CounterReadingRow {
-                    number: r.number(),
-                    number_label: number_label(r.number()),
-                    reading: r.reading().to_string(),
-                    irregular: r.irregular(),
-                })
-                .collect()
-        })
-        .unwrap_or_default();
-    let rows = StoredValue::new(rows);
+    let rows = StoredValue::new(rows_for_suffix(&suffix.get_value()));
     let gloss = StoredValue::new(
         entry
             .map(|e| {

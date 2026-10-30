@@ -257,7 +257,7 @@ pub fn QuizCardView(
                 <Show when=move || !show_result.get() && is_multi>
                     <button
                         data-testid="quiz-submit-btn"
-                        class="w-full mt-2 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 font-serif font-medium border-[var(--fg-black)] bg-[var(--fg-black)] hover:opacity-80"
+                        class="w-full mt-4 p-2 sm:p-4 border text-center transition-all cursor-pointer flex items-center justify-center gap-2 font-serif font-medium border-[var(--fg-black)] bg-[var(--fg-black)] hover:opacity-80"
                         style="color: var(--bg-paper)"
                         on:click=move |_| {
                             if selected_options.get().is_empty() {
@@ -291,6 +291,7 @@ pub fn QuizCardView(
             tags=tags_row
             feedback=feedback_row
             footer=footer_row
+            card_class=Signal::derive(|| super::LESSON_CARD_CLASS_COMPACT.to_string())
             test_id="lesson-card-root"
         >
         <div class="text-center mb-0.5 sm:mb-1">
