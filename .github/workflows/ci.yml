@@ -662,7 +662,14 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         env:
-            ORIGA_CDN_BASE_URL: "https://${{ vars.ORIGA_CDN_URI_PREFIX }}.${{ vars.ORIGA_BASE_URI }}"
+            # Baked into the wasm test binary at compile time (build.rs
+            # emits it via rerun-if-env-changed, so the cache invalidates
+            # correctly): the suite must fetch dictionary/content bytes
+            # from the local mirror started below — never from the
+            # production CDN. A prod fetch is a slow per-suite download
+            # whose fetch+inflate spikes periodically SIGKILL the browser
+            # page (rc27/rc31/rc33, PR #876 x4 flakes).
+            ORIGA_CDN_BASE_URL: http://localhost:8080
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -699,6 +706,25 @@ jobs:
                   name: cdn-data
                   path: cdn/
 
+            - name: Serve CDN mirror locally
+              # Local twin of the e2e CDN server (`npx serve ../cdn`,
+              # end2end/playwright.config.ts): the wasm suite gets its own
+              # hermetic mirror instead of the production CDN. A python
+              # stdlib server because this job has no node (e2e does) —
+              # and no npm-registry fetch, which would be a new network
+              # flake vector in the very job meant to remove network
+              # flakes. The access log doubles as hermeticity evidence
+              # and is dumped after the test step.
+              run: |
+                  nohup python3 .github/scripts/serve-cdn-cors.py "$GITHUB_WORKSPACE/cdn" 8080 > /tmp/cdn-mirror-access.log 2>&1 &
+                  for _ in $(seq 1 60); do
+                      curl -fsS -o /dev/null http://127.0.0.1:8080/manifest.json && exit 0
+                      sleep 0.5
+                  done
+                  echo "::error::local CDN mirror did not come up on 127.0.0.1:8080"
+                  tail -20 /tmp/cdn-mirror-access.log || true
+                  exit 1
+
             - name: Install wasm-pack
               # Pinned: with no `version` input the action installs whatever
               # it resolves as "latest", which broke on 2026-09-20 (resolved
@@ -711,6 +737,21 @@ jobs:
 
             - name: Run WASM component tests
               run: wasm-pack test --headless --chrome origa_ui --features csr
+
+            - name: Dump CDN mirror access log
+              # Positive hermeticity evidence: every dictionary/content
+              # fetch the suite made, answered from 127.0.0.1:8080 —
+              # nothing went to the production CDN (the baked compile-time
+              # URL makes a prod fetch impossible by construction; the log
+              # proves the mirror was actually consumed). Dictionary lines
+              # are grepped out explicitly — they sit early in the log
+              # (the first live-path test seeds the Cache API, the rest
+              # hit it), so a plain tail could cut them off on full runs.
+              if: always()
+              run: |
+                  echo "CDN mirror requests total: $(grep -c 'GET /' /tmp/cdn-mirror-access.log || true)"
+                  grep 'dictionaries/' /tmp/cdn-mirror-access.log || echo "(no dictionary fetches logged)"
+                  tail -30 /tmp/cdn-mirror-access.log || true
 
     e2e-build:
         name: E2E Build
