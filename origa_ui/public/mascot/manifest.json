@@ -1,0 +1,134 @@
+{
+  "scenes": {
+    "idle": {
+      "fps": 12,
+      "loop": true,
+      "frames": 38,
+      "frameSize": [
+        144,
+        200
+      ],
+      "kb": 2.5,
+      "budget": 150,
+      "dests": [
+        "app",
+        "landing"
+      ]
+    },
+    "welcome": {
+      "fps": 12,
+      "loop": false,
+      "frames": 25,
+      "frameSize": [
+        224,
+        216
+      ],
+      "kb": 36.3,
+      "budget": 100,
+      "dests": [
+        "app"
+      ]
+    },
+    "complete": {
+      "fps": 8,
+      "loop": false,
+      "frames": 28,
+      "frameSize": [
+        296,
+        272
+      ],
+      "kb": 74.4,
+      "budget": 150,
+      "dests": [
+        "app"
+      ]
+    },
+    "streak": {
+      "fps": 8,
+      "loop": true,
+      "frames": 24,
+      "frameSize": [
+        192,
+        208
+      ],
+      "kb": 133.6,
+      "budget": 300,
+      "dests": [
+        "marketing"
+      ]
+    },
+    "japaneseSpring": {
+      "fps": 8,
+      "loop": true,
+      "frames": 80,
+      "frameSize": [
+        320,
+        192
+      ],
+      "kb": 278.6,
+      "budget": 300,
+      "dests": []
+    },
+    "levelUp": {
+      "fps": 8,
+      "loop": false,
+      "frames": 27,
+      "frameSize": [
+        224,
+        272
+      ],
+      "kb": 199,
+      "budget": 300,
+      "dests": []
+    },
+    "holyAnswer": {
+      "fps": 8,
+      "loop": false,
+      "frames": 16,
+      "frameSize": [
+        176,
+        256
+      ],
+      "kb": 40.2,
+      "budget": 300,
+      "dests": []
+    },
+    "sleepy": {
+      "fps": 12,
+      "loop": true,
+      "frames": 29,
+      "frameSize": [
+        144,
+        216
+      ],
+      "kb": 63.2,
+      "budget": 300,
+      "dests": []
+    },
+    "charmed": {
+      "fps": 12,
+      "loop": true,
+      "frames": 29,
+      "frameSize": [
+        144,
+        216
+      ],
+      "kb": 43.7,
+      "budget": 300,
+      "dests": []
+    },
+    "achievement": {
+      "fps": 8,
+      "loop": false,
+      "frames": 20,
+      "frameSize": [
+        224,
+        170
+      ],
+      "kb": 17.6,
+      "budget": 300,
+      "dests": []
+    }
+  },
+  "totalKB": 113.2
+}

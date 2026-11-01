@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Mascot FX — демо</title>
+<style>
+  :root { --cream: #f6ecd4; --ink: #100e0a; --olive: #78885a; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: "DM Mono", "IBM Plex Mono", monospace;
+    margin: 0; padding: 32px;
+    display: flex; flex-direction: column; gap: 20px; align-items: center;
+  }
+  h1 { font-size: 18px; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
+  .hint { font-size: 12px; color: #5b6b48; margin: 0; }
+  .grid { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+  .card {
+    background: #fbf6ea;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px 16px 12px;
+    width: 372px;
+    display: flex; flex-direction: column; gap: 12px; align-items: center;
+  }
+  .stage {
+    background: var(--cream);
+    border: 1px solid #d9cfb2;
+    height: 440px;
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden; width: 340px;
+  }
+  img { image-rendering: pixelated; }
+  .row { display: flex; gap: 12px; align-items: center; width: 100%; justify-content: space-between; }
+  .name { font-size: 13px; }
+  .tag { font-size: 10px; padding: 2px 6px; border: 1px solid var(--olive); color: var(--olive); }
+  button {
+    font: inherit; font-size: 12px; padding: 4px 10px; cursor: pointer;
+    background: var(--ink); color: var(--cream); border: 0;
+  }
+  button:hover { background: var(--olive); }
+</style>
+</head>
+<body>
+  <h1>Орига — маскот-анимации</h1>
+  <p class="hint">Код-рендер (pixelfx-методика), 12 fps, lossless WebP. Кнопка — повторить one-shot.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="stage"><img src="../../origa_ui/public/mascot/idle.webp" alt="idle" style="width:288px"></div>
+      <div class="row"><span class="name">idle-blink</span><span class="tag">loop · 6.2 KB</span></div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="welcome" src="../../origa_ui/public/mascot/welcome.webp" alt="welcome" style="width:224px"></div>
+      <div class="row">
+        <span class="name">welcome</span>
+        <span class="tag">one-shot · 9.9 KB</span>
+        <button onclick="replay('welcome')">↻</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="complete" src="../../origa_ui/public/mascot/complete.webp" alt="complete" style="width:296px"></div>
+      <div class="row">
+        <span class="name">lesson-complete</span>
+        <span class="tag">one-shot · 23.5 KB</span>
+        <button onclick="replay('complete')">↻</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="streak" src="assets/streak.webp" alt="streak" style="width:192px"></div>
+      <div class="row"><span class="name">streak-flame</span><span class="tag">loop · маркетинг · 264.4 KB</span></div>
+    </div>
+    <div class="card">
+      <div class="stage"><img src="assets/japaneseSpring.webp" alt="japanese spring"></div>
+      <div class="row"><span class="name">japanese-spring</span><span class="tag">loop · сакура · демо</span></div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="levelUp" src="assets/levelUp.webp" alt="level up"></div>
+      <div class="row">
+        <span class="name">level-up</span>
+        <span class="tag">one-shot · 198.6 KB</span>
+        <button onclick="replay('levelUp')">↻</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="holyAnswer" src="assets/holyAnswer.webp" alt="holy answer"></div>
+      <div class="row">
+        <span class="name">holy-answer</span>
+        <span class="tag">one-shot · 39.9 KB</span>
+        <button onclick="replay('holyAnswer')">↻</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stage"><img src="assets/sleepy.webp" alt="sleepy"></div>
+      <div class="row"><span class="name">sleepy</span><span class="tag">loop · демо</span></div>
+    </div>
+    <div class="card">
+      <div class="stage"><img src="assets/charmed.webp" alt="charmed"></div>
+      <div class="row"><span class="name">charmed</span><span class="tag">loop · демо</span></div>
+    </div>
+    <div class="card">
+      <div class="stage"><img id="achievement" src="assets/achievement.webp" alt="achievement"></div>
+      <div class="row">
+        <span class="name">achievement</span>
+        <span class="tag">one-shot · 16.7 KB</span>
+        <button onclick="replay('achievement')">↻</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function replay(id) {
+      const el = document.getElementById(id);
+      el.style.display = "none";
+      void el.offsetWidth; // reflow resets the animation
+      el.style.display = "";
+    }
+  </script>
+</body>
+</html>

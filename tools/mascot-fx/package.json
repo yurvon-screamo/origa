@@ -1,0 +1,15 @@
+{
+  "name": "mascot-fx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Code-driven pixel art animations of the Origa mascot (method: Hugo Duprez / pixelfx). Dev-only: renders assets, never ships to the app runtime.",
+  "scripts": {
+    "export": "node export.mjs",
+    "check": "node check-scenes.mjs",
+    "demo": "start demo.html"
+  },
+  "dependencies": {
+    "pixelfx": "github:patch-gg/pixelfx#a84159688af3ca37a4be05a0d422b94451b2e24e"
+  }
+}
