@@ -1,0 +1,52 @@
+[project]
+name = "origa-translator"
+version = "0.3.0"
+description = "Origa translation stack: JA→{en,ru,ko,vi,zh} translator serving, quality judge, content pipelines"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # --- serving / inference ---
+    "vllm==0.32.0",
+    "vllm-xpu-kernels>=0.1.16",
+    "transformers>=5.19,<6",
+    "peft>=0.14",
+    "accelerate>=1.3",
+    "tokenizers>=0.21",
+    # --- judge / data ---
+    "numpy>=2.2",
+    "requests>=2.33",
+    # --- Chinese locales ---
+    "opencc-python-reimplemented>=0.1.7",
+    # --- misc ---
+    "tqdm",
+    "psutil",
+    # --- XPU-стек: СОГЛАСОВАННОЙ датой, только с nightly-xpu индекса ---
+    "torch==2.16.0.dev20261019+xpu",
+    "torchvision==0.30.0.dev20261019+xpu",
+    "torchaudio==2.11.0.dev20261016+xpu",
+    "triton-xpu==3.9.0+gitb6f7ac74",
+]
+
+[tool.uv]
+# Резолвим только под нашу машину (linux x86-64); иначе uv проверяет
+# s390x и прочие сплиты, где xpu-пинов нет.
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+# vllm требует base-triton и torchvision==0.28 (не-xpu) — оба конфликта
+# с XPU-стеком лечим override'ами:
+override-dependencies = [
+    "triton ; sys_platform == 'never'",       # base-triton отключён: triton-xpu перезаписывает модуль
+    "torchvision==0.30.0.dev20261019+xpu",    # вместо vllm'овского 0.28
+    "torchaudio==2.11.0.dev20261016+xpu",     # вместо vllm'овского 2.11.0 (не-xpu)
+    "torch==2.16.0.dev20261019+xpu",          # на случай не-xpu требований от vllm
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-xpu-nightly" }
+torchvision = { index = "pytorch-xpu-nightly" }
+torchaudio = { index = "pytorch-xpu-nightly" }
+triton-xpu = { index = "pytorch-xpu-nightly" }
+
+[[tool.uv.index]]
+name = "pytorch-xpu-nightly"
+url = "https://download.pytorch.org/whl/nightly/xpu"
+explicit = true
