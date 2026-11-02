@@ -4,7 +4,25 @@
 деплой, окружение и его грабли. Все рецепты проверены в бою (сентябрь–октябрь 2026).
 Компоненты и метрики — в [README.md](../README.md).
 
-## 1. Окружение (venv `/home/yurvon/vllm-xpu`)
+## 1. Окружение
+
+### Правильный путь (uv-проект, с 2026-10-23)
+
+```bash
+cd translator
+uv sync                                   # 212 пакетов из lock — согласовано с первого раза
+uv run python scripts/patch_vllm_xpu.py   # одноразовые gloo-патчи vllm (после каждого reinstall vllm)
+uv run vllm serve ...                     # всё через uv run
+```
+
+`pyproject.toml` + `uv.lock` закрепляют: torch-стек одной датой с nightly-xpu
+индекса (sources), base-triton отключён (override) — вместо него triton-xpu
+(перекрывает модуль triton целиком, базу поверх накатывать НЕЛЬЗЯ — битые ядра),
+torch/torchvision/torchaudio переопределены на +xpu-сборки против требований vllm.
+Обновления — только осознанным bump'ом версий в pyproject + перегенерацией lock,
+не `pip install -U` поверх живого окружения.
+
+### Легаси-путь (venv /home/yurvon/vllm-xpu, ручная сборка — история)
 
 Канон (проверен 2026-10-20, сборка «v2» с нуля):
 
