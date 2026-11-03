@@ -8,6 +8,7 @@ Two row kinds in judge_train_v6.jsonl:
 Same recipe as the v5/60k runs: LoRA r16 a32, bs4 x accum4, LR 1e-4 cosine,
 length-bucketing, empty_cache/20 steps, ckpt+auto-resume/1000 steps, XPU.
 """
+
 import json
 import math
 import random
@@ -43,16 +44,24 @@ FAITHFUL_Q = {
     ),
     "criteria": {
         "false": "The translation is NOT faithful: wrong meaning, hallucinated or "
-                 "dropped details, meaning inversion, wrong names, or wrong language",
+        "dropped details, meaning inversion, wrong names, or wrong language",
         "true": "The translation IS faithful: exact meaning preserved, nothing "
-                "invented or dropped, correct names, fully in the target language",
+        "invented or dropped, correct names, fully in the target language",
     },
 }
-TIER_Q = json.loads(Path("/home/yurvon/origa-translator/data/judge/tier_question_v6.json").read_text())
+TIER_Q = json.loads(
+    Path("/home/yurvon/origa-translator/data/judge/tier_question_v6.json").read_text()
+)
 TIER_OF = {"DEFECT": "0", "PARTIAL": "1", "OK": "2"}
 
-LANG_NAME = {"ru": "Russian", "en": "English", "vi": "Vietnamese", "ko": "Korean",
-             "zh-Hans": "Chinese (Simplified)", "zh-Hant-TW": "Traditional Chinese (Taiwan)"}
+LANG_NAME = {
+    "ru": "Russian",
+    "en": "English",
+    "vi": "Vietnamese",
+    "ko": "Korean",
+    "zh-Hans": "Chinese (Simplified)",
+    "zh-Hant-TW": "Traditional Chinese (Taiwan)",
+}
 
 EPOCHS, BS, ACCUM, LR, WARMUP, SEED, MAXLEN = 1, 4, 4, 1e-4, 0.03, 42, 448
 CKPT_EVERY = 1000
@@ -62,8 +71,14 @@ torch.manual_seed(SEED)
 
 
 def state_of(state, translation, lang):
-    return json.dumps({"japanese": state, "translation": translation,
-                       "target_locale": f"{lang} ({LANG_NAME.get(lang, lang)})"}, ensure_ascii=False)
+    return json.dumps(
+        {
+            "japanese": state,
+            "translation": translation,
+            "target_locale": f"{lang} ({LANG_NAME.get(lang, lang)})",
+        },
+        ensure_ascii=False,
+    )
 
 
 def main():
@@ -73,24 +88,26 @@ def main():
         p = Path("/home/yurvon/origa-translator/data/judge") / f"{g}.jsonl"
         if not p.exists():
             continue
-        for l in open(p, encoding="utf-8"):
-            r = json.loads(l)
+        for line in open(p, encoding="utf-8"):
+            r = json.loads(line)
             golden_states.add((r["state"], r.get("lang")))
     # golden_tier rows leak-guard by exact (state, translation)
     tier_holdout = set()
     p = Path("/home/yurvon/origa-translator/data/judge/golden_tier_v1.jsonl")
     if p.exists():
-        for l in open(p, encoding="utf-8"):
-            r = json.loads(l)
+        for line in open(p, encoding="utf-8"):
+            r = json.loads(line)
             tier_holdout.add((r["state"], r["translation"]))
 
     rows = []
-    for l in open(DATA, encoding="utf-8"):
-        r = json.loads(l)
+    for line in open(DATA, encoding="utf-8"):
+        r = json.loads(line)
         if r.get("question") == "tier":
             if (r["state"], r["positive"]) in tier_holdout:
                 continue
-            rows.append(("tier", r["state"], r["positive"], r["lang"], TIER_OF[r["tier"]]))
+            rows.append(
+                ("tier", r["state"], r["positive"], r["lang"], TIER_OF[r["tier"]])
+            )
         else:
             if (r["state"], r["lang"]) in golden_states:
                 continue
@@ -102,8 +119,11 @@ def main():
     random.Random(7).shuffle(rows)
     val_rows = rows[:600]
     train_rows = rows[600:]
-    print(f"rows: train {len(train_rows)} val {len(val_rows)} "
-          f"(tier rows: {sum(1 for r in rows if r[0]=='tier')})", flush=True)
+    print(
+        f"rows: train {len(train_rows)} val {len(val_rows)} "
+        f"(tier rows: {sum(1 for r in rows if r[0] == 'tier')})",
+        flush=True,
+    )
 
     tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
     tok.truncation_side = "left"
@@ -118,16 +138,26 @@ def main():
             q = q_tier
         else:
             q = q_faithful
-        prompt = render(tokenizer=tok, state=state_of(state, translation, lang), q=q,
-                        bos=tok.bos_token)
-        ids = tok(prompt, truncation=True, max_length=MAXLEN, add_special_tokens=False)["input_ids"]
+        prompt = render(
+            tokenizer=tok,
+            state=state_of(state, translation, lang),
+            q=q,
+            bos=tok.bos_token,
+        )
+        ids = tok(prompt, truncation=True, max_length=MAXLEN, add_special_tokens=False)[
+            "input_ids"
+        ]
         comp = tok(completion, add_special_tokens=False)["input_ids"]
         return ids + comp, [-100] * len(ids) + comp
 
     t0 = time.perf_counter()
-    base = AutoModel.from_pretrained(MODEL_ID, trust_remote_code=True,
-                                     dtype=torch.bfloat16, attn_implementation="sdpa").to("xpu")
-    print(f"loaded {time.perf_counter()-t0:.0f}s", flush=True)
+    base = AutoModel.from_pretrained(
+        MODEL_ID,
+        trust_remote_code=True,
+        dtype=torch.bfloat16,
+        attn_implementation="sdpa",
+    ).to("xpu")
+    print(f"loaded {time.perf_counter() - t0:.0f}s", flush=True)
 
     ckpts = sorted(OUT.glob("ckpt_*"), key=lambda p: int(p.name.split("_")[1]))
     start_step = 0
@@ -138,23 +168,38 @@ def main():
         start_step = meta["step"]
         print(f"RESUME {ck.name}: step {start_step}", flush=True)
     else:
-        targets = [n for n, m in base.named_modules()
-                   if n.split(".")[-1] in ("q_proj", "k_proj", "v_proj", "out_proj", "in_proj",
-                                           "w1", "w2", "w3")
-                   and type(m).__name__ == "Linear"
-                   and getattr(m, "weight", None) is not None and "vision" not in n]
+        targets = [
+            n
+            for n, m in base.named_modules()
+            if n.split(".")[-1]
+            in ("q_proj", "k_proj", "v_proj", "out_proj", "in_proj", "w1", "w2", "w3")
+            and type(m).__name__ == "Linear"
+            and getattr(m, "weight", None) is not None
+            and "vision" not in n
+        ]
         print(f"lora targets: {len(targets)}", flush=True)
-        model = get_peft_model(base, LoraConfig(
-            r=16, lora_alpha=32, lora_dropout=0.05, bias="none",
-            task_type="CAUSAL_LM", target_modules=targets))
+        model = get_peft_model(
+            base,
+            LoraConfig(
+                r=16,
+                lora_alpha=32,
+                lora_dropout=0.05,
+                bias="none",
+                task_type="CAUSAL_LM",
+                target_modules=targets,
+            ),
+        )
     model.train()
     model.enable_input_require_grads()
     model.print_trainable_parameters()
 
-    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],
-                            lr=LR, weight_decay=0.01)
+    opt = torch.optim.AdamW(
+        [p for p in model.parameters() if p.requires_grad], lr=LR, weight_decay=0.01
+    )
     if ckpts:
-        opt.load_state_dict(torch.load(ckpts[-1] / "opt.pt", map_location="xpu", weights_only=True))
+        opt.load_state_dict(
+            torch.load(ckpts[-1] / "opt.pt", map_location="xpu", weights_only=True)
+        )
         torch.xpu.empty_cache()
 
     def masked_ce(ids, labels, attn):
@@ -169,7 +214,7 @@ def main():
     val_encoded = [encode_row(*r) for r in val_rows]
 
     order = sorted(range(len(encoded)), key=lambda i: len(encoded[i][0]))
-    batch_idx = [order[s:s + BS] for s in range(0, len(order), BS)]
+    batch_idx = [order[s : s + BS] for s in range(0, len(order), BS)]
     random.Random(12345).shuffle(batch_idx)
     skip_batches = 0
     if ckpts:
@@ -190,13 +235,16 @@ def main():
         tot, n = 0.0, 0
         with torch.no_grad():
             for s in range(0, len(val_encoded), BS):
-                enc = val_encoded[s:s + BS]
+                enc = val_encoded[s : s + BS]
                 ml = max(len(ids) for ids, _ in enc)
                 ii = [ids + [tok.pad_token_id] * (ml - len(ids)) for ids, _ in enc]
                 ll = [lab + [-100] * (ml - len(lab)) for _, lab in enc]
                 aa = [[1] * len(ids) + [0] * (ml - len(ids)) for ids, _ in enc]
-                loss = masked_ce(torch.tensor(ii).to("xpu"), torch.tensor(ll).to("xpu"),
-                                 torch.tensor(aa).to("xpu"))
+                loss = masked_ce(
+                    torch.tensor(ii).to("xpu"),
+                    torch.tensor(ll).to("xpu"),
+                    torch.tensor(aa).to("xpu"),
+                )
                 tot += loss.item() * len(ii)
                 n += len(ii)
         model.train()
@@ -212,8 +260,11 @@ def main():
         ii = [ids + [tok.pad_token_id] * (ml - len(ids)) for ids, _ in enc]
         ll = [lab + [-100] * (ml - len(lab)) for _, lab in enc]
         aa = [[1] * len(ids) + [0] * (ml - len(ids)) for ids, _ in enc]
-        loss = masked_ce(torch.tensor(ii).to("xpu"), torch.tensor(ll).to("xpu"),
-                         torch.tensor(aa).to("xpu"))
+        loss = masked_ce(
+            torch.tensor(ii).to("xpu"),
+            torch.tensor(ll).to("xpu"),
+            torch.tensor(aa).to("xpu"),
+        )
         (loss / ACCUM).backward()
         micro += 1
         batches_done = bi + 1
@@ -228,15 +279,24 @@ def main():
                 torch.xpu.empty_cache()
             if step % 100 == 0:
                 done = batches_done / len(batch_idx)
-                eta = (time.perf_counter() - t0) / max(1, step - start_step) * (steps_total - step)
-                print(f"step {step}/{steps_total} ({done:.0%}) loss {loss.item():.4f} "
-                      f"eta {eta/60:.0f}m", flush=True)
+                eta = (
+                    (time.perf_counter() - t0)
+                    / max(1, step - start_step)
+                    * (steps_total - step)
+                )
+                print(
+                    f"step {step}/{steps_total} ({done:.0%}) loss {loss.item():.4f} "
+                    f"eta {eta / 60:.0f}m",
+                    flush=True,
+                )
             if step % CKPT_EVERY == 0 or step >= steps_total:
                 ck = OUT / f"ckpt_{step:05d}"
                 (ck / "adapter").mkdir(parents=True, exist_ok=True)
                 model.save_pretrained(ck / "adapter")
                 torch.save(opt.state_dict(), ck / "opt.pt")
-                (ck / "meta.json").write_text(json.dumps({"step": step, "batches": batches_done}))
+                (ck / "meta.json").write_text(
+                    json.dumps({"step": step, "batches": batches_done})
+                )
                 torch.xpu.empty_cache()
                 print(f"checkpoint {ck.name} (val_loss {run_val():.4f})", flush=True)
 

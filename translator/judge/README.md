@@ -5,11 +5,11 @@ decision model. Answers `noul` (yes/no probability) questions about translation 
 
 ## Architecture
 
-```
+```python
 LiquidAI/d1-2B (LFM3-VL backbone)
   + LoRA r16 α32 (24M trainable) ← judge adapter
   → RAW slot-readout: p(Yes) at answer position
-```
+```python
 
 **Important:** use RAW slot-readout (not `system_one` API) — the stock
 `calibration.json` in d1-2B distorts readouts for adapted models. All evaluation
@@ -43,7 +43,7 @@ python train_d1.py  # ~8h on Intel Arc B390 XPU
 
 # v7 (v5 + prodfix from cleanup)
 python train_d1_v7.py  # ~8h
-```
+```python
 
 XPU requirements: bs4 × accum4, length-bucketing, `empty_cache` every 20 steps,
 `use_cache=False` (DEVICE_LOST fix). See trainer code for details.
@@ -56,13 +56,13 @@ python eval_d1_faithful_raw.py <adapter_dir>
 
 # zh — same but on golden_zh_v1
 D1_GOLDEN=.../golden_zh_v1.jsonl python eval_d1_faithful_raw.py <adapter_dir>
-```
+```python
 
 ## Prod scanning
 
 ```bash
 python scan_prod.py  # scans all cdn phrases × 5 locales (~14h)
-```
+```python
 
 Calibrated per-locale thresholds (F1-balanced on golden):
 ru 0.80 · en 0.80 · vi 0.85 · ko 0.90 · zh 0.98
