@@ -68,7 +68,10 @@ export const lessonUnificationScenario: ShotScenario = {
 
         // The hand closes into the lesson complete screen (a fresh user has
         // no due review cards yet) or the review body — capture whichever
-        // appears.
+        // appears. The walk's writing stop is silent for this scenario on
+        // purpose: with-word builds on fresh, due cards are rare, and the
+        // acquaintance shots already carry the manifest — a reroll here
+        // would restart the hand, losing the captured frames above.
         const complete = page.getByTestId("lesson-complete-screen");
         const completeShown = await complete
             .waitFor({ state: "visible", timeout: 20_000 })
