@@ -3,47 +3,61 @@
 TLS endpoints, Railway custom-domain certificate state, and the uwuwu.net
 domain expiry.
 
-Companion to ``marketing/tools/asc_cert_check.py`` (ASC/Apple side) — this
-one guards the web delivery surface. Incident 2026-11-06 (#891-class):
-Railway skipped the scheduled renewal of two custom-domain certificates
-(app.origa.uwuwu.net expired Nov 4, origa.uwuwu.net was hours from expiry)
-while ``domain status`` showed ``CERTIFICATE_STATUS_TYPE_ISSUE_FAILED``
-with ``retryable: true`` — recoverable with ``railway domain certificate
+Guards the web delivery surface (companion to the Apple/ASC-side checker
+that lives on the marketing branch). Incident 2026-11-06: Railway skipped
+the scheduled renewal of two custom-domain certificates (app.origa.uwuwu.net
+expired Nov 4, origa.uwuwu.net was hours from expiry) while ``domain
+status`` showed ``CERTIFICATE_STATUS_TYPE_ISSUE_FAILED`` with
+``retryable: true`` — recoverable with ``railway domain certificate
 retry``, but invisible until a browser shows a TLS warning. This script
 surfaces that state weeks earlier.
 
 Checks (all read-only):
-  1. TLS notAfter for the public endpoints (world branch, direct SNI).
+  1. TLS notAfter for the public endpoints.
   2. Railway custom-domain certificate status via ``railway domain status``
      (needs CLI auth; skipped gracefully with ``--no-railway``).
   3. uwuwu.net registrar expiry via RDAP (rdap.org).
 
-Exit codes:
-  0 — everything healthy, nothing expires within WARN_DAYS
-  1 — TLS/RDAP expiry inside the warning window (list in stdout)
+TLS vantage point: the probes go to whatever the running host's resolver
+returns. ADR-061 geo-splits uwuwu.net — an RF-routed host resolves the
+custom domains to the RF VM, whose acme.sh certificate is independent of
+the Railway edge this script is meant to guard. The script detects that
+case and prints a loud VANTAGE warning so a cron on an RF host cannot
+report green while the Railway edge rots.
+
+Exit codes (highest wins):
+  3 — infrastructure error (network, CLI missing/crashed, unparseable
+      output). Masks everything below on purpose: a blind checker must
+      page louder than an actionable finding.
   2 — Railway certificate issuance failed with retryable=true
-      (run: railway domain certificate retry <domain> ...)
-  3 — infrastructure error (network, CLI missing/crashed, bad response)
+      (run: railway domain certificate retry <domain> ...).
+  1 — TLS/RDAP expiry inside the warning window (list in stdout).
+  0 — everything healthy, nothing expires within WARN_DAYS.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import socket
 import ssl
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import UTC, datetime
+from dataclasses import dataclass
+from datetime import datetime, timezone
 
 WARN_DAYS = 30
 
-# (hostname, note) probed directly at :443 — the world branch (Railway edge
-# for origa/app/umami, CloudFront for s3). The RF branch terminates TLS on
-# the RF VM with its own acme.sh certificate and is covered by the VM-side
-# probe; this script answers "what does a normal user outside RF see".
+# ADR-061 RF-branch anchor: RF-resolved clients terminate TLS on the RF VM
+# (its own acme.sh certificate), not on the Railway edge guarded here.
+RF_VM_IP = "193.233.217.243"
+
+# (hostname, note) probed directly at :443. s3 rides CloudFront; the three
+# custom domains ride the Railway edge whose certificates this script guards.
 TLS_ENDPOINTS = [
     ("origa.uwuwu.net", "landing (Railway custom domain)"),
     ("app.origa.uwuwu.net", "app/TrailBase (Railway custom domain)"),
@@ -66,7 +80,7 @@ RDAP_URL = f"https://rdap.org/domain/{RDAP_DOMAIN}"
 
 def tls_expiry(host: str, port: int = 443, timeout: float = 15.0) -> datetime | None:
     """Connect with SNI and return the leaf certificate's notAfter (UTC)."""
-    pem = ssl.get_server_certificate((host, port))
+    pem = ssl.get_server_certificate((host, port), timeout=timeout)
     result = subprocess.run(
         ["openssl", "x509", "-noout", "-enddate"],
         input=pem.encode(),
@@ -83,7 +97,7 @@ def parse_openssl_enddate(text: str) -> datetime | None:
             raw = line.split("=", 1)[1].strip()
             try:
                 return datetime.strptime(raw, "%b %d %H:%M:%S %Y %Z").replace(
-                    tzinfo=UTC
+                    tzinfo=timezone.utc  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
                 )
             except ValueError:
                 return None
@@ -95,33 +109,57 @@ def days_left(expiry: datetime | None, now: float | None = None) -> float | None
     if expiry is None:
         return None
     now_dt = datetime.fromtimestamp(
-        time.time() if now is None else now, tz=UTC
+        time.time() if now is None else now,
+        tz=timezone.utc,  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
     )
     return (expiry - now_dt).total_seconds() / 86400
 
 
+def detect_vantage_from_ips(resolved_ips: set[str]) -> str:
+    """Classify the vantage: ``rf`` when any resolved IP is the RF VM anchor
+    (ADR-061), else ``world``."""
+    if RF_VM_IP in resolved_ips:
+        return "rf"
+    return "world"
+
+
+def resolve_vantage(hosts: list[str]) -> str:
+    """Resolve the probe hosts and classify where this machine lands."""
+    for host in hosts:
+        try:
+            infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
+        except OSError:
+            continue
+        ips = {info[4][0] for info in infos}
+        if detect_vantage_from_ips(ips) == "rf":
+            return "rf"
+    return "world"
+
+
+@dataclass
 class RailwayStatus:
     """Parsed ``railway domain status`` fields we act on."""
 
-    def __init__(
-        self,
-        cert_status: str = "",
-        error_type: str = "",
-        retryable: bool = False,
-        verified: bool | None = None,
-    ) -> None:
-        self.cert_status = cert_status
-        self.error_type = error_type
-        self.retryable = retryable
-        self.verified = verified
+    cert_status: str = ""
+    error_type: str = ""
+    retryable: bool = False
+    verified: bool | None = None
 
     @property
     def issue_failed_retryable(self) -> bool:
-        return self.cert_status == "CERTIFICATE_STATUS_TYPE_ISSUE_FAILED" and self.retryable
+        return (
+            self.cert_status == "CERTIFICATE_STATUS_TYPE_ISSUE_FAILED"
+            and self.retryable
+        )
 
     @property
     def issuing(self) -> bool:
         return self.cert_status == "CERTIFICATE_STATUS_TYPE_ISSUING"
+
+    @property
+    def recognized(self) -> bool:
+        """False when the CLI output drifted and nothing was parsed."""
+        return bool(self.cert_status)
 
 
 def parse_railway_status(text: str) -> RailwayStatus:
@@ -144,17 +182,25 @@ def parse_railway_status(text: str) -> RailwayStatus:
     return out
 
 
-def railway_status(domain: str, service: str, project: str, environment: str) -> RailwayStatus:
+def railway_status(
+    domain: str, service: str, project: str, environment: str
+) -> RailwayStatus:
     """Query ``railway domain status``; raises RuntimeError on CLI failure."""
     env = dict(os.environ)
     env.setdefault("RAILWAY_CALLER", "origa:ssl_cert_check")
     env.setdefault("RAILWAY_AGENT_SESSION", f"ssl-cert-check-{int(time.time())}")
     result = subprocess.run(
         [
-            "railway", "domain", "status", domain,
-            "-s", service,
-            "-e", environment,
-            "--project", project,
+            "railway",
+            "domain",
+            "status",
+            domain,
+            "-s",
+            service,
+            "-e",
+            environment,
+            "--project",
+            project,
         ],
         capture_output=True,
         text=True,
@@ -178,7 +224,7 @@ def rdap_expiry(url: str = RDAP_URL, timeout: float = 20.0) -> datetime | None:
     return parse_rdap_events(data.get("events", []))
 
 
-def parse_rdap_events(events: list) -> datetime | None:
+def parse_rdap_events(events: list[dict]) -> datetime | None:
     """Extract the ``expiration`` event date from an RDAP payload."""
     for event in events:
         if event.get("eventAction") != "expiration":
@@ -193,9 +239,118 @@ def parse_rdap_events(events: list) -> datetime | None:
         except ValueError:
             return None
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=UTC)
+            dt = dt.replace(tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
         return dt
     return None
+
+
+def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
+    """TLS section: prints the report, returns (warnings, hard_errors)."""
+    warnings: list[str] = []
+    hard_errors: list[str] = []
+
+    print("== Public TLS endpoints ==")
+    vantage = resolve_vantage([host for host, _ in TLS_ENDPOINTS])
+    if vantage == "rf":
+        print(
+            f"! VANTAGE: this host resolves custom domains to the RF VM "
+            f"({RF_VM_IP}, ADR-061) — the dates below are the RF VM's acme.sh "
+            f"certificate, NOT the Railway edge this script guards. "
+            f"Run from a world-routed host for Railway coverage."
+        )
+    else:
+        print("! vantage: world-routed (Railway edge / CloudFront direct)")
+
+    for host, note in TLS_ENDPOINTS:
+        try:
+            expiry = tls_expiry(host)
+        except Exception as exc:  # noqa: BLE001 — report any probe failure
+            hard_errors.append(f"TLS probe failed for {host}: {exc}")
+            print(f"- {host:26s} {note:32s} PROBE FAILED: {exc}")
+            continue
+        if expiry is None:
+            hard_errors.append(f"no notAfter parsed for {host}")
+            print(f"- {host:26s} {note:32s} PARSE FAILED (no notAfter)")
+            continue
+        left = days_left(expiry, now)
+        state = "OK" if left >= WARN_DAYS else ("EXPIRED" if left < 0 else "EXPIRING")
+        print(
+            f"- {host:26s} {note:32s} expires={expiry:%Y-%m-%d} ({left:.0f} d) [{state}]"
+        )
+        if left < WARN_DAYS:
+            warnings.append(
+                f"TLS: {host} ({note}) expires {expiry:%Y-%m-%d %H:%M} UTC "
+                f"({'already expired' if left < 0 else f'in {left:.0f} days'})"
+            )
+    return warnings, hard_errors
+
+
+def run_railway_checks() -> tuple[list[str], list[str], list[str]]:
+    """Railway section: prints the report, returns (warnings, retries, hard_errors)."""
+    warnings: list[str] = []
+    retries: list[str] = []
+    hard_errors: list[str] = []
+
+    print("\n== Railway custom-domain certificates ==")
+    for domain, service in RAILWAY_DOMAINS:
+        try:
+            status = railway_status(
+                domain, service, RAILWAY_PROJECT, RAILWAY_ENVIRONMENT
+            )
+        except (RuntimeError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
+            hard_errors.append(f"Railway status failed for {domain}: {exc}")
+            print(f"- {domain:26s} service={service:16s} CLI FAILED: {exc}")
+            continue
+        if not status.recognized:
+            hard_errors.append(
+                f"Railway: unparseable status output for {domain} "
+                "(CLI format drift? re-pin parse_railway_status)"
+            )
+            print(
+                f"- {domain:26s} service={service:16s} "
+                "UNRECOGNIZED OUTPUT (format drift)"
+            )
+            continue
+        suffix = ""
+        if status.issue_failed_retryable:
+            suffix = " -> run: railway domain certificate retry " + domain
+            retries.append(
+                f"Railway: {domain} cert ISSUE_FAILED (retryable) — retry needed"
+            )
+        elif status.issuing:
+            suffix = " (issuance in progress)"
+        print(f"- {domain:26s} service={service:16s} cert={status.cert_status}{suffix}")
+    return warnings, retries, hard_errors
+
+
+def run_rdap_check(now: float) -> tuple[list[str], list[str]]:
+    """RDAP section: prints the report, returns (warnings, hard_errors)."""
+    warnings: list[str] = []
+    hard_errors: list[str] = []
+
+    print("\n== Registrar expiry (RDAP) ==")
+    try:
+        expiry = rdap_expiry()
+    except Exception as exc:  # noqa: BLE001
+        hard_errors.append(f"RDAP probe failed for {RDAP_DOMAIN}: {exc}")
+        print(f"- {RDAP_DOMAIN:26s} PROBE FAILED: {exc}")
+        return warnings, hard_errors
+    left = days_left(expiry, now)
+    if left is None:
+        hard_errors.append(f"RDAP: no expiration event for {RDAP_DOMAIN}")
+        print(f"- {RDAP_DOMAIN:26s} NO EXPIRATION EVENT")
+        return warnings, hard_errors
+    state = "OK" if left >= WARN_DAYS else ("EXPIRED" if left < 0 else "EXPIRING")
+    print(
+        f"- {RDAP_DOMAIN:26s} domain expires={expiry:%Y-%m-%d} ({left:.0f} d) [{state}]"
+    )
+    if left < WARN_DAYS:
+        warnings.append(
+            f"Registrar: {RDAP_DOMAIN} expires {expiry:%Y-%m-%d} "
+            f"({'already expired' if left < 0 else f'in {left:.0f} days'}) "
+            "— renew with the registrar (OnlineNIC)"
+        )
+    return warnings, hard_errors
 
 
 def main() -> int:
@@ -214,94 +369,44 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    now = time.time()
     warnings: list[str] = []
-    retries_needed: list[str] = []
+    retries: list[str] = []
     hard_errors: list[str] = []
 
-    now = time.time()
-
-    print("== Public TLS endpoints (world branch) ==")
-    for host, note in TLS_ENDPOINTS:
-        try:
-            expiry = tls_expiry(host)
-        except Exception as exc:  # noqa: BLE001 — report any probe failure
-            hard_errors.append(f"TLS probe failed for {host}: {exc}")
-            print(f"- {host:26s} {note:32s} PROBE FAILED: {exc}")
-            continue
-        left = days_left(expiry, now)
-        if left is None:
-            hard_errors.append(f"no notAfter parsed for {host}")
-            continue
-        state = "OK" if left >= WARN_DAYS else ("EXPIRED" if left < 0 else "EXPIRING")
-        print(f"- {host:26s} {note:32s} expires={expiry:%Y-%m-%d} ({left:.0f} d) [{state}]")
-        if left < WARN_DAYS:
-            warnings.append(
-                f"TLS: {host} ({note}) expires {expiry:%Y-%m-%d %H:%M} UTC "
-                f"({'already expired' if left < 0 else f'in {left:.0f} days'})"
-            )
+    tls_warn, tls_err = run_tls_checks(now)
+    warnings += tls_warn
+    hard_errors += tls_err
 
     if not args.no_railway:
-        print("\n== Railway custom-domain certificates ==")
-        for domain, service in RAILWAY_DOMAINS:
-            try:
-                status = railway_status(
-                    domain, service, RAILWAY_PROJECT, RAILWAY_ENVIRONMENT
-                )
-            except (RuntimeError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
-                hard_errors.append(f"Railway status failed for {domain}: {exc}")
-                print(f"- {domain:26s} service={service:16s} CLI FAILED: {exc}")
-                continue
-            suffix = ""
-            if status.issue_failed_retryable:
-                suffix = " -> run: railway domain certificate retry " + domain
-                retries_needed.append(
-                    f"Railway: {domain} cert ISSUE_FAILED (retryable) — retry needed"
-                )
-            elif status.issuing:
-                suffix = " (issuance in progress)"
-            print(f"- {domain:26s} service={service:16s} "
-                  f"cert={status.cert_status or '?'}{suffix}")
+        rw, rr, re_ = run_railway_checks()
+        warnings += rw
+        retries += rr
+        hard_errors += re_
 
     if not args.no_rdap:
-        print("\n== Registrar expiry (RDAP) ==")
-        try:
-            expiry = rdap_expiry()
-        except Exception as exc:  # noqa: BLE001
-            hard_errors.append(f"RDAP probe failed for {RDAP_DOMAIN}: {exc}")
-            print(f"- {RDAP_DOMAIN:26s} PROBE FAILED: {exc}")
-        else:
-            left = days_left(expiry, now)
-            if left is not None:
-                state = "OK" if left >= WARN_DAYS else (
-                    "EXPIRED" if left < 0 else "EXPIRING"
-                )
-                print(f"- {RDAP_DOMAIN:26s} domain expires={expiry:%Y-%m-%d} "
-                      f"({left:.0f} d) [{state}]")
-                if left < WARN_DAYS:
-                    warnings.append(
-                        f"Registrar: {RDAP_DOMAIN} expires {expiry:%Y-%m-%d} "
-                        f"({'already expired' if left < 0 else f'in {left:.0f} days'}) "
-                        "— renew with the registrar (OnlineNIC)"
-                    )
-            else:
-                hard_errors.append(f"RDAP: no expiration event for {RDAP_DOMAIN}")
+        rdap_warn, rdap_err = run_rdap_check(now)
+        warnings += rdap_warn
+        hard_errors += rdap_err
 
     if warnings:
         print(f"\n!! EXPIRING WITHIN {WARN_DAYS} DAYS:")
         for w in warnings:
             print(f"!! {w}")
-    if retries_needed:
+    if retries:
         print("\n!! RAILWAY CERTIFICATE RETRY NEEDED:")
-        for r in retries_needed:
+        for r in retries:
             print(f"!! {r}")
     if hard_errors:
         print("\n!! PROBE ERRORS (infrastructure, not expiry):")
         for e in hard_errors:
             print(f"!! {e}")
 
+    # Priority: 3 > 2 > 1 > 0. A broken probe means the checker is blind and
+    # must page louder than any actionable finding it did manage to collect.
     if hard_errors:
         return 3
-    if retries_needed:
+    if retries:
         return 2
     if warnings:
         return 1
