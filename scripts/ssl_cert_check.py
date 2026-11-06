@@ -18,12 +18,15 @@ Checks (all read-only):
      (needs CLI auth; skipped gracefully with ``--no-railway``).
   3. uwuwu.net registrar expiry via RDAP (rdap.org).
 
-TLS vantage point: the probes go to whatever the running host's resolver
-returns. ADR-061 geo-splits uwuwu.net — an RF-routed host resolves the
-custom domains to the RF VM, whose acme.sh certificate is independent of
-the Railway edge this script is meant to guard. The script detects that
-case and prints a loud VANTAGE warning so a cron on an RF host cannot
-report green while the Railway edge rots.
+Style note: ``timezone.utc`` with bare ``# noqa: UP017`` instead of the
+``datetime.UTC`` alias — the alias needs Python 3.11 while
+``scripts/pyproject.toml`` declares ``requires-python >= 3.10``.
+
+TLS vantage point: ADR-061 geo-splits uwuwu.net per record, so each probe
+host is resolved individually and rows whose connection lands on the RF VM
+anchor (193.233.217.243 — its own acme.sh certificate, independent of the
+Railway edge guarded here) are annotated inline; those hosts' Railway-side
+dates are simply not measured from this machine.
 
 Exit codes (highest wins):
   3 — infrastructure error (network, CLI missing/crashed, unparseable
@@ -78,9 +81,28 @@ RDAP_DOMAIN = "uwuwu.net"
 RDAP_URL = f"https://rdap.org/domain/{RDAP_DOMAIN}"
 
 
-def tls_expiry(host: str, port: int = 443, timeout: float = 15.0) -> datetime | None:
-    """Connect with SNI and return the leaf certificate's notAfter (UTC)."""
-    pem = ssl.get_server_certificate((host, port), timeout=timeout)
+def tls_expiry(
+    host: str,
+    resolved_ip: str,
+    port: int = 443,
+    timeout: float = 15.0,
+) -> datetime | None:
+    """Connect to ``resolved_ip`` with proper SNI for ``host`` and return the
+    leaf certificate's notAfter (UTC).
+
+    Pinning the IP the caller resolved keeps the vantage annotation and the
+    certificate on the same server: ADR-061 geo-split answers per query, so a
+    separate resolve inside the connect could land on a different branch.
+    """
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE  # dates only, chain trust is out of scope
+    with (
+        socket.create_connection((resolved_ip, port), timeout=timeout) as sock,
+        ctx.wrap_socket(sock, server_hostname=host) as tls,
+    ):
+        der = tls.getpeercert(binary_form=True)
+    pem = ssl.DER_cert_to_PEM_cert(der)
     result = subprocess.run(
         ["openssl", "x509", "-noout", "-enddate"],
         input=pem.encode(),
@@ -97,7 +119,7 @@ def parse_openssl_enddate(text: str) -> datetime | None:
             raw = line.split("=", 1)[1].strip()
             try:
                 return datetime.strptime(raw, "%b %d %H:%M:%S %Y %Z").replace(
-                    tzinfo=timezone.utc  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+                    tzinfo=timezone.utc  # noqa: UP017
                 )
             except ValueError:
                 return None
@@ -110,29 +132,16 @@ def days_left(expiry: datetime | None, now: float | None = None) -> float | None
         return None
     now_dt = datetime.fromtimestamp(
         time.time() if now is None else now,
-        tz=timezone.utc,  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        tz=timezone.utc,  # noqa: UP017
     )
     return (expiry - now_dt).total_seconds() / 86400
 
 
 def detect_vantage_from_ips(resolved_ips: set[str]) -> str:
-    """Classify the vantage: ``rf`` when any resolved IP is the RF VM anchor
-    (ADR-061), else ``world``."""
+    """Classify one host's resolution: ``rf`` when any resolved IP is the RF
+    VM anchor (ADR-061), else ``world``."""
     if RF_VM_IP in resolved_ips:
         return "rf"
-    return "world"
-
-
-def resolve_vantage(hosts: list[str]) -> str:
-    """Resolve the probe hosts and classify where this machine lands."""
-    for host in hosts:
-        try:
-            infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
-        except OSError:
-            continue
-        ips = {info[4][0] for info in infos}
-        if detect_vantage_from_ips(ips) == "rf":
-            return "rf"
     return "world"
 
 
@@ -239,31 +248,41 @@ def parse_rdap_events(events: list[dict]) -> datetime | None:
         except ValueError:
             return None
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+            dt = dt.replace(tzinfo=timezone.utc)  # noqa: UP017
         return dt
     return None
 
 
 def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
-    """TLS section: prints the report, returns (warnings, hard_errors)."""
+    """TLS section: prints the report, returns (warnings, hard_errors).
+
+    Per-host vantage (ADR-061 geo-split is per record): every probe host is
+    resolved on its own; rows landing on the RF VM anchor are annotated
+    inline and excluded from Railway-edge claims — the script never states
+    more than it observed.
+    """
     warnings: list[str] = []
     hard_errors: list[str] = []
 
     print("== Public TLS endpoints ==")
-    vantage = resolve_vantage([host for host, _ in TLS_ENDPOINTS])
-    if vantage == "rf":
-        print(
-            f"! VANTAGE: this host resolves custom domains to the RF VM "
-            f"({RF_VM_IP}, ADR-061) — the dates below are the RF VM's acme.sh "
-            f"certificate, NOT the Railway edge this script guards. "
-            f"Run from a world-routed host for Railway coverage."
-        )
-    else:
-        print("! vantage: world-routed (Railway edge / CloudFront direct)")
+    print(
+        "! vantage: resolved per host (ADR-061 geo-split); rows annotated "
+        "[RF-VM anchor] show the RF VM's acme.sh certificate — the Railway "
+        "edge is not measured for them"
+    )
+    rf_anchored_rows: list[str] = []
 
     for host, note in TLS_ENDPOINTS:
         try:
-            expiry = tls_expiry(host)
+            infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
+        except OSError as exc:
+            hard_errors.append(f"DNS resolution failed for {host}: {exc}")
+            print(f"- {host:26s} {note:32s} DNS FAILED: {exc}")
+            continue
+        resolved_ip = infos[0][4][0]
+        rf_anchored = detect_vantage_from_ips({info[4][0] for info in infos}) == "rf"
+        try:
+            expiry = tls_expiry(host, resolved_ip)
         except Exception as exc:  # noqa: BLE001 — report any probe failure
             hard_errors.append(f"TLS probe failed for {host}: {exc}")
             print(f"- {host:26s} {note:32s} PROBE FAILED: {exc}")
@@ -274,20 +293,29 @@ def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
             continue
         left = days_left(expiry, now)
         state = "OK" if left >= WARN_DAYS else ("EXPIRED" if left < 0 else "EXPIRING")
-        print(
-            f"- {host:26s} {note:32s} expires={expiry:%Y-%m-%d} ({left:.0f} d) [{state}]"
-        )
+        row = f"- {host:26s} {note:32s} via={resolved_ip} expires={expiry:%Y-%m-%d} ({left:.0f} d) [{state}]"
+        if rf_anchored:
+            row += " [RF-VM anchor]"
+            rf_anchored_rows.append(host)
+        print(row)
         if left < WARN_DAYS:
             warnings.append(
                 f"TLS: {host} ({note}) expires {expiry:%Y-%m-%d %H:%M} UTC "
                 f"({'already expired' if left < 0 else f'in {left:.0f} days'})"
             )
+
+    if rf_anchored_rows:
+        joined = ", ".join(rf_anchored_rows)
+        print(
+            f"! RF-anchored ({joined}): dates above are the RF VM's acme.sh "
+            f"certificate; the Railway edge was NOT measured for these hosts "
+            f"from this machine"
+        )
     return warnings, hard_errors
 
 
-def run_railway_checks() -> tuple[list[str], list[str], list[str]]:
-    """Railway section: prints the report, returns (warnings, retries, hard_errors)."""
-    warnings: list[str] = []
+def run_railway_checks() -> tuple[list[str], list[str]]:
+    """Railway section: prints the report, returns (retries, hard_errors)."""
     retries: list[str] = []
     hard_errors: list[str] = []
 
@@ -320,7 +348,7 @@ def run_railway_checks() -> tuple[list[str], list[str], list[str]]:
         elif status.issuing:
             suffix = " (issuance in progress)"
         print(f"- {domain:26s} service={service:16s} cert={status.cert_status}{suffix}")
-    return warnings, retries, hard_errors
+    return retries, hard_errors
 
 
 def run_rdap_check(now: float) -> tuple[list[str], list[str]]:
@@ -379,8 +407,7 @@ def main() -> int:
     hard_errors += tls_err
 
     if not args.no_railway:
-        rw, rr, re_ = run_railway_checks()
-        warnings += rw
+        rr, re_ = run_railway_checks()
         retries += rr
         hard_errors += re_
 

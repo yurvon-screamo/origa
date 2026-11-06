@@ -21,14 +21,14 @@ from ssl_cert_check import (
     parse_rdap_events,
 )
 
-NOW = datetime(2026, 11, 6, 2, 0, 0, tzinfo=timezone.utc).timestamp()  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+NOW = datetime(2026, 11, 6, 2, 0, 0, tzinfo=timezone.utc).timestamp()  # noqa: UP017
 
 
 class TestOpensslEnddate:
     def test_parses_double_space_day(self):
         text = "notAfter=Nov  4 17:49:24 2026 GMT\n"
         dt = parse_openssl_enddate(text)
-        assert dt == datetime(2026, 11, 4, 17, 49, 24, tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        assert dt == datetime(2026, 11, 4, 17, 49, 24, tzinfo=timezone.utc)  # noqa: UP017
 
     def test_parses_single_digit_day_with_space(self):
         text = "notAfter=Apr  5 23:59:59 2027 GMT\n"
@@ -43,12 +43,12 @@ class TestOpensslEnddate:
 
 class TestDaysLeft:
     def test_future(self):
-        exp = datetime(2026, 12, 29, tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        exp = datetime(2026, 12, 29, tzinfo=timezone.utc)  # noqa: UP017
         left = days_left(exp, NOW)
         assert 52 < left < 54
 
     def test_expired_is_negative(self):
-        exp = datetime(2026, 11, 4, tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        exp = datetime(2026, 11, 4, tzinfo=timezone.utc)  # noqa: UP017
         assert days_left(exp, NOW) < 0
 
     def test_none_passthrough(self):
@@ -124,7 +124,7 @@ class TestRdapEvents:
             {"eventAction": "expiration", "eventDate": "2026-11-23T00:00:00Z"},
         ]
         dt = parse_rdap_events(events)
-        assert dt == datetime(2026, 11, 23, tzinfo=timezone.utc)  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        assert dt == datetime(2026, 11, 23, tzinfo=timezone.utc)  # noqa: UP017
 
     def test_no_expiration_returns_none(self):
         assert (
@@ -148,7 +148,7 @@ class TestRdapEvents:
             [{"eventAction": "expiration", "eventDate": "2026-11-23T00:00:00"}]
         )
         assert dt is not None
-        assert dt.tzinfo is timezone.utc  # noqa: UP017 — scripts floor is py3.10, datetime.UTC needs 3.11
+        assert dt.tzinfo is timezone.utc  # noqa: UP017
 
     def test_offset_date_preserved(self):
         dt = parse_rdap_events(
