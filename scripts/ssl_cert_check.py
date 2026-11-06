@@ -94,7 +94,7 @@ def tls_expiry(
     certificate on the same server: ADR-061 geo-split answers per query, so a
     separate resolve inside the connect could land on a different branch.
     """
-    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE  # dates only, chain trust is out of scope
     with (
@@ -267,8 +267,8 @@ def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
     print("== Public TLS endpoints ==")
     print(
         "! vantage: resolved per host (ADR-061 geo-split); rows annotated "
-        "[RF-VM anchor] show the RF VM's acme.sh certificate — the Railway "
-        "edge is not measured for them"
+        "[RF-VM anchor] landed on the RF VM — Railway-edge coverage for them "
+        "is not guaranteed from this machine"
     )
     rf_anchored_rows: list[str] = []
 
@@ -280,7 +280,9 @@ def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
             print(f"- {host:26s} {note:32s} DNS FAILED: {exc}")
             continue
         resolved_ip = infos[0][4][0]
-        rf_anchored = detect_vantage_from_ips({info[4][0] for info in infos}) == "rf"
+        # Annotate by the IP the connection is pinned to, not by the whole
+        # resolver answer — a mixed answer must not mislabel the row.
+        rf_anchored = detect_vantage_from_ips({resolved_ip}) == "rf"
         try:
             expiry = tls_expiry(host, resolved_ip)
         except Exception as exc:  # noqa: BLE001 — report any probe failure
@@ -299,17 +301,20 @@ def run_tls_checks(now: float) -> tuple[list[str], list[str]]:
             rf_anchored_rows.append(host)
         print(row)
         if left < WARN_DAYS:
+            qualifier = " [RF-VM anchor cert]" if rf_anchored else ""
             warnings.append(
-                f"TLS: {host} ({note}) expires {expiry:%Y-%m-%d %H:%M} UTC "
+                f"TLS: {host} ({note}){qualifier} expires "
+                f"{expiry:%Y-%m-%d %H:%M} UTC "
                 f"({'already expired' if left < 0 else f'in {left:.0f} days'})"
             )
 
     if rf_anchored_rows:
         joined = ", ".join(rf_anchored_rows)
         print(
-            f"! RF-anchored ({joined}): dates above are the RF VM's acme.sh "
-            f"certificate; the Railway edge was NOT measured for these hosts "
-            f"from this machine"
+            f"! RF-anchored ({joined}): connection landed on the RF VM anchor; "
+            f"the certificate shown may be the RF VM's or a passthrough — "
+            f"Railway-edge coverage was not verified for these hosts from "
+            f"this machine"
         )
     return warnings, hard_errors
 
