@@ -1,7 +1,9 @@
+use std::future::Future;
 use std::path::Path;
 use std::sync::Mutex;
 
 use crate::domain::OrigaError;
+use crate::traits::Transcriber;
 use ndarray::Array2;
 use ort::session::{Session, builder::GraphOptimizationLevel};
 use ort::value::Value;
@@ -53,6 +55,10 @@ impl WhisperTranscriber {
         tracing::info!(path = ?wav_path, "Transcribing audio");
 
         let samples = load_wav(wav_path).map_err(|reason| OrigaError::SttError { reason })?;
+        self.transcribe_from_samples(samples)
+    }
+
+    fn transcribe_from_samples(&self, samples: Vec<f32>) -> Result<String, OrigaError> {
         let mel = super::mel_spectrogram::compute_mel_spectrogram(&samples)
             .map_err(|reason| OrigaError::SttError { reason })?;
 
@@ -63,6 +69,22 @@ impl WhisperTranscriber {
 
         tracing::info!(text = %text, "Transcription complete");
         Ok(text)
+    }
+}
+
+/// Inference zone — intentionally not unit-covered. Constructing the
+/// transcriber and running the encoder/decoder require the ONNX models,
+/// which are not available in the coverage environment; the full pipeline
+/// is covered by the model-gated smoke tests in `stt/tests.rs` (run when
+/// local models exist) and manual smoke. Everything around the inference
+/// (WAV loading, mel computation, tokenizer, prompt building, argmax) is
+/// unit-tested without models.
+impl Transcriber for WhisperTranscriber {
+    fn transcribe_samples(
+        &self,
+        samples: &[f32],
+    ) -> impl Future<Output = Result<String, OrigaError>> {
+        std::future::ready(self.transcribe_from_samples(samples.to_vec()))
     }
 }
 

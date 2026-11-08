@@ -4,10 +4,12 @@ use super::common::{
 use crate::domain::OrigaError;
 use crate::ort_init;
 use crate::stt::tokenizer::WhisperTokenizer;
+use crate::traits::Transcriber;
 use futures::lock::Mutex;
 use ort::ep::WebGPU;
 use ort::session::RunOptions;
 use ort_web::ValueExt;
+use std::future::Future;
 
 pub struct WhisperTranscriber {
     encoder_session: Mutex<ort::session::Session>,
@@ -187,6 +189,15 @@ impl WhisperTranscriber {
         }
 
         Ok(tokens)
+    }
+}
+
+impl Transcriber for WhisperTranscriber {
+    fn transcribe_samples(
+        &self,
+        samples: &[f32],
+    ) -> impl Future<Output = Result<String, OrigaError>> {
+        self.transcribe_from_samples(samples)
     }
 }
 
