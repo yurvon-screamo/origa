@@ -5,14 +5,16 @@
 //! Released clients carry user FSRS cards keyed by `rule_id`; loading a
 //! corpus without those rules must not leave broken cards behind.
 //!
-//! Merge twins (5 pairs) have a successor: the surviving rule absorbed the
-//! twin's detector anchors and related patterns, so the card's study
-//! history transfers. Deleted rules without a successor are lexicon or
-//! lesson-phrase points — their cards are dropped: there is nothing left
-//! to review.
+//! Merge twins (7 pairs) have a successor: the surviving rule absorbed the
+//! twin's detector anchors and related patterns (for the N4 ～そうだ triple —
+//! the siblings live on as the survivor's format_map variants), so the
+//! card's study history transfers. Deleted rules without a successor are
+//! lexicon or lesson-phrase points — their cards are dropped: there is
+//! nothing left to review.
 //!
-//! The map is generated from `staging/migration_map.json`; `rule_id`s are
-//! stable ULIDs, so the pairs are compile-time constants.
+//! The pairs are compile-time constants; the corpus-consistency test
+//! (`tests/grammar_migration.rs::merge_twins_match_the_shipped_v3_corpus`)
+//! pins the map to the shipped corpus.
 
 use ulid::Ulid;
 
