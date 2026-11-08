@@ -190,7 +190,7 @@ wrong» в UI — карточка воронки без данных):
 | Onboarding funnel, Landing to Web app | **Funnels** | карточки с шагами и drop-off |
 | User retention (weekly) | **Retention** | cohort-таблица (окно из parameters) |
 | Traffic sources (UTM) | **UTM** | конструктор source/medium/campaign |
-| Landing downloads (by platform) | **Events** | список событий с count (имя события в строке); `download_*` читаются в этом списке. Вкладка Breakdown — Fields-конструктор по размерностям (path/referrer/geo/UTM…): опции `Event` в меню Fields **нет** |
+| Landing downloads (by platform) | **Events** | список событий с count (имя события в строке); `download_*` читаются в этом списке — **в текущих данных их ещё нет** (лендинг-CTA трафик до инстанса не дошёл, появятся с кликами); Вкладка Breakdown — Fields-конструктор по размерностям (path/referrer/geo/UTM…): опции `Event` в меню Fields **нет** |
 
 Breakdown-отчёт сохраняется валидными параметрами (`fields: ["event"]` —
 строки-имена из enum, объекты и `filter` в parameters схемой не допускаются —
