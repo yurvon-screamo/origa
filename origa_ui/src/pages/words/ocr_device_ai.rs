@@ -8,7 +8,7 @@
 use crate::core::device_ai::{self, Feature};
 use crate::ui_components::{OcrLoadingStage, OcrLoadingState};
 use leptos::prelude::*;
-use tracing::{info, warn};
+use tracing::{error, info};
 
 /// Attempts native OCR on a base64-encoded image. Returns `Some(text)` on
 /// success, or `None` when native OCR is unavailable or fails — signalling
@@ -30,7 +30,12 @@ pub(super) async fn recognize_via_device_ai(
     match device_ai::recognize_text(base64_data).await {
         Ok(result) => Some(result.text),
         Err(e) => {
-            warn!("device-ai OCR failed, falling back to WASM: {e}");
+            // Only reachable when capabilities reported the feature
+            // available, so this is a genuine degradation of the native path
+            // (plugin present, call failed) — escalate to a Sentry event via
+            // the tracing bridge; the error string carries the plugin's
+            // structured code ([FEATURE_NOT_AVAILABLE], [INVALID_IMAGE], …).
+            error!("device-ai OCR failed, falling back to WASM: {e}");
             None
         },
     }
