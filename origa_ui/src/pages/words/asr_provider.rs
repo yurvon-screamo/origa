@@ -6,7 +6,7 @@
 //! Both return `None` when unavailable so callers fall back to Whisper WASM.
 
 use crate::core::device_ai::{self, Feature};
-use tracing::{info, warn};
+use tracing::{error, info};
 
 const JA_JP: &str = "ja-JP";
 
@@ -48,7 +48,12 @@ pub(super) async fn recognize_file_via_device_ai(base64_audio: &str) -> Option<S
             .ok()
             .and_then(|t| t.as_string()),
         Err(e) => {
-            warn!("device-ai file ASR failed, falling back to Whisper: {e}");
+            // Same reachability as the OCR escalation (ocr_device_ai.rs):
+            // only fired after capabilities reported the feature available,
+            // so this is a genuine degradation of the native path — escalate
+            // to a Sentry event via the tracing bridge; the error string
+            // carries the plugin's structured code.
+            error!("device-ai file ASR failed, falling back to Whisper: {e}");
             None
         },
     }
@@ -78,7 +83,12 @@ pub(super) async fn recognize_live_via_device_ai() -> Option<String> {
                 info!("ASR (live): no speech detected");
                 return Some(String::new());
             }
-            warn!("device-ai live ASR failed: {e}");
+            // Same reachability as the OCR escalation (ocr_device_ai.rs):
+            // native path failed after caps=available — a genuine
+            // degradation, escalate to a Sentry event via the tracing
+            // bridge. (NO_SPEECH above is an expected user outcome and
+            // stays a breadcrumb-level info.)
+            error!("device-ai live ASR failed: {e}");
             None
         },
     }

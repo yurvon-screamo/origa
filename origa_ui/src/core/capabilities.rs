@@ -4,7 +4,7 @@
 //! The macOS microphone (#570) is the poster child: the button was hidden
 //! because the capabilities query resolved unavailable, but no error was
 //! ever surfaced. Every "quietly unavailable" resolution now emits a
-//! Sentry breadcrumb so regressions are visible without a real device.
+//! Sentry event so regressions are visible without a real device.
 
 use crate::core::device_ai::{self, Feature};
 use crate::core::platform::platform_name;
@@ -21,8 +21,8 @@ pub struct CaptureCapabilities {
 }
 
 impl CaptureCapabilities {
-    /// Queries the runtime and captures a Sentry breadcrumb for every
-    /// unavailable feature (the #570 observability requirement).
+    /// Queries the runtime and emits a Sentry event for every unavailable
+    /// feature (the #570 observability requirement).
     pub async fn detect() -> Self {
         let platform = platform_name();
 
