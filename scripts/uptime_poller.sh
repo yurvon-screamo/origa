@@ -195,8 +195,12 @@ check_ru_resolvers_alive() {
 # --- HTTP probes ------------------------------------------------------------
 
 # Pinned-IP probe of the RF branch: TLS+SNI through the VM's nginx. The
-# CloudFront misroute guard (the kz1 lesson) asserts the response carries the
-# VM's nginx header and not the Tigris-served-from marker of the world branch.
+# CloudFront misroute guard (the kz1 lesson) has two legs: the VM's nginx
+# signs responses with a versioned "server: nginx/x.y.z" while the world
+# branch (CloudFront in front of Tigris) serves a bare "server: nginx"; and
+# CloudFront always adds via/x-cache/x-amz-cf-* markers that the VM's direct
+# path never carries. The Tigris x-tigris-* headers are present on BOTH
+# branches (the Tigris origin sets them) — they do not discriminate.
 check_rf_branch() {
   local headers
   headers=$(curl -sS -D - -o /dev/null --max-time 20 \
@@ -210,12 +214,12 @@ check_rf_branch() {
     record_outcome "rf-branch" fail "http_code=${http_code}"
     return
   fi
-  if grep -qi '^x-tigris-served-from:' <<< "$headers"; then
-    record_outcome "rf-branch" fail "world branch leaked into the pinned IP"
-    return
-  fi
   if ! grep -qi '^server: nginx/' <<< "$headers"; then
     record_outcome "rf-branch" fail "no VM nginx header"
+    return
+  fi
+  if grep -qiE '^(via|x-cache|x-amz-cf-id):' <<< "$headers"; then
+    record_outcome "rf-branch" fail "CloudFront markers on the pinned IP"
     return
   fi
   record_outcome "rf-branch" ok "200 from VM nginx"
@@ -268,7 +272,8 @@ send_heartbeat() {
   # The heartbeat proves the poller itself is alive, so it fires at the end
   # of every completed cycle regardless of individual check outcomes.
   if [[ -n "${HETRIX_HEARTBEAT_URL:-}" ]]; then
-    curl -fsS --max-time 15 "$HETRIX_HEARTBEAT_URL" > /dev/null 2>&1 \
+    # -L: some intermediate answers redirect; a heartbeat ping must follow.
+    curl -fsSL --max-time 15 "$HETRIX_HEARTBEAT_URL" > /dev/null 2>&1 \
       || log "WARN heartbeat ping failed"
   else
     log "WARN HETRIX_HEARTBEAT_URL not set"
