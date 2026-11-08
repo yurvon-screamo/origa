@@ -37,8 +37,12 @@ v3 — read-only (Bearer). Heartbeat-мониторы API не создаёт �
 
 Keyword-контракт: тело никогда не содержит строк, которые отдавал бы Railway
 fallback 404 (`Application not found`) — тихий слап custom-domain binding
-переводит монитор в DOWN, а не врёт зелёным. Локации: Frankfurt, Warsaw,
-London, Amsterdam (кворум). Антифлап: `FailsBeforeAlert=2`.
+переводит монитор в DOWN, а не врёт зелёным. Поля v2-пейлоада (по доке
+вендора): `Target` — URL, `Frequency` — строка минут `"1"`, `Locations` —
+объект `{"fra": true, ...}`, `FailsBeforeAlert` — 2, `SSLExpiryReminder`/
+`DomainExpiryReminder` — строки-дни `"30"`, `MID` — адрес монитора при edit;
+доставка алертов — через `ContactList` (полей SendEmail/SendSMS в v2 нет).
+Локации мониторинга — Frankfurt, Warsaw, London, Amsterdam (кворум).
 
 Счёт против free-лимита 15: 4 website + 2 heartbeat = 6, запас 9. Если
 включите App Sleeping на спящем сервисе — HTTP-монитор этого сервиса снимается
@@ -128,6 +132,7 @@ Sentry UI → Uptime → Add monitor: URL
 Script-записей geo-split (после платформенного фикса Railway, задача
 20261104060617-ag7v6qr / Bunny-failover 20261108155113-zhiy2o5) меняет
 ожидания: origa/app/umami на RU-резолверах снова станут A ВМ — обновить
-`RU_EXPECTED`-константы `scripts/uptime_poller.sh` и эту страницу одним
+константы `ORIGA_CNAME`/`APP_CNAME`/`UMAMI_CNAME`/`CONTENT_CNAME`/
+`S3_WORLD_CNAME` в шапке `scripts/uptime_poller.sh` и эту страницу одним
 коммитом. Domain-expiry `uwuwu.net` — флаг на `origa-landing`; продление
 регистратора OnlineNIC проверять при каждом плановом релизе.

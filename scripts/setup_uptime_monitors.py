@@ -7,11 +7,16 @@ and heartbeat monitors that act as the dead-man switch for the RF poller.
 
 The HetrixTools API is split across two protocol generations:
 
-- **v2** (``/v2/<uptime_api_token>/uptime/add|edit/``) — the only write path.
-  The token rides in the URL path, so it must never be logged or echoed.
+- **v2** (``https://api.hetrixtools.com/v2/<uptime_api_token>/uptime/...``) —
+  the only write path. The token rides in the URL path, so it must never be
+  logged or echoed. Field shapes follow the v2 documentation: ``Target`` for
+  the URL, ``Frequency`` as a string of minutes (1/3/5/10), ``Locations`` as a
+  mapping of location code to boolean, expiry reminders as day-count strings,
+  and ``MID`` to address an existing monitor on edit.
 - **v3** (``GET /v3/uptime-monitors``, ``Authorization: Bearer``) — read-only,
   used as the source of truth for idempotency: we diff what the account
-  already has against the desired state below.
+  already has (flat ``target``/``keyword`` entries) against the desired state
+  below.
 
 Heartbeat monitors are intentionally NOT created here: the API cannot create
 them (v2 knows website/ping/smtp/agent types only). They are created by hand
@@ -37,15 +42,22 @@ from dataclasses import dataclass
 from typing import Final
 
 V3_BASE: Final[str] = "https://api.hetrixtools.com/v3"
-V2_BASE: Final[str] = "https://hetrixtools.com/api"
+V2_BASE: Final[str] = "https://api.hetrixtools.com/v2"
 
 # EU locations closest to the product audience; the free tier allows 4 of 12.
 LOCATIONS: Final[list[str]] = ["fra", "waw", "lon", "ams"]
 
+# Fastest interval the v2 API accepts (minutes, string per the docs).
+CHECK_FREQUENCY_MINUTES: Final[str] = "1"
 
-# Keyword assertions pick bodies that the Railway fallback 404
-# ("Application not found") can never contain, so a silently slapped
-# custom-domain binding flips the monitor to DOWN instead of lying green.
+# Expiry reminders are day-count strings in v2: warn 30 days ahead so a
+# broken renewal has weeks of runway before browsers complain.
+EXPIRY_HORIZON_DAYS: Final[str] = "30"
+
+# v2 monitor type 1 = website.
+WEBSITE_TYPE: Final[int] = 1
+
+
 @dataclass(frozen=True)
 class DesiredMonitor:
     name: str
@@ -83,9 +95,6 @@ DESIRED_MONITORS: Final[list[DesiredMonitor]] = [
     ),
 ]
 
-# v2 monitor type 1 = website.
-WEBSITE_TYPE: Final[int] = 1
-
 
 @dataclass
 class PlanAction:
@@ -117,24 +126,33 @@ def fetch_existing_monitors(api_key: str) -> list[dict]:
     return body.get("monitors", [])
 
 
-def build_v2_payload(monitor: DesiredMonitor) -> dict:
+def build_v2_payload(monitor: DesiredMonitor, monitor_id: str | None = None) -> dict:
     payload: dict = {
         "Name": monitor.name,
-        "URL": monitor.target,
+        "Target": monitor.target,
         "Type": WEBSITE_TYPE,
-        "CheckFrequency": 60,
-        "Locations": LOCATIONS,
+        "Frequency": CHECK_FREQUENCY_MINUTES,
+        "Locations": {location: True for location in LOCATIONS},
         "FailsBeforeAlert": 2,
-        "SendEmail": True,
-        "SendSMS": False,
     }
     if monitor.keyword:
         payload["Keyword"] = monitor.keyword
     if monitor.ssl_expiry_reminder:
-        payload["SSLExpiryReminder"] = True
+        payload["SSLExpiryReminder"] = EXPIRY_HORIZON_DAYS
     if monitor.domain_expiry_reminder:
-        payload["DomainExpiryReminder"] = True
+        payload["DomainExpiryReminder"] = EXPIRY_HORIZON_DAYS
+    if monitor_id:
+        payload["MID"] = monitor_id
     return payload
+
+
+def describe_mismatch(current: dict, monitor: DesiredMonitor) -> str:
+    problems: list[str] = []
+    if current.get("target") != monitor.target:
+        problems.append("target")
+    if monitor.keyword and current.get("keyword") != monitor.keyword:
+        problems.append("keyword")
+    return ", ".join(problems)
 
 
 def diff_plan(existing: list[dict], desired: list[DesiredMonitor]) -> list[PlanAction]:
@@ -157,22 +175,9 @@ def diff_plan(existing: list[dict], desired: list[DesiredMonitor]) -> list[PlanA
     return actions
 
 
-def describe_mismatch(current: dict, monitor: DesiredMonitor) -> str:
-    problems: list[str] = []
-    v2 = current.get("v2", {})
-    uptime = current.get("uptime", {})
-    merged = {**uptime, **v2}
-    if merged.get("url") != monitor.target and merged.get("target") != monitor.target:
-        problems.append("target")
-    keyword = monitor.keyword
-    if keyword and keyword not in (merged.get("keyword"), merged.get("Keyword")):
-        problems.append("keyword")
-    return ", ".join(problems)
-
-
 def v2_call(api_token: str, endpoint: str, payload: dict) -> dict:
     # The v2 token rides in the URL path — never log or echo the full URL.
-    url = f"{V2_BASE}/v2/{api_token}/uptime/{endpoint}/"
+    url = f"{V2_BASE}/{api_token}/uptime/{endpoint}/"
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
@@ -193,10 +198,9 @@ def execute_plan(actions: list[PlanAction], api_token: str) -> int:
         if action.action == "skip":
             print(f"skip  {action.monitor.name}: {action.reason}")
             continue
-        payload = build_v2_payload(action.monitor)
+        payload = build_v2_payload(action.monitor, action.monitor_id or None)
         result = v2_call(api_token, action.action, payload)
-        status = result.get("status")
-        if status == "success" or result.get("ok"):
+        if result.get("status") == "success" or result.get("ok"):
             print(f"{action.action:4}  {action.monitor.name}: ok")
         else:
             failures += 1

@@ -31,6 +31,13 @@ readonly RU_RESOLVER_SECONDARY="77.88.8.1"
 readonly WORLD_RESOLVER="1.1.1.1"
 readonly UMAMI_CERT_HORIZON_DAYS=21
 
+# Full hostnames (the landing is the bare domain — no second .origa label).
+readonly ORIGA_HOST="origa.uwuwu.net"
+readonly APP_HOST="app.origa.uwuwu.net"
+readonly UMAMI_HOST="umami.origa.uwuwu.net"
+readonly CONTENT_HOST="content.origa.uwuwu.net"
+readonly S3_HOST="s3.origa.uwuwu.net"
+
 readonly ORIGA_CNAME="c2qj368z.up.railway.app."
 readonly APP_CNAME="9fmm6y4e.up.railway.app."
 readonly UMAMI_CNAME="07wyrdxw.up.railway.app."
@@ -59,7 +66,9 @@ record_outcome() {
   local check="$1" outcome="$2" context="$3"
   local key="fail:${check}"
   local previous
-  previous=$(awk -v k="$key" '$1 == k { print $2 }' "$STATE_FILE" 2>/dev/null || echo 0)
+  # `|| true` keeps pipefail from killing the assignment when the state file
+  # does not exist yet (first cycle after install).
+  previous=$(awk -v k="$key" '$1 == k { print $2 }' "$STATE_FILE" 2>/dev/null | head -n1 || true)
   previous="${previous:-0}"
 
   if [[ "$outcome" == "ok" ]]; then
@@ -82,9 +91,12 @@ record_outcome() {
 update_state() {
   local key="$1" value="$2"
   touch "$STATE_FILE"
-  awk -v k="$key" -v v="$value" '$1 == k { skip = 1 } { if (!skip) print } END { if (!skip) print k, v }' \
+  # Replace the key's line in place, append it if absent — exactly one line
+  # per key, otherwise the counter readback returns two numbers and the
+  # arithmetic test crashes the next cycle.
+  awk -v k="$key" -v v="$value" \
+    '$1 == k { seen = 1; print k, v; next } { print } END { if (!seen) print k, v }' \
     "$STATE_FILE" > "${STATE_FILE}.next"
-  printf '%s %s\n' "$key" "$value" >> "${STATE_FILE}.next"
   mv "${STATE_FILE}.next" "$STATE_FILE"
 }
 
@@ -93,44 +105,42 @@ update_state() {
 # dig emits the CNAME chain; the first line carries the canonical target of
 # the queried name itself.
 cname_matches() {
-  local resolver="$1" name="$2" expected="$3"
+  local resolver="$1" host="$2" expected="$3"
   local answer
-  answer=$(dig +short "$name.origa.uwuwu.net" "@$resolver" CNAME 2>/dev/null | head -n1)
+  answer=$(dig +short "$host" "@$resolver" CNAME 2>/dev/null | head -n1 || true)
   [[ "$answer" == "$expected" ]]
 }
 
 s3_ru_is_vm_ip() {
   local resolver="$1"
   local answer
-  answer=$(dig +short s3.origa.uwuwu.net "@$resolver" A 2>/dev/null | head -n1)
+  answer=$(dig +short "$S3_HOST" "@$resolver" A 2>/dev/null | head -n1 || true)
   [[ "$answer" == "$RF_IP" ]]
 }
 
 # The geo split survives only on s3: both RU resolvers must answer with the
-# VM's A record, and the remaining names with their Railway/Tigris CNAMEs.
+# VM's A record, and the remaining names with their Railway/Tigris CNAMEs —
+# asserted through both resolvers, so a dead secondary cannot drift silently.
 check_dns_ru() {
-  local failures=0 detail=""
+  local failures=0 detail="" resolver host expected
 
   for resolver in "$RU_RESOLVER_PRIMARY" "$RU_RESOLVER_SECONDARY"; do
     if ! s3_ru_is_vm_ip "$resolver"; then
       failures=$((failures + 1))
       detail+="s3@${resolver}!=RF-IP; "
     fi
-  done
-
-  local name
-  for name in origa app umami content; do
-    local expected
-    case "$name" in
-      origa) expected="$ORIGA_CNAME" ;;
-      app) expected="$APP_CNAME" ;;
-      umami) expected="$UMAMI_CNAME" ;;
-      content) expected="$CONTENT_CNAME" ;;
-    esac
-    if ! cname_matches "$RU_RESOLVER_PRIMARY" "$name" "$expected"; then
-      failures=$((failures + 1))
-      detail+="${name}@RU!=${expected}; "
-    fi
+    for host in "$ORIGA_HOST" "$APP_HOST" "$UMAMI_HOST" "$CONTENT_HOST"; do
+      case "$host" in
+        "$ORIGA_HOST") expected="$ORIGA_CNAME" ;;
+        "$APP_HOST") expected="$APP_CNAME" ;;
+        "$UMAMI_HOST") expected="$UMAMI_CNAME" ;;
+        "$CONTENT_HOST") expected="$CONTENT_CNAME" ;;
+      esac
+      if ! cname_matches "$resolver" "$host" "$expected"; then
+        failures=$((failures + 1))
+        detail+="${host}@${resolver}!=${expected}; "
+      fi
+    done
   done
 
   if (( failures == 0 )); then
@@ -141,25 +151,23 @@ check_dns_ru() {
 }
 
 check_dns_world() {
-  local failures=0 detail=""
+  local failures=0 detail="" host expected
 
-  if ! cname_matches "$WORLD_RESOLVER" s3 "$S3_WORLD_CNAME"; then
+  if ! cname_matches "$WORLD_RESOLVER" "$S3_HOST" "$S3_WORLD_CNAME"; then
     failures=$((failures + 1))
     detail+="s3@world!=${S3_WORLD_CNAME}; "
   fi
 
-  local name
-  for name in origa app umami content; do
-    local expected
-    case "$name" in
-      origa) expected="$ORIGA_CNAME" ;;
-      app) expected="$APP_CNAME" ;;
-      umami) expected="$UMAMI_CNAME" ;;
-      content) expected="$CONTENT_CNAME" ;;
+  for host in "$ORIGA_HOST" "$APP_HOST" "$UMAMI_HOST" "$CONTENT_HOST"; do
+    case "$host" in
+      "$ORIGA_HOST") expected="$ORIGA_CNAME" ;;
+      "$APP_HOST") expected="$APP_CNAME" ;;
+      "$UMAMI_HOST") expected="$UMAMI_CNAME" ;;
+      "$CONTENT_HOST") expected="$CONTENT_CNAME" ;;
     esac
-    if ! cname_matches "$WORLD_RESOLVER" "$name" "$expected"; then
+    if ! cname_matches "$WORLD_RESOLVER" "$host" "$expected"; then
       failures=$((failures + 1))
-      detail+="${name}@world!=${expected}; "
+      detail+="${host}@world!=${expected}; "
     fi
   done
 
@@ -192,8 +200,8 @@ check_ru_resolvers_alive() {
 check_rf_branch() {
   local headers
   headers=$(curl -sS -D - -o /dev/null --max-time 20 \
-    --resolve "s3.origa.uwuwu.net:443:${RF_IP}" \
-    "https://s3.origa.uwuwu.net/manifest.json" 2>/dev/null) || headers=""
+    --resolve "${S3_HOST}:443:${RF_IP}" \
+    "https://${S3_HOST}/manifest.json" 2>/dev/null) || headers=""
   local http_code
   http_code=$(head -n1 <<< "$headers" | awk '{print $2}')
   http_code="${http_code:-000}"
@@ -214,17 +222,21 @@ check_rf_branch() {
 }
 
 # Direct Railway reachability from an RF datacenter vantage: catches the full
-# TSPU block of the Railway edge (ADR-049 class). Partial residential
-# degradation stays a blind spot.
+# TSPU block of the Railway edge (ADR-049 class) and the silent custom-domain
+# slap — a 4xx here is the RF side of the Railway fallback, never green.
+# Partial residential degradation stays a blind spot.
 check_rf_railway() {
   local host="$1" http_code
   http_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
-    "https://${host}.origa.uwuwu.net/" 2>/dev/null) || http_code="000"
-  if [[ "$http_code" == "000" || "$http_code" == 5* ]]; then
-    record_outcome "rf-railway-${host}" fail "http_code=${http_code}"
-  else
-    record_outcome "rf-railway-${host}" ok "http_code=${http_code}"
-  fi
+    "https://${host}/" 2>/dev/null) || http_code="000"
+  case "$http_code" in
+    2*|3*)
+      record_outcome "rf-railway-${host}" ok "http_code=${http_code}"
+      ;;
+    *)
+      record_outcome "rf-railway-${host}" fail "http_code=${http_code}"
+      ;;
+  esac
 }
 
 # --- Certificate probe ------------------------------------------------------
@@ -233,9 +245,9 @@ check_rf_railway() {
 # directly, so the zero-scale contract for the umami service holds.
 check_umami_certificate() {
   local enddate days_left now then_ts
-  enddate=$(echo | openssl s_client -servername umami.origa.uwuwu.net \
-    -connect umami.origa.uwuwu.net:443 2>/dev/null \
-    | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
+  enddate=$(echo | openssl s_client -servername "$UMAMI_HOST" \
+    -connect "$UMAMI_HOST:443" 2>/dev/null \
+    | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || true)
   if [[ -z "$enddate" ]]; then
     record_outcome "umami-cert" fail "no certificate retrieved"
     return
@@ -269,8 +281,8 @@ main() {
   check_dns_world
   check_ru_resolvers_alive
   check_rf_branch
-  check_rf_railway origa
-  check_rf_railway app
+  check_rf_railway "$ORIGA_HOST"
+  check_rf_railway "$APP_HOST"
   check_umami_certificate
   send_heartbeat
   log "cycle end"

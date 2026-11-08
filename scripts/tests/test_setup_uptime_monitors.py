@@ -3,11 +3,18 @@
 The setup script keeps the HetrixTools account in sync with the desired
 monitor table of the runbook. The API is split: v2 writes (token in the URL
 path), v3 reads (Bearer). The tests pin the parts that can silently go wrong:
-the desired keyword contract (every keyword must be absent from the Railway
-fallback 404 body, otherwise a silently slapped custom-domain binding would
-look green), the diff/idempotency logic over the v3 listing, the v2 payload
-shape (anti-flap count, locations, expiry flags), and the guarantee that a
-monitor whose v3 entry is already in sync is never rewritten.
+
+* the desired keyword contract — every keyword must be absent from the
+  Railway fallback 404 body, otherwise a silently slapped custom-domain
+  binding would look green;
+* the v2 payload shape per the vendor docs — ``Target`` (not ``URL``),
+  ``Frequency`` as a minutes string (1/3/5/10), ``Locations`` as a mapping,
+  expiry reminders as day-count strings, ``MID`` on edit, no invented
+  ``SendEmail``/``SendSMS`` fields;
+* the diff/idempotency logic over the flat v3 listing (``target``/``keyword``
+  at the top level — the nested fixture shape here would silently drift the
+  matching into "always edit");
+* the environment gates that must fire before any API call.
 
 The tests are pure: no network, no environment, no filesystem.
 """
@@ -49,14 +56,19 @@ def test_desired_set_matches_the_runbook() -> None:
     assert landing.domain_expiry_reminder is True, "uwuwu.net expiry must be watched"
 
 
-def test_v2_payload_carries_antiflap_and_locations() -> None:
+def test_v2_payload_follows_the_vendor_docs() -> None:
     payload = setup.build_v2_payload(setup.DESIRED_MONITORS[0])
+    assert payload["Target"] == "https://origa.uwuwu.net/"
+    assert payload["Frequency"] == "1"
+    assert payload["Locations"] == {"fra": True, "waw": True, "lon": True, "ams": True}
     assert payload["FailsBeforeAlert"] == 2
-    assert payload["Locations"] == setup.LOCATIONS
     assert payload["Keyword"] == "Learn Japanese"
-    assert payload["SSLExpiryReminder"] is True
-    assert payload["DomainExpiryReminder"] is True
+    assert payload["SSLExpiryReminder"] == "30"
+    assert payload["DomainExpiryReminder"] == "30"
     assert payload["Type"] == setup.WEBSITE_TYPE
+    assert "SendEmail" not in payload
+    assert "SendSMS" not in payload
+    assert "MID" not in payload, "add must not carry an edit-only field"
 
 
 def test_v2_payload_omits_empty_keyword() -> None:
@@ -65,11 +77,20 @@ def test_v2_payload_omits_empty_keyword() -> None:
     assert "Keyword" not in payload
 
 
+def test_v2_payload_carries_mid_on_edit() -> None:
+    monitor = setup.DESIRED_MONITORS[1]
+    payload = setup.build_v2_payload(monitor, monitor_id="42")
+    assert payload["MID"] == "42"
+    assert setup.build_v2_payload(monitor).get("MID") is None
+
+
 def _existing_entry(name: str, monitor_id: str, target: str, keyword: str) -> dict:
+    # Flat v3 listing shape: target/keyword live at the top level.
     return {
         "name": name,
         "id": monitor_id,
-        "v2": {"target": target, "keyword": keyword},
+        "target": target,
+        "keyword": keyword,
     }
 
 
@@ -110,6 +131,12 @@ def test_missing_env_stops_before_any_api_call(
     with pytest.raises(SystemExit) as raised:
         setup.require_env(variable)
     assert raised.value.code == 1
+
+
+def test_v2_host_matches_the_vendor_docs() -> None:
+    # The write host is api.hetrixtools.com; hetrixtools.com/api is not the
+    # documented v2 endpoint.
+    assert setup.V2_BASE == "https://api.hetrixtools.com/v2"
 
 
 def test_monitor_count_fits_the_free_tier() -> None:
