@@ -170,6 +170,34 @@ Funnel-шаги несут per-step фильтр `hostname neq localhost` — de
 поддерживает (схема — только `window`); его dev-чистота — только UI-фильтр
 hostname при просмотре.
 
+Гочи funnel-отчётов через API (обе ловили тестировщика на «Something went
+wrong» в UI — карточка воронки без данных):
+
+- `parameters.window` **обязателен** (число минут, в наших — 60): reports-POST
+  его не валидирует (создастся с 200), но UI-stats-валидатор
+  `GET /api/websites/{id}/funnels/{reportId}/stats` без него отдаёт 400 и
+  карточка рендерит ошибку;
+- тип шага — `path` или `event`, **не `url`** (reports-POST пропустит `url`,
+  stats-валидатор отвергнет — снова карточка с ошибкой при валидных, казалось
+  бы, данных);
+- проверка до отдачи владельцу: `GET .../funnels/{reportId}/stats?startAt&endAt`
+  → 200 + массив шагов.
+
+### Где отчёты живут в UI (v3.4 — единого раздела «Reports» нет)
+
+| Отчёт | Вкладка сайта | Как выглядит |
+| --- | --- | --- |
+| Onboarding funnel, Landing to Web app | **Funnels** | карточки с шагами и drop-off |
+| User retention (weekly) | **Retention** | cohort-таблица (окно из parameters) |
+| Traffic sources (UTM) | **UTM** | конструктор source/medium/campaign |
+| Landing downloads (by platform) | **Breakdown** | Fields-конструктор: выбрать `Event` в Fields — разбивка всех событий; `download_*` фильтром по значению |
+
+Breakdown-отчёт сохраняется валидными параметрами (`fields: ["event"]` —
+строки-имена из enum, объекты и `filter` в parameters схемой не допускаются —
+иначе вкладка отчёт не рендерит), но карточкой на вкладке не показывается —
+вкладка работает как Fields-конструктор, сегмент `download_*` выбирается
+фильтром при просмотре.
+
 Типы отчётов v3.4.0: `attribution|breakdown|funnel|goal|heatmap|journey|performance|retention|revenue|utm`
 (инсайтов-«insights» нет — их роль играют breakdown). Создание:
 `POST /api/reports {"type", "websiteId", "name", "parameters"}` токеном admin.
