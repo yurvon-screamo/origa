@@ -68,9 +68,7 @@ def read_file_list(path: Path) -> set[str]:
     return entries
 
 
-def check_presence(
-    cdn_dir: Path, entries: set[str]
-) -> tuple[list[str], set[str]]:
+def check_presence(cdn_dir: Path, entries: set[str]) -> tuple[list[str], set[str]]:
     problems: list[str] = []
     missing: set[str] = set()
     for entry in sorted(entries):
@@ -93,16 +91,12 @@ def load_hash_manifest(path: Path) -> dict[str, str]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as error:
-        raise UnusableHashManifestError(
-            f"hash manifest {path} not found"
-        ) from error
+        raise UnusableHashManifestError(f"hash manifest {path} not found") from error
     except json.JSONDecodeError as error:
         raise UnusableHashManifestError(
             f"hash manifest {path} is not valid JSON: {error}"
         ) from error
-    if not isinstance(payload, dict) or not isinstance(
-        payload.get("files"), dict
-    ):
+    if not isinstance(payload, dict) or not isinstance(payload.get("files"), dict):
         raise UnusableHashManifestError(
             f"hash manifest {path} lacks a 'files' object mapping paths to hashes"
         )
@@ -129,9 +123,7 @@ def check_hashes(
             continue
         actual = sha256_of(target)
         if actual != expected:
-            problems.append(
-                f"STALE: {target} (cached={actual}, expected={expected})"
-            )
+            problems.append(f"STALE: {target} (cached={actual}, expected={expected})")
     return problems
 
 
@@ -145,9 +137,7 @@ def main() -> int:
     problems, missing_entries = check_presence(args.cdn_dir, entries)
     if args.hash_manifest is not None:
         problems.extend(
-            check_hashes(
-                args.cdn_dir, args.hash_manifest, entries, missing_entries
-            )
+            check_hashes(args.cdn_dir, args.hash_manifest, entries, missing_entries)
         )
 
     for problem in problems:
@@ -155,7 +145,9 @@ def main() -> int:
 
     mode = "presence + SHA256" if args.hash_manifest else "presence only"
     if problems:
-        print(f"FAILED: {len(problems)} problem(s) across {len(entries)} files ({mode})")
+        print(
+            f"FAILED: {len(problems)} problem(s) across {len(entries)} files ({mode})"
+        )
         return 1
     print(f"OK: {len(entries)} files verified ({mode})")
     return 0

@@ -19,56 +19,56 @@ const NIL_USER_SUFFIX = `:${"0".repeat(26)}`;
 
 /** Memory of one counter binding (a digit × suffix pair). */
 export interface PersistedCounterBinding {
-    number?: number;
-    memory?: {
-        current_state?: unknown;
-    } | null;
+  number?: number;
+  memory?: {
+    current_state?: unknown;
+  } | null;
 }
 
 /** One study card of the persisted knowledge set. */
 export interface PersistedStudyCard {
-    card?: {
-        Counter?: {
-            bindings?: PersistedCounterBinding[];
-        };
+  card?: {
+    Counter?: {
+      bindings?: PersistedCounterBinding[];
     };
-    memory_history?: {
-        current_state?: unknown;
-        reps?: number;
-    };
+  };
+  memory_history?: {
+    current_state?: unknown;
+    reps?: number;
+  };
 }
 
 /** The persisted user (only the parts the tests read). */
 export interface PersistedUser {
-    knowledge_set?: {
-        study_cards?: Record<string, PersistedStudyCard>;
-    };
+  knowledge_set?: {
+    study_cards?: Record<string, PersistedStudyCard>;
+  };
 }
 
 /** Keys of the local user store (the user id is the key). */
 export async function readUserStoreKeys(page: Page): Promise<string[]> {
-    return await page.evaluate(
-        async ({ databaseName, userStore }): Promise<string[]> => {
-            return await new Promise<string[]>((resolve, reject) => {
-                const open = indexedDB.open(databaseName);
-                open.onerror = () => reject(new Error("indexedDB open failed"));
-                open.onupgradeneeded = () => resolve([]);
-                open.onsuccess = () => {
-                    const db = open.result;
-                    if (!db.objectStoreNames.contains(userStore)) {
-                        resolve([]);
-                        return;
-                    }
-                    const tx = db.transaction(userStore, "readonly");
-                    const store = tx.objectStore(userStore);
-                    const req = store.getAllKeys();
-                    req.onsuccess = () => resolve(req.result.map((k) => String(k)));
-                    req.onerror = () => reject(new Error("getAllKeys failed"));
-                };
-            });
-        },
-        { databaseName: DATABASE_NAME, userStore: USER_STORE },
-    );
+  return await page.evaluate(
+    async ({ databaseName, userStore }): Promise<string[]> => {
+      return await new Promise<string[]>((resolve, reject) => {
+        const open = indexedDB.open(databaseName);
+        open.onerror = () => reject(new Error("indexedDB open failed"));
+        open.onupgradeneeded = () => resolve([]);
+        open.onsuccess = () => {
+          const db = open.result;
+          if (!db.objectStoreNames.contains(userStore)) {
+            resolve([]);
+            return;
+          }
+          const tx = db.transaction(userStore, "readonly");
+          const store = tx.objectStore(userStore);
+          const req = store.getAllKeys();
+          req.onsuccess = () => resolve(req.result.map((k) => String(k)));
+          req.onerror = () => reject(new Error("getAllKeys failed"));
+        };
+      });
+    },
+    { databaseName: DATABASE_NAME, userStore: USER_STORE },
+  );
 }
 
 /**
@@ -79,74 +79,73 @@ export async function readUserStoreKeys(page: Page): Promise<string[]> {
  * helper is meant for the e2e-sized users (a full corpus is megabytes),
  * not for bulk reads.
  */
-export async function readPersistedUser(page: Page): Promise<PersistedUser | null> {
-    const raw = await page.evaluate(
-        async ({
-            databaseName,
-            userStore,
-            nilUserSuffix,
-        }): Promise<string | null> => {
-            return await new Promise<string | null>((resolve, reject) => {
-                const open = indexedDB.open(databaseName);
-                open.onerror = () => reject(new Error("indexedDB open failed"));
-                open.onupgradeneeded = () => resolve(null);
-                open.onsuccess = () => {
-                    const db = open.result;
-                    if (!db.objectStoreNames.contains(userStore)) {
-                        resolve(null);
-                        return;
-                    }
-                    const tx = db.transaction(userStore, "readonly");
-                    const store = tx.objectStore(userStore);
-                    const keysReq = store.getAllKeys();
-                    keysReq.onsuccess = () => {
-                        const keys = keysReq.result.map((key) => String(key));
-                        // The canonical row first, the legacy nil-user row
-                        // only as a last resort.
-                        const ordered = [
-                            ...keys.filter((key) => !key.endsWith(nilUserSuffix)),
-                            ...keys.filter((key) => key.endsWith(nilUserSuffix)),
-                        ];
-                        const readNext = (index: number): void => {
-                            if (index >= ordered.length) {
-                                resolve(null);
-                                return;
-                            }
-                            const req = store.get(ordered[index]);
-                            req.onsuccess = () => {
-                                const value = req.result;
-                                if (
-                                    typeof value === "string" &&
-                                    value.includes('"email"')
-                                ) {
-                                    resolve(value);
-                                    return;
-                                }
-                                readNext(index + 1);
-                            };
-                            req.onerror = () => reject(new Error("get failed"));
-                        };
-                        readNext(0);
-                    };
-                    keysReq.onerror = () => reject(new Error("getAllKeys failed"));
-                };
-            });
-        },
-        {
-            databaseName: DATABASE_NAME,
-            userStore: USER_STORE,
-            nilUserSuffix: NIL_USER_SUFFIX,
-        },
-    );
+export async function readPersistedUser(
+  page: Page,
+): Promise<PersistedUser | null> {
+  const raw = await page.evaluate(
+    async ({
+      databaseName,
+      userStore,
+      nilUserSuffix,
+    }): Promise<string | null> => {
+      return await new Promise<string | null>((resolve, reject) => {
+        const open = indexedDB.open(databaseName);
+        open.onerror = () => reject(new Error("indexedDB open failed"));
+        open.onupgradeneeded = () => resolve(null);
+        open.onsuccess = () => {
+          const db = open.result;
+          if (!db.objectStoreNames.contains(userStore)) {
+            resolve(null);
+            return;
+          }
+          const tx = db.transaction(userStore, "readonly");
+          const store = tx.objectStore(userStore);
+          const keysReq = store.getAllKeys();
+          keysReq.onsuccess = () => {
+            const keys = keysReq.result.map((key) => String(key));
+            // The canonical row first, the legacy nil-user row
+            // only as a last resort.
+            const ordered = [
+              ...keys.filter((key) => !key.endsWith(nilUserSuffix)),
+              ...keys.filter((key) => key.endsWith(nilUserSuffix)),
+            ];
+            const readNext = (index: number): void => {
+              if (index >= ordered.length) {
+                resolve(null);
+                return;
+              }
+              const req = store.get(ordered[index]);
+              req.onsuccess = () => {
+                const value = req.result;
+                if (typeof value === "string" && value.includes('"email"')) {
+                  resolve(value);
+                  return;
+                }
+                readNext(index + 1);
+              };
+              req.onerror = () => reject(new Error("get failed"));
+            };
+            readNext(0);
+          };
+          keysReq.onerror = () => reject(new Error("getAllKeys failed"));
+        };
+      });
+    },
+    {
+      databaseName: DATABASE_NAME,
+      userStore: USER_STORE,
+      nilUserSuffix: NIL_USER_SUFFIX,
+    },
+  );
 
-    if (raw === null) {
-        return null;
-    }
-    try {
-        return JSON.parse(raw) as PersistedUser;
-    } catch {
-        return null;
-    }
+  if (raw === null) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as PersistedUser;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -158,14 +157,16 @@ export async function readPersistedUser(page: Page): Promise<PersistedUser | nul
  * persisted store is the source of truth — `window` does not survive the
  * lesson reload that follows a rating.
  */
-export function reviewedCounterBindingNumbers(user: PersistedUser | null): number[] {
-    const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
-    return cards.flatMap((card) =>
-        (card.card?.Counter?.bindings ?? [])
-            .filter((binding) => binding.memory?.current_state != null)
-            .map((binding) => binding.number)
-            .filter((number): number is number => typeof number === "number"),
-    );
+export function reviewedCounterBindingNumbers(
+  user: PersistedUser | null,
+): number[] {
+  const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
+  return cards.flatMap((card) =>
+    (card.card?.Counter?.bindings ?? [])
+      .filter((binding) => binding.memory?.current_state != null)
+      .map((binding) => binding.number)
+      .filter((number): number is number => typeof number === "number"),
+  );
 }
 
 /**
@@ -176,13 +177,15 @@ export function reviewedCounterBindingNumbers(user: PersistedUser | null): numbe
  * rating. The semantic memory of the card itself is NOT a signal here: a
  * binding review does not touch it.
  */
-export function countReviewedCounterBindings(user: PersistedUser | null): number {
-    const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
-    return cards.reduce((total, card) => {
-        const bindings = card.card?.Counter?.bindings ?? [];
-        return (
-            total +
-            bindings.filter((binding) => binding.memory?.current_state != null).length
-        );
-    }, 0);
+export function countReviewedCounterBindings(
+  user: PersistedUser | null,
+): number {
+  const cards = Object.values(user?.knowledge_set?.study_cards ?? {});
+  return cards.reduce((total, card) => {
+    const bindings = card.card?.Counter?.bindings ?? [];
+    return (
+      total +
+      bindings.filter((binding) => binding.memory?.current_state != null).length
+    );
+  }, 0);
 }

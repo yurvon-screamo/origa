@@ -1,4 +1,7 @@
 # Maintainer: yurvon-screamo <yurvon.screamo@gmail.com>
+# shellcheck disable=SC2034,SC2154
+# pkgname/pkgver and srcdir/pkgdir are assigned/consumed by makepkg
+# itself, not by this file.
 # Origa Linux distribution channels: .deb (Debian/Ubuntu), .rpm
 # (RHEL/Fedora), AUR (Arch) — see docs/decisions/ADR-065-flatpak-channel-retired.md.
 # In-app self-updater is intentionally disabled on Arch: this package is
@@ -27,8 +30,8 @@ sha256sums=('b56b7e904b2e62bb8827cd04fe62b2ed7bef9620857b010b31b8d7f750fc41e4')
 #   4. Commit and push to ssh://aur@aur.archlinux.org/origa-bin.git
 
 package() {
-    # The .deb packs everything under usr/ (binary, resources, desktop
-    # entry, hicolor icons); it unpacks 1:1 into /usr. data.tar compression
-    # (gz/xz/zstd) is left to bsdtar's autodetection via the glob.
-    bsdtar -xOf "${srcdir}/Origa_${pkgver}.deb" data.tar.* | bsdtar -x -C "${pkgdir}"
+	# The .deb packs everything under usr/ (binary, resources, desktop
+	# entry, hicolor icons); it unpacks 1:1 into /usr. data.tar compression
+	# (gz/xz/zstd) is left to bsdtar's autodetection via the glob.
+	bsdtar -xOf "${srcdir}/Origa_${pkgver}.deb" data.tar.* | bsdtar -x -C "${pkgdir}"
 }

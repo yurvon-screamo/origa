@@ -1,0 +1,7 @@
+# The GitHub Actions configs keep their own consistent 4-space
+# convention; letting prettier reflow them churns every cross-PR merge
+# on workflow files (this repo edits ci.yml frequently). actionlint and
+# shellcheck still scan these paths — only prettier is turned off here
+# (qlty triage does not apply to formatter runs, so the ignore file is
+# the mechanism prettier itself honors).
+.github/**

@@ -10,155 +10,155 @@ import { DEFAULT_VIEWPORTS, type ViewportTag } from "./viewports.ts";
  * one source of truth for the metadata.
  */
 export interface ScenarioDescriptor {
-    /** Stable identifier — the registry key and the CLI argument. */
-    id: string;
-    /** Human title (Russian) for the registry and the reports. */
-    title: string;
-    /** Route the screen belongs to. */
-    route: string;
-    locale: "ru-RU" | "en-US";
-    /** Viewports to capture; the desktop/phone pair by default. */
-    viewports?: ViewportTag[];
-    /** Alternative build to capture (a before/after pair on another port). */
-    baseURL?: string;
-    /** Data state the screen is shown in. */
-    preset: PresetId;
+  /** Stable identifier — the registry key and the CLI argument. */
+  id: string;
+  /** Human title (Russian) for the registry and the reports. */
+  title: string;
+  /** Route the screen belongs to. */
+  route: string;
+  locale: "ru-RU" | "en-US";
+  /** Viewports to capture; the desktop/phone pair by default. */
+  viewports?: ViewportTag[];
+  /** Alternative build to capture (a before/after pair on another port). */
+  baseURL?: string;
+  /** Data state the screen is shown in. */
+  preset: PresetId;
 }
 
 export const descriptors: Record<string, ScenarioDescriptor> = {
-    home: {
-        id: "home",
-        title: "Главный экран",
-        route: "/home",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "fresh",
-    },
-    "word-examples": {
-        id: "word-examples",
-        title: "Слово с примерами",
-        route: "/words/:word",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded",
-    },
-    "lesson-acquaintance-grammar": {
-        id: "lesson-acquaintance-grammar",
-        title: "Урок: ответ знакомства (грамматика)",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "acquaintance-hand",
-    },
-    "lesson-acquaintance-kanji": {
-        id: "lesson-acquaintance-kanji",
-        title: "Урок: слайд знакомства (кандзи)",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "acquaintance-hand",
-    },
-    "lesson-example": {
-        id: "lesson-example",
-        title: "Урок: знакомство и ответ",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "with-word",
-    },
-    "lesson-example-recall": {
-        id: "lesson-example-recall",
-        title: "Урок: карта-пример",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "due-examples",
-    },
-    "lesson-reading-quiz": {
-        id: "lesson-reading-quiz",
-        title: "Урок: квиз чтений кандзи",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "due-corpus",
-    },
-    "counter-scoring": {
-        id: "counter-scoring",
-        title: "Карточка счётчика в разметке",
-        route: "/onboarding",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "scoring-n5",
-    },
-    "home-due-counter": {
-        id: "home-due-counter",
-        title: "Счётчик просроченных карточек",
-        route: "/home",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded",
-    },
-    "home-accuracy-chart": {
-        id: "home-accuracy-chart",
-        title: "График точности за месяц",
-        route: "/home",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded-history",
-    },
-    "feedback-form": {
-        id: "feedback-form",
-        title: "Форма обратной связи в уроке",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "with-word",
-    },
-    "token-popup": {
-        id: "token-popup",
-        title: "Поповер токена с кнопкой жалобы",
-        route: "/phrases",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "onboarded",
-    },
-    "jft-card": {
-        id: "jft-card",
-        title: "Карточка готовности JFT-Basic",
-        route: "/home",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "irodori-nyuumon",
-    },
-    "lesson-counter-pack": {
-        id: "lesson-counter-pack",
-        title: "Пачка связок счётного суффикса в уроке",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "counter-due",
-    },
-    "lesson-unification": {
-        id: "lesson-unification",
-        title: "Единый урок: знакомство, тренировка, тело",
-        route: "/lesson",
-        locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
-        preset: "with-word",
-    },
-    "lesson-review-body": {
-        id: "lesson-review-body",
-        title: "Тело повторения урока (due-профиль)",
-        route: "/lesson",
-        locale: "ru-RU",
-        // Desktop only: each capture is also examined by the local model
-        // (~a minute per screen on CPU), and the 20-minute test budget
-        // does not fit two viewports of a six-card walk.
-        viewports: ["desktop"],
-        preset: "due-corpus",
-    },
+  home: {
+    id: "home",
+    title: "Главный экран",
+    route: "/home",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "fresh",
+  },
+  "word-examples": {
+    id: "word-examples",
+    title: "Слово с примерами",
+    route: "/words/:word",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "onboarded",
+  },
+  "lesson-acquaintance-grammar": {
+    id: "lesson-acquaintance-grammar",
+    title: "Урок: ответ знакомства (грамматика)",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "acquaintance-hand",
+  },
+  "lesson-acquaintance-kanji": {
+    id: "lesson-acquaintance-kanji",
+    title: "Урок: слайд знакомства (кандзи)",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "acquaintance-hand",
+  },
+  "lesson-example": {
+    id: "lesson-example",
+    title: "Урок: знакомство и ответ",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "with-word",
+  },
+  "lesson-example-recall": {
+    id: "lesson-example-recall",
+    title: "Урок: карта-пример",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "due-examples",
+  },
+  "lesson-reading-quiz": {
+    id: "lesson-reading-quiz",
+    title: "Урок: квиз чтений кандзи",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "due-corpus",
+  },
+  "counter-scoring": {
+    id: "counter-scoring",
+    title: "Карточка счётчика в разметке",
+    route: "/onboarding",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "scoring-n5",
+  },
+  "home-due-counter": {
+    id: "home-due-counter",
+    title: "Счётчик просроченных карточек",
+    route: "/home",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "onboarded",
+  },
+  "home-accuracy-chart": {
+    id: "home-accuracy-chart",
+    title: "График точности за месяц",
+    route: "/home",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "onboarded-history",
+  },
+  "feedback-form": {
+    id: "feedback-form",
+    title: "Форма обратной связи в уроке",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "with-word",
+  },
+  "token-popup": {
+    id: "token-popup",
+    title: "Поповер токена с кнопкой жалобы",
+    route: "/phrases",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "onboarded",
+  },
+  "jft-card": {
+    id: "jft-card",
+    title: "Карточка готовности JFT-Basic",
+    route: "/home",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "irodori-nyuumon",
+  },
+  "lesson-counter-pack": {
+    id: "lesson-counter-pack",
+    title: "Пачка связок счётного суффикса в уроке",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "counter-due",
+  },
+  "lesson-unification": {
+    id: "lesson-unification",
+    title: "Единый урок: знакомство, тренировка, тело",
+    route: "/lesson",
+    locale: "ru-RU",
+    viewports: DEFAULT_VIEWPORTS,
+    preset: "with-word",
+  },
+  "lesson-review-body": {
+    id: "lesson-review-body",
+    title: "Тело повторения урока (due-профиль)",
+    route: "/lesson",
+    locale: "ru-RU",
+    // Desktop only: each capture is also examined by the local model
+    // (~a minute per screen on CPU), and the 20-minute test budget
+    // does not fit two viewports of a six-card walk.
+    viewports: ["desktop"],
+    preset: "due-corpus",
+  },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {
-    return Object.values(descriptors).sort((a, b) => a.id.localeCompare(b.id));
+  return Object.values(descriptors).sort((a, b) => a.id.localeCompare(b.id));
 }

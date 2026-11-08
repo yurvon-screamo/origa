@@ -3,58 +3,68 @@ import { When, Then } from "../fixtures";
 import { PhrasesPage, WordsPage } from "../../pages";
 import { waitUntilStable } from "../../helpers/wait";
 
-When('пользователь открывает страницу фраз', async ({ page }) => {
-    const phrasesPage = new PhrasesPage(page);
-    await phrasesPage.goto();
-    await phrasesPage.expectPhrasesVisible();
+When("пользователь открывает страницу фраз", async ({ page }) => {
+  const phrasesPage = new PhrasesPage(page);
+  await phrasesPage.goto();
+  await phrasesPage.expectPhrasesVisible();
 });
 
-When('ищет фразу {string} на странице фраз', async ({ page }, query: string) => {
+When(
+  "ищет фразу {string} на странице фраз",
+  async ({ page }, query: string) => {
     const phrasesPage = new PhrasesPage(page);
     await phrasesPage.searchInput.fill(query);
+  },
+);
+
+When("нажимает навигацию к фразам", async ({ page }) => {
+  // #823: phrases left the nav bars — the entry point is the words
+  // header button now.
+  const wordsPage = new WordsPage(page);
+  await wordsPage.phrasesButton.click({ timeout: 10_000 });
+  await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
 });
 
-When('нажимает навигацию к фразам', async ({ page }) => {
-    // #823: phrases left the nav bars — the entry point is the words
-    // header button now.
-    const wordsPage = new WordsPage(page);
-    await wordsPage.phrasesButton.click({ timeout: 10_000 });
-    await page.waitForURL(/\/phrases$/, { timeout: 10_000 });
+Then("страница фраз отображается", async ({ page }) => {
+  const phrasesPage = new PhrasesPage(page);
+  await expect(phrasesPage.phrasesPage).toBeVisible({ timeout: 15_000 });
 });
 
-Then('страница фраз отображается', async ({ page }) => {
-    const phrasesPage = new PhrasesPage(page);
-    await expect(phrasesPage.phrasesPage).toBeVisible({ timeout: 15_000 });
+Then("поле поиска фраз содержит {string}", async ({ page }, query: string) => {
+  const phrasesPage = new PhrasesPage(page);
+  await expect(phrasesPage.searchInput).toHaveValue(query, { timeout: 10_000 });
 });
 
-Then('поле поиска фраз содержит {string}', async ({ page }, query: string) => {
-    const phrasesPage = new PhrasesPage(page);
-    await expect(phrasesPage.searchInput).toHaveValue(query, { timeout: 10_000 });
+Then("на странице фраз отображается пустое состояние", async ({ page }) => {
+  const phrasesPage = new PhrasesPage(page);
+  await expect(phrasesPage.emptyState).toBeVisible();
 });
 
-Then('на странице фраз отображается пустое состояние', async ({ page }) => {
-    const phrasesPage = new PhrasesPage(page);
-    await expect(phrasesPage.emptyState).toBeVisible();
+Then("отображается поле поиска фраз", async ({ page }) => {
+  const phrasesPage = new PhrasesPage(page);
+  await expect(phrasesPage.searchInput).toBeVisible();
 });
 
-Then('отображается поле поиска фраз', async ({ page }) => {
-    const phrasesPage = new PhrasesPage(page);
-    await expect(phrasesPage.searchInput).toBeVisible();
+When("нажимает кнопку возврата с фраз", async ({ page }) => {
+  await page.goto("/home");
+  await page.waitForURL(/\/home$/, { timeout: 10_000 });
 });
 
-When('нажимает кнопку возврата с фраз', async ({ page }) => {
-    await page.goto("/home");
-    await page.waitForURL(/\/home$/, { timeout: 10_000 });
+Then("отображаются кнопки фильтрации фраз", async ({ page }) => {
+  await expect(
+    page.getByTestId(/phrase.*filter|filter.*phrase/).first(),
+  ).toBeVisible({ timeout: 10_000 });
 });
 
-Then('отображаются кнопки фильтрации фраз', async ({ page }) => {
-    await expect(page.getByTestId(/phrase.*filter|filter.*phrase/).first()).toBeVisible({ timeout: 10_000 });
-});
-
-Then('карточки фраз имеют непустой текст', async ({ page }) => {
-    await expect(page.getByTestId("phrases-card-item").first()).toBeVisible({ timeout: 30_000 });
-    const text = await page.getByTestId("phrases-card-item").first().textContent();
-    expect(text?.trim().length ?? 0).toBeGreaterThan(0);
+Then("карточки фраз имеют непустой текст", async ({ page }) => {
+  await expect(page.getByTestId("phrases-card-item").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  const text = await page
+    .getByTestId("phrases-card-item")
+    .first()
+    .textContent();
+  expect(text?.trim().length ?? 0).toBeGreaterThan(0);
 });
 
 // Main CJK ideograph block only — a deliberate subset of the
@@ -64,44 +74,46 @@ Then('карточки фраз имеют непустой текст', async (
 // gate if the gate ever widens.
 const KANJI_RE = /[\u4E00-\u9FFF]/;
 
-Then('текст фраз содержит фуригану', async ({ page }) => {
-    // Furigana arrives either from the precompute blob (#521 fast path)
-    // or from the background tokenizer warmup — generous timeout covers
-    // the latter in CI (~344 MB dictionary download from the mirror).
-    // Anchored to the card (not the translator span): the translator's
-    // no-language fallback branch renders plain text without inner
-    // test ids, and the card is the stable container either way.
-    //
-    // The card is picked by kanji presence, NOT by list position (#584):
-    // the first card may legitimately be an all-kana phrase — the
-    // translator gates ruby on has_kanji (translator.rs), so it renders
-    // no ruby by design — and the fresh-user card order floats (Ulid
-    // sort), which made ruby-in-first-card a data gamble that flaked
-    // this scenario. A kanji-bearing card must always grow a ruby once
-    // its tokens render; that invariant is the furigana contract this
-    // step pins.
-    const kanjiCard = page
-        .getByTestId("phrases-card-item")
-        .filter({ hasText: KANJI_RE })
-        .first();
-    await expect(kanjiCard).toBeVisible({ timeout: 30_000 });
-    await expect(
-        kanjiCard.locator(".furigana-ruby").first(),
-        "kanji-bearing phrase card must render furigana ruby",
-    ).toBeVisible({ timeout: 120_000 });
+Then("текст фраз содержит фуригану", async ({ page }) => {
+  // Furigana arrives either from the precompute blob (#521 fast path)
+  // or from the background tokenizer warmup — generous timeout covers
+  // the latter in CI (~344 MB dictionary download from the mirror).
+  // Anchored to the card (not the translator span): the translator's
+  // no-language fallback branch renders plain text without inner
+  // test ids, and the card is the stable container either way.
+  //
+  // The card is picked by kanji presence, NOT by list position (#584):
+  // the first card may legitimately be an all-kana phrase — the
+  // translator gates ruby on has_kanji (translator.rs), so it renders
+  // no ruby by design — and the fresh-user card order floats (Ulid
+  // sort), which made ruby-in-first-card a data gamble that flaked
+  // this scenario. A kanji-bearing card must always grow a ruby once
+  // its tokens render; that invariant is the furigana contract this
+  // step pins.
+  const kanjiCard = page
+    .getByTestId("phrases-card-item")
+    .filter({ hasText: KANJI_RE })
+    .first();
+  await expect(kanjiCard).toBeVisible({ timeout: 30_000 });
+  await expect(
+    kanjiCard.locator(".furigana-ruby").first(),
+    "kanji-bearing phrase card must render furigana ruby",
+  ).toBeVisible({ timeout: 120_000 });
 });
 
-When('ищет фразы {string}', async ({ page }, query: string) => {
-    const phrasesPage = new PhrasesPage(page);
-    // Шаг-действие: заполнили поиск. Дальше поиск догружает детали фраз
-    // в фоне, и следующий Then сам ждёт результат (toHaveCount с
-    // авто-ретраем) — фиксированная пауза здесь только задерживала
-    // прогон и ничего не гарантировала.
-    await phrasesPage.searchPhrases(query);
+When("ищет фразы {string}", async ({ page }, query: string) => {
+  const phrasesPage = new PhrasesPage(page);
+  // Шаг-действие: заполнили поиск. Дальше поиск догружает детали фраз
+  // в фоне, и следующий Then сам ждёт результат (toHaveCount с
+  // авто-ретраем) — фиксированная пауза здесь только задерживала
+  // прогон и ничего не гарантировала.
+  await phrasesPage.searchPhrases(query);
 });
 
-Then('на странице фраз нет карточек', async ({ page }) => {
-    await expect(page.getByTestId("phrases-card-item")).toHaveCount(0, { timeout: 10_000 });
+Then("на странице фраз нет карточек", async ({ page }) => {
+  await expect(page.getByTestId("phrases-card-item")).toHaveCount(0, {
+    timeout: 10_000,
+  });
 });
 
 /**
@@ -110,17 +122,23 @@ Then('на странице фраз нет карточек', async ({ page }) 
  */
 let phrasesRequestLog: string[] = [];
 
-When('пользователь открывает страницу фраз с записью сетевых запросов', async ({ page }) => {
+When(
+  "пользователь открывает страницу фраз с записью сетевых запросов",
+  async ({ page }) => {
     phrasesRequestLog = [];
     page.on("request", (request) => phrasesRequestLog.push(request.url()));
     const phrasesPage = new PhrasesPage(page);
     await phrasesPage.goto();
     await phrasesPage.expectPhrasesVisible();
-});
+  },
+);
 
-Then('количество загруженных чанков данных фраз ограничено видимой пачкой', async () => {
+Then(
+  "количество загруженных чанков данных фраз ограничено видимой пачкой",
+  async () => {
     const chunkUrl = /\/phrases\/data\/p\d{4}\.json/;
-    const countNow = () => phrasesRequestLog.filter((url) => chunkUrl.test(url)).length;
+    const countNow = () =>
+      phrasesRequestLog.filter((url) => chunkUrl.test(url)).length;
 
     // Wait for the request stream to stabilize: two consecutive samples
     // with the same count mean the burst is over. The pre-#540 behavior
@@ -129,33 +147,44 @@ Then('количество загруженных чанков данных фр
     // visible-slice load settles quickly on a few dozen chunks.
     let settleError = "";
     await waitUntilStable(countNow, {
-        label: "phrase data chunk requests",
-        quietMs: 1_000,
-        timeoutMs: 10_000,
-        pollMs: 500,
+      label: "phrase data chunk requests",
+      quietMs: 1_000,
+      timeoutMs: 10_000,
+      pollMs: 500,
     }).catch((error: unknown) => {
-        // Поток не устоялся — уходим к проверке ниже: она сообщает
-        // фактическое число загруженных чанков, это и есть actionable
-        // сигнал (как и раньше, когда цикл просто исчерпывал итерации).
-        settleError = error instanceof Error ? error.message : String(error);
+      // Поток не устоялся — уходим к проверке ниже: она сообщает
+      // фактическое число загруженных чанков, это и есть actionable
+      // сигнал (как и раньше, когда цикл просто исчерпывал итерации).
+      settleError = error instanceof Error ? error.message : String(error);
     });
 
     const finalCount = countNow();
     expect(
-        finalCount,
-        `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}` +
-            (settleError ? ` — the request stream never settled: ${settleError}` : ""),
+      finalCount,
+      `the lazy phrases page must load only the visible slice's chunks (#540), got ${finalCount}` +
+        (settleError
+          ? ` — the request stream never settled: ${settleError}`
+          : ""),
     ).toBeLessThanOrEqual(60);
     // Positive control: data WAS loaded (the preceding step already
     // asserted non-empty card text, this guards against a vacuous zero).
-    expect(finalCount, "the visible slice must actually fetch its chunks").toBeGreaterThan(0);
+    expect(
+      finalCount,
+      "the visible slice must actually fetch its chunks",
+    ).toBeGreaterThan(0);
+  },
+);
+
+When("удаляет первую фразу", async ({ page }) => {
+  await page
+    .getByTestId("phrases-card-item")
+    .first()
+    .locator('[data-testid*="delete"]')
+    .first()
+    .click();
 });
 
-When('удаляет первую фразу', async ({ page }) => {
-    await page.getByTestId("phrases-card-item").first().locator('[data-testid*="delete"]').first().click();
-});
-
-Then('отображается сообщение о подтверждении удаления', async ({ page }) => {
-    const phrasesPage = new PhrasesPage(page);
-    await expect(phrasesPage.deleteModal).toBeVisible();
+Then("отображается сообщение о подтверждении удаления", async ({ page }) => {
+  const phrasesPage = new PhrasesPage(page);
+  await expect(phrasesPage.deleteModal).toBeVisible();
 });

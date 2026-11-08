@@ -139,3 +139,7 @@ end2end/.stitch/
 # nothing lands in the working tree by accident.
 end2end/screenshots/
 translator/.venv/
+# qlty tool runtime state (invoke-*.yaml written during every qlty run):
+# formatting those untracked files would fail the qlty formatter gate on
+# its own artifacts. The pattern is excluded in .qlty/qlty.toml too.
+.qlty/out/

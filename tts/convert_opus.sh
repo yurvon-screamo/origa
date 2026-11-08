@@ -15,12 +15,12 @@ OUT_DIR="${3:-opus_out}"
 mkdir -p "$OUT_DIR"
 
 find "$SRC_DIR" -name '*.wav' -print0 | while IFS= read -r -d '' f; do
-    fid=$(basename "$f" .wav)
-    out="$OUT_DIR/${fid}.opus"
-    if [ ! -f "$out" ]; then
-        ffmpeg -nostdin -y -loglevel error -i "$f" \
-            -c:a libopus -b:a 24k -ac 1 -application audio "$out"
-    fi
+	fid=$(basename "$f" .wav)
+	out="$OUT_DIR/${fid}.opus"
+	if [ ! -f "$out" ]; then
+		ffmpeg -nostdin -y -loglevel error -i "$f" \
+			-c:a libopus -b:a 24k -ac 1 -application audio "$out"
+	fi
 done
 
 # Completeness gate: every corpus id must have an opus file.
@@ -28,7 +28,7 @@ expected=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))))
 actual=$(find "$OUT_DIR" -name '*.opus' | wc -l)
 echo "converted: $actual / expected: $expected"
 if [ "$actual" -ne "$expected" ]; then
-    echo "ERROR: incomplete corpus — do NOT deploy (immutable CDN keys)" >&2
-    exit 1
+	echo "ERROR: incomplete corpus — do NOT deploy (immutable CDN keys)" >&2
+	exit 1
 fi
 echo "CONVERT DONE: $actual files, corpus complete"

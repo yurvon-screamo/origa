@@ -14,8 +14,8 @@ import { withWord } from "./with-word.ts";
 
 /** What a preset works with. */
 export interface PresetContext {
-    page: Page;
-    baseURL: string;
+  page: Page;
+  baseURL: string;
 }
 
 /**
@@ -29,14 +29,14 @@ export interface PresetContext {
 export type Preset = (context: PresetContext) => Promise<void>;
 
 export const presets: Record<PresetId, Preset> = {
-    fresh,
-    "acquaintance-hand": acquaintanceHand,
-    "counter-due": counterDue,
-    "due-corpus": dueCorpus,
-    "due-examples": dueExamples,
-    onboarded,
-    "scoring-n5": scoringN5,
-    "onboarded-history": onboardedHistory,
-    "irodori-nyuumon": irodoriNyuumon,
-    "with-word": withWord,
+  fresh,
+  "acquaintance-hand": acquaintanceHand,
+  "counter-due": counterDue,
+  "due-corpus": dueCorpus,
+  "due-examples": dueExamples,
+  onboarded,
+  "scoring-n5": scoringN5,
+  "onboarded-history": onboardedHistory,
+  "irodori-nyuumon": irodoriNyuumon,
+  "with-word": withWord,
 };

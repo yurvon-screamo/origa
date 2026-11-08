@@ -3,6 +3,6 @@
     "**/*.md",
     "!**/node_modules/**",
     "!**/target/**",
-    "!**/graphify-out/**"
-  ]
+    "!**/graphify-out/**",
+  ],
 }

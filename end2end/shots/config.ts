@@ -34,14 +34,19 @@ export const DEFAULT_PROD_CDN_URL = "https://s3.origa.uwuwu.net";
  * "reuse" that stranger as its CDN server and the app would download
  * its dictionaries from it.
  */
-export const LOCAL_CDN_PORT = parsePort("E2E_CDN_PORT", process.env.E2E_CDN_PORT ?? 8080);
+export const LOCAL_CDN_PORT = parsePort(
+  "E2E_CDN_PORT",
+  process.env.E2E_CDN_PORT ?? 8080,
+);
 
 function parsePort(name: string, raw: string | number): number {
-    const value = Number(raw);
-    if (!Number.isInteger(value) || value <= 0 || value > 65535) {
-        throw new Error(`${name} должно быть целым портом 1..65535, получено: "${raw}"`);
-    }
-    return value;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0 || value > 65535) {
+    throw new Error(
+      `${name} должно быть целым портом 1..65535, получено: "${raw}"`,
+    );
+  }
+  return value;
 }
 
 /** Port the app is served on. */
@@ -57,12 +62,12 @@ export const repoRoot = join(fileURLToPath(new URL("../..", import.meta.url)));
 export const defaultCdnCacheDir = join(repoRoot, "cdn");
 
 export interface CdnSource {
-    /** URL the app bundle must point at for CDN content. */
-    baseUrl: string;
-    /** Local corpus directory; `null` when the content comes from the remote CDN. */
-    cacheDir: string | null;
-    /** Whether a local static server for the corpus has to be started. */
-    serveLocally: boolean;
+  /** URL the app bundle must point at for CDN content. */
+  baseUrl: string;
+  /** Local corpus directory; `null` when the content comes from the remote CDN. */
+  cacheDir: string | null;
+  /** Whether a local static server for the corpus has to be started. */
+  serveLocally: boolean;
 }
 
 /**
@@ -73,14 +78,20 @@ export interface CdnSource {
  * CDN serves the content instead. The URL is compiled into the bundle
  * (`build.rs` → `rustc-env`), so it is a build-time decision.
  */
-export function resolveCdnSource(env: NodeJS.ProcessEnv = process.env): CdnSource {
-    const cacheDir = env.ORIGA_CDN_CACHE_DIR ?? defaultCdnCacheDir;
-    if (existsSync(cacheDir)) {
-        return { baseUrl: `http://localhost:${LOCAL_CDN_PORT}`, cacheDir, serveLocally: true };
-    }
+export function resolveCdnSource(
+  env: NodeJS.ProcessEnv = process.env,
+): CdnSource {
+  const cacheDir = env.ORIGA_CDN_CACHE_DIR ?? defaultCdnCacheDir;
+  if (existsSync(cacheDir)) {
     return {
-        baseUrl: env.SHOT_CDN_BASE_URL ?? DEFAULT_PROD_CDN_URL,
-        cacheDir: null,
-        serveLocally: false,
+      baseUrl: `http://localhost:${LOCAL_CDN_PORT}`,
+      cacheDir,
+      serveLocally: true,
     };
+  }
+  return {
+    baseUrl: env.SHOT_CDN_BASE_URL ?? DEFAULT_PROD_CDN_URL,
+    cacheDir: null,
+    serveLocally: false,
+  };
 }

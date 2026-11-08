@@ -8,6 +8,6 @@ import type { ShotContext, ShotSink } from "./types.ts";
  * owns the browser session, the files and the bookkeeping.
  */
 export type ShotScenario = ScenarioDescriptor & {
-    /** Reaches the screen and puts the wanted captures into the sink. */
-    run(context: ShotContext, sink: ShotSink): Promise<void>;
+  /** Reaches the screen and puts the wanted captures into the sink. */
+  run(context: ShotContext, sink: ShotSink): Promise<void>;
 };

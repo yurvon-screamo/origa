@@ -51,6 +51,13 @@ exclude_patterns = [
     # ----- Version Control -----
     "**/.git/**",
 
+    # ----- qlty runtime state -----
+    # Every qlty run writes .qlty/out/invoke-*.yaml; without this exclude a
+    # formatter (prettier) inside the SAME run would flag those untracked
+    # files as unformatted — a nondeterministically red gate on its own
+    # artifacts (reproduced; .gitignore carries the same entry).
+    ".qlty/out/**",
+
     # ----- Misc -----
     "**/assets/**",
     "**/cache/**",
@@ -65,6 +72,21 @@ exclude_patterns = [
     "docs/marketing/playbooks/**",
     "docs/marketing/research/**",
     "docs/marketing/strategies/**",
+
+    # ----- Prose & generated artifacts (formatter scope) -----
+    # Markdown is prose everywhere in this repo (docs, ADRs, READMEs, LLM
+    # prompts, translator/HF copy): reformatting it risks render degradation
+    # (table/list reflow, fenced-block churn) and has no gate value —
+    # markdownlint runs in monitor mode (never a merge stopper). This
+    # excludes *.md from formatter AND markdownlint scans globally.
+    "**/*.md",
+    # Machine-generated / archival files: their bytes are owned by their
+    # pipeline (npm install, factcheck generator, point-in-time snapshots).
+    "origa_landing/content/**",
+    "**/package-lock.json",
+    "origa_landing/style/landing.processed.css",
+    "docs/backups/**",
+    "docs/.factcheck/**",
 ]
 
 # =============================================================================
@@ -190,6 +212,28 @@ mode = "monitor"
 name = "ruff"
 mode = "comment"
 
+# -----------------------------------------------------------------------------
+# FORMATTERS (gated through `qlty check` formatter findings; owner decision
+# 2026-11-08: "форматтер плагины все тоже поставь, пусть гоняется").
+#
+# NOTE — deliberate deviation from the uwuwu-agent reference config, which
+# keeps fmt drivers OFF ("the fmt driver reformats the whole repo"): here the
+# formatter gate was explicitly requested. The baseline reformat ships in the
+# same PR that enables the gate (see ci.yml Lint job).
+# -----------------------------------------------------------------------------
+
+# TS/JS/JSON (+css/html/yaml): end2end/** is the main uncovered surface.
+# Prose markdown, lockfiles and the committed landing CSS artifact are
+# excluded above (see "Prose & build artifacts").
+[[plugin]]
+name = "prettier"
+mode = "comment"
+
+# Shell: tts/*.sh and .qlty/hooks/*.sh.
+[[plugin]]
+name = "shfmt"
+mode = "comment"
+
 # =============================================================================
 # TRIAGE RULES
 # =============================================================================
@@ -214,6 +258,20 @@ set.level = "medium"
 [[triage]]
 match.plugins = ["ripgrep"]
 match.file_patterns = ["**/end2end/**"]
+set.ignored = true
+
+# Formatters never touch .github/**: the workflows have their own
+# consistent 4-space convention (and cross-PR merge churn on every
+# reformat); actionlint and shellcheck still scan these paths — only
+# prettier/shfmt rewrite access is turned off here.
+[[triage]]
+match.plugins = ["prettier"]
+match.file_patterns = [".github/**"]
+set.ignored = true
+
+[[triage]]
+match.plugins = ["shfmt"]
+match.file_patterns = [".github/**"]
 set.ignored = true
 
 [[triage]]

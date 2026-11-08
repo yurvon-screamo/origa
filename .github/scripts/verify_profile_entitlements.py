@@ -40,8 +40,7 @@ def main() -> int:
         "--entitlement",
         action="append",
         required=True,
-        help="Entitlement key that must be present in the profile "
-        "(repeatable)",
+        help="Entitlement key that must be present in the profile (repeatable)",
     )
     args = parser.parse_args()
 

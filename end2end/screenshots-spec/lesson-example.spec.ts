@@ -10,11 +10,11 @@ import { test } from "@playwright/test";
 import { runScenarioWithManifest } from "../shots/runner.ts";
 
 test("lesson example screenshots", async ({ browser }) => {
-    test.setTimeout(600_000);
-    await runScenarioWithManifest(browser, "lesson-example", {
-        outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/lesson-example",
-        label: "lesson-example",
-        cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
-        commit: process.env.SHOT_COMMIT ?? "unknown",
-    });
+  test.setTimeout(600_000);
+  await runScenarioWithManifest(browser, "lesson-example", {
+    outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/lesson-example",
+    label: "lesson-example",
+    cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
+    commit: process.env.SHOT_COMMIT ?? "unknown",
+  });
 });

@@ -25,11 +25,11 @@ rm -f /app/traildepot/wasm/*.wasm
 # is unchanged from the plain exec below.
 case "${THP_DISABLE:-0}" in
 1 | true | yes)
-    if [ -x /app/thp_off ]; then
-        exec /app/thp_off "$@"
-    fi
-    echo "[entrypoint] thp_off binary missing, starting without THP disable"
-    ;;
+	if [ -x /app/thp_off ]; then
+		exec /app/thp_off "$@"
+	fi
+	echo "[entrypoint] thp_off binary missing, starting without THP disable"
+	;;
 esac
 
 exec "$@"

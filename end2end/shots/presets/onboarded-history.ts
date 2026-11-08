@@ -11,6 +11,6 @@ import { withSeededUser } from "./seeded.ts";
  * lapses behind the difficult counter.
  */
 export async function onboardedHistory(context: PresetContext): Promise<void> {
-    await onboarded(context);
-    await withSeededUser(context, seedTypicalUserState);
+  await onboarded(context);
+  await withSeededUser(context, seedTypicalUserState);
 }

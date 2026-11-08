@@ -11,33 +11,33 @@ import type { ViewportTag } from "./viewports.ts";
  * provenance cannot be reproduced.
  */
 export interface ShotEntry {
-    scenario: string;
-    title: string;
-    screen: string;
-    route: string;
-    viewport: ViewportTag;
-    locale: string;
-    width: number;
-    height: number;
-    fullPage: boolean;
-    bytes: number;
-    sha256: string;
-    file: string;
-    capturedAt: string;
-    commit: string;
-    baseURL: string;
-    cdnBaseUrl: string;
+  scenario: string;
+  title: string;
+  screen: string;
+  route: string;
+  viewport: ViewportTag;
+  locale: string;
+  width: number;
+  height: number;
+  fullPage: boolean;
+  bytes: number;
+  sha256: string;
+  file: string;
+  capturedAt: string;
+  commit: string;
+  baseURL: string;
+  cdnBaseUrl: string;
 }
 
 export interface ShotManifest {
-    version: 1;
-    label: string;
-    entries: ShotEntry[];
+  version: 1;
+  label: string;
+  entries: ShotEntry[];
 }
 
 /** SHA-256 of a buffer, hex encoded. */
 export function sha256Hex(data: Buffer): string {
-    return createHash("sha256").update(data).digest("hex");
+  return createHash("sha256").update(data).digest("hex");
 }
 
 /**
@@ -47,7 +47,7 @@ export function sha256Hex(data: Buffer): string {
  * the fact that ends up in the registry.
  */
 export function readPngSize(data: Buffer): { width: number; height: number } {
-    return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
+  return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
 }
 
 /**
@@ -58,20 +58,20 @@ export function readPngSize(data: Buffer): { width: number; height: number } {
  * registry keeps both entries.
  */
 export function shotFileName(
-    scenario: string,
-    screen: string,
-    viewport: ViewportTag,
-    locale: string,
+  scenario: string,
+  screen: string,
+  viewport: ViewportTag,
+  locale: string,
 ): string {
-    return `${scenario}--${screen}--${viewport}--${locale}.png`;
+  return `${scenario}--${screen}--${viewport}--${locale}.png`;
 }
 
 /** Key of a capture inside the registry. */
 export function shotKey(entry: {
-    scenario: string;
-    screen: string;
-    viewport: string;
-    locale: string;
+  scenario: string;
+  screen: string;
+  viewport: string;
+  locale: string;
 }): string {
-    return `${entry.scenario}--${entry.screen}--${entry.viewport}--${entry.locale}`;
+  return `${entry.scenario}--${entry.screen}--${entry.viewport}--${entry.locale}`;
 }

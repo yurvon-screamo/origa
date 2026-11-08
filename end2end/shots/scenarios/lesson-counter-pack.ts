@@ -11,27 +11,33 @@ import type { ShotScenario } from "../scenario.ts";
  * pair below the card) and the expanded readings table.
  */
 export const lessonCounterPackScenario: ShotScenario = {
-    ...descriptors["lesson-counter-pack"],
-    async run({ page }, sink) {
-        await page.goto("/lesson");
-        await page.getByTestId("lesson-page").waitFor({ state: "visible", timeout: 90_000 });
+  ...descriptors["lesson-counter-pack"],
+  async run({ page }, sink) {
+    await page.goto("/lesson");
+    await page
+      .getByTestId("lesson-page")
+      .waitFor({ state: "visible", timeout: 90_000 });
 
-        const pack = page.getByTestId("counter-binding-front");
-        await pack.waitFor({ state: "visible", timeout: 90_000 });
-        await page.waitForTimeout(700);
-        await sink.shot("pack-front");
+    const pack = page.getByTestId("counter-binding-front");
+    await pack.waitFor({ state: "visible", timeout: 90_000 });
+    await page.waitForTimeout(700);
+    await sink.shot("pack-front");
 
-        // Reveal the reading answer (the shared Space pipeline).
-        await page.keyboard.press(" ");
-        await page.getByTestId("counter-binding-answer").waitFor({ timeout: 10_000 });
-        await page.waitForTimeout(700);
-        await sink.shot("pack-answer");
+    // Reveal the reading answer (the shared Space pipeline).
+    await page.keyboard.press(" ");
+    await page
+      .getByTestId("counter-binding-answer")
+      .waitFor({ timeout: 10_000 });
+    await page.waitForTimeout(700);
+    await sink.shot("pack-answer");
 
-        // The full readings table behind the expand toggle (the answered
-        // row keeps its accent).
-        await page.getByTestId("counter-binding-mutations-toggle").click();
-        await page.getByTestId("counter-binding-mutations-table").waitFor({ timeout: 10_000 });
-        await page.waitForTimeout(700);
-        await sink.shot("pack-answer-table");
-    },
+    // The full readings table behind the expand toggle (the answered
+    // row keeps its accent).
+    await page.getByTestId("counter-binding-mutations-toggle").click();
+    await page
+      .getByTestId("counter-binding-mutations-table")
+      .waitFor({ timeout: 10_000 });
+    await page.waitForTimeout(700);
+    await sink.shot("pack-answer-table");
+  },
 };
