@@ -81,12 +81,19 @@ exclude_patterns = [
     # excludes *.md from formatter AND markdownlint scans globally.
     "**/*.md",
     # Machine-generated / archival files: their bytes are owned by their
-    # pipeline (npm install, factcheck generator, point-in-time snapshots).
+    # pipeline — a formatter must never be the last writer, or the next
+    # pipeline run rewrites them back in generator style and the gate goes
+    # red on legitimate work (review round 1, PR #904: the CI Lint job
+    # regenerates tauri-plugin-aswebauth schema.json on every cargo build).
+    # The committed bytes match the generator output for each of these.
     "origa_landing/content/**",
     "**/package-lock.json",
     "origa_landing/style/landing.processed.css",
     "docs/backups/**",
     "docs/.factcheck/**",
+    "tauri-plugin-aswebauth/permissions/**",
+    "translator/calibration/judge_calibration.json",
+    "tts/ref_pool_manifest.json",
 ]
 
 # =============================================================================
@@ -224,7 +231,10 @@ mode = "comment"
 
 # TS/JS/JSON (+css/html/yaml): end2end/** is the main uncovered surface.
 # Prose markdown, lockfiles and the committed landing CSS artifact are
-# excluded above (see "Prose & build artifacts").
+# excluded above (see "Prose & generated artifacts"). .github/** is out of
+# prettier scope via .prettierignore (workflows keep their own 4-space
+# convention); shfmt and ruff still reformat .github/scripts — operational
+# code, not config.
 [[plugin]]
 name = "prettier"
 mode = "comment"
@@ -258,20 +268,6 @@ set.level = "medium"
 [[triage]]
 match.plugins = ["ripgrep"]
 match.file_patterns = ["**/end2end/**"]
-set.ignored = true
-
-# Formatters never touch .github/**: the workflows have their own
-# consistent 4-space convention (and cross-PR merge churn on every
-# reformat); actionlint and shellcheck still scan these paths — only
-# prettier/shfmt rewrite access is turned off here.
-[[triage]]
-match.plugins = ["prettier"]
-match.file_patterns = [".github/**"]
-set.ignored = true
-
-[[triage]]
-match.plugins = ["shfmt"]
-match.file_patterns = [".github/**"]
 set.ignored = true
 
 [[triage]]
