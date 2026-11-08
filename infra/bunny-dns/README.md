@@ -117,8 +117,12 @@ Deploy is a production change: record the live dig matrix
 (RU `@77.88.8.8` / world `@1.1.1.1` × `s3`/`content`) before and after — it
 must be identical while the VM is alive.
 
-Rollback: `git revert` the change commit, redeploy — RF clients fall back
-to the previous answer within TTL 60. The same rollback treats a misbehaving
+Rollback: `git revert` the change commit, redeploy. Convergence depends on
+what clients currently hold: a stale RF A record expires within TTL 60, but
+clients that already received the failover CNAME keep it up to TTL 300 — in
+the main rollback scenario (the gate falsely failing over) the return to
+the previous answer is bounded by TTL 300, not 60 (see Convergence above).
+The same rollback treats a misbehaving
 gate: the previous script revision has no monitoring dependency. The smoke
 test runs outside CI on purpose (`infra/**` is not in ci.yml path filters);
 `node infra/bunny-dns/smoke.test.mjs` is part of this procedure for the same

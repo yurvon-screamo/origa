@@ -69,13 +69,25 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("answers world resolvers with the CloudFront CNAME without consulting monitoring", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const onlineStub = globalThis.Monitoring;
+      globalThis.Monitoring = {
+        // the world branch must never reach the monitoring gate — a call
+        // here would throw and fail the test
+        getStatus: () => {
+          throw new Error("getStatus consulted for a world query");
+        },
+      };
+      try {
+        const handleQuery = await import("./handleQuery.js").then((m) => m.default);
 
-      const answer = handleQuery(query("s3.origa.uwuwu.net", "US"));
+        const answer = handleQuery(query("s3.origa.uwuwu.net", "US"));
 
-      assert.ok(answer instanceof CnameRecord);
-      assert.equal(answer.hostname, S3_WORLD_CNAME);
-      assert.equal(answer.ttl, 300);
+        assert.ok(answer instanceof CnameRecord);
+        assert.equal(answer.hostname, S3_WORLD_CNAME);
+        assert.equal(answer.ttl, 300);
+      } finally {
+        globalThis.Monitoring = onlineStub; // keep sibling tests isolated
+      }
     });
 
     it("answers RF resolvers with the world CNAME when the resolver geo is unknown", async () => {
