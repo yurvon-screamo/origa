@@ -40,6 +40,18 @@ pub(crate) fn uuid_to_ulid(b64_uuid: &str) -> Ulid {
     Ulid::nil()
 }
 
+/// Pure projection of a session's `trailbase_id` onto the canonical `Ulid`:
+/// empty and undecodable ids resolve to `None` — nil is the bug state, not a
+/// valid identity. Shared by the legacy nil-row migration and the
+/// session-scoped `get_current_user` read.
+pub(crate) fn canonical_id_from_trailbase_id(trailbase_id: &str) -> Option<Ulid> {
+    if trailbase_id.is_empty() {
+        return None;
+    }
+    let id = uuid_to_ulid(trailbase_id);
+    (id != Ulid::nil()).then_some(id)
+}
+
 fn decode_base64_to_ulid(engine: &impl Engine, input: &str) -> Option<Ulid> {
     let bytes = engine.decode(input).ok()?;
     bytes_to_ulid(&bytes)
@@ -178,6 +190,41 @@ mod tests {
     #[test]
     fn uuid_to_ulid_returns_nil_for_hex_wrong_length() {
         assert_eq!(uuid_to_ulid("550e8400-e29b-41d4"), Ulid::nil());
+    }
+
+    #[test]
+    fn canonical_id_returns_none_for_empty_trailbase_id() {
+        // No session id means we cannot derive a canonical id; deferring the
+        // migration (rather than guessing) is the correct outcome.
+        assert!(canonical_id_from_trailbase_id("").is_none());
+    }
+
+    #[test]
+    fn canonical_id_returns_none_for_undecodable_trailbase_id() {
+        // uuid_to_ulid fails safe to nil for garbage input; the canonical-id
+        // resolver must treat nil as "no id" and return None so callers defer
+        // instead of keying records under nil again.
+        assert!(canonical_id_from_trailbase_id("not-a-valid-id").is_none());
+    }
+
+    #[test]
+    fn canonical_id_returns_some_for_valid_base64_url_no_pad() {
+        let expected = Ulid::from_bytes(KNOWN_BYTES);
+        let encoded = URL_SAFE_NO_PAD.encode(expected.to_bytes());
+
+        let resolved = canonical_id_from_trailbase_id(&encoded);
+
+        assert_eq!(resolved, Some(expected));
+    }
+
+    #[test]
+    fn canonical_id_returns_some_for_valid_hex_uuid() {
+        let expected = Ulid::from_bytes(KNOWN_BYTES);
+        let hex = encode_ulid_as_hex_uuid(expected);
+
+        let resolved = canonical_id_from_trailbase_id(&hex);
+
+        assert_eq!(resolved, Some(expected));
     }
 
     #[test]
