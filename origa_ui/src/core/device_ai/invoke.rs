@@ -6,7 +6,14 @@
 //! against hangs (e.g. a live speech-recognition session waiting on noise that
 //! never settles) — on expiry the caller receives an error and routes to the
 //! fallback stack.
+//!
+//! Capabilities get a single-flight layer on top: one shared in-flight query
+//! promise so concurrent first callers all receive the same real result
+//! (see [`get_capabilities`]). Cache policy (success-only caching, retry on
+//! error) lives in `super::cached_or_query` — this module only deduplicates
+//! the transport call.
 
+use std::cell::RefCell;
 use std::time::Duration;
 
 use leptos::wasm_bindgen::JsCast;
@@ -31,10 +38,62 @@ const LIVE_RECOGNITION_TIMEOUT: Duration = Duration::from_secs(45);
 const TIMEOUT_SENTINEL: &str = "__device_ai_timeout__";
 
 /// Query the native AI capabilities on the current platform.
+///
+/// Concurrent callers share one in-flight query: the raced plugin promise is
+/// stored until it settles, and late callers await the same promise instead
+/// of starting their own IPC round-trip. Without this, a caller arriving
+/// while a query is running would receive a synthetic failure (the old
+/// `CAPABILITIES_LOADING` shortcut) and — being a one-shot caller such as
+/// `AudioLiveRecorder`'s mount effect — never re-check, permanently hiding
+/// the live-recognition button (#570). On failure the slot is dropped, so
+/// the next call starts a fresh query (retry semantics live in
+/// `cached_or_query`, which caches successes only).
 pub async fn get_capabilities() -> Result<Capabilities, String> {
-    let raw = invoke(CMD_GET_CAPABILITIES, &JsValue::UNDEFINED, DEFAULT_TIMEOUT).await?;
+    let raced = IN_FLIGHT_QUERY.with(|slot| {
+        slot.borrow_mut()
+            .get_or_insert_with(start_capabilities_query)
+            .clone()
+    });
+
+    let outcome = settle_raced(raced, DEFAULT_TIMEOUT).await;
+    IN_FLIGHT_QUERY.with(|slot| *slot.borrow_mut() = None);
+
+    let raw = outcome?;
     serde_wasm_bindgen::from_value::<Capabilities>(raw)
         .map_err(|e| format!("get_capabilities decode failed: {e:?}"))
+}
+
+/// Starts the capabilities query and races it against the timeout guard.
+/// Returns the raced promise without awaiting so concurrent callers can
+/// share it. A synchronous invoke failure (no Tauri bridge) becomes an
+/// already-rejected promise, keeping the shared-slot contract uniform.
+fn start_capabilities_query() -> js_sys::Promise {
+    tracing::debug!("device-ai: invoking {CMD_GET_CAPABILITIES} (timeout {DEFAULT_TIMEOUT:?})");
+    let promise = match tauri::invoke_promise(CMD_GET_CAPABILITIES, &JsValue::UNDEFINED) {
+        Ok(promise) => promise,
+        Err(e) => return rejected_promise(&e),
+    };
+    race_promise_with_timeout(promise, DEFAULT_TIMEOUT)
+}
+
+/// An already-rejected promise carrying `message` — lets callers share a
+/// uniformly failing query slot when the invoke could not even start.
+fn rejected_promise(message: &str) -> js_sys::Promise {
+    js_sys::Promise::new(&mut |_resolve, reject| {
+        let _ = reject.call1(&JsValue::UNDEFINED, &JsValue::from_str(message));
+    })
+}
+
+/// Shared in-flight capabilities query. `Some` = a query is running; every
+/// caller awaits the same raced promise. Cleared as soon as it settles.
+thread_local! {
+    static IN_FLIGHT_QUERY: RefCell<Option<js_sys::Promise>> = const { RefCell::new(None) };
+}
+
+/// Test hook: drops the shared in-flight query so each test starts clean.
+#[cfg(all(target_arch = "wasm32", test))]
+pub(super) fn reset_in_flight_query() {
+    IN_FLIGHT_QUERY.with(|slot| *slot.borrow_mut() = None);
 }
 
 /// Recognize text in a base64-encoded image. Japanese is prioritised.
@@ -90,13 +149,20 @@ pub async fn recognize_live(language: &str) -> Result<RecognitionResult, String>
 async fn invoke(command: &str, args: &JsValue, timeout: Duration) -> Result<JsValue, String> {
     tracing::debug!("device-ai: invoking {command} (timeout {timeout:?})");
     let promise = tauri::invoke_promise(command, args)?;
-    race_with_timeout(promise, timeout).await
+    settle_raced(race_promise_with_timeout(promise, timeout), timeout).await
 }
 
-async fn race_with_timeout(promise: js_sys::Promise, timeout: Duration) -> Result<JsValue, String> {
+/// Races `promise` against a timeout that resolves with the sentinel value.
+/// Returns the raced promise synchronously so callers can share it before
+/// anyone awaits (see `get_capabilities`' single-flight slot).
+fn race_promise_with_timeout(promise: js_sys::Promise, timeout: Duration) -> js_sys::Promise {
     let timeout_promise = make_timeout_promise(timeout);
+    js_sys::Promise::race(&js_sys::Array::of2(&promise, &timeout_promise))
+}
 
-    let raced = js_sys::Promise::race(&js_sys::Array::of2(&promise, &timeout_promise));
+/// Awaits a promise produced by [`race_promise_with_timeout`], translating a
+/// rejection or a timeout-expiry sentinel into the `String` error contract.
+async fn settle_raced(raced: js_sys::Promise, timeout: Duration) -> Result<JsValue, String> {
     let settled = JsFuture::from(raced)
         .await
         .map_err(|e| format!("plugin command rejected: {}", describe_rejection(&e)))?;
