@@ -156,19 +156,12 @@ pub fn index_version() -> (u32, String) {
 mod dispatch_tests {
     use super::*;
 
-    fn synthetic_index_json() -> &'static str {
-        r#"{"v":1,"h":"test","total":2,"phrases":[{"i":"01KPJ5S3N1DRFFD236Z4EZ03HJ","t":["hello","world"],"c":0},{"i":"01KPJ5S3N1DRFFD236Z4EZ03HK","t":["goodbye","world"],"c":1}]}"#
-    }
-
-    /// Load the CDN corpus; when the data is absent, fall back to a synthetic
-    /// index so the dispatch assertions have something real to answer with.
+    /// Phrase tests of this binary are mutually exclusive: two incompatible
+    /// fixtures (8-phrase journeys, 15-phrase lesson-builder) share the
+    /// one-shot slot, so this test never installs anything — it only reads
+    /// whichever fixture a fixture-owning test has installed, and skips
+    /// when the slot is still empty (isolated runs of this module).
     fn ensure_index_loaded() -> bool {
-        if !is_phrases_loaded() {
-            crate::test_support::init_phrase_index_from_cdn();
-        }
-        if !is_phrases_loaded() {
-            let _ = init_phrase_index(synthetic_index_json());
-        }
         is_phrases_loaded()
     }
 
@@ -178,7 +171,7 @@ mod dispatch_tests {
     fn init_returns_ok_without_parsing_when_index_is_already_loaded() {
         // Arrange
         if !ensure_index_loaded() {
-            return; // no corpus and no slot — nothing to assert
+            return; // another test won the slot with unusable content
         }
 
         // Act + Assert — even garbage JSON is accepted while loaded.

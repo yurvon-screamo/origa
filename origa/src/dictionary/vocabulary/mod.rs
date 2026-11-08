@@ -105,7 +105,6 @@ pub fn get_description(word: &str, native_language: &NativeLanguage) -> Option<S
 #[cfg(test)]
 mod dispatch_tests {
     use super::*;
-    use std::path::PathBuf;
 
     fn chunk_data_with(chunk_01: &str) -> VocabularyChunkData {
         VocabularyChunkData {
@@ -123,32 +122,15 @@ mod dispatch_tests {
         }
     }
 
-    /// Load the real chunks race-tolerantly: a concurrent test may have
-    /// installed the dictionary first (identical data). Missing cdn/ data
-    /// fails parsing and leaves the slot untouched — callers bail out.
+    /// Load through the shared test_support fixture: its call_once makes
+    /// every caller converge on one install of the real chunks. Missing
+    /// cdn/ data fails the fixture — callers bail out. Direct
+    /// `init_vocabulary` calls here would race the fixture and poison its
+    /// Once for every other test in the binary.
     fn ensure_vocabulary_loaded() {
-        if is_vocabulary_loaded() {
-            return;
+        if !is_vocabulary_loaded() {
+            crate::test_support::init_real_dictionaries();
         }
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .expect("workspace root")
-            .join("cdn")
-            .join("dictionary");
-        let read = |name: &str| std::fs::read_to_string(dir.join(name)).unwrap_or_default();
-        let _ = init_vocabulary(VocabularyChunkData {
-            chunk_01: read("chunk_01.json"),
-            chunk_02: read("chunk_02.json"),
-            chunk_03: read("chunk_03.json"),
-            chunk_04: read("chunk_04.json"),
-            chunk_05: read("chunk_05.json"),
-            chunk_06: read("chunk_06.json"),
-            chunk_07: read("chunk_07.json"),
-            chunk_08: read("chunk_08.json"),
-            chunk_09: read("chunk_09.json"),
-            chunk_10: read("chunk_10.json"),
-            chunk_11: read("chunk_11.json"),
-        });
     }
 
     /// Parsing happens before the global slot write, so a broken chunk
