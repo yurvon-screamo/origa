@@ -87,7 +87,7 @@ request body.
 catalog:
 
 - `shots/catalog.ts` — the metadata of the screen (id, title, route,
-  locale, viewports, data state). The CLI reads it without loading the
+  locale, data state). The CLI reads it without loading the
   browser-side modules.
 - `shots/scenarios/<id>.ts` — the steps that reach the screen. It
   spreads its catalog descriptor and adds a `run` step.

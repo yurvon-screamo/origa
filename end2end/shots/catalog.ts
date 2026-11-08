@@ -1,5 +1,4 @@
 import type { PresetId } from "./presets/registry.ts";
-import { DEFAULT_VIEWPORTS, type ViewportTag } from "./viewports.ts";
 
 /**
  * Everything about a screen except HOW to reach it.
@@ -17,8 +16,6 @@ export interface ScenarioDescriptor {
     /** Route the screen belongs to. */
     route: string;
     locale: "ru-RU" | "en-US";
-    /** Viewports to capture; the desktop/phone pair by default. */
-    viewports?: ViewportTag[];
     /** Alternative build to capture (a before/after pair on another port). */
     baseURL?: string;
     /** Data state the screen is shown in. */
@@ -31,7 +28,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Главный экран",
         route: "/home",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "fresh",
     },
     "word-examples": {
@@ -39,7 +35,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Слово с примерами",
         route: "/words/:word",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded",
     },
     "lesson-acquaintance-grammar": {
@@ -47,7 +42,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Урок: ответ знакомства (грамматика)",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "acquaintance-hand",
     },
     "lesson-acquaintance-kanji": {
@@ -55,7 +49,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Урок: слайд знакомства (кандзи)",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "acquaintance-hand",
     },
     "lesson-example": {
@@ -63,7 +56,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Урок: знакомство и ответ",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "with-word",
     },
     "lesson-example-recall": {
@@ -71,7 +63,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Урок: карта-пример",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "due-examples",
     },
     "lesson-reading-quiz": {
@@ -79,7 +70,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Урок: квиз чтений кандзи",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "due-corpus",
     },
     "counter-scoring": {
@@ -87,7 +77,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Карточка счётчика в разметке",
         route: "/onboarding",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "scoring-n5",
     },
     "home-due-counter": {
@@ -95,7 +84,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Счётчик просроченных карточек",
         route: "/home",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded",
     },
     "home-accuracy-chart": {
@@ -103,7 +91,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "График точности за месяц",
         route: "/home",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded-history",
     },
     "feedback-form": {
@@ -111,7 +98,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Форма обратной связи в уроке",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "with-word",
     },
     "token-popup": {
@@ -119,7 +105,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Поповер токена с кнопкой жалобы",
         route: "/phrases",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "onboarded",
     },
     "jft-card": {
@@ -127,7 +112,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Карточка готовности JFT-Basic",
         route: "/home",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "irodori-nyuumon",
     },
     "lesson-counter-pack": {
@@ -135,7 +119,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Пачка связок счётного суффикса в уроке",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "counter-due",
     },
     "lesson-unification": {
@@ -143,7 +126,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Единый урок: знакомство, тренировка, тело",
         route: "/lesson",
         locale: "ru-RU",
-        viewports: DEFAULT_VIEWPORTS,
         preset: "with-word",
     },
     "lesson-review-body": {
@@ -151,10 +133,6 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
         title: "Тело повторения урока (due-профиль)",
         route: "/lesson",
         locale: "ru-RU",
-        // Desktop only: each capture is also examined by the local model
-        // (~a minute per screen on CPU), and the 20-minute test budget
-        // does not fit two viewports of a six-card walk.
-        viewports: ["desktop"],
         preset: "due-corpus",
     },
 };

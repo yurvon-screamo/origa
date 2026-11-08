@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-review-body",
+  "screen": "review-body-quiz-1",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 361832,
+  "sha256": "983de5209c198b86d4b0c06de8b4d77130efa59273c607e98aec3a3e90d1a6bc",
+  "capturedAt": "2026-11-08T12:48:37.977Z",
+  "commit": "5d64bf7a6a3cc4085376437faf8c5de96a28efe1",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261104060556/lesson-review-body--review-body-quiz-1--desktop-983de520.png",
+  "uploadedSha256": "983de5209c198b86d4b0c06de8b4d77130efa59273c607e98aec3a3e90d1a6bc",
+  "uploadedAt": "2026-11-08T12:52:14.130Z"
+}

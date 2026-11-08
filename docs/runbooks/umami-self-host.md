@@ -47,13 +47,14 @@ Bootstrap (первый заход — обязательно, дефолтны�
 пароль из миграции `01_init`; ротация до публикации домена):
 `POST /api/auth/login` → `POST /api/users/{userId} {"password": ...}` →
 website `POST /api/websites {"name":"Origa","domain":"origa.uwuwu.net"}`
-(domain в v3 обязателен и валидируется регекспом хостнейма) → юзеры
-`POST /api/users {"username":"umami-ru","password":"...","role":"view-only"}`
-→ API-ключи `POST /api/me/api-keys {"name":"marketing"}` токеном юзера
-(значение ключа отдаётся один раз). Пароли/ключи → `marketing/.env` +
-инвентарь ключей (uwuwu-вики `origa/access-keys-inventory`).
+(domain в v3 обязателен и валидируется регекспом хостнейма). **С 2026-11-09
+доп. юзеры не создаются** (view-only `umami-*` удалены — см. секцию 6);
+если снова понадобятся — секция 6 описывает полный порядок с ловушкой
+доступа к сайту. Пароли/ключи → `marketing/.env` + инвентарь ключей
+(uwuwu-вики `origa/access-keys-inventory`). Дашборд-просмотр — share-линк
+(секция 5).
 
-## 2. RF VM: серт + nginx-ветка (ssh root@193.233.217.243)
+## 2. RF VM: серт + nginx-ветка (ретировано 2026-11-06 — инструкция на случай возврата geo-split после фикса Bunny; ssh root@193.233.217.243)
 
 Серт (DNS-01 через Bunny; TXT fall-through через scriptable DNS работает —
 проверено 2026-10-22 на приаттаченном имени):
@@ -139,6 +140,138 @@ Railway-LE имён запрещён доктриной ADR-072 — см. п.3).
    Realtime на `umami.origa.uwuwu.net`.
 4. Параллельная сверка с Cloud (1–2 суток агрегатов), затем деактивация
    website в Cloud за владельцем.
+
+## 5. Аналитика: как смотреть (настроено 2026-11-09)
+
+### Read-only просмотр — share-линк
+
+Публичный read-only дашборд без логина: share-URL ведётся в uwuwu-Деплойменте
+(секция umami) — сознательно не дублируется в public-репо: ссылка открывает
+неаутентифицированный просмотр аналитики (вкл. realtime) любому читателю репо.
+ShareId хранится в поле `shareId` website; отозвать —
+`POST /api/websites/{id} {"shareId": null}` токеном admin. Проверка анон-доступа:
+страница рендерит цифры дашборда без авторизации (проверено headless-браузером).
+
+### Отчёты (Reports)
+
+| Имя | Тип | Вопрос, на который отвечает |
+| --- | --- | --- |
+| Onboarding funnel | funnel | Где отваливаются в онбординге (шаги в порядке `OnboardingStep` enum: intro → load → jlpt → apps → progress → summary → scoring → `onboarding_complete`) |
+| Landing to Web app | funnel | Лендинг: `pageview /` → `hero_cta_download` → `open_webapp` |
+| User retention (weekly) | retention | Возвращаемость недельных когорт (окно 7d) |
+| Landing downloads (by platform) | breakdown | Клик-разбивка `download_*` по платформам (windows/appstore/android_rustore/android/linux/linux_rpm/linux_aur) |
+| Traffic sources (UTM) | utm | Источники/кампании (utm_source/medium/campaign) |
+
+Funnel-шаги несут per-step фильтр `hostname neq localhost` — dev-трафик
+(чистый `localhost`, локальный `trunk serve`) в воронки не попадает;
+прод-десктоп (`tauri.localhost`) и обе прод-поверхности (`*.origa.uwuwu.net`)
+проходят. Обновление шагов: `POST /api/reports/{reportId}` с полным payload
+(частичной правки нет). Retention-отчёт фильтров на уровне parameters не
+поддерживает (схема — только `window`); его dev-чистота — только UI-фильтр
+hostname при просмотре.
+
+Гочи funnel-отчётов через API (обе ловили тестировщика на «Something went
+wrong» в UI — карточка воронки без данных):
+
+- `parameters.window` **обязателен** (число минут, в наших — 60): reports-POST
+  его не валидирует (создастся с 200), но UI-stats-валидатор
+  `GET /api/websites/{id}/funnels/{reportId}/stats` без него отдаёт 400 и
+  карточка рендерит ошибку;
+- тип шага — `path` или `event`, **не `url`** (reports-POST пропустит `url`,
+  stats-валидатор отвергнет — снова карточка с ошибкой при валидных, казалось
+  бы, данных);
+- проверка до отдачи владельцу: `GET .../funnels/{reportId}/stats?startAt&endAt`
+  → 200 + массив шагов.
+
+### Где отчёты живут в UI (v3.4 — единого раздела «Reports» нет)
+
+| Отчёт | Вкладка сайта | Как выглядит |
+| --- | --- | --- |
+| Onboarding funnel, Landing to Web app | **Funnels** | карточки с шагами и drop-off |
+| User retention (weekly) | **Retention** | cohort-таблица (окно из parameters) |
+| Traffic sources (UTM) | **UTM** | конструктор source/medium/campaign |
+| Landing downloads (by platform) | **Events** | список событий с count (имя события в строке); `download_*` читаются в этом списке — **в текущих данных их ещё нет** (лендинг-CTA трафик до инстанса не дошёл, появятся с кликами); Вкладка Breakdown — Fields-конструктор по размерностям (path/referrer/geo/UTM…): опции `Event` в меню Fields **нет** |
+
+Breakdown-отчёт сохраняется валидными параметрами (`fields: ["event"]` —
+строки-имена из enum, объекты и `filter` в parameters схемой не допускаются —
+иначе вкладка отчёт не рендерит), но карточкой на вкладке не показывается:
+вкладка Breakdown — Fields-конструктор по размерностям, и `Event` в его меню
+отсутствует (проверено DOM-пробой меню). Событийная разбивка — вкладка
+**Events** (полный список событий с count).
+
+Типы отчётов v3.4.0: `attribution|breakdown|funnel|goal|heatmap|journey|performance|retention|revenue|utm`
+(инсайтов-«insights» нет — их роль играют breakdown). Создание:
+`POST /api/reports {"type", "websiteId", "name", "parameters"}` токеном admin.
+Custom-события продукта уже вшиты в код (ADR-054 §5): onboarding step-пара,
+`login_submit`/`login_{google,apple,yandex}`, `lesson_finish`, лендинг-CTA —
+имена фиксированы, воронки выше завязаны на них.
+
+### Разрезы: лендинг vs приложение vs десктоп
+
+Сайт один на всё (domain `origa.uwuwu.net`); поверхности различаются по
+`hostname` в UI-фильтре дашборда:
+
+| hostname | Поверхность |
+| --- | --- |
+| `origa.uwuwu.net` | лендинг (SSR, `data-domains="origa.uwuwu.net"`) |
+| `app.origa.uwuwu.net` | веб-приложение |
+| `tauri.localhost` | десктоп Tauri (Windows/Linux/macOS) |
+| `localhost[:1420]` | локальный dev — шум, фильтровать |
+
+### Проверка потока данных (beacon-check)
+
+Синтетический бикон с конкретного контура (проверено 09.11 для мира; для
+РФ — тот же POST с `--resolve umami.origa.uwuwu.net:443:193.233.217.243`):
+
+```bash
+curl -sS -X POST https://umami.origa.uwuwu.net/api/send \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://origa.uwuwu.net' \
+  -H 'Referer: https://origa.uwuwu.net/' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+  -d '{"payload":{"website":"57c7d57f-3bd9-48cf-b9ee-ea02c95d967a","hostname":"origa.uwuwu.net","language":"ru-RU","referrer":"","screen":"1920x1080","title":"Test","url":"/__runbook_beacon_check_YYYYMMDD"},"type":"event"}'
+```
+
+Успех = в ответе `{"cache":"<jwt>","sessionId":...,"visitId":...}` и URL
+появляется в метрике `path` через ~1 мин (кэш метрик 60с). Гоча: куцый
+payload (без `title`/`referrer`/браузерного UA) принимается со схемным
+`{"beep":"boop"}`, но запись не создаётся — payload должен повторять набор
+полей трекера. Синтетика попадает в данные — имя-маркер с датой делает её
+заметной, не путать с реальным трафиком.
+
+## 6. Доступы (состояние 2026-11-09)
+
+- **admin** — единственная учётка. Креды: `marketing/.env`
+  (`UMAMI_ADMIN_USER`/`UMAMI_ADMIN_PASSWORD`, ноут). Программный доступ:
+  `POST /api/auth/login` → Bearer JWT.
+- **view-only юзеры `umami-ru/en/ko/vi` удалены 2026-11-09.** Причины: (а) сайт
+  живёт в личном пространстве admin (`teamId: null`), юзеры его не видели и их
+  API-ключи отдавали 401 на любые данные (проверено 08.11: логин юзера работает,
+  `GET /api/websites` у него пуст); (б) потребителей ключей в `marketing/` нет.
+  Строки `UMAMI_USER_UMAMI-*`/`UMAMI_PASSWORD_*`/`UMAMI_API_KEY*` в
+  `marketing/.env` — историческая запись, ключи невалидны.
+- **Если view-only с API-ключом понадобится снова** (маркетолог по локалям и
+  т.п.): создать юзера (`POST /api/users {"username","password","role":"view-only"}`),
+  ключ (`POST /api/me/api-keys` под его токеном — значение показывается один раз)
+  и **дать юзеру доступ к сайту — иначе повторится та же мёртвая схема**: сайт
+  держится у admin, поэтому нужен либо transfer сайта в team с юзером, либо
+  website под юзером. Ключ ходит заголовком `x-umami-api-key` (Bearer с ключом
+  не работает — проверено 08.11).
+- **Gotcha v3-роутов:** юзеры — `/api/users` (`POST`, `DELETE /api/users/{id}` —
+  админ), список — `/api/admin/users`; `DELETE /api/admin/users/{id}` — 404.
+  Шаринг — `POST /api/websites/{id} {"shareId"}`; GET на `/api/share/{slug}`
+  отдаёт анон JWT токен дашборда.
+
+### Известные ограничения
+
+- **Dev-шум в прод-данных:** локальные dev-сборки шлют биконы (hostname
+  `localhost*`) в тот же инстанс. Отличить их от прод-десктопа нетривиально:
+  `TRAILBASE_URL` без env резолвится в прод (`build_defaults.rs`), поэтому
+  build-переменные dev-сборку не выдают. CI/e2e и android-smoke компилируют
+  трекер out (`UMAMI_DISABLED=1`); остальное — фильтр hostname в UI/отчётах.
+- `bootstrap_test_event` (единично в событиях) — ручной тест API, не из кода.
+- Лендинг и приложение в одном website: агрегаты «в целом по продукту»
+  смешаны — разрезается hostname-фильтром (см. выше).
 
 ## Откат
 
