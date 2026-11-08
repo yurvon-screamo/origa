@@ -1,6 +1,7 @@
 pub mod card_precache_loader;
 pub mod data_loader;
 pub mod dictionary;
+mod dictionary_verified_fetch_wasm_tests;
 pub mod example_loader;
 pub mod furigana_dict_loader;
 pub mod grammar_precompute_loader;

@@ -475,4 +475,33 @@ mod tests {
         // Assert
         assert!(view.is_none());
     }
+
+    /// Regression pin for the verified-fetch migration (task
+    /// 20261107150931-k0c1rb7): `load_kanji`/`load_grammar`/`load_radicals`
+    /// must fetch through `fetch_text_verified`. The loaders have no
+    /// injection seam (global provider + OnceLock init), so the behavioral
+    /// coverage of the heal lives in `dictionary_verified_fetch_wasm_tests`;
+    /// this pin catches a revert to plain `fetch_text` at the source level.
+    /// Update the expectations together with the call sites.
+    #[test]
+    fn dictionary_loaders_fetch_through_verified_gate() {
+        let source = include_str!("data_loader.rs");
+
+        for path in [
+            "dictionary/kanji.json",
+            "grammar/grammar_v3.json",
+            "dictionary/radicals.json",
+        ] {
+            let verified = format!("fetch_text_verified(\"{path}\")");
+            assert!(
+                source.contains(&verified),
+                "{path} must be fetched through fetch_text_verified"
+            );
+            let plain = format!("fetch_text(\"{path}\")");
+            assert!(
+                !source.contains(&plain),
+                "{path} must not be fetched through plain fetch_text"
+            );
+        }
+    }
 }
