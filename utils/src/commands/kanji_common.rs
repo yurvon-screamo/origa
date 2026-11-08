@@ -1,5 +1,6 @@
 use origa::domain::OrigaError;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -10,6 +11,14 @@ pub struct KanjiEntry {
     pub on_readings: Vec<String>,
     #[serde(default)]
     pub kun_readings: Vec<String>,
+    /// Words exemplifying this kanji, curated against the JLPT word lists.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub popular_words: Vec<String>,
+    /// Per-reading corpus frequency, keyed exactly as the entries in
+    /// `on_readings`/`kun_readings`. BTreeMap keeps the rewritten file
+    /// deterministic across runs.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub reading_frequencies: BTreeMap<String, u32>,
     #[serde(flatten)]
     pub other: serde_json::Value,
 }
