@@ -56,7 +56,10 @@ fn read_samples(
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+/// Parse WAV bytes (RIFF/WAVE walk) and produce 16 kHz mono samples padded
+/// or trimmed to the 30-second Whisper input. Shared by the WASM
+/// transcription path; compiled on native too so the byte-level contract is
+/// unit-testable without a browser.
 pub fn load_audio_bytes(data: &[u8]) -> Result<Vec<f32>, String> {
     if data.len() < 44 {
         return Err("Audio data too short".to_string());
@@ -142,7 +145,6 @@ pub fn load_audio_bytes(data: &[u8]) -> Result<Vec<f32>, String> {
     Ok(result)
 }
 
-#[cfg(target_arch = "wasm32")]
 fn decode_pcm(sample_data: &[u8], bits_per_sample: u16) -> Result<Vec<f32>, String> {
     match bits_per_sample {
         8 => Ok(sample_data
