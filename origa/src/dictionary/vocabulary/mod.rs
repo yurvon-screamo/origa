@@ -168,8 +168,11 @@ mod dispatch_tests {
         assert!(reason.contains("access"), "reason: {reason}");
     }
 
-    /// Owned and archived dispatch must agree: serialize the installed store,
-    /// access it zero-copy and compare the lookups word by word.
+    /// Owned and archived dispatch must agree: serialize the installed
+    /// store, access it zero-copy and compare the lookups word by word.
+    /// The word key is a stable vocabulary entry, the translations are
+    /// asserted only for cross-branch equality — no corpus content is
+    /// hardcoded, so a dictionary refresh cannot break this unit.
     #[test]
     fn archived_view_matches_the_owned_store_for_lookups() {
         // Arrange
@@ -183,17 +186,13 @@ mod dispatch_tests {
         let Some(expected) = owned_translations.as_deref() else {
             return; // another test installed a dictionary without this word
         };
+        assert!(!expected.is_empty(), "corpus entry carries no translations");
 
         // Act
         let bytes = serialize_vocabulary_to_rkyv().expect("serialize the owned store");
         let view = access_vocabulary_blob(&bytes).expect("access without install");
 
         // Assert — the archived branch answers exactly like the owned one.
-        assert_eq!(
-            expected,
-            ["гамма-лучи".to_string(), "гамма-излучение".to_string()],
-            "unexpected real-chunk content for γ線"
-        );
         assert_eq!(view.translations(word, language), owned_translations);
         assert_eq!(
             view.translation(word, language),
@@ -203,6 +202,38 @@ mod dispatch_tests {
             view.description(word, language),
             get_description(word, language)
         );
+    }
+
+    /// Branch agreement on a synthetic database: the archived view answers
+    /// exactly like the owned `VocabularyDatabase`, independent of the
+    /// deployed corpus content.
+    #[test]
+    fn archived_view_matches_the_owned_database_for_lookups() {
+        // Arrange
+        let db = build_vocabulary_database_from_chunks(chunk_data_with(
+            r#"{"猫": {"russian_translation": "кот", "english_translation": "cat"}}"#,
+        ))
+        .expect("valid chunks");
+        let payload = serialize_vocabulary_blob_to_rkyv(&db).expect("serialize");
+        let view = access_vocabulary_blob(&payload).expect("access without install");
+        let language = &NativeLanguage::Russian;
+
+        // Act + Assert — singular, plural and description agree on the hit;
+        // a missing word is None on both branches.
+        assert_eq!(
+            view.translation("猫", language),
+            db.get_translation("猫", language)
+        );
+        assert_eq!(
+            view.translations("猫", language),
+            db.get_translations("猫", language)
+        );
+        assert_eq!(
+            view.description("猫", language),
+            db.get_description("猫", language)
+        );
+        assert_eq!(view.translation("犬", language), None);
+        assert_eq!(db.get_translation("犬", language), None);
     }
 
     #[test]

@@ -89,7 +89,9 @@ mod tests {
         }
     }
 
-    fn wav_path_with_samples(samples: &[i16]) -> std::path::PathBuf {
+    /// Writes a mono 16 kHz PCM16 fixture; the caller keeps the returned
+    /// TempDir alive for the duration of the test — no /tmp leakage.
+    fn wav_path_with_samples(samples: &[i16]) -> (tempfile::TempDir, std::path::PathBuf) {
         let dir = tempfile::tempdir().expect("temp dir");
         let path = dir.path().join("input.wav");
         let spec = hound::WavSpec {
@@ -103,8 +105,7 @@ mod tests {
             writer.write_sample(s).expect("write sample");
         }
         writer.finalize().expect("finalize");
-        std::mem::forget(dir); // keep the file alive until the test reads it
-        path
+        (dir, path)
     }
 
     fn engine_error() -> OrigaError {
@@ -117,7 +118,7 @@ mod tests {
     async fn execute_with_path_passes_decoded_samples_to_engine_and_returns_text() {
         // Arrange
         let raw: [i16; 4] = [100, -100, 3276, -3276];
-        let path = wav_path_with_samples(&raw);
+        let (_dir, path) = wav_path_with_samples(&raw);
         let engine = FakeTranscriber::returning(Ok("こんにちは".to_string()));
         let use_case = TranscribeAudioUseCase::new();
 
@@ -159,7 +160,7 @@ mod tests {
     #[tokio::test]
     async fn execute_with_path_engine_error_is_returned_unchanged() {
         // Arrange
-        let path = wav_path_with_samples(&[100, -100]);
+        let (_dir, path) = wav_path_with_samples(&[100, -100]);
         let engine = FakeTranscriber::returning(Err(engine_error()));
         let use_case = TranscribeAudioUseCase::new();
 
@@ -173,17 +174,17 @@ mod tests {
 
     #[tokio::test]
     async fn execute_rejects_non_wav_bytes_without_calling_engine() {
-        // Arrange
-        let engine = FakeTranscriber::returning(Ok("unused".to_string()));
+        // Arrange — keep a handle to the engine to assert it was not called.
+        let engine = Rc::new(FakeTranscriber::returning(Ok("unused".to_string())));
+        let handle = Rc::clone(&engine);
         let use_case = TranscribeAudioUseCase::new();
 
         // Act
-        let result = use_case
-            .execute(Rc::new(engine), b"not a wav file at all....")
-            .await;
+        let result = use_case.execute(engine, b"not a wav file at all....").await;
 
         // Assert
         assert!(matches!(result, Err(OrigaError::SttError { .. })));
+        assert_eq!(handle.calls.get(), 0);
     }
 
     #[tokio::test]
