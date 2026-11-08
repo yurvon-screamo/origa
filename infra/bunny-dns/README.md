@@ -1,72 +1,125 @@
-# Bunny Scriptable DNS: geo-steering for RF (script ID 91629)
+# Bunny Scriptable DNS: s3 geo-steering + RF failover (script ID 91629)
 
 `handleQuery.js` is deployed as Bunny DNS script `origa-s3-geo` (ID 91629) and
-attached (via NS records, TTL 60) to **five** names in the `uwuwu.net` zone
+attached (SCRIPT records, TTL 60) to **two** names in the `uwuwu.net` zone
 (873317):
 
-- `origa`         → RF: A 193.233.217.243 (RF VM, nginx), world: CNAME vl080mt6.up.railway.app
-- `app.origa`     → RF: A 193.233.217.243, world: CNAME 9v15a3ov.up.railway.app
-- `s3.origa`      → RF: A 193.233.217.243, world: CNAME d3gbi3wo8j4c2w.cloudfront.net
-- `content.origa` → CNAME origa.t3.tigrisbucket.io for everyone (diagnostic name, no RF branch)
-- `umami.origa`   → A 193.233.217.243 for everyone (temporary, 2026-10-29: Railway custom-domain
-  cert issuance fails with an internal error, the edge serves the wildcard cert for this SNI;
-  the VM holds a valid cert, so both geo branches go through it. Flip back to the geo-split —
-  world CNAME 07wyrdxw.up.railway.app — once Railway's domain-status shows a VALID certificate.
-  Self-hosted Umami, ADR-054 §7)
+- `s3.origa`      → RF: A 193.233.217.243 while the RF VM is online (nginx
+  SNI-demux → Tigris); world — and RF during VM death — CNAME
+  `d3gbi3wo8j4c2w.cloudfront.net` (CloudFront in front of the public Tigris
+  bucket)
+- `content.origa` → CNAME `origa.t3.tigrisbucket.io` for everyone
+  (diagnostic name, no RF branch)
 
-`pass` is a plain A record (85.192.63.249, TTL 300) and is **not** attached to
-the script. The script answers only the five names above (hostname guard) and
-returns `undefined` for anything else — a newly attached name without a branch
-fails loudly instead of silently resolving to the RF IP. (Semantics note:
-Bunny treats a script answer of `undefined` as "no record" — grey answer.
-The terminal `return undefined` is unreachable today: every guarded name has
-a branch; it exists so a future branch-less addition cannot inherit another
-name's record.)
+Everything else in the zone is plain records and stays out of the script:
+`origa`, `app.origa`, `umami.origa` are plain CNAMEs to the Railway edge
+since ADR-072 (2026-11-06) — script-attached names break LE-issuance paths
+that resolve through Google resolvers, so never re-attach Railway-LE names;
+`pass` is a plain A record (85.192.63.249) and was never in the blast
+radius. The script answers only the two attached names (hostname guard) and
+returns `undefined` for anything else — a newly attached name without a
+branch fails loudly (grey answer) instead of silently resolving elsewhere.
 
-There is **no health gating** in the script: RF always gets the RF VM IP,
-world always gets the direct CNAME. Fallback decisions are made by editing and
-redeploying the script.
+## RF failover gate (`Monitoring.getStatus`)
 
-## Why
+On the RF geo branch the script consults Bunny's built-in background
+monitoring: `Monitoring.getStatus("193.233.217.243").isOnline`.
 
-During TSPU/provider throttling windows (observed 2026-09-19 evening)
-CloudFront body transfers from RF degrade to hundreds of B/s, and the Railway
-edge subnet 69.46.46.0/24 is payload-dropped by TSPU outright (ADR-049). The
-geo-split routes RF users through an RF-terminating front (ADR-061); world
-users keep the direct CloudFront/Railway paths.
+- VM online → RF resolvers get the A record, TTL 60.
+- VM offline → RF resolvers get the same CloudFront CNAME the world gets,
+  TTL 300: degraded but working, instead of silently dead.
+- Any non-`true` status (offline, unknown shape, `Monitoring` global absent)
+  is treated as offline — **fail-closed**: degrade to the working world path,
+  never grey-answer.
+
+Monitoring semantics (Bunny docs): ICMP ping only (700 ms × 3 retries, one
+reply = online); actively queried IPs are re-checked roughly every 10 s; the
+status is per DNS server — "reachable from the PoP answering the query".
+The first query for an IP synchronously waits for the initial check.
+
+**What the gate does NOT cover:** an nginx crash on a live VM keeps
+answering ping, so no failover happens. That failure class belongs to the
+uptime poller's pinned HTTP probe (alert to the owner, monitoring task
+20261104060619), not to DNS. A VM-side watchdog that blinds ping when nginx
+dies is a possible future task, deliberately out of scope here.
+
+## Convergence (asymmetric by design)
+
+- **Failover (VM dies):** the RF A answer carries TTL 60 and Bunny re-checks
+  ~every 10 s, so RF clients land on CloudFront within roughly a minute of
+  the actual death.
+- **Recovery (VM returns):** clients that already received the failover
+  CNAME hold it up to TTL 300, so the return to the A record converges up
+  to ~5 minutes after Bunny sees the VM alive again. The slower recovery is
+  the cost of the stable CNAME answer — not a bug. Measured numbers from
+  the drills live in the Bunny-failover task body and the wiki Deployment
+  doc.
+
+## Drill (VM-death rehearsal)
+
+The gate triggers on ICMP loss, so the drill is an ICMP black hole on the
+RF VM — not an nginx stop:
+
+```bash
+# on the RF VM — drop ping, auto-revert after 4 minutes
+iptables -I INPUT -p icmp --icmp-type echo-request -j DROP
+nohup sh -c 'sleep 240 && iptables -D INPUT -p icmp --icmp-type echo-request -j DROP' \
+  >/dev/null 2>&1 &
+```
+
+Then watch, from anywhere:
+
+```bash
+watch -n 15 'dig +short s3.origa.uwuwu.net @77.88.8.8; echo ---; dig +short s3.origa.uwuwu.net @1.1.1.1'
+```
+
+Expected: the RU resolver flips to the CloudFront CNAME within the failover
+window, and back to the A record after the revert; the world answer never
+changes. Dropping ping does not touch nginx or the xray VPN (TCP).
+
+Coordination: if the uptime poller (monitoring task 20261104060619) is
+already live, its DNS assert "s3 RU → strictly A VM" fires during the drill
+— warn the owner about the expected Telegram alert before opening the
+window.
 
 ## RF VM side (nginx on 193.233.217.243, ADR-061)
 
-nginx stream SNI-demultiplexer on :443 routes RF TLS to either the http proxy
-blocks (loopback :8443 → Railway/Tigris, PROXY protocol carries the real
-client IP) or the xray Reality VPN (loopback :4430 via a PROXY-header-stripper
-bridge on :4432). TLS certificates are issued by acme.sh **DNS-01 via Bunny**
-on the VM (HTTP-01 cannot pass: world resolvers land on CloudFront/Railway
-directly); renewal via the acme.sh crontab on the VM. Upstream hostnames are
-resolved once at start/reload — after any Railway edge change run `dig` first,
-then `nginx -s reload` (reload fails closed with "host not found in upstream"
-if DNS is unreachable).
+nginx stream SNI-demultiplexer on :443 routes RF TLS to either the http
+proxy blocks (loopback :8443 → Tigris, PROXY protocol carries the real
+client IP) or the xray Reality VPN (loopback :4430 via a
+PROXY-header-stripper bridge on :4432). TLS certificates are issued by
+acme.sh **DNS-01 via Bunny** on the VM (HTTP-01 cannot pass: world resolvers
+land on CloudFront directly); renewal via the acme.sh crontab on the VM.
+Upstream hostnames are resolved once at start/reload — after any edge
+change run `dig` first, then `nginx -s reload` (reload fails closed with
+"host not found in upstream" if DNS is unreachable).
 
-`umami.origa` has its own certificate (SAN `umami.origa.uwuwu.net`, acme.sh
-DNS-01) and its own `rf-proxy-common-umami.conf` snippet — nginx does not
-support variables in `ssl_certificate`, so the shared snippet (which pins the
-`origa.uwuwu.net` cert) cannot be reused for a second host. DNS-01 TXT records
-under a script-attached name resolve through the zone's own records
-(verified 2026-10-22 when the `umami` cert was issued while `umami.origa` was
-already attached to the script).
+`umami.origa` keeps its own certificate and nginx snippet on the VM even
+though the name is now a plain CNAME (ADR-072) — the config is dormant, not
+removed, so a future geo-split return for a specific name is one Bunny
+operation (nginx configs alive, ADR-072).
 
-Legacy reference (superseded 2026-09-30, host TSPU-blocked from RF): the old
-Aeza Frankfurt VPS (85.192.63.249) served the same RF branch via Caddy with
-`bind 85.192.63.249`, proxying to `origa.t3.tigrisfiles.io` /
-`vl080mt6.up.railway.app`. Caddy on that box remains authoritative for
-`pass.uwuwu.net`, `uwuwu.ru` redirects and personal services.
+Legacy reference (superseded 2026-09-30, host TSPU-blocked from RF): the
+old Aeza Frankfurt VPS (85.192.63.249) served the same RF branch via Caddy.
+Caddy on that box remains authoritative for `pass.uwuwu.net`, `uwuwu.ru`
+redirects and personal services.
 
 ## Change procedure
 
 ```bash
 # edit handleQuery.js, then:
-bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629
+node infra/bunny-dns/smoke.test.mjs                 # branch matrix must stay green
+node --check infra/bunny-dns/handleQuery.js         # syntax gate
+bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629   # upload + publish
 ```
 
-Rollback: `git revert` the cutover commit, redeploy — RF clients fall back to
-the previous answer within TTL 60.
+Deploy is a production change: record the live dig matrix
+(RU `@77.88.8.8` / world `@1.1.1.1` × `s3`/`content`) before and after — it
+must be identical while the VM is alive.
+
+Rollback: `git revert` the change commit, redeploy — RF clients fall back
+to the previous answer within TTL 60. The same rollback treats a misbehaving
+gate: the previous script revision has no monitoring dependency. The smoke
+test runs outside CI on purpose (`infra/**` is not in ci.yml path filters);
+`node infra/bunny-dns/smoke.test.mjs` is part of this procedure for the same
+reason.
