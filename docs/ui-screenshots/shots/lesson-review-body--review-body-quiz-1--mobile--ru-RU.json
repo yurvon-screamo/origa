@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 255857,
-  "sha256": "c0e04337c965b6f80de28dc4e092cad678b2de0dd7bf81a53c6ad2a4ebf4fba3",
-  "capturedAt": "2026-10-30T18:20:07.283Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
+  "bytes": 255545,
+  "sha256": "433b1e9cdf02b6ce6a0776a27e6cc7540e28ab35456a99e073b89b713d3107c2",
+  "capturedAt": "2026-11-08T12:51:30.386Z",
+  "commit": "5d64bf7a6a3cc4085376437faf8c5de96a28efe1",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-1--mobile-c0e04337.png",
-  "uploadedSha256": "c0e04337c965b6f80de28dc4e092cad678b2de0dd7bf81a53c6ad2a4ebf4fba3",
-  "uploadedAt": "2026-10-30T18:56:37.429Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261104060556/lesson-review-body--review-body-quiz-1--mobile-433b1e9c.png",
+  "uploadedSha256": "433b1e9cdf02b6ce6a0776a27e6cc7540e28ab35456a99e073b89b713d3107c2",
+  "uploadedAt": "2026-11-08T12:52:15.911Z"
 }
