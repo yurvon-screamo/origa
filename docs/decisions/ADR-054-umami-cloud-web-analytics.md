@@ -326,9 +326,11 @@ users, our own endpoints and limits, our own data.
   those three names go direct to Railway (TSPU risk accepted); the RF VM
   keeps nginx branches + certs as dormant fallback and remains in the DNS
   path only for `s3.origa` / `content.origa` + VPN. Scriptable DNS stays off
-  cert-bearing names until Bunny fixes the NODATA bug; the `umami.origa`
-  branch in `handleQuery.js` is kept pre-staged (below the `isRF` block) so
-  the post-fix return stays a single record operation.
+  cert-bearing names until Bunny fixes the NODATA bug; PR #898 (2026-11-08,
+  s3 RF failover gate) removed the dormant `umami.origa` branch from
+  `handleQuery.js` entirely — re-attaching a Railway-LE name is off the
+  table until that fix, and a post-fix return would be a script edit plus a
+  record re-attach (runbook §3.4).
 - Deploy/verify procedure: `docs/runbooks/umami-self-host.md`.
 
 ### Tracker changes

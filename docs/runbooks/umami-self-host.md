@@ -11,8 +11,8 @@ issuance 2026-10..11 — Bunny Scriptable DNS отдаёт NODATA через Goo
 (8.8.8.8), на котором сидят валидаторы LE/Railway; скрипт-имена валидацию не
 проходят, поэтому cert-bearing имена приаттачивать к скрипту 91629 нельзя до
 платформенного фикса Bunny (warning в шапке `handleQuery.js`). Ветка umami в
-скрипте оставлена pre-staged (ниже isRF-блока, мир → CNAME 07wyrdxw) —
-спящая, сработает только при ре-аттаче имени. Сервис — Umami v3.4.0
+скрипте — удалена целиком (PR #898: umami не в guard-списке, доктрина
+ADR-072 запрещает ре-аттач Railway-LE имён). Сервис — Umami v3.4.0
 (PostgreSQL-only) + Railway Postgres
 
 - Valkey (Redis из шаблона, опционален).
@@ -90,11 +90,11 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
 
 ## 3. Bunny DNS: кастом-домен + ветка umami в скрипте 91629
 
-**Текущее состояние (2026-11-08):** имя — plain CNAME →
-`07wyrdxw.up.railway.app`, TTL 300, сертификат Railway VALID. Скриптовая
-ветка umami в `handleQuery.js` — pre-staged, спящая (имя не приаттачено,
-запросы до скрипта не доходят). Порядок исходной настройки (для истории и
-возврата):
+**Текущее состояние (2026-11-09):** имя — plain CNAME →
+`07wyrdxw.up.railway.app`, TTL 300, сертификат Railway VALID. Ветки umami в
+`handleQuery.js` НЕТ (PR #898 выкинул её вместе с guard-записью: ре-аттач
+Railway-LE имён запрещён доктриной ADR-072 — см. п.3). Порядок исходной
+настройки (для истории и возврата):
 
 1. Кастом-домен приаттачен к сервису (`railway domain umami.origa.uwuwu.net`),
    Railway даёт edge-CNAME: `umami.origa → 07wyrdxw.up.railway.app`.
@@ -111,14 +111,15 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
    `retry-domain-certificate` (Railway MCP/CLI) — штатное лечение застрявшего
    цикла при исправном DNS (umami: ISSUING с 06.11 → VALID за минуты после
    ретрая 08.11).
-4. Ветка в скрипте (репо `infra/bunny-dns/handleQuery.js`): имя в
-   guard-список + мир-ветка `CnameRecord("07wyrdxw.up.railway.app", 300)`
-   ниже isRF-блока (РФ обслуживается общим `isRF`-блоком). Сейчас ветка
-   спящая; при возврате на geo-split после платформенного фикса Bunny —
-   удалить зоновую CNAME, создать Script-запись на имя (ссылка на 91629,
-   как у `s3.origa`), деплой не нужен (ветка уже в целевом виде). Деплой
-   скрипта при правках: `bunny dns scripts deploy
-   infra/bunny-dns/handleQuery.js 91629`.
+4. Ветки в скрипте больше нет (PR #898 убрал umami из guard вместе с
+   веткой; script 91629 отвечает только на s3/content, RF-ветка s3 —
+   с failover-гейтом `Monitoring.getStatus`). Возврат на geo-split (если
+   когда-нибудь понадобится после фикса Bunny и осознанного решения
+   владельца) = добавить имя в guard + мир-ветка
+   `CnameRecord("07wyrdxw.up.railway.app", 300)` + RF через общий
+   isRF-блок, деплой скрипта (`bunny dns scripts deploy
+   infra/bunny-dns/handleQuery.js 91629`), затем удалить зоновую CNAME и
+   создать Script-запись на имя (ссылка на 91629, как у `s3.origa`).
 5. Проверка обеих веток (актуальна при приаттаченном имени):
    `curl -fsS https://umami.origa.uwuwu.net/script.js -o /dev/null -w '%{http_code}'`
    (мир, ждём 200) и через `--resolve umami.origa.uwuwu.net:443:193.233.217.243`
