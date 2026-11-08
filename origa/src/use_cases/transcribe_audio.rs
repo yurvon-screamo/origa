@@ -1,5 +1,7 @@
 use crate::domain::OrigaError;
-use crate::stt::{load_audio_bytes, load_wav};
+use crate::stt::load_audio_bytes;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::stt::load_wav;
 use crate::traits::Transcriber;
 use std::rc::Rc;
 use tracing::info;
