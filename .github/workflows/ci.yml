@@ -1119,7 +1119,7 @@ jobs:
               uses: actions/cache@v6
               with:
                   path: ~/.local/bin/trail
-                  key: trailbase-v0.28.3-verified
+                  key: trailbase-v0.35.10-verified
 
             - name: Add TrailBase to PATH
               run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -1143,7 +1143,7 @@ jobs:
                   # system" on every retry. A direct release-asset URL needs
                   # no API quota. Keep the version in sync with the cache key.
                   curl -sSfL --retry 3 --retry-delay 10 -o /tmp/trailbase.zip \
-                    https://github.com/trailbaseio/trailbase/releases/download/v0.28.3/trailbase_v0.28.3_x86_64_linux.zip
+                    https://github.com/trailbaseio/trailbase/releases/download/v0.35.10/trailbase_v0.35.10_x86_64_linux.zip
                   mkdir -p "$HOME/.local/bin"
                   unzip -oq /tmp/trailbase.zip -d "$HOME/.local/bin" trail
                   chmod +x "$HOME/.local/bin/trail"
