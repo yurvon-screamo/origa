@@ -19,6 +19,16 @@ test("every catalog entry names a known data state", () => {
     }
 });
 
+test("no catalog entry restricts viewports — every scenario captures the pair", () => {
+    for (const descriptor of listDescriptors()) {
+        assert.ok(
+            !("viewports" in descriptor),
+            `${descriptor.id} restricts viewports — the desktop+mobile pair is the policy, ` +
+                `a per-scenario restriction lives only in the run (--viewports), not the catalog`,
+        );
+    }
+});
+
 test("the catalog is listed in a stable order", () => {
     const ids = listDescriptors().map((descriptor) => descriptor.id);
 
