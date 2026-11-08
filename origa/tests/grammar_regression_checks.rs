@@ -320,34 +320,33 @@ fn you_ni_suru_uses_dictionary_form() {
 }
 
 // ===========================================================================
-// Hearsay そうだ（伝聞）: plain form, NOT stem
+// ～そうだ（様態・伝聞）: sou forms per word class
 // ===========================================================================
 
-/// Bug: hearsay ``～そうだ（伝聞）`` produced ``降りそうだ`` for verbs (the
-/// conjectural / 様態 form) instead of ``降るそうだ`` (plain form + そうだ).
-///
-/// The two そうだ are grammatically distinct:
-///   - 様態そうだ (conjectural): attaches to verb stem → 降りそうだ ("looks
-///     like it will rain")
-///   - 伝聞そうだ (hearsay): attaches to plain form → 降るそうだ ("I heard
-///     it will rain")
-///
-/// This rule (rule_id ``01G000000000000000W8000000``) is the HEARSAY
-/// construction, so it must render the plain form before そうだ.
+/// The N4 ～そうだ corpus carried three sibling rules — the combined
+/// 様態・伝聞 rule plus its 様態 and 伝聞 subsets — until they collapsed
+/// onto the combined rule (rule_id ``01G000000000000000W0000000``, merge
+/// map in `dictionary/grammar_migration.rs`). Its format_map now
+/// generates the sou form for every word class: stem + そう
+/// (降りそう, 美味しそう, 元気そう). The hearsay readings (降るそうだ,
+/// 美味しいそうだ) live in the rule content, not in quiz form generation —
+/// the schema expresses one format chain per word class.
 #[test]
-fn hearsay_sou_da_uses_plain_form() {
+fn sou_da_combined_rule_formats_all_word_classes() {
     assert_rule_formats(
-        "01G000000000000000W8000000",
+        "01G000000000000000W0000000",
         PartOfSpeech::Verb,
-        &[
-            ("降る", "降るそうだ"), // CRITICAL: was 降りそうだ
-            ("書く", "書くそうだ"),
-        ],
+        &[("降る", "降りそう"), ("書く", "書きそう")],
     );
-    // Hearsay そうだ also attaches to い-adjectives in the plain form.
+    // Adjective classes go through the same stem+そう generation.
     assert_rule_formats(
-        "01G000000000000000W8000000",
+        "01G000000000000000W0000000",
         PartOfSpeech::IAdjective,
-        &[("美味しい", "美味しいそうだ")],
+        &[("美味しい", "美味しそう")],
+    );
+    assert_rule_formats(
+        "01G000000000000000W0000000",
+        PartOfSpeech::NaAdjective,
+        &[("元気", "元気そう")],
     );
 }
