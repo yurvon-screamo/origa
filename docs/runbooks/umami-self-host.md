@@ -108,7 +108,7 @@ curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{h
    Railway на нём сидят, domain validation и реньюал ломаются. Проверка:
    `dig +short <имя> @8.8.8.8` — пусто при живом ответе от 1.1.1.1 и NS
    Bunny. Cert-bearing имена к скрипту не приаттачивать до фикса Bunny;
-  `retry-domain-certificate` (Railway MCP/CLI) — штатное лечение застрявшего
+   `retry-domain-certificate` (Railway MCP/CLI) — штатное лечение застрявшего
    цикла при исправном DNS (umami: ISSUING с 06.11 → VALID за минуты после
    ретрая 08.11).
 4. Ветка в скрипте (репо `infra/bunny-dns/handleQuery.js`): имя в
