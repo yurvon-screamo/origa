@@ -10,6 +10,7 @@ uwuwu-Деплойменте, секция umami). Скрипт-ветка umami
 `infra/bunny-dns/handleQuery.js` спит pre-staged ниже isRF-блока — возврат на
 geo-split после платформенного фикса Bunny = одна операция ре-аттача записи.
 Сервис — Umami v3.4.0 (PostgreSQL-only) + Railway Postgres
+
 + Valkey (Redis из шаблона, опционален).
 
 Развёрнуто 2026-10-22. Фактические значения:
@@ -50,6 +51,7 @@ website `POST /api/websites {"name":"Origa","domain":"origa.uwuwu.net"}`
 (секция 5).
 
 ## 2. RF VM: серт + nginx-ветка (ретировано 2026-11-06, инструкция нужна
+
    при возврате geo-split после фикса Bunny; ssh root@193.233.217.243)
 
 Серт (DNS-01 через Bunny; TXT fall-through через scriptable DNS работает —
@@ -67,12 +69,12 @@ mkdir -p /etc/nginx/ssl/umami.origa.uwuwu.net
 nginx (IaC: `~/rf-proxy-infra` на ноуте и на ВМ, правки через git;
 бэкап 2026-10-22 — `/root/nginx-backup-20261022/`):
 
-- `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
++ `rf-proxy-stream.conf` — строка `umami.origa.uwuwu.net → 127.0.0.1:8443` в
   `map $ssl_preread_server_name`;
-- `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
++ `rf-proxy-common-umami.conf` — копия common-сниппета с путями к серту
   umami (nginx не умеет переменные в `ssl_certificate`, поэтому сниппет
   дублируется);
-- `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
++ `rf-proxy-http.conf` — upstream `railway_umami` (сервисный домен Railway)
   и server-блок `:8443`. **`proxy_ssl_name` — сервисный домен Railway
   (`umami-production-5769.up.railway.app`), НЕ кастомный**: серт Railway
   выдаёт на сервисное имя, verify ON проверяет его; приложение получает
@@ -194,42 +196,42 @@ payload (без `title`/`referrer`/браузерного UA) принимает
 
 ## 6. Доступы (состояние 2026-11-09)
 
-- **admin** — единственная учётка. Креды: `marketing/.env`
++ **admin** — единственная учётка. Креды: `marketing/.env`
   (`UMAMI_ADMIN_USER`/`UMAMI_ADMIN_PASSWORD`, ноут). Программный доступ:
   `POST /api/auth/login` → Bearer JWT.
-- **view-only юзеры `umami-ru/en/ko/vi` удалены 2026-11-09.** Причины: (а) сайт
++ **view-only юзеры `umami-ru/en/ko/vi` удалены 2026-11-09.** Причины: (а) сайт
   живёт в личном пространстве admin (`teamId: null`), юзеры его не видели и их
   API-ключи отдавали 401 на любые данные (проверено 08.11: логин юзера работает,
   `GET /api/websites` у него пуст); (б) потребителей ключей в `marketing/` нет.
   Строки `UMAMI_USER_UMAMI-*`/`UMAMI_PASSWORD_*`/`UMAMI_API_KEY*` в
   `marketing/.env` — историческая запись, ключи невалидны.
-- **Если view-only с API-ключом понадобится снова** (маркетолог по локалям и
++ **Если view-only с API-ключом понадобится снова** (маркетолог по локалям и
   т.п.): создать юзера (`POST /api/users {"username","password","role":"view-only"}`),
   ключ (`POST /api/me/api-keys` под его токеном — значение показывается один раз)
   и **дать юзеру доступ к сайту — иначе повторится та же мёртвая схема**: сайт
   держится у admin, поэтому нужен либо transfer сайта в team с юзером, либо
   website под юзером. Ключ ходит заголовком `x-umami-api-key` (Bearer с ключом
   не работает — проверено 08.11).
-- **Gotcha v3-роутов:** юзеры — `/api/users` (`POST`, `DELETE /api/users/{id}` —
++ **Gotcha v3-роутов:** юзеры — `/api/users` (`POST`, `DELETE /api/users/{id}` —
   админ), список — `/api/admin/users`; `DELETE /api/admin/users/{id}` — 404.
   Шаринг — `POST /api/websites/{id} {"shareId"}`; GET на `/api/share/{slug}`
   отдаёт анон JWT токен дашборда.
 
 ### Известные ограничения
 
-- **Dev-шум в прод-данных:** локальные dev-сборки шлют биконы (hostname
++ **Dev-шум в прод-данных:** локальные dev-сборки шлют биконы (hostname
   `localhost*`) в тот же инстанс. Отличить их от прод-десктопа нетривиально:
   `TRAILBASE_URL` без env резолвится в прод (`build_defaults.rs`), поэтому
   build-переменные dev-сборку не выдают. CI/e2e и android-smoke компилируют
   трекер out (`UMAMI_DISABLED=1`); остальное — фильтр hostname в UI/отчётах.
-- `bootstrap_test_event` (единично в событиях) — ручной тест API, не из кода.
-- Лендинг и приложение в одном website: агрегаты «в целом по продукту»
++ `bootstrap_test_event` (единично в событиях) — ручной тест API, не из кода.
++ Лендинг и приложение в одном website: агрегаты «в целом по продукту»
   смешаны — разрезается hostname-фильтром (см. выше).
 
 ## Откат
 
-- Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
-- Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
-- Код: revert релизного коммита — трекер возвращается на Cloud (website id
++ Скрипт Bunny: revert + редеплой (TTL 60) — трафик уходит с имени.
++ Railway: MCP/CLI → удалить сервисы `umami`/`Postgres`/`Valkey`.
++ Код: revert релизного коммита — трекер возвращается на Cloud (website id
   Cloud `0b8b69aa-9c94-41ef-b27a-f928011b797b` хранится в git-истории до
   деактивации аккаунта).
