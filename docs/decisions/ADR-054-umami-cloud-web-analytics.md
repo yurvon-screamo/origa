@@ -8,7 +8,10 @@ details below (§1–§6) describe how the integration was built and stay
 accurate except for the provider, website id, and CSP hosts, which §7
 replaces. Amended again (2026-10-29): while Railway's custom-domain
 certificate issuance is broken, `umami.origa` routes through the RF VM for
-both geo branches — see §7, Domain.
+both geo branches — see §7, Domain. Amendment resolved (2026-11-06/08): the
+issuance outage was root-caused to Bunny Scriptable DNS (NODATA via Google
+DNS), `umami.origa` moved to a plain zone CNAME for both geo branches
+(variant A, ADR-072 in the uwuwu wiki; task 202611060809) — see §7, Domain.
 
 ## Context
 
@@ -308,6 +311,24 @@ users, our own endpoints and limits, our own data.
   VM** — it holds a valid Let's Encrypt cert for the name and the
   beacon/script volume is trivial. Flip back to the geo-split (one script
   deploy, TTL 60) once `domain-status` reports a VALID certificate.
+  **Resolution (2026-11-06/08, ADR-072 in the uwuwu wiki, task 202611060809):**
+  the "internal error" was not Railway-side at all — Bunny Scriptable DNS
+  answers NODATA through Google/8.8.8.8 resolvers, where LE validators and
+  Railway resolvers live, so script-attached names fail domain validation
+  (plus Railway had re-assigned the edge CNAME targets). Fix: script-backed
+  zone records for `origa` / `app.origa` / `umami.origa` replaced with plain
+  CNAMEs straight to Railway (`origa` → `c2qj368z…`, `app.origa` →
+  `9fmm6y4e…`, `umami.origa` → `07wyrdxw.up.railway.app`); s3/content stay
+  script-backed (s3's cert is CloudFront's). app and landing certs re-issued
+  VALID on 2026-11-06; umami's cycle sat in ISSUING until a manual
+  `retry-domain-certificate` completed it on 2026-11-08 (LE, valid into
+  February 2027). RF consequence — owner decision "variant A": RF clients of
+  those three names go direct to Railway (TSPU risk accepted); the RF VM
+  keeps nginx branches + certs as dormant fallback and remains in the DNS
+  path only for `s3.origa` / `content.origa` + VPN. Scriptable DNS stays off
+  cert-bearing names until Bunny fixes the NODATA bug; the `umami.origa`
+  branch in `handleQuery.js` is kept pre-staged (below the `isRF` block) so
+  the post-fix return stays a single record operation.
 - Deploy/verify procedure: `docs/runbooks/umami-self-host.md`.
 
 ### Tracker changes

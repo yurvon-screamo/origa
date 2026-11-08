@@ -1,21 +1,36 @@
 # Bunny Scriptable DNS: geo-steering for RF (script ID 91629)
 
 `handleQuery.js` is deployed as Bunny DNS script `origa-s3-geo` (ID 91629) and
-attached (via NS records, TTL 60) to **five** names in the `uwuwu.net` zone
+attached (via Script records, TTL 60) to **two** names in the `uwuwu.net` zone
 (873317):
 
-- `origa`         → RF: A 193.233.217.243 (RF VM, nginx), world: CNAME vl080mt6.up.railway.app
-- `app.origa`     → RF: A 193.233.217.243, world: CNAME 9v15a3ov.up.railway.app
-- `s3.origa`      → RF: A 193.233.217.243, world: CNAME d3gbi3wo8j4c2w.cloudfront.net
+- `s3.origa`      → RF: A 193.233.217.243 (RF VM, nginx), world: CNAME d3gbi3wo8j4c2w.cloudfront.net
 - `content.origa` → CNAME origa.t3.tigrisbucket.io for everyone (diagnostic name, no RF branch)
-- `umami.origa`   → A 193.233.217.243 for everyone (temporary, 2026-10-29: Railway custom-domain
-  cert issuance fails with an internal error, the edge serves the wildcard cert for this SNI;
-  the VM holds a valid cert, so both geo branches go through it. Flip back to the geo-split —
-  world CNAME 07wyrdxw.up.railway.app — once Railway's domain-status shows a VALID certificate.
-  Self-hosted Umami, ADR-054 §7)
+
+Three more names are plain CNAME records in the zone — straight to Railway for
+everyone, RF included (variant A, ADR-072 / task 202611060809: RF clients of
+these three names take the TSPU risk on the direct path):
+
+- `origa`       → c2qj368z.up.railway.app
+- `app.origa`   → 9fmm6y4e.up.railway.app
+- `umami.origa` → 07wyrdxw.up.railway.app (self-hosted Umami, ADR-054 §7)
+
+The script does **not** answer those three while they are not attached.
+`handleQuery.js` keeps a **dormant pre-staged geo-split branch** for
+`umami.origa` (RF → the RF VM via the common `isRF` block, world → the Railway
+edge CNAME) so that the post-fix return stays a single record operation.
+
+**Do not re-attach cert-bearing names while the Bunny NODATA bug stands:**
+Scriptable DNS answers NODATA through Google/8.8.8.8 resolvers (verified
+2026-11-08), and LE validators / Railway resolvers sit on Google DNS —
+script-attached names fail domain validation, breaking cert issuance and
+renewal. This is the diagnosed root cause of the "internal error" issuance
+outage (task 202611060809; plain-CNAME cutover 2026-11-06 restored issuance:
+app/landing certs re-issued VALID on 2026-11-06, umami on 2026-11-08 after a
+manual `retry-domain-certificate` nudge of a cycle stuck since 2026-11-06).
 
 `pass` is a plain A record (85.192.63.249, TTL 300) and is **not** attached to
-the script. The script answers only the five names above (hostname guard) and
+the script. The script answers only the guarded names (hostname guard) and
 returns `undefined` for anything else — a newly attached name without a branch
 fails loudly instead of silently resolving to the RF IP. (Semantics note:
 Bunny treats a script answer of `undefined` as "no record" — grey answer.
@@ -48,12 +63,16 @@ then `nginx -s reload` (reload fails closed with "host not found in upstream"
 if DNS is unreachable).
 
 `umami.origa` has its own certificate (SAN `umami.origa.uwuwu.net`, acme.sh
-DNS-01) and its own `rf-proxy-common-umami.conf` snippet — nginx does not
-support variables in `ssl_certificate`, so the shared snippet (which pins the
-`origa.uwuwu.net` cert) cannot be reused for a second host. DNS-01 TXT records
-under a script-attached name resolve through the zone's own records
-(verified 2026-10-22 when the `umami` cert was issued while `umami.origa` was
-already attached to the script).
+DNS-01; renewed 2026-11-08, valid into February 2027) and its own
+`rf-proxy-common-umami.conf` snippet — nginx does not support variables in
+`ssl_certificate`, so the shared snippet (which pins the `origa.uwuwu.net`
+cert) cannot be reused for a second host. DNS-01 TXT records created by
+acme.sh resolve regardless of how the name itself is routed (verified
+2026-10-22 when the name was script-attached, and again 2026-11-08 when it
+was already a plain zone CNAME). Since 2026-11-06 the name itself is a plain
+CNAME straight to Railway (variant A), so this nginx branch is dormant
+fallback: it serves traffic only if the zone record is pointed back at the
+VM.
 
 Legacy reference (superseded 2026-09-30, host TSPU-blocked from RF): the old
 Aeza Frankfurt VPS (85.192.63.249) served the same RF branch via Caddy with
