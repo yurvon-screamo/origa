@@ -99,13 +99,14 @@ fn reset_module_state() {
 /// resolves with `payload` after [`FAKE_INVOKE_DELAY_MS`].
 fn install_fake_tauri(payload: &JsValue) {
     let window = web_sys::window().expect("test browser window");
-    let invoke_fn = js_sys::Function::new_with_args(
-        "command, args",
+    let invoke_body = format!(
         "window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
-         return new Promise(function (resolve) { \
-             setTimeout(function () { resolve(window.__fakeDeviceAiCaps); }, 25); \
-         });",
+         return new Promise(function (resolve) {{ \
+             setTimeout(function () {{ resolve(window.__fakeDeviceAiCaps); }}, \
+                 {FAKE_INVOKE_DELAY_MS}); \
+         }});"
     );
+    let invoke_fn = js_sys::Function::new_with_args("command, args", &invoke_body);
 
     let core = js_sys::Object::new();
     js_sys::Reflect::set(&core, &JsValue::from_str("invoke"), &invoke_fn.into())

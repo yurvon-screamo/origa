@@ -55,8 +55,19 @@ pub async fn get_capabilities() -> Result<Capabilities, String> {
             .clone()
     });
 
-    let outcome = settle_raced(raced, DEFAULT_TIMEOUT).await;
-    IN_FLIGHT_QUERY.with(|slot| *slot.borrow_mut() = None);
+    let outcome = settle_raced(raced.clone(), DEFAULT_TIMEOUT).await;
+    // Clear the slot only while it still holds OUR promise: by the time this
+    // caller resumes, a successor may already have replaced it with a fresh
+    // query — wiping that would orphan the successor's shared query.
+    IN_FLIGHT_QUERY.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        if slot
+            .as_ref()
+            .is_some_and(|in_flight| js_sys::Object::is(in_flight, &raced))
+        {
+            *slot = None;
+        }
+    });
 
     let raw = outcome?;
     serde_wasm_bindgen::from_value::<Capabilities>(raw)
@@ -85,7 +96,9 @@ fn rejected_promise(message: &str) -> js_sys::Promise {
 }
 
 // Shared in-flight capabilities query. `Some` = a query is running; every
-// caller awaits the same raced promise. Cleared as soon as it settles.
+// caller awaits the same raced promise. The settling caller clears it only
+// while it still holds that same promise — a successor that started a fresh
+// query must not be orphaned by an earlier caller's cleanup.
 // (A doc comment here would be an `unused doc comment` — thread_local! does
 // not propagate outer docs.)
 thread_local! {
