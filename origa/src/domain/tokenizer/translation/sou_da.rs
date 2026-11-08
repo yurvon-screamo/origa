@@ -1,7 +1,10 @@
-//! Context-aware detection of the そうだ grammar pattern.
+//! Detection of the そうだ grammar pattern.
 //!
 //! そう has two readings depending on the predecessor token: 様態
 //! (appearance, after a stem) and 伝聞 (hearsay, after a plain/past form).
+//! The corpus carried three variant rules until the N4 triple collapsed
+//! onto the single combined rule (its format_map generates the sou forms
+//! per word class); detection keeps only the false-positive guards.
 //! Split out of the former translation.rs god-file (issue #796).
 
 use crate::dictionary::grammar::{GRAMMAR_RULES, GrammarRule};
@@ -11,20 +14,10 @@ use crate::domain::tokenizer::{PartOfSpeech, TokenInfo};
 
 use super::grammar_match::GrammarMatch;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum SouDaVariant {
-    Appearance,
-    Hearsay,
-    Combined,
-}
-
 /// Context-aware detection for the そうだ grammar pattern.
 ///
-/// そう has two distinct meanings depending on what precedes it:
-/// - 様態 (appearance/conjecture): follows a verb/adjective STEM form
-///   (美味し→美味しそう, 降り→降りそう). Previous token: conjugated (surface != base).
-/// - 伝聞 (hearsay): follows a PLAIN/dictionary form (食べる→食べるそうだ) or a
-///   past/copula auxiliary (降った→降ったそうだ, 元気だ→元気だそうだ).
+/// そう attaches to a predicate: a verb/i-adjective (stem or plain form), a
+/// na-adjective/noun stem, or the た/だ auxiliaries (降ったそうだ, 元気だそうだ).
 ///
 /// A standalone そう that is NOT part of a そうだ construction (the demonstrative
 /// manner adverb そう in そう思う, そうですね) must be left to `resolve_grammar_match`
@@ -60,45 +53,27 @@ pub(super) fn resolve_sou_da_match(
     }
 
     let prev = previous_predicate(tokens, index)?;
-
-    let prev_surface = prev.orthographic_surface_form();
-    let prev_base = prev.orthographic_base_form();
     let prev_pos = prev.part_of_speech();
-
-    let is_stem_form = prev_surface != prev_base
-        && matches!(prev_pos, PartOfSpeech::Verb | PartOfSpeech::IAdjective);
-
-    let is_plain_form = prev_surface == prev_base
-        && matches!(prev_pos, PartOfSpeech::Verb | PartOfSpeech::IAdjective);
+    let prev_surface = prev.orthographic_surface_form();
 
     // た (past) and だ (copula) auxiliaries both attach そう as hearsay:
     // 降ったそうだ (past), 元気だそうだ / 学生だそうだ (copula plain form).
-    let is_ta_or_da_aux = matches!(prev_pos, PartOfSpeech::AuxiliaryVerb)
-        && (prev_surface == "た" || prev_surface == "だ");
-
-    // A na-adjective/noun directly before そう (元気そう, 静かそう) is token-ambiguous:
-    // the 様態 stem and the dictionary form are visually identical. Noun/na-adj
-    // hearsay always carries an intervening copula だ (caught by is_ta_or_da_aux),
-    // so a bare noun/na-adj predecessor leans appearance — the combined rule
-    // covers both readings without forcing a wrong specific label.
-    let is_ambiguous_stem = matches!(
+    // Other auxiliaries (passive/causative chains, ない) do not.
+    let attaches_to_sou_da = matches!(
         prev_pos,
-        PartOfSpeech::NaAdjective | PartOfSpeech::Noun | PartOfSpeech::ProperNoun
-    );
+        PartOfSpeech::Verb
+            | PartOfSpeech::IAdjective
+            | PartOfSpeech::NaAdjective
+            | PartOfSpeech::Noun
+            | PartOfSpeech::ProperNoun
+    ) || (matches!(prev_pos, PartOfSpeech::AuxiliaryVerb)
+        && (prev_surface == "た" || prev_surface == "だ"));
+    if !attaches_to_sou_da {
+        return None;
+    }
 
     let rules = GRAMMAR_RULES.get()?;
-
-    let rule = if is_stem_form {
-        find_sou_rule(rules, native_language, SouDaVariant::Appearance)
-    } else if is_plain_form || is_ta_or_da_aux {
-        find_sou_rule(rules, native_language, SouDaVariant::Hearsay)
-    } else if is_ambiguous_stem {
-        find_sou_rule(rules, native_language, SouDaVariant::Combined)
-    } else {
-        None
-    };
-
-    rule.map(|r| GrammarMatch::from_rule(r, native_language))
+    find_sou_da_rule(rules, native_language).map(|r| GrammarMatch::from_rule(r, native_language))
 }
 
 /// Locates the nearest content token preceding `index`, stopping at a sentence
@@ -131,37 +106,26 @@ fn is_sentence_boundary(token: &TokenInfo) -> bool {
         .any(|c| matches!(c, '。' | '！' | '？'))
 }
 
-/// Resolves a そうだ grammar rule for the requested variant. Anchored to
-/// rule_ids (stable primary keys) instead of legacy title literals: the
-/// hearsay そうだ must not collide with unrelated hearsay rules (～という,
-/// ～とか) or with the appearance variant — the title qualifiers that used
-/// to disambiguate them are legacy now (#503 UX schema). Falls back to
-/// any そうだ rule when the store lacks a variant-specific entry.
-fn find_sou_rule(
+/// Resolves the ～そうだ rule. Anchored to the rule_id (stable primary key).
+/// The corpus carries a single ～そうだ rule since the N4 様態/伝聞 sibling
+/// merge; the anchor must not collide with unrelated hearsay rules (～という,
+/// ～とか). Falls back to any そうだ-pattern rule for stores predating the
+/// merge.
+fn find_sou_da_rule(
     rules: &'static [GrammarRule],
     native_language: &NativeLanguage,
-    variant: SouDaVariant,
 ) -> Option<&'static GrammarRule> {
     use ulid::Ulid;
 
-    // Corpus anchors (cdn/grammar/grammar_v3.json):
-    // ～そうだ（様態・伝聞） combined / ～そうだ（様態） appearance /
-    // ～そうだ（伝聞） hearsay.
-    const COMBINED: &str = "01G000000000000000W0000000";
-    const APPEARANCE: &str = "01G000000000000000W4000000";
-    const HEARSAY: &str = "01G000000000000000W8000000";
+    // Corpus anchor (cdn/grammar/grammar_v3.json): ～そうだ（様態・伝聞）.
+    const SOU_DA: &str = "01G000000000000000W0000000";
 
-    let anchor = match variant {
-        SouDaVariant::Appearance => APPEARANCE,
-        SouDaVariant::Hearsay => HEARSAY,
-        SouDaVariant::Combined => COMBINED,
-    };
-    let anchor_id = Ulid::from_string(anchor).ok();
+    let anchor_id = Ulid::from_string(SOU_DA).ok();
 
     rules
         .iter()
         .find(|rule| Some(*rule.rule_id()) == anchor_id)
-        // Fallback for stores predating the split: any そうだ rule.
+        // Fallback for stores predating the merge: any そうだ rule.
         .or_else(|| {
             rules
                 .iter()
@@ -301,8 +265,8 @@ mod integration_tests {
         );
     }
     // A noun directly before そう (元気そうだ) is token-ambiguous (the 様態 stem
-    // looks identical to the dictionary form), so it resolves to the combined
-    // rule rather than forcing hearsay.
+    // looks identical to the dictionary form), so it resolves to the single
+    // ～そうだ rule.
     #[test]
     fn should_label_sou_as_combined_after_bare_noun() {
         ensure_dictionaries();
@@ -360,8 +324,8 @@ mod integration_tests {
         assert!(
             sou.grammar_label
                 .as_deref()
-                .is_none_or(|label| !label.contains("そうだ（伝聞）")),
-            "そう after a sentence boundary must not be labeled hearsay, got: {:?}",
+                .is_none_or(|label| !label.contains("そうだ")),
+            "そう after a sentence boundary must not be labeled ～そうだ, got: {:?}",
             sou.grammar_label
         );
     }
