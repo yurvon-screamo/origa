@@ -84,8 +84,10 @@ fn rejected_promise(message: &str) -> js_sys::Promise {
     })
 }
 
-/// Shared in-flight capabilities query. `Some` = a query is running; every
-/// caller awaits the same raced promise. Cleared as soon as it settles.
+// Shared in-flight capabilities query. `Some` = a query is running; every
+// caller awaits the same raced promise. Cleared as soon as it settles.
+// (A doc comment here would be an `unused doc comment` — thread_local! does
+// not propagate outer docs.)
 thread_local! {
     static IN_FLIGHT_QUERY: RefCell<Option<js_sys::Promise>> = const { RefCell::new(None) };
 }
