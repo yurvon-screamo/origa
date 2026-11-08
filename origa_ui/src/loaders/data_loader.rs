@@ -217,8 +217,9 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading kanji...");
 
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("dictionary/kanji.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("dictionary/kanji.json").await?;
     let data = KanjiData { kanji_json: json };
 
     yield_to_browser().await;
@@ -237,11 +238,12 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading grammar...");
 
-    let cdn = cdn_provider();
     // v3 corpus (#503 content pass): 677 rules, all four locales in one
     // file — the only grammar format on the CDN since the legacy
     // retirement (#583/#507/#482 removed v1, v2 and the KO/VI overlay).
-    let json = cdn.fetch_text("grammar/grammar_v3.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("grammar/grammar_v3.json").await?;
     let data = GrammarData { grammar_json: json };
 
     yield_to_browser().await;
@@ -293,8 +295,9 @@ pub async fn load_radicals() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading radicals...");
 
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("dictionary/radicals.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("dictionary/radicals.json").await?;
     let data = RadicalData {
         radicals_json: json,
     };

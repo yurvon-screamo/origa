@@ -413,8 +413,11 @@ pub fn text_freshness(text: &str, manifest_hash: Option<&str>) -> TextFreshness 
 /// has nothing to compare against a manifest entry that does not exist —
 /// trusting the cache is the only coherent option.
 ///
-/// The hash cost is paid per call — keep this for kilobyte-scale content
-/// files, not multi-megabyte blobs.
+/// The hash cost is one sha256 pass over the body per call. Dictionary
+/// loaders run once per app start (OnceLock guards), so even the largest
+/// current consumer (grammar_v3.json, ~10 MB) pays a one-off start-up
+/// cost. rkyv blobs stay out of this path — they carry their own
+/// manifest_guard header and are verified without a text hash pass.
 async fn resolve_verified_text<P, F, Fut>(
     cdn: &P,
     path: &str,
