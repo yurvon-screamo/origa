@@ -188,6 +188,39 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
   });
 
+  describe("with non-true isOnline shapes (platform drift)", () => {
+    // The gate trusts only strict true: any other value Bunny's platform
+    // might hand back must degrade RF to the world path, never answer the A.
+    const shapes = [
+      ['string "true"', "true"],
+      ["number 1", 1],
+      ["null", null],
+      ["plain object", {}],
+      ["NaN", Number.NaN],
+    ];
+
+    for (const [label, value] of shapes) {
+      it(`treats isOnline=${label} as offline (fail-closed -> world CNAME)`, async () => {
+        globalThis.ARecord = ARecord;
+        globalThis.CnameRecord = CnameRecord;
+        globalThis.Monitoring = { getStatus: () => ({ isOnline: value, latency: 42 }) };
+        try {
+          const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+
+          const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
+
+          assert.ok(answer instanceof CnameRecord);
+          assert.equal(answer.hostname, S3_WORLD_CNAME);
+          assert.equal(answer.ttl, 300);
+        } finally {
+          delete globalThis.ARecord;
+          delete globalThis.CnameRecord;
+          delete globalThis.Monitoring;
+        }
+      });
+    }
+  });
+
   describe("with the Monitoring global missing (platform drift)", () => {
     before(() => {
       globalThis.ARecord = ARecord;
