@@ -3,7 +3,6 @@ import { test } from "node:test";
 
 import { descriptors, listDescriptors } from "./catalog.ts";
 import { PRESET_IDS } from "./presets/registry.ts";
-import { VIEWPORTS } from "./viewports.ts";
 
 test("every catalog entry is addressed by its own id", () => {
   for (const [key, descriptor] of Object.entries(descriptors)) {
@@ -20,14 +19,13 @@ test("every catalog entry names a known data state", () => {
   }
 });
 
-test("every catalog entry names known viewports", () => {
+test("no catalog entry restricts viewports — every scenario captures the pair", () => {
   for (const descriptor of listDescriptors()) {
-    for (const viewport of descriptor.viewports ?? []) {
-      assert.ok(
-        viewport in VIEWPORTS,
-        `${descriptor.id} names an unknown viewport`,
-      );
-    }
+    assert.ok(
+      !("viewports" in descriptor),
+      `${descriptor.id} restricts viewports — the desktop+mobile pair is the policy, ` +
+        `a per-scenario restriction lives only in the run (--viewports), not the catalog`,
+    );
   }
 });
 

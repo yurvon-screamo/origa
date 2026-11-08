@@ -150,11 +150,12 @@ function headCommit(): string {
 }
 
 function listCommand(): number {
-  console.log("Сценарии:");
+  console.log(
+    "Сценарии (каждый снимается в паре desktop+mobile; --viewports сужает прогон):",
+  );
   for (const descriptor of listDescriptors()) {
-    const viewports = (descriptor.viewports ?? DEFAULT_VIEWPORTS).join(", ");
     console.log(
-      `  ${descriptor.id.padEnd(20)} ${descriptor.title} — ${descriptor.route} [${viewports}]`,
+      `  ${descriptor.id.padEnd(20)} ${descriptor.title} — ${descriptor.route}`,
     );
   }
   return 0;

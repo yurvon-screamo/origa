@@ -37,8 +37,7 @@ export async function runScenario(
   options: RunOptions,
 ): Promise<ShotEntry[]> {
   const scenario = getImplementation(id);
-  const viewports =
-    options.viewports ?? scenario.viewports ?? DEFAULT_VIEWPORTS;
+  const viewports = options.viewports ?? DEFAULT_VIEWPORTS;
   const locale = options.locale ?? scenario.locale;
   const baseURL =
     options.baseURL ??
