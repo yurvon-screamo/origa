@@ -162,8 +162,8 @@ pub fn compute_mel_spectrogram(samples: &[f32]) -> Result<Array3<f32>, String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        N_FFT, N_FRAMES, N_MELS, compute_mel_spectrogram, create_mel_filter_bank,
-        hanning_window, hz_to_mel, mel_to_hz, reflect_pad,
+        N_FFT, N_FRAMES, N_MELS, compute_mel_spectrogram, create_mel_filter_bank, hanning_window,
+        hz_to_mel, mel_to_hz, reflect_pad,
     };
     use std::f64::consts::PI;
 
