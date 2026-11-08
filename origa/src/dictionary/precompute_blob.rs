@@ -208,25 +208,26 @@ impl From<&rkyv::Archived<PartOfSpeech>> for PartOfSpeech {
 }
 
 #[cfg(test)]
+fn sample_entry() -> PrecomputedEntry {
+    PrecomputedEntry {
+        furigana_spans: vec![crate::domain::AnnotatedSpan {
+            text: "私は学生です。".to_string(),
+            reading: Some("ワタシワガクセイデス".to_string()),
+            reading_spans: vec![],
+        }],
+        tokens: vec![PrecomputedToken {
+            surface: "私".to_string(),
+            base: "私".to_string(),
+            reading: "ワタシ".to_string(),
+            pos: PartOfSpeech::Pronoun,
+        }],
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::domain::lookup_precomputed;
-
-    fn sample_entry() -> PrecomputedEntry {
-        PrecomputedEntry {
-            furigana_spans: vec![crate::domain::AnnotatedSpan {
-                text: "私は学生です。".to_string(),
-                reading: Some("ワタシワガクセイデス".to_string()),
-                reading_spans: vec![],
-            }],
-            tokens: vec![PrecomputedToken {
-                surface: "私".to_string(),
-                base: "私".to_string(),
-                reading: "ワタシ".to_string(),
-                pos: PartOfSpeech::Pronoun,
-            }],
-        }
-    }
 
     #[test]
     fn serialize_access_roundtrip_answers_lookups() {
@@ -280,22 +281,6 @@ mod deflated_tests {
             schema_version: SCHEMA_VERSION,
             source_sha256: [0u8; 32],
             manifest_guard: manifest_guard_from_hex_hashes(&[guard_seed]),
-        }
-    }
-
-    fn sample_entry() -> PrecomputedEntry {
-        PrecomputedEntry {
-            furigana_spans: vec![crate::domain::AnnotatedSpan {
-                text: "私は学生です。".to_string(),
-                reading: Some("ワタシワガクセイデス".to_string()),
-                reading_spans: vec![],
-            }],
-            tokens: vec![PrecomputedToken {
-                surface: "私".to_string(),
-                base: "私".to_string(),
-                reading: "ワタシ".to_string(),
-                pos: PartOfSpeech::Pronoun,
-            }],
         }
     }
 
