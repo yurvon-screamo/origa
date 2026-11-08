@@ -38,6 +38,8 @@ import stat
 import subprocess
 from pathlib import Path
 
+import pytest
+
 REPO_SCRIPTS = Path(__file__).resolve().parent.parent
 POLLER = REPO_SCRIPTS / "uptime_poller.sh"
 
@@ -337,6 +339,32 @@ class TestHttpProbes:
         messages = telegram_messages(tmp_path, check="rf-branch")
         assert len(messages) == 1, messages
         assert "ALERT [origa-poller] rf-branch" in messages[0]
+
+    @pytest.mark.parametrize(
+        "marker",
+        [
+            "via: 1.1 cloudfront.net (CloudFront)",
+            "x-cache: Miss from cloudfront",
+            "x-amz-cf-id: abc123",
+        ],
+    )
+    def test_rf_branch_guard_flags_each_cloudfront_marker(
+        self, tmp_path: Path, marker: str
+    ) -> None:
+        # The second leg of the guard (fix 1781ee48): a versioned nginx header
+        # alone is not enough — any CloudFront-only marker on the pinned IP
+        # means the world branch is answering, even with the VM-like server
+        # line forged. Each marker must trip the guard on its own.
+        forged = {
+            "FAKE_RF_BRANCH_RESPONSE": (
+                "HTTP/2 200\nserver: nginx/1.28.3 (Ubuntu)\n" + marker + "\n"
+            )
+        }
+        run_cycle(tmp_path, forged)
+        run_cycle(tmp_path, forged)
+        messages = telegram_messages(tmp_path, check="rf-branch")
+        assert len(messages) == 1, messages
+        assert "CloudFront markers" in messages[0]
 
 
 class TestCycleResilience:
