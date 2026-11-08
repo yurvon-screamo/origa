@@ -152,6 +152,15 @@ def describe_mismatch(current: dict, monitor: DesiredMonitor) -> str:
         problems.append("target")
     if monitor.keyword and current.get("keyword") != monitor.keyword:
         problems.append("keyword")
+    # The v3 listing exposes only a subset of the v2 fields; the SSL flag is
+    # one of them. When it is present we enforce it too — so flipping the
+    # flag by hand in the UI does not leave the monitor "in sync". Absent
+    # keys stay outside the idempotency contract (the runbook documents it).
+    if (
+        "ssl_expiration_warn" in current
+        and bool(current["ssl_expiration_warn"]) != monitor.ssl_expiry_reminder
+    ):
+        problems.append("ssl-flag")
     return ", ".join(problems)
 
 

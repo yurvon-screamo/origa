@@ -94,6 +94,24 @@ def _existing_entry(name: str, monitor_id: str, target: str, keyword: str) -> di
     }
 
 
+def test_diff_enforces_ssl_flag_when_v3_exposes_it() -> None:
+    monitor = setup.DESIRED_MONITORS[1]  # ssl_expiry_reminder=True
+    existing = [_existing_entry(monitor.name, "5", monitor.target, monitor.keyword)]
+    existing[0]["ssl_expiration_warn"] = False  # flipped by hand in the UI
+    actions = setup.diff_plan(existing, [monitor])
+    assert [a.action for a in actions] == ["edit"]
+    assert "ssl-flag" in actions[0].reason
+
+    existing[0]["ssl_expiration_warn"] = True
+    actions = setup.diff_plan(existing, [monitor])
+    assert [a.action for a in actions] == ["skip"]
+
+    # Absent key stays outside the idempotency contract (documented in the
+    # runbook): the listing without the field still counts as in sync.
+    plain = [_existing_entry(monitor.name, "5", monitor.target, monitor.keyword)]
+    assert [a.action for a in setup.diff_plan(plain, [monitor])] == ["skip"]
+
+
 def test_diff_plans_add_for_unknown_monitor() -> None:
     actions = setup.diff_plan([], setup.DESIRED_MONITORS[:1])
     assert [(a.action, a.reason) for a in actions] == [("add", "")]

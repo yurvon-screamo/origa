@@ -43,6 +43,11 @@ fallback 404 (`Application not found`) — тихий слап custom-domain bin
 `DomainExpiryReminder` — строки-дни `"30"`, `MID` — адрес монитора при edit;
 доставка алертов — через `ContactList` (полей SendEmail/SendSMS в v2 нет).
 Локации мониторинга — Frankfurt, Warsaw, London, Amsterdam (кворум).
+Граница идемпотентности setup-скрипта: сверка по `name`/`target`/`keyword` и
+доступному в v3-листинге `ssl_expiration_warn` — ручное переключение SSL-флага
+в UI вернёт edit при следующем `--apply`; остальные поля (частоту, напоминания
+о днях, локации) v3-листинг не отдаёт и вне контракта — их правят вручную в UI
+HetrixTools, правка `DESIRED_MONITORS` в скрипте их не вернёт.
 
 Счёт против free-лимита 15: 4 website + 2 heartbeat = 6, запас 9. Если
 включите App Sleeping на спящем сервисе — HTTP-монитор этого сервиса снимается
