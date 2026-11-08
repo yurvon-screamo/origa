@@ -190,13 +190,14 @@ wrong» в UI — карточка воронки без данных):
 | Onboarding funnel, Landing to Web app | **Funnels** | карточки с шагами и drop-off |
 | User retention (weekly) | **Retention** | cohort-таблица (окно из parameters) |
 | Traffic sources (UTM) | **UTM** | конструктор source/medium/campaign |
-| Landing downloads (by platform) | **Breakdown** | Fields-конструктор: выбрать `Event` в Fields — разбивка всех событий; `download_*` фильтром по значению |
+| Landing downloads (by platform) | **Events** | список событий с count (имя события в строке); `download_*` читаются в этом списке. Вкладка Breakdown — Fields-конструктор по размерностям (path/referrer/geo/UTM…): опции `Event` в меню Fields **нет** |
 
 Breakdown-отчёт сохраняется валидными параметрами (`fields: ["event"]` —
 строки-имена из enum, объекты и `filter` в parameters схемой не допускаются —
-иначе вкладка отчёт не рендерит), но карточкой на вкладке не показывается —
-вкладка работает как Fields-конструктор, сегмент `download_*` выбирается
-фильтром при просмотре.
+иначе вкладка отчёт не рендерит), но карточкой на вкладке не показывается:
+вкладка Breakdown — Fields-конструктор по размерностям, и `Event` в его меню
+отсутствует (проверено DOM-пробой меню). Событийная разбивка — вкладка
+**Events** (полный список событий с count).
 
 Типы отчётов v3.4.0: `attribution|breakdown|funnel|goal|heatmap|journey|performance|retention|revenue|utm`
 (инсайтов-«insights» нет — их роль играют breakdown). Создание:
