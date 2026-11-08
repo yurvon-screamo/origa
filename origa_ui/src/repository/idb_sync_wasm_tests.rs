@@ -64,7 +64,7 @@ async fn sync_meta_roundtrip_and_missing_fallback() {
 }
 
 #[wasm_bindgen_test]
-async fn sync_meta_key_stays_out_of_user_listings() {
+async fn sync_meta_key_stays_out_of_user_reads() {
     clear_sync_meta().await;
 
     let repo = FileSystemUserRepository::new();
@@ -87,12 +87,15 @@ async fn sync_meta_key_stays_out_of_user_listings() {
         .await
         .expect("meta stored");
 
-    // The user listing stays healthy with the meta record present: a user
-    // is returned (the meta key must never surface as a "corrupted user
-    // entry" that would break parsing) — which user depends on key order
-    // across the shared suite, so presence is the assertion.
+    // The session-scoped read stays healthy with the meta record present:
+    // the seeded user resolves by its canonical id, and the meta key never
+    // surfaces as a "corrupted user entry" that would break parsing.
+    let _session = crate::test_support::install_session_for_user(&user);
     let current = repo.get_current_user().await.expect("get");
-    assert!(current.is_some(), "a user must be listed beside sync_meta");
+    assert_eq!(
+        current.expect("session user listed beside sync_meta").id(),
+        user.id()
+    );
 
     // The existence probe agrees (inherent method on the repository).
     assert!(repo.has_any_user().await.expect("has_any_user"));
@@ -100,6 +103,8 @@ async fn sync_meta_key_stays_out_of_user_listings() {
     // And the meta survives alongside the user records.
     let reloaded = store.load().await.expect("meta reload");
     assert_eq!(reloaded.last_synced_fingerprint.as_deref(), Some("fp"));
+
+    repo.delete(user.id()).await.expect("user removed");
 }
 
 /// Record-level cleanup for `user:*` keys used by the codec tests.
@@ -183,13 +188,24 @@ async fn user_records_store_json_string_and_read_legacy_objects() {
             .expect("legacy stored");
     }
 
-    // Both records decode through the listing path (key order decides which
-    // one `get_current_user` returns first, so assert presence only).
+    // Both records decode through the read path: the session resolves each
+    // record by its canonical id — the string-format record as-is, and the
+    // legacy object record through the transparent upgrade decode.
+    let _session = crate::test_support::install_session_for_user(&string_user);
     let current = repo
         .get_current_user()
         .await
-        .expect("get after both formats");
-    assert!(current.is_some(), "records in either format must list");
+        .expect("get string format")
+        .expect("session user readable");
+    assert_eq!(current.id(), string_user.id());
+
+    let _legacy_session = crate::test_support::install_session_for_user(&legacy_user);
+    let legacy_current = repo
+        .get_current_user()
+        .await
+        .expect("get legacy format")
+        .expect("legacy object record readable");
+    assert_eq!(legacy_current.id(), legacy_user.id());
 
     clear_user_keys(&[string_user.id(), legacy_user.id()]).await;
 }
