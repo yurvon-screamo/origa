@@ -154,6 +154,34 @@ fn install_failing_tauri() {
         .expect("install failing __TAURI__");
 }
 
+/// Installs a fake `window.__TAURI__.core.invoke` that throws synchronously —
+/// models a bridge that cannot even start the call (`invoke_promise` returns
+/// `Err`), exercising the already-rejected-promise path of the shared slot.
+fn install_throwing_tauri() {
+    let window = web_sys::window().expect("test browser window");
+    let invoke_fn = js_sys::Function::new_with_args(
+        "command, args",
+        "window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
+         throw new Error('sync bridge failure');",
+    );
+
+    let core = js_sys::Object::new();
+    js_sys::Reflect::set(&core, &JsValue::from_str("invoke"), &invoke_fn.into())
+        .expect("set core.invoke");
+    let tauri = js_sys::Object::new();
+    js_sys::Reflect::set(&tauri, &JsValue::from_str("core"), &core.into())
+        .expect("set __TAURI__.core");
+
+    js_sys::Reflect::set(
+        &window,
+        &JsValue::from_str("__fakeInvokeCount"),
+        &JsValue::from_f64(0.0),
+    )
+    .expect("reset invoke counter");
+    js_sys::Reflect::set(&window, &JsValue::from_str("__TAURI__"), &tauri.into())
+        .expect("install throwing __TAURI__");
+}
+
 /// Removes the fake bridge and its globals.
 fn remove_fake_tauri() {
     let window = match web_sys::window() {
@@ -306,6 +334,65 @@ async fn a_failed_query_is_not_cached_so_the_next_call_retries() {
         invoke_count(),
         2.0,
         "failures are not cached — each call retries the query"
+    );
+
+    reset_module_state();
+}
+
+#[wasm_bindgen_test]
+async fn a_synchronously_throwing_invoke_is_not_cached_so_the_next_call_retries() {
+    reset_module_state();
+    install_throwing_tauri();
+
+    assert!(
+        !device_ai::available(Feature::SpeechRecognition).await,
+        "a bridge that cannot even start the call routes to the fallback"
+    );
+    assert!(
+        !device_ai::available(Feature::SpeechRecognition).await,
+        "the retry also fails while the bridge keeps throwing"
+    );
+    assert_eq!(
+        invoke_count(),
+        2.0,
+        "a synchronous invoke failure must not be cached — each call retries"
+    );
+
+    reset_module_state();
+}
+
+#[wasm_bindgen_test]
+async fn three_concurrent_first_callers_share_one_query_and_all_get_the_real_result() {
+    reset_module_state();
+    install_fake_tauri(&capabilities_payload(true));
+
+    let remaining = Rc::new(Cell::new(3_u32));
+    let results: Rc<std::cell::RefCell<Vec<bool>>> = Rc::new(std::cell::RefCell::new(Vec::new()));
+    for _ in 0..3 {
+        let remaining = remaining.clone();
+        let results = results.clone();
+        spawn_local(async move {
+            let available = device_ai::available(Feature::SpeechRecognition).await;
+            results.borrow_mut().push(available);
+            remaining.set(remaining.get() - 1);
+        });
+    }
+    wait_for_tasks(&remaining).await;
+
+    let results = results.borrow();
+    assert_eq!(
+        results.len(),
+        3,
+        "all three concurrent callers must have completed"
+    );
+    assert!(
+        results.iter().all(|&available| available),
+        "no caller may receive the synthetic unavailable: {results:?}"
+    );
+    assert_eq!(
+        invoke_count(),
+        1.0,
+        "the shared query slot must survive until the query settles"
     );
 
     reset_module_state();
