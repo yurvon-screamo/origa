@@ -127,6 +127,14 @@ async fn verified_fetch_stale_kanji_cache_heals_through_load_kanji() {
         .expect("mirror manifest must track dictionary/kanji.json for this test to be meaningful");
 
     seed_cache_body(&cache, KANJI_PATH, STALE_KANJI_JSON).await;
+    let seeded_check = read_cache_text(&cache, KANJI_PATH).await;
+    assert!(
+        seeded_check.as_deref() == Some(STALE_KANJI_JSON),
+        "precondition: seed must land in the cache, got {:?}",
+        seeded_check
+            .as_deref()
+            .map(|t| t.chars().take(60).collect::<String>())
+    );
     assert_eq!(
         text_freshness(STALE_KANJI_JSON, Some(manifest_hash)),
         TextFreshness::Stale,
