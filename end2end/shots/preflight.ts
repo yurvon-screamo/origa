@@ -135,7 +135,8 @@ function checkBundle(facts: PreflightFacts): string[] {
         if (!facts.fontsReady) {
             errors.push(
                 "в локальном корпусе нет cdn/fonts/ — бандл соберётся без @font-face (sans-serif). " +
-                    "Укажите каталог корпуса через ORIGA_CDN_CACHE_DIR (симлинк или копия dictionaries/ + fonts/)",
+                    "ORIGA_CDN_CACHE_DIR параметризует раздачу контента, но реестр шрифтов билда " +
+                    "build.rs читает из repo-локального cdn/fonts: для брендовых скринов симлинк cdn → корпус",
             );
         }
         return errors;

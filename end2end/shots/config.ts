@@ -44,6 +44,33 @@ function parsePort(name: string, raw: string | number): number {
     return value;
 }
 
+/**
+ * Startup budget of the app webServer, milliseconds.
+ *
+ * A warm trunk build answers the port within seconds; the budget only
+ * bounds the cold case — an empty cargo cache compiles the whole
+ * workspace for wasm32, which does not fit the previous 10-minute
+ * default and killed the run on a fresh machine. A server process that
+ * exits is reported immediately regardless of this budget, so a
+ * generous default costs nothing except a longer hang for a start that
+ * neither answers nor dies.
+ *
+ * Overridable (`E2E_APP_SERVER_TIMEOUT`): machines slower than the
+ * default hour can set a higher ceiling.
+ */
+export const APP_SERVER_TIMEOUT = parseTimeout(
+    "E2E_APP_SERVER_TIMEOUT",
+    process.env.E2E_APP_SERVER_TIMEOUT ?? 3_600_000,
+);
+
+function parseTimeout(name: string, raw: string | number): number {
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(`${name} должно быть положительным числом миллисекунд, получено: "${raw}"`);
+    }
+    return value;
+}
+
 /** Port the app is served on. */
 export const APP_PORT = 1420;
 
