@@ -175,6 +175,10 @@ fn is_on_variant_pair(a: &str, b: &str) -> bool {
     false
 }
 
+/// Remove every small tsu from the reading. Filtering ALL っ (not just a
+/// final one) is intentional: on readings place っ only in gemination
+/// position, so any っ-bearing reading joins the family of its
+/// dakuten-free base through the prefix checks below.
 fn strip_gemination(reading: &str) -> String {
     reading.chars().filter(|&c| c != 'っ').collect()
 }

@@ -38,7 +38,11 @@ impl KanjiCorpusIndex {
                         })
                         .collect(),
                 };
-                for kanji in word.text.chars().filter(|c| is_kanji(*c)) {
+                // Dedup: a word with a repeated kanji must land in that
+                // kanji's list once, or exact_reading_count would double it.
+                let kanji_chars: HashSet<char> =
+                    word.text.chars().filter(|c| is_kanji(*c)).collect();
+                for kanji in kanji_chars {
                     words_by_kanji.entry(kanji).or_default().push(word.clone());
                 }
             }
