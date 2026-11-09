@@ -7,6 +7,11 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
+| quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
+| quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
+| quiz-question | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:47.225Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--desktop-67f28019.png) |
+| writing-card | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:33.353Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--desktop-1be097ec.png) |
 | review-body-quiz-2 | lesson-review-body | mobile | ru-RU | 390×844 | 2026-11-08T12:51:36.548Z | 5d64bf7a | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261104060556/lesson-review-body--review-body-quiz-2--mobile-92de1bde.png) |
 | review-body-quiz-1 | lesson-review-body | mobile | ru-RU | 390×844 | 2026-11-08T12:51:30.386Z | 5d64bf7a | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261104060556/lesson-review-body--review-body-quiz-1--mobile-433b1e9c.png) |
 | review-body-quiz-1 | lesson-review-body | desktop | ru-RU | 1280×800 | 2026-11-08T12:48:37.977Z | 5d64bf7a | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261104060556/lesson-review-body--review-body-quiz-1--desktop-983de520.png) |
@@ -16,12 +21,7 @@
 | pack-answer-table | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-30T19:43:34.106Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-counter-pack--pack-answer-table--desktop-3b39b9da.png) |
 | pack-answer | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-30T19:43:33.196Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-counter-pack--pack-answer--desktop-a4a55164.png) |
 | pack-front | lesson-counter-pack | desktop | ru-RU | 1280×800 | 2026-10-30T19:43:32.197Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-counter-pack--pack-front--desktop-0a8e06a6.png) |
-| quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-30T19:43:23.987Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
-| quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-30T19:43:23.071Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | writing-card | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-10-30T19:43:17.181Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--mobile-db0842dd.png) |
-| quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-30T19:42:50.856Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
-| quiz-question | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-30T19:42:49.648Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--desktop-67f28019.png) |
-| writing-card | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-10-30T19:42:37.805Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--desktop-1be097ec.png) |
 | grammar-details | lesson-acquaintance-grammar | mobile | ru-RU | 390×2762 | 2026-10-30T19:42:15.900Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-details--mobile-e362dc42.png) |
 | grammar-answer | lesson-acquaintance-grammar | mobile | ru-RU | 390×844 | 2026-10-30T19:42:14.966Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-answer--mobile-9959f481.png) |
 | grammar-presentation | lesson-acquaintance-grammar | mobile | ru-RU | 390×1974 | 2026-10-30T19:42:12.905Z | d6f2df45 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-acquaintance-grammar--grammar-presentation--mobile-fb791487.png) |

@@ -9,10 +9,10 @@ use clap::Parser;
 use crate::cli::{Cli, Commands};
 use crate::commands::{
     run_build_cdn_rkyv, run_build_grammar_precompute, run_build_phrase_dataset,
-    run_build_phrase_precompute, run_dedup_kanji_readings, run_enrich_phrases_with_grammar,
-    run_find_missing, run_generate_grammar, run_generate_grammar_prompt, run_ndlocr,
-    run_patch_kanji_readings, run_regenerate_invalid, run_tokenize, run_tokenize_well_known,
-    run_validate_dictionary,
+    run_build_phrase_precompute, run_collapse_kanji_readings, run_dedup_kanji_readings,
+    run_enrich_phrases_with_grammar, run_find_missing, run_generate_grammar,
+    run_generate_grammar_prompt, run_ndlocr, run_patch_kanji_readings, run_regenerate_invalid,
+    run_tokenize, run_tokenize_well_known, run_validate_dictionary,
 };
 
 #[tokio::main]
@@ -126,6 +126,11 @@ async fn main() {
             .await
         },
         Commands::DedupKanjiReadings { input, dry_run } => run_dedup_kanji_readings(input, dry_run),
+        Commands::CollapseKanjiReadings {
+            input,
+            furigana,
+            apply,
+        } => run_collapse_kanji_readings(input, furigana, apply),
         Commands::PatchKanjiReadings {
             input,
             patches,
