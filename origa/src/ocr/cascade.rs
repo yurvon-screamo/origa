@@ -87,3 +87,6 @@ impl CascadeRecognizer<ParseqRecognizer> {
         Ok(Self::from_recognizers(rec30, rec50, rec100))
     }
 }
+
+#[cfg(test)]
+mod tests;
