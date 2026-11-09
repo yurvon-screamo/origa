@@ -1,6 +1,4 @@
 use super::*;
-use base64::Engine;
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use chrono::Utc;
 use origa::domain::{
     Card, DailyLoad, JlptProgress, KnowledgeSet, NativeLanguage, PhraseCard, User,
@@ -222,62 +220,4 @@ fn merge_unions_canonical_and_legacy_knowledge_set_cards() {
     assert!(merged.knowledge_set().get_card(canonical_card_id).is_some());
     assert!(merged.knowledge_set().get_card(legacy_card_id).is_some());
     assert_eq!(merged.knowledge_set().study_cards().len(), 2);
-}
-
-// ---------------------------------------------------------------------------
-// canonical_id_from_trailbase_id (resolve_canonical_id pure half)
-// ---------------------------------------------------------------------------
-
-#[test]
-fn canonical_id_returns_none_for_empty_trailbase_id() {
-    // No session id means we cannot derive a canonical id; deferring the
-    // migration (rather than guessing) is the correct outcome.
-    assert!(canonical_id_from_trailbase_id("").is_none());
-}
-
-#[test]
-fn canonical_id_returns_none_for_undecodable_trailbase_id() {
-    // uuid_to_ulid fails safe to nil for garbage input; the canonical-id
-    // resolver must treat nil as "no id" and return None so the migration
-    // defers instead of re-keying everything under nil again.
-    assert!(canonical_id_from_trailbase_id("not-a-valid-id").is_none());
-}
-
-#[test]
-fn canonical_id_returns_some_for_valid_base64_url_no_pad() {
-    let expected = canonical_id();
-    let encoded = URL_SAFE_NO_PAD.encode(expected.to_bytes());
-
-    let resolved = canonical_id_from_trailbase_id(&encoded);
-
-    assert_eq!(resolved, Some(expected));
-}
-
-#[test]
-fn canonical_id_returns_some_for_valid_hex_uuid() {
-    let expected = canonical_id();
-    let bytes = expected.to_bytes();
-    let hex = format!(
-        "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-        bytes[0],
-        bytes[1],
-        bytes[2],
-        bytes[3],
-        bytes[4],
-        bytes[5],
-        bytes[6],
-        bytes[7],
-        bytes[8],
-        bytes[9],
-        bytes[10],
-        bytes[11],
-        bytes[12],
-        bytes[13],
-        bytes[14],
-        bytes[15],
-    );
-
-    let resolved = canonical_id_from_trailbase_id(&hex);
-
-    assert_eq!(resolved, Some(expected));
 }

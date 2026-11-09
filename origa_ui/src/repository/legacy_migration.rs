@@ -4,9 +4,9 @@
 //! under `user:00000000000000000000000000` because the JWT `sub` was parsed as
 //! hex and collapsed to `Ulid::nil()`. After the fix the canonical id is
 //! derived from the session, so new saves land on `user:{correct_id}` — but the
-//! old nil-keyed record still holds the user's accumulated progress and would
-//! be returned nondeterministically by `get_current_user` (which takes the
-//! first row in the store).
+//! old nil-keyed record still holds the user's accumulated progress, and the
+//! session-scoped `get_current_user` read never sees it (it reads the
+//! canonical key only).
 //!
 //! This module re-keys such legacy rows to the canonical id derived from the
 //! active session and deletes the stale nil row, preserving progress across
@@ -21,7 +21,7 @@ use origa::domain::{OrigaError, User};
 use ulid::Ulid;
 
 use super::session::get_session;
-use super::uuid_to_ulid;
+use super::trailbase_id::canonical_id_from_trailbase_id;
 
 #[path = "legacy_migration_idb.rs"]
 mod legacy_migration_idb;
@@ -82,18 +82,6 @@ fn mark_migration_done() {
 fn resolve_canonical_id() -> Option<Ulid> {
     let session = get_session()?;
     canonical_id_from_trailbase_id(&session.trailbase_id)
-}
-
-/// Pure projection of a session's `trailbase_id` onto the canonical `Ulid`.
-/// Extracted from `resolve_canonical_id` so the encoding/empty/nil rules are
-/// unit-testable without a browser session: callers that already hold a
-/// session string can reuse this directly.
-fn canonical_id_from_trailbase_id(trailbase_id: &str) -> Option<Ulid> {
-    if trailbase_id.is_empty() {
-        return None;
-    }
-    let id = uuid_to_ulid(trailbase_id);
-    (id != Ulid::nil()).then_some(id)
 }
 
 /// Rebuild a legacy user row under the canonical id. The domain `User` has no
