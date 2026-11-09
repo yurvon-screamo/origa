@@ -158,3 +158,149 @@ pub fn compute_mel_spectrogram(samples: &[f32]) -> Result<Array3<f32>, String> {
     tracing::debug!(shape = ?output.shape(), "Mel spectrogram computed");
     Ok(output)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        N_FFT, N_FRAMES, N_MELS, compute_mel_spectrogram, create_mel_filter_bank, hanning_window,
+        hz_to_mel, mel_to_hz, reflect_pad,
+    };
+    use std::f64::consts::PI;
+
+    /// Analytic golden for digital silence: zero power spectrum →
+    /// log10(FLOOR) = −10, the frame-max clamp (−18) does not bite, and the
+    /// normalization gives (−10 + 4) / 4 = −1.5 exactly.
+    const SILENCE_VALUE: f64 = -1.5;
+
+    /// A deterministic 440 Hz sine at 16 kHz — the Whisper-native rate, so
+    /// the frequency axis is exercised without resampling noise.
+    fn sine_440hz(seconds: f64) -> Vec<f32> {
+        let len = (seconds * 16_000.0) as usize;
+        (0..len)
+            .map(|i| (2.0 * PI * 440.0 * i as f64 / 16_000.0).sin() as f32 * 0.5)
+            .collect()
+    }
+
+    #[test]
+    fn hz_mel_conversions_roundtrip() {
+        for hz in [0.0, 100.0, 440.0, 1000.0, 4000.0, 8000.0] {
+            let roundtripped = mel_to_hz(hz_to_mel(hz));
+            assert!(
+                (roundtripped - hz).abs() < 1e-6,
+                "{hz} Hz roundtripped to {roundtripped}"
+            );
+        }
+    }
+
+    #[test]
+    fn hanning_window_is_periodic_symmetric_and_peaks_in_the_middle() {
+        let window = hanning_window(N_FFT);
+        assert_eq!(window.len(), N_FFT);
+        assert!(window[0].abs() < 1e-9);
+        let mid = N_FFT / 2;
+        assert!((window[mid] - 1.0).abs() < 1e-9);
+        // Periodic (DFT-even) window: w[n] == w[size - n].
+        for n in 1..mid {
+            assert!(
+                (window[n] - window[N_FFT - n]).abs() < 1e-12,
+                "window not periodic-symmetric at {n}"
+            );
+        }
+    }
+
+    #[test]
+    fn mel_filter_bank_rows_form_triangles_within_unit_range() {
+        let bank = create_mel_filter_bank();
+        assert_eq!(bank.shape(), &[N_MELS, N_FFT / 2 + 1]);
+        for m in 0..N_MELS {
+            let row = bank.row(m);
+            let mut peak = 0.0f64;
+            for &v in row.iter() {
+                assert!(
+                    (0.0..=1.0).contains(&v),
+                    "filter {m} value {v} out of range"
+                );
+                peak = peak.max(v);
+            }
+            assert!(peak > 0.0, "filter {m} never overlaps the spectrum");
+        }
+    }
+
+    #[test]
+    fn reflect_pad_mirrors_edges_and_rejects_empty_input() {
+        assert!(reflect_pad(&[]).is_err());
+        let padded = reflect_pad(&[1.0, 2.0, 3.0]).expect("pad");
+        assert_eq!(padded.len(), 3 + N_FFT);
+        let pad = N_FFT / 2;
+        assert_eq!(padded[pad], 1.0, "body starts with the first sample");
+        assert_eq!(padded[pad - 1], 1.0, "left edge mirrors the first sample");
+        assert_eq!(padded[pad + 3], 3.0, "right edge mirrors the last sample");
+    }
+
+    #[test]
+    fn silence_maps_every_element_to_the_floor_value() {
+        // Analytic golden: zero spectrum → log10(FLOOR) = -10 → frame max -10,
+        // clamp t = -18 does not bite, normalization gives (−10+4)/4 = −1.5.
+        let result = compute_mel_spectrogram(&[0.0; 8000]).expect("silence");
+        assert_eq!(result.shape(), &[1, N_MELS, N_FRAMES]);
+        for &v in result.iter() {
+            assert!((v as f64 - SILENCE_VALUE).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn short_input_leaves_trailing_frames_at_the_floor_value() {
+        // Arrange — 1/8 s of tone: frames past the signal end have no energy.
+        let result = compute_mel_spectrogram(&sine_440hz(0.125)).expect("short tone");
+
+        // Assert — early frames carry energy, tail is exactly silence.
+        let early = result[[0, 20, 5]] as f64;
+        assert!(early > SILENCE_VALUE, "toned frame must exceed the floor");
+        let tail = result[[0, 20, N_FRAMES - 10]] as f64;
+        assert!((tail - SILENCE_VALUE).abs() < 1e-6);
+    }
+
+    #[test]
+    fn sine_tone_peaks_near_the_mel_band_of_its_frequency() {
+        // Arrange — 2 s of 440 Hz. mel(440) ≈ 549 sits between band centers
+        // 14 (≈416 Hz) and 15 (≈451 Hz); averaging over voiced frames must
+        // place the peak in the 14–16 window. Catches a swapped hz↔mel axis
+        // or an off-by-one in the band layout.
+        let result = compute_mel_spectrogram(&sine_440hz(2.0)).expect("sine");
+        let voiced_frames = 200;
+
+        // Assert — shape, finiteness, energy above floor in voiced frames.
+        assert_eq!(result.shape(), &[1, N_MELS, N_FRAMES]);
+        let mut band_energy = vec![0.0f64; N_MELS];
+        for m in 0..N_MELS {
+            for f in 0..voiced_frames {
+                let v = result[[0, m, f]] as f64;
+                assert!(v.is_finite(), "non-finite value at band {m} frame {f}");
+                band_energy[m] += v;
+            }
+        }
+        let peak_band = band_energy
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.total_cmp(b.1))
+            .expect("non-empty bands")
+            .0;
+        assert!(
+            (14..=16).contains(&peak_band),
+            "440 Hz peaked in band {peak_band}, expected 14–16"
+        );
+    }
+
+    #[test]
+    fn computation_is_deterministic() {
+        // Arrange
+        let input = sine_440hz(0.25);
+
+        // Act
+        let first = compute_mel_spectrogram(&input).expect("first run");
+        let second = compute_mel_spectrogram(&input).expect("second run");
+
+        // Assert
+        assert_eq!(first.as_slice(), second.as_slice());
+    }
+}

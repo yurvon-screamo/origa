@@ -101,3 +101,149 @@ pub fn get_description(word: &str, native_language: &NativeLanguage) -> Option<S
         VocabularyStore::Archived(view) => view.description(word, native_language),
     }
 }
+
+#[cfg(test)]
+mod dispatch_tests {
+    use super::*;
+
+    fn chunk_data_with(chunk_01: &str) -> VocabularyChunkData {
+        VocabularyChunkData {
+            chunk_01: chunk_01.to_string(),
+            chunk_02: "{}".to_string(),
+            chunk_03: "{}".to_string(),
+            chunk_04: "{}".to_string(),
+            chunk_05: "{}".to_string(),
+            chunk_06: "{}".to_string(),
+            chunk_07: "{}".to_string(),
+            chunk_08: "{}".to_string(),
+            chunk_09: "{}".to_string(),
+            chunk_10: "{}".to_string(),
+            chunk_11: "{}".to_string(),
+        }
+    }
+
+    /// Load through the shared test_support fixture: its call_once makes
+    /// every caller converge on one install of the real chunks. Missing
+    /// cdn/ data fails the fixture — callers bail out. Direct
+    /// `init_vocabulary` calls here would race the fixture and poison its
+    /// Once for every other test in the binary.
+    fn ensure_vocabulary_loaded() {
+        if !is_vocabulary_loaded() {
+            crate::test_support::init_real_dictionaries();
+        }
+    }
+
+    /// Parsing happens before the global slot write, so a broken chunk
+    /// errors deterministically regardless of which test won the slot.
+    #[test]
+    fn init_rejects_broken_chunk_json_before_touching_the_slot() {
+        // Act
+        let Err(OrigaError::VocabularyParseError { reason }) =
+            init_vocabulary(chunk_data_with("not json"))
+        else {
+            panic!("expected a parse error");
+        };
+
+        // Assert
+        assert!(reason.contains("chunk_01"), "reason: {reason}");
+    }
+
+    #[test]
+    fn init_from_rkyv_rejects_a_truncated_payload() {
+        // Arrange — a fresh database serialized outside the global slot.
+        let db = build_vocabulary_database_from_chunks(chunk_data_with(
+            r#"{"猫": {"russian_translation": "кот", "english_translation": "cat"}}"#,
+        ))
+        .expect("valid chunks");
+        let payload = serialize_vocabulary_blob_to_rkyv(&db).expect("serialize");
+
+        // Act — losing the last byte pushes the rkyv root out of bounds.
+        let Err(OrigaError::VocabularyParseError { reason }) =
+            init_vocabulary_from_rkyv(&payload[..payload.len() - 1])
+        else {
+            panic!("expected an access error");
+        };
+
+        // Assert
+        assert!(reason.contains("access"), "reason: {reason}");
+    }
+
+    /// Owned and archived dispatch must agree: serialize the installed
+    /// store, access it zero-copy and compare the lookups word by word.
+    /// The word key is a stable vocabulary entry, the translations are
+    /// asserted only for cross-branch equality — no corpus content is
+    /// hardcoded, so a dictionary refresh cannot break this unit.
+    #[test]
+    fn archived_view_matches_the_owned_store_for_lookups() {
+        // Arrange
+        ensure_vocabulary_loaded();
+        if !is_vocabulary_loaded() {
+            return; // cdn/ data absent — the real-dictionary fixture is unavailable
+        }
+        let word = "γ線";
+        let language = &NativeLanguage::Russian;
+        let owned_translations = get_translations(word, language);
+        let Some(expected) = owned_translations.as_deref() else {
+            return; // another test installed a dictionary without this word
+        };
+        assert!(!expected.is_empty(), "corpus entry carries no translations");
+
+        // Act
+        let bytes = serialize_vocabulary_to_rkyv().expect("serialize the owned store");
+        let view = access_vocabulary_blob(&bytes).expect("access without install");
+
+        // Assert — the archived branch answers exactly like the owned one.
+        assert_eq!(view.translations(word, language), owned_translations);
+        assert_eq!(
+            view.translation(word, language),
+            get_translation(word, language)
+        );
+        assert_eq!(
+            view.description(word, language),
+            get_description(word, language)
+        );
+    }
+
+    /// Branch agreement on a synthetic database: the archived view answers
+    /// exactly like the owned `VocabularyDatabase`, independent of the
+    /// deployed corpus content.
+    #[test]
+    fn archived_view_matches_the_owned_database_for_lookups() {
+        // Arrange
+        let db = build_vocabulary_database_from_chunks(chunk_data_with(
+            r#"{"猫": {"russian_translation": "кот", "english_translation": "cat"}}"#,
+        ))
+        .expect("valid chunks");
+        let payload = serialize_vocabulary_blob_to_rkyv(&db).expect("serialize");
+        let view = access_vocabulary_blob(&payload).expect("access without install");
+        let language = &NativeLanguage::Russian;
+
+        // Act + Assert — singular, plural and description agree on the hit;
+        // a missing word is None on both branches.
+        assert_eq!(
+            view.translation("猫", language),
+            db.get_translation("猫", language)
+        );
+        assert_eq!(
+            view.translations("猫", language),
+            db.get_translations("猫", language)
+        );
+        assert_eq!(
+            view.description("猫", language),
+            db.get_description("猫", language)
+        );
+        assert_eq!(view.translation("犬", language), None);
+        assert_eq!(db.get_translation("犬", language), None);
+    }
+
+    #[test]
+    fn lookups_before_initialization_yield_none() {
+        // Best effort: only meaningful while the slot is still empty.
+        if is_vocabulary_loaded() {
+            return;
+        }
+        assert_eq!(get_translation("猫", &NativeLanguage::Russian), None);
+        assert_eq!(get_translations("猫", &NativeLanguage::Russian), None);
+        assert_eq!(get_description("猫", &NativeLanguage::Russian), None);
+    }
+}
