@@ -25,7 +25,7 @@ Playwright сам поднимает всю инфраструктуру — в�
 | Сервис        | Порт | Кто поднимает            | Конфиг                |
 |---------------|------|--------------------------|-----------------------|
 | TrailBase     | 4000 | `global-setup.ts`        | `trail run --dev`     |
-| CDN (статика) | 8080 | `playwright.config.ts`   | `npx serve ../cdn`    |
+| CDN (статика) | 8080 | `playwright.config.ts`   | `npx serve <corpus-dir>` ($ORIGA_CDN_DIR or ~/origa-cdn)    |
 | Приложение    | 1420 | `playwright.config.ts`   | `trunk serve` / dist  |
 
 `.env` (обязателен):

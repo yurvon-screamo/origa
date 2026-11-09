@@ -284,10 +284,7 @@ fn build_pitch_index_blob(cdn_dir: &Path) -> Result<bool, String> {
 }
 
 fn default_cdn_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .expect("crate dir has a parent")
-        .join("cdn")
+    crate::utils::cdn_dir()
 }
 
 pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {

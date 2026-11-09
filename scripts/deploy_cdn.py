@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import zlib
@@ -22,6 +23,19 @@ from typing import Final
 import _cdn_cache
 import _cdn_s3
 import _cdn_verify
+
+def _corpus_dir() -> Path:
+    """Local CDN corpus root: $ORIGA_CDN_DIR or ~/origa-cdn.
+
+    The corpus is machine-local state outside the repository (mirrors
+    origa/src/corpus.rs — keep the resolution contract in sync). Repo-root
+    ``cdn/`` is no longer read by anything.
+    """
+    env_dir = os.environ.get("ORIGA_CDN_DIR")
+    if env_dir:
+        return Path(env_dir)
+    return Path.home() / "origa-cdn"
+
 
 VERSIONED_FILES: list[str] = [
     # Word examples (#528): the index is hash-tracked for client-side
@@ -269,7 +283,7 @@ def validate_grammar_if_changed(changed: list[str]) -> None:
     target = "grammar/grammar_v3.json"
     print(f"\nStep 3.5: Validating {target}...")
     result = subprocess.run(
-        [sys.executable, str(script), str(Path("cdn") / target)],
+        [sys.executable, str(script), str(_corpus_dir() / target)],
         capture_output=True,
         text=True,
         check=False,
@@ -600,7 +614,7 @@ def _force_all_deploy(dry_run: bool) -> None:
     import time as _time
 
     project_root = Path(__file__).resolve().parent.parent
-    cdn_dir = project_root / "cdn"
+    cdn_dir = _corpus_dir()
     if not cdn_dir.is_dir():
         print(f"ERROR: {cdn_dir} not found", file=sys.stderr)
         sys.exit(1)
@@ -826,7 +840,7 @@ def main() -> None:
         print("=== DRY RUN ===\n")
 
     project_root = Path(__file__).resolve().parent.parent
-    cdn_dir = project_root / "cdn"
+    cdn_dir = _corpus_dir()
 
     if not cdn_dir.is_dir():
         print(f"ERROR: {cdn_dir} not found", file=sys.stderr)

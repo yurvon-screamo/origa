@@ -26,9 +26,10 @@ import zipfile
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CDN_DIR = PROJECT_ROOT / "cdn"
+CDN_DIR = corpus_dir()
 FONTS_OUT = CDN_DIR / "fonts"
 CACHE_DIR = PROJECT_ROOT / "scripts" / ".font_cache"
 CDN_MANIFEST = PROJECT_ROOT / "end2end" / "cdn-manifest.txt"

@@ -79,7 +79,7 @@ export default defineConfig({
     ...(cdnSource.serveLocally
       ? [
           {
-            command: `npx serve ../cdn -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            command: `npx serve ${JSON.stringify(cdnSource.cacheDir)} -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
             port: LOCAL_CDN_PORT,
             reuseExistingServer: !isCI,
             timeout: 30_000,

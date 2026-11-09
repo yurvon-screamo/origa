@@ -6,12 +6,13 @@ import glob
 import argparse
 from collections import defaultdict
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 ROOT = Path(__file__).resolve().parent.parent
-KANJI_PATH = ROOT / "cdn" / "dictionary" / "kanji.json"
-FURIGANA_PATH = ROOT / "cdn" / "dictionaries" / "JmdictFurigana.txt"
-CHUNK_GLOB = str(ROOT / "cdn" / "dictionary" / "chunk_*.json")
-JLPT_GLOB = str(ROOT / "cdn" / "well_known_set" / "jlpt_n*.json")
+KANJI_PATH = corpus_dir() / "dictionary" / "kanji.json"
+FURIGANA_PATH = corpus_dir() / "dictionaries" / "JmdictFurigana.txt"
+CHUNK_GLOB = str(corpus_dir() / "dictionary" / "chunk_*.json")
+JLPT_GLOB = str(corpus_dir() / "well_known_set" / "jlpt_n*.json")
 REPORT_PATH = ROOT / "scripts" / "kanji_audit_changes.json"
 
 KATAKANA_TO_HIRAGANA = str.maketrans(

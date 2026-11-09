@@ -14,6 +14,11 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
+    # Local corpus root for tests and build scripts (origa::corpus contract):
+    # the cdn-download job / artifact unpack into `<workspace>/cdn`, so every
+    # job that seeds the corpus resolves it through this override without
+    # moving artifact paths.
+    ORIGA_CDN_DIR: ${{ github.workspace }}/cdn
     # Single source of the Linux system packages (GTK speech stack):
     # consumed by the apt cache step (PR/branch runs) and by the plain
     # install step (tag runs) — one place to bump, no list drift.

@@ -335,7 +335,7 @@ pub enum Commands {
     /// header is fresh). Blobs are deterministic: identical sources produce
     /// identical bytes, keeping the CDN manifest hash stable.
     BuildCdnRkyv {
-        /// CDN root directory (defaults to <repo>/cdn next to the crate).
+        /// CDN root directory ($ORIGA_CDN_DIR or ~/origa-cdn).
         #[arg(long, default_value = None)]
         cdn_dir: Option<PathBuf>,
     },
@@ -351,7 +351,7 @@ pub enum Commands {
     /// whole string. Freshness binds to both grammar sources plus the
     /// tokenizer inputs.
     BuildGrammarPrecompute {
-        /// CDN root directory (defaults to <repo>/cdn next to the crate).
+        /// CDN root directory ($ORIGA_CDN_DIR or ~/origa-cdn).
         #[arg(long, default_value = None)]
         cdn_dir: Option<PathBuf>,
     },
@@ -364,7 +364,7 @@ pub enum Commands {
     /// the CDN checkout. Freshness binds the chunk bytes plus the
     /// dictionary inputs, so a dictionary bump regenerates all chunks.
     BuildPhrasePrecompute {
-        /// CDN root directory (defaults to <repo>/cdn next to the crate).
+        /// CDN root directory ($ORIGA_CDN_DIR or ~/origa-cdn).
         #[arg(long, default_value = None)]
         cdn_dir: Option<PathBuf>,
     },

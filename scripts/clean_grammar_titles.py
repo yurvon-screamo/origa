@@ -37,6 +37,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+from _cdn_corpus import corpus_dir as _corpus_dir  # noqa: E402
 from _grammar_title import (  # noqa: E402 — deploy validator, single source of truth
     dup_key,
     split_title,
@@ -127,8 +128,8 @@ def main() -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=Path("cdn/grammar/grammar_v3.json"),
-        help="path to the grammar store (default: cdn/grammar/grammar_v3.json)",
+        default=_corpus_dir() / "grammar" / "grammar_v3.json",
+        help="path to the grammar store (default: $ORIGA_CDN_DIR or ~/origa-cdn)",
     )
     args = parser.parse_args()
 

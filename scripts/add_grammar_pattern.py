@@ -30,6 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from _grammar_title import strip_trailing_qualifiers  # noqa: E402 — single source of truth
+from _cdn_corpus import corpus_dir as _corpus_dir
 
 LOCALES = ("English", "Russian")
 
@@ -52,8 +53,8 @@ def main() -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=Path("cdn/grammar/grammar_v3.json"),
-        help="path to the grammar store (default: cdn/grammar/grammar_v3.json)",
+        default=_corpus_dir() / "grammar" / "grammar_v3.json",
+        help="path to the grammar store (default: $ORIGA_CDN_DIR or ~/origa-cdn)",
     )
     args = parser.parse_args()
 

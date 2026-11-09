@@ -2,7 +2,7 @@
 """Schema v3 validator + slop-linter for Origa grammar data.
 
 Usage:
-    python scripts/validate_grammar_v3.py [path]      # default: cdn/grammar/grammar_v3.json
+    python scripts/validate_grammar_v3.py [path]      # default: $ORIGA_CDN_DIR or ~/origa-cdn
     python scripts/validate_grammar_v3.py --json      # machine-readable output
 
 Exit code 0 = valid, 1 = errors found.
@@ -41,6 +41,7 @@ from pathlib import Path
 
 import _format_map_check
 import _grammar_title
+from _cdn_corpus import corpus_dir as _corpus_dir
 
 LEVELS = {"N5", "N4", "N3", "N2", "N1"}
 LANGS = {"English", "Russian", "Korean", "Vietnamese"}
@@ -397,7 +398,7 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     as_json = "--json" in sys.argv
     default_path = (
-        Path(__file__).resolve().parents[1] / "cdn" / "grammar" / "grammar_v3.json"
+        _corpus_dir() / "grammar" / "grammar_v3.json"
     )
     path = Path(args[0]) if args else default_path
 

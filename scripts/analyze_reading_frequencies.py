@@ -16,9 +16,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import audit_kanji_readings as audit  # noqa: E402
+from _cdn_corpus import corpus_dir
 
 FURIGANA_PATH = audit.FURIGANA_PATH
-KANJI_PATH = ROOT / "cdn" / "dictionary" / "kanji.json"
+KANJI_PATH = corpus_dir() / "dictionary" / "kanji.json"
 
 
 def main() -> None:

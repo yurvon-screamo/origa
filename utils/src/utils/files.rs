@@ -51,3 +51,18 @@ pub fn get_base_path() -> PathBuf {
 
     path
 }
+
+/// Local CDN corpus root (mirrors `origa::corpus::cdn_dir`, which is the
+/// source of truth — a CLI crate cannot import it): `$ORIGA_CDN_DIR`
+/// override first, then `~/origa-cdn`. The corpus is machine-local state
+/// outside the repository, shared by every checkout on the machine.
+pub fn cdn_dir() -> PathBuf {
+    if let Some(dir) = std::env::var_os("ORIGA_CDN_DIR").filter(|value| !value.is_empty()) {
+        return PathBuf::from(dir);
+    }
+    let home = std::env::var_os("HOME")
+        .or_else(|| std::env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("origa-cdn"));
+    home.join("origa-cdn")
+}

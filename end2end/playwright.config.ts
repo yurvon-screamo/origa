@@ -1,9 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
-import { LOCAL_CDN_PORT } from "./shots/config.ts";
+import { LOCAL_CDN_PORT, resolveCdnSource } from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
+
+// Where CDN content comes from: the local corpus when seeded ($ORIGA_CDN_DIR
+// or ~/origa-cdn — machine-local, outside the repo; see shots/config.ts),
+// otherwise the production CDN. The served path must be resolved, not
+// repo-relative: repo-root `cdn/` no longer exists.
+const cdnSource = resolveCdnSource();
 
 /** The app origin the suite runs against; also the inbox seam opt-in scope. */
 export const APP_BASE_URL = "http://localhost:1420";
@@ -70,14 +76,20 @@ export default defineConfig({
     },
   ],
   webServer: [
-    {
-      command: `npx serve ../cdn -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
-      port: LOCAL_CDN_PORT,
-      reuseExistingServer: !isCI,
-      timeout: 30000,
-      stdout: "pipe",
-      stderr: "pipe",
-    },
+    // Local corpus server only when a corpus exists; without one the app
+    // reads the production CDN (same decision as the shots harness).
+    ...(cdnSource.serveLocally
+      ? [
+          {
+            command: `npx serve ${JSON.stringify(cdnSource.cacheDir)} -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            port: LOCAL_CDN_PORT,
+            reuseExistingServer: !isCI,
+            timeout: 30000,
+            stdout: "pipe",
+            stderr: "pipe",
+          },
+        ]
+      : []),
     {
       command: isCI
         ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
@@ -88,7 +100,9 @@ export default defineConfig({
       stdout: "pipe",
       stderr: "pipe",
       env: {
-        ORIGA_CDN_BASE_URL: `http://localhost:${LOCAL_CDN_PORT}`,
+        ORIGA_CDN_BASE_URL: cdnSource.serveLocally
+          ? `http://localhost:${LOCAL_CDN_PORT}`
+          : cdnSource.baseUrl,
         TRAILBASE_URL: "http://127.0.0.1:4000",
       },
     },

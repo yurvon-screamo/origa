@@ -31,8 +31,9 @@ import json
 import re
 import sys
 from pathlib import Path
+from _cdn_corpus import corpus_dir as _corpus_dir
 
-CORPUS = Path("cdn/grammar/grammar_v3.json")
+CORPUS = _corpus_dir() / "grammar" / "grammar_v3.json"
 CONTENT_FIELDS = (
     "short_description",
     "explanation",

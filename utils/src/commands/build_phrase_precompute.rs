@@ -14,7 +14,7 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use origa::dictionary::cdn_blob::{self, BlobHeader, SCHEMA_VERSION, build_blob, split_blob};
 use origa::dictionary::precompute_blob::{
@@ -121,7 +121,8 @@ fn build_chunk(
 }
 
 pub fn run_build_phrase_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaError> {
-    let cdn_dir = cdn_dir.unwrap_or_else(|| Path::new("cdn"));
+    let cdn_dir_buf = cdn_dir.map(PathBuf::from).unwrap_or_else(crate::utils::cdn_dir);
+    let cdn_dir = cdn_dir_buf.as_path();
     load_dictionary().map_err(|e| OrigaError::RepositoryError {
         reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
     })?;
