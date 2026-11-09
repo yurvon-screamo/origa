@@ -40,3 +40,65 @@ pub(super) async fn recognize_via_device_ai(
         },
     }
 }
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod wasm_tests {
+    //! Pins the OCR invoke-failure escalation (task 20261104051142-inn7qka):
+    //! a native-path failure after caps=available must log at `error` level
+    //! (a Sentry event) and return `None` (WASM fallback). A downgrade back
+    //! to `warn` would make the degradation invisible in Sentry — the level
+    //! itself is the assertion target.
+
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::{TauriMock, all_available_caps, rejected_with};
+    use tracing::Level;
+
+    fn plugin_mock_with_failing_vision() -> TauriMock {
+        TauriMock::install(|command, _args| {
+            let command = command.as_string().unwrap_or_default();
+            if command.ends_with("get_capabilities") {
+                all_available_caps()
+            } else if command.ends_with("vision_recognize_text") {
+                rejected_with("FEATURE_NOT_AVAILABLE", "recognizer unavailable")
+            } else {
+                rejected_with("UNEXPECTED_COMMAND", &command)
+            }
+        })
+    }
+
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    async fn ocr_invoke_failure_emits_error_event_and_falls_back() {
+        log_capture::install();
+        device_ai::reset_capabilities_cache_for_tests();
+        let _mock = plugin_mock_with_failing_vision();
+
+        let loading = OcrLoadingState::new();
+        let result = recognize_via_device_ai("aGVsbG8=", &loading).await;
+
+        assert!(
+            result.is_none(),
+            "failed native OCR must fall back (return None)"
+        );
+        let events = log_capture::take_events()
+            .into_iter()
+            .filter(|(_, message)| message.contains("device-ai OCR failed"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            events.len(),
+            1,
+            "exactly one OCR failure event, got: {events:?}"
+        );
+        assert_eq!(
+            events[0].0,
+            Level::ERROR,
+            "native OCR failure must be an error (Sentry event), got: {:?}",
+            events[0]
+        );
+        assert!(
+            events[0].1.contains("[FEATURE_NOT_AVAILABLE]"),
+            "the structured plugin code must ride in the event body: {:?}",
+            events[0]
+        );
+    }
+}

@@ -14,6 +14,8 @@
 //! timeout so a hung native call falls back instead of freezing the UI.
 
 pub mod contracts;
+#[cfg(all(target_arch = "wasm32", test))]
+mod degradation_wasm_tests;
 mod invoke;
 #[cfg(all(target_arch = "wasm32", test))]
 mod invoke_wasm_tests;
@@ -46,6 +48,15 @@ thread_local! {
     /// plugin round-trips on every OCR/ASR call.
     static CACHED_CAPABILITIES: RefCell<Option<Capabilities>> = const { RefCell::new(None) };
     static CAPABILITIES_LOADING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Clears the capabilities cache in wasm tests. The cache is process-global
+/// for the WASM binary, so component tests that script the plugin mock need
+/// a deterministic starting state regardless of test execution order.
+#[cfg(all(target_arch = "wasm32", test))]
+pub(crate) fn reset_capabilities_cache_for_tests() {
+    CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = None);
+    CAPABILITIES_LOADING.with(|l| l.set(false));
 }
 
 /// Returns `true` if the device-ai plugin could be present at all.
