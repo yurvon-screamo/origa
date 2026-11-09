@@ -151,3 +151,69 @@ pub fn index_version() -> (u32, String) {
         None => (0, String::new()),
     }
 }
+
+#[cfg(test)]
+mod dispatch_tests {
+    use super::*;
+
+    /// Phrase tests of this binary are mutually exclusive: two incompatible
+    /// fixtures (8-phrase journeys, 15-phrase lesson-builder) share the
+    /// one-shot slot, so this test never installs anything — it only reads
+    /// whichever fixture a fixture-owning test has installed, and skips
+    /// when the slot is still empty (isolated runs of this module).
+    fn ensure_index_loaded() -> bool {
+        is_phrases_loaded()
+    }
+
+    /// The loaded-gate documents the race-tolerance contract: once an index
+    /// is installed, init accepts any payload without parsing it.
+    #[test]
+    fn init_returns_ok_without_parsing_when_index_is_already_loaded() {
+        // Arrange
+        if !ensure_index_loaded() {
+            return; // another test won the slot with unusable content
+        }
+
+        // Act + Assert — even garbage JSON is accepted while loaded.
+        assert!(init_phrase_index("not json").is_ok());
+    }
+
+    #[test]
+    fn dispatch_lookups_serve_the_installed_index() {
+        // Arrange
+        if !ensure_index_loaded() {
+            return;
+        }
+
+        // Assert — every free function routes through the installed store.
+        let len = phrase_index_len();
+        assert!(len > 0, "installed index is empty");
+
+        let ids = get_all_index_ids();
+        assert_eq!(ids.len(), len, "all_ids and the index length diverge");
+
+        let (version, hash) = index_version();
+        assert!(version > 0, "installed index has no version");
+        assert!(!hash.is_empty(), "installed index has no hash");
+
+        let first = iter_index_entries()
+            .expect("index is loaded")
+            .next()
+            .expect("index is non-empty");
+        let id = *first.id();
+
+        let entry = get_index_entry(&id).expect("entry by id");
+        assert_eq!(entry.id(), &id);
+        assert_eq!(get_chunk_id(&id), Some(entry.chunk_id()));
+
+        let token = entry
+            .tokens()
+            .first()
+            .expect("entry carries at least one token");
+        let by_token = get_phrases_by_token(token);
+        assert!(
+            by_token.iter().any(|e| e.id() == &id),
+            "token lookup misses the entry that carries the token"
+        );
+    }
+}

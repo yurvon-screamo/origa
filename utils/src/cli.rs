@@ -229,6 +229,22 @@ pub enum Commands {
         dry_run: bool,
     },
 
+    /// Collapse same-body kun readings and on reading variants in kanji.json
+    CollapseKanjiReadings {
+        /// Path to kanji.json
+        #[arg(short, long, default_value = "cdn/dictionary/kanji.json")]
+        input: PathBuf,
+
+        /// Path to the JmdictFurigana corpus
+        #[arg(long, default_value = "cdn/dictionaries/JmdictFurigana.txt")]
+        furigana: PathBuf,
+
+        /// Write changes back (with a .bak backup); without this flag the
+        /// run only reports what would change
+        #[arg(long)]
+        apply: bool,
+    },
+
     /// Apply targeted reading removal patches to kanji dictionary
     PatchKanjiReadings {
         /// Path to kanji.json

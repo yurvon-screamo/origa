@@ -11,6 +11,11 @@
 //! coverage numbers are therefore only truly enforced in environments
 //! that have the CDN artifacts (local dev, release CI).
 //!
+//! A downloaded corpus that is newer than the committed pin (corpus
+//! deploy window open, see `common/grammar_corpus.rs`) skips the same way
+//! — a fresh corpus against stale pins is a fixtures-PR concern, not a
+//! red Test job on branches that never touched the grammar.
+//!
 //! Run: `cargo test -p origa --test near_miss_coverage -- --nocapture`.
 
 use std::path::PathBuf;
@@ -21,9 +26,18 @@ use origa::dictionary::grammar::{
 };
 use origa::domain::{PartOfSpeech, apply_format_actions, generate_grammar_distractors};
 
+#[path = "common/grammar_corpus.rs"]
+mod grammar_corpus;
+
 static CORPUS_INIT: Once = Once::new();
 
 fn ensure_corpus_loaded() -> bool {
+    // Deploy-window gate: a downloaded corpus newer than the committed pin
+    // must skip like an absent one (see common/grammar_corpus.rs) instead
+    // of failing every branch on pins they never touched.
+    if grammar_corpus::corpus_pin_drifted("near_miss_coverage") {
+        return false;
+    }
     let mut loaded = false;
     CORPUS_INIT.call_once(|| {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -73,7 +87,9 @@ const PINNED_INAPPLICABLE: &[&str] = &[
 #[test]
 fn corpus_quiz_chains_coverage_matches_pinned_losses() {
     if !ensure_corpus_loaded() {
-        eprintln!("grammar store absent — corpus coverage check skipped");
+        eprintln!(
+            "grammar store unavailable (absent or corpus drift) — corpus coverage check skipped"
+        );
         return;
     }
 
@@ -144,7 +160,7 @@ fn corpus_quiz_chains_coverage_matches_pinned_losses() {
 #[test]
 fn corpus_distractors_stay_within_the_rule_shape() {
     if !ensure_corpus_loaded() {
-        eprintln!("grammar store absent — shape check skipped");
+        eprintln!("grammar store unavailable (absent or corpus drift) — shape check skipped");
         return;
     }
 
@@ -212,7 +228,7 @@ fn corpus_distractors_stay_within_the_rule_shape() {
 #[ignore = "manual audit dump, not a pass/fail check"]
 fn dump_quadruples() {
     if !ensure_corpus_loaded() {
-        eprintln!("grammar store absent — dump skipped");
+        eprintln!("grammar store unavailable (absent or corpus drift) — dump skipped");
         return;
     }
 

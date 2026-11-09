@@ -699,7 +699,17 @@ fn generate_font_registry() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_file = Path::new(&out_dir).join("fonts.rs");
 
-    println!("cargo:rerun-if-changed={}", fonts_dir.display());
+    // The watch is emitted only for an existing dir. A rerun-if-changed path
+    // that does not exist makes cargo re-dirty the build script on EVERY
+    // invocation ("Dirty ... the file `cdn/fonts` is missing", observed on
+    // cargo 1.98): the whole crate then recompiles per build in fresh
+    // worktrees, where `cdn/` is gitignored. Trade-off of skipping the watch:
+    // fonts restored into an existing worktree are picked up on the next
+    // build.rs rerun (any source/env change), not by the appearance itself —
+    // same degradation class as generate_well_known_meta's early return.
+    if fonts_dir.is_dir() {
+        println!("cargo:rerun-if-changed={}", fonts_dir.display());
+    }
 
     let mut entries: Vec<(String, String)> = Vec::new();
     if fonts_dir.is_dir() {
@@ -760,13 +770,16 @@ fn stage_fonts_for_bundling() {
         .join("fonts");
     let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
 
-    println!("cargo:rerun-if-changed={}", src_dir.display());
-
     if !src_dir.is_dir() {
         // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face
         // degrades to FONT_FILES empty -> system fallback. Do not fail the build.
+        //
+        // No rerun-if-changed either (see generate_font_registry): a watched
+        // but missing path re-dirties the build script on every invocation.
         return;
     }
+
+    println!("cargo:rerun-if-changed={}", src_dir.display());
 
     fs::create_dir_all(&dest_dir).expect("Failed to create public/fonts/");
 

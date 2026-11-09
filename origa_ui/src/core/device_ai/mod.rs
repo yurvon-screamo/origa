@@ -14,6 +14,8 @@
 //! timeout so a hung native call falls back instead of freezing the UI.
 
 pub mod contracts;
+#[cfg(all(target_arch = "wasm32", test))]
+mod degradation_wasm_tests;
 mod invoke;
 #[cfg(all(target_arch = "wasm32", test))]
 mod invoke_wasm_tests;
@@ -45,7 +47,13 @@ thread_local! {
     /// (possibly all-unavailable). Queried once per session to avoid repeated
     /// plugin round-trips on every OCR/ASR call.
     static CACHED_CAPABILITIES: RefCell<Option<Capabilities>> = const { RefCell::new(None) };
-    static CAPABILITIES_LOADING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Test hook: clears the capabilities cache so each test starts clean and
+/// stays order-independent.
+#[cfg(all(target_arch = "wasm32", test))]
+pub(crate) fn reset_cached_capabilities() {
+    CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = None);
 }
 
 /// Returns `true` if the device-ai plugin could be present at all.
@@ -86,7 +94,12 @@ pub async fn available(feature: Feature) -> bool {
 }
 
 /// Resolves capabilities from the cache, querying the plugin on first access.
-/// Guards against concurrent queries with a loading flag.
+///
+/// Concurrent first callers share one in-flight query (single-flight lives in
+/// [`invoke::get_capabilities`]), so everyone receives the same real result —
+/// nobody collapses to "unavailable" merely because a query is already
+/// running. This matters because callers are one-shot (e.g. the live-recorder
+/// mount effect): without sharing, the loser would never re-check (#570).
 ///
 /// Only a *successful* query is cached — including an honest "all features
 /// unavailable". A transient failure (plugin not yet ready, timeout, decode
@@ -98,17 +111,7 @@ async fn cached_or_query() -> Result<Capabilities, String> {
         return Ok(caps);
     }
 
-    if CAPABILITIES_LOADING.with(|l| l.get()) {
-        // Another caller is querying; treat as unavailable this turn — the
-        // caller falls back, and subsequent calls hit the now-warm cache.
-        return Ok(Capabilities::all_unavailable());
-    }
-
-    CAPABILITIES_LOADING.with(|l| l.set(true));
-    let result = invoke::get_capabilities().await;
-    CAPABILITIES_LOADING.with(|l| l.set(false));
-
-    match result {
+    match invoke::get_capabilities().await {
         Ok(caps) => {
             CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = Some(caps.clone()));
             tracing::info!(
@@ -119,7 +122,21 @@ async fn cached_or_query() -> Result<Capabilities, String> {
             Ok(caps)
         },
         Err(e) => {
-            tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
+            // A capabilities failure on a platform that expects the native
+            // path is a degradation, not routine fallback routing: escalate
+            // to an error so it surfaces as a Sentry event (warn only lands
+            // as a breadcrumb, which is invisible without a later capture).
+            // Windows/Linux/web have no plugin by design — keep those as
+            // breadcrumbs to avoid event noise from normal fallbacks.
+            if crate::core::capabilities::expects_native_ai(&crate::core::platform::platform_name())
+            {
+                tracing::error!(
+                    "device-ai: capabilities query failed ({e}) — native path degraded on a \
+                     platform that expects it"
+                );
+            } else {
+                tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
+            }
             Ok(Capabilities::all_unavailable())
         },
     }

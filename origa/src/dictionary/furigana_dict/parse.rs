@@ -50,6 +50,12 @@ impl FuriganaDictionary {
             .flatten()
             .collect()
     }
+
+    /// All stored entries grouped by their word text. Grouping mirrors the
+    /// dictionary key: each item is the entry list of one distinct word.
+    pub fn grouped_entries(&self) -> impl Iterator<Item = &[FuriganaEntry]> {
+        self.entries.values().map(Vec::as_slice)
+    }
 }
 
 impl ArchivedFuriganaDictionary {
@@ -229,6 +235,21 @@ mod tests {
         let dict = FuriganaDictionary::from_text(content).unwrap();
         let results = dict.lookup_prefixed("食べ");
         assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn grouped_entries_lists_every_distinct_word_once() {
+        // Arrange
+        let content = "大人|おとな|0-1:おとな\n大人|だいじん|0-1:だいじん\n指|ゆび|0:ゆび";
+        let dict = FuriganaDictionary::from_text(content).unwrap();
+
+        // Act
+        let groups: Vec<&[FuriganaEntry]> = dict.grouped_entries().collect();
+
+        // Assert
+        assert_eq!(groups.len(), 2);
+        let total: usize = groups.iter().map(|group| group.len()).sum();
+        assert_eq!(total, 3);
     }
 
     #[test]

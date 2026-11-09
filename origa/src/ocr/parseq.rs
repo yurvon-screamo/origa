@@ -40,6 +40,12 @@ impl ParseqRecognizer {
         })
     }
 
+    /// Inference path — not unit-covered by design. Running the session
+    /// requires the PARSeq ONNX models, which are absent in the coverage
+    /// environment; the full pipeline is exercised by the model-gated
+    /// `japanese_ocr_e2e` integration test and manual smoke. Everything
+    /// around the session call (pre/post-processing math, vocabulary) is
+    /// unit-tested in `shared.rs` and `vocab.rs`.
     pub fn read(&self, image: &DynamicImage) -> String {
         if image.width() == 0 || image.height() == 0 {
             return String::new();

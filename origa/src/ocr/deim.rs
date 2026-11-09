@@ -62,6 +62,11 @@ impl DeimDetector {
         })
     }
 
+    /// Inference path — not unit-covered by design. Running the session
+    /// requires the DEIM ONNX models, which are absent in the coverage
+    /// environment; the full pipeline is exercised by the model-gated
+    /// `japanese_ocr_e2e` integration test and manual smoke. The
+    /// pre/post-processing math lives in `shared.rs` and is unit-tested.
     pub fn detect(&self, image: &DynamicImage) -> Result<Vec<BoundingBox>, OrigaError> {
         let max_wh = image.height().max(image.width());
 

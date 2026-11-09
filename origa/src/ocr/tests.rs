@@ -105,3 +105,57 @@ async fn japanese_ocr_e2e() {
     assert!(result.contains("入る"), "should contain '入る'");
     assert!(result.contains("どれですか"), "should contain 'どれですか'");
 }
+
+#[test]
+fn ort_error_maps_to_ocr_error_with_the_original_reason() {
+    // Arrange
+    let ort_error = ort::Error::new("boom");
+
+    // Act
+    let mapped: crate::domain::OrigaError = ort_error.into();
+
+    // Assert
+    let crate::domain::OrigaError::OcrError { reason } = mapped else {
+        panic!("expected OcrError");
+    };
+    assert!(reason.contains("boom"), "reason: {reason}");
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn deim_detector_new_missing_model_file_errors() {
+    // Arrange — a path with no ONNX model behind it.
+    let missing = std::env::temp_dir().join("origa-no-such-deim.onnx");
+
+    // Act
+    let result = crate::ocr::DeimDetector::new(&missing);
+
+    // Assert
+    let Err(crate::domain::OrigaError::OcrError { reason }) = result else {
+        panic!("expected a model-loading failure");
+    };
+    assert!(
+        reason.contains("Failed to load DEIM model"),
+        "reason: {reason}"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn parseq_recognizer_new_missing_model_file_errors() {
+    // Arrange
+    let missing = std::env::temp_dir().join("origa-no-such-parseq.onnx");
+    let vocab = crate::ocr::Vocabulary::from_bytes("あ\nい\n".as_bytes()).expect("vocab");
+
+    // Act
+    let result = crate::ocr::ParseqRecognizer::new(&missing, &vocab, 320);
+
+    // Assert
+    let Err(crate::domain::OrigaError::OcrError { reason }) = result else {
+        panic!("expected a model-loading failure");
+    };
+    assert!(
+        reason.contains("Failed to load PARSeq model"),
+        "reason: {reason}"
+    );
+}

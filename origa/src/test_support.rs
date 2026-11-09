@@ -16,7 +16,7 @@ use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use crate::dictionary::phrase::{init_phrase_index, is_phrases_loaded};
 use crate::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
-use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
+use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
 use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
 
 static TOKENIZER_INIT: Once = Once::new();
@@ -136,7 +136,16 @@ fn init_vocabulary_dictionary() {
             chunk_11: std::fs::read_to_string(vocab_dir.join("chunk_11.json"))
                 .expect("Failed to read vocabulary chunk_11.json"),
         };
-        init_vocabulary(vocab_data).expect("Failed to init vocabulary dictionary");
+        // Tolerate the OnceLock race: a concurrent test thread may have
+        // installed the dictionary first (identical real chunks). A panic
+        // here would poison the Once for every other caller — only a
+        // genuinely unset dictionary indicates a real failure (same
+        // contract as domain::tokenizer::translation::test_env).
+        if let Err(e) = init_vocabulary(vocab_data) {
+            if !is_vocabulary_loaded() {
+                panic!("Failed to init vocabulary dictionary: {e:?}");
+            }
+        }
     });
 }
 

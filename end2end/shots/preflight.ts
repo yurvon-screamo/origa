@@ -86,7 +86,7 @@ export function evaluatePreflight(facts: PreflightFacts): PreflightReport {
   errors.push(...checkToolchain(facts));
   errors.push(...checkBundle(facts));
   warnings.push(...checkCorpus(facts));
-  warnings.push(...checkPorts(facts));
+  errors.push(...checkPorts(facts));
   errors.push(...checkUpload(facts));
   errors.push(...checkOutput(facts));
   errors.push(...checkExaminer(facts));
@@ -172,18 +172,43 @@ function checkCorpus(facts: PreflightFacts): string[] {
   return warnings;
 }
 
-/** The servers of the run: a listener from another checkout is a zombie. */
+/**
+ * The servers of the run.
+ *
+ * A listener from another checkout is a stranger the run would reuse as
+ * its own server (Playwright's `reuseExistingServer`; the same trap via
+ * global-setup for TrailBase) — the capture would photograph the wrong
+ * bundle or read the corpus from the stranger. That must fail the run
+ * before it starts, not warn mid-run.
+ *
+ * The CDN port belongs to the run only with a local corpus: without one
+ * the content comes from the production CDN and the port is never bound,
+ * so a stranger there is harmless.
+ */
 function checkPorts(facts: PreflightFacts): string[] {
-  const warnings: string[] = [];
+  const errors: string[] = [];
   for (const listener of facts.listeners) {
     if (listener.pid === null || listener.cwd === null) continue;
-    if (!isInside(listener.cwd, facts.repoRoot)) {
-      warnings.push(
-        `порт ${listener.port} занят процессом из ${listener.cwd} — возможен зомби-ворктри, снимок уйдёт не из того бандла`,
-      );
+    if (isInside(listener.cwd, facts.repoRoot)) continue;
+    if (listener.port === LOCAL_CDN_PORT && facts.cdnCacheDir === null)
+      continue;
+
+    let reason: string;
+    if (listener.port === LOCAL_CDN_PORT) {
+      reason =
+        "локальный корпус будет раздаваться чужим сервисом — приложение потянет контент у него. " +
+        "Задайте E2E_CDN_PORT=<свободный> или остановите процесс";
+    } else if (listener.port === APP_PORT) {
+      reason =
+        "playwright «переиспользует» чужой сервер — снимок уйдёт не из того бандла. Остановите процесс";
+    } else {
+      reason = "TrailBase не сможет привязать свой порт. Остановите процесс";
     }
+    errors.push(
+      `порт ${listener.port} занят процессом из ${listener.cwd} — ${reason}`,
+    );
   }
-  return warnings;
+  return errors;
 }
 
 /** The upload needs a profile — a missing one must fail before the run. */

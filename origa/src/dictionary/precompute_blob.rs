@@ -208,25 +208,26 @@ impl From<&rkyv::Archived<PartOfSpeech>> for PartOfSpeech {
 }
 
 #[cfg(test)]
+fn sample_entry() -> PrecomputedEntry {
+    PrecomputedEntry {
+        furigana_spans: vec![crate::domain::AnnotatedSpan {
+            text: "私は学生です。".to_string(),
+            reading: Some("ワタシワガクセイデス".to_string()),
+            reading_spans: vec![],
+        }],
+        tokens: vec![PrecomputedToken {
+            surface: "私".to_string(),
+            base: "私".to_string(),
+            reading: "ワタシ".to_string(),
+            pos: PartOfSpeech::Pronoun,
+        }],
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::domain::lookup_precomputed;
-
-    fn sample_entry() -> PrecomputedEntry {
-        PrecomputedEntry {
-            furigana_spans: vec![crate::domain::AnnotatedSpan {
-                text: "私は学生です。".to_string(),
-                reading: Some("ワタシワガクセイデス".to_string()),
-                reading_spans: vec![],
-            }],
-            tokens: vec![PrecomputedToken {
-                surface: "私".to_string(),
-                base: "私".to_string(),
-                reading: "ワタシ".to_string(),
-                pos: PartOfSpeech::Pronoun,
-            }],
-        }
-    }
 
     #[test]
     fn serialize_access_roundtrip_answers_lookups() {
@@ -265,5 +266,103 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
+    }
+}
+
+#[cfg(test)]
+mod deflated_tests {
+    use super::*;
+    use crate::dictionary::cdn_blob::{
+        BlobHeader, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes,
+    };
+
+    fn header_for(guard_seed: &str) -> BlobHeader {
+        BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: [0u8; 32],
+            manifest_guard: manifest_guard_from_hex_hashes(&[guard_seed]),
+        }
+    }
+
+    #[test]
+    fn deflate_inflate_roundtrip_preserves_the_payload() {
+        // Arrange
+        let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
+            entries: BTreeMap::from([("roundtrip".to_string(), sample_entry())]),
+        })
+        .unwrap();
+
+        // Act
+        let deflated = deflate_blob(&payload);
+        let inflated = inflate_blob(&deflated).unwrap();
+
+        // Assert
+        assert!(
+            deflated.len() <= payload.len(),
+            "deflate must not grow a string-heavy payload"
+        );
+        assert_eq!(inflated, payload);
+    }
+
+    #[test]
+    fn inflate_rejects_garbage() {
+        assert!(inflate_blob(&[1, 2, 3, 4]).is_err());
+    }
+
+    #[test]
+    fn access_precompute_deflated_reads_header_and_payload() {
+        // Arrange — a header-prefixed deflated blob, the CDN transport form.
+        let _guard = crate::domain::tokenizer::precomputed::precomputed_test_lock_guard();
+        clear_installed_views();
+        let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
+            entries: BTreeMap::from([("私は学生です。".to_string(), sample_entry())]),
+        })
+        .unwrap();
+        let blob = build_blob(&header_for("deadbeef"), &payload);
+        let deflated = deflate_blob(&blob);
+
+        // Act
+        let (view, header) = access_precompute_deflated(&deflated).expect("deflated access");
+        install_precompute_view(view);
+        let found = crate::domain::lookup_precomputed("私は学生です。");
+
+        // Assert
+        assert_eq!(header.manifest_guard, header_for("deadbeef").manifest_guard);
+        assert_eq!(found, Some(sample_entry()));
+        clear_installed_views();
+    }
+
+    #[test]
+    fn access_precompute_deflated_rejects_corrupted_payload() {
+        // Arrange — deflate a truncated rkyv payload.
+        let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
+            entries: BTreeMap::new(),
+        })
+        .unwrap();
+        let blob = build_blob(&header_for("deadbeef"), &payload);
+        let deflated = deflate_blob(&blob[..blob.len() - 1]);
+
+        // Act + Assert
+        assert!(access_precompute_deflated(&deflated).is_err());
+    }
+
+    #[test]
+    fn install_precompute_view_suppresses_duplicate_views() {
+        // Arrange
+        let _guard = crate::domain::tokenizer::precomputed::precomputed_test_lock_guard();
+        clear_installed_views();
+        let payload = serialize_precompute_blob_to_rkyv(&PrecomputeBlob {
+            entries: BTreeMap::new(),
+        })
+        .unwrap();
+        let view = access_precompute_blob(&payload).unwrap();
+
+        // Act — install the same view twice.
+        install_precompute_view(view);
+        install_precompute_view(view);
+
+        // Assert
+        assert_eq!(installed_precompute_views_len(), 1);
+        clear_installed_views();
     }
 }

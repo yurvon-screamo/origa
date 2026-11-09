@@ -175,8 +175,8 @@ objc2-authentication-services = "0.3"
 #  - Linux: device-ai has no Linux backend (returns FeatureNotAvailable).
 # Windows + Linux keep their current stack — strictly non-regressing.
 # Future: upstream the mobile fix and switch back to hypothesi/...
-tauri-plugin-device-ai-apis = { git = "https://github.com/yurvon-screamo/tauri-plugin-device-ai-apis", rev = "8b5765fa068123a40060345549fd6028ee80c624" }
-device-ai = { git = "https://github.com/yurvon-screamo/tauri-plugin-device-ai-apis", rev = "8b5765fa068123a40060345549fd6028ee80c624" }
+tauri-plugin-device-ai-apis = { git = "https://github.com/yurvon-screamo/tauri-plugin-device-ai-apis", rev = "f4acf727a5c3fc4f8b364caa91da6cadad639680" }
+device-ai = { git = "https://github.com/yurvon-screamo/tauri-plugin-device-ai-apis", rev = "f4acf727a5c3fc4f8b364caa91da6cadad639680" }
 
 # Dev Dependencies
 wasm-bindgen = "0.2"

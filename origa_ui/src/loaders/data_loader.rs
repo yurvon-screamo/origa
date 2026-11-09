@@ -217,8 +217,9 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading kanji...");
 
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("dictionary/kanji.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("dictionary/kanji.json").await?;
     let data = KanjiData { kanji_json: json };
 
     yield_to_browser().await;
@@ -237,11 +238,12 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading grammar...");
 
-    let cdn = cdn_provider();
     // v3 corpus (#503 content pass): 677 rules, all four locales in one
     // file — the only grammar format on the CDN since the legacy
     // retirement (#583/#507/#482 removed v1, v2 and the KO/VI overlay).
-    let json = cdn.fetch_text("grammar/grammar_v3.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("grammar/grammar_v3.json").await?;
     let data = GrammarData { grammar_json: json };
 
     yield_to_browser().await;
@@ -293,8 +295,9 @@ pub async fn load_radicals() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading radicals...");
 
-    let cdn = cdn_provider();
-    let json = cdn.fetch_text("dictionary/radicals.json").await?;
+    // Verified fetch: a cache body predating the file's manifest tracking
+    // never invalidates through the manifest diff — see fetch_text_verified.
+    let json = cdn_provider::fetch_text_verified("dictionary/radicals.json").await?;
     let data = RadicalData {
         radicals_json: json,
     };
@@ -471,5 +474,34 @@ mod tests {
 
         // Assert
         assert!(view.is_none());
+    }
+
+    /// Regression pin for the verified-fetch migration (task
+    /// 20261107150931-k0c1rb7): `load_kanji`/`load_grammar`/`load_radicals`
+    /// must fetch through `fetch_text_verified`. The loaders have no
+    /// injection seam (global provider + OnceLock init), so the behavioral
+    /// coverage of the heal lives in `dictionary_verified_fetch_wasm_tests`;
+    /// this pin catches a revert to plain `fetch_text` at the source level.
+    /// Update the expectations together with the call sites.
+    #[test]
+    fn dictionary_loaders_fetch_through_verified_gate() {
+        let source = include_str!("data_loader.rs");
+
+        for path in [
+            "dictionary/kanji.json",
+            "grammar/grammar_v3.json",
+            "dictionary/radicals.json",
+        ] {
+            let verified = format!("fetch_text_verified(\"{path}\")");
+            assert!(
+                source.contains(&verified),
+                "{path} must be fetched through fetch_text_verified"
+            );
+            let plain = format!("fetch_text(\"{path}\")");
+            assert!(
+                !source.contains(&plain),
+                "{path} must not be fetched through plain fetch_text"
+            );
+        }
     }
 }
