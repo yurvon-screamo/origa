@@ -247,7 +247,10 @@ mod tests {
 
     #[test]
     fn tauri_build_serves_fonts_from_local_origin() {
-        assert_eq!(font_file_url(true, SAMPLE_FONT), format!("/fonts/{SAMPLE_FONT}"));
+        assert_eq!(
+            font_file_url(true, SAMPLE_FONT),
+            format!("/fonts/{SAMPLE_FONT}")
+        );
     }
 
     #[test]
