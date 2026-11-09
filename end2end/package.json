@@ -17,7 +17,7 @@
         "guard:matrix": "node scripts/check-ci-matrix.mjs",
         "shots": "node scripts/shots.ts",
         "exam:canary": "playwright test --config=playwright.screenshots.config.ts exam-canary",
-        "test:unit": "node --test \"shots/**/*.test.ts\"",
+        "test:unit": "node --test --experimental-test-module-mocks \"shots/**/*.test.ts\"",
         "lint": "eslint bdd pages helpers fixtures shots scripts/shots.ts *.ts --no-error-on-unmatched-pattern"
     },
     "devDependencies": {

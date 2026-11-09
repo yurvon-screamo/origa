@@ -133,7 +133,7 @@ RUN gcc -O2 -Wall -Wextra -s -static -o /tmp/thp_off /tmp/thp_off.c
 # admin/auth UI, which this deployment does not expose.
 FROM alpine:3.24
 
-ARG TRAILBASE_VERSION=v0.33.16
+ARG TRAILBASE_VERSION=v0.35.10
 
 USER root
 WORKDIR /app

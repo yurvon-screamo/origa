@@ -84,10 +84,13 @@ screenshots would be sans-serif — a violation of the design rules of the
 repository), a poisoned `dist/` (the trunk live-reload bridge breaks the
 WASM load of a statically served bundle), a missing output directory
 outside the working tree, missing e2e credentials (the `end2end/.env` of
-the fixture is gitignored — a fresh worktree has none). It warns — and
-does not fail — when the local corpus lags behind the deployment, when a
-listener on port 1420 comes from another checkout, and when the tokenizer
-dictionary is absent.
+the fixture is gitignored — a fresh worktree has none), and a listener
+from another checkout on a port the run binds — the app port always, the
+CDN port only with a local corpus (without one the content comes from
+the production CDN and the port stays unbound): the run would reuse the
+stranger as its own server and the capture would photograph the wrong
+bundle. It warns — and does not fail — when the local corpus lags behind
+the deployment and when the tokenizer dictionary is absent.
 
 A fresh worktree of the factory has none of the three things a capture
 needs: the corpus (`cdn/` is gitignored), the e2e credentials

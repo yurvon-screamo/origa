@@ -1675,6 +1675,22 @@ mod acquaintance_training {
     /// финиша не должно перемонтировать дерево тренировки.
     #[wasm_bindgen_test]
     async fn final_answer_freezes_answered_card_until_completion_screen() {
+        use crate::test_support::{install_session_for_user, test_user};
+        use origa::traits::UserRepository;
+
+        // The hand-completion persistence (CompleteAcquaintanceHandUseCase)
+        // resolves the current user: seed the user the session resolves to.
+        // Without it the use case fails on an empty store, and the
+        // fail-fast resolution (session cache, no IndexedDB round-trip)
+        // races the freeze assert below — the completion screen would
+        // replace the frozen card before the assert reads it. With the
+        // seeded user the save runs real IndexedDB macrotasks, the exact
+        // persistence window this test freezes against.
+        let repository = crate::repository::HybridUserRepository::new();
+        let seeded_user = test_user("acq-final");
+        repository.save(&seeded_user).await.expect("user seeded");
+        let _session = install_session_for_user(&seeded_user);
+
         // Arrange: рука из одного кандзи (критерий — 3 «помню»)
         let ctx = acq_context(AcquaintanceStage::Training);
         let card_id = Ulid::new();
@@ -5083,34 +5099,15 @@ mod know_confirm_dispose {
     /// unscoped for exactly this reason.
     #[wasm_bindgen_test]
     async fn know_confirm_commits_mark_known_despite_page_disposal() {
-        use crate::test_support::test_user;
-        use origa::domain::{Card, Question, User, VocabularyCard};
+        use crate::test_support::{install_session_for_user, test_user};
+        use origa::domain::{Card, Question, VocabularyCard};
         use origa::traits::UserRepository;
 
         let repo = HybridUserRepository::new();
 
-        // get_current_user returns the FIRST user by ULID key order, and
-        // leftover users from other tests always sort earlier (their ULID
-        // timestamps precede this test's). The mark-known use case targets
-        // that first user — so the seeded user must be the ONLY one: purge
-        // whatever is present (recording it for the restore below).
-        let mut purged_users: Vec<User> = Vec::new();
-        // Bounded: a store glitch must not hang the suite. Known fail
-        // mode: a panic between this purge and the restore below skips
-        // the restore — later tests that read the current user without
-        // seeding their own would see an empty store (worse diagnostics,
-        // never a false green).
-        for _ in 0..16 {
-            match repo.get_current_user().await {
-                Ok(Some(existing)) => {
-                    let existing_id = existing.id();
-                    purged_users.push(existing);
-                    repo.delete(existing_id).await.expect("purge leftover user");
-                },
-                _ => break,
-            }
-        }
-
+        // The session-scoped current-user read (GH #634) resolves the seeded
+        // user by the session's canonical id, so leftover users of other
+        // tests are invisible to the read — no purge needed.
         let mut user = test_user("knowconfirm");
         let study = user
             .create_card(Card::Vocabulary(VocabularyCard::new_with_pos(
@@ -5121,6 +5118,7 @@ mod know_confirm_dispose {
             .expect("study card created");
         let card_id = *study.card_id();
         repo.save(&user).await.expect("user seeded");
+        let _session = install_session_for_user(&user);
         // The mount closure moves the repo in — keep a clone for the
         // post-dispose repository assertions below.
         let repo_for_asserts = repo.clone();
@@ -5168,18 +5166,11 @@ mod know_confirm_dispose {
             }
         }
 
-        // Record-level cleanup BEFORE the assert: the store is global
-        // (stateless repository instances share it), so a failing test
-        // must not leave the seeded knowconfirm user polluting whatever
-        // test reads the current user next. Drop the seeded user and put
-        // back everything the purge removed.
+        // Record-level cleanup BEFORE the assert: the store is shared by the
+        // whole suite, so failing early must not leave the seeded knowconfirm
+        // record behind (session-scoped reads ignore it, but the garbage
+        // still accumulates across runs).
         let _ = repo_for_asserts.delete(user.id()).await;
-        for purged in purged_users {
-            repo_for_asserts
-                .save(&purged)
-                .await
-                .expect("purged user restored");
-        }
 
         assert!(
             known,

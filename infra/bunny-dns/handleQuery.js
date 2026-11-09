@@ -1,75 +1,86 @@
 /**
- * Geo-steering for Origa (.net zone) — Bunny DNS script 91629 "origa-s3-geo".
+ * Geo-steering + RF failover for Origa (.net zone) — Bunny DNS script 91629
+ * "origa-s3-geo".
  *
- * Attached via NS records (zone 873317, TTL 60): origa, app.origa,
- * s3.origa, content.origa, umami.origa. Nothing else must reach this
- * script: it answers ONLY the names above and returns undefined for any
- * other hostname — a newly attached name without a branch here must fail
- * loudly (grey answer), not silently resolve to the RF IP.
+ * Live topology (ADR-072, 2026-11-06): the script is attached ONLY to
+ * s3.origa and content.origa (SCRIPT records, TTL 60). Everything else in
+ * the zone stays out of the script:
+ *  - origa / app.origa / umami.origa are plain CNAMEs to the Railway edge —
+ *    script-attached names break LE-issuance paths that resolve through
+ *    Google resolvers (ADR-072), so never re-attach them;
+ *  - pass is a plain A record and was never in the blast radius.
+ * A name newly attached in Bunny without a branch below grey-answers for
+ * everyone (fail-loud by design), never silently resolves to another
+ * name's record.
  *
- * Current topology (ADR-061, cutover 2026-09-30; umami added 2026-10-22):
- *  - RF clients    -> A 193.233.217.243 (RF VM, nginx SNI-demux -> Railway/Tigris)
- *  - world         -> direct: Railway edge (API/landing), CloudFront (CDN)
- *  - content.origa -> CNAME Tigris custom domain (diagnostic name, no RF branch)
- *  - umami.origa   -> A 193.233.217.243 for EVERYONE (temporary; see the
- *                     umami branch below — Railway cert issuance is broken)
+ * s3.origa (ADR-061 RF delivery branch):
+ *  - RF resolvers -> A 193.233.217.243 (RF VM, nginx SNI-demux -> Tigris),
+ *    but ONLY while Bunny's built-in background monitoring sees the VM
+ *    online (Monitoring.getStatus, ICMP-based);
+ *  - VM offline -> RF clients get the same CloudFront CNAME the world gets:
+ *    degraded (evening TSPU throttling slows it) but working, instead of
+ *    silently dead. Any non-true status is treated as offline (fail-closed).
+ *  - world -> CNAME d3gbi3wo8j4c2w.cloudfront.net (CloudFront in front of
+ *    the public Tigris bucket). The direct Tigris custom domain
+ *    (origa.t3.tigrisbucket.io) stays parked: its edge still serves TLS
+ *    alert 80 on that SNI — flip only after a real-client 200 from a Tigris
+ *    edge IP (verified dead 2026-09-20).
  *
- * s3.origa world branch: CloudFront (free tier) in front of the public
- * Tigris bucket. The direct Tigris custom domain (origa.t3.tigrisbucket.io)
- * is parked: the Tigris edge still serves TLS alert 80 on that SNI —
- * verified 2026-09-20 by a real client path (curl via live CNAME fails with
- * 000) AND direct openssl probes on multiple edge IPs. Flip the s3 world
- * branch to CnameRecord("origa.t3.tigrisbucket.io") only after a real-client
- * test returns 200 from a Tigris edge IP.
+ * Monitoring semantics (Bunny docs): ICMP ping only, 700 ms x 3 retries,
+ * one reply = online; actively queried IPs re-checked ~every 10 s; the
+ * status is per DNS server ("reachable from the PoP answering the query").
+ * ICMP-only means an nginx crash on a live VM is NOT seen here — that class
+ * is covered by the uptime poller's HTTP probe (alert), not by DNS.
+ *
+ * TTLs are asymmetric on purpose: the RF A answer carries TTL 60 (fast
+ * failover), the CloudFront CNAME carries TTL 300 — so recovery back to A
+ * converges up to ~5 minutes after Bunny sees the VM alive again. See
+ * infra/bunny-dns/README.md for the drill procedure and measured numbers.
+ *
+ * content.origa: CNAME to the direct Tigris custom domain for everyone
+ * (diagnostic name, no RF branch).
  */
+
+var RF_VM_IP = "193.233.217.243";
+var S3_WORLD_CNAME = "d3gbi3wo8j4c2w.cloudfront.net";
+var CONTENT_CNAME = "origa.t3.tigrisbucket.io";
+
+/**
+ * True only when Bunny's background monitoring reports the RF VM online.
+ * The typeof-guard keeps a future platform-side removal of the Monitoring
+ * global from throwing (a throw grey-answers the query — for the world
+ * branch too); degrading RF users to the working world path is the safer
+ * default, that is the whole point of this gate.
+ */
+function isRfVmOnline() {
+  if (typeof Monitoring === "undefined") {
+    return false;
+  }
+  return Monitoring.getStatus(RF_VM_IP).isOnline === true;
+}
+
 export default function handleQuery(query) {
-  var h = (query.request.hostname || "").replace(/\.$/, ""); // strip FQDN trailing dot
+  var hostname = (query.request.hostname || "").replace(/\.$/, ""); // strip FQDN trailing dot
 
   // Guard: answer only the names attached to this script (see header).
   if (
-    h !== "origa.uwuwu.net" &&
-    h !== "app.origa.uwuwu.net" &&
-    h !== "s3.origa.uwuwu.net" &&
-    h !== "content.origa.uwuwu.net" &&
-    h !== "umami.origa.uwuwu.net"
+    hostname !== "s3.origa.uwuwu.net" &&
+    hostname !== "content.origa.uwuwu.net"
   ) {
-    return undefined; // not ours — do NOT fall through to the RF A-record
+    return undefined; // not ours — do NOT fall through to any record
   }
 
-  if (h === "content.origa.uwuwu.net") {
-    return new CnameRecord("origa.t3.tigrisbucket.io", 300);
+  if (hostname === "content.origa.uwuwu.net") {
+    return new CnameRecord(CONTENT_CNAME, 300);
   }
 
-  // Temporary (2026-10-29, issue #733): Railway's custom-domain certificate
-  // issuance fails repeatedly with an internal error (4+ retries over two
-  // days), so the edge serves the wildcard *.up.railway.app cert for this
-  // SNI and world browsers fail the TLS handshake. The RF VM holds a valid
-  // Let's Encrypt cert for the name, so BOTH geo branches go through it.
-  // Beacon/script volume is tiny — the VM easily carries it. Flip back to
-  // the geo-split (move this branch below isRF, world -> CnameRecord
-  // Railway edge name) once Railway's domain-status reports a VALID
-  // certificate. ADR-054 §7.
-  if (h === "umami.origa.uwuwu.net") {
-    return new ARecord("193.233.217.243", 60);
-  }
-
+  // RF geo branch: the RF VM while Bunny sees it alive...
   var geo = query.request.geoLocation;
-  var isRF = geo && geo.country === "RU";
-  if (isRF) {
-    return new ARecord("193.233.217.243", 60);
+  if (geo && geo.country === "RU" && isRfVmOnline()) {
+    return new ARecord(RF_VM_IP, 60);
   }
 
-  if (h === "s3.origa.uwuwu.net") {
-    return new CnameRecord("d3gbi3wo8j4c2w.cloudfront.net", 300);
-  }
-  if (h === "app.origa.uwuwu.net") {
-    return new CnameRecord("9v15a3ov.up.railway.app", 300);
-  }
-  if (h === "origa.uwuwu.net") {
-    return new CnameRecord("vl080mt6.up.railway.app", 300);
-  }
-  // unreachable while the guard list above matches the branches; kept as a
-  // fail-loud terminal: a name added to the guard without a branch must get
-  // a grey answer, never another name's record.
-  return undefined;
+  // ...otherwise the world path: world clients always, RF clients while
+  // the VM is dead (failover).
+  return new CnameRecord(S3_WORLD_CNAME, 300);
 }

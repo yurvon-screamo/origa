@@ -4,7 +4,7 @@
 //! The meta record lives as a `sync_meta` key **inside the existing `users`
 //! IndexedDB store**, next to the `user:{id}` records: the store uses
 //! out-of-line keys without a key path, so no schema version bump or
-//! upgrade migration is needed, and `list_users` bounds its key range to
+//! upgrade migration is needed, and the user reads bound their key ranges to
 //! the `user:` prefix (see `file_repository`) so the meta record never
 //! shows up as a "corrupted user entry".
 

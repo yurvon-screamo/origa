@@ -3,6 +3,8 @@ pub mod cache_manager;
 pub mod cdn_provider;
 mod dictionary_cache;
 mod file_repository;
+#[cfg(all(test, target_arch = "wasm32"))]
+mod file_repository_wasm_tests;
 mod hybrid_repository;
 #[cfg(all(test, target_arch = "wasm32"))]
 mod idb_sync_wasm_tests;

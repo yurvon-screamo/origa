@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readlinkSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative as relativePath } from "node:path";
 import { promisify } from "node:util";
@@ -82,7 +82,9 @@ async function readDarwinListeners(port: number): Promise<ListenerInfo[]> {
 /** Working directory of a process (Linux only). */
 export function readProcCwd(pid: number): string | null {
     try {
-        return readFileSync(`/proc/${pid}/cwd`, "utf-8").trim() || null;
+        // /proc/<pid>/cwd is a symlink to a directory: readFileSync would
+        // fail with EISDIR — the link target is the answer.
+        return readlinkSync(`/proc/${pid}/cwd`) || null;
     } catch {
         return null;
     }
