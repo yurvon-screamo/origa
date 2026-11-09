@@ -2,94 +2,99 @@ import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
 import { HomePage, GrammarPage } from "../../pages";
 
-When('пользователь открывает главную страницу', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.goto();
-    await expect(homePage.homePage).toBeVisible({ timeout: 15_000 });
+When("пользователь открывает главную страницу", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await homePage.goto();
+  await expect(homePage.homePage).toBeVisible({ timeout: 15_000 });
 });
 
-Then('главная страница отображается', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await expect(homePage.homePage).toBeVisible();
+Then("главная страница отображается", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await expect(homePage.homePage).toBeVisible();
 });
 
-When('нажимает навигацию к словам', async ({ page }) => {
-    const homePage = new HomePage(page);
-    // Sidebar is hidden on mobile; bottom-tab is hidden on desktop. Pick the
-    // one actually rendered for the current viewport.
-    if (await homePage.bottomTabWords.isVisible().catch(() => false)) {
-        await homePage.bottomTabWords.click();
-    } else {
-        await homePage.sidebarWords.click();
-    }
+When("нажимает навигацию к словам", async ({ page }) => {
+  const homePage = new HomePage(page);
+  // Sidebar is hidden on mobile; bottom-tab is hidden on desktop. Pick the
+  // one actually rendered for the current viewport.
+  if (await homePage.bottomTabWords.isVisible().catch(() => false)) {
+    await homePage.bottomTabWords.click();
+  } else {
+    await homePage.sidebarWords.click();
+  }
 });
 
-When('нажимает навигацию к грамматике', async ({ page }) => {
-    const homePage = new HomePage(page);
-    if (await homePage.bottomTabGrammar.isVisible().catch(() => false)) {
-        await homePage.bottomTabGrammar.click();
-    } else {
-        await homePage.sidebarGrammar.click();
-    }
+When("нажимает навигацию к грамматике", async ({ page }) => {
+  const homePage = new HomePage(page);
+  if (await homePage.bottomTabGrammar.isVisible().catch(() => false)) {
+    await homePage.bottomTabGrammar.click();
+  } else {
+    await homePage.sidebarGrammar.click();
+  }
 });
 
-Then('страница грамматики отображается', async ({ page }) => {
-    const grammarPage = new GrammarPage(page);
-    await expect(grammarPage.grammarPage).toBeVisible({ timeout: 15_000 });
+Then("страница грамматики отображается", async ({ page }) => {
+  const grammarPage = new GrammarPage(page);
+  await expect(grammarPage.grammarPage).toBeVisible({ timeout: 15_000 });
 });
 
-Then('отображается кнопка начала урока', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await expect(homePage.lessonButton).toBeVisible();
+Then("отображается кнопка начала урока", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await expect(homePage.lessonButton).toBeVisible();
 });
 
-When('нажимает кнопку начала урока', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.startLesson();
+When("нажимает кнопку начала урока", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await homePage.startLesson();
 });
 
-Then('отображается карточка прогресса JLPT', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await expect(homePage.jlptProgress).toBeVisible();
+Then("отображается карточка прогресса JLPT", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await expect(homePage.jlptProgress).toBeVisible();
 });
 
-Then('отображается призрачный прогресс', async ({ page }) => {
-    await expect(page.getByTestId("home-jlpt-progress-progress-projected")).toBeVisible();
+Then("отображается призрачный прогресс", async ({ page }) => {
+  await expect(
+    page.getByTestId("home-jlpt-progress-progress-projected"),
+  ).toBeVisible();
 });
 
-Then('отображается график точности', async ({ page }) => {
-    const homePage = new HomePage(page);
-    // Графики живут в свёрнутом аккордеоне «Статистика» — раскрываем.
-    await homePage.statsAccordionToggle.click();
-    await expect(homePage.accuracyChart).toBeVisible();
+Then("отображается график точности", async ({ page }) => {
+  const homePage = new HomePage(page);
+  // Графики живут в свёрнутом аккордеоне «Статистика» — раскрываем.
+  await homePage.statsAccordionToggle.click();
+  await expect(homePage.accuracyChart).toBeVisible();
 });
 
-Then('отображается недавняя активность', async ({ page }) => {
-    await expect(page.getByTestId("home-recent-study")).toBeVisible({ timeout: 10_000 });
+Then("отображается недавняя активность", async ({ page }) => {
+  await expect(page.getByTestId("home-recent-study")).toBeVisible({
+    timeout: 10_000,
+  });
 });
 
-Then('отображается приветственная карточка', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await expect(homePage.welcomeCard).toBeVisible();
+Then("отображается приветственная карточка", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await expect(homePage.welcomeCard).toBeVisible();
 });
 
-When('раскрывает детали прогресса JLPT', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await homePage.jlptProgress.click();
+When("раскрывает детали прогресса JLPT", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await homePage.jlptProgress.click();
 });
 
-Then('отображаются категории прогресса', async ({ page }) => {
-    await expect(page.getByTestId(/jlpt.*categor/)).toBeVisible({ timeout: 5_000 });
+Then("отображаются категории прогресса", async ({ page }) => {
+  await expect(page.getByTestId(/jlpt.*categor/)).toBeVisible({
+    timeout: 5_000,
+  });
 });
 
-Then('приветственная карточка содержит имя пользователя', async ({ page }) => {
-    const homePage = new HomePage(page);
-    await expect(homePage.welcomeCard).toBeVisible();
-    const text = await homePage.welcomeCard.textContent();
-    expect(text?.trim().length ?? 0).toBeGreaterThan(0);
+Then("приветственная карточка содержит имя пользователя", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await expect(homePage.welcomeCard).toBeVisible();
+  const text = await homePage.welcomeCard.textContent();
+  expect(text?.trim().length ?? 0).toBeGreaterThan(0);
 });
 
-
-Then('отображается нижняя панель навигации', async ({ page }) => {
-    await expect(page.getByTestId("bottom-tab")).toBeVisible({ timeout: 10_000 });
+Then("отображается нижняя панель навигации", async ({ page }) => {
+  await expect(page.getByTestId("bottom-tab")).toBeVisible({ timeout: 10_000 });
 });

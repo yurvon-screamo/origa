@@ -10,10 +10,10 @@ import type { PresetContext } from "./index.ts";
  * with the local one — the seeded parts survive that merge.
  */
 export async function withSeededUser(
-    context: PresetContext,
-    seed: (userJson: string) => string,
+  context: PresetContext,
+  seed: (userJson: string) => string,
 ): Promise<void> {
-    const stored = await readStoredUser(context.page);
-    await writeStoredUser(context.page, stored.key, seed(stored.value));
-    await context.page.reload({ waitUntil: "domcontentloaded" });
+  const stored = await readStoredUser(context.page);
+  await writeStoredUser(context.page, stored.key, seed(stored.value));
+  await context.page.reload({ waitUntil: "domcontentloaded" });
 }

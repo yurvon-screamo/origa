@@ -42,55 +42,55 @@
 set -euo pipefail
 
 if [[ $# -ne 3 ]]; then
-    echo "usage: $0 <version> <version_base> <version_type>" >&2
-    exit 2
+	echo "usage: $0 <version> <version_base> <version_type>" >&2
+	exit 2
 fi
 
 VERSION="$1"
 VERSION_BASE="$2"
 VERSION_TYPE="$3"
 
-if [[ "$VERSION_TYPE" != "stable" && "$VERSION_TYPE" != "prerelease" ]]; then
-    echo "error: version_type must be 'stable' or 'prerelease', got '$VERSION_TYPE'" >&2
-    exit 1
+if [[ $VERSION_TYPE != "stable" && $VERSION_TYPE != "prerelease" ]]; then
+	echo "error: version_type must be 'stable' or 'prerelease', got '$VERSION_TYPE'" >&2
+	exit 1
 fi
 
-if [[ ! "$VERSION_BASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "error: version_base must be numeric X.Y.Z, got '$VERSION_BASE'" >&2
-    exit 1
+if [[ ! $VERSION_BASE =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+	echo "error: version_base must be numeric X.Y.Z, got '$VERSION_BASE'" >&2
+	exit 1
 fi
 
-IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_BASE"
+IFS='.' read -r MAJOR MINOR PATCH <<<"$VERSION_BASE"
 MAJOR=$((10#$MAJOR))
 MINOR=$((10#$MINOR))
 PATCH=$((10#$PATCH))
 
-if (( PATCH > 99 )); then
-    echo "error: patch segment $PATCH exceeds 99 — BASE*100 would collide with the next minor's version space (bump the minor instead)" >&2
-    exit 1
+if ((PATCH > 99)); then
+	echo "error: patch segment $PATCH exceeds 99 — BASE*100 would collide with the next minor's version space (bump the minor instead)" >&2
+	exit 1
 fi
 
 BASE_CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
 
 RC_OFFSET=99
-if [[ "$VERSION_TYPE" == "prerelease" ]]; then
-    RC_SUFFIX="${VERSION#*-}"
-    if [[ ! "$RC_SUFFIX" =~ ^rc(0|[1-9][0-9]*)$ ]]; then
-        echo "error: prerelease suffix '$RC_SUFFIX' is not rcN with no leading zeros — rc01/rc.1/rc1.2 forms would produce colliding or ambiguous Play versionCodes" >&2
-        exit 1
-    fi
-    RC_OFFSET=$((10#${RC_SUFFIX#rc}))
-    if (( RC_OFFSET < 1 || RC_OFFSET > 98 )); then
-        echo "error: rc number $RC_OFFSET is out of the 1..98 range (99 is reserved for the stable of the same train)" >&2
-        exit 1
-    fi
+if [[ $VERSION_TYPE == "prerelease" ]]; then
+	RC_SUFFIX="${VERSION#*-}"
+	if [[ ! $RC_SUFFIX =~ ^rc(0|[1-9][0-9]*)$ ]]; then
+		echo "error: prerelease suffix '$RC_SUFFIX' is not rcN with no leading zeros — rc01/rc.1/rc1.2 forms would produce colliding or ambiguous Play versionCodes" >&2
+		exit 1
+	fi
+	RC_OFFSET=$((10#${RC_SUFFIX#rc}))
+	if ((RC_OFFSET < 1 || RC_OFFSET > 98)); then
+		echo "error: rc number $RC_OFFSET is out of the 1..98 range (99 is reserved for the stable of the same train)" >&2
+		exit 1
+	fi
 fi
 
 VERSION_CODE=$((BASE_CODE * 100 + RC_OFFSET))
 
-if (( VERSION_CODE > 2100000000 )); then
-    echo "error: versionCode $VERSION_CODE exceeds the Play maximum 2100000000 — retire the major version line before tagging" >&2
-    exit 1
+if ((VERSION_CODE > 2100000000)); then
+	echo "error: versionCode $VERSION_CODE exceeds the Play maximum 2100000000 — retire the major version line before tagging" >&2
+	exit 1
 fi
 
 echo "$VERSION_CODE"

@@ -2,175 +2,200 @@ import { expect } from "@playwright/test";
 import { When, Then } from "../fixtures";
 import { ProfilePage } from "../../pages";
 
-When('пользователь открывает страницу профиля', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await profilePage.goto();
-    await expect(profilePage.profilePage).toBeVisible({ timeout: 15_000 });
+When("пользователь открывает страницу профиля", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await profilePage.goto();
+  await expect(profilePage.profilePage).toBeVisible({ timeout: 15_000 });
 });
 
-Then('страница профиля отображается', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.profilePage).toBeVisible();
+Then("страница профиля отображается", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.profilePage).toBeVisible();
 });
 
-Then('отображаются опции языка', async ({ page }) => {
+Then("отображаются опции языка", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.profileSettings).toBeVisible();
+});
+
+Then("отображается английский язык", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.langEnglish).toBeVisible();
+});
+
+Then("отображается русский язык", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.langRussian).toBeVisible();
+});
+
+When("выбирает английский язык", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await profilePage.selectLanguage("english");
+  await profilePage.waitForAutoSave();
+});
+
+Then("отображается статус автосохранения", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await profilePage.waitForAutoSave();
+});
+
+Then("отображаются опции нагрузки", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.loadMedium).toBeVisible();
+});
+
+Then("отображается минимальная нагрузка", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.loadMinimal).toBeVisible();
+});
+
+Then("отображается средняя нагрузка", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.loadMedium).toBeVisible();
+});
+
+Then("отображается максимальная нагрузка", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await expect(profilePage.loadMaximum).toBeVisible();
+});
+
+When("нажимает кнопку выхода", async ({ page }) => {
+  await page.getByTestId("profile-logout-btn").click();
+});
+
+Then("происходит переход на страницу входа", async ({ page }) => {
+  // After delete the app clears auth state and ProtectedRoute re-renders
+  // the Login view inline (it does not change the URL). Assert on the
+  // login form being visible — if clear_auth_state didn't run, the user
+  // would still see the profile content and this Then would fail.
+  // 45s: the reload right before this step pays a full cold WASM boot,
+  // which does not fit 15s on a loaded CI runner with parallel e2e jobs.
+  await expect(page.getByTestId("login-page")).toBeVisible({ timeout: 45_000 });
+  await expect(
+    page
+      .getByTestId("email-input")
+      .or(page.getByTestId("login-password-toggle")),
+  ).toBeVisible({ timeout: 5_000 });
+});
+
+Then("отображается карточка смены пароля", async ({ page }) => {
+  await expect(page.getByTestId("profile-password")).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+When("вводит старый пароль {string}", async ({ page }, password: string) => {
+  await page.getByTestId("profile-password").click();
+  // Форма смены пароля открывается по клику — ждём её поля ввода,
+  // а не фиксированной паузы.
+  await expect(page.getByTestId("current-password")).toBeVisible({
+    timeout: 10_000,
+  });
+  await page.getByTestId("current-password").fill(password);
+});
+
+When("вводит новый пароль {string}", async ({ page }, password: string) => {
+  await page.getByTestId("new-password").fill(password);
+});
+
+When("вводит подтверждение {string}", async ({ page }, password: string) => {
+  await page.getByTestId("confirm-password").fill(password);
+});
+
+When("нажимает кнопку смены пароля", async ({ page }) => {
+  await page.getByTestId("change-password-btn").click();
+});
+
+Then("отображается ошибка несовпадения паролей", async ({ page }) => {
+  await expect(page.getByTestId("password-error")).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+When("нажимает кнопку удаления аккаунта", async ({ page }) => {
+  await page.getByTestId("profile-delete-btn").click();
+});
+
+When("подтверждает удаление", async ({ page }) => {
+  // The reload below used to fire immediately after the click — killing
+  // the still-in-flight delete (remote DELETE → local cleanup) mid-flow.
+  // The session then survived the reload and the profile re-rendered
+  // instead of the login page. Wait for the server-side DELETE first,
+  // then give the local auth-state cleanup a chance to unmount the
+  // profile on its own; the reload stays as belt-and-suspenders for the
+  // route re-evaluation (an inline login already visible survives it).
+  const serverDelete = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/records/v1/domain_user") &&
+      response.request().method() === "DELETE",
+    { timeout: 30_000 },
+  );
+  await page.getByTestId("profile-confirm-delete-btn").click();
+  await serverDelete;
+  await page
+    .getByTestId("login-page")
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .catch(() => {
+      // Cleanup did not unmount the profile in time — the reload
+      // forces the route re-evaluation as before.
+    });
+  await page.reload();
+});
+
+Then("отображается сообщение об успешной смене пароля", async ({ page }) => {
+  await expect(page.getByTestId("password-success")).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+Then("английский язык выбран", async ({ page }) => {
+  // autosave was already awaited in the When step; here we just verify the
+  // toggle reflects English as selected.
+  const profilePage = new ProfilePage(page);
+  const langClass = (await profilePage.langEnglish.getAttribute("class")) ?? "";
+  const isEnglish =
+    langClass.includes("cursor-default") ||
+    langClass.includes("fg-black") ||
+    !langClass.includes("fg-muted");
+  expect(isEnglish).toBe(true);
+});
+
+Then(
+  "отображается карточка настроек с информацией о приложении",
+  async ({ page }) => {
     const profilePage = new ProfilePage(page);
     await expect(profilePage.profileSettings).toBeVisible();
+  },
+);
+
+When("выбирает минимальную нагрузку", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  await profilePage.selectDailyLoad("minimal");
+  await profilePage.waitForAutoSave();
 });
 
-Then('отображается английский язык', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.langEnglish).toBeVisible();
+Then("минимальная нагрузка выбрана", async ({ page }) => {
+  const profilePage = new ProfilePage(page);
+  const loadClass = (await profilePage.loadMinimal.getAttribute("class")) ?? "";
+  const isSelected =
+    loadClass.includes("btn-olive") ||
+    loadClass.includes("cursor-default") ||
+    !loadClass.includes("btn-ghost");
+  expect(isSelected).toBe(true);
 });
 
-Then('отображается русский язык', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.langRussian).toBeVisible();
+Then("отображается подтверждение удаления", async ({ page }) => {
+  await expect(page.getByTestId("profile-confirm-delete-btn")).toBeVisible({
+    timeout: 5_000,
+  });
 });
 
-When('выбирает английский язык', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await profilePage.selectLanguage("english");
-    await profilePage.waitForAutoSave();
+When("пользователь отменяет удаление аккаунта", async ({ page }) => {
+  await page.getByTestId("profile-cancel-delete-btn").click();
 });
 
-Then('отображается статус автосохранения', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await profilePage.waitForAutoSave();
-});
-
-Then('отображаются опции нагрузки', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.loadMedium).toBeVisible();
-});
-
-Then('отображается минимальная нагрузка', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.loadMinimal).toBeVisible();
-});
-
-Then('отображается средняя нагрузка', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.loadMedium).toBeVisible();
-});
-
-Then('отображается максимальная нагрузка', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.loadMaximum).toBeVisible();
-});
-
-When('нажимает кнопку выхода', async ({ page }) => {
-    await page.getByTestId("profile-logout-btn").click();
-});
-
-Then('происходит переход на страницу входа', async ({ page }) => {
-    // After delete the app clears auth state and ProtectedRoute re-renders
-    // the Login view inline (it does not change the URL). Assert on the
-    // login form being visible — if clear_auth_state didn't run, the user
-    // would still see the profile content and this Then would fail.
-    // 45s: the reload right before this step pays a full cold WASM boot,
-    // which does not fit 15s on a loaded CI runner with parallel e2e jobs.
-    await expect(page.getByTestId("login-page")).toBeVisible({ timeout: 45_000 });
-    await expect(page.getByTestId("email-input").or(page.getByTestId("login-password-toggle"))).toBeVisible({ timeout: 5_000 });
-});
-
-Then('отображается карточка смены пароля', async ({ page }) => {
-    await expect(page.getByTestId("profile-password")).toBeVisible({ timeout: 10_000 });
-});
-
-When('вводит старый пароль {string}', async ({ page }, password: string) => {
-    await page.getByTestId("profile-password").click();
-    // Форма смены пароля открывается по клику — ждём её поля ввода,
-    // а не фиксированной паузы.
-    await expect(page.getByTestId("current-password")).toBeVisible({ timeout: 10_000 });
-    await page.getByTestId("current-password").fill(password);
-});
-
-When('вводит новый пароль {string}', async ({ page }, password: string) => {
-    await page.getByTestId("new-password").fill(password);
-});
-
-When('вводит подтверждение {string}', async ({ page }, password: string) => {
-    await page.getByTestId("confirm-password").fill(password);
-});
-
-When('нажимает кнопку смены пароля', async ({ page }) => {
-    await page.getByTestId("change-password-btn").click();
-});
-
-Then('отображается ошибка несовпадения паролей', async ({ page }) => {
-    await expect(page.getByTestId("password-error")).toBeVisible({ timeout: 10_000 });
-});
-
-When('нажимает кнопку удаления аккаунта', async ({ page }) => {
-    await page.getByTestId("profile-delete-btn").click();
-});
-
-When('подтверждает удаление', async ({ page }) => {
-    // The reload below used to fire immediately after the click — killing
-    // the still-in-flight delete (remote DELETE → local cleanup) mid-flow.
-    // The session then survived the reload and the profile re-rendered
-    // instead of the login page. Wait for the server-side DELETE first,
-    // then give the local auth-state cleanup a chance to unmount the
-    // profile on its own; the reload stays as belt-and-suspenders for the
-    // route re-evaluation (an inline login already visible survives it).
-    const serverDelete = page.waitForResponse(
-        (response) =>
-            response.url().includes("/api/records/v1/domain_user") &&
-            response.request().method() === "DELETE",
-        { timeout: 30_000 },
-    );
-    await page.getByTestId("profile-confirm-delete-btn").click();
-    await serverDelete;
-    await page
-        .getByTestId("login-page")
-        .waitFor({ state: "visible", timeout: 15_000 })
-        .catch(() => {
-            // Cleanup did not unmount the profile in time — the reload
-            // forces the route re-evaluation as before.
-        });
-    await page.reload();
-});
-
-Then('отображается сообщение об успешной смене пароля', async ({ page }) => {
-    await expect(page.getByTestId("password-success")).toBeVisible({ timeout: 10_000 });
-});
-
-Then('английский язык выбран', async ({ page }) => {
-    // autosave was already awaited in the When step; here we just verify the
-    // toggle reflects English as selected.
-    const profilePage = new ProfilePage(page);
-    const langClass = await profilePage.langEnglish.getAttribute("class") ?? "";
-    const isEnglish = langClass.includes("cursor-default") || langClass.includes("fg-black") || !langClass.includes("fg-muted");
-    expect(isEnglish).toBe(true);
-});
-
-Then('отображается карточка настроек с информацией о приложении', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await expect(profilePage.profileSettings).toBeVisible();
-});
-
-When('выбирает минимальную нагрузку', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    await profilePage.selectDailyLoad("minimal");
-    await profilePage.waitForAutoSave();
-});
-
-Then('минимальная нагрузка выбрана', async ({ page }) => {
-    const profilePage = new ProfilePage(page);
-    const loadClass = await profilePage.loadMinimal.getAttribute("class") ?? "";
-    const isSelected = loadClass.includes("btn-olive") || loadClass.includes("cursor-default") || !loadClass.includes("btn-ghost");
-    expect(isSelected).toBe(true);
-});
-
-Then('отображается подтверждение удаления', async ({ page }) => {
-    await expect(page.getByTestId("profile-confirm-delete-btn")).toBeVisible({ timeout: 5_000 });
-});
-
-When('пользователь отменяет удаление аккаунта', async ({ page }) => {
-    await page.getByTestId("profile-cancel-delete-btn").click();
-});
-
-Then('отображается ошибка короткого пароля', async ({ page }) => {
-    await expect(page.getByTestId("password-error")).toBeVisible({ timeout: 10_000 });
+Then("отображается ошибка короткого пароля", async ({ page }) => {
+  await expect(page.getByTestId("password-error")).toBeVisible({
+    timeout: 10_000,
+  });
 });

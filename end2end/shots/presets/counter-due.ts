@@ -5,7 +5,8 @@ import type { PresetContext } from "./index.ts";
 
 const day = 24 * 60 * 60 * 1000;
 
-const iso = (ms: number) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
+const iso = (ms: number) =>
+  new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 
 /** Valid ULID for the injected card. */
 const COUNTER_CARD_ID = "01JCBZ8QK0AX4W7YH2Z5P9T3GE";
@@ -20,51 +21,51 @@ const BINDING_NUMBERS = [1, 2, 3, 0];
  * interface are serde defaults the app fills in).
  */
 interface DueMemory {
-    current_state: {
-        stability: { value: number };
-        difficulty: { value: number };
-        next_review_date: string;
-        card_state: string;
-    };
-    reps: number;
-    lapses: number;
-    easy_count: number;
-    good_count: number;
-    last_review_date: string;
-    last_rating: string;
-    consecutive_again: number;
-    ghost: null;
-    marked_known_at: null;
+  current_state: {
+    stability: { value: number };
+    difficulty: { value: number };
+    next_review_date: string;
+    card_state: string;
+  };
+  reps: number;
+  lapses: number;
+  easy_count: number;
+  good_count: number;
+  last_review_date: string;
+  last_rating: string;
+  consecutive_again: number;
+  ghost: null;
+  marked_known_at: null;
 }
 
 interface SeedCard {
-    card_id?: string;
-    card?: Record<string, unknown>;
-    memory_history?: DueMemory | null;
-    is_favorite?: boolean;
-    perfect_streak_since_known?: number;
-    favorite_changed_at?: string | null;
+  card_id?: string;
+  card?: Record<string, unknown>;
+  memory_history?: DueMemory | null;
+  is_favorite?: boolean;
+  perfect_streak_since_known?: number;
+  favorite_changed_at?: string | null;
 }
 
 /** A due review memory (yesterday's review date). */
 function dueMemory(now: number, stamp: string): DueMemory {
-    return {
-        current_state: {
-            stability: { value: 3.0 },
-            difficulty: { value: 5.0 },
-            next_review_date: iso(now - day),
-            card_state: "Review",
-        },
-        reps: 1,
-        lapses: 0,
-        easy_count: 0,
-        good_count: 1,
-        last_review_date: stamp,
-        last_rating: "Good",
-        consecutive_again: 0,
-        ghost: null,
-        marked_known_at: null,
-    };
+  return {
+    current_state: {
+      stability: { value: 3.0 },
+      difficulty: { value: 5.0 },
+      next_review_date: iso(now - day),
+      card_state: "Review",
+    },
+    reps: 1,
+    lapses: 0,
+    easy_count: 0,
+    good_count: 1,
+    last_review_date: stamp,
+    last_rating: "Good",
+    consecutive_again: 0,
+    ghost: null,
+    marked_known_at: null,
+  };
 }
 
 /**
@@ -78,44 +79,44 @@ function dueMemory(now: number, stamp: string): DueMemory {
  * showings (issue #415).
  */
 export async function counterDue(context: PresetContext): Promise<void> {
-    if (await isOnboardingShown(context.page)) {
-        await skipOnboarding(context.page);
-    }
+  if (await isOnboardingShown(context.page)) {
+    await skipOnboarding(context.page);
+  }
 
-    const stored = await readStoredUser(context.page);
-    const user = JSON.parse(stored.value) as {
-        knowledge_set?: { study_cards?: Record<string, SeedCard> };
-    };
-    user.knowledge_set ??= {};
-    const cards = (user.knowledge_set.study_cards ??= {});
+  const stored = await readStoredUser(context.page);
+  const user = JSON.parse(stored.value) as {
+    knowledge_set?: { study_cards?: Record<string, SeedCard> };
+  };
+  user.knowledge_set ??= {};
+  const cards = (user.knowledge_set.study_cards ??= {});
 
-    const now = Date.now();
-    const stamp = iso(now);
-    // Push every pre-existing card out of the way — the pack must be
-    // the first thing the lesson shows.
-    for (const card of Object.values(cards)) {
-        const state = card?.memory_history?.current_state;
-        if (!state) continue;
-        state.next_review_date = iso(now + 30 * day);
-        if (card.memory_history) card.memory_history.last_review_date = stamp;
-    }
+  const now = Date.now();
+  const stamp = iso(now);
+  // Push every pre-existing card out of the way — the pack must be
+  // the first thing the lesson shows.
+  for (const card of Object.values(cards)) {
+    const state = card?.memory_history?.current_state;
+    if (!state) continue;
+    state.next_review_date = iso(now + 30 * day);
+    if (card.memory_history) card.memory_history.last_review_date = stamp;
+  }
 
-    const memory = dueMemory(now, stamp);
-    cards[COUNTER_CARD_ID] = {
-        card_id: COUNTER_CARD_ID,
-        card: {
-            Counter: {
-                suffix: "本",
-                bindings: BINDING_NUMBERS.map((number) => ({ number, memory })),
-            },
-        },
-        memory_history: memory,
-        is_favorite: false,
-        perfect_streak_since_known: 0,
-        favorite_changed_at: null,
-    };
+  const memory = dueMemory(now, stamp);
+  cards[COUNTER_CARD_ID] = {
+    card_id: COUNTER_CARD_ID,
+    card: {
+      Counter: {
+        suffix: "本",
+        bindings: BINDING_NUMBERS.map((number) => ({ number, memory })),
+      },
+    },
+    memory_history: memory,
+    is_favorite: false,
+    perfect_streak_since_known: 0,
+    favorite_changed_at: null,
+  };
 
-    await writeStoredUser(context.page, stored.key, JSON.stringify(user));
-    await context.page.reload({ waitUntil: "domcontentloaded" });
-    await context.page.waitForURL(/\/home$/, { timeout: 120_000 });
+  await writeStoredUser(context.page, stored.key, JSON.stringify(user));
+  await context.page.reload({ waitUntil: "domcontentloaded" });
+  await context.page.waitForURL(/\/home$/, { timeout: 120_000 });
 }

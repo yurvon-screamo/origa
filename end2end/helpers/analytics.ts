@@ -14,8 +14,11 @@ import { expect, test, type Page } from "@playwright/test";
  * `npx playwright test` — the webServer inherits the environment).
  */
 export async function expectUmamiTrackerAbsent(page: Page): Promise<void> {
-    test.skip(!process.env.CI, "CI-build guard: dist outside CI keeps analytics enabled");
-    await expect(page.locator("script[data-website-id]")).toHaveCount(0);
+  test.skip(
+    !process.env.CI,
+    "CI-build guard: dist outside CI keeps analytics enabled",
+  );
+  await expect(page.locator("script[data-website-id]")).toHaveCount(0);
 }
 
 /**
@@ -27,24 +30,25 @@ export async function expectUmamiTrackerAbsent(page: Page): Promise<void> {
  * failure.
  */
 export async function skipWhenUmamiTrackerAbsent(page: Page): Promise<void> {
-    const trackerPresent = (await page.locator("script[data-website-id]").count()) > 0;
-    test.skip(
-        !trackerPresent,
-        "трекер Umami скомпилирован out (UMAMI_DISABLED=1) — сценарий требует сборки с включённой аналитикой",
-    );
+  const trackerPresent =
+    (await page.locator("script[data-website-id]").count()) > 0;
+  test.skip(
+    !trackerPresent,
+    "трекер Umami скомпилирован out (UMAMI_DISABLED=1) — сценарий требует сборки с включённой аналитикой",
+  );
 }
 
 /** One Umami event captured from a `POST /api/send` beacon. */
 export interface UmamiCapturedEvent {
-    name: string;
-    /** Event data property, when the tracker attached one. */
-    locale?: string;
-    device?: string;
+  name: string;
+  /** Event data property, when the tracker attached one. */
+  locale?: string;
+  device?: string;
 }
 
 /** Read handle for events captured by {@link collectUmamiEvents}. */
 export interface UmamiEventCollector {
-    events: UmamiCapturedEvent[];
+  events: UmamiCapturedEvent[];
 }
 
 /**
@@ -57,32 +61,34 @@ export interface UmamiEventCollector {
  * Callers poll {@link UmamiEventCollector.events} — beacons land
  * asynchronously after the triggering action.
  */
-export async function collectUmamiEvents(page: Page): Promise<UmamiEventCollector> {
-    const collector: UmamiEventCollector = { events: [] };
-    await page.route("**/api/send", async (route) => {
-        const request = route.request();
-        if (request.method() === "POST") {
-            const body = request.postData();
-            if (body) {
-                try {
-                    const parsed = JSON.parse(body) as {
-                        payload?: { name?: string; data?: Record<string, unknown> };
-                    };
-                    if (parsed.payload?.name) {
-                        collector.events.push({
-                            name: parsed.payload.name,
-                            locale: parsed.payload.data?.locale as string | undefined,
-                            device: parsed.payload.data?.device as string | undefined,
-                        });
-                    }
-                } catch {
-                    // Not the payload shape we track — pass it through.
-                }
-            }
+export async function collectUmamiEvents(
+  page: Page,
+): Promise<UmamiEventCollector> {
+  const collector: UmamiEventCollector = { events: [] };
+  await page.route("**/api/send", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST") {
+      const body = request.postData();
+      if (body) {
+        try {
+          const parsed = JSON.parse(body) as {
+            payload?: { name?: string; data?: Record<string, unknown> };
+          };
+          if (parsed.payload?.name) {
+            collector.events.push({
+              name: parsed.payload.name,
+              locale: parsed.payload.data?.locale as string | undefined,
+              device: parsed.payload.data?.device as string | undefined,
+            });
+          }
+        } catch {
+          // Not the payload shape we track — pass it through.
         }
-        await route.continue();
-    });
-    return collector;
+      }
+    }
+    await route.continue();
+  });
+  return collector;
 }
 
 /**
@@ -91,24 +97,28 @@ export async function collectUmamiEvents(page: Page): Promise<UmamiEventCollecto
  * event-data properties on each matched instance.
  */
 export async function expectUmamiEventSequence(
-    collector: UmamiEventCollector,
-    expected: Array<{ name: string; locale?: string; device?: string }>,
+  collector: UmamiEventCollector,
+  expected: Array<{ name: string; locale?: string; device?: string }>,
 ): Promise<void> {
-    const names = collector.events.map((event) => event.name);
-    let cursor = 0;
-    for (const expectedEvent of expected) {
-        const offset = names.slice(cursor).indexOf(expectedEvent.name);
-        expect(
-            offset,
-            `событие "${expectedEvent.name}" не найдено после позиции ${cursor} в [${names.join(", ")}]`,
-        ).toBeGreaterThanOrEqual(0);
-        cursor += offset + 1;
-        const matched = collector.events[cursor - 1];
-        if (expectedEvent.locale !== undefined) {
-            expect(matched.locale, `locale у "${expectedEvent.name}"`).toBe(expectedEvent.locale);
-        }
-        if (expectedEvent.device !== undefined) {
-            expect(matched.device, `device у "${expectedEvent.name}"`).toBe(expectedEvent.device);
-        }
+  const names = collector.events.map((event) => event.name);
+  let cursor = 0;
+  for (const expectedEvent of expected) {
+    const offset = names.slice(cursor).indexOf(expectedEvent.name);
+    expect(
+      offset,
+      `событие "${expectedEvent.name}" не найдено после позиции ${cursor} в [${names.join(", ")}]`,
+    ).toBeGreaterThanOrEqual(0);
+    cursor += offset + 1;
+    const matched = collector.events[cursor - 1];
+    if (expectedEvent.locale !== undefined) {
+      expect(matched.locale, `locale у "${expectedEvent.name}"`).toBe(
+        expectedEvent.locale,
+      );
     }
+    if (expectedEvent.device !== undefined) {
+      expect(matched.device, `device у "${expectedEvent.name}"`).toBe(
+        expectedEvent.device,
+      );
+    }
+  }
 }

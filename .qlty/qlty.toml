@@ -51,6 +51,13 @@ exclude_patterns = [
     # ----- Version Control -----
     "**/.git/**",
 
+    # ----- qlty runtime state -----
+    # Every qlty run writes .qlty/out/invoke-*.yaml; without this exclude a
+    # formatter (prettier) inside the SAME run would flag those untracked
+    # files as unformatted — a nondeterministically red gate on its own
+    # artifacts (reproduced; .gitignore carries the same entry).
+    ".qlty/out/**",
+
     # ----- Misc -----
     "**/assets/**",
     "**/cache/**",
@@ -65,6 +72,33 @@ exclude_patterns = [
     "docs/marketing/playbooks/**",
     "docs/marketing/research/**",
     "docs/marketing/strategies/**",
+
+    # ----- Prose & generated artifacts (formatter scope) -----
+    # Markdown is prose everywhere in this repo (docs, ADRs, READMEs, LLM
+    # prompts, translator/HF copy): reformatting it risks render degradation
+    # (table/list reflow, fenced-block churn) and has no gate value —
+    # markdownlint runs in monitor mode (never a merge stopper). This
+    # excludes *.md from formatter AND markdownlint scans globally.
+    "**/*.md",
+    # Machine-generated / archival files: their bytes are owned by their
+    # pipeline — a formatter must never be the last writer, or the next
+    # pipeline run rewrites them back in generator style and the gate goes
+    # red on legitimate work (review round 1, PR #904: the CI Lint job
+    # regenerates tauri-plugin-aswebauth schema.json on every cargo build).
+    # The committed bytes match the generator output for each of these.
+    "origa_landing/content/**",
+    "**/package-lock.json",
+    "origa_landing/style/landing.processed.css",
+    "docs/backups/**",
+    "docs/.factcheck/**",
+    "tauri-plugin-aswebauth/permissions/**",
+    "translator/calibration/judge_calibration.json",
+    "tts/ref_pool_manifest.json",
+    # tauri capabilities: the build_capabilities_content generator emits
+    # tab-indented JSON and tauri/tests/build_config.rs asserts byte parity
+    # with the committed file ("intentional drift detection") — a prettier
+    # reformat IS a semantic break there (review round 3, PR #904).
+    "tauri/capabilities/**",
 ]
 
 # =============================================================================
@@ -188,6 +222,31 @@ mode = "monitor"
 # class ruff's parse errors would have caught at commit time).
 [[plugin]]
 name = "ruff"
+mode = "comment"
+
+# -----------------------------------------------------------------------------
+# FORMATTERS (gated through `qlty check` formatter findings; owner decision
+# 2026-11-08: "форматтер плагины все тоже поставь, пусть гоняется").
+#
+# NOTE — deliberate deviation from the uwuwu-agent reference config, which
+# keeps fmt drivers OFF ("the fmt driver reformats the whole repo"): here the
+# formatter gate was explicitly requested. The baseline reformat ships in the
+# same PR that enables the gate (see ci.yml Lint job).
+# -----------------------------------------------------------------------------
+
+# TS/JS/JSON (+css/html/yaml): end2end/** is the main uncovered surface.
+# Prose markdown, lockfiles and the committed landing CSS artifact are
+# excluded above (see "Prose & generated artifacts"). .github/** is out of
+# prettier scope via .prettierignore (workflows keep their own 4-space
+# convention); shfmt and ruff still reformat .github/scripts — operational
+# code, not config.
+[[plugin]]
+name = "prettier"
+mode = "comment"
+
+# Shell: tts/*.sh and .qlty/hooks/*.sh.
+[[plugin]]
+name = "shfmt"
 mode = "comment"
 
 # =============================================================================

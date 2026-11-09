@@ -17,20 +17,20 @@
 
 /** Options of {@link waitUntilStable}. */
 export interface StableWaitOptions {
-    /** Name of the observed counter — it appears in the error message. */
-    label: string;
-    /** How long the counter must stay unchanged to count as settled. */
-    quietMs: number;
-    /** Upper bound of the whole wait. */
-    timeoutMs: number;
-    /** Sampling interval (default 250 ms). */
-    pollMs?: number;
+  /** Name of the observed counter — it appears in the error message. */
+  label: string;
+  /** How long the counter must stay unchanged to count as settled. */
+  quietMs: number;
+  /** Upper bound of the whole wait. */
+  timeoutMs: number;
+  /** Sampling interval (default 250 ms). */
+  pollMs?: number;
 }
 
 const DEFAULT_POLL_MS = 250;
 
 function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -44,30 +44,30 @@ function sleep(ms: number): Promise<void> {
  * would move the failure into a later, less readable assertion.
  */
 export async function waitUntilStable(
-    read: () => number | Promise<number>,
-    options: StableWaitOptions,
+  read: () => number | Promise<number>,
+  options: StableWaitOptions,
 ): Promise<void> {
-    const pollMs = options.pollMs ?? DEFAULT_POLL_MS;
-    const deadline = Date.now() + options.timeoutMs;
-    let last = await read();
-    let lastChangeAt = Date.now();
+  const pollMs = options.pollMs ?? DEFAULT_POLL_MS;
+  const deadline = Date.now() + options.timeoutMs;
+  let last = await read();
+  let lastChangeAt = Date.now();
 
-    while (Date.now() < deadline) {
-        await sleep(pollMs);
-        const current = await read();
-        if (current !== last) {
-            last = current;
-            lastChangeAt = Date.now();
-            continue;
-        }
-        if (Date.now() - lastChangeAt >= options.quietMs) {
-            return;
-        }
+  while (Date.now() < deadline) {
+    await sleep(pollMs);
+    const current = await read();
+    if (current !== last) {
+      last = current;
+      lastChangeAt = Date.now();
+      continue;
     }
+    if (Date.now() - lastChangeAt >= options.quietMs) {
+      return;
+    }
+  }
 
-    throw new Error(
-        `waitUntilStable(${options.label}): the counter did not settle within ` +
-            `${options.timeoutMs} ms — last value ${last}, required quiet window ` +
-            `${options.quietMs} ms`,
-    );
+  throw new Error(
+    `waitUntilStable(${options.label}): the counter did not settle within ` +
+      `${options.timeoutMs} ms — last value ${last}, required quiet window ` +
+      `${options.quietMs} ms`,
+  );
 }

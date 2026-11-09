@@ -21,234 +21,250 @@ import type { ShotScenario } from "../scenario.ts";
  * quiz shows up.
  */
 export const lessonReadingQuizScenario: ShotScenario = {
-    ...descriptors["lesson-reading-quiz"],
-    async run({ page }, sink) {
-        let quizShot = false;
-        let writingShot = false;
-        for (let attempt = 0; attempt < 8 && !quizShot; attempt++) {
-            await page.goto("/lesson");
-            await page
-                .getByTestId("lesson-page")
-                .waitFor({ state: "visible", timeout: 90_000 });
-            console.log(`[shots] attempt ${attempt}: walking`);
+  ...descriptors["lesson-reading-quiz"],
+  async run({ page }, sink) {
+    let quizShot = false;
+    let writingShot = false;
+    for (let attempt = 0; attempt < 8 && !quizShot; attempt++) {
+      await page.goto("/lesson");
+      await page
+        .getByTestId("lesson-page")
+        .waitFor({ state: "visible", timeout: 90_000 });
+      console.log(`[shots] attempt ${attempt}: walking`);
 
-            for (let card = 0; card < 14; card++) {
-                // The target: the multi-select reading quiz.
-                if (
-                    await page
-                        .getByTestId("quiz-submit-btn")
-                        .isVisible()
-                        .catch(() => false)
-                ) {
-                    quizShot = await captureReadingQuiz(page, sink);
-                    if (quizShot) break;
-                    // A single-reading kanji cannot produce a lenient
-                    // state — the capture was skipped, reroll.
-                    await page.waitForTimeout(400);
-                    break;
-                }
-
-                // The writing card (stroke practice) on the way: capture it
-                // once — the corner stroke-progress label and the drawing
-                // canvas are lesson-card UI this catalog otherwise misses.
-                // Class selector: the writing card mounts the practice
-                // without a test_id, so the canvas carries no testid.
-                if (
-                    !writingShot &&
-                    (await page
-                        .locator("canvas.kanji-drawing-canvas")
-                        .isVisible()
-                        .catch(() => false))
-                ) {
-                    await page.waitForTimeout(700);
-                    await sink.shot("writing-card");
-                    writingShot = true;
-                }
-
-                // Meaning quiz (single-select): answer, take the Next.
-                const singleOption = page.getByTestId("quiz-option-0");
-                if (await singleOption.isVisible().catch(() => false)) {
-                    await singleOption.click({ timeout: 4_000 }).catch(() => undefined);
-                    await page.waitForTimeout(600);
-                    await page
-                        .getByTestId("lesson-card-next-btn")
-                        .click({ timeout: 4_000 })
-                        .catch(() => undefined);
-                    await page.waitForTimeout(400);
-                    continue;
-                }
-
-                // Yes/no card.
-                const yesno = page.getByTestId("yesno-no-btn");
-                if (await yesno.isVisible().catch(() => false)) {
-                    await yesno.click({ timeout: 4_000 }).catch(() => undefined);
-                    await page.waitForTimeout(600);
-                    await page
-                        .getByTestId("lesson-card-next-btn")
-                        .click({ timeout: 4_000 })
-                        .catch(() => undefined);
-                    await page.waitForTimeout(400);
-                    continue;
-                }
-
-                // Audio recall.
-                const audioReveal = page.getByTestId("audio-recall-reveal-btn");
-                if (await audioReveal.isVisible().catch(() => false)) {
-                    await audioReveal.click({ timeout: 4_000 }).catch(() => undefined);
-                    await page.waitForTimeout(600);
-                    await page
-                        .getByTestId("audio-recall-know-btn")
-                        .click({ timeout: 4_000 })
-                        .catch(() => undefined);
-                    await page.waitForTimeout(400);
-                    continue;
-                }
-
-                // Normal card: reveal, rate «хорошо».
-                const reveal = page.getByTestId("lesson-show-answer-btn");
-                if (await reveal.isVisible().catch(() => false)) {
-                    await reveal.click({ timeout: 4_000 }).catch(() => undefined);
-                    await page.waitForTimeout(600);
-                    await page
-                        .getByTestId("lesson-rating-btn-again")
-                        .click({ timeout: 4_000 })
-                        .catch(() => undefined);
-                    await page.waitForTimeout(400);
-                    continue;
-                }
-
-                // Held on the feedback card — advance.
-                const nextBtn = page.getByTestId("lesson-card-next-btn");
-                if (await nextBtn.isVisible().catch(() => false)) {
-                    await nextBtn.click({ timeout: 4_000 }).catch(() => undefined);
-                    await page.waitForTimeout(400);
-                    continue;
-                }
-
-                // The writing card (canvas drawing, no skip) — abandon the
-                // attempt; the outer loop re-enters the lesson.
-                if (await page.locator("canvas").isVisible().catch(() => false)) {
-                    console.log(`[shots] attempt ${attempt} card ${card}: writing card, reroll`);
-                    break;
-                }
-
-                await page.waitForTimeout(700);
-            }
+      for (let card = 0; card < 14; card++) {
+        // The target: the multi-select reading quiz.
+        if (
+          await page
+            .getByTestId("quiz-submit-btn")
+            .isVisible()
+            .catch(() => false)
+        ) {
+          quizShot = await captureReadingQuiz(page, sink);
+          if (quizShot) break;
+          // A single-reading kanji cannot produce a lenient
+          // state — the capture was skipped, reroll.
+          await page.waitForTimeout(400);
+          break;
         }
 
-        expect(quizShot, "a kanji reading quiz must appear within the reroll budget").toBe(true);
-    },
+        // The writing card (stroke practice) on the way: capture it
+        // once — the corner stroke-progress label and the drawing
+        // canvas are lesson-card UI this catalog otherwise misses.
+        // Class selector: the writing card mounts the practice
+        // without a test_id, so the canvas carries no testid.
+        if (
+          !writingShot &&
+          (await page
+            .locator("canvas.kanji-drawing-canvas")
+            .isVisible()
+            .catch(() => false))
+        ) {
+          await page.waitForTimeout(700);
+          await sink.shot("writing-card");
+          writingShot = true;
+        }
+
+        // Meaning quiz (single-select): answer, take the Next.
+        const singleOption = page.getByTestId("quiz-option-0");
+        if (await singleOption.isVisible().catch(() => false)) {
+          await singleOption.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(600);
+          await page
+            .getByTestId("lesson-card-next-btn")
+            .click({ timeout: 4_000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
+        // Yes/no card.
+        const yesno = page.getByTestId("yesno-no-btn");
+        if (await yesno.isVisible().catch(() => false)) {
+          await yesno.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(600);
+          await page
+            .getByTestId("lesson-card-next-btn")
+            .click({ timeout: 4_000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
+        // Audio recall.
+        const audioReveal = page.getByTestId("audio-recall-reveal-btn");
+        if (await audioReveal.isVisible().catch(() => false)) {
+          await audioReveal.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(600);
+          await page
+            .getByTestId("audio-recall-know-btn")
+            .click({ timeout: 4_000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
+        // Normal card: reveal, rate «хорошо».
+        const reveal = page.getByTestId("lesson-show-answer-btn");
+        if (await reveal.isVisible().catch(() => false)) {
+          await reveal.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(600);
+          await page
+            .getByTestId("lesson-rating-btn-again")
+            .click({ timeout: 4_000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
+        // Held on the feedback card — advance.
+        const nextBtn = page.getByTestId("lesson-card-next-btn");
+        if (await nextBtn.isVisible().catch(() => false)) {
+          await nextBtn.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
+        // The writing card (canvas drawing, no skip) — abandon the
+        // attempt; the outer loop re-enters the lesson.
+        if (
+          await page
+            .locator("canvas")
+            .isVisible()
+            .catch(() => false)
+        ) {
+          console.log(
+            `[shots] attempt ${attempt} card ${card}: writing card, reroll`,
+          );
+          break;
+        }
+
+        await page.waitForTimeout(700);
+      }
+    }
+
+    expect(
+      quizShot,
+      "a kanji reading quiz must appear within the reroll budget",
+    ).toBe(true);
+  },
 };
 
 interface KanjiEntry {
-    kanji: string;
-    on_readings: string[];
-    kun_readings: string[];
+  kanji: string;
+  on_readings: string[];
+  kun_readings: string[];
 }
 
 let kanjiDict: KanjiEntry[] | null = null;
 
 async function loadKanjiDict(page: Page): Promise<KanjiEntry[]> {
-    if (kanjiDict) return kanjiDict;
-    // The same corpus the bundle reads: the local server on the
-    // configured corpus port (config.ts LOCAL_CDN_PORT — a developer
-    // machine may run its own service on the default 8080, hence the
-    // E2E_CDN_PORT override), the production CDN otherwise.
-    for (const base of [
-        `http://localhost:${LOCAL_CDN_PORT}`,
-        "https://s3.origa.uwuwu.net",
-    ]) {
-        const entries = await page.evaluate(async (url) => {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) return null;
-                return (await res.json()).kanji as KanjiEntry[];
-            } catch {
-                return null;
-            }
-        }, `${base}/dictionary/kanji.json`);
-        if (entries) {
-            kanjiDict = entries;
-            return entries;
-        }
+  if (kanjiDict) return kanjiDict;
+  // The same corpus the bundle reads: the local server on the
+  // configured corpus port (config.ts LOCAL_CDN_PORT — a developer
+  // machine may run its own service on the default 8080, hence the
+  // E2E_CDN_PORT override), the production CDN otherwise.
+  for (const base of [
+    `http://localhost:${LOCAL_CDN_PORT}`,
+    "https://s3.origa.uwuwu.net",
+  ]) {
+    const entries = await page.evaluate(async (url) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        return (await res.json()).kanji as KanjiEntry[];
+      } catch {
+        return null;
+      }
+    }, `${base}/dictionary/kanji.json`);
+    if (entries) {
+      kanjiDict = entries;
+      return entries;
     }
-    throw new Error("the kanji dictionary is not reachable from the page");
+  }
+  throw new Error("the kanji dictionary is not reachable from the page");
 }
 
 async function captureReadingQuiz(
-    page: Page,
-    sink: { shot(name: string): Promise<unknown> },
+  page: Page,
+  sink: { shot(name: string): Promise<unknown> },
 ): Promise<boolean> {
-    // The quiz renders the kanji through DisplayText with a dedicated
-    // test id (`lesson-quiz-kanji`, quiz_card.rs).
-    const kanji = (
-        (await page.getByTestId("lesson-quiz-kanji").textContent()) ?? ""
-    ).trim();
-    const dict = await loadKanjiDict(page);
-    const entry = dict.find((k) => k.kanji === kanji);
-    // The quiz options: the correct ones are this kanji's readings; the
-    // distractors are readings of OTHER kanji, excluded from the target
-    // set by the generator — so the dictionary lookup is exact.
-    const readings = new Set(entry ? [...entry.on_readings, ...entry.kun_readings] : []);
+  // The quiz renders the kanji through DisplayText with a dedicated
+  // test id (`lesson-quiz-kanji`, quiz_card.rs).
+  const kanji = (
+    (await page.getByTestId("lesson-quiz-kanji").textContent()) ?? ""
+  ).trim();
+  const dict = await loadKanjiDict(page);
+  const entry = dict.find((k) => k.kanji === kanji);
+  // The quiz options: the correct ones are this kanji's readings; the
+  // distractors are readings of OTHER kanji, excluded from the target
+  // set by the generator — so the dictionary lookup is exact.
+  const readings = new Set(
+    entry ? [...entry.on_readings, ...entry.kun_readings] : [],
+  );
 
-    const count = await page.locator('[data-testid^="quiz-option-"]').count();
-    const correctIdxs: number[] = [];
-    for (let i = 0; i < count; i++) {
-        const raw = (await page.getByTestId(`quiz-option-${i}`).textContent()) ?? "";
-        const text = raw.replace(/[\s0-9[\]]/g, "");
-        if (readings.has(text)) correctIdxs.push(i);
-    }
+  const count = await page.locator('[data-testid^="quiz-option-"]').count();
+  const correctIdxs: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const raw =
+      (await page.getByTestId(`quiz-option-${i}`).textContent()) ?? "";
+    const text = raw.replace(/[\s0-9[\]]/g, "");
+    if (readings.has(text)) correctIdxs.push(i);
+  }
 
-    // A strict subset with ≥50% of the correct readings → the lenient
-    // pass: green «зачтено», the missed list, the kanji name box. A
-    // single-reading kanji has no lenient state (any correct pick is
-    // perfect) — skip it, the caller rerolls for a better kanji.
-    if (correctIdxs.length < 2) {
-        console.log("[shots] single-reading kanji — no lenient state, reroll");
-        return false;
-    }
-    const toSelect = correctIdxs.slice(0, Math.ceil(correctIdxs.length / 2));
-    for (const idx of toSelect) {
-        await page.getByTestId(`quiz-option-${idx}`).click({ timeout: 5_000 }).catch(() => {});
-        await page.waitForTimeout(150);
-    }
-
-    await page.waitForTimeout(500);
-    await sink.shot("quiz-question");
-
-    await page.getByTestId("quiz-submit-btn").click({ timeout: 8_000 });
+  // A strict subset with ≥50% of the correct readings → the lenient
+  // pass: green «зачтено», the missed list, the kanji name box. A
+  // single-reading kanji has no lenient state (any correct pick is
+  // perfect) — skip it, the caller rerolls for a better kanji.
+  if (correctIdxs.length < 2) {
+    console.log("[shots] single-reading kanji — no lenient state, reroll");
+    return false;
+  }
+  const toSelect = correctIdxs.slice(0, Math.ceil(correctIdxs.length / 2));
+  for (const idx of toSelect) {
     await page
-        .getByTestId("lesson-card-next-btn")
-        .waitFor({ state: "visible", timeout: 20_000 })
-        .catch(() => undefined);
-    await page.waitForTimeout(700);
+      .getByTestId(`quiz-option-${idx}`)
+      .click({ timeout: 5_000 })
+      .catch(() => {});
+    await page.waitForTimeout(150);
+  }
 
-    // The scenario's whole point is the LENIENT pass state (#822): the
-    // ledger strip (task 3SekkMiYYW) shows «Нестрогий зачёт» with the
-    // missed readings as dashed rows. A dictionary over-match (the
-    // generator caps the correct options, so a distractor can share a
-    // dict reading) yields a partial state instead — that run is not
-    // the state this scenario documents: advance and reroll.
-    const stripText =
-        (await page
-            .getByTestId("quiz-feedback-strip")
-            .textContent()
-            .catch(() => "")) ?? "";
-    if (!stripText.includes("Нестрогий зачёт")) {
-        console.log(
-            `[shots] not a lenient state (${stripText.slice(0, 40)}...), reroll`,
-        );
-        await page
-            .getByTestId("lesson-card-next-btn")
-            .click({ timeout: 8_000 })
-            .catch(() => undefined);
-        return false;
-    }
-    await sink.shot("quiz-answer");
+  await page.waitForTimeout(500);
+  await sink.shot("quiz-question");
 
+  await page.getByTestId("quiz-submit-btn").click({ timeout: 8_000 });
+  await page
+    .getByTestId("lesson-card-next-btn")
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(() => undefined);
+  await page.waitForTimeout(700);
+
+  // The scenario's whole point is the LENIENT pass state (#822): the
+  // ledger strip (task 3SekkMiYYW) shows «Нестрогий зачёт» with the
+  // missed readings as dashed rows. A dictionary over-match (the
+  // generator caps the correct options, so a distractor can share a
+  // dict reading) yields a partial state instead — that run is not
+  // the state this scenario documents: advance and reroll.
+  const stripText =
+    (await page
+      .getByTestId("quiz-feedback-strip")
+      .textContent()
+      .catch(() => "")) ?? "";
+  if (!stripText.includes("Нестрогий зачёт")) {
+    console.log(
+      `[shots] not a lenient state (${stripText.slice(0, 40)}...), reroll`,
+    );
     await page
-        .getByTestId("lesson-card-next-btn")
-        .click({ timeout: 8_000 })
-        .catch(() => undefined);
-    return true;
+      .getByTestId("lesson-card-next-btn")
+      .click({ timeout: 8_000 })
+      .catch(() => undefined);
+    return false;
+  }
+  await sink.shot("quiz-answer");
+
+  await page
+    .getByTestId("lesson-card-next-btn")
+    .click({ timeout: 8_000 })
+    .catch(() => undefined);
+  return true;
 }

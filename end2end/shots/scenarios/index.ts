@@ -23,30 +23,30 @@ import { wordExamplesScenario } from "./word-examples.ts";
  * steps that reach the screen.
  */
 export const implementations: Record<string, ShotScenario> = {
-    [homeScenario.id]: homeScenario,
-    [wordExamplesScenario.id]: wordExamplesScenario,
-    [lessonExampleScenario.id]: lessonExampleScenario,
-    [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
-    [counterScoringScenario.id]: counterScoringScenario,
-    [homeDueCounterScenario.id]: homeDueCounterScenario,
-    [homeAccuracyChartScenario.id]: homeAccuracyChartScenario,
-    [feedbackFormScenario.id]: feedbackFormScenario,
-    [tokenPopupScenario.id]: tokenPopupScenario,
-    [jftCardScenario.id]: jftCardScenario,
-    [lessonAcquaintanceGrammarScenario.id]: lessonAcquaintanceGrammarScenario,
-    [lessonAcquaintanceKanjiScenario.id]: lessonAcquaintanceKanjiScenario,
-    [lessonUnificationScenario.id]: lessonUnificationScenario,
-    [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
-    [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
-    [lessonCounterPackScenario.id]: lessonCounterPackScenario,
+  [homeScenario.id]: homeScenario,
+  [wordExamplesScenario.id]: wordExamplesScenario,
+  [lessonExampleScenario.id]: lessonExampleScenario,
+  [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
+  [counterScoringScenario.id]: counterScoringScenario,
+  [homeDueCounterScenario.id]: homeDueCounterScenario,
+  [homeAccuracyChartScenario.id]: homeAccuracyChartScenario,
+  [feedbackFormScenario.id]: feedbackFormScenario,
+  [tokenPopupScenario.id]: tokenPopupScenario,
+  [jftCardScenario.id]: jftCardScenario,
+  [lessonAcquaintanceGrammarScenario.id]: lessonAcquaintanceGrammarScenario,
+  [lessonAcquaintanceKanjiScenario.id]: lessonAcquaintanceKanjiScenario,
+  [lessonUnificationScenario.id]: lessonUnificationScenario,
+  [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
+  [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
+  [lessonCounterPackScenario.id]: lessonCounterPackScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {
-    const scenario = implementations[id];
-    if (!scenario) {
-        throw new Error(
-            `Unknown scenario "${id}". Known: ${Object.keys(implementations).sort().join(", ")}`,
-        );
-    }
-    return scenario;
+  const scenario = implementations[id];
+  if (!scenario) {
+    throw new Error(
+      `Unknown scenario "${id}". Known: ${Object.keys(implementations).sort().join(", ")}`,
+    );
+  }
+  return scenario;
 }

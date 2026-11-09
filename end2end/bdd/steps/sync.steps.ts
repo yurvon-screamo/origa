@@ -6,37 +6,42 @@ import { readUserStoreKeys } from "../../helpers/indexeddb";
 
 const NIL_USER_ID = "0".repeat(26);
 
-Then('user ID в IndexedDB не nil', async ({ page }) => {
-    await page.waitForURL(/\/home$/, { timeout: 15_000 });
-    await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 30_000 });
+Then("user ID в IndexedDB не nil", async ({ page }) => {
+  await page.waitForURL(/\/home$/, { timeout: 15_000 });
+  await page
+    .getByTestId("home-page")
+    .waitFor({ state: "visible", timeout: 30_000 });
 
-    // Ключ с canonical user id появляется после логина: ждём состояния
-    // хранилища, а не фиксированной паузы.
-    await expect
-        .poll(
-            async () => {
-                const keys = await readUserStoreKeys(page).catch(() => [] as string[]);
-                return keys.find((k) => !k.endsWith(`:${NIL_USER_ID}`)) ?? null;
-            },
-            {
-                timeout: 15_000,
-                message: "Expected a non-nil user key in IndexedDB after login",
-            },
-        )
-        .not.toBeNull();
+  // Ключ с canonical user id появляется после логина: ждём состояния
+  // хранилища, а не фиксированной паузы.
+  await expect
+    .poll(
+      async () => {
+        const keys = await readUserStoreKeys(page).catch(() => [] as string[]);
+        return keys.find((k) => !k.endsWith(`:${NIL_USER_ID}`)) ?? null;
+      },
+      {
+        timeout: 15_000,
+        message: "Expected a non-nil user key in IndexedDB after login",
+      },
+    )
+    .not.toBeNull();
 
-    const keys = await readUserStoreKeys(page);
-    const nilKeys = keys.filter((k) => k.endsWith(`:${NIL_USER_ID}`));
-    expect(nilKeys, `IndexedDB must not hold a nil user key; found: ${nilKeys.join(", ")}`).toHaveLength(0);
+  const keys = await readUserStoreKeys(page);
+  const nilKeys = keys.filter((k) => k.endsWith(`:${NIL_USER_ID}`));
+  expect(
+    nilKeys,
+    `IndexedDB must not hold a nil user key; found: ${nilKeys.join(", ")}`,
+  ).toHaveLength(0);
 });
 
-When('второй браузер входит в тот же аккаунт', async ({ browser }) => {
-    const context = await browser.newContext();
-    const pageB = await context.newPage();
-    await pageB.setViewportSize({ width: 1280, height: 720 });
-    await pageB.goto("/");
-    await pageB.waitForLoadState("networkidle");
-    await context.close();
+When("второй браузер входит в тот же аккаунт", async ({ browser }) => {
+  const context = await browser.newContext();
+  const pageB = await context.newPage();
+  await pageB.setViewportSize({ width: 1280, height: 720 });
+  await pageB.goto("/");
+  await pageB.waitForLoadState("networkidle");
+  await context.close();
 });
 
 // Deterministic, UI-independent confirmation that save_sync actually
@@ -54,29 +59,38 @@ When('второй браузер входит в тот же аккаунт', a
 // (Read-path coverage — that the client can decode the persisted value back —
 // is already provided by the fixture's own login at scenario start and by the
 // codec unit tests; it is not the job of this scenario.)
-Then('запись на сервере содержит обновлённый knowledge_set', async ({ testUser }) => {
+Then(
+  "запись на сервере содержит обновлённый knowledge_set",
+  async ({ testUser }) => {
     const admin = await getAdminToken();
-    const url =
-        `${getTrailBaseUrl()}/api/records/v1/domain_user?filter[email][$eq]=${encodeURIComponent(testUser.email)}&`;
+    const url = `${getTrailBaseUrl()}/api/records/v1/domain_user?filter[email][$eq]=${encodeURIComponent(testUser.email)}&`;
     const resp = await fetch(url, {
-        headers: {
-            Authorization: `Bearer ${admin.token}`,
-            "csrf-token": admin.csrfToken,
-        },
+      headers: {
+        Authorization: `Bearer ${admin.token}`,
+        "csrf-token": admin.csrfToken,
+      },
     });
-    expect(resp.ok, `admin records read must succeed, got ${resp.status}`).toBe(true);
+    expect(resp.ok, `admin records read must succeed, got ${resp.status}`).toBe(
+      true,
+    );
     // TrailBase records list wraps rows in { records: [...] } — see
     // trailbase_records.rs ListResponseInner.
-    const data = (await resp.json()) as { records: Array<{ knowledge_set?: string }> };
+    const data = (await resp.json()) as {
+      records: Array<{ knowledge_set?: string }>;
+    };
     const rows = data.records;
-    expect(rows.length, "remote user row must exist for the test account").toBeGreaterThan(0);
+    expect(
+      rows.length,
+      "remote user row must exist for the test account",
+    ).toBeGreaterThan(0);
     const ks = rows[0]?.knowledge_set;
     expect(ks, "remote knowledge_set column must be present").toBeTruthy();
     expect(
-        ks,
-        "remote knowledge_set must not still be the empty default — save_sync did not persist the write",
+      ks,
+      "remote knowledge_set must not still be the empty default — save_sync did not persist the write",
     ).not.toBe('{"study_cards":{},"lesson_history":[]}');
-});
+  },
+);
 
 // Composite of "toggle favorite" + explicit wait for the save_sync write to
 // /api/records/v1/user to resolve. The plain toggle step (common.steps)
@@ -107,9 +121,14 @@ Then('запись на сервере содержит обновлённый k
 // can't satisfy the wait first.
 import { waitForUserRecordWrite } from "../../helpers/syncwait";
 
-When('отмечает первую карточку избранной и дожидается сохранения', async ({ page }) => {
-    const favBtn = page.locator('[data-testid*="card-item"]').first()
-        .locator('[data-testid*="favorite"]').first();
+When(
+  "отмечает первую карточку избранной и дожидается сохранения",
+  async ({ page }) => {
+    const favBtn = page
+      .locator('[data-testid*="card-item"]')
+      .first()
+      .locator('[data-testid*="favorite"]')
+      .first();
 
     // Register the wait BEFORE the click so the listener is in place when
     // spawn_local fires the network request; otherwise a fast save can slip
@@ -118,15 +137,23 @@ When('отмечает первую карточку избранной и до�
 
     await favBtn.click();
     await expect(favBtn.locator('svg path[fill="currentColor"]')).toBeVisible({
-        timeout: 10_000,
+      timeout: 10_000,
     });
 
     const resp = await saveResponse;
-    expect(resp.ok(), `save_sync must succeed, got ${resp.status()}`).toBe(true);
-});
+    expect(resp.ok(), `save_sync must succeed, got ${resp.status()}`).toBe(
+      true,
+    );
+  },
+);
 
-Then('на сервере одна запись пользователя', async ({ page }) => {
-    const cookies = await page.context().cookies();
-    const trailbaseCookies = cookies.filter((c) => c.domain.includes("127.0.0.1") || c.domain.includes("localhost"));
-    expect(trailbaseCookies.length, "Expected TrailBase auth cookies").toBeGreaterThan(0);
+Then("на сервере одна запись пользователя", async ({ page }) => {
+  const cookies = await page.context().cookies();
+  const trailbaseCookies = cookies.filter(
+    (c) => c.domain.includes("127.0.0.1") || c.domain.includes("localhost"),
+  );
+  expect(
+    trailbaseCookies.length,
+    "Expected TrailBase auth cookies",
+  ).toBeGreaterThan(0);
 });

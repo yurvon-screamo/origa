@@ -1,40 +1,40 @@
 {
-    "name": "origa-e2e",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "trailbase:start": "cd trailbase-fixture && trail run --dev --address 127.0.0.1:4000",
-        "trailbase:stop": "taskkill /f /im trail.exe 2>nul || true",
-        "test": "playwright test",
-        "pretest": "bddgen",
-        "typecheck": "tsc --noEmit",
-        "bdd:gen": "bddgen",
-        "test:bdd": "bddgen && playwright test --project=bdd",
-        "test:ui": "playwright test --ui",
-        "test:headed": "playwright test --headed",
-        "test:debug": "playwright test --debug",
-        "report": "playwright show-report --host 0.0.0.0 --port 9323",
-        "guard:matrix": "node scripts/check-ci-matrix.mjs",
-        "shots": "node scripts/shots.ts",
-        "exam:canary": "playwright test --config=playwright.screenshots.config.ts exam-canary",
-        "test:unit": "node --test --experimental-test-module-mocks \"shots/**/*.test.ts\"",
-        "lint": "eslint bdd pages helpers fixtures shots scripts/shots.ts *.ts --no-error-on-unmatched-pattern"
-    },
-    "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@playwright/test": "^1.60.0",
-        "@types/node": "^25.9.3",
-        "eslint": "^10.5.0",
-        "playwright-bdd": "^9.2.0",
-        "serve": "^14.2.6",
-        "typescript": "^6.0.3",
-        "typescript-eslint": "^8.61.0"
-    },
-    "dependencies": {
-        "dotenv": "^17.4.2"
-    },
-    "engines": {
-        "node": ">=22.18"
-    },
-    "type": "module"
+  "name": "origa-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "trailbase:start": "cd trailbase-fixture && trail run --dev --address 127.0.0.1:4000",
+    "trailbase:stop": "taskkill /f /im trail.exe 2>nul || true",
+    "test": "playwright test",
+    "pretest": "bddgen",
+    "typecheck": "tsc --noEmit",
+    "bdd:gen": "bddgen",
+    "test:bdd": "bddgen && playwright test --project=bdd",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report --host 0.0.0.0 --port 9323",
+    "guard:matrix": "node scripts/check-ci-matrix.mjs",
+    "shots": "node scripts/shots.ts",
+    "exam:canary": "playwright test --config=playwright.screenshots.config.ts exam-canary",
+    "test:unit": "node --test --experimental-test-module-mocks \"shots/**/*.test.ts\"",
+    "lint": "eslint bdd pages helpers fixtures shots scripts/shots.ts *.ts --no-error-on-unmatched-pattern"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.3",
+    "eslint": "^10.5.0",
+    "playwright-bdd": "^9.2.0",
+    "serve": "^14.2.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "type": "module"
 }

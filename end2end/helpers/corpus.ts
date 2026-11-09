@@ -13,11 +13,11 @@ import { end2endRoot } from "./paths";
  * any first/last-position quirks in rendering.
  */
 export function corpusWordFromCdn(): string {
-    const path = join(end2endRoot, "..", "cdn", "well_known_set", "jlpt_n1.json");
-    const data = JSON.parse(readFileSync(path, "utf8")) as { words: string[] };
-    const words = data.words;
-    if (!Array.isArray(words) || words.length === 0) {
-        throw new Error(`N1 corpus at ${path} has no words`);
-    }
-    return words[Math.floor(words.length / 2)];
+  const path = join(end2endRoot, "..", "cdn", "well_known_set", "jlpt_n1.json");
+  const data = JSON.parse(readFileSync(path, "utf8")) as { words: string[] };
+  const words = data.words;
+  if (!Array.isArray(words) || words.length === 0) {
+    throw new Error(`N1 corpus at ${path} has no words`);
+  }
+  return words[Math.floor(words.length / 2)];
 }

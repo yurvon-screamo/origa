@@ -49,7 +49,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     before(() => {
       globalThis.ARecord = ARecord;
       globalThis.CnameRecord = CnameRecord;
-      globalThis.Monitoring = { getStatus: () => ({ isOnline: true, latency: 42 }) };
+      globalThis.Monitoring = {
+        getStatus: () => ({ isOnline: true, latency: 42 }),
+      };
     });
 
     after(() => {
@@ -59,7 +61,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("answers RF resolvers with the RF VM A record", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
 
@@ -78,7 +82,9 @@ describe("handleQuery (Bunny script 91629)", () => {
         },
       };
       try {
-        const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+        const handleQuery = await import("./handleQuery.js").then(
+          (m) => m.default,
+        );
 
         const answer = handleQuery(query("s3.origa.uwuwu.net", "US"));
 
@@ -91,7 +97,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("answers RF resolvers with the world CNAME when the resolver geo is unknown", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", undefined));
 
@@ -101,7 +109,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("answers content.origa with the Tigris CNAME for everyone", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       for (const country of ["RU", "DE"]) {
         const answer = handleQuery(query("content.origa.uwuwu.net", country));
@@ -112,7 +122,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("grey-answers hostnames outside the attached pair", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       assert.equal(handleQuery(query("origa.uwuwu.net", "RU")), undefined);
       assert.equal(handleQuery(query("app.origa.uwuwu.net", "RU")), undefined);
@@ -120,7 +132,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("strips the FQDN trailing dot before matching", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net.", "RU"));
 
@@ -134,7 +148,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     before(() => {
       globalThis.ARecord = ARecord;
       globalThis.CnameRecord = CnameRecord;
-      globalThis.Monitoring = { getStatus: () => ({ isOnline: false, latency: 0 }) };
+      globalThis.Monitoring = {
+        getStatus: () => ({ isOnline: false, latency: 0 }),
+      };
     });
 
     after(() => {
@@ -144,7 +160,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("fails RF resolvers over to the CloudFront CNAME", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
 
@@ -154,7 +172,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("still answers world resolvers with the CloudFront CNAME", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "DE"));
 
@@ -178,7 +198,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("treats a non-true status as offline (fail-closed, no RF A answer)", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
 
@@ -203,9 +225,13 @@ describe("handleQuery (Bunny script 91629)", () => {
       it(`treats isOnline=${label} as offline (fail-closed -> world CNAME)`, async () => {
         globalThis.ARecord = ARecord;
         globalThis.CnameRecord = CnameRecord;
-        globalThis.Monitoring = { getStatus: () => ({ isOnline: value, latency: 42 }) };
+        globalThis.Monitoring = {
+          getStatus: () => ({ isOnline: value, latency: 42 }),
+        };
         try {
-          const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+          const handleQuery = await import("./handleQuery.js").then(
+            (m) => m.default,
+          );
 
           const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
 
@@ -234,7 +260,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("does not throw and degrades RF resolvers to the world CNAME", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
 
@@ -244,7 +272,9 @@ describe("handleQuery (Bunny script 91629)", () => {
     });
 
     it("keeps the world branch working", async () => {
-      const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+      const handleQuery = await import("./handleQuery.js").then(
+        (m) => m.default,
+      );
 
       const answer = handleQuery(query("s3.origa.uwuwu.net", "GB"));
 

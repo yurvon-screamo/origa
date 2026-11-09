@@ -227,7 +227,7 @@ CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
 Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-065, supersedes ADR-064), AppImage убран (ADR-064).
 
-**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `ci` (.github → полный прогон). Релизные теги и workflow_dispatch форсируют полный прогон. Docs/scripts-only PR скипает весь CI.
+**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `python` (scripts/**, translator/**), `ci` (.github, .opencode → полный прогон). `run_lint` покрывает все qlty-цели (доктрина ci.yml, инвариант #5): Lint = cargo fmt/clippy + qlty check (дельта, кросс-языковой линтер+форматтер гейт). Релизные теги и workflow_dispatch форсируют полный прогон. Docs-only PR скипает весь CI.
 
 Инварианты (нарушение = silent skip / дырявый gate; канон — доктрина в шапке ci.yml, номера совпадают):
 
@@ -236,7 +236,7 @@ Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с 
 3. `changes` и `version` не фильтруются: gate ассертит их success-only (упавший detection = красный PR, не зелёный).
 4. `e2e-report` без своего run-флага: следует за result'ом e2e, в gate ассертится через `run_e2e`.
 
-Новая джоба: `run_*` output в `changes`, `if`, строка в `check.needs` + `gate()`-ассерт.
+Новая джоба: `run_*` output в `changes`, `if`, строка в `check.needs` + `gate()`-ассерт. Гвард `gate-completeness` (python: `.github/scripts/check_gate_completeness.py`) ассертит полноту `check.needs` механически — новая джоба вне гейта красит PR самим CI.
 
 ## Границы
 

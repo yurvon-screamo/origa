@@ -7,11 +7,11 @@ import { end2endRoot } from "./helpers/paths";
 config({ path: resolve(end2endRoot, ".env"), override: true });
 
 export function getTrailBaseUrl(): string {
-    const url = process.env.TRAILBASE_URL;
-    if (!url) {
-        throw new Error("TRAILBASE_URL is not set. Configure it in .env file.");
-    }
-    return url;
+  const url = process.env.TRAILBASE_URL;
+  if (!url) {
+    throw new Error("TRAILBASE_URL is not set. Configure it in .env file.");
+  }
+  return url;
 }
 
 /**
@@ -24,5 +24,5 @@ export function getTrailBaseUrl(): string {
  * bootstrap above has already run.
  */
 export function getAppBaseUrl(): string {
-    return process.env.E2E_APP_BASE_URL ?? "http://localhost:1420";
+  return process.env.E2E_APP_BASE_URL ?? "http://localhost:1420";
 }

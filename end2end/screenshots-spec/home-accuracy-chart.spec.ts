@@ -11,12 +11,15 @@ import { test } from "@playwright/test";
 
 import { runScenarioWithManifest } from "../shots/runner.ts";
 
-test("home accuracy chart screenshots with seeded data", async ({ browser }) => {
-    test.setTimeout(900_000);
-    await runScenarioWithManifest(browser, "home-accuracy-chart", {
-        outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/home-accuracy-chart",
-        label: "home-accuracy-chart",
-        cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
-        commit: process.env.SHOT_COMMIT ?? "unknown",
-    });
+test("home accuracy chart screenshots with seeded data", async ({
+  browser,
+}) => {
+  test.setTimeout(900_000);
+  await runScenarioWithManifest(browser, "home-accuracy-chart", {
+    outDir:
+      process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/home-accuracy-chart",
+    label: "home-accuracy-chart",
+    cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
+    commit: process.env.SHOT_COMMIT ?? "unknown",
+  });
 });

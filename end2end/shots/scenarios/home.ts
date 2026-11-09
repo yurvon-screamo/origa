@@ -8,10 +8,12 @@ import type { ShotScenario } from "../scenario.ts";
  * the layout has to show.
  */
 export const homeScenario: ShotScenario = {
-    ...descriptors.home,
-    async run({ page }, sink) {
-        await page.goto("/home");
-        await page.getByTestId("home-page").waitFor({ state: "visible", timeout: 60_000 });
-        await sink.shot("home");
-    },
+  ...descriptors.home,
+  async run({ page }, sink) {
+    await page.goto("/home");
+    await page
+      .getByTestId("home-page")
+      .waitFor({ state: "visible", timeout: 60_000 });
+    await sink.shot("home");
+  },
 };

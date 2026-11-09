@@ -48,9 +48,16 @@ permissions:
 #    not green).
 # 4. e2e-report has no run flag of its own: it follows e2e's RESULT
 #    (`!= 'skipped'`) and is asserted in the gate through run_e2e.
+# 5. The qlty gate lives in the Lint job (`qlty check --upstream`):
+#    run_lint must include every component whose paths qlty scans
+#    (core, wasm, landing, tauri, utils, tts, e2e, python, ci) — a PR
+#    touching only a qlty-target path (end2end TS, scripts/translator
+#    Python) must run Lint, or the formatter/linter gate silently
+#    misses it.
 #
 # Adding a job: add a run_* output to `changes`, wire the job's if, add
-# the job to check.needs AND a gate() assertion line.
+# the job to check.needs AND a gate() assertion line. The gate-completeness
+# job asserts mechanically that no job escapes check.needs.
 
 jobs:
     changes:
@@ -61,6 +68,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         outputs:
+            run_ci: >-
+              ${{ github.event_name != 'pull_request' ||
+              steps.components.outputs.ci == 'true' }}
             run_lint: >-
               ${{ github.event_name != 'pull_request' ||
               steps.components.outputs.core == 'true' ||
@@ -69,6 +79,8 @@ jobs:
               steps.components.outputs.tauri == 'true' ||
               steps.components.outputs.utils == 'true' ||
               steps.components.outputs.tts == 'true' ||
+              steps.components.outputs.e2e == 'true' ||
+              steps.components.outputs.python == 'true' ||
               steps.components.outputs.ci == 'true' }}
             run_macos_check: >-
               ${{ (github.event_name != 'pull_request' ||
@@ -203,6 +215,10 @@ jobs:
                           - translator/**
                       ci:
                           - .github/**
+                          # Factory TS sources are qlty formatter targets
+                          # (prettier) and match no other component; they
+                          # ride the ci component (full run, rare changes).
+                          - .opencode/**
 
     version:
         name: Version
@@ -347,6 +363,10 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
+              with:
+                  # Full history: the qlty gate below computes its findings
+                  # against the merge-base with origin/master (--upstream).
+                  fetch-depth: 0
 
             - name: Refresh APT indexes
               run: sudo apt-get update
@@ -423,6 +443,36 @@ jobs:
               # at tag-push on macos-15 (~30 min, blocks release).
               run: ORIGA_APP_STORE=1 cargo check -p origa-app
 
+            - name: Cache qlty plugins
+              # No tag-ref saves (issue #803): a cache written on a tag ref
+              # is unreachable from any other ref.
+              if: github.ref_type != 'tag'
+              uses: actions/cache@v6
+              with:
+                  path: ~/.qlty
+                  key: qlty-plugins-${{ runner.os }}-v1-${{ hashFiles('.qlty/qlty.toml') }}
+
+            - name: Install qlty
+              # Canonical installer; the version is asserted right after
+              # the install so a silent upstream change fails loudly
+              # instead of altering the report format (issue #800
+              # precedent in weekly-quality.yml).
+              run: |
+                  curl -fsSL https://qlty.sh | sh
+                  echo "$HOME/.qlty/bin" >> "$GITHUB_PATH"
+                  "$HOME/.qlty/bin/qlty" --version
+
+            - name: qlty check (delta)
+              # Cross-language linter + formatter gate (owner decision
+              # 2026-11-08: "форматтер плагины все тоже поставь, пусть
+              # гоняется. гейт обязательно нужен"). Native string delta
+              # against the merge-base with origin/master: findings are
+              # reported only on lines this PR touches. Any finding exits
+              # non-zero → Lint red → CI Gate red → merge blocked. Target
+              # paths of every component are covered by run_lint
+              # (doctrine invariant #5 in the file header).
+              run: qlty check --no-fix --no-progress --upstream origin/master
+
     python-tests:
         name: Python tests
         permissions:
@@ -465,6 +515,29 @@ jobs:
               # (local LLM server, machine-specific data paths — #847) that
               # crash collection on a runner and must not be picked up.
               run: uv run --project scripts pytest scripts/tests translator/scripts/test_judge_calibration.py
+
+    gate-completeness:
+        name: CI Gate Completeness
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_ci == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Verify every job is wired into the CI Gate
+              # Static assertion of doctrine invariant "no job outside the
+              # gate": a job missing from check.needs runs outside the
+              # single required status check, so its red result would not
+              # block the merge (the qlty-hole class, task
+              # 20261104060555). pyyaml: not guaranteed on the runner
+              # image — install is quiet and takes seconds.
+              run: |
+                  python3 -m pip install --quiet pyyaml
+                  python3 .github/scripts/check_gate_completeness.py
 
     cdn-download:
         name: Download CDN
@@ -1420,6 +1493,7 @@ jobs:
                 ios-check,
                 cdn-download,
                 python-tests,
+                gate-completeness,
                 test,
                 landing-test,
                 wasm-test,
@@ -1466,6 +1540,7 @@ jobs:
                   gate "ios-check" "${{ needs.ios-check.result }}" "${{ needs.changes.outputs.run_ios_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
                   gate "python-tests" "${{ needs.python-tests.result }}" "${{ needs.changes.outputs.run_python_tests }}"
+                  gate "gate-completeness" "${{ needs.gate-completeness.result }}" "${{ needs.changes.outputs.run_ci }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
                   gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
                   gate "wasm-test" "${{ needs.wasm-test.result }}" "${{ needs.changes.outputs.run_wasm_test }}"

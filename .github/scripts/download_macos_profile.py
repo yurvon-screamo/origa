@@ -47,6 +47,7 @@ ASC_API_BASE = "https://api.appstoreconnect.apple.com/v1"
 # JWT (ES256) — pure stdlib + openssl
 # ---------------------------------------------------------------------------
 
+
 def _b64url(data: bytes) -> str:
     """Base64url encode without trailing '=' padding."""
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
@@ -127,9 +128,8 @@ def create_es256_jwt(key_path: str, key_id: str, issuer_id: str) -> str:
 # App Store Connect API
 # ---------------------------------------------------------------------------
 
-def fetch_mac_profile(
-    jwt_token: str, bundle_id: str
-) -> tuple[bytes, str] | None:
+
+def fetch_mac_profile(jwt_token: str, bundle_id: str) -> tuple[bytes, str] | None:
     """Fetch MAC_APP_STORE profile, return (profile_bytes, profile_name).
 
     Returns None if no matching profile is found.
@@ -190,6 +190,7 @@ def fetch_mac_profile(
 # Entitlements extraction & merge
 # ---------------------------------------------------------------------------
 
+
 def extract_profile_entitlements(profile_path: str) -> dict:
     """Extract the Entitlements dict from a .provisionprofile file.
 
@@ -205,9 +206,7 @@ def extract_profile_entitlements(profile_path: str) -> dict:
     return plist_data.get("Entitlements", {})
 
 
-def merge_entitlements(
-    app_entitlements_path: str, profile_entitlements: dict
-) -> dict:
+def merge_entitlements(app_entitlements_path: str, profile_entitlements: dict) -> dict:
     """Merge app entitlements with profile entitlements.
 
     App entitlements take precedence for keys that exist in both.
@@ -227,6 +226,7 @@ def merge_entitlements(
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Download Mac App Store provisioning profile"
@@ -235,16 +235,19 @@ def main() -> int:
         "bundle_id", nargs="?", default="net.uwuwu.origa", help="Bundle ID"
     )
     parser.add_argument(
-        "--output-profile", default="embedded.provisionprofile",
-        help="Output path for .provisionprofile"
+        "--output-profile",
+        default="embedded.provisionprofile",
+        help="Output path for .provisionprofile",
     )
     parser.add_argument(
-        "--output-entitlements", default=None,
-        help="Output path for merged entitlements plist"
+        "--output-entitlements",
+        default=None,
+        help="Output path for merged entitlements plist",
     )
     parser.add_argument(
-        "--app-entitlements", default=None,
-        help="App's Entitlements.plist to merge with profile entitlements"
+        "--app-entitlements",
+        default=None,
+        help="App's Entitlements.plist to merge with profile entitlements",
     )
     args = parser.parse_args()
 

@@ -20,17 +20,17 @@
 set -euo pipefail
 
 if [[ $# -ne 3 ]]; then
-    echo "usage: $0 <version> <changelog-path> <output-path>" >&2
-    exit 1
+	echo "usage: $0 <version> <changelog-path> <output-path>" >&2
+	exit 1
 fi
 
 VERSION="$1"
 CHANGELOG="$2"
 OUTPUT="$3"
 
-if [[ ! -f "$CHANGELOG" ]]; then
-    echo "error: changelog not found: $CHANGELOG" >&2
-    exit 1
+if [[ ! -f $CHANGELOG ]]; then
+	echo "error: changelog not found: $CHANGELOG" >&2
+	exit 1
 fi
 
 # Count section headers with the same semantics the extractor uses below:
@@ -41,13 +41,13 @@ fi
 # exit 1 and swallow the actionable message below.
 VERSION_RE=$(printf '%s' "$VERSION" | sed -E 's/[][\\.^$*+?(){}|]/\\&/g')
 matches=$(grep -cE "^## ${VERSION_RE}[[:space:]]*$" "$CHANGELOG" || true)
-if [[ "$matches" -eq 0 ]]; then
-    echo "error: no '## ${VERSION}' section in ${CHANGELOG} — add it before tagging (format: see the CHANGELOG.md header)" >&2
-    exit 1
+if [[ $matches -eq 0 ]]; then
+	echo "error: no '## ${VERSION}' section in ${CHANGELOG} — add it before tagging (format: see the CHANGELOG.md header)" >&2
+	exit 1
 fi
-if [[ "$matches" -gt 1 ]]; then
-    echo "error: found ${matches} '## ${VERSION}' sections in ${CHANGELOG} — keep exactly one" >&2
-    exit 1
+if [[ $matches -gt 1 ]]; then
+	echo "error: found ${matches} '## ${VERSION}' sections in ${CHANGELOG} — keep exactly one" >&2
+	exit 1
 fi
 
 # Body extraction: exact header match (trailing whitespace trimmed), stop at
@@ -85,19 +85,19 @@ body=$(awk -v header="$header" '
         print line
         if (line !~ /^[[:space:]]*$/) body_lines++
     }' "$CHANGELOG") || {
-    # awk already printed the diagnostic to stderr (exit 3 = nested header)
-    exit 1
+	# awk already printed the diagnostic to stderr (exit 3 = nested header)
+	exit 1
 }
 
 # Strip bullet markers, trailing whitespace, and drop empty lines.
-cleaned=$(printf '%s\n' "$body" \
-    | sed -E 's/^[[:space:]]*[-*][[:space:]]+//' \
-    | sed -E 's/[[:space:]]+$//' \
-    | grep -v '^[[:space:]]*$' || true)
+cleaned=$(printf '%s\n' "$body" |
+	sed -E 's/^[[:space:]]*[-*][[:space:]]+//' |
+	sed -E 's/[[:space:]]+$//' |
+	grep -v '^[[:space:]]*$' || true)
 
-if [[ -z "$cleaned" ]]; then
-    echo "error: '## ${VERSION}' section in ${CHANGELOG} is empty — add at least one bullet before tagging" >&2
-    exit 1
+if [[ -z $cleaned ]]; then
+	echo "error: '## ${VERSION}' section in ${CHANGELOG} is empty — add at least one bullet before tagging" >&2
+	exit 1
 fi
 
 # Length in Unicode codepoints (jq counts codepoints, not bytes — the naive
@@ -105,10 +105,10 @@ fi
 # RuStore 500-character limit for BMP text; astral-plane characters (rare
 # emoji) would be counted 2x by the store — the format contract forbids them.
 length=$(printf '%s' "$cleaned" | jq -sR 'length')
-if [[ "$length" -gt 500 ]]; then
-    echo "error: '## ${VERSION}' section is ${length} characters (limit 500) — shorten it to fit the RuStore whatsNew field" >&2
-    exit 1
+if [[ $length -gt 500 ]]; then
+	echo "error: '## ${VERSION}' section is ${length} characters (limit 500) — shorten it to fit the RuStore whatsNew field" >&2
+	exit 1
 fi
 
-printf '%s\n' "$cleaned" > "$OUTPUT"
+printf '%s\n' "$cleaned" >"$OUTPUT"
 echo "whatsNew for ${VERSION}: ${length} chars extracted from ${CHANGELOG}"

@@ -2,57 +2,63 @@
 // Без зависимостей — импортируется демоном и тестами.
 
 export interface IssueRef {
-  number: number
-  title: string
-  body: string
-  state: "open" | "closed"
-  updatedAt: string
+  number: number;
+  title: string;
+  body: string;
+  state: "open" | "closed";
+  updatedAt: string;
 }
 
 export interface IssueComment {
   /** GitHub-строка вида IC_… (НЕ число) */
-  id: string
+  id: string;
   /** login автора */
-  author: string
-  body: string
+  author: string;
+  body: string;
   /** ISO-время — надёжный порядок (IC-id лексически не сортируется) */
-  createdAt: string
+  createdAt: string;
 }
 
 /** Состояние одной задачи фабрики. */
 export interface TrackedIssue {
-  sessionID: string
-  worktree: string
-  branch: string
+  sessionID: string;
+  worktree: string;
+  branch: string;
   /** ISO-время последнего обработанного коммента */
-  lastCommentAt: string
+  lastCommentAt: string;
   /** id последнего обработанного коммента (created_at у GitHub секундный:
    *  сосед в ту же секунду отличаем по id) */
-  lastCommentId: string
-  createdAt: number
+  lastCommentId: string;
+  createdAt: number;
   /** неудачные попытки заведения (после MAX_ATTEMPTS — карантин до нового коммента) */
-  attempts: number
+  attempts: number;
 }
 
 export interface FactoryState {
-  issues: Record<string, TrackedIssue>
+  issues: Record<string, TrackedIssue>;
 }
 
 /** Комменты агента фабрики — с этим префиксом, чтобы не петлить себя. */
-export const AGENT_MARK = "🤖"
+export const AGENT_MARK = "🤖";
 
 /** Авторы, чьи комменты мостятся агенту (репо публичное — allowlist обязателен). */
-export function isAllowedAuthor(author: string, allowed: readonly string[]): boolean {
-  return allowed.includes(author)
+export function isAllowedAuthor(
+  author: string,
+  allowed: readonly string[],
+): boolean {
+  return allowed.includes(author);
 }
 
 /** Комменты, которые триггерят агента: от allowlist-автора, не наши (🤖), не служебные. */
-export function isUserComment(c: IssueComment, allowed: readonly string[]): boolean {
-  if (!isAllowedAuthor(c.author, allowed)) return false
-  const body = c.body.trimStart()
-  if (body.startsWith(AGENT_MARK)) return false
-  if (body.startsWith("[factory]")) return false
-  return true
+export function isUserComment(
+  c: IssueComment,
+  allowed: readonly string[],
+): boolean {
+  if (!isAllowedAuthor(c.author, allowed)) return false;
+  const body = c.body.trimStart();
+  if (body.startsWith(AGENT_MARK)) return false;
+  if (body.startsWith("[factory]")) return false;
+  return true;
 }
 
 /**
@@ -69,12 +75,14 @@ export function newUserComments(
   const users = comments
     .filter((c) => isUserComment(c, allowed))
     .sort((a, b) =>
-      a.createdAt === b.createdAt ? a.id.localeCompare(b.id) : a.createdAt.localeCompare(b.createdAt),
-    )
-  if (lastSeen.at === "") return users
-  const idx = users.findIndex((c) => c.id === lastSeen.id)
-  if (idx >= 0) return users.slice(idx + 1)
-  return users.filter((c) => c.createdAt > lastSeen.at)
+      a.createdAt === b.createdAt
+        ? a.id.localeCompare(b.id)
+        : a.createdAt.localeCompare(b.createdAt),
+    );
+  if (lastSeen.at === "") return users;
+  const idx = users.findIndex((c) => c.id === lastSeen.id);
+  if (idx >= 0) return users.slice(idx + 1);
+  return users.filter((c) => c.createdAt > lastSeen.at);
 }
 
 /** Ишью, которых ещё нет в состоянии. */
@@ -82,17 +90,17 @@ export function untrackedIssues(
   issues: IssueRef[],
   state: FactoryState,
 ): IssueRef[] {
-  return issues.filter((i) => state.issues[String(i.number)] === undefined)
+  return issues.filter((i) => state.issues[String(i.number)] === undefined);
 }
 
 /** Нейтрализация подделываемых границ в теле ишью (промпт-инъекция):
  *  любая строка, начинающаяся с ===, глушится — границу не подделать. */
 export function sanitizeBoundary(text: string): string {
-  return text.replace(/^\s*===.*$/gm, "≡")
+  return text.replace(/^\s*===.*$/gm, "≡");
 }
 
 /** Комменты агента фабрики идут от GitHub App uwuwu-agent[bot]. */
-export const GH_AS_AGENT = "/home/yurvon/origa/.opencode/factory/gh-as-agent"
+export const GH_AS_AGENT = "/home/yurvon/origa/.opencode/factory/gh-as-agent";
 
 /** Промпт-контракт пайпа для новой задачи. */
 export function kickoffPrompt(issue: IssueRef, repo: string): string {
@@ -106,7 +114,9 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "ПАЙП (строго по порядку):",
     "1. Изучи задачу и репо (ветка ворктри уже создана — работай здесь).",
     "2. Если для старта нужны решения пользователя — задай вопросы ОДНИМ комментарием",
-    "   (готовый markdown-файл + gh-as-agent issue comment с --body-file, первая строка обязательно " + AGENT_MARK + ")",
+    "   (готовый markdown-файл + gh-as-agent issue comment с --body-file, первая строка обязательно " +
+      AGENT_MARK +
+      ")",
     `   и ЗАВЕРШИ ход. Ответ придёт новым комментом в ишью — тебя разбудят.`,
     "3. Если всё ясно: прогони план через code-quality-reviewer сабагента, исправь замечания.",
     "4. Реализуй. Коммить атомарно, сообщения по конвенции репо. Пуш ветки — как настроено (от бота).",
@@ -141,13 +151,15 @@ export function kickoffPrompt(issue: IssueRef, repo: string): string {
     "ПРАВИЛА:",
     `- ВСЕ постинги в GitHub — только через ${GH_AS_AGENT} (выступаешь как uwuwu-agent[bot]).`,
     "  Голый gh для issue comment/pr create/pr checks --repo ЗАПРЕЩЁН (постить от аккаунта юзера нельзя).",
-    "- КАЖДЫЙ твой комментарий в ишью начинается с " + AGENT_MARK + " — без него тебя разбудит собственный коммент.",
+    "- КАЖДЫЙ твой комментарий в ишью начинается с " +
+      AGENT_MARK +
+      " — без него тебя разбудит собственный коммент.",
     "- ВСЁ, что должен увидеть пользователь — ТОЛЬКО комменты в ишью. Твой текст в сессии пользователь не читает.",
     "- Не мержи сам. Не закрывай ишью сам. Не выходи за пределы ворктри.",
     `- Разрешено: ${GH_AS_AGENT} issue comment/view, ${GH_AS_AGENT} pr create/checks. Запрещены: pr merge, issue close.`,
     "- Если задача правит сам код фабрики (.opencode/factory/) — в ПР напомни: после мержа нужен",
     "  systemctl --user restart origa-factory (работающий демон не подхватит новый код сам).",
-  ].join("\n")
+  ].join("\n");
 }
 
 /** Промпт-будильник на новые комменты юзера. */
@@ -157,22 +169,25 @@ export function wakeupPrompt(
 ): string {
   const quoted = comments
     .map((c) => `@${c.author}: ${c.body.trim()}`)
-    .join("\n---\n")
+    .join("\n---\n");
   return [
     `[factory] В ишью #${issueNumber} новые комментарии от пользователя:`,
     "",
     quoted,
     "",
     "Отреагируй по пайпу: ответь на вопросы/исправь замечания. Ответ пользователю — gh-as-agent issue comment (🤖), не текст в сессии.",
-  ].join("\n")
+  ].join("\n");
 }
 
 /** Ветка и путь ворктри для ишью. */
-export function worktreePaths(root: string, issueNumber: number): { branch: string; worktree: string } {
+export function worktreePaths(
+  root: string,
+  issueNumber: number,
+): { branch: string; worktree: string } {
   return {
     branch: `work/issue-${issueNumber}`,
     worktree: `${root}/issue-${issueNumber}`,
-  }
+  };
 }
 
 /** Валидация записи state.json (битое состояние не должно попадать в git/REST пути).
@@ -180,19 +195,24 @@ export function worktreePaths(root: string, issueNumber: number): { branch: stri
  *  сбои старта) и гибрид (sessionID="" + живые пути — сессия умерла, работа
  *  в ворктри сохраняется до решения юзера; пишут quiet-dead и restartIssue). */
 export function isValidTracked(v: unknown): v is TrackedIssue {
-  if (v === null || typeof v !== "object") return false
-  const t = v as Record<string, unknown>
+  if (v === null || typeof v !== "object") return false;
+  const t = v as Record<string, unknown>;
   if (
     typeof t.lastCommentAt !== "string" ||
     typeof t.lastCommentId !== "string" ||
     typeof t.createdAt !== "number" ||
     !(t.attempts === undefined || typeof t.attempts === "number")
-  ) return false
-  const sesOk = t.sessionID === "" || (typeof t.sessionID === "string" && t.sessionID.startsWith("ses_"))
-  if (!sesOk) return false
-  if (t.worktree === "" && t.branch === "") return true // чистый карантин
+  )
+    return false;
+  const sesOk =
+    t.sessionID === "" ||
+    (typeof t.sessionID === "string" && t.sessionID.startsWith("ses_"));
+  if (!sesOk) return false;
+  if (t.worktree === "" && t.branch === "") return true; // чистый карантин
   return (
-    typeof t.worktree === "string" && t.worktree.startsWith("/") &&
-    typeof t.branch === "string" && t.branch.startsWith("work/issue-")
-  ) // полный или гибрид
+    typeof t.worktree === "string" &&
+    t.worktree.startsWith("/") &&
+    typeof t.branch === "string" &&
+    t.branch.startsWith("work/issue-")
+  ); // полный или гибрид
 }
