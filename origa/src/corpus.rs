@@ -47,26 +47,22 @@ fn resolve_cdn_dir(
     }
 }
 
-/// Emit the corpus-absent marker once per test process. Printed from a
-/// helper thread: libtest captures the *test* thread's output (green tests
-/// never show it), while a fresh thread has no capture installed and writes
-/// straight to the process stderr — the marker stays visible in default
-/// `cargo test` runs. Public so integration tests (outside the crate, under
-/// the same libtest capture) share one marker form.
+/// Emit the corpus-absent marker once per test process. A plain eprintln:
+/// libtest captures the test thread's output, so in a default `cargo test`
+/// run the marker surfaces only under `--nocapture` or in the report of a
+/// failing test; the always-visible signal for an unseeded corpus is the
+/// `cargo:warning` from `origa/build.rs`. Public so integration tests
+/// (outside the crate, under the same capture) share one marker form.
 pub fn print_corpus_skip_marker(what: &str, path: &Path) {
     if CORPUS_SKIP_REPORTED.swap(true, Ordering::SeqCst) {
         return;
     }
-    let what = what.to_string();
-    let path = path.display().to_string();
-    let _ = std::thread::spawn(move || {
-        eprintln!(
-            "[skip] {what}: local corpus not found at {path}\n\
-             Corpus-dependent tests are skipped. Seed it once: set $ORIGA_CDN_DIR \
-             or seed ~/origa-cdn (AGENTS.md -> \"Local corpus\")."
-        );
-    })
-    .join();
+    eprintln!(
+        "[skip] {what}: local corpus not found at {}\n\
+         Corpus-dependent tests are skipped. Seed it once: set $ORIGA_CDN_DIR \
+         or seed ~/origa-cdn (AGENTS.md -> \"Local corpus\").",
+        path.display()
+    );
 }
 
 /// Skip probe shared by every corpus-reading fixture: when the corpus entry

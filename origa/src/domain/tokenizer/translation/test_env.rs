@@ -76,7 +76,7 @@ fn ensure_vocabulary_dictionary() {
 
     let read_chunk = |name: &str| {
         std::fs::read_to_string(vocab_dir.join(name))
-            .expect("vocabulary chunk exists (probed above)")
+            .unwrap_or_else(|e| panic!("failed to read vocabulary chunk {name}: {e}"))
     };
 
     let vocab_data = VocabularyChunkData {

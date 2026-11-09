@@ -67,7 +67,9 @@ fn binary_is_stale(binary: &Path, crate_root: &Path) -> bool {
 }
 
 /// Newest compiled test binary matching ``<target>/debug/deps/<name>-<hash>``
-/// (cargo may keep stale hashes around).
+/// (cargo may keep stale hashes around). Files with an extension (``.d``
+/// depfiles, ``.pdb``) are not executables — spawning one fails with
+/// ``PermissionDenied`` — so the search considers only extension-less files.
 fn find_corpus_binary(name: &str) -> Option<PathBuf> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let workspace_root = manifest_dir.parent().expect("crate lives in the workspace");
@@ -88,6 +90,10 @@ fn find_corpus_binary(name: &str) -> Option<PathBuf> {
             .and_then(|n| n.to_str())
             .is_some_and(|n| n.starts_with(&format!("{name}-")));
         if !is_match || !path.is_file() {
+            continue;
+        }
+        let is_executable = path.extension().is_none();
+        if !is_executable {
             continue;
         }
         let modified = modified_time(&path);

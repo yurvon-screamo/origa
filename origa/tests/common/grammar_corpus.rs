@@ -24,7 +24,7 @@ pub const GRAMMAR_CORPUS_REL_PATH: &str = "grammar/grammar_v3.json";
 /// part of the commit, like the content pins it travels with.
 const PIN_FILE: &str = include_str!("../fixtures/cdn_grammar_v3.sha256");
 
-/// Workspace-root `cdn/` directory (parent of the `origa` crate manifest).
+/// The local CDN corpus root (delegates to [`origa::corpus::cdn_dir`]).
 pub fn cdn_dir() -> PathBuf {
     origa::corpus::cdn_dir()
 }
