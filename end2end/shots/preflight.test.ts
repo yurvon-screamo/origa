@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { APP_PORT, LOCAL_CDN_PORT, TRAILBASE_PORT } from "./config.ts";
 import { evaluatePreflight, type PreflightFacts } from "./preflight.ts";
 
 function facts(overrides: Partial<PreflightFacts> = {}): PreflightFacts {
@@ -90,19 +91,57 @@ test("a missing upload profile fails the capture before it starts", () => {
     assert.match(report.errors[0], /origa-t3/);
 });
 
-test("a listener from another checkout warns about a zombie worktree", () => {
+test("a listener from another checkout fails the capture", () => {
     const report = evaluatePreflight(
-        facts({ listeners: [{ port: 1420, pid: 4242, cwd: "/home/other/worktree" }] }),
+        facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" }] }),
     );
 
-    assert.match(report.warnings[0], /зомби-ворктри/);
+    assert.equal(report.warnings.length, 0);
+    assert.match(report.errors[0], /не из того бандла/);
+});
+
+test("a stranger on the TrailBase port fails the capture", () => {
+    const report = evaluatePreflight(
+        facts({ listeners: [{ port: TRAILBASE_PORT, pid: 4242, cwd: "/home/other/tool" }] }),
+    );
+
+    assert.match(report.errors[0], /TrailBase не сможет/);
+});
+
+test("a stranger on the CDN port fails the capture and names the override", () => {
+    const report = evaluatePreflight(
+        facts({ listeners: [{ port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" }] }),
+    );
+
+    assert.match(report.errors[0], /E2E_CDN_PORT/);
+});
+
+test("a stranger on the CDN port is harmless without a local corpus", () => {
+    const report = evaluatePreflight(
+        facts({
+            cdnCacheDir: null,
+            listeners: [{ port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" }],
+        }),
+    );
+
+    assert.deepEqual(report.errors, []);
+});
+
+test("a listener of unknown ownership stays unreported", () => {
+    const report = evaluatePreflight(
+        facts({ listeners: [{ port: LOCAL_CDN_PORT, pid: null, cwd: null }] }),
+    );
+
+    assert.deepEqual(report.errors, []);
+    assert.deepEqual(report.warnings, []);
 });
 
 test("a listener of the same checkout is not reported", () => {
     const report = evaluatePreflight(
-        facts({ listeners: [{ port: 1420, pid: 4242, cwd: "/repo" }] }),
+        facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/repo" }] }),
     );
 
+    assert.deepEqual(report.errors, []);
     assert.deepEqual(report.warnings, []);
 });
 
