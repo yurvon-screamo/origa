@@ -89,7 +89,7 @@ nginx -t && systemctl reload nginx
 curl -s --resolve umami.origa.uwuwu.net:443:193.233.217.243 -o /dev/null -w '%{http_code}\n' https://umami.origa.uwuwu.net/script.js
 ```
 
-## 3. Bunny DNS: кастом-домен + ветка umami в скрипте 91629
+## 3. Bunny DNS: кастом-домен и место имени в скрипте 91629
 
 **Текущее состояние (2026-11-09):** имя — plain CNAME →
 `07wyrdxw.up.railway.app`, TTL 300, сертификат Railway VALID. Ветки umami в
