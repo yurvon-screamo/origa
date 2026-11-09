@@ -18,12 +18,7 @@ use origa::dictionary::radical::RadicalDatabase;
 use origa::domain::NativeLanguage;
 
 fn radicals_path() -> PathBuf {
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set by cargo");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root is parent of CARGO_MANIFEST_DIR")
-        .join("cdn")
+    origa::corpus::cdn_dir()
         .join("dictionary")
         .join("radicals.json")
 }

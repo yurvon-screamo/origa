@@ -7,9 +7,9 @@
 //! ``ensure_corpus_loaded`` / ``ensure_grammar_loaded`` /
 //! ``merge_twins_match_the_shipped_v3_corpus`` and the unit tests stay
 //! green while the red-on-foreign-diff deploy-window class returns. These
-//! tests spawn each compiled corpus binary with a sandboxed
-//! ``CARGO_MANIFEST_DIR`` — the runtime env the gate's ``cdn_dir()`` reads
-//! — pointing at a drifted corpus, and assert the binary stays green AND
+//! tests spawn each compiled corpus binary with ``ORIGA_CDN_DIR`` — the
+//! override the gate's ``cdn_dir()`` resolves first — pointing at a drifted
+//! corpus, and assert the binary stays green AND
 //! its shipped-corpus tests skipped via the ``[skip] … corpus drift``
 //! marker (visible because the harness runs with ``--nocapture``; without
 //! it the libtest capture swallows the markers).
@@ -99,10 +99,10 @@ fn find_corpus_binary(name: &str) -> Option<PathBuf> {
     best.map(|(path, _)| path)
 }
 
-/// Sandbox with a drifted corpus: `<sandbox>/cdn/grammar/grammar_v3.json`
+/// Sandbox with a drifted corpus: `<sandbox>/grammar/grammar_v3.json`
 /// exists but is not the pinned version (deploy window open). Returns the
-/// fake crate dir whose parent holds `cdn/` — exactly the shape the gate's
-/// ``cdn_dir()`` derives from the runtime ``CARGO_MANIFEST_DIR``.
+/// sandbox corpus dir — exactly the value the gate's ``cdn_dir()`` reads
+/// from the runtime ``ORIGA_CDN_DIR`` override.
 fn sandbox_with_drifted_corpus() -> PathBuf {
     let sandbox = std::env::temp_dir().join(format!(
         "origa-pin-gate-e2e-{}-{}",
@@ -112,13 +112,13 @@ fn sandbox_with_drifted_corpus() -> PathBuf {
             .expect("clock is after epoch")
             .as_nanos()
     ));
-    std::fs::create_dir_all(sandbox.join("cdn/grammar")).expect("sandbox must be creatable");
+    std::fs::create_dir_all(sandbox.join("grammar")).expect("sandbox must be creatable");
     std::fs::write(
-        sandbox.join("cdn/grammar/grammar_v3.json"),
+        sandbox.join("grammar/grammar_v3.json"),
         "drifted probe corpus — deliberately not the pinned version",
     )
     .expect("drifted corpus must be writable");
-    sandbox.join("crate")
+    sandbox
 }
 
 #[rstest]
@@ -143,20 +143,16 @@ fn drifted_corpus_skips_with_the_marker_and_stays_green(#[case] binary_name: &st
         return;
     }
 
-    let fake_crate = sandbox_with_drifted_corpus();
+    let sandbox_cdn = sandbox_with_drifted_corpus();
     let output = Command::new(&binary)
         .arg("--nocapture")
-        .env("CARGO_MANIFEST_DIR", &fake_crate)
+        .env("ORIGA_CDN_DIR", &sandbox_cdn)
         .output()
         .expect("corpus binary must spawn");
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let _ = std::fs::remove_dir_all(
-        fake_crate
-            .parent()
-            .expect("sandbox crate always has a parent"),
-    );
+    let _ = std::fs::remove_dir_all(&sandbox_cdn);
 
     assert!(
         output.status.success(),

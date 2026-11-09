@@ -34,12 +34,7 @@ use std::path::PathBuf;
 use serde::Deserialize;
 
 fn cdn_dir() -> PathBuf {
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set by cargo");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root is parent of CARGO_MANIFEST_DIR")
-        .join("cdn")
+    origa::corpus::cdn_dir()
 }
 
 #[derive(Deserialize)]
