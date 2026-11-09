@@ -117,6 +117,16 @@ impl Drop for UnreachableGuard {
 /// predates the file's manifest tracking (valid JSON, wrong content) must be
 /// healed by `load_kanji` — the bypass-refetch overwrites the poisoned entry
 /// with the manifest-fresh body.
+/// Main scenario on the canonical migrated path: a cache entry whose body
+/// predates the file's manifest tracking (valid JSON, wrong content) must be
+/// healed by `fetch_text_verified` — the bypass-refetch overwrites the
+/// poisoned entry with the manifest-fresh body.
+///
+/// Deliberately NOT through `load_kanji`: it would fill the process-global
+/// `KANJI_DICTIONARY` OnceLock and every later test in this suite expecting
+/// an empty dictionary (e.g. lesson reading-quiz states) would see loaded
+/// data instead. The call-site binding is pinned by the native
+/// source-contract test in `data_loader::tests`.
 #[wasm_bindgen_test]
 async fn verified_fetch_stale_kanji_cache_heals_through_load_kanji() {
     let cache = open_cache().await;
@@ -141,25 +151,26 @@ async fn verified_fetch_stale_kanji_cache_heals_through_load_kanji() {
         "precondition: the seeded body must classify as stale against the manifest"
     );
 
-    crate::loaders::data_loader::load_kanji()
+    let served = fetch_text_verified(KANJI_PATH)
         .await
-        .expect("load_kanji must heal the stale cache body and load");
+        .expect("verified fetch must heal the stale cache body");
 
+    assert_ne!(
+        served, STALE_KANJI_JSON,
+        "the poisoned body must not be served"
+    );
+    assert_eq!(
+        sha256_hex(&served),
+        manifest_hash.to_ascii_lowercase(),
+        "the fetch must resolve to the manifest-fresh body"
+    );
     let healed = read_cache_text(&cache, KANJI_PATH)
         .await
         .expect("cache entry must exist after the heal");
-    assert_ne!(
-        healed, STALE_KANJI_JSON,
-        "the poisoned body must be overwritten by the bypass-refetch"
-    );
     assert_eq!(
         sha256_hex(&healed),
         manifest_hash.to_ascii_lowercase(),
-        "the cache must now hold the manifest-fresh body"
-    );
-    assert!(
-        origa::dictionary::kanji::is_kanji_loaded(),
-        "kanji data must be initialized after load_kanji"
+        "the bypass-refetch must overwrite the cache entry with the manifest-fresh body"
     );
 }
 
