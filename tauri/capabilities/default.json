@@ -1,19 +1,19 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "core:event:default",
-    "tts:default",
-    "deep-link:default",
-    {
-      "identifier": "opener:default",
-      "allow": [
-        { "url": "https://origa.uwuwu.net/*" },
-        { "url": "https://app.origa.uwuwu.net/*" }
-      ]
-    }
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "Capability for the main window",
+	"windows": ["main"],
+	"permissions": [
+		"core:default",
+		"core:event:default",
+		"tts:default",
+		"deep-link:default",
+		{
+			"identifier": "opener:default",
+			"allow": [
+				{ "url": "https://origa.uwuwu.net/*" },
+				{ "url": "https://app.origa.uwuwu.net/*" }
+			]
+		}
+	]
 }

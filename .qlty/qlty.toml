@@ -94,6 +94,11 @@ exclude_patterns = [
     "tauri-plugin-aswebauth/permissions/**",
     "translator/calibration/judge_calibration.json",
     "tts/ref_pool_manifest.json",
+    # tauri capabilities: the build_capabilities_content generator emits
+    # tab-indented JSON and tauri/tests/build_config.rs asserts byte parity
+    # with the committed file ("intentional drift detection") — a prettier
+    # reformat IS a semantic break there (review round 3, PR #904).
+    "tauri/capabilities/**",
 ]
 
 # =============================================================================
