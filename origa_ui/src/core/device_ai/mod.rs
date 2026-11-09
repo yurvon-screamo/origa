@@ -14,6 +14,8 @@
 //! timeout so a hung native call falls back instead of freezing the UI.
 
 pub mod contracts;
+#[cfg(all(target_arch = "wasm32", test))]
+mod degradation_wasm_tests;
 mod invoke;
 #[cfg(all(target_arch = "wasm32", test))]
 mod invoke_wasm_tests;
@@ -50,7 +52,7 @@ thread_local! {
 /// Test hook: clears the capabilities cache so each test starts clean and
 /// stays order-independent.
 #[cfg(all(target_arch = "wasm32", test))]
-fn reset_cached_capabilities() {
+pub(crate) fn reset_cached_capabilities() {
     CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = None);
 }
 
@@ -120,7 +122,21 @@ async fn cached_or_query() -> Result<Capabilities, String> {
             Ok(caps)
         },
         Err(e) => {
-            tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
+            // A capabilities failure on a platform that expects the native
+            // path is a degradation, not routine fallback routing: escalate
+            // to an error so it surfaces as a Sentry event (warn only lands
+            // as a breadcrumb, which is invisible without a later capture).
+            // Windows/Linux/web have no plugin by design — keep those as
+            // breadcrumbs to avoid event noise from normal fallbacks.
+            if crate::core::capabilities::expects_native_ai(&crate::core::platform::platform_name())
+            {
+                tracing::error!(
+                    "device-ai: capabilities query failed ({e}) — native path degraded on a \
+                     platform that expects it"
+                );
+            } else {
+                tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
+            }
             Ok(Capabilities::all_unavailable())
         },
     }
