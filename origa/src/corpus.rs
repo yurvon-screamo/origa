@@ -157,4 +157,26 @@ mod tests {
     fn missing_home_falls_back_to_a_relative_path() {
         assert_eq!(resolve(None, None, None), PathBuf::from("origa-cdn"));
     }
+
+    #[test]
+    fn absent_corpus_entry_probes_as_skip() {
+        // Arrange: a corpus entry that does not exist (fresh machine, no seed).
+        let missing =
+            std::env::temp_dir().join(format!("origa-corpus-absent-probe-{}", std::process::id()));
+
+        // Act + Assert: the probe reports absence so the caller bails out green.
+        assert!(corpus_absent(&missing, "unit probe"));
+    }
+
+    #[test]
+    fn present_corpus_entry_falls_through_to_loader() {
+        // Arrange: a corpus entry that exists (seeded machine).
+        let dir = tempfile::tempdir().expect("sandbox corpus dir");
+        let present = dir.path().join("entry.json");
+        std::fs::write(&present, b"{}").expect("sandbox corpus entry");
+
+        // Act + Assert: the loader proceeds — a present-but-broken entry stays
+        // a loud loader panic instead of being masked as a skip.
+        assert!(!corpus_absent(&present, "unit probe"));
+    }
 }
