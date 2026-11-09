@@ -91,7 +91,7 @@ const HONORIFIC_VERB_BASES: &[&str] = &[
 #[cfg(test)]
 mod integration_tests {
     use super::super::lookup_tokens_translations;
-    use super::super::test_env::ensure_dictionaries;
+    use crate::corpus::translation_dictionaries_or_skip;
     use crate::domain::NativeLanguage;
     use crate::domain::tokenizer::tokenize_text;
 
@@ -102,7 +102,7 @@ mod integration_tests {
     // grammar_label.
     #[test]
     fn should_label_masu_stem_continuative_when_standalone() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "返事を願いします";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -124,7 +124,7 @@ mod integration_tests {
     // is covered by the ～ます rule.
     #[test]
     fn should_not_label_masu_stem_before_polite_aux() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "ご飯を食べます";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -147,7 +147,7 @@ mod integration_tests {
     // AuxiliaryVerb, so a POS-only guard would over-match.
     #[test]
     fn should_not_label_masu_stem_before_te_particle() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べて飲んで";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -171,7 +171,7 @@ mod integration_tests {
     // and base lookup is caught.
     #[test]
     fn should_use_noun_translation_for_standalone_masu_stem() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "返事を願いします";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -208,7 +208,7 @@ mod integration_tests {
     // the VerbToNasai FormatAction variant (matched by lemma only).
     #[test]
     fn should_label_nasai_imperative_from_nasaru() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "よく考えなさい";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -226,7 +226,7 @@ mod integration_tests {
     // the VerbToKudasai FormatAction variant.
     #[test]
     fn should_label_kudasai_imperative_from_kudasaru() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "これをお食べください";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -244,7 +244,7 @@ mod integration_tests {
     // produced by the VerbToIrasshai FormatAction variant.
     #[test]
     fn should_label_irasshai_imperative_from_irassharu() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "いらっしゃいませ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);

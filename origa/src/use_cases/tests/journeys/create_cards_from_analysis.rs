@@ -1,6 +1,6 @@
 use crate::domain::{CardType, NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 use crate::use_cases::{CreateCardsFromAnalysisUseCase, WordToCreate};
 
 fn create_repo() -> InMemoryUserRepository {
@@ -13,7 +13,7 @@ fn create_repo() -> InMemoryUserRepository {
 
 #[tokio::test]
 async fn create_cards_from_analysis_creates_vocabulary_cards() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -34,7 +34,7 @@ async fn create_cards_from_analysis_creates_vocabulary_cards() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_creates_multiple_cards() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -72,7 +72,7 @@ async fn create_cards_from_analysis_returns_error_when_user_not_found() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_skips_duplicates() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -93,7 +93,7 @@ async fn create_cards_from_analysis_skips_duplicates() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_handles_failed_words() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -117,7 +117,7 @@ async fn create_cards_from_analysis_handles_failed_words() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_marks_set_as_imported() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -139,7 +139,7 @@ async fn create_cards_from_analysis_marks_set_as_imported() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_marks_multiple_sets_as_imported() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -171,7 +171,7 @@ async fn create_cards_from_analysis_marks_multiple_sets_as_imported() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_empty_words_creates_nothing() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -186,7 +186,7 @@ async fn create_cards_from_analysis_empty_words_creates_nothing() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_persists_cards_in_repository() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 
@@ -203,7 +203,7 @@ async fn create_cards_from_analysis_persists_cards_in_repository() {
 
 #[tokio::test]
 async fn create_cards_from_analysis_mixed_results() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateCardsFromAnalysisUseCase::new(&repo);
 

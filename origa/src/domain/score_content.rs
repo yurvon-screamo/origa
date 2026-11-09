@@ -86,11 +86,11 @@ mod tests {
     use ulid::Ulid;
 
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::{
         Card, Difficulty, KanjiCard, MemoryState, Rating, Stability, StudyCard, VocabularyCard,
         value_objects::Question,
     };
-    use crate::test_support::init_real_dictionaries;
 
     fn create_known_study_card_with_kanji(kanji: &str) -> StudyCard {
         let kanji_card = KanjiCard::new_test(kanji.to_string());
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn score_content_returns_empty_for_plain_text() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "Hello World";
         let cards = HashMap::new();
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn score_content_identifies_known_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日本語";
         let cards = cards_to_hashmap(vec![
@@ -167,7 +167,7 @@ mod tests {
 
     #[test]
     fn score_content_identifies_unknown_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日本語";
         let cards = HashMap::new();
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn score_content_mixed_kanji_knowledge() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日本語";
         let cards = cards_to_hashmap(vec![
@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn score_content_identifies_known_words() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫と犬";
         let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn score_content_identifies_unknown_words() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫と犬";
         let cards = HashMap::new();
@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn score_content_mixed_word_knowledge() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫と犬";
         let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
@@ -236,7 +236,7 @@ mod tests {
 
     #[test]
     fn score_content_ignores_hiragana_for_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "こんにちは";
         let cards = HashMap::new();
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn score_content_ignores_katakana_for_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "コンニチハ";
         let cards = HashMap::new();
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn score_content_handles_empty_content() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "";
         let cards = HashMap::new();
@@ -277,7 +277,7 @@ mod tests {
 
     #[test]
     fn score_content_ignores_unknown_card_type_for_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日";
         let vocab_card = create_known_study_card_with_vocab("日");
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     fn score_content_ignores_unknown_card_type_for_words() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫";
         let kanji_card = create_known_study_card_with_kanji("猫");
@@ -304,7 +304,7 @@ mod tests {
 
     #[test]
     fn score_content_deduplicates_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日日日";
         let cards = HashMap::new();
@@ -317,7 +317,7 @@ mod tests {
 
     #[test]
     fn score_content_deduplicates_words() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫猫猫";
         let cards = HashMap::new();
@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn score_content_unknown_kanji_card_not_counted_as_known() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "日";
         let cards = cards_to_hashmap(vec![create_unknown_study_card_with_kanji("日")]);
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn score_content_unknown_vocab_card_not_counted_as_known() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let content = "猫";
         let cards = cards_to_hashmap(vec![create_unknown_study_card_with_vocab("猫")]);
@@ -359,7 +359,7 @@ mod tests {
 
         #[test]
         fn known_words_returns_slice() {
-            init_real_dictionaries();
+            real_dictionaries_or_skip!();
 
             let content = "猫";
             let cards = cards_to_hashmap(vec![create_known_study_card_with_vocab("猫")]);
@@ -371,7 +371,7 @@ mod tests {
 
         #[test]
         fn unknown_words_returns_slice() {
-            init_real_dictionaries();
+            real_dictionaries_or_skip!();
 
             let content = "猫";
             let cards = HashMap::new();
@@ -383,7 +383,7 @@ mod tests {
 
         #[test]
         fn known_kanji_returns_slice() {
-            init_real_dictionaries();
+            real_dictionaries_or_skip!();
 
             let content = "日";
             let cards = cards_to_hashmap(vec![create_known_study_card_with_kanji("日")]);
@@ -395,7 +395,7 @@ mod tests {
 
         #[test]
         fn unknown_kanji_returns_slice() {
-            init_real_dictionaries();
+            real_dictionaries_or_skip!();
 
             let content = "日";
             let cards = HashMap::new();

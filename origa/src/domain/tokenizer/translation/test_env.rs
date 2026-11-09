@@ -1,10 +1,15 @@
 //! Shared dictionary fixture for translation integration tests.
 //!
 //! Loads the three dictionaries the translation pipeline reads (tokenizer
-//! SudachiDict, vocabulary chunks, grammar rules) from the local `cdn/`
-//! checkout. Deliberately lighter than the crate-wide test fixture: it does
-//! not load kanji/radicals, which the translation pipeline never reads.
+//! SudachiDict, vocabulary chunks, grammar rules) from the local corpus
+//! (see [`crate::corpus`]). Deliberately lighter than the crate-wide test
+//! fixture: it does not load kanji/radicals, which the translation pipeline
+//! never reads — the skip guard mirrors the fixture, not the whole family.
+//!
+//! Corpus absence is a skip, not a panic: tests enter through the
+//! `translation_dictionaries_or_skip!` macro ([`crate::corpus`]).
 
+use crate::corpus::{cdn_dir, corpus_absent};
 use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use crate::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary, is_vocabulary_loaded};
 use crate::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
@@ -14,22 +19,26 @@ pub(super) fn ensure_dictionaries() {
     ensure_vocabulary_dictionary();
     ensure_grammar_dictionary();
 }
+
+/// True when the three dictionaries of [`ensure_dictionaries`] are loaded.
+pub(super) fn translation_dictionaries_ready() -> bool {
+    is_dictionary_loaded() && is_vocabulary_loaded() && is_grammar_loaded()
+}
+
 fn ensure_tokenizer_dictionary() {
     if is_dictionary_loaded() {
         return;
     }
 
     use flate2::read::DeflateDecoder;
-    use std::fs;
     use std::io::Read;
 
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let dict_dir = std::path::PathBuf::from(manifest_dir)
-        .parent()
-        .unwrap()
-        .join("cdn")
+    let dict_dir = cdn_dir()
         .join("dictionaries")
         .join(crate::domain::SUDACHIDICT_DIR);
+    if corpus_absent(&dict_dir, "SudachiDict") {
+        return;
+    }
 
     let decompress = |data: Vec<u8>| -> Vec<u8> {
         let mut decoder = DeflateDecoder::new(&data[..]);
@@ -38,7 +47,7 @@ fn ensure_tokenizer_dictionary() {
         decompressed
     };
 
-    let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
+    let read_file = |name: &str| std::fs::read(dict_dir.join(name)).unwrap();
 
     let data = DictionaryData {
         char_def: decompress(read_file("char_def.bin")),
@@ -54,19 +63,21 @@ fn ensure_tokenizer_dictionary() {
 
     init_dictionary(data).unwrap();
 }
+
 fn ensure_vocabulary_dictionary() {
     if is_vocabulary_loaded() {
         return;
     }
 
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let vocab_dir = std::path::PathBuf::from(manifest_dir)
-        .parent()
-        .unwrap()
-        .join("cdn")
-        .join("dictionary");
+    let vocab_dir = cdn_dir().join("dictionary");
+    if corpus_absent(&vocab_dir.join("chunk_01.json"), "vocabulary chunks") {
+        return;
+    }
 
-    let read_chunk = |name: &str| std::fs::read_to_string(vocab_dir.join(name)).unwrap();
+    let read_chunk = |name: &str| {
+        std::fs::read_to_string(vocab_dir.join(name))
+            .expect("vocabulary chunk exists (probed above)")
+    };
 
     let vocab_data = VocabularyChunkData {
         chunk_01: read_chunk("chunk_01.json"),
@@ -92,20 +103,19 @@ fn ensure_vocabulary_dictionary() {
         }
     }
 }
+
 fn ensure_grammar_dictionary() {
     if is_grammar_loaded() {
         return;
     }
 
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let grammar_path = std::path::PathBuf::from(manifest_dir)
-        .parent()
-        .unwrap()
-        .join("cdn")
-        .join("grammar")
-        .join("grammar_v3.json");
+    let grammar_path = cdn_dir().join("grammar").join("grammar_v3.json");
+    if corpus_absent(&grammar_path, "grammar rules") {
+        return;
+    }
 
-    let grammar_json = std::fs::read_to_string(grammar_path).unwrap();
+    let grammar_json =
+        std::fs::read_to_string(grammar_path).expect("grammar_v3.json exists (probed above)");
     // Same OnceLock race tolerance as ensure_vocabulary_dictionary.
     if let Err(e) = init_grammar(GrammarData { grammar_json }) {
         if !is_grammar_loaded() {
