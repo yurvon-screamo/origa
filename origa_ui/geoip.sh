@@ -20,7 +20,7 @@ set -eu
 
 # --- Configuration ---
 GEOIP_DEST="${TRAILBASE_DATA_DIR:-/app/traildepot}/GeoLite2-Country.mmdb"
-GEOIP_URL="https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb"
+GEOIP_URL="${GEOIP_URL:-https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb}"
 FRESHNESS_DAYS="${GEOIP_FRESHNESS_DAYS:-6}"
 CURL_TIMEOUT="${GEOIP_TIMEOUT:-120}"
 MIN_SIZE_BYTES=4194304 # valid builds are ~8 MB; a truncated download is smaller
