@@ -121,7 +121,9 @@ fn build_chunk(
 }
 
 pub fn run_build_phrase_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaError> {
-    let cdn_dir_buf = cdn_dir.map(PathBuf::from).unwrap_or_else(crate::utils::cdn_dir);
+    let cdn_dir_buf = cdn_dir
+        .map(PathBuf::from)
+        .unwrap_or_else(crate::utils::cdn_dir);
     let cdn_dir = cdn_dir_buf.as_path();
     load_dictionary().map_err(|e| OrigaError::RepositoryError {
         reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),

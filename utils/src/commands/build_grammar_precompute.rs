@@ -130,7 +130,9 @@ fn collect_value_keys(value: &serde_json::Value, key: &str, keys: &mut BTreeMap<
 }
 
 pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaError> {
-    let cdn_dir = cdn_dir.map(PathBuf::from).unwrap_or_else(crate::utils::cdn_dir);
+    let cdn_dir = cdn_dir
+        .map(PathBuf::from)
+        .unwrap_or_else(crate::utils::cdn_dir);
     load_dictionary().map_err(|e| OrigaError::RepositoryError {
         reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
     })?;

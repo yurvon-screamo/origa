@@ -83,7 +83,6 @@ fn main() {
     println!("cargo:rerun-if-changed=../build_defaults.rs");
 }
 
-
 /// Local corpus root (mirrors `origa::corpus::cdn_dir`): `$ORIGA_CDN_DIR`
 /// override first, then `~/origa-cdn`. The corpus is machine-local state
 /// outside the repository; a build script cannot import the crate, so the

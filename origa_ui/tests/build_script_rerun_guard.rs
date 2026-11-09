@@ -24,9 +24,7 @@ use std::time::SystemTime;
 fn cdn_fonts_dir() -> PathBuf {
     // Mirrors origa_ui/build.rs::cdn_dir (the build script cannot import the
     // crate): $ORIGA_CDN_DIR override first, then ~/origa-cdn.
-    if let Some(dir) =
-        std::env::var_os("ORIGA_CDN_DIR").filter(|value| !value.is_empty())
-    {
+    if let Some(dir) = std::env::var_os("ORIGA_CDN_DIR").filter(|value| !value.is_empty()) {
         return PathBuf::from(dir).join("fonts");
     }
     let home = std::env::var_os("HOME")
