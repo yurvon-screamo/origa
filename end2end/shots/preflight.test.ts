@@ -138,9 +138,10 @@ test("a listener of unknown ownership stays unreported", () => {
 
 test("a listener of the same checkout is not reported", () => {
     const report = evaluatePreflight(
-        facts({ listeners: [{ port: 1420, pid: 4242, cwd: "/repo" }] }),
+        facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/repo" }] }),
     );
 
+    assert.deepEqual(report.errors, []);
     assert.deepEqual(report.warnings, []);
 });
 
