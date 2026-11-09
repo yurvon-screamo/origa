@@ -256,3 +256,39 @@ pub(crate) fn test_user(name: &str) -> origa::domain::User {
         None,
     )
 }
+
+// ─── Session fixture ───────────────────────────────────────────────────
+
+use crate::repository::session::{clear_session, set_session};
+use base64::Engine;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+
+/// Clears the installed test session when dropped: the session cache is
+/// global to the browser page, and a leftover session would silently
+/// redirect the next test's `get_current_user` to this test's record.
+pub(crate) struct SessionGuard;
+
+impl Drop for SessionGuard {
+    fn drop(&mut self) {
+        clear_session();
+    }
+}
+
+/// Installs a TrailBase session whose canonical id is `user.id()` (the same
+/// projection production uses: `uuid_to_ulid` of the session's `trailbase_id`).
+/// After this call, session-scoped repository reads resolve to `user`'s record
+/// and ignore leftover users of other tests. The session is undone when the
+/// returned guard drops — hold it for the lifetime of the test.
+pub(crate) fn install_session_for_user(user: &origa::domain::User) -> SessionGuard {
+    let session = crate::repository::session::TrailBaseSession {
+        auth_token: "test-token".to_string(),
+        refresh_token: String::new(),
+        email: user.email().to_string(),
+        trailbase_id: URL_SAFE_NO_PAD.encode(user.id().to_bytes()),
+        record_id: None,
+        // Far future: the test session must never trip session-refresh paths.
+        expires_at: u64::MAX,
+    };
+    set_session(&session).expect("test session set");
+    SessionGuard
+}

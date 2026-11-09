@@ -6,7 +6,9 @@ use origa::{
 use ulid::Ulid;
 use wasm_bindgen::JsValue;
 
+use super::get_session;
 use super::hybrid_repository::LocalUserPresence;
+use super::trailbase_id::{canonical_id_from_trailbase_id, redact};
 
 pub(crate) const DB_NAME: &str = "origa";
 pub(crate) const DB_VERSION: u32 = 1;
@@ -153,7 +155,11 @@ impl FileSystemUserRepository {
         Ok(count > 0)
     }
 
-    async fn list_users(&self) -> Result<Vec<User>, OrigaError> {
+    /// Keyed read of a single user record. A missing key resolves to `None`;
+    /// a record that fails to decode is treated like the listing path treated
+    /// corrupted entries — a warning and `None`, so the sync restore branch
+    /// re-seeds the store instead of erroring.
+    async fn read_user_by_id(&self, user_id: Ulid) -> Result<Option<User>, OrigaError> {
         let db = open_database().await?;
 
         let transaction = db
@@ -171,30 +177,32 @@ impl FileSystemUserRepository {
         })?;
 
         let request = store
-            .get_all(Some(idb::Query::from(user_key_range()?)), None)
+            .get(JsValue::from_str(&user_key(user_id)))
             .map_err(|e| {
-                let reason = format!("Failed to create get_all request: {e:?}");
+                let reason = format!("Failed to create get request: {e:?}");
                 tracing::error!("{reason}");
                 OrigaError::RepositoryError { reason }
             })?;
 
-        let all_values: Vec<JsValue> = request.await.map_err(|e| {
-            let reason = format!("Failed to get all users: {:?}", e);
+        let value = request.await.map_err(|e| {
+            let reason = format!("Failed to get user: {:?}", e);
             tracing::error!("{}", reason);
             OrigaError::RepositoryError { reason }
         })?;
 
-        let mut users = vec![];
-        for value in all_values {
-            match user_from_stored_value(&value) {
-                Ok(user) => users.push(user),
-                Err(reason) => {
-                    tracing::warn!("Skipping corrupted user entry in IndexedDB: {reason}");
-                },
-            }
-        }
+        // IndexedDB answers a missing key with `undefined`; the idb wrapper
+        // passes it through as a present-but-undefined value.
+        let Some(value) = value.filter(|v| !v.is_undefined() && !v.is_null()) else {
+            return Ok(None);
+        };
 
-        Ok(users)
+        match user_from_stored_value(&value) {
+            Ok(user) => Ok(Some(user)),
+            Err(reason) => {
+                tracing::warn!("Skipping corrupted user entry in IndexedDB: {reason}");
+                Ok(None)
+            },
+        }
     }
 }
 
@@ -205,16 +213,42 @@ impl LocalUserPresence for FileSystemUserRepository {
 }
 
 impl UserRepository for FileSystemUserRepository {
+    /// Session-scoped current user: the record under the canonical id derived
+    /// from the active session — `uuid_to_ulid(session.trailbase_id)`, the
+    /// same projection every production writer uses (profile creation pins
+    /// the id to the session, the remote restore decodes it from the row, the
+    /// legacy migration re-keys nil rows onto it). A keyed read, never "the
+    /// first record in the store": nothing ties the store's key order to the
+    /// session, and in the shared wasm-test store unrelated records sort
+    /// unpredictably (GH #634). No session, or an id that fails to decode →
+    /// `Ok(None)` — there is no current user to resolve.
+    ///
+    /// The sync session read relies on the app-start contract: the session
+    /// cache is populated by `check_session`/`set_session_async` before any
+    /// production call reaches this method (on Tauri the sync `get_session`
+    /// serves from the cache only).
     async fn get_current_user(&self) -> Result<Option<User>, OrigaError> {
-        // Self-heal legacy nil-keyed rows before reading so that the first
-        // read after upgrade returns the canonical record. Migration errors are
-        // non-fatal: the read still proceeds against whatever rows exist.
+        let Some(session) = get_session() else {
+            return Ok(None);
+        };
+        let Some(user_id) = canonical_id_from_trailbase_id(&session.trailbase_id) else {
+            tracing::warn!(
+                "Session trailbase_id did not decode to a valid user id: {}",
+                redact(&session.trailbase_id)
+            );
+            return Ok(None);
+        };
+
+        // Self-heal legacy nil-keyed rows before reading so the canonical
+        // record is complete: the session-scoped read never sees a nil row
+        // (wrong key), so this merge is what preserves the progress it
+        // accumulated. Migration errors are non-fatal: the read still
+        // proceeds against the canonical record.
         if let Err(e) = super::legacy_migration::migrate_nil_users_to_session_id().await {
             tracing::warn!("Legacy nil-user migration skipped: {:?}", e);
         }
 
-        let users = self.list_users().await?;
-        Ok(users.into_iter().next())
+        self.read_user_by_id(user_id).await
     }
 
     async fn save(&self, user: &User) -> Result<(), OrigaError> {

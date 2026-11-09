@@ -55,6 +55,10 @@ const SAMPLE_WORDS: &[(PartOfSpeech, &[&str])] = &[
 const PINNED_LOSSES: &[&str] = &[
     "01G00000000000000060000000", // ～な＋名詞 [AdjectiveToNa]
     "01G000000000000000SW000000", // ～て／～くて／～で [AdjectiveToDe]
+    // ～そうだ [AdjectiveToSouNa]: the そうだ merge added the NaAdjective
+    // sou chain; near-miss generation yields fewer than 3 distractors for
+    // it (静かっそう/静かぞう).
+    "01G000000000000000W0000000",
 ];
 
 /// Pinned: chains that reject every typical sample word (lemma-gated

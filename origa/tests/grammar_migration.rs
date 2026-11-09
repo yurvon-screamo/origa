@@ -20,6 +20,12 @@ const TWIN_OF_LIVE: &str = "01KV2C1TJN7FZ34PB80VBFCXFD"; // deleted twin
 const OTHER_SUCCESSOR: &str = "01KV2BRAW30ESEMGXK3N2PTAEA"; // ～たら、～た survivor
 const OTHER_TWIN: &str = "01KV2BV49PQW2NZ6JX06ZRX0FB"; // its deleted twin
 
+/// ～そうだ（様態・伝聞） — survivor of the N4 そうだ triple merge (the
+/// 様態 and 伝聞 siblings became its format_map variants).
+const SOU_DA_SURVIVOR: &str = "01G000000000000000W0000000";
+const SOU_DA_APPEARANCE: &str = "01G000000000000000W4000000"; // deleted 様態
+const SOU_DA_HEARSAY: &str = "01G000000000000000W8000000"; // deleted 伝聞
+
 static CORPUS_INIT: Once = Once::new();
 
 fn ensure_corpus() {
@@ -32,6 +38,10 @@ fn ensure_corpus() {
                  "nuances": {}, "pro_tip": ""}}},
                 {"rule_id": OTHER_SUCCESSOR, "level": "N3",
                  "content": {"English": {"title": "t2", "short_description": "s",
+                 "explanation": "e", "how_to_form": "f", "examples": "[]",
+                 "nuances": {}, "pro_tip": ""}}},
+                {"rule_id": SOU_DA_SURVIVOR, "level": "N4",
+                 "content": {"English": {"title": "t3", "short_description": "s",
                  "explanation": "e", "how_to_form": "f", "examples": "[]",
                  "nuances": {}, "pro_tip": ""}}}
             ]
@@ -174,6 +184,52 @@ fn second_pass_is_a_noop() {
     // Assert
     assert_eq!(report.total(), 0);
     assert_eq!(grammar_rule_ids(&user), vec![LIVE_RULE.to_string()]);
+}
+
+/// Both ～そうだ siblings collapse onto the survivor. Without the user's
+/// own survivor card, one ghost transfers (FSRS history kept) and the
+/// other drops as a duplicate of the just-transferred card — the end
+/// state is exactly one ～そうだ card per knowledge set.
+#[test]
+fn sou_da_sibling_ghosts_collapse_onto_survivor() {
+    ensure_corpus();
+
+    // Arrange: user studied the 様態 and 伝聞 siblings, no survivor card.
+    let mut user = user();
+    insert_ghost_card(&mut user, SOU_DA_APPEARANCE);
+    insert_ghost_card(&mut user, SOU_DA_HEARSAY);
+
+    // Act
+    let report = migrate_user_cards(&mut user).expect("migration");
+
+    // Assert
+    assert_eq!(report.transferred, 1);
+    assert_eq!(report.dropped_duplicates, 1);
+    assert_eq!(report.dropped_deleted, 0);
+    assert_eq!(grammar_rule_ids(&user), vec![SOU_DA_SURVIVOR.to_string()]);
+}
+
+/// With the user already holding the survivor (the acquaintance-dealt new
+/// card from the bug report), both sibling ghosts drop as duplicates and
+/// the native survivor keeps its slot.
+#[test]
+fn sou_da_sibling_ghosts_drop_when_survivor_card_exists() {
+    ensure_corpus();
+
+    // Arrange
+    let mut user = user();
+    let native = insert_live_card(&mut user, SOU_DA_SURVIVOR);
+    insert_ghost_card(&mut user, SOU_DA_APPEARANCE);
+    insert_ghost_card(&mut user, SOU_DA_HEARSAY);
+
+    // Act
+    let report = migrate_user_cards(&mut user).expect("migration");
+
+    // Assert
+    assert_eq!(report.transferred, 0);
+    assert_eq!(report.dropped_duplicates, 2);
+    assert_eq!(grammar_rule_ids(&user), vec![SOU_DA_SURVIVOR.to_string()]);
+    assert!(user.knowledge_set().get_card(native).is_some());
 }
 
 /// The merge map must stay consistent with the SHIPPED corpus: every
