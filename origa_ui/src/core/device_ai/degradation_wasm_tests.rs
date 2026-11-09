@@ -11,7 +11,7 @@
 
 use wasm_bindgen_test::*;
 
-use super::{Feature, available, reset_capabilities_cache_for_tests};
+use super::{Feature, available, reset_cached_capabilities};
 use crate::core::log_capture;
 use crate::core::tauri_mock::{TauriMock, UserAgentOverride, all_available_caps, rejected_with};
 use tracing::Level;
@@ -33,7 +33,7 @@ fn events_about(marker: &str) -> Vec<(Level, String)> {
 #[wasm_bindgen_test]
 async fn caps_failure_on_android_escalates_to_error_event() {
     log_capture::install();
-    reset_capabilities_cache_for_tests();
+    reset_cached_capabilities();
     let _ua = UserAgentOverride::install(ANDROID_UA);
     // Reject the caps query — the plugin "present but failing" scenario.
     let _mock = TauriMock::install(|command, _args| {
@@ -72,7 +72,7 @@ async fn caps_failure_on_android_escalates_to_error_event() {
 #[wasm_bindgen_test]
 async fn caps_failure_on_web_stays_warn_without_error_event() {
     log_capture::install();
-    reset_capabilities_cache_for_tests();
+    reset_cached_capabilities();
     // No UA override: the runner's browser UA is a desktop one and without
     // a Tauri shell platform_name() resolves to "web" — the plugin-less
     // platform where fallback routing is normal, not a degradation.
@@ -110,7 +110,7 @@ async fn caps_failure_on_web_stays_warn_without_error_event() {
 #[wasm_bindgen_test]
 async fn cached_caps_skip_the_query_and_its_event() {
     log_capture::install();
-    reset_capabilities_cache_for_tests();
+    reset_cached_capabilities();
     let _ua = UserAgentOverride::install(ANDROID_UA);
     let _mock = TauriMock::install(|command, _args| {
         let command = command.as_string().unwrap_or_default();

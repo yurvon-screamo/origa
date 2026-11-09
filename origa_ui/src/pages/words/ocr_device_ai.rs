@@ -70,7 +70,7 @@ mod wasm_tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn ocr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
-        device_ai::reset_capabilities_cache_for_tests();
+        device_ai::reset_cached_capabilities();
         let _mock = plugin_mock_with_failing_vision();
 
         let loading = OcrLoadingState::new();

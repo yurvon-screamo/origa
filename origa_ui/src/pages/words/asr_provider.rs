@@ -147,7 +147,7 @@ mod wasm_tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn file_asr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
-        device_ai::reset_capabilities_cache_for_tests();
+        device_ai::reset_cached_capabilities();
         let _mock = plugin_mock("SPEECH_RECOGNITION_FAILED", "file path broken");
 
         let result = recognize_file_via_device_ai("YXVkaW8=").await;
@@ -172,7 +172,7 @@ mod wasm_tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn live_asr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
-        device_ai::reset_capabilities_cache_for_tests();
+        device_ai::reset_cached_capabilities();
         let _mock = plugin_mock("SPEECH_RECOGNITION_FAILED", "live path broken");
 
         let result = recognize_live_via_device_ai().await;
@@ -197,7 +197,7 @@ mod wasm_tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn live_asr_no_speech_stays_info_and_routes_to_empty_string() {
         log_capture::install();
-        device_ai::reset_capabilities_cache_for_tests();
+        device_ai::reset_cached_capabilities();
         let _mock = plugin_mock("NO_SPEECH_DETECTED", "No speech detected");
 
         let result = recognize_live_via_device_ai().await;

@@ -52,17 +52,8 @@ thread_local! {
 /// Test hook: clears the capabilities cache so each test starts clean and
 /// stays order-independent.
 #[cfg(all(target_arch = "wasm32", test))]
-fn reset_cached_capabilities() {
+pub(crate) fn reset_cached_capabilities() {
     CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = None);
-}
-
-/// Clears the capabilities cache in wasm tests. The cache is process-global
-/// for the WASM binary, so component tests that script the plugin mock need
-/// a deterministic starting state regardless of test execution order.
-#[cfg(all(target_arch = "wasm32", test))]
-pub(crate) fn reset_capabilities_cache_for_tests() {
-    CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = None);
-    CAPABILITIES_LOADING.with(|l| l.set(false));
 }
 
 /// Returns `true` if the device-ai plugin could be present at all.
