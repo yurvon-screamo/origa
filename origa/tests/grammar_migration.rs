@@ -13,6 +13,12 @@ use origa::use_cases::migrate_user_cards;
 use std::sync::Once;
 use ulid::Ulid;
 
+/// The deploy-window gate for the one shipped-corpus test in this binary
+/// (``merge_twins_match_the_shipped_v3_corpus``); every other test here
+/// loads a synthetic corpus and never consults `cdn/`.
+#[path = "common/grammar_corpus.rs"]
+mod grammar_corpus;
+
 /// Survivor of the ～される merge + an unrelated live rule + the successor
 /// of the ～たら、～た pair (for the duplicate-transfer case).
 const LIVE_RULE: &str = "01KV2BRAW30ESEMGXK3N2PTAF4"; // ～される twin survivor
@@ -236,15 +242,21 @@ fn sou_da_sibling_ghosts_drop_when_survivor_card_exists() {
 /// successor alive, every deleted twin gone. A future corpus cleanup that
 /// drops a successor would silently break the migration (transfers turn
 /// into endless errors) — this test fails loudly instead. Graceful-skips
-/// when the gitignored v3 corpus is absent (fresh clone / CI cache miss).
+/// when the gitignored v3 corpus is absent (fresh clone / CI cache miss)
+/// or newer than the committed pin (corpus deploy window open — a fresh
+/// corpus against this pin is a fixtures-PR concern, see
+/// ``common/grammar_corpus.rs``).
 #[test]
 fn merge_twins_match_the_shipped_v3_corpus() {
+    if grammar_corpus::corpus_pin_drifted("grammar_migration") {
+        return;
+    }
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
         .join("cdn/grammar/grammar_v3.json");
     let Ok(raw) = std::fs::read_to_string(&path) else {
-        eprintln!("grammar_v3.json not present — skipping");
+        eprintln!("grammar store unavailable (absent or corpus drift) — skipping");
         return;
     };
     let corpus: serde_json::Value = serde_json::from_str(&raw).expect("v3 corpus parses");

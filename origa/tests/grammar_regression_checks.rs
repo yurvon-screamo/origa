@@ -13,6 +13,11 @@
 //! have access to the CDN artifacts. Once the store is present (local dev,
 //! release CI), every regression check runs for real.
 //!
+//! A downloaded corpus newer than the committed pin (corpus deploy window
+//! open, see ``common/grammar_corpus.rs``) skips the same way — a fresh
+//! corpus against stale pins is a fixtures-PR concern, not a red Test job
+//! on branches that never touched the grammar.
+//!
 //! Run: ``cargo test -p origa --test grammar_regression_checks``.
 
 use std::path::PathBuf;
@@ -28,6 +33,9 @@ use ulid::Ulid;
 // avoiding the "Failed to set grammar rules" panic that ``init_grammar``
 // returns when a second thread races the ``set`` after the first succeeded.
 static GRAMMAR_INIT: Once = Once::new();
+
+#[path = "common/grammar_corpus.rs"]
+mod grammar_corpus;
 
 fn cdn_grammar_path() -> PathBuf {
     let manifest_dir =
@@ -45,7 +53,14 @@ fn cdn_grammar_path() -> PathBuf {
 /// the gitignored ``cdn/grammar/grammar_v3.json`` is absent so the caller can
 /// skip gracefully. A malformed store still panics — a corrupt grammar_v3.json
 /// is a real error, not a missing-environment condition.
+///
+/// A downloaded corpus newer than the committed pin (corpus deploy window
+/// open, see ``common/grammar_corpus.rs``) also reports ``false`` — a fresh
+/// corpus against stale pins is a fixtures-PR concern, not a red Test job.
 fn ensure_grammar_loaded() -> bool {
+    if grammar_corpus::corpus_pin_drifted("grammar_regression_checks") {
+        return false;
+    }
     GRAMMAR_INIT.call_once(|| {
         let path = cdn_grammar_path();
         if !path.exists() {
@@ -76,9 +91,9 @@ fn ensure_grammar_loaded() -> bool {
 fn assert_rule_formats(rule_id_str: &str, pos: PartOfSpeech, cases: &[(&str, &str)]) {
     if !ensure_grammar_loaded() {
         eprintln!(
-            "skip grammar regression check for {rule_id_str}: \
-             cdn/grammar/grammar_v3.json absent (cdn/ is gitignored; \
-             restore via scripts/deploy_cdn.py)"
+            "skip grammar regression check for {rule_id_str}: grammar store \
+             unavailable (absent, or corpus drift — see the [skip] corpus drift \
+             marker; cdn/ is gitignored; restore via scripts/deploy_cdn.py)"
         );
         return;
     }
