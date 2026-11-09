@@ -404,4 +404,141 @@ mod tests {
         assert_eq!(kun_kept, vec!["のむ"]);
         assert!(on_removed.is_empty() && kun_removed.is_empty());
     }
+
+    // --- Integration tests: the file boundary of run_collapse_kanji_readings.
+
+    const FURIGANA: &str = "\
+見る|みる|0:み
+見える|みえる|0:み
+見せる|みせる|0:み
+間|ま|0:ま
+時間|じかん|0:じかん
+人間|にんげん|1:げん
+";
+
+    /// Two kanji: 見 collapses (body み three times), 間 stays (go-on/kan-on
+    /// doublet). 見 carries stale frequency keys for the removed forms and
+    /// a description field that must survive the rewrite.
+    fn fixture_dictionary() -> String {
+        r#"{
+  "kanji": [
+    {
+      "kanji": "見",
+      "on_readings": ["ケン"],
+      "kun_readings": ["みる", "みえる", "みせる"],
+      "description_en": ["see"],
+      "popular_words": ["見る"],
+      "reading_frequencies": {"ケン": 800, "みる": 1011, "みえる": 1012, "みせる": 300}
+    },
+    {
+      "kanji": "間",
+      "on_readings": ["カン", "ケン"],
+      "kun_readings": ["あいだ", "ま"]
+    }
+  ]
+}"#
+        .to_string()
+    }
+
+    fn temp_input(contents: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("origa-collapse-test-{}", ulid::Ulid::new()));
+        fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("kanji.json");
+        fs::write(&path, contents).unwrap();
+        path
+    }
+
+    fn temp_corpus() -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("origa-collapse-test-{}", ulid::Ulid::new()));
+        fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("JmdictFurigana.txt");
+        fs::write(&path, FURIGANA).unwrap();
+        path
+    }
+
+    fn entry(contents: &str, kanji: &str) -> serde_json::Value {
+        let value: serde_json::Value = serde_json::from_str(contents).unwrap();
+        value["kanji"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["kanji"] == kanji)
+            .unwrap()
+            .clone()
+    }
+
+    #[test]
+    fn apply_rewrites_file_with_backup_and_stale_frequencies_removed() {
+        // Arrange
+        let original = fixture_dictionary();
+        let input = temp_input(&original);
+        let furigana = temp_corpus();
+
+        // Act
+        run_collapse_kanji_readings(input.clone(), furigana, true).unwrap();
+
+        // Assert: the collapsed lists landed in the file.
+        let rewritten = fs::read_to_string(&input).unwrap();
+        let mi = entry(&rewritten, "見");
+        assert_eq!(mi["kun_readings"], serde_json::json!(["みる"]));
+        assert_eq!(mi["on_readings"], serde_json::json!(["ケン"]));
+        assert_eq!(
+            mi["reading_frequencies"],
+            serde_json::json!({"ケン": 800, "みる": 1011})
+        );
+        assert_eq!(mi["description_en"], serde_json::json!(["see"]));
+        // The go-on/kan-on doublet stayed untouched.
+        let ma = entry(&rewritten, "間");
+        assert_eq!(ma["on_readings"], serde_json::json!(["カン", "ケン"]));
+        // The backup carries the pre-collapse bytes.
+        let backup = fs::read_to_string(input.with_extension("json.bak")).unwrap();
+        assert_eq!(backup, original);
+    }
+
+    #[test]
+    fn repeated_apply_is_byte_identical() {
+        // Arrange
+        let input = temp_input(&fixture_dictionary());
+        let furigana = temp_corpus();
+
+        // Act
+        run_collapse_kanji_readings(input.clone(), furigana.clone(), true).unwrap();
+        let first = fs::read_to_string(&input).unwrap();
+        run_collapse_kanji_readings(input.clone(), furigana, true).unwrap();
+        let second = fs::read_to_string(&input).unwrap();
+
+        // Assert
+        assert_eq!(first, second);
+    }
+
+    #[test]
+    fn dry_run_writes_nothing() {
+        // Arrange
+        let original = fixture_dictionary();
+        let input = temp_input(&original);
+        let furigana = temp_corpus();
+
+        // Act
+        run_collapse_kanji_readings(input.clone(), furigana, false).unwrap();
+
+        // Assert
+        assert_eq!(fs::read_to_string(&input).unwrap(), original);
+        assert!(!input.with_extension("json.bak").exists());
+    }
+
+    #[test]
+    fn missing_input_fails_loudly() {
+        // Arrange
+        let input = std::env::temp_dir().join(format!(
+            "origa-collapse-test-{}-absent.json",
+            ulid::Ulid::new()
+        ));
+        let furigana = temp_corpus();
+
+        // Act
+        let result = run_collapse_kanji_readings(input, furigana, false);
+
+        // Assert
+        assert!(result.is_err());
+    }
 }
