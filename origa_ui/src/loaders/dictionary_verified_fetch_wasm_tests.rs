@@ -128,7 +128,7 @@ impl Drop for UnreachableGuard {
 /// data instead. The call-site binding is pinned by the native
 /// source-contract test in `data_loader::tests`.
 #[wasm_bindgen_test]
-async fn verified_fetch_stale_kanji_cache_heals_through_load_kanji() {
+async fn verified_fetch_stale_kanji_cache_heals() {
     let cache = open_cache().await;
     delete_cache_entry(&cache, KANJI_PATH).await;
     fetch_manifest_like_app_start().await;
