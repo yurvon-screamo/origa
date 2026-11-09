@@ -61,27 +61,34 @@ pub fn downloaded_corpus_sha256(cdn_root: &Path) -> Option<String> {
         .map(|bytes| sha256_hex(&bytes))
 }
 
+/// Drift = corpus present and not matching the pin. Absence is not drift —
+/// it keeps the existing graceful-skip convention (fresh clones).
+pub fn is_corpus_drift(seen: Option<&str>, pinned: &str) -> bool {
+    matches!(seen, Some(hash) if hash != pinned)
+}
+
 /// True when the downloaded corpus is present but NOT the pinned version —
-/// the corpus deploy window is open. Prints the drift marker (seen /
-/// expected / fix path) on every drifted call so each skipped test names
-/// its own skip; callers then skip their corpus tests silently.
+/// the corpus deploy window is open (CI) or the local `cdn/` copy is stale
+/// (both directions print the same marker: without a network probe the
+/// direction is not distinguishable). Callers then skip their corpus tests
+/// silently.
 pub fn corpus_pin_drifted(test_label: &str) -> bool {
     corpus_pin_drifted_at(&cdn_dir(), test_label)
 }
 
 /// Path-injected variant of [`corpus_pin_drifted`] — the testable core.
 pub fn corpus_pin_drifted_at(cdn_root: &Path, test_label: &str) -> bool {
-    let Some(seen) = downloaded_corpus_sha256(cdn_root) else {
-        return false;
-    };
-    let expected = pinned_corpus_sha256();
-    if seen == expected {
+    let seen = downloaded_corpus_sha256(cdn_root);
+    let pinned = pinned_corpus_sha256();
+    if !is_corpus_drift(seen.as_deref(), pinned) {
         return false;
     }
     eprintln!(
         "[skip] {test_label}: corpus drift — cdn/{GRAMMAR_CORPUS_REL_PATH} sha256 \
-         {seen} != pinned {expected}; corpus deploy window open — update \
-         origa/tests/fixtures/cdn_grammar_v3.sha256 in the fixtures PR"
+         {} != pinned {pinned}; if the corpus deploy window is open, update \
+         origa/tests/fixtures/cdn_grammar_v3.sha256 in the fixtures PR, \
+         otherwise refresh your local cdn/ via scripts/deploy_cdn.py",
+        seen.expect("drift implies a seen hash")
     );
     true
 }
@@ -142,31 +149,37 @@ mod tests {
         assert!(!corpus_pin_drifted_at(missing, "probe"));
     }
 
-    /// A corpus whose hash differs from the pin is drift — the deploy
-    /// window is open and callers must skip.
+    /// The pure drift core: present-and-different is drift, present-and-
+    /// matching is not, absent is not (three outcome branches of the gate).
     #[test]
-    fn mismatched_corpus_is_drift() {
+    fn is_corpus_drift_covers_the_three_outcome_branches() {
+        let pinned = pinned_corpus_sha256();
+
+        assert!(!is_corpus_drift(None, pinned), "absence is not drift");
+        assert!(
+            !is_corpus_drift(Some(pinned), pinned),
+            "a matching corpus is not drift"
+        );
+        assert!(
+            is_corpus_drift(Some("deadbeef"), pinned),
+            "a mismatching corpus is drift"
+        );
+    }
+
+    /// The end-to-end path (file on disk → hash → pin comparison) flags a
+    /// non-pinned corpus as drift — without the printing wrapper, so the
+    /// probe leaves no marker noise in `--nocapture` runs.
+    #[test]
+    fn mismatched_corpus_file_flags_as_drift() {
         let probe_dir =
             std::env::temp_dir().join(format!("origa-pin-probe-{}", std::process::id()));
-        std::fs::create_dir_all(&probe_dir).expect("probe dir must be creatable");
-        let corpus_dir = probe_dir.join("grammar");
-        std::fs::create_dir_all(&corpus_dir).expect("probe grammar dir must be creatable");
-        let corpus_path = corpus_dir.join(
-            GRAMMAR_CORPUS_REL_PATH
-                .split('/')
-                .next_back()
-                .expect("relative path has a file name"),
-        );
-        std::fs::write(&corpus_path, b"probe bytes").expect("probe corpus must be writable");
-        assert_ne!(
-            downloaded_corpus_sha256(&probe_dir).as_deref(),
-            Some(pinned_corpus_sha256()),
-            "probe bytes must not accidentally match the pin"
-        );
+        std::fs::create_dir_all(probe_dir.join("grammar")).expect("probe dir must be creatable");
+        std::fs::write(probe_dir.join(GRAMMAR_CORPUS_REL_PATH), b"probe bytes")
+            .expect("probe corpus must be writable");
 
-        let drifted = corpus_pin_drifted_at(&probe_dir, "probe");
+        let seen = downloaded_corpus_sha256(&probe_dir);
 
         let _ = std::fs::remove_dir_all(&probe_dir);
-        assert!(drifted, "a non-pinned corpus must report drift");
+        assert!(is_corpus_drift(seen.as_deref(), pinned_corpus_sha256()));
     }
 }
