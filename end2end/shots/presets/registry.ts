@@ -6,16 +6,16 @@
  * is a compile error here and a runtime error in the preset map.
  */
 export const PRESET_IDS = [
-    "acquaintance-hand",
-    "counter-due",
-    "due-corpus",
-    "due-examples",
-    "fresh",
-    "onboarded",
-    "scoring-n5",
-    "onboarded-history",
-    "irodori-nyuumon",
-    "with-word",
+  "acquaintance-hand",
+  "counter-due",
+  "due-corpus",
+  "due-examples",
+  "fresh",
+  "onboarded",
+  "scoring-n5",
+  "onboarded-history",
+  "irodori-nyuumon",
+  "with-word",
 ] as const;
 
 export type PresetId = (typeof PRESET_IDS)[number];

@@ -2,7 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { APP_SERVER_TIMEOUT, LOCAL_CDN_PORT, SERVE_MODE, resolveCdnSource } from "./shots/config.ts";
+import {
+  APP_SERVER_TIMEOUT,
+  LOCAL_CDN_PORT,
+  SERVE_MODE,
+  resolveCdnSource,
+} from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
 
@@ -16,16 +21,16 @@ const { baseUrl: cdnBaseUrl, cacheDir: cdnCacheDir, serveLocally } = cdnSource;
 // The commit the bundle is expected to carry. `build.rs` embeds it
 // (ORIGA_COMMIT), so a capture can prove which build it photographed.
 function headCommit(): string {
-    try {
-        return execFileSync("git", ["rev-parse", "HEAD"], {
-            // fileURLToPath: a pathname would keep a leading slash on
-            // Windows and the git call would fail.
-            cwd: fileURLToPath(new URL("..", import.meta.url)),
-            encoding: "utf-8",
-        }).trim();
-    } catch {
-        return "unknown";
-    }
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      // fileURLToPath: a pathname would keep a leading slash on
+      // Windows and the git call would fail.
+      cwd: fileURLToPath(new URL("..", import.meta.url)),
+      encoding: "utf-8",
+    }).trim();
+  } catch {
+    return "unknown";
+  }
 }
 
 // Screenshot-only runner for #528: reuses the project's webServer recipe
@@ -39,74 +44,74 @@ function headCommit(): string {
 // of end2end/trailbase-fixture, so the instance had no `user` /
 // `domain_user` record APIs and the app could not read its own profile.
 export default defineConfig({
-    testDir: "./screenshots-spec",
-    timeout: 180_000,
-    expect: { timeout: 15_000 },
-    workers: 1,
-    reporter: [["line"]],
-    use: {
-        baseURL: "http://localhost:1420",
-        // Pin the UI locale the same way the BDD config does: the specs
-        // assert Russian product copy (e.g. the «Счётный суффикс» tag in
-        // counter-scoring.spec.ts) and a fresh profile inherits the runner
-        // locale otherwise.
-        locale: "ru-RU",
-        trace: "off",
-        screenshot: "off",
-        ...devices["Desktop Chrome"],
-        // WASM + long onboarding flows: avoid tab crashes on /dev/shm
-        launchOptions: {
-            args: [
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-                // The BDD suite caps the V8 heap so a desktop run fails
-                // like an iOS WebView instead of silently surviving
-                // memory-hungry pages (playwright.config.ts).
-                "--js-flags=--max-old-space-size=1024",
-                "--memory-pressure-off",
-            ],
-        },
+  testDir: "./screenshots-spec",
+  timeout: 180_000,
+  expect: { timeout: 15_000 },
+  workers: 1,
+  reporter: [["line"]],
+  use: {
+    baseURL: "http://localhost:1420",
+    // Pin the UI locale the same way the BDD config does: the specs
+    // assert Russian product copy (e.g. the «Счётный суффикс» tag in
+    // counter-scoring.spec.ts) and a fresh profile inherits the runner
+    // locale otherwise.
+    locale: "ru-RU",
+    trace: "off",
+    screenshot: "off",
+    ...devices["Desktop Chrome"],
+    // WASM + long onboarding flows: avoid tab crashes on /dev/shm
+    launchOptions: {
+      args: [
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        // The BDD suite caps the V8 heap so a desktop run fails
+        // like an iOS WebView instead of silently surviving
+        // memory-hungry pages (playwright.config.ts).
+        "--js-flags=--max-old-space-size=1024",
+        "--memory-pressure-off",
+      ],
     },
-    globalSetup: "./global-setup.ts",
-    globalTeardown: "./global-teardown.ts",
-    webServer: [
-        // The local corpus server only exists when there IS a local corpus.
-        // In a fresh worktree `cdn/` is missing (gitignored), and the app
-        // then reads the content from the production CDN instead. The
-        // served directory is the resolved one (`ORIGA_CDN_CACHE_DIR`
-        // overrides the repo-local `cdn/` default) — a worktree without
-        // the repo-local copy points the server at the real corpus
-        // elsewhere instead of failing on the hardcoded relative path.
-        ...(serveLocally && cdnCacheDir !== null
-            ? [
-                  {
-                      command: `npx serve "${cdnCacheDir}" -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
-                      port: LOCAL_CDN_PORT,
-                      reuseExistingServer: !isCI,
-                      timeout: 30_000,
-                  },
-              ]
-            : []),
-        {
-            // CI serves the prebuilt bundle (the same recipe as the BDD
-            // config); locally `trunk serve` keeps the hot-reload loop.
-            // The budget is the shared cold-build-aware constant, not a
-            // literal: a fresh machine compiles the workspace for wasm32
-            // far beyond 10 minutes (shots/config.ts → APP_SERVER_TIMEOUT).
-            command:
-                SERVE_MODE === "dist"
-                    ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
-                    : "cd ../origa_ui && trunk serve",
-            port: 1420,
+  },
+  globalSetup: "./global-setup.ts",
+  globalTeardown: "./global-teardown.ts",
+  webServer: [
+    // The local corpus server only exists when there IS a local corpus.
+    // In a fresh worktree `cdn/` is missing (gitignored), and the app
+    // then reads the content from the production CDN instead. The
+    // served directory is the resolved one (`ORIGA_CDN_CACHE_DIR`
+    // overrides the repo-local `cdn/` default) — a worktree without
+    // the repo-local copy points the server at the real corpus
+    // elsewhere instead of failing on the hardcoded relative path.
+    ...(serveLocally && cdnCacheDir !== null
+      ? [
+          {
+            command: `npx serve "${cdnCacheDir}" -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            port: LOCAL_CDN_PORT,
             reuseExistingServer: !isCI,
-            timeout: APP_SERVER_TIMEOUT,
-            stdout: "pipe",
-            stderr: "pipe",
-            env: {
-                ORIGA_CDN_BASE_URL: cdnBaseUrl,
-                TRAILBASE_URL: "http://127.0.0.1:4000",
-                ORIGA_COMMIT: headCommit(),
-            },
-        },
-    ],
+            timeout: 30_000,
+          },
+        ]
+      : []),
+    {
+      // CI serves the prebuilt bundle (the same recipe as the BDD
+      // config); locally `trunk serve` keeps the hot-reload loop.
+      // The budget is the shared cold-build-aware constant, not a
+      // literal: a fresh machine compiles the workspace for wasm32
+      // far beyond 10 minutes (shots/config.ts → APP_SERVER_TIMEOUT).
+      command:
+        SERVE_MODE === "dist"
+          ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
+          : "cd ../origa_ui && trunk serve",
+      port: 1420,
+      reuseExistingServer: !isCI,
+      timeout: APP_SERVER_TIMEOUT,
+      stdout: "pipe",
+      stderr: "pipe",
+      env: {
+        ORIGA_CDN_BASE_URL: cdnBaseUrl,
+        TRAILBASE_URL: "http://127.0.0.1:4000",
+        ORIGA_COMMIT: headCommit(),
+      },
+    },
+  ],
 });

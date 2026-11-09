@@ -4,465 +4,479 @@ import { BasePage } from "./base.page";
 type WordsFilterType = "Все" | "Новые" | "Сложные" | "В процессе" | "Изученные";
 
 export class WordsPage extends BasePage {
+  // Page structure
+  readonly wordsPage: Locator;
+  readonly wordsCard: Locator;
+  readonly wordsTitle: Locator;
+
+  // Navigation buttons
+  readonly backButton: Locator;
+  readonly setsButton: Locator;
+  readonly phrasesButton: Locator;
+  readonly examplesButton: Locator;
+  readonly addButton: Locator;
+
+  // Search
+  readonly searchInput: Locator;
+
+  // Content
+  readonly wordsGrid: Locator;
+  readonly emptyState: Locator;
+
+  // Add-words drawer
+  readonly drawer: Locator;
+  readonly drawerTextarea: Locator;
+  readonly drawerAnalyzeBtn: Locator;
+  readonly drawerAddBtn: Locator;
+  readonly drawerCancelBtn: Locator;
+  readonly analyzedWordItems: Locator;
+  readonly noResultsFeedback: Locator;
+  readonly addTabs: Locator;
+
+  // Inbox (zero-tap intake)
+  readonly inboxError: Locator;
+  readonly inboxOpenManuallyBtn: Locator;
+
+  // Transcript screen (AU-2)
+  readonly transcriptStage: Locator;
+  readonly transcriptSentences: Locator;
+  readonly transcriptAnalyzeBtn: Locator;
+
+  // Anki import
+  readonly ankiTab: Locator;
+  readonly ankiDropZone: Locator;
+  readonly ankiFileInput: Locator;
+  readonly ankiFieldWord: Locator;
+  readonly ankiFieldTranslation: Locator;
+  readonly ankiNextBtn: Locator;
+  readonly ankiBackBtn: Locator;
+  readonly ankiImportBtn: Locator;
+  readonly ankiCardCount: Locator;
+  readonly ankiCardList: Locator;
+  readonly ankiDone: Locator;
+  readonly ankiError: Locator;
+  readonly ankiRetryBtn: Locator;
+
+  // Image/OCR import
+  readonly imageTab: Locator;
+  readonly imageFileInput: Locator;
+
+  // Audio import
+  readonly audioTab: Locator;
+  readonly audioFileInput: Locator;
+
+  // Delete modal
+  readonly deleteModal: Locator;
+  readonly deleteConfirmBtn: Locator;
+  readonly deleteCancelBtn: Locator;
+
+  // Pagination
+  readonly loadMoreButton: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
     // Page structure
-    readonly wordsPage: Locator;
-    readonly wordsCard: Locator;
-    readonly wordsTitle: Locator;
+    this.wordsPage = page.getByTestId("words-page");
+    this.wordsCard = page.getByTestId("words-card");
+    this.wordsTitle = page.getByTestId("words-title");
 
     // Navigation buttons
-    readonly backButton: Locator;
-    readonly setsButton: Locator;
-    readonly phrasesButton: Locator;
-    readonly examplesButton: Locator;
-    readonly addButton: Locator;
+    this.backButton = page.getByTestId("words-back-btn");
+    this.setsButton = page.getByTestId("words-sets-btn");
+    this.phrasesButton = page.getByTestId("words-phrases-btn");
+    this.examplesButton = page.getByTestId("words-examples-btn");
+    this.addButton = page.getByTestId("words-add-btn");
 
     // Search
-    readonly searchInput: Locator;
+    this.searchInput = page.getByTestId("words-search-input");
 
     // Content
-    readonly wordsGrid: Locator;
-    readonly emptyState: Locator;
+    this.wordsGrid = page.getByTestId("words-grid");
+    this.emptyState = page.getByTestId("words-empty-state");
 
     // Add-words drawer
-    readonly drawer: Locator;
-    readonly drawerTextarea: Locator;
-    readonly drawerAnalyzeBtn: Locator;
-    readonly drawerAddBtn: Locator;
-    readonly drawerCancelBtn: Locator;
-    readonly analyzedWordItems: Locator;
-    readonly noResultsFeedback: Locator;
-    readonly addTabs: Locator;
+    this.drawer = page.getByTestId("words-add-drawer");
+    this.drawerTextarea = page.getByTestId("words-drawer-textarea");
+    this.drawerAnalyzeBtn = page.getByTestId("words-drawer-analyze-btn");
+    this.drawerAddBtn = page.getByTestId("words-drawer-add-btn");
+    this.drawerCancelBtn = page.getByTestId("words-drawer-cancel-btn");
+    this.analyzedWordItems = this.drawer.getByTestId("words-drawer-item");
+    this.noResultsFeedback = this.drawer.getByTestId("words-no-results");
+    this.addTabs = page.getByTestId("words-add-tabs");
 
     // Inbox (zero-tap intake)
-    readonly inboxError: Locator;
-    readonly inboxOpenManuallyBtn: Locator;
+    this.inboxError = page.getByTestId("words-inbox-error");
+    this.inboxOpenManuallyBtn = page.getByTestId(
+      "words-inbox-open-manually-btn",
+    );
 
     // Transcript screen (AU-2)
-    readonly transcriptStage: Locator;
-    readonly transcriptSentences: Locator;
-    readonly transcriptAnalyzeBtn: Locator;
+    this.transcriptStage = page.getByTestId("words-transcript-stage");
+    this.transcriptSentences = page.getByTestId("words-transcript-sentence");
+    this.transcriptAnalyzeBtn = page.getByTestId(
+      "words-transcript-analyze-btn",
+    );
 
     // Anki import
-    readonly ankiTab: Locator;
-    readonly ankiDropZone: Locator;
-    readonly ankiFileInput: Locator;
-    readonly ankiFieldWord: Locator;
-    readonly ankiFieldTranslation: Locator;
-    readonly ankiNextBtn: Locator;
-    readonly ankiBackBtn: Locator;
-    readonly ankiImportBtn: Locator;
-    readonly ankiCardCount: Locator;
-    readonly ankiCardList: Locator;
-    readonly ankiDone: Locator;
-    readonly ankiError: Locator;
-    readonly ankiRetryBtn: Locator;
+    this.ankiTab = this.drawer.getByText("Anki");
+    this.ankiDropZone = page.getByTestId("anki-import-drop-zone");
+    this.ankiFileInput = page.getByTestId("anki-import-file-input");
+    this.ankiFieldWord = page.getByTestId("anki-import-field-word");
+    this.ankiFieldTranslation = page.getByTestId(
+      "anki-import-field-translation",
+    );
+    this.ankiNextBtn = page.getByTestId("anki-import-next-btn");
+    this.ankiBackBtn = page.getByTestId("anki-import-back-btn");
+    this.ankiImportBtn = page.getByTestId("anki-import-import-btn");
+    this.ankiCardCount = page.getByTestId("anki-import-card-count");
+    this.ankiCardList = page.getByTestId("anki-import-card-list");
+    this.ankiDone = page.getByTestId("anki-import-done");
+    this.ankiError = page.getByTestId("anki-import-error");
+    this.ankiRetryBtn = page.getByTestId("anki-import-retry-btn");
 
     // Image/OCR import
-    readonly imageTab: Locator;
-    readonly imageFileInput: Locator;
+    this.imageTab = this.drawer.getByTestId("words-add-tabs-image");
+    this.imageFileInput = this.drawer.locator(
+      'input[type="file"][accept*="image"]',
+    );
 
     // Audio import
-    readonly audioTab: Locator;
-    readonly audioFileInput: Locator;
+    this.audioTab = this.drawer.getByTestId("words-add-tabs-audio");
+    this.audioFileInput = this.drawer.locator(
+      'input[type="file"][accept*="audio"]',
+    );
 
     // Delete modal
-    readonly deleteModal: Locator;
-    readonly deleteConfirmBtn: Locator;
-    readonly deleteCancelBtn: Locator;
+    this.deleteModal = page.getByTestId("words-delete-modal");
+    this.deleteConfirmBtn = page.getByTestId("words-delete-modal-confirm");
+    this.deleteCancelBtn = page.getByTestId("words-delete-modal-cancel");
 
     // Pagination
-    readonly loadMoreButton: Locator;
+    this.loadMoreButton = page.getByTestId("words-load-more-btn");
+  }
 
-    constructor(page: Page) {
-        super(page);
+  async goto(): Promise<void> {
+    await this.navigate("/words");
+  }
 
-        // Page structure
-        this.wordsPage = page.getByTestId("words-page");
-        this.wordsCard = page.getByTestId("words-card");
-        this.wordsTitle = page.getByTestId("words-title");
+  async expectWordsVisible(): Promise<void> {
+    await this.page.waitForURL(/\/words$/, { timeout: 10000 });
+  }
 
-        // Navigation buttons
-        this.backButton = page.getByTestId("words-back-btn");
-        this.setsButton = page.getByTestId("words-sets-btn");
-        this.phrasesButton = page.getByTestId("words-phrases-btn");
-        this.examplesButton = page.getByTestId("words-examples-btn");
-        this.addButton = page.getByTestId("words-add-btn");
+  async searchWords(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+  }
 
-        // Search
-        this.searchInput = page.getByTestId("words-search-input");
-
-        // Content
-        this.wordsGrid = page.getByTestId("words-grid");
-        this.emptyState = page.getByTestId("words-empty-state");
-
-        // Add-words drawer
-        this.drawer = page.getByTestId("words-add-drawer");
-        this.drawerTextarea = page.getByTestId("words-drawer-textarea");
-        this.drawerAnalyzeBtn = page.getByTestId("words-drawer-analyze-btn");
-        this.drawerAddBtn = page.getByTestId("words-drawer-add-btn");
-        this.drawerCancelBtn = page.getByTestId("words-drawer-cancel-btn");
-        this.analyzedWordItems = this.drawer.getByTestId("words-drawer-item");
-        this.noResultsFeedback = this.drawer.getByTestId("words-no-results");
-        this.addTabs = page.getByTestId("words-add-tabs");
-
-        // Inbox (zero-tap intake)
-        this.inboxError = page.getByTestId("words-inbox-error");
-        this.inboxOpenManuallyBtn = page.getByTestId(
-            "words-inbox-open-manually-btn",
-        );
-
-        // Transcript screen (AU-2)
-        this.transcriptStage = page.getByTestId("words-transcript-stage");
-        this.transcriptSentences = page.getByTestId(
-            "words-transcript-sentence",
-        );
-        this.transcriptAnalyzeBtn = page.getByTestId(
-            "words-transcript-analyze-btn",
-        );
-
-        // Anki import
-        this.ankiTab = this.drawer.getByText("Anki");
-        this.ankiDropZone = page.getByTestId("anki-import-drop-zone");
-        this.ankiFileInput = page.getByTestId("anki-import-file-input");
-        this.ankiFieldWord = page.getByTestId("anki-import-field-word");
-        this.ankiFieldTranslation = page.getByTestId("anki-import-field-translation");
-        this.ankiNextBtn = page.getByTestId("anki-import-next-btn");
-        this.ankiBackBtn = page.getByTestId("anki-import-back-btn");
-        this.ankiImportBtn = page.getByTestId("anki-import-import-btn");
-        this.ankiCardCount = page.getByTestId("anki-import-card-count");
-        this.ankiCardList = page.getByTestId("anki-import-card-list");
-        this.ankiDone = page.getByTestId("anki-import-done");
-        this.ankiError = page.getByTestId("anki-import-error");
-        this.ankiRetryBtn = page.getByTestId("anki-import-retry-btn");
-
-        // Image/OCR import
-        this.imageTab = this.drawer.getByTestId("words-add-tabs-image");
-        this.imageFileInput = this.drawer.locator('input[type="file"][accept*="image"]');
-
-        // Audio import
-        this.audioTab = this.drawer.getByTestId("words-add-tabs-audio");
-        this.audioFileInput = this.drawer.locator('input[type="file"][accept*="audio"]');
-
-        // Delete modal
-        this.deleteModal = page.getByTestId("words-delete-modal");
-        this.deleteConfirmBtn = page.getByTestId("words-delete-modal-confirm");
-        this.deleteCancelBtn = page.getByTestId("words-delete-modal-cancel");
-
-        // Pagination
-        this.loadMoreButton = page.getByTestId("words-load-more-btn");
+  /**
+   * Locator for cards whose text contains the word's characters in
+   * order, tolerating the furigana ruby split: the card renders 打ち付ける
+   * as ruby segments, so its textContent reads 打(ウ)ち付(ツ)ける and a
+   * plain getByText(word) never matches. The grid is already narrowed by
+   * the app's substring search before this matcher runs — the in-order
+   * regex only has to survive the ruby insertions, it is not a filter.
+   */
+  cardMatchingWord(word: string): Locator {
+    if (word.length === 0) {
+      throw new Error("cardMatchingWord: an empty word would match every card");
     }
+    const pattern = word
+      .split("")
+      .map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("[\\s\\S]*");
+    return this.wordsGrid
+      .getByTestId("words-card-item")
+      .filter({ hasText: new RegExp(pattern) });
+  }
 
-    async goto(): Promise<void> {
-        await this.navigate("/words");
-    }
+  async clickBack(): Promise<void> {
+    await this.backButton.click();
+  }
 
-    async expectWordsVisible(): Promise<void> {
-        await this.page.waitForURL(/\/words$/, { timeout: 10000 });
-    }
+  async clickSets(): Promise<void> {
+    await this.setsButton.click();
+  }
 
-    async searchWords(query: string): Promise<void> {
-        await this.searchInput.fill(query);
-    }
+  async clickPhrases(): Promise<void> {
+    await this.phrasesButton.click();
+  }
 
-    /**
-     * Locator for cards whose text contains the word's characters in
-     * order, tolerating the furigana ruby split: the card renders 打ち付ける
-     * as ruby segments, so its textContent reads 打(ウ)ち付(ツ)ける and a
-     * plain getByText(word) never matches. The grid is already narrowed by
-     * the app's substring search before this matcher runs — the in-order
-     * regex only has to survive the ruby insertions, it is not a filter.
-     */
-    cardMatchingWord(word: string): Locator {
-        if (word.length === 0) {
-            throw new Error("cardMatchingWord: an empty word would match every card");
-        }
-        const pattern = word
-            .split("")
-            .map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-            .join("[\\s\\S]*");
-        return this.wordsGrid
-            .getByTestId("words-card-item")
-            .filter({ hasText: new RegExp(pattern) });
-    }
+  async clickExamples(): Promise<void> {
+    await this.examplesButton.click();
+  }
 
-    async clickBack(): Promise<void> {
-        await this.backButton.click();
-    }
+  async openAddModal(): Promise<void> {
+    await this.addButton.click();
+    await expect(this.drawer).toBeVisible({ timeout: 5000 });
+  }
 
-    async clickSets(): Promise<void> {
-        await this.setsButton.click();
-    }
+  async enterText(text: string): Promise<void> {
+    await this.drawerTextarea.waitFor({ state: "visible", timeout: 5000 });
+    await this.drawerTextarea.fill(text);
+  }
 
-    async clickPhrases(): Promise<void> {
-        await this.phrasesButton.click();
-    }
+  async analyzeText(): Promise<void> {
+    await this.drawerAnalyzeBtn.click();
+    // Wait for analysis results - the "Найдено" text indicates completion
+    await this.drawer
+      .getByText(/Найдено/)
+      .waitFor({ state: "visible", timeout: 10_000 });
+  }
 
-    async clickExamples(): Promise<void> {
-        await this.examplesButton.click();
-    }
+  async analyzeTextNoResults(): Promise<void> {
+    await this.drawerAnalyzeBtn.click();
+    // When analysis returns 0 words, the "No words found" Alert with
+    // testid "words-no-results" appears, plus the input controls remain
+    // available (no dead-end).
+    await expect(this.noResultsFeedback).toBeVisible({ timeout: 10_000 });
+  }
 
-    async openAddModal(): Promise<void> {
-        await this.addButton.click();
-        await expect(this.drawer).toBeVisible({ timeout: 5000 });
-    }
+  async selectFirstWord(): Promise<void> {
+    const firstItem = this.analyzedWordItems.first();
+    await firstItem.waitFor({ state: "visible", timeout: 5000 });
 
-    async enterText(text: string): Promise<void> {
-        await this.drawerTextarea.waitFor({ state: "visible", timeout: 5000 });
-        await this.drawerTextarea.fill(text);
-    }
+    // analyze_text() pre-selects every detected word. To pick ONLY the
+    // first one, deselect all currently-checked items first, then click
+    // the first to (re)select it.
+    const count = await this.analyzedWordItems.count();
+    for (let i = 0; i < count; i++) {
+      const item = this.analyzedWordItems.nth(i);
+      const checkbox = item.locator('input[type="checkbox"]');
+      if (await checkbox.isChecked()) {
+        // Skip disabled items (no translation found) — they can't be
+        // toggled and will stay checked regardless.
+        const isDisabled = await item
+          .evaluate((el) => el.classList.contains("cursor-not-allowed"))
+          .catch(() => false);
+        if (isDisabled) continue;
 
-    async analyzeText(): Promise<void> {
-        await this.drawerAnalyzeBtn.click();
-        // Wait for analysis results - the "Найдено" text indicates completion
-        await this.drawer.getByText(/Найдено/).waitFor({ state: "visible", timeout: 10_000 });
-    }
-
-    async analyzeTextNoResults(): Promise<void> {
-        await this.drawerAnalyzeBtn.click();
-        // When analysis returns 0 words, the "No words found" Alert with
-        // testid "words-no-results" appears, plus the input controls remain
-        // available (no dead-end).
-        await expect(this.noResultsFeedback).toBeVisible({ timeout: 10_000 });
-    }
-
-    async selectFirstWord(): Promise<void> {
-        const firstItem = this.analyzedWordItems.first();
-        await firstItem.waitFor({ state: "visible", timeout: 5000 });
-
-        // analyze_text() pre-selects every detected word. To pick ONLY the
-        // first one, deselect all currently-checked items first, then click
-        // the first to (re)select it.
-        const count = await this.analyzedWordItems.count();
-        for (let i = 0; i < count; i++) {
-            const item = this.analyzedWordItems.nth(i);
-            const checkbox = item.locator('input[type="checkbox"]');
-            if (await checkbox.isChecked()) {
-                // Skip disabled items (no translation found) — they can't be
-                // toggled and will stay checked regardless.
-                const isDisabled = await item.evaluate((el) =>
-                    el.classList.contains("cursor-not-allowed"),
-                ).catch(() => false);
-                if (isDisabled) continue;
-
-                await item.click();
-                await expect(checkbox).not.toBeChecked({ timeout: 2000 });
-            }
-        }
-
-        await firstItem.click();
-        await expect(
-            firstItem.locator('input[type="checkbox"]'),
-        ).toBeChecked({ timeout: 2000 });
-    }
-
-    async addSelectedWords(): Promise<void> {
-        await this.drawerAddBtn.click({ timeout: 5000 });
-        await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
-    }
-
-    async cancelAddModal(): Promise<void> {
-        await this.drawerCancelBtn.click();
-    }
-
-    /**
-     * Delivers a text payload through the inbox test seam. The seam is
-     * registered by the app only when the e2e opt-in flag is set (see
-     * fixtures.ts); a missing hook is a hard failure instead of a silent
-     * no-op that would surface as an unrelated assertion later.
-     */
-    async shareText(text: string): Promise<void> {
-        await this.expectInboxSeamAvailable();
-        await this.page.evaluate((payload) => {
-            (
-                window as unknown as Record<string, (p: unknown) => void>
-            ).__ORIGA_TEST_INBOX__(payload);
-        }, { kind: "text", text });
-    }
-
-    /**
-     * Delivers a file payload through the inbox test seam. The app
-     * constructs the `File` in page context from the name/MIME pair — byte
-     * content is irrelevant because format validation keys on the name and
-     * type and fires before any read.
-     */
-    async shareFile(fileName: string, mime: string): Promise<void> {
-        await this.expectInboxSeamAvailable();
-        await this.page.evaluate((payload) => {
-            (
-                window as unknown as Record<string, (p: unknown) => void>
-            ).__ORIGA_TEST_INBOX__(payload);
-        }, { kind: "file", fileName, mime });
-    }
-
-    async shareTranscript(sentenceCount: number): Promise<void> {
-        await this.expectInboxSeamAvailable();
-        const sentences = [
-            "私は本を読みます。",
-            "本は面白いです。",
-            "彼は行きます。",
-        ].slice(0, sentenceCount);
-        await this.page.evaluate((payload) => {
-            (
-                window as unknown as Record<string, (p: unknown) => void>
-            ).__ORIGA_TEST_INBOX__(payload);
-        }, { kind: "transcript", sentences });
-    }
-
-    async expectTranscriptStage(): Promise<void> {
-        await expect(this.transcriptStage).toBeVisible({ timeout: 10_000 });
-    }
-
-    async transcriptCheckedCount(): Promise<number> {
-        const sentences = this.transcriptSentences;
-        const count = await sentences.count();
-        let checked = 0;
-        for (let i = 0; i < count; i++) {
-            // The test id IS the checkbox input.
-            if (await sentences.nth(i).isChecked()) {
-                checked++;
-            }
-        }
-        return checked;
-    }
-
-    async uncheckTranscriptSentence(index: number): Promise<void> {
-        const checkbox = this.transcriptSentences.nth(index);
-        if (await checkbox.isChecked()) {
-            await this.transcriptSentences.nth(index).click();
-        }
+        await item.click();
         await expect(checkbox).not.toBeChecked({ timeout: 2000 });
+      }
     }
 
-    async analyzeSelectedSentences(): Promise<void> {
-        await this.transcriptAnalyzeBtn.click({ timeout: 5000 });
-        await this.analyzedWordItems
-            .first()
-            .waitFor({ state: "visible", timeout: 15_000 });
-    }
+    await firstItem.click();
+    await expect(firstItem.locator('input[type="checkbox"]')).toBeChecked({
+      timeout: 2000,
+    });
+  }
 
-    private async expectInboxSeamAvailable(): Promise<void> {
-        const registered = await this.page.evaluate(
-            () =>
-                typeof (
-                    window as unknown as Record<string, unknown>
-                ).__ORIGA_TEST_INBOX__ === "function",
-        );
-        if (!registered) {
-            const diagnostics = await this.page.evaluate(() => ({
-                flag: window.localStorage.getItem("__origa_e2e_seam"),
-                origin: window.location.origin,
-                wordsMounted: Boolean(
-                    document.querySelector('[data-testid="words-page"]'),
-                ),
-            }));
-            expect(
-                registered,
-                `inbox e2e seam is not registered — diagnostics: ${JSON.stringify(diagnostics)}`,
-            ).toBe(true);
-        }
-    }
+  async addSelectedWords(): Promise<void> {
+    await this.drawerAddBtn.click({ timeout: 5000 });
+    await expect(this.drawer).not.toBeVisible({ timeout: 15_000 });
+  }
 
-    /** The drawer is open and already showing analyzed words — no tabs. */
-    async expectInboxPreview(): Promise<void> {
-        await expect(this.drawer).toBeVisible({ timeout: 10_000 });
-        await this.analyzedWordItems
-            .first()
-            .waitFor({ state: "visible", timeout: 10_000 });
-    }
+  async cancelAddModal(): Promise<void> {
+    await this.drawerCancelBtn.click();
+  }
 
-    async expectInboxTabsHidden(): Promise<void> {
-        await expect(this.addTabs).not.toBeVisible();
-    }
+  /**
+   * Delivers a text payload through the inbox test seam. The seam is
+   * registered by the app only when the e2e opt-in flag is set (see
+   * fixtures.ts); a missing hook is a hard failure instead of a silent
+   * no-op that would surface as an unrelated assertion later.
+   */
+  async shareText(text: string): Promise<void> {
+    await this.expectInboxSeamAvailable();
+    await this.page.evaluate(
+      (payload) => {
+        (
+          window as unknown as Record<string, (p: unknown) => void>
+        ).__ORIGA_TEST_INBOX__(payload);
+      },
+      { kind: "text", text },
+    );
+  }
 
-    async expectInboxTabsVisible(): Promise<void> {
-        await expect(this.addTabs).toBeVisible({ timeout: 5000 });
-    }
+  /**
+   * Delivers a file payload through the inbox test seam. The app
+   * constructs the `File` in page context from the name/MIME pair — byte
+   * content is irrelevant because format validation keys on the name and
+   * type and fires before any read.
+   */
+  async shareFile(fileName: string, mime: string): Promise<void> {
+    await this.expectInboxSeamAvailable();
+    await this.page.evaluate(
+      (payload) => {
+        (
+          window as unknown as Record<string, (p: unknown) => void>
+        ).__ORIGA_TEST_INBOX__(payload);
+      },
+      { kind: "file", fileName, mime },
+    );
+  }
 
-    async expectInboxError(): Promise<void> {
-        await expect(this.inboxError).toBeVisible({ timeout: 10_000 });
-    }
+  async shareTranscript(sentenceCount: number): Promise<void> {
+    await this.expectInboxSeamAvailable();
+    const sentences = [
+      "私は本を読みます。",
+      "本は面白いです。",
+      "彼は行きます。",
+    ].slice(0, sentenceCount);
+    await this.page.evaluate(
+      (payload) => {
+        (
+          window as unknown as Record<string, (p: unknown) => void>
+        ).__ORIGA_TEST_INBOX__(payload);
+      },
+      { kind: "transcript", sentences },
+    );
+  }
 
-    async returnToManualInput(): Promise<void> {
-        await this.inboxOpenManuallyBtn.click();
-    }
+  async expectTranscriptStage(): Promise<void> {
+    await expect(this.transcriptStage).toBeVisible({ timeout: 10_000 });
+  }
 
-    async switchToAnkiTab(): Promise<void> {
-        await this.ankiTab.click();
+  async transcriptCheckedCount(): Promise<number> {
+    const sentences = this.transcriptSentences;
+    const count = await sentences.count();
+    let checked = 0;
+    for (let i = 0; i < count; i++) {
+      // The test id IS the checkbox input.
+      if (await sentences.nth(i).isChecked()) {
+        checked++;
+      }
     }
+    return checked;
+  }
 
-    async uploadAnkiFile(filePath: string): Promise<void> {
-        await this.ankiFileInput.setInputFiles(filePath);
+  async uncheckTranscriptSentence(index: number): Promise<void> {
+    const checkbox = this.transcriptSentences.nth(index);
+    if (await checkbox.isChecked()) {
+      await this.transcriptSentences.nth(index).click();
     }
+    await expect(checkbox).not.toBeChecked({ timeout: 2000 });
+  }
 
-    async switchToImageTab(): Promise<void> {
-        await this.imageTab.click();
-    }
+  async analyzeSelectedSentences(): Promise<void> {
+    await this.transcriptAnalyzeBtn.click({ timeout: 5000 });
+    await this.analyzedWordItems
+      .first()
+      .waitFor({ state: "visible", timeout: 15_000 });
+  }
 
-    async uploadImageFile(filePath: string): Promise<void> {
-        await this.imageFileInput.setInputFiles(filePath);
+  private async expectInboxSeamAvailable(): Promise<void> {
+    const registered = await this.page.evaluate(
+      () =>
+        typeof (window as unknown as Record<string, unknown>)
+          .__ORIGA_TEST_INBOX__ === "function",
+    );
+    if (!registered) {
+      const diagnostics = await this.page.evaluate(() => ({
+        flag: window.localStorage.getItem("__origa_e2e_seam"),
+        origin: window.location.origin,
+        wordsMounted: Boolean(
+          document.querySelector('[data-testid="words-page"]'),
+        ),
+      }));
+      expect(
+        registered,
+        `inbox e2e seam is not registered — diagnostics: ${JSON.stringify(diagnostics)}`,
+      ).toBe(true);
     }
+  }
 
-    async switchToAudioTab(): Promise<void> {
-        await this.audioTab.click();
-    }
+  /** The drawer is open and already showing analyzed words — no tabs. */
+  async expectInboxPreview(): Promise<void> {
+    await expect(this.drawer).toBeVisible({ timeout: 10_000 });
+    await this.analyzedWordItems
+      .first()
+      .waitFor({ state: "visible", timeout: 10_000 });
+  }
 
-    async uploadAudioFile(filePath: string): Promise<void> {
-        await this.audioFileInput.setInputFiles(filePath);
-    }
+  async expectInboxTabsHidden(): Promise<void> {
+    await expect(this.addTabs).not.toBeVisible();
+  }
 
-    async selectFilter(name: WordsFilterType): Promise<void> {
-        // Accept both Russian (UI labels) and English (feature-file style) keys.
-        const filterMap: Record<string, string> = {
-            "Все": "all",
-            "all": "all",
-            "Новые": "new",
-            "new": "new",
-            "Сложные": "hard",
-            "hard": "hard",
-            "В процессе": "in-progress",
-            "in-progress": "in-progress",
-            "in_progress": "in-progress",
-            "learning": "in-progress",
-            "Изученные": "learned",
-            "learned": "learned",
-        };
-        const suffix = filterMap[name];
-        if (!suffix) {
-            throw new Error(`Unknown filter name: ${name}`);
-        }
-        await this.page.getByTestId("words-filter-" + suffix).click();
-    }
+  async expectInboxTabsVisible(): Promise<void> {
+    await expect(this.addTabs).toBeVisible({ timeout: 5000 });
+  }
 
-    async getCardCount(): Promise<number> {
-        return this.page.getByTestId("words-card-item").count();
-    }
+  async expectInboxError(): Promise<void> {
+    await expect(this.inboxError).toBeVisible({ timeout: 10_000 });
+  }
 
-    async deleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("words-card-item").nth(index);
-        await card.getByTestId("words-card-item-delete-btn").click();
-        await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
-        await this.deleteConfirmBtn.click();
-        await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
-    }
+  async returnToManualInput(): Promise<void> {
+    await this.inboxOpenManuallyBtn.click();
+  }
 
-    async cancelDeleteCardByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("words-card-item").nth(index);
-        await card.getByTestId("words-card-item-delete-btn").click();
-        await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
-        await this.deleteCancelBtn.click();
-        await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
-    }
+  async switchToAnkiTab(): Promise<void> {
+    await this.ankiTab.click();
+  }
 
-    async markCardAsKnownByIndex(index: number): Promise<void> {
-        const card = this.page.getByTestId("words-card-item").nth(index);
-        await card.getByTestId("words-card-item-mark-known-btn").click();
-    }
+  async uploadAnkiFile(filePath: string): Promise<void> {
+    await this.ankiFileInput.setInputFiles(filePath);
+  }
 
-    async isLoadMoreVisible(): Promise<boolean> {
-        return this.loadMoreButton.isVisible();
-    }
+  async switchToImageTab(): Promise<void> {
+    await this.imageTab.click();
+  }
 
-    async clickLoadMore(): Promise<void> {
-        await this.loadMoreButton.click();
+  async uploadImageFile(filePath: string): Promise<void> {
+    await this.imageFileInput.setInputFiles(filePath);
+  }
+
+  async switchToAudioTab(): Promise<void> {
+    await this.audioTab.click();
+  }
+
+  async uploadAudioFile(filePath: string): Promise<void> {
+    await this.audioFileInput.setInputFiles(filePath);
+  }
+
+  async selectFilter(name: WordsFilterType): Promise<void> {
+    // Accept both Russian (UI labels) and English (feature-file style) keys.
+    const filterMap: Record<string, string> = {
+      Все: "all",
+      all: "all",
+      Новые: "new",
+      new: "new",
+      Сложные: "hard",
+      hard: "hard",
+      "В процессе": "in-progress",
+      "in-progress": "in-progress",
+      in_progress: "in-progress",
+      learning: "in-progress",
+      Изученные: "learned",
+      learned: "learned",
+    };
+    const suffix = filterMap[name];
+    if (!suffix) {
+      throw new Error(`Unknown filter name: ${name}`);
     }
+    await this.page.getByTestId("words-filter-" + suffix).click();
+  }
+
+  async getCardCount(): Promise<number> {
+    return this.page.getByTestId("words-card-item").count();
+  }
+
+  async deleteCardByIndex(index: number): Promise<void> {
+    const card = this.page.getByTestId("words-card-item").nth(index);
+    await card.getByTestId("words-card-item-delete-btn").click();
+    await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
+    await this.deleteConfirmBtn.click();
+    await expect(this.deleteModal).not.toBeVisible({ timeout: 10_000 });
+  }
+
+  async cancelDeleteCardByIndex(index: number): Promise<void> {
+    const card = this.page.getByTestId("words-card-item").nth(index);
+    await card.getByTestId("words-card-item-delete-btn").click();
+    await expect(this.deleteModal).toBeVisible({ timeout: 5000 });
+    await this.deleteCancelBtn.click();
+    await expect(this.deleteModal).not.toBeVisible({ timeout: 5000 });
+  }
+
+  async markCardAsKnownByIndex(index: number): Promise<void> {
+    const card = this.page.getByTestId("words-card-item").nth(index);
+    await card.getByTestId("words-card-item-mark-known-btn").click();
+  }
+
+  async isLoadMoreVisible(): Promise<boolean> {
+    return this.loadMoreButton.isVisible();
+  }
+
+  async clickLoadMore(): Promise<void> {
+    await this.loadMoreButton.click();
+  }
 }

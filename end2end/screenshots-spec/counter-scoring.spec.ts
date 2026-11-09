@@ -14,12 +14,12 @@ import { test } from "@playwright/test";
 import { runScenarioWithManifest } from "../shots/runner.ts";
 
 test("counter scoring card screenshots", async ({ browser }) => {
-    test.setTimeout(1_200_000);
-    await runScenarioWithManifest(browser, "counter-scoring", {
-        outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/counter-scoring",
-        label: "counter-scoring",
-        cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
-        commit: process.env.SHOT_COMMIT ?? "unknown",
-        baseURL: process.env.SHOT_BASE_URL || undefined,
-    });
+  test.setTimeout(1_200_000);
+  await runScenarioWithManifest(browser, "counter-scoring", {
+    outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/counter-scoring",
+    label: "counter-scoring",
+    cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
+    commit: process.env.SHOT_COMMIT ?? "unknown",
+    baseURL: process.env.SHOT_BASE_URL || undefined,
+  });
 });

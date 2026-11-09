@@ -5,166 +5,190 @@ import { APP_PORT, LOCAL_CDN_PORT, TRAILBASE_PORT } from "./config.ts";
 import { evaluatePreflight, type PreflightFacts } from "./preflight.ts";
 
 function facts(overrides: Partial<PreflightFacts> = {}): PreflightFacts {
-    return {
-        serveMode: "build",
-        nodeModulesPresent: true,
-        fontsReady: true,
-        dictPresent: true,
-        distPoisoned: false,
-        corpusProbe: { path: "dictionaries/JmdictFurigana.rkyv", present: true },
-        listeners: [],
-        appBaseUrl: "http://localhost:1420",
-        cdnBaseUrl: "http://localhost:8080",
-        cdnCacheDir: "/repo/cdn",
-        repoRoot: "/repo",
-        awsProfilePresent: null,
-        trailBaseUrlConfigured: true,
-        adminPasswordConfigured: true,
-        outDirInsideRepo: false,
-        examinerEnabled: false,
-        examModelTag: "d3:2b",
-        ollamaUrl: "http://localhost:11434",
-        ollamaModels: null,
-        ...overrides,
-    };
+  return {
+    serveMode: "build",
+    nodeModulesPresent: true,
+    fontsReady: true,
+    dictPresent: true,
+    distPoisoned: false,
+    corpusProbe: { path: "dictionaries/JmdictFurigana.rkyv", present: true },
+    listeners: [],
+    appBaseUrl: "http://localhost:1420",
+    cdnBaseUrl: "http://localhost:8080",
+    cdnCacheDir: "/repo/cdn",
+    repoRoot: "/repo",
+    awsProfilePresent: null,
+    trailBaseUrlConfigured: true,
+    adminPasswordConfigured: true,
+    outDirInsideRepo: false,
+    examinerEnabled: false,
+    examModelTag: "d3:2b",
+    ollamaUrl: "http://localhost:11434",
+    ollamaModels: null,
+    ...overrides,
+  };
 }
 
 test("a ready environment produces no errors", () => {
-    const report = evaluatePreflight(facts());
+  const report = evaluatePreflight(facts());
 
-    assert.deepEqual(report.errors, []);
+  assert.deepEqual(report.errors, []);
 });
 
 test("a missing corpus font fails the capture", () => {
-    const report = evaluatePreflight(facts({ fontsReady: false }));
+  const report = evaluatePreflight(facts({ fontsReady: false }));
 
-    assert.equal(report.errors.length, 1);
-    assert.match(report.errors[0], /cdn\/fonts\//);
+  assert.equal(report.errors.length, 1);
+  assert.match(report.errors[0], /cdn\/fonts\//);
 });
 
 test("a missing tokenizer dictionary only warns", () => {
-    const report = evaluatePreflight(facts({ dictPresent: false }));
+  const report = evaluatePreflight(facts({ dictPresent: false }));
 
-    assert.deepEqual(report.errors, []);
-    assert.equal(report.warnings.length, 1);
+  assert.deepEqual(report.errors, []);
+  assert.equal(report.warnings.length, 1);
 });
 
 test("a stale corpus only warns", () => {
-    const report = evaluatePreflight(facts({ corpusProbe: { path: "grammar/x.json", present: false } }));
+  const report = evaluatePreflight(
+    facts({ corpusProbe: { path: "grammar/x.json", present: false } }),
+  );
 
-    assert.deepEqual(report.errors, []);
-    assert.match(report.warnings[0], /отстаёт/);
+  assert.deepEqual(report.errors, []);
+  assert.match(report.warnings[0], /отстаёт/);
 });
 
 test("a poisoned bundle fails the capture", () => {
-    const report = evaluatePreflight(facts({ serveMode: "dist", distPoisoned: true }));
+  const report = evaluatePreflight(
+    facts({ serveMode: "dist", distPoisoned: true }),
+  );
 
-    assert.equal(report.errors.length, 1);
-    assert.match(report.errors[0], /trunk build --release/);
+  assert.equal(report.errors.length, 1);
+  assert.match(report.errors[0], /trunk build --release/);
 });
 
 test("an output directory inside the repository fails the capture", () => {
-    const report = evaluatePreflight(facts({ outDirInsideRepo: true }));
+  const report = evaluatePreflight(facts({ outDirInsideRepo: true }));
 
-    assert.match(report.errors[0], /внутри репозитория/);
+  assert.match(report.errors[0], /внутри репозитория/);
 });
 
 test("a missing node_modules fails the capture", () => {
-    const report = evaluatePreflight(facts({ nodeModulesPresent: false }));
+  const report = evaluatePreflight(facts({ nodeModulesPresent: false }));
 
-    assert.match(report.errors[0], /npm ci/);
+  assert.match(report.errors[0], /npm ci/);
 });
 
 test("a missing e2e configuration fails the capture before the browser starts", () => {
-    const report = evaluatePreflight(
-        facts({ trailBaseUrlConfigured: false, adminPasswordConfigured: false }),
-    );
+  const report = evaluatePreflight(
+    facts({ trailBaseUrlConfigured: false, adminPasswordConfigured: false }),
+  );
 
-    assert.equal(report.errors.length, 2);
-    assert.match(report.errors[0], /TRAILBASE_URL/);
-    assert.match(report.errors[1], /ORIGA_ADMIN_PASSWORD/);
+  assert.equal(report.errors.length, 2);
+  assert.match(report.errors[0], /TRAILBASE_URL/);
+  assert.match(report.errors[1], /ORIGA_ADMIN_PASSWORD/);
 });
 
 test("a missing upload profile fails the capture before it starts", () => {
-    const report = evaluatePreflight(facts({ awsProfilePresent: false }));
+  const report = evaluatePreflight(facts({ awsProfilePresent: false }));
 
-    assert.match(report.errors[0], /origa-t3/);
+  assert.match(report.errors[0], /origa-t3/);
 });
 
 test("a listener from another checkout fails the capture", () => {
-    const report = evaluatePreflight(
-        facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" }] }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      listeners: [{ port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" }],
+    }),
+  );
 
-    assert.equal(report.warnings.length, 0);
-    assert.match(report.errors[0], /не из того бандла/);
+  assert.equal(report.warnings.length, 0);
+  assert.match(report.errors[0], /не из того бандла/);
 });
 
 test("a stranger on the TrailBase port fails the capture", () => {
-    const report = evaluatePreflight(
-        facts({ listeners: [{ port: TRAILBASE_PORT, pid: 4242, cwd: "/home/other/tool" }] }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      listeners: [{ port: TRAILBASE_PORT, pid: 4242, cwd: "/home/other/tool" }],
+    }),
+  );
 
-    assert.match(report.errors[0], /TrailBase не сможет/);
+  assert.match(report.errors[0], /TrailBase не сможет/);
 });
 
 test("a stranger on the CDN port fails the capture and names the override", () => {
-    const report = evaluatePreflight(
-        facts({ listeners: [{ port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" }] }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      listeners: [
+        { port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" },
+      ],
+    }),
+  );
 
-    assert.match(report.errors[0], /E2E_CDN_PORT/);
+  assert.match(report.errors[0], /E2E_CDN_PORT/);
 });
 
 test("a stranger on the CDN port is harmless without a local corpus", () => {
-    const report = evaluatePreflight(
-        facts({
-            cdnCacheDir: null,
-            listeners: [{ port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" }],
-        }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      cdnCacheDir: null,
+      listeners: [
+        { port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/llama.cpp" },
+      ],
+    }),
+  );
 
-    assert.deepEqual(report.errors, []);
+  assert.deepEqual(report.errors, []);
 });
 
 test("a listener of unknown ownership stays unreported", () => {
-    const report = evaluatePreflight(
-        facts({ listeners: [{ port: LOCAL_CDN_PORT, pid: null, cwd: null }] }),
-    );
+  const report = evaluatePreflight(
+    facts({ listeners: [{ port: LOCAL_CDN_PORT, pid: null, cwd: null }] }),
+  );
 
-    assert.deepEqual(report.errors, []);
-    assert.deepEqual(report.warnings, []);
+  assert.deepEqual(report.errors, []);
+  assert.deepEqual(report.warnings, []);
 });
 
 test("a listener of the same checkout is not reported", () => {
-    const report = evaluatePreflight(
-        facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/repo" }] }),
-    );
+  const report = evaluatePreflight(
+    facts({ listeners: [{ port: APP_PORT, pid: 4242, cwd: "/repo" }] }),
+  );
 
-    assert.deepEqual(report.errors, []);
-    assert.deepEqual(report.warnings, []);
+  assert.deepEqual(report.errors, []);
+  assert.deepEqual(report.warnings, []);
 });
 
 test("an unreachable Ollama fails an examining run before a pixel is written", () => {
-    const report = evaluatePreflight(facts({ examinerEnabled: true, ollamaModels: null }));
+  const report = evaluatePreflight(
+    facts({ examinerEnabled: true, ollamaModels: null }),
+  );
 
-    assert.equal(report.errors.length, 1);
-    assert.match(report.errors[0], /Ollama недоступен/);
+  assert.equal(report.errors.length, 1);
+  assert.match(report.errors[0], /Ollama недоступен/);
 });
 
 test("a missing exam model fails an examining run", () => {
-    const report = evaluatePreflight(
-        facts({ examinerEnabled: true, ollamaModels: ["d3:2b", "d3:4b"], examModelTag: "d3:9b" }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      examinerEnabled: true,
+      ollamaModels: ["d3:2b", "d3:4b"],
+      examModelTag: "d3:9b",
+    }),
+  );
 
-    assert.equal(report.errors.length, 1);
-    assert.match(report.errors[0], /ollama pull d3:9b/);
+  assert.equal(report.errors.length, 1);
+  assert.match(report.errors[0], /ollama pull d3:9b/);
 });
 
 test("an examining run with the model pulled passes", () => {
-    const report = evaluatePreflight(
-        facts({ examinerEnabled: true, ollamaModels: ["d3:2b"], examModelTag: "d3:2b" }),
-    );
+  const report = evaluatePreflight(
+    facts({
+      examinerEnabled: true,
+      ollamaModels: ["d3:2b"],
+      examModelTag: "d3:2b",
+    }),
+  );
 
-    assert.deepEqual(report.errors, []);
+  assert.deepEqual(report.errors, []);
 });

@@ -144,9 +144,7 @@ def create_outcome(http_code: int) -> str:
     return "error"
 
 
-def build_create_payload(
-    version_string: str, platform: str, app_id: str
-) -> dict:
+def build_create_payload(version_string: str, platform: str, app_id: str) -> dict:
     return {
         "data": {
             "type": "appStoreVersions",
@@ -155,9 +153,7 @@ def build_create_payload(
                 "platform": platform,
                 "releaseType": "AUTOMATIC",
             },
-            "relationships": {
-                "app": {"data": {"type": "apps", "id": app_id}}
-            },
+            "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
         }
     }
 
@@ -360,9 +356,7 @@ def create_version(
             file=sys.stderr,
         )
         raise SystemExit(1)
-    patch_release_type(
-        jwt_token, versions[0]["id"], version_string, platform
-    )
+    patch_release_type(jwt_token, versions[0]["id"], version_string, platform)
 
 
 # ---------------------------------------------------------------------------
@@ -372,10 +366,7 @@ def create_version(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description=(
-            "Set the App Store Connect release type to AUTOMATIC "
-            "(issue #730)"
-        )
+        description=("Set the App Store Connect release type to AUTOMATIC (issue #730)")
     )
     parser.add_argument(
         "--platform",
@@ -415,14 +406,8 @@ def main() -> int:
     app_id = resolve_app_id(jwt_token, args.bundle_id)
     print(f"App id: {app_id}")
 
-    versions = fetch_versions(
-        jwt_token, app_id, args.version_string, args.platform
-    )
-    state = (
-        versions[0].get("attributes", {}).get("appStoreState")
-        if versions
-        else None
-    )
+    versions = fetch_versions(jwt_token, app_id, args.version_string, args.platform)
+    state = versions[0].get("attributes", {}).get("appStoreState") if versions else None
     action = decide_action(state)
     print(
         f"{args.platform} {args.version_string}: "
@@ -431,8 +416,7 @@ def main() -> int:
 
     if action == Action.NOOP:
         print(
-            "✅ Nothing to do — version is already released/replaced "
-            f"(state={state})"
+            f"✅ Nothing to do — version is already released/replaced (state={state})"
         )
         return 0
     if action == Action.UNKNOWN:

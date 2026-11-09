@@ -11,51 +11,60 @@ import { FeedbackPage, LessonPage } from "../../pages";
 // surface (spoiler guard), so an early report cannot spoil the answer.
 
 When("пользователь нажимает кнопку проблемы на уроке", async ({ page }) => {
-    const lessonPage = new LessonPage(page);
-        await expect(lessonPage.reportButton).toBeEnabled();
-    await lessonPage.reportButton.click();
+  const lessonPage = new LessonPage(page);
+  await expect(lessonPage.reportButton).toBeEnabled();
+  await lessonPage.reportButton.click();
 });
 
 // Opened modal must carry the card as the subject: the Japanese surface of
 // the card being studied is visible in the subject block.
-Then("открылась форма обратной связи с предметом карточки", async ({ page }) => {
+Then(
+  "открылась форма обратной связи с предметом карточки",
+  async ({ page }) => {
     const feedbackPage = new FeedbackPage(page);
     await feedbackPage.expectOpen();
     await expect(feedbackPage.subject).toBeVisible();
     const subjectText = (await feedbackPage.subject.textContent()) ?? "";
-    expect(subjectText.trim().length, "subject must carry the card surface").toBeGreaterThan(0);
-});
+    expect(
+      subjectText.trim().length,
+      "subject must carry the card surface",
+    ).toBeGreaterThan(0);
+  },
+);
 
 // ═══════════════════════════════════════════════════════════════════════
 // Modal form
 // ═══════════════════════════════════════════════════════════════════════
 
-When("пользователь заполняет текст проблемы {string}", async ({ page }, text: string) => {
+When(
+  "пользователь заполняет текст проблемы {string}",
+  async ({ page }, text: string) => {
     const feedbackPage = new FeedbackPage(page);
     await feedbackPage.fillMessage(text);
-});
+  },
+);
 
 When("пользователь отправляет форму обратной связи", async ({ page }) => {
-    const feedbackPage = new FeedbackPage(page);
-    await feedbackPage.submit();
+  const feedbackPage = new FeedbackPage(page);
+  await feedbackPage.submit();
 });
 
 // The e2e build compiles without SENTRY_DSN (see ci.yml e2e-build), so a
 // submission surfaces the informational "release builds only" state — not
 // an error (ADR-055: empty compile-time DSN is the single legit trigger).
 Then(
-    "отображается подсказка о доступности в релизных сборках",
-    async ({ page }) => {
-        const feedbackPage = new FeedbackPage(page);
-        await expect(feedbackPage.unavailableInfo).toBeVisible();
-        await expect(feedbackPage.errorAlert).not.toBeVisible();
-    },
+  "отображается подсказка о доступности в релизных сборках",
+  async ({ page }) => {
+    const feedbackPage = new FeedbackPage(page);
+    await expect(feedbackPage.unavailableInfo).toBeVisible();
+    await expect(feedbackPage.errorAlert).not.toBeVisible();
+  },
 );
 
 Then("кнопка отправки формы обратной связи неактивна", async ({ page }) => {
-    const feedbackPage = new FeedbackPage(page);
-    await expect(feedbackPage.submitButton).toBeVisible();
-    await expect(feedbackPage.submitButton).toBeDisabled();
+  const feedbackPage = new FeedbackPage(page);
+  await expect(feedbackPage.submitButton).toBeVisible();
+  await expect(feedbackPage.submitButton).toBeDisabled();
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -63,33 +72,33 @@ Then("кнопка отправки формы обратной связи не�
 // ═══════════════════════════════════════════════════════════════════════
 
 When("открывает попап перевода первого токена фразы", async ({ page }) => {
-    // Vocabulary/grammar tokens render as clickable .token-word spans on
-    // phrase cards (TranslatorText); the popup mounts right below the token.
-    // Generous timeout: the phrases page lazy-loads every card's chunk +
-    // precompute blob (a user coming out of onboarding has thousands of
-    // ready phrases — 6-connection limit makes the fetch queue long).
-    const token = page.locator(".token-word .token-surface").first();
-    await token.waitFor({ state: "visible", timeout: 90_000 });
-    await token.click();
-    await page
-        .getByTestId("token-popup-report")
-        .waitFor({ state: "visible", timeout: 10_000 });
+  // Vocabulary/grammar tokens render as clickable .token-word spans on
+  // phrase cards (TranslatorText); the popup mounts right below the token.
+  // Generous timeout: the phrases page lazy-loads every card's chunk +
+  // precompute blob (a user coming out of onboarding has thousands of
+  // ready phrases — 6-connection limit makes the fetch queue long).
+  const token = page.locator(".token-word .token-surface").first();
+  await token.waitFor({ state: "visible", timeout: 90_000 });
+  await token.click();
+  await page
+    .getByTestId("token-popup-report")
+    .waitFor({ state: "visible", timeout: 10_000 });
 });
 
 When("нажимает кнопку неверного перевода в попапе", async ({ page }) => {
-    // Deterministic after the phrase-card stacking fix (hover lift via
-    // `top`, not transform): the popup stays on top of neighbouring cards.
-    await page.getByTestId("token-popup-report").click();
+  // Deterministic after the phrase-card stacking fix (hover lift via
+  // `top`, not transform): the popup stays on top of neighbouring cards.
+  await page.getByTestId("token-popup-report").click();
 });
 
 Then("открылась форма обратной связи с предметом токена", async ({ page }) => {
-    const feedbackPage = new FeedbackPage(page);
-    await feedbackPage.expectOpen();
-    const subjectText = (await feedbackPage.subject.textContent()) ?? "";
-    expect(
-        subjectText,
-        `subject must contain a CJK token, got: ${subjectText}`,
-    ).toMatch(/[぀-ヿ㐀-䶿一-鿿]/u);
-    // The popup must be closed by the report action (modal renders above it).
-    await expect(page.getByTestId("token-popup-report")).not.toBeVisible();
+  const feedbackPage = new FeedbackPage(page);
+  await feedbackPage.expectOpen();
+  const subjectText = (await feedbackPage.subject.textContent()) ?? "";
+  expect(
+    subjectText,
+    `subject must contain a CJK token, got: ${subjectText}`,
+  ).toMatch(/[぀-ヿ㐀-䶿一-鿿]/u);
+  // The popup must be closed by the report action (modal renders above it).
+  await expect(page.getByTestId("token-popup-report")).not.toBeVisible();
 });

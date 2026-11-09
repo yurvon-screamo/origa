@@ -5,11 +5,11 @@ import type { ViewportTag } from "./viewports.ts";
 
 /** What a scenario gets to work with. */
 export interface ShotContext {
-    page: Page;
-    context: BrowserContext;
-    baseURL: string;
-    locale: string;
-    viewport: ViewportTag;
+  page: Page;
+  context: BrowserContext;
+  baseURL: string;
+  locale: string;
+  viewport: ViewportTag;
 }
 
 /**
@@ -19,7 +19,7 @@ export interface ShotContext {
  * provenance) — a scenario only names the screen it wants to keep.
  */
 export interface ShotSink {
-    shot(name: string, options?: { fullPage?: boolean }): Promise<ShotEntry>;
-    /** Everything captured through this sink, in capture order. */
-    readonly entries: readonly ShotEntry[];
+  shot(name: string, options?: { fullPage?: boolean }): Promise<ShotEntry>;
+  /** Everything captured through this sink, in capture order. */
+  readonly entries: readonly ShotEntry[];
 }

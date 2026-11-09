@@ -4,219 +4,225 @@ import { BasePage } from "./base.page";
 type Rating = "again" | "good";
 
 export class LessonPage extends BasePage {
+  // Page structure
+  readonly lessonPage: Locator;
+  readonly lessonCard: Locator;
+  readonly lessonHeader: Locator;
+
+  // Navigation
+  readonly backButton: Locator;
+  readonly muteButton: Locator;
+
+  // Feedback (ADR-055): alert-triangle report entry in the lesson header.
+  // Enabled only while the card answer is shown.
+  readonly reportButton: Locator;
+
+  // Loading states
+  readonly lessonLoading: Locator;
+  readonly lessonSpinner: Locator;
+  readonly lessonLoadingText: Locator;
+
+  // Error states
+  readonly lessonError: Locator;
+
+  // Empty state (diagnosed deck exhaustion / daily limit / next review)
+  readonly lessonEmptyState: Locator;
+  readonly lessonEmptyImportBtn: Locator;
+  readonly lessonEmptyProfileBtn: Locator;
+  readonly lessonEmptyNextReview: Locator;
+
+  // Content
+  readonly lessonContent: Locator;
+
+  // Card interaction
+  readonly showAnswerBtn: Locator;
+  readonly ratingAgain: Locator;
+  readonly ratingGood: Locator;
+
+  // Quiz
+  readonly quizOptions: readonly [Locator, Locator, Locator, Locator];
+
+  // Yes/No
+  readonly yesnoYesBtn: Locator;
+  readonly yesnoNoBtn: Locator;
+
+  // Pure-manual advance (ADR-051): in-lesson "Next card" button shown after
+  // a quiz/yesno/phrase answer is submitted. Distinct from `nextLessonBtn`
+  // which is on the completion screen and starts the NEXT lesson.
+  readonly lessonCardNextBtn: Locator;
+
+  // Lesson completion
+  readonly completeScreen: Locator;
+  readonly completeBackBtn: Locator;
+
+  // Sync indicator
+  readonly syncIndicator: Locator;
+  readonly syncSpinner: Locator;
+
+  private readonly ratingMap: Record<Rating, Locator>;
+
+  constructor(page: Page) {
+    super(page);
+
     // Page structure
-    readonly lessonPage: Locator;
-    readonly lessonCard: Locator;
-    readonly lessonHeader: Locator;
+    this.lessonPage = page.getByTestId("lesson-page");
+    this.lessonCard = page.getByTestId("lesson-card");
+    this.lessonHeader = page.getByTestId("lesson-header");
 
     // Navigation
-    readonly backButton: Locator;
-    readonly muteButton: Locator;
-
-    // Feedback (ADR-055): alert-triangle report entry in the lesson header.
-    // Enabled only while the card answer is shown.
-    readonly reportButton: Locator;
+    this.backButton = page.getByTestId("lesson-back-btn");
+    this.muteButton = page.getByTestId("lesson-mute-btn");
+    this.reportButton = page.getByTestId("lesson-report-btn");
 
     // Loading states
-    readonly lessonLoading: Locator;
-    readonly lessonSpinner: Locator;
-    readonly lessonLoadingText: Locator;
+    this.lessonLoading = page.getByTestId("lesson-loading");
+    this.lessonSpinner = page.getByTestId("lesson-spinner");
+    this.lessonLoadingText = page.getByTestId("lesson-loading-text");
 
     // Error states
-    readonly lessonError: Locator;
+    this.lessonError = page.getByTestId("lesson-error");
 
-    // Empty state (diagnosed deck exhaustion / daily limit / next review)
-    readonly lessonEmptyState: Locator;
-    readonly lessonEmptyImportBtn: Locator;
-    readonly lessonEmptyProfileBtn: Locator;
-    readonly lessonEmptyNextReview: Locator;
+    // Empty state
+    this.lessonEmptyState = page.getByTestId("lesson-empty-state");
+    this.lessonEmptyImportBtn = page.getByTestId("lesson-empty-import-btn");
+    this.lessonEmptyProfileBtn = page.getByTestId("lesson-empty-profile-btn");
+    this.lessonEmptyNextReview = page.getByTestId("lesson-empty-next-review");
 
     // Content
-    readonly lessonContent: Locator;
+    this.lessonContent = page.getByTestId("lesson-content");
 
     // Card interaction
-    readonly showAnswerBtn: Locator;
-    readonly ratingAgain: Locator;
-    readonly ratingGood: Locator;
+    this.showAnswerBtn = page.getByTestId("lesson-show-answer-btn");
+    this.ratingAgain = page.getByTestId("lesson-rating-btn-again");
+    this.ratingGood = page.getByTestId("lesson-rating-btn-good");
 
     // Quiz
-    readonly quizOptions: readonly [Locator, Locator, Locator, Locator];
+    this.quizOptions = [
+      page.getByTestId("quiz-option-0"),
+      page.getByTestId("quiz-option-1"),
+      page.getByTestId("quiz-option-2"),
+      page.getByTestId("quiz-option-3"),
+    ] as const;
 
     // Yes/No
-    readonly yesnoYesBtn: Locator;
-    readonly yesnoNoBtn: Locator;
+    this.yesnoYesBtn = page.getByTestId("yesno-yes-btn");
+    this.yesnoNoBtn = page.getByTestId("yesno-no-btn");
 
-    // Pure-manual advance (ADR-051): in-lesson "Next card" button shown after
-    // a quiz/yesno/phrase answer is submitted. Distinct from `nextLessonBtn`
-    // which is on the completion screen and starts the NEXT lesson.
-    readonly lessonCardNextBtn: Locator;
+    // Pure-manual advance (ADR-051): in-lesson "Next card" button.
+    this.lessonCardNextBtn = page.getByTestId("lesson-card-next-btn");
 
     // Lesson completion
-    readonly completeScreen: Locator;
-    readonly completeBackBtn: Locator;
+    this.completeScreen = page.getByTestId("lesson-complete-screen");
+    this.completeBackBtn = page.getByTestId("lesson-complete-back-btn");
 
     // Sync indicator
-    readonly syncIndicator: Locator;
-    readonly syncSpinner: Locator;
+    this.syncIndicator = page.getByTestId("lesson-sync-indicator");
+    this.syncSpinner = page.getByTestId("lesson-sync-spinner");
 
-    private readonly ratingMap: Record<Rating, Locator>;
+    this.ratingMap = {
+      again: this.ratingAgain,
+      good: this.ratingGood,
+    };
+  }
 
-    constructor(page: Page) {
-        super(page);
+  async goto(): Promise<void> {
+    await this.navigate("/lesson");
+  }
 
-        // Page structure
-        this.lessonPage = page.getByTestId("lesson-page");
-        this.lessonCard = page.getByTestId("lesson-card");
-        this.lessonHeader = page.getByTestId("lesson-header");
+  async expectLessonVisible(): Promise<void> {
+    await expect(this.lessonPage).toBeVisible();
+    await expect(this.lessonCard).toBeVisible();
+    await expect(this.lessonHeader).toBeVisible();
+  }
 
-        // Navigation
-        this.backButton = page.getByTestId("lesson-back-btn");
-        this.muteButton = page.getByTestId("lesson-mute-btn");
-        this.reportButton = page.getByTestId("lesson-report-btn");
+  async waitForLoading(): Promise<void> {
+    await expect(this.lessonLoading).toBeVisible({ timeout: 10_000 });
+    await expect(this.lessonLoading).toBeHidden({ timeout: 30_000 });
+  }
 
-        // Loading states
-        this.lessonLoading = page.getByTestId("lesson-loading");
-        this.lessonSpinner = page.getByTestId("lesson-spinner");
-        this.lessonLoadingText = page.getByTestId("lesson-loading-text");
+  async clickBack(): Promise<void> {
+    await this.backButton.click();
+  }
 
-        // Error states
-        this.lessonError = page.getByTestId("lesson-error");
+  async toggleMute(): Promise<void> {
+    await this.muteButton.click();
+  }
 
-        // Empty state
-        this.lessonEmptyState = page.getByTestId("lesson-empty-state");
-        this.lessonEmptyImportBtn = page.getByTestId("lesson-empty-import-btn");
-        this.lessonEmptyProfileBtn = page.getByTestId("lesson-empty-profile-btn");
-        this.lessonEmptyNextReview = page.getByTestId("lesson-empty-next-review");
+  async expectContentVisible(): Promise<void> {
+    await expect(this.lessonContent).toBeVisible();
+  }
 
-        // Content
-        this.lessonContent = page.getByTestId("lesson-content");
+  async expectErrorVisible(): Promise<void> {
+    await expect(this.lessonError).toBeVisible();
+  }
 
-        // Card interaction
-        this.showAnswerBtn = page.getByTestId("lesson-show-answer-btn");
-        this.ratingAgain = page.getByTestId("lesson-rating-btn-again");
-        this.ratingGood = page.getByTestId("lesson-rating-btn-good");
+  async expectEmptyStateVisible(): Promise<void> {
+    await expect(this.lessonEmptyState).toBeVisible();
+    await expect(this.lessonContent).toBeHidden();
+    // The empty state and the error message are mutually exclusive by
+    // construction (content.rs sets exactly one); assert the invariant
+    // so a regression fails here instead of confusing downstream steps.
+    await expect(this.lessonError).toBeHidden();
+  }
 
-        // Quiz
-        this.quizOptions = [
-            page.getByTestId("quiz-option-0"),
-            page.getByTestId("quiz-option-1"),
-            page.getByTestId("quiz-option-2"),
-            page.getByTestId("quiz-option-3"),
-        ] as const;
+  async clickEmptyImportSets(): Promise<void> {
+    await this.lessonEmptyImportBtn.click();
+  }
 
-        // Yes/No
-        this.yesnoYesBtn = page.getByTestId("yesno-yes-btn");
-        this.yesnoNoBtn = page.getByTestId("yesno-no-btn");
+  async clickEmptyIncreaseLoad(): Promise<void> {
+    await this.lessonEmptyProfileBtn.click();
+  }
 
-        // Pure-manual advance (ADR-051): in-lesson "Next card" button.
-        this.lessonCardNextBtn = page.getByTestId("lesson-card-next-btn");
+  /**
+   * Bounded click timeout shared by card-control methods (showAnswer,
+   * rate, selectQuizOption, yesno, next-card). Under WASM re-render races
+   * the resolved element can be detached mid-click; without a timeout
+   * Playwright retries the stale handle until the TEST timeout. Callers
+   * (completeLessonFlexible) re-resolve locators on the next loop
+   * iteration, so a bounded failure just retries against the fresh DOM.
+   * Mirrors ACTION_TIMEOUT from helpers/lesson.ts (that module imports
+   * this page; keeping the constant here avoids a cycle).
+   */
+  private static readonly CARD_ACTION_TIMEOUT = 10_000;
 
-        // Lesson completion
-        this.completeScreen = page.getByTestId("lesson-complete-screen");
-        this.completeBackBtn = page.getByTestId("lesson-complete-back-btn");
+  /**
+   * Advance to the next card under the pure-manual advance model
+   * (ADR-051). After a quiz/yesno/phrase answer is submitted, the user is
+   * held on the feedback card until they press Space/Enter or click the
+   * "Next" button.
+   */
+  async clickNextCard(): Promise<void> {
+    await this.lessonCardNextBtn.click({
+      timeout: LessonPage.CARD_ACTION_TIMEOUT,
+    });
+  }
 
-        // Sync indicator
-        this.syncIndicator = page.getByTestId("lesson-sync-indicator");
-        this.syncSpinner = page.getByTestId("lesson-sync-spinner");
+  async waitForSync(): Promise<void> {
+    await expect(this.syncIndicator).toBeVisible({ timeout: 10_000 });
+    await expect(this.syncIndicator).toBeHidden({ timeout: 30_000 });
+  }
 
-        this.ratingMap = {
-            again: this.ratingAgain,
-            good: this.ratingGood,
-        };
-    }
+  async showAnswer(): Promise<void> {
+    await this.showAnswerBtn.click({ timeout: LessonPage.CARD_ACTION_TIMEOUT });
+  }
 
-    async goto(): Promise<void> {
-        await this.navigate("/lesson");
-    }
+  async rate(rating: Rating): Promise<void> {
+    await this.ratingMap[rating].click({
+      timeout: LessonPage.CARD_ACTION_TIMEOUT,
+    });
+  }
 
-    async expectLessonVisible(): Promise<void> {
-        await expect(this.lessonPage).toBeVisible();
-        await expect(this.lessonCard).toBeVisible();
-        await expect(this.lessonHeader).toBeVisible();
-    }
+  async waitForComplete(): Promise<void> {
+    await expect(this.completeScreen).toBeVisible({ timeout: 30_000 });
+  }
 
-    async waitForLoading(): Promise<void> {
-        await expect(this.lessonLoading).toBeVisible({ timeout: 10_000 });
-        await expect(this.lessonLoading).toBeHidden({ timeout: 30_000 });
-    }
+  async expectMuteIcon(): Promise<void> {
+    await expect(this.muteButton.locator("svg")).toBeVisible();
+  }
 
-    async clickBack(): Promise<void> {
-        await this.backButton.click();
-    }
-
-    async toggleMute(): Promise<void> {
-        await this.muteButton.click();
-    }
-
-    async expectContentVisible(): Promise<void> {
-        await expect(this.lessonContent).toBeVisible();
-    }
-
-    async expectErrorVisible(): Promise<void> {
-        await expect(this.lessonError).toBeVisible();
-    }
-
-    async expectEmptyStateVisible(): Promise<void> {
-        await expect(this.lessonEmptyState).toBeVisible();
-        await expect(this.lessonContent).toBeHidden();
-        // The empty state and the error message are mutually exclusive by
-        // construction (content.rs sets exactly one); assert the invariant
-        // so a regression fails here instead of confusing downstream steps.
-        await expect(this.lessonError).toBeHidden();
-    }
-
-    async clickEmptyImportSets(): Promise<void> {
-        await this.lessonEmptyImportBtn.click();
-    }
-
-    async clickEmptyIncreaseLoad(): Promise<void> {
-        await this.lessonEmptyProfileBtn.click();
-    }
-
-    /**
-     * Bounded click timeout shared by card-control methods (showAnswer,
-     * rate, selectQuizOption, yesno, next-card). Under WASM re-render races
-     * the resolved element can be detached mid-click; without a timeout
-     * Playwright retries the stale handle until the TEST timeout. Callers
-     * (completeLessonFlexible) re-resolve locators on the next loop
-     * iteration, so a bounded failure just retries against the fresh DOM.
-     * Mirrors ACTION_TIMEOUT from helpers/lesson.ts (that module imports
-     * this page; keeping the constant here avoids a cycle).
-     */
-    private static readonly CARD_ACTION_TIMEOUT = 10_000;
-
-    /**
-     * Advance to the next card under the pure-manual advance model
-     * (ADR-051). After a quiz/yesno/phrase answer is submitted, the user is
-     * held on the feedback card until they press Space/Enter or click the
-     * "Next" button.
-     */
-    async clickNextCard(): Promise<void> {
-        await this.lessonCardNextBtn.click({ timeout: LessonPage.CARD_ACTION_TIMEOUT });
-    }
-
-    async waitForSync(): Promise<void> {
-        await expect(this.syncIndicator).toBeVisible({ timeout: 10_000 });
-        await expect(this.syncIndicator).toBeHidden({ timeout: 30_000 });
-    }
-
-    async showAnswer(): Promise<void> {
-        await this.showAnswerBtn.click({ timeout: LessonPage.CARD_ACTION_TIMEOUT });
-    }
-
-    async rate(rating: Rating): Promise<void> {
-        await this.ratingMap[rating].click({ timeout: LessonPage.CARD_ACTION_TIMEOUT });
-    }
-
-    async waitForComplete(): Promise<void> {
-        await expect(this.completeScreen).toBeVisible({ timeout: 30_000 });
-    }
-
-    async expectMuteIcon(): Promise<void> {
-        await expect(this.muteButton.locator("svg")).toBeVisible();
-    }
-
-    async selectQuizOption(index: number): Promise<void> {
-        await this.quizOptions[index].click({ timeout: LessonPage.CARD_ACTION_TIMEOUT });
-    }
+  async selectQuizOption(index: number): Promise<void> {
+    await this.quizOptions[index].click({
+      timeout: LessonPage.CARD_ACTION_TIMEOUT,
+    });
+  }
 }

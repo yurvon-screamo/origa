@@ -11,11 +11,11 @@ import { test } from "@playwright/test";
 import { runScenarioWithManifest } from "../shots/runner.ts";
 
 test("word detail screenshots", async ({ browser }) => {
-    test.setTimeout(600_000);
-    await runScenarioWithManifest(browser, "word-examples", {
-        outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/word-examples",
-        label: "word-examples",
-        cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
-        commit: process.env.SHOT_COMMIT ?? "unknown",
-    });
+  test.setTimeout(600_000);
+  await runScenarioWithManifest(browser, "word-examples", {
+    outDir: process.env.SHOT_OUT_DIR ?? "/tmp/opencode/shots/word-examples",
+    label: "word-examples",
+    cdnBaseUrl: process.env.SHOT_CDN_BASE_URL ?? "",
+    commit: process.env.SHOT_COMMIT ?? "unknown",
+  });
 });

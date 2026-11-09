@@ -19,224 +19,250 @@ import type { ShotEntry } from "../manifest.ts";
 // cannot silently pass against a broken model.
 
 interface FakeElement {
-    tag: string;
-    testid?: string;
-    classes?: string[];
+  tag: string;
+  testid?: string;
+  classes?: string[];
 }
 
 type FakeScreen = FakeElement[];
 
 /** Resolves the CSS shapes QUESTION_MARKERS and REVEALS/ADVANCES use. */
 function matchesSelector(element: FakeElement, selector: string): boolean {
-    const attr = selector.match(/^(?:([a-z]+))?\[data-testid(\^?)="([^"]+)"\]$/);
-    if (attr) {
-        const [, tag, caret, value] = attr;
-        if (tag && element.tag !== tag) return false;
-        const testid = element.testid ?? "";
-        return caret === "^" ? testid.startsWith(value) : testid === value;
-    }
-    const classSel = selector.match(/^([a-z]+)\.([a-z-]+)$/);
-    if (classSel) {
-        const [, tag, cls] = classSel;
-        return element.tag === tag && (element.classes ?? []).includes(cls);
-    }
-    throw new Error(`fake page: unsupported selector "${selector}"`);
+  const attr = selector.match(/^(?:([a-z]+))?\[data-testid(\^?)="([^"]+)"\]$/);
+  if (attr) {
+    const [, tag, caret, value] = attr;
+    if (tag && element.tag !== tag) return false;
+    const testid = element.testid ?? "";
+    return caret === "^" ? testid.startsWith(value) : testid === value;
+  }
+  const classSel = selector.match(/^([a-z]+)\.([a-z-]+)$/);
+  if (classSel) {
+    const [, tag, cls] = classSel;
+    return element.tag === tag && (element.classes ?? []).includes(cls);
+  }
+  throw new Error(`fake page: unsupported selector "${selector}"`);
 }
 
 class FakeLocator {
-    private page: FakePage;
-    private matches: (element: FakeElement) => boolean;
+  private page: FakePage;
+  private matches: (element: FakeElement) => boolean;
 
-    constructor(page: FakePage, matches: (element: FakeElement) => boolean) {
-        this.page = page;
-        this.matches = matches;
-    }
+  constructor(page: FakePage, matches: (element: FakeElement) => boolean) {
+    this.page = page;
+    this.matches = matches;
+  }
 
-    first(): FakeLocator {
-        return this;
-    }
+  first(): FakeLocator {
+    return this;
+  }
 
-    async waitFor(_options: { state: string; timeout?: number }): Promise<Locator> {
-        if (this.visible()) return this as unknown as Locator;
-        throw new Error("fake page: element not visible");
-    }
+  async waitFor(_options: {
+    state: string;
+    timeout?: number;
+  }): Promise<Locator> {
+    if (this.visible()) return this as unknown as Locator;
+    throw new Error("fake page: element not visible");
+  }
 
-    async click(_options?: { timeout?: number }): Promise<void> {
-        if (!this.visible()) throw new Error("fake page: element not clickable");
-        this.page.advance();
-    }
+  async click(_options?: { timeout?: number }): Promise<void> {
+    if (!this.visible()) throw new Error("fake page: element not clickable");
+    this.page.advance();
+  }
 
-    private visible(): boolean {
-        return this.page.currentScreen().some(this.matches);
-    }
+  private visible(): boolean {
+    return this.page.currentScreen().some(this.matches);
+  }
 }
 
 class FakePage {
-    /** Elements visible on every screen regardless of the lesson state. */
-    chrome: FakeElement[] = [];
+  /** Elements visible on every screen regardless of the lesson state. */
+  chrome: FakeElement[] = [];
 
-    private lessons: FakeScreen[][];
-    private lessonIndex = 0;
-    private screenIndex = 0;
-    private loaded = false;
+  private lessons: FakeScreen[][];
+  private lessonIndex = 0;
+  private screenIndex = 0;
+  private loaded = false;
 
-    constructor(lessons: FakeScreen[][]) {
-        this.lessons = lessons;
-    }
+  constructor(lessons: FakeScreen[][]) {
+    this.lessons = lessons;
+  }
 
-    /**
-     * The first goto loads the initial lesson script; every next goto is
-     * a reload — the views regenerate, the next script takes over.
-     */
-    goto(_url: string): Promise<unknown> {
-        if (this.loaded && this.lessonIndex < this.lessons.length - 1) this.lessonIndex += 1;
-        this.loaded = true;
-        this.screenIndex = 0;
-        return Promise.resolve();
-    }
+  /**
+   * The first goto loads the initial lesson script; every next goto is
+   * a reload — the views regenerate, the next script takes over.
+   */
+  goto(_url: string): Promise<unknown> {
+    if (this.loaded && this.lessonIndex < this.lessons.length - 1)
+      this.lessonIndex += 1;
+    this.loaded = true;
+    this.screenIndex = 0;
+    return Promise.resolve();
+  }
 
-    currentScreen(): FakeElement[] {
-        const lesson = this.lessons[Math.min(this.lessonIndex, this.lessons.length - 1)];
-        return [...this.chrome, ...(lesson[Math.min(this.screenIndex, lesson.length - 1)] ?? [])];
-    }
+  currentScreen(): FakeElement[] {
+    const lesson =
+      this.lessons[Math.min(this.lessonIndex, this.lessons.length - 1)];
+    return [
+      ...this.chrome,
+      ...(lesson[Math.min(this.screenIndex, lesson.length - 1)] ?? []),
+    ];
+  }
 
-    advance(): void {
-        this.screenIndex += 1;
-    }
+  advance(): void {
+    this.screenIndex += 1;
+  }
 
-    getByTestId(testid: string): FakeLocator {
-        return new FakeLocator(this, (element) => element.testid === testid);
-    }
+  getByTestId(testid: string): FakeLocator {
+    return new FakeLocator(this, (element) => element.testid === testid);
+  }
 
-    locator(selector: string): FakeLocator {
-        return new FakeLocator(this, (element) => matchesSelector(element, selector));
-    }
+  locator(selector: string): FakeLocator {
+    return new FakeLocator(this, (element) =>
+      matchesSelector(element, selector),
+    );
+  }
 
-    waitForTimeout(_ms: number): Promise<void> {
-        return Promise.resolve();
-    }
+  waitForTimeout(_ms: number): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 /** The `ShotSink` a scenario writes its screens into. */
 function fakeSink(): ShotSink & { names: string[] } {
-    const names: string[] = [];
-    return {
-        names,
-        entries: [],
-        shot: async (name: string) => {
-            names.push(name);
-            return { screen: name } as unknown as ShotEntry;
-        },
-    };
+  const names: string[] = [];
+  return {
+    names,
+    entries: [],
+    shot: async (name: string) => {
+      names.push(name);
+      return { screen: name } as unknown as ShotEntry;
+    },
+  };
 }
 
 const el = (testid: string): FakeElement => ({ tag: "div", testid });
 const revealScreen: FakeScreen = [el("lesson-show-answer-btn")];
-const ratingScreen: FakeScreen = [el("lesson-rating-btn-again"), el("lesson-card-next-btn")];
+const ratingScreen: FakeScreen = [
+  el("lesson-rating-btn-again"),
+  el("lesson-card-next-btn"),
+];
 const completeScreen: FakeScreen = [el("lesson-complete-screen")];
-const writingScreen: FakeScreen = [{ tag: "canvas", classes: ["kanji-drawing-canvas"] }];
+const writingScreen: FakeScreen = [
+  { tag: "canvas", classes: ["kanji-drawing-canvas"] },
+];
 
 function normalLesson(cards = 2): FakeScreen[] {
-    const screens: FakeScreen[] = [];
-    for (let i = 0; i < cards; i++) screens.push(revealScreen, ratingScreen);
-    return [...screens, completeScreen];
+  const screens: FakeScreen[] = [];
+  for (let i = 0; i < cards; i++) screens.push(revealScreen, ratingScreen);
+  return [...screens, completeScreen];
 }
 
 test("a writing card holding the first screen stops the walk honestly — no stale-selector throw", async () => {
-    // One lesson: the writing card opens the review body; whatever could
-    // follow never gets reached — the walk must stop before it.
-    const page = new FakePage([[writingScreen, revealScreen]]);
-    const sink = fakeSink();
+  // One lesson: the writing card opens the review body; whatever could
+  // follow never gets reached — the walk must stop before it.
+  const page = new FakePage([[writingScreen, revealScreen]]);
+  const sink = fakeSink();
 
-    const captured = await captureReviewBody(page as unknown as Page, sink, 6);
+  const captured = await captureReviewBody(page as unknown as Page, sink, 6);
 
-    assert.equal(captured, 0);
-    assert.deepEqual(sink.names, []);
+  assert.equal(captured, 0);
+  assert.deepEqual(sink.names, []);
 });
 
 test("a run of normal cards is captured and counted", async () => {
-    const page = new FakePage([normalLesson(2)]);
-    const sink = fakeSink();
+  const page = new FakePage([normalLesson(2)]);
+  const sink = fakeSink();
 
-    const captured = await captureReviewBody(page as unknown as Page, sink, 6);
+  const captured = await captureReviewBody(page as unknown as Page, sink, 6);
 
-    assert.equal(captured, 2);
-    assert.deepEqual(sink.names, ["review-body-normal-1", "review-body-normal-2"]);
+  assert.equal(captured, 2);
+  assert.deepEqual(sink.names, [
+    "review-body-normal-1",
+    "review-body-normal-2",
+  ]);
 });
 
 test("a writing card deeper in the lesson stops with the frames already collected", async () => {
-    const page = new FakePage([[...normalLesson(2).slice(0, 4), writingScreen]]);
-    const sink = fakeSink();
+  const page = new FakePage([[...normalLesson(2).slice(0, 4), writingScreen]]);
+  const sink = fakeSink();
 
-    const captured = await captureReviewBody(page as unknown as Page, sink, 6);
+  const captured = await captureReviewBody(page as unknown as Page, sink, 6);
 
-    assert.equal(captured, 2);
-    assert.deepEqual(sink.names, ["review-body-normal-1", "review-body-normal-2"]);
+  assert.equal(captured, 2);
+  assert.deepEqual(sink.names, [
+    "review-body-normal-1",
+    "review-body-normal-2",
+  ]);
 });
 
 test("a genuinely unknown first card must still fail loudly", async () => {
-    const page = new FakePage([[[el("some-future-widget")]]]);
-    const sink = fakeSink();
+  const page = new FakePage([[[el("some-future-widget")]]]);
+  const sink = fakeSink();
 
-    await assert.rejects(
-        captureReviewBody(page as unknown as Page, sink, 6),
-        /did not reveal its first card/,
-    );
+  await assert.rejects(
+    captureReviewBody(page as unknown as Page, sink, 6),
+    /did not reveal its first card/,
+  );
 });
 
 test("an unknown kind with a reveal control is still captured", async () => {
-    const page = new FakePage([
-        [[el("lesson-example-reveal"), el("lesson-example-next")], completeScreen],
-    ]);
-    const sink = fakeSink();
+  const page = new FakePage([
+    [[el("lesson-example-reveal"), el("lesson-example-next")], completeScreen],
+  ]);
+  const sink = fakeSink();
 
-    const captured = await captureReviewBody(page as unknown as Page, sink, 6);
+  const captured = await captureReviewBody(page as unknown as Page, sink, 6);
 
-    assert.equal(captured, 1);
-    assert.deepEqual(sink.names, ["review-body-unknown-1"]);
+  assert.equal(captured, 1);
+  assert.deepEqual(sink.names, ["review-body-unknown-1"]);
 });
 
 test("no advance control after a frame ends the walk quietly, keeping the frame", async () => {
-    const page = new FakePage([
-        [[revealScreen[0], el("lesson-unknown-aftermath")], completeScreen],
-    ]);
-    const sink = fakeSink();
+  const page = new FakePage([
+    [[revealScreen[0], el("lesson-unknown-aftermath")], completeScreen],
+  ]);
+  const sink = fakeSink();
 
-    const captured = await captureReviewBody(page as unknown as Page, sink, 6);
+  const captured = await captureReviewBody(page as unknown as Page, sink, 6);
 
-    assert.equal(captured, 1);
-    assert.deepEqual(sink.names, ["review-body-normal-1"]);
+  assert.equal(captured, 1);
+  assert.deepEqual(sink.names, ["review-body-normal-1"]);
 });
 
 test("the scenario rerolls a writing-first lesson and captures the next one", async () => {
-    // Attempt 0 opens on writing; attempt 1 is a fresh normal lesson.
-    const page = new FakePage([[writingScreen], normalLesson(2)]);
-    const sink = fakeSink();
+  // Attempt 0 opens on writing; attempt 1 is a fresh normal lesson.
+  const page = new FakePage([[writingScreen], normalLesson(2)]);
+  const sink = fakeSink();
 
-    await lessonReviewBodyScenario.run(scenarioContext(page), sink);
+  await lessonReviewBodyScenario.run(scenarioContext(page), sink);
 
-    assert.deepEqual(sink.names, ["review-body-normal-1", "review-body-normal-2"]);
+  assert.deepEqual(sink.names, [
+    "review-body-normal-1",
+    "review-body-normal-2",
+  ]);
 });
 
 test("the scenario gives up with an honest error when every attempt opens unwalkably", async () => {
-    const allWriting: FakeScreen[][] = Array.from({ length: 5 }, () => [writingScreen]);
-    const page = new FakePage(allWriting);
-    const sink = fakeSink();
+  const allWriting: FakeScreen[][] = Array.from({ length: 5 }, () => [
+    writingScreen,
+  ]);
+  const page = new FakePage(allWriting);
+  const sink = fakeSink();
 
-    await assert.rejects(
-        lessonReviewBodyScenario.run(scenarioContext(page), sink),
-        /no review-body frames/,
-    );
-    assert.deepEqual(sink.names, []);
+  await assert.rejects(
+    lessonReviewBodyScenario.run(scenarioContext(page), sink),
+    /no review-body frames/,
+  );
+  assert.deepEqual(sink.names, []);
 });
 
 const scenarioContext = (page: FakePage) => {
-    page.chrome = [el("lesson-page")];
-    return {
-        page: page as unknown as Page,
-        context: {} as unknown as BrowserContext,
-        baseURL: "http://localhost:1420",
-        locale: "ru-RU",
-        viewport: "desktop",
-    } as unknown as ShotContext;
+  page.chrome = [el("lesson-page")];
+  return {
+    page: page as unknown as Page,
+    context: {} as unknown as BrowserContext,
+    baseURL: "http://localhost:1420",
+    locale: "ru-RU",
+    viewport: "desktop",
+  } as unknown as ShotContext;
 };

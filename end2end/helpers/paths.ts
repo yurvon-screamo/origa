@@ -9,6 +9,6 @@ import { fileURLToPath } from "node:url";
  * undefined — resolve fixture/pid paths from `import.meta.url` instead.
  */
 export const end2endRoot = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "..",
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
 );

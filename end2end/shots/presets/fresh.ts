@@ -9,7 +9,7 @@ import type { PresetContext } from "./index.ts";
  * with nothing studied — the state a first-time user sees.
  */
 export async function fresh(context: PresetContext): Promise<void> {
-    if (await isOnboardingShown(context.page)) {
-        await skipOnboarding(context.page);
-    }
+  if (await isOnboardingShown(context.page)) {
+    await skipOnboarding(context.page);
+  }
 }

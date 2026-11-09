@@ -26,19 +26,19 @@ CURL_TIMEOUT="${GEOIP_TIMEOUT:-120}"
 MIN_SIZE_BYTES=4194304 # valid builds are ~8 MB; a truncated download is smaller
 
 log() {
-    printf '[geoip %s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"
+	printf '[geoip %s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"
 }
 
 # --- Skip if fresh enough (a corrupt or truncated leftover fails the size check
 # and gets re-downloaded instead of being trusted) ---
 if [ -f "${GEOIP_DEST}" ]; then
-    existing_size=$(stat -c %s "${GEOIP_DEST}")
-    file_age=$(( $(date +%s) - $(stat -c %Y "${GEOIP_DEST}") ))
-    if [ "${existing_size}" -ge "${MIN_SIZE_BYTES}" ] \
-        && [ "${file_age}" -lt $(( FRESHNESS_DAYS * 86400 )) ]; then
-        log "Database is fresh (${FRESHNESS_DAYS}d window), skipping."
-        exit 0
-    fi
+	existing_size=$(stat -c %s "${GEOIP_DEST}")
+	file_age=$(($(date +%s) - $(stat -c %Y "${GEOIP_DEST}")))
+	if [ "${existing_size}" -ge "${MIN_SIZE_BYTES}" ] &&
+		[ "${file_age}" -lt $((FRESHNESS_DAYS * 86400)) ]; then
+		log "Database is fresh (${FRESHNESS_DAYS}d window), skipping."
+		exit 0
+	fi
 fi
 
 mkdir -p "$(dirname "${GEOIP_DEST}")"
@@ -50,12 +50,12 @@ tmp_file="${GEOIP_DEST}.tmp.$$"
 trap 'rm -f "${tmp_file}"' EXIT
 
 curl -sSfL --max-time "${CURL_TIMEOUT}" --retry 3 --retry-delay 2 \
-    -o "${tmp_file}" "${GEOIP_URL}"
+	-o "${tmp_file}" "${GEOIP_URL}"
 
 downloaded_size=$(stat -c %s "${tmp_file}")
 if [ "${downloaded_size}" -lt "${MIN_SIZE_BYTES}" ]; then
-    log "Downloaded file too small (${downloaded_size} bytes) — discarding."
-    exit 1
+	log "Downloaded file too small (${downloaded_size} bytes) — discarding."
+	exit 1
 fi
 
 mv "${tmp_file}" "${GEOIP_DEST}"

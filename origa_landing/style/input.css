@@ -20,152 +20,168 @@
    URL here and in the preloads in src/app.rs, update LICENSE.txt, and bump
    the stylesheet `?v=` in src/app.rs. License: see public/fonts/landing/LICENSE.txt. */
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: normal;
-    font-weight: 300;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-300.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-300.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-regular.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-regular.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: italic;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-italic.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-italic.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-500.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-500.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-600.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-600.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "Cormorant Garamond";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-700.woff2") format("woff2");
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/landing/cormorant-garamond-v21-cyrillic_latin-700.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "DM Mono";
-    font-style: normal;
-    font-weight: 300;
-    font-display: swap;
-    src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-300.woff2") format("woff2");
+  font-family: "DM Mono";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-300.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "DM Mono";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-regular.woff2") format("woff2");
+  font-family: "DM Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-regular.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "DM Mono";
-    font-style: italic;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-italic.woff2") format("woff2");
+  font-family: "DM Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-italic.woff2")
+    format("woff2");
 }
 @font-face {
-    font-family: "DM Mono";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-500.woff2") format("woff2");
+  font-family: "DM Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/landing/dm-mono-v16-latin_latin-ext-500.woff2")
+    format("woff2");
 }
 
 :root {
-    /* Colors */
-    --bg-cream: #f7f4ee;
-    --bg-paper: #fdfbf7;
-    --bg-aged: #ede8dd;
-    --bg-warm: #f0ebe1;
-    --fg-black: #1a1915;
-    --fg-muted: #6b665a;
-    /* AA on cream/paper (4.5:1+); the old #9a9590 measured 2.7:1 */
-    --fg-light: #75705f;
-    --accent-olive: #3d4535;
-    --accent-terracotta: #a65d3f;
-    /* Ink variant for terracotta TEXT: passes AA on every background,
+  /* Colors */
+  --bg-cream: #f7f4ee;
+  --bg-paper: #fdfbf7;
+  --bg-aged: #ede8dd;
+  --bg-warm: #f0ebe1;
+  --fg-black: #1a1915;
+  --fg-muted: #6b665a;
+  /* AA on cream/paper (4.5:1+); the old #9a9590 measured 2.7:1 */
+  --fg-light: #75705f;
+  --accent-olive: #3d4535;
+  --accent-terracotta: #a65d3f;
+  /* Ink variant for terracotta TEXT: passes AA on every background,
        including aged; the base terracotta stays for decorative rules */
-    --accent-terracotta-ink: #8f4e33;
-    --accent-gold: #8b7355;
-    --accent-sage: #6b7b5e;
-    --border-light: #d4cfc3;
-    --border-dark: #1a1915;
-    --success: #4a6b4a;
-    --warning: #a67c3f;
-    --error: #8b4545;
+  --accent-terracotta-ink: #8f4e33;
+  --accent-gold: #8b7355;
+  --accent-sage: #6b7b5e;
+  --border-light: #d4cfc3;
+  --border-dark: #1a1915;
+  --success: #4a6b4a;
+  --warning: #a67c3f;
+  --error: #8b4545;
 
-    /* Compatibility aliases */
-    --bg-primary: var(--bg-cream);
-    --bg-secondary: var(--bg-aged);
-    --border-color: var(--border-dark);
-    --border-subtle: var(--border-light);
-    --fg: var(--fg-black);
-    --fg-primary: var(--fg-black);
-    --accent: var(--accent-olive);
-    --muted: var(--fg-muted);
+  /* Compatibility aliases */
+  --bg-primary: var(--bg-cream);
+  --bg-secondary: var(--bg-aged);
+  --border-color: var(--border-dark);
+  --border-subtle: var(--border-light);
+  --fg: var(--fg-black);
+  --fg-primary: var(--fg-black);
+  --accent: var(--accent-olive);
+  --muted: var(--fg-muted);
 
-    --accent-olive-subtle: color-mix(in srgb, var(--accent-olive) 40%, transparent);
-    --backdrop: color-mix(in srgb, var(--fg-black) 60%, transparent);
+  --accent-olive-subtle: color-mix(
+    in srgb,
+    var(--accent-olive) 40%,
+    transparent
+  );
+  --backdrop: color-mix(in srgb, var(--fg-black) 60%, transparent);
 
-    /* Animation Timing */
-    --anima-duration-normal: 200ms;
-    --anima-ease-paper: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Animation Timing */
+  --anima-duration-normal: 200ms;
+  --anima-ease-paper: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-    /* Spacing */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 16px;
-    --space-lg: 24px;
-    --space-xl: 32px;
-    --space-xxl: 48px;
-    --space-xxxl: 64px;
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --space-xxxl: 64px;
 
-    /* JA glyphs have no coverage in Cormorant/DM Mono: the explicit JP serif
+  /* JA glyphs have no coverage in Cormorant/DM Mono: the explicit JP serif
        names resolve them to a mincho (serif) face on macOS/Windows/Linux
        instead of the browser default (sans on stock Android, which has no
        system JP serif). Issue #772. */
-    --font-serif: "Cormorant Garamond", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", serif;
-    --font-mono: "DM Mono", monospace;
+  --font-serif:
+    "Cormorant Garamond", "Hiragino Mincho ProN", "Yu Mincho",
+    "Noto Serif CJK JP", serif;
+  --font-mono: "DM Mono", monospace;
 
-    /* Typography Scale */
-    --text-2xs: 12px;
-    --text-xs: 15px;
-    --text-sm: 17px;
-    --text-label: 14px;
-    --text-label-sm: 12px;
-    --text-body: 16px;
-    --text-lg: 19px;
+  /* Typography Scale */
+  --text-2xs: 12px;
+  --text-xs: 15px;
+  --text-sm: 17px;
+  --text-label: 14px;
+  --text-label-sm: 12px;
+  --text-body: 16px;
+  --text-lg: 19px;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: var(--font-mono);
-    background-color: var(--bg-cream);
-    color: var(--fg-black);
-    line-height: 1.6;
-    margin: 0;
+  font-family: var(--font-mono);
+  background-color: var(--bg-cream);
+  color: var(--fg-black);
+  line-height: 1.6;
+  margin: 0;
 }
 
 button,
@@ -173,99 +189,100 @@ button,
 a,
 input[type="button"],
 input[type="submit"] {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .font-serif {
-    font-family: var(--font-serif);
+  font-family: var(--font-serif);
 }
 
 .font-mono {
-    font-family: var(--font-mono);
+  font-family: var(--font-mono);
 }
 
 .paper-texture::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-    z-index: 0;
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .btn {
-    font-family: var(--font-mono);
-    font-size: var(--text-label-sm);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 10px 16px;
-    border: 1px solid var(--border-dark);
-    background: var(--bg-paper);
-    color: var(--fg-black);
-    cursor: pointer;
-    transition: background-color var(--anima-duration-normal) var(--anima-ease-paper),
-        color var(--anima-duration-normal) var(--anima-ease-paper),
-        border-color var(--anima-duration-normal) var(--anima-ease-paper);
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    max-width: 100%;
-    overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-paper);
+  color: var(--fg-black);
+  cursor: pointer;
+  transition:
+    background-color var(--anima-duration-normal) var(--anima-ease-paper),
+    color var(--anima-duration-normal) var(--anima-ease-paper),
+    border-color var(--anima-duration-normal) var(--anima-ease-paper);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 @media (min-width: 640px) {
-    .btn {
-        font-size: var(--text-label);
-        letter-spacing: 0.15em;
-        padding: 16px 32px;
-    }
+  .btn {
+    font-size: var(--text-label);
+    letter-spacing: 0.15em;
+    padding: 16px 32px;
+  }
 }
 
 .btn::before {
-    content: "";
-    position: absolute;
-    inset: 2px;
-    border: 1px solid var(--border-dark);
-    opacity: 0;
-    transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid var(--border-dark);
+  opacity: 0;
+  transition: opacity var(--anima-duration-normal) var(--anima-ease-paper);
+  pointer-events: none;
 }
 
 @media (min-width: 640px) {
-    .btn::before {
-        inset: 4px;
-    }
+  .btn::before {
+    inset: 4px;
+  }
 }
 
 .btn:hover::before {
-    opacity: 1;
+  opacity: 1;
 }
 
 .btn:hover {
-    background: var(--fg-black);
-    color: var(--bg-paper);
+  background: var(--fg-black);
+  color: var(--bg-paper);
 }
 
 .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .btn-filled {
-    background: var(--fg-black);
-    color: var(--bg-paper);
+  background: var(--fg-black);
+  color: var(--bg-paper);
 }
 
 .btn-filled:hover {
-    background: var(--bg-paper);
-    color: var(--fg-black);
+  background: var(--bg-paper);
+  color: var(--fg-black);
 }
 
 @media (max-width: 768px) {
-    .btn {
-        min-height: 44px;
-    }
+  .btn {
+    min-height: 44px;
+  }
 }

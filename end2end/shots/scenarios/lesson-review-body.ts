@@ -24,28 +24,34 @@ const HAND_WAIT_FIRST_MS = 45_000;
 const HAND_WAIT_RETRY_MS = 10_000;
 
 export const lessonReviewBodyScenario: ShotScenario = {
-    ...descriptors["lesson-review-body"],
-    async run({ page }, sink) {
-        for (let attempt = 0; attempt < REROLL_BUDGET; attempt++) {
-            await page.goto("/lesson");
-            await page.getByTestId("lesson-page").waitFor({ state: "visible", timeout: 90_000 });
+  ...descriptors["lesson-review-body"],
+  async run({ page }, sink) {
+    for (let attempt = 0; attempt < REROLL_BUDGET; attempt++) {
+      await page.goto("/lesson");
+      await page
+        .getByTestId("lesson-page")
+        .waitFor({ state: "visible", timeout: 90_000 });
 
-            // A due profile may open straight into the review body, without
-            // an acquaintance hand — wait briefly for the hand, then proceed
-            // either way. After the first attempt the profile has proven
-            // itself, so retries wait shorter.
-            await page
-                .getByTestId("acquaintance-view")
-                .waitFor({
-                    state: "visible",
-                    timeout: attempt === 0 ? HAND_WAIT_FIRST_MS : HAND_WAIT_RETRY_MS,
-                })
-                .catch(() => undefined);
+      // A due profile may open straight into the review body, without
+      // an acquaintance hand — wait briefly for the hand, then proceed
+      // either way. After the first attempt the profile has proven
+      // itself, so retries wait shorter.
+      await page
+        .getByTestId("acquaintance-view")
+        .waitFor({
+          state: "visible",
+          timeout: attempt === 0 ? HAND_WAIT_FIRST_MS : HAND_WAIT_RETRY_MS,
+        })
+        .catch(() => undefined);
 
-            const captured = await captureReviewBody(page, sink, 6);
-            if (captured > 0) return;
-            console.log(`[shots] attempt ${attempt}: no review-body frames captured, rerolling`);
-        }
-        throw new Error(`no review-body frames captured in ${REROLL_BUDGET} attempts`);
-    },
+      const captured = await captureReviewBody(page, sink, 6);
+      if (captured > 0) return;
+      console.log(
+        `[shots] attempt ${attempt}: no review-body frames captured, rerolling`,
+      );
+    }
+    throw new Error(
+      `no review-body frames captured in ${REROLL_BUDGET} attempts`,
+    );
+  },
 };

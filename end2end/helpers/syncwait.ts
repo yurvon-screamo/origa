@@ -15,11 +15,13 @@ const USER_RECORD_URL = /\/api\/records\/v1\/(user|domain_user)(\/|$)/;
  * promise. The caller performs the action, then awaits and asserts `ok()`.
  */
 export function waitForUserRecordWrite(
-    page: Page,
-    timeout = 15_000,
+  page: Page,
+  timeout = 15_000,
 ): Promise<{ ok: () => boolean; status: () => number }> {
-    return page.waitForResponse(
-        (resp) => USER_RECORD_URL.test(resp.url()) && RECORD_WRITE_METHODS.has(resp.request().method()),
-        { timeout },
-    );
+  return page.waitForResponse(
+    (resp) =>
+      USER_RECORD_URL.test(resp.url()) &&
+      RECORD_WRITE_METHODS.has(resp.request().method()),
+    { timeout },
+  );
 }
