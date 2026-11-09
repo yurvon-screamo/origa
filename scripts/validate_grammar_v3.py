@@ -397,9 +397,7 @@ def entry_self_reference(rid: str, related: object) -> bool:
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     as_json = "--json" in sys.argv
-    default_path = (
-        _corpus_dir() / "grammar" / "grammar_v3.json"
-    )
+    default_path = _corpus_dir() / "grammar" / "grammar_v3.json"
     path = Path(args[0]) if args else default_path
 
     if not path.exists():

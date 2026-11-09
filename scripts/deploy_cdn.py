@@ -24,6 +24,7 @@ import _cdn_cache
 import _cdn_s3
 import _cdn_verify
 
+
 def _corpus_dir() -> Path:
     """Local CDN corpus root: $ORIGA_CDN_DIR or ~/origa-cdn.
 

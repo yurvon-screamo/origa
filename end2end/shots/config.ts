@@ -87,7 +87,8 @@ export interface CdnSource {
 export function resolveCdnSource(
   env: NodeJS.ProcessEnv = process.env,
 ): CdnSource {
-  const cacheDir = env.ORIGA_CDN_CACHE_DIR ?? env.ORIGA_CDN_DIR ?? defaultCdnCacheDir;
+  const cacheDir =
+    env.ORIGA_CDN_CACHE_DIR ?? env.ORIGA_CDN_DIR ?? defaultCdnCacheDir;
   if (existsSync(cacheDir)) {
     return {
       baseUrl: `http://localhost:${LOCAL_CDN_PORT}`,
