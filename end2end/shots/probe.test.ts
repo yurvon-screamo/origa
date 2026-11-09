@@ -23,10 +23,14 @@ test("a sibling directory is not inside", () => {
 // readFileSync on /proc/<pid>/cwd — a symlink to a directory — which
 // always failed with EISDIR and silently returned null, so no port
 // verdict ever fired on Linux. The readlink is the behavior under test.
-test("the cwd probe reads the live /proc symlink", { skip: process.platform !== "linux" }, () => {
+test(
+  "the cwd probe reads the live /proc symlink",
+  { skip: process.platform !== "linux" },
+  () => {
     assert.equal(readProcCwd(process.pid), process.cwd());
-});
+  },
+);
 
 test("a cwd probe of a non-existent pid degrades to unknown ownership", () => {
-    assert.equal(readProcCwd(-1), null);
+  assert.equal(readProcCwd(-1), null);
 });
