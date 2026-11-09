@@ -707,8 +707,9 @@ jobs:
                   path: cdn/
 
             - name: Serve CDN mirror locally
-              # Local twin of the e2e CDN server (`npx serve ../cdn`,
-              # end2end/playwright.config.ts): the wasm suite gets its own
+              # Local twin of the e2e CDN server (webServer in
+              # end2end/playwright.config.ts, its directory resolved by
+              # end2end/shots/config.ts): the wasm suite gets its own
               # hermetic mirror instead of the production CDN. A python
               # stdlib server because this job has no node (e2e does) —
               # and no npm-registry fetch, which would be a new network

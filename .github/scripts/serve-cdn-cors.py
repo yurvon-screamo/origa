@@ -9,8 +9,9 @@ job itself instead of the production CDN (hermetic wasm suite; see the
 - `Access-Control-Allow-Origin: *` is REQUIRED: the wasm-bindgen harness
   page runs on a different origin (127.0.0.1:<ephemeral> port), so every
   fetch to this server is cross-origin. The e2e twin of this mechanism
-  (`npx serve ../cdn` in end2end/playwright.config.ts) relies on serve's
-  own CORS default; this job has no node, hence the stdlib server.
+  (the corpus webServer in end2end/playwright.config.ts — its directory
+  is resolved by end2end/shots/config.ts) relies on serve's own CORS
+  default; this job has no node, hence the stdlib server.
 - No `Content-Encoding` header: mirror files are already raw-deflate
   compressed exactly as the production CDN serves them, and the app code
   inflates them itself. A server that transparently decodes (or announces
