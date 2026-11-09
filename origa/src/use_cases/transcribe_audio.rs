@@ -190,17 +190,31 @@ mod tests {
     #[tokio::test]
     async fn execute_passes_decoded_wav_bytes_to_engine_and_returns_text() {
         // Arrange — a minimal RIFF/WAVE payload with one PCM16 chunk.
-        let engine = FakeTranscriber::returning(Ok("テスト".to_string()));
+        let raw: [i16; 3] = [1000, -1000, 500];
+        let engine = Rc::new(FakeTranscriber::returning(Ok("テスト".to_string())));
+        let engine_handle = engine.clone();
         let use_case = TranscribeAudioUseCase::new();
 
         // Act
         let text = use_case
-            .execute(Rc::new(engine), &test_wav_bytes(&[1000, -1000, 500]))
+            .execute(engine, &test_wav_bytes(&raw))
             .await
             .unwrap();
 
         // Assert
         assert_eq!(text, "テスト");
+        assert_eq!(engine_handle.calls.get(), 1);
+        // load_audio_bytes pads/trims to 30s at 16kHz
+        assert_eq!(engine_handle.samples_len.get(), 480_000);
+        let head = engine_handle.samples_head.borrow();
+        for (i, &expected) in raw.iter().enumerate() {
+            let decoded = expected as f32 / 32768.0;
+            assert!(
+                (head[i] - decoded).abs() < 1e-6,
+                "sample {i}: {} vs {decoded}",
+                head[i]
+            );
+        }
     }
 
     /// Builds minimal RIFF/WAVE bytes: fmt (PCM16 mono 16kHz) + data.
