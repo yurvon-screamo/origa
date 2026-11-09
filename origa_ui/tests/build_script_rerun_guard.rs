@@ -43,7 +43,11 @@ fn freshest_script_output() -> Option<PathBuf> {
         let Ok(modified) = meta.modified() else {
             continue;
         };
-        if best.as_ref().is_none_or(|(t, _)| modified > *t) {
+        let is_fresher = match &best {
+            Some((t, _)) => modified > *t,
+            None => true,
+        };
+        if is_fresher {
             best = Some((modified, out));
         }
     }
