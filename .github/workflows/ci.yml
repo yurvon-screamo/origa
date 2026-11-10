@@ -1225,9 +1225,11 @@ jobs:
                   # The binary must not just run but match the Dockerfile
                   # version: a stale cache entry would otherwise race an old
                   # TrailBase under a fresh key. `trail --version` prints
-                  # `trail vX.Y.Z-…`; compare on the bare semver.
-                  expected="${EXPECTED_VERSION#v}"
-                  if command -v trail &> /dev/null && trail --version 2>&1 | grep -q -- "$expected"; then
+                  # `trail vX.Y.Z-…`; extract the semver and compare exactly —
+                  # no substring matching (unescaped dots and no anchors would
+                  # let `0.35.1` match a v0.35.10 binary).
+                  got="$(trail --version 2>&1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+                  if command -v trail &> /dev/null && [[ "$got" == "$EXPECTED_VERSION" ]]; then
                     echo "valid=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "valid=false" >> "$GITHUB_OUTPUT"

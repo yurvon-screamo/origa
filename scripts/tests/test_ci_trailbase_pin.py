@@ -165,18 +165,21 @@ def test_validate_step_compares_binary_version():
     """The validate step checks the binary version, not just executability.
 
     A stale cache entry would otherwise run an old TrailBase under a fresh
-    key; the version comparison is the second line of defense.
+    key; the version comparison is the second line of defense. The semver
+    is extracted from `trail --version` and compared exactly — substring
+    matching (unescaped dots, no anchors) would let `0.35.1` pass a
+    v0.35.10 binary.
     """
     validate = step_block(workflow_text(), VALIDATE_STEP_NAME)
     assert VALIDATE_ENV_LINE in validate, (
         "the validate step must receive the expected version from the read step"
     )
-    assert 'expected="${EXPECTED_VERSION#v}"' in validate, (
-        "the validate step must strip the v-prefix before comparing"
-    )
-    assert 'grep -q -- "$expected"' in validate, (
-        "the validate step must compare `trail --version` output against the "
-        "expected semver"
+    assert (
+        "got=\"$(trail --version 2>&1 | grep -oE 'v[0-9]+\\.[0-9]+\\.[0-9]+' | head -n1)\""
+        in validate
+    ), "the validate step must extract the semver from `trail --version` output"
+    assert '[[ "$got" == "$EXPECTED_VERSION" ]]' in validate, (
+        "the validate step must compare the extracted semver exactly, not by substring"
     )
 
 
