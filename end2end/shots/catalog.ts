@@ -107,6 +107,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "counter-due",
   },
+  "onboarding-import-progress": {
+    id: "onboarding-import-progress",
+    title: "Онбординг: прогресс импорта корпуса",
+    route: "/onboarding",
+    locale: "ru-RU",
+    preset: "onboarding-summary",
+  },
   "home-due-counter": {
     id: "home-due-counter",
     title: "Счётчик просроченных карточек",

@@ -8,6 +8,7 @@ import { fresh } from "./fresh.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { onboarded } from "./onboarded.ts";
 import { onboardedHistory } from "./onboarded-history.ts";
+import { onboardingSummary } from "./onboarding-summary.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
 import { withWord } from "./with-word.ts";
@@ -38,5 +39,6 @@ export const presets: Record<PresetId, Preset> = {
   "scoring-n5": scoringN5,
   "onboarded-history": onboardedHistory,
   "irodori-nyuumon": irodoriNyuumon,
+  "onboarding-summary": onboardingSummary,
   "with-word": withWord,
 };

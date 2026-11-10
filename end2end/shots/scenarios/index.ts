@@ -18,6 +18,7 @@ import { lessonReadingQuizScenario } from "./lesson-reading-quiz.ts";
 import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
+import { onboardingImportProgressScenario } from "./onboarding-import-progress.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 import { wordsGridScenario } from "./words-grid.ts";
@@ -53,6 +54,7 @@ export const implementations: Record<string, ShotScenario> = {
   [grammarPageScenario.id]: grammarPageScenario,
   [countersDetailScenario.id]: countersDetailScenario,
   [wordsGridScenario.id]: wordsGridScenario,
+  [onboardingImportProgressScenario.id]: onboardingImportProgressScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {
