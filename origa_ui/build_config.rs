@@ -69,12 +69,14 @@ pub(crate) const DEFAULT_UMAMI_WEBSITE_ID: &str = "57c7d57f-3bd9-48cf-b9ee-ea02c
 /// identifier status as the production ID above.
 pub(crate) const DEFAULT_UMAMI_DEV_WEBSITE_ID: &str = "f0af05d8-a31b-462c-8f6c-999b95da1aa4";
 
-/// Website-id default by build context. `ORIGA_VERSION` is set only on CI
+/// Website-id default by build context. `ORIGA_VERSION` is set on CI
 /// surfaces (`docker.yml`, `tauri.yml`); `build.rs` reads it through
 /// `env::var`, so unset arrives as `None` and an empty value as `Some("")`.
 /// Per the ADR-020 empty==unset contract both fall to the dev website, as
-/// does the literal `"dev"` that `build.rs` emits for local builds. Any
-/// other non-empty value is a real CI version → production website.
+/// does the literal `"dev"` — shipped as `ENV ORIGA_VERSION=dev` in
+/// `origa_ui/Dockerfile` (local docker builds) and settable by a developer
+/// shell. Any other non-empty value is a real CI version → production
+/// website.
 pub(crate) fn umami_default_website_id(version: Option<&str>) -> &'static str {
     match version {
         Some(v) if !v.is_empty() && v != "dev" => DEFAULT_UMAMI_WEBSITE_ID,

@@ -75,7 +75,8 @@ fn umami_empty_version_defaults_to_dev_website() {
 
 #[test]
 fn umami_literal_dev_version_defaults_to_dev_website() {
-    // build.rs's own unwrap_or("dev") default for local builds.
+    // The "dev" literal in the wild: `ENV ORIGA_VERSION=dev` in
+    // origa_ui/Dockerfile (local docker builds) and explicit user shells.
     assert_eq!(
         resolve_umami(None, None, Some("dev")),
         DEFAULT_UMAMI_DEV_WEBSITE_ID
