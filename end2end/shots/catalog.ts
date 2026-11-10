@@ -114,6 +114,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "irodori-nyuumon",
   },
+  "home-jlpt-details": {
+    id: "home-jlpt-details",
+    title: "JLPT-карточка: раскрытая матрица категорий",
+    route: "/home",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
   "lesson-counter-pack": {
     id: "lesson-counter-pack",
     title: "Пачка связок счётного суффикса в уроке",
