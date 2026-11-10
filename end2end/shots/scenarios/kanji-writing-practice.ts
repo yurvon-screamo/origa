@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
