@@ -28,6 +28,9 @@
     "home:home": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "home-jlpt-details:home-jlpt-details": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "jft-card:home-jft": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
