@@ -5,102 +5,46 @@
   },
   "screens": {
     "counter-scoring:card-after": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "counters-detail:detail-full": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "counters-detail:detail-viewport": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "feedback-form:feedback-modal-filled": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "feedback-form:feedback-modal-subject": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "feedback-form:lesson-header-report-disabled": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "grammar-page:grid-full": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "grammar-page:grid-viewport": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home-accuracy-chart:accuracy-chart": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home-due-counter:due-counter": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home-due-counter:due-day-one": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home:home": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "jft-card:home-jft": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "jft-card:sets-jft-badge": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "lesson-acquaintance-grammar:grammar-answer": {
       "questions": [
@@ -111,38 +55,20 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-revealed"
-        ]
+        "lesson-stage": ["training-revealed"]
       }
     },
     "lesson-acquaintance-kanji:kanji-presentation": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "lesson-counter-pack:pack-answer": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "lesson-counter-pack:pack-answer-table": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "lesson-counter-pack:pack-front": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "lesson-example-recall:example-answer": {
       "questions": [
@@ -153,9 +79,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-revealed"
-        ]
+        "lesson-stage": ["training-revealed"]
       }
     },
     "lesson-example-recall:example-question": {
@@ -167,9 +91,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-question"
-        ]
+        "lesson-stage": ["training-question"]
       }
     },
     "lesson-example:acquaintance-example": {
@@ -181,9 +103,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "presentation"
-        ]
+        "lesson-stage": ["presentation"]
       }
     },
     "lesson-example:answer-example": {
@@ -195,9 +115,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-revealed"
-        ]
+        "lesson-stage": ["training-revealed"]
       }
     },
     "lesson-reading-quiz:quiz-answer": {
@@ -210,9 +128,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "quiz-answer"
-        ]
+        "lesson-stage": ["quiz-answer"]
       }
     },
     "lesson-reading-quiz:quiz-question": {
@@ -224,9 +140,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "quiz-question"
-        ]
+        "lesson-stage": ["quiz-question"]
       }
     },
     "lesson-review-body:review-body-*": {
@@ -255,9 +169,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "presentation"
-        ]
+        "lesson-stage": ["presentation"]
       }
     },
     "lesson-unification:acquaintance-training-answer-1": {
@@ -269,9 +181,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-revealed"
-        ]
+        "lesson-stage": ["training-revealed"]
       }
     },
     "lesson-unification:acquaintance-training-answer-2": {
@@ -283,9 +193,7 @@
         "card-has-japanese"
       ],
       "expect": {
-        "lesson-stage": [
-          "training-revealed"
-        ]
+        "lesson-stage": ["training-revealed"]
       }
     },
     "lesson-unification:lesson-complete": {
@@ -296,31 +204,17 @@
         "lesson-stage"
       ],
       "expect": {
-        "lesson-stage": [
-          "complete"
-        ]
+        "lesson-stage": ["complete"]
       }
     },
     "token-popup:token-popup-report": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "word-examples:detail-full": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "word-examples:detail-viewport": {
-      "questions": [
-        "text-overlap",
-        "tofu-glyphs",
-        "broken-state"
-      ]
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }
