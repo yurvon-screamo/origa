@@ -7,7 +7,8 @@ use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 use origa::domain::{
-    NativeLanguage, TokenTranslation, lookup_precomputed, lookup_tokens_translations, tokenize_text,
+    NativeLanguage, TokenTranslation, katakana_to_hiragana, lookup_precomputed,
+    lookup_tokens_translations, tokenize_text,
 };
 
 use crate::feedback::{FeedbackCategory, FeedbackContext, FeedbackSource, FeedbackSubject};
@@ -193,7 +194,10 @@ pub fn TranslatorText(
                     key=|(idx, _)| *idx
                     children=move |(idx, token): (usize, TokenTranslation)| {
                         let surface = token.surface_form.clone();
-                        let reading = token.reading.clone();
+                        // Ruby renders hiragana (owner request): lindera
+                        // readings are katakana lemma readings — カタカナ rt
+                        // made them read like foreign names (トウ, アキラ).
+                        let reading = katakana_to_hiragana(&token.reading.clone());
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
                         let grammar_label = token.grammar_label.clone();

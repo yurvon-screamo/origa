@@ -25,23 +25,6 @@ use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
-/// Split a sentence at the highlighted word occurrence. Character offsets;
-/// negative offsets mean "unlocatable" — everything stays unhighlighted.
-pub fn split_highlight(text: &str, start: i32, end: i32) -> (String, String, String) {
-    if start < 0 || end < 0 {
-        return (text.to_string(), String::new(), String::new());
-    }
-    let (start, end) = (start as usize, end as usize);
-    let chars: Vec<char> = text.chars().collect();
-    if start >= end || start > chars.len() || end > chars.len() {
-        return (text.to_string(), String::new(), String::new());
-    }
-    let head: String = chars[..start].iter().collect();
-    let mid: String = chars[start..end].iter().collect();
-    let tail: String = chars[end..].iter().collect();
-    (head, mid, tail)
-}
-
 /// Find the user's vocabulary study card for a dictionary word.
 fn find_word_card(user: &User, word: &str) -> Option<(Ulid, StudyCard)> {
     let found = user
@@ -420,7 +403,24 @@ pub(super) fn ExampleCard(
 
 #[cfg(test)]
 mod tests {
-    use super::split_highlight;
+    /// Split a sentence at the highlighted word occurrence. Character
+    /// offsets; negative offsets mean "unlocatable" — everything stays
+    /// unhighlighted. Test twin of the highlight-range contract the
+    /// ExampleRubyText render consumes.
+    fn split_highlight(text: &str, start: i32, end: i32) -> (String, String, String) {
+        if start < 0 || end < 0 {
+            return (text.to_string(), String::new(), String::new());
+        }
+        let (start, end) = (start as usize, end as usize);
+        let chars: Vec<char> = text.chars().collect();
+        if start >= end || start > chars.len() || end > chars.len() {
+            return (text.to_string(), String::new(), String::new());
+        }
+        let head: String = chars[..start].iter().collect();
+        let mid: String = chars[start..end].iter().collect();
+        let tail: String = chars[end..].iter().collect();
+        (head, mid, tail)
+    }
 
     #[test]
     fn splits_at_char_offsets() {
