@@ -799,15 +799,32 @@ jobs:
                   tail -20 /tmp/cdn-mirror-access.log || true
                   exit 1
 
-            - name: Install wasm-pack
-              # Pinned: with no `version` input the action installs whatever
-              # it resolves as "latest", which broke on 2026-09-20 (resolved
-              # to an ancient v0.9.1 whose CLI rejects `--features`, failing
-              # the job on every open PR). The input goes into the release
-              # URL verbatim — the tag has a `v` prefix, so it must too.
-              uses: jetli/wasm-pack-action@v0.4.0
+            - name: Restore wasm-pack
+              id: wasm-pack-cache
+              uses: actions/cache@v6
               with:
-                  version: "v0.15.0"
+                  path: ~/.cargo/bin/wasm-pack
+                  key: wasm-pack-v0.15.0
+
+            - name: Install wasm-pack
+              # Pinned: with no pin the tool resolves whatever it sees as
+              # "latest", which broke on 2026-09-20 (jetli/wasm-pack-action,
+              # previously used here, resolved to an ancient v0.9.1 whose CLI
+              # rejects `--features`, failing the job on every open PR). The
+              # release URL goes verbatim into the download — the tag has a
+              # `v` prefix, so it must too. Direct release-asset download
+              # replaces the third-party action (same pattern as the
+              # trailbase download in the e2e job), and the miss path gets
+              # --retry — a network 504 here used to fail the job outright.
+              if: steps.wasm-pack-cache.outputs.cache-hit != 'true'
+              run: |
+                  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors \
+                      https://github.com/rustwasm/wasm-pack/releases/download/v0.15.0/wasm-pack-v0.15.0-x86_64-unknown-linux-musl.tar.gz \
+                      | tar -xz -C "$HOME/.cargo/bin" --strip-components=1 \
+                          wasm-pack-v0.15.0-x86_64-unknown-linux-musl/wasm-pack
+                  chmod +x "$HOME/.cargo/bin/wasm-pack"
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+                  wasm-pack --version
 
             - name: Run WASM component tests
               run: wasm-pack test --headless --chrome origa_ui --features csr
