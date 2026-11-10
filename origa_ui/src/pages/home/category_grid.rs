@@ -1,7 +1,8 @@
 //! Compact category matrix for the expanded JLPT progress card
-//! (`JlptProgressCard`): frameless tiles in a 2×2 grid on mobile, one row
-//! of four from `sm`. Each tile keeps the full stat content (icon, label,
-//! N/M, layered progress) and stays a navigational link.
+//! (`JlptProgressCard`): frameless stat tiles — each category is one calm
+//! line (icon + label + N/M) over the layered progress track. One column
+//! on mobile, 2×2 from `sm`, four in a row from `lg`. Every tile stays a
+//! navigational link.
 
 use crate::i18n::{td_string, use_i18n};
 use leptos::prelude::*;
@@ -28,7 +29,7 @@ pub fn CategoryProgressGrid(
 
     view! {
         <div
-            class="grid grid-cols-2 gap-x-4 gap-y-3 items-stretch sm:grid-cols-4"
+            class="grid grid-cols-1 gap-x-4 gap-y-3 items-stretch sm:grid-cols-2 lg:grid-cols-4"
             data-testid=grid_test_id
         >
             <CategoryTile
@@ -150,9 +151,9 @@ fn CategoryTile(
             >
                 <div class="flex items-start gap-2">
                     {icon_view}
-                    // Long labels wrap on narrow tiles ("Счётные суффиксы"
-                    // does not fit one line at ~160px); numbers stay one
-                    // line top-right.
+                    // The label wraps if a locale outgrows the tile
+                    // (never truncates — the name is the content); the
+                    // N/M figure stays one line top-right.
                     <span class="min-w-0 font-mono text-[11px] uppercase leading-snug tracking-[0.15em] text-[var(--fg-muted)]">
                         {move || label.get()}
                     </span>
