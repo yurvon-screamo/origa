@@ -7,7 +7,6 @@ use origa::domain::OrigaError;
 use tokio::sync::Semaphore;
 
 use crate::api::translate_word;
-use crate::utils::get_base_path;
 
 #[derive(Debug, serde::Deserialize)]
 struct ValidationRecord {
@@ -148,8 +147,7 @@ pub async fn run_regenerate_invalid(
     russian_only: bool,
     english_only: bool,
 ) -> Result<(), OrigaError> {
-    let base_path = get_base_path();
-    let vocab_path = base_path.join("cdn").join("dictionary");
+    let vocab_path = crate::utils::cdn_dir().join("dictionary");
 
     let mut invalid_words = load_invalid_words(&input)?;
     if invalid_words.is_empty() {

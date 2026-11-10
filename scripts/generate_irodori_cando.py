@@ -28,10 +28,11 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 import xlrd
+from _cdn_corpus import corpus_dir
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXCEL_PATH = PROJECT_ROOT / "scripts" / "data" / "irodori_cando.xls"
-CDN_OUTPUT = PROJECT_ROOT / "cdn" / "well_known_set" / "irodori_cando.json"
+CDN_OUTPUT = corpus_dir() / "well_known_set" / "irodori_cando.json"
 FIXTURE_OUTPUT = PROJECT_ROOT / "origa" / "tests" / "fixtures" / "irodori_cando.json"
 
 SOURCE_LABEL = "JF Can-do for Life in Japan -> Irodori, 2023-10 revision"

@@ -24,7 +24,7 @@ over when missing there; both rule_ids enter the migration map.
 
 Usage:
     python scripts/apply_pruning_staging.py \
-        [--corpus cdn/grammar/grammar_v3.json] \
+        [--corpus <corpus>/grammar/grammar_v3.json] \
         [--staging /tmp/opencode/staging]
 """
 
@@ -32,6 +32,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from _cdn_corpus import corpus_dir as _corpus_dir
 
 # rule_ids resolved from patterns at runtime by this script (see PATTERNS).
 DELETE_PATTERNS = {
@@ -100,7 +101,7 @@ def core(p: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v3.json")
+        "--corpus", type=Path, default=_corpus_dir() / "grammar" / "grammar_v3.json"
     )
     parser.add_argument("--staging", type=Path, default=Path("/tmp/opencode/staging"))
     args = parser.parse_args()

@@ -278,51 +278,8 @@ pub fn furiganize_text_precomputed(text: &str, known_kanji: &HashSet<char>) -> O
 
 #[cfg(test)]
 mod tests {
-    use std::{env, fs, io::Read, path::PathBuf};
-
-    use flate2::read::DeflateDecoder;
-
     use super::*;
-    use crate::domain::{
-        DictionaryData, PrecomputedEntry, init_dictionary, install_precomputed_entry,
-        is_dictionary_loaded, reset_precomputed_store,
-    };
-
-    fn decompress(data: Vec<u8>) -> Vec<u8> {
-        let mut decoder = DeflateDecoder::new(&data[..]);
-        let mut decompressed = Vec::new();
-        decoder.read_to_end(&mut decompressed).unwrap();
-        decompressed
-    }
-
-    fn ensure_dictionary() {
-        if is_dictionary_loaded() {
-            return;
-        }
-
-        let base = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap())
-            .parent()
-            .unwrap()
-            .join("cdn")
-            .join("dictionaries");
-        let dict_dir = base.join(crate::domain::SUDACHIDICT_DIR);
-
-        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
-
-        let data = DictionaryData {
-            char_def: decompress(read_file("char_def.bin")),
-            matrix: decompress(read_file("matrix.mtx")),
-            dict_trie: decompress(read_file("dict.trie")),
-            dict_vals_idx: decompress(read_file("dict.valsidx")),
-            dict_vals: decompress(read_file("dict.vals")),
-            unk: decompress(read_file("unk.bin")),
-            words_idx: decompress(read_file("dict.wordsidx")),
-            words: decompress(read_file("dict.words")),
-            metadata: read_file("metadata.json"),
-        };
-
-        init_dictionary(data).unwrap();
-    }
+    use crate::domain::{PrecomputedEntry, install_precomputed_entry, reset_precomputed_store};
 
     #[test]
     fn should_create_segment_with_reading() {
@@ -349,7 +306,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_kanji_word_with_reading() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
         assert!(!segments.is_empty());
@@ -358,7 +315,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_hiragana_without_reading() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         let segments = furiganize_segments("たべもの", &known_kanji).unwrap();
         assert!(!segments.is_empty());
@@ -372,7 +329,7 @@ mod tests {
     // `has_reading() == true`.
     #[test]
     fn should_furiganize_unknown_kanji_without_empty_reading() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         // 杏璃 is a single token in SudachiDict now; 蕗 alone is not a lemma,
         // so a name ending in it takes the unknown-kanji path.
@@ -391,7 +348,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_mixed_text() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         let segments = furiganize_segments("食べます", &known_kanji).unwrap();
         assert!(!segments.is_empty());
@@ -408,7 +365,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_mixed_japanese_and_ascii() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         let segments = furiganize_segments("hello食べ物world", &known_kanji).unwrap();
         assert!(!segments.is_empty());
@@ -474,7 +431,7 @@ mod tests {
 
     #[test]
     fn should_furiganize_text_backwards_compatible() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
         let result = furiganize_text("食べ物", &known_kanji).unwrap();
         assert!(result.contains("<ruby"));
@@ -577,7 +534,7 @@ mod tests {
                 tokens: vec![],
             },
         );
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
 
         // Act
@@ -629,7 +586,7 @@ mod tests {
 
     #[test]
     fn should_show_furigana_when_only_partial_kanji_known() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let mut known_kanji: HashSet<char> = HashSet::new();
         known_kanji.insert('食');
 
@@ -646,7 +603,7 @@ mod tests {
 
     #[test]
     fn should_show_furigana_when_no_kanji_known() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let known_kanji: HashSet<char> = HashSet::new();
 
         let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
@@ -662,7 +619,7 @@ mod tests {
 
     #[test]
     fn should_hide_furigana_when_all_kanji_known() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let mut known_kanji: HashSet<char> = HashSet::new();
         known_kanji.insert('食');
         known_kanji.insert('物');
@@ -824,8 +781,11 @@ mod tests {
         assert_eq!(segments[2].reading(), Some("もの"));
     }
 
-    fn setup_dictionaries_for_integration() {
-        ensure_dictionary();
+    /// Embedded furigana dictionary (corpus-free); the tokenizer fixture is
+    /// loaded by the `real_dictionaries_or_skip!` guard at test sites.
+    /// Embedded furigana dictionary (corpus-free); the tokenizer fixture is
+    /// loaded by the `real_dictionaries_or_skip!` guard at test sites.
+    fn setup_furigana_dict() {
         if !is_furigana_dict_loaded() {
             let content = "\
 食べる|たべる|0:た
@@ -848,7 +808,8 @@ mod tests {
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         reset_precomputed_store();
-        setup_dictionaries_for_integration();
+        crate::corpus::real_dictionaries_or_skip!();
+        setup_furigana_dict();
         let known_kanji: HashSet<char> = HashSet::new();
         let segments = furiganize_segments("食べ物", &known_kanji).unwrap();
 
@@ -879,7 +840,8 @@ mod tests {
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         reset_precomputed_store();
-        setup_dictionaries_for_integration();
+        crate::corpus::real_dictionaries_or_skip!();
+        setup_furigana_dict();
         let mut known_kanji: HashSet<char> = HashSet::new();
         known_kanji.insert('食');
         let segments = furiganize_segments("食べ物", &known_kanji).unwrap();

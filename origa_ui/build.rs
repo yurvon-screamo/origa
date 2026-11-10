@@ -10,10 +10,11 @@ fn main() {
     handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
-    // The font source depends on this env (resolve_fonts_dir): cargo tracks
-    // the variable's presence too, so adding, changing or removing it
-    // re-runs the build script.
-    println!("cargo:rerun-if-env-changed=ORIGA_CDN_CACHE_DIR");
+    // The font source depends on this env (cdn_dir): cargo tracks the
+    // variable's presence too, so adding, changing or removing it re-runs
+    // the build script. Without this a corpus switch leaves a stale font
+    // registry baked into the bundle.
+    println!("cargo:rerun-if-env-changed=ORIGA_CDN_DIR");
     generate_font_registry();
     stage_fonts_for_bundling();
     println!("cargo:rerun-if-changed=build.rs");
@@ -59,16 +60,23 @@ fn main() {
     println!("cargo:rustc-env=SENTRY_ENVIRONMENT_UI={sentry_environment}");
     println!("cargo:rustc-env=SENTRY_RELEASE_UI={sentry_release}");
 
-    // Umami Cloud analytics (ADR-054). `UMAMI_DISABLED=1` compiles the
-    // tracker out entirely for CI builds that execute the app (e2e headless
-    // runs, android-smoke emulator) so their localhost traffic never reaches
-    // production analytics; `UMAMI_WEBSITE_ID` optionally overrides the
-    // committed default (website IDs are public — see build_config.rs). The
+    // Umami website id by build context (ADR-054; isolation task
+    // 20261109071819). `UMAMI_DISABLED=1` compiles the tracker out entirely
+    // for CI builds that execute the app (e2e headless runs, android-smoke
+    // emulator); otherwise an explicit non-empty `UMAMI_WEBSITE_ID` wins,
+    // and the default is picked by build context: real `ORIGA_VERSION`
+    // (CI: docker.yml, tauri.yml) → production website, unset/empty/"dev"
+    // (all local builds: trunk serve, cargo tauri dev, local e2e, shots) →
+    // dev website. The version signal is read via `env::var` (ADR-024
+    // pattern — a build-script re-execution re-reads the environment,
+    // `rerun-if-env-changed=ORIGA_VERSION` below), not via `option_env!`,
+    // whose value is frozen into the compiled build-script binary. The
     // emitted value is read via `env!()` by `core::analytics`; an empty
     // value makes the runtime injection a no-op.
     let umami_website_id = build_config::resolve_umami(
         env::var("UMAMI_DISABLED").ok().as_deref(),
         env::var("UMAMI_WEBSITE_ID").ok().as_deref(),
+        env::var("ORIGA_VERSION").ok().as_deref(),
     );
     println!("cargo:rustc-env=UMAMI_WEBSITE_ID={umami_website_id}");
     println!("cargo:rerun-if-env-changed=UMAMI_DISABLED");
@@ -85,6 +93,21 @@ fn main() {
     println!("cargo:rerun-if-env-changed=SENTRY_ENVIRONMENT");
     println!("cargo:rerun-if-changed=build_config.rs");
     println!("cargo:rerun-if-changed=../build_defaults.rs");
+}
+
+/// Local corpus root (mirrors `origa::corpus::cdn_dir`): `$ORIGA_CDN_DIR`
+/// override first, then `~/origa-cdn`. The corpus is machine-local state
+/// outside the repository; a build script cannot import the crate, so the
+/// resolution contract is mirrored here — keep the two in sync.
+fn cdn_dir() -> PathBuf {
+    if let Some(dir) = env::var_os("ORIGA_CDN_DIR").filter(|v| !v.is_empty()) {
+        return PathBuf::from(dir);
+    }
+    let home = env::var_os("HOME")
+        .or_else(|| env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("origa-cdn"));
+    home.join("origa-cdn")
 }
 
 fn handle_i18n() {
@@ -130,12 +153,7 @@ fn handle_lindera_dictionary() {
     // (a build script cannot import from the crate itself) and the paths in
     // scripts/deploy_cdn.py — bump all three together.
     const SUDACHIDICT_DIR: &str = "sudachidict-20260723";
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let public_dict_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("dictionaries")
-        .join(SUDACHIDICT_DIR);
+    let public_dict_dir = cdn_dir().join("dictionaries").join(SUDACHIDICT_DIR);
 
     let required = [
         "char_def.bin",
@@ -266,11 +284,7 @@ fn load_json(path: &Path) -> WellKnownSet {
 }
 
 fn generate_well_known_meta() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let base_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("well_known_set");
+    let base_dir = cdn_dir().join("well_known_set");
     let output_file = base_dir.join("well_known_sets_meta.json");
 
     if !base_dir.exists() {
@@ -683,31 +697,7 @@ fn generate_well_known_meta() {
     );
 }
 
-/// Fonts source for the registry (`generate_font_registry`) and staging
-/// (`stage_fonts_for_bundling`): a non-empty `ORIGA_CDN_CACHE_DIR` pointing
-/// at a corpus that carries `fonts/` wins, otherwise the repo-local
-/// `cdn/fonts` (gitignored, absent in fresh worktrees).
-///
-/// The capture stack mirrors this resolution (`end2end/shots/probe.ts`,
-/// `resolveBuildFontsDir`), so the preflight check and the build read the
-/// same place — before the env wiring a corpus-by-env capture passed
-/// preflight while the build read the (absent) repo-local `cdn/fonts` and
-/// baked a sans-serif bundle.
-fn resolve_fonts_dir(manifest_dir: &str) -> Option<PathBuf> {
-    if let Ok(cache_dir) = env::var("ORIGA_CDN_CACHE_DIR") {
-        if !cache_dir.is_empty() {
-            let from_env = Path::new(&cache_dir).join("fonts");
-            if from_env.is_dir() {
-                return Some(from_env);
-            }
-        }
-    }
-    let repo_local = Path::new(manifest_dir).join("..").join("cdn").join("fonts");
-    repo_local.is_dir().then_some(repo_local)
-}
-
-/// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files of the resolved
-/// fonts dir (see `resolve_fonts_dir`).
+/// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files in `cdn/fonts/`.
 ///
 /// Each file is named `<logical>-<sha8>.woff2` (content hash, see
 /// `scripts/subset_fonts.py`). The hash suffix is the CDN cache-bust key: a
@@ -715,12 +705,11 @@ fn resolve_fonts_dir(manifest_dir: &str) -> Option<PathBuf> {
 /// can never serve a stale font (PR #182 class).
 ///
 /// The generated module exposes `FONT_FILES: &[(&str, &str)]` mapping the
-/// logical name (used by `font_face_css`) to the on-CDN filename. When the
-/// fonts dir is absent the array is empty, so the app degrades gracefully
+/// logical name (used by `font_face_css`) to the on-CDN filename. When
+/// `cdn/fonts/` is absent the array is empty, so the app degrades gracefully
 /// (no @font-face injected, system fallback) instead of failing to build.
 fn generate_font_registry() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let fonts_dir = resolve_fonts_dir(&manifest_dir);
+    let fonts_dir = cdn_dir().join("fonts");
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_file = Path::new(&out_dir).join("fonts.rs");
 
@@ -732,13 +721,13 @@ fn generate_font_registry() {
     // fonts restored into an existing worktree are picked up on the next
     // build.rs rerun (any source/env change), not by the appearance itself —
     // same degradation class as generate_well_known_meta's early return.
-    if let Some(fonts_dir) = &fonts_dir {
+    if fonts_dir.is_dir() {
         println!("cargo:rerun-if-changed={}", fonts_dir.display());
     }
 
     let mut entries: Vec<(String, String)> = Vec::new();
-    if let Some(fonts_dir) = &fonts_dir {
-        let mut names: Vec<_> = fs::read_dir(fonts_dir)
+    if fonts_dir.is_dir() {
+        let mut names: Vec<_> = fs::read_dir(&fonts_dir)
             .unwrap()
             .filter_map(|e| e.ok())
             .filter_map(|e| e.file_name().to_str().map(str::to_owned))
@@ -777,34 +766,30 @@ fn strip_hash_suffix(filename: &str) -> String {
     }
 }
 
-/// Copy the canonical `*.woff2` of the resolved fonts dir (see
-/// `resolve_fonts_dir`) into `origa_ui/public/fonts/` so the existing trunk
-/// `copy-dir href="public"` serves them at `/fonts/` on the local origin
-/// (Tauri builds, first-launch offline CJK). trunk does not accept assets
-/// outside the `index.html` directory (trunk-rs/trunk#1045), so we stage
-/// the canonical files inside `public/` first. `public/fonts/` is
-/// gitignored — the resolved fonts dir remains the single source of truth,
-/// mirrored verbatim here.
+/// Copy the canonical `cdn/fonts/*.woff2` into `origa_ui/public/fonts/` so the
+/// existing trunk `copy-dir href="public"` serves them at `/fonts/` on the
+/// local origin (Tauri builds, first-launch offline CJK). trunk does not accept
+/// assets outside the `index.html` directory (trunk-rs/trunk#1045), so we stage
+/// the canonical files inside `public/` first. `public/fonts/` is gitignored —
+/// `cdn/fonts/` remains the single source of truth, mirrored verbatim here.
 ///
-/// Idempotent: re-runs only when the fonts dir changes (`rerun-if-changed`),
-/// and only rewrites a target file when its bytes differ from the source, so
+/// Idempotent: re-runs only when `cdn/fonts/` changes (`rerun-if-changed`), and
+/// only rewrites a target file when its bytes differ from the source, so
 /// incremental trunk rebuilds are not invalidated by no-op copies.
 fn stage_fonts_for_bundling() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let src_dir = match resolve_fonts_dir(&manifest_dir) {
-        Some(dir) => dir,
-        None => {
-            // Fonts dir absent (e.g. fresh checkout without CDN assets):
-            // font_face degrades to FONT_FILES empty -> system fallback.
-            // Do not fail the build.
-            //
-            // No rerun-if-changed either (see generate_font_registry): a
-            // watched but missing path re-dirties the build script on every
-            // invocation.
-            return;
-        },
-    };
-    let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
+    let src_dir = cdn_dir().join("fonts");
+    let dest_dir = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+        .join("public")
+        .join("fonts");
+
+    if !src_dir.is_dir() {
+        // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face
+        // degrades to FONT_FILES empty -> system fallback. Do not fail the build.
+        //
+        // No rerun-if-changed either (see generate_font_registry): a watched
+        // but missing path re-dirties the build script on every invocation.
+        return;
+    }
 
     println!("cargo:rerun-if-changed={}", src_dir.display());
 

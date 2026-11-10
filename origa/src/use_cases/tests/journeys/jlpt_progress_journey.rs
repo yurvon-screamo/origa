@@ -7,13 +7,12 @@ use crate::domain::{
 };
 use crate::traits::UserRepository;
 use crate::use_cases::MarkCardAsKnownUseCase;
-use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, get_cdn_dir, init_real_dictionaries,
-};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 
 fn load_jlpt_n5_words() -> HashSet<String> {
-    let cdn_dir = get_cdn_dir();
-    let path = cdn_dir.join("well_known_set").join("jlpt_n5.json");
+    let path = crate::corpus::cdn_dir()
+        .join("well_known_set")
+        .join("jlpt_n5.json");
     let content = std::fs::read_to_string(&path).expect("Failed to read jlpt_n5.json");
     let data: serde_json::Value =
         serde_json::from_str(&content).expect("Failed to parse jlpt_n5.json");
@@ -58,7 +57,7 @@ fn build_real_jlpt_content() -> JlptContent {
 
 #[test]
 fn token_base_forms_match_jlpt_n5_words() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let n5_words = load_jlpt_n5_words();
     let tokens = tokenize_text("私は本を読みます").expect("Tokenization failed");
@@ -89,7 +88,7 @@ fn token_base_forms_match_jlpt_n5_words() {
 
 #[test]
 fn vocabulary_card_content_key_matches_jlpt_n5() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let n5_words = load_jlpt_n5_words();
     let result = VocabularyCard::from_text("私は本を読みます", &NativeLanguage::Russian);
@@ -118,7 +117,7 @@ fn vocabulary_card_content_key_matches_jlpt_n5() {
 
 #[tokio::test]
 async fn mark_known_and_recalculate_updates_jlpt_progress() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let mut user = User::new(
         "test@example.com".to_string(),

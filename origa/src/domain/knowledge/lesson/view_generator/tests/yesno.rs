@@ -1,8 +1,8 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::{LessonCardView, YesNoCard};
 use crate::domain::value_objects::NativeLanguage;
-use crate::test_support::init_real_dictionaries;
 use rand::{SeedableRng, rngs::StdRng};
 use rstest::rstest;
 
@@ -35,7 +35,7 @@ fn check_answer_compares_user_answer_to_card_correctness(
 #[case::seed_42(42)]
 #[case::seed_123(123)]
 fn generate_yesno_produces_statement_with_non_empty_text(#[case] seed: u64) {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab_words = ["猫", "犬", "鳥", "魚"];
     let cards: Vec<Card> = vocab_words
@@ -60,7 +60,7 @@ fn generate_yesno_produces_statement_with_non_empty_text(#[case] seed: u64) {
 
 #[test]
 fn generate_yesno_falls_back_to_normal_when_no_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let card = create_vocab_card_with_word("猫");
     let empty_cards: Vec<Card> = vec![];
@@ -84,7 +84,7 @@ fn generate_yesno_falls_back_to_normal_when_no_distractors() {
 
 #[test]
 fn generate_yesno_produces_yesno_in_most_cases() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab_words = ["猫", "犬", "鳥", "魚", "馬", "牛", "羊", "豚"];
     let cards: Vec<Card> = vocab_words
@@ -115,7 +115,7 @@ fn generate_yesno_produces_yesno_in_most_cases() {
 
 #[test]
 fn generate_yesno_balances_correct_and_incorrect_statements() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab_words = ["猫", "犬", "鳥", "魚"];
     let cards: Vec<Card> = vocab_words
@@ -160,7 +160,7 @@ fn generate_yesno_balances_correct_and_incorrect_statements() {
 
 #[test]
 fn generate_yesno_kanji_with_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let cards: Vec<Card> = ["日", "月", "水", "火"]
         .iter()
         .map(|k| Card::Kanji(KanjiCard::new_test(k.to_string())))
@@ -184,7 +184,7 @@ fn generate_yesno_kanji_with_distractors() {
 
 #[test]
 fn generate_yesno_kanji_fallback_no_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let card = Card::Kanji(KanjiCard::new_test("日".to_string()));
     let mut rng = StdRng::seed_from_u64(42);
     let result = generation::generate_yesno(card.clone(), &[], &NativeLanguage::Russian, &mut rng);
@@ -196,7 +196,7 @@ fn generate_yesno_kanji_fallback_no_distractors() {
 
 #[test]
 fn generate_yesno_stores_word_and_statement_separately() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab_words = ["猫", "犬", "鳥", "魚"];
     let cards: Vec<Card> = vocab_words
@@ -236,7 +236,7 @@ fn generate_yesno_stores_word_and_statement_separately() {
 
 #[test]
 fn generate_yesno_uses_english_statement_for_english_locale() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab_words = ["猫", "犬", "鳥", "魚"];
     let cards: Vec<Card> = vocab_words

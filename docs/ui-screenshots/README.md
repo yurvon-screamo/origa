@@ -7,6 +7,14 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
+| detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
+| detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |
+| detail-full | counters-detail | desktop | ru-RU | 1280×1050 | 2026-11-10T11:53:05.142Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--desktop-a926eac2.png) |
+| grid-viewport | grammar-page | mobile | ru-RU | 390×844 | 2026-11-10T11:51:09.757Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-viewport--mobile-60b59cce.png) |
+| grid-full | grammar-page | mobile | ru-RU | 390×1101 | 2026-11-10T11:51:09.249Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-full--mobile-abfe3b17.png) |
+| grid-viewport | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:57.054Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-viewport--desktop-79ae7909.png) |
+| grid-full | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:54.152Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-full--desktop-79ae7909.png) |
 | home | home | mobile | ru-RU | 390×844 | 2026-11-10T01:58:48.188Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--mobile-212a56bd.png) |
 | home | home | desktop | ru-RU | 1280×800 | 2026-11-10T01:58:25.257Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--desktop-414ae67a.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |

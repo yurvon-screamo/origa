@@ -251,10 +251,9 @@ fn merge_twins_match_the_shipped_v3_corpus() {
     if grammar_corpus::corpus_pin_drifted("grammar_migration") {
         return;
     }
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("cdn/grammar/grammar_v3.json");
+    let path = origa::corpus::cdn_dir()
+        .join("grammar")
+        .join("grammar_v3.json");
     let Ok(raw) = std::fs::read_to_string(&path) else {
         eprintln!("grammar store unavailable (absent or corpus drift) — skipping");
         return;

@@ -34,45 +34,38 @@ export interface FontState {
   bakedInBundle: boolean;
 }
 
-/**
- * The fonts dir the build reads (mirror of build.rs `resolve_fonts_dir`):
- * the corpus `ORIGA_CDN_CACHE_DIR` points at when it carries `fonts/`,
- * else the repo-local `cdn/fonts`. `null` — no fonts source anywhere, the
- * build bakes a sans-serif bundle.
- *
- * Directory check, not a bare exists: build.rs resolves with `is_dir()`, so
- * a regular file named `fonts` degrades the build to sans-serif and the
- * mirror must say the same thing.
- */
-export function resolveBuildFontsDir(
-  cacheDir: string | null,
-  repoRoot: string,
-): string | null {
-  if (cacheDir !== null && isDirectory(join(cacheDir, "fonts"))) {
-    return join(cacheDir, "fonts");
+  /**
+   * The fonts dir the build reads (mirror of build.rs `cdn_dir`): the
+   * resolved corpus ($ORIGA_CDN_DIR override, else `~/origa-cdn`) when it
+   * carries `fonts/`. `null` — no fonts source anywhere, the build bakes a
+   * sans-serif bundle. Nothing reads a repo-local `cdn/` anymore (the
+   * corpus-home canon, PR #912).
+   *
+   * Directory check, not a bare exists: build.rs resolves with `is_dir()`, so
+   * a regular file named `fonts` degrades the build to sans-serif and the
+   * mirror must say the same thing.
+   */
+  export function resolveBuildFontsDir(cacheDir: string | null): string | null {
+    if (cacheDir !== null && isDirectory(join(cacheDir, "fonts"))) {
+      return join(cacheDir, "fonts");
+    }
+    return null;
   }
-  const repoLocal = join(repoRoot, "cdn", "fonts");
-  return isDirectory(repoLocal) ? repoLocal : null;
-}
 
-/** Whether the path exists and is a directory (symlinks resolved). */
-function isDirectory(path: string): boolean {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
+  /** Whether the path exists and is a directory (symlinks resolved). */
+  function isDirectory(path: string): boolean {
+    try {
+      return statSync(path).isDirectory();
+    } catch {
+      return false;
+    }
   }
-}
 
-/** Font availability of the local corpus and of the built bundle. */
-export function inspectFonts(
-  cacheDir: string | null,
-  repoRoot: string,
-  distDir: string,
-): FontState {
-  const sourcePresent = resolveBuildFontsDir(cacheDir, repoRoot) !== null;
-  return { sourcePresent, bakedInBundle: bundleHasBrandedFonts(distDir) };
-}
+  /** Font availability of the local corpus and of the built bundle. */
+  export function inspectFonts(cacheDir: string | null, distDir: string): FontState {
+    const sourcePresent = resolveBuildFontsDir(cacheDir) !== null;
+    return { sourcePresent, bakedInBundle: bundleHasBrandedFonts(distDir) };
+  }
 
 /**
  * Lists the processes listening on a TCP port.

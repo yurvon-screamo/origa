@@ -1,6 +1,6 @@
 use crate::domain::{Card, NativeLanguage, User, VocabularyCard, WordImportOutcome};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 use crate::use_cases::{CreateCardsFromAnalysisUseCase, WordToCreate};
 
 /// Words covering every import path:
@@ -11,7 +11,7 @@ use crate::use_cases::{CreateCardsFromAnalysisUseCase, WordToCreate};
 const WORDS: &[&str] = &["食べました", "ねこ", "は", "読みます", "読む"];
 
 fn repo_with_lemma_card() -> InMemoryUserRepository {
-    init_real_dictionaries();
+    crate::test_support::init_real_dictionaries();
     let mut user = User::new(
         "test@example.com".to_string(),
         NativeLanguage::Russian,
@@ -41,6 +41,7 @@ fn preview_outcomes(user: &User) -> Vec<(String, WordImportOutcome)> {
 /// the mismatched-numbers bug the preview classification exists to fix.
 #[tokio::test]
 async fn preview_word_imports_default_selection_matches_import_result() {
+    real_dictionaries_or_skip!();
     let repo = repo_with_lemma_card();
     let user = repo.get_current_user().await.unwrap().unwrap();
     let outcomes = preview_outcomes(&user);
@@ -114,6 +115,7 @@ async fn preview_word_imports_default_selection_matches_import_result() {
 /// skipped for it) and must not be counted twice as creatable.
 #[tokio::test]
 async fn preview_word_imports_counts_a_word_duplicated_across_sets_once() {
+    real_dictionaries_or_skip!();
     let repo = repo_with_lemma_card();
     let user = repo.get_current_user().await.unwrap().unwrap();
 

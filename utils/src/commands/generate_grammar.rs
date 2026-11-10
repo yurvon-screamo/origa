@@ -1,5 +1,4 @@
 use crate::api::{ReasoningConfig, generate_grammar_description};
-use crate::utils::get_base_path;
 use futures::stream::{FuturesUnordered, StreamExt};
 use origa::domain::OrigaError;
 use serde_json::Value;
@@ -11,8 +10,7 @@ use tokio::sync::Semaphore;
 fn resolve_grammar_path(custom_path: Option<&PathBuf>) -> PathBuf {
     match custom_path {
         Some(p) => p.clone(),
-        None => get_base_path()
-            .join("cdn")
+        None => crate::utils::cdn_dir()
             .join("grammar")
             .join("grammar_v3.json"),
     }

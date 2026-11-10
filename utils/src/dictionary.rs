@@ -68,15 +68,9 @@ pub fn load_dictionary_from(dictionary_dir: Option<&Path>) -> Result<(), OrigaEr
 }
 
 fn find_dictionary_directory() -> Result<PathBuf, OrigaError> {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
-    let mut dict_dir = PathBuf::from(manifest_dir);
-
-    if dict_dir.ends_with("tokenizer") {
-        dict_dir.pop();
-    }
-
-    let dict_dir = dict_dir
-        .join("cdn")
+    // Single resolution contract: origa::corpus (works from both the lib and
+    // the bin target — origa is a dependency of the utils crate itself).
+    let dict_dir = origa::corpus::cdn_dir()
         .join("dictionaries")
         .join(origa::domain::SUDACHIDICT_DIR);
 

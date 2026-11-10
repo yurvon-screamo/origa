@@ -4,9 +4,9 @@ use std::path::Path;
 use origa::domain::OrigaError;
 
 pub(crate) fn load_vocabulary_chunks(
-    base_path: &Path,
+    _base_path: &Path,
 ) -> Result<Vec<(String, serde_json::Value)>, OrigaError> {
-    let vocab_path = base_path.join("cdn").join("dictionary");
+    let vocab_path = crate::utils::cdn_dir().join("dictionary");
 
     let mut entries = Vec::new();
     let mut chunk_count = 0;

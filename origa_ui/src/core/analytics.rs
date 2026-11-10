@@ -8,6 +8,16 @@
 //! localhost/tauri.localhost traffic into production analytics. See ADR-054
 //! (injection mechanism) and its 2026-10 self-host amendment (the provider
 //! moved from Umami Cloud to the project-owned instance on Railway).
+//!
+//! When tracking is enabled and no explicit `UMAMI_WEBSITE_ID` was set, the
+//! website id default follows the build context: a real `ORIGA_VERSION`
+//! (CI surfaces) reports to the production website «Origa», local builds
+//! (unset/empty/`"dev"`) report to the dev website «Origa (dev)» on the same
+//! instance — dev/e2e/shots traffic stays out of the production dashboard
+//! while remaining fully visible in its own site (isolation task
+//! 20261109071819). The tracking host is shared by both websites, so the CSP
+//! and the cross-crate endpoint guards (`origa_ui/tests/umami_hosts.rs`)
+//! are unaffected.
 
 /// Self-hosted Umami tracker script (`umami.origa.uwuwu.net`, ADR-054
 /// amendment). The host is pinned exactly (no wildcard) — it is also

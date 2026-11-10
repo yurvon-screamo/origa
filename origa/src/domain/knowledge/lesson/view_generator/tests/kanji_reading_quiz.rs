@@ -1,9 +1,9 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::dictionary::kanji::KanjiInfo;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::{LessonCardView, QuizMode};
 use crate::domain::memory::{Difficulty, MemoryState, Rating, Stability};
-use crate::test_support::init_real_dictionaries;
 use chrono::Utc;
 use rand::{SeedableRng, rngs::StdRng};
 use std::collections::HashMap;
@@ -66,7 +66,7 @@ fn extract_quiz(view: LessonCardView) -> crate::domain::knowledge::lesson::types
 
 #[test]
 fn non_rare_target_readings_are_correct_options() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
 
@@ -89,7 +89,7 @@ fn non_rare_target_readings_are_correct_options() {
 
 #[test]
 fn rare_readings_filtered_from_correct_options() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     // Back-compat: skip if the kanji.json on disk/CDN has no reading_frequencies
     // (before the enriched version is deployed). Without freq data, no reading
@@ -127,7 +127,7 @@ fn rare_readings_filtered_from_correct_options() {
 
 #[test]
 fn all_readings_kept_when_all_are_rare() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     // 弐 has 3 readings (ニ f=3, ジ f=3, ふたつ f=3), all rare at T=5. Per the
     // spec, when filtering leaves nothing, fall back to all readings — the
@@ -158,7 +158,7 @@ fn all_readings_kept_when_all_are_rare() {
 
 #[test]
 fn each_reading_has_on_or_kun_tag() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let info = crate::dictionary::kanji::get_kanji_info("日").unwrap();
@@ -193,7 +193,7 @@ fn each_reading_has_on_or_kun_tag() {
 
 #[test]
 fn distractors_have_no_tags() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
 
@@ -208,7 +208,7 @@ fn distractors_have_no_tags() {
 
 #[test]
 fn no_target_readings_in_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let target_readings = get_target_readings("日");
@@ -224,7 +224,7 @@ fn no_target_readings_in_distractors() {
 
 #[test]
 fn fallback_when_more_than_six_target_readings() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let cards = create_kanji_cards(&["日"]);
     let other_cards = create_kanji_cards(&["月", "水", "火"]);
@@ -266,7 +266,7 @@ fn mostly_rare_kanji_with_few_non_rare_yields_quiz_with_two_non_rare_correct() {
     //
     // Back-compat: skip when kanji.json lacks reading_frequencies (before
     // the enriched version is deployed). The filter becomes a no-op.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let info = crate::dictionary::kanji::get_kanji_info("厳").unwrap();
     if info.reading_frequencies().is_empty() {
         eprintln!(
@@ -301,7 +301,7 @@ fn mostly_rare_kanji_with_few_non_rare_yields_quiz_with_two_non_rare_correct() {
 
 #[test]
 fn fallback_when_less_than_two_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let cards = create_kanji_cards(&["日"]);
     let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
@@ -316,7 +316,7 @@ fn fallback_when_less_than_two_distractors() {
 
 #[test]
 fn mode_is_multi() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     assert_eq!(quiz.mode(), QuizMode::Multi);
@@ -324,7 +324,7 @@ fn mode_is_multi() {
 
 #[test]
 fn check_multi_answers_perfect() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
 
@@ -345,7 +345,7 @@ fn check_multi_answers_perfect() {
 
 #[test]
 fn check_multi_answers_partial() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
 
@@ -382,7 +382,7 @@ fn check_multi_answers_partial() {
 
 #[test]
 fn max_eight_options() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     assert!(quiz.options().len() <= 8);
@@ -390,7 +390,7 @@ fn max_eight_options() {
 
 #[test]
 fn generate_reading_quiz_fallback_no_readings() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let card = Card::Kanji(KanjiCard::new_test("𛀀".to_string()));
     let mut kanji_cache: HashMap<String, &'static KanjiInfo> = HashMap::new();
@@ -408,7 +408,7 @@ fn generate_reading_quiz_fallback_no_readings() {
 
 #[test]
 fn generate_reading_quiz_filters_all_target_readings_from_distractors() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let target_readings = get_target_readings("日");
@@ -432,7 +432,7 @@ fn generate_reading_quiz_filters_all_target_readings_from_distractors() {
 
 #[test]
 fn review_kanji_produces_reading_quiz() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
@@ -454,7 +454,7 @@ fn review_kanji_produces_reading_quiz() {
 
 #[test]
 fn new_kanji_never_reading_quiz() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let ks = make_kanji_knowledge_set(&["日", "月", "水", "火", "木"]);
     let sc = StudyCard::new(Card::Kanji(KanjiCard::new_test("日".to_string())));
@@ -472,7 +472,7 @@ fn new_kanji_never_reading_quiz() {
 
 #[test]
 fn multi_rating_returns_good_for_perfect() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let correct_indices: Vec<usize> = quiz
@@ -489,7 +489,7 @@ fn multi_rating_returns_good_for_perfect() {
 
 #[test]
 fn multi_rating_returns_again_for_partial() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let correct_indices: Vec<usize> = quiz
@@ -507,7 +507,7 @@ fn multi_rating_returns_again_for_partial() {
 
 #[test]
 fn multi_rating_returns_again_for_nothing_correct() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let quiz = extract_quiz(generate_reading_quiz_for("日", &["月", "水", "火"]).unwrap());
     let wrong_indices: Vec<usize> = quiz

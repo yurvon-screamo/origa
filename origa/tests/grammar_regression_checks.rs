@@ -38,12 +38,7 @@ static GRAMMAR_INIT: Once = Once::new();
 mod grammar_corpus;
 
 fn cdn_grammar_path() -> PathBuf {
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set by cargo");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root is parent of the origa crate manifest")
-        .join("cdn")
+    origa::corpus::cdn_dir()
         .join("grammar")
         .join("grammar_v3.json")
 }
