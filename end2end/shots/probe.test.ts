@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
-import { isInside, readProcCwd } from "./probe.ts";
+import { isInside, readProcCwd, resolveBuildFontsDir } from "./probe.ts";
 
 test("a directory is inside itself", () => {
   assert.equal(isInside("/repo", "/repo"), true);
@@ -33,4 +36,62 @@ test(
 
 test("a cwd probe of a non-existent pid degrades to unknown ownership", () => {
   assert.equal(readProcCwd(-1), null);
+});
+
+// Resolution matrix of resolveBuildFontsDir — the mirror of build.rs
+// resolve_fonts_dir (task 20261110041750-4bs23o3): the check and the build
+// must look at the same place, otherwise preflight passes while the build
+// bakes a sans-serif bundle.
+test("the env corpus with fonts wins", () => {
+  const root = mkdtempSync(join(tmpdir(), "origa-probe-fonts-"));
+  try {
+    const corpus = join(root, "corpus");
+    const repo = join(root, "repo");
+    mkdirSync(join(corpus, "fonts"), { recursive: true });
+    writeFileSync(join(corpus, "fonts", "a-12345678.woff2"), "");
+    const resolved = resolveBuildFontsDir(corpus, repo);
+    assert.equal(resolved, join(corpus, "fonts"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("an env corpus without fonts falls back to the repo-local cdn/fonts", () => {
+  const root = mkdtempSync(join(tmpdir(), "origa-probe-fonts-"));
+  try {
+    const corpus = join(root, "corpus");
+    const repo = join(root, "repo");
+    mkdirSync(corpus, { recursive: true }); // no fonts/ inside
+    mkdirSync(join(repo, "cdn", "fonts"), { recursive: true });
+    const resolved = resolveBuildFontsDir(corpus, repo);
+    assert.equal(resolved, join(repo, "cdn", "fonts"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("no env corpus uses the repo-local cdn/fonts", () => {
+  const root = mkdtempSync(join(tmpdir(), "origa-probe-fonts-"));
+  try {
+    const repo = join(root, "repo");
+    mkdirSync(join(repo, "cdn", "fonts"), { recursive: true });
+    assert.equal(resolveBuildFontsDir(null, repo), join(repo, "cdn", "fonts"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("no fonts anywhere resolves to null", () => {
+  const root = mkdtempSync(join(tmpdir(), "origa-probe-fonts-"));
+  try {
+    // env corpus present but empty, repo-local absent
+    const corpus = join(root, "corpus");
+    const repo = join(root, "repo");
+    mkdirSync(corpus, { recursive: true });
+    assert.equal(resolveBuildFontsDir(corpus, repo), null);
+    // no env corpus at all
+    assert.equal(resolveBuildFontsDir(null, repo), null);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

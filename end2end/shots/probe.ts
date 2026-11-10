@@ -28,10 +28,37 @@ export interface CorpusProbe {
 
 /** Whether the local corpus carries the branded fonts. */
 export interface FontState {
-  /** `cdn/fonts/` holds the woff2 subset (build mode). */
+  /** The fonts dir the build reads exists (build mode). */
   sourcePresent: boolean;
   /** The served bundle injects `@font-face` for Cormorant (dist mode). */
   bakedInBundle: boolean;
+}
+
+/**
+ * The fonts dir the build reads (mirror of build.rs `resolve_fonts_dir`):
+ * the corpus `ORIGA_CDN_CACHE_DIR` points at when it carries `fonts/`,
+ * else the repo-local `cdn/fonts`. `null` — no fonts source anywhere, the
+ * build bakes a sans-serif bundle.
+ */
+export function resolveBuildFontsDir(
+  cacheDir: string | null,
+  repoRoot: string,
+): string | null {
+  if (cacheDir !== null && existsSync(join(cacheDir, "fonts"))) {
+    return join(cacheDir, "fonts");
+  }
+  const repoLocal = join(repoRoot, "cdn", "fonts");
+  return existsSync(repoLocal) ? repoLocal : null;
+}
+
+/** Font availability of the local corpus and of the built bundle. */
+export function inspectFonts(
+  cacheDir: string | null,
+  repoRoot: string,
+  distDir: string,
+): FontState {
+  const sourcePresent = resolveBuildFontsDir(cacheDir, repoRoot) !== null;
+  return { sourcePresent, bakedInBundle: bundleHasBrandedFonts(distDir) };
 }
 
 /**
@@ -133,16 +160,6 @@ export function probeCorpus(
     }
   }
   return null;
-}
-
-/** Font availability of the local corpus and of the built bundle. */
-export function inspectFonts(
-  cacheDir: string | null,
-  distDir: string,
-): FontState {
-  const sourcePresent =
-    cacheDir !== null && existsSync(join(cacheDir, "fonts"));
-  return { sourcePresent, bakedInBundle: bundleHasBrandedFonts(distDir) };
 }
 
 /** Whether the built bundle injects `@font-face` for Cormorant and ships the woff2 files. */

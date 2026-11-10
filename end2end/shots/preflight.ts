@@ -136,9 +136,8 @@ function checkBundle(facts: PreflightFacts): string[] {
   if (facts.serveMode === "build") {
     if (!facts.fontsReady) {
       errors.push(
-        "в локальном корпусе нет cdn/fonts/ — бандл соберётся без @font-face (sans-serif). " +
-          "ORIGA_CDN_CACHE_DIR параметризует раздачу контента, но реестр шрифтов билда " +
-          "build.rs читает из repo-локального cdn/fonts: для брендовых скринов симлинк cdn → корпус",
+        "ни ORIGA_CDN_CACHE_DIR, ни repo-локальный cdn/ не содержат fonts/ — бандл соберётся без @font-face (sans-serif). " +
+          "Укажите ORIGA_CDN_CACHE_DIR на корпус со шрифтами или скопируйте cdn/fonts из основного чекаута",
       );
     }
     return errors;
@@ -254,7 +253,11 @@ export async function runPreflight(
   options: PreflightOptions,
 ): Promise<PreflightReport> {
   const { cdnSource } = options;
-  const fonts = inspectFonts(cdnSource.cacheDir, options.distDir);
+  const fonts = inspectFonts(
+    cdnSource.cacheDir,
+    options.repoRoot,
+    options.distDir,
+  );
   const corpusProbe =
     cdnSource.cacheDir === null
       ? null

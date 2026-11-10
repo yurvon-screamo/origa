@@ -39,7 +39,10 @@ test("a missing corpus font fails the capture", () => {
   const report = evaluatePreflight(facts({ fontsReady: false }));
 
   assert.equal(report.errors.length, 1);
-  assert.match(report.errors[0], /cdn\/fonts\//);
+  // The build reads fonts from the env corpus or the repo-local cdn/
+  // (resolveBuildFontsDir) — the verdict names both sources.
+  assert.match(report.errors[0], /ORIGA_CDN_CACHE_DIR/);
+  assert.match(report.errors[0], /cdn\//);
 });
 
 test("a missing tokenizer dictionary only warns", () => {

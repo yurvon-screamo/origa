@@ -10,6 +10,10 @@ fn main() {
     handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
+    // The font source depends on this env (resolve_fonts_dir): cargo tracks
+    // the variable's presence too, so adding, changing or removing it
+    // re-runs the build script.
+    println!("cargo:rerun-if-env-changed=ORIGA_CDN_CACHE_DIR");
     generate_font_registry();
     stage_fonts_for_bundling();
     println!("cargo:rerun-if-changed=build.rs");
@@ -679,7 +683,31 @@ fn generate_well_known_meta() {
     );
 }
 
-/// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files in `cdn/fonts/`.
+/// Fonts source for the registry (`generate_font_registry`) and staging
+/// (`stage_fonts_for_bundling`): a non-empty `ORIGA_CDN_CACHE_DIR` pointing
+/// at a corpus that carries `fonts/` wins, otherwise the repo-local
+/// `cdn/fonts` (gitignored, absent in fresh worktrees).
+///
+/// The capture stack mirrors this resolution (`end2end/shots/probe.ts`,
+/// `resolveBuildFontsDir`), so the preflight check and the build read the
+/// same place — before the env wiring a corpus-by-env capture passed
+/// preflight while the build read the (absent) repo-local `cdn/fonts` and
+/// baked a sans-serif bundle.
+fn resolve_fonts_dir(manifest_dir: &str) -> Option<PathBuf> {
+    if let Ok(cache_dir) = env::var("ORIGA_CDN_CACHE_DIR") {
+        if !cache_dir.is_empty() {
+            let from_env = Path::new(&cache_dir).join("fonts");
+            if from_env.is_dir() {
+                return Some(from_env);
+            }
+        }
+    }
+    let repo_local = Path::new(manifest_dir).join("..").join("cdn").join("fonts");
+    repo_local.is_dir().then_some(repo_local)
+}
+
+/// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files of the resolved
+/// fonts dir (see `resolve_fonts_dir`).
 ///
 /// Each file is named `<logical>-<sha8>.woff2` (content hash, see
 /// `scripts/subset_fonts.py`). The hash suffix is the CDN cache-bust key: a
@@ -687,15 +715,12 @@ fn generate_well_known_meta() {
 /// can never serve a stale font (PR #182 class).
 ///
 /// The generated module exposes `FONT_FILES: &[(&str, &str)]` mapping the
-/// logical name (used by `font_face_css`) to the on-CDN filename. When
-/// `cdn/fonts/` is absent the array is empty, so the app degrades gracefully
+/// logical name (used by `font_face_css`) to the on-CDN filename. When the
+/// fonts dir is absent the array is empty, so the app degrades gracefully
 /// (no @font-face injected, system fallback) instead of failing to build.
 fn generate_font_registry() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let fonts_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("fonts");
+    let fonts_dir = resolve_fonts_dir(&manifest_dir);
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_file = Path::new(&out_dir).join("fonts.rs");
 
@@ -707,13 +732,13 @@ fn generate_font_registry() {
     // fonts restored into an existing worktree are picked up on the next
     // build.rs rerun (any source/env change), not by the appearance itself —
     // same degradation class as generate_well_known_meta's early return.
-    if fonts_dir.is_dir() {
+    if let Some(fonts_dir) = &fonts_dir {
         println!("cargo:rerun-if-changed={}", fonts_dir.display());
     }
 
     let mut entries: Vec<(String, String)> = Vec::new();
-    if fonts_dir.is_dir() {
-        let mut names: Vec<_> = fs::read_dir(&fonts_dir)
+    if let Some(fonts_dir) = &fonts_dir {
+        let mut names: Vec<_> = fs::read_dir(fonts_dir)
             .unwrap()
             .filter_map(|e| e.ok())
             .filter_map(|e| e.file_name().to_str().map(str::to_owned))
@@ -752,32 +777,34 @@ fn strip_hash_suffix(filename: &str) -> String {
     }
 }
 
-/// Copy the canonical `cdn/fonts/*.woff2` into `origa_ui/public/fonts/` so the
-/// existing trunk `copy-dir href="public"` serves them at `/fonts/` on the
-/// local origin (Tauri builds, first-launch offline CJK). trunk does not accept
-/// assets outside the `index.html` directory (trunk-rs/trunk#1045), so we stage
-/// the canonical files inside `public/` first. `public/fonts/` is gitignored —
-/// `cdn/fonts/` remains the single source of truth, mirrored verbatim here.
+/// Copy the canonical `*.woff2` of the resolved fonts dir (see
+/// `resolve_fonts_dir`) into `origa_ui/public/fonts/` so the existing trunk
+/// `copy-dir href="public"` serves them at `/fonts/` on the local origin
+/// (Tauri builds, first-launch offline CJK). trunk does not accept assets
+/// outside the `index.html` directory (trunk-rs/trunk#1045), so we stage
+/// the canonical files inside `public/` first. `public/fonts/` is
+/// gitignored — the resolved fonts dir remains the single source of truth,
+/// mirrored verbatim here.
 ///
-/// Idempotent: re-runs only when `cdn/fonts/` changes (`rerun-if-changed`), and
-/// only rewrites a target file when its bytes differ from the source, so
+/// Idempotent: re-runs only when the fonts dir changes (`rerun-if-changed`),
+/// and only rewrites a target file when its bytes differ from the source, so
 /// incremental trunk rebuilds are not invalidated by no-op copies.
 fn stage_fonts_for_bundling() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let src_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("fonts");
+    let src_dir = match resolve_fonts_dir(&manifest_dir) {
+        Some(dir) => dir,
+        None => {
+            // Fonts dir absent (e.g. fresh checkout without CDN assets):
+            // font_face degrades to FONT_FILES empty -> system fallback.
+            // Do not fail the build.
+            //
+            // No rerun-if-changed either (see generate_font_registry): a
+            // watched but missing path re-dirties the build script on every
+            // invocation.
+            return;
+        },
+    };
     let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
-
-    if !src_dir.is_dir() {
-        // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face
-        // degrades to FONT_FILES empty -> system fallback. Do not fail the build.
-        //
-        // No rerun-if-changed either (see generate_font_registry): a watched
-        // but missing path re-dirties the build script on every invocation.
-        return;
-    }
 
     println!("cargo:rerun-if-changed={}", src_dir.display());
 
