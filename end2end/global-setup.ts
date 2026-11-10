@@ -3,6 +3,7 @@ import { end2endRoot } from "./helpers/paths";
 import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccountsWithToken } from "./helpers/cleanup";
+import { TRAILBASE_PORT } from "./shots/config.ts";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -20,7 +21,8 @@ if (
   }
 }
 
-const TRAILBASE_PORT = 4000;
+// TrailBase port lives in shots/config.ts (env-overridable) — this
+// file only consumes it.
 
 async function waitForTrailBase(
   maxRetries = 30,

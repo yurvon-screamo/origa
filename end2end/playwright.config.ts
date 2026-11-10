@@ -2,9 +2,11 @@ import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
 import {
+  APP_PORT,
   APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
   resolveCdnSource,
+  TRAILBASE_PORT,
 } from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
@@ -16,7 +18,7 @@ const isCI = !!process.env.CI;
 const { baseUrl: cdnBaseUrl, cacheDir: cdnCacheDir } = resolveCdnSource();
 
 /** The app origin the suite runs against; also the inbox seam opt-in scope. */
-export const APP_BASE_URL = "http://localhost:1420";
+export const APP_BASE_URL = `http://localhost:${APP_PORT}`;
 
 const bddTestDir = defineBddConfig({
   features: "./bdd/features",
@@ -98,9 +100,9 @@ export default defineConfig({
       : []),
     {
       command: isCI
-        ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
-        : "cd ../origa_ui && trunk serve",
-      port: 1420,
+        ? `npx serve ../origa_ui/dist -s -p ${APP_PORT} --no-clipboard`
+        : `cd ../origa_ui && trunk serve --port ${APP_PORT}`,
+      port: APP_PORT,
       reuseExistingServer: !isCI,
       // Cold-build aware budget (shots/config.ts), not a literal:
       // a fresh machine compiles the workspace for wasm32 beyond
@@ -110,7 +112,7 @@ export default defineConfig({
       stderr: "pipe",
       env: {
         ORIGA_CDN_BASE_URL: cdnBaseUrl,
-        TRAILBASE_URL: "http://127.0.0.1:4000",
+        TRAILBASE_URL: `http://127.0.0.1:${TRAILBASE_PORT}`,
       },
     },
   ],

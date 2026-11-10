@@ -78,11 +78,18 @@ export function parseTimeout(name: string, raw: string | number): number {
   return value;
 }
 
-/** Port the app is served on. */
-export const APP_PORT = 1420;
+/** Port the app is served on (`E2E_APP_PORT` — sibling agent sessions
+ * share this machine; two captures must not fight over the same port). */
+export const APP_PORT = parsePort(
+  "E2E_APP_PORT",
+  process.env.E2E_APP_PORT ?? 1420,
+);
 
-/** Port TrailBase listens on. */
-export const TRAILBASE_PORT = 4000;
+/** Port TrailBase listens on (`E2E_TRAILBASE_PORT` — same reason). */
+export const TRAILBASE_PORT = parsePort(
+  "E2E_TRAILBASE_PORT",
+  process.env.E2E_TRAILBASE_PORT ?? 4000,
+);
 
 /** Repository root — `end2end/` lives one level below it. */
 export const repoRoot = join(fileURLToPath(new URL("../..", import.meta.url)));

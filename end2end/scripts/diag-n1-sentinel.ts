@@ -13,8 +13,9 @@ import { chromium } from "@playwright/test";
 
 import { setupTestUser, uiLogin } from "../helpers/auth";
 import { completeN1StressSeed } from "../helpers/onboarding";
+import { getAppBaseUrl } from "../config";
 
-const APP_BASE = "http://localhost:1420";
+const APP_BASE = getAppBaseUrl();
 
 interface RemoteRecord {
   email: string;
@@ -93,11 +94,11 @@ async function main(): Promise<void> {
     if (frame === page.mainFrame())
       console.log(`[dev1 navigated] ${frame.url()}`);
   });
-  await context.addInitScript(() => {
-    if (window.location.origin === "http://localhost:1420") {
+  await context.addInitScript((origin: string) => {
+    if (window.location.origin === origin) {
       window.localStorage.setItem("origa_resource_download_consented", "true");
     }
-  });
+  }, APP_BASE);
   // NEUTRALIZE the trunk live-reload script (baked into the served
   // index.html): on any WS reconnect it force-reloads the page, which
   // aborts the WASM load, interrupts Playwright gotos and restarts the
@@ -138,11 +139,11 @@ async function main(): Promise<void> {
     if (frame === page2.mainFrame())
       console.log(`[dev2 navigated] ${frame.url()}`);
   });
-  await context2.addInitScript(() => {
-    if (window.location.origin === "http://localhost:1420") {
+  await context2.addInitScript((origin: string) => {
+    if (window.location.origin === origin) {
       window.localStorage.setItem("origa_resource_download_consented", "true");
     }
-  });
+  }, APP_BASE);
   // Neutralize the trunk live-reload script — see device 1 comment.
   await blockTrunkReload(context2);
 

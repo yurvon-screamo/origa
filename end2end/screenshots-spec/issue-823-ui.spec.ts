@@ -7,6 +7,7 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/login.page";
 import { getAdminToken, createTestUser } from "../fixtures/admin";
+import { APP_PORT } from "../shots/config.ts";
 import {
   completeOnboardingToScoring,
   isOnboardingShown,
@@ -31,11 +32,16 @@ test("words header + examples page screenshots", async ({ page }) => {
   // Pre-approve the one-time resource download before any app script
   // runs — otherwise the consent overlay intercepts every click on a
   // fresh browser context.
-  await page.context().addInitScript(() => {
-    if (window.location.origin === "http://localhost:1420") {
+  // Pre-approve the one-time resource download before any app script
+  // runs — otherwise the consent overlay intercepts every click on a
+  // fresh browser context. The app origin is passed in: addInitScript
+  // runs in every frame, and the served port is not a literal.
+  const appOrigin = `http://localhost:${APP_PORT}`;
+  await page.context().addInitScript((origin: string) => {
+    if (window.location.origin === origin) {
       window.localStorage.setItem("origa_resource_download_consented", "true");
     }
-  });
+  }, appOrigin);
 
   // Cold-start flake: the resource-loading overlay can intercept the
   // first form interaction while bundles download — full retries, like
