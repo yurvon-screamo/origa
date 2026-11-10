@@ -15,14 +15,19 @@ runs:
         # immutable — a single combined key would freeze on whichever subset
         # saved first and never converge to the union. One key per tool keeps
         # every entry's content homogeneous, so exact hits are always valid.
-        # Bumping a pinned version does NOT require a key bump: the key pins
-        # the cache slot, the version pin below pins the binary identity.
+        # Keys carry runner.os/arch qualifiers: the action runs on ubuntu and
+        # macos runners, the GitHub cache service does NOT partition by
+        # platform, and the cached binaries are platform-specific — an
+        # unqualified key would let a macos runner exact-hit a linux ELF
+        # (exec format error) or vice versa. Bumping a pinned version does
+        # NOT require a key bump: the key pins the cache slot, the version
+        # pin below pins the binary identity.
         - name: Restore cargo-binstall
           id: cache-binstall
           uses: actions/cache@v4
           with:
               path: ~/.cargo/bin/cargo-binstall
-              key: frontend-tools-binstall-v1
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-binstall-v1
 
         - name: Restore trunk
           id: cache-trunk
@@ -30,7 +35,7 @@ runs:
           uses: actions/cache@v4
           with:
               path: ~/.cargo/bin/trunk
-              key: frontend-tools-trunk-v1
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-trunk-v1
 
         - name: Restore tauri-cli
           id: cache-tauri-cli
@@ -38,7 +43,7 @@ runs:
           uses: actions/cache@v4
           with:
               path: ~/.cargo/bin/cargo-tauri
-              key: frontend-tools-tauri-cli-v1
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-tauri-cli-v1
 
         - name: Install cargo-binstall
           shell: bash
@@ -85,9 +90,17 @@ runs:
                       echo "$bin already present (cache hit) — skipping download"
                       continue
                   fi
+                  # The source-build fallback keeps the pin: installing
+                  # unversioned latest here would reintroduce exactly the
+                  # drift the pins above eliminate.
+                  crate="${pin%@*}"
+                  case "$pin" in
+                      *@*) ver=("--version" "${pin#*@}") ;;
+                      *) ver=() ;;
+                  esac
                   if ! cargo binstall "$pin" --no-confirm --force --disable-strategies compile; then
                       echo "binstall binary unavailable — falling back to cargo install --locked"
-                      cargo install "${pin%@*}" --locked --force
+                      cargo install "$crate" --locked --force "${ver[@]}"
                   fi
               done
 
