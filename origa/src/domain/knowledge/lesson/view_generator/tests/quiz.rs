@@ -1,22 +1,22 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::domain::RatingContext;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::value_objects::NativeLanguage;
-use crate::test_support::init_real_dictionaries;
 use ulid::Ulid;
 
 mod grammar_quiz {
     use super::*;
 
     fn get_first_grammar_rule_id() -> Ulid {
-        init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
         Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
     }
 
     #[test]
     fn grammar_card_generates_quiz_with_sufficient_distinct_cards() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let grammar_rule_id = get_first_grammar_rule_id();
         let grammar_card = create_grammar_card(grammar_rule_id);
@@ -48,7 +48,7 @@ mod grammar_quiz {
 
     #[test]
     fn grammar_card_returns_normal_with_insufficient_distinct_cards() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let grammar_rule_id = get_first_grammar_rule_id();
         let grammar_card = create_grammar_card(grammar_rule_id);
@@ -71,7 +71,7 @@ mod grammar_quiz {
 
     #[test]
     fn grammar_quiz_options_contain_correct_answer() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let grammar_rule_id = get_first_grammar_rule_id();
         let grammar_card = create_grammar_card(grammar_rule_id);
@@ -111,12 +111,12 @@ mod generate_grammar_quiz_tests {
     use crate::domain::RateMode;
 
     fn get_verb_rule_id() -> Ulid {
-        init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
         Ulid::from_string("01G00000000000000024000000").expect("Invalid ULID")
     }
 
     fn get_non_format_map_rule_id() -> Ulid {
-        init_real_dictionaries();
+        crate::test_support::init_real_dictionaries();
         Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
     }
 
@@ -146,7 +146,7 @@ mod generate_grammar_quiz_tests {
 
     #[test]
     fn grammar_quiz_falls_back_to_normal_without_format_map() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let rule_id = get_non_format_map_rule_id();
         let grammar_card = create_grammar_card(rule_id);
@@ -163,7 +163,7 @@ mod generate_grammar_quiz_tests {
 
     #[test]
     fn grammar_quiz_generates_quiz_with_format_map() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let rule_id = get_verb_rule_id();
         let grammar_card = create_grammar_card(rule_id);
@@ -193,7 +193,7 @@ mod generate_grammar_quiz_tests {
 
     #[test]
     fn grammar_quiz_falls_back_without_known_vocab() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let rule_id = get_verb_rule_id();
         let grammar_card = create_grammar_card(rule_id);
@@ -210,8 +210,9 @@ mod generate_grammar_quiz_tests {
 
     #[test]
     fn grammar_quiz_view_carries_word_and_rule_title_for_renderer() {
+        real_dictionaries_or_skip!();
         // Arrange
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let rule_id = get_verb_rule_id();
         let grammar_card = create_grammar_card(rule_id);
@@ -250,7 +251,7 @@ mod generate_quiz_vocab_kanji_tests {
 
     #[test]
     fn generate_quiz_vocab_with_distinct_answers() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let words = ["猫", "犬", "鳥", "魚"];
         let cards: Vec<Card> = words.iter().map(|w| create_vocab_card(w)).collect();
 
@@ -268,7 +269,7 @@ mod generate_quiz_vocab_kanji_tests {
 
     #[test]
     fn generate_quiz_vocab_fallback_no_cards() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
         let result = generation::generate_quiz(card.clone(), &[], &NativeLanguage::Russian);
         match result.unwrap() {
@@ -279,7 +280,7 @@ mod generate_quiz_vocab_kanji_tests {
 
     #[test]
     fn generate_quiz_vocab_fallback_insufficient_distinct() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
         let same = vec![card.clone()];
         let result = generation::generate_quiz(card.clone(), &same, &NativeLanguage::Russian);
@@ -291,7 +292,7 @@ mod generate_quiz_vocab_kanji_tests {
 
     #[test]
     fn generate_quiz_kanji_with_distinct_answers() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let kanji_cards: Vec<Card> = ["日", "月", "水", "火"]
             .iter()
             .map(|k| Card::Kanji(KanjiCard::new_test(k.to_string())))
@@ -314,7 +315,7 @@ mod generate_quiz_vocab_kanji_tests {
 
     #[test]
     fn generate_quiz_uses_english_translations_for_english_locale() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let words = ["猫", "犬", "鳥", "魚"];
         let cards: Vec<Card> = words.iter().map(|w| create_vocab_card(w)).collect();
 
@@ -354,14 +355,14 @@ mod generate_quiz_vocab_kanji_tests {
 
 mod generate_quiz_pos_filter_tests {
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::knowledge::lesson::types::LessonCardView;
     use crate::domain::value_objects::NativeLanguage;
-    use crate::test_support::init_real_dictionaries;
     use std::collections::HashSet;
 
     #[test]
     fn generate_quiz_prefers_same_pos_distractors() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let verbs: Vec<Card> = ["食べる", "飲む", "読む", "書く"]
             .iter()
@@ -414,7 +415,7 @@ mod generate_quiz_pos_filter_tests {
 
     #[test]
     fn generate_quiz_falls_back_to_other_pos() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let verb = create_vocab_card("食べる");
         let nouns: Vec<Card> = ["猫", "犬", "鳥"]
@@ -435,7 +436,7 @@ mod generate_quiz_pos_filter_tests {
 
     #[test]
     fn generate_quiz_all_same_pos() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let verbs: Vec<Card> = ["食べる", "飲む", "読む", "書く"]
             .iter()
@@ -456,7 +457,7 @@ mod generate_quiz_pos_filter_tests {
 
     #[test]
     fn generate_yesno_prefers_same_pos_distractor() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         use rand::{SeedableRng, rngs::StdRng};
 
         let verbs: Vec<Card> = ["食べる", "飲む", "読む"]
@@ -509,7 +510,7 @@ mod generate_quiz_pos_filter_tests {
 
     #[test]
     fn generate_yesno_falls_back_to_other_pos() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         use rand::{SeedableRng, rngs::StdRng};
 
         let verb = create_vocab_card("食べる");

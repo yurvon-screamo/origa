@@ -2,7 +2,7 @@ use crate::domain::{JapaneseLevel, NativeLanguage, User};
 use crate::traits::UserRepository;
 use crate::use_cases::ImportOnboardingSetsUseCase;
 use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, MockCdnProvider, init_real_dictionaries,
+    InMemoryUserRepository, MockCdnProvider, real_dictionaries_or_skip,
 };
 
 /// Returns a CDN pre-populated with the well-known-set JSONs for the given
@@ -47,7 +47,7 @@ async fn import_creates_grammar_for_non_jlpt_set_when_target_allows_it() {
     // Arrange — Minna N4 set alone (no JLPT set picked). Before the fix this
     // produced zero grammar cards because grammar import was gated on the
     // "Jlpt" set-type prefix.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = InMemoryUserRepository::with_user(fresh_user());
     let cdn = cdn_with_sets(&[("minna_n4_1", JapaneseLevel::N4, &["猫"])]);
 
@@ -76,7 +76,7 @@ async fn import_creates_grammar_for_non_jlpt_set_when_target_allows_it() {
 async fn import_expands_grammar_to_every_level_up_to_target() {
     // Arrange — same set, two different target levels. A higher target must
     // pull in strictly more grammar rules (N5 alone vs N5+N4+N3).
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let cdn = cdn_with_sets(&[("jlpt_n5", JapaneseLevel::N5, &["猫"])]);
 
     let repo_low = InMemoryUserRepository::with_user(fresh_user());
@@ -116,7 +116,7 @@ async fn import_skips_kanji_above_target_level() {
     // kanji if the gate weren't there. With target N5, only N5 kanji should
     // be created. We assert via the kanji count vs a target=N4 run on the
     // same set.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = InMemoryUserRepository::with_user(fresh_user());
     let cdn = cdn_with_sets(&[("jlpt_n4", JapaneseLevel::N4, &["猫"])]);
 
@@ -161,7 +161,7 @@ async fn import_creates_kanji_from_dictionary_not_from_vocab() {
     // Словарь кандзи: N5=80, N4=170. Ожидаем creation каналов обоих уровней.
     // При старом подходе (vocab→kanji) создавался бы только кандзи из слова "猫",
     // т.е. 1 кандзи. При новом подходе — все N5+N4 из словаря.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let cdn = cdn_with_sets(&[("jlpt_n5", JapaneseLevel::N5, &["猫"])]);
     let repo = InMemoryUserRepository::with_user(fresh_user());
     let use_case = ImportOnboardingSetsUseCase::new(&repo, &cdn);
@@ -189,7 +189,7 @@ async fn import_creates_kanji_from_dictionary_not_from_vocab() {
 async fn import_kanji_does_not_create_above_target_level() {
     // Кандзи уровня выше target НЕ должны создаваться, даже если слово из
     // набора их содержит. Target=N5 → только N5 кандзи из словаря.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let cdn = cdn_with_sets(&[("jlpt_n4", JapaneseLevel::N4, &["猫"])]);
     let repo_n5 = InMemoryUserRepository::with_user(fresh_user());
     let uc_n5 = ImportOnboardingSetsUseCase::new(&repo_n5, &cdn);

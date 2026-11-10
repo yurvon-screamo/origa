@@ -262,8 +262,8 @@ pub fn install_precompute_for_cards<'a>(cards: impl IntoIterator<Item = &'a Voca
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::value_objects::Question;
-    use crate::test_support::init_real_dictionaries;
 
     fn create_vocab_card(word: &str) -> VocabularyCard {
         VocabularyCard {
@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn answer_returns_translation_from_dictionary() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
@@ -328,7 +328,7 @@ mod tests {
 
     #[test]
     fn answer_returns_error_for_unknown_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("存在しない言葉");
         let lang = NativeLanguage::Russian;
 
@@ -363,7 +363,7 @@ mod tests {
 
     #[test]
     fn answer_returns_different_translations_for_different_languages() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
 
         let russian = card.answer(&NativeLanguage::Russian).unwrap();
@@ -376,7 +376,7 @@ mod tests {
 
     #[test]
     fn validate_translation_returns_translation_for_known_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let result = VocabularyCard::validate_translation("猫", &NativeLanguage::Russian);
 
@@ -387,7 +387,7 @@ mod tests {
 
     #[test]
     fn validate_translation_returns_error_for_unknown_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let result =
             VocabularyCard::validate_translation("存在しない言葉", &NativeLanguage::Russian);
@@ -401,7 +401,7 @@ mod tests {
 
     #[test]
     fn validate_translation_returns_error_for_empty_translation() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let result = VocabularyCard::validate_translation("", &NativeLanguage::Russian);
 
@@ -410,7 +410,7 @@ mod tests {
 
     #[test]
     fn part_of_speech_returns_noun_for_noun() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
 
         let pos = card.part_of_speech();
@@ -420,7 +420,7 @@ mod tests {
 
     #[test]
     fn part_of_speech_returns_verb_for_verb() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("食べる");
 
         let pos = card.part_of_speech();
@@ -430,7 +430,7 @@ mod tests {
 
     #[test]
     fn part_of_speech_returns_error_for_single_space() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let question = Question::new(" ".to_string());
 
         assert!(question.is_err());
@@ -438,7 +438,7 @@ mod tests {
 
     #[test]
     fn revert_creates_reversed_card() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
@@ -454,7 +454,7 @@ mod tests {
 
     #[test]
     fn revert_swaps_question_and_answer() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let original_word = "猫";
         let card = create_vocab_card(original_word);
         let lang = NativeLanguage::Russian;
@@ -476,7 +476,7 @@ mod tests {
 
     #[test]
     fn with_grammar_rule_returns_error_for_invalid_rule() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("猫");
         let lang = NativeLanguage::Russian;
 
@@ -489,7 +489,7 @@ mod tests {
 
     #[test]
     fn with_grammar_rule_stores_translation_as_reverse_side() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let card = create_vocab_card("食べる");
         let lang = NativeLanguage::Russian;
 
@@ -533,7 +533,7 @@ mod tests {
 
     #[test]
     fn from_known_word_persists_token_precompute() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let card = VocabularyCard::from_known_word("猫", &NativeLanguage::Russian).unwrap();
 
@@ -634,7 +634,7 @@ mod tests {
 
     #[test]
     fn from_known_word_creates_card_for_valid_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let lang = NativeLanguage::Russian;
 
         let card = VocabularyCard::from_known_word("猫", &lang);
@@ -645,7 +645,7 @@ mod tests {
 
     #[test]
     fn from_known_word_returns_error_for_unknown_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let lang = NativeLanguage::Russian;
 
         let result = VocabularyCard::from_known_word("存在しない言葉", &lang);
@@ -659,7 +659,7 @@ mod tests {
 
     #[test]
     fn from_known_word_returns_error_for_empty_word() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let lang = NativeLanguage::Russian;
 
         let result = VocabularyCard::from_known_word("", &lang);
@@ -669,7 +669,7 @@ mod tests {
 
     #[test]
     fn from_known_word_card_answers_with_translation() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let lang = NativeLanguage::Russian;
 
         let card = VocabularyCard::from_known_word("猫", &lang).unwrap();

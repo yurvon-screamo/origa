@@ -74,9 +74,9 @@ struct PhraseAnalysis {
     missing_bases: Vec<String>,
 }
 
-fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, OrigaError> {
+fn load_vocabulary_dictionary(_base_path: &Path) -> Result<HashSet<String>, OrigaError> {
     let mut words = HashSet::new();
-    let vocab_path = base_path.join("cdn").join("dictionary");
+    let vocab_path = crate::utils::cdn_dir().join("dictionary");
 
     if !vocab_path.exists() {
         return Err(OrigaError::TokenizerError {

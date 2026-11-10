@@ -18,7 +18,6 @@
 //!
 //! Run: `cargo test -p origa --test near_miss_coverage -- --nocapture`.
 
-use std::path::PathBuf;
 use std::sync::Once;
 
 use origa::dictionary::grammar::{
@@ -40,10 +39,7 @@ fn ensure_corpus_loaded() -> bool {
     }
     let mut loaded = false;
     CORPUS_INIT.call_once(|| {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .expect("workspace root is parent of the origa crate manifest")
-            .join("cdn")
+        let path = origa::corpus::cdn_dir()
             .join("grammar")
             .join("grammar_v3.json");
         let Ok(grammar_json) = std::fs::read_to_string(&path) else {

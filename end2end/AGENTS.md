@@ -43,7 +43,7 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 | Service | Port | Managed by | Config |
 |---------|------|-----------|--------|
 | TrailBase | 4000 | `global-setup.ts` | Spawns `trail run --dev` |
-| CDN (static files) | 8080 | `playwright.config.ts` webServer | `npx serve <resolved corpus dir>` |
+| CDN (static files) | 8080 | `playwright.config.ts` webServer | `npx serve <resolved corpus dir>` ($ORIGA_CDN_DIR or ~/origa-cdn) |
 | App (trunk/wasm) | 1420 | `playwright.config.ts` webServer | `trunk serve` or `npx serve` |
 
 **Just run:** `npx playwright test` — everything starts automatically.

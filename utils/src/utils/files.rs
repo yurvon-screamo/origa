@@ -51,3 +51,10 @@ pub fn get_base_path() -> PathBuf {
 
     path
 }
+
+/// Local CDN corpus root. Delegates to [`origa::corpus::cdn_dir`] — the
+/// single source of the resolution contract ($ORIGA_CDN_DIR, then
+/// ~/origa-cdn); kept as a thin alias for the command call sites.
+pub fn cdn_dir() -> PathBuf {
+    origa::corpus::cdn_dir()
+}

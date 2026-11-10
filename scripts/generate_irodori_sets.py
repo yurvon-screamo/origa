@@ -8,10 +8,11 @@ from collections import defaultdict
 from pathlib import Path
 
 from openpyxl import load_workbook
+from _cdn_corpus import corpus_dir
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXCEL_PATH = PROJECT_ROOT / "wordlist_all.xlsx"
-OUTPUT_BASE = PROJECT_ROOT / "cdn" / "well_known_set"
+OUTPUT_BASE = corpus_dir() / "well_known_set"
 META_PATH = OUTPUT_BASE / "well_known_types_meta.json"
 
 COL_HEADING = 3

@@ -17,12 +17,7 @@ use origa::domain::{DictionaryData, init_dictionary, is_dictionary_loaded};
 static BOOTSTRAP: Once = Once::new();
 
 pub fn cdn_dir() -> PathBuf {
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set by cargo");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root is parent of the origa crate manifest")
-        .join("cdn")
+    origa::corpus::cdn_dir()
 }
 
 pub fn cdn_path(components: &[&str]) -> PathBuf {

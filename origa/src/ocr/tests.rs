@@ -1,6 +1,5 @@
 use crate::ocr::{JapaneseOCRModel, ModelFiles};
 use image::open;
-use std::path::PathBuf;
 use tokio::fs;
 
 #[tokio::test]
@@ -10,13 +9,7 @@ async fn japanese_ocr_e2e() {
         .with_test_writer()
         .try_init();
 
-    let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let workspace_root = PathBuf::from(manifest_dir)
-        .parent()
-        .expect("Failed to get workspace root")
-        .to_path_buf();
-
-    let ndlocr_model_dir = workspace_root.join("cdn").join("ndlocr");
+    let ndlocr_model_dir = crate::corpus::cdn_dir().join("ndlocr");
 
     if !ndlocr_model_dir.join("deim.onnx").exists() {
         eprintln!("Skipping OCR test: model files not available in CI");
@@ -54,7 +47,7 @@ async fn japanese_ocr_e2e() {
     let model = JapaneseOCRModel::from_model_files(model_files)
         .expect("Failed to initialize JapaneseOCRModel");
 
-    let img_path = PathBuf::from(manifest_dir).join("src/ocr/ocr_example.jpg");
+    let img_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/ocr/ocr_example.jpg");
     let img = open(img_path).expect("Failed to open ocr_example.jpg");
 
     let result = model.run(&img).expect("Failed to run OCR");

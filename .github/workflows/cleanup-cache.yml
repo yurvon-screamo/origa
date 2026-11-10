@@ -124,7 +124,9 @@ jobs:
           MASTER_SEEDS = re.compile(
               r"^(xwin-Linux-x86_64-pc-windows-msvc-v\d+"
               r"|trunk-tools-v\d+"
-              r"|trailbase-v\d+\.\d+\.\d+-verified)$"
+              r"|trailbase-v\d+\.\d+\.\d+-verified"
+              r"|frontend-tools-(Linux|macOS|Windows)-(X64|ARM64)-(binstall|trunk|tauri-cli)-v\d+"
+              r"|wasm-pack-(Linux|macOS|Windows)-(X64|ARM64)-v\d+\.\d+\.\d+)$"
           )
 
           def main():

@@ -1,9 +1,9 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::domain::StudyCard;
 use crate::domain::knowledge::KanjiCard;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::memory::{Difficulty, MemoryState, Rating, Stability};
-use crate::test_support::init_real_dictionaries;
 use chrono::Utc;
 use rand::{SeedableRng, rngs::StdRng};
 
@@ -86,7 +86,7 @@ mod kanji_view_tests {
 
     #[test]
     fn review_kanji_produces_yesno() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
         let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
@@ -109,7 +109,7 @@ mod kanji_view_tests {
 
     #[test]
     fn review_kanji_not_high_difficulty_produces_writing() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let ks = make_ks();
         let sc = make_reviewed_kanji("日", 5.0, 3.0, Rating::Good);
         let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
@@ -136,7 +136,7 @@ mod defensive_new_vocab_view_tests {
 
     #[test]
     fn new_vocab_slipping_into_lesson_gets_defensive_normal() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let ks = create_knowledge_set_with_vocab(&["猫", "犬", "鳥", "魚"]);
         let sc = StudyCard::new(create_vocab_card("猫"));
         let mut generator = LessonViewGenerator::new(&ks, NativeLanguage::Russian);
@@ -159,7 +159,7 @@ mod defensive_new_kanji_view_tests {
 
     #[test]
     fn new_kanji_slipping_into_lesson_gets_defensive_normal() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
         let mut ks = KnowledgeSet::new();
         for k in ["日", "月", "水", "火", "木"] {
             ks.create_card(Card::Kanji(KanjiCard::new_test(k.to_string())))
@@ -189,7 +189,7 @@ const VERB_RULE_ID: &str = "01G00000000000000024000000";
 const DISTRACTOR_WORDS: &[&str] = &["食べる", "飲む", "行く", "読む", "書く", "話す"];
 
 fn make_review_vocab_ks() -> KnowledgeSet {
-    init_real_dictionaries();
+    crate::test_support::init_real_dictionaries();
     let mut ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
     let rule_id = ulid::Ulid::from_string(VERB_RULE_ID).expect("valid ULID");
     let grammar_sc = ks.create_card(create_grammar_card(rule_id)).unwrap();
@@ -256,6 +256,7 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn in_progress_vocab_never_gets_quiz_or_yesno() {
+        real_dictionaries_or_skip!();
         // Parallel sibling tests install an examples index into the shared
         // global store: isolate this test from it (empty index = no
         // example-view slots in the ladder).
@@ -282,6 +283,7 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn known_vocab_never_gets_quiz_or_yesno() {
+        real_dictionaries_or_skip!();
         // Parallel sibling tests install an examples index into the shared
         // global store: isolate this test from it (empty index = no
         // example-view slots in the ladder).
@@ -308,6 +310,7 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn late_stage_vocab_produces_all_strict_recall_forms() {
+        real_dictionaries_or_skip!();
         // Parallel sibling tests install an examples index into the shared
         // global store: isolate this test from it (empty index = no
         // example-view slots in the ladder).
@@ -329,6 +332,7 @@ mod review_vocab_strict_recall_tests {
 
     #[test]
     fn high_difficulty_vocab_produces_all_five_forms() {
+        real_dictionaries_or_skip!();
         // Parallel sibling tests install an examples index into the shared
         // global store: isolate this test from it (empty index = no
         // example-view slots in the ladder).
@@ -373,6 +377,7 @@ mod example_slot_tests {
 
     #[test]
     fn vocab_reviews_never_draw_the_example_view_anymore() {
+        real_dictionaries_or_skip!();
         // #528 v2: the example-recall slot is gone from the per-showing
         // ladder — companions are attached by the final layout pass
         // (see `example_companions`). No RNG seed may produce the view.

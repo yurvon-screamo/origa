@@ -170,11 +170,6 @@ impl KanjiCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::init_real_dictionaries;
-
-    fn setup() {
-        init_real_dictionaries();
-    }
 
     #[test]
     fn new_test_creates_valid_card() {
@@ -191,7 +186,7 @@ mod tests {
 
     #[test]
     fn description_returns_answer_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let result = kanji.description(&NativeLanguage::Russian);
         assert!(result.is_ok());
@@ -203,7 +198,7 @@ mod tests {
 
     #[test]
     fn example_words_returns_words_with_meanings() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let words = kanji.example_words(&NativeLanguage::Russian);
         assert!(!words.is_empty());
@@ -215,7 +210,7 @@ mod tests {
 
     #[test]
     fn example_words_english_returns_words_with_meanings() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let words = kanji.example_words(&NativeLanguage::English);
         assert!(!words.is_empty());
@@ -223,7 +218,7 @@ mod tests {
 
     #[test]
     fn jlpt_returns_level_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let level = kanji.jlpt();
         assert!(matches!(
@@ -245,7 +240,7 @@ mod tests {
 
     #[test]
     fn used_in_returns_count_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let count = kanji.used_in();
         assert!(count > 0);
@@ -260,7 +255,7 @@ mod tests {
 
     #[test]
     fn radicals_chars_returns_chars_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let radicals = kanji.radicals_chars();
         assert!(!radicals.is_empty());
@@ -275,7 +270,7 @@ mod tests {
 
     #[test]
     fn radicals_info_returns_infos_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let result = kanji.radicals_info();
         assert!(result.is_ok());
@@ -292,7 +287,7 @@ mod tests {
 
     #[test]
     fn on_readings_returns_readings_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let readings = kanji.on_readings();
         assert!(!readings.is_empty());
@@ -307,7 +302,7 @@ mod tests {
 
     #[test]
     fn kun_readings_returns_readings_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let kanji = KanjiCard::new_test("日".to_string());
         let readings = kanji.kun_readings();
         assert!(!readings.is_empty());
@@ -359,7 +354,7 @@ mod tests {
 
     #[test]
     fn new_creates_card_for_known_kanji() {
-        setup();
+        crate::corpus::real_dictionaries_or_skip!();
         let result = KanjiCard::new("日".to_string());
         assert!(result.is_ok());
         let kanji = result.unwrap();
