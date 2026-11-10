@@ -7,6 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| home | home | mobile | ru-RU | 390×844 | 2026-11-10T01:58:48.188Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--mobile-212a56bd.png) |
+| home | home | desktop | ru-RU | 1280×800 | 2026-11-10T01:58:25.257Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--desktop-414ae67a.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
@@ -53,8 +55,6 @@
 | review-body-quiz-2 | lesson-review-body | desktop | ru-RU | 1280×800 | 2026-10-30T18:18:18.516Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-2--desktop-9162abb4.png) |
 | accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-30T14:05:31.089Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-280a170a.png) |
 | accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-30T14:04:49.794Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--desktop-6c44a263.png) |
-| home | home | mobile | ru-RU | 390×844 | 2026-10-25T17:11:58.113Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
-| home | home | desktop | ru-RU | 1280×800 | 2026-10-25T17:11:35.697Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
 
 ## Как обновить
 
