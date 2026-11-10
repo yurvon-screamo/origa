@@ -143,15 +143,22 @@ async fn stroke_progress_label_shares_the_canvas_positioning_context() {
         wrapper.inner_html()
     );
 
-    let label_text = wrapper
-        .query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]")
-        .unwrap()
-        .expect("label checked above")
-        .text_content()
-        .unwrap_or_default();
+    let label_text = wait_for(|| {
+        let node = wrapper
+            .query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]");
+        let Some(label) = node.ok().flatten() else {
+            return false;
+        };
+        label
+            .text_content()
+            .map(|text| text.contains("1 / 1"))
+            .unwrap_or(false)
+    })
+    .await;
     assert!(
-        label_text.contains("1 / 1"),
-        "the label must show the stroke progress (1 / 1), got: {label_text:?}"
+        label_text,
+        "the label must show the stroke progress (1 / 1); DOM: {}",
+        wrapper.inner_html()
     );
 
     purge_kanji_art(&cache, &art_path).await;

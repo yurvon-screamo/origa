@@ -159,60 +159,71 @@ pub fn KanjiDrawingPractice(
 
     view! {
         <div class="kanji-drawing-container" data-testid=test_id_val>
+            // The stage shrink-wraps the canvas box and carries the
+            // corner label INSIDE it: the label pins to the drawing box
+            // (identical in every parent layout), not to a full-width
+            // container edge, where it could leave the viewport
+            // (10.11 bug report — the label clipped off-screen on the
+            // phone layout).
+            <div class="kanji-drawing-stage">
+                {move || {
+                    (!load_error.get()).then(|| {
+                        // Compact corner label (top-right of the canvas,
+                        // see .kanji-drawing-info): progress while
+                        // drawing, done after the last stroke.
+                        view! {
+                            <div class="kanji-drawing-info" data-testid=test_id_progress>
+                                {move || {
+                                    if is_completed.get() {
+                                        t_string!(i18n, kanji_page.done).to_string()
+                                    } else {
+                                        let total = strokes.get().len();
+                                        let current = current_stroke_index.get() + 1;
+                                        i18n.get_keys().kanji_page().stroke_progress().inner().to_string()
+                                            .replacen("{}", &current.to_string(), 1)
+                                            .replacen("{}", &total.to_string(), 1)
+                                    }
+                                }}
+                            </div>
+                        }
+                            .into_any()
+                    })
+                }}
+                // The canvas is a direct child of the stage: the old
+                // wrapper div existed only as the positioning context for
+                // a decorative ::after shadow that never rendered (see
+                // .kanji-drawing-canvas in input.css).
+                <canvas
+                    node_ref={canvas_ref}
+                    width={CANVAS_SIZE}
+                    height={CANVAS_SIZE}
+                    data-testid=test_id_canvas
+                    class=move || {
+                        if is_completed.get() {
+                            "kanji-drawing-canvas pointer-events-none"
+                        } else {
+                            "kanji-drawing-canvas"
+                        }
+                    }
+                    on:pointerdown={handle_pointer_down}
+                    on:pointermove={handle_pointer_move}
+                    on:pointerup={handle_pointer_up}
+                    on:pointerleave={handle_pointer_leave}
+                />
+            </div>
             {move || {
-                if load_error.get() {
-                    // Error keeps the centered flow layout: a corner label
-                    // would squeeze the message. The canvas stays mounted
-                    // (empty paper) as before.
+                // Error keeps the centered flow layout: a corner label
+                // would squeeze the message. The canvas stays mounted
+                // (empty paper) as before.
+                load_error.get().then(|| {
                     view! {
                         <div class="kanji-drawing-error" data-testid=test_id_progress>
                             {t!(i18n, kanji_page.animation_unavailable)}
                         </div>
                     }
                         .into_any()
-                } else {
-                    // Compact corner label (top-right, see
-                    // .kanji-drawing-info): progress while drawing, done
-                    // after the last stroke.
-                    view! {
-                        <div class="kanji-drawing-info" data-testid=test_id_progress>
-                            {move || {
-                                if is_completed.get() {
-                                    t_string!(i18n, kanji_page.done).to_string()
-                                } else {
-                                    let total = strokes.get().len();
-                                    let current = current_stroke_index.get() + 1;
-                                    i18n.get_keys().kanji_page().stroke_progress().inner().to_string()
-                                        .replacen("{}", &current.to_string(), 1)
-                                        .replacen("{}", &total.to_string(), 1)
-                                }
-                            }}
-                        </div>
-                    }
-                        .into_any()
-                }
+                })
             }}
-            // The canvas is a direct child of the container: the old
-            // wrapper div existed only as the positioning context for a
-            // decorative ::after shadow that never rendered (see
-            // .kanji-drawing-canvas in input.css).
-            <canvas
-                node_ref={canvas_ref}
-                width={CANVAS_SIZE}
-                height={CANVAS_SIZE}
-                data-testid=test_id_canvas
-                class=move || {
-                    if is_completed.get() {
-                        "kanji-drawing-canvas pointer-events-none"
-                    } else {
-                        "kanji-drawing-canvas"
-                    }
-                }
-                on:pointerdown={handle_pointer_down}
-                on:pointermove={handle_pointer_move}
-                on:pointerup={handle_pointer_up}
-                on:pointerleave={handle_pointer_leave}
-            />
         </div>
     }
 }
