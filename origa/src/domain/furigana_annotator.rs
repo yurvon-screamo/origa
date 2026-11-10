@@ -2,7 +2,6 @@ use crate::dictionary::furigana_dict::{
     FuriganaEntry, FuriganaStore, ReadingSpan, get_furigana_dict,
 };
 use crate::domain::OrigaError;
-use crate::domain::hiragana_to_katakana;
 use crate::domain::tokenizer::{TokenInfo, tokenize_text};
 use serde::{Deserialize, Serialize};
 
@@ -142,14 +141,14 @@ fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSp
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text: surface,
-                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading: Some(best.reading.clone()),
                     reading_spans: best
                         .reading_spans
                         .iter()
                         .map(|s| ReadingSpan {
                             start_index: s.start_index,
                             end_index: s.end_index,
-                            text: hiragana_to_katakana(&s.text),
+                            text: s.text.clone(),
                         })
                         .collect(),
                 }
@@ -166,14 +165,14 @@ fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSp
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text,
-                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading: Some(best.reading.clone()),
                     reading_spans: best
                         .reading_spans
                         .iter()
                         .map(|s| ReadingSpan {
                             start_index: s.start_index,
                             end_index: s.end_index,
-                            text: hiragana_to_katakana(&s.text),
+                            text: s.text.clone(),
                         })
                         .collect(),
                 }
@@ -305,11 +304,11 @@ mod tests {
         let span = resolve_annotation(token, &dict);
 
         let reading = span.reading.as_ref().expect("明日 should have a reading");
-        // hiragana_to_katakana is applied, so あした becomes アシタ.
         // The reading_hint was アス (literary) — the annotator must NOT
         // use it and must pick the first dictionary entry instead.
+        // Readings render hiragana as stored in JmdictFurigana.
         assert_eq!(
-            reading, "アシタ",
+            reading, "あした",
             "明日 should use the most frequent reading あした, got {}",
             reading
         );

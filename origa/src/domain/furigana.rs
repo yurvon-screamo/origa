@@ -5,7 +5,6 @@ use crate::dictionary::furigana_dict::{
 };
 use crate::domain::JapaneseText;
 use crate::domain::furigana_annotator::AnnotatedSpan;
-use crate::domain::hiragana_to_katakana;
 use crate::domain::{
     OrigaError, japanese::JapaneseChar, lookup_precomputed, tokenizer::tokenize_text,
 };
@@ -98,14 +97,17 @@ fn annotate_single_word(text: &str, dict: &FuriganaStore) -> Option<AnnotatedSpa
     let best = dict.lookup_word(text).into_iter().next()?;
     Some(AnnotatedSpan {
         text: text.to_string(),
-        reading: Some(hiragana_to_katakana(&best.reading)),
+        // Hiragana render (owner request): ruby in Japanese typography is
+        // kana-in-text-order — katakana here made readings read like foreign
+        // names (トウ, アキラ). Kanji-less kana passes through unchanged.
+        reading: Some(best.reading.clone()),
         reading_spans: best
             .reading_spans
             .iter()
             .map(|span| ReadingSpan {
                 start_index: span.start_index,
                 end_index: span.end_index,
-                text: hiragana_to_katakana(&span.text),
+                text: span.text.clone(),
             })
             .collect(),
     })
@@ -845,18 +847,18 @@ mod tests {
 
         let ta = segments
             .iter()
-            .find(|s| s.text() == "食" && s.reading() == Some("タベ"));
+            .find(|s| s.text() == "食" && s.reading() == Some("たべ"));
         assert!(
             ta.is_some(),
-            "expected segment '食' with reading 'タベ', got: {segments:?}"
+            "expected segment '食' with reading 'たべ', got: {segments:?}"
         );
 
         let mo = segments
             .iter()
-            .find(|s| s.text() == "物" && s.reading() == Some("モノ"));
+            .find(|s| s.text() == "物" && s.reading() == Some("もの"));
         assert!(
             mo.is_some(),
-            "expected segment '物' with reading 'モノ', got: {segments:?}"
+            "expected segment '物' with reading 'もの', got: {segments:?}"
         );
     }
 
