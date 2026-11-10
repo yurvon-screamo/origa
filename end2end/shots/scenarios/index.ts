@@ -15,6 +15,7 @@ import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
+import { wordsScenario } from "./words.ts";
 
 /**
  * The browser-side implementations of the catalog.
@@ -25,6 +26,7 @@ import { wordExamplesScenario } from "./word-examples.ts";
 export const implementations: Record<string, ShotScenario> = {
   [homeScenario.id]: homeScenario,
   [wordExamplesScenario.id]: wordExamplesScenario,
+  [wordsScenario.id]: wordsScenario,
   [lessonExampleScenario.id]: lessonExampleScenario,
   [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
   [counterScoringScenario.id]: counterScoringScenario,

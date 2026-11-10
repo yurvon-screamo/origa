@@ -203,6 +203,12 @@
     },
     "word-examples:detail-viewport": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words:words": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words:words-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }
