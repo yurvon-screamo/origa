@@ -14,7 +14,7 @@
   "commit": "f327bf845b8deb2d4a010311fb84fc5e9f3e0389",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "unknown (dist)",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-full--mobile-abfe3b17.png",
+  "uploadedSha256": "abfe3b1705390166e41d549bbd0b68d7e514ba3df7b85f58f6dffd09a6caf20c",
+  "uploadedAt": "2026-11-10T12:23:47.290434Z"
 }

@@ -14,7 +14,7 @@
   "commit": "f327bf845b8deb2d4a010311fb84fc5e9f3e0389",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "unknown (dist)",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png",
+  "uploadedSha256": "290c0c2faa8482bc9f77966c9d27b55ba380c9c3d8a971471bc2b4f84f3cddaf",
+  "uploadedAt": "2026-11-10T12:23:47.290434Z"
 }
