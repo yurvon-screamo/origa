@@ -108,13 +108,22 @@ SELFTEST_TIMEOUT_S="${SELFTEST_TIMEOUT_S:-120}"
 deadline=$(($(date +%s) + SELFTEST_TIMEOUT_S))
 marker=""
 while [ "$(date +%s)" -lt "$deadline" ]; do
-	marker="$($ADB logcat -d 2>/dev/null | grep 'I/origa' | grep '\[selftest\] ocr' | tail -n 1 | tr -d '\r' || true)"
+	# Grep by the message substring only — the default `adb logcat -d`
+	# format separates level and tag with a space on API 34 (`I origa`),
+	# so a `I/origa` pattern would never match. Same contract as the
+	# substring markers above.
+	marker="$($ADB logcat -d 2>/dev/null | grep '\[selftest\] ocr' | tail -n 1 | tr -d '\r' || true)"
 	[ -n "$marker" ] && break
 	sleep 2
 done
 case "$marker" in
 *"[selftest] ocr ok"*) echo "android-smoke: OCR selftest passed ($marker)" ;;
-"") fail "OCR selftest marker never appeared within ${SELFTEST_TIMEOUT_S}s (probe hung, listener not mounted, or the logcat bridge is broken)" ;;
+"")
+	echo "--- selftest diagnostics (filtered logcat) ---"
+	$ADB logcat -d 2>/dev/null |
+		grep -iE 'selftest|Tauri/Console|AndroidRuntime|FATAL EXCEPTION' |
+		tail -n 50 >&2 || true
+	fail "OCR selftest marker never appeared within ${SELFTEST_TIMEOUT_S}s (probe hung, listener not mounted, or the logcat bridge is broken)" ;;
 *) fail "OCR selftest failed: $marker" ;;
 esac
 
