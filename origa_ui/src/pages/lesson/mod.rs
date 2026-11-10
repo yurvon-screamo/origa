@@ -49,6 +49,7 @@ mod phrase_cleanup;
 pub(crate) mod pos_label;
 mod quiz_card;
 pub(crate) mod quiz_feedback_strip;
+pub(crate) mod quiz_full_card_expand;
 pub(crate) mod quiz_ledger;
 pub(crate) mod quiz_ledger_labels;
 mod quiz_options;
