@@ -7,6 +7,14 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | не загружен |
+| detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | не загружен |
+| detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | не загружен |
+| detail-full | counters-detail | desktop | ru-RU | 1280×1050 | 2026-11-10T11:53:05.142Z | f327bf84 | не загружен |
+| grid-viewport | grammar-page | mobile | ru-RU | 390×844 | 2026-11-10T11:51:09.757Z | f327bf84 | не загружен |
+| grid-full | grammar-page | mobile | ru-RU | 390×1101 | 2026-11-10T11:51:09.249Z | f327bf84 | не загружен |
+| grid-viewport | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:57.054Z | f327bf84 | не загружен |
+| grid-full | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:54.152Z | f327bf84 | не загружен |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
