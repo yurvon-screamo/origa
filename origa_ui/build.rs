@@ -44,8 +44,11 @@ fn main() {
     // Empty/unset = Sentry disabled at runtime. `SENTRY_RELEASE_UI` is derived
     // from `ORIGA_VERSION` to guarantee release-name sync with the native
     // layer (ADR-036 §3). See ADR-024 for the env-var read pattern
-    // (`env::var()` + `cargo:rustc-env` + `rerun-if-env-changed` instead of
-    // `option_env!`, which captures at build-script compile time).
+    // (`env::var()` + `cargo:rustc-env` + `rerun-if-env-changed`). The
+    // explicit pattern is preferred over `option_env!` for the empty-string
+    // handling it enables (resolve_env, ADR-024) — not for invalidation:
+    // modern cargo tracks option_env! reads too, env changes invalidate
+    // either way (verified on cargo 1.98, PR #909 probe).
     let sentry_dsn = env::var("SENTRY_DSN").unwrap_or_default();
     let sentry_environment =
         env::var("SENTRY_ENVIRONMENT").unwrap_or_else(|_| "development".into());
@@ -273,67 +276,39 @@ fn generate_well_known_meta() {
         return;
     }
 
-    // Rerun if any JSON file in well_known_set changes
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n5.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n4.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n3.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n2.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n1.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("migii").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n5").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n4").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n3").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n2").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("spy_family").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("duolingo").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_nyuumon").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_shokyuu1").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_shokyuu2").display()
-    );
+    // Watch each child only if it exists: a rerun-if-changed path that does
+    // not exist makes cargo re-dirty the build script on EVERY invocation
+    // ("Dirty ... the file X is missing", observed on cargo 1.98 — same
+    // failure class as cdn/fonts before PR #909; a partial or stale corpus
+    // snapshot would poison the cache the same way). A single watch on the
+    // base dir is NOT an option here: cargo fingerprints watched paths before
+    // the script runs, and this script writes well_known_sets_meta.json INTO
+    // the watched dir, so the next invocation would always see the dir as
+    // changed — an ever-dirty loop (verified live on cargo 1.98). The list is
+    // the generator's input contract: a newly introduced child kind needs a
+    // build.rs change anyway, so it lands in both lists together.
+    for child in [
+        "jlpt_n5.json",
+        "jlpt_n4.json",
+        "jlpt_n3.json",
+        "jlpt_n2.json",
+        "jlpt_n1.json",
+        "migii",
+        "minna_n5",
+        "minna_n4",
+        "minna_n3",
+        "minna_n2",
+        "spy_family",
+        "duolingo",
+        "irodori_nyuumon",
+        "irodori_shokyuu1",
+        "irodori_shokyuu2",
+    ] {
+        let path = base_dir.join(child);
+        if path.exists() {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+    }
 
     let mut meta_list: Vec<WellKnownMeta> = Vec::new();
 
@@ -706,7 +681,7 @@ fn generate_font_registry() {
     // worktrees, where `cdn/` is gitignored. Trade-off of skipping the watch:
     // fonts restored into an existing worktree are picked up on the next
     // build.rs rerun (any source/env change), not by the appearance itself —
-    // same degradation class as generate_well_known_meta's early return.
+    // same trade-off as the corpus watch in generate_well_known_meta.
     if fonts_dir.is_dir() {
         println!("cargo:rerun-if-changed={}", fonts_dir.display());
     }

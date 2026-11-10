@@ -5,9 +5,11 @@
 //! origa_ui: the file ../cdn/fonts is missing`). The whole crate then
 //! recompiles on every build in any checkout without the gitignored `cdn/`
 //! assets — fresh worktrees, CI lint/test checkouts. The fix guards both font
-//! watch prints behind a `is_dir` check; this suite pins the emitted build
-//! script output against the actual state of `cdn/fonts` so a regression
-//! (unconditional print) fails instead of silently costing ~30 s per build.
+//! watch prints behind a `is_dir` check (task 20261109234301-dd6s9tv later
+//! put the well_known_set corpus watches behind the same exists guard);
+//! this suite pins the emitted build script output against the actual state
+//! of `cdn/fonts` and `cdn/well_known_set` so a regression (unconditional
+//! print) fails instead of silently costing ~30 s per build.
 //!
 //! Reads the freshest cached build script output under `target/`: `cargo test`
 //! compiles `origa_ui` before running this suite, so that file always
@@ -26,6 +28,13 @@ fn cdn_fonts_dir() -> PathBuf {
         .join("..")
         .join("cdn")
         .join("fonts")
+}
+
+fn cdn_well_known_set_dir() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("cdn")
+        .join("well_known_set")
 }
 
 /// Freshest cached output of the `origa_ui` build script anywhere under the
@@ -116,6 +125,37 @@ fn font_watch_matches_cdn_fonts_state() {
              the build script on every invocation and origa_ui recompiles on every \
              build in checkouts without cdn assets; the watch print must stay \
              guarded by is_dir (task 20261109020526-ej6jeho)"
+        );
+    }
+}
+
+/// The corpus watch must match the actual state of `cdn/well_known_set`:
+/// emitted when the dir exists (corpus updates invalidate the cache), absent
+/// when it does not (a watch on a missing path re-dirties the build script on
+/// every cargo run — the same failure class as the font watch above).
+#[test]
+fn well_known_watch_matches_corpus_state() {
+    let Some(content) = freshest_output_content() else {
+        eprintln!("skip: no origa_ui build script output under target/");
+        return;
+    };
+    let watch_emitted = content
+        .lines()
+        .any(|line| line.contains("rerun-if-changed") && line.contains("cdn/well_known_set"));
+    if cdn_well_known_set_dir().is_dir() {
+        assert!(
+            watch_emitted,
+            "cdn/well_known_set exists but the build script output has no rerun-if-changed \
+             watch for it — corpus updates no longer invalidate the origa_ui cache; \
+             see generate_well_known_meta in origa_ui/build.rs"
+        );
+    } else {
+        assert!(
+            !watch_emitted,
+            "build script output watches the missing cdn/well_known_set — cargo re-dirties \
+             the build script on every invocation and origa_ui recompiles on every build \
+             in checkouts without cdn assets; the watch print must stay behind the \
+             base_dir.exists() early return (task 20261109234301-dd6s9tv)"
         );
     }
 }
