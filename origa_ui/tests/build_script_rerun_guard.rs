@@ -23,6 +23,7 @@
 
 #![cfg(not(target_arch = "wasm32"))] // std::fs does not exist on wasm32 (wasm-pack compiles this suite too)
 
+use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -111,13 +112,19 @@ fn freshest_output_content() -> Option<String> {
     fs::read_to_string(output).ok()
 }
 
+/// The directive prefix of a `cargo:rerun-if-changed` line, as a path.
+fn watch_path(line: &str) -> Option<&Path> {
+    line.strip_prefix("cargo:rerun-if-changed=").map(Path::new)
+}
+
 /// The font watch must point exactly at the resolved fonts source: emitted
 /// with that path when the source exists (font changes invalidate the cache),
 /// absent when it does not (a watch on a missing path re-dirties the build
-/// script on every cargo run). Exact-path comparison, not a `cdn/fonts`
-/// substring: a typical env corpus (`~/origa/cdn/fonts`) contains that
-/// substring too, which once made this test reject the healthy env-source
-/// workflow the capture stack documents (task 20261110041750-4bs23o3).
+/// script on every cargo run). Paths compare by components, not by display
+/// strings: `display()` prints platform separators (`\fonts` on a native
+/// Windows host), and a `cdn/fonts` substring once made this test reject the
+/// healthy env-source workflow the capture stack documents (task
+/// 20261110041750-4bs23o3).
 #[test]
 fn font_watch_matches_fonts_source_state() {
     let Some(content) = freshest_output_content() else {
@@ -127,28 +134,26 @@ fn font_watch_matches_fonts_source_state() {
         );
         return;
     };
-    // The font watch lines end with `/fonts` (registry + staging print the
-    // same resolved dir); every other watch in the output ends with a file
-    // name or a different directory.
-    let watch_line = content
+    // The font watch lines point at a path named `fonts` (registry + staging
+    // print the same resolved dir); every other watch targets a file or a
+    // different directory.
+    let watched = content
         .lines()
         .map(str::trim)
-        .find(|line| line.starts_with("cargo:rerun-if-changed=") && line.ends_with("/fonts"));
+        .filter_map(watch_path)
+        .find(|path| path.file_name() == Some(OsStr::new("fonts")));
     match resolved_fonts_dir() {
-        Some(dir) => {
-            let expected = format!("cargo:rerun-if-changed={}", dir.display());
-            assert!(
-                watch_line == Some(expected.as_str()),
-                "build script output watches {watch_line:?} but the resolved fonts \
-                 source is `{expected}` — the watch must follow ORIGA_CDN_CACHE_DIR \
-                 with the repo-local cdn/fonts fallback (resolve_fonts_dir in \
-                 origa_ui/build.rs), otherwise font updates may not invalidate \
-                 the origa_ui cache"
-            );
-        },
+        Some(dir) => assert!(
+            watched == Some(dir.as_path()),
+            "build script output watches {watched:?} but the resolved fonts source \
+             is `{}` — the watch must follow ORIGA_CDN_CACHE_DIR with the \
+             repo-local cdn/fonts fallback (resolve_fonts_dir in origa_ui/build.rs), \
+             otherwise font updates may not invalidate the origa_ui cache",
+            dir.display()
+        ),
         None => assert!(
-            watch_line.is_none(),
-            "build script output watches the missing fonts source ({watch_line:?}) — \
+            watched.is_none(),
+            "build script output watches the missing fonts source ({watched:?}) — \
              cargo re-dirties the build script on every invocation and origa_ui \
              recompiles on every build in checkouts without the fonts assets; the \
              watch print must stay guarded by is_dir (task 20261109020526-ej6jeho)"
