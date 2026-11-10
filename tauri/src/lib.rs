@@ -18,6 +18,11 @@ mod android_context;
 #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
 mod device_ai_commands;
 mod file_commands;
+// Pure per-platform routing contracts (update policy, store review,
+// share-intent mirror): cfg!() converts to the enum exactly once here, and
+// rstest tables pin every platform's decision on any host CI runner
+// (task 20261104060604, GH #854).
+mod platform_routing;
 mod share_intake;
 // Auto-updater is Windows/Linux-only and is additionally compiled OUT of
 // app-store builds (`ORIGA_APP_STORE=1`): Microsoft Store policy 10.2.5
