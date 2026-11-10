@@ -212,59 +212,73 @@ async fn parallel_fetch_runs_set_requests_concurrently() {
 /// The owner scenario under a 25 ms simulated round trip must finish within
 /// the measured budget. Sequential fetching alone costs 184 × 25 ms ≈ 4.6 s
 /// — over budget even before any CPU work.
+///
+/// Best-of-3 wall time, same rationale as `fastest_import` in
+/// `import_onboarding_n2_scale`: the minimum is robust against asymmetric
+/// CPU contention from parallel tests in the shared test pool.
 #[tokio::test]
 async fn owner_scale_import_with_network_latency_stays_within_budget() {
     init_real_dictionaries();
     // Arrange
     let ids = owner_set_ids();
     let cdn = LatencyCdn::with_corpus(&ids.iter().map(|s| s.as_str()).collect::<Vec<_>>(), 25);
-    let repo = fresh_repo();
-    let use_case = ImportOnboardingSetsUseCase::new(&repo, &cdn);
-    let user = repo.get_current_user().await.unwrap().unwrap();
 
-    // Act
-    let started = Instant::now();
-    let result = use_case.execute(user, ids, JapaneseLevel::N3).await;
-    let elapsed = started.elapsed();
+    // Act — best-of-3, a fresh user per run (the import saves into the
+    // repository; re-importing into the previous user would dedup to zero)
+    let mut best = Duration::MAX;
+    let mut created = 0;
+    for _ in 0..3 {
+        let repo = fresh_repo();
+        let use_case = ImportOnboardingSetsUseCase::new(&repo, &cdn);
+        let user = repo.get_current_user().await.unwrap().unwrap();
+        let started = Instant::now();
+        let result = use_case.execute(user, ids.clone(), JapaneseLevel::N3).await;
+        let elapsed = started.elapsed();
+        let result = result.expect("import with a complete mock corpus must succeed");
+        created = result.created_vocabulary + result.created_kanji;
+        best = best.min(elapsed);
+    }
 
     // Assert
-    let result = result.expect("import with a complete mock corpus must succeed");
+    assert!(created > 5000, "owner scale must create the full card set");
     assert!(
-        result.created_vocabulary + result.created_kanji > 5000,
-        "owner scale must create the full card set"
-    );
-    assert!(
-        elapsed < Duration::from_secs(4),
-        "import with 25 ms round trips must stay within the 4 s budget, took {elapsed:?}"
+        best < Duration::from_secs(4),
+        "import with 25 ms round trips must stay within the 4 s budget, took {best:?}"
     );
 }
 
 /// Zero-latency absolute ceiling for the CPU path — pins the debug-profile
 /// cost of the full owner scenario so any regression shows up as a budget
-/// breach, not as a slow app on a real device.
+/// breach, not as a slow app on a real device. Best-of-3 for the same
+/// contention-robustness reason as the latency budget above.
 #[tokio::test]
 async fn owner_scale_import_cpu_stays_within_budget() {
     init_real_dictionaries();
     // Arrange
     let ids = owner_set_ids();
     let cdn = corpus_cdn(&ids);
-    let repo = fresh_repo();
-    let use_case = ImportOnboardingSetsUseCase::new(&repo, &cdn);
-    let user = repo.get_current_user().await.unwrap().unwrap();
 
-    // Act
-    let started = Instant::now();
-    let result = use_case
-        .execute(user, ids, JapaneseLevel::N3)
-        .await
-        .expect("import with a complete mock corpus must succeed");
-    let elapsed = started.elapsed();
+    // Act — best-of-3, a fresh user per run (the import saves into the
+    // repository; re-importing into the previous user would dedup to zero)
+    let mut best = Duration::MAX;
+    let mut created = 0;
+    for _ in 0..3 {
+        let repo = fresh_repo();
+        let use_case = ImportOnboardingSetsUseCase::new(&repo, &cdn);
+        let user = repo.get_current_user().await.unwrap().unwrap();
+        let started = Instant::now();
+        let result = use_case.execute(user, ids.clone(), JapaneseLevel::N3).await;
+        let elapsed = started.elapsed();
+        let result = result.expect("import with a complete mock corpus must succeed");
+        created = result.created_vocabulary + result.created_kanji;
+        best = best.min(elapsed);
+    }
 
     // Assert
-    assert!(result.created_vocabulary + result.created_kanji > 5000);
+    assert!(created > 5000);
     assert!(
-        elapsed < Duration::from_secs(4),
-        "debug-profile CPU import of the owner scenario must stay within 4 s, took {elapsed:?}"
+        best < Duration::from_secs(4),
+        "debug-profile CPU import of the owner scenario must stay within 4 s, took {best:?}"
     );
 }
 
