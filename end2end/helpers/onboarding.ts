@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import TimeoutError, { type Page, expect } from "@playwright/test";
 
 import { OnboardingPage } from "../pages";
 
@@ -116,12 +116,18 @@ async function tapNextRidingOverlays(page: Page): Promise<void> {
     try {
       await next.click({ timeout: 3000 });
       return;
-    } catch {
+    } catch (error) {
+      // Ride out overlay stability-blocks (TimeoutError) only: a broken
+      // selector — strict-mode violation, removed button — must surface
+      // immediately instead of burning the retry budget behind a misleading
+      // "overlay" diagnosis.
+      if (!(error instanceof TimeoutError)) throw error;
       await page.waitForTimeout(1000);
     }
   }
+  // 30 attempts × (3 s click timeout + 1 s pause) ≈ 120 s worst case.
   throw new Error(
-    "onboarding-next stayed blocked for ~90s — check the app-level overlays",
+    "onboarding-next stayed blocked for ~120s — check the app-level overlays",
   );
 }
 

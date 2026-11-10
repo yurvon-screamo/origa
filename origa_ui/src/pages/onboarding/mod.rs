@@ -59,8 +59,10 @@ enum PendingAction {
 }
 
 /// Renders one import progress tick as a localized status line, e.g.
-/// "Загрузка наборов 24/184…". Phases with a unit count interpolate
-/// `{done}`/`{total}`; indeterminate phases (Saving) use a bare label.
+/// "Загрузка наборов 24/184…". Counting phases interpolate `{done}`/`{total}`;
+/// if a locale drifted from the placeholder contract, the raw counters are
+/// appended instead of rendering the untouched braces. Indeterminate phases
+/// (Saving) use a bare label.
 fn import_progress_line(i18n: I18nContext<Locale>, event: ImportProgressEvent) -> String {
     let progress = i18n.get_keys_untracked().onboarding().import_progress();
     let template = match event.phase {
@@ -70,6 +72,12 @@ fn import_progress_line(i18n: I18nContext<Locale>, event: ImportProgressEvent) -
         ImportPhase::Kanji => progress.kanji().inner().to_string(),
         ImportPhase::Saving => progress.saving().inner().to_string(),
     };
+    let counted = event.phase != ImportPhase::Saving;
+    if counted && !(template.contains("{done}") && template.contains("{total}")) {
+        // Locale lost its placeholders — degrade to appended raw counters
+        // rather than rendering "{done}/{total}" verbatim.
+        return format!("{template} {}/{}", event.done, event.total);
+    }
     template
         .replace("{done}", &event.done.to_string())
         .replace("{total}", &event.total.to_string())
