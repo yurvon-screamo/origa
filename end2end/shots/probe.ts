@@ -39,16 +39,29 @@ export interface FontState {
  * the corpus `ORIGA_CDN_CACHE_DIR` points at when it carries `fonts/`,
  * else the repo-local `cdn/fonts`. `null` — no fonts source anywhere, the
  * build bakes a sans-serif bundle.
+ *
+ * Directory check, not a bare exists: build.rs resolves with `is_dir()`, so
+ * a regular file named `fonts` degrades the build to sans-serif and the
+ * mirror must say the same thing.
  */
 export function resolveBuildFontsDir(
   cacheDir: string | null,
   repoRoot: string,
 ): string | null {
-  if (cacheDir !== null && existsSync(join(cacheDir, "fonts"))) {
+  if (cacheDir !== null && isDirectory(join(cacheDir, "fonts"))) {
     return join(cacheDir, "fonts");
   }
   const repoLocal = join(repoRoot, "cdn", "fonts");
-  return existsSync(repoLocal) ? repoLocal : null;
+  return isDirectory(repoLocal) ? repoLocal : null;
+}
+
+/** Whether the path exists and is a directory (symlinks resolved). */
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 /** Font availability of the local corpus and of the built bundle. */

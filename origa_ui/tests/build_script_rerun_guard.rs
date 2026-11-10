@@ -6,14 +6,20 @@
 //! recompiles on every build in any checkout without the gitignored `cdn/`
 //! assets — fresh worktrees, CI lint/test checkouts. The fix guards both font
 //! watch prints behind a `is_dir` check; this suite pins the emitted build
-//! script output against the actual state of `cdn/fonts` so a regression
-//! (unconditional print) fails instead of silently costing ~30 s per build.
+//! script output against the resolved fonts source (the mirror of
+//! `resolve_fonts_dir`: `ORIGA_CDN_CACHE_DIR` corpus when it carries `fonts/`,
+//! else the repo-local `cdn/fonts` — task 20261110041750-4bs23o3) so a
+//! regression (unconditional print, or a watch pointing at the wrong source)
+//! fails instead of silently costing ~30 s per build.
 //!
 //! Reads the freshest cached build script output under `target/`: `cargo test`
 //! compiles `origa_ui` before running this suite, so that file always
-//! reflects the current `build.rs` source. Host suites (no `cdn/` locally)
-//! pin the "missing dir -> no watch" branch; CI suites run with the CDN
-//! artifact downloaded and pin the "dir exists -> watch emitted" branch.
+//! reflects the current `build.rs` source and the current env (`cargo`
+//! re-runs the script when `ORIGA_CDN_CACHE_DIR` changes — the
+//! `rerun-if-env-changed` contract pinned by `env_watches_declared_for_read_env_vars`).
+//! A host suite without any fonts source pins the "missing dir -> no watch"
+//! branch; a suite with the env corpus (or the downloaded CDN artifact)
+//! pins the "source exists -> watch emitted" branch.
 
 #![cfg(not(target_arch = "wasm32"))] // std::fs does not exist on wasm32 (wasm-pack compiles this suite too)
 
@@ -28,55 +34,73 @@ fn cdn_fonts_dir() -> PathBuf {
         .join("fonts")
 }
 
-/// Freshest cached output of the `origa_ui` build script anywhere under the
-/// workspace `target/`. Layout: `target/{triple,profile}/build/origa_ui-<hash>/output`.
+/// The fonts source the build script resolves right now — the test-side mirror
+/// of `resolve_fonts_dir` in build.rs: a non-empty `ORIGA_CDN_CACHE_DIR`
+/// carrying `fonts/` wins, else the repo-local `cdn/fonts`. `None` — no
+/// source anywhere, the watch must be absent from the output.
+fn resolved_fonts_dir() -> Option<PathBuf> {
+    if let Ok(cache_dir) = std::env::var("ORIGA_CDN_CACHE_DIR") {
+        if !cache_dir.is_empty() {
+            let from_env = Path::new(&cache_dir).join("fonts");
+            if from_env.is_dir() {
+                return Some(from_env);
+            }
+        }
+    }
+    let repo_local = cdn_fonts_dir();
+    repo_local.is_dir().then_some(repo_local)
+}
+
+/// Freshest cached output of the `origa_ui` build script under the host
+/// profiles of the workspace `target/`. Layout:
+/// `target/{profile}/build/origa_ui-<hash>/output`.
+///
+/// Host profiles only (`debug`, `release`): the triple dirs
+/// (`target/wasm32-unknown-unknown/...`) are trunk/cross builds with their
+/// own env history — a capture run hours ago must not outvote the current
+/// host run (task 20261110041750-4bs23o3 review). Within the host profile
+/// the invariant holds: every env switch dirties the script (`cargo` reports
+/// `the env variable ORIGA_CDN_CACHE_DIR changed`) and rewrites the current
+/// fingerprint's output, so the freshest host output always reflects the
+/// env `cargo test` just ran with.
 fn freshest_script_output() -> Option<PathBuf> {
     let target = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("..")
         .join("target");
     let mut best: Option<(SystemTime, PathBuf)> = None;
-    for candidate in build_dirs_under(&target) {
-        let out = candidate.join("output");
-        let Ok(meta) = fs::metadata(&out) else {
-            continue;
-        };
-        let Ok(modified) = meta.modified() else {
-            continue;
-        };
-        let is_fresher = match &best {
-            Some((t, _)) => modified > *t,
-            None => true,
-        };
-        if is_fresher {
-            best = Some((modified, out));
+    for profile in ["debug", "release"] {
+        for candidate in build_dirs_under(&target.join(profile)) {
+            let out = candidate.join("output");
+            let Ok(meta) = fs::metadata(&out) else {
+                continue;
+            };
+            let Ok(modified) = meta.modified() else {
+                continue;
+            };
+            let is_fresher = match &best {
+                Some((t, _)) => modified > *t,
+                None => true,
+            };
+            if is_fresher {
+                best = Some((modified, out));
+            }
         }
     }
     best.map(|(_, path)| path)
 }
 
-/// All `build/origa_ui-<hash>` script dirs one and two levels below `target/`
-/// (host profile directly, target triples one level deeper).
-fn build_dirs_under(target: &Path) -> Vec<PathBuf> {
+/// All `build/origa_ui-<hash>` script dirs one level below the given
+/// profile dir.
+fn build_dirs_under(profile_dir: &Path) -> Vec<PathBuf> {
     let mut found = Vec::new();
-    let Ok(entries) = fs::read_dir(target) else {
+    let build = profile_dir.join("build");
+    let Ok(scripts) = fs::read_dir(&build) else {
         return found;
     };
-    for level1 in entries.flatten() {
-        let path = level1.path();
-        if !path.is_dir() {
-            continue;
-        }
-        for level2 in fs::read_dir(&path).into_iter().flatten().flatten() {
-            let build = level2.path().join("build");
-            let Ok(scripts) = fs::read_dir(&build) else {
-                continue;
-            };
-            for script in scripts.flatten() {
-                let name = script.file_name();
-                if name.to_string_lossy().starts_with("origa_ui-") && script.path().is_dir() {
-                    found.push(script.path());
-                }
-            }
+    for script in scripts.flatten() {
+        let name = script.file_name();
+        if name.to_string_lossy().starts_with("origa_ui-") && script.path().is_dir() {
+            found.push(script.path());
         }
     }
     found
@@ -87,11 +111,15 @@ fn freshest_output_content() -> Option<String> {
     fs::read_to_string(output).ok()
 }
 
-/// The font watch must match the actual state of `cdn/fonts`: emitted when the
-/// dir exists (font changes invalidate the cache), absent when it does not
-/// (a watch on a missing path re-dirties the build script on every cargo run).
+/// The font watch must point exactly at the resolved fonts source: emitted
+/// with that path when the source exists (font changes invalidate the cache),
+/// absent when it does not (a watch on a missing path re-dirties the build
+/// script on every cargo run). Exact-path comparison, not a `cdn/fonts`
+/// substring: a typical env corpus (`~/origa/cdn/fonts`) contains that
+/// substring too, which once made this test reject the healthy env-source
+/// workflow the capture stack documents (task 20261110041750-4bs23o3).
 #[test]
-fn font_watch_matches_cdn_fonts_state() {
+fn font_watch_matches_fonts_source_state() {
     let Some(content) = freshest_output_content() else {
         eprintln!(
             "skip: no origa_ui build script output under target/ — cargo test \
@@ -99,24 +127,32 @@ fn font_watch_matches_cdn_fonts_state() {
         );
         return;
     };
-    let watch_emitted = content
+    // The font watch lines end with `/fonts` (registry + staging print the
+    // same resolved dir); every other watch in the output ends with a file
+    // name or a different directory.
+    let watch_line = content
         .lines()
-        .any(|line| line.contains("rerun-if-changed") && line.contains("cdn/fonts"));
-    if cdn_fonts_dir().is_dir() {
-        assert!(
-            watch_emitted,
-            "cdn/fonts exists but the build script output has no rerun-if-changed \
-             watch for it — font updates no longer invalidate the origa_ui cache; \
-             see generate_font_registry/stage_fonts_for_bundling in origa_ui/build.rs"
-        );
-    } else {
-        assert!(
-            !watch_emitted,
-            "build script output watches the missing cdn/fonts — cargo re-dirties \
-             the build script on every invocation and origa_ui recompiles on every \
-             build in checkouts without cdn assets; the watch print must stay \
-             guarded by is_dir (task 20261109020526-ej6jeho)"
-        );
+        .map(str::trim)
+        .find(|line| line.starts_with("cargo:rerun-if-changed=") && line.ends_with("/fonts"));
+    match resolved_fonts_dir() {
+        Some(dir) => {
+            let expected = format!("cargo:rerun-if-changed={}", dir.display());
+            assert!(
+                watch_line == Some(expected.as_str()),
+                "build script output watches {watch_line:?} but the resolved fonts \
+                 source is `{expected}` — the watch must follow ORIGA_CDN_CACHE_DIR \
+                 with the repo-local cdn/fonts fallback (resolve_fonts_dir in \
+                 origa_ui/build.rs), otherwise font updates may not invalidate \
+                 the origa_ui cache"
+            );
+        },
+        None => assert!(
+            watch_line.is_none(),
+            "build script output watches the missing fonts source ({watch_line:?}) — \
+             cargo re-dirties the build script on every invocation and origa_ui \
+             recompiles on every build in checkouts without the fonts assets; the \
+             watch print must stay guarded by is_dir (task 20261109020526-ej6jeho)"
+        ),
     }
 }
 
@@ -133,6 +169,7 @@ fn env_watches_declared_for_read_env_vars() {
     };
     for var in [
         "ORIGA_CDN_BASE_URL",
+        "ORIGA_CDN_CACHE_DIR",
         "ORIGA_CDN_REGION",
         "TRAILBASE_URL",
         "SENTRY_DSN",

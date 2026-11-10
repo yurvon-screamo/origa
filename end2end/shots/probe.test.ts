@@ -95,3 +95,25 @@ test("no fonts anywhere resolves to null", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// build.rs resolves with is_dir(): a regular FILE named fonts degrades the
+// build to sans-serif, and the mirror must say the same thing (review of
+// task 20261110041750-4bs23o3 — a bare existsSync would pass preflight).
+test("a regular file named fonts is not a fonts source", () => {
+  const root = mkdtempSync(join(tmpdir(), "origa-probe-fonts-"));
+  try {
+    const corpus = join(root, "corpus");
+    const repo = join(root, "repo");
+    mkdirSync(corpus, { recursive: true });
+    writeFileSync(join(corpus, "fonts"), "");
+    assert.equal(resolveBuildFontsDir(corpus, repo), null);
+    // the repo-local dir is a real source — the fallback answers
+    mkdirSync(join(repo, "cdn", "fonts"), { recursive: true });
+    assert.equal(
+      resolveBuildFontsDir(corpus, repo),
+      join(repo, "cdn", "fonts"),
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
