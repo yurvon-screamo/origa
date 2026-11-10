@@ -14,11 +14,10 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use crate::corpus::{cdn_dir, corpus_absent};
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, User};
 use crate::traits::{CdnProvider, UserRepository};
-use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, MockCdnProvider, get_cdn_dir, init_real_dictionaries,
-};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, MockCdnProvider};
 use crate::use_cases::{ImportOnboardingSetsUseCase, ImportPhase, ImportProgressEvent};
 
 /// CDN mock that delays every fetch (simulated network round trip) and
@@ -38,14 +37,13 @@ impl LatencyCdn {
     fn with_corpus(ids: &[&str], delay_ms: u64) -> Self {
         let mut texts = HashMap::new();
         for id in ids {
-            let body =
-                std::fs::read_to_string(get_cdn_dir().join(crate::domain::resolve_set_path(id)))
-                    .unwrap_or_else(|e| {
-                        panic!(
-                            "{} must exist in cdn/: {e}",
-                            crate::domain::resolve_set_path(id)
-                        )
-                    });
+            let body = std::fs::read_to_string(cdn_dir().join(crate::domain::resolve_set_path(id)))
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "{} must exist in cdn/: {e}",
+                        crate::domain::resolve_set_path(id)
+                    )
+                });
             texts.insert(crate::domain::resolve_set_path(id), body);
         }
         Self {
@@ -100,7 +98,7 @@ impl CdnProvider for LatencyCdn {
 /// first Migii N4 (1) = 184 sets, ~9.2k words (screen said 8663 — minor
 /// metadata drift is acceptable for a speed contract).
 fn owner_set_ids() -> Vec<String> {
-    let meta_path = get_cdn_dir().join("well_known_set/well_known_sets_meta.json");
+    let meta_path = cdn_dir().join("well_known_set/well_known_sets_meta.json");
     let meta: Vec<serde_json::Value> =
         serde_json::from_str(&std::fs::read_to_string(&meta_path).unwrap()).unwrap();
     let pick = |pred: &dyn Fn(&serde_json::Value) -> bool| -> Vec<String> {
@@ -143,7 +141,7 @@ fn corpus_cdn(ids: &[String]) -> MockCdnProvider {
     let mut cdn = MockCdnProvider::new();
     for id in ids {
         let rel = crate::domain::resolve_set_path(id);
-        let body = std::fs::read_to_string(get_cdn_dir().join(&rel))
+        let body = std::fs::read_to_string(cdn_dir().join(&rel))
             .unwrap_or_else(|e| panic!("{rel} must exist in cdn/: {e}"));
         cdn = cdn.with_text(&rel, &body);
     }
@@ -162,7 +160,12 @@ fn fresh_repo() -> InMemoryUserRepository {
 /// never has two requests in flight (the "very long import" bug).
 #[tokio::test]
 async fn parallel_fetch_runs_set_requests_concurrently() {
-    init_real_dictionaries();
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+    crate::test_support::init_real_dictionaries();
     // Arrange — 16 sets at 50 ms round trip each: sequential = 800 ms of
     // pure waiting, bounded-parallel = a couple of batch rounds.
     let ids: Vec<String> = [
@@ -218,7 +221,12 @@ async fn parallel_fetch_runs_set_requests_concurrently() {
 /// CPU contention from parallel tests in the shared test pool.
 #[tokio::test]
 async fn owner_scale_import_with_network_latency_stays_within_budget() {
-    init_real_dictionaries();
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+    crate::test_support::init_real_dictionaries();
     // Arrange
     let ids = owner_set_ids();
     let cdn = LatencyCdn::with_corpus(&ids.iter().map(|s| s.as_str()).collect::<Vec<_>>(), 25);
@@ -253,7 +261,12 @@ async fn owner_scale_import_with_network_latency_stays_within_budget() {
 /// contention-robustness reason as the latency budget above.
 #[tokio::test]
 async fn owner_scale_import_cpu_stays_within_budget() {
-    init_real_dictionaries();
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+    crate::test_support::init_real_dictionaries();
     // Arrange
     let ids = owner_set_ids();
     let cdn = corpus_cdn(&ids);
@@ -287,7 +300,12 @@ async fn owner_scale_import_cpu_stays_within_budget() {
 /// still the input-order-first one (identical to the sequential behavior).
 #[tokio::test]
 async fn import_reports_the_input_order_first_set_error() {
-    init_real_dictionaries();
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+    crate::test_support::init_real_dictionaries();
     // Arrange — good sets fetch instantly, the late-order failure
     // (irodori_missing_late) resolves before the early-order one
     // (irodori_missing_early): completion order differs from input order.
@@ -326,7 +344,12 @@ async fn import_reports_the_input_order_first_set_error() {
 /// phase, and end with the save phase.
 #[tokio::test]
 async fn progress_events_cover_every_phase_in_order() {
-    init_real_dictionaries();
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+    crate::test_support::init_real_dictionaries();
     // Arrange
     let ids: Vec<String> = ["jlpt_n5", "jlpt_n4"]
         .iter()
