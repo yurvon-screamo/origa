@@ -31,7 +31,8 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// 漢 — unused by the other kanji-art tests, so parallel cache access in
 /// the same browser document cannot race on this entry.
 const KANJI: &str = "漢";
-const SVG: &str = "<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 20 20 L 80 80\" fill=\"none\"/></svg>";
+const SVG: &str =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 20 20 L 80 80\" fill=\"none\"/></svg>";
 
 struct UnreachableGuard;
 impl Drop for UnreachableGuard {
@@ -99,13 +100,12 @@ async fn stroke_progress_label_shares_the_canvas_positioning_context() {
     // Isolation first: the seeded entry must resolve through the same
     // shared fetch the component uses — a failure here is a test-setup
     // problem, not a component problem.
-    let direct =
-        crate::loaders::kanji_art_manifest::fetch_kanji_art_svg(
-            crate::loaders::kanji_bundle_store::KanjiBundleType::Animations,
-            KANJI,
-            &art_path,
-        )
-        .await;
+    let direct = crate::loaders::kanji_art_manifest::fetch_kanji_art_svg(
+        crate::loaders::kanji_bundle_store::KanjiBundleType::Animations,
+        KANJI,
+        &art_path,
+    )
+    .await;
     assert!(
         direct.is_some(),
         "the seeded art must resolve through fetch_kanji_art_svg in offline mode"
@@ -144,8 +144,8 @@ async fn stroke_progress_label_shares_the_canvas_positioning_context() {
     );
 
     let label_text = wait_for(|| {
-        let node = wrapper
-            .query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]");
+        let node =
+            wrapper.query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]");
         let Some(label) = node.ok().flatten() else {
             return false;
         };

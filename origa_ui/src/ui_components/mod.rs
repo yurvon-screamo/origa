@@ -57,12 +57,12 @@ mod content_wasm_tests;
 mod context_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod feedback_modal_wasm_tests;
-#[cfg(all(target_arch = "wasm32", test))]
-mod kanji_drawing_wasm_tests;
 mod feedback_wasm_tests;
 mod filter_tag;
 #[cfg(all(target_arch = "wasm32", test))]
 mod form_wasm_tests;
+#[cfg(all(target_arch = "wasm32", test))]
+mod kanji_drawing_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod layout_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
