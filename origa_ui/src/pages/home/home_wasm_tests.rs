@@ -148,7 +148,7 @@ async fn jlpt_progress_card_percentage_renders() {
 #[wasm_bindgen_test]
 async fn jlpt_progress_card_toggle_expands_categories() {
     let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
+    let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::JlptProgress::new();
         view! {
             <JlptProgressCard jlpt_progress=Signal::from(progress) test_id="jp3" />
@@ -157,17 +157,36 @@ async fn jlpt_progress_card_toggle_expands_categories() {
     });
     tick().await;
 
-    let panel = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    // Collapsed by default: the category matrix is absent.
+    let grid_before = wrapper.query_selector("[data-testid=\"jp3-expanded\"]");
     assert!(
-        panel.is_ok_and(|p| p.is_some()),
+        grid_before.is_ok_and(|g| g.is_none()),
+        "matrix must not render while collapsed"
+    );
+
+    let toggle = wrapper
+        .query_selector("[data-testid=\"jp3-toggle\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    toggle.click();
+    tick().await;
+
+    let section = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    assert!(
+        section.is_ok_and(|p| p.is_some()),
         "categories section must render"
     );
 
-    // Expanded content (CategoryProgressGrid) hidden until toggle click:
-    // the grid lives under the toggle's panel; clicking reveals it.
-    let grid_before = wrapper.query_selector(".category-progress-grid");
-    // Initially collapsed — the grid may not be present at all.
-    let _ = grid_before;
+    // All four category tiles render inside the expanded matrix.
+    for tile in ["kanji", "words", "grammar", "counters"] {
+        let tile_node = wrapper.query_selector(&format!("[data-testid=\"jp3-expanded-{tile}\"]"));
+        assert!(
+            tile_node.is_ok_and(|t| t.is_some()),
+            "{tile} tile must render in the expanded matrix"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -192,7 +211,7 @@ async fn jlpt_skeleton_renders_skeleton_block() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_renders_three_linked_cards() {
+async fn category_progress_grid_renders_three_linked_tiles() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress::new();
