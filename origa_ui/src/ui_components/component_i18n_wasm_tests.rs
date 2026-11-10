@@ -17,6 +17,8 @@ use leptos::prelude::*;
 use leptos::task::tick;
 use wasm_bindgen_test::*;
 
+use std::collections::HashMap as GateProbeUnusedImport;
+
 use crate::i18n::Locale;
 use crate::test_support::{create_wrapper, mount_to_wrapper, provide_i18n};
 use crate::ui_components::{
