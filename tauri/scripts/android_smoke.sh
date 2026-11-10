@@ -12,7 +12,8 @@
 # stdout/stderr go to /dev/null regardless of debuggability (ADR-063).
 #
 # Usage: android_smoke.sh <apk-path> [package-id]
-# Env: ADB (default "adb"), BOOT_TIMEOUT_S, LAUNCH_TIMEOUT_S, SETTLE_S.
+# Env: ADB (default "adb"), BOOT_TIMEOUT_S, LAUNCH_TIMEOUT_S, SETTLE_S,
+#      SELFTEST_TIMEOUT_S (OCR marker wait budget, default 120).
 # Requires: adb in PATH; an emulator/device already attached (boot is
 # awaited here).
 set -euo pipefail

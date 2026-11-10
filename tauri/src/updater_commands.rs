@@ -128,14 +128,11 @@ pub async fn check_for_update(
     app: AppHandle,
     pending: State<'_, PendingUpdate>,
 ) -> Result<Option<UpdateMetadata>, String> {
-    // The platform arm is decided at compile time — this command only exists
-    // on Windows and Linux (the module cfg); `update_policy` carries the
-    // full cross-platform table for the host test suite.
-    let platform = if cfg!(windows) {
-        HostPlatform::Windows
-    } else {
-        HostPlatform::Linux
-    };
+    // The platform comes from the single cfg! conversion site — this
+    // command only exists on Windows and Linux (the module cfg), and
+    // `update_policy` carries the full cross-platform table for the host
+    // test suite.
+    let platform = HostPlatform::current();
     #[cfg(target_os = "linux")]
     let (dpkg_available, rpm_available) = system_package_tools();
     #[cfg(not(target_os = "linux"))]

@@ -2,16 +2,20 @@
 """Warning-only guard for new platform cfg branches (task 20261104060604, GH #854).
 
 Scans the PR diff over `tauri/src` for ADDED lines that introduce cfg-based
-platform branches (`cfg(target_os`, `cfg(mobile)`, `cfg(desktop)`) and checks
-whether the touched file carries any sign of per-platform test coverage
-(a `#[cfg(test)]` module, an `#[rstest]` table, `#[test]`s or a `mod tests`).
-Files without it get a `::warning::` GitHub annotation — informational,
-never blocking (the #701 class: a platform branch that no Linux CI runner
-can see, while the platform it targets ships dead).
+platform branches: a `cfg(` attribute/expression carrying a platform token
+(`target_os =`, `target_family =`, `mobile`, `desktop`, `windows`, `unix`).
+All wrapper shapes are covered — bare (`#[cfg(target_os = "linux")]` and
+short `#[cfg(windows)]`), `cfg(any(...))`, `cfg(all(...))`, `cfg(not(...))`
+and their nesting; `cfg!(...)` macro decisions are NOT matched (the `!`
+breaks the `cfg(` prefix) — an accepted blind spot, see the task body's
+not-goals. It checks whether the touched file carries any sign of
+per-platform test coverage (a `#[cfg(test)]` module, an `#[rstest]` table,
+`#[test]`s or a `mod tests`). Files without it get a `::warning::` GitHub
+annotation — informational, never blocking (the #701 class: a platform
+branch that no Linux CI runner can see, while the platform it targets
+ships dead).
 
-Known blind spots, accepted in the task body (NOTICED BUT NOT TOUCHING):
-- `cfg!()` macro decisions (`cfg!(target_os = ...)`) are not detected — the
-  pure-routing-table pattern replaces them instead of policing them;
+Other accepted blind spots (task body, NOTICED BUT NOT TOUCHING):
 - a plain `invoke` of a platform-scoped plugin without any cfg is not
   detected (too many false positives).
 
@@ -26,7 +30,11 @@ import sys
 BASE = os.environ.get("PLATFORM_GUARD_BASE", "origin/master")
 DIFF_PATHS = ["tauri/src"]
 
-CFG_LINE_RE = re.compile(r"cfg\((?:target_os|mobile|desktop)\b")
+# `cfg(` but not `cfg!(` — the macro form is a declared blind spot.
+CFG_LINE_RE = re.compile(r"\bcfg\(")
+PLATFORM_TOKEN_RE = re.compile(
+    r"target_os\s*=|target_family\s*=|\b(?:mobile|desktop|windows|unix)\b"
+)
 TEST_SIGN_RE = re.compile(
     r"#\[cfg\(test\)\]|#\[rstest\]|#\[test\]|mod tests|wasm_bindgen_test"
 )
@@ -49,14 +57,24 @@ def diff_lines() -> list[str]:
 
 
 def added_cfg_paths(lines: list[str]) -> dict[str, int]:
-    """Files with ADDED cfg-branch lines, plus the line count per file."""
+    """Files with ADDED cfg-branch lines, plus the line count per file.
+
+    A line counts when it both opens a `cfg(` (attribute or expression, any
+    any/all/not wrapper shape, short `windows`/`unix` forms included) and
+    carries a platform token. `cfg!(...)` macros never match — the `!`
+    breaks the `cfg(` prefix, keeping the declared macro blind spot honest.
+    """
     current_file = None
     counts: dict[str, int] = {}
     for line in lines:
         if line.startswith("+++ b/"):
             current_file = line[len("+++ b/") :]
         elif line.startswith("+") and not line.startswith("+++"):
-            if current_file and CFG_LINE_RE.search(line):
+            if (
+                current_file
+                and CFG_LINE_RE.search(line)
+                and PLATFORM_TOKEN_RE.search(line)
+            ):
                 counts[current_file] = counts.get(current_file, 0) + 1
     return counts
 

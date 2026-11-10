@@ -2,9 +2,12 @@
 //!
 //! The Android smoke job exercises a real feature path end-to-end: it fires
 //! a deep link (`origa://selftest-ocr`), this module runs the probe and
-//! reports the outcome through the native `selftest_marker` command — the
-//! logcat bridge the smoke script greps (ADR-063: tracing has no logcat
-//! backend, so nothing the frontend logs is CI-observable otherwise).
+//! reports the outcome through the native `selftest_marker` command. The
+//! bridge exists because the smoke script needs a *stable, grep-able*
+//! marker — its own `I/origa` tag, the ADR-063 marker precedent. WebView
+//! console output does reach logcat (wry pipes it as `Tauri/Console`), but
+//! that channel carries arbitrary app logs under a foreign tag, while
+//! `tracing` itself has no logcat backend at all.
 //!
 //! Mounted on Android only: other platforms never see the deep link, so the
 //! listener simply does not exist there (zero overhead, nothing to ignore).
@@ -142,11 +145,28 @@ async fn run_ocr_probe() {
 
 /// Fires a marker through the native logcat bridge. Best-effort: a failed
 /// invoke is logged, never fatal (the smoke script times out on silence).
+///
+/// The Tauri v2 IPC contract expects a JSON object of named argument keys —
+/// a bare JS string deserialises into no arguments at all (`Value::String`
+/// has no `message` key), the command rejects with
+/// "missing required key message", and the marker never reaches logcat.
+/// Same convention as every other call site (`read_share_file`,
+/// `pick_and_read_file`): named keys on a `js_sys::Object`.
 fn report(marker: &str) {
     debug!("selftest: reporting marker: {marker}");
-    let marker = marker.to_string();
+    let args = js_sys::Object::new();
+    if js_sys::Reflect::set(
+        &args,
+        &JsValue::from_str("message"),
+        &JsValue::from_str(marker),
+    )
+    .is_err()
+    {
+        debug!("selftest: failed to build marker args, marker dropped: {marker}");
+        return;
+    }
     leptos::task::spawn_local(async move {
-        if let Err(e) = invoke_with_args(CMD_SELFTEST_MARKER, &JsValue::from_str(&marker)).await {
+        if let Err(e) = invoke_with_args(CMD_SELFTEST_MARKER, &args.into()).await {
             debug!("selftest: marker invoke failed: {e}");
         }
     });

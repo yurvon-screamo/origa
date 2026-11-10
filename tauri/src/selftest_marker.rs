@@ -1,18 +1,19 @@
 //! CI selftest marker bridge (task 20261104060604, GH #854).
 //!
 //! The WASM selftest deep-link handler reports its feature-probe outcome
-//! through this command, and the native side writes it to logcat — the
-//! app's only CI-observable channel on Android (ADR-063: tracing has no
-//! logcat backend, native stdout goes to /dev/null). The Android smoke
-//! script greps logcat for the `[selftest]` markers; a broken bridge means
-//! the smoke job fails on the missing marker, which is the end-to-end
-//! coverage this one-line transit needs.
+//! through this command, and the native side writes it to logcat under the
+//! app's own `I/origa` tag — the stable, grep-able channel the Android
+//! smoke script asserts on (the ADR-063 marker precedent; tracing has no
+//! logcat backend in this app, and WebView console output lands under the
+//! foreign `Tauri/Console` tag). A broken bridge means the smoke job fails
+//! on the missing marker, which is the end-to-end coverage this one-line
+//! transit needs.
 //!
 //! Registered unconditionally like `request_app_review`; non-Android builds
 //! just log (the command never receives probes there — the selftest
 //! listener mounts on Android only).
 
-/// Carries a selftest marker to the CI-observable channel.
+/// Carries a selftest marker to the app's logcat marker channel.
 #[tauri::command]
 pub(crate) fn selftest_marker(message: String) {
     #[cfg(target_os = "android")]
