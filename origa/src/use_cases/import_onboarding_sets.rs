@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 use std::future::Future;
-use std::time::Instant;
 
 use futures::stream::StreamExt;
 use tracing::{debug, info, warn};
+use web_time::Instant;
 
 use crate::domain::resolve_set_path;
 use crate::domain::{JapaneseLevel, OrigaError, User, WellKnownSet};
