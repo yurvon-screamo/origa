@@ -20,7 +20,7 @@ if (
   }
 }
 
-const TRAILBASE_PORT = 4000;
+const TRAILBASE_PORT = Number(process.env.E2E_TRAILBASE_PORT ?? 4000);
 
 async function waitForTrailBase(
   maxRetries = 30,
