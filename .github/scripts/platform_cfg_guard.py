@@ -73,7 +73,9 @@ def main() -> None:
     counts = added_cfg_paths(diff_lines())
     for path, added in sorted(counts.items()):
         if has_test_coverage(path):
-            print(f"platform_cfg_guard: {path}: {added} added cfg line(s), test coverage present")
+            print(
+                f"platform_cfg_guard: {path}: {added} added cfg line(s), test coverage present"
+            )
             continue
         print(
             f"::warning file={path}::"

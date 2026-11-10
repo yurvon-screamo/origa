@@ -105,12 +105,11 @@ pub fn update_policy(
         // No updater plugin is registered on these platforms: macOS updates
         // via the App Store / intentionally excluded builds, mobile has no
         // self-update path at all.
-        HostPlatform::MacOS
-        | HostPlatform::Android
-        | HostPlatform::Ios => UpdatePolicy::Skip("no self-update path on this platform"),
+        HostPlatform::MacOS | HostPlatform::Android | HostPlatform::Ios => {
+            UpdatePolicy::Skip("no self-update path on this platform")
+        },
     }
 }
-
 
 /// Checks the configured updater endpoint for a newer release.
 ///

@@ -18,7 +18,7 @@ use crate::core::platform::platform_name;
 use crate::core::tauri::{event_listen_fn, invoke_with_args, is_tauri};
 
 /// Deep link fired by the Android smoke script to trigger the OCR probe.
-pub(crate) const SELFTEST_OCR_URL: &str = "origa://selftest-ocr";
+const SELFTEST_OCR_URL: &str = "origa://selftest-ocr";
 
 /// The native command that carries markers to logcat (Android) / tracing.
 const CMD_SELFTEST_MARKER: &str = "selftest_marker";
@@ -45,7 +45,7 @@ thread_local! {
 /// Parses a deep-link URL into the selftest probe it requests.
 /// `None` for everything else — coexists with the shortcut/oauth listeners
 /// on the same `deep-link://new-url` channel without touching their parsing.
-pub(crate) fn parse_selftest_url(url: &str) -> Option<SelftestKind> {
+fn parse_selftest_url(url: &str) -> Option<SelftestKind> {
     match url.trim_end_matches(['/', '?', '&']) {
         SELFTEST_OCR_URL => Some(SelftestKind::Ocr),
         _ => None,
@@ -54,7 +54,7 @@ pub(crate) fn parse_selftest_url(url: &str) -> Option<SelftestKind> {
 
 /// The probes the smoke script can request.
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum SelftestKind {
+enum SelftestKind {
     /// `vision_recognize_text` on the fixed probe image.
     Ocr,
 }
@@ -168,10 +168,7 @@ mod tests {
     #[case::other_selftest("origa://selftest-share", None)]
     #[case::unknown("origa://unknown", None)]
     #[case::empty("", None)]
-    fn selftest_url_routing(
-        #[case] url: &str,
-        #[case] expected: Option<SelftestKind>,
-    ) {
+    fn selftest_url_routing(#[case] url: &str, #[case] expected: Option<SelftestKind>) {
         assert_eq!(parse_selftest_url(url), expected);
     }
 }
