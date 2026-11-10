@@ -31,10 +31,14 @@ fn main() {
         corpus_dir.join("manifest.json").display()
     );
 
-    if !corpus_dir.exists() {
+    // Sentinel per the module docs: manifest.json ships with every seeded
+    // corpus. An existing-but-empty directory would otherwise be a silent
+    // green (no warning, no markers) — exactly the state the probe exists
+    // to surface.
+    if !corpus_dir.join("manifest.json").exists() {
         println!(
-            "cargo:warning=local corpus not found at {} — corpus-dependent tests \
-             will SKIP. Seed it once (see AGENTS.md -> \"Local corpus\")",
+            "cargo:warning=local corpus not seeded at {} (manifest.json missing) — \
+             corpus-dependent tests will SKIP. Seed it once (see AGENTS.md -> \"Local corpus\")",
             corpus_dir.display()
         );
     }
