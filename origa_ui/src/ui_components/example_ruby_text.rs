@@ -17,6 +17,24 @@ use crate::store::auth_store::AuthStore;
 /// the highlight class.
 pub type HighlightRange = (i32, i32);
 
+/// Whether the segment occupying char range
+/// `[offset_before, offset_before + segment_len)` intersects the
+/// highlight word range. Negative highlight bounds mean "no word to
+/// highlight" — no segment ever matches.
+pub fn segment_overlaps_highlight(
+    offset_before: usize,
+    segment_len: usize,
+    highlight: HighlightRange,
+) -> bool {
+    let (start, end) = highlight;
+    if start < 0 || end < 0 {
+        return false;
+    }
+    let (start, end) = (start as usize, end as usize);
+    let segment_end = offset_before + segment_len;
+    segment_end > start && offset_before < end
+}
+
 #[component]
 pub fn ExampleRubyText(
     text: String,
@@ -46,13 +64,7 @@ pub fn ExampleRubyText(
     };
 
     let is_highlighted = move |segment: &FuriganaSegment, offset_before: usize| {
-        let (start, end) = highlight;
-        if start < 0 || end < 0 {
-            return false;
-        }
-        let (start, end) = (start as usize, end as usize);
-        let segment_end = offset_before + segment.text().chars().count();
-        segment_end > start && offset_before < end
+        segment_overlaps_highlight(offset_before, segment.text().chars().count(), highlight)
     };
 
     view! {
@@ -99,5 +111,51 @@ fn render_segment(segment: FuriganaSegment, highlighted: bool) -> impl IntoView 
             .into_any()
         },
         None => view! { <span class=class>{text}</span> }.into_any(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn segment_inside_highlight_range_is_highlighted() {
+        // The word occupies chars [3, 5): a segment fully inside matches.
+        assert!(segment_overlaps_highlight(3, 2, (3, 5)));
+    }
+
+    #[test]
+    fn segment_straddling_highlight_start_is_highlighted() {
+        // Context ruby pairs are not word-aligned: a segment that crosses
+        // the range start still overlaps (render must mark it).
+        assert!(segment_overlaps_highlight(2, 3, (3, 5)));
+    }
+
+    #[test]
+    fn segment_straddling_highlight_end_is_highlighted() {
+        assert!(segment_overlaps_highlight(4, 3, (3, 5)));
+    }
+
+    #[test]
+    fn segment_before_highlight_range_is_plain() {
+        assert!(!segment_overlaps_highlight(0, 3, (3, 5)));
+    }
+
+    #[test]
+    fn segment_after_highlight_range_is_plain() {
+        assert!(!segment_overlaps_highlight(5, 2, (3, 5)));
+    }
+
+    #[test]
+    fn absent_highlight_marks_nothing() {
+        // Stored offsets [-1,-1] (kana-variant match) — nothing matches,
+        // exactly like the renderer contract for unlocatable words.
+        assert!(!segment_overlaps_highlight(3, 2, (-1, -1)));
+    }
+
+    #[test]
+    fn empty_highlight_range_marks_nothing() {
+        // Degenerate range (start == end): zero-width, no overlap.
+        assert!(!segment_overlaps_highlight(3, 2, (3, 3)));
     }
 }

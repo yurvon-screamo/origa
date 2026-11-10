@@ -197,7 +197,7 @@ pub fn TranslatorText(
                         // Ruby renders hiragana (owner request): lindera
                         // readings are katakana lemma readings — カタカナ rt
                         // made them read like foreign names (トウ, アキラ).
-                        let reading = katakana_to_hiragana(&token.reading.clone());
+                        let reading = katakana_to_hiragana(&token.reading);
                         let base_form = token.base_form.clone();
                         let translation_text = token.translation.clone();
                         let grammar_label = token.grammar_label.clone();

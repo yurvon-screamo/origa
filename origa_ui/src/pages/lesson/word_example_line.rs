@@ -17,6 +17,19 @@ use crate::ui_components::{
 use origa::domain::NativeLanguage;
 use std::collections::HashSet;
 
+/// A surfacing ref (the word really sits in the sentence) beats an
+/// offset-less kana-variant match: the auxiliary てしまう usage of 仕舞う
+/// must not pose as the lemma's example. When NO ref surfaces, the first
+/// ref still renders (unhighlighted) — no example reads worse than a
+/// word-less one for a card that has nothing else.
+fn pick_surfaced_example(mut loaded: Vec<WordExample>) -> Option<WordExample> {
+    let surfaced = loaded.iter().position(|we| we.start >= 0 && we.end >= 0);
+    match surfaced {
+        Some(pos) => Some(loaded.swap_remove(pos)),
+        None => loaded.into_iter().next(),
+    }
+}
+
 #[component]
 pub fn WordExampleLine(
     word: String,
@@ -37,15 +50,7 @@ pub fn WordExampleLine(
                 .into_iter()
                 .flatten()
                 .collect();
-            // A surfacing ref (the word really sits in the sentence) beats
-            // an offset-less kana-variant match: the auxiliary てしまう
-            // usage of 仕舞う must not pose as the lemma's example.
-            let picked = loaded
-                .iter()
-                .find(|we| we.start >= 0 && we.end >= 0)
-                .cloned()
-                .or_else(|| loaded.into_iter().next());
-            if let Some(we) = picked {
+            if let Some(we) = pick_surfaced_example(loaded) {
                 example.set(Some(we));
             }
         });
@@ -115,5 +120,58 @@ pub fn WordExampleLine(
             </div>
         }
         .into_any()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use origa::dictionary::example::ExampleDetail;
+
+    fn example(start: i32, end: i32, text: &str) -> WordExample {
+        WordExample {
+            detail: ExampleDetail {
+                sentence_id: 0,
+                text: text.to_string(),
+                translation_en: None,
+                translation_ru: None,
+                translation_vi: None,
+                translation_ko: None,
+                ruby: vec![],
+            },
+            start,
+            end,
+        }
+    }
+
+    #[test]
+    fn surfaced_ref_wins_over_kana_variant_match() {
+        // The 仕舞う case: kana-variant refs (auxiliary てしまう) must not
+        // pose as the lemma's example when a surfacing ref exists.
+        let loaded = vec![
+            example(-1, -1, "諦めてしまえ。"),
+            example(2, 4, "頭を冷やせ。"),
+        ];
+        let picked = pick_surfaced_example(loaded).expect("a ref exists");
+        assert_eq!(picked.detail.text, "頭を冷やせ。");
+        assert_eq!((picked.start, picked.end), (2, 4));
+    }
+
+    #[test]
+    fn word_less_refs_still_render_when_nothing_surfaces() {
+        // No example reads worse than a word-less one for a card that has
+        // nothing else: the first ref is the pick (unhighlighted render).
+        let loaded = vec![
+            example(-1, -1, "諦めてしまえ。"),
+            example(-1, -1, "行ってしまえ！"),
+        ];
+        let picked = pick_surfaced_example(loaded).expect("a ref exists");
+        assert_eq!(picked.detail.text, "諦めてしまえ。");
+        assert_eq!((picked.start, picked.end), (-1, -1));
+    }
+
+    #[test]
+    fn empty_ref_list_picks_nothing() {
+        assert!(pick_surfaced_example(vec![]).is_none());
     }
 }
