@@ -20,6 +20,7 @@ upstream change forces a deliberate hash update (reproducibility, NFR-4).
 from __future__ import annotations
 
 import hashlib
+import re
 import subprocess
 import sys
 import zipfile
@@ -32,6 +33,7 @@ CDN_DIR = PROJECT_ROOT / "cdn"
 FONTS_OUT = CDN_DIR / "fonts"
 CACHE_DIR = PROJECT_ROOT / "scripts" / ".font_cache"
 CDN_MANIFEST = PROJECT_ROOT / "end2end" / "cdn-manifest.txt"
+UI_INDEX_HTML = PROJECT_ROOT / "origa_ui" / "index.html"
 
 LATIN_UNICODES = "U+0000-007F,U+00A0-00FF,U+2000-206F,U+20A0-20CF,U+2100-214F"
 # Cyrillic Supplement + Extended-A/B/C + Hryvnia sign. Cormorant Garamond and
@@ -303,6 +305,41 @@ def hash_rename(raw_path: Path) -> Path:
     return final
 
 
+def sync_preload_links(
+    font_files: Iterable[str], index_html: Path = UI_INDEX_HTML
+) -> list[str]:
+    """Point index.html font links at the freshly produced woff2 names.
+
+    The preload <link> in index.html carries a content-hash filename that no
+    other tooling rewrites — the drift behind the font-404 incidents (June
+    2026 CI, Nov 2026 prod). For each produced ``fonts/<logical>-<sha8>.woff2``,
+    rewrite quoted-attribute references to the same logical name carrying a
+    different hash. The match is anchored to quoted attribute values, so plain
+    text mentions survive; the 8-hex constraint keeps sibling logical names
+    intact (``cormorant-garamond`` never matches ``cormorant-garamond-italic-…``).
+
+    Returns the rewritten filenames; empty when nothing changed.
+    """
+    if not index_html.is_file():
+        sys.exit(f"Font link sync target is missing: {index_html}")
+    html = index_html.read_text(encoding="utf-8")
+
+    updated: list[str] = []
+    for font_relative in font_files:
+        final_name = Path(font_relative).name
+        logical = final_name.rsplit("-", 1)[0]
+        pattern = re.compile(
+            rf'(?P<pre>"[^"]*/){re.escape(logical)}-[0-9a-f]{{8}}\.woff2(?P<post>")'
+        )
+        new_html = pattern.sub(rf"\g<pre>{final_name}\g<post>", html)
+        if new_html != html:
+            updated.append(final_name)
+            html = new_html
+    if updated:
+        index_html.write_text(html, encoding="utf-8")
+    return updated
+
+
 def update_cdn_manifest(font_relative: Iterable[str]) -> None:
     start_marker = "# FONTS-START"
     end_marker = "# FONTS-END"
@@ -375,6 +412,9 @@ def main() -> None:
         produced.append(f"fonts/{final.name}")
 
     update_cdn_manifest(produced)
+    synced = sync_preload_links(produced)
+    if synced:
+        print(f"index.html font links updated: {', '.join(synced)}")
     verify_glyph_coverage()
     print(f"\nDone: {len(produced)} fonts in {FONTS_OUT}")
     print(f"Corpus: {len(corpus_path.read_text(encoding='utf-8'))} glyphs")

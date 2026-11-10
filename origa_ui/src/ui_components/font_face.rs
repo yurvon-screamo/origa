@@ -237,21 +237,27 @@ fn filename_for(logical: &str) -> Option<&'static str> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     use super::*;
+
+    // Arbitrary sample filename for URL-shaping checks; the canonical hash
+    // itself is asserted by index_html_font_links_reference_manifest_fonts.
+    const SAMPLE_FONT: &str = "noto-sans-jp-400-41a4227e.woff2";
 
     #[test]
     fn tauri_build_serves_fonts_from_local_origin() {
         assert_eq!(
-            font_file_url(true, "noto-sans-jp-400-a1fd00ef.woff2"),
-            "/fonts/noto-sans-jp-400-a1fd00ef.woff2"
+            font_file_url(true, SAMPLE_FONT),
+            format!("/fonts/{SAMPLE_FONT}")
         );
     }
 
     #[test]
     fn web_build_serves_fonts_from_cdn() {
-        let url = font_file_url(false, "noto-sans-jp-400-a1fd00ef.woff2");
+        let url = font_file_url(false, SAMPLE_FONT);
         assert!(
-            url.ends_with("/fonts/noto-sans-jp-400-a1fd00ef.woff2"),
+            url.ends_with(&format!("/fonts/{SAMPLE_FONT}")),
             "web URL must keep the canonical path: {url}"
         );
         assert!(
@@ -273,5 +279,57 @@ mod tests {
                 spec.logical, spec.display
             );
         }
+    }
+
+    /// Font filenames referenced by href attributes of an HTML document.
+    fn font_files_in_html(html: &str) -> Vec<&str> {
+        let mut files = Vec::new();
+        let mut rest = html;
+        while let Some(pos) = rest.find("href=\"") {
+            rest = &rest[pos + "href=\"".len()..];
+            let href = &rest[..rest.find('"').unwrap_or(0)];
+            if href.contains("/fonts/") && href.ends_with(".woff2") {
+                files.push(href.rsplit('/').next().unwrap_or_default());
+            }
+        }
+        files
+    }
+
+    /// Basenames inside the FONTS block of `end2end/cdn-manifest.txt`.
+    fn manifest_font_files(manifest: &str) -> HashSet<&str> {
+        let block = manifest
+            .split("# FONTS-START")
+            .nth(1)
+            .and_then(|rest| rest.split("# FONTS-END").next())
+            .unwrap_or("");
+        block
+            .lines()
+            .map(str::trim)
+            .filter(|line| line.ends_with(".woff2"))
+            .map(|line| line.rsplit('/').next().unwrap_or_default())
+            .collect()
+    }
+
+    /// The index.html preload link carries a hand-maintained content-hash font
+    /// URL that no build step rewrites — it already drifted twice (June 2026
+    /// CDN incident; Nov 2026: a retired hash 404'd in prod). The canonical
+    /// filename set lives in the FONTS block of `end2end/cdn-manifest.txt`
+    /// (refreshed by `scripts/subset_fonts.py`), so every font href in
+    /// index.html must be part of it. Removing the preload makes this pass
+    /// vacuously — no link, no 404.
+    #[test]
+    fn index_html_font_links_reference_manifest_fonts() {
+        let html = include_str!("../../index.html");
+        let manifest = include_str!("../../../end2end/cdn-manifest.txt");
+        let canonical = manifest_font_files(manifest);
+        let stale: Vec<&str> = font_files_in_html(html)
+            .into_iter()
+            .filter(|file| !canonical.contains(file))
+            .collect();
+        assert!(
+            stale.is_empty(),
+            "index.html references fonts absent from the cdn-manifest.txt FONTS block \
+             (regenerate fonts or update the link): {stale:?}"
+        );
     }
 }
