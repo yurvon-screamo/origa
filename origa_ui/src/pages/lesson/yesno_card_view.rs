@@ -183,7 +183,6 @@ pub fn YesNoCardView(
                     let verdict = single_verdict(result)?;
                     let rows = yesno_ledger_rows(
                         result,
-                        selected_answer,
                         is_statement_correct,
                         &yesno_label(i18n, true),
                         &yesno_label(i18n, false),
