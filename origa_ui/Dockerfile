@@ -96,6 +96,31 @@ COPY origa ./origa
 COPY origa_ui ./origa_ui
 COPY build_defaults.rs ./
 
+# Stage brand fonts for the web build. `cdn/` is gitignored and excluded from
+# the Docker context, so without this step FONT_FILES compiles empty and
+# font_face.rs silently degrades to system fallback typography (the bug this
+# fixes). The canonical filename list lives in the FONTS block of
+# end2end/cdn-manifest.txt (refreshed by scripts/subset_fonts.py; guarded by
+# the font_face.rs manifest test), filenames are content-hashed, so the CDN
+# URLs are immutable and a layer built from them is cache-safe. The fallback
+# base mirrors build.rs resolve_cdn() (DEFAULT_CDN in build_defaults.rs).
+# curl --fail turns a missing CDN file into a failed build — loud instead of
+# the silent degradation this step exists to prevent (ADR-028 staging
+# pattern, Tauri already gets its fonts from the local corpus).
+COPY end2end/cdn-manifest.txt ./end2end/cdn-manifest.txt
+
+# pipefail comes from the SHELL instruction above (bash); POSIX set lacks the
+# flag (hadolint SC3040).
+RUN set -eux; \
+    cdn_base="${ORIGA_CDN_BASE_URL:-https://s3.origa.uwuwu.net}"; \
+    mkdir -p cdn/fonts; \
+    sed -n '/# FONTS-START/,/# FONTS-END/p' end2end/cdn-manifest.txt \
+      | grep '\.woff2$' \
+      | while read -r rel; do \
+          curl --retry 5 --retry-delay 2 --retry-all-errors --fail -sS \
+            -o "cdn/fonts/$(basename "$rel")" "${cdn_base}/${rel}"; \
+        done
+
 # Real build - origa + origa_ui (wasm)
 RUN --mount=type=cache,target=/sccache,sharing=locked \
     --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
@@ -114,6 +139,28 @@ RUN --mount=type=cache,target=/root/.cargo/registry,sharing=locked \
     --mount=type=cache,target=/app/target,sharing=locked \
     --mount=type=cache,target=/root/.cache/trunk,sharing=locked \
     trunk build --release --dist dist
+
+# Post-build guard: the staging above is only meaningful if the subsets made
+# it through build.rs -> public/fonts -> trunk copy-dir into the distribution
+# (copy-dir href="public" mirrors the folder as dist/public/, not dist/).
+# An empty dir or an empty FONT_FILES registry would mean the build silently
+# degraded to system fallback typography again (the exact bug this file
+# fixes) — fail loudly instead.
+# pipefail comes from the SHELL instruction above (bash); POSIX set lacks the
+# flag (hadolint SC3040).
+RUN set -eu; \
+    expected=$(sed -n '/# FONTS-START/,/# FONTS-END/p' ../end2end/cdn-manifest.txt \
+      | grep -c '\.woff2$'); \
+    staged=$(find dist/public/fonts -name '*.woff2' 2>/dev/null | wc -l || true); \
+    if [ "$staged" -lt "$expected" ]; then \
+      echo "FAIL: expected >= ${expected} woff2 in dist/public/fonts, found ${staged}" >&2; \
+      exit 1; \
+    fi; \
+    if ! grep -q "cormorant-garamond" dist/*.wasm 2>/dev/null; then \
+      echo "FAIL: FONT_FILES registry is empty in the built wasm" >&2; \
+      exit 1; \
+    fi; \
+    echo "Fonts staged into dist/public/fonts: ${staged}/${expected}+, registry present in wasm"
 
 # Stage: static THP-disable launcher, built separately so Rust/WASM rebuilds
 # don't invalidate it (see origa_ui/thp_off.c for the rationale).
