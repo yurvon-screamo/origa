@@ -134,8 +134,14 @@ fn env_watches_declared_for_read_env_vars() {
     for var in [
         "ORIGA_CDN_BASE_URL",
         "ORIGA_CDN_REGION",
-        "TRAILBASE_URL",
+        "ORIGA_COMMIT",
+        "ORIGA_BUILD_DATE",
+        "ORIGA_PUBLIC_BASE_URL",
+        "ORIGA_VERSION",
         "SENTRY_DSN",
+        "SENTRY_ENVIRONMENT",
+        "TRAILBASE_URL",
+        "UMAMI_DISABLED",
         "UMAMI_WEBSITE_ID",
     ] {
         let expected = format!("cargo:rerun-if-env-changed={var}");

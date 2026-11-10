@@ -25,7 +25,8 @@ ADR-072 запрещает ре-аттач Railway-LE имён). Сервис �
 | Сервисы | `umami` (c468ab89, образ `umamisoftware/umami:3.4.0` — запинен, шаблон ставит `postgresql-latest`), `Postgres`, `Valkey (Redis)` |
 | Сервисный домен | `umami-production-5769.up.railway.app` |
 | Кастом-домен | `umami.origa.uwuwu.net` (id 987565d2), edge-CNAME `07wyrdxw.up.railway.app` |
-| Website id | `57c7d57f-3bd9-48cf-b9ee-ea02c95d967a` (website «Origa», domain `origa.uwuwu.net`) |
+| Website id (prod) | `57c7d57f-3bd9-48cf-b9ee-ea02c95d967a` (website «Origa», domain `origa.uwuwu.net`) |
+| Website id (dev) | `f0af05d8-a31b-462c-8f6c-999b95da1aa4` (website «Origa (dev)», domain `localhost`) — приёмник dev/e2e/shots-трафика локальных сборок |
 | Переменные umami | `APP_SECRET` (шаблон), `DATABASE_URL` (ссылка на Postgres), `CLIENT_IP_HEADER=x-forwarded-for` |
 
 ## 1. Railway: деплой
@@ -264,11 +265,16 @@ payload (без `title`/`referrer`/браузерного UA) принимает
 
 ### Известные ограничения
 
-- **Dev-шум в прод-данных:** локальные dev-сборки шлют биконы (hostname
-  `localhost*`) в тот же инстанс. Отличить их от прод-десктопа нетривиально:
-  `TRAILBASE_URL` без env резолвится в прод (`build_defaults.rs`), поэтому
-  build-переменные dev-сборку не выдают. CI/e2e и android-smoke компилируют
-  трекер out (`UMAMI_DISABLED=1`); остальное — фильтр hostname в UI/отчётах.
+- **Dev-шум в прод-данных — закрыт 2026-11-10** (задача 20261109071819): website id
+  выбирается при компиляции по контуру сборки (`ORIGA_VERSION` проставлен → прод-website
+  «Origa», отсутствует/пусто/`"dev"` → dev-website «Origa (dev)», id в таблице выше).
+  Все локальные сборки (`trunk serve`, `cargo tauri dev`, локальный e2e, локальные shots)
+  пишут в «Origa (dev)» на том же инстансе; прод-дашборд чист по построению, дев-видимость
+  сохранена. CI/e2e и android-smoke по-прежнему компилируют трекер out (`UMAMI_DISABLED=1`).
+  Остаточные риски: локально собранный release-бинарь без `ORIGA_VERSION` уйдёт в dev-website
+  (не прод-воркфлоу — релизы собирает `tauri.yml`); dev с выставленным в шелле
+  `ORIGA_VERSION` (копипаста CI-env) уйдёт в прод — страховка: `UMAMI_DISABLED` /
+  явный `UMAMI_WEBSITE_ID` сильнее дефолта (`origa_ui/build_config.rs::resolve_umami`).
 - `bootstrap_test_event` (единично в событиях) — ручной тест API, не из кода.
 - Лендинг и приложение в одном website: агрегаты «в целом по продукту»
   смешаны — разрезается hostname-фильтром (см. выше).
