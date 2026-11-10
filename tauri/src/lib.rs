@@ -60,20 +60,10 @@ fn is_store_build() -> bool {
     cfg!(app_store)
 }
 
-/// CI selftest marker bridge (task 20261104060604, GH #854): the WASM
-/// selftest deep-link handler reports its feature-probe outcome through
-/// this command, and the native side writes it to logcat — the app's only
-/// CI-observable channel on Android (ADR-063: tracing has no logcat
-/// backend, native stdout goes to /dev/null). Registered unconditionally
-/// like `request_app_review`; non-Android builds just log (the Android
-/// smoke script greps logcat for the `[selftest]` markers).
-#[tauri::command]
-fn selftest_marker(message: String) {
-    #[cfg(target_os = "android")]
-    android_context::logcat_info(&message);
-    #[cfg(not(target_os = "android"))]
-    tracing::info!("{message}");
-}
+// CI selftest marker bridge: the Android smoke script's logcat channel
+// (task 20261104060604, GH #854). Registered unconditionally like
+// `request_app_review`.
+mod selftest_marker;
 
 /// Returns the deep-link URL that launched (or last targeted) the current
 /// Activity. The frontend polls this on mount because the `deep-link://new-url`
@@ -239,7 +229,7 @@ pub fn run() {
             share_intake::share_listener_ready,
             share_intake::read_share_file,
             share_intake::delete_share_file,
-            selftest_marker
+            selftest_marker::selftest_marker
         ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
