@@ -54,11 +54,16 @@ pub(crate) fn create_wrapper() -> web_sys::Element {
 /// leptos_i18n 0.6 deprecated `provide_i18n_context` in favor of the
 /// `<I18nContextProvider>` component, but that component's `TypedChildren`
 /// requires a `Send` closure while these fixtures mount non-Send views
-/// (Rc-based). `init_i18n_context` + `provide_context` is the same public,
-/// non-deprecated inner path the deprecated function used (the crate runs
-/// without the `unified_contexts` feature, so providing the context value
-/// directly matches the crate-private `I18nContext::provide`), keeping the
-/// mount-scope provision semantics the tests rely on.
+/// (Rc-based). `init_i18n_context` + `provide_context` follows the same
+/// public, non-deprecated inner path the deprecated function used (the
+/// crate runs without the `unified_contexts` feature, so providing the
+/// context value directly matches the crate-private
+/// `I18nContext::provide`), keeping the mount-scope provision semantics
+/// the tests rely on. Not a drop-in twin: the deprecated function also
+/// called `leptos_meta::provide_meta_context()` (unused by these tests)
+/// and was idempotent through `I18nContext::from_context()` — this helper
+/// always creates a fresh context, which is safe because every call site
+/// is the top of a fresh mount scope.
 pub(crate) fn provide_i18n() {
     let i18n = leptos_i18n::context::init_i18n_context::<Locale>();
     provide_context(i18n);

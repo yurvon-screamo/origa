@@ -2503,16 +2503,6 @@ mod mixed_hand_regression {
         let wrapper = mount_training(&ctx);
         tick().await;
 
-        let _click = |sel: &str| {
-            wrapper
-                .query_selector(sel)
-                .unwrap()
-                .expect(sel)
-                .dyn_into::<web_sys::HtmlElement>()
-                .unwrap()
-                .click();
-        };
-
         // Полный флоу: раскрываем и отвечаем «Помню»最多 200 раз —
         // рука обязана пройти Forward, смениться на Reverse и закрыться.
         // Каждый клик ждёт свою кнопку: advance и окно финиша руки
