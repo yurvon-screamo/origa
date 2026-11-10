@@ -120,7 +120,9 @@ async function tapNextRidingOverlays(page: Page): Promise<void> {
       await page.waitForTimeout(1000);
     }
   }
-  throw new Error("onboarding-next stayed blocked for ~90s — check the app-level overlays");
+  throw new Error(
+    "onboarding-next stayed blocked for ~90s — check the app-level overlays",
+  );
 }
 
 /**
