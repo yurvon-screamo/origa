@@ -72,6 +72,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "due-corpus",
   },
+  "lesson-yesno-result": {
+    id: "lesson-yesno-result",
+    title: "Урок: результат да/нет-квиза и разворот карточки",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
+  },
   "counter-scoring": {
     id: "counter-scoring",
     title: "Карточка счётчика в разметке",

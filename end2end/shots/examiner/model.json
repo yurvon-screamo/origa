@@ -195,6 +195,55 @@
         "lesson-stage": ["complete"]
       }
     },
+    "lesson-yesno-result:quiz-result": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "quiz-single-highlight",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:quiz-result-expanded": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:yesno-result": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:yesno-result-expanded": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
     "token-popup:token-popup-report": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
