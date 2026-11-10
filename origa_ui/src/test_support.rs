@@ -49,6 +49,21 @@ pub(crate) fn create_wrapper() -> web_sys::Element {
 
 // ─── Mounts ────────────────────────────────────────────────────────────
 
+/// Provides an i18n context in the current reactive scope.
+///
+/// leptos_i18n 0.6 deprecated `provide_i18n_context` in favor of the
+/// `<I18nContextProvider>` component, but that component's `TypedChildren`
+/// requires a `Send` closure while these fixtures mount non-Send views
+/// (Rc-based). `init_i18n_context` + `provide_context` is the same public,
+/// non-deprecated inner path the deprecated function used (the crate runs
+/// without the `unified_contexts` feature, so providing the context value
+/// directly matches the crate-private `I18nContext::provide`), keeping the
+/// mount-scope provision semantics the tests rely on.
+pub(crate) fn provide_i18n() {
+    let i18n = leptos_i18n::context::init_i18n_context::<Locale>();
+    provide_context(i18n);
+}
+
 /// Mount a view closure into `wrapper`'s reactive scope. The `UnmountHandle`
 /// is leaked to keep the component alive for the test (48dd9dc pattern).
 pub(crate) fn mount_to_wrapper<F>(wrapper: &web_sys::Element, f: F)
@@ -81,7 +96,7 @@ where
     F: FnOnce() -> AnyView + 'static,
 {
     mount_to_wrapper(wrapper, move || {
-        leptos_i18n::provide_i18n_context::<Locale>();
+        provide_i18n();
         f()
     });
 }
@@ -151,7 +166,7 @@ where
     F: FnOnce(&AuthStore, &ConnectivityStore) -> AnyView + 'static,
 {
     mount_to_wrapper(wrapper, move || {
-        leptos_i18n::provide_i18n_context::<Locale>();
+        provide_i18n();
         let auth = AuthStore::new();
         let connectivity = ConnectivityStore::new();
         provide_context(auth.clone());
@@ -169,7 +184,7 @@ where
 /// erased closures (see module docs).
 #[component]
 fn TestRouterHost(children: ChildrenFn) -> impl IntoView {
-    leptos_i18n::provide_i18n_context::<Locale>();
+    provide_i18n();
     view! {
         <leptos_router::components::Router>
             {children()}

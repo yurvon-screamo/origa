@@ -19,7 +19,10 @@ pub enum TypographyVariant {
     Primary,
     Muted,
 
-    #[expect(dead_code, reason = "design system API")]
+    #[cfg_attr(
+        not(all(target_arch = "wasm32", test)),
+        expect(dead_code, reason = "design system API")
+    )]
     Olive,
 }
 
