@@ -19,13 +19,14 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 ROOT = Path(__file__).resolve().parent.parent
 
 DB_PATH = ROOT / "tmp" / "pitch_sources" / "entries.db"
-FURIGANA_PATH = ROOT / "cdn" / "dictionaries" / "JmdictFurigana.txt"
-INDEX_PATH = ROOT / "cdn" / "pitch" / "index.json"
-AUDIO_DIR = ROOT / "cdn" / "pitch" / "audio"
+FURIGANA_PATH = corpus_dir() / "dictionaries" / "JmdictFurigana.txt"
+INDEX_PATH = corpus_dir() / "pitch" / "index.json"
+AUDIO_DIR = corpus_dir() / "pitch" / "audio"
 HASH_CACHE_PATH = ROOT / "tmp" / "pitch_sources" / "hash_cache.json"
 
 NHK_MEDIA = ROOT / "tmp" / "nhk_extract" / "nhk16" / "media"

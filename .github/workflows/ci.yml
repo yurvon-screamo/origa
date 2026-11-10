@@ -14,6 +14,11 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
+    # Local corpus root for tests and build scripts (origa::corpus contract):
+    # the cdn-download job / artifact unpack into `<workspace>/cdn`, so every
+    # job that seeds the corpus resolves it through this override without
+    # moving artifact paths.
+    ORIGA_CDN_DIR: ${{ github.workspace }}/cdn
     # Single source of the Linux system packages (GTK speech stack):
     # consumed by the apt cache step (PR/branch runs) and by the plain
     # install step (tag runs) — one place to bump, no list drift.
@@ -799,15 +804,42 @@ jobs:
                   tail -20 /tmp/cdn-mirror-access.log || true
                   exit 1
 
-            - name: Install wasm-pack
-              # Pinned: with no `version` input the action installs whatever
-              # it resolves as "latest", which broke on 2026-09-20 (resolved
-              # to an ancient v0.9.1 whose CLI rejects `--features`, failing
-              # the job on every open PR). The input goes into the release
-              # URL verbatim — the tag has a `v` prefix, so it must too.
-              uses: jetli/wasm-pack-action@v0.4.0
+            - name: Restore wasm-pack
+              id: wasm-pack-cache
+              uses: actions/cache@v6
               with:
-                  version: "v0.15.0"
+                  path: ~/.cargo/bin/wasm-pack
+                  # os/arch qualifier: platform-specific binary (same
+                  # reasoning as the frontend-tools keys in setup-frontend).
+                  key: wasm-pack-${{ runner.os }}-${{ runner.arch }}-v0.15.0
+
+            - name: Install wasm-pack
+              # Pinned: with no pin the tool resolves whatever it sees as
+              # "latest", which broke on 2026-09-20 (jetli/wasm-pack-action,
+              # previously used here, resolved to an ancient v0.9.1 whose CLI
+              # rejects `--features`, failing the job on every open PR). The
+              # release URL goes verbatim into the download — the tag has a
+              # `v` prefix, so it must too. Direct release-asset download
+              # replaces the third-party action (same pattern as the
+              # trailbase download in the e2e job), and the miss path gets
+              # --retry — a network 504 here used to fail the job outright.
+              if: steps.wasm-pack-cache.outputs.cache-hit != 'true'
+              run: |
+                  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors \
+                      https://github.com/rustwasm/wasm-pack/releases/download/v0.15.0/wasm-pack-v0.15.0-x86_64-unknown-linux-musl.tar.gz \
+                      | tar -xz -C "$HOME/.cargo/bin" --strip-components=1 \
+                          wasm-pack-v0.15.0-x86_64-unknown-linux-musl/wasm-pack
+                  chmod +x "$HOME/.cargo/bin/wasm-pack"
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+                  wasm-pack --version
+
+            - name: Verify wasm-pack
+              # Unconditional (not only on the install path): a cache hit
+              # must also prove the restored binary actually runs — same
+              # validate-on-every-run shape as the trailbase step in the
+              # e2e job. A corrupt/foreign binary fails loudly here instead
+              # of puzzling the test step.
+              run: wasm-pack --version
 
             - name: Run WASM component tests
               run: wasm-pack test --headless --chrome origa_ui --features csr
@@ -1187,21 +1219,49 @@ jobs:
                   name: cdn-data
                   path: cdn/
 
+            - name: Read TrailBase version from origa_ui/Dockerfile
+              id: trailbase-version
+              run: |
+                  # Single source of truth: the e2e runner always races the
+                  # binary version the production image ships. The
+                  # TRAILBASE_VERSION ARG in origa_ui/Dockerfile is the only
+                  # literal in the repo — a prod bump PR automatically moves
+                  # e2e with it. Fail loud here instead of building a broken
+                  # cache key / download URL.
+                  mapfile -t versions < <(sed -n 's/^ARG TRAILBASE_VERSION=//p' origa_ui/Dockerfile)
+                  if [[ ${#versions[@]} -ne 1 || ! "${versions[0]}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "::error::origa_ui/Dockerfile must declare exactly one 'ARG TRAILBASE_VERSION=vX.Y.Z' (got: ${versions[*]:-nothing})"
+                      exit 1
+                  fi
+                  echo "version=${versions[0]}" >> "$GITHUB_OUTPUT"
+
             - name: Cache TrailBase CLI
               if: github.ref_type != 'tag'
               id: cache-trailbase
               uses: actions/cache@v6
               with:
                   path: ~/.local/bin/trail
-                  key: trailbase-v0.28.3-verified
+                  # No restore-keys on purpose: a fallback key would restore
+                  # an old binary under a new version key, and only the
+                  # Validate step below would catch it.
+                  key: trailbase-${{ steps.trailbase-version.outputs.version }}
 
             - name: Add TrailBase to PATH
               run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
             - name: Validate TrailBase CLI
               id: validate-trailbase
+              env:
+                  EXPECTED_VERSION: ${{ steps.trailbase-version.outputs.version }}
               run: |
-                  if command -v trail &> /dev/null && trail --version &> /dev/null; then
+                  # The binary must not just run but match the Dockerfile
+                  # version: a stale cache entry would otherwise race an old
+                  # TrailBase under a fresh key. `trail --version` prints
+                  # `trail vX.Y.Z-…`; extract the semver and compare exactly —
+                  # no substring matching (unescaped dots and no anchors would
+                  # let `0.35.1` match a v0.35.10 binary).
+                  got="$(trail --version 2>&1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+                  if command -v trail &> /dev/null && [[ "$got" == "$EXPECTED_VERSION" ]]; then
                     echo "valid=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "valid=false" >> "$GITHUB_OUTPUT"
@@ -1209,15 +1269,18 @@ jobs:
 
             - name: Install TrailBase CLI
               if: steps.cache-trailbase.outputs.cache-hit != 'true' || steps.validate-trailbase.outputs.valid != 'true'
+              env:
+                  TRAILBASE_VERSION: ${{ steps.trailbase-version.outputs.version }}
               run: |
-                  # Pinned direct download. The trailbase.io installer resolves
-                  # "latest" via anonymous GitHub API calls, which get
-                  # rate-limited on shared runner IPs: it reports an empty
-                  # version and "Could not find any assets that fit your
-                  # system" on every retry. A direct release-asset URL needs
-                  # no API quota. Keep the version in sync with the cache key.
+                  # Pinned direct download; the version comes from
+                  # origa_ui/Dockerfile (see the read step above). The
+                  # trailbase.io installer resolves "latest" via anonymous
+                  # GitHub API calls, which get rate-limited on shared
+                  # runner IPs: it reports an empty version and "Could not
+                  # find any assets that fit your system" on every retry.
+                  # A direct release-asset URL needs no API quota.
                   curl -sSfL --retry 3 --retry-delay 10 -o /tmp/trailbase.zip \
-                    https://github.com/trailbaseio/trailbase/releases/download/v0.28.3/trailbase_v0.28.3_x86_64_linux.zip
+                    "https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_x86_64_linux.zip"
                   mkdir -p "$HOME/.local/bin"
                   unzip -oq /tmp/trailbase.zip -d "$HOME/.local/bin" trail
                   chmod +x "$HOME/.local/bin/trail"

@@ -24,14 +24,9 @@ pub const GRAMMAR_CORPUS_REL_PATH: &str = "grammar/grammar_v3.json";
 /// part of the commit, like the content pins it travels with.
 const PIN_FILE: &str = include_str!("../fixtures/cdn_grammar_v3.sha256");
 
-/// Workspace-root `cdn/` directory (parent of the `origa` crate manifest).
+/// The local CDN corpus root (delegates to [`origa::corpus::cdn_dir`]).
 pub fn cdn_dir() -> PathBuf {
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root is parent of the origa crate manifest")
-        .join("cdn")
+    origa::corpus::cdn_dir()
 }
 
 /// The pinned corpus SHA256 (first whitespace-separated token of the pin file).

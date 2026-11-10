@@ -223,7 +223,7 @@ mod tests {
 #[cfg(test)]
 mod integration_tests {
     use super::super::lookup_tokens_translations;
-    use super::super::test_env::ensure_dictionaries;
+    use crate::corpus::translation_dictionaries_or_skip;
     use crate::domain::NativeLanguage;
     use crate::domain::tokenizer::PartOfSpeech;
     use crate::domain::tokenizer::tokenize_text;
@@ -233,7 +233,7 @@ mod integration_tests {
     // keywords. Keyword matching fires on the token surface, so once a keyword
     // is added the marker token itself is labeled instead of staying bare.
     fn assert_marker_has_grammar_label(text: &str, marker_surface: &str, expected_label: &str) {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
         let marker = results
@@ -251,7 +251,7 @@ mod integration_tests {
     }
     #[test]
     fn should_resolve_grammar_label_for_particle() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "東京から大阪まで";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -269,7 +269,7 @@ mod integration_tests {
     }
     #[test]
     fn should_detect_te_form_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べて";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -284,7 +284,7 @@ mod integration_tests {
     }
     #[test]
     fn should_detect_tai_form_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べたい";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -299,7 +299,7 @@ mod integration_tests {
     }
     #[test]
     fn should_detect_ta_form_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べた";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -314,7 +314,7 @@ mod integration_tests {
     }
     #[test]
     fn should_detect_nai_form_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べない";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -329,7 +329,7 @@ mod integration_tests {
     }
     #[test]
     fn should_not_set_grammar_label_for_base_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べる";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -342,7 +342,7 @@ mod integration_tests {
     }
     #[test]
     fn should_detect_beki_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "うん、あるべきものをあるべき形カタチに";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -369,7 +369,7 @@ mod integration_tests {
     // grammar nouns (べき, はず, ところ, etc.) still resolve to a grammar rule.
     #[test]
     fn tokenize_standalone_beki_returns_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "べき";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -393,7 +393,7 @@ mod integration_tests {
     // wiring error that attached the wrong field.
     #[test]
     fn tokenize_standalone_beki_returns_grammar_description() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "べき";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -423,7 +423,7 @@ mod integration_tests {
     // Robust to whether Lindera keeps ベキ as katakana or normalises to べき.
     #[test]
     fn should_match_katakana_beki_via_normalization() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "ベキ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -446,7 +446,7 @@ mod integration_tests {
     // is not a grammar keyword must NOT receive a spurious grammar_label.
     #[test]
     fn should_not_overmatch_katakana_content_word() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "テスト";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -468,7 +468,7 @@ mod integration_tests {
     // with a grammar keyword.
     #[test]
     fn tokenize_common_content_noun_has_no_grammar_label() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "猫";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -489,7 +489,7 @@ mod integration_tests {
     // with a grammar_label. This test locks in the grammar rule that labels it.
     #[test]
     fn should_label_yagaru_derogatory_auxiliary_grammar() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "大丈夫でやがる";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -513,7 +513,7 @@ mod integration_tests {
     // test locks in the ぬ vocabulary entry that resolves it.
     #[test]
     fn should_label_or_translate_n_negative_auxiliary() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "二度も言わんでええの！";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -538,7 +538,7 @@ mod integration_tests {
     // keyword-based すぎる detection that resolves conjugated auxiliaries.
     #[test]
     fn should_detect_sugiru_too_much_for_tsuyosugite() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "雨の音強すぎて、テレビの音聞こえない";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -567,7 +567,7 @@ mod integration_tests {
     // keyword activation + homonym blacklist that resolve it.
     #[test]
     fn should_label_shi_reason_particle_grammar() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "ストーブついてますし、大丈夫ですよ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -590,7 +590,7 @@ mod integration_tests {
     // prevents the bare-keyword false positive.
     #[test]
     fn should_not_mislabel_plain_ha_particle_as_hahodo_nai() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "私は学生です";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -615,7 +615,7 @@ mod integration_tests {
     // would otherwise match the longer phrase.
     #[test]
     fn should_detect_sugiru_label_for_compound_word() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "この問題は複雑すぎる";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -644,7 +644,7 @@ mod integration_tests {
     // the keyword fallback.
     #[test]
     fn should_detect_sugiru_te_form_for_noun_stem_compound() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "この問題は複雑すぎて困っている";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -686,7 +686,7 @@ mod integration_tests {
     }
     #[test]
     fn should_label_san_honorific_suffix_via_keyword() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "田中さん";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -704,7 +704,7 @@ mod integration_tests {
     }
     #[test]
     fn should_label_itsu_question_word_via_keyword() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "いつ行きますか";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -730,7 +730,7 @@ mod integration_tests {
     // the corpus (~10k hits). The ku-form turns an i-adjective into an adverb.
     #[test]
     fn should_label_i_adjective_ku_form_adverbial() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "もっと早く歩いて";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -748,7 +748,7 @@ mod integration_tests {
     // is implemented but exposed by no rule (~5k hits in the corpus).
     #[test]
     fn should_label_i_adjective_katta_past_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "昨日の天気が本当に良かった";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -774,7 +774,7 @@ mod integration_tests {
     // i-adjective branch never matches.
     #[test]
     fn should_label_i_adjective_kute_te_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "このケーキは美味しくて止まらない";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -803,7 +803,7 @@ mod integration_tests {
     // formatted_conjugation_variants.
     #[test]
     fn should_label_i_adjective_garu_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "周りが怖がってるぞ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -820,7 +820,7 @@ mod integration_tests {
     // AdjectiveToKunai — i-adj negative form (高い→高くない).
     #[test]
     fn should_label_i_adjective_kunai_negative_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "この問題は難しくない";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -837,7 +837,7 @@ mod integration_tests {
     // AdjectiveToKunakatta — i-adj negative past (高い→高くなかった).
     #[test]
     fn should_label_i_adjective_kunakatta_negative_past_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "あの映画は面白くなかった";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -854,7 +854,7 @@ mod integration_tests {
     // AdjectiveToKereba — i-adj conditional (高い→高ければ).
     #[test]
     fn should_label_i_adjective_kereba_conditional_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "安ければ買います";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);

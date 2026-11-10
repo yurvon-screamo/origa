@@ -15,14 +15,15 @@ Deterministic: sorted keys, ensure_ascii=False, compact separators.
 import json
 import sys
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 CHUNKS_PER_BUNDLE = 34
 
 
 def main() -> int:
     project_root = Path(__file__).resolve().parent.parent
-    data_dir = project_root / "cdn" / "phrases" / "data"
-    out_dir = project_root / "cdn" / "phrases"
+    data_dir = corpus_dir() / "phrases" / "data"
+    out_dir = corpus_dir() / "phrases"
 
     if not data_dir.is_dir():
         print(f"ERROR: {data_dir} not found", file=sys.stderr)

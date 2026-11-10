@@ -11,10 +11,7 @@ use origa::domain::{JapaneseChar, tokenize_text};
 mod bootstrap;
 
 fn cdn_dir() -> PathBuf {
-    PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
-        .parent()
-        .unwrap()
-        .join("cdn")
+    origa::corpus::cdn_dir()
 }
 
 fn is_jp_word(w: &str) -> bool {
@@ -62,7 +59,13 @@ fn load_words() -> BTreeMap<String, usize> {
 
 #[test]
 fn audit_well_known_sets_whole_word_rate() {
-    assert!(bootstrap::ensure_all_dictionaries(), "cdn artifacts absent");
+    if !bootstrap::ensure_all_dictionaries() {
+        origa::corpus::print_corpus_skip_marker(
+            "tokenizer audit",
+            &origa::corpus::cdn_dir().join("dictionaries"),
+        );
+        return;
+    }
     let words = load_words();
 
     let mut single = 0;

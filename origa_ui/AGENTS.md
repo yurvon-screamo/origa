@@ -114,8 +114,9 @@ Routes defined in `routes.rs`: `/` (home), `/login`, `/onboarding`, `/profile`,
 metadata, and env vars (`ORIGA_CDN_BASE_URL` required, plus optional
 `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`).
 The tokenizer dictionary is not built here — `build.rs` only verifies the
-pre-built SudachiDict files exist in `cdn/dictionaries/` (fail fast on a
-broken checkout; `cdn/` is gitignored).
+pre-built SudachiDict files exist in the local corpus `$ORIGA_CDN_DIR` /
+`~/origa-cdn` (fail fast with a warning; the corpus is machine-local state
+outside the repository — see root AGENTS.md «Локальный корпус CDN»).
 
 ### `recursion_limit` (bin crate) — RESOLVED, keep the guardrails
 

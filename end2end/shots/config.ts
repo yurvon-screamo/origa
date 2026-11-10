@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -89,8 +90,13 @@ export const TRAILBASE_PORT = Number(process.env.E2E_TRAILBASE_PORT ?? 4000);
 /** Repository root — `end2end/` lives one level below it. */
 export const repoRoot = join(fileURLToPath(new URL("../..", import.meta.url)));
 
-/** Where the CDN corpus lives by default (gitignored — see `.gitignore`). */
-export const defaultCdnCacheDir = join(repoRoot, "cdn");
+/**
+ * Where the CDN corpus lives by default: `~/origa-cdn` (machine-local state
+ * outside the repository, shared by every worktree — mirrors
+ * `origa/src/corpus.rs`; repo-root `cdn/` is no longer read). The
+ * `$ORIGA_CDN_DIR` override is honored in `resolveCdnSource`.
+ */
+export const defaultCdnCacheDir = join(homedir(), "origa-cdn");
 
 export interface CdnSource {
   /** URL the app bundle must point at for CDN content. */
@@ -112,7 +118,8 @@ export interface CdnSource {
 export function resolveCdnSource(
   env: NodeJS.ProcessEnv = process.env,
 ): CdnSource {
-  const cacheDir = env.ORIGA_CDN_CACHE_DIR ?? defaultCdnCacheDir;
+  const cacheDir =
+    env.ORIGA_CDN_CACHE_DIR ?? env.ORIGA_CDN_DIR ?? defaultCdnCacheDir;
   if (existsSync(cacheDir)) {
     return {
       baseUrl: `http://localhost:${LOCAL_CDN_PORT}`,

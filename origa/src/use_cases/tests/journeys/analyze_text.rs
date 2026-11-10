@@ -1,12 +1,12 @@
 use crate::domain::{NativeLanguage, OrigaError, User};
 use crate::use_cases::AnalyzeTextForCardsUseCase;
 use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, create_test_vocab_card, init_real_dictionaries,
+    InMemoryUserRepository, create_test_vocab_card, real_dictionaries_or_skip,
 };
 
 #[tokio::test]
 async fn analyze_text_finds_vocabulary_candidates() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -28,7 +28,7 @@ async fn analyze_text_finds_vocabulary_candidates() {
 
 #[tokio::test]
 async fn analyze_text_empty_returns_empty_analysis() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -48,7 +48,7 @@ async fn analyze_text_empty_returns_empty_analysis() {
 
 #[tokio::test]
 async fn analyze_text_only_symbols_returns_empty() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -66,7 +66,7 @@ async fn analyze_text_only_symbols_returns_empty() {
 
 #[tokio::test]
 async fn analyze_text_marks_known_words() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let mut user = User::new(
         "test@example.com".to_string(),
@@ -92,7 +92,7 @@ async fn analyze_text_marks_known_words() {
 
 #[tokio::test]
 async fn analyze_text_counts_known_and_new() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let mut user = User::new(
         "test@example.com".to_string(),
@@ -120,7 +120,7 @@ async fn analyze_text_counts_known_and_new() {
 
 #[tokio::test]
 async fn analyze_text_deduplicates_words() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -145,7 +145,7 @@ async fn analyze_text_deduplicates_words() {
 
 #[tokio::test]
 async fn analyze_text_without_user_returns_error() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let repo = InMemoryUserRepository::new();
     let use_case = AnalyzeTextForCardsUseCase::new(&repo);
@@ -157,7 +157,7 @@ async fn analyze_text_without_user_returns_error() {
 
 #[tokio::test]
 async fn analyze_text_provides_word_details() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -180,7 +180,7 @@ async fn analyze_text_provides_word_details() {
 
 #[tokio::test]
 async fn analyze_text_mixed_japanese_and_latin() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -201,7 +201,7 @@ async fn analyze_text_mixed_japanese_and_latin() {
 
 #[tokio::test]
 async fn analyze_text_long_text() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),
@@ -223,7 +223,7 @@ async fn analyze_text_long_text() {
 
 #[tokio::test]
 async fn analyze_text_whitespace_only() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),

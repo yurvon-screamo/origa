@@ -20,8 +20,10 @@ from pathlib import Path
 from typing import Final
 
 import _cdn_cache
+import _cdn_corpus
 import _cdn_s3
 import _cdn_verify
+
 
 VERSIONED_FILES: list[str] = [
     # Word examples (#528): the index is hash-tracked for client-side
@@ -269,7 +271,7 @@ def validate_grammar_if_changed(changed: list[str]) -> None:
     target = "grammar/grammar_v3.json"
     print(f"\nStep 3.5: Validating {target}...")
     result = subprocess.run(
-        [sys.executable, str(script), str(Path("cdn") / target)],
+        [sys.executable, str(script), str(_cdn_corpus.corpus_dir() / target)],
         capture_output=True,
         text=True,
         check=False,
@@ -600,7 +602,7 @@ def _force_all_deploy(dry_run: bool) -> None:
     import time as _time
 
     project_root = Path(__file__).resolve().parent.parent
-    cdn_dir = project_root / "cdn"
+    cdn_dir = _cdn_corpus.corpus_dir()
     if not cdn_dir.is_dir():
         print(f"ERROR: {cdn_dir} not found", file=sys.stderr)
         sys.exit(1)
@@ -826,7 +828,7 @@ def main() -> None:
         print("=== DRY RUN ===\n")
 
     project_root = Path(__file__).resolve().parent.parent
-    cdn_dir = project_root / "cdn"
+    cdn_dir = _cdn_corpus.corpus_dir()
 
     if not cdn_dir.is_dir():
         print(f"ERROR: {cdn_dir} not found", file=sys.stderr)

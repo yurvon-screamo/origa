@@ -136,9 +136,10 @@ function checkBundle(facts: PreflightFacts): string[] {
   if (facts.serveMode === "build") {
     if (!facts.fontsReady) {
       errors.push(
-        "в локальном корпусе нет cdn/fonts/ — бандл соберётся без @font-face (sans-serif). " +
-          "ORIGA_CDN_CACHE_DIR параметризует раздачу контента, но реестр шрифтов билда " +
-          "build.rs читает из repo-локального cdn/fonts: для брендовых скринов симлинк cdn → корпус",
+        "в локальном корпусе нет шрифтов — бандл соберётся без @font-face (sans-serif). " +
+          "Реестр шрифтов билда build.rs читает из корпуса ($ORIGA_CDN_DIR or ~/origa-cdn, " +
+          "ORIGA_CDN_CACHE_DIR параметризует раздачу контента shot-харнесом): " +
+          "скопируйте шрифты в корпус (corpus/fonts/)",
       );
     }
     return errors;

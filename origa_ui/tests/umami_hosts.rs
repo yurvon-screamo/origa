@@ -17,8 +17,11 @@
 //! | Desktop CSP (built) | `tauri/build_config.rs` | `script-src`, `connect-src` |
 //! | Desktop CSP (committed) | `tauri/tauri.conf.json` | `csp` |
 //!
-//! plus the website id, which the landing tag and `origa_ui/build_config.rs`
-//! must share (one website for all surfaces — ADR-054 §Decision-1).
+//! plus the website id: the landing tag pins the production id (the landing
+//! is a prod-only surface), and `origa_ui/build_config.rs` must keep the same
+//! production constant as its context default for CI builds (website-id split
+//! by build context since 2026-11-10: app builds also report to «Origa (dev)»
+//! locally — ADR-054 §Decision-1 amended by isolation task 20261109071819).
 
 const ANALYTICS_RS: &str = include_str!("../src/core/analytics.rs");
 const BUILD_CONFIG_RS: &str = include_str!("../build_config.rs");

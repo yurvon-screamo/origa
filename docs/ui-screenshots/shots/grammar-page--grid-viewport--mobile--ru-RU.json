@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "grammar-page",
+  "screen": "grid-viewport",
+  "route": "/grammar",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 146912,
+  "sha256": "60b59cce823537b3aade5afce15101ffb77d87564a1bc90d0dea346ff2a01d3b",
+  "capturedAt": "2026-11-10T11:51:09.757Z",
+  "commit": "f327bf845b8deb2d4a010311fb84fc5e9f3e0389",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "unknown (dist)",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-viewport--mobile-60b59cce.png",
+  "uploadedSha256": "60b59cce823537b3aade5afce15101ffb77d87564a1bc90d0dea346ff2a01d3b",
+  "uploadedAt": "2026-11-10T12:23:47.290434Z"
+}

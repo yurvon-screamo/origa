@@ -26,9 +26,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from radicals_canonical_fixes import CORRECTIONS  # noqa: E402
+from _cdn_corpus import corpus_dir
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-RADICALS_PATH = _REPO_ROOT / "cdn" / "dictionary" / "radicals.json"
+RADICALS_PATH = corpus_dir() / "dictionary" / "radicals.json"
 
 CYRILLIC = re.compile(r"[\u0400-\u04FF]")
 

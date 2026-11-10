@@ -1,6 +1,6 @@
 use crate::domain::{NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 use crate::use_cases::{
     AnkiCard, ImportAnkiPackUseCase, extract_anki_db_bytes, extract_cards, parse_cards,
     read_anki_database,
@@ -327,7 +327,7 @@ fn full_extract_pipeline_with_sample_apkg() {
 
 #[tokio::test]
 async fn execute_imports_cards_into_user_collection() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let repo = InMemoryUserRepository::with_user(User::new(
         "test@example.com".to_string(),
@@ -364,7 +364,7 @@ async fn execute_imports_cards_into_user_collection() {
 
 #[tokio::test]
 async fn execute_skips_duplicate_cards() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let repo = InMemoryUserRepository::with_user(User::new(
         "test@example.com".to_string(),

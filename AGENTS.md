@@ -26,11 +26,19 @@ tauri/          — Tauri v2 desktop app
 end2end/     — Playwright E2E тесты
 utils/       — CLI утилиты
 packaging/   — Linux-упаковка: AUR-пакет (rpm-бандл собирает tauri-cli) (ADR-065)
-cdn/         — статический контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set)
 scripts/     — Python скрипты обработки данных
 docs/        — документация (decisions/, marketing/)
 models/      — ML модели
 ```
+
+## Локальный корпус CDN ($ORIGA_CDN_DIR / ~/origa-cdn)
+
+CDN-контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pitch, well_known_set, fonts) — машинное состояние **вне репозитория**: канонический путь `$ORIGA_CDN_DIR`, иначе `~/origa-cdn`. Один seed на машину — его видят все чекауты и ворктри; repo-root `cdn/` больше не читает ничто в коде (`.gitignore`-запись оставлена как страховка от мусора).
+
+- **Резолюция** (единый контракт, `origa/src/corpus.rs` — источник истины): `$ORIGA_CDN_DIR` → `~/origa-cdn` (`HOME`, fallback `USERPROFILE`). Те же правила повторяют `origa_ui/build.rs`, `utils` CLI, `scripts/deploy_cdn.py`, e2e shots — держать синхронно.
+- **Seed один раз**: перенести корпус из существующего чекаута (`mv <checkout>/cdn ~/origa-cdn`) или скопировать с прода (`aws s3 sync s3://<bucket> ~/origa-cdn --profile origa`). CI сеет `$GITHUB_WORKSPACE/cdn` артефактом `cdn-download` и резолвит его через workflow env `ORIGA_CDN_DIR`.
+- **Пропуск вместо паники**: при незасеянном корпусе тесты-потребители рано выходят с маркером `[skip] … local corpus not found at <path>` (один на процесс; виден под `--nocapture` и в выводе упавших тестов — libtest глотает stderr зелёных тестов). Видимость в дефолтном прогоне даёт `cargo:warning` от `origa/build.rs` (печатается cargo'ом, захвату не подвластен). Битый (присутствующий, но нечитаемый) файл — громкая паника: реальный баг seed'а не маскируется.
+- **Сборка UI без шрифтов**: `origa_ui/build.rs` деградирует gracefully (пустой реестр шрифтов, warning про словарь) — так же, как раньше без `cdn/`.
 
 ## Среда разработки
 
@@ -161,7 +169,7 @@ python scripts/deploy_cdn.py --dry-run  # показать что будет з�
 перегенерирует их (`cargo run -p utils -- build-cdn-rkyv`, skip при свежем header) и fail-loud ассертит
 freshness против исходников. Порядок при релизе: **деплой CDN до мержа/релиза приложения** (e2e CI качает
 блобы с прода через `end2end/cdn-manifest.txt`; fallback-цепочки толерантны к окну несогласованности в обе
-стороны). Ручная правка словарей — как раньше в `cdn/` исходниках; блобы перегенерятся при следующем деплое.
+стороны). Ручная правка словарей — как раньше в исходниках локального корпуса (`~/origa-cdn`); блобы перегенерятся при следующем деплое.
 
 Манифест (`manifest.json`) содержит SHA256 хеши версионных файлов и позволяет клиенту обнаруживать обновления. Деплоится с `Cache-Control: no-cache`.
 
@@ -213,7 +221,7 @@ npm run shots -- capture --scenario home --label issue-808 --upload   # + зал
 npm run shots -- index                                         # пересобрать индекс реестра
 ```
 
-- **Проверка окружения до съёмки** (`shots/preflight.ts`): без `cdn/fonts/` бандл соберётся без `@font-face` (скрины уйдут в sans-serif); чужой слушатель на портах харнеса (1420 / 4000 / 8080 — CDN-порт только при локальном корпусе, corpus-less прогон его не биндит) — это ошибки, прогон не стартует; отставший локальный корпус и отсутствие словаря токенизатора — предупреждения.
+- **Проверка окружения до съёмки** (`shots/preflight.ts`): без шрифтов локального корпуса бандл соберётся без `@font-face` (скрины уйдут в sans-serif); чужой слушатель на портах харнеса (1420 / 4000 / 8080 — CDN-порт только при локальном корпусе, corpus-less прогон его не биндит) — это ошибки, прогон не стартует; отставший локальный корпус и отсутствие словаря токенизатора — предупреждения.
 - **Куда падают файлы**: `/tmp/opencode/shots/<label>/` — вне репозитория (PNG в git не коммитим, #797).
 - **Реестр**: `docs/ui-screenshots/shots/*.json` (по файлу на снимок) + генерируемый индекс `docs/ui-screenshots/README.md`. В записи — размеры, sha256, время, коммит, адрес сборки и ссылка на CDN.
 - **Заливка**: ключ content-addressed — `pr-screenshots/{label}/{scenario}--{screen}--{viewport}-{sha8}.png`, `immutable` допустим именно потому, что ключ содержит хеш (доктрина `scripts/_cdn_cache.py`, прецедент #182). Профиль AWS — `[origa-t3]`.
