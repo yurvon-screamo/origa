@@ -215,7 +215,7 @@ jobs:
           # between created_at and last_accessed_at is immaterial. Seeds
           # are protected on any ref — toolchain caches saved on PR merge
           # refs must survive for reruns; master itself is never evicted.
-          def plan_budget_eviction(caches, deletions, now):
+          def plan_budget_eviction(caches, deletions):
               total = sum(c["size_in_bytes"] for c in caches)
               projected = total - sum(c["size_in_bytes"] for c, _ in deletions.values())
               evicted = []
@@ -240,22 +240,25 @@ jobs:
               print_budget_report(caches)
 
               deletions = plan_rule_deletions(caches, now)
-              projected, evicted = plan_budget_eviction(caches, deletions, now)
+              projected, evicted = plan_budget_eviction(caches, deletions)
+              evicted_ids = {c["id"] for c in evicted}
 
+              warn_pct = WARN_BYTES / BUDGET_BYTES * 100
+              evict_pct = EVICT_AT_BYTES / BUDGET_BYTES * 100
               if projected >= WARN_BYTES:
                   print(
                       f"::warning::cache budget projected at {projected / 1e9:.2f} GB"
-                      f" after cleanup (>= 80% of {BUDGET_BYTES / 1e9:.2f} GB)"
+                      f" after cleanup (>= {warn_pct:.0f}% of {BUDGET_BYTES / 1e9:.2f} GB)"
                   )
               unsalvageable = projected >= EVICT_AT_BYTES
               if unsalvageable:
                   print(
                       f"::error::cache budget unsalvageable: projected {projected / 1e9:.2f} GB"
-                      f" stays >= 95% after eviction — protected entries fill the budget"
+                      f" stays >= {evict_pct:.0f}% after eviction — protected entries fill the budget"
                   )
 
               for c, reason in sorted(deletions.values(), key=lambda item: item[0]["key"]):
-                  if reason == "budget eviction":
+                  if c["id"] in evicted_ids:
                       print(
                           f"EVICT [budget]: {c['key'][:60]}"
                           f" ({c['size_in_bytes'] / 1e6:.0f} MB, {age_days(c, now):.0f}d old) [{c['ref']}]"
@@ -274,6 +277,7 @@ jobs:
                   return
 
               failed = 0
+              skipped = 0
               for c, _ in deletions.values():
                   result = subprocess.run(
                       ["gh", "cache", "delete", str(c["id"])], capture_output=True, text=True
@@ -282,14 +286,24 @@ jobs:
                       continue
                   # A parallel PR-close job may have deleted the same cache:
                   # already-gone means the goal is reached, so only real
-                  # API failures (auth/5xx/throttle) count as failed.
+                  # API failures (auth/5xx/throttle) count as failed. gh's
+                  # message for an already-deleted id is "Could not find a
+                  # cache matching <id> ..." (exit 1, no HTTP status text).
                   stderr = result.stderr or ""
-                  if "404" in stderr or "not found" in stderr.lower():
+                  if (
+                      "could not find a cache" in stderr.lower()
+                      or "404" in stderr
+                      or "not found" in stderr.lower()
+                  ):
+                      skipped += 1
                       print(f"SKIP already-gone: {c['key'][:60]}")
                   else:
                       failed += 1
                       print(f"WARNING: failed to delete cache {c['id']} ({c['key'][:60]}): {stderr}")
-              print(f"=== Cleanup complete: {len(deletions) - failed} deleted, {failed} failed ===")
+              print(
+                  f"=== Cleanup complete: {len(deletions) - failed - skipped} deleted,"
+                  f" {skipped} already-gone, {failed} failed ==="
+              )
               if failed or unsalvageable:
                   sys.exit(1)
 
