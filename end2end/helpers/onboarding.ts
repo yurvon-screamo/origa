@@ -104,6 +104,26 @@ export interface CompleteOnboardingOptions {
 }
 
 /**
+ * Clicks the wizard's Next button, riding out transient full-screen
+ * loading overlays. A background save_sync checkpoint flips the app-level
+ * syncing overlay mid-walk; Playwright's default click timeout is 0
+ * (unbounded), so a stability-blocked click would hang the whole test
+ * budget instead of failing — bound each attempt and retry.
+ */
+async function tapNextRidingOverlays(page: Page): Promise<void> {
+  const next = page.getByTestId("onboarding-next");
+  for (let attempt = 0; attempt < 30; attempt++) {
+    try {
+      await next.click({ timeout: 3000 });
+      return;
+    } catch {
+      await page.waitForTimeout(1000);
+    }
+  }
+  throw new Error("onboarding-next stayed blocked for ~90s — check the app-level overlays");
+}
+
+/**
  * Completes onboarding from login through import, stops at scoring step.
  * Navigates: Intro → Load → JLPT (N4) → Apps → Progress → Summary → Import → Scoring
  *
@@ -143,7 +163,7 @@ export async function completeOnboardingToScoring(
   }
 
   // Intro → Load
-  await page.getByTestId("onboarding-next").click();
+  await tapNextRidingOverlays(page);
   await expect(page.getByTestId("onboarding-load-step")).toBeVisible();
 
   // Optional intra-step mutation: picking a load option updates the
@@ -154,7 +174,7 @@ export async function completeOnboardingToScoring(
   }
 
   // Load → JLPT (default medium load)
-  await page.getByTestId("onboarding-next").click();
+  await tapNextRidingOverlays(page);
   await expect(page.getByTestId("onboarding-jlpt-step")).toBeVisible();
 
   // JLPT: select the requested level (cumulative corpus N5..level).
@@ -168,7 +188,7 @@ export async function completeOnboardingToScoring(
       timeout: 5000,
     });
   }
-  await page.getByTestId("onboarding-next").click();
+  await tapNextRidingOverlays(page);
   await expect(page.getByTestId("onboarding-apps-step")).toBeVisible();
 
   // Apps: select Migii, DuolingoRu, MinnaNoNihongo, Irodori — unless a
@@ -178,7 +198,7 @@ export async function completeOnboardingToScoring(
     await selectDefaultApps(page);
   }
 
-  await page.getByTestId("onboarding-next").click();
+  await tapNextRidingOverlays(page);
   await expect(page.getByTestId("onboarding-progress-step")).toBeVisible();
 
   // Progress: configure each selected app
@@ -226,7 +246,7 @@ export async function completeOnboardingToScoring(
     await page.getByTestId("irodori-lesson-dropdown-option-lesson_9").click();
   }
 
-  await page.getByTestId("onboarding-next").click();
+  await tapNextRidingOverlays(page);
   await expect(page.getByTestId("onboarding-summary-step")).toBeVisible();
 
   if (options.stopAtSummary === true) {
