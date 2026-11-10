@@ -18,8 +18,8 @@ mod summary_step;
 mod telemetry;
 
 use crate::i18n::{
-    Locale, locale_code, locale_to_native_language, native_language_to_locale, t, td_string,
-    use_i18n,
+    I18nContext, Locale, locale_code, locale_to_native_language, native_language_to_locale, t,
+    td_string, use_i18n,
 };
 use crate::loaders::WellKnownSetLoaderImpl;
 use crate::repository::HybridUserRepository;
@@ -43,7 +43,7 @@ use onboarding_state::{OnboardingState, OnboardingStep};
 use origa::domain::NativeLanguage;
 use origa::domain::User;
 use origa::traits::UserRepository;
-use origa::use_cases::UpdateUserProfileUseCase;
+use origa::use_cases::{ImportPhase, ImportProgressEvent, UpdateUserProfileUseCase};
 use progress::ProgressStep;
 use scoring_finish_button::ScoringFinishButton;
 use scoring_step::ScoringStep;
@@ -56,6 +56,23 @@ enum PendingAction {
     KnowAll,
     Skip,
     IntroSkip,
+}
+
+/// Renders one import progress tick as a localized status line, e.g.
+/// "Загрузка наборов 24/184…". Phases with a unit count interpolate
+/// `{done}`/`{total}`; indeterminate phases (Saving) use a bare label.
+fn import_progress_line(i18n: I18nContext<Locale>, event: ImportProgressEvent) -> String {
+    let progress = i18n.get_keys_untracked().onboarding().import_progress();
+    let template = match event.phase {
+        ImportPhase::FetchSets => progress.fetch_sets().inner().to_string(),
+        ImportPhase::Vocabulary => progress.vocabulary().inner().to_string(),
+        ImportPhase::Grammar => progress.grammar().inner().to_string(),
+        ImportPhase::Kanji => progress.kanji().inner().to_string(),
+        ImportPhase::Saving => progress.saving().inner().to_string(),
+    };
+    template
+        .replace("{done}", &event.done.to_string())
+        .replace("{total}", &event.total.to_string())
 }
 
 #[component]
@@ -81,6 +98,9 @@ pub fn Onboarding() -> impl IntoView {
     let sets_loaded = RwSignal::new(false);
     let is_loading = RwSignal::new(true);
     let is_importing = RwSignal::new(false);
+    // Current tick of the import pipeline (phase + counters), rendered as a
+    // live progress line under the import button while `is_importing` holds.
+    let import_progress: RwSignal<Option<ImportProgressEvent>> = RwSignal::new(None);
     let is_finishing = RwSignal::new(false);
     // True while the skip save_sync checkpoint is in flight: disables both
     // skip buttons (intro + scoring) to block double submits, un-sticks on
@@ -323,8 +343,15 @@ pub fn Onboarding() -> impl IntoView {
         navigate_for_finish,
     );
 
-    let on_start_import =
-        create_on_start_import_callback(repository, state, is_importing, toasts, i18n, disposed);
+    let on_start_import = create_on_start_import_callback(
+        repository,
+        state,
+        is_importing,
+        import_progress,
+        toasts,
+        i18n,
+        disposed,
+    );
 
     let can_proceed = Memo::new(move |_| state.get().can_proceed());
 
@@ -406,7 +433,7 @@ pub fn Onboarding() -> impl IntoView {
                                 </Show>
                             </div>
 
-                            <div>
+                            <div class="flex flex-col items-end gap-2">
                                 <Show when=move || !matches!(state.get().current_step, OnboardingStep::Summary)
                                     && !matches!(state.get().current_step, OnboardingStep::Scoring)
                                 >
@@ -434,6 +461,17 @@ pub fn Onboarding() -> impl IntoView {
                                     >
                                         {move || if is_importing.get() { t!(i18n, onboarding.importing).into_any() } else { t!(i18n, onboarding.start_import).into_any() }}
                                     </Button>
+
+                                    <Show when=move || is_importing.get() && import_progress.get().is_some()>
+                                        <Text size=TextSize::Small variant=TypographyVariant::Muted test_id=Signal::derive(|| "onboarding-import-progress".to_string())>
+                                            {move || {
+                                                import_progress
+                                                    .get()
+                                                    .map(|event| import_progress_line(i18n, event))
+                                                    .unwrap_or_default()
+                                            }}
+                                        </Text>
+                                    </Show>
                                 </Show>
                             </div>
                         </div>

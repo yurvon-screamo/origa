@@ -108,6 +108,13 @@
     "next": "Далее",
     "start_import": "Начать импорт",
     "importing": "Импорт...",
+    "import_progress": {
+      "fetch_sets": "Загрузка наборов {done}/{total}…",
+      "vocabulary": "Импорт слов {done}/{total}…",
+      "grammar": "Грамматика {done}/{total}…",
+      "kanji": "Кандзи {done}/{total}…",
+      "saving": "Сохранение…"
+    },
     "know_all": "Знаю все",
     "finish": "Завершить",
     "completing": "Завершаем...",

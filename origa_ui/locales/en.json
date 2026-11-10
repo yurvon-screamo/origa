@@ -108,6 +108,13 @@
     "next": "Next",
     "start_import": "Start import",
     "importing": "Importing...",
+    "import_progress": {
+      "fetch_sets": "Loading sets {done}/{total}…",
+      "vocabulary": "Importing words {done}/{total}…",
+      "grammar": "Grammar rules {done}/{total}…",
+      "kanji": "Kanji {done}/{total}…",
+      "saving": "Saving…"
+    },
     "know_all": "Know all",
     "finish": "Finish",
     "completing": "Completing...",

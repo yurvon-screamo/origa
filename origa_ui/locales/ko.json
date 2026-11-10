@@ -108,6 +108,13 @@
     "next": "다음",
     "start_import": "가져오기 시작",
     "importing": "가져오는 중...",
+    "import_progress": {
+      "fetch_sets": "세트 불러오는 중 {done}/{total}…",
+      "vocabulary": "단어 가져오는 중 {done}/{total}…",
+      "grammar": "문법 {done}/{total}…",
+      "kanji": "한자 {done}/{total}…",
+      "saving": "저장 중…"
+    },
     "know_all": "모두 앎",
     "finish": "완료",
     "completing": "완료하는 중...",
