@@ -7,6 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
+| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
