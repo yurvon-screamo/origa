@@ -124,44 +124,8 @@ impl GrammarRuleCard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionary::grammar::{
-        GrammarData, get_rules_by_level, init_grammar, is_grammar_loaded, iter_grammar_rules,
-    };
+    use crate::dictionary::grammar::{get_rules_by_level, iter_grammar_rules};
     use crate::domain::{JapaneseLevel, NativeLanguage};
-    use std::sync::Once;
-
-    static INIT: Once = Once::new();
-
-    // Single source of truth for the test grammar corpus location:
-    // <workspace_root>/cdn/grammar/grammar_v3.json (schema 3)
-    fn grammar_json_path() -> Option<std::path::PathBuf> {
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").ok()?;
-        Some(
-            std::path::PathBuf::from(manifest_dir)
-                .parent()?
-                .join("cdn")
-                .join("grammar")
-                .join("grammar_v3.json"),
-        )
-    }
-
-    fn init_test_grammar() {
-        INIT.call_once(|| {
-            if is_grammar_loaded() {
-                return;
-            }
-
-            let grammar_path = grammar_json_path().expect("Failed to resolve grammar.json path");
-
-            tracing::debug!("Reading grammar from: {:?}", grammar_path);
-            let grammar_json =
-                std::fs::read_to_string(&grammar_path).expect("Failed to read grammar.json");
-            tracing::debug!("Read {} bytes from grammar.json", grammar_json.len());
-
-            let grammar_data = GrammarData { grammar_json };
-            init_grammar(grammar_data).expect("Failed to init grammar rules");
-        });
-    }
 
     fn get_first_rule_id() -> Ulid {
         Ulid::from_string("01KJ9AVWBGC2BT0DMFPDYYFEWB").expect("Invalid ULID")
@@ -173,7 +137,7 @@ mod tests {
 
     #[test]
     fn get_rules_by_level_returns_n3_and_n2() {
-        init_test_grammar();
+        crate::corpus::real_dictionaries_or_skip!();
 
         let total = iter_grammar_rules().count();
         let n5 = get_rules_by_level(&JapaneseLevel::N5).len();
@@ -185,7 +149,9 @@ mod tests {
         // Diagnostic for CI: visible with `--nocapture`, and cargo test also
         // prints captured stderr on failure, so this surfaces in CI logs when
         // the test actually breaks.
-        let grammar_path = grammar_json_path().unwrap_or_default();
+        let grammar_path = crate::corpus::cdn_dir()
+            .join("grammar")
+            .join("grammar_v3.json");
         let file_size = std::fs::metadata(&grammar_path)
             .map(|m| m.len())
             .unwrap_or(0);
@@ -224,7 +190,7 @@ mod tests {
 
         #[test]
         fn creates_card_with_valid_rule_id() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id);
@@ -235,7 +201,7 @@ mod tests {
 
         #[test]
         fn returns_error_for_nonexistent_rule_id() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let nonexistent_id = Ulid::new();
             let result = GrammarRuleCard::new(nonexistent_id);
@@ -251,7 +217,7 @@ mod tests {
 
         #[test]
         fn returns_rule_id() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -272,7 +238,7 @@ mod tests {
 
         #[test]
         fn returns_title_in_russian() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -285,7 +251,7 @@ mod tests {
 
         #[test]
         fn returns_title_in_english() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -301,7 +267,7 @@ mod tests {
         /// that contract direct — no manual split needed.
         #[test]
         fn pattern_equal_across_languages() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             for rule in iter_grammar_rules() {
                 let english = rule.content(&NativeLanguage::English).pattern();
@@ -317,7 +283,7 @@ mod tests {
 
         #[test]
         fn pattern_is_bare_while_sd_disambiguates() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             // Fixture: the ～の pair. The legacy title still carries its
             // localized qualifiers (short pattern → qualifier required by
@@ -345,7 +311,7 @@ mod tests {
 
         #[test]
         fn returns_description_in_russian() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -364,7 +330,7 @@ mod tests {
 
         #[test]
         fn returns_description_in_english() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -383,7 +349,7 @@ mod tests {
 
         #[test]
         fn description_equals_short_description() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -407,7 +373,7 @@ mod tests {
 
         #[test]
         fn returns_parts_of_speech_for_rule_with_format_map() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_verb_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -424,7 +390,7 @@ mod tests {
 
         #[test]
         fn returns_short_description_in_russian() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -440,7 +406,7 @@ mod tests {
 
         #[test]
         fn returns_short_description_in_english() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -456,7 +422,7 @@ mod tests {
 
         #[test]
         fn returns_error_for_nonexistent_rule() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let card = GrammarRuleCard::new_test();
             let result = card.short_description(&NativeLanguage::Russian);
@@ -472,7 +438,7 @@ mod tests {
 
         #[test]
         fn serialization_roundtrip() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -486,7 +452,7 @@ mod tests {
 
         #[test]
         fn serialization_contains_rule_id() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -513,7 +479,7 @@ mod tests {
 
         #[test]
         fn clone_produces_equal_card() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id = get_first_rule_id();
             let card = GrammarRuleCard::new(rule_id).expect("Failed to create card");
@@ -524,7 +490,7 @@ mod tests {
 
         #[test]
         fn different_rule_ids_produce_different_cards() {
-            init_test_grammar();
+            crate::corpus::real_dictionaries_or_skip!();
 
             let rule_id1 = get_first_rule_id();
             let rule_id2 = Ulid::from_string("01G00000000000000004000000").expect("Invalid ULID");

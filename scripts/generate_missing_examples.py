@@ -23,10 +23,11 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import requests
+from _cdn_corpus import corpus_dir
 
 REPO = Path(__file__).resolve().parent.parent
-DATA = REPO / "cdn" / "examples" / "data"
-INDEX = REPO / "cdn" / "examples" / "index.json"
+DATA = corpus_dir() / "examples" / "data"
+INDEX = corpus_dir() / "examples" / "index.json"
 TR_URL = "http://127.0.0.1:8091/v1/chat/completions"
 LOCALES = ("ru", "vi", "ko")
 
@@ -140,7 +141,7 @@ def main() -> int:
     # targets words that build_examples.py left out of the index entirely.
     popular: set[str] = set()
     level_by_word: dict[str, str] = {}
-    for sf in sorted((REPO / "cdn" / "well_known_set").rglob("*.json")):
+    for sf in sorted((corpus_dir() / "well_known_set").rglob("*.json")):
         try:
             d = json.loads(sf.read_text(encoding="utf-8"))
         except Exception:

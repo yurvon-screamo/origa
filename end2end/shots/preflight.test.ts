@@ -39,7 +39,7 @@ test("a missing corpus font fails the capture", () => {
   const report = evaluatePreflight(facts({ fontsReady: false }));
 
   assert.equal(report.errors.length, 1);
-  assert.match(report.errors[0], /cdn\/fonts\//);
+  assert.match(report.errors[0], /шрифт/u);
 });
 
 test("a missing tokenizer dictionary only warns", () => {

@@ -1,3 +1,4 @@
+pub mod corpus;
 pub mod dictionary;
 pub mod domain;
 pub mod ocr;

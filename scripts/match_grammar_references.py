@@ -22,7 +22,7 @@ Matching model:
 
 Usage:
     python scripts/match_grammar_references.py \
-        [--corpus cdn/grammar/grammar_v3.json] \
+        [--corpus <corpus>/grammar/grammar_v3.json] \
         [--jnihongo /tmp/opencode/jnihongo/catalog.json] \
         [--hanabira /tmp/opencode/hanabira] \
         [--threshold 0.45] \
@@ -35,6 +35,7 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
+from _cdn_corpus import corpus_dir as _corpus_dir
 
 _ROMAJI_PAREN = re.compile(r"\([^)]*\)")
 _ANY_PAREN = re.compile(r"[（(][^）)]*[）)]")
@@ -129,7 +130,7 @@ def load_references(jnihongo: Path | None, hanabira: Path | None) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--corpus", type=Path, default=Path("cdn/grammar/grammar_v3.json")
+        "--corpus", type=Path, default=_corpus_dir() / "grammar" / "grammar_v3.json"
     )
     parser.add_argument(
         "--jnihongo", type=Path, default=Path("/tmp/opencode/jnihongo/catalog.json")

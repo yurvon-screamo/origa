@@ -90,6 +90,21 @@ fn main() {
     println!("cargo:rerun-if-changed=../build_defaults.rs");
 }
 
+/// Local corpus root (mirrors `origa::corpus::cdn_dir`): `$ORIGA_CDN_DIR`
+/// override first, then `~/origa-cdn`. The corpus is machine-local state
+/// outside the repository; a build script cannot import the crate, so the
+/// resolution contract is mirrored here — keep the two in sync.
+fn cdn_dir() -> PathBuf {
+    if let Some(dir) = env::var_os("ORIGA_CDN_DIR").filter(|v| !v.is_empty()) {
+        return PathBuf::from(dir);
+    }
+    let home = env::var_os("HOME")
+        .or_else(|| env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("origa-cdn"));
+    home.join("origa-cdn")
+}
+
 fn handle_i18n() {
     println!("cargo:rerun-if-changed=locales/en.json");
     println!("cargo:rerun-if-changed=locales/ru.json");
@@ -133,12 +148,7 @@ fn handle_lindera_dictionary() {
     // (a build script cannot import from the crate itself) and the paths in
     // scripts/deploy_cdn.py — bump all three together.
     const SUDACHIDICT_DIR: &str = "sudachidict-20260723";
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let public_dict_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("dictionaries")
-        .join(SUDACHIDICT_DIR);
+    let public_dict_dir = cdn_dir().join("dictionaries").join(SUDACHIDICT_DIR);
 
     let required = [
         "char_def.bin",
@@ -269,11 +279,7 @@ fn load_json(path: &Path) -> WellKnownSet {
 }
 
 fn generate_well_known_meta() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let base_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("well_known_set");
+    let base_dir = cdn_dir().join("well_known_set");
     let output_file = base_dir.join("well_known_sets_meta.json");
 
     if !base_dir.exists() {
@@ -698,11 +704,7 @@ fn generate_well_known_meta() {
 /// `cdn/fonts/` is absent the array is empty, so the app degrades gracefully
 /// (no @font-face injected, system fallback) instead of failing to build.
 fn generate_font_registry() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let fonts_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("fonts");
+    let fonts_dir = cdn_dir().join("fonts");
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_file = Path::new(&out_dir).join("fonts.rs");
 
@@ -770,12 +772,10 @@ fn strip_hash_suffix(filename: &str) -> String {
 /// only rewrites a target file when its bytes differ from the source, so
 /// incremental trunk rebuilds are not invalidated by no-op copies.
 fn stage_fonts_for_bundling() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let src_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
+    let src_dir = cdn_dir().join("fonts");
+    let dest_dir = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+        .join("public")
         .join("fonts");
-    let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
 
     if !src_dir.is_dir() {
         // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face

@@ -3,15 +3,19 @@
 //! Lives outside `use_cases` so that domain tests can initialize the
 //! process-wide dictionaries without reaching into the layer above them
 //! (the domain → use_cases inversion flagged in issue #796). The fixture
-//! depends only on `crate::dictionary::*`, `crate::domain::*` and std —
-//! moving it here removes the inversion completely, not transitively.
+//! depends only on `crate::dictionary::*`, `crate::domain::*` and std.
+//!
+//! Corpus absence is a skip, not a panic: every loader probes its corpus
+//! entry first and bails out via [`crate::corpus`] when unseeded — calling
+//! tests then skip through the `*_or_skip!` macros. Setup helpers that
+//! cannot early-return re-check the `is_*_loaded` predicates instead.
 
 use std::io::Read;
-use std::path::PathBuf;
 use std::sync::Once;
 
 use flate2::read::DeflateDecoder;
 
+use crate::corpus::{cdn_dir, corpus_absent};
 use crate::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use crate::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
 use crate::dictionary::phrase::{init_phrase_index, is_phrases_loaded};
@@ -26,19 +30,20 @@ static RADICALS_INIT: Once = Once::new();
 static GRAMMAR_INIT: Once = Once::new();
 static PHRASE_INDEX_INIT: Once = Once::new();
 
-pub(crate) fn get_cdn_dir() -> PathBuf {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("Failed to get parent directory of CARGO_MANIFEST_DIR")
-        .join("cdn")
-}
-
 fn decompress(data: Vec<u8>) -> Vec<u8> {
     let mut decoder = DeflateDecoder::new(&data[..]);
     let mut decompressed = Vec::new();
     decoder.read_to_end(&mut decompressed).unwrap();
     decompressed
+}
+
+/// True when all five dictionaries of [`init_real_dictionaries`] are loaded.
+pub(crate) fn real_dictionaries_ready() -> bool {
+    is_dictionary_loaded()
+        && is_vocabulary_loaded()
+        && is_kanji_loaded()
+        && is_radicals_loaded()
+        && is_grammar_loaded()
 }
 
 pub(crate) fn init_real_dictionaries() {
@@ -49,7 +54,7 @@ pub(crate) fn init_real_dictionaries() {
     init_grammar_rules();
 }
 
-/// Loads `cdn/phrases/phrase_index.json` into the process-wide `PHRASE_INDEX`.
+/// Loads the corpus phrase index into the process-wide `PHRASE_INDEX`.
 /// Required by lesson-builder tests because `init_real_dictionaries` intentionally
 /// does not pull the phrase index (production loads it lazily from the CDN).
 pub(crate) fn init_phrase_index_from_cdn() {
@@ -58,20 +63,13 @@ pub(crate) fn init_phrase_index_from_cdn() {
             return;
         }
 
-        let cdn_dir = get_cdn_dir();
-        let index_path = cdn_dir.join("phrases").join("phrase_index.json");
+        let index_path = cdn_dir().join("phrases").join("phrase_index.json");
+        if corpus_absent(&index_path, "phrase index") {
+            return;
+        }
 
-        let index_json = match std::fs::read_to_string(&index_path) {
-            Ok(content) => content,
-            Err(e) => {
-                tracing::warn!(
-                    "Phrase index not found, skipping phrase index initialization: {}",
-                    e
-                );
-                return;
-            },
-        };
-
+        let index_json =
+            std::fs::read_to_string(&index_path).expect("phrase index exists (probed above)");
         if let Err(e) = init_phrase_index(&index_json) {
             tracing::warn!("Failed to init phrase index: {:?}", e);
         }
@@ -84,10 +82,12 @@ fn init_tokenizer_dictionary() {
             return;
         }
 
-        let cdn_dir = get_cdn_dir();
-        let dict_dir = cdn_dir
+        let dict_dir = cdn_dir()
             .join("dictionaries")
             .join(crate::domain::SUDACHIDICT_DIR);
+        if corpus_absent(&dict_dir, "SudachiDict") {
+            return;
+        }
 
         let read_file = |name: &str| std::fs::read(dict_dir.join(name)).unwrap();
 
@@ -109,32 +109,27 @@ fn init_tokenizer_dictionary() {
 
 fn init_vocabulary_dictionary() {
     VOCABULARY_INIT.call_once(|| {
-        let cdn_dir = get_cdn_dir();
+        let vocab_dir = cdn_dir().join("dictionary");
+        if corpus_absent(&vocab_dir.join("chunk_01.json"), "vocabulary chunks") {
+            return;
+        }
 
-        let vocab_dir = cdn_dir.join("dictionary");
+        let read_chunk = |name: &str| {
+            std::fs::read_to_string(vocab_dir.join(name))
+                .unwrap_or_else(|e| panic!("failed to read vocabulary chunk {name}: {e}"))
+        };
         let vocab_data = VocabularyChunkData {
-            chunk_01: std::fs::read_to_string(vocab_dir.join("chunk_01.json"))
-                .expect("Failed to read vocabulary chunk_01.json"),
-            chunk_02: std::fs::read_to_string(vocab_dir.join("chunk_02.json"))
-                .expect("Failed to read vocabulary chunk_02.json"),
-            chunk_03: std::fs::read_to_string(vocab_dir.join("chunk_03.json"))
-                .expect("Failed to read vocabulary chunk_03.json"),
-            chunk_04: std::fs::read_to_string(vocab_dir.join("chunk_04.json"))
-                .expect("Failed to read vocabulary chunk_04.json"),
-            chunk_05: std::fs::read_to_string(vocab_dir.join("chunk_05.json"))
-                .expect("Failed to read vocabulary chunk_05.json"),
-            chunk_06: std::fs::read_to_string(vocab_dir.join("chunk_06.json"))
-                .expect("Failed to read vocabulary chunk_06.json"),
-            chunk_07: std::fs::read_to_string(vocab_dir.join("chunk_07.json"))
-                .expect("Failed to read vocabulary chunk_07.json"),
-            chunk_08: std::fs::read_to_string(vocab_dir.join("chunk_08.json"))
-                .expect("Failed to read vocabulary chunk_08.json"),
-            chunk_09: std::fs::read_to_string(vocab_dir.join("chunk_09.json"))
-                .expect("Failed to read vocabulary chunk_09.json"),
-            chunk_10: std::fs::read_to_string(vocab_dir.join("chunk_10.json"))
-                .expect("Failed to read vocabulary chunk_10.json"),
-            chunk_11: std::fs::read_to_string(vocab_dir.join("chunk_11.json"))
-                .expect("Failed to read vocabulary chunk_11.json"),
+            chunk_01: read_chunk("chunk_01.json"),
+            chunk_02: read_chunk("chunk_02.json"),
+            chunk_03: read_chunk("chunk_03.json"),
+            chunk_04: read_chunk("chunk_04.json"),
+            chunk_05: read_chunk("chunk_05.json"),
+            chunk_06: read_chunk("chunk_06.json"),
+            chunk_07: read_chunk("chunk_07.json"),
+            chunk_08: read_chunk("chunk_08.json"),
+            chunk_09: read_chunk("chunk_09.json"),
+            chunk_10: read_chunk("chunk_10.json"),
+            chunk_11: read_chunk("chunk_11.json"),
         };
         // Tolerate the OnceLock race: a concurrent test thread may have
         // installed the dictionary first (identical real chunks). A panic
@@ -155,13 +150,14 @@ fn init_kanji_dictionary() {
             return;
         }
 
-        let cdn_dir = get_cdn_dir();
+        let kanji_path = cdn_dir().join("dictionary").join("kanji.json");
+        if corpus_absent(&kanji_path, "kanji dictionary") {
+            return;
+        }
 
-        let kanji_path = cdn_dir.join("dictionary").join("kanji.json");
-        let kanji_data = KanjiData {
-            kanji_json: std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json"),
-        };
-        init_kanji(kanji_data).expect("Failed to init kanji dictionary");
+        let kanji_json =
+            std::fs::read_to_string(&kanji_path).expect("kanji.json exists (probed above)");
+        init_kanji(KanjiData { kanji_json }).expect("Failed to init kanji dictionary");
     });
 }
 
@@ -171,13 +167,14 @@ fn init_radicals_dictionary() {
             return;
         }
 
-        let cdn_dir = get_cdn_dir();
-        let radicals_path = cdn_dir.join("dictionary").join("radicals.json");
-        let radicals_data = RadicalData {
-            radicals_json: std::fs::read_to_string(&radicals_path)
-                .expect("Failed to read radicals.json"),
-        };
-        init_radicals(radicals_data).expect("Failed to init radicals dictionary");
+        let radicals_path = cdn_dir().join("dictionary").join("radicals.json");
+        if corpus_absent(&radicals_path, "radicals dictionary") {
+            return;
+        }
+
+        let radicals_json =
+            std::fs::read_to_string(&radicals_path).expect("radicals.json exists (probed above)");
+        init_radicals(RadicalData { radicals_json }).expect("Failed to init radicals dictionary");
     });
 }
 
@@ -187,22 +184,14 @@ fn init_grammar_rules() {
             return;
         }
 
-        let cdn_dir = get_cdn_dir();
-        let grammar_path = cdn_dir.join("grammar").join("grammar_v3.json");
+        let grammar_path = cdn_dir().join("grammar").join("grammar_v3.json");
+        if corpus_absent(&grammar_path, "grammar rules") {
+            return;
+        }
 
-        let grammar_json = match std::fs::read_to_string(&grammar_path) {
-            Ok(content) => content,
-            Err(e) => {
-                tracing::warn!(
-                    "Grammar file not found, skipping grammar initialization: {}",
-                    e
-                );
-                return;
-            },
-        };
-
-        let grammar_data = GrammarData { grammar_json };
-        if let Err(e) = init_grammar(grammar_data) {
+        let grammar_json =
+            std::fs::read_to_string(&grammar_path).expect("grammar_v3.json exists (probed above)");
+        if let Err(e) = init_grammar(GrammarData { grammar_json }) {
             tracing::warn!("Failed to init grammar rules: {:?}", e);
         }
     });

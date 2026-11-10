@@ -10,7 +10,7 @@ use crate::domain::{
 use crate::traits::UserRepository;
 use crate::use_cases::CreatePhraseCardUseCase;
 use crate::use_cases::SeedReadyPhrasesUseCase;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 
 static PHRASE_INIT: OnceLock<()> = OnceLock::new();
 
@@ -75,7 +75,9 @@ fn create_test_user() -> User {
 }
 
 fn setup() {
-    init_real_dictionaries();
+    // Corpus-free fixture: phrase cards read the synthetic index/details
+    // below, not the real dictionaries (which stay optional here).
+    crate::test_support::init_real_dictionaries();
     init_test_phrases();
 }
 

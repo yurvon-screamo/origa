@@ -22,10 +22,16 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 fn cdn_fonts_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("..")
-        .join("cdn")
-        .join("fonts")
+    // Mirrors origa_ui/build.rs::cdn_dir (the build script cannot import the
+    // crate): $ORIGA_CDN_DIR override first, then ~/origa-cdn.
+    if let Some(dir) = std::env::var_os("ORIGA_CDN_DIR").filter(|value| !value.is_empty()) {
+        return PathBuf::from(dir).join("fonts");
+    }
+    let home = std::env::var_os("HOME")
+        .or_else(|| std::env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("origa-cdn"));
+    home.join("origa-cdn").join("fonts")
 }
 
 /// Freshest cached output of the `origa_ui` build script anywhere under the

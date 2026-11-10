@@ -1,9 +1,8 @@
 mod file_well_known_set_loader;
 mod in_memory_repository;
 
-pub(crate) use crate::test_support::{
-    get_cdn_dir, init_phrase_index_from_cdn, init_real_dictionaries,
-};
+pub(crate) use crate::corpus::real_dictionaries_or_skip;
+pub(crate) use crate::test_support::init_phrase_index_from_cdn;
 pub use file_well_known_set_loader::MockCdnProvider;
 pub use in_memory_repository::InMemoryUserRepository;
 
