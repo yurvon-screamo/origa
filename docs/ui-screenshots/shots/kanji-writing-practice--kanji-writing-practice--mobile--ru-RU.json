@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "kanji-writing-practice",
+  "screen": "kanji-writing-practice",
+  "route": "/kanji/:id",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 1026,
+  "fullPage": true,
+  "bytes": 158273,
+  "sha256": "ae9b5bd715b3e11357c78759aa3ae07125ad4040ce5462950e3dff77c5675090",
+  "capturedAt": "2026-11-10T16:42:32.712Z",
+  "commit": "f9a16d21587a7809d06528609bffe312ea371164",
+  "baseURL": "http://localhost:1422",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--mobile-ae9b5bd7.png",
+  "uploadedSha256": "ae9b5bd715b3e11357c78759aa3ae07125ad4040ce5462950e3dff77c5675090",
+  "uploadedAt": "2026-11-10T16:42:36.462Z"
+}

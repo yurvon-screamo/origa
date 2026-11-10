@@ -5,6 +5,7 @@ import { homeDueCounterScenario } from "./home-due-counter.ts";
 import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
+import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
@@ -25,6 +26,7 @@ import { wordExamplesScenario } from "./word-examples.ts";
 export const implementations: Record<string, ShotScenario> = {
   [homeScenario.id]: homeScenario,
   [wordExamplesScenario.id]: wordExamplesScenario,
+  [kanjiWritingPracticeScenario.id]: kanjiWritingPracticeScenario,
   [lessonExampleScenario.id]: lessonExampleScenario,
   [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
   [counterScoringScenario.id]: counterScoringScenario,
