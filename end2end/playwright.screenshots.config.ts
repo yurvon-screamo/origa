@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
+  APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
   SERVE_MODE,
   resolveCdnSource,
@@ -15,6 +16,7 @@ const isCI = !!process.env.CI;
 // cannot disagree. The URL is compiled into the bundle (`build.rs` →
 // `rustc-env`), so switching the source means rebuilding.
 const cdnSource = resolveCdnSource();
+const { baseUrl: cdnBaseUrl, cacheDir: cdnCacheDir, serveLocally } = cdnSource;
 
 // The commit the bundle is expected to carry. `build.rs` embeds it
 // (ORIGA_COMMIT), so a capture can prove which build it photographed.
@@ -75,11 +77,15 @@ export default defineConfig({
   webServer: [
     // The local corpus server only exists when there IS a local corpus.
     // In a fresh worktree `cdn/` is missing (gitignored), and the app
-    // then reads the content from the production CDN instead.
-    ...(cdnSource.serveLocally
+    // then reads the content from the production CDN instead. The
+    // served directory is the resolved one (`ORIGA_CDN_CACHE_DIR`
+    // overrides the repo-local `cdn/` default) — a worktree without
+    // the repo-local copy points the server at the real corpus
+    // elsewhere instead of failing on the hardcoded relative path.
+    ...(serveLocally && cdnCacheDir !== null
       ? [
           {
-            command: `npx serve ${JSON.stringify(cdnSource.cacheDir)} -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            command: `npx serve "${cdnCacheDir}" -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
             port: LOCAL_CDN_PORT,
             reuseExistingServer: !isCI,
             timeout: 30_000,
@@ -89,17 +95,20 @@ export default defineConfig({
     {
       // CI serves the prebuilt bundle (the same recipe as the BDD
       // config); locally `trunk serve` keeps the hot-reload loop.
+      // The budget is the shared cold-build-aware constant, not a
+      // literal: a fresh machine compiles the workspace for wasm32
+      // far beyond 10 minutes (shots/config.ts → APP_SERVER_TIMEOUT).
       command:
         SERVE_MODE === "dist"
           ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
           : "cd ../origa_ui && trunk serve",
       port: 1420,
       reuseExistingServer: !isCI,
-      timeout: 600_000,
+      timeout: APP_SERVER_TIMEOUT,
       stdout: "pipe",
       stderr: "pipe",
       env: {
-        ORIGA_CDN_BASE_URL: cdnSource.baseUrl,
+        ORIGA_CDN_BASE_URL: cdnBaseUrl,
         TRAILBASE_URL: "http://127.0.0.1:4000",
         ORIGA_COMMIT: headCommit(),
       },

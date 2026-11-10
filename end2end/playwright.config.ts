@@ -1,15 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
-import { LOCAL_CDN_PORT, resolveCdnSource } from "./shots/config.ts";
+import {
+  APP_SERVER_TIMEOUT,
+  LOCAL_CDN_PORT,
+  resolveCdnSource,
+} from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
 
-// Where CDN content comes from: the local corpus when seeded ($ORIGA_CDN_DIR
-// or ~/origa-cdn — machine-local, outside the repo; see shots/config.ts),
-// otherwise the production CDN. The served path must be resolved, not
-// repo-relative: repo-root `cdn/` no longer exists.
-const cdnSource = resolveCdnSource();
+// Where the app takes its CDN content from — the same module the
+// screenshots config uses, so the two runners cannot disagree. The URL is
+// compiled into the bundle (`build.rs` → `rustc-env`), so switching the
+// source means rebuilding.
+const { baseUrl: cdnBaseUrl, cacheDir: cdnCacheDir } = resolveCdnSource();
 
 /** The app origin the suite runs against; also the inbox seam opt-in scope. */
 export const APP_BASE_URL = "http://localhost:1420";
@@ -76,17 +80,19 @@ export default defineConfig({
     },
   ],
   webServer: [
-    // Local corpus server only when a corpus exists; without one the app
-    // reads the production CDN (same decision as the shots harness).
-    ...(cdnSource.serveLocally
+    // The corpus server only exists when there IS a local corpus: a
+    // fresh worktree has no `cdn/` (gitignored), the app then reads
+    // the content from the production CDN instead of dying on a
+    // server started against a missing relative path. Same recipe as
+    // the screenshots config; the served directory is the resolved
+    // one (`ORIGA_CDN_CACHE_DIR` overrides the repo-local default).
+    ...(cdnCacheDir !== null
       ? [
           {
-            command: `npx serve ${JSON.stringify(cdnSource.cacheDir)} -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
+            command: `npx serve "${cdnCacheDir}" -p ${LOCAL_CDN_PORT} --no-clipboard --cors`,
             port: LOCAL_CDN_PORT,
             reuseExistingServer: !isCI,
             timeout: 30000,
-            stdout: "pipe",
-            stderr: "pipe",
           },
         ]
       : []),
@@ -96,13 +102,14 @@ export default defineConfig({
         : "cd ../origa_ui && trunk serve",
       port: 1420,
       reuseExistingServer: !isCI,
-      timeout: 600000,
+      // Cold-build aware budget (shots/config.ts), not a literal:
+      // a fresh machine compiles the workspace for wasm32 beyond
+      // the previous 10-minute default.
+      timeout: APP_SERVER_TIMEOUT,
       stdout: "pipe",
       stderr: "pipe",
       env: {
-        ORIGA_CDN_BASE_URL: cdnSource.serveLocally
-          ? `http://localhost:${LOCAL_CDN_PORT}`
-          : cdnSource.baseUrl,
+        ORIGA_CDN_BASE_URL: cdnBaseUrl,
         TRAILBASE_URL: "http://127.0.0.1:4000",
       },
     },

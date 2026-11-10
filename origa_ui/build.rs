@@ -55,16 +55,23 @@ fn main() {
     println!("cargo:rustc-env=SENTRY_ENVIRONMENT_UI={sentry_environment}");
     println!("cargo:rustc-env=SENTRY_RELEASE_UI={sentry_release}");
 
-    // Umami Cloud analytics (ADR-054). `UMAMI_DISABLED=1` compiles the
-    // tracker out entirely for CI builds that execute the app (e2e headless
-    // runs, android-smoke emulator) so their localhost traffic never reaches
-    // production analytics; `UMAMI_WEBSITE_ID` optionally overrides the
-    // committed default (website IDs are public — see build_config.rs). The
+    // Umami website id by build context (ADR-054; isolation task
+    // 20261109071819). `UMAMI_DISABLED=1` compiles the tracker out entirely
+    // for CI builds that execute the app (e2e headless runs, android-smoke
+    // emulator); otherwise an explicit non-empty `UMAMI_WEBSITE_ID` wins,
+    // and the default is picked by build context: real `ORIGA_VERSION`
+    // (CI: docker.yml, tauri.yml) → production website, unset/empty/"dev"
+    // (all local builds: trunk serve, cargo tauri dev, local e2e, shots) →
+    // dev website. The version signal is read via `env::var` (ADR-024
+    // pattern — a build-script re-execution re-reads the environment,
+    // `rerun-if-env-changed=ORIGA_VERSION` below), not via `option_env!`,
+    // whose value is frozen into the compiled build-script binary. The
     // emitted value is read via `env!()` by `core::analytics`; an empty
     // value makes the runtime injection a no-op.
     let umami_website_id = build_config::resolve_umami(
         env::var("UMAMI_DISABLED").ok().as_deref(),
         env::var("UMAMI_WEBSITE_ID").ok().as_deref(),
+        env::var("ORIGA_VERSION").ok().as_deref(),
     );
     println!("cargo:rustc-env=UMAMI_WEBSITE_ID={umami_website_id}");
     println!("cargo:rerun-if-env-changed=UMAMI_DISABLED");
