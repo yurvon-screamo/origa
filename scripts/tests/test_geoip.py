@@ -23,9 +23,13 @@ Behavior contract pinned here:
   successfully (the original bug: the size gate rejected the real ~3.2 MB
   GeoLite2-Country on every weekly refresh, so production silently lived
   without geo enrichment);
-* a truncated download is discarded and never reaches the depot;
+* a truncated download is discarded and never reaches the depot (no tmp
+  orphan left behind);
+* a download whose marker sits beyond the 128 KiB tail window is discarded —
+  the window stays pinned at the spec's maximum metadata size;
 * a fresh valid depot file is left alone (no download happens);
-* a fresh depot file without the marker is re-downloaded.
+* a fresh depot file without the marker is re-downloaded;
+* a valid depot file older than the freshness window is re-downloaded.
 """
 
 from __future__ import annotations
@@ -33,6 +37,7 @@ from __future__ import annotations
 import os
 import subprocess
 import threading
+import time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -66,6 +71,20 @@ def valid_mmdb_bytes() -> bytes:
 def truncated_mmdb_bytes() -> bytes:
     """Same file cut before the marker — what a truncated download looks like."""
     return valid_mmdb_bytes()[: MARKER_DISTANCE_FROM_EOF - 1024]
+
+
+def tail_junk_mmdb_bytes() -> bytes:
+    """Valid-shaped file with a junk tail longer than the 128 KiB window.
+
+    The marker ends up beyond the spec's maximum metadata distance from EOF:
+    a reader must reject it, and so must the script — pinning the window at
+    its spec maximum instead of letting it grow silently.
+    """
+    junk = b"\xff" * (2 * WINDOW_BYTES)
+    return valid_mmdb_bytes() + junk
+
+
+FRESHNESS_DAYS = 6
 
 
 class _ServerHandle(NamedTuple):
@@ -154,9 +173,29 @@ class TestDownloadAndInstall:
         # Act
         proc = run_geoip(depot, f"{serve.base_url}/truncated.mmdb")
 
-        # Assert: rejected, and the depot stays empty — no partial install.
+        # Assert: rejected, and the depot stays empty — no partial install,
+        # no tmp orphan left behind (the EXIT trap must clean it up).
         assert proc.returncode != 0
         assert not (depot / DEPOT_FILENAME).exists()
+        assert list(depot.glob(f"{DEPOT_FILENAME}.tmp.*")) == []
+
+    def test_download_with_marker_beyond_tail_window_is_discarded(
+        self, tmp_path: Path, serve: _ServerHandle
+    ) -> None:
+        # Arrange: the marker sits beyond the 128 KiB tail window (junk
+        # appended after the metadata section) — the spec caps the metadata
+        # section at 128 KiB from EOF, so this file is not a valid mmdb.
+        (serve.directory / "tailjunk.mmdb").write_bytes(tail_junk_mmdb_bytes())
+        depot = tmp_path / "traildepot"
+
+        # Act
+        proc = run_geoip(depot, f"{serve.base_url}/tailjunk.mmdb")
+
+        # Assert: rejected — the window stays pinned at its spec maximum,
+        # and the discarded tmp file left no orphan behind.
+        assert proc.returncode != 0
+        assert not (depot / DEPOT_FILENAME).exists()
+        assert list(depot.glob(f"{DEPOT_FILENAME}.tmp.*")) == []
 
 
 class TestFreshSkip:
@@ -197,3 +236,24 @@ class TestFreshSkip:
         # Assert: re-downloaded, the depot now holds the valid file.
         assert proc.returncode == 0, proc.stdout + proc.stderr
         assert installed.read_bytes() == valid_mmdb_bytes()
+
+    def test_stale_valid_depot_file_is_re_downloaded(
+        self, tmp_path: Path, serve: _ServerHandle
+    ) -> None:
+        # Arrange: a valid file older than the freshness window — validity
+        # does not freeze the database; the weekly cron must still refresh it.
+        depot = tmp_path / "traildepot"
+        depot.mkdir(parents=True)
+        installed = depot / DEPOT_FILENAME
+        installed.write_bytes(valid_mmdb_bytes())
+        stale = (FRESHNESS_DAYS + 1) * 86400
+        os.utime(installed, (time.time() - stale, time.time() - stale))
+        (serve.directory / "country.mmdb").write_bytes(valid_mmdb_bytes())
+
+        # Act
+        proc = run_geoip(depot, f"{serve.base_url}/country.mmdb")
+
+        # Assert: freshness check fired — re-downloaded exactly once.
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        assert installed.read_bytes() == valid_mmdb_bytes()
+        assert serve.hits == 1
