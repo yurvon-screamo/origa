@@ -11,6 +11,11 @@ import type { ShotScenario } from "../scenario.ts";
  * line under the import button (Загрузка наборов k/N…) stays visible
  * long enough to capture — and the pipeline still has to land on the
  * scoring step, which is the end-to-end proof the import completes.
+ *
+ * The progress budget is minutes, not seconds: on a debug WASM build the
+ * tokenizer warmup (ensure_tokenizer_loaded inside the import callback)
+ * can outlast a short wait, and until it concludes no phase event exists
+ * by design.
  */
 export const onboardingImportProgressScenario: ShotScenario = {
   ...descriptors["onboarding-import-progress"],
@@ -22,7 +27,7 @@ export const onboardingImportProgressScenario: ShotScenario = {
 
     await page.getByTestId("onboarding-import").click();
     const progress = page.getByTestId("onboarding-import-progress");
-    await expect(progress).toBeVisible({ timeout: 60_000 });
+    await expect(progress).toBeVisible({ timeout: 600_000 });
 
     await page.waitForTimeout(500);
     await sink.shot("progress");
