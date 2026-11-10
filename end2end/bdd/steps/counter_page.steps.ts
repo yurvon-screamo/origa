@@ -80,6 +80,15 @@ Then("в детальной карточке видна таблица чтен�
   expect(await rows.count()).toBeGreaterThanOrEqual(11);
 });
 
+Then("блок примеров — отдельная карточка верхнего уровня", async ({ page }) => {
+  const examples = page.getByTestId("counters-detail-examples");
+  await expect(examples).toBeVisible({ timeout: 15_000 });
+  // Якорь паттерна «карточка в карточке» (задача 20261109231401):
+  // примеры не потомок таблицы чтений — вложенная рамка не возвращается.
+  const table = page.getByTestId("counters-detail-table");
+  await expect(table.getByTestId("counters-detail-examples")).toHaveCount(0);
+});
+
 Then("breadcrumbs ведут назад к списку счётчиков", async ({ page }) => {
   const link = page.locator(".counter-breadcrumbs a");
   await expect(link).toBeVisible();
