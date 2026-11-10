@@ -10,32 +10,99 @@ inputs:
 runs:
     using: "composite"
     steps:
+        # Per-tool cache entries: call sites request heterogeneous subsets
+        # (trunk-only, tauri-cli-only, both), and actions/cache keys are
+        # immutable — a single combined key would freeze on whichever subset
+        # saved first and never converge to the union. One key per tool keeps
+        # every entry's content homogeneous, so exact hits are always valid.
+        # Keys carry runner.os/arch qualifiers: the action runs on ubuntu and
+        # macos runners, the GitHub cache service does NOT partition by
+        # platform, and the cached binaries are platform-specific — an
+        # unqualified key would let a macos runner exact-hit a linux ELF
+        # (exec format error) or vice versa. Bumping a pinned version does
+        # NOT require a key bump: the key pins the cache slot, the version
+        # pin below pins the binary identity.
+        - name: Restore cargo-binstall
+          id: cache-binstall
+          uses: actions/cache@v4
+          with:
+              path: ~/.cargo/bin/cargo-binstall
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-binstall-v1
+
+        - name: Restore trunk
+          id: cache-trunk
+          if: contains(inputs.tools, 'trunk')
+          uses: actions/cache@v4
+          with:
+              path: ~/.cargo/bin/trunk
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-trunk-v1
+
+        - name: Restore tauri-cli
+          id: cache-tauri-cli
+          if: contains(inputs.tools, 'tauri-cli')
+          uses: actions/cache@v4
+          with:
+              path: ~/.cargo/bin/cargo-tauri
+              key: frontend-tools-${{ runner.os }}-${{ runner.arch }}-tauri-cli-v1
+
         - name: Install cargo-binstall
           shell: bash
           run: |
-              tmp=$(mktemp) && curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && bash "$tmp"
+              if command -v cargo-binstall > /dev/null 2>&1; then
+                  echo "cargo-binstall already present (cache hit) — skipping installer download"
+              else
+                  tmp=$(mktemp)
+                  # --retry: this fetch is on the miss path of the cache
+                  # above; a network 504 here used to fail the job outright.
+                  curl -L --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh
+                  bash "$tmp"
+              fi
 
         - name: Add cargo bin to PATH
           shell: bash
           run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
-        - name: Install tools via cargo-binstall
+        - name: Install pinned tools via cargo-binstall
+          # Pinned: unpinned binstall resolves "latest", so CI trunk silently
+          # drifted (0.22.1) while the Docker build stayed on the consciously
+          # pinned 0.21.14 — the ARG TRUNK_VERSION in origa_ui/Dockerfile.
+          # Keep the trunk pin below equal to that ARG and vice versa (the
+          # Dockerfile carries the mirrored comment). tauri-cli was likewise
+          # unpinned; its pin is whatever latest was at pinning time (2.12.4,
+          # 2026-11-10). Bumping a pin is a conscious edit of this case block.
+          #
+          # Binary-first install; the source-build fallback goes through
+          # `cargo install --locked` — the registry broke trunk's
+          # unpinned deps before (cssparser 0.35 vs lightningcss alpha).
+          # Presence check instead of cache-hit flags: restores are per-tool
+          # and jobs request different subsets, so "is the binary there" is
+          # the only reliable skip condition.
           shell: bash
           run: |
-              # Binary-first install; the source-build fallback goes through
-              # `cargo install --locked` — the registry broke trunk's
-              # unpinned deps before (cssparser 0.35 vs lightningcss alpha).
-              set +e
-              cargo binstall ${{ inputs.tools }} --no-confirm --force \
-                --disable-strategies compile
-              status=$?
               set -e
-              if [ $status -ne 0 ]; then
-                echo "binstall binary unavailable — falling back to cargo install --locked"
-                for tool in ${{ inputs.tools }}; do
-                  cargo install "$tool" --locked --force
-                done
-              fi
+              for tool in ${{ inputs.tools }}; do
+                  case "$tool" in
+                      trunk) bin="trunk"; pin="trunk@0.21.14" ;;
+                      tauri-cli) bin="cargo-tauri"; pin="tauri-cli@2.12.4" ;;
+                      *) bin="$tool"; pin="$tool" ;;
+                  esac
+                  if command -v "$bin" > /dev/null 2>&1; then
+                      echo "$bin already present (cache hit) — skipping download"
+                      continue
+                  fi
+                  # The source-build fallback keeps the pin: installing
+                  # unversioned latest here would reintroduce exactly the
+                  # drift the pins above eliminate.
+                  crate="${pin%@*}"
+                  case "$pin" in
+                      *@*) ver=("--version" "${pin#*@}") ;;
+                      *) ver=() ;;
+                  esac
+                  if ! cargo binstall "$pin" --no-confirm --force --disable-strategies compile; then
+                      echo "binstall binary unavailable — falling back to cargo install --locked"
+                      cargo install "$crate" --locked --force "${ver[@]}"
+                  fi
+              done
 
         - name: Verify trunk installation
           if: contains(inputs.tools, 'trunk')
@@ -51,4 +118,3 @@ runs:
           with:
               path: ~/.cache/trunk
               key: trunk-tools-v2
-

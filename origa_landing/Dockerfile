@@ -27,14 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     musl-tools \
     pkg-config \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/sccache-v0.14.0-x86_64-unknown-linux-musl.tar.gz | tar xz \
+    && curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/sccache-v0.14.0-x86_64-unknown-linux-musl.tar.gz | tar xz \
     && mv sccache-v0.14.0-x86_64-unknown-linux-musl/sccache /usr/local/bin/ \
     && chmod +x /usr/local/bin/sccache
 
 ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_DIR=/sccache
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
