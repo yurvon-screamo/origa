@@ -10,7 +10,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use crate::repository::LoginFailure;
-use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router, shared_cell};
+use crate::test_support::{create_wrapper, mount_with_i18n, shared_cell};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -70,7 +70,7 @@ async fn danger_zone_card_actions_dispatch_and_disable_while_pending() {
         .into_any()
     });
     let logged_out = get_logout.get().expect("captured");
-    let deleted = get_delete.get().expect("captured");
+    let _deleted = get_delete.get().expect("captured");
     tick().await;
 
     let card = wrapper

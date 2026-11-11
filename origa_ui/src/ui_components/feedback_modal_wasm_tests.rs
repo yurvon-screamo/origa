@@ -21,13 +21,12 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
 use crate::feedback::sink::{FeedbackSink, sink_to_fn};
-use crate::feedback::types::FeedbackEnvironment;
 use crate::feedback::{
     FeedbackCategory, FeedbackContext, FeedbackReport, FeedbackSource, FeedbackSubject,
     FeedbackSubmitError,
 };
 use crate::store::connectivity::ConnectivityStore;
-use crate::test_support::{create_wrapper, mount_to_wrapper};
+use crate::test_support::{create_wrapper, mount_to_wrapper, provide_i18n};
 use crate::ui_components::FeedbackModal;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -81,7 +80,7 @@ fn mount_modal(ctx: &FeedbackContext) -> web_sys::Element {
     let wrapper = create_wrapper();
     let ctx = ctx.clone();
     mount_to_wrapper(&wrapper, move || {
-        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        provide_i18n();
         provide_context(ctx.clone());
         provide_context(ConnectivityStore::new());
         view! { <FeedbackModal /> }.into_any()
