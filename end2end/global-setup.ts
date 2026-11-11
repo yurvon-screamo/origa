@@ -7,6 +7,7 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { getTrailBaseUrl } from "./config";
+import { TRAILBASE_PORT } from "./shots/config.ts";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (
@@ -20,7 +21,12 @@ if (
   }
 }
 
-const TRAILBASE_PORT = 4000;
+// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
+// imported after ./config so the dotenv bootstrap has already run. The spawn
+// address, the healthcheck and the kill must agree on one port, so the
+// .env-provided TRAILBASE_URL is re-pinned from the resolved port (dotenv's
+// override would otherwise keep a stale port from a shared checkout copy).
+process.env.TRAILBASE_URL = `http://127.0.0.1:${TRAILBASE_PORT}`;
 
 async function waitForTrailBase(
   maxRetries = 30,
@@ -102,7 +108,13 @@ function killExistingTrailBase(): void {
     if (process.platform === "win32") {
       execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
     } else {
-      execSync("pkill -f 'trail run'", { stdio: "pipe" });
+      // Port-scoped pattern: a parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
+      // `pkill -f 'trail run'` would take that stranger down too.
+      execSync(
+        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        { stdio: "pipe" },
+      );
     }
     console.log("[global-setup] ✓ Killed existing TrailBase process");
   } catch {
