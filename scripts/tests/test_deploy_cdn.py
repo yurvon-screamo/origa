@@ -22,10 +22,13 @@ from deploy_cdn import (
     RKYV_BLOB_SOURCES,
     RKYV_SCHEMA_VERSION,
     VERSIONED_FILES,
+    collect_versioned_files,
     compare_manifests,
     compute_files_to_upload,
+    generate_manifest,
     parse_rkyv_header,
     rkyv_blob_freshness_problems,
+    sha256_hex,
 )
 from _cdn_verify import MANIFEST_ERROR
 
@@ -555,3 +558,82 @@ def test_size_only_sync_dirs_are_immutable_tier():
     for dir_name in SYNC_DIRS:
         if cache_control_for(dir_name + "/") == IMMUTABLE:
             assert dir_name in SIZE_ONLY_SYNC_DIRS, dir_name
+
+
+# ---------------------------------------------------------------------------
+# collect_versioned_files — SYNC_DIRS families manifest-tracked (task
+# 20261110215209-fv4ng39): example chunks and individual well-known sets
+# have plain cache-first fetches (no ?v=, no purge helpers), so the
+# manifest hash diff is their only freshness mechanism.
+# ---------------------------------------------------------------------------
+
+
+def _write_cdn_skeleton(cdn_dir: Path) -> None:
+    """Minimal cdn/ tree with one file per dynamic family."""
+    chunks = cdn_dir / "examples" / "data"
+    chunks.mkdir(parents=True)
+    (chunks / "s0001.json").write_text("[]", encoding="utf-8")
+    (chunks / "s0002.json").write_text("[]", encoding="utf-8")
+    sets = cdn_dir / "well_known_set" / "duolingo" / "N3"
+    sets.mkdir(parents=True)
+    (sets / "duolingo_n3_1.json").write_text("{}", encoding="utf-8")
+
+
+def test_collect_versioned_files_includes_dynamic_families(tmp_path: Path):
+    _write_cdn_skeleton(tmp_path)
+
+    collected = collect_versioned_files(tmp_path)
+
+    assert "examples/data/s0001.json" in collected
+    assert "examples/data/s0002.json" in collected
+    assert "well_known_set/duolingo/N3/duolingo_n3_1.json" in collected
+
+
+def test_collect_versioned_files_dedupes_explicit_entries(tmp_path: Path):
+    """Explicit VERSIONED_FILES paths under the walk roots stay single-entry."""
+    _write_cdn_skeleton(tmp_path)
+    (tmp_path / "well_known_set" / "jlpt_n5.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "examples" / "index.json").write_text("{}", encoding="utf-8")
+
+    collected = collect_versioned_files(tmp_path)
+
+    assert collected.count("well_known_set/jlpt_n5.json") == 1
+    assert collected.count("examples/index.json") == 1
+
+
+def test_collect_versioned_files_without_dynamic_dirs_is_exact(tmp_path: Path):
+    """A cdn/ tree without the dynamic families yields exactly the static list."""
+    collected = collect_versioned_files(tmp_path)
+
+    assert collected == VERSIONED_FILES
+
+
+def test_collect_versioned_files_ignores_non_json_and_audio(tmp_path: Path):
+    _write_cdn_skeleton(tmp_path)
+    (tmp_path / "examples" / "audio").mkdir()
+    (tmp_path / "examples" / "audio" / "000001.opus").write_bytes(b"x")
+    (tmp_path / "examples" / "data" / "notes.txt").write_text("x", encoding="utf-8")
+    (tmp_path / "well_known_set" / "README.md").write_text("x", encoding="utf-8")
+
+    collected = collect_versioned_files(tmp_path)
+
+    assert "examples/data/notes.txt" not in collected
+    assert not any(p.startswith("examples/audio/") for p in collected)
+    assert not any(
+        p.endswith(".md") and p.startswith("well_known_set/") for p in collected
+    )
+
+
+def test_generate_manifest_hashes_dynamic_families(tmp_path: Path):
+    _write_cdn_skeleton(tmp_path)
+
+    manifest = generate_manifest(tmp_path)
+
+    files = manifest["files"]
+    assert isinstance(files, dict)
+    for path in (
+        "examples/data/s0001.json",
+        "examples/data/s0002.json",
+        "well_known_set/duolingo/N3/duolingo_n3_1.json",
+    ):
+        assert files[path] == sha256_hex(tmp_path / path)

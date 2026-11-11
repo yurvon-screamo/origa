@@ -185,6 +185,44 @@ MANIFEST_VERSION = 1
 CHUNK_SIZE = 8192
 
 
+def _example_chunk_files(cdn_dir: Path) -> list[str]:
+    """Manifest paths of the numbered example data chunks (s0001.json...).
+
+    Names mirror build_examples.py exactly: CHUNK_SIZE sentences per chunk,
+    ``s{chunks:04d}.json`` — the loader fetches these paths verbatim.
+    """
+    data_dir = cdn_dir / "examples" / "data"
+    if not data_dir.is_dir():
+        return []
+    return sorted(f"examples/data/{p.name}" for p in data_dir.glob("s*.json"))
+
+
+def _well_known_set_files(cdn_dir: Path) -> list[str]:
+    """Manifest paths of every JSON under well_known_set/.
+
+    Explicit VERSIONED_FILES entries (JLPT aggregates, both metas,
+    irodori_cando) dedupe out in collect_versioned_files; the provider
+    subdirectories are the family this walk adds.
+    """
+    root = cdn_dir / "well_known_set"
+    if not root.is_dir():
+        return []
+    return sorted(p.relative_to(cdn_dir).as_posix() for p in root.rglob("*.json"))
+
+
+def collect_versioned_files(cdn_dir: Path) -> list[str]:
+    """Explicit VERSIONED_FILES plus directory-tracked families, deduped.
+
+    Example chunks and individual well-known sets ship via SYNC_DIRS but
+    must also be manifest-tracked: their client fetches are plain
+    cache-first (no ``?v=``, no purge helpers), so the manifest hash diff
+    of check_and_invalidate is the only freshness mechanism (ADR-078,
+    task 20261110215209-fv4ng39).
+    """
+    dynamic = [*_example_chunk_files(cdn_dir), *_well_known_set_files(cdn_dir)]
+    return list(dict.fromkeys([*VERSIONED_FILES, *dynamic]))
+
+
 def sha256_hex(path: Path) -> str:
     hasher = hashlib.sha256()
     with path.open("rb") as f:
@@ -196,7 +234,7 @@ def sha256_hex(path: Path) -> str:
 def generate_manifest(cdn_dir: Path) -> dict[str, object]:
     files: dict[str, str] = {}
 
-    for relative_path in VERSIONED_FILES:
+    for relative_path in collect_versioned_files(cdn_dir):
         full_path = cdn_dir / relative_path
         if not full_path.is_file():
             print(f"WARNING: {relative_path} not found, skipping", file=sys.stderr)
@@ -628,15 +666,16 @@ def _force_all_deploy(dry_run: bool) -> None:
     print(f"  manifest.json uploaded ({len(manifest['files'])} files)", flush=True)
 
     # Step 2: Upload versioned files
-    print(f"\nStep 2: Versioned files ({len(VERSIONED_FILES)})...", flush=True)
-    for relative_path in VERSIONED_FILES:
+    versioned = collect_versioned_files(cdn_dir)
+    print(f"\nStep 2: Versioned files ({len(versioned)})...", flush=True)
+    for relative_path in versioned:
         local_path = cdn_dir / relative_path
         if not local_path.is_file():
             print(f"  SKIP {relative_path} (not found)", flush=True)
             continue
         cache_control = _cdn_cache.cache_control_for(relative_path)
         _cdn_s3.upload_file(local_path, relative_path, cache_control, dry_run)
-    print(f"  {len(VERSIONED_FILES)} versioned files done", flush=True)
+    print(f"  {len(versioned)} versioned files done", flush=True)
 
     # Step 3: Sync directories (no remote listing — upload everything)
     print("\nStep 3: Sync directories...", flush=True)
