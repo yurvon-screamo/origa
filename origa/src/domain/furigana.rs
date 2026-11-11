@@ -801,6 +801,15 @@ mod tests {
 
     #[test]
     fn furiganize_segments_uses_annotator_when_dict_loaded() {
+        // The precomputed fast path sits ABOVE the dict paths: without this
+        // lock (and a clean store) a parallel precomputed_* test's `食べ物`
+        // entry answers first and the annotator assertions race on a
+        // stranger's entry — the CI failure that looked like corpus drift
+        // (task 20261110041750-4bs23o3, merge blocker of PR #918).
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_precomputed_store();
         crate::corpus::real_dictionaries_or_skip!();
         setup_furigana_dict();
         let known_kanji: HashSet<char> = HashSet::new();
@@ -825,6 +834,14 @@ mod tests {
 
     #[test]
     fn furiganize_segments_annotator_known_kanji() {
+        // Same precomputed-interference window as
+        // furiganize_segments_uses_annotator_when_dict_loaded above: a
+        // parallel precomputed_* test's `食べ物` entry would collapse the
+        // segmentation and the `find("食")` would panic.
+        let _guard = crate::domain::tokenizer::precomputed::STORE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        reset_precomputed_store();
         crate::corpus::real_dictionaries_or_skip!();
         setup_furigana_dict();
         let mut known_kanji: HashSet<char> = HashSet::new();

@@ -10,6 +10,11 @@ fn main() {
     handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
+    // The font source depends on this env (cdn_dir): cargo tracks the
+    // variable's presence too, so adding, changing or removing it re-runs
+    // the build script. Without this a corpus switch leaves a stale font
+    // registry baked into the bundle.
+    println!("cargo:rerun-if-env-changed=ORIGA_CDN_DIR");
     generate_font_registry();
     stage_fonts_for_bundling();
     println!("cargo:rerun-if-changed=build.rs");

@@ -7,8 +7,6 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| home | home | mobile | ru-RU | 390×844 | 2026-11-11T10:18:48.305Z | 1f3ad20d | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
-| home | home | desktop | ru-RU | 1280×800 | 2026-11-11T10:17:57.162Z | 1f3ad20d | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
 | home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | kanji-writing-practice | kanji-writing-practice | mobile | ru-RU | 390×1026 | 2026-11-10T16:42:32.712Z | f9a16d21 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--mobile-ae9b5bd7.png) |
@@ -21,6 +19,8 @@
 | grid-full | grammar-page | mobile | ru-RU | 390×1101 | 2026-11-10T11:51:09.249Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-full--mobile-abfe3b17.png) |
 | grid-viewport | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:57.054Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-viewport--desktop-79ae7909.png) |
 | grid-full | grammar-page | desktop | ru-RU | 1280×800 | 2026-11-10T11:49:54.152Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/grammar-page--grid-full--desktop-79ae7909.png) |
+| home | home | mobile | ru-RU | 390×844 | 2026-11-10T01:58:48.188Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--mobile-212a56bd.png) |
+| home | home | desktop | ru-RU | 1280×800 | 2026-11-10T01:58:25.257Z | 633c0dce | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110041750-4bs23o3/home--home--desktop-414ae67a.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
