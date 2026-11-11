@@ -16,7 +16,6 @@ export const PRESET_IDS = [
   "onboarded-history",
   "irodori-nyuumon",
   "with-word",
-  "words-list",
 ] as const;
 
 export type PresetId = (typeof PRESET_IDS)[number];

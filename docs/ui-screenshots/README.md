@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| words-full | words | mobile | ru-RU | 390×844 | 2026-11-11T11:12:59.990Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words-full--mobile-90227fc5.png) |
+| words | words | mobile | ru-RU | 390×844 | 2026-11-11T11:12:59.672Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words--mobile-90227fc5.png) |
+| words-full | words | desktop | ru-RU | 1280×800 | 2026-11-11T11:12:46.986Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words-full--desktop-a5656b69.png) |
+| words | words | desktop | ru-RU | 1280×800 | 2026-11-11T11:12:46.196Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words--desktop-a5656b69.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |

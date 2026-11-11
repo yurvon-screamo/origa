@@ -35,7 +35,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Экран «Слова»",
     route: "/words",
     locale: "ru-RU",
-    preset: "words-list",
+    preset: "fresh",
   },
   "word-examples": {
     id: "word-examples",
