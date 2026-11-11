@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,6 +38,21 @@ export const DEFAULT_PROD_CDN_URL = "https://s3.origa.uwuwu.net";
 export const LOCAL_CDN_PORT = parsePort(
   "E2E_CDN_PORT",
   process.env.E2E_CDN_PORT ?? 8080,
+);
+
+/**
+ * Port the TrailBase fixture listens on.
+ *
+ * Overridable (`E2E_TRAILBASE_PORT`): a shared dev machine may already run
+ * a TrailBase from ANOTHER checkout (a parallel worktree) — the hard-coded
+ * port would either collide with it or make the global setup kill the
+ * stranger's process (`pkill 'trail run'` was global before this override
+ * and the port-scoped kill relies on the address being part of the
+ * command line).
+ */
+export const TRAILBASE_PORT = parsePort(
+  "E2E_TRAILBASE_PORT",
+  process.env.E2E_TRAILBASE_PORT ?? 4000,
 );
 
 function parsePort(name: string, raw: string | number): number {
@@ -78,24 +94,27 @@ export function parseTimeout(name: string, raw: string | number): number {
   return value;
 }
 
-/** Port the app is served on (`E2E_APP_PORT` — sibling agent sessions
- * share this machine; two captures must not fight over the same port). */
+/**
+ * Port the app is served on.
+ *
+ * Overridable (`E2E_APP_PORT`): sibling agent sessions share this machine
+ * — two captures must not fight over the same app port.
+ */
 export const APP_PORT = parsePort(
   "E2E_APP_PORT",
   process.env.E2E_APP_PORT ?? 1420,
 );
 
-/** Port TrailBase listens on (`E2E_TRAILBASE_PORT` — same reason). */
-export const TRAILBASE_PORT = parsePort(
-  "E2E_TRAILBASE_PORT",
-  process.env.E2E_TRAILBASE_PORT ?? 4000,
-);
-
 /** Repository root — `end2end/` lives one level below it. */
 export const repoRoot = join(fileURLToPath(new URL("../..", import.meta.url)));
 
-/** Where the CDN corpus lives by default (gitignored — see `.gitignore`). */
-export const defaultCdnCacheDir = join(repoRoot, "cdn");
+/**
+ * Where the CDN corpus lives by default: `~/origa-cdn` (machine-local state
+ * outside the repository, shared by every worktree — mirrors
+ * `origa/src/corpus.rs`; repo-root `cdn/` is no longer read). The
+ * `$ORIGA_CDN_DIR` override is honored in `resolveCdnSource`.
+ */
+export const defaultCdnCacheDir = join(homedir(), "origa-cdn");
 
 export interface CdnSource {
   /** URL the app bundle must point at for CDN content. */
@@ -117,7 +136,8 @@ export interface CdnSource {
 export function resolveCdnSource(
   env: NodeJS.ProcessEnv = process.env,
 ): CdnSource {
-  const cacheDir = env.ORIGA_CDN_CACHE_DIR ?? defaultCdnCacheDir;
+  const cacheDir =
+    env.ORIGA_CDN_CACHE_DIR ?? env.ORIGA_CDN_DIR ?? defaultCdnCacheDir;
   if (existsSync(cacheDir)) {
     return {
       baseUrl: `http://localhost:${LOCAL_CDN_PORT}`,

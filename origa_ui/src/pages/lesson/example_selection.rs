@@ -56,7 +56,7 @@ pub async fn pick_easiest_examples(
                 continue;
             };
             let score = unknown_word_tokens(&detail.text, &known);
-            let better = best.as_ref().map_or(true, |b| score < b.3);
+            let better = best.as_ref().is_none_or(|b| score < b.3);
             if better {
                 best = Some((r.sentence_id(), r.start(), r.end(), score));
             }

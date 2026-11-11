@@ -1550,12 +1550,12 @@ fn favorite_card_appears_once_when_due_known() {
 
 mod companion_vocab_cards {
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::NativeLanguage;
-    use crate::test_support::init_real_dictionaries;
 
     #[test]
     fn create_companion_vocab_cards_creates_cards_for_known_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut knowledge_set = KnowledgeSet::new();
         let created = knowledge_set.create_companion_vocab_cards("日", &NativeLanguage::Russian);
@@ -1580,7 +1580,7 @@ mod companion_vocab_cards {
 
     #[test]
     fn create_companion_vocab_cards_returns_empty_for_unknown_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut knowledge_set = KnowledgeSet::new();
         let created = knowledge_set.create_companion_vocab_cards("∃", &NativeLanguage::Russian);
@@ -1593,7 +1593,7 @@ mod companion_vocab_cards {
 
     #[test]
     fn create_companion_vocab_cards_skips_audit_removed_words() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Фикстура: единственное популярное слово кандзи 拷 — 拷問 —
         // входит в removal-список аудита словаря
@@ -1622,7 +1622,7 @@ mod companion_vocab_cards {
 
     #[test]
     fn create_companion_vocab_cards_skips_duplicates() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut knowledge_set = KnowledgeSet::new();
         let first = knowledge_set.create_companion_vocab_cards("日", &NativeLanguage::Russian);
@@ -1640,7 +1640,7 @@ mod companion_vocab_cards {
 
     #[test]
     fn create_companion_vocab_cards_creates_fewer_than_max() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut knowledge_set = KnowledgeSet::new();
 
@@ -1658,8 +1658,8 @@ mod companion_vocab_cards {
 
 mod deleted_companion_words {
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::{NativeLanguage, RateMode, Rating};
-    use crate::test_support::init_real_dictionaries;
 
     fn first_companion_word(created: &[StudyCard]) -> String {
         let sc = created.first().expect("at least one companion created");
@@ -1708,7 +1708,7 @@ mod deleted_companion_words {
 
     #[test]
     fn dismissed_companion_word_is_not_recreated() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let created = ks.create_companion_vocab_cards("日", &NativeLanguage::Russian);

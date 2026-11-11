@@ -6,12 +6,13 @@ use tracing::info;
 
 use super::cascade::CascadeRecognizer;
 use super::deim::DeimDetector;
+use super::parseq::ParseqRecognizer;
 use super::shared::{ModelFiles, crop_bbox};
 use crate::domain::OrigaError;
 
 pub struct JapaneseOCRModel {
     detector: DeimDetector,
-    recognizer: CascadeRecognizer,
+    recognizer: CascadeRecognizer<ParseqRecognizer>,
 }
 
 impl JapaneseOCRModel {

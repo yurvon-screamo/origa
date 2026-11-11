@@ -1,7 +1,7 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::memory::Rating;
-use crate::test_support::init_real_dictionaries;
 use rand::{SeedableRng, rngs::StdRng};
 
 use super::super::LessonViewGenerator;
@@ -48,7 +48,7 @@ mod yesno_view_filtering {
 
     #[test]
     fn high_difficulty_card_can_get_yesno_view() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card("猫");
@@ -63,7 +63,7 @@ mod yesno_view_filtering {
 
     #[test]
     fn in_progress_card_never_gets_yesno_view() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_in_progress_card("猫");
@@ -130,7 +130,7 @@ mod reversed_view_filtering {
 
     #[test]
     fn high_difficulty_card_never_gets_reversed_view() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card("猫");
@@ -153,7 +153,7 @@ mod reversed_view_filtering {
 
     #[test]
     fn known_card_can_get_reversed_view() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_known_card("猫");
@@ -168,7 +168,7 @@ mod reversed_view_filtering {
 
     #[test]
     fn in_progress_card_can_get_reversed_view() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_in_progress_card("猫");
@@ -183,7 +183,7 @@ mod reversed_view_filtering {
 
     #[test]
     fn review_vocab_never_mutates_by_new_grammar_rule() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: единственная применимая грамматика — глагольное
         // правило, ещё НОВОЕ (не прошедшее руку знакомства)
@@ -280,7 +280,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_many_easy_reviews_gets_reversed() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_easy_reviews("猫", 3);
@@ -308,7 +308,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_few_easy_reviews_no_reversed() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_easy_reviews("猫", 2);
@@ -329,7 +329,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_many_easy_reviews_no_grammar_mutated() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_easy_reviews("猫", 3);
@@ -348,7 +348,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_enough_good_reviews_gets_reversed() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_good_reviews("猫", 4);
@@ -376,7 +376,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_few_good_reviews_no_reversed() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_good_reviews("猫", 3);
@@ -397,7 +397,7 @@ mod reversed_view_easy_reviews {
 
     #[test]
     fn high_difficulty_with_enough_good_reviews_no_grammar_mutated() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let ks = create_knowledge_set_with_vocab(DISTRACTOR_WORDS);
         let study_card = create_high_difficulty_card_with_good_reviews("猫", 4);

@@ -43,7 +43,7 @@ fn create_yesno_card_with_words(
 
 #[tokio::test]
 async fn yesno_journey_correct_answer_results_in_good_rating() {
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     // Arrange: создаём пользователя с реальными японскими словами
     let words = vec!["猫", "犬", "鳥", "魚", "馬"];
@@ -103,7 +103,7 @@ async fn yesno_journey_correct_answer_results_in_good_rating() {
 
 #[tokio::test]
 async fn yesno_journey_wrong_answer_results_in_again_rating() {
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     // Arrange: создаём пользователя с реальными японскими словами
     let words = vec!["猫", "犬", "鳥", "魚", "馬"];
@@ -168,7 +168,7 @@ async fn yesno_journey_wrong_answer_results_in_again_rating() {
 #[tokio::test]
 async fn yesno_journey_false_statement_correct_no_answer() {
     // Arrange: Тестируем случай когда утверждение ложно и пользователь отвечает "Нет"
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     let card = VocabularyCard::new(Question::new("猫".to_string()).unwrap());
     let question = Card::Vocabulary(card.clone())
@@ -197,7 +197,7 @@ async fn yesno_journey_false_statement_correct_no_answer() {
 #[tokio::test]
 async fn yesno_journey_false_statement_wrong_yes_answer() {
     // Arrange: Тестируем случай когда утверждение ложно и пользователь ошибается
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     let card = VocabularyCard::new(Question::new("猫".to_string()).unwrap());
     let question = Card::Vocabulary(card.clone())
@@ -225,7 +225,7 @@ async fn yesno_journey_false_statement_wrong_yes_answer() {
 
 #[tokio::test]
 async fn yesno_journey_transition_to_next_card_after_rating() {
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     // Arrange: создаём пользователя с несколькими карточками
     let words = vec!["猫", "犬", "鳥", "魚", "馬"];
@@ -275,7 +275,7 @@ async fn yesno_journey_all_rating_cases(
     #[case] statement_is_correct: bool,
     #[case] expected_rating: Rating,
 ) {
-    crate::test_support::init_real_dictionaries();
+    crate::corpus::real_dictionaries_or_skip!();
 
     // Arrange: создаём пользователя с реальными японскими словами
     let words = vec!["猫", "犬", "鳥", "魚", "馬"];

@@ -10,6 +10,11 @@ fn main() {
     handle_i18n();
     handle_lindera_dictionary();
     generate_well_known_meta();
+    // The font source depends on this env (cdn_dir): cargo tracks the
+    // variable's presence too, so adding, changing or removing it re-runs
+    // the build script. Without this a corpus switch leaves a stale font
+    // registry baked into the bundle.
+    println!("cargo:rerun-if-env-changed=ORIGA_CDN_DIR");
     generate_font_registry();
     stage_fonts_for_bundling();
     println!("cargo:rerun-if-changed=build.rs");
@@ -44,8 +49,11 @@ fn main() {
     // Empty/unset = Sentry disabled at runtime. `SENTRY_RELEASE_UI` is derived
     // from `ORIGA_VERSION` to guarantee release-name sync with the native
     // layer (ADR-036 §3). See ADR-024 for the env-var read pattern
-    // (`env::var()` + `cargo:rustc-env` + `rerun-if-env-changed` instead of
-    // `option_env!`, which captures at build-script compile time).
+    // (`env::var()` + `cargo:rustc-env` + `rerun-if-env-changed`). The
+    // explicit pattern is preferred over `option_env!` for the empty-string
+    // handling it enables (resolve_env, ADR-024) — not for invalidation:
+    // modern cargo tracks option_env! reads too, env changes invalidate
+    // either way (verified on cargo 1.98, PR #909 probe).
     let sentry_dsn = env::var("SENTRY_DSN").unwrap_or_default();
     let sentry_environment =
         env::var("SENTRY_ENVIRONMENT").unwrap_or_else(|_| "development".into());
@@ -55,16 +63,23 @@ fn main() {
     println!("cargo:rustc-env=SENTRY_ENVIRONMENT_UI={sentry_environment}");
     println!("cargo:rustc-env=SENTRY_RELEASE_UI={sentry_release}");
 
-    // Umami Cloud analytics (ADR-054). `UMAMI_DISABLED=1` compiles the
-    // tracker out entirely for CI builds that execute the app (e2e headless
-    // runs, android-smoke emulator) so their localhost traffic never reaches
-    // production analytics; `UMAMI_WEBSITE_ID` optionally overrides the
-    // committed default (website IDs are public — see build_config.rs). The
+    // Umami website id by build context (ADR-054; isolation task
+    // 20261109071819). `UMAMI_DISABLED=1` compiles the tracker out entirely
+    // for CI builds that execute the app (e2e headless runs, android-smoke
+    // emulator); otherwise an explicit non-empty `UMAMI_WEBSITE_ID` wins,
+    // and the default is picked by build context: real `ORIGA_VERSION`
+    // (CI: docker.yml, tauri.yml) → production website, unset/empty/"dev"
+    // (all local builds: trunk serve, cargo tauri dev, local e2e, shots) →
+    // dev website. The version signal is read via `env::var` (ADR-024
+    // pattern — a build-script re-execution re-reads the environment,
+    // `rerun-if-env-changed=ORIGA_VERSION` below), not via `option_env!`,
+    // whose value is frozen into the compiled build-script binary. The
     // emitted value is read via `env!()` by `core::analytics`; an empty
     // value makes the runtime injection a no-op.
     let umami_website_id = build_config::resolve_umami(
         env::var("UMAMI_DISABLED").ok().as_deref(),
         env::var("UMAMI_WEBSITE_ID").ok().as_deref(),
+        env::var("ORIGA_VERSION").ok().as_deref(),
     );
     println!("cargo:rustc-env=UMAMI_WEBSITE_ID={umami_website_id}");
     println!("cargo:rerun-if-env-changed=UMAMI_DISABLED");
@@ -81,6 +96,21 @@ fn main() {
     println!("cargo:rerun-if-env-changed=SENTRY_ENVIRONMENT");
     println!("cargo:rerun-if-changed=build_config.rs");
     println!("cargo:rerun-if-changed=../build_defaults.rs");
+}
+
+/// Local corpus root (mirrors `origa::corpus::cdn_dir`): `$ORIGA_CDN_DIR`
+/// override first, then `~/origa-cdn`. The corpus is machine-local state
+/// outside the repository; a build script cannot import the crate, so the
+/// resolution contract is mirrored here — keep the two in sync.
+fn cdn_dir() -> PathBuf {
+    if let Some(dir) = env::var_os("ORIGA_CDN_DIR").filter(|v| !v.is_empty()) {
+        return PathBuf::from(dir);
+    }
+    let home = env::var_os("HOME")
+        .or_else(|| env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("origa-cdn"));
+    home.join("origa-cdn")
 }
 
 fn handle_i18n() {
@@ -126,12 +156,7 @@ fn handle_lindera_dictionary() {
     // (a build script cannot import from the crate itself) and the paths in
     // scripts/deploy_cdn.py — bump all three together.
     const SUDACHIDICT_DIR: &str = "sudachidict-20260723";
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let public_dict_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("dictionaries")
-        .join(SUDACHIDICT_DIR);
+    let public_dict_dir = cdn_dir().join("dictionaries").join(SUDACHIDICT_DIR);
 
     let required = [
         "char_def.bin",
@@ -262,78 +287,46 @@ fn load_json(path: &Path) -> WellKnownSet {
 }
 
 fn generate_well_known_meta() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let base_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("well_known_set");
+    let base_dir = cdn_dir().join("well_known_set");
     let output_file = base_dir.join("well_known_sets_meta.json");
 
     if !base_dir.exists() {
         return;
     }
 
-    // Rerun if any JSON file in well_known_set changes
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n5.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n4.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n3.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n2.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("jlpt_n1.json").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("migii").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n5").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n4").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n3").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("minna_n2").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("spy_family").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("duolingo").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_nyuumon").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_shokyuu1").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        base_dir.join("irodori_shokyuu2").display()
-    );
+    // Watch each child only if it exists: a rerun-if-changed path that does
+    // not exist makes cargo re-dirty the build script on EVERY invocation
+    // ("Dirty ... the file X is missing", observed on cargo 1.98 — same
+    // failure class as cdn/fonts before PR #909; a partial or stale corpus
+    // snapshot would poison the cache the same way). A single watch on the
+    // base dir is NOT an option here: cargo fingerprints watched paths before
+    // the script runs, and this script writes well_known_sets_meta.json INTO
+    // the watched dir, so the next invocation would always see the dir as
+    // changed — an ever-dirty loop (verified live on cargo 1.98). The list is
+    // the generator's input contract: a newly introduced child kind needs a
+    // build.rs change anyway, so it lands in both lists together.
+    for child in [
+        "jlpt_n5.json",
+        "jlpt_n4.json",
+        "jlpt_n3.json",
+        "jlpt_n2.json",
+        "jlpt_n1.json",
+        "migii",
+        "minna_n5",
+        "minna_n4",
+        "minna_n3",
+        "minna_n2",
+        "spy_family",
+        "duolingo",
+        "irodori_nyuumon",
+        "irodori_shokyuu1",
+        "irodori_shokyuu2",
+    ] {
+        let path = base_dir.join(child);
+        if path.exists() {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+    }
 
     let mut meta_list: Vec<WellKnownMeta> = Vec::new();
 
@@ -691,11 +684,7 @@ fn generate_well_known_meta() {
 /// `cdn/fonts/` is absent the array is empty, so the app degrades gracefully
 /// (no @font-face injected, system fallback) instead of failing to build.
 fn generate_font_registry() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let fonts_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
-        .join("fonts");
+    let fonts_dir = cdn_dir().join("fonts");
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_file = Path::new(&out_dir).join("fonts.rs");
 
@@ -706,7 +695,7 @@ fn generate_font_registry() {
     // worktrees, where `cdn/` is gitignored. Trade-off of skipping the watch:
     // fonts restored into an existing worktree are picked up on the next
     // build.rs rerun (any source/env change), not by the appearance itself —
-    // same degradation class as generate_well_known_meta's early return.
+    // same trade-off as the corpus watch in generate_well_known_meta.
     if fonts_dir.is_dir() {
         println!("cargo:rerun-if-changed={}", fonts_dir.display());
     }
@@ -763,12 +752,10 @@ fn strip_hash_suffix(filename: &str) -> String {
 /// only rewrites a target file when its bytes differ from the source, so
 /// incremental trunk rebuilds are not invalidated by no-op copies.
 fn stage_fonts_for_bundling() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let src_dir = Path::new(&manifest_dir)
-        .join("..")
-        .join("cdn")
+    let src_dir = cdn_dir().join("fonts");
+    let dest_dir = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+        .join("public")
         .join("fonts");
-    let dest_dir = Path::new(&manifest_dir).join("public").join("fonts");
 
     if !src_dir.is_dir() {
         // cdn/fonts/ absent (e.g. fresh checkout without CDN assets): font_face

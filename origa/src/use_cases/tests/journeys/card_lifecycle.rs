@@ -3,7 +3,7 @@ use ulid::Ulid;
 use crate::domain::{JapaneseLevel, NativeLanguage, OrigaError, SetType, User, WellKnownSetMeta};
 use crate::traits::UserRepository;
 use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, create_test_vocab_card, init_real_dictionaries,
+    InMemoryUserRepository, create_test_vocab_card, real_dictionaries_or_skip,
 };
 use crate::use_cases::{
     CreateKanjiCardUseCase, CreateVocabularyCardUseCase, DeleteCardUseCase, ToggleFavoriteUseCase,
@@ -137,7 +137,7 @@ async fn toggle_favorite_nonexistent_card_returns_error() {
 #[tokio::test]
 async fn create_vocabulary_card_empty_text_returns_empty_result() {
     // Arrange
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo().await;
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -153,7 +153,7 @@ async fn create_vocabulary_card_empty_text_returns_empty_result() {
 #[tokio::test]
 async fn create_vocabulary_card_whitespace_only_returns_empty_result() {
     // Arrange
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo().await;
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -167,7 +167,7 @@ async fn create_vocabulary_card_whitespace_only_returns_empty_result() {
 #[tokio::test]
 async fn create_kanji_card_duplicate_returns_error() {
     // Arrange
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo().await;
     let use_case = CreateKanjiCardUseCase::new(&repo);
 

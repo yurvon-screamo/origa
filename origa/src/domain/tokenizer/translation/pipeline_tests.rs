@@ -2,13 +2,13 @@
 //! labels, compound splits and tokenizer characterization phrases that
 //! exercise `lookup_tokens_translations` end to end.
 
-use super::test_env::ensure_dictionaries;
 use super::*;
+use crate::corpus::translation_dictionaries_or_skip;
 use crate::domain::tokenizer::tokenize_text;
 
 #[test]
 fn should_translate_bakari() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "ばかり";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -21,7 +21,7 @@ fn should_translate_bakari() {
 }
 #[test]
 fn should_translate_uwa_interjection() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "うわー";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -34,7 +34,7 @@ fn should_translate_uwa_interjection() {
 }
 #[test]
 fn should_translate_souiu_compound() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "そういう";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -47,7 +47,7 @@ fn should_translate_souiu_compound() {
 }
 #[test]
 fn should_translate_hodo() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "ほど";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -112,7 +112,7 @@ fn counter_label_falls_back_to_english_gloss_for_partial_locales() {
 // particle + punct + pronoun + copula) — wontfix with this note.
 #[test]
 fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "さあついたよ、ここだ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -161,7 +161,7 @@ fn tokenize_saa_tsuita_yo_kokoda_returns_expected_tokens() {
 // auxiliary. This test locks in the vocabulary entry for ぬ that resolves it.
 #[test]
 fn should_label_or_translate_classical_negative_zu_auxiliary() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "人はパンのみで生きるにあらずですわよ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -181,7 +181,7 @@ fn should_label_or_translate_classical_negative_zu_auxiliary() {
 // translation was None. This test locks in the added translation.
 #[test]
 fn should_translate_wa_sentence_final_particle() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "生きるにあらずですわよ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -206,7 +206,7 @@ fn should_translate_wa_sentence_final_particle() {
 // rendering; this code-only fix avoids touching the build binary.
 #[test]
 fn should_split_mizunashi_compound() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "水なしでは生きていけない";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -257,7 +257,7 @@ fn should_split_mizunashi_compound() {
 // is the fix; the grammar_label data gap is a separate cdn/ concern.
 #[test]
 fn should_split_doryokukurai_compound() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "努力くらいはしてみるよ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -289,7 +289,7 @@ fn should_split_doryokukurai_compound() {
 // lost. This test locks in the user-dictionary entry that keeps it one token.
 #[test]
 fn should_tokenize_kakkoii_katakana_as_single_token() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "カッコイイの！";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -309,7 +309,7 @@ fn should_tokenize_kakkoii_katakana_as_single_token() {
 // This test locks in the user-dictionary entry that keeps it one token.
 #[test]
 fn should_use_kakkoii_dictionary_entry_for_hiragana_compound() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "かっこいいですね";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -332,7 +332,7 @@ fn should_use_kakkoii_dictionary_entry_for_hiragana_compound() {
 // This test locks in the user-dictionary entry that keeps it one token.
 #[test]
 fn should_tokenize_hitotsu_as_single_token() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "心をひとつに";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -353,7 +353,7 @@ fn should_tokenize_hitotsu_as_single_token() {
 // user-dictionary entry that keeps it one token.
 #[test]
 fn should_tokenize_yareyare_as_single_token() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "やれやれ、無駄なことだよ。";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -373,7 +373,7 @@ fn should_tokenize_yareyare_as_single_token() {
 // instead. This test locks in the user-dictionary entry that keeps it one token.
 #[test]
 fn should_tokenize_monoka_as_single_token() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "起きるものか";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -390,7 +390,7 @@ fn should_tokenize_monoka_as_single_token() {
 // translation was None. This test locks in the added translation.
 #[test]
 fn should_translate_fufu_interjection() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "ふふ、ストーブついてますし";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -413,7 +413,7 @@ fn should_translate_fufu_interjection() {
 // tokenizer/dictionary limitation and is out of scope for translation.rs.
 #[test]
 fn should_still_extract_iu_base_form_from_mixed_kana_kanji_input() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "言っイッてみただけ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::English, text);
@@ -434,7 +434,7 @@ fn should_still_extract_iu_base_form_from_mixed_kana_kanji_input() {
 // would be translated as the verb instead of being left untranslated.
 #[test]
 fn should_suppress_homonym_translation_for_particle_shi() {
-    ensure_dictionaries();
+    translation_dictionaries_or_skip!();
     let text = "ストーブついてますし、大丈夫ですよ";
     let tokens = tokenize_text(text).unwrap();
     let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);

@@ -2,6 +2,10 @@
 
 ARG RUST_VERSION=1.93
 ARG TRUNK_VERSION=0.21.14
+# Keep in sync with the trunk@ pin in .github/actions/setup-frontend
+# (CI installs this same release via cargo-binstall; that file carries
+# the mirrored comment). docker.yml builds with no-cache, so the curl
+# below runs on every image build — hence the --retry flags on it.
 
 FROM ubuntu:26.04 AS builder
 
@@ -40,20 +44,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/sccache-v0.14.0-x86_64-unknown-linux-musl.tar.gz | tar xz \
+    && curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://github.com/mozilla/sccache/releases/download/v0.14.0/sccache-v0.14.0-x86_64-unknown-linux-musl.tar.gz | tar xz \
     && mv sccache-v0.14.0-x86_64-unknown-linux-musl/sccache /usr/local/bin/ \
     && chmod +x /usr/local/bin/sccache
 
 ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_DIR=/sccache
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 
 RUN rustup target add wasm32-unknown-unknown && \
-    curl -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz \
+    curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz \
     | tar -xzf - -C /usr/local/bin
 
 RUN npm install -g tailwindcss@${TAILWINDCSS_VERSION} \

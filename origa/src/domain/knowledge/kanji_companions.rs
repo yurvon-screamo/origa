@@ -290,9 +290,9 @@ fn append_companions(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::corpus::real_dictionaries_or_skip;
     use crate::domain::knowledge::{KanjiCard, VocabularyCard};
     use crate::domain::value_objects::Question;
-    use crate::test_support::init_real_dictionaries;
     use chrono::Utc;
 
     fn create_vocab_card(word: &str) -> Card {
@@ -324,7 +324,7 @@ mod tests {
 
     #[test]
     fn add_kanji_companions_includes_vocab_cards_when_kanji_in_lesson() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let kanji_sc = ks.create_card(create_kanji_card("日")).unwrap();
@@ -355,7 +355,7 @@ mod tests {
 
     #[test]
     fn add_kanji_companions_respects_max_limit() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let kanji_chars = [
             "人", "日", "年", "大", "出", "見", "食", "飲", "行", "来", "読", "書", "話", "聞",
@@ -411,7 +411,7 @@ mod tests {
 
     #[test]
     fn add_kanji_companions_no_duplicates() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let kanji_sc = ks.create_card(create_kanji_card("日")).unwrap();
@@ -443,7 +443,7 @@ mod tests {
 
     #[test]
     fn add_kanji_companions_empty_when_no_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let vocab_sc = ks.create_card(create_vocab_card("猫")).unwrap();
@@ -472,7 +472,7 @@ mod tests {
 
     #[test]
     fn reverse_adds_kanji_from_vocab() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let vocab_sc = ks.create_card(create_vocab_card("日本")).unwrap();
@@ -500,7 +500,7 @@ mod tests {
 
     #[test]
     fn reverse_respects_jlpt_level_filter() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
 
@@ -545,7 +545,7 @@ mod tests {
 
     #[test]
     fn reverse_no_duplicate_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
@@ -574,7 +574,7 @@ mod tests {
 
     #[test]
     fn reverse_skips_kanji_not_in_deck() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let vocab_sc = ks.create_card(create_vocab_card("日本")).unwrap();
@@ -607,7 +607,7 @@ mod tests {
 
     #[test]
     fn reverse_intra_dedup_shared_kanji() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let vocab_nihon_sc = ks.create_card(create_vocab_card("日本")).unwrap();
@@ -639,7 +639,7 @@ mod tests {
 
     #[test]
     fn reverse_respects_max_limit() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let kanji_chars = [
             "日", "本", "人", "大", "出", "見", "食", "飲", "行", "来", "読",
@@ -678,7 +678,7 @@ mod tests {
     // With a 41-card core (MAX_LESSON_SIZE - 9) the old code would have offered only 9 reverse slots.
     #[test]
     fn reverse_companions_uncapped_by_lesson_size() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let reverse_kanji_chars = ["日", "本", "人", "大", "出", "見", "食", "飲", "行", "来"];
 
@@ -726,7 +726,7 @@ mod tests {
 
     #[test]
     fn reverse_uses_forward_vocab_as_source() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         let mut ks = KnowledgeSet::new();
         let kanji_nichi_sc = ks.create_card(create_kanji_card("日")).unwrap();
@@ -791,7 +791,7 @@ mod tests {
 
     #[test]
     fn reverse_skips_kanji_marked_known_today() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: слово 日本 тянет кандзи 日 и 本; 日 отмечен «Знаю» сегодня
         let mut ks = KnowledgeSet::new();
@@ -823,7 +823,7 @@ mod tests {
 
     #[test]
     fn reverse_includes_kanji_marked_known_yesterday() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: отметка «Знаю» вчерашняя — семантика «только сегодня»
         let mut ks = KnowledgeSet::new();
@@ -854,7 +854,7 @@ mod tests {
 
     #[test]
     fn forward_skips_word_marked_known_today() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: кандзи 日 в уроке, его первое популярное слово отмечено сегодня
         let mut ks = KnowledgeSet::new();
@@ -887,7 +887,7 @@ mod tests {
 
     #[test]
     fn forward_words_of_known_source_kanji_still_attach() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: ИЗВЕСТНЫЙ кандзи 日 в уроке (законное core-ревью),
         // его популярное слово чисто — решение владельца №2: источник
@@ -918,7 +918,7 @@ mod tests {
 
     #[test]
     fn marked_today_due_card_still_enters_core() {
-        init_real_dictionaries();
+        real_dictionaries_or_skip!();
 
         // Arrange: due-карта с сегодняшней отметкой — фильтр живёт только
         // в канале компаньонов, core-отбор её не видит

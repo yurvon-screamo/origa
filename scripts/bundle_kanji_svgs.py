@@ -15,13 +15,14 @@ Deterministic: sorted keys, ensure_ascii=False, compact separators.
 import json
 import sys
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 JLPT_LEVELS = ["n5", "n4", "n3", "n2", "n1"]
 
 
 def main() -> int:
     project_root = Path(__file__).resolve().parent.parent
-    cdn = project_root / "cdn"
+    cdn = corpus_dir()
 
     kanji_json_path = cdn / "dictionary" / "kanji.json"
     if not kanji_json_path.is_file():

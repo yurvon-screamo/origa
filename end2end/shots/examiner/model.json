@@ -7,6 +7,12 @@
     "counter-scoring:card-after": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "counters-detail:detail-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "counters-detail:detail-viewport": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "feedback-form:feedback-modal-filled": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
@@ -14,6 +20,12 @@
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "feedback-form:lesson-header-report-disabled": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "grammar-page:grid-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "grammar-page:grid-viewport": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home-accuracy-chart:accuracy-chart": {
@@ -26,6 +38,9 @@
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "home:home": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "home-jlpt-details:home-jlpt-details": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "jft-card:home-jft": {

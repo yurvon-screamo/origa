@@ -440,51 +440,9 @@ fn find_splittable_suffix(surface: &str) -> Option<(String, &'static str, PartOf
 mod tests {
     use super::*;
 
-    fn ensure_dictionary() {
-        if !is_dictionary_loaded() {
-            let data = create_test_dictionary_data();
-            let _ = init_dictionary(data);
-        }
-    }
-
-    fn create_test_dictionary_data() -> DictionaryData {
-        use flate2::read::DeflateDecoder;
-        use std::fs;
-        use std::io::Read;
-
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let dict_dir = std::path::PathBuf::from(manifest_dir)
-            .parent()
-            .unwrap()
-            .join("cdn")
-            .join("dictionaries")
-            .join(SUDACHIDICT_DIR);
-
-        let decompress = |data: Vec<u8>| -> Vec<u8> {
-            let mut decoder = DeflateDecoder::new(&data[..]);
-            let mut decompressed = Vec::new();
-            decoder.read_to_end(&mut decompressed).unwrap();
-            decompressed
-        };
-
-        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
-
-        DictionaryData {
-            char_def: decompress(read_file("char_def.bin")),
-            matrix: decompress(read_file("matrix.mtx")),
-            dict_trie: decompress(read_file("dict.trie")),
-            dict_vals_idx: decompress(read_file("dict.valsidx")),
-            dict_vals: decompress(read_file("dict.vals")),
-            unk: decompress(read_file("unk.bin")),
-            words_idx: decompress(read_file("dict.wordsidx")),
-            words: decompress(read_file("dict.words")),
-            metadata: read_file("metadata.json"),
-        }
-    }
-
     #[test]
     fn should_return_base_form_for_verb() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("食べます").unwrap();
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].orthographic_base_form, "食べる");
@@ -495,7 +453,7 @@ mod tests {
 
     #[test]
     fn should_return_base_form_for_noun() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("食べ物").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_base_form, "食べ物");
@@ -504,7 +462,7 @@ mod tests {
 
     #[test]
     fn should_return_base_form_for_adjective() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("美味しい").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_base_form, "美味しい");
@@ -513,7 +471,7 @@ mod tests {
 
     #[test]
     fn should_return_base_form_for_hiragana() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("たべます").unwrap();
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].orthographic_base_form, "食べる");
@@ -522,7 +480,7 @@ mod tests {
 
     #[test]
     fn should_return_base_form_for_hiragana_2() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("こんや").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_base_form, "今夜");
@@ -531,7 +489,7 @@ mod tests {
 
     #[test]
     fn should_return_surface_form_for_verb() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("食べます").unwrap();
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].orthographic_surface_form, "食べ");
@@ -540,7 +498,7 @@ mod tests {
 
     #[test]
     fn should_return_surface_form_for_noun() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("食べ物").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_surface_form, "食べ物");
@@ -549,7 +507,7 @@ mod tests {
 
     #[test]
     fn should_return_surface_form_for_adjective() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("美味しい").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_surface_form, "美味しい");
@@ -558,7 +516,7 @@ mod tests {
 
     #[test]
     fn should_return_surface_form_for_hiragana() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("たべます").unwrap();
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].orthographic_surface_form, "たべ");
@@ -567,7 +525,7 @@ mod tests {
 
     #[test]
     fn should_clean_katakana_base_form() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("アニメ").unwrap();
         assert_eq!(tokens.len(), 1);
         // UniDic typically returns "アニメ-animation" for lexeme
@@ -577,7 +535,7 @@ mod tests {
 
     #[test]
     fn should_ignore_junk_symbols_as_vocabulary() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         // Symbols like * and x should be forced to Symbol POS
         let tokens = tokenize_text("アーニャ*ダミアン×ヨル").unwrap();
         for token in tokens {
@@ -596,7 +554,7 @@ mod tests {
 
     #[test]
     fn should_preserve_kanji_for_proper_nouns() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("名古屋 横浜").unwrap();
         assert_eq!(tokens[0].orthographic_base_form, "名古屋");
         assert_eq!(tokens[1].part_of_speech(), &PartOfSpeech::Whitespace);
@@ -605,7 +563,7 @@ mod tests {
 
     #[test]
     fn should_detect_proper_noun() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("名古屋").unwrap();
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::ProperNoun);
         assert!(tokens[0].part_of_speech().is_vocabulary_word());
@@ -613,14 +571,14 @@ mod tests {
 
     #[test]
     fn should_detect_common_noun_as_noun_not_proper() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("食べ物").unwrap();
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Noun);
     }
 
     #[test]
     fn should_preserve_digits_in_tokenization() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("第3課").unwrap();
         let digit_token = tokens.iter().find(|t| t.orthographic_surface_form() == "3");
         assert!(
@@ -636,7 +594,7 @@ mod tests {
 
     #[test]
     fn should_preserve_non_japanese_as_symbol() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("hello食べ物world").unwrap();
         let hello_token = tokens
             .iter()
@@ -652,7 +610,7 @@ mod tests {
 
     #[test]
     fn should_handle_only_non_japanese() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("123").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].orthographic_surface_form(), "123");
@@ -661,14 +619,14 @@ mod tests {
 
     #[test]
     fn should_handle_empty_text() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("").unwrap();
         assert!(tokens.is_empty());
     }
 
     #[test]
     fn should_handle_whitespace_as_whitespace_pos() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("   ").unwrap();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0].part_of_speech(), &PartOfSpeech::Whitespace);
@@ -676,7 +634,7 @@ mod tests {
 
     #[test]
     fn should_not_split_souiu_into_sou_and_iu() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("そういう").unwrap();
         assert!(
             tokens
@@ -692,7 +650,7 @@ mod tests {
 
     #[test]
     fn should_not_split_kouiu_into_kou_and_iu() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("こういう").unwrap();
         assert!(
             tokens
@@ -708,7 +666,7 @@ mod tests {
 
     #[test]
     fn should_not_split_douiu_into_dou_and_iu() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("どういう").unwrap();
         assert!(
             tokens
@@ -724,7 +682,7 @@ mod tests {
 
     #[test]
     fn should_not_translate_iu_as_govoriit_in_souiu_context() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("そういう").unwrap();
         let iu_token = tokens
             .iter()
@@ -744,7 +702,7 @@ mod tests {
 
     #[test]
     fn should_not_split_to_iu_into_to_and_iu() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
         let tokens = tokenize_text("という").unwrap();
         assert!(
             tokens
@@ -828,7 +786,7 @@ mod tests {
 
     #[test]
     fn should_not_use_kanji_surface_as_phonological_reading_for_unknown_kanji() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
 
         // SudachiDict keeps the character name 杏璃 whole. Force an unknown
         // kanji path through a made-up name to keep the contract covered.
@@ -855,7 +813,7 @@ mod tests {
     // dict.words), so Viterbi cuts at known-word boundaries.
     #[test]
     fn should_keep_jidousha_as_single_vocabulary_token() {
-        ensure_dictionary();
+        crate::corpus::real_dictionaries_or_skip!();
 
         for surface in ["自動車", "飛行機", "図書館", "自転車", "令和", "お父さん"]
         {

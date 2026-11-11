@@ -4,11 +4,14 @@ on:
   pull_request:
     types:
       - closed
-  # Daily, not weekly: GitHub skipped 2 of 4 weekly runs in Sep–Oct 2026,
-  # and a stalled cleanup let the repo hit the 10 GB cache budget
-  # ("your cache is now read only", issue #803).
+  # Twice daily: bursts of active PR-merge refs refill the 10 GB budget
+  # between ticks (observed 10.2 GB/day across 8 refs, task 20261110221612),
+  # so a single tick would leave a multi-hour read-only window. A second
+  # tick also halves the impact of GitHub skipping scheduled runs
+  # (2 of 4 weekly runs skipped in Sep-Oct 2026, issue #803).
   schedule:
     - cron: '0 3 * * *'
+    - cron: '0 15 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -75,11 +78,20 @@ jobs:
           # "refs/heads/refs/tags/<tag>" — the only reliable master test is
           # string equality. If a long-lived branch ever appears, exclude
           # its ref here the same way.
-          NON_MASTER_TTL_DAYS = 2
+          NON_MASTER_TTL_DAYS = 1
           # Master keys matching no current family or seed below are
           # version-bump leftovers (e.g. a superseded xwin-v17); give them a
           # grace period before removal.
           MASTER_ORPHAN_DAYS = 14
+
+          # Repo cache budget (GH Actions). Projected total after all
+          # planned deletions drives the three reactions: warn at 80%,
+          # evict from 95% down to 85%, fail the job if eviction cannot
+          # get below 95% (protected entries fill the budget).
+          BUDGET_BYTES = 10_000_000_000
+          WARN_BYTES = 8_000_000_000
+          EVICT_AT_BYTES = 9_500_000_000
+          EVICT_TO_BYTES = 8_500_000_000
 
           def gh(*args):
               return subprocess.check_output(["gh", *args], text=True)
@@ -111,38 +123,73 @@ jobs:
               if key.startswith("codeql-overlay-base-database-"):
                   # CodeQL default setup: ...-<dbhash>-<lang>-<version>-<commit>-<runid>-1
                   return key.rsplit("-", 3)[0]
-              for prefix in ("Linux-gradle-", "macOS-gradle-", "cdn-data-v15-"):
+              for prefix in (
+                  "Linux-gradle-",
+                  "macOS-gradle-",
+                  "Windows-gradle-",
+                  "cdn-data-v15-",
+                  "qlty-plugins-",
+                  "playwright-",
+                  "setup-uv-",
+              ):
                   if key.startswith(prefix):
                       return key.rsplit("-", 1)[0]
+              if key.startswith("cache-apt-pkgs_"):
+                  # awalsh128/cache-apt-pkgs-action: cache-apt-pkgs_<hash>
+                  return key.rsplit("_", 1)[0]
               return None
 
-          # Constant-key seeds on master (no content hash): tag and PR runs
-          # exact-hit them, which is what keeps jobs like the Windows
-          # cross-build from saving fresh copies on isolated refs. Never age
-          # them out; a version bump changes the key and the old seed is
-          # then reaped by the orphan rule.
+          # Constant-key seeds (no content hash): tag and PR runs exact-hit
+          # them, which is what keeps jobs like the Windows cross-build from
+          # saving fresh copies on isolated refs. Never aged out or evicted
+          # (on any ref); a version bump changes the key and the old seed is
+          # then reaped by the orphan rule. NB: trailbase keys lost their
+          # "-verified" suffix when the pin moved to the Dockerfile (#916).
           MASTER_SEEDS = re.compile(
               r"^(xwin-Linux-x86_64-pc-windows-msvc-v\d+"
               r"|trunk-tools-v\d+"
-              r"|trailbase-v\d+\.\d+\.\d+-verified)$"
+              r"|trailbase-v\d+\.\d+\.\d+(-verified)?"
+              r"|frontend-tools-(Linux|macOS|Windows)-(X64|ARM64)-(binstall|trunk|tauri-cli)-v\d+"
+              r"|wasm-pack-(Linux|macOS|Windows)-(X64|ARM64)-v\d+\.\d+\.\d+)$"
           )
 
-          def main():
-              caches = fetch_all_caches()
-              now = datetime.now(timezone.utc)
-              deletions = []
+          def age_days(cache, now):
+              return (now - parse_ts(cache["created_at"])).total_seconds() / 86400
 
-              def age_days(c):
-                  return (now - parse_ts(c["created_at"])).total_seconds() / 86400
-
-              # Rule 1: non-master refs — short TTL.
+          def print_budget_report(caches):
+              total = sum(c["size_in_bytes"] for c in caches)
+              master_total = sum(c["size_in_bytes"] for c in caches if c["ref"] == MASTER)
+              print(
+                  f"=== Cache budget: {total / 1e9:.2f} GB / {BUDGET_BYTES / 1e9:.2f} GB"
+                  f" ({total / BUDGET_BYTES * 100:.0f}%)"
+                  f" — master {master_total / 1e9:.2f} GB,"
+                  f" non-master {(total - master_total) / 1e9:.2f} GB,"
+                  f" {len(caches)} entries ==="
+              )
+              families = {}
               for c in caches:
-                  if c["ref"] != MASTER and age_days(c) > NON_MASTER_TTL_DAYS:
-                      deletions.append((c, f"non-master ref {c['ref']}, {age_days(c):.0f}d old"))
+                  label = family_of(c["key"]) or c["key"][:60]
+                  size, count = families.get(label, (0, 0))
+                  families[label] = (size + c["size_in_bytes"], count + 1)
+              print("Top cache families by size:")
+              for label, (size, count) in sorted(families.items(), key=lambda item: -item[1][0])[:10]:
+                  print(f"  {label} — {size / 1e6:.0f} MB × {count}")
+
+          # Rule 1: non-master refs — short TTL.
+          # Rule 2: master family dedupe — keep newest per family.
+          # Rule 3: master orphans — no current family, no seed, idle past
+          # the grace period.
+          def plan_rule_deletions(caches, now):
+              deletions = {}
+
+              def delete(cache, reason):
+                  deletions[cache["id"]] = (cache, reason)
+
+              for c in caches:
+                  if c["ref"] != MASTER and age_days(c, now) > NON_MASTER_TTL_DAYS:
+                      delete(c, f"non-master ref {c['ref']}, {age_days(c, now):.0f}d old")
 
               master = [c for c in caches if c["ref"] == MASTER]
-
-              # Rule 2: master family dedupe — keep newest per family.
               families = {}
               for c in master:
                   fam = family_of(c["key"])
@@ -153,35 +200,111 @@ jobs:
                   members.sort(key=lambda c: c["created_at"], reverse=True)
                   newest_in_family.add(members[0]["key"])
                   for c in members[1:]:
-                      deletions.append((c, f"superseded by newer {fam} entry"))
+                      delete(c, f"superseded by newer {fam} entry")
 
-              # Rule 3: master orphans — no current family, no seed, idle
-              # past the grace period.
               for c in master:
                   if c["key"] in newest_in_family or MASTER_SEEDS.match(c["key"]):
                       continue
-                  if age_days(c) > MASTER_ORPHAN_DAYS:
-                      deletions.append((c, f"master orphan, {age_days(c):.0f}d old"))
+                  if age_days(c, now) > MASTER_ORPHAN_DAYS:
+                      delete(c, f"master orphan, {age_days(c, now):.0f}d old")
 
-              deletions.sort(key=lambda item: item[0]["key"])
-              freed = sum(c["size_in_bytes"] for c, _ in deletions)
-              print(f"=== {len(caches)} caches, deleting {len(deletions)} ({freed / 1e9:.2f} GB) ===")
-              for c, reason in deletions:
+              return deletions
+
+          # Budget eviction: FIFO over the oldest non-seed non-master
+          # entries (created_at asc). On the tick window the difference
+          # between created_at and last_accessed_at is immaterial. Seeds
+          # are protected on any ref — toolchain caches saved on PR merge
+          # refs must survive for reruns; master itself is never evicted.
+          def plan_budget_eviction(caches, deletions):
+              total = sum(c["size_in_bytes"] for c in caches)
+              projected = total - sum(c["size_in_bytes"] for c, _ in deletions.values())
+              evicted = []
+              if projected >= EVICT_AT_BYTES:
+                  candidates = sorted(
+                      (c for c in caches if c["ref"] != MASTER and not MASTER_SEEDS.match(c["key"])),
+                      key=lambda c: c["created_at"],
+                  )
+                  for c in candidates:
+                      if projected <= EVICT_TO_BYTES:
+                          break
+                      if c["id"] in deletions:
+                          continue
+                      deletions[c["id"]] = (c, "budget eviction")
+                      evicted.append(c)
+                      projected -= c["size_in_bytes"]
+              return projected, evicted
+
+          def main():
+              caches = fetch_all_caches()
+              now = datetime.now(timezone.utc)
+              print_budget_report(caches)
+
+              deletions = plan_rule_deletions(caches, now)
+              projected, evicted = plan_budget_eviction(caches, deletions)
+              evicted_ids = {c["id"] for c in evicted}
+
+              warn_pct = WARN_BYTES / BUDGET_BYTES * 100
+              evict_pct = EVICT_AT_BYTES / BUDGET_BYTES * 100
+              if projected >= WARN_BYTES:
+                  print(
+                      f"::warning::cache budget projected at {projected / 1e9:.2f} GB"
+                      f" after cleanup (>= {warn_pct:.0f}% of {BUDGET_BYTES / 1e9:.2f} GB)"
+                  )
+              unsalvageable = projected >= EVICT_AT_BYTES
+              if unsalvageable:
+                  print(
+                      f"::error::cache budget unsalvageable: projected {projected / 1e9:.2f} GB"
+                      f" stays >= {evict_pct:.0f}% after eviction — protected entries fill the budget"
+                  )
+
+              for c, reason in sorted(deletions.values(), key=lambda item: item[0]["key"]):
+                  if c["id"] in evicted_ids:
+                      print(
+                          f"EVICT [budget]: {c['key'][:60]}"
+                          f" ({c['size_in_bytes'] / 1e6:.0f} MB, {age_days(c, now):.0f}d old) [{c['ref']}]"
+                      )
+                      continue
                   print(f"DELETE [{reason}]: {c['key'][:60]} ({c['size_in_bytes'] / 1e6:.0f} MB) [{c['ref']}]")
+
+              freed = sum(c["size_in_bytes"] for c, _ in deletions.values())
+              print(
+                  f"=== {len(caches)} caches, deleting {len(deletions)} ({freed / 1e9:.2f} GB),"
+                  f" projected after: {projected / 1e9:.2f} GB ==="
+              )
 
               if DRY_RUN:
                   print("=== DRY RUN: nothing deleted ===")
                   return
 
               failed = 0
-              for c, _ in deletions:
-                  try:
-                      gh("cache", "delete", str(c["id"]))
-                  except subprocess.CalledProcessError as exc:
+              skipped = 0
+              for c, _ in deletions.values():
+                  result = subprocess.run(
+                      ["gh", "cache", "delete", str(c["id"])], capture_output=True, text=True
+                  )
+                  if result.returncode == 0:
+                      continue
+                  # A parallel PR-close job may have deleted the same cache:
+                  # already-gone means the goal is reached, so only real
+                  # API failures (auth/5xx/throttle) count as failed. gh's
+                  # message for an already-deleted id is "Could not find a
+                  # cache matching <id> ..." (exit 1, no HTTP status text).
+                  stderr = result.stderr or ""
+                  if (
+                      "could not find a cache" in stderr.lower()
+                      or "404" in stderr
+                      or "not found" in stderr.lower()
+                  ):
+                      skipped += 1
+                      print(f"SKIP already-gone: {c['key'][:60]}")
+                  else:
                       failed += 1
-                      print(f"WARNING: failed to delete cache {c['id']} ({c['key'][:60]}): {exc}")
-              print(f"=== Cleanup complete: {len(deletions) - failed} deleted, {failed} failed ===")
-              if failed:
+                      print(f"WARNING: failed to delete cache {c['id']} ({c['key'][:60]}): {stderr}")
+              print(
+                  f"=== Cleanup complete: {len(deletions) - failed - skipped} deleted,"
+                  f" {skipped} already-gone, {failed} failed ==="
+              )
+              if failed or unsalvageable:
                   sys.exit(1)
 
           main()

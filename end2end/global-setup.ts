@@ -3,11 +3,11 @@ import { end2endRoot } from "./helpers/paths";
 import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccountsWithToken } from "./helpers/cleanup";
-import { TRAILBASE_PORT } from "./shots/config.ts";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { getTrailBaseUrl } from "./config";
+import { TRAILBASE_PORT } from "./shots/config.ts";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (
@@ -21,8 +21,17 @@ if (
   }
 }
 
-// TrailBase port lives in shots/config.ts (env-overridable) — this
-// file only consumes it.
+// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
+// imported after ./config so the dotenv bootstrap has already run.
+// The trail process spawns on 127.0.0.1:PORT and the healthcheck waits on
+// that exact address (waitForTrailBase uses trailbaseSpawnUrl below); the
+// TRAILBASE_URL env is left untouched — offline specs build request
+// intercepts from it and the bundle embeds it, so host spelling
+// (localhost vs 127.0.0.1) must stay whatever the caller provided
+// (ci.yml uses localhost; rewriting it here breaks the intercepts).
+
+/** The address the trail process is spawned on (loopback, always reachable). */
+const trailbaseSpawnUrl = `http://127.0.0.1:${TRAILBASE_PORT}`;
 
 async function waitForTrailBase(
   maxRetries = 30,
@@ -31,7 +40,7 @@ async function waitForTrailBase(
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetchWithTimeout(
-        `${getTrailBaseUrl()}/api/healthcheck`,
+        `${trailbaseSpawnUrl}/api/healthcheck`,
         {},
         5000,
       );
@@ -104,7 +113,13 @@ function killExistingTrailBase(): void {
     if (process.platform === "win32") {
       execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
     } else {
-      execSync("pkill -f 'trail run'", { stdio: "pipe" });
+      // Port-scoped pattern: a parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
+      // `pkill -f 'trail run'` would take that stranger down too.
+      execSync(
+        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        { stdio: "pipe" },
+      );
     }
     console.log("[global-setup] ✓ Killed existing TrailBase process");
   } catch {

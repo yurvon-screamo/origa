@@ -1,8 +1,11 @@
 import type { ShotScenario } from "../scenario.ts";
 import { counterScoringScenario } from "./counter-scoring.ts";
+import { countersDetailScenario } from "./counters-detail.ts";
 import { feedbackFormScenario } from "./feedback-form.ts";
+import { grammarPageScenario } from "./grammar-page.ts";
 import { homeDueCounterScenario } from "./home-due-counter.ts";
 import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
+import { homeJlptDetailsScenario } from "./home-jlpt-details.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
@@ -32,6 +35,7 @@ export const implementations: Record<string, ShotScenario> = {
   [counterScoringScenario.id]: counterScoringScenario,
   [homeDueCounterScenario.id]: homeDueCounterScenario,
   [homeAccuracyChartScenario.id]: homeAccuracyChartScenario,
+  [homeJlptDetailsScenario.id]: homeJlptDetailsScenario,
   [feedbackFormScenario.id]: feedbackFormScenario,
   [tokenPopupScenario.id]: tokenPopupScenario,
   [jftCardScenario.id]: jftCardScenario,
@@ -41,6 +45,8 @@ export const implementations: Record<string, ShotScenario> = {
   [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
   [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
   [lessonCounterPackScenario.id]: lessonCounterPackScenario,
+  [grammarPageScenario.id]: grammarPageScenario,
+  [countersDetailScenario.id]: countersDetailScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

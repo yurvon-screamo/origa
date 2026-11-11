@@ -126,7 +126,7 @@ pub(super) fn pick_group(
         if rem == 0 {
             continue;
         }
-        let cooled = last_pos[qi].map_or(true, |lp| p - lp > MIN_REPEAT_SPACING);
+        let cooled = last_pos[qi].is_none_or(|lp| p - lp > MIN_REPEAT_SPACING);
         if !force && !cooled {
             continue;
         }

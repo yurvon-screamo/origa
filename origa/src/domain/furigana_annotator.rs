@@ -2,7 +2,6 @@ use crate::dictionary::furigana_dict::{
     FuriganaEntry, FuriganaStore, ReadingSpan, get_furigana_dict,
 };
 use crate::domain::OrigaError;
-use crate::domain::hiragana_to_katakana;
 use crate::domain::tokenizer::{TokenInfo, tokenize_text};
 use serde::{Deserialize, Serialize};
 
@@ -142,14 +141,14 @@ fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSp
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text: surface,
-                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading: Some(best.reading.clone()),
                     reading_spans: best
                         .reading_spans
                         .iter()
                         .map(|s| ReadingSpan {
                             start_index: s.start_index,
                             end_index: s.end_index,
-                            text: hiragana_to_katakana(&s.text),
+                            text: s.text.clone(),
                         })
                         .collect(),
                 }
@@ -166,14 +165,14 @@ fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSp
             if let Some(best) = entries.first() {
                 AnnotatedSpan {
                     text,
-                    reading: Some(hiragana_to_katakana(&best.reading)),
+                    reading: Some(best.reading.clone()),
                     reading_spans: best
                         .reading_spans
                         .iter()
                         .map(|s| ReadingSpan {
                             start_index: s.start_index,
                             end_index: s.end_index,
-                            text: hiragana_to_katakana(&s.text),
+                            text: s.text.clone(),
                         })
                         .collect(),
                 }
@@ -192,69 +191,31 @@ fn resolve_annotation(token: InternalToken, dict: &FuriganaStore) -> AnnotatedSp
 mod tests {
     use super::*;
 
-    fn setup_dictionaries() {
-        if !crate::domain::is_dictionary_loaded() {
-            let data = create_lindera_dictionary_data();
-            crate::domain::init_dictionary(data).unwrap();
-        }
-
-        if !crate::dictionary::furigana_dict::is_furigana_dict_loaded() {
-            let content = "\
+    /// Embedded furigana dictionary (corpus-free); the tokenizer fixture
+    /// is loaded by the `real_dictionaries_or_skip!` guard at test sites.
+    fn setup_furigana_dict() {
+        let content = "\
 食べる|たべる|0:た
 食べ物|たべもの|0:たべ;2:もの
 大人|おとな|0-1:おとな
 大人|だいじん|0-1:だいじん
 指|ゆび|0:ゆび
 ";
-            let _ = crate::dictionary::furigana_dict::init_furigana_dict(content);
-        }
-    }
-
-    fn create_lindera_dictionary_data() -> crate::domain::DictionaryData {
-        use flate2::read::DeflateDecoder;
-        use std::fs;
-        use std::io::Read;
-
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let base = std::path::PathBuf::from(manifest_dir)
-            .parent()
-            .unwrap()
-            .join("cdn")
-            .join("dictionaries");
-        let dict_dir = base.join(crate::domain::SUDACHIDICT_DIR);
-
-        let decompress = |data: Vec<u8>| -> Vec<u8> {
-            let mut decoder = DeflateDecoder::new(&data[..]);
-            let mut decompressed = Vec::new();
-            decoder.read_to_end(&mut decompressed).unwrap();
-            decompressed
-        };
-
-        let read_file = |name: &str| fs::read(dict_dir.join(name)).unwrap();
-
-        crate::domain::DictionaryData {
-            char_def: decompress(read_file("char_def.bin")),
-            matrix: decompress(read_file("matrix.mtx")),
-            dict_trie: decompress(read_file("dict.trie")),
-            dict_vals_idx: decompress(read_file("dict.valsidx")),
-            dict_vals: decompress(read_file("dict.vals")),
-            unk: decompress(read_file("unk.bin")),
-            words_idx: decompress(read_file("dict.wordsidx")),
-            words: decompress(read_file("dict.words")),
-            metadata: read_file("metadata.json"),
-        }
+        let _ = crate::dictionary::furigana_dict::init_furigana_dict(content);
     }
 
     #[test]
     fn annotate_text_returns_empty_for_empty_input() {
-        setup_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        setup_furigana_dict();
         let result = annotate_text("").unwrap();
         assert!(result.is_empty());
     }
 
     #[test]
     fn annotate_text_produces_spans_for_known_word() {
-        setup_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        setup_furigana_dict();
         let result = annotate_text("食べ物").unwrap();
         assert!(!result.is_empty());
 
@@ -267,7 +228,8 @@ mod tests {
 
     #[test]
     fn annotate_text_fallback_when_no_dict_entry() {
-        setup_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        setup_furigana_dict();
         let result = annotate_text("食べます").unwrap();
         assert!(!result.is_empty());
 
@@ -305,11 +267,11 @@ mod tests {
         let span = resolve_annotation(token, &dict);
 
         let reading = span.reading.as_ref().expect("明日 should have a reading");
-        // hiragana_to_katakana is applied, so あした becomes アシタ.
         // The reading_hint was アス (literary) — the annotator must NOT
         // use it and must pick the first dictionary entry instead.
+        // Readings render hiragana as stored in JmdictFurigana.
         assert_eq!(
-            reading, "アシタ",
+            reading, "あした",
             "明日 should use the most frequent reading あした, got {}",
             reading
         );

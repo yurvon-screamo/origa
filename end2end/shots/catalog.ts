@@ -86,6 +86,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "scoring-n5",
   },
+  "counters-detail": {
+    id: "counters-detail",
+    title: "Детальная карточка счётного суффикса",
+    route: "/counters/:id",
+    locale: "ru-RU",
+    preset: "counter-due",
+  },
   "home-due-counter": {
     id: "home-due-counter",
     title: "Счётчик просроченных карточек",
@@ -121,6 +128,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "irodori-nyuumon",
   },
+  "home-jlpt-details": {
+    id: "home-jlpt-details",
+    title: "JLPT-карточка: раскрытая матрица категорий",
+    route: "/home",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
   "lesson-counter-pack": {
     id: "lesson-counter-pack",
     title: "Пачка связок счётного суффикса в уроке",
@@ -141,6 +155,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     route: "/lesson",
     locale: "ru-RU",
     preset: "due-corpus",
+  },
+  "grammar-page": {
+    id: "grammar-page",
+    title: "Страница грамматики",
+    route: "/grammar",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
   },
 };
 

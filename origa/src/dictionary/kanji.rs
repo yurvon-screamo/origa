@@ -393,7 +393,6 @@ struct KanjiDatabaseStoredType {
 mod tests {
     use super::*;
     use rstest::rstest;
-    use std::path::Path;
 
     fn create_valid_kanji_json() -> String {
         r#"{
@@ -429,8 +428,17 @@ mod tests {
         "{ invalid json }".to_string()
     }
 
+    /// True when the real corpus kanji.json is available; real-content tests
+    /// early-return without it (the probe emits the skip marker).
+    fn real_kanji_corpus_available() -> bool {
+        !crate::corpus::corpus_absent(
+            &crate::corpus::cdn_dir().join("dictionary/kanji.json"),
+            "kanji dictionary",
+        )
+    }
+
     fn load_real_kanji_json() -> String {
-        let kanji_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../cdn/dictionary/kanji.json");
+        let kanji_path = crate::corpus::cdn_dir().join("dictionary/kanji.json");
 
         if kanji_path.exists() {
             std::fs::read_to_string(&kanji_path).expect("Failed to read kanji.json")
@@ -441,8 +449,7 @@ mod tests {
 
     fn ensure_test_dictionary_loaded() {
         if !is_kanji_loaded() {
-            let kanji_path =
-                Path::new(env!("CARGO_MANIFEST_DIR")).join("../cdn/dictionary/kanji.json");
+            let kanji_path = crate::corpus::cdn_dir().join("dictionary/kanji.json");
 
             if kanji_path.exists() {
                 let kanji_json =
@@ -480,6 +487,10 @@ mod tests {
         #[case] expected_char: char,
         #[case] expected_level: JapaneseLevel,
     ) {
+        if !real_kanji_corpus_available() {
+            return;
+        }
+
         ensure_test_dictionary_loaded();
         let result = get_kanji_info(kanji_str);
         assert!(result.is_ok());
@@ -503,6 +514,10 @@ mod tests {
     #[case(JapaneseLevel::N2)]
     #[case(JapaneseLevel::N1)]
     fn get_kanji_list_all_levels(#[case] level: JapaneseLevel) {
+        if !real_kanji_corpus_available() {
+            return;
+        }
+
         ensure_test_dictionary_loaded();
         let result = get_kanji_list(&level);
         assert!(!result.is_empty(), "Level {:?} should have kanji", level);
@@ -535,6 +550,10 @@ mod tests {
 
     #[test]
     fn integration_real_dictionary() {
+        if !real_kanji_corpus_available() {
+            return;
+        }
+
         ensure_test_dictionary_loaded();
         let n5_list = get_kanji_list(&JapaneseLevel::N5);
         assert!(!n5_list.is_empty());
@@ -666,6 +685,10 @@ mod tests {
     #[case("一", 0)]
     #[case("日", 1000)]
     fn kanji_used_in_frequency(#[case] kanji: &str, #[case] min_used_in: u32) {
+        if !real_kanji_corpus_available() {
+            return;
+        }
+
         let json = load_real_kanji_json();
         let db = KanjiDatabase::from_json(&json).unwrap();
         let info = db.get_kanji_info(kanji).unwrap();
@@ -1052,6 +1075,10 @@ mod tests {
 
     #[test]
     fn reading_frequencies_loaded_from_real_kanji_json() {
+        if !real_kanji_corpus_available() {
+            return;
+        }
+
         // Smoke: the real kanji.json (enriched by the pipeline) exposes
         // non-empty frequencies for 生, with the spotlight anchors we rely on
         // in the pipeline --validate step.
