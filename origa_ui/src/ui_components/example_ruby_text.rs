@@ -53,13 +53,13 @@ pub fn ExampleRubyText(
             ready.get();
         }
         let known = known_kanji.clone();
-        match furiganize_segments_with_ruby(&text, &ruby, &known) {
-            Ok(segments) if !segments.is_empty() => segments,
-            _ => {
-                // FuriganaError (dictionary not loaded yet) or an empty
-                // derivation: one plain run, same as FuriganaText's fallback.
-                vec![FuriganaSegment::new(text.clone(), None, false)]
-            },
+        let segments = furiganize_segments_with_ruby(&text, &ruby, &known);
+        if segments.is_empty() {
+            // Empty derivation (blank text): one plain run, same as
+            // FuriganaText's fallback.
+            vec![FuriganaSegment::new(text.clone(), None, false)]
+        } else {
+            segments
         }
     };
 

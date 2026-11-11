@@ -11,7 +11,7 @@ use std::collections::HashSet;
 
 use crate::dictionary::example::RubyPair;
 use crate::domain::JapaneseChar;
-use crate::domain::{FuriganaSegment, OrigaError, furiganize_segments};
+use crate::domain::{FuriganaSegment, furiganize_segments};
 
 /// One matched ruby occurrence: char range in the sentence + its reading.
 struct RubyRange {
@@ -24,17 +24,20 @@ struct RubyRange {
 /// Pairs are matched left-to-right in Tanaka order (each claims the first
 /// free occurrence of its surface at/after the previous match); pairs whose
 /// surface is absent from the text (conjugated forms recorded by lemma) are
-/// skipped. Uncovered spans — dictionary path as before.
+/// skipped. Uncovered spans — dictionary path as before, with a graceful
+/// degrade: a dictionary miss (not loaded yet, annotate error) renders the
+/// span as one plain run rather than failing the whole sentence.
 pub fn furiganize_segments_with_ruby(
     text: &str,
     ruby: &[RubyPair],
     known_kanji: &HashSet<char>,
-) -> Result<Vec<FuriganaSegment>, OrigaError> {
+) -> Vec<FuriganaSegment> {
     let ranges = match_ruby_ranges(text, ruby);
     if ranges.is_empty() {
-        return furiganize_segments(text, known_kanji);
+        return furiganize_segments(text, known_kanji)
+            .unwrap_or_else(|_| vec![FuriganaSegment::new(text.to_string(), None, false)]);
     }
-    Ok(build_segments(text, &ranges, known_kanji))
+    build_segments(text, &ranges, known_kanji)
 }
 
 fn match_ruby_ranges(text: &str, ruby: &[RubyPair]) -> Vec<RubyRange> {
@@ -124,6 +127,69 @@ fn gap_segments(chars: &[char], known_kanji: &HashSet<char>) -> Vec<FuriganaSegm
 mod tests {
     use super::*;
 
+    // Dictionary setup mirrors furigana.rs tests: the furigana store is a
+    // process-global, and the Coverage CI run orders tests differently from
+    // a local run — a gap-fallback here once raced another test's half-
+    // initialized state. Every test ensures BOTH dictionaries itself.
+    fn ensure_lindera_dictionary() {
+        use flate2::read::DeflateDecoder;
+        use std::io::Read;
+
+        if crate::domain::is_dictionary_loaded() {
+            return;
+        }
+        let dict_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .parent()
+            .unwrap()
+            .join("cdn")
+            .join("dictionaries")
+            .join(crate::domain::SUDACHIDICT_DIR);
+
+        let decompress = |data: Vec<u8>| -> Vec<u8> {
+            let mut decoder = DeflateDecoder::new(&data[..]);
+            let mut decompressed = Vec::new();
+            decoder.read_to_end(&mut decompressed).unwrap();
+            decompressed
+        };
+        let read_file = |name: &str| std::fs::read(dict_dir.join(name)).expect("dictionary file");
+
+        let data = crate::domain::DictionaryData {
+            char_def: decompress(read_file("char_def.bin")),
+            matrix: decompress(read_file("matrix.mtx")),
+            dict_trie: decompress(read_file("dict.trie")),
+            dict_vals_idx: decompress(read_file("dict.valsidx")),
+            dict_vals: decompress(read_file("dict.vals")),
+            unk: decompress(read_file("unk.bin")),
+            words_idx: decompress(read_file("dict.wordsidx")),
+            words: decompress(read_file("dict.words")),
+            metadata: read_file("metadata.json"),
+        };
+        crate::domain::init_dictionary(data).unwrap();
+    }
+
+    fn ensure_furigana_dictionary() {
+        if crate::dictionary::furigana_dict::is_furigana_dict_loaded() {
+            return;
+        }
+        // Lines shared with the furigana.rs tests (whoever initializes
+        // first must not break the other's expectations) plus the 頭 entry
+        // this module's assertions rely on NOT being used: the context
+        // pair (あたま) must win over the dictionary entry (とう).
+        let content = concat!(
+            "食べる|たべる|0:た\n",
+            "食べ物|たべもの|0:たべ;2:もの\n",
+            "大人|おとな|0-1:おとな\n",
+            "指|ゆび|0:ゆび\n",
+            "頭|とう|0:とう\n",
+        );
+        crate::dictionary::furigana_dict::init_furigana_dict(content).unwrap();
+    }
+
+    fn ensure_dictionaries() {
+        ensure_lindera_dictionary();
+        ensure_furigana_dictionary();
+    }
+
     fn pair(surface: &str, reading: &str) -> RubyPair {
         RubyPair {
             surface: surface.to_string(),
@@ -131,20 +197,15 @@ mod tests {
         }
     }
 
-    fn readings(segments: &[FuriganaSegment]) -> Vec<(String, Option<String>)> {
-        segments
-            .iter()
-            .map(|s| (s.text().to_string(), s.reading().map(str::to_string)))
-            .collect()
-    }
-
     #[test]
     fn context_pair_overrides_dictionary_reading_for_the_word() {
+        ensure_dictionaries();
         // The screenshot case: 頭 must render あたま (context), not とう
-        // (dictionary first entry) — 冷やせる gap still gets dictionary help.
+        // (dictionary first entry) — the gap を。 is kana-only, no
+        // dictionary needed for it.
         let ruby = vec![pair("頭", "あたま")];
         let known = HashSet::new();
-        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known).unwrap();
+        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known);
 
         let head = segments
             .iter()
@@ -155,14 +216,16 @@ mod tests {
 
     #[test]
     fn pairs_match_in_sentence_order_for_repeated_surfaces() {
+        ensure_dictionaries();
         let ruby = vec![pair("今日", "きょう"), pair("今日", "こんにち")];
         let known = HashSet::new();
-        let segments = furiganize_segments_with_ruby("今日は今日の運命。", &ruby, &known).unwrap();
+        let segments = furiganize_segments_with_ruby("今日は今日の運命。", &ruby, &known);
 
-        assert_eq!(
-            readings(&segments)[0],
-            ("今日".into(), Some("きょう".into()))
-        );
+        let first = segments
+            .iter()
+            .find(|s| s.text() == "今日")
+            .expect("first 今日");
+        assert_eq!(first.reading(), Some("きょう"));
         let second = segments
             .iter()
             .filter(|s| s.text() == "今日")
@@ -173,11 +236,12 @@ mod tests {
 
     #[test]
     fn absent_surface_pair_is_skipped_and_gaps_render_via_dictionary() {
+        ensure_dictionaries();
         // 下った is a conjugated surface; a lemma-recorded pair (下る) does
         // not match the text and the gap falls back to the dictionary.
         let ruby = vec![pair("下る", "くだる")];
         let known = HashSet::new();
-        let segments = furiganize_segments_with_ruby("坂を下った。", &ruby, &known).unwrap();
+        let segments = furiganize_segments_with_ruby("坂を下った。", &ruby, &known);
 
         assert!(
             segments.iter().all(|s| s.reading() != Some("くだる")),
@@ -187,16 +251,18 @@ mod tests {
 
     #[test]
     fn empty_ruby_degrades_to_plain_dictionary_path() {
+        ensure_dictionaries();
         let known = HashSet::new();
-        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &[], &known).unwrap();
+        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &[], &known);
         assert!(!segments.is_empty());
     }
 
     #[test]
     fn kana_gaps_render_without_reading() {
+        ensure_dictionaries();
         let ruby = vec![pair("冷やせ", "ひやせ")];
         let known = HashSet::new();
-        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known).unwrap();
+        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known);
 
         let wo = segments
             .iter()
@@ -207,10 +273,11 @@ mod tests {
 
     #[test]
     fn context_segments_track_known_kanji() {
+        ensure_dictionaries();
         let ruby = vec![pair("頭", "あたま")];
         let mut known = HashSet::new();
         known.insert('頭');
-        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known).unwrap();
+        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known);
 
         let head = segments
             .iter()
