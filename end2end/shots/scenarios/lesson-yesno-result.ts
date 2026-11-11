@@ -53,9 +53,28 @@ export const lessonYesnoResultScenario: ShotScenario = {
           continue;
         }
 
+        // Multi-select quiz first: the submit button is the multi
+        // discriminator — quiz-option-N test ids exist on BOTH variants.
+        const submit = page.getByTestId("quiz-submit-btn");
+        if (await submit.isVisible().catch(() => false)) {
+          const first = page.getByTestId("quiz-option-0");
+          if (await first.isVisible().catch(() => false)) {
+            await first.click({ timeout: 4_000 }).catch(() => undefined);
+            await page.waitForTimeout(300);
+          }
+          await submit.click({ timeout: 4_000 }).catch(() => undefined);
+          await page.waitForTimeout(600);
+          await page
+            .getByTestId("lesson-card-next-btn")
+            .click({ timeout: 4_000 })
+            .catch(() => undefined);
+          await page.waitForTimeout(400);
+          continue;
+        }
+
         // Opportunistic: the single-select quiz (Тест) — the second
-        // surface of the full-card expand. Multi quizzes carry the
-        // submit button instead of plain options and are advanced below.
+        // surface of the full-card expand. Reached only when the multi
+        // submit button is absent (the discriminator above).
         const singleOption = page.getByTestId("quiz-option-0");
         if ((await singleOption.isVisible().catch(() => false)) && !quizShot) {
           await singleOption.click({ timeout: 4_000 }).catch(() => undefined);
@@ -68,24 +87,6 @@ export const lessonYesnoResultScenario: ShotScenario = {
             await sink.shot("quiz-result-expanded");
           }
           quizShot = true;
-          await page
-            .getByTestId("lesson-card-next-btn")
-            .click({ timeout: 4_000 })
-            .catch(() => undefined);
-          await page.waitForTimeout(400);
-          continue;
-        }
-
-        // Multi-select quiz: submit whatever is there (or don't know).
-        const submit = page.getByTestId("quiz-submit-btn");
-        if (await submit.isVisible().catch(() => false)) {
-          const first = page.getByTestId("quiz-option-0");
-          if (await first.isVisible().catch(() => false)) {
-            await first.click({ timeout: 4_000 }).catch(() => undefined);
-            await page.waitForTimeout(300);
-          }
-          await submit.click({ timeout: 4_000 }).catch(() => undefined);
-          await page.waitForTimeout(600);
           await page
             .getByTestId("lesson-card-next-btn")
             .click({ timeout: 4_000 })
