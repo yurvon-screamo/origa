@@ -28,16 +28,18 @@ Playwright сам поднимает всю инфраструктуру — в�
 | CDN (статика) | 8080 | `playwright.config.ts`   | `npx serve <корпус>` ($ORIGA_CDN_DIR or ~/origa-cdn)  |
 | Приложение    | 1420 | `playwright.config.ts`   | `trunk serve` / dist  |
 
-Каталог корпуса резолвится в `shots/config.ts` (зеркало
-`origa/src/corpus.rs`): `ORIGA_CDN_CACHE_DIR` → `ORIGA_CDN_DIR` →
-дефолт `~/origa-cdn` — машинное состояние вне репозитория, одно на все
+Каталог корпуса для **раздачи контента** резолвится в `shots/config.ts`
+(зеркало `origa/src/corpus.rs`): `ORIGA_CDN_CACHE_DIR` → `ORIGA_CDN_DIR`
+→ дефолт `~/origa-cdn` — машинное состояние вне репозитория, одно на все
 чекауты (seed-рецепт — root AGENTS.md «Локальный корпус CDN»). Когда
 корпуса нет нигде, CDN-сервер не стартует вовсе — контент приложение
 берёт с прод-CDN. Стартовый таймаут app-сервера учитывает холодный
 wasm-билд (дефолт час, `E2E_APP_SERVER_TIMEOUT` переопределяет).
-Брендовые шрифты билд (`origa_ui/build.rs`) читает из того же корпуса
-(`corpus/fonts/`) — отдельный симлинк не нужен (подсказку даёт
-preflight).
+Реестр шрифтов билда (`origa_ui/build.rs`) читает канонный корпус
+напрямую (`cdn_dir`: `ORIGA_CDN_DIR` → `~/origa-cdn`, **без**
+`ORIGA_CDN_CACHE_DIR` — тот рулит только раздачей), и preflight
+проверяет ровно этот резолв (`shots/probe.ts`) — зелёный preflight при
+расхождении двух переменных невозможен; отдельный симлинк не нужен.
 
 `.env` (обязателен):
 

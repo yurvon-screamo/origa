@@ -36,20 +36,27 @@ export interface FontState {
 
 /**
  * The fonts dir the build reads (mirror of build.rs `cdn_dir`): the
- * resolved corpus ($ORIGA_CDN_DIR override, else `~/origa-cdn`) when it
- * carries `fonts/`. `null` — no fonts source anywhere, the build bakes a
- * sans-serif bundle. Nothing reads a repo-local `cdn/` anymore (the
- * corpus-home canon, PR #912).
+ * `$ORIGA_CDN_DIR` override (empty counts as unset), else `~/origa-cdn` —
+ * when the corpus carries a `fonts/` dir. `null` — no fonts source
+ * anywhere, the build bakes a sans-serif bundle.
+ *
+ * Deliberately not `resolveCdnSource().cacheDir`: that chain picks the
+ * corpus for shot content (`ORIGA_CDN_CACHE_DIR` first), while the build
+ * registry follows the corpus canon only. Mirroring the serving chain here
+ * would pass preflight on a corpus the build never reads — the round-5
+ * review seam (task 20261110041750-4bs23o3).
  *
  * Directory check, not a bare exists: build.rs resolves with `is_dir()`, so
  * a regular file named `fonts` degrades the build to sans-serif and the
  * mirror must say the same thing.
  */
-export function resolveBuildFontsDir(cacheDir: string | null): string | null {
-  if (cacheDir !== null && isDirectory(join(cacheDir, "fonts"))) {
-    return join(cacheDir, "fonts");
-  }
-  return null;
+export function resolveBuildFontsDir(
+  explicitDir: string | undefined,
+  home: string,
+): string | null {
+  const corpus = explicitDir ? explicitDir : join(home, "origa-cdn");
+  const fonts = join(corpus, "fonts");
+  return isDirectory(fonts) ? fonts : null;
 }
 
 /** Whether the path exists and is a directory (symlinks resolved). */
@@ -63,10 +70,11 @@ function isDirectory(path: string): boolean {
 
 /** Font availability of the local corpus and of the built bundle. */
 export function inspectFonts(
-  cacheDir: string | null,
+  explicitCdnDir: string | undefined,
   distDir: string,
 ): FontState {
-  const sourcePresent = resolveBuildFontsDir(cacheDir) !== null;
+  const sourcePresent =
+    resolveBuildFontsDir(explicitCdnDir, homedir()) !== null;
   return { sourcePresent, bakedInBundle: bundleHasBrandedFonts(distDir) };
 }
 

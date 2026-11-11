@@ -255,7 +255,7 @@ export async function runPreflight(
   options: PreflightOptions,
 ): Promise<PreflightReport> {
   const { cdnSource } = options;
-  const fonts = inspectFonts(cdnSource.cacheDir, options.distDir);
+  const fonts = inspectFonts(process.env.ORIGA_CDN_DIR, options.distDir);
   const corpusProbe =
     cdnSource.cacheDir === null
       ? null
