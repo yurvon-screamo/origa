@@ -307,3 +307,61 @@ async fn load_step_selection_updates_onboarding_state() {
         "load selection must propagate into the onboarding state"
     );
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Import progress line
+// ═══════════════════════════════════════════════════════════════════════
+
+/// The summary step's live progress line interpolates `{done}`/`{total}`
+/// into the locale template for every counting phase and renders the save
+/// phase as a bare label — raw `{done}` braces must never reach the UI
+/// (the locale-drift guard renders appended counters instead).
+#[wasm_bindgen_test]
+async fn import_progress_line_interpolates_counters_and_bares_the_save_label() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    use crate::i18n::{Locale, use_i18n};
+    use origa::use_cases::{ImportPhase, ImportProgressEvent};
+
+    // Arrange — capture one rendered line per phase inside the i18n scope.
+    let lines: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    let sink = lines.clone();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        let i18n = use_i18n();
+        i18n.set_locale(Locale::ru);
+        let events = [
+            (ImportPhase::FetchSets, 3, 8),
+            (ImportPhase::Vocabulary, 16, 184),
+            (ImportPhase::Grammar, 0, 5),
+            (ImportPhase::Kanji, 100, 250),
+            (ImportPhase::Saving, 0, 1),
+        ];
+        for (phase, done, total) in events {
+            sink.borrow_mut().push(super::import_progress_line(
+                i18n,
+                ImportProgressEvent {
+                    phase,
+                    done,
+                    total,
+                },
+            ));
+        }
+        view! { <div /> }.into_any()
+    });
+
+    // Assert — exact RU copy with interpolated counters, no raw braces.
+    let lines = lines.borrow().clone();
+    assert_eq!(
+        lines,
+        vec![
+            "Загрузка наборов 3/8…".to_string(),
+            "Импорт слов 16/184…".to_string(),
+            "Грамматика 0/5…".to_string(),
+            "Кандзи 100/250…".to_string(),
+            "Сохранение…".to_string(),
+        ],
+        "counting phases interpolate counters; saving is a bare label"
+    );
+}
