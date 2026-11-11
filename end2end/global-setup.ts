@@ -3,6 +3,7 @@ import { end2endRoot } from "./helpers/paths";
 import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccountsWithToken } from "./helpers/cleanup";
+import { TRAILBASE_PORT } from "./shots/config";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -19,8 +20,6 @@ if (
     process.env.PATH = `${home}/.local/bin${process.platform === "win32" ? ";" : ":"}${process.env.PATH || ""}`;
   }
 }
-
-const TRAILBASE_PORT = Number(process.env.E2E_TRAILBASE_PORT ?? 4000);
 
 async function waitForTrailBase(
   maxRetries = 30,
