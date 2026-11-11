@@ -3,23 +3,30 @@
 //! `cargo:rerun-if-changed` on a path that does not exist makes cargo re-dirty
 //! the build script on EVERY invocation (observed on cargo 1.98: `Dirty
 //! origa_ui: the file ../cdn/fonts is missing`). The whole crate then
-//! recompiles on every build in any checkout without the corpus assets —
-//! fresh worktrees, CI lint/test checkouts. The fix guards the font watch
-//! prints behind a `is_dir` check; this suite pins the emitted build script
-//! output against the resolved fonts source (the corpus-root mirror of
-//! build.rs `cdn_dir`: `$ORIGA_CDN_DIR` override, else `~/origa-cdn` —
-//! task 20261110041750-4bs23o3) so a regression (unconditional print, or a
-//! watch pointing at the wrong source) fails instead of silently costing
-//! ~30 s per build.
+//! recompiles on every build in any checkout without the seeded corpus —
+//! fresh worktrees, CI lint/test checkouts. The fix guards the font and
+//! well_known_set watch prints behind `is_dir` checks (the well_known_set
+//! corpus watches landed with task 20261109234301-dd6s9tv); this suite pins
+//! the emitted build script output against the resolved corpus state (the
+//! corpus-root mirror of build.rs `cdn_dir`: `$ORIGA_CDN_DIR` override, else
+//! `~/origa-cdn` — task 20261110041750-4bs23o3) so a regression
+//! (unconditional print, or a watch pointing at the wrong source) fails
+//! instead of silently costing ~30 s per build.
 //!
 //! Reads the freshest cached build script output under the host profiles of
 //! `target/`: `cargo test` compiles `origa_ui` before running this suite, so
 //! that file always reflects the current `build.rs` source and the current
 //! env (`cargo` re-runs the script when `ORIGA_CDN_DIR` changes — the
 //! `rerun-if-env-changed` contract pinned by `env_watches_declared_for_read_env_vars`).
-//! A host suite without any fonts source pins the "missing dir -> no watch"
-//! branch; a suite with the seeded corpus pins the "source exists -> watch
-//! emitted" branch.
+//! Host profiles only (`debug`, `release`): triple dirs carry trunk/cross
+//! builds with their own env history — a stale wasm output must not outvote
+//! the current host run. A host suite without any fonts source pins the
+//! "missing dir -> no watch" branch; a suite with the seeded corpus pins
+//! the "source exists -> watch emitted" branch. The pins compare the output
+//! of the LAST build script run against the current corpus state: adding
+//! corpus files without a build in between leaves a stale output (appearance
+//! does not trigger a rerun by itself) — rebuild before judging a red pin in
+//! that situation.
 
 #![cfg(not(target_arch = "wasm32"))] // std::fs does not exist on wasm32 (wasm-pack compiles this suite too)
 
@@ -28,18 +35,26 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-fn cdn_fonts_dir() -> PathBuf {
-    // Mirrors origa_ui/build.rs::cdn_dir (the build script cannot import the
-    // crate): $ORIGA_CDN_DIR override first (empty counts as unset), then
-    // `~/origa-cdn` (HOME, then USERPROFILE).
+/// Corpus root mirror of build.rs `cdn_dir` (the build script cannot import
+/// the crate): `$ORIGA_CDN_DIR` override first (empty counts as unset), then
+/// `~/origa-cdn` (HOME, then USERPROFILE).
+fn cdn_corpus_root() -> PathBuf {
     if let Some(dir) = std::env::var_os("ORIGA_CDN_DIR").filter(|value| !value.is_empty()) {
-        return PathBuf::from(dir).join("fonts");
+        return PathBuf::from(dir);
     }
     let home = std::env::var_os("HOME")
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("origa-cdn"));
-    home.join("origa-cdn").join("fonts")
+    home.join("origa-cdn")
+}
+
+fn cdn_fonts_dir() -> PathBuf {
+    cdn_corpus_root().join("fonts")
+}
+
+fn cdn_well_known_set_dir() -> PathBuf {
+    cdn_corpus_root().join("well_known_set")
 }
 
 /// Freshest cached output of the `origa_ui` build script under the host
@@ -149,6 +164,63 @@ fn font_watch_matches_fonts_source_state() {
              cargo re-dirties the build script on every invocation and origa_ui \
              recompiles on every build in checkouts without the fonts assets; the \
              watch print must stay guarded by is_dir (task 20261109020526-ej6jeho)"
+        );
+    }
+}
+
+/// The corpus watches must match the actual contents of `cdn/well_known_set`:
+/// corpus children present -> watches emitted (corpus updates invalidate the
+/// cache); no children (empty or absent dir) -> no watches. A watch on a
+/// missing path re-dirties the build script on every cargo run — the same
+/// failure class as the font watch above. The exact per-child correspondence
+/// is the generator's input contract (see the watch list in build.rs); this
+/// pin only asserts the presence agreement, which covers both regressions:
+/// an unconditional print (watch for an empty/absent dir) and a dropped
+/// watch (children present but nothing invalidates the cache).
+#[test]
+fn well_known_watch_matches_corpus_state() {
+    let Some(content) = freshest_output_content() else {
+        eprintln!("skip: no origa_ui build script output under target/");
+        return;
+    };
+    let watch_count = content
+        .lines()
+        .map(str::trim)
+        .filter_map(watch_path)
+        // Component check, not a `cdn/well_known_set` substring: a custom
+        // ORIGA_CDN_DIR (`/mnt/corpus`) does not contain that substring
+        // (same class as the font watch heuristic above).
+        .filter(|path| {
+            path.components()
+                .any(|c| c.as_os_str() == OsStr::new("well_known_set"))
+        })
+        .count();
+    // Generated meta output lives inside the dir but is not a corpus child.
+    let child_count = fs::read_dir(cdn_well_known_set_dir())
+        .map(|entries| {
+            entries
+                .flatten()
+                .filter(|e| e.file_name().to_string_lossy() != "well_known_sets_meta.json")
+                .count()
+        })
+        .unwrap_or(0);
+    if child_count > 0 {
+        assert!(
+            watch_count > 0,
+            "cdn/well_known_set has {} corpus children but the build script \
+             output has no rerun-if-changed watch for them — corpus updates no longer \
+             invalidate the origa_ui cache; see generate_well_known_meta in \
+             origa_ui/build.rs",
+            child_count
+        );
+    } else {
+        assert_eq!(
+            watch_count, 0,
+            "build script output emits {} watch(es) for an absent or empty \
+             cdn/well_known_set — cargo re-dirties the build script on every invocation \
+             and origa_ui recompiles on every build; the watch prints must stay behind \
+             the existence checks (task 20261109234301-dd6s9tv)",
+            watch_count
         );
     }
 }

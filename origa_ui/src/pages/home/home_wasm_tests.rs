@@ -17,7 +17,7 @@ use crate::pages::home::{
     JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, TodayOverviewCard,
     WelcomeCard,
 };
-use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
+use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router, provide_i18n};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -255,24 +255,8 @@ async fn category_progress_grid_shows_percentage_per_card() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// AccuracyChartCard (fl2O037UR7)
+// StatsSection
 // ═══════════════════════════════════════════════════════════════════════
-
-/// Ряд из CHART_DAYS дней с оценками в выбранных позициях (от старых к новым).
-fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeries {
-    use origa::domain::insights::{CHART_DAYS, DayAccuracy};
-    let days = (0..CHART_DAYS)
-        .map(|index| {
-            let days_ago = (CHART_DAYS - 1 - index) as u32;
-            let review = reviews.iter().find(|(idx, _)| *idx == index);
-            DayAccuracy {
-                days_ago,
-                accuracy_pct: review.map(|(_, pct)| *pct),
-            }
-        })
-        .collect();
-    origa::domain::insights::AccuracySeries { days }
-}
 
 #[wasm_bindgen_test]
 async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
@@ -280,7 +264,7 @@ async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
 
     let wrapper = create_wrapper();
     let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
-        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        provide_i18n();
         view! {
             <StatsSection test_id="ss1">
                 <p data-testid="ss1-inner">"inner content"</p>
@@ -337,7 +321,7 @@ async fn studied_today_list_empty_shows_placeholder() {
         view! {
             <StudiedTodayList
                 items=Signal::from(Vec::<RecentlyStudiedItem>::new())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 test_id="st1"
             />
         }
@@ -377,7 +361,7 @@ async fn studied_today_list_renders_items_with_count() {
         view! {
             <StudiedTodayList
                 items=Signal::from(items)
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 test_id="st2"
             />
         }
@@ -419,7 +403,7 @@ fn readiness_fixture_coverage(imported: &str) -> origa::domain::JftCoverage {
 #[wasm_bindgen_test]
 async fn jft_readiness_card_renders_single_current_band_bar() {
     let wrapper = create_wrapper();
-    let _mount = mount_with_i18n(&wrapper, || {
+    mount_with_i18n(&wrapper, || {
         view! {
             <JftReadinessCard
                 coverage=Signal::derive(|| readiness_fixture_coverage("mine_1"))
@@ -468,7 +452,7 @@ async fn jft_readiness_card_visibility_tracks_coverage_signal() {
     // and reveal it once a coverage lands.
     let wrapper = create_wrapper();
     let coverage: RwSignal<Option<origa::domain::JftCoverage>> = RwSignal::new(None);
-    let _mount = mount_with_i18n(&wrapper, move || {
+    mount_with_i18n(&wrapper, move || {
         view! {
             <Show when=move || coverage.get().is_some()>
                 <JftReadinessCard

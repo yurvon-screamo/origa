@@ -18,7 +18,7 @@ use leptos::task::tick;
 use wasm_bindgen_test::*;
 
 use crate::i18n::Locale;
-use crate::test_support::{create_wrapper, mount_to_wrapper};
+use crate::test_support::{create_wrapper, mount_to_wrapper, provide_i18n};
 use crate::ui_components::{
     FuriganaText, LevelSelector, Stepper, StepperStep, TranslatorText, WordTranslations,
 };
@@ -32,7 +32,7 @@ where
     F: FnOnce() -> AnyView + 'static,
 {
     mount_to_wrapper(wrapper, move || {
-        leptos_i18n::provide_i18n_context::<Locale>();
+        provide_i18n();
         f()
     });
 }
@@ -584,7 +584,7 @@ async fn i18n_locale_switch_renders_korean_and_vietnamese() {
     ));
     let cell_for_mount = std::rc::Rc::clone(&i18n_cell);
     mount_to_wrapper(&wrapper, move || {
-        leptos_i18n::provide_i18n_context::<Locale>();
+        provide_i18n();
         let i18n = crate::i18n::use_i18n();
         *cell_for_mount.borrow_mut() = Some(i18n);
         view! {
@@ -606,10 +606,7 @@ async fn i18n_locale_switch_renders_korean_and_vietnamese() {
         assert_eq!(text, expected);
     };
 
-    let i18n = i18n_cell
-        .borrow()
-        .clone()
-        .expect("i18n context must be captured during mount");
+    let i18n = (*i18n_cell.borrow()).expect("i18n context must be captured during mount");
     i18n.set_locale(Locale::ko);
     tick().await;
     cell_text("취소");
