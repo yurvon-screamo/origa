@@ -3,11 +3,11 @@ import { end2endRoot } from "./helpers/paths";
 import type { FullConfig } from "@playwright/test";
 import { fetchWithTimeout } from "./helpers/http";
 import { cleanupOrphanedAccountsWithToken } from "./helpers/cleanup";
-import { TRAILBASE_PORT } from "./shots/config";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { getTrailBaseUrl } from "./config";
+import { TRAILBASE_PORT } from "./shots/config.ts";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (
@@ -21,6 +21,18 @@ if (
   }
 }
 
+// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
+// imported after ./config so the dotenv bootstrap has already run.
+// The trail process spawns on 127.0.0.1:PORT and the healthcheck waits on
+// that exact address (waitForTrailBase uses trailbaseSpawnUrl below); the
+// TRAILBASE_URL env is left untouched — offline specs build request
+// intercepts from it and the bundle embeds it, so host spelling
+// (localhost vs 127.0.0.1) must stay whatever the caller provided
+// (ci.yml uses localhost; rewriting it here breaks the intercepts).
+
+/** The address the trail process is spawned on (loopback, always reachable). */
+const trailbaseSpawnUrl = `http://127.0.0.1:${TRAILBASE_PORT}`;
+
 async function waitForTrailBase(
   maxRetries = 30,
   intervalMs = 1000,
@@ -28,7 +40,7 @@ async function waitForTrailBase(
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetchWithTimeout(
-        `${getTrailBaseUrl()}/api/healthcheck`,
+        `${trailbaseSpawnUrl}/api/healthcheck`,
         {},
         5000,
       );
@@ -97,31 +109,21 @@ function setAdminPassword(): void {
 }
 
 function killExistingTrailBase(): void {
-  // Kill only OUR previous instance (the PID written at spawn). The old
-  // blanket `pkill -f 'trail run'` reached across ports and killed
-  // another concurrent harness's server even when this run used a
-  // different E2E_TRAILBASE_PORT (bug report, test round 2026-11-11).
-  // A stranger squatting OUR port is not handled here: the spawn fails
-  // to bind and the readiness wait below fails loudly.
-  const pidFile = path.join(end2endRoot, ".trailbase.pid");
   try {
-    const pid = Number(fs.readFileSync(pidFile, "utf-8").trim());
-    if (Number.isInteger(pid) && pid > 0) {
-      if (process.platform === "win32") {
-        execSync(`taskkill /f /PID ${pid}`, { stdio: "pipe" });
-      } else {
-        process.kill(pid, "SIGTERM");
-      }
-      console.log(`[global-setup] ✓ Killed previous TrailBase (pid ${pid})`);
+    if (process.platform === "win32") {
+      execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
+    } else {
+      // Port-scoped pattern: a parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
+      // `pkill -f 'trail run'` would take that stranger down too.
+      execSync(
+        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        { stdio: "pipe" },
+      );
     }
-    fs.rmSync(pidFile, { force: true });
-  } catch (error) {
-    // No pid file / process already dead — nothing to kill
-    console.log(
-      `[global-setup] No previous TrailBase to kill: ${
-        error instanceof Error ? error.message.split("\n")[0] : error
-      }`,
-    );
+    console.log("[global-setup] ✓ Killed existing TrailBase process");
+  } catch {
+    // No process found — that's fine
   }
 }
 

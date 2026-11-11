@@ -35,8 +35,10 @@ standard-macro-braces = []
 # literal_representation_group = "normal"
 
 # MSRV - Minimum Supported Rust Version
-# Align with project needs
-msrv = "1.75"
+# Aligned with the APIs the code actually uses (Option::is_none_or is
+# stable since 1.82 and used by wasm-only tests); the historical 1.75 pin
+# predated them and made wasm-target clippy flag compatible code.
+msrv = "1.82"
 
 # Avoid breaking changes from new Clippy lints early
 doc-valid-idents = [

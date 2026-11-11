@@ -97,7 +97,7 @@ fn find_corpus_binary(name: &str) -> Option<PathBuf> {
             continue;
         }
         let modified = modified_time(&path);
-        let is_newer = best.as_ref().map_or(true, |(_, time)| modified > *time);
+        let is_newer = best.as_ref().is_none_or(|(_, time)| modified > *time);
         if is_newer {
             best = Some((path, modified));
         }

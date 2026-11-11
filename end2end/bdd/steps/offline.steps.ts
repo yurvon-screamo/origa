@@ -50,11 +50,11 @@ const VOCABULARY_RKYV_STORE = "origa-vocabulary-rkyv-v1";
 
 async function abortExternalTraffic(page: Page): Promise<void> {
   // The app bundle bakes its TrailBase host independently of the
-  // harness base (CI bakes `localhost:4000`, the harness base is
-  // `127.0.0.1:<port>`) — abort BOTH host forms or the traffic leaks
-  // through to the live server and the offline error never shows
-  // (E2E core red, 11.11). Same recipe as trailbaseAbortPatterns()
-  // in failure_paths.steps.ts.
+  // harness base URL (ci.yml bakes localhost:4000; the harness base
+  // follows TRAILBASE_URL and may carry the other host form) — abort
+  // BOTH host forms or the traffic leaks through to the live server
+  // and the offline error never shows (E2E core red, 11.11). Same
+  // recipe as trailbaseAbortPatterns() in failure_paths.steps.ts.
   const base = getTrailBaseUrl();
   const port = new URL(base).port;
   const patterns = [CDN_URL, `${base}/**`];

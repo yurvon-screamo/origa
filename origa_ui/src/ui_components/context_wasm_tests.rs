@@ -69,7 +69,7 @@ async fn card_action_bar_without_callbacks_renders_no_buttons() {
         view! {
             <CardActionBar
                 tag_variant=Signal::derive(|| crate::ui_components::TagVariant::Default)
-                tag_label=Signal::derive(|| String::new())
+                tag_label=Signal::derive(String::new)
                 is_favorite=Signal::from(false)
                 test_id="cab2"
                 show_tag=Signal::from(false)
@@ -95,7 +95,7 @@ async fn card_action_bar_mark_known_hidden_when_learned() {
         view! {
             <CardActionBar
                 tag_variant=Signal::derive(|| crate::ui_components::TagVariant::Default)
-                tag_label=Signal::derive(|| String::new())
+                tag_label=Signal::derive(String::new)
                 is_favorite=Signal::from(false)
                 on_mark_as_known=Callback::new(|()| {})
                 show_mark_as_known=Signal::from(false)
@@ -907,7 +907,7 @@ async fn kanji_animation_frames_mode_renders_img_shell() {
 
     // Without the CDN asset the component still mounts its shell with an
     // addressable test id; assert the container node itself exists.
-    let shell = wrapper
+    let _shell = wrapper
         .query_selector("[data-testid=\"ka1\"]")
         .ok()
         .flatten()

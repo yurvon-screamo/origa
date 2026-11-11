@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| home | home | mobile | ru-RU | 390×844 | 2026-11-11T10:18:48.305Z | 1f3ad20d | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
+| home | home | desktop | ru-RU | 1280×800 | 2026-11-11T10:17:57.162Z | 1f3ad20d | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
+| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
+| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | kanji-writing-practice | kanji-writing-practice | mobile | ru-RU | 390×1026 | 2026-11-10T16:42:32.712Z | f9a16d21 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--mobile-ae9b5bd7.png) |
 | kanji-writing-practice | kanji-writing-practice | desktop | ru-RU | 1280×1541 | 2026-11-10T16:42:16.881Z | f9a16d21 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--desktop-390eab21.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
@@ -63,8 +67,6 @@
 | review-body-quiz-2 | lesson-review-body | desktop | ru-RU | 1280×800 | 2026-10-30T18:18:18.516Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-2--desktop-9162abb4.png) |
 | accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-30T14:05:31.089Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-280a170a.png) |
 | accuracy-chart | home-accuracy-chart | desktop | ru-RU | 1280×800 | 2026-10-30T14:04:49.794Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--desktop-6c44a263.png) |
-| home | home | mobile | ru-RU | 390×844 | 2026-10-25T17:11:58.113Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--mobile-4a970bc3.png) |
-| home | home | desktop | ru-RU | 1280×800 | 2026-10-25T17:11:35.697Z | 73ae147e | [png](https://s3.origa.uwuwu.net/pr-screenshots/manual-testing-poc/home--home--desktop-d174056f.png) |
 
 ## Как обновить
 

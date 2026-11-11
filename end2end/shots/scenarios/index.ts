@@ -5,6 +5,7 @@ import { feedbackFormScenario } from "./feedback-form.ts";
 import { grammarPageScenario } from "./grammar-page.ts";
 import { homeDueCounterScenario } from "./home-due-counter.ts";
 import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
+import { homeJlptDetailsScenario } from "./home-jlpt-details.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
 import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
@@ -34,6 +35,7 @@ export const implementations: Record<string, ShotScenario> = {
   [counterScoringScenario.id]: counterScoringScenario,
   [homeDueCounterScenario.id]: homeDueCounterScenario,
   [homeAccuracyChartScenario.id]: homeAccuracyChartScenario,
+  [homeJlptDetailsScenario.id]: homeJlptDetailsScenario,
   [feedbackFormScenario.id]: feedbackFormScenario,
   [tokenPopupScenario.id]: tokenPopupScenario,
   [jftCardScenario.id]: jftCardScenario,

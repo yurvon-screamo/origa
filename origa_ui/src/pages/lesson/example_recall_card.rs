@@ -20,8 +20,8 @@ use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::{t, t_string, use_i18n};
 use crate::loaders::example_loader::{WordExample, example_audio_path, load_example_detail};
 use crate::ui_components::{
-    AudioButtons, Button, ButtonVariant, Card, FuriganaText, Tag, Text, TextSize, TranslatorText,
-    TypographyVariant,
+    AudioButtons, Button, ButtonVariant, Card, ExampleRubyText, Tag, Text, TextSize,
+    TranslatorText, TypographyVariant,
 };
 use origa::domain::NativeLanguage;
 
@@ -181,15 +181,22 @@ pub fn ExampleRecallCard(
                             }
                             .into_any();
                         }
-                        // Text mode: plain furigana — a QUESTION side
+                        // Text mode: context ruby — a QUESTION side
                         // reads, it does not parse (the token translator
                         // waits for the answer, like the phrase cards).
+                        // The chunk's ruby pairs carry the CONTEXT
+                        // reading (頭→あたま), so the same sentence reads
+                        // the same on every screen; no highlight here —
+                        // the recall card belongs to the sentence, not
+                        // to a word card.
                         let known = known_kanji.get();
                         return view! {
                             <div class="example-recall-ja" data-testid="lesson-example-ja">
-                                <FuriganaText
+                                <ExampleRubyText
                                     text=we.detail.text.clone()
+                                    ruby=we.detail.ruby.clone()
                                     known_kanji=known
+                                    highlight=(-1, -1)
                                     class=sentence_class
                                 />
                             </div>

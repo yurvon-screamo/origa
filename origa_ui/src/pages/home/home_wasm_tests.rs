@@ -17,7 +17,7 @@ use crate::pages::home::{
     JftReadinessCard, JlptProgressCard, JlptSkeleton, StudiedTodayList, TodayOverviewCard,
     WelcomeCard,
 };
-use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router};
+use crate::test_support::{create_wrapper, mount_with_i18n, mount_with_router, provide_i18n};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -148,7 +148,7 @@ async fn jlpt_progress_card_percentage_renders() {
 #[wasm_bindgen_test]
 async fn jlpt_progress_card_toggle_expands_categories() {
     let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
+    let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::JlptProgress::new();
         view! {
             <JlptProgressCard jlpt_progress=Signal::from(progress) test_id="jp3" />
@@ -157,17 +157,36 @@ async fn jlpt_progress_card_toggle_expands_categories() {
     });
     tick().await;
 
-    let panel = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    // Collapsed by default: the category matrix is absent.
+    let grid_before = wrapper.query_selector("[data-testid=\"jp3-expanded\"]");
     assert!(
-        panel.is_ok_and(|p| p.is_some()),
+        grid_before.is_ok_and(|g| g.is_none()),
+        "matrix must not render while collapsed"
+    );
+
+    let toggle = wrapper
+        .query_selector("[data-testid=\"jp3-toggle\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    toggle.click();
+    tick().await;
+
+    let section = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    assert!(
+        section.is_ok_and(|p| p.is_some()),
         "categories section must render"
     );
 
-    // Expanded content (CategoryProgressGrid) hidden until toggle click:
-    // the grid lives under the toggle's panel; clicking reveals it.
-    let grid_before = wrapper.query_selector(".category-progress-grid");
-    // Initially collapsed — the grid may not be present at all.
-    let _ = grid_before;
+    // All four category tiles render inside the expanded matrix.
+    for tile in ["kanji", "words", "grammar", "counters"] {
+        let tile_node = wrapper.query_selector(&format!("[data-testid=\"jp3-expanded-{tile}\"]"));
+        assert!(
+            tile_node.is_ok_and(|t| t.is_some()),
+            "{tile} tile must render in the expanded matrix"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -192,7 +211,7 @@ async fn jlpt_skeleton_renders_skeleton_block() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_renders_three_linked_cards() {
+async fn category_progress_grid_renders_three_linked_tiles() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress::new();
@@ -214,16 +233,16 @@ async fn category_progress_grid_renders_three_linked_cards() {
         .unwrap()
         .unwrap();
     for section in ["kanji", "words", "grammar"] {
-        let card = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
+        let tile = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
         assert!(
-            card.is_ok_and(|c| c.is_some()),
-            "{section} card must render"
+            tile.is_ok_and(|t| t.is_some()),
+            "{section} tile must render"
         );
     }
 }
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_shows_percentage_per_card() {
+async fn category_progress_grid_shows_percentage_per_tile() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress {
@@ -254,25 +273,58 @@ async fn category_progress_grid_shows_percentage_per_card() {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// AccuracyChartCard (fl2O037UR7)
-// ═══════════════════════════════════════════════════════════════════════
+#[wasm_bindgen_test]
+async fn category_progress_grid_tiles_keep_navigation_targets() {
+    // The tile is a navigational link first (issue #415): if a refactor
+    // ever drops the <A href> or retargets a section, this must fail —
+    // the presence-only tests above cannot see a lost href.
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router(&wrapper, || {
+        let progress = origa::domain::CategoryProgress::new();
+        let (p1, p2, p3, p4) = (
+            progress.clone(),
+            progress.clone(),
+            progress.clone(),
+            progress,
+        );
+        view! {
+            <CategoryProgressGrid
+                kanji_progress=Signal::from(p1)
+                words_progress=Signal::from(p2)
+                grammar_progress=Signal::from(p3)
+                counters_progress=Signal::from(p4)
+                test_id="cg3"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
 
-/// Ряд из CHART_DAYS дней с оценками в выбранных позициях (от старых к новым).
-fn series_with(reviews: &[(usize, u8)]) -> origa::domain::insights::AccuracySeries {
-    use origa::domain::insights::{CHART_DAYS, DayAccuracy};
-    let days = (0..CHART_DAYS)
-        .map(|index| {
-            let days_ago = (CHART_DAYS - 1 - index) as u32;
-            let review = reviews.iter().find(|(idx, _)| *idx == index);
-            DayAccuracy {
-                days_ago,
-                accuracy_pct: review.map(|(_, pct)| *pct),
-            }
-        })
-        .collect();
-    origa::domain::insights::AccuracySeries { days }
+    let grid = wrapper
+        .query_selector("[data-testid=\"cg3\"]")
+        .unwrap()
+        .unwrap();
+    for (section, href) in [
+        ("kanji", "/kanji"),
+        ("words", "/words"),
+        ("grammar", "/grammar"),
+        ("counters", "/counters"),
+    ] {
+        // The <A> is the tile's parent (the test id sits on the inner
+        // div), so the link is matched from outside in.
+        let link = grid.query_selector(&format!(
+            "a[href=\"{href}\"] [data-testid=\"cg3-{section}\"]"
+        ));
+        assert!(
+            link.is_ok_and(|l| l.is_some()),
+            "{section} tile must keep its {href} link target"
+        );
+    }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// StatsSection
+// ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
 async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
@@ -280,7 +332,7 @@ async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
 
     let wrapper = create_wrapper();
     let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
-        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        provide_i18n();
         view! {
             <StatsSection test_id="ss1">
                 <p data-testid="ss1-inner">"inner content"</p>
@@ -337,7 +389,7 @@ async fn studied_today_list_empty_shows_placeholder() {
         view! {
             <StudiedTodayList
                 items=Signal::from(Vec::<RecentlyStudiedItem>::new())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 test_id="st1"
             />
         }
@@ -377,7 +429,7 @@ async fn studied_today_list_renders_items_with_count() {
         view! {
             <StudiedTodayList
                 items=Signal::from(items)
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 test_id="st2"
             />
         }
@@ -419,7 +471,7 @@ fn readiness_fixture_coverage(imported: &str) -> origa::domain::JftCoverage {
 #[wasm_bindgen_test]
 async fn jft_readiness_card_renders_single_current_band_bar() {
     let wrapper = create_wrapper();
-    let _mount = mount_with_i18n(&wrapper, || {
+    mount_with_i18n(&wrapper, || {
         view! {
             <JftReadinessCard
                 coverage=Signal::derive(|| readiness_fixture_coverage("mine_1"))
@@ -468,7 +520,7 @@ async fn jft_readiness_card_visibility_tracks_coverage_signal() {
     // and reveal it once a coverage lands.
     let wrapper = create_wrapper();
     let coverage: RwSignal<Option<origa::domain::JftCoverage>> = RwSignal::new(None);
-    let _mount = mount_with_i18n(&wrapper, move || {
+    mount_with_i18n(&wrapper, move || {
         view! {
             <Show when=move || coverage.get().is_some()>
                 <JftReadinessCard

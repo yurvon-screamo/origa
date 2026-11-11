@@ -435,6 +435,15 @@ jobs:
             - name: Run clippy
               run: cargo clippy --workspace --all-targets -- -D warnings
 
+            - name: Run wasm clippy
+              # The native clippy above cannot see code gated to
+              # `target_arch = "wasm32"` (wasm-only modules and the
+              # *_wasm_tests.rs suites are invisible to a host-target
+              # compile) — lint the UI crate on the real target with the
+              # same features the wasm test build uses (wasm-pack test
+              # runs --features csr) so csr-gated lines are covered too.
+              run: cargo clippy -p origa_ui --target wasm32-unknown-unknown --all-targets --features csr -- -D warnings
+
             - name: Verify App Store cfg compiles
               # The ORIGA_APP_STORE env var triggers build.rs to emit
               # cargo:rustc-cfg=app_store, gating out the auto-updater and

@@ -40,6 +40,21 @@ export const LOCAL_CDN_PORT = parsePort(
   process.env.E2E_CDN_PORT ?? 8080,
 );
 
+/**
+ * Port the TrailBase fixture listens on.
+ *
+ * Overridable (`E2E_TRAILBASE_PORT`): a shared dev machine may already run
+ * a TrailBase from ANOTHER checkout (a parallel worktree) — the hard-coded
+ * port would either collide with it or make the global setup kill the
+ * stranger's process (`pkill 'trail run'` was global before this override
+ * and the port-scoped kill relies on the address being part of the
+ * command line).
+ */
+export const TRAILBASE_PORT = parsePort(
+  "E2E_TRAILBASE_PORT",
+  process.env.E2E_TRAILBASE_PORT ?? 4000,
+);
+
 function parsePort(name: string, raw: string | number): number {
   const value = Number(raw);
   if (!Number.isInteger(value) || value <= 0 || value > 65535) {
@@ -79,13 +94,8 @@ export function parseTimeout(name: string, raw: string | number): number {
   return value;
 }
 
-/** Port the app is served on (`E2E_APP_PORT` overrides — concurrent local
-    captures on one machine collide on the default 1420). */
-export const APP_PORT = Number(process.env.E2E_APP_PORT ?? 1420);
-
-/** Port TrailBase listens on (`E2E_TRAILBASE_PORT` overrides — concurrent
-    local captures on one machine collide on the default 4000). */
-export const TRAILBASE_PORT = Number(process.env.E2E_TRAILBASE_PORT ?? 4000);
+/** Port the app is served on. */
+export const APP_PORT = 1420;
 
 /** Repository root — `end2end/` lives one level below it. */
 export const repoRoot = join(fileURLToPath(new URL("../..", import.meta.url)));

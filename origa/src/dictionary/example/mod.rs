@@ -10,8 +10,8 @@ use std::sync::OnceLock;
 use std::sync::RwLock;
 
 pub use detail::{
-    ExampleDetail, cache_example_details, get_cached_example_detail, is_example_chunk_loaded,
-    reset_example_data_for_test,
+    ExampleDetail, RubyPair, cache_example_details, get_cached_example_detail,
+    is_example_chunk_loaded, reset_example_data_for_test,
 };
 pub use index::{ExampleIndex, ExampleRef};
 

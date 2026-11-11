@@ -17,6 +17,7 @@ mod divider;
 mod drawer;
 mod dropdown;
 mod error_alert;
+mod example_ruby_text;
 mod favorite_button;
 mod feedback_modal;
 mod font_face;
@@ -55,6 +56,8 @@ mod component_wasm_tests;
 mod content_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod context_wasm_tests;
+#[cfg(all(target_arch = "wasm32", test))]
+mod example_ruby_text_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod feedback_modal_wasm_tests;
 mod feedback_wasm_tests;
@@ -109,6 +112,7 @@ pub use divider::{Divider, DividerVariant};
 pub use drawer::Drawer;
 pub use dropdown::{Dropdown, DropdownItem};
 pub use error_alert::ErrorAlert;
+pub use example_ruby_text::{ExampleRubyText, HighlightRange};
 pub use favorite_button::FavoriteButton;
 pub use feedback_modal::FeedbackModal;
 pub use font_face::inject_font_faces;
