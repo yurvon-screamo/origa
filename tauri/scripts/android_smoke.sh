@@ -123,7 +123,8 @@ case "$marker" in
 	$ADB logcat -d 2>/dev/null |
 		grep -iE 'selftest|Tauri/Console|AndroidRuntime|FATAL EXCEPTION' |
 		tail -n 50 >&2 || true
-	fail "OCR selftest marker never appeared within ${SELFTEST_TIMEOUT_S}s (probe hung, listener not mounted, or the logcat bridge is broken)" ;;
+	fail "OCR selftest marker never appeared within ${SELFTEST_TIMEOUT_S}s (probe hung, listener not mounted, or the logcat bridge is broken)"
+	;;
 *) fail "OCR selftest failed: $marker" ;;
 esac
 

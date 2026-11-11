@@ -29,7 +29,7 @@ const CMD_SELFTEST_MARKER: &str = "selftest_marker";
 /// Fixed probe image: a 320x120 PNG rendering `日本語` in Noto Sans CJK
 /// (black on white, generated with ImageMagick). Kept tiny on purpose —
 /// it lives in the bundle.
-const PROBE_IMAGE_B64: &str = "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";
+const PROBE_IMAGE_B64: &str = "iVBORw0KGgoAAAANSUhEUgAAAUAAAAB4CAAAAACmpXQCAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAAd0SU1FB+oLCgE4A+wyxEcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMTEtMTBUMDE6NTY6MDMrMDA6MDDbeVMyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTExLTEwVDAxOjU2OjAzKzAwOjAwqiTrjgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0xMS0xMFQwMTo1NjowMyswMDowMP0xylEAAAZqSURBVHja7Zx7bBRFHIC/qwiUYgtIsECLokBUIqJWXhaEQBRfqARRtKCCIhg1pAKtAUMhINQGUWMJYBvDQyGVl1iFhDQiKPIslYdg5GWgGF+xVKhAkfWPu6N37T1mmN7MXZ3vn+7uzM7OfJ3Z2f3t7rkcLCrEma5ArGMFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKmIFKtLIdAU8zP8bSH7WdDXkcUXJg/XUk0DaTtPVkMcOYUViUmChqy75AJNc4Sm3AqMKiUnkeIlUyfFPm26bFiQE7n5BquRkKzBqeTyt7rb2huoSkwJbtQqSkJd3eTE7F+ixPeJ1abCTyCGAWyN/nAYr8CBA18gfR1rgLic8ncw486X6KLYHqnD4IlHaA01TEvQWo6VvtoMACR0iX5+YEyiIew5xRf5AMXkZE5y1H3sWSgHKn6iV/Gn9H1GjwFXDwuXYFarHzMkSOMaPK33XTq0U2EWRmOuBneYES2lipD4xJ/B6kY6okYY6iWijgQnM8lzK5wP08bm2L4vUETUO4a4zgyTsWOezMqZjkFx9ZY61Hz33IVoF3jwl8HbHLzhVNUWwuJDsQ899SFQM4aJS37UVAoPtjgD3IbP8cujrgeYFXnzTb9V5ox7KLK/g/9MDC37yX9+wSb3MfQBJWoLUxgVW5AB0aA3QIQEg81/lQssAummpv/EL6axfAWZnAbR5fjqw593Xw+yTd7ruNr/xWgrQXU8DBOKjHtw3lsIB1WShQr9xAdx9KQUg7UwyQLNj4pUKUYFC3y1lko0VxvAQrh7rALzjiSIkzACoGq9Y6ukjaOuB0kO45Hj4PGeES5vzA8CwdO/66PcOABuWZSg1qswBGmmZhOWHsDAiQ3j71QCJJxzHPYQd52sXQOKRKxlN6YI1W9BghnDliGqA3JSaTf1eBKh8qtpkvWQwKnDcUYB+L/lue7stwM7sUPuFvxPRh0mBHy0HaPqhXxw66QMA5n1hsGIyGLwO3P0KADO7+G8eOrwIcDK23iJbYMcKsXwtxbKJIS1w113h83Q+LFBQ+ZAqgAczaycs2nEcqHhoWxvJqi2pTzGiGOuBVUNOAbRbXOdBUtLyvheBY49+1TTIvgUBrpOChREjjSmBzshSgLhPWtdN6zUrC2DbyKIgT+kEBoE2TE0ir60GIOfeQImTBgOwcmyUfEIQCkMCJ7rn2uFTA6a6VrgnkIIYMGhmCE+ZC0CPxUHGaFJxzz8AClgk+3ZG3vuhUhMP1HdTjAic/hYAqZ8FmyW4cc3ACwAFzsKr5MquPBkqtUW9t8XAEL6UmQNAYnFy8Ezphe6uV/hIZd3EawLcifTW3xAwIvDck/MASFgfMmScke/+u/4egfCPQbQL/HOQO6oT/3mf0BnHuz2zv+d3ZtSIoVvg972/BaDxqgHhsk6Y7f77W/+8S5JHGRcg7rQ2Mg3SPInMzzwPQHzRA+EzZ8dlOwAXJn+5JLV2YvtXLy+en6a3EX5oFfjXmDXuhZbFfcj1S6oE+MVvW9rAye1Gu+OCm7rl1/7uqW3NW1pnTQrU+VBptbcbpRxwnPCXyBMcx9mY6F3rv7umoObu6LWXMwC9PCtTCTWEW9RnMFpzRPrQfUNPuJdu2yr80sWgzd73xDelPVfPH6rWD9oELuy20bOUsS1VfLfb9zzsWXIWT9fsRghtAh/zxJsa5y9tJrNfq3V5nvP0qIWa3QihTeB1JTcA3LTlZckdXRM3dwEYXKjhowV59J0DU9bEE5e5t4d33f9c7H2s6cM8b87ee3Oa0HmF8bdQAqLxQrr7gq5b50oNXy9Npu27f1mSRisSSP9b1wq8AHk68OZRz0hGVmrovEGzF2GkBc6U3cGHK/YXxRh/PzDWic4zswC/F15ePFcncWlx3R3+iUw9Ylbgz6F+Q+TsWW31sENYkYb6yb82bA9UJGYFptXq9X5xf40R6ZgVGC1IzMLXpgM0F8g5oxKIN900PUgI7L9FNOcI+XpkVACiP7KRWw3B3n0b1BS4M0DCgLKI3AtFy0+Axiz2HKiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFaiIFajIf/6VhuyD/MGqAAAAAElFTkSuQmCC";
 
 /// Success requires any one of the rendered glyphs: recognizers segment
 /// differently (`日本語` may come back as `日本 語` or with extras), but a
@@ -176,6 +176,57 @@ fn report(marker: &str) {
 mod tests {
     use super::*;
     use rstest::rstest;
+
+    /// The probe asset is embedded in the source file, and a silently
+    /// truncated base64 decodes into a PNG whose data chunk fails the CRC —
+    /// BitmapFactory on Android then rejects the image with INVALID_IMAGE
+    /// and the smoke job fails on the `ocr failed` marker. Pin the full
+    /// integrity the same way the wire contracts are pinned: decode, walk
+    /// the chunk list, verify every CRC, require a zero-length IEND end.
+    #[test]
+    fn probe_image_is_a_complete_png() {
+        use base64::Engine;
+
+        fn crc32(data: &[u8]) -> u32 {
+            !data.iter().fold(0xFFFF_FFFFu32, |acc, &byte| {
+                (0..8).fold(acc ^ u32::from(byte), |acc, _| {
+                    if acc & 1 != 0 {
+                        (acc >> 1) ^ 0xEDB8_8320
+                    } else {
+                        acc >> 1
+                    }
+                })
+            })
+        }
+
+        let raw = base64::engine::general_purpose::STANDARD
+            .decode(PROBE_IMAGE_B64)
+            .expect("probe image base64 must decode");
+        assert!(
+            raw.starts_with(b"\x89PNG\r\n\x1a\n"),
+            "probe image must be a PNG"
+        );
+
+        let mut pos = 8;
+        loop {
+            assert!(
+                pos + 12 <= raw.len(),
+                "truncated PNG: chunk header at {pos} runs past the end"
+            );
+            let len = u32::from_be_bytes(raw[pos..pos + 4].try_into().unwrap()) as usize;
+            let chunk_type = &raw[pos + 4..pos + 8];
+            let crc_stored =
+                u32::from_be_bytes(raw[pos + 8 + len..pos + 12 + len].try_into().unwrap());
+            let crc_calc = crc32(&raw[pos + 4..pos + 8 + len]);
+            assert_eq!(crc_stored, crc_calc, "chunk {chunk_type:?} CRC mismatch");
+            pos += 12 + len;
+            if chunk_type == b"IEND" {
+                assert_eq!(len, 0, "IEND must be zero-length");
+                assert_eq!(pos, raw.len(), "IEND must be the last chunk");
+                break;
+            }
+        }
+    }
 
     /// Deep-link routing table: the smoke script's URL resolves, every
     /// neighbour (shortcut/oauth/prefix/suffix variants) stays untouched.
