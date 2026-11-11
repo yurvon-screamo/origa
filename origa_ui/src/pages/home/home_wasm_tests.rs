@@ -273,6 +273,55 @@ async fn category_progress_grid_shows_percentage_per_tile() {
     );
 }
 
+#[wasm_bindgen_test]
+async fn category_progress_grid_tiles_keep_navigation_targets() {
+    // The tile is a navigational link first (issue #415): if a refactor
+    // ever drops the <A href> or retargets a section, this must fail —
+    // the presence-only tests above cannot see a lost href.
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router(&wrapper, || {
+        let progress = origa::domain::CategoryProgress::new();
+        let (p1, p2, p3, p4) = (
+            progress.clone(),
+            progress.clone(),
+            progress.clone(),
+            progress,
+        );
+        view! {
+            <CategoryProgressGrid
+                kanji_progress=Signal::from(p1)
+                words_progress=Signal::from(p2)
+                grammar_progress=Signal::from(p3)
+                counters_progress=Signal::from(p4)
+                test_id="cg3"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let grid = wrapper
+        .query_selector("[data-testid=\"cg3\"]")
+        .unwrap()
+        .unwrap();
+    for (section, href) in [
+        ("kanji", "/kanji"),
+        ("words", "/words"),
+        ("grammar", "/grammar"),
+        ("counters", "/counters"),
+    ] {
+        // The <A> is the tile's parent (the test id sits on the inner
+        // div), so the link is matched from outside in.
+        let link = grid.query_selector(&format!(
+            "a[href=\"{href}\"] [data-testid=\"cg3-{section}\"]"
+        ));
+        assert!(
+            link.is_ok_and(|l| l.is_some()),
+            "{section} tile must keep its {href} link target"
+        );
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // AccuracyChartCard (fl2O037UR7)
 // ═══════════════════════════════════════════════════════════════════════
