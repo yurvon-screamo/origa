@@ -639,3 +639,38 @@ def test_generate_manifest_hashes_dynamic_families(tmp_path: Path):
         "well_known_set/duolingo/N3/duolingo_n3_1.json",
     ):
         assert files[path] == sha256_hex(tmp_path / path)
+
+
+def test_dynamic_family_paths_keep_release_updated_tier():
+    """Family files must stay on the release-updated tier, file-level.
+
+    Freshness works as manifest-hash invalidation followed by a plain
+    refetch; a drifted-to-immutable refetch would stick in the CDN edge
+    for a year — the #182 poisoning class. EXPECTED_SYNC_DIR_POLICY
+    pins the catalog tier; this pins the file-level lookup the upload
+    actually passes as CacheControl, for dynamic paths, explicit
+    VERSIONED_FILES entries under the walk roots, and the neighbouring
+    immutable audio dir that must not bleed into data/.
+    """
+    from _cdn_cache import IMMUTABLE, RELEASE_UPDATED, cache_control_for
+
+    family_files = [
+        "examples/data/s0000.json",
+        "examples/data/s0022.json",
+        "well_known_set/duolingo/n3/duolingo_en_n3_1.json",
+        "well_known_set/migii/n1/migii_jlpt_n1_1.json",
+        "well_known_set/jlpt_n5.json",
+        "well_known_set/irodori_cando.json",
+        "well_known_set/well_known_types_meta.json",
+    ]
+    for path in family_files:
+        assert cache_control_for(path) == RELEASE_UPDATED, path
+
+    # Tier agreement between the catalog entry (sync upload) and the file
+    # (versioned/manifest upload) for one and the same path.
+    for dir_name in ("examples/", "well_known_set/duolingo/"):
+        assert cache_control_for(dir_name) == RELEASE_UPDATED
+
+    # The immutable sibling stays immutable: audio files are not tracked,
+    # and the test must notice if the rules ever bleed across the family.
+    assert cache_control_for("examples/audio/000001.opus") == IMMUTABLE
