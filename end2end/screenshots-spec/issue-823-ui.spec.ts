@@ -31,9 +31,6 @@ test("words header + examples page screenshots", async ({ page }) => {
 
   // Pre-approve the one-time resource download before any app script
   // runs — otherwise the consent overlay intercepts every click on a
-  // fresh browser context.
-  // Pre-approve the one-time resource download before any app script
-  // runs — otherwise the consent overlay intercepts every click on a
   // fresh browser context. The app origin is passed in: addInitScript
   // runs in every frame, and the served port is not a literal.
   const appOrigin = `http://localhost:${APP_PORT}`;

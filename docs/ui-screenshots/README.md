@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| words-full | words | mobile | ru-RU | 390×844 | 2026-11-11T11:12:59.990Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words-full--mobile-90227fc5.png) |
+| words | words | mobile | ru-RU | 390×844 | 2026-11-11T11:12:59.672Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words--mobile-90227fc5.png) |
+| words-full | words | desktop | ru-RU | 1280×800 | 2026-11-11T11:12:46.986Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words-full--desktop-a5656b69.png) |
+| words | words | desktop | ru-RU | 1280×800 | 2026-11-11T11:12:46.196Z | 0af0aee1 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words--desktop-a5656b69.png) |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
 | home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
