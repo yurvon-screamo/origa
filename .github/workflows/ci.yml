@@ -637,7 +637,11 @@ jobs:
               run: npm ci && npm run build:css
 
             - name: Run tests
-              run: cargo test --workspace --exclude origa_landing
+              # --no-fail-fast: a red suite must not stop the remaining
+              # ones — fail-fast shows one regression per CI round while
+              # the rest of the workspace stays unexamined behind it.
+              # Compile errors still abort everything regardless.
+              run: cargo test --workspace --exclude origa_landing --no-fail-fast
 
     # Landing SSR tests (#800). The 300+ integration tests of
     # origa_landing were green but invisible to CI: the Test job excludes
@@ -730,7 +734,10 @@ jobs:
                   fi
 
             - name: Run landing SSR tests
-              run: cargo test -p origa_landing --features ssr
+              # Same --no-fail-fast rationale as the Test job: ~14 test
+              # binaries in the package, every red one must be visible
+              # in a single run.
+              run: cargo test -p origa_landing --features ssr --no-fail-fast
 
             # The ssr code and its test targets were never linted: the
             # workspace clippy run builds the crate WITHOUT the ssr
