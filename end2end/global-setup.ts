@@ -97,15 +97,31 @@ function setAdminPassword(): void {
 }
 
 function killExistingTrailBase(): void {
+  // Kill only OUR previous instance (the PID written at spawn). The old
+  // blanket `pkill -f 'trail run'` reached across ports and killed
+  // another concurrent harness's server even when this run used a
+  // different E2E_TRAILBASE_PORT (bug report, test round 2026-11-11).
+  // A stranger squatting OUR port is not handled here: the spawn fails
+  // to bind and the readiness wait below fails loudly.
+  const pidFile = path.join(end2endRoot, ".trailbase.pid");
   try {
-    if (process.platform === "win32") {
-      execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
-    } else {
-      execSync("pkill -f 'trail run'", { stdio: "pipe" });
+    const pid = Number(fs.readFileSync(pidFile, "utf-8").trim());
+    if (Number.isInteger(pid) && pid > 0) {
+      if (process.platform === "win32") {
+        execSync(`taskkill /f /PID ${pid}`, { stdio: "pipe" });
+      } else {
+        process.kill(pid, "SIGTERM");
+      }
+      console.log(`[global-setup] ✓ Killed previous TrailBase (pid ${pid})`);
     }
-    console.log("[global-setup] ✓ Killed existing TrailBase process");
-  } catch {
-    // No process found — that's fine
+    fs.rmSync(pidFile, { force: true });
+  } catch (error) {
+    // No pid file / process already dead — nothing to kill
+    console.log(
+      `[global-setup] No previous TrailBase to kill: ${
+        error instanceof Error ? error.message.split("\n")[0] : error
+      }`,
+    );
   }
 }
 

@@ -2,16 +2,21 @@ import { config } from "dotenv";
 import { resolve } from "path";
 
 import { end2endRoot } from "./helpers/paths";
+import { TRAILBASE_PORT } from "./shots/config";
 
 // Override system env vars with local .env values
 config({ path: resolve(end2endRoot, ".env"), override: true });
 
 export function getTrailBaseUrl(): string {
-  const url = process.env.TRAILBASE_URL;
-  if (!url) {
-    throw new Error("TRAILBASE_URL is not set. Configure it in .env file.");
-  }
-  return url;
+  // Single source of truth with the TrailBase spawn (global-setup):
+  // both derive from the same E2E_TRAILBASE_PORT-driven port, so a
+  // non-default port cannot desync the readiness probe / admin login
+  // from the spawned server (bug report, test round 2026-11-11 — the
+  // probe used to follow the .env TRAILBASE_URL line while the spawn
+  // followed the env port). The .env TRAILBASE_URL line is no longer
+  // consulted: dotenv's override:true made shell-level sync impossible
+  // anyway.
+  return `http://127.0.0.1:${TRAILBASE_PORT}`;
 }
 
 /**
