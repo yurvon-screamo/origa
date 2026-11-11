@@ -7,10 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| kanji-writing-practice | kanji-writing-practice | mobile | ru-RU | 390×1026 | 2026-11-11T14:13:39.125Z | a5dbbcb4 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-removed/kanji-writing-practice--kanji-writing-practice--mobile-cddfa4ca.png) |
+| kanji-writing-practice | kanji-writing-practice | desktop | ru-RU | 1280×1541 | 2026-11-11T14:13:27.857Z | a5dbbcb4 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-removed/kanji-writing-practice--kanji-writing-practice--desktop-f16b3e23.png) |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
 | home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
-| kanji-writing-practice | kanji-writing-practice | mobile | ru-RU | 390×1026 | 2026-11-10T16:42:32.712Z | f9a16d21 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--mobile-ae9b5bd7.png) |
-| kanji-writing-practice | kanji-writing-practice | desktop | ru-RU | 1280×1541 | 2026-11-10T16:42:16.881Z | f9a16d21 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--desktop-390eab21.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
 | detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
 | detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |

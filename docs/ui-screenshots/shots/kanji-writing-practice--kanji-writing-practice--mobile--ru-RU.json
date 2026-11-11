@@ -8,13 +8,13 @@
   "width": 390,
   "height": 1026,
   "fullPage": true,
-  "bytes": 158273,
-  "sha256": "ae9b5bd715b3e11357c78759aa3ae07125ad4040ce5462950e3dff77c5675090",
-  "capturedAt": "2026-11-10T16:42:32.712Z",
-  "commit": "f9a16d21587a7809d06528609bffe312ea371164",
-  "baseURL": "http://localhost:1422",
+  "bytes": 157436,
+  "sha256": "cddfa4caf68ee355befdc7bbb28d494a266d1f43d0563e78d41b1fba7c9bbc2e",
+  "capturedAt": "2026-11-11T14:13:39.125Z",
+  "commit": "a5dbbcb4009992abdd6cc1dcb7468214287cb9ff",
+  "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:8091",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-after/kanji-writing-practice--kanji-writing-practice--mobile-ae9b5bd7.png",
-  "uploadedSha256": "ae9b5bd715b3e11357c78759aa3ae07125ad4040ce5462950e3dff77c5675090",
-  "uploadedAt": "2026-11-10T16:42:36.462Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-removed/kanji-writing-practice--kanji-writing-practice--mobile-cddfa4ca.png",
+  "uploadedSha256": "cddfa4caf68ee355befdc7bbb28d494a266d1f43d0563e78d41b1fba7c9bbc2e",
+  "uploadedAt": "2026-11-11T14:13:42.964Z"
 }
