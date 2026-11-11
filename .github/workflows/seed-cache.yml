@@ -78,7 +78,13 @@ jobs:
     seed-linux:
         name: Seed Linux caches
         runs-on: ubuntu-24.04
-        timeout-minutes: 30
+        # Sized for the cold first tick when every family misses: qlty --all
+        # (full-scope) + playwright install + two apt cycles + xwin download
+        # + cdn download (~10 min alone) + uv/frontend-tools installs sum to
+        # 25-45 min on observed PR-run durations; too tight a limit would
+        # cancel the tick (post-save does not write on cancel) and the
+        # seed-forming run would never complete.
+        timeout-minutes: 60
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -104,12 +110,16 @@ jobs:
               # --all on purpose: the seed must initialize EVERY configured
               # plugin, and a narrow delta might not touch some tools at all
               # — an under-filled seed would exact-hit PR runs forever
-              # (post-save never rewrites an exact hit). A non-zero exit from
-              # pre-existing baseline findings is the expected master state,
-              # NOT a seeding failure: plugins download during run
-              # initialization regardless. The real download failure is
+              # (post-save never rewrites an exact hit). Runs execute under
+              # `bash -e` by default: a non-zero qlty exit (baseline
+              # findings + unformatted files on master are the expected
+              # state, not a seeding failure) would abort the script before
+              # the echo, so errexit is disabled explicitly and the code is
+              # reported instead. Plugins download during run initialization
+              # regardless of the check verdict; a REAL download failure is
               # caught fail-loud by the assert below.
               run: |
+                  set +e
                   qlty check --all --no-fix --no-progress
                   code=$?
                   echo "qlty exit code: ${code} (baseline findings on master are expected, not a seeding failure)"
@@ -284,7 +294,11 @@ jobs:
     seed-android-gradle:
         name: Seed Gradle cache (Android build)
         runs-on: ubuntu-24.04
-        timeout-minutes: 60
+        # Cold tick = toolchain setup (NDK download, rust targets, npm,
+        # trunk release build) ~10-15 min ON TOP of the ~40 min APK build;
+        # 60 would sit flush against the estimate and clip the seed-forming
+        # run.
+        timeout-minutes: 90
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
             # Mirror of ci.yml android-smoke NDK_VERSION — keep in sync.
