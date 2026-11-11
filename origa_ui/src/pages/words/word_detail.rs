@@ -25,23 +25,6 @@ use origa::traits::UserRepository;
 use origa::use_cases::ToggleFavoriteUseCase;
 use ulid::Ulid;
 
-/// Split a sentence at the highlighted word occurrence. Character offsets;
-/// negative offsets mean "unlocatable" — everything stays unhighlighted.
-pub fn split_highlight(text: &str, start: i32, end: i32) -> (String, String, String) {
-    if start < 0 || end < 0 {
-        return (text.to_string(), String::new(), String::new());
-    }
-    let (start, end) = (start as usize, end as usize);
-    let chars: Vec<char> = text.chars().collect();
-    if start >= end || start > chars.len() || end > chars.len() {
-        return (text.to_string(), String::new(), String::new());
-    }
-    let head: String = chars[..start].iter().collect();
-    let mid: String = chars[start..end].iter().collect();
-    let tail: String = chars[end..].iter().collect();
-    (head, mid, tail)
-}
-
 /// Find the user's vocabulary study card for a dictionary word.
 fn find_word_card(user: &User, word: &str) -> Option<(Ulid, StudyCard)> {
     let found = user
@@ -415,52 +398,5 @@ pub(super) fn ExampleCard(
                 {move || translation.get()}
             </div>
         </div>
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::split_highlight;
-
-    #[test]
-    fn splits_at_char_offsets() {
-        let (h, m, t) = split_highlight("家族は４人です。", 0, 2);
-        assert_eq!(h, "");
-        assert_eq!(m, "家族");
-        assert_eq!(t, "は４人です。");
-    }
-
-    #[test]
-    fn middle_occurrence_splits_in_three() {
-        let (h, m, t) = split_highlight("彼は家族を捨てた。", 2, 4);
-        assert_eq!(h, "彼は");
-        assert_eq!(m, "家族");
-        assert_eq!(t, "を捨てた。");
-    }
-
-    #[test]
-    fn negative_offsets_highlight_nothing() {
-        let (h, m, t) = split_highlight("どっちでも同じ。", -1, -1);
-        assert_eq!(m, "");
-        assert_eq!(h + &m + &t, "どっちでも同じ。");
-    }
-
-    #[test]
-    fn out_of_range_offsets_highlight_nothing() {
-        let (h, m, t) = split_highlight("短い", 0, 99);
-        assert_eq!(m, "");
-        assert_eq!(h + &m + &t, "短い");
-        let (h, m, t) = split_highlight("短い", 5, 9);
-        assert_eq!(m, "");
-        assert_eq!(h + &m + &t, "短い");
-    }
-
-    #[test]
-    fn multibyte_text_is_char_safe() {
-        // 6 chars, 18 bytes: byte-based slicing would panic or split glyphs.
-        let (h, m, t) = split_highlight("こんにちは世界", 3, 5);
-        assert_eq!(h, "こんに");
-        assert_eq!(m, "ちは");
-        assert_eq!(t, "世界");
     }
 }

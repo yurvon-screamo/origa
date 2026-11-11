@@ -94,6 +94,14 @@ fn with_cache<T>(f: impl FnOnce(&mut ExampleDataCache) -> T) -> Result<T, OrigaE
     Ok(f(entry))
 }
 
+/// Tanaka B-line id artifacts: pairs like `で|#2028980` carry a corpus
+/// token id, not a kana reading. Shipped chunks contain them, so the
+/// filter lives at parse time — a generator-side fix cleans future
+/// deploys, this one protects every render today.
+fn is_junk_reading(reading: &str) -> bool {
+    reading.starts_with('#') || reading.chars().any(|c| c.is_ascii_digit())
+}
+
 impl ExampleDataCache {
     fn new() -> Self {
         Self {
@@ -130,6 +138,7 @@ pub fn cache_example_details(chunk_json: &str) -> Result<(), OrigaError> {
                         ruby: d
                             .ruby
                             .into_iter()
+                            .filter(|(_, reading)| !is_junk_reading(reading))
                             .map(|(surface, reading)| RubyPair { surface, reading })
                             .collect(),
                     },
@@ -228,5 +237,23 @@ mod tests {
     #[test]
     fn corrupt_chunk_json_is_an_error() {
         assert!(cache_example_details("[][").is_err());
+    }
+
+    const JUNK_RUBY_JSON: &str = r##"[
+        {"i":4000,"x":"彼は法を守る。","f":[["守る","まもる"],["で","#2028980"],["て","#2654270"]]}
+    ]"##;
+
+    #[test]
+    fn junk_corpus_id_readings_are_dropped_at_parse_time() {
+        cache_example_details(JUNK_RUBY_JSON).expect("install");
+        let d = get_cached_example_detail(4000).expect("detail");
+        assert_eq!(
+            d.ruby.len(),
+            1,
+            "only the real reading survives: {:?}",
+            d.ruby
+        );
+        assert_eq!(d.ruby[0].surface, "守る");
+        assert_eq!(d.ruby[0].reading, "まもる");
     }
 }

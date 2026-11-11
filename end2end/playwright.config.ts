@@ -4,6 +4,7 @@ import { defineBddConfig } from "playwright-bdd";
 import {
   APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
+  TRAILBASE_PORT,
   resolveCdnSource,
 } from "./shots/config.ts";
 
@@ -110,7 +111,7 @@ export default defineConfig({
       stderr: "pipe",
       env: {
         ORIGA_CDN_BASE_URL: cdnBaseUrl,
-        TRAILBASE_URL: "http://127.0.0.1:4000",
+        TRAILBASE_URL: `http://localhost:${TRAILBASE_PORT}`,
       },
     },
   ],
