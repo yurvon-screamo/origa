@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "home-jlpt-details",
+  "screen": "home-jlpt-details",
+  "route": "/home",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 276833,
+  "sha256": "cb7edeadd3a527d8b22d2bf2442fb0f4419276bf7f9ec414bf5f5e73165d4a8f",
+  "capturedAt": "2026-11-10T21:33:43.181Z",
+  "commit": "c9c4f16e8195e280d6cfcdd41f879e105a0c099a",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png",
+  "uploadedSha256": "cb7edeadd3a527d8b22d2bf2442fb0f4419276bf7f9ec414bf5f5e73165d4a8f",
+  "uploadedAt": "2026-11-10T21:35:35.745Z"
+}

@@ -7,6 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
+| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
 | detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
 | detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |

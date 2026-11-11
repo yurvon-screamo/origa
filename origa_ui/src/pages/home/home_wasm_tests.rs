@@ -148,7 +148,7 @@ async fn jlpt_progress_card_percentage_renders() {
 #[wasm_bindgen_test]
 async fn jlpt_progress_card_toggle_expands_categories() {
     let wrapper = create_wrapper();
-    mount_with_i18n(&wrapper, || {
+    let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::JlptProgress::new();
         view! {
             <JlptProgressCard jlpt_progress=Signal::from(progress) test_id="jp3" />
@@ -157,17 +157,36 @@ async fn jlpt_progress_card_toggle_expands_categories() {
     });
     tick().await;
 
-    let panel = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    // Collapsed by default: the category matrix is absent.
+    let grid_before = wrapper.query_selector("[data-testid=\"jp3-expanded\"]");
     assert!(
-        panel.is_ok_and(|p| p.is_some()),
+        grid_before.is_ok_and(|g| g.is_none()),
+        "matrix must not render while collapsed"
+    );
+
+    let toggle = wrapper
+        .query_selector("[data-testid=\"jp3-toggle\"]")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
+    toggle.click();
+    tick().await;
+
+    let section = wrapper.query_selector("[data-testid=\"jp3-categories\"]");
+    assert!(
+        section.is_ok_and(|p| p.is_some()),
         "categories section must render"
     );
 
-    // Expanded content (CategoryProgressGrid) hidden until toggle click:
-    // the grid lives under the toggle's panel; clicking reveals it.
-    let grid_before = wrapper.query_selector(".category-progress-grid");
-    // Initially collapsed — the grid may not be present at all.
-    let _ = grid_before;
+    // All four category tiles render inside the expanded matrix.
+    for tile in ["kanji", "words", "grammar", "counters"] {
+        let tile_node = wrapper.query_selector(&format!("[data-testid=\"jp3-expanded-{tile}\"]"));
+        assert!(
+            tile_node.is_ok_and(|t| t.is_some()),
+            "{tile} tile must render in the expanded matrix"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -192,7 +211,7 @@ async fn jlpt_skeleton_renders_skeleton_block() {
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_renders_three_linked_cards() {
+async fn category_progress_grid_renders_three_linked_tiles() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress::new();
@@ -214,16 +233,16 @@ async fn category_progress_grid_renders_three_linked_cards() {
         .unwrap()
         .unwrap();
     for section in ["kanji", "words", "grammar"] {
-        let card = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
+        let tile = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
         assert!(
-            card.is_ok_and(|c| c.is_some()),
-            "{section} card must render"
+            tile.is_ok_and(|t| t.is_some()),
+            "{section} tile must render"
         );
     }
 }
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_shows_percentage_per_card() {
+async fn category_progress_grid_shows_percentage_per_tile() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress {
@@ -252,6 +271,55 @@ async fn category_progress_grid_shows_percentage_per_card() {
         text.contains("5 / 10"),
         "5 of 10 learned must show the ratio; got: {text}"
     );
+}
+
+#[wasm_bindgen_test]
+async fn category_progress_grid_tiles_keep_navigation_targets() {
+    // The tile is a navigational link first (issue #415): if a refactor
+    // ever drops the <A href> or retargets a section, this must fail —
+    // the presence-only tests above cannot see a lost href.
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router(&wrapper, || {
+        let progress = origa::domain::CategoryProgress::new();
+        let (p1, p2, p3, p4) = (
+            progress.clone(),
+            progress.clone(),
+            progress.clone(),
+            progress,
+        );
+        view! {
+            <CategoryProgressGrid
+                kanji_progress=Signal::from(p1)
+                words_progress=Signal::from(p2)
+                grammar_progress=Signal::from(p3)
+                counters_progress=Signal::from(p4)
+                test_id="cg3"
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let grid = wrapper
+        .query_selector("[data-testid=\"cg3\"]")
+        .unwrap()
+        .unwrap();
+    for (section, href) in [
+        ("kanji", "/kanji"),
+        ("words", "/words"),
+        ("grammar", "/grammar"),
+        ("counters", "/counters"),
+    ] {
+        // The <A> is the tile's parent (the test id sits on the inner
+        // div), so the link is matched from outside in.
+        let link = grid.query_selector(&format!(
+            "a[href=\"{href}\"] [data-testid=\"cg3-{section}\"]"
+        ));
+        assert!(
+            link.is_ok_and(|l| l.is_some()),
+            "{section} tile must keep its {href} link target"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

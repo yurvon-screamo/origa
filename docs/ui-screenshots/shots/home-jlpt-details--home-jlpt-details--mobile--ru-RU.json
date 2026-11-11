@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "home-jlpt-details",
+  "screen": "home-jlpt-details",
+  "route": "/home",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 125248,
+  "sha256": "d1691137886f0d6269ab3c462f84306f4eb74e452e69552742fdeebe8887faad",
+  "capturedAt": "2026-11-10T21:35:33.029Z",
+  "commit": "c9c4f16e8195e280d6cfcdd41f879e105a0c099a",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png",
+  "uploadedSha256": "d1691137886f0d6269ab3c462f84306f4eb74e452e69552742fdeebe8887faad",
+  "uploadedAt": "2026-11-10T21:35:37.741Z"
+}
