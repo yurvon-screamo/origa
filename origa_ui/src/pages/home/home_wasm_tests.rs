@@ -233,16 +233,16 @@ async fn category_progress_grid_renders_three_linked_tiles() {
         .unwrap()
         .unwrap();
     for section in ["kanji", "words", "grammar"] {
-        let card = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
+        let tile = grid.query_selector(&format!("[data-testid=\"cg1-{section}\"]"));
         assert!(
-            card.is_ok_and(|c| c.is_some()),
-            "{section} card must render"
+            tile.is_ok_and(|t| t.is_some()),
+            "{section} tile must render"
         );
     }
 }
 
 #[wasm_bindgen_test]
-async fn category_progress_grid_shows_percentage_per_card() {
+async fn category_progress_grid_shows_percentage_per_tile() {
     let wrapper = create_wrapper();
     let _mount = mount_with_router(&wrapper, || {
         let progress = origa::domain::CategoryProgress {
