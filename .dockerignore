@@ -20,5 +20,8 @@ models/
 docs/
 scripts/
 end2end/
+# Real-include for the ui image build: the FONTS block names the woff2 subsets
+# the Dockerfile stages from the CDN (see origa_ui/Dockerfile).
+!end2end/cdn-manifest.txt
 store-assets/
 test-dockerfile/
