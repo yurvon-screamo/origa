@@ -57,6 +57,8 @@ mod content_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod context_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
+mod example_ruby_text_wasm_tests;
+#[cfg(all(target_arch = "wasm32", test))]
 mod feedback_modal_wasm_tests;
 mod feedback_wasm_tests;
 mod filter_tag;

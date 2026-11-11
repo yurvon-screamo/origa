@@ -272,6 +272,21 @@ mod tests {
     }
 
     #[test]
+    fn empty_surface_pair_is_skipped_without_panicking() {
+        ensure_dictionaries();
+        // Corrupt pair (empty surface from a dirty chunk source): skipped,
+        // no empty segment, render continues with the dictionary path.
+        let ruby = vec![pair("", "あたま")];
+        let known = HashSet::new();
+        let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known);
+
+        assert!(
+            segments.iter().all(|s| !s.text().is_empty()),
+            "empty surface must not produce an empty segment: {segments:?}"
+        );
+    }
+
+    #[test]
     fn context_segments_track_known_kanji() {
         ensure_dictionaries();
         let ruby = vec![pair("頭", "あたま")];
