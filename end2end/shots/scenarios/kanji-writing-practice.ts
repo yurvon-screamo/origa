@@ -4,15 +4,17 @@ import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
 
 /**
- * The kanji-detail writing practice (stroke-count indicator + canvas).
+ * The kanji-detail writing practice (canvas + error/empty states).
  *
- * The bug this screen documents: the corner stroke-progress label used
- * to pin to the full-width container edge (leaving the viewport on
- * narrow layouts) instead of the drawing box. The capture lands
- * directly on the seeded kanji card's detail (acquaintance-hand —
- * seconds to prepare, no corpus import): the desktop grid shows the
- * practice in the right column, the phone layout needs the
- * «НАПИСАНИЕ» tab before the canvas mounts.
+ * History: the corner stroke-progress label was the subject of two
+ * rounds (off-screen clip → stage-pin → owner removal, 11.11 — on wide
+ * viewports the canvas box is invisible against the card, so the chip
+ * read as a floating label in empty space). The screen now documents
+ * the label-free practice block. The capture lands directly on the
+ * seeded kanji card's detail (acquaintance-hand — seconds to prepare,
+ * no corpus import): the desktop grid shows the practice in the right
+ * column, the phone layout needs the «НАПИСАНИЕ» tab before the canvas
+ * mounts.
  */
 export const kanjiWritingPracticeScenario: ShotScenario = {
   ...descriptors["kanji-writing-practice"],

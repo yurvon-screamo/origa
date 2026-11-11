@@ -2788,40 +2788,6 @@ rt {
   height: min(320px, 85vw);
 }
 
-/* Canvas stage: shrink-wraps the canvas box and anchors the corner
-   progress label to the DRAWING box (identical in every parent layout —
-   kanji-detail practice cell and lesson writing card), not to a
-   full-width container edge, where the label could leave the viewport
-   (10.11 bug report) or visually detach from the glyph. */
-.kanji-drawing-stage {
-  position: relative;
-  display: inline-flex;
-}
-
-/* Stroke-progress chip pinned to the top-right corner of the canvas
-   (owner request: compact, out of the content flow). Absolute +
-   pointer-events-none: it overlays the canvas corner without
-   intercepting strokes; the drawing SVG keeps its inner margins, so the
-   chip never collides with the glyph. Paper backing + hairline border
-   keep it legible over the grey hint strokes; nowrap survives long
-   counts («ШТРИХ 12 / 20») without widening the canvas box. */
-.kanji-drawing-info {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1;
-  pointer-events: none;
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  background: var(--bg-paper);
-  border: 1px solid var(--border-light);
-  padding: 3px 7px;
-  white-space: nowrap;
-}
-
 .kanji-drawing-error {
   text-align: center;
   padding: 40px;

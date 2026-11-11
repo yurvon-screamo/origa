@@ -1,14 +1,14 @@
 #![cfg(all(target_arch = "wasm32", test))]
 
-//! Browser test for the `KanjiDrawingPractice` stroke-progress label
-//! placement contract: the label and the canvas share a canvas-sized
-//! positioning context (`.kanji-drawing-stage`), so the label stays
-//! pinned to the drawing box in every parent layout (the kanji-detail
-//! practice cell and the lesson writing card) instead of hugging a
-//! full-width container edge, where it could leave the viewport.
+//! Browser test for the `KanjiDrawingPractice` drawing block: the
+//! stroke-progress label is GONE (removed at the owner's request,
+//! 11.11 — on wide viewports the canvas box is invisible against the
+//! card, so the corner chip read as a floating label in empty space).
+//! The contract pins the removal: with the art resolved, the block
+//! renders ONLY the canvas — no progress label, no stage wrapper.
 //!
-//! The label only renders in the non-error branch, which needs the
-//! kanji art to resolve. Deterministic offline setup (the
+//! The label used to render only in the non-error branch, which needs
+//! the kanji art to resolve. Deterministic offline setup (the
 //! `kanji_art_heal_wasm_tests` recipe): a plausible SVG is seeded into
 //! the CDN Cache Storage (same realm, string-backed 200) and the CDN is
 //! marked unreachable — cache-first hits the seed, every network leg
@@ -78,7 +78,7 @@ async fn wait_for(predicate: impl Fn() -> bool) -> bool {
 }
 
 #[wasm_bindgen_test]
-async fn stroke_progress_label_shares_the_canvas_positioning_context() {
+async fn drawing_block_renders_no_stroke_progress_label() {
     reset_kanji_art_state();
     clear_cdn_unreachable();
     mark_cdn_unreachable();
@@ -119,45 +119,30 @@ async fn stroke_progress_label_shares_the_canvas_positioning_context() {
         .into_any()
     });
 
-    // Act + Assert: once the art resolves, the progress label must live
-    // INSIDE the canvas stage — one positioning context for the label
-    // and the canvas, so the corner pin anchors to the drawing box.
-    let label_in_stage = wait_for(|| {
+    // Act + Assert: once the art resolves, the block settles to
+    // canvas-only — the stroke-progress chip (`.kanji-drawing-info`,
+    // the `…-progress` label branch) must not render in any state.
+    let canvas_mounted = wait_for(|| {
         wrapper
-            .query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]")
+            .query_selector(".kanji-drawing-canvas")
             .is_ok_and(|el| el.is_some())
     })
     .await;
     assert!(
-        label_in_stage,
-        "the stroke-progress label must render inside the canvas stage; DOM: {}",
+        canvas_mounted,
+        "the drawing canvas must render; DOM: {}",
         wrapper.inner_html()
     );
 
-    let stage_wraps_canvas = wrapper
-        .query_selector(".kanji-drawing-stage .kanji-drawing-canvas")
-        .is_ok_and(|el| el.is_some());
-    assert!(
-        stage_wraps_canvas,
-        "the stage must wrap the canvas; DOM: {}",
-        wrapper.inner_html()
-    );
-
-    let label_text = wait_for(|| {
-        let node =
-            wrapper.query_selector(".kanji-drawing-stage [data-testid=\"drawing-progress\"]");
-        let Some(label) = node.ok().flatten() else {
-            return false;
-        };
-        label
-            .text_content()
-            .map(|text| text.contains("1 / 1"))
-            .unwrap_or(false)
+    let settled = wait_for(|| {
+        let label = wrapper.query_selector(".kanji-drawing-info");
+        let stage = wrapper.query_selector(".kanji-drawing-stage");
+        label.ok().flatten().is_none() && stage.ok().flatten().is_none()
     })
     .await;
     assert!(
-        label_text,
-        "the label must show the stroke progress (1 / 1); DOM: {}",
+        settled,
+        "no stroke-progress label or stage wrapper may render; DOM: {}",
         wrapper.inner_html()
     );
 
