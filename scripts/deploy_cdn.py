@@ -189,12 +189,15 @@ def _example_chunk_files(cdn_dir: Path) -> list[str]:
     """Manifest paths of the numbered example data chunks (s0001.json...).
 
     Names mirror build_examples.py exactly: CHUNK_SIZE sentences per chunk,
-    ``s{chunks:04d}.json`` — the loader fetches these paths verbatim.
+    ``s{chunks:04d}.json`` — the loader fetches these paths verbatim. The
+    glob enforces the documented four-digit shape, not just the prefix.
     """
     data_dir = cdn_dir / "examples" / "data"
     if not data_dir.is_dir():
         return []
-    return sorted(f"examples/data/{p.name}" for p in data_dir.glob("s*.json"))
+    return sorted(
+        f"examples/data/{p.name}" for p in data_dir.glob("s[0-9][0-9][0-9][0-9].json")
+    )
 
 
 def _well_known_set_files(cdn_dir: Path) -> list[str]:

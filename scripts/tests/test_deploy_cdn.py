@@ -613,11 +613,13 @@ def test_collect_versioned_files_ignores_non_json_and_audio(tmp_path: Path):
     (tmp_path / "examples" / "audio").mkdir()
     (tmp_path / "examples" / "audio" / "000001.opus").write_bytes(b"x")
     (tmp_path / "examples" / "data" / "notes.txt").write_text("x", encoding="utf-8")
+    (tmp_path / "examples" / "data" / "s9.json").write_text("[]", encoding="utf-8")
     (tmp_path / "well_known_set" / "README.md").write_text("x", encoding="utf-8")
 
     collected = collect_versioned_files(tmp_path)
 
     assert "examples/data/notes.txt" not in collected
+    assert "examples/data/s9.json" not in collected
     assert not any(p.startswith("examples/audio/") for p in collected)
     assert not any(
         p.endswith(".md") and p.startswith("well_known_set/") for p in collected
