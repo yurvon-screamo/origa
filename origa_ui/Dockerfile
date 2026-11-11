@@ -96,29 +96,36 @@ COPY origa ./origa
 COPY origa_ui ./origa_ui
 COPY build_defaults.rs ./
 
-# Stage brand fonts for the web build. `cdn/` is gitignored and excluded from
-# the Docker context, so without this step FONT_FILES compiles empty and
-# font_face.rs silently degrades to system fallback typography (the bug this
-# fixes). The canonical filename list lives in the FONTS block of
-# end2end/cdn-manifest.txt (refreshed by scripts/subset_fonts.py; guarded by
-# the font_face.rs manifest test), filenames are content-hashed, so the CDN
-# URLs are immutable and a layer built from them is cache-safe. The fallback
-# base mirrors build.rs resolve_cdn() (DEFAULT_CDN in build_defaults.rs).
-# curl --fail turns a missing CDN file into a failed build — loud instead of
-# the silent degradation this step exists to prevent (ADR-028 staging
-# pattern, Tauri already gets its fonts from the local corpus).
+# Point the build scripts' corpus root (ORIGA_CDN_DIR override of the
+# cdn_dir() contract mirrored from origa::corpus::cdn_dir, corpus migration
+# #912) at the fonts staged below — a container has no seeded machine-local
+# corpus, the only corpus content it needs is the font subsets.
+ENV ORIGA_CDN_DIR=/app/cdn
+
+# Stage brand fonts for the web build. The corpus is machine-local state
+# outside the repository (and outside the Docker context), so without this
+# step FONT_FILES compiles empty and font_face.rs silently degrades to system
+# fallback typography (the bug this fixes). The canonical filename list lives
+# in the FONTS block of end2end/cdn-manifest.txt (refreshed by
+# scripts/subset_fonts.py; guarded by the font_face.rs manifest test),
+# filenames are content-hashed, so the CDN URLs are immutable and a layer
+# built from them is cache-safe. The fallback base mirrors build.rs
+# resolve_cdn() (DEFAULT_CDN in build_defaults.rs). curl --fail turns a
+# missing CDN file into a failed build — loud instead of the silent
+# degradation this step exists to prevent (ADR-028 staging pattern, Tauri
+# already gets its fonts from the local corpus).
 COPY end2end/cdn-manifest.txt ./end2end/cdn-manifest.txt
 
 # pipefail comes from the SHELL instruction above (bash); POSIX set lacks the
 # flag (hadolint SC3040).
 RUN set -eux; \
     cdn_base="${ORIGA_CDN_BASE_URL:-https://s3.origa.uwuwu.net}"; \
-    mkdir -p cdn/fonts; \
+    mkdir -p "${ORIGA_CDN_DIR}/fonts"; \
     sed -n '/# FONTS-START/,/# FONTS-END/p' end2end/cdn-manifest.txt \
       | grep '\.woff2$' \
       | while read -r rel; do \
           curl --retry 5 --retry-delay 2 --retry-all-errors --fail -sS \
-            -o "cdn/fonts/$(basename "$rel")" "${cdn_base}/${rel}"; \
+            -o "${ORIGA_CDN_DIR}/fonts/$(basename "$rel")" "${cdn_base}/${rel}"; \
         done
 
 # Real build - origa + origa_ui (wasm)
