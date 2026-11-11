@@ -341,11 +341,7 @@ async fn import_progress_line_interpolates_counters_and_bares_the_save_label() {
         for (phase, done, total) in events {
             sink.borrow_mut().push(super::import_progress_line(
                 i18n,
-                ImportProgressEvent {
-                    phase,
-                    done,
-                    total,
-                },
+                ImportProgressEvent { phase, done, total },
             ));
         }
         view! { <div /> }.into_any()
