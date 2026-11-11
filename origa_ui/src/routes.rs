@@ -56,6 +56,11 @@ fn should_retry_after_error(error: &OrigaError) -> bool {
 /// translucent Android system nav bar on 3-button devices. There the device
 /// inset is reserved directly (`pb-safe-b` = env(safe-area-inset-bottom));
 /// on desktop the inset is 0, so the reserve is a no-op there.
+///
+/// Return contract: a class-list **suffix** with a LEADING SPACE (`" …"`),
+/// meant to be concatenated into `main_class`'s format string right after
+/// the base classes — never a standalone value (the leading space would
+/// leak into a bare class attribute). The tests assert the exact strings.
 pub fn main_bottom_pad_for(is_authenticated: bool, path: &str) -> &'static str {
     if bottom_nav_visible_for(is_authenticated, path) {
         " app-main-with-nav"
