@@ -163,6 +163,7 @@ mod tests {
     /// омонимы не превращаются в счётчики без контекста из текста.
     #[tokio::test]
     async fn noun_homonym_stays_a_vocabulary_card() {
+        crate::corpus::real_dictionaries_or_skip!();
         crate::dictionary::counters::tests::init_test_counters();
         let repo = InMemoryUserRepository::with_user(user());
         let result = CreateCardsFromAnalysisUseCase::new(&repo)

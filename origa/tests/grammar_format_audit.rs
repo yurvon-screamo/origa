@@ -31,11 +31,7 @@ struct AuditData {
 }
 
 fn cdn_dir() -> PathBuf {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-    PathBuf::from(manifest_dir)
-        .parent()
-        .expect("workspace root parent of CARGO_MANIFEST_DIR")
-        .join("cdn")
+    origa::corpus::cdn_dir()
 }
 
 fn ensure_grammar_loaded() {

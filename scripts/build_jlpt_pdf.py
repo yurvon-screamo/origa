@@ -36,9 +36,10 @@ import json
 import os
 import sys
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-KANJI_JSON = REPO_ROOT / "cdn" / "dictionary" / "kanji.json"
+KANJI_JSON = corpus_dir() / "dictionary" / "kanji.json"
 OUT_ROOT = REPO_ROOT / "origa_landing" / "public" / "jlpt"
 # Tracked sidecar anchoring the rendered artefacts to the data content:
 # sha256 of kanji.json + the date that content was first rendered. cdn/

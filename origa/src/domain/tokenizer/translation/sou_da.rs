@@ -136,7 +136,7 @@ fn find_sou_da_rule(
 #[cfg(test)]
 mod integration_tests {
     use super::super::lookup_tokens_translations;
-    use super::super::test_env::ensure_dictionaries;
+    use crate::corpus::translation_dictionaries_or_skip;
     use crate::domain::NativeLanguage;
     use crate::domain::tokenizer::tokenize_text;
 
@@ -145,7 +145,7 @@ mod integration_tests {
     // surface != base, which resolve_sou_da_label detects.
     #[test]
     fn should_label_sou_as_appearance_after_adjective_stem() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "この料理は美味しそうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -165,7 +165,7 @@ mod integration_tests {
     // (hearsay): "I heard he will come".
     #[test]
     fn should_label_sou_as_hearsay_after_dictionary_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "田中さんは来るそうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -185,7 +185,7 @@ mod integration_tests {
     // "I heard it rained". The token directly before そう is the た auxiliary.
     #[test]
     fn should_label_sou_as_hearsay_after_past_form() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "雨が降ったそうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -205,7 +205,7 @@ mod integration_tests {
     // word. The context-aware path must not attach a そうだ grammar_label to it.
     #[test]
     fn should_not_label_souiu_compound_as_sou_da_grammar() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "そういうこと";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -229,7 +229,7 @@ mod integration_tests {
     // adaptation — noun/na-adj hearsay is detected via the intervening copula.
     #[test]
     fn should_label_sou_as_hearsay_after_copula_da() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "元気だそうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -248,7 +248,7 @@ mod integration_tests {
     // そうだ after an i-adjective past (美味しかった → 美味しかっ + た) is 伝聞.
     #[test]
     fn should_label_sou_as_hearsay_after_iadjective_past() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "美味しかったそうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -269,7 +269,7 @@ mod integration_tests {
     // ～そうだ rule.
     #[test]
     fn should_label_sou_as_combined_after_bare_noun() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "元気そうだ";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -291,7 +291,7 @@ mod integration_tests {
     // positive where そう follows a non-predicate token.
     #[test]
     fn should_label_demonstrative_sou_as_manner_not_sou_da() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "私はそう思う";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);
@@ -312,7 +312,7 @@ mod integration_tests {
     // clause (食べた。そうだ。) is agreement, not hearsay about the first clause.
     #[test]
     fn should_not_attach_sou_da_label_across_sentence_boundary() {
-        ensure_dictionaries();
+        translation_dictionaries_or_skip!();
         let text = "食べた。そうだ。";
         let tokens = tokenize_text(text).unwrap();
         let results = lookup_tokens_translations(&tokens, &NativeLanguage::Russian, text);

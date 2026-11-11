@@ -34,6 +34,13 @@ fn events_about(marker: &str) -> Vec<(Level, String)> {
 async fn caps_failure_on_android_escalates_to_error_event() {
     log_capture::install();
     reset_cached_capabilities();
+    // In-flight caps queries from earlier suites (device_ai invoke tests)
+    // reject on the JS event loop — their warnings land in whatever test
+    // window is open at that moment. Let the stragglers settle, then start
+    // the verdict window drained (the log_capture protocol: drain right
+    // before driving the behaviour under test).
+    gloo_timers::future::TimeoutFuture::new(50).await;
+    log_capture::take_events();
     let _ua = UserAgentOverride::install(ANDROID_UA);
     // Reject the caps query — the plugin "present but failing" scenario.
     let _mock = TauriMock::install(|command, _args| {
@@ -73,6 +80,12 @@ async fn caps_failure_on_android_escalates_to_error_event() {
 async fn caps_failure_on_web_stays_warn_without_error_event() {
     log_capture::install();
     reset_cached_capabilities();
+    // Same settle+drain as the android test above: this test's window must
+    // not absorb straggler warnings from earlier suites' in-flight caps
+    // queries (observed on CI: 4 leftover "capabilities query failed"
+    // events from the invoke suite landed here and broke the == 1 count).
+    gloo_timers::future::TimeoutFuture::new(50).await;
+    log_capture::take_events();
     // No UA override: the runner's browser UA is a desktop one and without
     // a Tauri shell platform_name() resolves to "web" — the plugin-less
     // platform where fallback routing is normal, not a degradation.

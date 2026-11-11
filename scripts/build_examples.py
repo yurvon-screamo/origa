@@ -29,9 +29,10 @@ import sys
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 REPO = Path(__file__).resolve().parent.parent
-CDN = REPO / "cdn"
+CDN = corpus_dir()
 EXAMPLES_URL = "https://www.edrdg.org/pub/Nihongo/examples.utf.gz"
 DEFAULT_WORK = Path("/tmp/opencode")
 

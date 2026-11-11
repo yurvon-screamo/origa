@@ -1,7 +1,7 @@
 use crate::domain::{CardType, NativeLanguage, OrigaError, User};
 use crate::traits::UserRepository;
 use crate::use_cases::CreateVocabularyCardUseCase;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 
 fn create_repo() -> InMemoryUserRepository {
     InMemoryUserRepository::with_user(User::new(
@@ -13,7 +13,7 @@ fn create_repo() -> InMemoryUserRepository {
 
 #[tokio::test]
 async fn create_vocabulary_card_creates_card_for_known_word() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -43,7 +43,7 @@ async fn create_vocabulary_card_returns_error_for_nonexistent_user() {
 
 #[tokio::test]
 async fn create_vocabulary_card_duplicate_returns_skipped() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -62,7 +62,7 @@ async fn create_vocabulary_card_duplicate_returns_skipped() {
 
 #[tokio::test]
 async fn create_vocabulary_card_skips_non_japanese_text() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -78,7 +78,7 @@ async fn create_vocabulary_card_skips_non_japanese_text() {
 
 #[tokio::test]
 async fn create_vocabulary_card_creates_multiple_cards_from_sentence() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -95,7 +95,7 @@ async fn create_vocabulary_card_creates_multiple_cards_from_sentence() {
 
 #[tokio::test]
 async fn create_vocabulary_card_repository_returns_saved_user() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 
@@ -107,7 +107,7 @@ async fn create_vocabulary_card_repository_returns_saved_user() {
 
 #[tokio::test]
 async fn create_vocabulary_card_empty_text_creates_no_cards() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let repo = create_repo();
     let use_case = CreateVocabularyCardUseCase::new(&repo);
 

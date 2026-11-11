@@ -338,18 +338,15 @@ mod tests {
                 return;
             }
 
-            let manifest_dir =
-                std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
-
-            let grammar_path = std::path::PathBuf::from(manifest_dir)
-                .parent()
-                .expect("Failed to get parent directory")
-                .join("cdn")
+            let grammar_path = crate::corpus::cdn_dir()
                 .join("grammar")
                 .join("grammar_v3.json");
+            if crate::corpus::corpus_absent(&grammar_path, "grammar rules") {
+                return;
+            }
 
-            let grammar_json =
-                std::fs::read_to_string(&grammar_path).expect("Failed to read grammar_v3.json");
+            let grammar_json = std::fs::read_to_string(&grammar_path)
+                .expect("grammar_v3.json exists (probed above)");
 
             let grammar_data = GrammarData { grammar_json };
             init_grammar(grammar_data).expect("Failed to init grammar rules");
@@ -413,7 +410,9 @@ mod tests {
     #[test]
     fn remove_orphaned_grammar_cards_returns_zero_when_no_orphaned_cards() {
         ensure_grammar_loaded();
-
+        if !is_grammar_loaded() {
+            return; // corpus absent (marker emitted) — grammar asserts need it
+        }
         let mut user = create_test_user();
         let valid_rule_id = get_first_rule_id();
         user.create_card(Card::Grammar(GrammarRuleCard::new_test_with_id(
@@ -430,7 +429,9 @@ mod tests {
     #[test]
     fn remove_orphaned_grammar_cards_removes_cards_with_nonexistent_rule_ids() {
         ensure_grammar_loaded();
-
+        if !is_grammar_loaded() {
+            return; // corpus absent (marker emitted) — grammar asserts need it
+        }
         let mut user = create_test_user();
 
         let valid_rule_id = get_first_rule_id();
@@ -485,7 +486,9 @@ mod tests {
     #[test]
     fn remove_orphaned_grammar_cards_ignores_non_grammar_cards() {
         ensure_grammar_loaded();
-
+        if !is_grammar_loaded() {
+            return; // corpus absent (marker emitted) — grammar asserts need it
+        }
         let mut user = create_test_user();
         let orphan_rule_id = Ulid::new();
 
