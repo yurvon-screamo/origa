@@ -22,11 +22,16 @@ if (
 }
 
 // TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
-// imported after ./config so the dotenv bootstrap has already run. The spawn
-// address, the healthcheck and the kill must agree on one port, so the
-// .env-provided TRAILBASE_URL is re-pinned from the resolved port (dotenv's
-// override would otherwise keep a stale port from a shared checkout copy).
-process.env.TRAILBASE_URL = `http://127.0.0.1:${TRAILBASE_PORT}`;
+// imported after ./config so the dotenv bootstrap has already run.
+// The trail process spawns on 127.0.0.1:PORT and the healthcheck waits on
+// that exact address (waitForTrailBase uses trailbaseSpawnUrl below); the
+// TRAILBASE_URL env is left untouched — offline specs build request
+// intercepts from it and the bundle embeds it, so host spelling
+// (localhost vs 127.0.0.1) must stay whatever the caller provided
+// (ci.yml uses localhost; rewriting it here breaks the intercepts).
+
+/** The address the trail process is spawned on (loopback, always reachable). */
+const trailbaseSpawnUrl = `http://127.0.0.1:${TRAILBASE_PORT}`;
 
 async function waitForTrailBase(
   maxRetries = 30,
@@ -35,7 +40,7 @@ async function waitForTrailBase(
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetchWithTimeout(
-        `${getTrailBaseUrl()}/api/healthcheck`,
+        `${trailbaseSpawnUrl}/api/healthcheck`,
         {},
         5000,
       );

@@ -110,7 +110,7 @@ export default defineConfig({
       stderr: "pipe",
       env: {
         ORIGA_CDN_BASE_URL: cdnBaseUrl,
-        TRAILBASE_URL: `http://127.0.0.1:${TRAILBASE_PORT}`,
+        TRAILBASE_URL: `http://localhost:${TRAILBASE_PORT}`,
         ORIGA_COMMIT: headCommit(),
       },
     },
