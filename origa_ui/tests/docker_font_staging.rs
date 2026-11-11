@@ -17,6 +17,7 @@
 use std::collections::HashSet;
 
 const DOCKERFILE: &str = include_str!("../Dockerfile");
+const BUILD_RS: &str = include_str!("../build.rs");
 const BUILD_DEFAULTS: &str = include_str!("../../build_defaults.rs");
 const CDN_MANIFEST: &str = include_str!("../../end2end/cdn-manifest.txt");
 
@@ -86,6 +87,57 @@ fn dockerfile_cdn_fallback_matches_default_cdn() {
          (build_defaults.rs): local no-env builds would stage fonts from \
          {actual} while the wasm bundle fetches from {expected} — keep the \
          two in sync (the fallback mirrors resolve_cdn())"
+    );
+}
+
+/// The corpus-root contract between the Dockerfile and `build.rs` (corpus
+/// migration #912): build scripts resolve the corpus root via the
+/// `ORIGA_CDN_DIR` override (falling back to `$HOME/origa-cdn`), and the
+/// Dockerfile pins that override to the directory it stages the subsets
+/// into. A drift between the two sides is invisible at compile time and
+/// only surfaces as a red Docker build guard deep in CI (this exact bug
+/// shipped as the round-1 failure of the font-staging task) — the pin
+/// fails in every Test run instead, right after either side renames its
+/// half of the contract.
+#[test]
+fn dockerfile_staging_root_follows_build_rs_corpus_contract() {
+    // build.rs side of the contract: cdn_dir() reads the ORIGA_CDN_DIR
+    // override and stages fonts from <corpus root>/fonts.
+    for (needle, what) in [
+        (
+            "env::var_os(\"ORIGA_CDN_DIR\")",
+            "the ORIGA_CDN_DIR override of cdn_dir()",
+        ),
+        (
+            ".join(\"fonts\")",
+            "the fonts subdirectory of the corpus root",
+        ),
+    ] {
+        assert!(
+            BUILD_RS.contains(needle),
+            "origa_ui/build.rs no longer contains {what} ({needle:?}) — \
+             the corpus-root contract drifted from the Dockerfile staging \
+             (see ENV ORIGA_CDN_DIR in origa_ui/Dockerfile); keep both \
+             sides of the contract in sync, otherwise the Docker build \
+             stages fonts the build script never reads"
+        );
+    }
+
+    // Dockerfile side: the override is set and the download step targets
+    // it, so the staged root and the build script's resolution cannot
+    // silently diverge.
+    assert!(
+        DOCKERFILE.contains("ENV ORIGA_CDN_DIR="),
+        "origa_ui/Dockerfile no longer pins ORIGA_CDN_DIR — the build \
+         script would fall back to the machine-local corpus root \
+         (~/origa-cdn), which no Docker builder seeds, and FONT_FILES \
+         would compile empty again (the PR #928 bug)"
+    );
+    assert!(
+        DOCKERFILE.contains("${ORIGA_CDN_DIR}/fonts"),
+        "the Dockerfile download step no longer stages into \
+         ${{ORIGA_CDN_DIR}}/fonts — the staging root drifted from the \
+         cdn_dir() override it must feed"
     );
 }
 
