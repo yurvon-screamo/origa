@@ -1,4 +1,4 @@
-import TimeoutError, { type Page, expect } from "@playwright/test";
+import { errors, type Page, expect } from "@playwright/test";
 
 import { OnboardingPage } from "../pages";
 
@@ -121,7 +121,7 @@ async function tapNextRidingOverlays(page: Page): Promise<void> {
       // selector — strict-mode violation, removed button — must surface
       // immediately instead of burning the retry budget behind a misleading
       // "overlay" diagnosis.
-      if (!(error instanceof TimeoutError)) throw error;
+      if (!(error instanceof errors.TimeoutError)) throw error;
       await page.waitForTimeout(1000);
     }
   }
