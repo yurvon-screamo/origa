@@ -44,7 +44,10 @@ CI_FILE = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 # second suite. Anything not on this list must carry --no-fail-fast.
 FAIL_FAST_ALLOWLIST: frozenset[str] = frozenset({"macos-check"})
 
-WORKSPACE_SUITE_FLAGS = ("cargo test --workspace --exclude origa_landing", "--no-fail-fast")
+WORKSPACE_SUITE_FLAGS = (
+    "cargo test --workspace --exclude origa_landing",
+    "--no-fail-fast",
+)
 LANDING_SUITE_FLAGS = ("cargo test -p origa_landing --features ssr", "--no-fail-fast")
 
 
