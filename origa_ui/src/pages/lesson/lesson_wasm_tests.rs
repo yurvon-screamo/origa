@@ -979,6 +979,106 @@ async fn yesno_card_view_grammar_result_offers_the_rule_expand() {
     );
 }
 
+// The non-kanji yes/no result keeps the compact answer block and the
+// full-card expand must stay EMPTY: vocabulary/phrase cards have no
+// separate full document, so any expand content would duplicate the
+// answer rendered right above it.
+#[wasm_bindgen_test]
+async fn yesno_card_view_non_kanji_result_keeps_an_empty_expand() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(true)
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let expand = wrapper
+        .query_selector("[data-testid=\"yesno-full-card-expand\"]")
+        .ok()
+        .flatten()
+        .expect("the expand mount point must exist on the result");
+    let expand_text = expand.text_content().unwrap_or_default();
+    assert!(
+        expand_text.trim().is_empty(),
+        "a vocabulary yes/no result must not unfold a full card; got: {expand_text}"
+    );
+    assert!(
+        !expand_text.contains("Meaning") && !expand_text.contains("シ"),
+        "no kanji details may leak into a non-kanji result; got: {expand_text}"
+    );
+}
+
+// The grammar quiz (QuizCardView) offers the rule expand only AFTER
+// submission: before it the result gate keeps «More details» hidden —
+// the rule breakdown must not leak while the learner is still answering.
+#[wasm_bindgen_test]
+async fn grammar_quiz_result_offers_the_rule_expand_only_after_submit() {
+    use super::quiz_card::{QuizCardView, QuizVariant};
+    use origa::domain::{QuizCard, QuizMode};
+
+    let show_result = RwSignal::new(false);
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        let grammar: origa::domain::Card =
+            serde_json::from_str(r#"{"Grammar":{"rule_id":"01ARZ3NDEKTSV4RRFFQ69G5FAV"}}"#)
+                .expect("deserialize grammar card");
+        let quiz = QuizCard::new(
+            grammar,
+            vec![
+                origa::domain::QuizOption::new("てもいい".to_string(), true, None),
+                origa::domain::QuizOption::new("てもいわない".to_string(), false, None),
+            ],
+            QuizMode::Single,
+        );
+        view! {
+            <QuizCardView
+                quiz_card=quiz
+                show_result=show_result.into()
+                selected_option=None
+                on_select_option=Callback::new(|_: usize| ())
+                on_dont_know=Callback::new(|_: ()| ())
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+                quiz_variant=QuizVariant::Grammar
+                selected_options=Signal::derive(HashSet::new)
+                multi_submitted=Signal::from(false)
+                multi_result=None
+                on_toggle=Callback::new(|_: usize| ())
+                on_submit=Callback::new(|_: ()| ())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let before = wrapper.text_content().unwrap();
+    assert!(
+        !before.contains("More details"),
+        "the rule expand must stay hidden before submission; got: {before}"
+    );
+
+    show_result.set(true);
+    tick().await;
+
+    let after = wrapper.text_content().unwrap();
+    assert!(
+        after.contains("More details"),
+        "the grammar quiz result must offer the rule expand; got: {after}"
+    );
+}
+
 #[wasm_bindgen_test]
 async fn yesno_card_view_incorrect_shows_correct_answer_line() {
     let wrapper = create_wrapper();
