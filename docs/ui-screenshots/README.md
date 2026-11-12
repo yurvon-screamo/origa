@@ -7,6 +7,14 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| yesno-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:49.589Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result-expanded--mobile-dd8ac551.png) |
+| yesno-result | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:46.987Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result--mobile-3238c82f.png) |
+| quiz-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:08.947Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result-expanded--mobile-07c3a0f5.png) |
+| quiz-result | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:07.896Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result--mobile-94f2d2bf.png) |
+| yesno-result-expanded | lesson-yesno-result | desktop | ru-RU | 1280×800 | 2026-11-11T23:59:50.095Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result-expanded--desktop-f9f5d6bf.png) |
+| yesno-result | lesson-yesno-result | desktop | ru-RU | 1280×800 | 2026-11-11T23:59:49.101Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result--desktop-cb9728b5.png) |
+| quiz-result-expanded | lesson-yesno-result | desktop | ru-RU | 1280×800 | 2026-11-11T23:58:09.265Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result-expanded--desktop-86ec8fa4.png) |
+| quiz-result | lesson-yesno-result | desktop | ru-RU | 1280×800 | 2026-11-11T23:58:08.244Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result--desktop-debd6c92.png) |
 | quiz-answer | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:17.498Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--mobile-fbf1bfaa.png) |
 | quiz-question | lesson-reading-quiz | mobile | ru-RU | 390×844 | 2026-11-09T02:05:16.493Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-question--mobile-56be97e7.png) |
 | quiz-answer | lesson-reading-quiz | desktop | ru-RU | 1280×800 | 2026-11-09T02:03:48.443Z | dc37c2c6 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--quiz-answer--desktop-c3777f32.png) |
