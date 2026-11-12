@@ -7,6 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| kanji-writing-practice | kanji-writing-practice | mobile | ru-RU | 390×1026 | 2026-11-11T14:13:39.125Z | a5dbbcb4 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-removed/kanji-writing-practice--kanji-writing-practice--mobile-cddfa4ca.png) |
+| kanji-writing-practice | kanji-writing-practice | desktop | ru-RU | 1280×1541 | 2026-11-11T14:13:27.857Z | a5dbbcb4 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-stroke-removed/kanji-writing-practice--kanji-writing-practice--desktop-f16b3e23.png) |
 | grid-viewport | words-grid | mobile | ru-RU | 390×844 | 2026-11-12T05:22:09.197Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--mobile-37045630.png) |
 | grid-full | words-grid | mobile | ru-RU | 390×894 | 2026-11-12T05:22:09.082Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--mobile-8808e9d4.png) |
 | grid-viewport | words-grid | desktop | ru-RU | 1280×800 | 2026-11-12T05:21:12.250Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--desktop-0b7907e3.png) |

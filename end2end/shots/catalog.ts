@@ -156,6 +156,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "with-word",
   },
+  "kanji-writing-practice": {
+    id: "kanji-writing-practice",
+    title: "Практика письма кандзи",
+    route: "/kanji/:id",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
   "lesson-review-body": {
     id: "lesson-review-body",
     title: "Тело повторения урока (due-профиль)",
