@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "word-examples",
+  "screen": "detail-viewport",
+  "route": "/words/:word",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 326750,
+  "sha256": "642d31ecfbcdc22236e7261584b9925cf97ef836c89dcabd8595d20348175a39",
+  "capturedAt": "2026-11-12T05:30:27.281Z",
+  "commit": "509f23bb77c5503176e48f327b87083c1fe70d31",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:8093",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--mobile-642d31ec.png",
+  "uploadedSha256": "642d31ecfbcdc22236e7261584b9925cf97ef836c89dcabd8595d20348175a39",
+  "uploadedAt": "2026-11-12T05:30:34.884Z"
+}

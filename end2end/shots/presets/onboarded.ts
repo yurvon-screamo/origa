@@ -16,10 +16,12 @@ export async function onboarded(context: PresetContext): Promise<void> {
 
   // The N4 import creates ~2500 cards; the scoring step appears when it
   // is done. The default budget of the helper (2 minutes) is too tight
-  // for a cold import on a busy machine.
+  // for a cold import on a busy machine — and a cold import on a debug
+  // WASM bundle of a fresh worktree can exceed even 10 minutes (import
+  // slowness is a known issue, PR #922).
   await completeOnboardingToScoring(context.page, {
     level: "N4",
-    scoringReadyTimeout: 600_000,
+    scoringReadyTimeout: 1_800_000,
   });
 
   const markAll = context.page.getByTestId("onboarding-mark-all-known");

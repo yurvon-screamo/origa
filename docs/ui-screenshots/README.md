@@ -8,7 +8,11 @@
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-12T05:30:37.615Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--mobile-4d07763a.png) |
+| detail-viewport | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:27.281Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--mobile-642d31ec.png) |
+| detail-full | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:26.958Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--mobile-642d31ec.png) |
 | home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:26.431Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--desktop-92110531.png) |
+| detail-viewport | word-examples | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:20.519Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--desktop-21fe2e4c.png) |
+| detail-full | word-examples | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:19.866Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--desktop-21fe2e4c.png) |
 | grid-viewport | words-grid | mobile | ru-RU | 390×844 | 2026-11-12T05:22:09.197Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--mobile-37045630.png) |
 | grid-full | words-grid | mobile | ru-RU | 390×894 | 2026-11-12T05:22:09.082Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--mobile-8808e9d4.png) |
 | grid-viewport | words-grid | desktop | ru-RU | 1280×800 | 2026-11-12T05:21:12.250Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--desktop-0b7907e3.png) |
