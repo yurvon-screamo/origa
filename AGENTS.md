@@ -264,7 +264,6 @@ Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с 
 - Sans-serif шрифты (только Cormorant Garamond + DM Mono)
 - `border-radius` на основных UI / `box-shadow` с blur (только жёсткие offset-тени)
 
-
 ## Браузер-совместимость (Baseline)
 
 Браузер-таргет проекта: **Baseline Widely available** (фичи интероперабельны во всех движках ≥30 месяцев; Tauri webviews — WKWebView / WebView2 / webkitgtk — та же рамка). Новые Web API/CSS допустимы с фоллбэком или чистой деградацией на движках вне таргета (web-слои: `origa_ui` WASM, `origa_landing` SSR). Ориентир — [web.dev/baseline](https://web.dev/baseline).
