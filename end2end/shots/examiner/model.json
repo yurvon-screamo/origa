@@ -49,6 +49,9 @@
     "jft-card:sets-jft-badge": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "kanji-writing-practice:kanji-writing-practice": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "lesson-acquaintance-grammar:grammar-answer": {
       "questions": [
         "text-overlap",
@@ -210,6 +213,55 @@
         "lesson-stage": ["complete"]
       }
     },
+    "lesson-yesno-result:quiz-result": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "quiz-single-highlight",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:quiz-result-expanded": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:yesno-result": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
+    "lesson-yesno-result:yesno-result-expanded": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage",
+        "card-has-japanese"
+      ],
+      "expect": {
+        "lesson-stage": ["quiz-answer"]
+      }
+    },
     "token-popup:token-popup-report": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
@@ -217,6 +269,12 @@
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "word-examples:detail-viewport": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-viewport": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "words:words": {

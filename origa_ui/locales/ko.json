@@ -587,8 +587,6 @@
     "no_kanji_for_level": "선택한 레벨의 한자가 없습니다 (또는 모두 학습했습니다)",
     "worksheets": "연습지: {}",
     "animation_unavailable": "이 한자에는 애니메이션이 없습니다",
-    "stroke_progress": "획 {} / {}",
-    "done": "완료!",
     "writing_practice": "쓰기 연습",
     "stroke_order": "획순",
     "vocabulary": "어휘",

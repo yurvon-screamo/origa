@@ -44,6 +44,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "onboarded",
   },
+  "words-grid": {
+    id: "words-grid",
+    title: "Экран «Слова»: сетка карточек",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "with-word",
+  },
   "lesson-acquaintance-grammar": {
     id: "lesson-acquaintance-grammar",
     title: "Урок: ответ знакомства (грамматика)",
@@ -75,6 +82,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
   "lesson-reading-quiz": {
     id: "lesson-reading-quiz",
     title: "Урок: квиз чтений кандзи",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
+  },
+  "lesson-yesno-result": {
+    id: "lesson-yesno-result",
+    title: "Урок: результат да/нет-квиза и разворот карточки",
     route: "/lesson",
     locale: "ru-RU",
     preset: "due-corpus",
@@ -148,6 +162,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     route: "/lesson",
     locale: "ru-RU",
     preset: "with-word",
+  },
+  "kanji-writing-practice": {
+    id: "kanji-writing-practice",
+    title: "Практика письма кандзи",
+    route: "/kanji/:id",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
   },
   "lesson-review-body": {
     id: "lesson-review-body",

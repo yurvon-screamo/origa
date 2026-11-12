@@ -65,6 +65,8 @@ mod filter_tag;
 #[cfg(all(target_arch = "wasm32", test))]
 mod form_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
+mod kanji_drawing_wasm_tests;
+#[cfg(all(target_arch = "wasm32", test))]
 mod layout_wasm_tests;
 #[cfg(all(target_arch = "wasm32", test))]
 mod overlay_wasm_tests;

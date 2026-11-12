@@ -587,8 +587,6 @@
     "no_kanji_for_level": "Нет кандзи для выбранного уровня (или все уже изучены)",
     "worksheets": "Прописи: {}",
     "animation_unavailable": "Анимация для этого кандзи недоступна",
-    "stroke_progress": "Штрих {} / {}",
-    "done": "Готово!",
     "writing_practice": "Практика написания",
     "stroke_order": "Порядок черт",
     "vocabulary": "Словарь",
