@@ -373,6 +373,15 @@ jobs:
                   # against the merge-base with origin/master (--upstream).
                   fetch-depth: 0
 
+            - name: Platform cfg guard (warning-only)
+              # Informational guard for the #701 class (task 20261104060604,
+              # GH #854): added cfg-based platform branches in tauri/src
+              # without a per-platform test table produce a ::warning::
+              # annotation on the PR — never a red job (doctrine: warning,
+              # not block). Pure-routing-table files (platform_routing.rs
+              # pattern) satisfy it by carrying a test module.
+              run: python3 .github/scripts/platform_cfg_guard.py
+
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages
@@ -637,7 +646,11 @@ jobs:
               run: npm ci && npm run build:css
 
             - name: Run tests
-              run: cargo test --workspace --exclude origa_landing
+              # --no-fail-fast: a red suite must not stop the remaining
+              # ones — fail-fast shows one regression per CI round while
+              # the rest of the workspace stays unexamined behind it.
+              # Compile errors still abort everything regardless.
+              run: cargo test --workspace --exclude origa_landing --no-fail-fast
 
     # Landing SSR tests (#800). The 300+ integration tests of
     # origa_landing were green but invisible to CI: the Test job excludes
@@ -730,7 +743,10 @@ jobs:
                   fi
 
             - name: Run landing SSR tests
-              run: cargo test -p origa_landing --features ssr
+              # Same --no-fail-fast rationale as the Test job: ~14 test
+              # binaries in the package, every red one must be visible
+              # in a single run.
+              run: cargo test -p origa_landing --features ssr --no-fail-fast
 
             # The ssr code and its test targets were never linted: the
             # workspace clippy run builds the crate WITHOUT the ssr
@@ -1352,7 +1368,7 @@ jobs:
                       ;;
                     onboarding-lesson)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding|feedback|feedback_translation|counter|counter_page)\.feature\.spec\.js"
+                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding|feedback|feedback_translation|counter|counter_page|insets)\.feature\.spec\.js"
                       ;;
                     stress)
                       # Full-corpus N1 scenarios: each seeds ~11k cards
