@@ -264,6 +264,11 @@ Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с 
 - Sans-serif шрифты (только Cormorant Garamond + DM Mono)
 - `border-radius` на основных UI / `box-shadow` с blur (только жёсткие offset-тени)
 
+
+## Браузер-совместимость (Baseline)
+
+Браузер-таргет проекта: **Baseline Widely available** (фичи интероперабельны во всех движках ≥30 месяцев; Tauri webviews — WKWebView / WebView2 / webkitgtk — та же рамка). Новые Web API/CSS допустимы с фоллбэком или чистой деградацией на движках вне таргета (web-слои: `origa_ui` WASM, `origa_landing` SSR). Ориентир — [web.dev/baseline](https://web.dev/baseline).
+
 ## Маркетинг и SEO (`docs/marketing/`)
 
 Вся маркетинговая/SEO-документация собрана в `docs/marketing/` (вход: `docs/marketing/README.md` — карта документов). Ключевое: спрос по 4 локалям — `docs/marketing/research/2026-09-16-keyword-research.md` (§15 — практическая валидация Wordstat/Trends/Bing API/GSC); мастер-стратегия — `docs/marketing/strategies/origa-seo.md`; исполнение контент-конвейера — issue #576. Конвенции: ресёрчи `YYYY-MM-DD-тема.md`, устаревшее не удаляется (баннер `⚠️ Superseded` + ссылка на преемника), ключи/креды в репо не хранить (ключ Bing Webmaster — в uwuwu-вики).
