@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| detail-viewport | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:27.281Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--mobile-642d31ec.png) |
+| detail-full | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:26.958Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--mobile-642d31ec.png) |
+| detail-viewport | word-examples | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:20.519Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--desktop-21fe2e4c.png) |
+| detail-full | word-examples | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:19.866Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--desktop-21fe2e4c.png) |
 | yesno-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:49.589Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result-expanded--mobile-dd8ac551.png) |
 | yesno-result | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:46.987Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result--mobile-3238c82f.png) |
 | quiz-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:08.947Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result-expanded--mobile-07c3a0f5.png) |
