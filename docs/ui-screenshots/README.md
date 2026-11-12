@@ -7,6 +7,8 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-12T05:30:37.615Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--mobile-4d07763a.png) |
+| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:26.431Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--desktop-92110531.png) |
 | yesno-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:49.589Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result-expanded--mobile-dd8ac551.png) |
 | yesno-result | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:46.987Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result--mobile-3238c82f.png) |
 | quiz-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:08.947Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--quiz-result-expanded--mobile-07c3a0f5.png) |
@@ -23,8 +25,6 @@
 | grammar-details | lesson-acquaintance-grammar | desktop | ru-RU | 1280×2122 | 2026-11-10T21:38:03.827Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-details--desktop-cb9f5187.png) |
 | grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-11-10T21:38:02.559Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-answer--desktop-6aed35a1.png) |
 | grammar-presentation | lesson-acquaintance-grammar | desktop | ru-RU | 1280×1303 | 2026-11-10T21:38:00.067Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-presentation--desktop-7adcbfe2.png) |
-| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
-| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
 | detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
 | detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |
