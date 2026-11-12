@@ -909,7 +909,7 @@ async fn yesno_card_view_kanji_result_renders_full_card_details() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -965,7 +965,7 @@ async fn yesno_card_view_grammar_result_offers_the_rule_expand() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1030,7 +1030,7 @@ async fn yesno_card_view_correct_shows_no_answer_rows() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1594,9 +1594,9 @@ async fn kanji_reading_quiz_result_shows_meaning_via_full_card_expand() {
                 on_dont_know=Callback::new(|_: ()| ())
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 quiz_variant=QuizVariant::Reading
-                selected_options=Signal::derive(|| HashSet::new())
+                selected_options=Signal::derive(HashSet::new)
                 multi_submitted=Signal::from(true)
                 multi_result=None
                 on_toggle=Callback::new(|_: usize| ())
