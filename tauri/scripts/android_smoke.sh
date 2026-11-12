@@ -12,7 +12,8 @@
 # stdout/stderr go to /dev/null regardless of debuggability (ADR-063).
 #
 # Usage: android_smoke.sh <apk-path> [package-id]
-# Env: ADB (default "adb"), BOOT_TIMEOUT_S, LAUNCH_TIMEOUT_S, SETTLE_S.
+# Env: ADB (default "adb"), BOOT_TIMEOUT_S, LAUNCH_TIMEOUT_S, SETTLE_S,
+#      SELFTEST_TIMEOUT_S (OCR marker wait budget, default 120).
 # Requires: adb in PATH; an emulator/device already attached (boot is
 # awaited here).
 set -euo pipefail
@@ -93,4 +94,38 @@ case "$logcat" in
 *) fail "rustls platform-verifier init marker missing in logcat (app alive but verifier not initialized)" ;;
 esac
 
-echo "android-smoke: OK (pid=$pid, publication + verifier markers present, no panic)"
+# Feature selftest (task 20261104060604, GH #854): the liveness markers
+# above say nothing about whether a feature actually works on this
+# platform — #701 shipped a dead Android OCR behind a green CI. Fire the
+# OCR selftest deep link and wait for the outcome marker the frontend
+# reports through the native logcat bridge (`selftest_marker` command):
+# "[selftest] ocr ok: …" passes, "[selftest] ocr failed: …" and silence
+# both fail the job.
+echo "android-smoke: firing OCR feature selftest deep link"
+$ADB shell am start -a android.intent.action.VIEW -d "origa://selftest-ocr" >/dev/null 2>&1 ||
+	fail "selftest deep link failed to fire (activity resolve error)"
+SELFTEST_TIMEOUT_S="${SELFTEST_TIMEOUT_S:-120}"
+deadline=$(($(date +%s) + SELFTEST_TIMEOUT_S))
+marker=""
+while [ "$(date +%s)" -lt "$deadline" ]; do
+	# Grep by the message substring only — the default `adb logcat -d`
+	# format separates level and tag with a space on API 34 (`I origa`),
+	# so a `I/origa` pattern would never match. Same contract as the
+	# substring markers above.
+	marker="$($ADB logcat -d 2>/dev/null | grep '\[selftest\] ocr' | tail -n 1 | tr -d '\r' || true)"
+	[ -n "$marker" ] && break
+	sleep 2
+done
+case "$marker" in
+*"[selftest] ocr ok"*) echo "android-smoke: OCR selftest passed ($marker)" ;;
+"")
+	echo "--- selftest diagnostics (filtered logcat) ---"
+	$ADB logcat -d 2>/dev/null |
+		grep -iE 'selftest|Tauri/Console|AndroidRuntime|FATAL EXCEPTION' |
+		tail -n 50 >&2 || true
+	fail "OCR selftest marker never appeared within ${SELFTEST_TIMEOUT_S}s (probe hung, listener not mounted, or the logcat bridge is broken)"
+	;;
+*) fail "OCR selftest failed: $marker" ;;
+esac
+
+echo "android-smoke: OK (pid=$pid, publication + verifier markers present, no panic, OCR selftest passed)"

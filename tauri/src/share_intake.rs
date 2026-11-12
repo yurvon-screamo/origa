@@ -527,11 +527,65 @@ pub(crate) fn ingest_path_cold(app: &AppHandle, path: &std::path::Path) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     fn wire() -> ShareWire {
         ShareWire::Text {
             text: "本を読む".to_string(),
         }
+    }
+
+    /// Pure mirror of the Android share-intent routing
+    /// (`tauri/gen/android/.../MainActivity.kt::captureShare`): the Kotlin
+    /// side decides which share payload reaches `ShareBuffer`, and the Rust
+    /// side decodes it blind — this table is the only place both halves of
+    /// that contract are visible together (task 20261104060604, GH #854).
+    /// **Change both together**: this mirror pins the routing decisions
+    /// (mime + EXTRA_TEXT presence), not the byte-level details.
+    ///
+    /// Known simplification (deliberate): the presence of EXTRA_STREAM is
+    /// not modelled — Kotlin silently ignores an image/* intent without a
+    /// stream, which this mirror would classify as `FileCapture`. The
+    /// contract level that matters for `ShareWire` decoding is the mime
+    /// family routing, so the mirror pins only (mime, has_extra_text).
+    fn mirror_kotlin_route(mime_type: &str, has_extra_text: bool) -> KotlinRoute {
+        if mime_type == "text/plain" && has_extra_text {
+            return KotlinRoute::Text;
+        }
+        if mime_type.starts_with("image/") || mime_type.starts_with("audio/") {
+            return KotlinRoute::FileCapture;
+        }
+        KotlinRoute::Ignore
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    enum KotlinRoute {
+        /// `ShareBuffer.setPending(text)` — decoded as `ShareWire::Text`.
+        Text,
+        /// `captureSharedUri(uri, mime)` — parked file, decoded as
+        /// `ShareWire::File { file_name, mime, cache_path }`.
+        FileCapture,
+        /// No `when` arm matches — the intent is silently ignored.
+        Ignore,
+    }
+
+    /// Intent-routing contract across the bridge: every mime family the
+    /// app declares a share handler for must keep its wire kind.
+    #[rstest]
+    #[case::text_plain_with_text("text/plain", true, KotlinRoute::Text)]
+    #[case::text_plain_without_extra_text("text/plain", false, KotlinRoute::Ignore)]
+    #[case::image_png("image/png", false, KotlinRoute::FileCapture)]
+    #[case::image_jpeg("image/jpeg", false, KotlinRoute::FileCapture)]
+    #[case::audio_mpeg("audio/mpeg", false, KotlinRoute::FileCapture)]
+    #[case::application_pdf("application/pdf", false, KotlinRoute::Ignore)]
+    #[case::video_mp4("video/mp4", false, KotlinRoute::Ignore)]
+    #[case::empty_mime("", true, KotlinRoute::Ignore)]
+    fn kotlin_intent_routing_contract(
+        #[case] mime_type: &str,
+        #[case] has_extra_text: bool,
+        #[case] expected: KotlinRoute,
+    ) {
+        assert_eq!(mirror_kotlin_route(mime_type, has_extra_text), expected);
     }
 
     #[test]

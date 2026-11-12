@@ -17,6 +17,17 @@
 #[cfg(target_os = "macos")]
 use tauri::Manager;
 
+use crate::platform_routing::HostPlatform;
+
+/// Pure platform contract: in-app store review is wired only on Apple
+/// platforms (`SKStoreReviewController`, ADR-062). The WASM gate keys its
+/// cooldown off the `false` return — pinning the matrix here keeps the
+/// cooldown contract visible to a host test table instead of being implicit
+/// in cfg blocks (task 20261104060604, GH #854).
+pub fn supports_in_app_review(platform: HostPlatform) -> bool {
+    matches!(platform, HostPlatform::MacOS | HostPlatform::Ios)
+}
+
 /// Requests the native store review prompt.
 ///
 /// Returns `true` when the platform supports in-app review and the prompt
@@ -26,16 +37,20 @@ use tauri::Manager;
 /// frontend keeps its cooldown intact for future sessions.
 #[tauri::command]
 pub fn request_app_review(app: tauri::AppHandle) -> bool {
-    // Tail expressions in both cfg blocks: on Apple targets the second
-    // block compiles out, and a `return` in the first would trip
-    // clippy::needless_return there (the non-Apple branch needs neither).
+    if !supports_in_app_review(HostPlatform::current()) {
+        let _ = app;
+        return false;
+    }
+    // Only Apple targets pass the routing check above; the cfg keeps the
+    // objc2 call sites (and the `Manager` import) out of non-Apple builds,
+    // where the early return has already answered `false` and this tail is
+    // unreachable-but-total.
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     {
         request_app_review_apple(app)
     }
     #[cfg(not(any(target_os = "macos", target_os = "ios")))]
     {
-        let _ = app;
         false
     }
 }
@@ -126,5 +141,46 @@ fn request_review_ios() {
             objc2::class!(SKStoreReviewController),
             requestReviewInScene: &*scene
         ];
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    /// Host-side contract table (task 20261104060604, GH #854): review is
+    /// wired on Apple platforms only. The WASM cooldown gate
+    /// (`origa_ui/src/core/review_request.rs`) records the prompt timestamp
+    /// only on `true` — flipping any row here silently changes how often
+    /// real users get prompted, so it must be an explicit, tested decision.
+    #[rstest]
+    #[case::macos(HostPlatform::MacOS, true)]
+    #[case::ios(HostPlatform::Ios, true)]
+    #[case::windows(HostPlatform::Windows, false)]
+    #[case::linux(HostPlatform::Linux, false)]
+    #[case::android(HostPlatform::Android, false)]
+    fn supports_in_app_review_routes_every_platform(
+        #[case] platform: HostPlatform,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(supports_in_app_review(platform), expected);
+    }
+
+    /// The compiled dispatch agrees with the pure table on the target this
+    /// test binary runs on: on non-Apple builds the command must answer
+    /// `false` without touching any native API.
+    #[test]
+    fn routing_check_matches_target_support() {
+        // On Apple targets the pure check is `true` and the cfg-gated Apple
+        // dispatcher compiles in; elsewhere both are `false`. Either way the
+        // pure table and the cfg blocks cannot disagree.
+        let platform = HostPlatform::current();
+        let apple_target = cfg!(any(target_os = "macos", target_os = "ios"));
+        assert_eq!(
+            supports_in_app_review(platform),
+            apple_target,
+            "the pure routing table must agree with the compiled target"
+        );
     }
 }
