@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-yesno-result",
+  "screen": "yesno-result",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 363975,
+  "sha256": "cb9728b5467e3b7ee305006b9fcd2e10c6a9f8cc76064a7f6c152d807fa053e5",
+  "capturedAt": "2026-11-11T23:59:49.101Z",
+  "commit": "0068d5537e7d848a2433278969c1f9e4912c1746",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:18081",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result--desktop-cb9728b5.png",
+  "uploadedSha256": "cb9728b5467e3b7ee305006b9fcd2e10c6a9f8cc76064a7f6c152d807fa053e5",
+  "uploadedAt": "2026-11-12T00:02:17.135Z"
+}
