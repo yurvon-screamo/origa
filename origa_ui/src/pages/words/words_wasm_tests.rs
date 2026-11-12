@@ -81,6 +81,22 @@ async fn words_header_renders_title_and_actions() {
             .is_some_and(|t| !t.text_content().unwrap().is_empty()),
         "words header must render its title"
     );
+    // The deliberate wrapped-state: below 768px the actions leave the
+    // title's row and spread across their own full-width row (task
+    // 20261109231359-i5xmc2d). The classes are the contract with the CSS.
+    let actions = wrapper
+        .query_selector("[data-testid=\"words-actions\"]")
+        .ok()
+        .flatten()
+        .expect("words header must render the actions wrapper");
+    assert!(
+        actions.class_list().contains("max-md:basis-full"),
+        "actions wrapper must take its own full-width row below 768px"
+    );
+    assert!(
+        actions.class_list().contains("max-md:justify-between"),
+        "actions wrapper must spread the tab strip across its row"
+    );
 }
 
 // ═══════════════════════════════════════════════════════════════════════

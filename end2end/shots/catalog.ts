@@ -30,12 +30,26 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "fresh",
   },
+  words: {
+    id: "words",
+    title: "Экран «Слова»",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "fresh",
+  },
   "word-examples": {
     id: "word-examples",
     title: "Слово с примерами",
     route: "/words/:word",
     locale: "ru-RU",
     preset: "onboarded",
+  },
+  "words-grid": {
+    id: "words-grid",
+    title: "Экран «Слова»: сетка карточек",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "with-word",
   },
   "lesson-acquaintance-grammar": {
     id: "lesson-acquaintance-grammar",
@@ -148,6 +162,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     route: "/lesson",
     locale: "ru-RU",
     preset: "with-word",
+  },
+  "kanji-writing-practice": {
+    id: "kanji-writing-practice",
+    title: "Практика письма кандзи",
+    route: "/kanji/:id",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
   },
   "lesson-review-body": {
     id: "lesson-review-body",

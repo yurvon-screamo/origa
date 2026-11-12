@@ -3,7 +3,7 @@ mod event_handlers;
 mod stroke_comparison;
 mod svg_parser;
 
-use crate::i18n::{t, t_string, use_i18n};
+use crate::i18n::{t, use_i18n};
 use crate::loaders::kanji_bundle_store::KanjiBundleType;
 use canvas_renderer::redraw_canvas;
 use leptos::ev::PointerEvent;
@@ -160,42 +160,25 @@ pub fn KanjiDrawingPractice(
     view! {
         <div class="kanji-drawing-container" data-testid=test_id_val>
             {move || {
-                if load_error.get() {
-                    // Error keeps the centered flow layout: a corner label
-                    // would squeeze the message. The canvas stays mounted
-                    // (empty paper) as before.
+                // Error keeps the centered flow layout. The canvas stays
+                // mounted (empty paper) as before.
+                load_error.get().then(|| {
                     view! {
                         <div class="kanji-drawing-error" data-testid=test_id_progress>
                             {t!(i18n, kanji_page.animation_unavailable)}
                         </div>
                     }
                         .into_any()
-                } else {
-                    // Compact corner label (top-right, see
-                    // .kanji-drawing-info): progress while drawing, done
-                    // after the last stroke.
-                    view! {
-                        <div class="kanji-drawing-info" data-testid=test_id_progress>
-                            {move || {
-                                if is_completed.get() {
-                                    t_string!(i18n, kanji_page.done).to_string()
-                                } else {
-                                    let total = strokes.get().len();
-                                    let current = current_stroke_index.get() + 1;
-                                    i18n.get_keys().kanji_page().stroke_progress().inner().to_string()
-                                        .replacen("{}", &current.to_string(), 1)
-                                        .replacen("{}", &total.to_string(), 1)
-                                }
-                            }}
-                        </div>
-                    }
-                        .into_any()
-                }
+                })
             }}
             // The canvas is a direct child of the container: the old
             // wrapper div existed only as the positioning context for a
             // decorative ::after shadow that never rendered (see
-            // .kanji-drawing-canvas in input.css).
+            // .kanji-drawing-canvas in input.css). The stroke-progress
+            // label that used to overlay the corner was removed at the
+            // owner's request (11.11 — on wide viewports the canvas box
+            // is invisible against the card, so the chip read as a
+            // floating label in empty space).
             <canvas
                 node_ref={canvas_ref}
                 width={CANVAS_SIZE}

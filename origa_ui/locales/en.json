@@ -587,8 +587,6 @@
     "no_kanji_for_level": "No kanji for the selected level (or all already learned)",
     "worksheets": "Worksheets: {}",
     "animation_unavailable": "Animation not available for this kanji",
-    "stroke_progress": "Stroke {} / {}",
-    "done": "Done!",
     "writing_practice": "Writing Practice",
     "stroke_order": "Stroke Order",
     "vocabulary": "Vocabulary",

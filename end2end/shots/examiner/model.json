@@ -49,6 +49,9 @@
     "jft-card:sets-jft-badge": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "kanji-writing-practice:kanji-writing-practice": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "lesson-acquaintance-grammar:grammar-answer": {
       "questions": [
         "text-overlap",
@@ -266,6 +269,18 @@
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "word-examples:detail-viewport": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-viewport": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words:words": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words:words-full": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }

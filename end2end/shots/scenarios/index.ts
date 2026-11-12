@@ -8,6 +8,7 @@ import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
 import { homeJlptDetailsScenario } from "./home-jlpt-details.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
+import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
@@ -19,6 +20,8 @@ import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
+import { wordsGridScenario } from "./words-grid.ts";
+import { wordsScenario } from "./words.ts";
 
 /**
  * The browser-side implementations of the catalog.
@@ -29,6 +32,8 @@ import { wordExamplesScenario } from "./word-examples.ts";
 export const implementations: Record<string, ShotScenario> = {
   [homeScenario.id]: homeScenario,
   [wordExamplesScenario.id]: wordExamplesScenario,
+  [wordsScenario.id]: wordsScenario,
+  [kanjiWritingPracticeScenario.id]: kanjiWritingPracticeScenario,
   [lessonExampleScenario.id]: lessonExampleScenario,
   [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,
   [counterScoringScenario.id]: counterScoringScenario,
@@ -47,6 +52,7 @@ export const implementations: Record<string, ShotScenario> = {
   [lessonCounterPackScenario.id]: lessonCounterPackScenario,
   [grammarPageScenario.id]: grammarPageScenario,
   [countersDetailScenario.id]: countersDetailScenario,
+  [wordsGridScenario.id]: wordsGridScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {
