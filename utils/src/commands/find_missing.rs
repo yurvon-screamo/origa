@@ -13,9 +13,9 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 
 /// Loads vocabulary dictionary from chunk files
-fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, OrigaError> {
+fn load_vocabulary_dictionary(_base_path: &Path) -> Result<HashSet<String>, OrigaError> {
     let mut words = HashSet::new();
-    let vocab_path = base_path.join("cdn").join("dictionary");
+    let vocab_path = crate::utils::cdn_dir().join("dictionary");
 
     if !vocab_path.exists() {
         tracing::warn!("Vocabulary directory not found: {}", vocab_path.display());
@@ -46,9 +46,9 @@ fn load_vocabulary_dictionary(base_path: &Path) -> Result<HashSet<String>, Origa
 }
 
 /// Loads well-known sets from JSON files
-fn load_well_known_sets(base_path: &Path) -> Result<HashMap<String, HashSet<String>>, OrigaError> {
+fn load_well_known_sets(_base_path: &Path) -> Result<HashMap<String, HashSet<String>>, OrigaError> {
     let mut sets = HashMap::new();
-    let well_known_path = base_path.join("cdn").join("well_known_set");
+    let well_known_path = crate::utils::cdn_dir().join("well_known_set");
 
     let files = collect_json_files(&well_known_path)?;
 
@@ -221,10 +221,9 @@ async fn generate_missing_vocabulary(
 /// Saves vocabulary entries to the dictionary file
 fn save_dictionary(
     entries: &HashMap<String, VocabularyEntry>,
-    base_path: &Path,
+    _base_path: &Path,
 ) -> Result<(), OrigaError> {
-    let dict_path = base_path
-        .join("cdn")
+    let dict_path = crate::utils::cdn_dir()
         .join("dictionaries")
         .join("missing_vocabulary.json");
 

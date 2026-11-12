@@ -26,11 +26,10 @@ use super::quiz_feedback_strip::QuizFeedbackStrip;
 use super::quiz_ledger::{LedgerRow, LedgerRowKind, LedgerVerdict};
 use super::quiz_options::QuizOptions;
 use super::quiz_options_multi::QuizOptionsMulti;
-use super::quiz_result::QuizResult;
 use super::yesno_card_view::YesNoCardView;
 use crate::test_support::{
-    create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, shared_cell,
-    wait_until,
+    create_wrapper, mount_to_wrapper, mount_with_i18n, mount_with_router_and_stores, provide_i18n,
+    shared_cell, wait_until,
 };
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -300,7 +299,7 @@ async fn lesson_card_question_text_shows_show_answer_button() {
                 kanji=None
                 is_reversed=false
                 on_show_answer=Callback::new(|()| {})
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 native_language=origa::domain::NativeLanguage::Russian
             />
         }
@@ -335,7 +334,7 @@ async fn lesson_card_question_show_answer_click_dispatches() {
                 kanji=None
                 is_reversed=false
                 on_show_answer=Callback::new(move |()| shown.set(true))
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 native_language=origa::domain::NativeLanguage::Russian
             />
         }
@@ -481,8 +480,8 @@ async fn card_answer_display_translations_render_list() {
             <CardAnswerDisplay
                 translations=Signal::derive(|| Some(vec!["кошка".to_string(), "кот".to_string()]))
                 description=Signal::derive(|| None::<String>)
-                text=Signal::derive(|| String::new())
-                known_kanji=Signal::derive(|| HashSet::new())
+                text=Signal::derive(String::new)
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -505,7 +504,7 @@ async fn card_answer_display_text_fallback_renders_markdown() {
                 translations=Signal::derive(|| None::<Vec<String>>)
                 description=Signal::derive(|| None::<String>)
                 text=Signal::derive(|| "**bold** answer".to_string())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -531,8 +530,8 @@ async fn card_answer_display_translations_are_centered() {
             <CardAnswerDisplay
                 translations=Signal::derive(|| Some(vec!["кошка".to_string()]))
                 description=Signal::derive(|| None::<String>)
-                text=Signal::derive(|| String::new())
-                known_kanji=Signal::derive(|| HashSet::new())
+                text=Signal::derive(String::new)
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -560,7 +559,7 @@ async fn card_answer_display_text_fallback_is_centered() {
                 translations=Signal::derive(|| None::<Vec<String>>)
                 description=Signal::derive(|| None::<String>)
                 text=Signal::derive(|| "текст ответа".to_string())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -587,8 +586,8 @@ async fn card_answer_display_empty_renders_nothing() {
             <CardAnswerDisplay
                 translations=Signal::derive(|| None::<Vec<String>>)
                 description=Signal::derive(|| None::<String>)
-                text=Signal::derive(|| String::new())
-                known_kanji=Signal::derive(|| HashSet::new())
+                text=Signal::derive(String::new)
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -625,7 +624,7 @@ async fn quiz_options_click_selects_index() {
                 options=quiz_options_fixture()
                 selected_option=None
                 on_select_option=Callback::new(move |i: usize| selected.set(Some(i)))
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -675,7 +674,7 @@ async fn quiz_options_multi_toggle_selects() {
                         if s.contains(&i) { s.remove(&i); } else { s.insert(i); }
                     });
                 })
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -731,7 +730,7 @@ async fn yesno_card_view_shows_statement_and_buttons() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -765,7 +764,7 @@ async fn yesno_card_view_correct_answer_still_shows_the_answer() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -798,7 +797,7 @@ async fn yesno_card_view_correct_hides_correct_answer_line() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -828,7 +827,7 @@ async fn yesno_card_view_correct_claim_hides_statement_on_result() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -865,7 +864,7 @@ async fn yesno_card_view_distractor_claim_stays_on_result() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -993,7 +992,7 @@ async fn yesno_card_view_incorrect_shows_correct_answer_line() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1067,7 +1066,7 @@ async fn yesno_card_view_dont_know_shows_correct_answer_line() {
                 on_dont_know=Callback::new(|()| {})
                 dont_know_selected=Signal::from(true)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1167,7 +1166,7 @@ async fn phrase_card_view_renders_options_and_quiz_tags() {
                 dont_know_selected=false
                 phrase_text=Some("これはペンです".to_string())
                 phrase_translation=Some("Это ручка".to_string())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 waiting_for_next=Signal::from(false)
                 on_next_card=Callback::new(|()| {})
             />
@@ -1217,7 +1216,7 @@ async fn phrase_card_view_result_shows_next_button() {
                 dont_know_selected=false
                 phrase_text=Some("これはペンです".to_string())
                 phrase_translation=Some("Это ручка".to_string())
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 waiting_for_next=Signal::from(true)
                 on_next_card=Callback::new(|()| {})
             />
@@ -1344,7 +1343,7 @@ async fn feedback_strip_correct_shows_success_accent() {
                     tag: None,
                     kind: LedgerRowKind::YourAnswerCorrect,
                 }]
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1387,7 +1386,7 @@ async fn feedback_strip_errors_lists_missed_and_wrong_rows() {
                         kind: LedgerRowKind::ExtraSelected,
                     },
                 ]
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1430,7 +1429,7 @@ async fn feedback_strip_lenient_pass_is_success_and_lists_missed() {
                     tag: Some("ON".to_string()),
                     kind: LedgerRowKind::Missed,
                 }]
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1469,7 +1468,7 @@ async fn feedback_strip_not_answered_reveals_correct_answer() {
                     tag: None,
                     kind: LedgerRowKind::CorrectAnswer,
                 }]
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -1534,9 +1533,9 @@ async fn kanji_reading_quiz_unresolvable_name_hides_empty_name_box() {
                 on_dont_know=Callback::new(|_: ()| ())
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 quiz_variant=QuizVariant::Reading
-                selected_options=Signal::derive(|| HashSet::new())
+                selected_options=Signal::derive(HashSet::new)
                 multi_submitted=Signal::from(true)
                 multi_result=None
                 on_toggle=Callback::new(|_: usize| ())
@@ -1662,9 +1661,9 @@ async fn kanji_reading_quiz_renders_no_writing_animation() {
                 on_dont_know=Callback::new(|_: ()| ())
                 dont_know_selected=Signal::from(false)
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
                 quiz_variant=QuizVariant::Reading
-                selected_options=Signal::derive(|| HashSet::new())
+                selected_options=Signal::derive(HashSet::new)
                 multi_submitted=Signal::from(true)
                 multi_result=None
                 on_toggle=Callback::new(|_: usize| ())
@@ -2696,16 +2695,6 @@ mod mixed_hand_regression {
 
         let wrapper = mount_training(&ctx);
         tick().await;
-
-        let click = |sel: &str| {
-            wrapper
-                .query_selector(sel)
-                .unwrap()
-                .expect(sel)
-                .dyn_into::<web_sys::HtmlElement>()
-                .unwrap()
-                .click();
-        };
 
         // Полный флоу: раскрываем и отвечаем «Помню»最多 200 раз —
         // рука обязана пройти Forward, смениться на Reverse и закрыться.
@@ -4280,7 +4269,7 @@ async fn audio_recall_front_hides_word_and_shows_reveal_button() {
                 on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -4348,7 +4337,7 @@ async fn audio_recall_revealed_answer_shows_word_and_rating_buttons() {
                 on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -4401,7 +4390,7 @@ async fn audio_recall_enter_hint_is_keyboard_only_affordance() {
                 on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -4437,7 +4426,7 @@ async fn audio_recall_answer_side_keeps_rating_buttons_and_has_no_next_step() {
                 on_reveal=Callback::new(|()| {})
                 on_replay=Callback::new(|()| {})
                 native_language=origa::domain::NativeLanguage::Russian
-                known_kanji=Signal::derive(|| HashSet::new())
+                known_kanji=Signal::derive(HashSet::new)
             />
         }
         .into_any()
@@ -4483,7 +4472,7 @@ where
     F: FnOnce() -> AnyView + 'static,
 {
     crate::test_support::mount_disposable(wrapper, move || {
-        leptos_i18n::provide_i18n_context::<crate::i18n::Locale>();
+        provide_i18n();
         f()
     })
 }
@@ -5729,7 +5718,7 @@ async fn example_recall_autoplay_announces_with_generated_clip() {
         view! {
             <super::example_recall_card::ExampleRecallCard
                 sentence_id=0
-                known_kanji=Signal::derive(|| std::collections::HashSet::new())
+                known_kanji=Signal::derive(std::collections::HashSet::new)
                 show_answer=Signal::from(false)
                 on_show_answer=Callback::new(|_| ())
                 on_advance=Callback::new(|_| ())
@@ -5779,7 +5768,7 @@ async fn example_recall_failed_load_is_not_a_dead_end() {
         view! {
             <super::example_recall_card::ExampleRecallCard
                 sentence_id=u32::MAX - 7
-                known_kanji=Signal::derive(|| std::collections::HashSet::new())
+                known_kanji=Signal::derive(std::collections::HashSet::new)
                 show_answer=Signal::from(false)
                 on_show_answer=Callback::new(|_| ())
                 on_advance=on_advance
@@ -5848,7 +5837,7 @@ async fn example_reveal_button_lives_inside_centered_group() {
         view! {
             <super::example_recall_card::ExampleRecallCard
                 sentence_id=0
-                known_kanji=Signal::derive(|| std::collections::HashSet::new())
+                known_kanji=Signal::derive(std::collections::HashSet::new)
                 show_answer=Signal::from(false)
                 on_show_answer=Callback::new(|_| ())
                 on_advance=Callback::new(|_| ())
@@ -5912,7 +5901,7 @@ mod counter_pack_contract {
         let wrapper = create_wrapper();
         let card2 = card.clone();
         let items2 = items.clone();
-        let on_rate2 = on_rate.clone();
+        let on_rate2 = on_rate;
         mount_with_i18n(&wrapper, move || {
             view! {
                 <CounterBindingsSession
@@ -5974,7 +5963,7 @@ mod counter_pack_contract {
         // Реестр счётчиков — OnceLock: minimal-инициализация покрывает
         // 本 (1..3 + 何), последующие вызовы молча игнорируются (если
         // другой тест успел загрузить полный реестр — тем лучше).
-        let _ = origa::dictionary::counters::init_minimal_counters();
+        origa::dictionary::counters::init_minimal_counters();
         let on_rate = Callback::new(|_: (u8, origa::domain::Rating, bool)| ());
         let card = origa::domain::Card::Counter(CounterCard::new("本"));
         let items = vec![
@@ -5985,7 +5974,7 @@ mod counter_pack_contract {
         let wrapper = create_wrapper();
         let card2 = card.clone();
         let items2 = items.clone();
-        let on_rate2 = on_rate.clone();
+        let on_rate2 = on_rate;
         mount_with_i18n(&wrapper, move || {
             view! {
                 <CounterBindingsSession
@@ -6083,7 +6072,7 @@ mod counter_pack_contract {
     /// без контекста (тест выше) молча работает как раньше.
     #[wasm_bindgen_test]
     async fn counter_pack_publishes_step_into_lesson_context() {
-        let _ = origa::dictionary::counters::init_minimal_counters();
+        origa::dictionary::counters::init_minimal_counters();
         let on_rate = Callback::new(|_: (u8, origa::domain::Rating, bool)| ());
         let card = origa::domain::Card::Counter(CounterCard::new("本"));
         let items = vec![
@@ -6095,7 +6084,7 @@ mod counter_pack_contract {
         let wrapper = create_wrapper();
         let card2 = card.clone();
         let items2 = items.clone();
-        let on_rate2 = on_rate.clone();
+        let on_rate2 = on_rate;
         mount_with_i18n(&wrapper, move || {
             let ctx = super::lesson_context();
             let step = ctx.counter_binding_step;

@@ -86,7 +86,9 @@ tauri/resources/whisper/decoder_model.onnx
 models/whisper-tiny/
 models/whisper-tiny-onnx/
 
-# cdn
+# Local corpus (now lives outside the repo: $ORIGA_CDN_DIR or ~/origa-cdn).
+# Entry kept as insurance: a stray tool with the old habit writing repo-root
+# cdn/ must not produce GB-scale untracked noise or sneak into `git add .`.
 cdn
 
 # Font source cache (downloaded by scripts/subset_fonts.py)

@@ -47,6 +47,28 @@ fn should_retry_after_error(error: &OrigaError) -> bool {
         && !crate::repository::cdn_provider::CdnUnreachableError::is_match(error)
 }
 
+/// Bottom padding strategy of the shell `<main>`: where the bottom tab bar
+/// is on screen the shell reserves the bar's clearance (`app-main-with-nav`,
+/// #845) — the bar already carries the device inset as its own padding.
+/// Where the bar is hidden (lesson/onboarding fullscreen flows, the login
+/// shell) nothing reserves the bottom, and the edge-to-edge WebView draws
+/// content to the physical bottom edge — the last controls slide under the
+/// translucent Android system nav bar on 3-button devices. There the device
+/// inset is reserved directly (`pb-safe-b` = env(safe-area-inset-bottom));
+/// on desktop the inset is 0, so the reserve is a no-op there.
+///
+/// Return contract: a class-list **suffix** with a LEADING SPACE (`" …"`),
+/// meant to be concatenated into `main_class`'s format string right after
+/// the base classes — never a standalone value (the leading space would
+/// leak into a bare class attribute). The tests assert the exact strings.
+pub fn main_bottom_pad_for(is_authenticated: bool, path: &str) -> &'static str {
+    if bottom_nav_visible_for(is_authenticated, path) {
+        " app-main-with-nav"
+    } else {
+        " pb-safe-b"
+    }
+}
+
 /// Critical resources of the startup pipeline (ADR-053): the app is
 /// unusable without ALL of them, so a full failure renders the load
 /// error screen while a partial one keeps the app open with what
@@ -729,11 +751,7 @@ pub fn AppRoutes() -> impl IntoView {
     // shown right after login, so the reserve must appear with it — a
     // fixed 80px under a 60px+inset bar left page content underneath (#845).
     let main_class = move || {
-        let nav_pad = if bottom_nav_visible_for(is_authenticated.get(), &location.pathname.get()) {
-            " app-main-with-nav"
-        } else {
-            ""
-        };
+        let nav_pad = main_bottom_pad_for(is_authenticated.get(), &location.pathname.get());
         // Non-sidebar <main> is a flex column so pages can fill the shell via flex-1
         // (e.g., lesson card centering). See ADR-027; height + safe-area stay on the shell.
         if sidebar_visible.get() {
@@ -775,6 +793,46 @@ pub fn AppRoutes() -> impl IntoView {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn bottom_pad_reserves_tab_bar_clearance_where_the_bar_is_visible() {
+        // Arrange: authenticated shell on a regular (nav-bar) route.
+        // Act
+        let with_bar = main_bottom_pad_for(true, "/home");
+        let with_bar_subroute = main_bottom_pad_for(true, "/words/ペン");
+
+        // Assert: the shell reserves the bar's clearance (#845), the bar
+        // itself already carries the device inset as padding.
+        assert_eq!(with_bar, " app-main-with-nav");
+        assert_eq!(with_bar_subroute, " app-main-with-nav");
+    }
+
+    #[test]
+    fn bottom_pad_reserves_the_device_inset_where_the_bar_is_hidden() {
+        // Arrange: fullscreen flows hide the bar, so the edge-to-edge
+        // WebView needs the bottom inset reserved directly — otherwise the
+        // last controls slide under the translucent Android system nav
+        // (Samsung 3-button).
+        // Act
+        let lesson = main_bottom_pad_for(true, "/lesson");
+        let onboarding = main_bottom_pad_for(true, "/onboarding");
+
+        // Assert
+        assert_eq!(lesson, " pb-safe-b");
+        assert_eq!(onboarding, " pb-safe-b");
+    }
+
+    #[test]
+    fn bottom_pad_reserves_the_device_inset_when_unauthenticated() {
+        // Arrange: login hides the bar too (no session → no bar).
+        // Act
+        let login = main_bottom_pad_for(false, "/login");
+        let home_unauth = main_bottom_pad_for(false, "/home");
+
+        // Assert
+        assert_eq!(login, " pb-safe-b");
+        assert_eq!(home_unauth, " pb-safe-b");
+    }
 
     async fn succeeding_loader() -> Result<(), OrigaError> {
         Ok(())

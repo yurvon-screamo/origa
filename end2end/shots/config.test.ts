@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { APP_SERVER_TIMEOUT, parseTimeout } from "./config.ts";
+import { APP_SERVER_TIMEOUT, TRAILBASE_PORT, parseTimeout } from "./config.ts";
 
 test("parseTimeout accepts positive milliseconds as number and string", () => {
   assert.equal(parseTimeout("E2E_APP_SERVER_TIMEOUT", 1500), 1500);
@@ -32,4 +32,8 @@ test("APP_SERVER_TIMEOUT resolves the cold-build default without an override", (
   // The unit run has no E2E_APP_SERVER_TIMEOUT in its environment, so the
   // constant must carry the hour ceiling (the cold wasm-build budget).
   assert.equal(APP_SERVER_TIMEOUT, 3_600_000);
+});
+
+test("TRAILBASE_PORT resolves the fixture default without an override", () => {
+  assert.equal(TRAILBASE_PORT, 4000);
 });

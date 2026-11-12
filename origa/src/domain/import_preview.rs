@@ -146,6 +146,7 @@ mod tests {
 
     #[test]
     fn inflected_form_with_existing_lemma_card_is_already_exists() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_with_card_for("食べる");
 
         let previews = user.preview_word_imports(&["食べました".to_string()]);
@@ -155,6 +156,7 @@ mod tests {
 
     #[test]
     fn dictionary_word_without_existing_card_is_new() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["ねこ".to_string()]);
@@ -164,6 +166,7 @@ mod tests {
 
     #[test]
     fn non_vocabulary_word_is_no_dictionary_entry() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["は".to_string()]);
@@ -173,6 +176,7 @@ mod tests {
 
     #[test]
     fn second_form_of_same_new_lemma_is_duplicate_in_selection() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["読みます".to_string(), "読む".to_string()]);
@@ -183,6 +187,7 @@ mod tests {
 
     #[test]
     fn exact_word_repeat_repeats_the_first_outcome_instead_of_duplicate() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["ねこ".to_string(), "ねこ".to_string()]);
@@ -197,6 +202,7 @@ mod tests {
 
     #[test]
     fn repeated_word_keeps_the_lemma_meaning_fallback() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["読みます".to_string(), "読みます".to_string()]);
@@ -210,6 +216,7 @@ mod tests {
 
     #[test]
     fn multi_token_word_is_classified_by_its_first_card_like_the_import() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["本を読む".to_string()]);
@@ -219,6 +226,7 @@ mod tests {
 
     #[test]
     fn meaning_falls_back_to_the_lemma_translation_for_inflected_forms() {
+        crate::corpus::real_dictionaries_or_skip!();
         let user = user_without_cards();
 
         let previews = user.preview_word_imports(&["読みます".to_string()]);

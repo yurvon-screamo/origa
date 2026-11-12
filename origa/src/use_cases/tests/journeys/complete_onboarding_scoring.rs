@@ -5,7 +5,7 @@ use crate::traits::UserRepository;
 use crate::use_cases::CompleteOnboardingScoringUseCase;
 use crate::use_cases::tests::fixtures::{
     InMemoryUserRepository, create_test_vocab_card, init_phrase_index_from_cdn,
-    init_real_dictionaries,
+    real_dictionaries_or_skip,
 };
 
 fn user_with_skipped_cards(skipped: &[Ulid]) -> User {
@@ -81,7 +81,7 @@ async fn complete_onboarding_marks_completed() {
 async fn complete_onboarding_returns_zero_phrases_when_no_known_words() {
     // Arrange — phrases dictionary loaded but the user has no known cards, so
     // SeedReadyPhrasesUseCase has nothing to seed.
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     init_phrase_index_from_cdn();
 
     let user = User::new(
@@ -141,7 +141,7 @@ async fn complete_onboarding_persists_completion_and_runs_seed_step() {
     // phrase that this single known word unlocks; the seed step running at
     // all is the contract being verified (and the no-known-words case below
     // covers the "no phrases" branch).
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     init_phrase_index_from_cdn();
 
     let mut user = User::new(

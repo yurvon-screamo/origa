@@ -14,6 +14,11 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
+    # Local corpus root for tests and build scripts (origa::corpus contract):
+    # the cdn-download job / artifact unpack into `<workspace>/cdn`, so every
+    # job that seeds the corpus resolves it through this override without
+    # moving artifact paths.
+    ORIGA_CDN_DIR: ${{ github.workspace }}/cdn
     # Single source of the Linux system packages (GTK speech stack):
     # consumed by the apt cache step (PR/branch runs) and by the plain
     # install step (tag runs) — one place to bump, no list drift.
@@ -430,6 +435,15 @@ jobs:
             - name: Run clippy
               run: cargo clippy --workspace --all-targets -- -D warnings
 
+            - name: Run wasm clippy
+              # The native clippy above cannot see code gated to
+              # `target_arch = "wasm32"` (wasm-only modules and the
+              # *_wasm_tests.rs suites are invisible to a host-target
+              # compile) — lint the UI crate on the real target with the
+              # same features the wasm test build uses (wasm-pack test
+              # runs --features csr) so csr-gated lines are covered too.
+              run: cargo clippy -p origa_ui --target wasm32-unknown-unknown --all-targets --features csr -- -D warnings
+
             - name: Verify App Store cfg compiles
               # The ORIGA_APP_STORE env var triggers build.rs to emit
               # cargo:rustc-cfg=app_store, gating out the auto-updater and
@@ -623,7 +637,11 @@ jobs:
               run: npm ci && npm run build:css
 
             - name: Run tests
-              run: cargo test --workspace --exclude origa_landing
+              # --no-fail-fast: a red suite must not stop the remaining
+              # ones — fail-fast shows one regression per CI round while
+              # the rest of the workspace stays unexamined behind it.
+              # Compile errors still abort everything regardless.
+              run: cargo test --workspace --exclude origa_landing --no-fail-fast
 
     # Landing SSR tests (#800). The 300+ integration tests of
     # origa_landing were green but invisible to CI: the Test job excludes
@@ -716,7 +734,10 @@ jobs:
                   fi
 
             - name: Run landing SSR tests
-              run: cargo test -p origa_landing --features ssr
+              # Same --no-fail-fast rationale as the Test job: ~14 test
+              # binaries in the package, every red one must be visible
+              # in a single run.
+              run: cargo test -p origa_landing --features ssr --no-fail-fast
 
             # The ssr code and its test targets were never linted: the
             # workspace clippy run builds the crate WITHOUT the ssr
@@ -1338,7 +1359,7 @@ jobs:
                       ;;
                     onboarding-lesson)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding|feedback|feedback_translation|counter|counter_page)\.feature\.spec\.js"
+                        --grep "features/(onboarding|onboarding_scoring|lesson|lesson_empty_state|phrases_onboarding|feedback|feedback_translation|counter|counter_page|insets)\.feature\.spec\.js"
                       ;;
                     stress)
                       # Full-corpus N1 scenarios: each seeds ~11k cards

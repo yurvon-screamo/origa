@@ -1,12 +1,12 @@
 use super::*;
+use crate::corpus::real_dictionaries_or_skip;
 use crate::domain::knowledge::lesson::types::LessonCardView;
 use crate::domain::knowledge::lesson::view_generator::transforms;
-use crate::test_support::init_real_dictionaries;
 use rand::{SeedableRng, rngs::StdRng};
 
 #[test]
 fn apply_reversed_uses_english_translation_for_english_locale() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
     let card = create_vocab_card("猫");
 
     let english_text = answer_text(&card, NativeLanguage::English);
@@ -35,7 +35,7 @@ fn apply_reversed_uses_english_translation_for_english_locale() {
 
 #[test]
 fn apply_grammar_mutated_uses_english_description_for_english_locale() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let vocab = VocabularyCard::from_known_word("食べる", &NativeLanguage::English).expect(
         "test fixture: 食べる must have an English translation for the grammar-mutated EN path",

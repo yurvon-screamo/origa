@@ -2,11 +2,11 @@ use crate::dictionary::grammar::iter_grammar_rules;
 use crate::domain::{JapaneseLevel, NativeLanguage, User};
 use crate::traits::UserRepository;
 use crate::use_cases::CreateGrammarCardUseCase;
-use crate::use_cases::tests::fixtures::{InMemoryUserRepository, init_real_dictionaries};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
 
 #[tokio::test]
 async fn grammar_rules_loads_from_real_file() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let rules: Vec<_> = iter_grammar_rules().collect();
     assert!(!rules.is_empty(), "Grammar rules should not be empty");
@@ -28,7 +28,7 @@ async fn grammar_rules_loads_from_real_file() {
 
 #[tokio::test]
 async fn create_grammar_card_creates_from_real_rule() {
-    init_real_dictionaries();
+    real_dictionaries_or_skip!();
 
     let user = User::new(
         "test@example.com".to_string(),

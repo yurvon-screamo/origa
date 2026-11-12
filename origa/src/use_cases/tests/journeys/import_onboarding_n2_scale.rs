@@ -1,28 +1,27 @@
 use std::time::Instant;
 
+use crate::corpus::{cdn_dir, corpus_absent};
 use crate::domain::{JapaneseLevel, NativeLanguage, User};
 use crate::traits::UserRepository;
 use crate::use_cases::ImportOnboardingSetsUseCase;
-use crate::use_cases::tests::fixtures::{
-    InMemoryUserRepository, MockCdnProvider, get_cdn_dir, init_real_dictionaries,
-};
+use crate::use_cases::tests::fixtures::{InMemoryUserRepository, MockCdnProvider};
 
 /// Runs the full onboarding import for the given well-known sets exactly as
-/// the onboarding UI queues them (real production JSONs from `cdn/`), on a
-/// fresh user, returning `(created card count, elapsed time)`.
+/// the onboarding UI queues them (real production JSONs from the corpus —
+/// see [`crate::corpus`]), on a fresh user, returning `(created card count,
+/// elapsed time)`. Callers must probe the corpus first: this helper cannot
+/// early-return (it returns a value), so corpus absence is handled at the
+/// test level.
 async fn import_sets(
     set_ids: &[&str],
     target_level: JapaneseLevel,
 ) -> (usize, std::time::Duration) {
-    init_real_dictionaries();
+    crate::test_support::init_real_dictionaries();
     let mut cdn = MockCdnProvider::new();
     for id in set_ids {
-        let body = std::fs::read_to_string(
-            get_cdn_dir()
-                .join("well_known_set")
-                .join(format!("{id}.json")),
-        )
-        .unwrap_or_else(|e| panic!("{id}.json must exist in cdn/: {e}"));
+        let body =
+            std::fs::read_to_string(cdn_dir().join("well_known_set").join(format!("{id}.json")))
+                .unwrap_or_else(|e| panic!("{id}.json must exist in the corpus: {e}"));
         cdn = cdn.with_text(&crate::domain::resolve_set_path(id), &body);
     }
     let repo = InMemoryUserRepository::with_user(User::new(
@@ -70,6 +69,12 @@ async fn fastest_import(
 /// is generous for CI noise but fails loudly on quadratic behaviour.
 #[tokio::test]
 async fn import_cost_grows_linearly_with_card_count() {
+    // The journey reads real well-known-set JSONs — without the corpus it
+    // must skip here, not fail inside a helper that cannot early-return.
+    if corpus_absent(&cdn_dir().join("well_known_set"), "well-known sets") {
+        return;
+    }
+
     // Arrange — picking N5 queues only jlpt_n5; picking N2 cumulatively queues
     // n5+n4+n3+n2 (see `OnboardingState::set_jlpt_level`).
     let (n5_cards, n5_elapsed) = fastest_import(&["jlpt_n5"], JapaneseLevel::N5).await;

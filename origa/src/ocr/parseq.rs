@@ -1,3 +1,4 @@
+use super::cascade::LineRecognizer;
 use super::shared::{parseq_postprocess, parseq_preprocess};
 use super::vocab::Vocabulary;
 use crate::domain::OrigaError;
@@ -80,5 +81,11 @@ impl ParseqRecognizer {
                 String::new()
             },
         }
+    }
+}
+
+impl LineRecognizer for ParseqRecognizer {
+    fn read_line(&self, image: &DynamicImage) -> String {
+        self.read(image)
     }
 }

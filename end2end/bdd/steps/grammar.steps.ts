@@ -117,6 +117,35 @@ Then("грамматическая карточка отображается в 
   await expect(grammarPage.emptyState).not.toBeVisible();
 });
 
+Then("карточка правила — без второй рамки", async ({ page }) => {
+  const ruleBox = page
+    .locator('[data-testid="grammar-card-item"] .grammar-card-rule-box')
+    .first();
+  await expect(ruleBox).toBeVisible();
+  // Якорь паттерна «двойная рамка» (задача 20261109231401): одна рамка на
+  // карточку — её несёт .grammar-card; блок правила — контент без
+  // собственной рамки и без offset-тени (::after).
+  // Tailwind preflight задаёт всем элементам border-style: solid при
+  // border-width: 0, поэтому отсутствие рамки проверяем шириной, а не
+  // стилем; ::after отсутствует целиком — content: none.
+  const styles = await ruleBox.evaluate((el) => {
+    const computed = getComputedStyle(el);
+    const after = getComputedStyle(el, "::after");
+    return {
+      borderTopWidth: computed.borderTopWidth,
+      borderRightWidth: computed.borderRightWidth,
+      borderBottomWidth: computed.borderBottomWidth,
+      borderLeftWidth: computed.borderLeftWidth,
+      afterContent: after.content,
+    };
+  });
+  expect(styles.borderTopWidth).toBe("0px");
+  expect(styles.borderRightWidth).toBe("0px");
+  expect(styles.borderBottomWidth).toBe("0px");
+  expect(styles.borderLeftWidth).toBe("0px");
+  expect(styles.afterContent).toBe("none");
+});
+
 Then("отображается более одной грамматической карточки", async ({ page }) => {
   const grammarPage = new GrammarPage(page);
   await grammarPage.expectMoreThanOneCard();

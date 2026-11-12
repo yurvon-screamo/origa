@@ -29,9 +29,10 @@ import sys
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
+from _cdn_corpus import corpus_dir
 
 REPO = Path(__file__).resolve().parent.parent
-CDN = REPO / "cdn"
+CDN = corpus_dir()
 EXAMPLES_URL = "https://www.edrdg.org/pub/Nihongo/examples.utf.gz"
 DEFAULT_WORK = Path("/tmp/opencode")
 
@@ -109,7 +110,13 @@ def bline_ruby(line: str) -> list[list[str]]:
             continue
         m = re.search(r"\(([^)]*)\)", tok)
         if m:
-            ruby.append([base, m.group(1)])
+            reading = m.group(1)
+            # Tanaka id artifacts (`で(2028980)`): a numeric token id, not
+            # a reading — shipped as pairs like で|#2028980 and rendered
+            # as garbage furigana.
+            if any(ch.isdigit() for ch in reading) or reading.startswith("#"):
+                continue
+            ruby.append([base, reading])
     return ruby
 
 
@@ -234,10 +241,18 @@ def select_for_words(
     matches: dict[str, dict[int, list[int]]],
     words: dict[str, str],
 ) -> dict[str, list[dict]]:
-    """Pick up to MAX_PER_WORD sentences per word: shortest first (textbook register)."""
+    """Pick up to MAX_PER_WORD sentences per word: shortest first (textbook register).
+
+    Kanji words take only sentences where the word SURFACES (`start >= 0`):
+    offset-less kana-variant matches (`[-1,-1]`, e.g. the auxiliary てしまう
+    usage of 仕舞う) do not demonstrate the card word at all — an example
+    without the word is worse than no example.
+    """
     sel: dict[str, list[dict]] = {}
     for w in sorted(words):
         cand = matches.get(w, {})
+        if KANJI_RE.search(w):
+            cand = {sid: off for sid, off in cand.items() if off[0] >= 0}
         if not cand:
             continue
         ranked = sorted(

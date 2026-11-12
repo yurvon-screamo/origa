@@ -25,9 +25,10 @@ import numpy as np
 import requests
 import torch
 import torch.nn.functional as F
+from _cdn_corpus import corpus_dir
 
 REPO = Path(__file__).resolve().parent.parent
-DATA = REPO / "cdn" / "examples" / "data"
+DATA = corpus_dir() / "examples" / "data"
 WORK = Path("/tmp/opencode/examples_tr")
 TR_URL = "http://127.0.0.1:8091/v1/chat/completions"
 EMB_URL = "http://127.0.0.1:8090/v1/embeddings"

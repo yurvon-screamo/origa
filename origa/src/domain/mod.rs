@@ -2,6 +2,7 @@ mod acquaintance;
 mod error;
 mod furigana;
 mod furigana_annotator;
+pub mod furigana_context;
 pub(crate) mod grammar;
 mod import_preview;
 pub mod insights;
