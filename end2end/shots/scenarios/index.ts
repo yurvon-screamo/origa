@@ -19,6 +19,7 @@ import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
+import { wordsGridScenario } from "./words-grid.ts";
 
 /**
  * The browser-side implementations of the catalog.
@@ -47,6 +48,7 @@ export const implementations: Record<string, ShotScenario> = {
   [lessonCounterPackScenario.id]: lessonCounterPackScenario,
   [grammarPageScenario.id]: grammarPageScenario,
   [countersDetailScenario.id]: countersDetailScenario,
+  [wordsGridScenario.id]: wordsGridScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

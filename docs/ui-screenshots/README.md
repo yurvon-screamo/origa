@@ -7,6 +7,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| grid-viewport | words-grid | mobile | ru-RU | 390×844 | 2026-11-12T05:22:09.197Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--mobile-37045630.png) |
+| grid-full | words-grid | mobile | ru-RU | 390×894 | 2026-11-12T05:22:09.082Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--mobile-8808e9d4.png) |
+| grid-viewport | words-grid | desktop | ru-RU | 1280×800 | 2026-11-12T05:21:12.250Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-viewport--desktop-0b7907e3.png) |
+| grid-full | words-grid | desktop | ru-RU | 1280×800 | 2026-11-12T05:21:11.763Z | 331f832f | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--desktop-0b7907e3.png) |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-12T05:30:37.615Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--mobile-4d07763a.png) |
 | home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-12T05:29:26.431Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--desktop-92110531.png) |
 | yesno-result-expanded | lesson-yesno-result | mobile | ru-RU | 390×844 | 2026-11-12T00:01:49.589Z | 0068d553 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261110100449/lesson-yesno-result--yesno-result-expanded--mobile-dd8ac551.png) |

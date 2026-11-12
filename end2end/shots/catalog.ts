@@ -37,6 +37,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "onboarded",
   },
+  "words-grid": {
+    id: "words-grid",
+    title: "Экран «Слова»: сетка карточек",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "with-word",
+  },
   "lesson-acquaintance-grammar": {
     id: "lesson-acquaintance-grammar",
     title: "Урок: ответ знакомства (грамматика)",
