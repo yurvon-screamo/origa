@@ -663,6 +663,9 @@ pub fn AppRoutes() -> impl IntoView {
     // and polls the cold-start pending slot. No-op in the web build.
     crate::core::share_intake::start_share_intake();
     crate::core::shortcut_links::start_shortcut_listener();
+    // CI selftest probes (Android smoke feature step, task
+    // 20261104060604): dormant outside Android.
+    crate::core::selftest::start_selftest_listener();
 
     // Capability matrix (P-1): detect and report degradations to Sentry.
     leptos::task::spawn_local(async move {

@@ -373,6 +373,15 @@ jobs:
                   # against the merge-base with origin/master (--upstream).
                   fetch-depth: 0
 
+            - name: Platform cfg guard (warning-only)
+              # Informational guard for the #701 class (task 20261104060604,
+              # GH #854): added cfg-based platform branches in tauri/src
+              # without a per-platform test table produce a ::warning::
+              # annotation on the PR — never a red job (doctrine: warning,
+              # not block). Pure-routing-table files (platform_routing.rs
+              # pattern) satisfy it by carrying a test module.
+              run: python3 .github/scripts/platform_cfg_guard.py
+
             - name: Refresh APT indexes
               run: sudo apt-get update
             - name: Cache APT packages

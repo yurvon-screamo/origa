@@ -15,6 +15,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
+
+use crate::platform_routing::HostPlatform;
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 /// Holds the `Update` returned by `check_for_update` until `install_update`
@@ -59,6 +61,56 @@ pub enum DownloadEvent {
 
 const PROGRESS_EVENT: &str = "origa-update-progress";
 
+/// The decision the auto-update check has taken for one platform.
+#[derive(Debug, PartialEq, Eq)]
+pub enum UpdatePolicy {
+    /// Proceed with the updater endpoint check.
+    Check,
+    /// Skip the check entirely; the payload is the logged reason.
+    Skip(&'static str),
+}
+
+/// Pure routing of the auto-update check per platform (task 20261104060604,
+/// GH #854). App-store builds never reach this function: the whole module is
+/// compiled out by `#[cfg(all(any(windows, linux), not(app_store)))]`, so the
+/// signature deliberately carries no store flag — that gate is enforced by
+/// the module cfg and verified by the CI step `ORIGA_APP_STORE=1 cargo check`.
+///
+/// The macOS/Android/iOS arms exist only to make the decision matrix visible
+/// to the host test table: the module is not compiled on those targets, so
+/// their policy is a documented `Skip`, not reachable code.
+///
+/// AUR (Linux without dpkg/rpm) is the #701-class case this table pins: the
+/// check itself would succeed and surface a banner whose install is
+/// guaranteed to fail.
+pub fn update_policy(
+    platform: HostPlatform,
+    is_dev: bool,
+    dpkg_available: bool,
+    rpm_available: bool,
+) -> UpdatePolicy {
+    if is_dev {
+        return UpdatePolicy::Skip("dev build: version is always behind the latest release");
+    }
+    match platform {
+        HostPlatform::Windows => UpdatePolicy::Check,
+        // pkexec dpkg/rpm is the only install path the updater drives.
+        HostPlatform::Linux => {
+            if has_system_package_tool(dpkg_available, rpm_available) {
+                UpdatePolicy::Check
+            } else {
+                UpdatePolicy::Skip("no dpkg/rpm on this system (e.g. AUR): install would fail")
+            }
+        },
+        // No updater plugin is registered on these platforms: macOS updates
+        // via the App Store / intentionally excluded builds, mobile has no
+        // self-update path at all.
+        HostPlatform::MacOS | HostPlatform::Android | HostPlatform::Ios => {
+            UpdatePolicy::Skip("no self-update path on this platform")
+        },
+    }
+}
+
 /// Checks the configured updater endpoint for a newer release.
 ///
 /// Returns `Ok(None)` when the current build is already up to date. When an
@@ -76,19 +128,24 @@ pub async fn check_for_update(
     app: AppHandle,
     pending: State<'_, PendingUpdate>,
 ) -> Result<Option<UpdateMetadata>, String> {
-    if tauri::is_dev() {
-        tracing::debug!("updater: skipping check in dev build");
-        return Ok(None);
-    }
-
-    // The updater installs updates with the system package manager
-    // (pkexec dpkg/rpm). On distributions with neither (e.g. Arch, where the
-    // app is installed from AUR and updated via `yay -Syu`), the check would
-    // only surface a banner whose install is guaranteed to fail — skip it.
+    // The platform comes from the single cfg! conversion site — this
+    // command only exists on Windows and Linux (the module cfg), and
+    // `update_policy` carries the full cross-platform table for the host
+    // test suite.
+    let platform = HostPlatform::current();
     #[cfg(target_os = "linux")]
-    if !system_package_tool_available() {
-        tracing::debug!("updater: skipping check, no dpkg/rpm on this system");
-        return Ok(None);
+    let (dpkg_available, rpm_available) = system_package_tools();
+    #[cfg(not(target_os = "linux"))]
+    let (dpkg_available, rpm_available) = (false, false);
+
+    // Dev builds and platforms without a working install path (AUR: no
+    // dpkg/rpm) skip here — the reasons live in `update_policy`'s table.
+    match update_policy(platform, tauri::is_dev(), dpkg_available, rpm_available) {
+        UpdatePolicy::Skip(reason) => {
+            tracing::debug!("updater: skipping check: {reason}");
+            return Ok(None);
+        },
+        UpdatePolicy::Check => {},
     }
 
     let update = app
@@ -119,22 +176,24 @@ fn has_system_package_tool(dpkg_available: bool, rpm_available: bool) -> bool {
 
 /// Detects whether this system can install updates at all (Linux only; the
 /// Windows NSIS path never reaches the caller). Probed once per process —
-/// the answer cannot change while the app runs.
+/// the answer cannot change while the app runs. Returns the per-tool
+/// availability pair so [`update_policy`]'s table stays the single decision
+/// point.
 #[cfg(target_os = "linux")]
-fn system_package_tool_available() -> bool {
+fn system_package_tools() -> (bool, bool) {
     use std::sync::OnceLock;
 
-    static PROBE: OnceLock<bool> = OnceLock::new();
+    static PROBE: OnceLock<(bool, bool)> = OnceLock::new();
     *PROBE.get_or_init(|| {
         let dpkg_ok = tool_runs("dpkg");
         let rpm_ok = tool_runs("rpm");
-        let available = has_system_package_tool(dpkg_ok, rpm_ok);
         tracing::debug!(
             dpkg_ok,
             rpm_ok,
-            "system package tool probe: available={available}"
+            "system package tool probe: available={}",
+            dpkg_ok || rpm_ok
         );
-        available
+        (dpkg_ok, rpm_ok)
     })
 }
 
@@ -193,6 +252,71 @@ pub async fn install_update(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
+
+    /// Host-side decision table for the auto-update check (task
+    /// 20261104060604, GH #854): every platform's policy is pinned so a
+    /// policy change without a matching row fails the plain `cargo test`
+    /// run on any Linux CI runner — no device needed. The macOS/Android/iOS
+    /// rows document that the module is compiled out there (never reachable
+    /// code); the store-build gate is a module-level cfg, verified by the
+    /// CI step `ORIGA_APP_STORE=1 cargo check`, not by this table.
+    #[rstest]
+    #[case::windows_release_checks(HostPlatform::Windows, false, false, false, UpdatePolicy::Check)]
+    #[case::windows_dev_skips(
+        HostPlatform::Windows,
+        true,
+        true,
+        true,
+        UpdatePolicy::Skip("dev build: version is always behind the latest release")
+    )]
+    #[case::linux_deb_checks(HostPlatform::Linux, false, true, false, UpdatePolicy::Check)]
+    #[case::linux_rpm_checks(HostPlatform::Linux, false, false, true, UpdatePolicy::Check)]
+    #[case::linux_deb_and_rpm_checks(HostPlatform::Linux, false, true, true, UpdatePolicy::Check)]
+    #[case::linux_aur_without_tools_skips(
+        HostPlatform::Linux,
+        false,
+        false,
+        false,
+        UpdatePolicy::Skip("no dpkg/rpm on this system (e.g. AUR): install would fail")
+    )]
+    #[case::linux_dev_skips_before_the_probe(
+        HostPlatform::Linux,
+        true,
+        false,
+        false,
+        UpdatePolicy::Skip("dev build: version is always behind the latest release")
+    )]
+    #[case::macos_module_compiled_out(
+        HostPlatform::MacOS,
+        false,
+        false,
+        false,
+        UpdatePolicy::Skip("no self-update path on this platform")
+    )]
+    #[case::android_module_compiled_out(
+        HostPlatform::Android,
+        false,
+        true,
+        true,
+        UpdatePolicy::Skip("no self-update path on this platform")
+    )]
+    #[case::ios_module_compiled_out(
+        HostPlatform::Ios,
+        false,
+        false,
+        false,
+        UpdatePolicy::Skip("no self-update path on this platform")
+    )]
+    fn update_policy_routes_every_platform(
+        #[case] platform: HostPlatform,
+        #[case] is_dev: bool,
+        #[case] dpkg: bool,
+        #[case] rpm: bool,
+        #[case] expected: UpdatePolicy,
+    ) {
+        assert_eq!(update_policy(platform, is_dev, dpkg, rpm), expected);
+    }
 
     /// The dpkg/rpm probe decision: at least one tool must be present.
     #[test]
