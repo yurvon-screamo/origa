@@ -5,7 +5,8 @@ Playwright E2E tests for Origa. TypeScript + `@playwright/test`.
 ## npm Scripts
 
 ```bash
-npm test                     # All tests (headless; pretest runs bddgen)
+npm test                     # Playwright suite (headless; pretest runs bddgen)
+npm run test:unit            # shots/ unit tests (node --test, no browser)
 npm run test:ui              # Playwright UI mode
 npm run test:headed          # Visible browser
 npm run test:debug           # Debug mode
@@ -95,6 +96,11 @@ catalog:
   fresh profile, an imported corpus, a seeded ledger). The set is open by
   design.
 - `shots/scenarios/index.ts` — the map of the implementations.
+- `shots/examiner/model.json` — at least one examined screen per
+  scenario (the Screen examiner below). Add the entry in the same
+  commit: `npm run test:unit` (seconds, no browser) fails on a
+  missing entry, and local `npm test` does not run that suite — the
+  CI `e2e-matrix-guard` job does.
 
 The screenshots-spec files are thin wrappers around that catalog: they
 exist so a screen can also be captured by hand.
@@ -132,8 +138,15 @@ npm run exam:canary   # proves the examiner catches defects (needs live Ollama, 
 ```
 
 - `shots/examiner/model.json` — the test model (which screens get
-  examined). Committed: the knowledge is versioned next to the code.
-  A screen absent from the model is skipped, not an error.
+  examined). Committed: the knowledge is versioned next to the code
+  (ADR-068). At runtime (`--examine`) a screen absent from the model
+  is skipped, not an error. The catalog-level invariant points the
+  other way: every scenario of `shots/catalog.ts` must name at least
+  one examined screen. `model.test.ts` fails the unit suite
+  (`npm run test:unit`) on a new scenario without one — the
+  `e2e-matrix-guard` CI job goes red and the CI Gate fails with it.
+  A new scenario therefore ships as `catalog.ts` +
+  `scenarios/<id>.ts` + the model entry, in one commit.
 - `shots/examiner/questions.ts` — the defect checklist (clear distinct
   criteria matter: the model only answers what it is asked).
 - Traces: `exam.<scenario>.jsonl` + `exam-report.md` next to the
