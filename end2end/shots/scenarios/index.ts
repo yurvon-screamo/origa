@@ -21,6 +21,7 @@ import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 import { wordsGridScenario } from "./words-grid.ts";
+import { wordsScenario } from "./words.ts";
 
 /**
  * The browser-side implementations of the catalog.
@@ -31,6 +32,7 @@ import { wordsGridScenario } from "./words-grid.ts";
 export const implementations: Record<string, ShotScenario> = {
   [homeScenario.id]: homeScenario,
   [wordExamplesScenario.id]: wordExamplesScenario,
+  [wordsScenario.id]: wordsScenario,
   [kanjiWritingPracticeScenario.id]: kanjiWritingPracticeScenario,
   [lessonExampleScenario.id]: lessonExampleScenario,
   [lessonExampleRecallScenario.id]: lessonExampleRecallScenario,

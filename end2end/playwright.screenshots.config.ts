@@ -3,11 +3,12 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
+  APP_PORT,
   APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
   SERVE_MODE,
-  TRAILBASE_PORT,
   resolveCdnSource,
+  TRAILBASE_PORT,
 } from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
@@ -51,7 +52,7 @@ export default defineConfig({
   workers: 1,
   reporter: [["line"]],
   use: {
-    baseURL: "http://localhost:1420",
+    baseURL: `http://localhost:${APP_PORT}`,
     // Pin the UI locale the same way the BDD config does: the specs
     // assert Russian product copy (e.g. the «Счётный суффикс» tag in
     // counter-scoring.spec.ts) and a fresh profile inherits the runner
@@ -101,9 +102,9 @@ export default defineConfig({
       // far beyond 10 minutes (shots/config.ts → APP_SERVER_TIMEOUT).
       command:
         SERVE_MODE === "dist"
-          ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
-          : "cd ../origa_ui && trunk serve",
-      port: 1420,
+          ? `npx serve ../origa_ui/dist -s -p ${APP_PORT} --no-clipboard`
+          : `cd ../origa_ui && trunk serve --port ${APP_PORT}`,
+      port: APP_PORT,
       reuseExistingServer: !isCI,
       timeout: APP_SERVER_TIMEOUT,
       stdout: "pipe",

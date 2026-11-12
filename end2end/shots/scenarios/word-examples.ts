@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test";
+import { gotoWordsRoute } from "../words-route.ts";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
@@ -12,24 +12,11 @@ import type { ShotScenario } from "../scenario.ts";
 export const wordExamplesScenario: ShotScenario = {
   ...descriptors["word-examples"],
   async run({ page }, sink) {
-    await page.goto(
+    await gotoWordsRoute(
+      page,
       `/words/${encodeURIComponent(process.env.SHOT_WORD ?? "あさ")}`,
+      "word-detail-word",
     );
-    try {
-      await expect(page.getByTestId("word-detail-word")).toBeVisible({
-        timeout: 60_000,
-      });
-    } catch {
-      // A cold page load boots the WASM app from scratch; while the
-      // session migration is in flight the protected route shows the
-      // login screen even for an authenticated user. The bootstrap
-      // persists the user locally, so one reload lands on the page.
-      await page.waitForTimeout(25_000);
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("word-detail-word")).toBeVisible({
-        timeout: 90_000,
-      });
-    }
     await page.waitForTimeout(3_000); // examples chunk fetch
     await sink.shot("detail-full", { fullPage: true });
     await sink.shot("detail-viewport");

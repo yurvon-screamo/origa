@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { resolve } from "path";
 
 import { end2endRoot } from "./helpers/paths";
-import { TRAILBASE_PORT } from "./shots/config";
+import { APP_PORT, TRAILBASE_PORT } from "./shots/config.ts";
 
 // Override system env vars with local .env values
 config({ path: resolve(end2endRoot, ".env"), override: true });
@@ -29,5 +29,5 @@ export function getTrailBaseUrl(): string {
  * bootstrap above has already run.
  */
 export function getAppBaseUrl(): string {
-  return process.env.E2E_APP_BASE_URL ?? "http://localhost:1420";
+  return process.env.E2E_APP_BASE_URL ?? `http://localhost:${APP_PORT}`;
 }

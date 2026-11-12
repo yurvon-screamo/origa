@@ -3,8 +3,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { detectCdnBaseUrl } from "./bundle.ts";
-import { createSink } from "./capture.ts";
 import { APP_PORT } from "./config.ts";
+import { createSink } from "./capture.ts";
 import type { Examiner } from "./examiner/examine.ts";
 import type { ShotEntry, ShotManifest } from "./manifest.ts";
 import { openShotSession } from "./session.ts";

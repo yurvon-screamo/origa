@@ -10,6 +10,15 @@ pub fn PageHeader(
     #[prop(optional, into)] back_label: Signal<String>,
     #[prop(optional, into)] title: Signal<String>,
     #[prop(optional, into)] test_id: Signal<String>,
+    /// Extra classes for the actions wrapper (the buttons row). Pages
+    /// whose header carries many actions pass a deliberate wrapped-state
+    /// here — e.g. words passes `max-md:basis-full max-md:justify-between`,
+    /// so below 768px the actions take their own full-width row (a tab
+    /// strip under the title) instead of an accidental right-hugging
+    /// wrap. Pages with one or two actions stay natural: the empty
+    /// default preserves the flex-wrap behaviour of #823.
+    #[prop(optional, into)]
+    actions_class: Signal<String>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let navigate = use_navigate();
@@ -23,7 +32,10 @@ pub fn PageHeader(
     let actions = children.map(|c| {
         let content = c();
         view! {
-            <div class="ml-auto flex items-center gap-2 sm:gap-4">
+            <div
+                class=move || format!("ml-auto flex items-center gap-2 sm:gap-4 {}", actions_class.get())
+                data-testid=move || format!("{}-actions", test_id.get())
+            >
                 {content}
             </div>
         }
