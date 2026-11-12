@@ -880,6 +880,205 @@ async fn yesno_card_view_distractor_claim_stays_on_result() {
     );
 }
 
+fn yesno_kanji_fixture(is_correct: bool) -> origa::domain::YesNoCard {
+    use origa::domain::YesNoCard;
+    let kanji: origa::domain::Card = serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"私"}}}"#)
+        .expect("deserialize kanji card");
+    YesNoCard::new(kanji, "私".to_string(), "я".to_string(), is_correct)
+}
+
+// The kanji yes/no result mounts the full KanjiCardDetails: readings and
+// the «Значение» row are visible immediately — that row IS the card
+// answer, so the plain answer block must NOT also render (the echo
+// duplication is avoided by construction). The details expand stays.
+#[wasm_bindgen_test]
+async fn yesno_card_view_kanji_result_renders_full_card_details() {
+    origa::dictionary::kanji::init_kanji(origa::dictionary::kanji::KanjiData {
+        kanji_json: r#"{"kanji":[{"kanji":"私","jlpt":"N5","used_in":100,"description_ru":["я, личное местоимение"],"description_en":[],"radicals":["禾"],"popular_words":[],"on_readings":["シ"],"kun_readings":["わた"]}]}"#.to_string(),
+    })
+    .expect("mini kanji dict");
+
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_kanji_fixture(true)
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text = wrapper.text_content().unwrap_or_default();
+    assert!(
+        text.contains("シ"),
+        "the kanji readings must render on the result; got: {text}"
+    );
+    assert!(
+        text.contains("Meaning") && text.contains("я, личное местоимение"),
+        "the «Значение» row must carry the kanji name; got: {text}"
+    );
+    assert!(
+        wrapper.query_selector(".lesson-answer").unwrap().is_none(),
+        "the plain answer block must not duplicate the details «Значение» row"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"kanji-details-toggle\"]")
+            .unwrap()
+            .is_some(),
+        "the details expand toggle must be present"
+    );
+}
+
+// The grammar yes/no result offers the rule expand (GrammarDetailsExpand
+// carries its own toggle; the grammar dictionary is not loaded in the
+// wasm env — the toggle still renders, degrading the body).
+#[wasm_bindgen_test]
+async fn yesno_card_view_grammar_result_offers_the_rule_expand() {
+    use origa::domain::YesNoCard;
+    let grammar: origa::domain::Card =
+        serde_json::from_str(r#"{"Grammar":{"rule_id":"01ARZ3NDEKTSV4RRFFQ69G5FAV"}}"#)
+            .expect("deserialize grammar card");
+    let yesno = YesNoCard::new(
+        grammar,
+        "～てもいい".to_string(),
+        "разрешение".to_string(),
+        true,
+    );
+
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text = wrapper.text_content().unwrap_or_default();
+    assert!(
+        text.contains("More details"),
+        "the grammar rule expand toggle must render on the result; got: {text}"
+    );
+}
+
+// The non-kanji yes/no result keeps the compact answer block and the
+// full-card expand must stay EMPTY: vocabulary/phrase cards have no
+// separate full document, so any expand content would duplicate the
+// answer rendered right above it.
+#[wasm_bindgen_test]
+async fn yesno_card_view_non_kanji_result_keeps_an_empty_expand() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(true)
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let expand = wrapper
+        .query_selector("[data-testid=\"yesno-full-card-expand\"]")
+        .ok()
+        .flatten()
+        .expect("the expand mount point must exist on the result");
+    let expand_text = expand.text_content().unwrap_or_default();
+    assert!(
+        expand_text.trim().is_empty(),
+        "a vocabulary yes/no result must not unfold a full card; got: {expand_text}"
+    );
+    assert!(
+        !expand_text.contains("Meaning") && !expand_text.contains("シ"),
+        "no kanji details may leak into a non-kanji result; got: {expand_text}"
+    );
+}
+
+// The grammar quiz (QuizCardView) offers the rule expand only AFTER
+// submission: before it the result gate keeps «More details» hidden —
+// the rule breakdown must not leak while the learner is still answering.
+#[wasm_bindgen_test]
+async fn grammar_quiz_result_offers_the_rule_expand_only_after_submit() {
+    use super::quiz_card::{QuizCardView, QuizVariant};
+    use origa::domain::{QuizCard, QuizMode};
+
+    let show_result = RwSignal::new(false);
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        let grammar: origa::domain::Card =
+            serde_json::from_str(r#"{"Grammar":{"rule_id":"01ARZ3NDEKTSV4RRFFQ69G5FAV"}}"#)
+                .expect("deserialize grammar card");
+        let quiz = QuizCard::new(
+            grammar,
+            vec![
+                origa::domain::QuizOption::new("てもいい".to_string(), true, None),
+                origa::domain::QuizOption::new("てもいわない".to_string(), false, None),
+            ],
+            QuizMode::Single,
+        );
+        view! {
+            <QuizCardView
+                quiz_card=quiz
+                show_result=show_result.into()
+                selected_option=None
+                on_select_option=Callback::new(|_: usize| ())
+                on_dont_know=Callback::new(|_: ()| ())
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+                quiz_variant=QuizVariant::Grammar
+                selected_options=Signal::derive(HashSet::new)
+                multi_submitted=Signal::from(false)
+                multi_result=None
+                on_toggle=Callback::new(|_: usize| ())
+                on_submit=Callback::new(|_: ()| ())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let before = wrapper.text_content().unwrap();
+    assert!(
+        !before.contains("More details"),
+        "the rule expand must stay hidden before submission; got: {before}"
+    );
+
+    show_result.set(true);
+    tick().await;
+
+    let after = wrapper.text_content().unwrap();
+    assert!(
+        after.contains("More details"),
+        "the grammar quiz result must offer the rule expand; got: {after}"
+    );
+}
+
 #[wasm_bindgen_test]
 async fn yesno_card_view_incorrect_shows_correct_answer_line() {
     let wrapper = create_wrapper();
@@ -909,6 +1108,48 @@ async fn yesno_card_view_incorrect_shows_correct_answer_line() {
     assert!(
         text.contains("Yes"),
         "an incorrect answer must reveal the correct Да/Нет row; got: {text}"
+    );
+    assert!(
+        !text.contains("Your answer"),
+        "the learner's own pick must not be echoed in the ledger; got: {text}"
+    );
+}
+
+// Owner request: a correct yes/no answer shows the verdict alone — the
+// «Нет [✓ Ваш ответ]» echo told the user nothing they didn't remember.
+#[wasm_bindgen_test]
+async fn yesno_card_view_correct_shows_no_answer_rows() {
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(true)
+                show_result=Signal::from(true)
+                selected_answer=Some(true)
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let strip = wrapper
+        .query_selector("[data-testid=\"quiz-feedback-strip\"]")
+        .ok()
+        .flatten()
+        .expect("a correct answer must still render the verdict strip");
+    let text = strip.text_content().unwrap_or_default();
+    assert!(
+        !text.contains("Your answer"),
+        "a correct answer must not echo the Да/Нет pick; got: {text}"
+    );
+    assert!(
+        !text.contains("Correct answer"),
+        "a correct answer must not reveal answer rows; got: {text}"
     );
 }
 
@@ -1351,41 +1592,17 @@ async fn feedback_strip_not_answered_reveals_correct_answer() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// KanjiQuizAnswerName (#822)
+// QuizFullCardExpand on the quiz result (kanji name contract, ex-#822)
 // ═══════════════════════════════════════════════════════════════════════
 
+/// The #822 name-box guard transfers to the full-card expand: an
+/// unresolvable kanji name (`card.answer` fails) renders NOTHING —
+/// no empty «Значение» row after submit. The kanji here is absent from
+/// every mini dictionary the suite initializes, so the degraded branch
+/// holds no matter which test initialized the shared dictionary first
+/// (wasm-bindgen-test runs in source order, the OnceLock is suite-wide).
 #[wasm_bindgen_test]
-async fn kanji_quiz_answer_name_renders_meaning_label_and_name() {
-    let wrapper = create_wrapper();
-    let (set_label, get_label) = shared_cell::<String>();
-    mount_with_i18n(&wrapper, move || {
-        let i18n = crate::i18n::use_i18n();
-        set_label.set(Some(
-            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.meaning).to_string(),
-        ));
-        view! {
-            <super::quiz_card::KanjiQuizAnswerName name="день, солнце".to_string() />
-        }
-        .into_any()
-    });
-    tick().await;
-
-    let text = wrapper.text_content().unwrap();
-    assert!(
-        text.contains(get_label.take().expect("captured").as_str()),
-        "meaning label must render; got: {text}"
-    );
-    assert!(
-        text.contains("день, солнце"),
-        "kanji name must render; got: {text}"
-    );
-}
-
-/// The full quiz view degrades without dictionary data: the wasm test
-/// env has no CDN kanji dictionary, so `card.answer` fails → the name
-/// box must stay hidden (no empty «Значение» box after submit).
-#[wasm_bindgen_test]
-async fn kanji_reading_quiz_without_dictionary_hides_empty_name_box() {
+async fn kanji_reading_quiz_unresolvable_name_hides_empty_name_box() {
     use super::quiz_card::{QuizCardView, QuizVariant};
     use origa::domain::{QuizCard, QuizMode};
 
@@ -1397,12 +1614,12 @@ async fn kanji_reading_quiz_without_dictionary_hides_empty_name_box() {
             crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.meaning).to_string(),
         ));
         let kanji: origa::domain::Card =
-            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"日"}}}"#)
+            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"漢"}}}"#)
                 .expect("deserialize kanji card");
         let quiz = QuizCard::new(
             kanji,
             vec![
-                origa::domain::QuizOption::new("ニチ".to_string(), true, None),
+                origa::domain::QuizOption::new("シ".to_string(), true, None),
                 origa::domain::QuizOption::new("ソチ".to_string(), false, None),
             ],
             QuizMode::Multi,
@@ -1432,7 +1649,83 @@ async fn kanji_reading_quiz_without_dictionary_hides_empty_name_box() {
     let text = wrapper.text_content().unwrap();
     assert!(
         !text.contains(get_label.take().expect("captured").as_str()),
-        "empty kanji name must hide the name box; got: {text}"
+        "empty kanji name must hide the name content; got: {text}"
+    );
+}
+
+/// The multi reading-quiz result keeps the #822 intent — the kanji name
+/// is visible on the answer side — now carried by the full-card expand's
+/// «Значение» row (the dedicated name box is superseded). With a mini
+/// dictionary the expand renders readings + meaning.
+#[wasm_bindgen_test]
+async fn kanji_reading_quiz_result_shows_meaning_via_full_card_expand() {
+    use super::quiz_card::{QuizCardView, QuizVariant};
+    use origa::domain::{QuizCard, QuizMode};
+
+    origa::dictionary::kanji::init_kanji(origa::dictionary::kanji::KanjiData {
+        kanji_json: r#"{"kanji":[{"kanji":"私","jlpt":"N5","used_in":100,"description_ru":["я, личное местоимение"],"description_en":[],"radicals":["禾"],"popular_words":[],"on_readings":["シ"],"kun_readings":["わた"]}]}"#.to_string(),
+    })
+    .expect("mini kanji dict");
+
+    let wrapper = create_wrapper();
+    let (set_label, get_label) = shared_cell::<String>();
+    mount_with_i18n(&wrapper, move || {
+        let i18n = crate::i18n::use_i18n();
+        set_label.set(Some(
+            crate::i18n::td_string!(i18n.get_locale_untracked(), lesson.meaning).to_string(),
+        ));
+        let kanji: origa::domain::Card =
+            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"私"}}}"#)
+                .expect("deserialize kanji card");
+        let quiz = QuizCard::new(
+            kanji,
+            vec![
+                origa::domain::QuizOption::new("シ".to_string(), true, None),
+                origa::domain::QuizOption::new("ソチ".to_string(), false, None),
+            ],
+            QuizMode::Multi,
+        );
+        view! {
+            <QuizCardView
+                quiz_card=quiz
+                show_result=Signal::from(true)
+                selected_option=None
+                on_select_option=Callback::new(|_: usize| ())
+                on_dont_know=Callback::new(|_: ()| ())
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+                quiz_variant=QuizVariant::Reading
+                selected_options=Signal::derive(HashSet::new)
+                multi_submitted=Signal::from(true)
+                multi_result=None
+                on_toggle=Callback::new(|_: usize| ())
+                on_submit=Callback::new(|_: ()| ())
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let text = wrapper.text_content().unwrap();
+    assert!(
+        text.contains(get_label.take().expect("captured").as_str()),
+        "the «Значение» label must render on the multi quiz result; got: {text}"
+    );
+    assert!(
+        text.contains("я, личное местоимение"),
+        "the kanji name must render via the details block; got: {text}"
+    );
+    assert!(
+        text.contains("シ"),
+        "the readings must render above the meaning; got: {text}"
+    );
+    assert!(
+        wrapper
+            .query_selector("[data-testid=\"kanji-details-toggle\"]")
+            .unwrap()
+            .is_some(),
+        "the details expand toggle must be present"
     );
 }
 
@@ -1449,12 +1742,12 @@ async fn kanji_reading_quiz_renders_no_writing_animation() {
     let wrapper = create_wrapper();
     mount_with_i18n(&wrapper, move || {
         let kanji: origa::domain::Card =
-            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"日"}}}"#)
+            serde_json::from_str(r#"{"Kanji":{"kanji":{"text":"私"}}}"#)
                 .expect("deserialize kanji card");
         let quiz = QuizCard::new(
             kanji,
             vec![
-                origa::domain::QuizOption::new("ニチ".to_string(), true, None),
+                origa::domain::QuizOption::new("シ".to_string(), true, None),
                 origa::domain::QuizOption::new("ソチ".to_string(), false, None),
             ],
             QuizMode::Multi,

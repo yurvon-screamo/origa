@@ -16,6 +16,7 @@ import { lessonExampleScenario } from "./lesson-example.ts";
 import { lessonReadingQuizScenario } from "./lesson-reading-quiz.ts";
 import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
+import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 
@@ -42,6 +43,7 @@ export const implementations: Record<string, ShotScenario> = {
   [lessonUnificationScenario.id]: lessonUnificationScenario,
   [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
   [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
+  [lessonYesnoResultScenario.id]: lessonYesnoResultScenario,
   [lessonCounterPackScenario.id]: lessonCounterPackScenario,
   [grammarPageScenario.id]: grammarPageScenario,
   [countersDetailScenario.id]: countersDetailScenario,

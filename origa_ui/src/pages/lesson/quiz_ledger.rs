@@ -152,46 +152,21 @@ pub(crate) fn multi_dont_know_rows(options: &[QuizOption]) -> Vec<LedgerRow> {
 }
 
 /// Rows of a yes/no quiz result. The localized Да/Нет labels come from
-/// the caller (`quiz_ledger_labels::yesno_label`).
+/// the caller (`quiz_ledger_labels::yesno_label`). The learner's pick is
+/// never echoed (owner request): a pass shows the verdict strip alone —
+/// the binary choice is trivially memorable; a miss (or «не знаю»)
+/// reveals the correct answer without repeating what the user already
+/// knows they picked.
 pub(crate) fn yesno_ledger_rows(
     result: QuizResult,
-    picked: Option<bool>,
     correct: bool,
     yes_label: &str,
     no_label: &str,
 ) -> Vec<LedgerRow> {
     let label = |v: bool| if v { yes_label } else { no_label }.to_string();
     match result {
-        QuizResult::Correct => picked
-            .map(|v| {
-                vec![LedgerRow {
-                    text: label(v),
-                    tag: None,
-                    kind: LedgerRowKind::YourAnswerCorrect,
-                }]
-            })
-            .unwrap_or_default(),
-        QuizResult::Incorrect => {
-            // Honest degradation: an Incorrect verdict without a pick
-            // (invariant break) still reveals the truth — no fabricated
-            // «user answer» row.
-            let mut rows = picked
-                .map(|v| {
-                    vec![LedgerRow {
-                        text: label(v),
-                        tag: None,
-                        kind: LedgerRowKind::YourAnswerWrong,
-                    }]
-                })
-                .unwrap_or_default();
-            rows.push(LedgerRow {
-                text: label(correct),
-                tag: None,
-                kind: LedgerRowKind::CorrectAnswer,
-            });
-            rows
-        },
-        QuizResult::DontKnow => vec![LedgerRow {
+        QuizResult::Correct => Vec::new(),
+        QuizResult::Incorrect | QuizResult::DontKnow => vec![LedgerRow {
             text: label(correct),
             tag: None,
             kind: LedgerRowKind::CorrectAnswer,
@@ -274,12 +249,27 @@ mod tests {
     }
 
     #[test]
-    fn yesno_incorrect_shows_pick_then_truth() {
-        let rows = yesno_ledger_rows(QuizResult::Incorrect, Some(true), false, "Да", "Нет");
-        assert_eq!(rows[0].kind, LedgerRowKind::YourAnswerWrong);
+    fn yesno_incorrect_shows_only_the_truth() {
+        let rows = yesno_ledger_rows(QuizResult::Incorrect, false, "Да", "Нет");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].kind, LedgerRowKind::CorrectAnswer);
+        assert_eq!(rows[0].text, "Нет");
+    }
+
+    // Owner request: a pass shows the verdict alone — the Да/Нет pick is
+    // trivially memorable and its echo carried no information.
+    #[test]
+    fn yesno_correct_shows_no_rows() {
+        let rows = yesno_ledger_rows(QuizResult::Correct, true, "Да", "Нет");
+        assert!(rows.is_empty());
+    }
+
+    #[test]
+    fn yesno_dont_know_reveals_the_correct_answer() {
+        let rows = yesno_ledger_rows(QuizResult::DontKnow, true, "Да", "Нет");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].kind, LedgerRowKind::CorrectAnswer);
         assert_eq!(rows[0].text, "Да");
-        assert_eq!(rows[1].kind, LedgerRowKind::CorrectAnswer);
-        assert_eq!(rows[1].text, "Нет");
     }
 
     #[test]
