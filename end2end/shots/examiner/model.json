@@ -267,6 +267,12 @@
     },
     "word-examples:detail-viewport": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-full": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-grid:grid-viewport": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }
