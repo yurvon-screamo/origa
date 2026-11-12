@@ -229,7 +229,7 @@ npm run shots -- index                                         # пересоб�
 
 ## CI/CD
 
-Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
+Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`, `seed-cache.yml` (посев common-кэшей на master — dispatch/schedule, PR #934).
 CI: lint + test + e2e + docker build (2 images: landing + ui).
 CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
