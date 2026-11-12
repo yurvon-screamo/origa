@@ -299,44 +299,31 @@ pub fn YesNoCardView(
             // the readings and the details expand — no duplicate blocks.
             // A grammar card keeps the compact answer AND gains the rule
             // expand; the expand renders nothing for the remaining kinds.
-            <Show when=move || show_result.get()>
-                {move || {
-                    if is_kanji_card {
-                        Some(
-                            view! {
-                                <QuizFullCardExpand
-                                    card=card_stored.get_value()
-                                    native_language=lang
-                                    known_kanji
-                                    test_id="yesno-full-card-expand"
-                                />
-                            }
-                            .into_any(),
-                        )
-                    } else {
-                        Some(
-                            view! {
-                                <CardAnswerDisplay
-                                    translations=Signal::derive(move || {
-                                        answer_vocab_translations_stored.get_value()
-                                    })
-                                    description=Signal::derive(move || {
-                                        answer_vocab_description_stored.get_value()
-                                    })
-                                    text=Signal::derive(move || answer_text_display_stored.get_value())
-                                    known_kanji=known_kanji
-                                />
-                                <QuizFullCardExpand
-                                    card=card_stored.get_value()
-                                    native_language=lang
-                                    known_kanji
-                                    test_id="yesno-full-card-expand"
-                                />
-                            }
-                            .into_any(),
-                        )
-                    }
-                }}
+            <Show when=move || show_result.get() && is_kanji_card>
+                <QuizFullCardExpand
+                    card=card_stored.get_value()
+                    native_language=lang
+                    known_kanji
+                    test_id="yesno-full-card-expand"
+                />
+            </Show>
+            <Show when=move || show_result.get() && !is_kanji_card>
+                <CardAnswerDisplay
+                    translations=Signal::derive(move || {
+                        answer_vocab_translations_stored.get_value()
+                    })
+                    description=Signal::derive(move || {
+                        answer_vocab_description_stored.get_value()
+                    })
+                    text=Signal::derive(move || answer_text_display_stored.get_value())
+                    known_kanji=known_kanji
+                />
+                <QuizFullCardExpand
+                    card=card_stored.get_value()
+                    native_language=lang
+                    known_kanji
+                    test_id="yesno-full-card-expand"
+                />
             </Show>
         </LessonCardShell>
     }
