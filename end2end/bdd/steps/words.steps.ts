@@ -80,6 +80,33 @@ Then("слово отображается в сетке слов", async ({ page
   await expect(wordsPage.emptyState).not.toBeVisible();
 });
 
+Then("карточка слова — без второй рамки", async ({ page }) => {
+  const wordBox = page.locator('[data-testid="words-card-word-link"]').first();
+  await expect(wordBox).toBeVisible();
+  // Якорь паттерна «двойная рамка» (задача 20261111125434): одна рамка на
+  // карточку — её несёт .word-card; блок слова — контент без собственной
+  // рамки и без offset-тени (::after).
+  // Tailwind preflight задаёт всем элементам border-style: solid при
+  // border-width: 0, поэтому отсутствие рамки проверяем шириной, а не
+  // стилем; ::after отсутствует целиком — content: none.
+  const styles = await wordBox.evaluate((el) => {
+    const computed = getComputedStyle(el);
+    const after = getComputedStyle(el, "::after");
+    return {
+      borderTopWidth: computed.borderTopWidth,
+      borderRightWidth: computed.borderRightWidth,
+      borderBottomWidth: computed.borderBottomWidth,
+      borderLeftWidth: computed.borderLeftWidth,
+      afterContent: after.content,
+    };
+  });
+  expect(styles.borderTopWidth).toBe("0px");
+  expect(styles.borderRightWidth).toBe("0px");
+  expect(styles.borderBottomWidth).toBe("0px");
+  expect(styles.borderLeftWidth).toBe("0px");
+  expect(styles.afterContent).toBe("none");
+});
+
 Then("отображается пустое состояние", async ({ page }) => {
   const wordsPage = new WordsPage(page);
   await expect(wordsPage.emptyState).toBeVisible();
