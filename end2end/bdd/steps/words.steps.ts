@@ -81,7 +81,7 @@ Then("слово отображается в сетке слов", async ({ page
 });
 
 Then("карточка слова — без второй рамки", async ({ page }) => {
-  const wordBox = page.locator('[data-testid="words-card-word-link"]').first();
+  const wordBox = page.getByTestId("words-card-word-link").first();
   await expect(wordBox).toBeVisible();
   // Якорь паттерна «двойная рамка» (задача 20261111125434): одна рамка на
   // карточку — её несёт .word-card; блок слова — контент без собственной
