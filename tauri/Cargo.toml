@@ -56,6 +56,9 @@ uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
 tempfile.workspace = true
+# Host-side per-platform routing tables (updater policy, store review,
+# share-intent mirror) — task 20261104060604, GH #854.
+rstest.workspace = true
 
 # Windows/Linux-only: auto-updater, process runner (for updater restart),
 # and single-instance plugins. macOS App Store handles updates; non-App-Store

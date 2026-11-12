@@ -543,7 +543,9 @@ fn check_for_update_gates_endpoint_check_behind_is_dev() {
 /// (b) the probe helper fns are Linux-only. Point (c) — the Windows path has
 /// no reference to the probe at all — is enforced by CI: the windows job in
 /// the same build compiles `check_for_update` without the linux cfg, so an
-/// ungated probe call would fail compilation there.
+/// ungated probe call would fail compilation there. The decision itself is
+/// pinned per-platform by the `update_policy` table in updater_commands.rs
+/// (task 20261104060604); this guard only enforces the wiring order.
 #[test]
 fn check_for_update_skips_endpoint_without_system_package_tool() {
     let updater_commands = include_str!("../src/updater_commands.rs");
@@ -559,8 +561,8 @@ fn check_for_update_skips_endpoint_without_system_package_tool() {
     let body = &updater_commands[body_start..body_end];
 
     let probe_call_pos = body
-        .find("system_package_tool_available()")
-        .expect("check_for_update must consult system_package_tool_available()");
+        .find("system_package_tools()")
+        .expect("check_for_update must consult system_package_tools()");
     let endpoint_call_pos = body
         .find(".updater()")
         .expect("check_for_update must call app.updater()");
@@ -571,8 +573,8 @@ fn check_for_update_skips_endpoint_without_system_package_tool() {
 
     // cfg-gate: the probe helpers must not compile into the Windows binary.
     let probe_fn_pos = updater_commands
-        .find("fn system_package_tool_available()")
-        .expect("system_package_tool_available missing from updater_commands.rs");
+        .find("fn system_package_tools()")
+        .expect("system_package_tools missing from updater_commands.rs");
     let cfg_prefix = &updater_commands[..probe_fn_pos];
     let linux_cfg_pos = cfg_prefix
         .rfind("#[cfg(target_os = \"linux\")]")
@@ -586,7 +588,7 @@ fn check_for_update_skips_endpoint_without_system_package_tool() {
             let trimmed = line.trim();
             trimmed.is_empty() || trimmed.starts_with("//") || trimmed.starts_with("#[cfg(")
         }),
-        "the #[cfg(target_os = \"linux\")] attribute must directly precede system_package_tool_available"
+        "the #[cfg(target_os = \"linux\")] attribute must directly precede system_package_tools"
     );
 
     // The whole probe block (probe fn + tool_runs) is inside the cfg-gated

@@ -18,6 +18,11 @@ mod android_context;
 #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
 mod device_ai_commands;
 mod file_commands;
+// Pure per-platform routing contracts (update policy, store review,
+// share-intent mirror): cfg!() converts to the enum exactly once here, and
+// rstest tables pin every platform's decision on any host CI runner
+// (task 20261104060604, GH #854).
+mod platform_routing;
 mod share_intake;
 // Auto-updater is Windows/Linux-only and is additionally compiled OUT of
 // app-store builds (`ORIGA_APP_STORE=1`): Microsoft Store policy 10.2.5
@@ -54,6 +59,11 @@ use updater_commands::{PendingUpdate, check_for_update, install_update};
 fn is_store_build() -> bool {
     cfg!(app_store)
 }
+
+// CI selftest marker bridge: the Android smoke script's logcat channel
+// (task 20261104060604, GH #854). Registered unconditionally like
+// `request_app_review`.
+mod selftest_marker;
 
 /// Returns the deep-link URL that launched (or last targeted) the current
 /// Activity. The frontend polls this on mount because the `deep-link://new-url`
@@ -218,7 +228,8 @@ pub fn run() {
             share_intake::get_pending_share,
             share_intake::share_listener_ready,
             share_intake::read_share_file,
-            share_intake::delete_share_file
+            share_intake::delete_share_file,
+            selftest_marker::selftest_marker
         ])
         .setup(|app| {
             tracing::info!("[deep-link] setup started");
