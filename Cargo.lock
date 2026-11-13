@@ -10221,7 +10221,6 @@ dependencies = [
  "ego-tree",
  "flate2",
  "futures",
- "hmac",
  "image",
  "origa",
  "pulldown-cmark",
@@ -10235,7 +10234,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "ulid",
- "urlencoding",
 ]
 
 [[package]]
