@@ -39,6 +39,12 @@
 | grammar-details | lesson-acquaintance-grammar | desktop | ru-RU | 1280×2122 | 2026-11-10T21:38:03.827Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-details--desktop-cb9f5187.png) |
 | grammar-answer | lesson-acquaintance-grammar | desktop | ru-RU | 1280×800 | 2026-11-10T21:38:02.559Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-answer--desktop-6aed35a1.png) |
 | grammar-presentation | lesson-acquaintance-grammar | desktop | ru-RU | 1280×1303 | 2026-11-10T21:38:00.067Z | 8011df13 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231215-insets/lesson-acquaintance-grammar--grammar-presentation--desktop-7adcbfe2.png) |
+| scoring | onboarding-import-progress | mobile | ru-RU | 390×844 | 2026-11-10T13:05:41.911Z | 28e8360e | не загружен |
+| progress | onboarding-import-progress | mobile | ru-RU | 390×844 | 2026-11-10T13:05:34.321Z | 28e8360e | не загружен |
+| scoring | onboarding-import-progress | desktop | ru-RU | 1280×800 | 2026-11-10T13:05:17.361Z | 28e8360e | не загружен |
+| progress | onboarding-import-progress | desktop | ru-RU | 1280×800 | 2026-11-10T13:05:08.937Z | 28e8360e | не загружен |
+| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
+| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
 | detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
 | detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |

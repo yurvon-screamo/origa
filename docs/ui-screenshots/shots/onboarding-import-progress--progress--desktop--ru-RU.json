@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "onboarding-import-progress",
+  "screen": "progress",
+  "route": "/onboarding",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 523525,
+  "sha256": "349e16f16f90f4c16f7bc2b6d7858368ecfa8fa75caf79fbb56704e84d95c81c",
+  "capturedAt": "2026-11-10T13:05:08.937Z",
+  "commit": "28e8360e3ade63473d4a0bd160060e41a46b70ff",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:28081",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

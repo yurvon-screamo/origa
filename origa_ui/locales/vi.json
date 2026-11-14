@@ -108,6 +108,13 @@
     "next": "Tiếp theo",
     "start_import": "Bắt đầu nhập",
     "importing": "Đang nhập...",
+    "import_progress": {
+      "fetch_sets": "Đang tải bộ {done}/{total}…",
+      "vocabulary": "Đang nhập từ {done}/{total}…",
+      "grammar": "Ngữ pháp {done}/{total}…",
+      "kanji": "Hán tự {done}/{total}…",
+      "saving": "Đang lưu…"
+    },
     "know_all": "Biết tất cả",
     "finish": "Hoàn tất",
     "completing": "Đang hoàn tất...",

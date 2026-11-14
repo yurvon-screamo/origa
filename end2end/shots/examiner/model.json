@@ -262,6 +262,12 @@
         "lesson-stage": ["quiz-answer"]
       }
     },
+    "onboarding-import-progress:progress": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-import-progress:scoring": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "token-popup:token-popup-report": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
