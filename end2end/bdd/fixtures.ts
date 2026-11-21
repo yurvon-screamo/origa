@@ -71,9 +71,7 @@ export const test = base.extend<
       // seeded via the API before the first page exists, so the app
       // rehydrates it on boot. The boot's settle wait keeps the same
       // content marker the UI-login path used (waitForLoginComplete).
-      await apiLogin(context, testUser.email, testUser.password, {
-        baseURL: getAppBaseUrl(),
-      });
+      await apiLogin(context, testUser.email, testUser.password);
       const page = await context.newPage();
       await page.setViewportSize({ width: 1280, height: 720 });
       try {

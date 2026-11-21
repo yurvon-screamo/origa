@@ -50,7 +50,7 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 **Just run:** `npx playwright test` — everything starts automatically.
 
 **Faster local boots:** start the app server yourself and the suite reuses it (`reuseExistingServer`):
-`TRAILBASE_URL=http://localhost:14000 ORIGA_CDN_BASE_URL=http://localhost:18080 trunk serve --cargo-profile wasm-dev --port 11420` (then `E2E_APP_PORT=11420 npx playwright test ...`). The `wasm-dev` profile cuts the bundle ~410 MB → ~25 MB and boots shrink accordingly. **The env pair is mandatory**: without it the build bakes the production URLs (`app.origa.uwuwu.net`), and a local run silently talks to the production TrailBase — the config-level guard that keeps the harness off production does not cover a manually started `trunk serve`.
+`TRAILBASE_URL=http://localhost:14000 ORIGA_CDN_BASE_URL=http://localhost:18080 trunk serve --cargo-profile wasm-dev --port 11420` (then, with the baked 14000/18080 ports, the full port trio `E2E_TRAILBASE_PORT=14000 E2E_CDN_PORT=18080 E2E_APP_PORT=11420 npx playwright test ...` — the harness defaults 4000/8080 would refuse connections against this build). The `wasm-dev` profile cuts the bundle ~410 MB → ~25 MB and boots shrink accordingly. **The env pair is mandatory**: without it the build bakes the production URLs (`app.origa.uwuwu.net`), and a local run silently talks to the production TrailBase — the config-level guard that keeps the harness off production does not cover a manually started `trunk serve`.
 
 **Required `.env`:**
 
