@@ -185,8 +185,19 @@ impl AuthStore {
                 // the remote row when one exists; when even that yields
                 // nothing, the bootstrap mints a fresh profile from the
                 // session and pushes the canonical record to the server.
+                // An OAuth callback can persist a session with an empty
+                // email (the product treats it as an error via
+                // `email_not_in_token`); minting from such a session would
+                // push a canonical record with empty email/username — the
+                // same guard the sibling call sites carry.
                 let email = match get_session_async().await {
-                    Some(session) => session.email,
+                    Some(session) if !session.email.is_empty() => session.email,
+                    Some(_) => {
+                        tracing::warn!(
+                            "Boot profile bootstrap skipped: session has an empty email"
+                        );
+                        return Ok(());
+                    },
                     None => return Ok(()),
                 };
                 match get_or_create_profile(self, &email, i18n).await {
