@@ -16,7 +16,11 @@ without touching the network. The tests pin the observable behavior contract:
   proxies the Tigris origin and forwards its ``x-tigris-served-from`` header,
   so an answer carrying that header (with the VM ``server: nginx/<version>``
   signature) is the healthy RF branch, not a world leak (regression pin for
-  the false-incident bug found in live testing on 2026-11-08).
+  the false-incident bug found in live testing on 2026-11-08);
+* the edge-script drift probe: the first cycle seeds the metadata pair
+  silently, a pair change fires EXACTLY one CHANGED alert (not the anti-flap
+  path — a change is a fact, not a flapping failure), probe failures follow
+  the standard anti-flap.
 
 Stub contract (read via ``FAKE_*`` environment variables):
 
@@ -25,7 +29,9 @@ Stub contract (read via ``FAKE_*`` environment variables):
   unset);
 * ``curl``: ``--resolve`` prints ``FAKE_RF_BRANCH_RESPONSE`` (default: the
   live VM shape); the ``-w '%{http_code}'`` TSPU probe answers with
-  ``FAKE_RAILWAY_<host>`` (dots → underscores, default "200"); telegram calls
+  ``FAKE_RAILWAY_<host>`` (dots → underscores, default "200"); the Bunny
+  metadata call prints ``FAKE_BUNNY_SCRIPT_JSON`` (default: the live script
+  shape, ``FAKE_BUNNY_FAIL=1`` makes it exit non-zero); telegram calls
   append to ``FAKE_TG_LOG``; the heartbeat call appends to
   ``FAKE_HEARTBEAT_LOG`` (``FAKE_HEARTBEAT_FAIL=1`` makes it fail);
 * ``openssl -enddate`` prints ``notAfter=$FAKE_UMAMI_NOTAFTER``.
@@ -82,7 +88,23 @@ CHECK_KEYS = [
     "fail:rf-railway-origa.uwuwu.net",
     "fail:rf-railway-app.origa.uwuwu.net",
     "fail:umami-cert",
+    "fail:bunny-script-drift",
 ]
+
+# The drift probe's non-counter state line: the seeded metadata pair.
+SCRIPT_PAIR_KEY = "bunny_script_91629"
+
+# The live script metadata pair (probed 2026-11-22): release bumped by the
+# 08.11 re-deploy of master.
+LIVE_SCRIPT_PAIR = "1300715:2026-11-08T17:14:40"
+LIVE_SCRIPT_JSON = (
+    '{"Items":[{"Id":91629,"Name":"origa-s3-geo",'
+    '"LastModified":"2026-11-08T17:14:40","CurrentReleaseId":1300715}]}'
+)
+CHANGED_SCRIPT_JSON = (
+    '{"Items":[{"Id":91629,"Name":"origa-s3-geo",'
+    '"LastModified":"2026-11-22T10:00:00","CurrentReleaseId":1400001}]}'
+)
 
 
 def _env_key(*parts: str) -> str:
@@ -103,8 +125,17 @@ exit 0
 
 CURL_STUB_TEMPLATE = r"""#!/usr/bin/env bash
 LIVE_VM_RESPONSE_DEFAULT="{live_vm}"
+# Single-quoted: the JSON carries double quotes (and no single ones).
+BUNNY_SCRIPT_JSON_DEFAULT='{bunny_json}'
 if [[ "$*" == *"--resolve"* ]]; then
   printf '%b\n' "${{FAKE_RF_BRANCH_RESPONSE:-$LIVE_VM_RESPONSE_DEFAULT}}"
+  exit 0
+fi
+if [[ "$*" == *"api.bunny.net"* ]]; then
+  if [[ "${{FAKE_BUNNY_FAIL:-0}}" == "1" ]]; then
+    exit 1
+  fi
+  printf '%s\n' "${{FAKE_BUNNY_SCRIPT_JSON:-$BUNNY_SCRIPT_JSON_DEFAULT}}"
   exit 0
 fi
 if [[ "$*" == *"%{{http_code}}"* ]]; then
@@ -135,7 +166,10 @@ exit 0
 def _stub_dir(tmp_path: Path) -> Path:
     bindir = tmp_path / "stubs"
     bindir.mkdir(exist_ok=True)
-    curl_stub = CURL_STUB_TEMPLATE.format(live_vm=LIVE_VM_RESPONSE.replace("\n", "\\n"))
+    curl_stub = CURL_STUB_TEMPLATE.format(
+        live_vm=LIVE_VM_RESPONSE.replace("\n", "\\n"),
+        bunny_json=LIVE_SCRIPT_JSON,
+    )
     for name, body in (
         ("dig", DIG_STUB),
         ("curl", curl_stub),
@@ -156,6 +190,7 @@ def _base_env(tmp_path: Path) -> dict[str, str]:
     env["TG_BOT_TOKEN"] = "test-token"  # nosemgrep: python-hardcoded-secrets
     env["TG_CHAT_ID"] = "test-chat"
     env["HETRIX_HEARTBEAT_URL"] = "https://heartbeat.test/ping"
+    env["BUNNY_API_KEY"] = "test-bunny-key"  # nosemgrep: python-hardcoded-secrets
     env["FAKE_UMAMI_NOTAFTER"] = "Feb  6 11:14:26 2027 GMT"
     # Healthy DNS topology (plain CNAME everywhere, geo split on s3 only).
     for host, target in CNAME_TARGETS.items():
@@ -187,9 +222,16 @@ def run_cycle(
     )
 
 
-def state_counts(tmp_path: Path) -> dict[str, int]:
+def state_counts(tmp_path: Path) -> dict[str, int | str]:
     lines = (tmp_path / "state.txt").read_text().splitlines()
-    return {parts[0]: int(parts[1]) for parts in (line.split() for line in lines)}
+    counts: dict[str, int | str] = {}
+    for parts in (line.split() for line in lines):
+        try:
+            counts[parts[0]] = int(parts[1])
+        except ValueError:
+            # Non-counter state (e.g. the drift probe's id:timestamp pair).
+            counts[parts[0]] = parts[1]
+    return counts
 
 
 def telegram_messages(tmp_path: Path, check: str | None = None) -> list[str]:
@@ -227,12 +269,15 @@ class TestGreenCycle:
     def test_green_cycle_keeps_all_counters_at_zero(self, tmp_path: Path) -> None:
         run_cycle(tmp_path)
         counts = state_counts(tmp_path)
-        assert sorted(counts) == sorted(CHECK_KEYS), counts
+        # The drift pair line is non-counter state, expected next to the
+        # anti-flap counters after every completed cycle.
+        assert sorted(counts) == sorted([*CHECK_KEYS, SCRIPT_PAIR_KEY]), counts
         # rf-branch is excluded here: on the current code the live VM response
         # shape fails the guard (see the dedicated regression pin below) — this
         # test pins the state mechanics of every other check.
         assert all(
-            key == "fail:rf-branch" or value == 0 for key, value in counts.items()
+            key in ("fail:rf-branch", SCRIPT_PAIR_KEY) or value == 0
+            for key, value in counts.items()
         ), counts
         assert telegram_messages(tmp_path) == []
 
@@ -258,7 +303,8 @@ class TestAntiFlap:
         # rf-branch is the guarded regression pin (see TestHttpProbes) and
         # stays red until the guard accepts the live VM shape.
         assert all(
-            key == "fail:rf-branch" or value == 0 for key, value in counts.items()
+            key in ("fail:rf-branch", SCRIPT_PAIR_KEY) or value == 0
+            for key, value in counts.items()
         ), counts
 
     def test_no_alert_storm_after_the_second_failure(self, tmp_path: Path) -> None:
@@ -279,7 +325,7 @@ class TestAntiFlap:
         raw_lines = (tmp_path / "state.txt").read_text().splitlines()
         keys = [line.split()[0] for line in raw_lines]
         assert len(keys) == len(set(keys)), f"duplicated state keys: {keys}"
-        assert sorted(keys) == sorted(CHECK_KEYS)
+        assert sorted(keys) == sorted([*CHECK_KEYS, SCRIPT_PAIR_KEY])
 
 
 class TestSeveritySemantics:
@@ -305,6 +351,62 @@ class TestSeveritySemantics:
         assert len(messages) == 1, messages
         assert "WARN [origa-poller] umami-cert" in messages[0]
         assert "expires in" in messages[0]
+
+
+class TestBunnyScriptDrift:
+    def test_first_cycle_seeds_script_pair_silently(self, tmp_path: Path) -> None:
+        # First-run semantics: the poller install itself is not a drift event —
+        # the state seeds without paging the owner.
+        run_cycle(tmp_path)
+        counts = state_counts(tmp_path)
+        assert counts[SCRIPT_PAIR_KEY] == LIVE_SCRIPT_PAIR, counts
+        assert counts["fail:bunny-script-drift"] == 0, counts
+        assert telegram_messages(tmp_path, check="bunny-script-drift") == []
+
+    def test_script_change_fires_exactly_one_changed_alert(
+        self, tmp_path: Path
+    ) -> None:
+        # The overwrite scenario: a deploy outside the recorded procedure
+        # bumps the (ReleaseId, LastModified) pair. Exactly one CHANGED alert
+        # on the change cycle, none on the following (re-seeded) cycles.
+        run_cycle(tmp_path)
+        changed = {"FAKE_BUNNY_SCRIPT_JSON": CHANGED_SCRIPT_JSON}
+        run_cycle(tmp_path, changed)
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 1, messages
+        assert "CHANGED [origa-poller] bunny-script-drift" in messages[0]
+        assert LIVE_SCRIPT_PAIR in messages[0]
+        assert "1400001:2026-11-22T10:00:00" in messages[0]
+        # State re-seeded to the new pair; the counter stays clean (the
+        # change took the immediate-alert path, not the anti-flap one).
+        counts = state_counts(tmp_path)
+        assert counts[SCRIPT_PAIR_KEY] == "1400001:2026-11-22T10:00:00", counts
+        assert counts["fail:bunny-script-drift"] == 0, counts
+        run_cycle(tmp_path, changed)
+        assert len(telegram_messages(tmp_path, check="bunny-script-drift")) == 1
+
+    def test_probe_failure_follows_antiflap(self, tmp_path: Path) -> None:
+        failing = {"FAKE_BUNNY_FAIL": "1"}
+        run_cycle(tmp_path, failing)  # first failure: silent
+        assert telegram_messages(tmp_path, check="bunny-script-drift") == []
+        run_cycle(tmp_path, failing)  # second failure: exactly one ALERT
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 1, messages
+        assert "ALERT [origa-poller] bunny-script-drift" in messages[0]
+        run_cycle(tmp_path)  # recovery: RESOLVE + silent seeding of the pair
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 2, messages
+        assert "RESOLVE [origa-poller] bunny-script-drift" in messages[1]
+        assert state_counts(tmp_path)[SCRIPT_PAIR_KEY] == LIVE_SCRIPT_PAIR
+
+    def test_missing_api_key_is_a_probe_failure(self, tmp_path: Path) -> None:
+        keyless = {"BUNNY_API_KEY": ""}
+        run_cycle(tmp_path, keyless)
+        run_cycle(tmp_path, keyless)
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 1, messages
+        assert "ALERT [origa-poller] bunny-script-drift" in messages[0]
+        assert "BUNNY_API_KEY missing" in messages[0]
 
 
 class TestHttpProbes:

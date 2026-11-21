@@ -6,6 +6,7 @@
 #   * the pinned-IP HTTP probe of the RF branch of s3.origa.uwuwu.net,
 #   * the TSPU reachability probe of the Railway-served hosts from RF,
 #   * the openssl expiry probe of the umami certificate (no HTTP pings),
+#   * the edge-script drift probe ( Bunny script 91629 metadata pair),
 #   * a heartbeat ping to HetrixTools at the end of every completed cycle.
 #
 # Alert semantics (the anti-flap contract from the runbook):
@@ -13,14 +14,20 @@
 #     when it comes back green);
 #   * both RU resolvers being unreachable is a WARN, not an incident
 #     (single operator behind anycast);
+#   * the edge-script drift probe alerts IMMEDIATELY on a metadata change
+#     (exactly one CHANGED per deploy — the change is a fact, not a flapping
+#     failure);
 #   * the poller itself never alerts on its own dead egress — that case
 #     is covered by the HetrixTools heartbeat going silent.
 #
 # Required environment (set in the cron environment on the VM):
 #   TG_BOT_TOKEN, TG_CHAT_ID   — Telegram alert delivery
 #   HETRIX_HEARTBEAT_URL       — HetrixTools heartbeat ping URL
+#   BUNNY_API_KEY              — Bunny AccessKey for the script-metadata probe
 # Optional:
 #   POLLER_STATE_FILE          — anti-flap counters (default below)
+#
+# Tools: jq must be installed (the drift probe parses the Bunny JSON).
 
 set -euo pipefail
 
@@ -30,6 +37,13 @@ readonly RU_RESOLVER_PRIMARY="77.88.8.8"
 readonly RU_RESOLVER_SECONDARY="77.88.8.1"
 readonly WORLD_RESOLVER="1.1.1.1"
 readonly UMAMI_CERT_HORIZON_DAYS=21
+
+# Edge-script drift probe: Bunny exposes only the metadata pair
+# (CurrentReleaseId, LastModified) — never the deployed code — so this is the
+# only machine-checkable "deployed version" invariant.
+readonly BUNNY_API_URL="https://api.bunny.net/compute/script"
+readonly BUNNY_SCRIPT_ID=91629
+readonly BUNNY_SCRIPT_STATE_KEY="bunny_script_91629"
 
 # Full hostnames (the landing is the bare domain — no second .origa label).
 readonly ORIGA_HOST="origa.uwuwu.net"
@@ -266,6 +280,51 @@ check_umami_certificate() {
   fi
 }
 
+# --- Edge-script drift probe -------------------------------------------------
+
+# Bunny API never returns the deployed script code, so the verifiable
+# invariant is "the last deploy is the one the deploy procedure recorded"
+# (infra/bunny-dns/README.md): every deploy bumps the
+# (CurrentReleaseId, LastModified) pair, so an unrecorded deploy — e.g. a
+# parallel session silently overwriting master — changes the pair. Exactly
+# one CHANGED alert fires per change, then the state re-seeds: the change is
+# a fact, not a flapping failure, so the anti-flap counter does not apply.
+# Probe failures (no key, network, API) follow the standard anti-flap.
+check_bunny_script_drift() {
+  local live
+  if [[ -z "${BUNNY_API_KEY:-}" ]]; then
+    record_outcome "bunny-script-drift" fail "BUNNY_API_KEY missing"
+    return
+  fi
+  live=$(curl -fsS --max-time 20 -H "AccessKey: ${BUNNY_API_KEY}" \
+      "$BUNNY_API_URL" 2>/dev/null \
+    | jq -r --arg id "$BUNNY_SCRIPT_ID" \
+      '.Items[] | select((.Id | tostring) == $id) | "\(.CurrentReleaseId):\(.LastModified)"' \
+      2>/dev/null) || live=""
+  if [[ -z "$live" ]]; then
+    record_outcome "bunny-script-drift" fail "no script metadata from Bunny API"
+    return
+  fi
+
+  # `|| true` keeps pipefail from killing the assignment when the state file
+  # does not exist yet (first cycle after install).
+  local recorded
+  recorded=$(awk -v k="$BUNNY_SCRIPT_STATE_KEY" '$1 == k { print $2 }' \
+    "$STATE_FILE" 2>/dev/null | head -n1 || true)
+  if [[ -z "$recorded" ]]; then
+    # First sighting seeds the state silently — the poller install itself is
+    # not a drift event and must not page the owner.
+    update_state "$BUNNY_SCRIPT_STATE_KEY" "$live"
+    record_outcome "bunny-script-drift" ok "seeded ${live}"
+    return
+  fi
+  if [[ "$recorded" != "$live" ]]; then
+    send_telegram "CHANGED [origa-poller] bunny-script-drift: script ${BUNNY_SCRIPT_ID} ${recorded} -> ${live} — verify against the deploy record (task body); unexplained change = investigate"
+    update_state "$BUNNY_SCRIPT_STATE_KEY" "$live"
+  fi
+  record_outcome "bunny-script-drift" ok "pair unchanged"
+}
+
 # --- Cycle ------------------------------------------------------------------
 
 send_heartbeat() {
@@ -289,6 +348,7 @@ main() {
   check_rf_railway "$ORIGA_HOST"
   check_rf_railway "$APP_HOST"
   check_umami_certificate
+  check_bunny_script_drift
   send_heartbeat
   log "cycle end"
 }
