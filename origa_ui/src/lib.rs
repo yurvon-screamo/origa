@@ -11,6 +11,8 @@ mod hooks;
 pub mod i18n;
 mod loaders;
 mod pages;
+#[cfg(all(target_arch = "wasm32", test))]
+mod panic_family_wasm_tests;
 mod repository;
 mod routes;
 mod sentry;
