@@ -283,5 +283,8 @@ codegen-units = 16
 debug = "line-tables-only"
 
 [profile.dev.package."*"]
+# Faster test/E2E runtime; one-time cost: full dep rebuild on profile change
+# (sccache/GH caches absorb it). Generic-heavy UI paths gain less (cargo book
+# "Overrides and generics") — opt-level=1 is a follow-up candidate if needed.
 debug = false
 opt-level = 2
