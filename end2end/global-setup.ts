@@ -22,14 +22,16 @@ if (
   }
 }
 
-// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
-// imported after ./config so the dotenv bootstrap has already run.
-// The trail process spawns on 127.0.0.1:PORT and the healthcheck waits on
-// that exact address (waitForTrailBase uses trailbaseSpawnUrl below); the
-// TRAILBASE_URL env is left untouched — offline specs build request
-// intercepts from it and the bundle embeds it, so host spelling
-// (localhost vs 127.0.0.1) must stay whatever the caller provided
-// (ci.yml uses localhost; rewriting it here breaks the intercepts).
+// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override).
+// Module order does NOT make the .env visible here: shots/config.ts is a
+// dependency of ./config, so it is evaluated before config.ts's dotenv
+// bootstrap either way — the ports resolve from shell env only (the
+// contract documented in end2end/AGENTS.md). The trail process spawns on
+// 127.0.0.1:PORT and the healthcheck waits on that exact address
+// (waitForTrailBase uses trailbaseSpawnUrl below). This setup reads no
+// TRAILBASE_URL: the bundle gets its compile-time URL from the webServer
+// env, and the offline intercept steps derive both host forms from the
+// port (getTrailBaseUrl), so there is nothing shell-level to preserve.
 
 /** The address the trail process is spawned on (loopback, always reachable). */
 const trailbaseSpawnUrl = `http://127.0.0.1:${TRAILBASE_PORT}`;
