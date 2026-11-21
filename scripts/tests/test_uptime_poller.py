@@ -399,6 +399,38 @@ class TestBunnyScriptDrift:
         assert "RESOLVE [origa-poller] bunny-script-drift" in messages[1]
         assert state_counts(tmp_path)[SCRIPT_PAIR_KEY] == LIVE_SCRIPT_PAIR
 
+    def test_script_missing_from_response_is_a_probe_failure(
+        self, tmp_path: Path
+    ) -> None:
+        # The API answered but the script is gone from Items[] (deleted or the
+        # response shape changed): the probe must fail through the anti-flap,
+        # never seed an empty pair as "the new metadata".
+        run_cycle(tmp_path)  # seed a healthy pair first
+        gone = {"FAKE_BUNNY_SCRIPT_JSON": '{"Items":[]}'}
+        run_cycle(tmp_path, gone)
+        run_cycle(tmp_path, gone)
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 1, messages
+        assert "ALERT [origa-poller] bunny-script-drift" in messages[0]
+        assert "no script metadata" in messages[0]
+        # The seeded pair must survive the failing probe untouched.
+        assert state_counts(tmp_path)[SCRIPT_PAIR_KEY] == LIVE_SCRIPT_PAIR
+
+    def test_pair_is_taken_from_script_91629_among_others(self, tmp_path: Path) -> None:
+        # The production listing carries every edge script of the account; the
+        # probe must select exactly 91629 and not the first/last item.
+        mixed = {
+            "FAKE_BUNNY_SCRIPT_JSON": (
+                '{"Items":['
+                '{"Id":91000,"Name":"other-script","LastModified":"2026-01-01T00:00:00","CurrentReleaseId":111},'
+                '{"Id":91629,"Name":"origa-s3-geo","LastModified":"2026-11-08T17:14:40","CurrentReleaseId":1300715},'
+                '{"Id":92000,"Name":"another-one","LastModified":"2026-02-02T00:00:00","CurrentReleaseId":222}'
+                "]}"
+            )
+        }
+        run_cycle(tmp_path, mixed)
+        assert state_counts(tmp_path)[SCRIPT_PAIR_KEY] == LIVE_SCRIPT_PAIR
+
     def test_missing_api_key_is_a_probe_failure(self, tmp_path: Path) -> None:
         keyless = {"BUNNY_API_KEY": ""}
         run_cycle(tmp_path, keyless)
