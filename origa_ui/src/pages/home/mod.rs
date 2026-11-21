@@ -72,10 +72,20 @@ pub fn Home() -> impl IntoView {
                         current_user.set(Some(user));
                     },
                     Ok(None) => {
+                        // Overdue read fence: the effect task may resume
+                        // after the home page is gone (route change during
+                        // the read) — the redirect belongs to the live
+                        // mount only (RUST-5 overdue-closure family #1443).
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         navigate("/login", Default::default());
                     },
                     Err(e) => {
                         tracing::error!("Home: get_current_user error: {:?}", e);
+                        if disposed.is_disposed() {
+                            return;
+                        }
                         navigate("/login", Default::default());
                     },
                 }
