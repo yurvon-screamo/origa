@@ -19,7 +19,11 @@ Bunny SCR жив только на `s3` — RU-резолверы получаю
 | `HETRIX_V2_API_TOKEN` | там же | Uptime API Token для v2-write (создаётся в HetrixTools UI → Account → API). Токен едет в URL-path — **не логировать URL**, не вставлять в тикеты |
 | `TG_BOT_TOKEN`, `TG_CHAT_ID` | cron-env RF-ВМ (`crontab`/env-файл) | доставка алертов поллера в Telegram |
 | `HETRIX_HEARTBEAT_URL` | там же | ping-URL heartbeat-монитора «poller» из HetrixTools |
+| `BUNNY_API_KEY` | там же | Bunny AccessKey для зонда метаданных edge-скрипта (`GET /compute/script`) |
 | `SENTRY_*` | существующий Sentry-контур | алерты Sentry Uptime (email) |
+
+Инструменты на ВМ: `curl`, `dig`, `openssl`, `jq` (зонд дрейфа парсит Bunny-JSON;
+на чистой Ubuntu `apt install jq`).
 
 ## 2. Мониторы HetrixTools
 
@@ -78,6 +82,7 @@ cat > /root/.uptime_poller.env <<'EOF'
 export TG_BOT_TOKEN="..."
 export TG_CHAT_ID="..."
 export HETRIX_HEARTBEAT_URL="https://hetrixtools.com/heartbeat/..."
+export BUNNY_API_KEY="..."
 EOF
 chmod 600 /root/.uptime_poller.env
 ```
@@ -90,10 +95,20 @@ state-файл счётчиков `/var/tmp/uptime_poller.state`):
 | `dns-ru` | Bunny SCR drift: s3@обоих RU-резолверов → строго A ВМ; origa/app/umami/content → CNAME | инцидент |
 | `dns-world` | мир-ветка DNS: s3 → CloudFront CNAME, остальные CNAME (`@1.1.1.1`) | инцидент |
 | `ru-resolvers` | смерть обоих RU-резолверов (Yandex anycast, один оператор) | **warn**, не инцидент |
-| `rf-branch` | законтренный `--resolve` на ВМ: 200 + `server: nginx/` + отсутствие `x-tigris-served-from` (kz1-гоча misroute) | инцидент |
+| `rf-branch` | законтренный `--resolve` на ВМ: 200 + `server: nginx/` (версионная подпись ВМ) + отсутствие CloudFront-маркеров `via`/`x-cache`/`x-amz-cf-id` (kz1-гоча misroute); `x-tigris-*` не дискриминируется — Tigris-origin ставит их в обеих ветках | инцидент |
 | `rf-railway-origa` / `rf-railway-app` | полный ТСПУ-блок Railway edge из РФ (ADR-049); residential-деградации — слепая зона | инцидент |
 | `umami-cert` | openssl notAfter < 21 дня; ноль HTTP-пингов umami (zero-scale) | warn |
+| `bunny-script-drift` | смена пары (ReleaseId, LastModified) edge-скрипта 91629 = деплой вне записанной процедуры (затирание параллельной сессией; код API не отдаёт — см. ранбук `infra/bunny-dns/README.md`) | немедленный **CHANGED**, не антифлап |
 | heartbeat | смерть самого поллера — тишина на HetrixTools | dead-man |
+
+Контракт `bunny-script-drift`: Bunny API не возвращает код задеплоенного
+скрипта, единственный машинно-проверяемый инвариант — «последний деплой
+выполнен записанной процедурой». Первый цикл после установки тихо сеет пару в
+state (установка поллера — не дрейф); смена пары → ровно один CHANGED-алерт с
+обеими парами, state пере-сеется; свой CHANGED на задокументированный деплой —
+бесплатное пост-деплой подтверждение, необъяснимый — инцидент. Фейлы зонда
+(сеть/API/ключ) идут через общий антифлап. До внедрения поллера на ВМ зонд
+спит; окно до того прикрывает процедурный гард из ранбука bunny-dns.
 
 ТСПУ-деградации CloudFront из РФ (вечерний класс ADR-059) отдельной алерт-логики
 не имеют — решение владельца от 03.11 («забей»).
@@ -128,7 +143,11 @@ Sentry UI → Uptime → Add monitor: URL
 5. Антифлап: остановить nginx на ВМ → ровно один ALERT через 2 цикла, не
    шторм; поднять → один RESOLVE.
 6. RF-проба: остановить nginx → `rf-branch` инцидент.
-7. Повторный `setup_uptime_monitors.py --apply` не создаёт дублей (v3-read
+7. Дрифт-учения: повторный деплой неизменного master-скрипта
+   (`bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629`) →
+   ровно один CHANGED-алерт с обеими парами, следующий цикл молчит; pair в
+   state обновился. Возврата не требует — CHANGED разовый по построению.
+8. Повторный `setup_uptime_monitors.py --apply` не создаёт дублей (v3-read
    матчинг по имени).
 
 ## 7. Ревизия при изменении топологии
