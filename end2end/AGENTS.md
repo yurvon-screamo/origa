@@ -142,7 +142,7 @@ npm run exam:canary   # proves the examiner catches defects (needs live Ollama, 
 
 - `shots/examiner/model.json` — the test model (which screens get
   examined). Committed: the knowledge is versioned next to the code
-  (ADR-068). At runtime (`--examine`) a screen absent from the model
+  (ADR-088). At runtime (`--examine`) a screen absent from the model
   is skipped, not an error. The catalog-level invariant points the
   other way: every scenario of `shots/catalog.ts` must name at least
   one examined screen. `model.test.ts` fails the unit suite
