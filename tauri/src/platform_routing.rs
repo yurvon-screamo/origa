@@ -53,6 +53,12 @@ impl HostPlatform {
 /// first — the exact engine init the plugin performs — and keep the app
 /// alive without TTS when it fails (the frontend already degrades
 /// gracefully: `plugin:tts|speak` invoke rejects into a `tracing::warn`).
+/// Compiled only where the table is consulted (Windows/Linux): Apple and
+/// mobile targets register the plugin unconditionally, and a dead enum on
+/// those targets would trip the clippy `-D warnings` gate (the table is
+/// host-pinned by the rstest matrix below, which compiles on the Linux CI
+/// runner).
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TtsRegistration {
     /// Probe the engine first; register the plugin only when it initializes.
@@ -68,6 +74,7 @@ pub enum TtsRegistration {
 /// fail on the user's machine); macOS and the mobile native bridges have
 /// no observed failures and register unconditionally. A new
 /// `HostPlatform` variant fails to compile here until it picks a cell.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub fn tts_registration(platform: HostPlatform) -> TtsRegistration {
     match platform {
         HostPlatform::Linux | HostPlatform::Windows => TtsRegistration::ProbeRequired,
