@@ -134,7 +134,27 @@ fn normalize_translation(raw: &str) -> String {
 /// punctuation (dialogue dashes in ja/ru/en) and survive, as do runs of
 /// the katakana prolonged-sound mark ー (U+30FC — a different codepoint).
 pub fn sanitize_dash_runs(text: &str) -> String {
-    text.to_string()
+    fn is_dash_char(c: char) -> bool {
+        matches!(c, '\u{2500}' | '\u{2015}' | '\u{2014}')
+    }
+
+    let mut out = String::with_capacity(text.len());
+    let mut run = String::new();
+    for c in text.chars() {
+        if is_dash_char(c) {
+            run.push(c);
+        } else {
+            if run.chars().count() < 2 {
+                out.push_str(&run);
+            }
+            run.clear();
+            out.push(c);
+        }
+    }
+    if run.chars().count() < 2 {
+        out.push_str(&run);
+    }
+    out.trim().to_string()
 }
 
 /// Translation load path: quote-wrapper normalization (#178 P-5) plus the
