@@ -602,54 +602,54 @@ def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
 PHRASE_BUNDLE_COUNT = 6
 
 
-def phrase_bundle_blob_freshness_problems(cdn_dir: Path) -> list[str]:
-    """Freshness checks for the deflated phrase data bundle blobs (uwuwu #1451).
+def _single_bundle_blob_problem(cdn_dir: Path, index: int) -> str | None:
+    """Freshness verdict for one phrase data bundle blob (uwuwu #1451).
 
     Mirrors the builder: inflate the stored bytes, verify the header (schema
     + sha256 of phrases/data_bundle_N.json) and the manifest_guard over the
     chunk files the bundle contains (the bundle JSON keys name the
     phrases/data/pXXXX.json sources).
     """
+    blob_rel = f"phrases/data_bundle_{index}.v3.rkyv"
+    blob = cdn_dir / blob_rel
+    if not blob.is_file():
+        return f"{blob_rel}: missing (run utils build-cdn-rkyv)"
+    try:
+        inflated = inflate_deflated(blob)
+    except zlib.error as e:
+        return f"{blob_rel}: not deflated ({e})"
+    if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
+        return f"{blob_rel}: unreadable header"
+    schema_version = int.from_bytes(inflated[4:8], "little")
+    if schema_version != RKYV_SCHEMA_VERSION:
+        return f"{blob_rel}: schema {schema_version} != {RKYV_SCHEMA_VERSION}"
+
+    source = cdn_dir / f"phrases/data_bundle_{index}.json"
+    if not source.is_file():
+        return f"{blob_rel}: source data_bundle_{index}.json not found"
+    if hashlib.sha256(source.read_bytes()).digest() != inflated[8:40]:
+        return f"{blob_rel}: stale relative to data_bundle_{index}.json"
+
+    bundle = json.loads(source.read_text(encoding="utf-8"))
+    chunk_hashes: list[str] = []
+    for key in sorted(bundle):
+        chunk = cdn_dir / f"phrases/data/{key}.json"
+        if not chunk.is_file():
+            return f"{blob_rel}: chunk source {key}.json missing"
+        chunk_hashes.append(hashlib.sha256(chunk.read_bytes()).hexdigest())
+    expected_guard = hashlib.sha256("".join(chunk_hashes).encode()).digest()
+    if expected_guard != inflated[40:72]:
+        return f"{blob_rel}: manifest_guard mismatch against chunk files"
+    return None
+
+
+def phrase_bundle_blob_freshness_problems(cdn_dir: Path) -> list[str]:
+    """Freshness checks for the deflated phrase data bundle blobs (uwuwu #1451)."""
     problems: list[str] = []
     for index in range(PHRASE_BUNDLE_COUNT):
-        blob_rel = f"phrases/data_bundle_{index}.v3.rkyv"
-        blob = cdn_dir / blob_rel
-        if not blob.is_file():
-            problems.append(f"{blob_rel}: missing (run utils build-cdn-rkyv)")
-            continue
-        try:
-            inflated = inflate_deflated(blob)
-        except zlib.error as e:
-            problems.append(f"{blob_rel}: not deflated ({e})")
-            continue
-        if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
-            problems.append(f"{blob_rel}: unreadable header")
-            continue
-        schema_version = int.from_bytes(inflated[4:8], "little")
-        if schema_version != RKYV_SCHEMA_VERSION:
-            problems.append(
-                f"{blob_rel}: schema {schema_version} != {RKYV_SCHEMA_VERSION}"
-            )
-            continue
-        source = cdn_dir / f"phrases/data_bundle_{index}.json"
-        if not source.is_file():
-            problems.append(f"{blob_rel}: source data_bundle_{index}.json not found")
-            continue
-        if hashlib.sha256(source.read_bytes()).digest() != inflated[8:40]:
-            problems.append(f"{blob_rel}: stale relative to data_bundle_{index}.json")
-            continue
-        bundle = json.loads(source.read_text(encoding="utf-8"))
-        chunk_hashes: list[str] = []
-        for key in sorted(bundle):
-            chunk = cdn_dir / f"phrases/data/{key}.json"
-            if not chunk.is_file():
-                problems.append(f"{blob_rel}: chunk source {key}.json missing")
-                break
-            chunk_hashes.append(hashlib.sha256(chunk.read_bytes()).hexdigest())
-        else:
-            expected_guard = hashlib.sha256("".join(chunk_hashes).encode()).digest()
-            if expected_guard != inflated[40:72]:
-                problems.append(f"{blob_rel}: manifest_guard mismatch against chunk files")
+        problem = _single_bundle_blob_problem(cdn_dir, index)
+        if problem is not None:
+            problems.append(problem)
     return problems
 
 
