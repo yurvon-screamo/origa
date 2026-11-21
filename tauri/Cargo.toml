@@ -61,18 +61,17 @@ tempfile.workspace = true
 rstest.workspace = true
 
 # Windows/Linux-only: auto-updater, process runner (for updater restart),
-# and single-instance plugins. macOS App Store handles updates; non-App-Store
-# macOS is intentionally excluded too. Target-scoping keeps the macOS binary
+# single-instance plugins, and the TTS availability probe (see lib.rs plugin
+# registration). macOS App Store handles updates; non-App-Store macOS is
+# intentionally excluded too. Target-scoping keeps the macOS binary
 # clean and avoids pulling updater-specific transitive deps.
 [target.'cfg(any(windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance.workspace = true
 tauri-plugin-updater.workspace = true
 tauri-plugin-process.workspace = true
-
-# Linux-only TTS availability probe (see lib.rs plugin registration): the
-# version MUST track the `tts` dep of tauri-plugin-tts (currently 0.26.x) so
-# the probe exercises the exact same engine init the plugin performs.
-[target.'cfg(target_os = "linux")'.dependencies]
+# The version MUST track the `tts` dep of tauri-plugin-tts (currently
+# 0.26.x) so the probe exercises the exact same engine init the plugin
+# performs. Bump together with tauri-plugin-tts.
 tts.workspace = true
 
 # In-app store review (SKStoreReviewController, ADR-062): raw objc2 bindings —
