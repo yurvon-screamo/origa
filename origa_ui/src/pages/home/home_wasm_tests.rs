@@ -189,6 +189,47 @@ async fn jlpt_progress_card_toggle_expands_categories() {
     }
 }
 
+#[wasm_bindgen_test]
+async fn jlpt_progress_card_aria_expanded_toggles_explicit_values() {
+    let wrapper = create_wrapper();
+    let _mount = mount_with_router(&wrapper, || {
+        let progress = origa::domain::JlptProgress::new();
+        view! {
+            <JlptProgressCard jlpt_progress=Signal::from(progress) test_id="jp-aria" />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let toggle = || {
+        wrapper
+            .query_selector("[data-testid=\"jp-aria-toggle\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+    };
+
+    // ARIA requires explicit "true"/"false": a presence-only attribute
+    // (empty value) reads as undefined to screen readers.
+    let collapsed = toggle().get_attribute("aria-expanded");
+    assert_eq!(
+        collapsed.as_deref(),
+        Some("false"),
+        "collapsed toggle must carry aria-expanded=\"false\"; got: {collapsed:?}"
+    );
+
+    toggle().click();
+    tick().await;
+
+    let expanded = toggle().get_attribute("aria-expanded");
+    assert_eq!(
+        expanded.as_deref(),
+        Some("true"),
+        "expanded toggle must carry aria-expanded=\"true\"; got: {expanded:?}"
+    );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // JlptSkeleton
 // ═══════════════════════════════════════════════════════════════════════
@@ -376,6 +417,50 @@ async fn stats_section_collapsed_by_default_and_expands_on_toggle() {
         "children must render inside the section"
     );
     let _ = section;
+}
+
+#[wasm_bindgen_test]
+async fn stats_section_aria_expanded_toggles_explicit_values() {
+    use crate::pages::home::StatsSection;
+
+    let wrapper = create_wrapper();
+    let _unmount = leptos::mount::mount_to(wrapper.clone().unchecked_into(), move || {
+        provide_i18n();
+        view! {
+            <StatsSection test_id="ss-aria">
+                <p data-testid="ss-aria-inner">"inner content"</p>
+            </StatsSection>
+        }
+        .into_any()
+    });
+    tick().await;
+
+    let toggle = || {
+        wrapper
+            .query_selector("[data-testid=\"ss-aria-toggle\"]")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap()
+    };
+
+    // Same ARIA contract as the JLPT card: explicit "true"/"false".
+    let collapsed = toggle().get_attribute("aria-expanded");
+    assert_eq!(
+        collapsed.as_deref(),
+        Some("false"),
+        "collapsed toggle must carry aria-expanded=\"false\"; got: {collapsed:?}"
+    );
+
+    toggle().click();
+    tick().await;
+
+    let expanded = toggle().get_attribute("aria-expanded");
+    assert_eq!(
+        expanded.as_deref(),
+        Some("true"),
+        "expanded toggle must carry aria-expanded=\"true\"; got: {expanded:?}"
+    );
 }
 
 // ═══════════════════════════════════════════════════════════════════════

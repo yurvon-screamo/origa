@@ -18,6 +18,11 @@ pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             back_label=Signal::derive(move || i18n.get_keys().common().back().inner().to_string())
             title=Signal::derive(move || i18n.get_keys().words().header().inner().to_string())
             test_id="words"
+            // Below 768px the four actions leave the title's row and take
+            // their own full-width row as a tab strip (deliberate grid);
+            // above 768px the header stays one line. Pages with fewer
+            // actions keep the natural wrap of #823.
+            actions_class="max-md:basis-full max-md:justify-between".to_string()
         >
             <Button
                 variant=ButtonVariant::Ghost

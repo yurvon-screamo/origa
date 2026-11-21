@@ -101,7 +101,7 @@ fn CategoryDetailSection(
             <button
                 class="flex items-center justify-between w-full cursor-pointer select-none"
                 on:click=move |_| is_expanded.update(|v| *v = !*v)
-                aria-expanded=move || is_expanded.get()
+                aria-expanded=move || if is_expanded.get() { "true" } else { "false" }
                 aria-controls=move || format!("{}-panel", test_id.get())
                 id=move || format!("{}-toggle", test_id.get())
                 data-testid=move || {

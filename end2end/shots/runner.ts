@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { detectCdnBaseUrl } from "./bundle.ts";
+import { APP_PORT } from "./config.ts";
 import { createSink } from "./capture.ts";
 import type { Examiner } from "./examiner/examine.ts";
 import type { ShotEntry, ShotManifest } from "./manifest.ts";
@@ -43,7 +44,7 @@ export async function runScenario(
     options.baseURL ??
     scenario.baseURL ??
     process.env.E2E_APP_BASE_URL ??
-    "http://localhost:1420";
+    `http://localhost:${APP_PORT}`;
   const cdnBaseUrl = await detectCdnBaseUrl(baseURL, options.cdnBaseUrl);
   const entries: ShotEntry[] = [];
 

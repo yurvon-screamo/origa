@@ -10,7 +10,9 @@ mod create_vocabulary_card;
 mod delete_card;
 mod extract_text_from_image;
 mod import_anki_pack;
+mod import_onboarding_progress;
 mod import_onboarding_sets;
+mod import_onboarding_steps;
 mod mark_card_as_known;
 mod migrate_counters;
 mod migrate_grammar_cards;
@@ -48,6 +50,7 @@ pub use import_anki_pack::{
     AnkiCard, AnkiDeckInfo, AnkiFieldInfo, ImportAnkiPackResult, ImportAnkiPackUseCase,
     extract_anki_db_bytes, extract_cards, parse_cards, read_anki_database,
 };
+pub use import_onboarding_progress::{ImportPhase, ImportProgressEvent};
 pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUseCase};
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use migrate_counters::MigrateCountersForExistingUsersUseCase;

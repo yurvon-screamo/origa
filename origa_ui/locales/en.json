@@ -108,6 +108,13 @@
     "next": "Next",
     "start_import": "Start import",
     "importing": "Importing...",
+    "import_progress": {
+      "fetch_sets": "Loading sets {done}/{total}…",
+      "vocabulary": "Importing words {done}/{total}…",
+      "grammar": "Grammar rules {done}/{total}…",
+      "kanji": "Kanji {done}/{total}…",
+      "saving": "Saving…"
+    },
     "know_all": "Know all",
     "finish": "Finish",
     "completing": "Completing...",
@@ -587,8 +594,6 @@
     "no_kanji_for_level": "No kanji for the selected level (or all already learned)",
     "worksheets": "Worksheets: {}",
     "animation_unavailable": "Animation not available for this kanji",
-    "stroke_progress": "Stroke {} / {}",
-    "done": "Done!",
     "writing_practice": "Writing Practice",
     "stroke_order": "Stroke Order",
     "vocabulary": "Vocabulary",

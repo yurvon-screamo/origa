@@ -31,7 +31,7 @@ pub fn StatsSection(
             <button
                 class="flex w-full items-center justify-between cursor-pointer select-none"
                 on:click=move |_| expanded.update(|v| *v = !*v)
-                aria-expanded=move || expanded.get()
+                aria-expanded=move || if expanded.get() { "true" } else { "false" }
                 data-testid=move || format!("{}-toggle", section_prefix())
             >
                 <span class="text-xs text-[var(--fg-muted)] uppercase tracking-widest">

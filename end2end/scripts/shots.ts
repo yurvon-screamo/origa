@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
 import { listDescriptors } from "../shots/catalog.ts";
-import { SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
+import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
 import {
   collectFindings,
@@ -57,7 +57,7 @@ const CDN_HOST = "https://s3.origa.uwuwu.net";
 const CDN_BUCKET = "origa";
 const CDN_ENDPOINT = "https://t3.storage.dev";
 const CDN_PROFILE = "origa-t3";
-const DEFAULT_APP_BASE_URL = "http://localhost:1420";
+const DEFAULT_APP_BASE_URL = `http://localhost:${APP_PORT}`;
 
 interface Options {
   scenario: string[];

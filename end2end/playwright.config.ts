@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
 import {
+  APP_PORT,
   APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
   TRAILBASE_PORT,
@@ -17,7 +18,7 @@ const isCI = !!process.env.CI;
 const { baseUrl: cdnBaseUrl, cacheDir: cdnCacheDir } = resolveCdnSource();
 
 /** The app origin the suite runs against; also the inbox seam opt-in scope. */
-export const APP_BASE_URL = "http://localhost:1420";
+export const APP_BASE_URL = `http://localhost:${APP_PORT}`;
 
 const bddTestDir = defineBddConfig({
   features: "./bdd/features",
@@ -81,12 +82,14 @@ export default defineConfig({
     },
   ],
   webServer: [
-    // The corpus server only exists when there IS a local corpus: a
-    // fresh worktree has no `cdn/` (gitignored), the app then reads
-    // the content from the production CDN instead of dying on a
-    // server started against a missing relative path. Same recipe as
-    // the screenshots config; the served directory is the resolved
-    // one (`ORIGA_CDN_CACHE_DIR` overrides the repo-local default).
+    // The corpus server only exists when there IS a local corpus:
+    // without one the app reads the content from the production CDN
+    // instead of dying on a server started against a missing relative
+    // path. Same recipe as the screenshots config; the served
+    // directory is the serve-only chain (`ORIGA_CDN_CACHE_DIR` →
+    // `ORIGA_CDN_DIR` → `~/origa-cdn`, shots/config.ts) — the build
+    // and the preflight follow the corpus canon only (`cdn_dir()`,
+    // ADR-083).
     ...(cdnCacheDir !== null
       ? [
           {
@@ -99,9 +102,9 @@ export default defineConfig({
       : []),
     {
       command: isCI
-        ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
-        : "cd ../origa_ui && trunk serve",
-      port: 1420,
+        ? `npx serve ../origa_ui/dist -s -p ${APP_PORT} --no-clipboard`
+        : `cd ../origa_ui && trunk serve --port ${APP_PORT}`,
+      port: APP_PORT,
       reuseExistingServer: !isCI,
       // Cold-build aware budget (shots/config.ts), not a literal:
       // a fresh machine compiles the workspace for wasm32 beyond

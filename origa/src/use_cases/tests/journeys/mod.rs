@@ -7,6 +7,7 @@ mod create_vocabulary_card;
 mod ghost_lifecycle;
 mod grammar;
 mod import_anki_pack;
+mod import_onboarding_import_speed;
 mod import_onboarding_n2_scale;
 mod import_onboarding_target_level;
 mod import_preview;

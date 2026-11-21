@@ -169,10 +169,7 @@ fn is_on_variant_pair(a: &str, b: &str) -> bool {
         return true;
     }
     let geminated_b = strip_gemination(b);
-    if geminated_b != b && (a.starts_with(&geminated_b) || geminated_b.starts_with(a)) {
-        return true;
-    }
-    false
+    geminated_b != b && (a.starts_with(&geminated_b) || geminated_b.starts_with(a))
 }
 
 /// Remove every small tsu from the reading. Filtering ALL っ (not just a

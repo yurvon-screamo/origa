@@ -5974,6 +5974,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+ "web-time",
  "zip 9.1.3",
 ]
 
@@ -10220,7 +10221,6 @@ dependencies = [
  "ego-tree",
  "flate2",
  "futures",
- "hmac",
  "image",
  "origa",
  "pulldown-cmark",
@@ -10234,7 +10234,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "ulid",
- "urlencoding",
 ]
 
 [[package]]

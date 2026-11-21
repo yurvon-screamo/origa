@@ -8,6 +8,7 @@ export class WordsPage extends BasePage {
   readonly wordsPage: Locator;
   readonly wordsCard: Locator;
   readonly wordsTitle: Locator;
+  readonly wordsActions: Locator;
 
   // Navigation buttons
   readonly backButton: Locator;
@@ -80,6 +81,10 @@ export class WordsPage extends BasePage {
     this.wordsPage = page.getByTestId("words-page");
     this.wordsCard = page.getByTestId("words-card");
     this.wordsTitle = page.getByTestId("words-title");
+    // Actions wrapper of the PageHeader (tab strip + add button). The
+    // deliberate two-row grid below 768px is asserted through it:
+    // `max-md:basis-full` makes the wrapper's flex-basis 100%.
+    this.wordsActions = page.getByTestId("words-actions");
 
     // Navigation buttons
     this.backButton = page.getByTestId("words-back-btn");

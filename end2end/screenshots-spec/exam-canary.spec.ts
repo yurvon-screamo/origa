@@ -28,6 +28,7 @@ import {
   type Examiner,
 } from "../shots/examiner/examine.ts";
 import { parseExamModel } from "../shots/examiner/model.ts";
+import { APP_PORT } from "../shots/config.ts";
 import { DEFECT_CHECKLIST } from "../shots/examiner/questions.ts";
 import { readPngSize, sha256Hex, type ShotEntry } from "../shots/manifest.ts";
 import { openShotSession } from "../shots/session.ts";
@@ -102,7 +103,7 @@ async function openHome(
 ): Promise<{ page: Page; close: () => Promise<void> }> {
   const session = await openShotSession({
     browser,
-    baseURL: "http://localhost:1420",
+    baseURL: `http://localhost:${APP_PORT}`,
     locale: "ru-RU",
     viewport,
     preset: "fresh",
@@ -138,7 +139,7 @@ async function captureEntry(
     file,
     capturedAt: new Date().toISOString(),
     commit: "canary",
-    baseURL: "http://localhost:1420",
+    baseURL: `http://localhost:${APP_PORT}`,
     cdnBaseUrl: "canary",
   };
 }

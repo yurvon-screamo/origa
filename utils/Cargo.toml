@@ -25,10 +25,8 @@ tokio = { workspace = true, features = ["full"] }
 reqwest = { workspace = true, features = ["json", "blocking"] }
 futures.workspace = true
 ulid.workspace = true
-hmac.workspace = true
 sha2.workspace = true
 chrono.workspace = true
-urlencoding.workspace = true
 pulldown-cmark.workspace = true
 ammonia.workspace = true
 scraper.workspace = true

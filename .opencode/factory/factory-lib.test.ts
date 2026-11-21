@@ -159,7 +159,10 @@ describe("kickoffPrompt", () => {
     // only has to point at it and forbid the bespoke script.
     expect(p).toContain("npm run shots -- capture");
     expect(p).toContain("npm run shots -- list");
-    expect(p).toContain("ORIGA_CDN_CACHE_DIR");
+    // Корпус — ADR-083 канон ($ORIGA_CDN_DIR / ~/origa-cdn); CACHE_DIR —
+    // serve-only ручка раздачи, промпт её преподавать не должен.
+    expect(p).toContain("ORIGA_CDN_DIR");
+    expect(p).not.toContain("ORIGA_CDN_CACHE_DIR");
     expect(p).not.toContain("aws s3 cp");
     expect(p).not.toContain(".pr-screenshots/"); // папка в репо — больше не существует
     expect(p).toContain("НЕ коммитить");

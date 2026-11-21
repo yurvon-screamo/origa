@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "words",
+  "screen": "words-full",
+  "route": "/words",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": true,
+  "bytes": 291566,
+  "sha256": "90227fc5809a88b549b73d80c1b7a7ec925427cf84c8bd34fc2b7a62bc76234d",
+  "capturedAt": "2026-11-11T11:12:59.990Z",
+  "commit": "0af0aee157bafff045d86d481ba8db1509297b16",
+  "baseURL": "http://localhost:14200",
+  "cdnBaseUrl": "http://localhost:18411",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-words-header-fix/words--words-full--mobile-90227fc5.png",
+  "uploadedSha256": "90227fc5809a88b549b73d80c1b7a7ec925427cf84c8bd34fc2b7a62bc76234d",
+  "uploadedAt": "2026-11-11T11:13:08.304Z"
+}

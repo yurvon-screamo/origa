@@ -5,7 +5,8 @@ Playwright E2E tests for Origa. TypeScript + `@playwright/test`.
 ## npm Scripts
 
 ```bash
-npm test                     # All tests (headless; pretest runs bddgen)
+npm test                     # Playwright suite (headless; pretest runs bddgen)
+npm run test:unit            # shots/ unit tests (node --test, no browser)
 npm run test:ui              # Playwright UI mode
 npm run test:headed          # Visible browser
 npm run test:debug           # Debug mode
@@ -47,6 +48,9 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 | App (trunk/wasm) | 1420 | `playwright.config.ts` webServer | `trunk serve` or `npx serve` |
 
 **Just run:** `npx playwright test` — everything starts automatically.
+
+**Faster local boots:** start the app server yourself and the suite reuses it (`reuseExistingServer`):
+`TRAILBASE_URL=http://localhost:14000 ORIGA_CDN_BASE_URL=http://localhost:18080 trunk serve --cargo-profile wasm-dev --port 11420` (then `E2E_APP_PORT=11420 npx playwright test ...`). The `wasm-dev` profile cuts the bundle ~410 MB → ~25 MB and boots shrink accordingly. **The env pair is mandatory**: without it the build bakes the production URLs (`app.origa.uwuwu.net`), and a local run silently talks to the production TrailBase — the config-level guard that keeps the harness off production does not cover a manually started `trunk serve`.
 
 **Required `.env`:**
 
@@ -95,6 +99,11 @@ catalog:
   fresh profile, an imported corpus, a seeded ledger). The set is open by
   design.
 - `shots/scenarios/index.ts` — the map of the implementations.
+- `shots/examiner/model.json` — at least one examined screen per
+  scenario (the Screen examiner below). Add the entry in the same
+  commit: `npm run test:unit` (seconds, no browser) fails on a
+  missing entry, and local `npm test` does not run that suite — the
+  CI `e2e-matrix-guard` job does.
 
 The screenshots-spec files are thin wrappers around that catalog: they
 exist so a screen can also be captured by hand.
@@ -132,8 +141,15 @@ npm run exam:canary   # proves the examiner catches defects (needs live Ollama, 
 ```
 
 - `shots/examiner/model.json` — the test model (which screens get
-  examined). Committed: the knowledge is versioned next to the code.
-  A screen absent from the model is skipped, not an error.
+  examined). Committed: the knowledge is versioned next to the code
+  (ADR-068). At runtime (`--examine`) a screen absent from the model
+  is skipped, not an error. The catalog-level invariant points the
+  other way: every scenario of `shots/catalog.ts` must name at least
+  one examined screen. `model.test.ts` fails the unit suite
+  (`npm run test:unit`) on a new scenario without one — the
+  `e2e-matrix-guard` CI job goes red and the CI Gate fails with it.
+  A new scenario therefore ships as `catalog.ts` +
+  `scenarios/<id>.ts` + the model entry, in one commit.
 - `shots/examiner/questions.ts` — the defect checklist (clear distinct
   criteria matter: the model only answers what it is asked).
 - Traces: `exam.<scenario>.jsonl` + `exam-report.md` next to the
@@ -221,3 +237,4 @@ aborts, bounded click loops) live in `helpers/` and are invoked from steps.
 - `import type` for type-only imports in `shots/**` and `scripts/shots.ts` — the tool runs under Node's type stripping as well as under Playwright, and type stripping does NOT remove a type-only import (it becomes a runtime "does not provide an export named" error that `tsc` stays silent about). ESLint enforces it in that zone.
 - Native `*.spec.ts` files are the norm for the screenshot scenarios: they produce artifacts instead of asserting behaviour, so the "everything lives in Gherkin" rule of the BDD suite does not apply to them.
 - The scenarios of `shots/` select by `data-testid` — the same rule as the page objects. A raw CSS selector is allowed only where the markup has no marker (a tag inside a card, a checkbox of a drawer), and the reason is a comment next to it.
+- Authenticated contexts are seeded, not logged in through the UI: fixtures and scenarios use `apiLogin` (`helpers/auth.ts`). `uiLogin` remains only where the login form itself is the tested behaviour (auth.feature, the relay scenario of onboarding_scoring) and in the manual tools (shots) — grep the consumers before adding a new `uiLogin` call.

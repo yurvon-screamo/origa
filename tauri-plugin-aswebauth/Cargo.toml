@@ -22,15 +22,19 @@ tauri-plugin.workspace = true
 tauri.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tracing.workspace = true
+
 # Nonce generation/hash is shared by the macOS implementation and the iOS
-# command (the Swift side only forwards the pre-hashed value), so these stay
-# target-independent.
+# command (the Swift side only forwards the pre-hashed value). The modules
+# using these are cfg-gated to Apple platforms, so the dependencies live in
+# a matching target section — the Linux-side `cargo clippy` lint
+# (`unused_dependencies`) does not inspect them there.
+[target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies]
 base64.workspace = true
 rand.workspace = true
 sha2.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
+tracing.workspace = true
 objc2.workspace = true
 block2.workspace = true
 tokio = { workspace = true, features = ["sync"] }

@@ -3,11 +3,12 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
+  APP_PORT,
   APP_SERVER_TIMEOUT,
   LOCAL_CDN_PORT,
   SERVE_MODE,
-  TRAILBASE_PORT,
   resolveCdnSource,
+  TRAILBASE_PORT,
 } from "./shots/config.ts";
 
 const isCI = !!process.env.CI;
@@ -51,7 +52,7 @@ export default defineConfig({
   workers: 1,
   reporter: [["line"]],
   use: {
-    baseURL: "http://localhost:1420",
+    baseURL: `http://localhost:${APP_PORT}`,
     // Pin the UI locale the same way the BDD config does: the specs
     // assert Russian product copy (e.g. the «Счётный суффикс» tag in
     // counter-scoring.spec.ts) and a fresh profile inherits the runner
@@ -76,13 +77,14 @@ export default defineConfig({
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   webServer: [
-    // The local corpus server only exists when there IS a local corpus.
-    // In a fresh worktree `cdn/` is missing (gitignored), and the app
-    // then reads the content from the production CDN instead. The
-    // served directory is the resolved one (`ORIGA_CDN_CACHE_DIR`
-    // overrides the repo-local `cdn/` default) — a worktree without
-    // the repo-local copy points the server at the real corpus
-    // elsewhere instead of failing on the hardcoded relative path.
+    // The local corpus server only exists when there IS a local
+    // corpus; without one the app reads the content from the
+    // production CDN instead. The served directory is the serve-only
+    // chain (`ORIGA_CDN_CACHE_DIR` → `ORIGA_CDN_DIR` → `~/origa-cdn`,
+    // shots/config.ts) — the server points at the real corpus outside
+    // the repo instead of failing on the hardcoded relative path.
+    // The build and the preflight follow the corpus canon only
+    // (`cdn_dir()`, ADR-083).
     ...(serveLocally && cdnCacheDir !== null
       ? [
           {
@@ -101,9 +103,9 @@ export default defineConfig({
       // far beyond 10 minutes (shots/config.ts → APP_SERVER_TIMEOUT).
       command:
         SERVE_MODE === "dist"
-          ? "npx serve ../origa_ui/dist -s -p 1420 --no-clipboard"
-          : "cd ../origa_ui && trunk serve",
-      port: 1420,
+          ? `npx serve ../origa_ui/dist -s -p ${APP_PORT} --no-clipboard`
+          : `cd ../origa_ui && trunk serve --port ${APP_PORT}`,
+      port: APP_PORT,
       reuseExistingServer: !isCI,
       timeout: APP_SERVER_TIMEOUT,
       stdout: "pipe",

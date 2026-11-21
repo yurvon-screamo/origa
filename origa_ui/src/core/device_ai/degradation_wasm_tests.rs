@@ -57,10 +57,14 @@ async fn caps_failure_on_android_escalates_to_error_event() {
     let routed = available(Feature::TextRecognition).await;
     assert!(!routed, "failed caps query must route to fallback");
 
+    // Count by THIS test's rejection marker, not by the generic phrase:
+    // the shared log buffer accumulates caps-failure events from the other
+    // device_ai tests (availability checks, real-invoke probes) that do not
+    // drain it, so the generic phrase under-counts by pollution.
     let all = log_capture::take_events();
     let caps_events: Vec<_> = all
         .iter()
-        .filter(|(_, message)| message.contains("capabilities query failed"))
+        .filter(|(_, message)| message.contains("[PLUGIN_FAILURE]"))
         .cloned()
         .collect();
     assert_eq!(
@@ -101,10 +105,14 @@ async fn caps_failure_on_web_stays_warn_without_error_event() {
     let routed = available(Feature::TextRecognition).await;
     assert!(!routed, "failed caps query must route to fallback");
 
+    // Count by THIS test's rejection marker, not by the generic phrase:
+    // the shared log buffer accumulates caps-failure events from the other
+    // device_ai tests (availability checks, real-invoke probes) that do not
+    // drain it, so the generic phrase under-counts by pollution.
     let all = log_capture::take_events();
     let caps_events: Vec<_> = all
         .iter()
-        .filter(|(_, message)| message.contains("capabilities query failed"))
+        .filter(|(_, message)| message.contains("[PLUGIN_FAILURE]"))
         .cloned()
         .collect();
     assert_eq!(

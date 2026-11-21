@@ -8,7 +8,8 @@ use leptos_i18n::I18nContext;
 use leptos_router::NavigateOptions;
 use origa::traits::UserRepository;
 use origa::use_cases::{
-    CompleteOnboardingScoringUseCase, ImportOnboardingSetsUseCase, USERNAME_MAX_CHARS,
+    CompleteOnboardingScoringUseCase, ImportOnboardingSetsUseCase, ImportProgressEvent,
+    USERNAME_MAX_CHARS,
 };
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -169,6 +170,7 @@ pub(super) fn create_on_start_import_callback(
     repository: crate::repository::HybridUserRepository,
     state: RwSignal<OnboardingState>,
     is_importing: RwSignal<bool>,
+    import_progress: RwSignal<Option<ImportProgressEvent>>,
     toasts: RwSignal<Vec<ToastData>>,
     i18n: I18nContext<Locale>,
     disposed: StoredValue<()>,
@@ -280,7 +282,18 @@ pub(super) fn create_on_start_import_callback(
             recalculate_user_jlpt_progress(&mut user);
 
             let use_case = ImportOnboardingSetsUseCase::new(&repo, cdn);
-            let result = use_case.execute(user, set_ids, target_level).await;
+            // The hook doubles as the cooperative yield: every progress tick
+            // awaits a browser frame, so the indicator renders and the main
+            // thread never freezes through the multi-second pipeline
+            // (tokenization on WASM blocks cooperatively only between chunks).
+            import_progress.set(None);
+            let result = use_case
+                .execute_with_progress(user, set_ids, target_level, |event| {
+                    import_progress.set(Some(event));
+                    crate::utils::yield_to_browser()
+                })
+                .await;
+            import_progress.set(None);
 
             if disposed.is_disposed() {
                 return;
