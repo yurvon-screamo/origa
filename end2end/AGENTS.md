@@ -80,7 +80,8 @@ above, and the app build receives its compile-time `TRAILBASE_URL` /
 `ORIGA_CDN_BASE_URL` from the Playwright webServer — a `TRAILBASE_URL`
 line in `.env` is read by nothing. Manual seed/patch scripts
 (`scripts/*.mjs`) are the exception: they still take `TRAILBASE_URL`
-from the shell to talk to a running instance.
+(shell first, their own `../.env` parse as the fallback) to talk to a
+running instance.
 
 **Flow:**
 

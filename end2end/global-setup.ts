@@ -117,11 +117,13 @@ function killExistingTrailBase(): void {
       // checkout's TrailBase on another E2E_TRAILBASE_PORT survives.
       execSync(winTrailKillCommand(TRAILBASE_PORT), { stdio: "pipe" });
     } else {
-      // Port-scoped pattern: a parallel checkout on a shared machine runs
-      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
-      // `pkill -f 'trail run'` would take that stranger down too.
+      // Port-scoped pattern, anchored at the end of the address argument
+      // (ERE, ( |$)): a bare substring would let a configured 4000 match
+      // a stranger's 40000. A parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a
+      // bare `pkill -f 'trail run'` would take that stranger down too.
       execSync(
-        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        `pkill -f 'trail run --dev --address 127\\.0\\.0\\.1:${TRAILBASE_PORT}( |$)'`,
         { stdio: "pipe" },
       );
     }

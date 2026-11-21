@@ -61,7 +61,8 @@ ORIGA_ADMIN_PASSWORD=secret
 а compile-time `TRAILBASE_URL` / `ORIGA_CDN_BASE_URL` бандлу подставляет
 webServer — строка `TRAILBASE_URL` в `.env` ничего не читает. Ручные
 seed/patch-скрипты (`scripts/*.mjs`) — исключение: они берут
-`TRAILBASE_URL` из оболочки, чтобы говорить с запущенным инстансом.
+`TRAILBASE_URL` (сначала оболочка, фоллбэк — собственный парсинг
+`../.env`), чтобы говорить с запущенным инстансом.
 
 Локально прогон идёт против dev-сборки (`trunk serve`). Сценарий
 `failure_paths` («Недоступный CDN…») осмыслен только против release-сборки
