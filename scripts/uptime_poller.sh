@@ -6,7 +6,7 @@
 #   * the pinned-IP HTTP probe of the RF branch of s3.origa.uwuwu.net,
 #   * the TSPU reachability probe of the Railway-served hosts from RF,
 #   * the openssl expiry probe of the umami certificate (no HTTP pings),
-#   * the edge-script drift probe ( Bunny script 91629 metadata pair),
+#   * the edge-script drift probe (Bunny script 91629 metadata pair),
 #   * a heartbeat ping to HetrixTools at the end of every completed cycle.
 #
 # Alert semantics (the anti-flap contract from the runbook):
@@ -321,6 +321,11 @@ check_bunny_script_drift() {
 	if [[ $recorded != "$live" ]]; then
 		send_telegram "CHANGED [origa-poller] bunny-script-drift: script ${BUNNY_SCRIPT_ID} ${recorded} -> ${live} — verify against the deploy record (task body); unexplained change = investigate"
 		update_state "$BUNNY_SCRIPT_STATE_KEY" "$live"
+		# Context for a possible RESOLVE (record_outcome fires it when the
+		# probe was failing): in a recovery-after-failure cycle "pair
+		# unchanged" would contradict the CHANGED just sent.
+		record_outcome "bunny-script-drift" ok "pair changed -> state re-seeded"
+		return
 	fi
 	record_outcome "bunny-script-drift" ok "pair unchanged"
 }

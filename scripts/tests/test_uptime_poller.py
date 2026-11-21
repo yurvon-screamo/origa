@@ -408,6 +408,28 @@ class TestBunnyScriptDrift:
         assert "ALERT [origa-poller] bunny-script-drift" in messages[0]
         assert "BUNNY_API_KEY missing" in messages[0]
 
+    def test_recovery_cycle_carrying_a_change_resolves_with_accurate_context(
+        self, tmp_path: Path
+    ) -> None:
+        # Review pin (rarely-hit path): the probe failed twice (one ALERT),
+        # then the recovery cycle also carries a pair change — the RESOLVE
+        # context must not claim "pair unchanged".
+        run_cycle(tmp_path)  # seed the pair first: only a seeded pair can drift
+        failing = {"FAKE_BUNNY_FAIL": "1"}
+        run_cycle(tmp_path, failing)
+        run_cycle(tmp_path, failing)
+        recovery = {"FAKE_BUNNY_SCRIPT_JSON": CHANGED_SCRIPT_JSON}
+        run_cycle(tmp_path, recovery)
+        messages = telegram_messages(tmp_path, check="bunny-script-drift")
+        assert len(messages) == 3, messages
+        assert messages[1].startswith("CHANGED [origa-poller] bunny-script-drift:")
+        assert "RESOLVE [origa-poller] bunny-script-drift" in messages[2]
+        assert "pair changed -> state re-seeded" in messages[2]
+        assert "pair unchanged" not in messages[2]
+        assert state_counts(tmp_path)[SCRIPT_PAIR_KEY] == (
+            "1400001:2026-11-22T10:00:00"
+        )
+
 
 class TestHttpProbes:
     def test_railway_4xx_is_a_failure(self, tmp_path: Path) -> None:

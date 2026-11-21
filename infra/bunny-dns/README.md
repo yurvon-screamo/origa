@@ -126,7 +126,7 @@ these raw fields are exactly what the poller's drift check compares):
 
 ```bash
 curl -fsS -H "AccessKey: $BUNNY_API_KEY" https://api.bunny.net/compute/script \
-  | jq -r '.Items[] | select(.Id == 91629) | "\(.CurrentReleaseId) \(.LastModified)"'
+  | jq -r '.Items[] | select(.Id == 91629) | "\(.CurrentReleaseId):\(.LastModified)"'
 ```
 
 - **Right after a deploy:** run the probe and record `CurrentReleaseId` +
