@@ -70,10 +70,8 @@ pub enum TtsRegistration {
 /// `HostPlatform` variant fails to compile here until it picks a cell.
 pub fn tts_registration(platform: HostPlatform) -> TtsRegistration {
     match platform {
-        HostPlatform::Linux => TtsRegistration::ProbeRequired,
-        HostPlatform::Windows | HostPlatform::MacOS | HostPlatform::Android | HostPlatform::Ios => {
-            TtsRegistration::Always
-        },
+        HostPlatform::Linux | HostPlatform::Windows => TtsRegistration::ProbeRequired,
+        HostPlatform::MacOS | HostPlatform::Android | HostPlatform::Ios => TtsRegistration::Always,
     }
 }
 
