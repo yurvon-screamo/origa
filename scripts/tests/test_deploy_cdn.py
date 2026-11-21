@@ -375,9 +375,15 @@ def _write_bundle_blob(
     deflate: bool = True,
 ) -> None:
     source_sha = source_sha or hashlib.sha256(BUNDLE_JSON).digest()
-    guard = guard or hashlib.sha256(
-        "".join(hashlib.sha256(BUNDLE_CHUNKS[key]).hexdigest() for key in sorted(BUNDLE_CHUNKS)).encode()
-    ).digest()
+    guard = (
+        guard
+        or hashlib.sha256(
+            "".join(
+                hashlib.sha256(BUNDLE_CHUNKS[key]).hexdigest()
+                for key in sorted(BUNDLE_CHUNKS)
+            ).encode()
+        ).digest()
+    )
     header = b"ORFG" + schema_version.to_bytes(4, "little") + source_sha + guard
     body = header + payload
     for index in range(PHRASE_BUNDLE_COUNT):
