@@ -65,6 +65,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "acquaintance-hand",
   },
+  "lesson-acquaintance-word": {
+    id: "lesson-acquaintance-word",
+    title: "Урок: слово знакомства — кнопка озвучки в карточке",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
   "lesson-example": {
     id: "lesson-example",
     title: "Урок: знакомство и ответ",
