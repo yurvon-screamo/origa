@@ -1,9 +1,10 @@
-import { type Browser, type Page } from "@playwright/test";
+import { type BrowserContext, type Page } from "@playwright/test";
 import { getAppBaseUrl } from "../config";
 import {
   getAdminToken,
   createTestUser,
   deleteTestUserWithRetry,
+  loginTestUser,
 } from "../fixtures/admin";
 
 export const DEFAULT_TEST_PASSWORD = "e2e-test-password-123";
@@ -147,27 +148,21 @@ export async function setupTestUser(options?: {
   };
 }
 
-export async function uiLogin(
-  page: Page,
-  email: string,
-  password: string,
-  options: { baseURL?: string } = {},
-): Promise<void> {
-  const maxRetries = 3;
-  const baseURL = options.baseURL ?? getAppBaseUrl();
-  const appOrigin = new URL(baseURL).origin;
-
-  // The first-run resource-download consent screen (App Review 4.2.3(ii))
-  // blocks authenticated routes until the user clicks Download. Tests are
-  // not about that screen, so pre-approve the download before any app
-  // script runs on the app origin. Matches gloo_storage JSON encoding
-  // (`LocalStorage::set(key, true)` stores the literal `true`).
-  //
-  // The origin is a parameter, not the literal 1420: a scenario may run
-  // against another build (a before/after pair on :1421). The write is
-  // guarded because a cross-origin document (an OAuth provider) can throw
-  // a SecurityError on localStorage access.
-  await page.context().addInitScript((origin: string) => {
+/**
+ * The one-time resource-download consent init script, shared by both login
+ * paths. The first-run consent screen (App Review 4.2.3(ii)) blocks
+ * authenticated routes until the user clicks Download, and tests are not
+ * about that screen — so the consent is pre-approved before any app script
+ * runs on the app origin. The origin is a parameter, not the literal 1420:
+ * a scenario may run against another build (a before/after pair on :1421).
+ * The write is guarded because a cross-origin document (an OAuth provider)
+ * can throw a SecurityError on localStorage access.
+ */
+function addDownloadConsentInitScript(
+  context: BrowserContext,
+  appOrigin: string,
+): void {
+  void context.addInitScript((origin: string) => {
     if (window.location.origin !== origin) return;
     try {
       window.localStorage.setItem("origa_resource_download_consented", "true");
@@ -176,6 +171,126 @@ export async function uiLogin(
       // caller decides whether that is fatal
     }
   }, appOrigin);
+}
+
+/**
+ * JWT payload claims the session seed needs. Mirror of `JwtClaims`
+ * (origa_ui/src/repository/trailbase_auth.rs): `sub` is the TrailBase user
+ * id, `email` is optional, `exp` is Unix seconds.
+ */
+interface SeededJwtClaims {
+  sub: string;
+  email?: string;
+  exp?: number;
+}
+
+/**
+ * Decodes the JWT payload segment the way `decode_jwt_claims`
+ * (trailbase_auth.rs) does — base64url, no padding. Runs in the Node
+ * process of the runner only; inside the browser the app decodes its own.
+ */
+function decodeJwtPayload(token: string): SeededJwtClaims {
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    throw new Error(`apiLogin: invalid JWT format (${parts.length} parts)`);
+  }
+  const base64 = parts[1].replaceAll("-", "+").replaceAll("_", "/");
+  const json = Buffer.from(base64, "base64").toString("utf-8");
+  const parsed = JSON.parse(json) as Partial<SeededJwtClaims>;
+  if (!parsed.sub) {
+    throw new Error("apiLogin: JWT payload has no `sub` (trailbase_id)");
+  }
+  return { sub: parsed.sub, email: parsed.email, exp: parsed.exp };
+}
+
+/**
+ * Seeded-session login: what `login_with_email_password`
+ * (origa_ui/src/repository/trailbase_client.rs) stores after a UI login —
+ * without the UI form itself.
+ *
+ * The app rehydrates the session from `localStorage["trailbase_session"]`
+ * (gloo_storage JSON, `origa_ui/src/repository/session.rs`) on boot, so a
+ * context whose storage holds the session starts authenticated: the boot
+ * lands straight on the terminal route (fresh user → the wizard, restored
+ * → home), and the form dance (toggle/fill/submit/auth round-trip/retry
+ * loop) disappears from every scenario that only needs an authenticated
+ * app. The seeded object mirrors `TrailBaseSession` field-for-field,
+ * including `expires_at = claims.exp ?? now + 3600` (the app's fallback,
+ * Unix seconds). The locale of the boot-time profile creation is pinned at
+ * the config level (`use.locale` in playwright.config.ts) — the same
+ * carrier the UI-login path relies on.
+ *
+ * The seed is a REAL localStorage write, not an init script: an init
+ * script re-runs on every load and would resurrect the session behind
+ * `wipeClientAuthState`, breaking the logout contract (auth.feature,
+ * failure_paths). The write happens once, on a NON-HTML origin document
+ * (a static app-shell asset — the WASM app never boots there), so no
+ * scenario time is spent booting the app twice. A later wipe therefore
+ * removes the session for real, exactly like it removes a UI-login one.
+ * The download-consent flag rides the same write (rationale on
+ * `addDownloadConsentInitScript`); a wipe still clears it, and the flows
+ * that wipe restore it explicitly.
+ *
+ * Contract: call BEFORE creating scenario pages of this context;
+ * navigation and the settle wait stay with the caller
+ * (`waitForLoginComplete` is the marker). The login form itself remains
+ * under test where it is the behaviour being verified — those callers
+ * keep `uiLogin` (auth.feature, the relay scenario of onboarding_scoring)
+ * and the manual tools (shots).
+ */
+export async function apiLogin(
+  context: BrowserContext,
+  email: string,
+  password: string,
+  options: { baseURL?: string } = {},
+): Promise<void> {
+  const baseURL = options.baseURL ?? getAppBaseUrl();
+  const { token, refreshToken } = await loginTestUser(email, password);
+  const claims = decodeJwtPayload(token);
+  const session = {
+    auth_token: token,
+    refresh_token: refreshToken ?? "",
+    email: claims.email ?? "",
+    trailbase_id: claims.sub,
+    record_id: null,
+    expires_at:
+      typeof claims.exp === "number" && claims.exp > 0
+        ? claims.exp
+        : Math.floor(Date.now() / 1000) + 3600,
+  };
+
+  // Static, stable, non-HTML asset of the app shell (served next to
+  // index.html by both `trunk serve` and the CI `serve dist`): loading it
+  // grants same-origin storage access WITHOUT booting the WASM app. The
+  // page is throwaway — localStorage outlives it, sessionStorage (any
+  // per-page marker) deliberately does not.
+  const seeder = await context.newPage();
+  try {
+    await seeder.goto(`${baseURL}/public/logo-128.png`);
+    await seeder.evaluate((seed: { session: object }) => {
+      window.localStorage.setItem("origa_resource_download_consented", "true");
+      window.localStorage.setItem(
+        "trailbase_session",
+        JSON.stringify(seed.session),
+      );
+    }, { session });
+  } finally {
+    await seeder.close();
+  }
+}
+
+export async function uiLogin(
+  page: Page,
+  email: string,
+  password: string,
+  options: { baseURL?: string } = {},
+): Promise<void> {
+  const maxRetries = 3;
+  const baseURL = options.baseURL ?? getAppBaseUrl();
+
+  // The consent seed is shared with apiLogin (the App Review 4.2.3(ii)
+  // rationale and the origin guard live on the helper).
+  addDownloadConsentInitScript(page.context(), new URL(baseURL).origin);
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     // The whole login flow is retried, not just waitForURL: the password
@@ -237,24 +352,5 @@ export async function uiLogin(
       // brief cooldown before the retry — WASM may still be loading
       await page.waitForTimeout(3_000);
     }
-  }
-}
-
-export async function withAuthenticatedPage(
-  browser: Browser,
-  use: (page: Page) => Promise<void>,
-): Promise<void> {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.setViewportSize({ width: 1280, height: 720 });
-
-  const userCtx = await setupTestUser();
-
-  try {
-    await uiLogin(page, userCtx.email, userCtx.password);
-    await use(page);
-  } finally {
-    await context.close();
-    await userCtx.cleanup();
   }
 }
