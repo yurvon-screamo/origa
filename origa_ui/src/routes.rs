@@ -488,7 +488,7 @@ pub fn ProtectedRoute(children: ChildrenFn) -> impl IntoView {
     let is_all_data_loaded = auth_store.is_all_data_loaded();
     let is_checking = auth_store.is_checking_session;
 
-    // Guideline 4.2.3(ii) consent gate: the mandatory ~230 MB resource fetch
+    // Guideline 4.2.3(ii) consent gate: the mandatory ~145 MB resource fetch
     // only starts after the user approves it on the consent screen. Both
     // trigger points are gated — this effect (auto-start) and the view branch
     // below (consent screen vs loading overlay).

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use futures::stream::{self, StreamExt};
-use origa::dictionary::cdn_blob::{guard_matches, split_blob};
+use origa::dictionary::cdn_blob::{self, guard_matches, split_blob};
 use origa::dictionary::phrase::index_version;
 use origa::dictionary::precompute_blob::inflate_blob;
 use origa::domain::OrigaError;
@@ -304,12 +304,22 @@ fn phrase_bundle_chunks_from_blob(
         .map(|key| format!("phrases/data/{key}.json"))
         .collect();
     let path_refs: Vec<&str> = chunk_paths.iter().map(String::as_str).collect();
-    if !guard_matches(&header, &guard_expectation_for(&path_refs)) {
+    phrase_bundle_chunks_with_expectation(chunks, &header, &guard_expectation_for(&path_refs))
+}
+
+/// Testable core: the guard expectation is injected (the process manifest
+/// is a OnceLock the unit tests cannot prime per-case). Returning the
+/// parsed chunks only after the guard passes.
+fn phrase_bundle_chunks_with_expectation(
+    chunks: std::collections::BTreeMap<String, serde_json::Value>,
+    header: &cdn_blob::BlobHeader,
+    expectation: &cdn_blob::GuardExpectation,
+) -> Result<std::collections::BTreeMap<String, serde_json::Value>, OrigaError> {
+    if !guard_matches(header, expectation) {
         return Err(OrigaError::PhraseParseError {
-            reason: format!("phrase bundle {bundle_idx} blob stale relative to manifest"),
+            reason: "phrase data bundle blob stale relative to manifest".to_string(),
         });
     }
-
     Ok(chunks)
 }
 
@@ -328,20 +338,26 @@ async fn release_bundle_cache_entries(bundle_idx: usize) {
     }
 }
 
+/// (path, blob replacement) pairs for the pre-blob phrase JSON keys.
+/// The cleanup contract: a key is removed only when its replacement is
+/// already cached — the pair list is the single source of both sides.
+fn legacy_cleanup_pairs() -> Vec<(String, String)> {
+    let mut pairs: Vec<(String, String)> = vec![(
+        "phrases/phrase_index.json".to_string(),
+        "phrases/phrase_index.v3.rkyv".to_string(),
+    )];
+    for idx in 0..PHRASE_BUNDLE_COUNT {
+        pairs.push((phrase_bundle_json_path(idx), phrase_bundle_blob_path(idx)));
+    }
+    pairs
+}
+
 /// Remove the pre-blob phrase JSON keys after a successful pass. Each key
 /// is removed only when its replacement is already cached, so an offline
 /// start never loses its content source (review contract: deletion happens
 /// after the pass, never before).
 async fn cleanup_legacy_phrase_json_cache() {
-    let mut legacy: Vec<(String, String)> = vec![(
-        "phrases/phrase_index.json".to_string(),
-        "phrases/phrase_index.v3.rkyv".to_string(),
-    )];
-    for idx in 0..PHRASE_BUNDLE_COUNT {
-        legacy.push((phrase_bundle_json_path(idx), phrase_bundle_blob_path(idx)));
-    }
-
-    for (path, replacement) in legacy {
+    for (path, replacement) in legacy_cleanup_pairs() {
         if !cdn_provider::is_cached(&replacement).await {
             tracing::warn!(
                 path = %path,
@@ -430,17 +446,352 @@ mod tests {
     #[test]
     fn legacy_cleanup_pairs_cover_every_removed_key() {
         // The cleanup contract: a legacy JSON key is removed only when its
-        // blob replacement is cached — every removed key must have a named
-        // replacement (verified indirectly through the helper functions the
-        // cleanup is built from).
-        for idx in 0..PHRASE_BUNDLE_COUNT {
-            assert_eq!(
-                phrase_bundle_json_path(idx),
-                format!("phrases/data_bundle_{idx}.json")
+        // blob replacement is cached — every removable key must have a named
+        // replacement, and no pair may point at a non-legacy key.
+        let pairs = legacy_cleanup_pairs();
+        assert_eq!(pairs.len(), 1 + PHRASE_BUNDLE_COUNT);
+        assert_eq!(
+            pairs[0],
+            (
+                "phrases/phrase_index.json".to_string(),
+                "phrases/phrase_index.v3.rkyv".to_string()
+            )
+        );
+        for (idx, (path, replacement)) in pairs[1..].iter().enumerate() {
+            assert_eq!(path, &phrase_bundle_json_path(idx));
+            assert_eq!(replacement, &phrase_bundle_blob_path(idx));
+        }
+    }
+
+    /// Recording mock: serves canned bytes/text per path and tracks which
+    /// paths were requested (external CDN boundary — a mock is appropriate;
+    /// the same pattern as the phrase_loader tests next door).
+    struct MockCdn {
+        responses: std::cell::RefCell<Vec<(String, MockResponse)>>,
+        requested: std::cell::RefCell<Vec<String>>,
+    }
+
+    enum MockResponse {
+        Bytes(Vec<u8>),
+        Text(String),
+    }
+
+    impl MockCdn {
+        fn with_blob_and_json(blob: Option<Vec<u8>>, json: &str) -> Self {
+            let mut responses = Vec::new();
+            if let Some(bytes) = blob {
+                responses.push((phrase_bundle_blob_path(0), MockResponse::Bytes(bytes)));
+            }
+            responses.push((
+                phrase_bundle_json_path(0),
+                MockResponse::Text(json.to_string()),
+            ));
+            Self {
+                responses: std::cell::RefCell::new(responses),
+                requested: std::cell::RefCell::new(Vec::new()),
+            }
+        }
+
+        fn requested_paths(&self) -> Vec<String> {
+            self.requested.borrow().clone()
+        }
+
+        fn find(&self, path: &str) -> Option<MockResponse> {
+            self.responses
+                .borrow()
+                .iter()
+                .find(|(candidate, _)| candidate == path)
+                .map(|(_, response)| match response {
+                    MockResponse::Bytes(bytes) => MockResponse::Bytes(bytes.clone()),
+                    MockResponse::Text(text) => MockResponse::Text(text.clone()),
+                })
+        }
+    }
+
+    impl CdnProvider for MockCdn {
+        fn fetch_text(&self, path: &str) -> impl Future<Output = Result<String, OrigaError>> {
+            self.requested.borrow_mut().push(path.to_string());
+            let result = match self.find(path) {
+                Some(MockResponse::Text(text)) => Ok(text),
+                _ => Err(OrigaError::NetworkError {
+                    url: path.to_string(),
+                    reason: "not stubbed".to_string(),
+                }),
+            };
+            std::future::ready(result)
+        }
+
+        fn fetch_bytes(&self, path: &str) -> impl Future<Output = Result<Vec<u8>, OrigaError>> {
+            self.requested.borrow_mut().push(path.to_string());
+            let result = match self.find(path) {
+                Some(MockResponse::Bytes(bytes)) => Ok(bytes),
+                _ => Err(OrigaError::NetworkError {
+                    url: path.to_string(),
+                    reason: "not stubbed".to_string(),
+                }),
+            };
+            std::future::ready(result)
+        }
+    }
+
+    fn sample_chunks() -> std::collections::BTreeMap<String, serde_json::Value> {
+        let mut chunks = std::collections::BTreeMap::new();
+        chunks.insert(
+            "p0000".to_string(),
+            serde_json::json!({"i": "01A", "t": ["hello"], "c": 0}),
+        );
+        chunks.insert(
+            "p0001".to_string(),
+            serde_json::json!({"i": "01B", "t": ["world"], "c": 0}),
+        );
+        chunks
+    }
+
+    fn bundle_json(chunks: &std::collections::BTreeMap<String, serde_json::Value>) -> String {
+        serde_json::to_string(chunks).unwrap()
+    }
+
+    /// Chunk-hash hex the tests bind guards to (deterministic fake sources).
+    fn chunk_hash_hex(key: &str, generation: &str) -> String {
+        let source = format!("{generation}{key}");
+        origa::dictionary::cdn_blob::sha256_bytes(source.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    }
+
+    /// Build a deflated bundle blob; `guard_hashes` overrides the guard to
+    /// simulate a stale (deploy-window) blob bound to a foreign generation.
+    fn build_bundle_blob(
+        chunks: &std::collections::BTreeMap<String, serde_json::Value>,
+        guard_hashes: Option<Vec<String>>,
+    ) -> Vec<u8> {
+        use origa::dictionary::cdn_blob::{
+            BlobHeader, SCHEMA_VERSION, manifest_guard_from_hex_hashes, sha256_bytes,
+        };
+        use origa::dictionary::precompute_blob::deflate_blob;
+
+        let json = bundle_json(chunks);
+        let hexes: Vec<String> = guard_hashes
+            .unwrap_or_else(|| chunks.keys().map(|key| chunk_hash_hex(key, "")).collect());
+        let refs: Vec<&str> = hexes.iter().map(String::as_str).collect();
+        let header = BlobHeader {
+            schema_version: SCHEMA_VERSION,
+            source_sha256: sha256_bytes(json.as_bytes()),
+            manifest_guard: manifest_guard_from_hex_hashes(&refs),
+        };
+        deflate_blob(&cdn_blob::build_blob(&header, json.as_bytes()))
+    }
+
+    /// The expectation the client derives in production: per-path hex hashes
+    /// (the manifest hashes for the chunk files the bundle contains).
+    fn expectation_from_chunk_hashes(
+        chunks: &std::collections::BTreeMap<String, serde_json::Value>,
+    ) -> cdn_blob::GuardExpectation {
+        let hashes: Vec<Option<String>> = chunks
+            .keys()
+            .map(|key| Some(chunk_hash_hex(key, "")))
+            .collect();
+        cdn_blob::guard_expectation(Some(&hashes))
+    }
+
+    #[tokio::test]
+    async fn valid_bundle_blob_serves_extraction_without_touching_json() {
+        // Arrange
+        let chunks = sample_chunks();
+        let provider = MockCdn::with_blob_and_json(
+            Some(build_bundle_blob(&chunks, None)),
+            &bundle_json(&chunks),
+        );
+
+        // Act
+        let loaded = load_bundle_chunks_via(&provider, 0).await.unwrap();
+
+        // Assert: the blob answers; the JSON fallback is never requested.
+        assert_eq!(loaded, chunks);
+        assert!(
+            !provider
+                .requested_paths()
+                .contains(&phrase_bundle_json_path(0)),
+            "blob path must serve extraction without the JSON fallback"
+        );
+    }
+
+    #[tokio::test]
+    async fn corrupted_bundle_blob_falls_back_to_json() {
+        // Arrange: bytes that do not inflate — the shape of truncated/garbage.
+        let chunks = sample_chunks();
+        let provider = MockCdn::with_blob_and_json(Some(vec![0xff_u8; 64]), &bundle_json(&chunks));
+
+        // Act
+        let loaded = load_bundle_chunks_via(&provider, 0).await.unwrap();
+
+        // Assert: JSON fallback serves the same chunks.
+        assert_eq!(loaded, chunks);
+        assert!(
+            provider
+                .requested_paths()
+                .contains(&phrase_bundle_json_path(0))
+        );
+    }
+
+    #[tokio::test]
+    async fn missing_bundle_blob_falls_back_to_json() {
+        // Arrange
+        let chunks = sample_chunks();
+        let provider = MockCdn::with_blob_and_json(None, &bundle_json(&chunks));
+
+        // Act
+        let loaded = load_bundle_chunks_via(&provider, 0).await.unwrap();
+
+        // Assert
+        assert_eq!(loaded, chunks);
+        assert!(
+            provider
+                .requested_paths()
+                .contains(&phrase_bundle_json_path(0))
+        );
+    }
+
+    #[test]
+    fn phrase_bundle_blob_guard_is_verified_against_chunk_hashes() {
+        // Arrange: a blob built with the chunk-bound guard plus the client
+        // expectation derived from the same chunk hashes — production wiring.
+        let chunks = sample_chunks();
+        let deflated = build_bundle_blob(&chunks, None);
+        let expectation = expectation_from_chunk_hashes(&chunks);
+
+        // Act: inflate + header + guard, exactly as the client core does.
+        let inflated = inflate_blob(&deflated).unwrap();
+        let (header, payload) = split_blob(&inflated).unwrap();
+
+        // Assert: the guard matches and the payload parses into the chunks.
+        assert!(guard_matches(&header, &expectation));
+        let parsed: std::collections::BTreeMap<String, serde_json::Value> =
+            serde_json::from_slice(payload).unwrap();
+        assert_eq!(parsed, chunks);
+    }
+
+    #[test]
+    fn stale_guard_is_rejected_by_the_injected_expectation() {
+        // Arrange: blob bound to a foreign generation, expectation bound to
+        // the real chunk hashes (the phrase_loader injectable pattern — the
+        // process manifest OnceLock cannot be primed per-case).
+        let chunks = sample_chunks();
+        let foreign_hashes: Vec<String> = chunks
+            .keys()
+            .map(|key| chunk_hash_hex(key, "older generation "))
+            .collect();
+        let deflated = build_bundle_blob(&chunks, Some(foreign_hashes));
+        let expectation = expectation_from_chunk_hashes(&chunks);
+
+        // Act
+        let inflated = inflate_blob(&deflated).unwrap();
+        let (header, payload) = split_blob(&inflated).unwrap();
+        let parsed: std::collections::BTreeMap<String, serde_json::Value> =
+            serde_json::from_slice(payload).unwrap();
+        let rejected = phrase_bundle_chunks_with_expectation(parsed, &header, &expectation);
+
+        // Assert
+        assert!(rejected.is_err(), "a stale guard must be rejected");
+    }
+}
+
+/// Browser-level behavior of the cleanup/release paths over the real
+/// Cache API — the native suite cannot touch web_sys state, and a guard
+/// regression in these paths silently reverts the task's own metric
+/// (uwuwu #1451 review: the only tests catching it live here).
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    async fn prime(paths: &[String]) {
+        for path in paths {
+            cdn_provider::store_text_in_cache(path, "test")
+                .await
+                .expect("cache store must succeed in the browser runner");
+        }
+    }
+
+    async fn drop_all(paths: &[String]) {
+        for path in paths {
+            let _ = cdn_provider::delete_from_cache(path).await;
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn release_bundle_cache_entries_removes_both_bundle_copies() {
+        // Arrange: both the blob and the legacy JSON bundle are cached.
+        let paths = vec![phrase_bundle_blob_path(0), phrase_bundle_json_path(0)];
+        drop_all(&paths).await;
+        prime(&paths).await;
+        for path in &paths {
+            assert!(
+                cdn_provider::is_cached(path).await,
+                "precondition: {path} cached"
             );
-            assert_eq!(
-                phrase_bundle_blob_path(idx),
-                format!("phrases/data_bundle_{idx}.v3.rkyv")
+        }
+
+        // Act
+        release_bundle_cache_entries(0).await;
+
+        // Assert: the bundle copy never survives extraction.
+        for path in &paths {
+            assert!(
+                !cdn_provider::is_cached(path).await,
+                "bundle copy must be released: {path}"
+            );
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn cleanup_removes_legacy_keys_when_replacements_are_cached() {
+        // Arrange: every replacement cached, every legacy key present.
+        let pairs = legacy_cleanup_pairs();
+        let replacements: Vec<String> = pairs.iter().map(|(_, r)| r.clone()).collect();
+        let legacy: Vec<String> = pairs.iter().map(|(p, _)| p.clone()).collect();
+        drop_all(&replacements).await;
+        drop_all(&legacy).await;
+        prime(&replacements).await;
+        prime(&legacy).await;
+
+        // Act
+        cleanup_legacy_phrase_json_cache().await;
+
+        // Assert: legacy keys gone, replacements intact.
+        for path in &legacy {
+            assert!(!cdn_provider::is_cached(path).await, "legacy kept: {path}");
+        }
+        for path in &replacements {
+            assert!(
+                cdn_provider::is_cached(path).await,
+                "replacement must survive cleanup: {path}"
+            );
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn cleanup_keeps_legacy_key_whose_replacement_is_missing() {
+        // Arrange: legacy keys present, replacements absent — the offline
+        // source must survive the pass (review contract).
+        let pairs = legacy_cleanup_pairs();
+        let replacements: Vec<String> = pairs.iter().map(|(_, r)| r.clone()).collect();
+        let legacy: Vec<String> = pairs.iter().map(|(p, _)| p.clone()).collect();
+        drop_all(&replacements).await;
+        drop_all(&legacy).await;
+        prime(&legacy).await;
+
+        // Act
+        cleanup_legacy_phrase_json_cache().await;
+
+        // Assert: nothing was deleted without a live replacement.
+        for path in &legacy {
+            assert!(
+                cdn_provider::is_cached(path).await,
+                "legacy key must be kept without its replacement: {path}"
             );
         }
     }

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import zlib
 from pathlib import Path
 
 import pytest
@@ -32,7 +33,6 @@ from deploy_cdn import (
     rkyv_blob_freshness_problems,
     sha256_hex,
 )
-import zlib
 from _cdn_verify import MANIFEST_ERROR
 
 
