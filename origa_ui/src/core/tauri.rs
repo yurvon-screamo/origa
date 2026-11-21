@@ -66,6 +66,30 @@ pub fn tauri_object() -> Option<Object> {
 /// Returns `window.__TAURI__.core.invoke` function if available.
 ///
 /// Used to call Tauri commands from WASM.
+/// Extracts the deep-link URL from a `deep-link://new-url` event.
+///
+/// Wire contract (tauri-plugin-deep-link 2.4.7): the plugin emits
+/// `emit("deep-link://new-url", vec![url])`, so the JS event payload is a
+/// JSON array of strings and the URL is `payload[0]` — the same shape its
+/// own guest-js hands to `onOpenUrl` handlers. The per-site readers this
+/// helper replaced parsed `event.url`, a field that does not exist, so the
+/// warm path of every listener on this channel was silently dead (#408: on
+/// a warm deep link the Android smoke OCR selftest never reported its
+/// marker and the job timed out).
+///
+/// Why not the host re-emit `deep-link-received` (plain string payload,
+/// delivery proven in the red runs)? That channel is oauth's — it carries
+/// every `origa://` URL through a mediator whose payload is not ours to
+/// pin — and anchoring to the upstream plugin channel keeps this contract
+/// checkable against the plugin's own guest-js. A plugin bump that changes
+/// the payload shape now trips the wasm contract test below instead of
+/// silently re-deadening the warm paths.
+pub fn deep_link_url_from_event(event: &JsValue) -> Option<String> {
+    let payload = Reflect::get(event, &JsValue::from_str("payload")).ok()?;
+    let urls = payload.dyn_into::<js_sys::Array>().ok()?;
+    urls.at(0).as_string()
+}
+
 pub fn invoke_fn() -> Option<Function> {
     let obj = tauri_object()?;
     let core = Reflect::get(&obj, &JsValue::from_str("core")).ok()?;
@@ -244,4 +268,74 @@ pub fn invoke_promise(command: &str, args: &JsValue) -> Result<js_sys::Promise, 
     result
         .dyn_into::<js_sys::Promise>()
         .map_err(|_| format!("invoke('{command}') did not return a Promise"))
+}
+
+#[cfg(all(target_arch = "wasm32", test))]
+mod deep_link_event_tests {
+    //! Wire-contract pin for `deep-link://new-url` (bug #408): the plugin's
+    //! event payload is a JSON string array and the URL is `payload[0]`. The
+    //! #408 regression shipped as `event.url` readers that silently never
+    //! matched — this matrix pins the real plugin shape and rejects the dead
+    //! shapes, so a payload change (e.g. a plugin bump) trips here instead of
+    //! re-deadening the warm deep-link paths.
+    use super::deep_link_url_from_event;
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn event_with_payload(payload: JsValue) -> JsValue {
+        let event = js_sys::Object::new();
+        js_sys::Reflect::set(&event, &JsValue::from_str("payload"), &payload)
+            .expect("payload set on event object");
+        event.into()
+    }
+
+    #[wasm_bindgen_test]
+    fn plugin_shape_string_array_extracts_first_url() {
+        let urls = js_sys::Array::new();
+        urls.push(&JsValue::from_str("origa://selftest-ocr"));
+        let event = event_with_payload(urls.into());
+        assert_eq!(
+            deep_link_url_from_event(&event).as_deref(),
+            Some("origa://selftest-ocr")
+        );
+    }
+
+    /// The exact #408 regression shape: URL under `event.url`, no `payload`.
+    /// Extraction must keep returning None — it reads the plugin contract,
+    /// not the invented field.
+    #[wasm_bindgen_test]
+    fn legacy_url_field_shape_is_not_matched() {
+        let event = js_sys::Object::new();
+        js_sys::Reflect::set(
+            &event,
+            &JsValue::from_str("url"),
+            &JsValue::from_str("origa://selftest-ocr"),
+        )
+        .expect("url set on event object");
+        assert_eq!(deep_link_url_from_event(&event.into()), None);
+    }
+
+    /// oauth's channel shape (`deep-link-received`): payload is a plain
+    /// string, not an array — must not resolve.
+    #[wasm_bindgen_test]
+    fn string_payload_shape_is_not_matched() {
+        let event = event_with_payload(JsValue::from_str("origa://auth/callback?code=x"));
+        assert_eq!(deep_link_url_from_event(&event), None);
+    }
+
+    #[wasm_bindgen_test]
+    fn empty_payload_array_yields_none() {
+        let event = event_with_payload(js_sys::Array::new().into());
+        assert_eq!(deep_link_url_from_event(&event), None);
+    }
+
+    #[wasm_bindgen_test]
+    fn missing_payload_field_yields_none() {
+        assert_eq!(
+            deep_link_url_from_event(&js_sys::Object::new().into()),
+            None
+        );
+    }
 }
