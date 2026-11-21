@@ -8,6 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { getTrailBaseUrl } from "./config";
 import { TRAILBASE_PORT } from "./shots/config.ts";
+import { winTrailKillCommand } from "./trail-kill.ts";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (
@@ -111,13 +112,18 @@ function setAdminPassword(): void {
 function killExistingTrailBase(): void {
   try {
     if (process.platform === "win32") {
-      execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
+      // Port-scoped via winTrailKillCommand() (trail-kill.ts): the
+      // command line carries the exact spawned address, so a parallel
+      // checkout's TrailBase on another E2E_TRAILBASE_PORT survives.
+      execSync(winTrailKillCommand(TRAILBASE_PORT), { stdio: "pipe" });
     } else {
-      // Port-scoped pattern: a parallel checkout on a shared machine runs
-      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
-      // `pkill -f 'trail run'` would take that stranger down too.
+      // Port-scoped pattern, anchored at the end of the address argument
+      // (ERE, ( |$)): a bare substring would let a configured 4000 match
+      // a stranger's 40000. A parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a
+      // bare `pkill -f 'trail run'` would take that stranger down too.
       execSync(
-        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        `pkill -f 'trail run --dev --address 127\\.0\\.0\\.1:${TRAILBASE_PORT}( |$)'`,
         { stdio: "pipe" },
       );
     }
