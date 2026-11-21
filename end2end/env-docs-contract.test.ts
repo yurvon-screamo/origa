@@ -20,9 +20,11 @@ const deadEnvLines =
   /^(TRAILBASE_URL|ORIGA_CDN_BASE_URL|TEST_USER_EMAIL|TEST_USER_PASSWORD)=/m;
 
 const fencedBlocks = (markdown: string, lang: string): string[] =>
-  [...markdown.matchAll(new RegExp(`^\`\`\`${lang}\\n([\\s\\S]*?)^\`\`\`$`, "gm"))].map(
-    (m) => m[1],
-  );
+  [
+    ...markdown.matchAll(
+      new RegExp(`^\`\`\`${lang}\\n([\\s\\S]*?)^\`\`\`$`, "gm"),
+    ),
+  ].map((m) => m[1]);
 
 test(".env.example documents only admin credentials", () => {
   const example = readFileSync(
