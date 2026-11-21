@@ -57,10 +57,12 @@ pub fn App() -> impl IntoView {
     // session. Migration MUST complete before check_session reads the store so
     // existing users upgrading from pre-ADR-010 builds keep their session.
     let auth_store_for_session = auth_store.clone();
+    // I18nContext is Copy — a plain copy, not a clone (clippy: using_clone_on_copy).
+    let i18n_for_session = i18n;
     spawn_local(async move {
         debug!("session lifecycle: starting migration + check_session");
         migrate_session_to_store_if_needed().await;
-        auth_store_for_session.check_session();
+        auth_store_for_session.check_session(&i18n_for_session);
     });
 
     // AD-4: OAuth callback checks run concurrently with session check.
