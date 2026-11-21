@@ -85,6 +85,9 @@ pub fn tts_registration(platform: HostPlatform) -> TtsRegistration {
 #[cfg(test)]
 mod tests {
     use super::*;
+    // The TTS matrix below exists only where the table itself compiles
+    // (its items are cfg-gated to their consumers in this file).
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     use rstest::rstest;
 
     /// `current()` must map every host compilation to the platform actually
@@ -113,6 +116,9 @@ mod tests {
     /// never shows a window). Five cells cover every `HostPlatform`
     /// variant; a sixth variant breaks the exhaustive match in
     /// `tts_registration` instead of silently registering unconditionally.
+    /// Gated with the table itself: on targets that never consult it the
+    /// items do not compile, so the matrix must not reference them.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[rstest]
     #[case(HostPlatform::Windows, TtsRegistration::ProbeRequired)]
     #[case(HostPlatform::Linux, TtsRegistration::ProbeRequired)]
