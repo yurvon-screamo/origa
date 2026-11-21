@@ -58,7 +58,7 @@ impl HostPlatform {
 /// those targets would trip the clippy `-D warnings` gate (the table is
 /// host-pinned by the rstest matrix below, which compiles on the Linux CI
 /// runner).
-#[cfg(any(target_os = "linux", target_os = "windows"))]
+#[cfg(any(windows, target_os = "linux"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TtsRegistration {
     /// Probe the engine first; register the plugin only when it initializes.
@@ -74,7 +74,7 @@ pub enum TtsRegistration {
 /// fail on the user's machine); macOS and the mobile native bridges have
 /// no observed failures and register unconditionally. A new
 /// `HostPlatform` variant fails to compile here until it picks a cell.
-#[cfg(any(target_os = "linux", target_os = "windows"))]
+#[cfg(any(windows, target_os = "linux"))]
 pub fn tts_registration(platform: HostPlatform) -> TtsRegistration {
     match platform {
         HostPlatform::Linux | HostPlatform::Windows => TtsRegistration::ProbeRequired,
@@ -87,7 +87,7 @@ mod tests {
     use super::*;
     // The TTS matrix below exists only where the table itself compiles
     // (its items are cfg-gated to their consumers in this file).
-    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(windows, target_os = "linux"))]
     use rstest::rstest;
 
     /// `current()` must map every host compilation to the platform actually
@@ -118,7 +118,7 @@ mod tests {
     /// `tts_registration` instead of silently registering unconditionally.
     /// Gated with the table itself: on targets that never consult it the
     /// items do not compile, so the matrix must not reference them.
-    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(windows, target_os = "linux"))]
     #[rstest]
     #[case(HostPlatform::Windows, TtsRegistration::ProbeRequired)]
     #[case(HostPlatform::Linux, TtsRegistration::ProbeRequired)]

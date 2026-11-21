@@ -44,7 +44,7 @@ use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 use store_review::request_app_review;
 // TTS probe-guard consumers (Windows/Linux): the decision table lives in
 // platform_routing; Apple/mobile builds register the plugin unconditionally.
-#[cfg(any(target_os = "linux", target_os = "windows"))]
+#[cfg(any(windows, target_os = "linux"))]
 use platform_routing::{HostPlatform, TtsRegistration, tts_registration};
 #[cfg(any(windows, target_os = "linux"))]
 use tauri::Manager;
@@ -186,7 +186,7 @@ pub fn run() {
     // Which platforms probe (vs register unconditionally) is the pure
     // decision table `tts_registration` (ADR-086); the cfg gate below only
     // bounds the target-scoped `tts` dependency.
-    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[cfg(any(windows, target_os = "linux"))]
     {
         match tts_registration(HostPlatform::current()) {
             TtsRegistration::ProbeRequired => match tts::Tts::default() {
@@ -203,7 +203,7 @@ pub fn run() {
             TtsRegistration::Always => builder = builder.plugin(tauri_plugin_tts::init()),
         }
     }
-    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    #[cfg(not(any(windows, target_os = "linux")))]
     {
         builder = builder.plugin(tauri_plugin_tts::init());
     }
