@@ -121,9 +121,47 @@ pub fn run() {
     //    structured logs — instead of silently dropping them.
     init_tracing();
 
-    #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default();
+    let builder = register_plugins(tauri::Builder::default());
 
+    let app = builder
+        .invoke_handler(tauri::generate_handler![
+            get_current_deep_link,
+            auth_store_get,
+            auth_store_set,
+            auth_store_delete,
+            is_store_build,
+            request_app_review,
+            #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
+            check_for_update,
+            #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
+            install_update,
+            #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
+            device_ai_commands::device_ai_recognize_file,
+            file_commands::pick_and_read_file,
+            share_intake::get_pending_share,
+            share_intake::share_listener_ready,
+            share_intake::read_share_file,
+            share_intake::delete_share_file,
+            selftest_marker::selftest_marker
+        ])
+        .setup(|app| setup_app(app))
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    // Cold-start delivery: file-association launches arrive before any
+    // window exists, so pending collection happens pre-run and the
+    // frontend picks it up via get_pending_share.
+    deliver_cold_start_shares(&app);
+
+    // macOS file-association and reopened-file delivery (both cold and
+    // warm runs surface here as Opened events).
+    app.run(on_run_event);
+}
+
+/// Registers every tauri plugin on the builder, with each block keeping its
+/// original platform cfg gating and policy comments. Extracted verbatim from
+/// `run()` — only the builder plumbing changed.
+fn register_plugins(mut builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> {
     // Single-instance focus-on-launch is Windows/Linux-only and STAYS in
     // app-store builds: under MSIX the OS delivers `origa://` protocol
     // activations to an already-running instance through this plugin.
@@ -221,138 +259,123 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_device_ai_apis::init());
     }
 
-    let app = builder
-        .invoke_handler(tauri::generate_handler![
-            get_current_deep_link,
-            auth_store_get,
-            auth_store_set,
-            auth_store_delete,
-            is_store_build,
-            request_app_review,
-            #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
-            check_for_update,
-            #[cfg(all(any(windows, target_os = "linux"), not(app_store)))]
-            install_update,
-            #[cfg(all(target_os = "macos", not(feature = "disable-device-ai")))]
-            device_ai_commands::device_ai_recognize_file,
-            file_commands::pick_and_read_file,
-            share_intake::get_pending_share,
-            share_intake::share_listener_ready,
-            share_intake::read_share_file,
-            share_intake::delete_share_file,
-            selftest_marker::selftest_marker
-        ])
-        .setup(|app| {
-            tracing::info!("[deep-link] setup started");
+    builder
+}
 
-            start_release_health_session(app);
+/// The `setup` closure body: release-health session, the `deep-link://new-url`
+/// listener, runtime scheme registration and the devtools notice. Extracted
+/// verbatim from `run()` — only the closure wrapper changed.
+fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    tracing::info!("[deep-link] setup started");
 
-            let handle_for_event = app.handle().clone();
+    start_release_health_session(app);
 
-            app.listen("deep-link://new-url", move |event: tauri::Event| {
-                let payload = event.payload();
-                tracing::info!(
-                    "[deep-link] received 'deep-link://new-url' event, payload: {}",
-                    payload
-                );
+    let handle_for_event = app.handle().clone();
 
-                if let Ok(urls) = serde_json::from_str::<Vec<String>>(payload) {
-                    tracing::info!("[deep-link] parsed {} url(s) from payload", urls.len());
-                    for url in &urls {
-                        tracing::info!("[deep-link] checking url: {}", url);
-                        if url.starts_with("origa://") {
-                            tracing::info!(
-                                "[deep-link] emitting 'deep-link-received' with url: {}",
-                                url
-                            );
-                            let _ = handle_for_event.emit("deep-link-received", url);
-                        }
-                    }
-                } else {
-                    tracing::error!(
-                        "[deep-link] failed to parse payload as Vec<String>: {}",
-                        payload
+    app.listen("deep-link://new-url", move |event: tauri::Event| {
+        let payload = event.payload();
+        tracing::info!(
+            "[deep-link] received 'deep-link://new-url' event, payload: {}",
+            payload
+        );
+
+        if let Ok(urls) = serde_json::from_str::<Vec<String>>(payload) {
+            tracing::info!("[deep-link] parsed {} url(s) from payload", urls.len());
+            for url in &urls {
+                tracing::info!("[deep-link] checking url: {}", url);
+                if url.starts_with("origa://") {
+                    tracing::info!(
+                        "[deep-link] emitting 'deep-link-received' with url: {}",
+                        url
                     );
-                }
-            });
-
-            tracing::info!("[deep-link] listener for 'deep-link://new-url' registered");
-
-            // Runtime scheme registration is a Windows/Linux mechanism (for
-            // installs where the static desktop-file registration does not
-            // cover them, e.g. a raw binary). On macOS the scheme is
-            // registered statically by the bundle (MacOS-Info.plist
-            // CFBundleURLTypes) and register_all() always
-            // returns Err(UnsupportedPlatform) — calling it there only
-            // produced a false error on every launch.
-            #[cfg(any(windows, target_os = "linux"))]
-            {
-                match app.deep_link().register_all() {
-                    Ok(()) => {
-                        tracing::info!(
-                            "[deep-link] register_all() succeeded — scheme 'origa://' is registered"
-                        );
-                    },
-                    Err(e) => {
-                        tracing::error!(
-                            "[deep-link] register_all() FAILED: {:?} — deep links will NOT work!",
-                            e
-                        );
-                    },
+                    let _ = handle_for_event.emit("deep-link-received", url);
                 }
             }
+        } else {
+            tracing::error!(
+                "[deep-link] failed to parse payload as Vec<String>: {}",
+                payload
+            );
+        }
+    });
 
-            tracing::info!("[deep-link] setup complete");
+    tracing::info!("[deep-link] listener for 'deep-link://new-url' registered");
 
-            // release-devtools feature enables the DevTools panel (F12 /
-            // right-click → Inspect) but does NOT auto-open it. Opening the
-            // panel at startup was annoying users on every launch.
-            #[cfg(feature = "release-devtools")]
-            {
-                tracing::info!("[devtools] DevTools available (F12 / right-click → Inspect)");
-            }
-
-            Ok(())
-        })
-        .build(tauri::generate_context!())
-        .expect("error while building tauri application");
-
-    // Cold-start delivery: file-association launches arrive before any
-    // window exists, so pending collection happens pre-run and the
-    // frontend picks it up via get_pending_share.
+    // Runtime scheme registration is a Windows/Linux mechanism (for
+    // installs where the static desktop-file registration does not
+    // cover them, e.g. a raw binary). On macOS the scheme is
+    // registered statically by the bundle (MacOS-Info.plist
+    // CFBundleURLTypes) and register_all() always
+    // returns Err(UnsupportedPlatform) — calling it there only
+    // produced a false error on every launch.
+    #[cfg(any(windows, target_os = "linux"))]
     {
-        let handle = app.handle();
-        share_intake::cleanup_stale_share_files(handle);
-        // Cold start: argv file-association launches arrive before the
-        // webview mounts its listener — the pending slot is the reliable
-        // channel (emit alone returns Ok with no listener and is lost).
-        let argv: Vec<String> = std::env::args().skip(1).collect();
-        for path in share_intake::parse_shared_paths(&argv) {
-            share_intake::ingest_path_cold(handle, &path);
+        match app.deep_link().register_all() {
+            Ok(()) => {
+                tracing::info!(
+                    "[deep-link] register_all() succeeded — scheme 'origa://' is registered"
+                );
+            },
+            Err(e) => {
+                tracing::error!(
+                    "[deep-link] register_all() FAILED: {:?} — deep links will NOT work!",
+                    e
+                );
+            },
         }
     }
 
-    // macOS file-association and reopened-file delivery (both cold and
-    // warm runs surface here as Opened events).
-    app.run(|_app_handle, _event| {
-        #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
-        if let tauri::RunEvent::Opened { urls } = _event {
-            for url in urls {
-                // Deep-link URLs (origa://…) resolve to no file path and
-                // are owned by the deep-link plugin; only files are ours.
-                // Cold (listener not yet mounted): pending slot is the
-                // reliable channel. Warm: emit only — a pending copy
-                // would double-deliver on the next focus poll.
-                if let Ok(path) = url.to_file_path() {
-                    if share_intake::is_listener_ready() {
-                        share_intake::ingest_path(_app_handle, &path);
-                    } else {
-                        share_intake::ingest_path_cold(_app_handle, &path);
-                    }
+    tracing::info!("[deep-link] setup complete");
+
+    // release-devtools feature enables the DevTools panel (F12 /
+    // right-click → Inspect) but does NOT auto-open it. Opening the
+    // panel at startup was annoying users on every launch.
+    #[cfg(feature = "release-devtools")]
+    {
+        tracing::info!("[devtools] DevTools available (F12 / right-click → Inspect)");
+    }
+
+    Ok(())
+}
+
+/// The `app.run` event closure: file-association and reopened-file delivery
+/// on mobile/Apple platforms (both cold and warm runs surface here as Opened
+/// events). Extracted verbatim from `run()` — only the closure wrapper
+/// changed; the underscore parameters keep the desktop builds warning-free
+/// where the cfg-gated body compiles out.
+fn on_run_event(_app_handle: &tauri::AppHandle, _event: tauri::RunEvent) {
+    #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
+    if let tauri::RunEvent::Opened { urls } = _event {
+        for url in urls {
+            // Deep-link URLs (origa://…) resolve to no file path and
+            // are owned by the deep-link plugin; only files are ours.
+            // Cold (listener not yet mounted): pending slot is the
+            // reliable channel. Warm: emit only — a pending copy
+            // would double-deliver on the next focus poll.
+            if let Ok(path) = url.to_file_path() {
+                if share_intake::is_listener_ready() {
+                    share_intake::ingest_path(_app_handle, &path);
+                } else {
+                    share_intake::ingest_path_cold(_app_handle, &path);
                 }
             }
         }
-    });
+    }
+}
+
+/// Cold-start share delivery: file-association launches arrive before any
+/// window exists, so pending collection happens pre-run and the frontend
+/// picks it up via get_pending_share. Extracted verbatim from `run()`.
+fn deliver_cold_start_shares(app: &tauri::App) {
+    let handle = app.handle();
+    share_intake::cleanup_stale_share_files(handle);
+    // Cold start: argv file-association launches arrive before the
+    // webview mounts its listener — the pending slot is the reliable
+    // channel (emit alone returns Ok with no listener and is lost).
+    let argv: Vec<String> = std::env::args().skip(1).collect();
+    for path in share_intake::parse_shared_paths(&argv) {
+        share_intake::ingest_path_cold(handle, &path);
+    }
 }
 
 /// Starts the Sentry release-health session with the anonymous install id
