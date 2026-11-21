@@ -49,6 +49,9 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 
 **Just run:** `npx playwright test` — everything starts automatically.
 
+**Faster local boots:** start the app server yourself and the suite reuses it (`reuseExistingServer`):
+`TRAILBASE_URL=http://localhost:14000 ORIGA_CDN_BASE_URL=http://localhost:18080 trunk serve --cargo-profile wasm-dev --port 11420` (then `E2E_APP_PORT=11420 npx playwright test ...`). The `wasm-dev` profile cuts the bundle ~410 MB → ~25 MB and boots shrink accordingly. **The env pair is mandatory**: without it the build bakes the production URLs (`app.origa.uwuwu.net`), and a local run silently talks to the production TrailBase — the config-level guard that keeps the harness off production does not cover a manually started `trunk serve`.
+
 **Required `.env`:**
 
 ```ini
@@ -234,3 +237,4 @@ aborts, bounded click loops) live in `helpers/` and are invoked from steps.
 - `import type` for type-only imports in `shots/**` and `scripts/shots.ts` — the tool runs under Node's type stripping as well as under Playwright, and type stripping does NOT remove a type-only import (it becomes a runtime "does not provide an export named" error that `tsc` stays silent about). ESLint enforces it in that zone.
 - Native `*.spec.ts` files are the norm for the screenshot scenarios: they produce artifacts instead of asserting behaviour, so the "everything lives in Gherkin" rule of the BDD suite does not apply to them.
 - The scenarios of `shots/` select by `data-testid` — the same rule as the page objects. A raw CSS selector is allowed only where the markup has no marker (a tag inside a card, a checkbox of a drawer), and the reason is a comment next to it.
+- Authenticated contexts are seeded, not logged in through the UI: fixtures and scenarios use `apiLogin` (`helpers/auth.ts`). `uiLogin` remains only where the login form itself is the tested behaviour (auth.feature, the relay scenario of onboarding_scoring) and in the manual tools (shots) — grep the consumers before adding a new `uiLogin` call.
