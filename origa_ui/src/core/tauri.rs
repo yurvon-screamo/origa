@@ -63,9 +63,6 @@ pub fn tauri_object() -> Option<Object> {
         })
 }
 
-/// Returns `window.__TAURI__.core.invoke` function if available.
-///
-/// Used to call Tauri commands from WASM.
 /// Extracts the deep-link URL from a `deep-link://new-url` event.
 ///
 /// Wire contract (tauri-plugin-deep-link 2.4.7): the plugin emits
@@ -90,6 +87,9 @@ pub fn deep_link_url_from_event(event: &JsValue) -> Option<String> {
     urls.at(0).as_string()
 }
 
+/// Returns `window.__TAURI__.core.invoke` function if available.
+///
+/// Used to call Tauri commands from WASM.
 pub fn invoke_fn() -> Option<Function> {
     let obj = tauri_object()?;
     let core = Reflect::get(&obj, &JsValue::from_str("core")).ok()?;
