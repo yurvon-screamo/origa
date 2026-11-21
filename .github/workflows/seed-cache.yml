@@ -1,0 +1,401 @@
+# Seed common caches on master
+# =============================
+#
+# The CI workflow runs on PR merge-refs only (no push->master trigger), so
+# every PR saves its own copy of every content-hash cache onto an isolated
+# ref: GitHub's branch hierarchy makes copies invisible to other PRs, and
+# duplicates used to pile up at ~10.2 GB/day across 8 active refs (budget
+# 10 GB) — observed 10-11 Nov 2026, task 20261111072128. This workflow
+# (dispatch + schedule) runs on the DEFAULT branch, so its saves land on
+# refs/heads/master; PR runs then exact-hit the master copies and skip
+# their own saves (actions/cache post-save runs only on a primary-key
+# miss). Tag runs exact-hit the un-gated seeds too.
+#
+# CONTRACT (the invariant that keeps this working): every key/path/params
+# here MUST mirror the consumer step exactly — seed key == consumer key is
+# what turns a PR miss into an exact hit. Consumers:
+#
+#   seed family            key pattern                          consumer
+#   qlty-plugins           qlty-plugins-Linux-v1-<hash>          ci.yml lint
+#   playwright             playwright-chromium-v1-<hash>         ci.yml e2e
+#   apt GTK                cache-apt-pkgs_<hash>                 ci.yml GTK jobs
+#   apt protobuf           cache-apt-pkgs_<hash>                 ci.yml android-smoke
+#   uv                     setup-uv-2-...                        ci.yml python-tests
+#   frontend-tools         frontend-tools-Linux-X64-*-v1         setup-frontend (composite)
+#   wasm-pack              wasm-pack-Linux-X64-v0.15.0           ci.yml wasm-test
+#   trailbase              trailbase-<semver from Dockerfile>    ci.yml e2e
+#   xwin                   xwin-Linux-x86_64-pc-windows-msvc-v17 _build-tauri.yml windows
+#   cdn-data               cdn-data-v15-<hash manifest>          download-cdn (composite)
+#   gradle                 Linux-gradle-<hash gradle files>      ci.yml android-smoke
+#
+# When you change a consumer key/path/pin in ci.yml / _build-tauri.yml /
+# setup-frontend, change the mirroring seed step here in the same PR,
+# otherwise the seed silently orphans (symptom: PR duplicates return —
+# they resurface in the cache-budget report of cleanup-cache.yml, which
+# stays as the safety net).
+#
+# Interaction with cleanup-cache.yml: every seed key matches an existing
+# family prefix (qlty-plugins-, Linux-gradle-, playwright-, setup-uv-,
+# cache-apt-pkgs_, cdn-data-v15-) or the MASTER_SEEDS regex (constant
+# keys), so cleanup never ages seeds out, and its family-dedupe replaces
+# a superseded master copy when content hashes change. Master itself is
+# never budget-evicted. Idempotency: with unchanged content every seed
+# step exact-hits its own master copy and skips the save — a tick costs
+# minutes, not builds.
+#
+# Known transition: the FIRST seed run adds master entries while
+# non-master duplicates are still within their 1-day TTL, so the first
+# post-seed budget report reads deeper over budget than usual and
+# converges within a day.
+#
+# Out of scope on purpose: macOS/Windows-keyed caches (no cheap seeding
+# runner; the 1-day TTL caps their window), CodeQL (GitHub-managed),
+# Swatinem/rust-cache entries (no consumer currently saves them).
+
+name: Seed Caches
+
+on:
+    schedule:
+        # Twice a day like cleanup-cache.yml (GitHub skips some scheduled
+        # runs), ticks offset from the cleanup ones (03:00/15:00 UTC).
+        - cron: "30 1 * * *"
+        - cron: "30 13 * * *"
+    workflow_dispatch:
+
+concurrency:
+    group: seed-cache
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    # Mirror of ci.yml env.GTK_SYSTEM_PACKAGES — keep in sync (see the
+    # contract comment at the top).
+    GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
+
+jobs:
+    seed-linux:
+        name: Seed Linux caches
+        runs-on: ubuntu-24.04
+        # Sized for the cold first tick when every family misses: qlty --all
+        # (full-scope) + playwright install + two apt cycles + xwin download
+        # + cdn download (~10 min alone) + uv/frontend-tools installs sum to
+        # 25-45 min on observed PR-run durations; too tight a limit would
+        # cancel the tick (post-save does not write on cancel) and the
+        # seed-forming run would never complete.
+        timeout-minutes: 60
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            # --- frontend-tools: binstall + trunk + tauri-cli (composite owns the keys)
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+
+            # --- qlty-plugins (consumer: ci.yml lint)
+            - name: Cache qlty plugins
+              uses: actions/cache@v6
+              with:
+                  path: ~/.qlty
+                  key: qlty-plugins-Linux-v1-${{ hashFiles('.qlty/qlty.toml') }}
+
+            - name: Install qlty
+              run: |
+                  curl -fsSL https://qlty.sh | sh
+                  echo "$HOME/.qlty/bin" >> "$GITHUB_PATH"
+                  "$HOME/.qlty/bin/qlty" --version
+
+            - name: Warm qlty plugins (full-scope run)
+              # --all on purpose: the seed must initialize EVERY configured
+              # plugin, and a narrow delta might not touch some tools at all
+              # — an under-filled seed would exact-hit PR runs forever
+              # (post-save never rewrites an exact hit). Runs execute under
+              # `bash -e` by default: a non-zero qlty exit (baseline
+              # findings + unformatted files on master are the expected
+              # state, not a seeding failure) would abort the script before
+              # the echo, so errexit is disabled explicitly and the code is
+              # reported instead. Plugins download during run initialization
+              # regardless of the check verdict; a REAL download failure is
+              # caught fail-loud by the assert below.
+              run: |
+                  set +e
+                  qlty check --all --no-fix --no-progress
+                  code=$?
+                  echo "qlty exit code: ${code} (baseline findings on master are expected, not a seeding failure)"
+
+            - name: Assert qlty plugins downloaded
+              run: |
+                  tools_dir="$HOME/.qlty/cache/tools"
+                  if [ ! -d "$tools_dir" ] || [ -z "$(find "$tools_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                      echo "::error::qlty plugin cache is empty after the warm run — plugins did not download; an empty seed would exact-hit PR runs forever"
+                      exit 1
+                  fi
+                  echo "qlty plugins seeded: $(find "$tools_dir" -mindepth 1 -maxdepth 1 | wc -l) tool dirs"
+
+            # --- playwright chromium (consumer: ci.yml e2e)
+            - name: Install Node.js dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Cache Playwright browsers
+              id: playwright-cache
+              uses: actions/cache@v6
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-v1-${{ hashFiles('end2end/package-lock.json') }}
+
+            - name: Install Playwright browsers
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: npx playwright install --with-deps chromium
+              working-directory: end2end
+
+            - name: Assert Playwright browsers downloaded
+              run: |
+                  if [ ! -d "$HOME/.cache/ms-playwright" ] || [ -z "$(find "$HOME/.cache/ms-playwright" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                      echo "::error::Playwright browser cache is empty — chromium did not download"
+                      exit 1
+                  fi
+
+            # --- apt GTK stack (consumer: ci.yml lint/test/landing-test/wasm-test)
+            - name: Refresh APT indexes
+              run: sudo apt-get update
+            - name: Cache APT packages (GTK stack)
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.3
+              with:
+                  packages: ${{ env.GTK_SYSTEM_PACKAGES }}
+                  version: 1.1  # same bump rationale as ci.yml (stale .pc files)
+
+            # --- apt protobuf-compiler (consumer: ci.yml android-smoke)
+            - name: Cache APT packages (protobuf-compiler)
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.3
+              with:
+                  packages: protobuf-compiler
+                  version: 1.1
+
+            # --- uv (consumer: ci.yml python-tests; the action owns the key)
+            - name: Setup uv
+              uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+              with:
+                  enable-cache: true
+                  cache-dependency-glob: scripts/uv.lock
+
+            - name: Install uv dependencies
+              run: uv sync --frozen --project scripts
+
+            # --- wasm-pack (consumer: ci.yml wasm-test)
+            - name: Restore wasm-pack
+              id: wasm-pack-cache
+              uses: actions/cache@v6
+              with:
+                  path: ~/.cargo/bin/wasm-pack
+                  key: wasm-pack-Linux-X64-v0.15.0
+
+            - name: Install wasm-pack
+              if: steps.wasm-pack-cache.outputs.cache-hit != 'true'
+              run: |
+                  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors \
+                      https://github.com/rustwasm/wasm-pack/releases/download/v0.15.0/wasm-pack-v0.15.0-x86_64-unknown-linux-musl.tar.gz \
+                      | tar -xz -C "$HOME/.cargo/bin" --strip-components=1 \
+                          wasm-pack-v0.15.0-x86_64-unknown-linux-musl/wasm-pack
+                  chmod +x "$HOME/.cargo/bin/wasm-pack"
+
+            - name: Verify wasm-pack
+              run: |
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+                  wasm-pack --version
+
+            # --- trailbase (consumer: ci.yml e2e)
+            - name: Read TrailBase version from origa_ui/Dockerfile
+              id: trailbase-version
+              run: |
+                  mapfile -t versions < <(sed -n 's/^ARG TRAILBASE_VERSION=//p' origa_ui/Dockerfile)
+                  if [[ ${#versions[@]} -ne 1 || ! "${versions[0]}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "::error::origa_ui/Dockerfile must declare exactly one 'ARG TRAILBASE_VERSION=vX.Y.Z' (got: ${versions[*]:-nothing})"
+                      exit 1
+                  fi
+                  echo "version=${versions[0]}" >> "$GITHUB_OUTPUT"
+
+            - name: Cache TrailBase CLI
+              id: cache-trailbase
+              uses: actions/cache@v6
+              with:
+                  path: ~/.local/bin/trail
+                  key: trailbase-${{ steps.trailbase-version.outputs.version }}
+
+            - name: Add TrailBase to PATH
+              run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+            - name: Validate TrailBase CLI
+              id: validate-trailbase
+              env:
+                  EXPECTED_VERSION: ${{ steps.trailbase-version.outputs.version }}
+              run: |
+                  got="$(trail --version 2>&1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+                  if command -v trail &> /dev/null && [[ "$got" == "$EXPECTED_VERSION" ]]; then
+                    echo "valid=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "valid=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Install TrailBase CLI
+              if: steps.cache-trailbase.outputs.cache-hit != 'true' || steps.validate-trailbase.outputs.valid != 'true'
+              env:
+                  TRAILBASE_VERSION: ${{ steps.trailbase-version.outputs.version }}
+              run: |
+                  curl -sSfL --retry 3 --retry-delay 10 -o /tmp/trailbase.zip \
+                    "https://github.com/trailbaseio/trailbase/releases/download/${TRAILBASE_VERSION}/trailbase_${TRAILBASE_VERSION}_x86_64_linux.zip"
+                  mkdir -p "$HOME/.local/bin"
+                  unzip -oq /tmp/trailbase.zip -d "$HOME/.local/bin" trail
+                  chmod +x "$HOME/.local/bin/trail"
+                  "$HOME/.local/bin/trail" --version
+
+            # --- xwin MSVC CRT/SDK (consumer: _build-tauri.yml windows cross-build)
+            - name: Setup Rust target for xwin
+              run: rustup target add x86_64-pc-windows-msvc
+
+            - name: Install cargo-binstall + cargo-xwin
+              run: |
+                  tmp=$(mktemp)
+                  curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh
+                  bash "$tmp"
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+                  cargo binstall cargo-xwin --no-confirm --force
+
+            - name: Cache cargo-xwin MSVC CRT
+              id: xwin-cache
+              uses: actions/cache@v6
+              with:
+                  path: ${{ github.workspace }}/.xwin-cache
+                  key: xwin-${{ runner.os }}-x86_64-pc-windows-msvc-v17
+                  restore-keys: |
+                      xwin-${{ runner.os }}-
+
+            - name: Download MSVC CRT/SDK (xwin)
+              if: steps.xwin-cache.outputs.cache-hit != 'true'
+              run: cargo xwin download --target x86_64-pc-windows-msvc
+              env:
+                  XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
+
+            - name: Assert xwin cache populated
+              run: |
+                  if [ ! -d "${{ github.workspace }}/.xwin-cache" ] || [ -z "$(find "${{ github.workspace }}/.xwin-cache" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                      echo "::error::xwin cache is empty — CRT/SDK did not download"
+                      exit 1
+                  fi
+
+            # --- cdn-data (consumer: download-cdn composite / ci.yml cdn-download)
+            - name: Download CDN data
+              uses: ./.github/actions/download-cdn
+              with:
+                  cache-key: cdn-data-v15-${{ hashFiles('end2end/cdn-manifest.txt') }}
+                  cdn-base-url: ${{ vars.ORIGA_CDN_BASE_URL }}
+
+    seed-android-gradle:
+        name: Seed Gradle cache (Android build)
+        runs-on: ubuntu-24.04
+        # Cold tick = toolchain setup (NDK download, rust targets, npm,
+        # trunk release build) ~10-15 min ON TOP of the ~40 min APK build;
+        # 60 would sit flush against the estimate and clip the seed-forming
+        # run.
+        timeout-minutes: 90
+        env:
+            ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
+            # Mirror of ci.yml android-smoke NDK_VERSION — keep in sync.
+            NDK_VERSION: "26.1.10909125"
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Refresh APT indexes
+              run: sudo apt-get update
+            - name: Install protobuf-compiler
+              # Plain install: the cacheable apt entry is seeded by
+              # seed-linux (same key); no second master copy here.
+              run: sudo apt-get install -y --no-install-recommends protobuf-compiler
+
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: wasm32-unknown-unknown,x86_64-linux-android
+                  shared-key: origa-android-smoke-v1
+                  save-if: false
+
+            - name: Setup Java
+              uses: actions/setup-java@v6
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Setup Android SDK + NDK
+              # Emulator/system-image packages are smoke-only — the build
+              # path does not consume them.
+              uses: android-actions/setup-android@v4
+              with:
+                  packages: "platform-tools ndk;${{ env.NDK_VERSION }}"
+
+            - name: Configure NDK environment
+              run: |
+                  NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${{ env.NDK_VERSION }}"
+                  if [ ! -d "$NDK_PATH" ]; then
+                      echo "::error::NDK directory not found at: $NDK_PATH"
+                      ls -1 "${ANDROID_SDK_ROOT}/ndk/" 2>/dev/null || true
+                      exit 1
+                  fi
+                  echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+                  echo "ANDROID_NDK_ROOT=$NDK_PATH" >> "$GITHUB_ENV"
+
+            - name: Cache Gradle
+              # Consumer: ci.yml android-smoke — same path/key/restore-keys.
+              id: gradle-cache
+              uses: actions/cache@v6
+              with:
+                  path: |
+                      ~/.gradle/caches
+                      ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*',
+                      '**/gradle-wrapper.properties') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gradle-
+
+            # Frontend tooling mirrors android-smoke: tauri-cli comes from
+            # setup-frontend (cargo subcommand), @tauri-apps/cli from npm.
+            - name: Setup frontend tools
+              uses: ./.github/actions/setup-frontend
+
+            - name: Add cargo bin to PATH
+              run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+            # Heavy (~40 min); unconditional ticks would waste it on every
+            # re-run: build only on a gradle cache miss, mirroring the
+            # consumer's miss-gated install steps.
+            - name: Install Tauri CLI (npm)
+              if: steps.gradle-cache.outputs.cache-hit != 'true'
+              working-directory: tauri
+              run: npm install
+
+            - name: Build landing CSS
+              if: steps.gradle-cache.outputs.cache-hit != 'true'
+              working-directory: origa_landing
+              run: npm ci && npm run build:css
+
+            - name: Build WASM frontend
+              if: steps.gradle-cache.outputs.cache-hit != 'true'
+              working-directory: origa_ui
+              run: trunk build --release
+              env:
+                  # Same mute as android-smoke's WASM build (ADR-054).
+                  UMAMI_DISABLED: "1"
+
+            - name: Build debug APK (fills the Gradle cache)
+              if: steps.gradle-cache.outputs.cache-hit != 'true'
+              working-directory: tauri
+              run: cargo tauri android build --debug --target x86_64 --apk
+
+            - name: Assert Gradle caches populated
+              run: |
+                  if [ ! -d "$HOME/.gradle/caches" ] || [ -z "$(find "$HOME/.gradle/caches" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                      echo "::error::Gradle caches are empty — the build did not run or populated nothing"
+                      exit 1
+                  fi
+                  du -sh "$HOME/.gradle/caches"
