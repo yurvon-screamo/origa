@@ -93,10 +93,12 @@ bundle. It warns — and does not fail — when the local corpus lags behind
 the deployment and when the tokenizer dictionary is absent.
 
 A fresh worktree of the factory has none of the three things a capture
-needs: the corpus (`cdn/` is gitignored), the e2e credentials
+needs: the corpus, the e2e credentials
 (`end2end/.env` is gitignored) and the node modules. The preflight names
-each of them and the way to provide it (`ORIGA_CDN_CACHE_DIR`, the `.env`
-of the main checkout, `npm ci`) — the alternative was a cryptic failure
+each of them and the way to provide it (`ORIGA_CDN_DIR` or the shared
+`~/origa-cdn` seed — ADR-083; `ORIGA_CDN_CACHE_DIR` is serve-only, the
+build registry does not read it; the `.env` of the main checkout,
+`npm ci`) — the alternative was a cryptic failure
 in the middle of the capture.
 
 The build mode has ONE predicate (`SERVE_MODE` in `shots/config.ts`), used
