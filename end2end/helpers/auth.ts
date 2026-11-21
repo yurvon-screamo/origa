@@ -267,13 +267,19 @@ export async function apiLogin(
   const seeder = await context.newPage();
   try {
     await seeder.goto(`${baseURL}/public/logo-128.png`);
-    await seeder.evaluate((seed: { session: object }) => {
-      window.localStorage.setItem("origa_resource_download_consented", "true");
-      window.localStorage.setItem(
-        "trailbase_session",
-        JSON.stringify(seed.session),
-      );
-    }, { session });
+    await seeder.evaluate(
+      (seed: { session: object }) => {
+        window.localStorage.setItem(
+          "origa_resource_download_consented",
+          "true",
+        );
+        window.localStorage.setItem(
+          "trailbase_session",
+          JSON.stringify(seed.session),
+        );
+      },
+      { session },
+    );
   } finally {
     await seeder.close();
   }
