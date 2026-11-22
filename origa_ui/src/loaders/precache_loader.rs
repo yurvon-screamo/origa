@@ -7,15 +7,17 @@ use origa::dictionary::precompute_blob::inflate_blob;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
+use crate::loaders::data_loader::VOCABULARY_CHUNK_PATHS;
 use crate::loaders::dictionary::dict_path;
 use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
 
 // v3 (uwuwu #1451): phrase content switched from raw JSON to deflated
-// bundle blobs — the key bump forces a one-time re-precache so updated
-// clients pick the blob layout (legacy JSON keys are cleaned up after
-// the successful pass).
-const BUNDLE_DOWNLOADED_KEY: &str = "/__origa_bundle_downloaded_v3__";
+// bundle blobs. v4 (uwuwu #1484): dictionary/grammar/kanji/radicals/pitch
+// precache also switched to deflated blobs — the key bump forces a
+// one-time re-precache so updated clients pick the blob layout (legacy
+// JSON keys are cleaned up after the successful pass).
+const BUNDLE_DOWNLOADED_KEY: &str = "/__origa_bundle_downloaded_v4__";
 const CONCURRENCY: usize = 20;
 const PHRASE_BUNDLE_COUNT: usize = 6;
 
@@ -48,16 +50,15 @@ pub fn get_base_bundle_resources() -> Vec<String> {
         "dictionaries/JmdictFurigana.txt".to_string(),
     ]);
 
-    for i in 1..=11 {
-        resources.push(format!("dictionary/chunk_{:02}.json", i));
-    }
-
-    resources.extend([
-        "dictionary/kanji.json".to_string(),
-        "dictionary/radicals.json".to_string(),
-    ]);
-
-    resources.push("grammar/grammar_v3.json".to_string());
+    // Deflated blobs replace the raw JSON downloads (uwuwu #1484): the
+    // wire format is invisible to the Sentry "Large HTTP payload" detector
+    // and several times smaller (NFT-06). The JSON sources stay on the CDN
+    // as fallback + released-client source; their precache keys are removed
+    // by the legacy cleanup after a successful pass.
+    resources.push("dictionary/vocabulary.rkyv".to_string());
+    resources.push("dictionary/kanji.rkyv".to_string());
+    resources.push("dictionary/radicals.rkyv".to_string());
+    resources.push("grammar/grammar_v3.rkyv".to_string());
     resources.push("phrases/phrase_index.v3.rkyv".to_string());
 
     // Phrase data bundles (uwuwu #1451): 6 deflated blobs replace the raw
@@ -69,7 +70,7 @@ pub fn get_base_bundle_resources() -> Vec<String> {
         resources.push(format!("phrases/data_bundle_{}.v3.rkyv", i));
     }
 
-    resources.push("pitch/index.json".to_string());
+    resources.push("pitch/index.rkyv".to_string());
 
     resources.extend([
         "well_known_set/well_known_sets_meta.json".to_string(),
@@ -152,12 +153,12 @@ pub async fn precache_base_bundle(
 
     if success_rate >= 0.95 {
         mark_bundle_downloaded().await?;
-        // Legacy phrase JSON keys are removed only AFTER the successful
-        // pass (review contract): during the pass cache-first hits skip
-        // them without any network, and each removed key's blob
-        // replacement must already be cached — otherwise an offline
-        // start would lose its phrase content source.
-        cleanup_legacy_phrase_json_cache().await;
+        // Legacy JSON keys are removed only AFTER the successful pass
+        // (review contract): during the pass cache-first hits skip them
+        // without any network, and each removed key's blob replacement
+        // must already be cached — otherwise an offline start would lose
+        // its content source.
+        cleanup_legacy_json_cache().await;
         tracing::info!(
             "Bundle downloaded: {}/{} succeeded",
             result.succeeded,
@@ -335,9 +336,12 @@ async fn release_bundle_cache_entries(bundle_idx: usize) {
     }
 }
 
-/// (path, blob replacement) pairs for the pre-blob phrase JSON keys.
-/// The cleanup contract: a key is removed only when its replacement is
-/// already cached — the pair list is the single source of both sides.
+/// (stale JSON key, blob replacement) pairs for every precache family that
+/// moved to blobs. The cleanup contract: a key is removed only when its
+/// replacement is already cached — the pair list is the single source of
+/// both sides. Offline safety nets beyond the blob: the local vocabulary
+/// rkyv cache (data_loader slow path serializes into it) and the runtime
+/// JSON re-fetch (online).
 fn legacy_cleanup_pairs() -> Vec<(String, String)> {
     let mut pairs: Vec<(String, String)> = vec![(
         "phrases/phrase_index.json".to_string(),
@@ -346,25 +350,35 @@ fn legacy_cleanup_pairs() -> Vec<(String, String)> {
     for idx in 0..PHRASE_BUNDLE_COUNT {
         pairs.push((phrase_bundle_json_path(idx), phrase_bundle_blob_path(idx)));
     }
+    // Deflated-blob families (uwuwu #1484): vocabulary consumes the
+    // chunk_01..11 JSON (the blob builder concatenates them), the rest
+    // consume their single JSON source.
+    for chunk_path in VOCABULARY_CHUNK_PATHS {
+        pairs.push((chunk_path.to_string(), "dictionary/vocabulary.rkyv".to_string()));
+    }
+    pairs.push(("dictionary/kanji.json".to_string(), "dictionary/kanji.rkyv".to_string()));
+    pairs.push(("dictionary/radicals.json".to_string(), "dictionary/radicals.rkyv".to_string()));
+    pairs.push(("grammar/grammar_v3.json".to_string(), "grammar/grammar_v3.rkyv".to_string()));
+    pairs.push(("pitch/index.json".to_string(), "pitch/index.rkyv".to_string()));
     pairs
 }
 
-/// Remove the pre-blob phrase JSON keys after a successful pass. Each key
-/// is removed only when its replacement is already cached, so an offline
+/// Remove the pre-blob JSON keys after a successful pass. Each key is
+/// removed only when its replacement is already cached, so an offline
 /// start never loses its content source (review contract: deletion happens
 /// after the pass, never before).
-async fn cleanup_legacy_phrase_json_cache() {
+async fn cleanup_legacy_json_cache() {
     for (path, replacement) in legacy_cleanup_pairs() {
         if !cdn_provider::is_cached(&replacement).await {
             tracing::warn!(
                 path = %path,
                 replacement = %replacement,
-                "Replacement not cached — legacy phrase JSON key kept"
+                "Replacement not cached — legacy JSON key kept"
             );
             continue;
         }
         if let Err(e) = cdn_provider::delete_from_cache(&path).await {
-            tracing::warn!(path = %path, error = ?e, "Failed to clean up legacy phrase JSON cache key");
+            tracing::warn!(path = %path, error = ?e, "Failed to clean up legacy JSON cache key");
         }
     }
 }
@@ -382,19 +396,33 @@ mod tests {
         assert!(resources.contains(&"dictionaries/sudachidict-20260723/dict.trie".to_string()));
         assert!(resources.contains(&"dictionaries/sudachidict-20260723/dict.valsidx".to_string()));
         assert!(resources.contains(&"dictionaries/JmdictFurigana.txt".to_string()));
-        assert!(resources.contains(&"dictionary/kanji.json".to_string()));
-        assert!(resources.contains(&"dictionary/radicals.json".to_string()));
-        assert!(resources.contains(&"grammar/grammar_v3.json".to_string()));
+        assert!(resources.contains(&"dictionary/vocabulary.rkyv".to_string()));
+        assert!(resources.contains(&"dictionary/kanji.rkyv".to_string()));
+        assert!(resources.contains(&"dictionary/radicals.rkyv".to_string()));
+        assert!(resources.contains(&"grammar/grammar_v3.rkyv".to_string()));
         assert!(resources.contains(&"phrases/phrase_index.v3.rkyv".to_string()));
-        assert!(resources.contains(&"pitch/index.json".to_string()));
+        assert!(resources.contains(&"pitch/index.rkyv".to_string()));
         assert!(resources.contains(&"well_known_set/jlpt_n5.json".to_string()));
     }
 
     #[test]
-    fn base_bundle_includes_vocabulary_chunks() {
+    fn base_bundle_rides_blobs_instead_of_raw_json_for_every_converted_family() {
+        // uwuwu #1484: dictionary chunks, grammar, kanji, radicals and
+        // pitch precache their deflated blobs — the raw JSON files never
+        // ride the precache pass (detector-invisible wire format, the
+        // JSON sources stay on CDN as fallback + released-client source).
         let resources = get_base_bundle_resources();
-        for i in 1..=11 {
-            assert!(resources.contains(&format!("dictionary/chunk_{:02}.json", i)));
+
+        assert!(resources.contains(&"dictionary/vocabulary.rkyv".to_string()));
+        assert!(!resources.contains(&"dictionary/kanji.json".to_string()));
+        assert!(!resources.contains(&"dictionary/radicals.json".to_string()));
+        assert!(!resources.contains(&"grammar/grammar_v3.json".to_string()));
+        assert!(!resources.contains(&"pitch/index.json".to_string()));
+        for chunk in VOCABULARY_CHUNK_PATHS {
+            assert!(
+                !resources.contains(&chunk.to_string()),
+                "chunk {chunk} must not ride the precache pass"
+            );
         }
     }
 
@@ -446,17 +474,34 @@ mod tests {
         // blob replacement is cached — every removable key must have a named
         // replacement, and no pair may point at a non-legacy key.
         let pairs = legacy_cleanup_pairs();
-        assert_eq!(pairs.len(), 1 + PHRASE_BUNDLE_COUNT);
-        assert_eq!(
-            pairs[0],
-            (
-                "phrases/phrase_index.json".to_string(),
-                "phrases/phrase_index.v3.rkyv".to_string()
-            )
-        );
-        for (idx, (path, replacement)) in pairs[1..].iter().enumerate() {
-            assert_eq!(path, &phrase_bundle_json_path(idx));
-            assert_eq!(replacement, &phrase_bundle_blob_path(idx));
+        let mut expected: Vec<(String, String)> = vec![(
+            "phrases/phrase_index.json".to_string(),
+            "phrases/phrase_index.v3.rkyv".to_string(),
+        )];
+        for idx in 0..PHRASE_BUNDLE_COUNT {
+            expected.push((
+                phrase_bundle_json_path(idx),
+                phrase_bundle_blob_path(idx),
+            ));
+        }
+        for chunk in VOCABULARY_CHUNK_PATHS {
+            expected.push((chunk.to_string(), "dictionary/vocabulary.rkyv".to_string()));
+        }
+        expected.push(("dictionary/kanji.json".to_string(), "dictionary/kanji.rkyv".to_string()));
+        expected.push((
+            "dictionary/radicals.json".to_string(),
+            "dictionary/radicals.rkyv".to_string(),
+        ));
+        expected.push((
+            "grammar/grammar_v3.json".to_string(),
+            "grammar/grammar_v3.rkyv".to_string(),
+        ));
+        expected.push(("pitch/index.json".to_string(), "pitch/index.rkyv".to_string()));
+
+        assert_eq!(pairs, expected);
+        // Every stale key is a JSON path — blobs are never cleanup targets.
+        for (path, _) in &pairs {
+            assert!(path.ends_with(".json"), "cleanup target must be JSON: {path}");
         }
     }
 
@@ -749,7 +794,7 @@ mod wasm_tests {
         prime(&legacy).await;
 
         // Act
-        cleanup_legacy_phrase_json_cache().await;
+        cleanup_legacy_json_cache().await;
 
         // Assert: legacy keys gone, replacements intact.
         for path in &legacy {
@@ -775,7 +820,7 @@ mod wasm_tests {
         prime(&legacy).await;
 
         // Act
-        cleanup_legacy_phrase_json_cache().await;
+        cleanup_legacy_json_cache().await;
 
         // Assert: nothing was deleted without a live replacement.
         for path in &legacy {
