@@ -22,12 +22,13 @@
 //! home redirect branches, password_card) fire on
 //! `StoredValue::is_disposed()` — a page-scoped sentinel created in the
 //! owner context. That primitive is pinned DIRECTLY
-//! (`disposal_sentinel_flips_after_owner_drop`): if a reactive_graph /
-//! leptos bump ever stops the disposal sweep from marking stored values,
-//! the whole fence layer would silently go inert and this suite must go
-//! red. `try_get_untracked()` pinning is the signal-level view of the
-//! same disposal state (`None`) — the detection primitive an overdue
-//! closure can use when it wants to check before reading.
+//! (`disposal_sentinel_flips_after_owner_drop` reads `is_disposed()`
+//! before AND after the owner drop): if a reactive_graph / leptos bump
+//! ever stops the disposal sweep from marking stored values, the whole
+//! fence layer would silently go inert and this suite must go red.
+//! `try_get_untracked()` / `RwSignal::is_disposed()` pin the signal-
+//! level view of the same disposal state — the detection primitives an
+//! overdue closure can use when it wants to check before reading.
 
 #![cfg(all(target_arch = "wasm32", test))]
 
@@ -40,11 +41,10 @@ use crate::test_support::{create_wrapper, mount_disposable, shared_cell};
 wasm_bindgen_test_configure!(run_in_browser);
 
 /// Mounts a wrapper capturing a page-scoped value out of the mount
-/// closure, then (optionally) disposes the mount (drop of the handle =
-/// owner disposal, mirroring a route unmount).
-fn mount_page_with<T: Copy + 'static>(
-    capture: impl FnOnce() -> T + 'static,
-) -> (T, impl FnMut() -> bool) {
+/// closure. The returned closure drops the mount once (owner disposal,
+/// mirroring a route unmount); disposal itself is observed on the
+/// captured primitives via their `is_disposed()`.
+fn mount_page_with<T: Copy + 'static>(capture: impl FnOnce() -> T + 'static) -> (T, impl FnMut()) {
     let wrapper = create_wrapper();
     let (tx, rx) = shared_cell::<T>();
     let mut handle = Some(mount_disposable(&wrapper, move || {
@@ -52,16 +52,11 @@ fn mount_page_with<T: Copy + 'static>(
         view! { <div data-testid="panic-family-host" /> }.into_any()
     }));
     let value = rx.get().expect("page-scoped value must be captured");
-    let mut dropped = false;
     (
         value,
         Box::new(move || {
-            if !dropped {
-                drop(handle.take()); // route unmount: owner disposal
-                dropped = true;
-            }
-            dropped
-        }) as Box<dyn FnMut() -> bool>,
+            drop(handle.take()); // route unmount: owner disposal
+        }) as Box<dyn FnMut()>,
     )
 }
 
@@ -73,15 +68,21 @@ fn mount_page_with<T: Copy + 'static>(
 
 #[wasm_bindgen_test]
 async fn disposal_sentinel_flips_after_owner_drop() {
-    let (sentinel, mut dispose_and_check) = mount_page_with(|| StoredValue::new(()));
+    let (sentinel, mut drop_mount) = mount_page_with(|| StoredValue::new(()));
 
     assert!(
         !sentinel.is_disposed(),
         "the sentinel must read live while the mount is alive"
     );
+
+    drop_mount();
+
+    // The actual flip: read from the sentinel AFTER the owner dropped.
+    // If the disposal sweep ever stops marking stored values, this is
+    // the assertion that goes red while the fence layer goes inert.
     assert!(
-        dispose_and_check(),
-        "after the mount drops, the sentinel must report disposal — \
+        sentinel.is_disposed(),
+        "after the owner drops, the sentinel must report disposal — \
          the primitive every fence of this task fires on"
     );
 }
@@ -89,23 +90,30 @@ async fn disposal_sentinel_flips_after_owner_drop() {
 // ═══════════════════════════════════════════════════════════════════════
 // RUST-5 root class: an overdue spawn_local task resumes after its page
 // is gone. Reads trap (see the module docs), both write shapes stay
-// silent, the sentinel reports disposal, and the signal-level `try_*`
-// probe agrees — so an overdue closure can fence itself off either way.
+// silent, and the signal-level disposal state is visible both via
+// `is_disposed()` and via the `try_*` probes — so an overdue closure
+// can fence itself off before reading.
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
 async fn overdue_task_sees_disposal_via_try_probes_and_silent_writes() {
-    let (signal, mut dispose_and_check) = mount_page_with(|| RwSignal::new(42u32));
-    dispose_and_check();
+    let (signal, mut drop_mount) = mount_page_with(|| RwSignal::new(42u32));
+    drop_mount();
+
+    // Signal-level disposal state, read after the owner dropped.
+    assert!(
+        signal.is_disposed(),
+        "the page-scoped signal must report disposal after the mount drops"
+    );
 
     let detected = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = detected.clone();
 
     // The exact overdue shape from the Sentry breadcrumbs: the closure
     // spawned on click resumes AFTER its owner was disposed and touches
-    // the page signals. Both write shapes must stay silent, the sentinel
-    // and the try-probe must agree on disposal — the task only survives
-    // to the flags if nothing panicked along the way.
+    // the page signals. Both write shapes must stay silent and the
+    // try-probe must agree with `is_disposed()` above — the task only
+    // survives to the flag if nothing panicked along the way.
     spawn_local(async move {
         signal.set(7); // try_update → None: must NOT panic
         signal.update(|v| *v += 1); // same silent path: must NOT panic
@@ -124,10 +132,6 @@ async fn overdue_task_sees_disposal_via_try_probes_and_silent_writes() {
         detected.get(),
         "an overdue task must survive silent set+update and see disposal \
          via try_get_untracked (signal-level guard semantics)"
-    );
-    assert!(
-        dispose_and_check(),
-        "the sentinel agrees with the signal-level probe (fence semantics)"
     );
 }
 
