@@ -13,7 +13,7 @@ use std::sync::RwLock;
 use crate::domain::OrigaError;
 use crate::domain::{PartOfSpeech, PrecomputedEntry, PrecomputedToken};
 
-use super::cdn_blob::split_blob;
+use super::cdn_blob::{BlobFormatError, BlobHeader, split_blob, split_blob_with_schema};
 
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
 pub struct PrecomputeBlob {
@@ -58,6 +58,32 @@ pub fn inflate_blob(deflated: &[u8]) -> Result<Vec<u8>, OrigaError> {
             reason: format!("failed to inflate precompute blob: {e}"),
         })?;
     Ok(blob)
+}
+
+/// Inflates a deflate-wrapped blob and splits its header against an
+/// explicit per-family schema expectation.
+///
+/// The shared read path for every deflated blob family: the deflated-rkyv
+/// generation (`DEFLATED_RKYV_SCHEMA_VERSION`, vocabulary/pitch) and the
+/// deflated-JSON blobs on the global schema (phrase bundles, grammar, kanji,
+/// radicals). An unreadable deflate stream surfaces as
+/// `BlobFormatError::Inflation` so callers keep mapping every rejection to
+/// their fallback path — a rejected blob is never a user-facing failure.
+pub fn inflate_and_split(
+    deflated: &[u8],
+    expected_schema: u32,
+) -> Result<(BlobHeader, Vec<u8>), BlobFormatError> {
+    use std::io::Read;
+
+    let mut decoder = flate2::read::DeflateDecoder::new(deflated);
+    let mut blob = Vec::new();
+    decoder.read_to_end(&mut blob).map_err(|e| {
+        BlobFormatError::Inflation {
+            reason: e.to_string(),
+        }
+    })?;
+    let (header, payload) = split_blob_with_schema(&blob, expected_schema)?;
+    Ok((header, payload.to_vec()))
 }
 
 /// Inflates a deflated CDN blob and splits it: the payload is accessed
