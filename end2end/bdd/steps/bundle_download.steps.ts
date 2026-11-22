@@ -23,9 +23,19 @@ const BUNDLE_DOWNLOADED_MARKER = "__origa_bundle_downloaded_v3__";
 /** CDN origin under test — same override chain as the CDN webServer. */
 const CDN_ORIGIN = `http://localhost:${LOCAL_CDN_PORT}`;
 
-/** The download card lives on /profile (OfflineBundleCard). */
+/** The download card lives on /profile (OfflineBundleCard). The wrapper is
+ * present in every card state (idle/downloading/downloaded). */
 async function openProfile(page: Page): Promise<void> {
   await page.goto("/profile", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("profile-offline-bundle")).toBeVisible({
+    timeout: 60_000,
+  });
+}
+
+/** The download button exists only while the bundle is NOT downloaded —
+ * a second profile open shows the downloaded state instead (no button). */
+async function openProfileForDownload(page: Page): Promise<void> {
+  await openProfile(page);
   await expect(page.getByTestId("download-bundle-btn")).toBeVisible({
     timeout: 60_000,
   });
@@ -43,7 +53,7 @@ async function cdnCacheKeys(page: Page): Promise<string[]> {
 When(
   "пользователь скачивает офлайн-пакет в профиле",
   async ({ page, cdnRequestLog }) => {
-    await openProfile(page);
+    await openProfileForDownload(page);
 
     // Attach the listener before the click, so the log covers the whole
     // download+extraction pass (click → fetch → Cache API put/delete).
