@@ -337,6 +337,20 @@ pub async fn purge_entry(path: &str) -> Result<(), OrigaError> {
     Ok(())
 }
 
+/// Purge half of the stale-blob heal (uwuwu #1484): vocabulary/pitch
+/// loaders purge a stale-generation entry before the refetch. The Cache
+/// API exists only under wasm; native builds (cargo test) get a no-op so
+/// the heal exercises its refetch half against injected providers.
+#[cfg(target_arch = "wasm32")]
+pub async fn purge_stale_blob_entry(path: &str) {
+    if let Err(e) = purge_entry(path).await {
+        tracing::warn!(path = %path, error = ?e, "Stale blob cache purge failed (best-effort)");
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn purge_stale_blob_entry(_path: &str) {}
+
 /// Network-only text fetch that overwrites the cache entry with the
 /// fresh body — the refetch half of the self-heal pair above. The
 /// unreachable guard mirrors `FetchDecision::FailOffline`: a CDN proven

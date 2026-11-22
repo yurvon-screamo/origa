@@ -1,6 +1,9 @@
-use origa::dictionary::cdn_blob::{guard_matches, split_blob};
+use origa::dictionary::cdn_blob::{
+    DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, BlobFormatError, guard_matches,
+};
 use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
+use origa::dictionary::precompute_blob::inflate_and_split;
 use origa::dictionary::radical::{RadicalData, init_radicals, is_radicals_loaded};
 use origa::dictionary::vocabulary::{
     ArchivedVocabularyBlob, VocabularyChunkData, access_vocabulary_blob, init_vocabulary,
@@ -18,8 +21,9 @@ use crate::utils::{now_ms, yield_to_browser};
 /// CDN path of the pre-built deterministic vocabulary blob.
 const VOCABULARY_BLOB_PATH: &str = "dictionary/vocabulary.rkyv";
 
-/// Chunk paths feeding the blob — used for the manifest guard expectation.
-const VOCABULARY_CHUNK_PATHS: [&str; 11] = [
+/// Chunk paths feeding the vocabulary blob — used for the manifest guard
+/// expectation and the precache legacy cleanup pairs.
+pub(crate) const VOCABULARY_CHUNK_PATHS: [&str; 11] = [
     "dictionary/chunk_01.json",
     "dictionary/chunk_02.json",
     "dictionary/chunk_03.json",
@@ -159,11 +163,56 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     Ok(())
 }
 
+/// Why the vocabulary blob bytes could not serve the fast path.
+#[derive(Debug)]
+enum VocabularyBlobError {
+    /// The blob belongs to an older format generation — the cache entry is
+    /// stale and heals by purge + refetch (self-heal, uwuwu #1484).
+    StaleGeneration,
+    /// Corruption, guard mismatch or payload failure — the fallback chain
+    /// (local rkyv cache, JSON chunks) serves the load instead.
+    Rejected(String),
+}
+
+/// Format + guard + payload validation of one vocabulary blob: inflate the
+/// deflated-rkyv generation, verify the manifest guard over the chunk
+/// hashes, access the payload zero-copy.
+fn vocabulary_view_from_blob(
+    blob: &[u8],
+) -> Result<&'static ArchivedVocabularyBlob, VocabularyBlobError> {
+    let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
+        Ok(split) => split,
+        Err(BlobFormatError::UnsupportedSchema { .. })
+        | Err(BlobFormatError::Inflation { .. }) => {
+            // Both stale shapes heal the same way: a cached blob of an
+            // older generation does not inflate (the pre-#1484 wire format
+            // was raw), and a foreign-generation deflated blob fails the
+            // schema check. A blob that fails to inflate at all is also
+            // indistinguishable from a poisoned cache body — purging is
+            // the established remedy (kanji-art healer).
+            return Err(VocabularyBlobError::StaleGeneration);
+        },
+        Err(e) => return Err(VocabularyBlobError::Rejected(e.to_string())),
+    };
+    let expectation = guard_expectation_for(&VOCABULARY_CHUNK_PATHS);
+    if !guard_matches(&header, &expectation) {
+        return Err(VocabularyBlobError::Rejected(
+            "stale relative to manifest".to_string(),
+        ));
+    }
+    access_vocabulary_blob(&payload).map_err(|e| VocabularyBlobError::Rejected(e.to_string()))
+}
+
 /// CDN-rkyv fast path core. `Ok(None)` means "no usable blob — use the
 /// fallback chain" (fetch error, invalid header, guard mismatch or payload
 /// failure are all non-fatal: the original sources remain loadable). The
 /// returned archived view is installed by the caller — tests exercise this
 /// core without touching the one-shot global slot.
+///
+/// A stale-generation blob heals in place: cache-first would serve it
+/// forever, so the loader purges the entry and refetches once — online the
+/// refetch is an honest cache miss, offline it fails and the fallback chain
+/// serves the load until the next online start.
 async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
     provider: &P,
 ) -> Result<Option<&'static ArchivedVocabularyBlob>, OrigaError> {
@@ -177,32 +226,82 @@ async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
     };
     let fetch_ms = now_ms() - fetch_start;
 
-    let (header, payload) = match split_blob(&blob) {
-        Ok(split) => split,
-        Err(e) => {
-            tracing::warn!("📖 Vocabulary blob header invalid: {e}");
-            return Ok(None);
+    let access_start = now_ms();
+    let view = match vocabulary_view_from_blob(&blob) {
+        Ok(view) => Some(view),
+        Err(VocabularyBlobError::StaleGeneration) => {
+            tracing::warn!("📖 Vocabulary blob of a stale generation, purging cache entry and refetching");
+            cdn_provider::purge_stale_blob_entry(VOCABULARY_BLOB_PATH).await;
+            match provider.fetch_bytes(VOCABULARY_BLOB_PATH).await {
+                Ok(refetched) => match vocabulary_view_from_blob(&refetched) {
+                    Ok(view) => Some(view),
+                    Err(rejection) => {
+                        tracing::warn!(
+                            "📖 Vocabulary blob rejected after refetch ({rejection:?}), using fallback chain"
+                        );
+                        None
+                    },
+                },
+                Err(e) => {
+                    tracing::warn!(
+                        "📖 Vocabulary blob refetch unavailable ({e:?}), using fallback chain"
+                    );
+                    None
+                },
+            }
+        },
+        Err(rejection) => {
+            tracing::warn!("📖 Vocabulary blob rejected ({rejection:?}), using fallback chain");
+            None
         },
     };
 
-    let expectation = guard_expectation_for(&VOCABULARY_CHUNK_PATHS);
+    let Some(view) = view else {
+        return Ok(None);
+    };
+    tracing::debug!(
+        "📖 Vocabulary blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
+        fetch_ms / 1000.0,
+        (now_ms() - access_start) / 1000.0
+    );
+    Ok(Some(view))
+}
+
+/// Deflated-JSON blob fast path shared by grammar/kanji/radicals (uwuwu
+/// #1484): fetch → inflate → header guard over the JSON source manifest
+/// hash → payload as UTF-8. These paths never carried another format, so
+/// there is no stale-generation heal — `Ok(None)` means "no usable blob,
+/// use the verified text fallback" (fetch error, guard mismatch, invalid
+/// header — all non-fatal).
+async fn load_deflated_json_via<P: CdnProvider>(
+    provider: &P,
+    blob_path: &str,
+    source_path: &str,
+    resource: &str,
+) -> Result<Option<String>, OrigaError> {
+    let deflated = match provider.fetch_bytes(blob_path).await {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            tracing::warn!("📖 {resource} blob unavailable ({e:?}), using JSON fallback");
+            return Ok(None);
+        },
+    };
+    let (header, payload) = match inflate_and_split(&deflated, SCHEMA_VERSION) {
+        Ok(split) => split,
+        Err(e) => {
+            tracing::warn!("📖 {resource} blob rejected ({e}), using JSON fallback");
+            return Ok(None);
+        },
+    };
+    let expectation = guard_expectation_for(&[source_path]);
     if !guard_matches(&header, &expectation) {
-        tracing::warn!("📖 Vocabulary blob stale relative to manifest, using fallback chain");
+        tracing::warn!("📖 {resource} blob stale relative to manifest, using JSON fallback");
         return Ok(None);
     }
-
-    let access_start = now_ms();
-    match access_vocabulary_blob(payload) {
-        Ok(view) => {
-            tracing::debug!(
-                "📖 Vocabulary blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
-                fetch_ms / 1000.0,
-                (now_ms() - access_start) / 1000.0
-            );
-            Ok(Some(view))
-        },
+    match String::from_utf8(payload) {
+        Ok(json) => Ok(Some(json)),
         Err(e) => {
-            tracing::warn!("📖 Vocabulary blob payload failed to access: {e:?}");
+            tracing::warn!("📖 {resource} blob payload is not UTF-8 ({e}), using JSON fallback");
             Ok(None)
         },
     }
@@ -217,9 +316,24 @@ pub async fn load_kanji() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading kanji...");
 
-    // Verified fetch: a cache body predating the file's manifest tracking
-    // never invalidates through the manifest diff — see fetch_text_verified.
-    let json = cdn_provider::fetch_text_verified("dictionary/kanji.json").await?;
+    // Fast path: the deflated-JSON blob (uwuwu #1484); its guard recompute
+    // off the manifest replaces the sha256 body pass of the verified fetch.
+    let json = match load_deflated_json_via(
+        cdn_provider(),
+        "dictionary/kanji.rkyv",
+        "dictionary/kanji.json",
+        "kanji",
+    )
+    .await?
+    {
+        Some(json) => json,
+        None => {
+            // Verified fetch: a cache body predating the file's manifest
+            // tracking never invalidates through the manifest diff — see
+            // fetch_text_verified.
+            cdn_provider::fetch_text_verified("dictionary/kanji.json").await?
+        },
+    };
     let data = KanjiData { kanji_json: json };
 
     yield_to_browser().await;
@@ -241,9 +355,24 @@ pub async fn load_grammar() -> Result<(), OrigaError> {
     // v3 corpus (#503 content pass): 677 rules, all four locales in one
     // file — the only grammar format on the CDN since the legacy
     // retirement (#583/#507/#482 removed v1, v2 and the KO/VI overlay).
-    // Verified fetch: a cache body predating the file's manifest tracking
-    // never invalidates through the manifest diff — see fetch_text_verified.
-    let json = cdn_provider::fetch_text_verified("grammar/grammar_v3.json").await?;
+    // Fast path: the deflated-JSON blob (uwuwu #1484); its guard recompute
+    // off the manifest replaces the sha256 body pass of the verified fetch.
+    let json = match load_deflated_json_via(
+        cdn_provider(),
+        "grammar/grammar_v3.rkyv",
+        "grammar/grammar_v3.json",
+        "grammar",
+    )
+    .await?
+    {
+        Some(json) => json,
+        None => {
+            // Verified fetch: a cache body predating the file's manifest
+            // tracking never invalidates through the manifest diff — see
+            // fetch_text_verified.
+            cdn_provider::fetch_text_verified("grammar/grammar_v3.json").await?
+        },
+    };
     let data = GrammarData { grammar_json: json };
 
     yield_to_browser().await;
@@ -295,9 +424,24 @@ pub async fn load_radicals() -> Result<(), OrigaError> {
     let start = now_ms();
     tracing::info!("📖 Loading radicals...");
 
-    // Verified fetch: a cache body predating the file's manifest tracking
-    // never invalidates through the manifest diff — see fetch_text_verified.
-    let json = cdn_provider::fetch_text_verified("dictionary/radicals.json").await?;
+    // Fast path: the deflated-JSON blob (uwuwu #1484); its guard recompute
+    // off the manifest replaces the sha256 body pass of the verified fetch.
+    let json = match load_deflated_json_via(
+        cdn_provider(),
+        "dictionary/radicals.rkyv",
+        "dictionary/radicals.json",
+        "radicals",
+    )
+    .await?
+    {
+        Some(json) => json,
+        None => {
+            // Verified fetch: a cache body predating the file's manifest
+            // tracking never invalidates through the manifest diff — see
+            // fetch_text_verified.
+            cdn_provider::fetch_text_verified("dictionary/radicals.json").await?
+        },
+    };
     let data = RadicalData {
         radicals_json: json,
     };
@@ -315,8 +459,10 @@ mod tests {
     use std::future::Future;
 
     use origa::dictionary::cdn_blob::{
-        BlobHeader, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes, sha256_bytes,
+        DEFLATED_RKYV_SCHEMA_VERSION, BlobHeader, SCHEMA_VERSION, build_blob,
+        manifest_guard_from_hex_hashes, sha256_bytes,
     };
+    use origa::dictionary::precompute_blob::deflate_blob;
     use origa::dictionary::vocabulary::{
         build_vocabulary_database_from_chunks, serialize_vocabulary_blob_to_rkyv,
     };
@@ -343,20 +489,25 @@ mod tests {
         }
     }
 
-    /// Recording mock over the external CDN boundary: canned bytes per path
-    /// plus a log of every requested path (asserts the fast path never
-    /// touches the JSON chunks).
+    /// Recording mock over the external CDN boundary: (path, bytes) pairs
+    /// consumed in request order — a request with no remaining canned
+    /// response for its path fails as "not stubbed" (an exhausted queue is
+    /// the offline-refetch branch of the stale-generation heal).
     struct MockCdn {
-        blob: Option<Vec<u8>>,
+        responses: RefCell<Vec<(String, Vec<u8>)>>,
         requested: RefCell<Vec<String>>,
     }
 
     impl MockCdn {
-        fn with_blob(blob: Option<Vec<u8>>) -> Self {
+        fn with_blob_responses(responses: Vec<(String, Vec<u8>)>) -> Self {
             Self {
-                blob,
+                responses: RefCell::new(responses),
                 requested: RefCell::new(Vec::new()),
             }
+        }
+
+        fn serving_blob(path: &str, bytes: Vec<u8>) -> Self {
+            Self::with_blob_responses(vec![(path.to_string(), bytes)])
         }
 
         fn requested_paths(&self) -> Vec<String> {
@@ -375,15 +526,28 @@ mod tests {
 
         fn fetch_bytes(&self, path: &str) -> impl Future<Output = Result<Vec<u8>, OrigaError>> {
             self.requested.borrow_mut().push(path.to_string());
-            let result = match (path, &self.blob) {
-                (VOCABULARY_BLOB_PATH, Some(bytes)) => Ok(bytes.clone()),
-                _ => Err(OrigaError::NetworkError {
+            let mut responses = self.responses.borrow_mut();
+            let position = responses
+                .iter()
+                .position(|(candidate, _)| candidate == path);
+            let result = position
+                .map(|index| responses.remove(index).1)
+                .ok_or(OrigaError::NetworkError {
                     url: path.to_string(),
                     reason: "not stubbed".to_string(),
-                }),
-            };
+                });
             std::future::ready(result)
         }
+    }
+
+    /// A deflated-rkyv generation blob (vocabulary wire format, #1484).
+    fn wrap_deflated_rkyv(schema: u32, payload: Vec<u8>, guard: [u8; 32]) -> Vec<u8> {
+        let header = BlobHeader {
+            schema_version: schema,
+            source_sha256: sha256_bytes(b"concatenated chunks"),
+            manifest_guard: guard,
+        };
+        deflate_blob(&build_blob(&header, &payload))
     }
 
     fn valid_blob() -> Vec<u8> {
@@ -404,18 +568,53 @@ mod tests {
         .collect();
         let hex_refs: Vec<&str> = hex_hashes.iter().map(String::as_str).collect();
 
+        wrap_deflated_rkyv(
+            DEFLATED_RKYV_SCHEMA_VERSION,
+            payload,
+            manifest_guard_from_hex_hashes(&hex_refs),
+        )
+    }
+
+    /// Raw-schema-2 blob bytes: what a released client cached before the
+    /// deflated generation shipped (the stale-generation heal input).
+    fn legacy_raw_blob() -> Vec<u8> {
+        let payload = serialize_vocabulary_blob_to_rkyv(
+            &build_vocabulary_database_from_chunks(chunk_data()).unwrap(),
+        )
+        .unwrap();
+        build_blob(
+            &BlobHeader {
+                schema_version: SCHEMA_VERSION,
+                source_sha256: sha256_bytes(b"concatenated chunks"),
+                manifest_guard: manifest_guard_from_hex_hashes(&[]),
+            },
+            &payload,
+        )
+    }
+
+    /// A deflated-JSON blob (grammar/kanji/radicals wire format, #1484).
+    /// The native tests run without a fetched manifest, so the guard is
+    /// `Unavailable` — trusted like every other cache entry offline.
+    fn deflated_json_blob(json: &str) -> Vec<u8> {
+        let hex = {
+            let digest = sha256_bytes(json.as_bytes());
+            digest
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>()
+        };
         let header = BlobHeader {
             schema_version: SCHEMA_VERSION,
-            source_sha256: sha256_bytes(b"concatenated chunks"),
-            manifest_guard: manifest_guard_from_hex_hashes(&hex_refs),
+            source_sha256: sha256_bytes(json.as_bytes()),
+            manifest_guard: manifest_guard_from_hex_hashes(&[&hex]),
         };
-        build_blob(&header, &payload)
+        deflate_blob(&build_blob(&header, json.as_bytes()))
     }
 
     #[tokio::test]
     async fn valid_blob_loads_database_without_fetching_chunks() {
         // Arrange
-        let provider = MockCdn::with_blob(Some(valid_blob()));
+        let provider = MockCdn::serving_blob(VOCABULARY_BLOB_PATH, valid_blob());
 
         // Act
         let view = load_vocabulary_from_cdn_blob(&provider)
@@ -438,7 +637,7 @@ mod tests {
     #[tokio::test]
     async fn missing_blob_yields_none_for_the_fallback_chain() {
         // Arrange
-        let provider = MockCdn::with_blob(None);
+        let provider = MockCdn::with_blob_responses(Vec::new());
 
         // Act
         let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
@@ -452,7 +651,7 @@ mod tests {
         // Arrange
         let mut blob = valid_blob();
         blob[0] = b'X';
-        let provider = MockCdn::with_blob(Some(blob));
+        let provider = MockCdn::serving_blob(VOCABULARY_BLOB_PATH, blob);
 
         // Act
         let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
@@ -462,25 +661,84 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn future_schema_version_yields_none_for_the_fallback_chain() {
-        // Arrange
-        let mut blob = valid_blob();
-        let version = SCHEMA_VERSION + 1;
-        blob[4..8].copy_from_slice(&version.to_le_bytes());
-        let provider = MockCdn::with_blob(Some(blob));
+    async fn stale_generation_blob_purges_and_heals_from_the_refetch() {
+        // Arrange: a released client cached the pre-#1484 raw blob; the
+        // refetch (post-purge cache miss) serves the new generation. The
+        // cache purge itself is a wasm Cache-API primitive — best-effort,
+        // exercised by the wasm suite.
+        let provider = MockCdn::with_blob_responses(vec![
+            (VOCABULARY_BLOB_PATH.to_string(), legacy_raw_blob()),
+            (VOCABULARY_BLOB_PATH.to_string(), valid_blob()),
+        ]);
+
+        // Act
+        let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
+
+        // Assert: the heal consumed both canned responses and the fresh
+        // generation served the load — no fallback-chain signals.
+        assert!(view.is_some(), "refetch after purge must heal the load");
+        assert_eq!(provider.requested_paths().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn stale_generation_blob_yields_none_when_the_refetch_fails() {
+        // Arrange: the stale blob is the only canned response — the refetch
+        // fails (offline) and the fallback chain serves the load.
+        let provider = MockCdn::serving_blob(VOCABULARY_BLOB_PATH, legacy_raw_blob());
 
         // Act
         let view = load_vocabulary_from_cdn_blob(&provider).await.unwrap();
 
         // Assert
         assert!(view.is_none());
+        assert_eq!(provider.requested_paths().len(), 2, "refetch happened");
+    }
+
+    #[tokio::test]
+    async fn deflated_json_blob_serves_the_payload_as_text() {
+        // Arrange
+        let json = r#"{"rules":[{"id":"g1"}]}"#;
+        let provider = MockCdn::serving_blob("grammar/grammar_v3.rkyv", deflated_json_blob(json));
+
+        // Act
+        let loaded = load_deflated_json_via(
+            &provider,
+            "grammar/grammar_v3.rkyv",
+            "grammar/grammar_v3.json",
+            "grammar",
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert_eq!(loaded.as_deref(), Some(json));
+    }
+
+    #[tokio::test]
+    async fn rejected_deflated_json_blob_yields_none_for_the_verified_fallback() {
+        // Arrange: bytes that do not inflate
+        let provider = MockCdn::serving_blob("dictionary/kanji.rkyv", b"garbage".to_vec());
+
+        // Act
+        let loaded = load_deflated_json_via(
+            &provider,
+            "dictionary/kanji.rkyv",
+            "dictionary/kanji.json",
+            "kanji",
+        )
+        .await
+        .unwrap();
+
+        // Assert
+        assert!(loaded.is_none());
     }
 
     /// Regression pin for the verified-fetch migration (task
     /// 20261107150931-k0c1rb7): `load_kanji`/`load_grammar`/`load_radicals`
-    /// must fetch through `fetch_text_verified`. The loaders have no
-    /// injection seam (global provider + OnceLock init), so the behavioral
-    /// coverage of the heal lives in `dictionary_verified_fetch_wasm_tests`;
+    /// must keep their JSON fallback on `fetch_text_verified`. The loaders
+    /// have no injection seam (global provider + OnceLock init), so the
+    /// behavioral coverage of the #1484 blob fast paths lives in the
+    /// MockCdn tests above and in `dictionary_verified_fetch_wasm_tests`;
     /// this pin catches a revert to plain `fetch_text` at the source level.
     /// Update the expectations together with the call sites.
     #[test]
