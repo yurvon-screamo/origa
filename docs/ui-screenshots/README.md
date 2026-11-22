@@ -7,6 +7,16 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| word-presentation | lesson-acquaintance-word | mobile | ru-RU | 390×844 | 2026-11-22T04:03:53.463Z | 24977069 | не загружен |
+| acquaintance-example | lesson-example | desktop | ru-RU | 1280×800 | 2026-11-22T03:51:05.263Z | 24977069 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--desktop-5e2afc49.png) |
+| word-training-front | lesson-acquaintance-word | mobile | ru-RU | 390×844 | 2026-11-22T03:29:57.615Z | 24977069 | не загружен |
+| word-training-audio-front | lesson-acquaintance-word | desktop | ru-RU | 1280×800 | 2026-11-22T03:04:08.808Z | 24977069 | не загружен |
+| word-training-answer | lesson-acquaintance-word | desktop | ru-RU | 1280×800 | 2026-11-22T03:04:05.329Z | 24977069 | не загружен |
+| word-training-front | lesson-acquaintance-word | desktop | ru-RU | 1280×800 | 2026-11-22T03:04:04.160Z | 24977069 | не загружен |
+| word-presentation | lesson-acquaintance-word | desktop | ru-RU | 1280×800 | 2026-11-22T03:04:00.576Z | 24977069 | не загружен |
+| acquaintance-example | lesson-example | mobile | ru-RU | 390×844 | 2026-11-22T02:46:53.974Z | 976f18b9 | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--mobile-688aa3fc.png) |
+| word-training-answer | lesson-acquaintance-word | mobile | ru-RU | 390×844 | 2026-11-22T02:40:52.616Z | 24977069 | не загружен |
+| word-training-audio-front | lesson-acquaintance-word | mobile | ru-RU | 390×844 | 2026-11-22T02:40:51.932Z | 24977069 | не загружен |
 | home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-12T05:30:37.615Z | 134aee1f | [png](https://s3.origa.uwuwu.net/pr-screenshots/aria-938/home-jlpt-details--home-jlpt-details--mobile-4d07763a.png) |
 | detail-viewport | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:27.281Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-viewport--mobile-642d31ec.png) |
 | detail-full | word-examples | mobile | ru-RU | 390×844 | 2026-11-12T05:30:26.958Z | 509f23bb | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--mobile-642d31ec.png) |
@@ -43,8 +53,6 @@
 | progress | onboarding-import-progress | mobile | ru-RU | 390×844 | 2026-11-10T13:05:34.321Z | 28e8360e | не загружен |
 | scoring | onboarding-import-progress | desktop | ru-RU | 1280×800 | 2026-11-10T13:05:17.361Z | 28e8360e | не загружен |
 | progress | onboarding-import-progress | desktop | ru-RU | 1280×800 | 2026-11-10T13:05:08.937Z | 28e8360e | не загружен |
-| home-jlpt-details | home-jlpt-details | mobile | ru-RU | 390×844 | 2026-11-10T21:35:33.029Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--mobile-d1691137.png) |
-| home-jlpt-details | home-jlpt-details | desktop | ru-RU | 1280×800 | 2026-11-10T21:33:43.181Z | c9c4f16e | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231404/home-jlpt-details--home-jlpt-details--desktop-cb7edead.png) |
 | detail-viewport | counters-detail | mobile | ru-RU | 390×844 | 2026-11-10T11:55:35.986Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--mobile-290c0c2f.png) |
 | detail-full | counters-detail | mobile | ru-RU | 417×1352 | 2026-11-10T11:55:35.842Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-full--mobile-6b7c81b7.png) |
 | detail-viewport | counters-detail | desktop | ru-RU | 1280×800 | 2026-11-10T11:53:05.583Z | f327bf84 | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-20261109231401/counters-detail--detail-viewport--desktop-7ae14d6e.png) |
@@ -87,8 +95,6 @@
 | acquaintance-training-answer-2 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-30T18:34:49.945Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--acquaintance-training-answer-2--desktop-cdea42e9.png) |
 | acquaintance-training-answer-1 | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-30T18:34:48.930Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--acquaintance-training-answer-1--desktop-3051be29.png) |
 | acquaintance-presentation | lesson-unification | desktop | ru-RU | 1280×800 | 2026-10-30T18:34:47.197Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--acquaintance-presentation--desktop-5e2afc49.png) |
-| acquaintance-example | lesson-example | mobile | ru-RU | 390×844 | 2026-10-30T18:27:21.429Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--mobile-688aa3fc.png) |
-| acquaintance-example | lesson-example | desktop | ru-RU | 1280×800 | 2026-10-30T18:22:30.214Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--desktop-5e2afc49.png) |
 | review-body-yesno-2 | lesson-review-body | mobile | ru-RU | 390×844 | 2026-10-30T18:20:18.330Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-yesno-2--mobile-8ae96e94.png) |
 | review-body-quiz-2 | lesson-review-body | desktop | ru-RU | 1280×800 | 2026-10-30T18:18:18.516Z | d727af7b | [png](https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-2--desktop-9162abb4.png) |
 | accuracy-chart | home-accuracy-chart | mobile | ru-RU | 390×844 | 2026-10-30T14:05:31.089Z | 77d1394b | [png](https://s3.origa.uwuwu.net/pr-screenshots/home-stats-accordion/home-accuracy-chart--accuracy-chart--mobile-280a170a.png) |

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-acquaintance-word",
+  "screen": "word-training-answer",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 97037,
+  "sha256": "ce13246fad22ffcdb5467c00c0163832174de9deaa7dfd20b33bd6c1c0a3cf67",
+  "capturedAt": "2026-11-22T02:40:52.616Z",
+  "commit": "249770690f6957fe37c80bd586686775d71d3434",
+  "baseURL": "http://localhost:11421",
+  "cdnBaseUrl": "http://localhost:18181",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}
