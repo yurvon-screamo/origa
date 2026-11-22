@@ -678,8 +678,6 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
-  overflow: hidden;
 }
 
 .home-feature-card__title {
@@ -816,7 +814,6 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -1000,7 +997,6 @@
   background: var(--bg-cream);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
 }
 
 .feat-step__text {
@@ -1791,7 +1787,6 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
 }
 
 .intg-card--featured {
