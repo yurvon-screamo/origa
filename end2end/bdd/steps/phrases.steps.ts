@@ -1,7 +1,80 @@
 import { expect } from "@playwright/test";
-import { When, Then } from "../fixtures";
+import { Given, When, Then } from "../fixtures";
 import { PhrasesPage, WordsPage } from "../../pages";
 import { waitUntilStable } from "../../helpers/wait";
+
+/**
+ * The injected study card's id (a syntactically valid ULID) — the same
+ * card the `phrase-dash-run` shots preset seeds.
+ */
+const DASH_RUN_CARD_ID = "PM4Q528M101GNGSPPPZCY2PHFH";
+
+Given(
+  "в профиле есть просроченная карточка фразы {string}",
+  async ({ page }, phraseId: string) => {
+    // Persisted-schema injection, the counter seed step's contract:
+    // db=origa, store=users, nested JSON string — a schema drift there
+    // needs a synchronous edit here. The words flow above has created
+    // the user row; the full /home navigation below re-reads the store
+    // with the patched card.
+    await page.evaluate(
+      ({ cardId, phraseId }) =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open("origa");
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const db = open.result;
+            const tx = db.transaction("users", "readwrite");
+            const cur = tx.objectStore("users").openCursor();
+            cur.onsuccess = () => {
+              const c = cur.result;
+              if (!c) return;
+              const v = c.value;
+              if (typeof v === "string" && v.includes('"email"')) {
+                try {
+                  const u = JSON.parse(v);
+                  u.knowledge_set = u.knowledge_set ?? {};
+                  u.knowledge_set.study_cards =
+                    u.knowledge_set.study_cards ?? {};
+                  u.knowledge_set.study_cards[cardId] = {
+                    card_id: cardId,
+                    card: { Phrase: { phrase_id: phraseId } },
+                    memory_history: {
+                      current_state: {
+                        stability: { value: 3.0 },
+                        difficulty: { value: 5.0 },
+                        next_review_date: "2020-01-01T00:00:00Z",
+                        card_state: "Review",
+                      },
+                      reps: 1,
+                      lapses: 0,
+                      easy_count: 0,
+                      good_count: 1,
+                      last_review_date: "2020-01-01T00:00:00Z",
+                      last_rating: "Good",
+                      consecutive_again: 0,
+                    },
+                  };
+                  c.update(JSON.stringify(u));
+                } catch {
+                  /* skip non-JSON rows */
+                }
+              }
+              c.continue();
+            };
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+          };
+        }),
+      { cardId: DASH_RUN_CARD_ID, phraseId },
+    );
+    await page.goto("/home");
+    await page.waitForURL(/\/home$/, { timeout: 120_000 });
+  },
+);
 
 When("пользователь открывает страницу фраз", async ({ page }) => {
   const phrasesPage = new PhrasesPage(page);
@@ -55,6 +128,29 @@ Then("отображаются кнопки фильтрации фраз", asyn
     page.getByTestId(/phrase.*filter|filter.*phrase/).first(),
   ).toBeVisible({ timeout: 10_000 });
 });
+
+Then(
+  "карточка фразы {string} отображается без тире-ранов",
+  async ({ page }, phraseText: string) => {
+    const item = page.getByTestId("phrases-card-item").first();
+    await expect(item).toBeVisible({ timeout: 60_000 });
+
+    // The phrase text renders through TranslatorText: the one-off
+    // dictionary warmup shows the loader first (#521) — wait it out.
+    await expect(item.getByTestId("translator-dict-loading")).toHaveCount(0, {
+      timeout: 60_000,
+    });
+
+    // Token surfaces concatenate in the DOM, so the clean phrase reads
+    // as one string; the dirty prod bytes must never reach the card.
+    const body = (await item.textContent()) ?? "";
+    expect(body).toContain(phraseText);
+    expect(
+      /[\u{2500}\u{2015}\u{2014}]{2}/u.test(body),
+      `dash-run artifact leaked onto the rendered card: ${body}`,
+    ).toBe(false);
+  },
+);
 
 Then("карточки фраз имеют непустой текст", async ({ page }) => {
   await expect(page.getByTestId("phrases-card-item").first()).toBeVisible({
