@@ -14,11 +14,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import zlib
 from pathlib import Path
 
 import pytest
 
 from deploy_cdn import (
+    PHRASE_BUNDLE_COUNT,
     RKYV_BLOB_SOURCES,
     RKYV_SCHEMA_VERSION,
     VERSIONED_FILES,
@@ -27,6 +29,7 @@ from deploy_cdn import (
     compute_files_to_upload,
     generate_manifest,
     parse_rkyv_header,
+    phrase_bundle_blob_freshness_problems,
     rkyv_blob_freshness_problems,
     sha256_hex,
 )
@@ -333,6 +336,131 @@ def test_missing_source_file_is_reported(tmp_path: Path):
     assert problems == [
         "dictionary/vocabulary.rkyv: source dictionary/chunk_05.json not found"
     ]
+
+
+# phrase data bundle blobs (uwuwu #1451, deflated, chunk-guarded)
+# ---------------------------------------------------------------------------
+
+BUNDLE_CHUNKS: dict[str, bytes] = {
+    "p0000": b'{"a": 1}',
+    "p0001": b'{"b": 2}',
+}
+BUNDLE_JSON = json.dumps(
+    {key: json.loads(value) for key, value in sorted(BUNDLE_CHUNKS.items())},
+    separators=(",", ":"),
+).encode()
+
+
+def _bundle_problems(message: str) -> list[str]:
+    """The freshness check walks every bundle — a per-bundle defect repeats
+    per index (the fixture corpus deploys all PHRASE_BUNDLE_COUNT bundles)."""
+    return [message.format(index=index) for index in range(PHRASE_BUNDLE_COUNT)]
+
+
+def _write_bundle_corpus(tmp_path: Path) -> None:
+    (tmp_path / "phrases/data").mkdir(parents=True, exist_ok=True)
+    for key, content in BUNDLE_CHUNKS.items():
+        (tmp_path / f"phrases/data/{key}.json").write_bytes(content)
+    for index in range(PHRASE_BUNDLE_COUNT):
+        (tmp_path / f"phrases/data_bundle_{index}.json").write_bytes(BUNDLE_JSON)
+
+
+def _write_bundle_blob(
+    tmp_path: Path,
+    *,
+    schema_version: int = RKYV_SCHEMA_VERSION,
+    source_sha: bytes | None = None,
+    guard: bytes | None = None,
+    payload: bytes = BUNDLE_JSON,
+    deflate: bool = True,
+) -> None:
+    source_sha = source_sha or hashlib.sha256(BUNDLE_JSON).digest()
+    # Production wiring (review round 2): the guard binds to the source JSON
+    # hex — the VERSIONED_FILES manifest path. `guard` overrides it to
+    # simulate a foreign-generation blob.
+    guard = (
+        guard
+        or hashlib.sha256(hashlib.sha256(BUNDLE_JSON).hexdigest().encode()).digest()
+    )
+    header = b"ORFG" + schema_version.to_bytes(4, "little") + source_sha + guard
+    body = header + payload
+    for index in range(PHRASE_BUNDLE_COUNT):
+        blob_path = tmp_path / f"phrases/data_bundle_{index}.v3.rkyv"
+        blob_path.parent.mkdir(parents=True, exist_ok=True)
+        blob_path.write_bytes(zlib.compress(body, wbits=-15) if deflate else body)
+
+
+def test_fresh_bundle_blob_produces_no_problems(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == []
+
+
+def test_missing_bundle_blob_is_reported(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == _bundle_problems(
+        "phrases/data_bundle_{index}.v3.rkyv: missing (run utils build-cdn-rkyv)"
+    )
+
+
+def test_stale_bundle_blob_hash_is_reported(tmp_path: Path):
+    # Arrange: bundle 0's source changed after the blob was built
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path)
+    (tmp_path / "phrases/data_bundle_0.json").write_bytes(BUNDLE_JSON + b" ")
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == [
+        "phrases/data_bundle_0.v3.rkyv: stale relative to data_bundle_0.json"
+    ]
+
+
+def test_bundle_blob_guard_mismatch_is_reported(tmp_path: Path):
+    # Arrange: a blob whose guard binds to a foreign generation (deploy
+    # window / stale build) — the source hash moved on.
+    _write_bundle_corpus(tmp_path)
+    foreign_guard = hashlib.sha256(b"older generation").digest()
+    _write_bundle_blob(tmp_path, guard=foreign_guard)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == _bundle_problems(
+        "phrases/data_bundle_{index}.v3.rkyv: manifest_guard mismatch against the source hash"
+    )
+
+
+def test_bundle_blob_not_deflated_is_reported(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path, deflate=False)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems, "raw header bytes must fail the inflate check"
+
+
+def test_bundle_blobs_are_registered_as_versioned_files():
+    for index in range(PHRASE_BUNDLE_COUNT):
+        assert f"phrases/data_bundle_{index}.v3.rkyv" in VERSIONED_FILES
 
 
 class TestGenerateKanjiArtManifest:

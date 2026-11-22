@@ -160,9 +160,18 @@ impl AuthStore {
         &self.client
     }
 
-    /// Load user after successful authentication
+    /// Load user after successful authentication.
+    ///
+    /// When neither the local store nor the server holds a user record for
+    /// the signed-in session, the profile is bootstrapped through the same
+    /// `get_or_create_profile` a fresh login uses (owner decision in
+    /// #1449, 21.11.2026): a valid session must not strand the user on the
+    /// login form. The #492 guard inside the bootstrap refuses to mint
+    /// while a live remote record exists, so the canonical row is never
+    /// shadowed by an empty profile.
     async fn load_user_after_auth(
         &self,
+        i18n: &I18nContext<Locale>,
         user_signal: RwSignal<Option<User>>,
     ) -> Result<(), OrigaError> {
         match self.repository.get_current_user().await {
@@ -172,11 +181,33 @@ impl AuthStore {
                 Ok(())
             },
             Ok(None) => {
-                if self.repository.merge_current_user().await.is_ok()
-                    && let Ok(Some(user)) = self.repository.get_current_user().await
-                {
-                    install_user_card_precompute(&user);
-                    user_signal.set(Some(user));
+                // The merge inside the bootstrap seeds the local store from
+                // the remote row when one exists; when even that yields
+                // nothing, the bootstrap mints a fresh profile from the
+                // session and pushes the canonical record to the server.
+                // An OAuth callback can persist a session with an empty
+                // email (the product treats it as an error via
+                // `email_not_in_token`); minting from such a session would
+                // push a canonical record with empty email/username — the
+                // same guard the sibling call sites carry.
+                let email = match get_session_async().await {
+                    Some(session) if !session.email.is_empty() => session.email,
+                    Some(_) => {
+                        tracing::warn!(
+                            "Boot profile bootstrap skipped: session has an empty email"
+                        );
+                        return Ok(());
+                    },
+                    None => return Ok(()),
+                };
+                match get_or_create_profile(self, &email, i18n).await {
+                    Ok(user) => {
+                        install_user_card_precompute(&user);
+                        user_signal.set(Some(user));
+                    },
+                    Err(e) => {
+                        tracing::error!("Boot profile bootstrap failed: {e}");
+                    },
                 }
                 Ok(())
             },
@@ -193,7 +224,9 @@ impl AuthStore {
 
     /// Check existing session from LocalStorage on app start.
     /// Offline-first: loads user from IndexedDB immediately, validates session in background.
-    pub fn check_session(&self) {
+    /// The `i18n` context seeds the native language of a bootstrapped profile
+    /// (see [`Self::load_user_after_auth`]) the same way the login screen does.
+    pub fn check_session(&self, i18n: &I18nContext<Locale>) {
         let user_signal = self.user;
         let is_checking = self.is_checking_session;
 
@@ -206,6 +239,9 @@ impl AuthStore {
         let client = self.client.clone();
         let repository = self.repository.clone();
         let store = self.clone();
+        // I18nContext is Copy: a plain copy moves no state and keeps the
+        // caller's context usable.
+        let i18n = *i18n;
 
         spawn_local(async move {
             let session = match get_session_async().await {
@@ -226,7 +262,7 @@ impl AuthStore {
                             session.email,
                             user.email()
                         );
-                        let _ = store.load_user_after_auth(user_signal).await;
+                        let _ = store.load_user_after_auth(&i18n, user_signal).await;
                         is_checking.set(false);
                         return;
                     }
@@ -261,7 +297,7 @@ impl AuthStore {
                                             e
                                         );
                                     }
-                                    let _ = store.load_user_after_auth(user_signal_bg).await;
+                                    let _ = store.load_user_after_auth(&i18n, user_signal_bg).await;
                                 },
                                 Err(AuthError::SessionExpired) => {
                                     tracing::warn!("Session definitively expired, logging out");
@@ -281,12 +317,12 @@ impl AuthStore {
                 },
                 Ok(None) => {
                     tracing::debug!("No local user found, fetching from server");
-                    let _ = store.load_user_after_auth(user_signal).await;
+                    let _ = store.load_user_after_auth(&i18n, user_signal).await;
                     is_checking.set(false);
                 },
                 Err(e) => {
                     tracing::error!("Failed to read local user: {:?}", e);
-                    let _ = store.load_user_after_auth(user_signal).await;
+                    let _ = store.load_user_after_auth(&i18n, user_signal).await;
                     is_checking.set(false);
                 },
             }
