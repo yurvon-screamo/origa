@@ -290,8 +290,10 @@ fn phrase_bundle_blob_path(index: usize) -> String {
 /// raw JSON bundles (~5x smaller on the wire). The payload is the
 /// deterministic bundle JSON itself — client extraction parses generic JSON
 /// and splits it into per-chunk cache entries. The manifest guard binds the
-/// blob to the chunk files (phrases/data/pXXXX.json) the bundle was
-/// assembled from, so a deploy-window bundle is rejected client-side.
+/// blob to phrases/data_bundle_N.json — the JSON source the bundle was
+/// built from, a VERSIONED_FILES path that always ships in the client
+/// manifest (the per-chunk files do NOT: phrases/data is a SYNC_DIR, so
+/// chunk-based guards would be a guaranteed Mismatch on every client).
 fn build_phrase_bundle_blobs(cdn_dir: &Path) -> Result<bool, String> {
     let mut rebuilt = false;
     for index in 0..PHRASE_BUNDLE_COUNT {
@@ -305,10 +307,13 @@ fn build_phrase_bundle_blob(cdn_dir: &Path, index: usize) -> Result<bool, String
     let blob_path = phrase_bundle_blob_path(index);
 
     let source = read(cdn_dir, &source_path)?;
+    let source_hex = sha256_hex(&source);
     let source_hash = sha256_raw(&source);
+    let expected_guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
 
-    // Freshness check BEFORE the guard derivation: a fresh blob costs one
-    // read + inflate, not a re-read of its 34 chunk files.
+    // Freshness check BEFORE the write: schema, source hash AND the guard
+    // scheme itself — a blob built by an older guard derivation (e.g. the
+    // chunk-based one before review round 2) must regenerate, not skip.
     let existing = read(cdn_dir, &blob_path)
         .ok()
         .and_then(|deflated| inflate_blob(&deflated).ok());
@@ -316,17 +321,18 @@ fn build_phrase_bundle_blob(cdn_dir: &Path, index: usize) -> Result<bool, String
         existing.as_deref().map(split_blob),
         Some(Ok((header, _))) if header.schema_version == SCHEMA_VERSION
             && header.source_sha256 == source_hash
+            && header.manifest_guard == expected_guard
     );
     if is_fresh {
         tracing::info!("{blob_path} is fresh, skipping regeneration");
         return Ok(false);
     }
 
-    let manifest_guard = phrase_bundle_manifest_guard(cdn_dir, &source)?;
+    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
     let header = BlobHeader {
         schema_version: SCHEMA_VERSION,
         source_sha256: source_hash,
-        manifest_guard,
+        manifest_guard: guard,
     };
     let built = build_blob(&header, &source);
     let deflated = deflate_blob(&built);
@@ -337,24 +343,6 @@ fn build_phrase_bundle_blob(cdn_dir: &Path, index: usize) -> Result<bool, String
         deflated_len as f64 / 1024.0 / 1024.0
     );
     Ok(true)
-}
-
-/// Guard over the chunk files the bundle contains: the bundle JSON keys
-/// (sorted) name phrases/data/pXXXX.json files whose manifest hashes feed
-/// the same derivation the client recomputes from a fetched manifest.
-fn phrase_bundle_manifest_guard(cdn_dir: &Path, bundle_json: &[u8]) -> Result<[u8; 32], String> {
-    let text = String::from_utf8(bundle_json.to_vec())
-        .map_err(|_| "phrase bundle source is not valid UTF-8".to_string())?;
-    let bundle: std::collections::BTreeMap<String, serde_json::Value> =
-        serde_json::from_str(&text).map_err(|e| format!("failed to parse phrase bundle: {e}"))?;
-
-    let mut hex_hashes = Vec::with_capacity(bundle.len());
-    for key in bundle.keys() {
-        let chunk = read(cdn_dir, &format!("phrases/data/{key}.json"))?;
-        hex_hashes.push(sha256_hex(&chunk));
-    }
-    let hex_refs: Vec<&str> = hex_hashes.iter().map(String::as_str).collect();
-    Ok(cdn_blob::manifest_guard_from_hex_hashes(&hex_refs))
 }
 
 fn build_pitch_index_blob(cdn_dir: &Path) -> Result<bool, String> {
@@ -550,33 +538,25 @@ mod tests {
         let dir = temp_cdn(&all_sources());
         build_phrase_bundle_blob(&dir, 0).unwrap();
 
-        // Act: edit the bundle source — the new chunk key makes the guard
-        // derivation read phrases/data/p0002.json, which does not exist yet.
+        // Act: edit the bundle source
         let path = dir.join(phrase_bundle_source_path(0));
         let mut json = String::from_utf8(fs::read(&path).unwrap()).unwrap();
         json.pop();
         json.push_str(r#","p0002":[]}"#);
         fs::write(&path, json).unwrap();
-        let missing_chunk = build_phrase_bundle_blob(&dir, 0);
-
-        // The chunk file lands on disk (bundle_phrases_data.py always runs
-        // against a complete chunk directory) — now the rebuild succeeds.
-        fs::write(dir.join("phrases/data/p0002.json"), b"[]").unwrap();
         let rebuilt = build_phrase_bundle_blob(&dir, 0).unwrap();
 
         // Assert
-        assert!(
-            missing_chunk.is_err(),
-            "missing chunk fails the guard derivation loudly"
-        );
         assert!(rebuilt, "stale bundle blob is regenerated");
 
         fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
-    fn phrase_bundle_guard_binds_to_chunk_hashes() {
-        // Arrange
+    fn phrase_bundle_guard_binds_to_the_source_json_hash() {
+        // Arrange: the guard must bind to phrases/data_bundle_N.json — the
+        // VERSIONED_FILES source whose hash ships in the client manifest
+        // (chunk paths are SYNC_DIR content and never reach the manifest).
         let dir = temp_cdn(&all_sources());
         build_phrase_bundle_blob(&dir, 0).unwrap();
 
@@ -584,14 +564,13 @@ mod tests {
         let deflated = fs::read(dir.join(phrase_bundle_blob_path(0))).unwrap();
         let inflated = inflate_blob(&deflated).unwrap();
         let (header, payload) = split_blob(&inflated).unwrap();
+        let source = fs::read(dir.join(phrase_bundle_source_path(0))).unwrap();
 
-        // Assert: the guard equals sha256 over the sorted chunk hash hexes
-        let expected = cdn_blob::manifest_guard_from_hex_hashes(&[
-            &sha256_hex(b"{\"i\":\"01A\",\"t\":[\"hello\"],\"c\":0}"),
-            &sha256_hex(b"{\"i\":\"01B\",\"t\":[\"world\"],\"c\":0}"),
-        ]);
+        // Assert
+        let expected = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&source)]);
         assert_eq!(header.manifest_guard, expected);
-        assert_eq!(payload, b"{\"p0000\":{\"i\":\"01A\",\"t\":[\"hello\"],\"c\":0},\"p0001\":{\"i\":\"01B\",\"t\":[\"world\"],\"c\":0}}");
+        assert_eq!(header.source_sha256, sha256_raw(&source));
+        assert_eq!(payload, &source);
 
         fs::remove_dir_all(&dir).ok();
     }

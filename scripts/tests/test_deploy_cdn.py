@@ -375,14 +375,12 @@ def _write_bundle_blob(
     deflate: bool = True,
 ) -> None:
     source_sha = source_sha or hashlib.sha256(BUNDLE_JSON).digest()
+    # Production wiring (review round 2): the guard binds to the source JSON
+    # hex — the VERSIONED_FILES manifest path. `guard` overrides it to
+    # simulate a foreign-generation blob.
     guard = (
         guard
-        or hashlib.sha256(
-            "".join(
-                hashlib.sha256(BUNDLE_CHUNKS[key]).hexdigest()
-                for key in sorted(BUNDLE_CHUNKS)
-            ).encode()
-        ).digest()
+        or hashlib.sha256(hashlib.sha256(BUNDLE_JSON).hexdigest().encode()).digest()
     )
     header = b"ORFG" + schema_version.to_bytes(4, "little") + source_sha + guard
     body = header + payload
@@ -433,32 +431,18 @@ def test_stale_bundle_blob_hash_is_reported(tmp_path: Path):
 
 
 def test_bundle_blob_guard_mismatch_is_reported(tmp_path: Path):
-    # Arrange: chunk files changed after the blobs were built (guard stale)
+    # Arrange: a blob whose guard binds to a foreign generation (deploy
+    # window / stale build) — the source hash moved on.
     _write_bundle_corpus(tmp_path)
-    _write_bundle_blob(tmp_path)
-    (tmp_path / "phrases/data/p0001.json").write_bytes(b'{"b": 3}')
+    foreign_guard = hashlib.sha256(b"older generation").digest()
+    _write_bundle_blob(tmp_path, guard=foreign_guard)
 
     # Act
     problems = phrase_bundle_blob_freshness_problems(tmp_path)
 
     # Assert
     assert problems == _bundle_problems(
-        "phrases/data_bundle_{index}.v3.rkyv: manifest_guard mismatch against chunk files"
-    )
-
-
-def test_bundle_blob_missing_chunk_source_is_reported(tmp_path: Path):
-    # Arrange
-    _write_bundle_corpus(tmp_path)
-    _write_bundle_blob(tmp_path)
-    (tmp_path / "phrases/data/p0001.json").unlink()
-
-    # Act
-    problems = phrase_bundle_blob_freshness_problems(tmp_path)
-
-    # Assert
-    assert problems == _bundle_problems(
-        "phrases/data_bundle_{index}.v3.rkyv: chunk source p0001.json missing"
+        "phrases/data_bundle_{index}.v3.rkyv: manifest_guard mismatch against the source hash"
     )
 
 

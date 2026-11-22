@@ -607,8 +607,10 @@ def _single_bundle_blob_problem(cdn_dir: Path, index: int) -> str | None:
 
     Mirrors the builder: inflate the stored bytes, verify the header (schema
     + sha256 of phrases/data_bundle_N.json) and the manifest_guard over the
-    chunk files the bundle contains (the bundle JSON keys name the
-    phrases/data/pXXXX.json sources).
+    source JSON hex — the VERSIONED_FILES path that ships in the client
+    manifest (review round 2: chunk files are SYNC_DIR content, their paths
+    never reach the manifest, so a chunk-based guard is a guaranteed client
+    Mismatch).
     """
     blob_rel = f"phrases/data_bundle_{index}.v3.rkyv"
     blob = cdn_dir / blob_rel
@@ -627,19 +629,15 @@ def _single_bundle_blob_problem(cdn_dir: Path, index: int) -> str | None:
     source = cdn_dir / f"phrases/data_bundle_{index}.json"
     if not source.is_file():
         return f"{blob_rel}: source data_bundle_{index}.json not found"
-    if hashlib.sha256(source.read_bytes()).digest() != inflated[8:40]:
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).digest() != inflated[8:40]:
         return f"{blob_rel}: stale relative to data_bundle_{index}.json"
 
-    bundle = json.loads(source.read_text(encoding="utf-8"))
-    chunk_hashes: list[str] = []
-    for key in sorted(bundle):
-        chunk = cdn_dir / f"phrases/data/{key}.json"
-        if not chunk.is_file():
-            return f"{blob_rel}: chunk source {key}.json missing"
-        chunk_hashes.append(hashlib.sha256(chunk.read_bytes()).hexdigest())
-    expected_guard = hashlib.sha256("".join(chunk_hashes).encode()).digest()
+    expected_guard = hashlib.sha256(
+        hashlib.sha256(source_bytes).hexdigest().encode()
+    ).digest()
     if expected_guard != inflated[40:72]:
-        return f"{blob_rel}: manifest_guard mismatch against chunk files"
+        return f"{blob_rel}: manifest_guard mismatch against the source hash"
     return None
 
 

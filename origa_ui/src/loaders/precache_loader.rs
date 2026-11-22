@@ -281,9 +281,11 @@ fn parse_phrase_bundle_json(
 }
 
 /// Pure blob-to-chunks core: inflate, validate the header, verify the
-/// manifest guard over the chunk hashes and parse the generic JSON payload.
-/// The guard expectation is derived from the payload's own chunk keys —
-/// exactly the paths the manifest lists for the files the bundle contains.
+/// manifest guard and parse the generic JSON payload. The guard binds the
+/// blob to phrases/data_bundle_N.json — a VERSIONED_FILES path that always
+/// ships in the client manifest (review round 2: chunk-file paths do NOT —
+/// phrases/data is a SYNC_DIR, so a chunk-based guard is a guaranteed
+/// Mismatch and a silent ~80 MB JSON re-download on every precache pass).
 fn phrase_bundle_chunks_from_blob(
     deflated: &[u8],
     bundle_idx: usize,
@@ -294,33 +296,28 @@ fn phrase_bundle_chunks_from_blob(
     let (header, payload) = split_blob(&inflated).map_err(|e| OrigaError::PhraseParseError {
         reason: format!("phrase bundle {bundle_idx} blob header invalid: {e}"),
     })?;
-    let json = std::str::from_utf8(payload).map_err(|e| OrigaError::PhraseParseError {
-        reason: format!("phrase bundle {bundle_idx} blob payload is not UTF-8: {e}"),
-    })?;
-    let chunks = parse_phrase_bundle_json(json, bundle_idx)?;
-
-    let chunk_paths: Vec<String> = chunks
-        .keys()
-        .map(|key| format!("phrases/data/{key}.json"))
-        .collect();
-    let path_refs: Vec<&str> = chunk_paths.iter().map(String::as_str).collect();
-    phrase_bundle_chunks_with_expectation(chunks, &header, &guard_expectation_for(&path_refs))
+    let source_path = phrase_bundle_json_path(bundle_idx);
+    let expectation = guard_expectation_for(&[&source_path]);
+    phrase_bundle_chunks_with_expectation(&header, &expectation, payload, bundle_idx)
 }
 
-/// Testable core: the guard expectation is injected (the process manifest
-/// is a OnceLock the unit tests cannot prime per-case). Returning the
-/// parsed chunks only after the guard passes.
+/// Testable core: guard first, parse after — the process manifest is a
+/// OnceLock the unit tests cannot prime per-case (phrase_loader pattern).
 fn phrase_bundle_chunks_with_expectation(
-    chunks: std::collections::BTreeMap<String, serde_json::Value>,
     header: &cdn_blob::BlobHeader,
     expectation: &cdn_blob::GuardExpectation,
+    payload: &[u8],
+    bundle_idx: usize,
 ) -> Result<std::collections::BTreeMap<String, serde_json::Value>, OrigaError> {
     if !guard_matches(header, expectation) {
         return Err(OrigaError::PhraseParseError {
             reason: "phrase data bundle blob stale relative to manifest".to_string(),
         });
     }
-    Ok(chunks)
+    let json = std::str::from_utf8(payload).map_err(|e| OrigaError::PhraseParseError {
+        reason: format!("phrase bundle {bundle_idx} blob payload is not UTF-8: {e}"),
+    })?;
+    parse_phrase_bundle_json(json, bundle_idx)
 }
 
 /// Release the bundle copy once its chunks are cached: the blob entry
@@ -551,17 +548,17 @@ mod tests {
         serde_json::to_string(chunks).unwrap()
     }
 
-    /// Chunk-hash hex the tests bind guards to (deterministic fake sources).
-    fn chunk_hash_hex(key: &str, generation: &str) -> String {
-        let source = format!("{generation}{key}");
-        origa::dictionary::cdn_blob::sha256_bytes(source.as_bytes())
+    fn hex_digest(data: &[u8]) -> String {
+        origa::dictionary::cdn_blob::sha256_bytes(data)
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
     }
 
-    /// Build a deflated bundle blob; `guard_hashes` overrides the guard to
-    /// simulate a stale (deploy-window) blob bound to a foreign generation.
+    /// Build a deflated bundle blob with the production guard wiring
+    /// (manifest_guard = sha256 over the hex hash of the source JSON);
+    /// `guard_hashes` overrides it to simulate a stale (deploy-window)
+    /// blob bound to a foreign generation.
     fn build_bundle_blob(
         chunks: &std::collections::BTreeMap<String, serde_json::Value>,
         guard_hashes: Option<Vec<String>>,
@@ -572,8 +569,7 @@ mod tests {
         use origa::dictionary::precompute_blob::deflate_blob;
 
         let json = bundle_json(chunks);
-        let hexes: Vec<String> = guard_hashes
-            .unwrap_or_else(|| chunks.keys().map(|key| chunk_hash_hex(key, "")).collect());
+        let hexes: Vec<String> = guard_hashes.unwrap_or_else(|| vec![hex_digest(json.as_bytes())]);
         let refs: Vec<&str> = hexes.iter().map(String::as_str).collect();
         let header = BlobHeader {
             schema_version: SCHEMA_VERSION,
@@ -583,16 +579,14 @@ mod tests {
         deflate_blob(&cdn_blob::build_blob(&header, json.as_bytes()))
     }
 
-    /// The expectation the client derives in production: per-path hex hashes
-    /// (the manifest hashes for the chunk files the bundle contains).
-    fn expectation_from_chunk_hashes(
+    /// The expectation the client derives in production from the fetched
+    /// manifest for the bundle's source path (injectable form of
+    /// `guard_expectation_for` — the OnceLock cannot be primed per-case).
+    fn expectation_from_source_json(
         chunks: &std::collections::BTreeMap<String, serde_json::Value>,
     ) -> cdn_blob::GuardExpectation {
-        let hashes: Vec<Option<String>> = chunks
-            .keys()
-            .map(|key| Some(chunk_hash_hex(key, "")))
-            .collect();
-        cdn_blob::guard_expectation(Some(&hashes))
+        let hex = hex_digest(bundle_json(chunks).as_bytes());
+        cdn_blob::guard_expectation(Some(&[Some(hex)]))
     }
 
     #[tokio::test]
@@ -654,12 +648,13 @@ mod tests {
     }
 
     #[test]
-    fn phrase_bundle_blob_guard_is_verified_against_chunk_hashes() {
-        // Arrange: a blob built with the chunk-bound guard plus the client
-        // expectation derived from the same chunk hashes — production wiring.
+    fn phrase_bundle_blob_guard_is_verified_against_the_source_hash() {
+        // Arrange: a blob built with the source-bound guard plus the client
+        // expectation derived from the same source hex — the production
+        // wiring (guard path = phrases/data_bundle_N.json, VERSIONED_FILES).
         let chunks = sample_chunks();
         let deflated = build_bundle_blob(&chunks, None);
-        let expectation = expectation_from_chunk_hashes(&chunks);
+        let expectation = expectation_from_source_json(&chunks);
 
         // Act: inflate + header + guard, exactly as the client core does.
         let inflated = inflate_blob(&deflated).unwrap();
@@ -667,30 +662,25 @@ mod tests {
 
         // Assert: the guard matches and the payload parses into the chunks.
         assert!(guard_matches(&header, &expectation));
-        let parsed: std::collections::BTreeMap<String, serde_json::Value> =
-            serde_json::from_slice(payload).unwrap();
+        let parsed =
+            phrase_bundle_chunks_with_expectation(&header, &expectation, payload, 0).unwrap();
         assert_eq!(parsed, chunks);
     }
 
     #[test]
     fn stale_guard_is_rejected_by_the_injected_expectation() {
         // Arrange: blob bound to a foreign generation, expectation bound to
-        // the real chunk hashes (the phrase_loader injectable pattern — the
+        // the real source hash (the phrase_loader injectable pattern — the
         // process manifest OnceLock cannot be primed per-case).
         let chunks = sample_chunks();
-        let foreign_hashes: Vec<String> = chunks
-            .keys()
-            .map(|key| chunk_hash_hex(key, "older generation "))
-            .collect();
+        let foreign_hashes: Vec<String> = vec![hex_digest(b"older generation")];
         let deflated = build_bundle_blob(&chunks, Some(foreign_hashes));
-        let expectation = expectation_from_chunk_hashes(&chunks);
+        let expectation = expectation_from_source_json(&chunks);
 
         // Act
         let inflated = inflate_blob(&deflated).unwrap();
         let (header, payload) = split_blob(&inflated).unwrap();
-        let parsed: std::collections::BTreeMap<String, serde_json::Value> =
-            serde_json::from_slice(payload).unwrap();
-        let rejected = phrase_bundle_chunks_with_expectation(parsed, &header, &expectation);
+        let rejected = phrase_bundle_chunks_with_expectation(&header, &expectation, payload, 0);
 
         // Assert
         assert!(rejected.is_err(), "a stale guard must be rejected");
