@@ -607,6 +607,28 @@ pub async fn is_cached(path: &str) -> bool {
     !result.is_null() && !result.is_undefined()
 }
 
+/// Delete a single entry from the CDN Cache API (uwuwu #1451): precache
+/// cleanup removes legacy phrase JSON keys after their blob replacements
+/// are cached, so the double-stored bundle copies stop occupying the
+/// storage budget. Best-effort by contract — callers log failures.
+pub async fn delete_from_cache(path: &str) -> Result<(), OrigaError> {
+    let cache = open_cache().await?;
+    let url = cdn_cache_url(&ensure_leading_slash(path));
+    let request =
+        web_sys::Request::new_with_str(&url).map_err(|e| OrigaError::RepositoryError {
+            reason: format!(
+                "Failed to create cache delete request for {path:?}: {:?}",
+                e
+            ),
+        })?;
+    JsFuture::from(cache.delete_with_request(&request))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to delete {path:?} from cache: {:?}", e),
+        })?;
+    Ok(())
+}
+
 /// Store arbitrary text in the CDN Cache API under the given path.
 /// Used by bundle extraction: download a bundle, parse it, then store
 /// individual chunks in cache so that lazy readers (phrase_data_loader)
