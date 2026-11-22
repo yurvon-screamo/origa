@@ -133,6 +133,8 @@ fn normalize_translation(raw: &str) -> String {
 /// a continuous line across the card (#914). Single dashes are legitimate
 /// punctuation (dialogue dashes in ja/ru/en) and survive, as do runs of
 /// the katakana prolonged-sound mark ー (U+30FC — a different codepoint).
+/// The whole string is trimmed unconditionally — including inputs without
+/// any dash runs; the caller contract is "clean display text".
 pub fn sanitize_dash_runs(text: &str) -> String {
     fn is_dash_char(c: char) -> bool {
         matches!(c, '\u{2500}' | '\u{2015}' | '\u{2014}')
@@ -140,18 +142,21 @@ pub fn sanitize_dash_runs(text: &str) -> String {
 
     let mut out = String::with_capacity(text.len());
     let mut run = String::new();
+    let mut run_len = 0usize;
     for c in text.chars() {
         if is_dash_char(c) {
             run.push(c);
+            run_len += 1;
         } else {
-            if run.chars().count() < 2 {
+            if run_len < 2 {
                 out.push_str(&run);
             }
             run.clear();
+            run_len = 0;
             out.push(c);
         }
     }
-    if run.chars().count() < 2 {
+    if run_len < 2 {
         out.push_str(&run);
     }
     out.trim().to_string()
