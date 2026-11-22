@@ -21,7 +21,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use origa::dictionary::cdn_blob::{
-    self, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, BlobHeader, build_blob, split_blob,
+    self, BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob, split_blob,
     split_blob_with_schema,
 };
 use origa::dictionary::furigana_dict::{
@@ -303,9 +303,7 @@ fn build_single_source_index(
 
     let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
     match encoding {
-        BlobEncoding::Raw => {
-            deploy_raw_blob(cdn_dir, blob_path, source_hash, guard, payload)
-        },
+        BlobEncoding::Raw => deploy_raw_blob(cdn_dir, blob_path, source_hash, guard, payload),
         BlobEncoding::DeflatedRkyv => {
             deploy_deflated_rkyv_blob(cdn_dir, blob_path, source_hash, guard, &payload)
         },
@@ -508,8 +506,8 @@ pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
     let pitch_rebuilt = build_pitch_index_blob(&cdn_dir)
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
-    let grammar_rebuilt = build_grammar_v3_blob(&cdn_dir)
-        .map_err(|reason| OrigaError::RepositoryError { reason })?;
+    let grammar_rebuilt =
+        build_grammar_v3_blob(&cdn_dir).map_err(|reason| OrigaError::RepositoryError { reason })?;
     let kanji_rebuilt =
         build_kanji_blob(&cdn_dir).map_err(|reason| OrigaError::RepositoryError { reason })?;
     let radicals_rebuilt =
@@ -736,8 +734,12 @@ mod tests {
         // VERSIONED_FILES source whose hash ships in the client manifest
         // (chunk paths are SYNC_DIR content and never reach the manifest).
         let dir = temp_cdn(&all_sources());
-        build_deflated_json_blob(&dir, &phrase_bundle_source_path(0), &phrase_bundle_blob_path(0))
-            .unwrap();
+        build_deflated_json_blob(
+            &dir,
+            &phrase_bundle_source_path(0),
+            &phrase_bundle_blob_path(0),
+        )
+        .unwrap();
 
         // Act: inflate and read the guard back
         let deflated = fs::read(dir.join(phrase_bundle_blob_path(0))).unwrap();
@@ -820,9 +822,8 @@ mod tests {
                 split_blob(&stored).is_err(),
                 "{blob_path} must not be readable as a raw blob"
             );
-            let (header, _) =
-                inflate_and_split(&stored, DEFLATED_RKYV_SCHEMA_VERSION)
-                    .unwrap_or_else(|e| panic!("{blob_path} must inflate into its generation: {e}"));
+            let (header, _) = inflate_and_split(&stored, DEFLATED_RKYV_SCHEMA_VERSION)
+                .unwrap_or_else(|e| panic!("{blob_path} must inflate into its generation: {e}"));
             assert_eq!(header.schema_version, DEFLATED_RKYV_SCHEMA_VERSION);
         }
 
@@ -855,8 +856,7 @@ mod tests {
                 .unwrap_or_else(|e| panic!("{blob_path} must inflate: {e}"));
             let source = fs::read(dir.join(source_path)).unwrap();
             assert_eq!(payload, source, "payload is the source JSON verbatim");
-            let expected_guard =
-                cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&source)]);
+            let expected_guard = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&source)]);
             assert_eq!(header.manifest_guard, expected_guard);
 
             fs::remove_dir_all(&dir).ok();

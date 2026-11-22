@@ -77,11 +77,11 @@ pub fn inflate_and_split(
 
     let mut decoder = flate2::read::DeflateDecoder::new(deflated);
     let mut blob = Vec::new();
-    decoder.read_to_end(&mut blob).map_err(|e| {
-        BlobFormatError::Inflation {
+    decoder
+        .read_to_end(&mut blob)
+        .map_err(|e| BlobFormatError::Inflation {
             reason: e.to_string(),
-        }
-    })?;
+        })?;
     let (header, payload) = split_blob_with_schema(&blob, expected_schema)?;
     Ok((header, payload.to_vec()))
 }

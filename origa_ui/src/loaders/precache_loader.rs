@@ -354,12 +354,27 @@ fn legacy_cleanup_pairs() -> Vec<(String, String)> {
     // chunk_01..11 JSON (the blob builder concatenates them), the rest
     // consume their single JSON source.
     for chunk_path in VOCABULARY_CHUNK_PATHS {
-        pairs.push((chunk_path.to_string(), "dictionary/vocabulary.rkyv".to_string()));
+        pairs.push((
+            chunk_path.to_string(),
+            "dictionary/vocabulary.rkyv".to_string(),
+        ));
     }
-    pairs.push(("dictionary/kanji.json".to_string(), "dictionary/kanji.rkyv".to_string()));
-    pairs.push(("dictionary/radicals.json".to_string(), "dictionary/radicals.rkyv".to_string()));
-    pairs.push(("grammar/grammar_v3.json".to_string(), "grammar/grammar_v3.rkyv".to_string()));
-    pairs.push(("pitch/index.json".to_string(), "pitch/index.rkyv".to_string()));
+    pairs.push((
+        "dictionary/kanji.json".to_string(),
+        "dictionary/kanji.rkyv".to_string(),
+    ));
+    pairs.push((
+        "dictionary/radicals.json".to_string(),
+        "dictionary/radicals.rkyv".to_string(),
+    ));
+    pairs.push((
+        "grammar/grammar_v3.json".to_string(),
+        "grammar/grammar_v3.rkyv".to_string(),
+    ));
+    pairs.push((
+        "pitch/index.json".to_string(),
+        "pitch/index.rkyv".to_string(),
+    ));
     pairs
 }
 
@@ -479,15 +494,15 @@ mod tests {
             "phrases/phrase_index.v3.rkyv".to_string(),
         )];
         for idx in 0..PHRASE_BUNDLE_COUNT {
-            expected.push((
-                phrase_bundle_json_path(idx),
-                phrase_bundle_blob_path(idx),
-            ));
+            expected.push((phrase_bundle_json_path(idx), phrase_bundle_blob_path(idx)));
         }
         for chunk in VOCABULARY_CHUNK_PATHS {
             expected.push((chunk.to_string(), "dictionary/vocabulary.rkyv".to_string()));
         }
-        expected.push(("dictionary/kanji.json".to_string(), "dictionary/kanji.rkyv".to_string()));
+        expected.push((
+            "dictionary/kanji.json".to_string(),
+            "dictionary/kanji.rkyv".to_string(),
+        ));
         expected.push((
             "dictionary/radicals.json".to_string(),
             "dictionary/radicals.rkyv".to_string(),
@@ -496,12 +511,18 @@ mod tests {
             "grammar/grammar_v3.json".to_string(),
             "grammar/grammar_v3.rkyv".to_string(),
         ));
-        expected.push(("pitch/index.json".to_string(), "pitch/index.rkyv".to_string()));
+        expected.push((
+            "pitch/index.json".to_string(),
+            "pitch/index.rkyv".to_string(),
+        ));
 
         assert_eq!(pairs, expected);
         // Every stale key is a JSON path — blobs are never cleanup targets.
         for (path, _) in &pairs {
-            assert!(path.ends_with(".json"), "cleanup target must be JSON: {path}");
+            assert!(
+                path.ends_with(".json"),
+                "cleanup target must be JSON: {path}"
+            );
         }
     }
 

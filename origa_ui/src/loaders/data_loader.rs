@@ -1,5 +1,5 @@
 use origa::dictionary::cdn_blob::{
-    DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, BlobFormatError, guard_matches,
+    BlobFormatError, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, guard_matches,
 };
 use origa::dictionary::grammar::{GrammarData, init_grammar, is_grammar_loaded};
 use origa::dictionary::kanji::{KanjiData, init_kanji, is_kanji_loaded};
@@ -182,8 +182,7 @@ fn vocabulary_view_from_blob(
 ) -> Result<&'static ArchivedVocabularyBlob, VocabularyBlobError> {
     let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
         Ok(split) => split,
-        Err(BlobFormatError::UnsupportedSchema { .. })
-        | Err(BlobFormatError::Inflation { .. }) => {
+        Err(BlobFormatError::UnsupportedSchema { .. }) | Err(BlobFormatError::Inflation { .. }) => {
             // Both stale shapes heal the same way: a cached blob of an
             // older generation does not inflate (the pre-#1484 wire format
             // was raw), and a foreign-generation deflated blob fails the
@@ -230,7 +229,9 @@ async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
     let view = match vocabulary_view_from_blob(&blob) {
         Ok(view) => Some(view),
         Err(VocabularyBlobError::StaleGeneration) => {
-            tracing::warn!("📖 Vocabulary blob of a stale generation, purging cache entry and refetching");
+            tracing::warn!(
+                "📖 Vocabulary blob of a stale generation, purging cache entry and refetching"
+            );
             cdn_provider::purge_stale_blob_entry(VOCABULARY_BLOB_PATH).await;
             match provider.fetch_bytes(VOCABULARY_BLOB_PATH).await {
                 Ok(refetched) => match vocabulary_view_from_blob(&refetched) {
@@ -459,7 +460,7 @@ mod tests {
     use std::future::Future;
 
     use origa::dictionary::cdn_blob::{
-        DEFLATED_RKYV_SCHEMA_VERSION, BlobHeader, SCHEMA_VERSION, build_blob,
+        BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob,
         manifest_guard_from_hex_hashes, sha256_bytes,
     };
     use origa::dictionary::precompute_blob::deflate_blob;
@@ -530,12 +531,13 @@ mod tests {
             let position = responses
                 .iter()
                 .position(|(candidate, _)| candidate == path);
-            let result = position
-                .map(|index| responses.remove(index).1)
-                .ok_or(OrigaError::NetworkError {
-                    url: path.to_string(),
-                    reason: "not stubbed".to_string(),
-                });
+            let result =
+                position
+                    .map(|index| responses.remove(index).1)
+                    .ok_or(OrigaError::NetworkError {
+                        url: path.to_string(),
+                        reason: "not stubbed".to_string(),
+                    });
             std::future::ready(result)
         }
     }

@@ -1,6 +1,4 @@
-use origa::dictionary::cdn_blob::{
-    DEFLATED_RKYV_SCHEMA_VERSION, BlobFormatError, guard_matches,
-};
+use origa::dictionary::cdn_blob::{BlobFormatError, DEFLATED_RKYV_SCHEMA_VERSION, guard_matches};
 use origa::dictionary::pitch_audio::{
     ArchivedPitchAudioIndexBlob, access_pitch_index_blob, install_archived_pitch_index,
     is_pitch_audio_loaded,
@@ -116,7 +114,9 @@ pub async fn load_pitch_audio_via<P: CdnProvider>(
                 }
             },
             Err(rejection) => {
-                tracing::warn!("📖 Pitch index rkyv blob rejected ({rejection:?}), falling back to JSON");
+                tracing::warn!(
+                    "📖 Pitch index rkyv blob rejected ({rejection:?}), falling back to JSON"
+                );
                 None
             },
         },
@@ -142,11 +142,12 @@ pub async fn load_pitch_audio_via<P: CdnProvider>(
 /// Format + guard + payload validation of one pitch index blob: inflate
 /// the deflated-rkyv generation, verify the manifest guard, access the
 /// payload zero-copy.
-fn pitch_view_from_blob(blob: &[u8]) -> Result<&'static ArchivedPitchAudioIndexBlob, PitchBlobError> {
+fn pitch_view_from_blob(
+    blob: &[u8],
+) -> Result<&'static ArchivedPitchAudioIndexBlob, PitchBlobError> {
     let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
         Ok(split) => split,
-        Err(BlobFormatError::UnsupportedSchema { .. })
-        | Err(BlobFormatError::Inflation { .. }) => {
+        Err(BlobFormatError::UnsupportedSchema { .. }) | Err(BlobFormatError::Inflation { .. }) => {
             // Both stale shapes heal the same way: a cached blob of an
             // older generation does not inflate (the pre-#1484 wire format
             // was raw), and a foreign-generation deflated blob fails the
@@ -175,7 +176,7 @@ mod tests {
     use std::future::Future;
 
     use origa::dictionary::cdn_blob::{
-        DEFLATED_RKYV_SCHEMA_VERSION, BlobHeader, SCHEMA_VERSION, build_blob,
+        BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob,
         manifest_guard_from_hex_hashes, sha256_bytes,
     };
     use origa::dictionary::pitch_audio::PitchAudioIndex;
@@ -241,12 +242,13 @@ mod tests {
             let position = responses
                 .iter()
                 .position(|(candidate, _)| candidate == path);
-            let result = position
-                .map(|index| responses.remove(index).1)
-                .ok_or(OrigaError::NetworkError {
-                    url: path.to_string(),
-                    reason: "not stubbed".to_string(),
-                });
+            let result =
+                position
+                    .map(|index| responses.remove(index).1)
+                    .ok_or(OrigaError::NetworkError {
+                        url: path.to_string(),
+                        reason: "not stubbed".to_string(),
+                    });
             std::future::ready(result)
         }
     }
@@ -319,7 +321,10 @@ mod tests {
         blob[0] = b'X';
         let provider = MockCdn::with_blob_responses(vec![
             (PITCH_INDEX_BLOB_PATH.to_string(), blob),
-            (PITCH_INDEX_PATH.to_string(), SAMPLE_JSON.as_bytes().to_vec()),
+            (
+                PITCH_INDEX_PATH.to_string(),
+                SAMPLE_JSON.as_bytes().to_vec(),
+            ),
         ]);
 
         // Act
@@ -387,7 +392,10 @@ mod tests {
         // fails (offline) and the JSON source serves the load.
         let provider = MockCdn::with_blob_responses(vec![
             (PITCH_INDEX_BLOB_PATH.to_string(), legacy_raw_blob()),
-            (PITCH_INDEX_PATH.to_string(), SAMPLE_JSON.as_bytes().to_vec()),
+            (
+                PITCH_INDEX_PATH.to_string(),
+                SAMPLE_JSON.as_bytes().to_vec(),
+            ),
         ]);
 
         // Act
