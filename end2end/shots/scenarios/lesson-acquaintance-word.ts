@@ -108,8 +108,10 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
       ) {
         // The audio front: the central replay button owns the card —
         // the corner button must NOT be on screen.
-        await expect(cornerButton, "no corner button on the audio front")
-          .toHaveCount(0);
+        await expect(
+          cornerButton,
+          "no corner button on the audio front",
+        ).toHaveCount(0);
         await page.waitForTimeout(500);
         await sink.shot("word-training-audio-front");
         audioFrontShot = true;
