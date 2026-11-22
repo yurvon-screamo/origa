@@ -1,5 +1,4 @@
-"""Regression pins for the corpus-less half of the skip contract (ADR-083,
-task #426, PR #944).
+"""Regression pins for the corpus-less half of the skip contract (ADR-083, PR #944).
 
 The skip contract ("corpus absent -> graceful skip with a marker, corpus
 broken -> loud panic") is only half-machine without the corpus-less CI step:
