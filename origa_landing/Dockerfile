@@ -1,12 +1,8 @@
 # syntax=docker/dockerfile:1.4
 
-ARG RUST_VERSION=1.93
-
 FROM ubuntu:26.04 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-ARG RUST_VERSION
 
 ARG ORIGA_LANDING_BASE_URL=https://origa.uwuwu.net
 ENV ORIGA_LANDING_BASE_URL=${ORIGA_LANDING_BASE_URL}
@@ -34,7 +30,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_DIR=/sccache
 
-RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+# Toolchain version from rust-toolchain.toml — the same carrier rustup and
+# .github/actions/setup-rust read (the RUST_VERSION ARG was a second,
+# silently drifting source). COPY must precede the rustup install: the file
+# also governs every later cargo step in the image via rustup's lookup.
+COPY rust-toolchain.toml /rust-toolchain.toml
+RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' /rust-toolchain.toml)"
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
