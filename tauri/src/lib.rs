@@ -42,6 +42,10 @@ use auth_store::{auth_store_delete, auth_store_get, auth_store_set};
 // register no plugin state and use local imports, so the import stays out
 // of macOS and iOS builds.
 use store_review::request_app_review;
+// TTS probe-guard consumers (Windows/Linux): the decision table lives in
+// platform_routing; Apple/mobile builds register the plugin unconditionally.
+#[cfg(any(windows, target_os = "linux"))]
+use platform_routing::{HostPlatform, TtsRegistration, tts_registration};
 #[cfg(any(windows, target_os = "linux"))]
 use tauri::Manager;
 use tauri::{Emitter, Listener};
@@ -173,26 +177,33 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build());
 
     // tauri-plugin-tts eagerly connects to the speech engine in plugin init;
-    // on Linux without the speech-dispatcher daemon that init fails and the
-    // whole app dies with PluginInitialization before any window appears.
-    // Probe the exact same engine init first: when the daemon is missing we
+    // when that init fails the whole app dies with PluginInitialization
+    // before any window appears (Linux: missing speech-dispatcher daemon,
+    // ee1f4838; Windows: WinRT error — Sentry RUST-S, Win10 / 0.7.37).
+    // Probe the exact same engine init first: when the engine is missing we
     // skip plugin registration and keep the app alive — the frontend already
     // degrades gracefully (plugin:tts|speak invoke rejects -> tracing::warn).
-    #[cfg(target_os = "linux")]
+    // Which platforms probe (vs register unconditionally) is the pure
+    // decision table `tts_registration` (ADR-086); the cfg gate below only
+    // bounds the target-scoped `tts` dependency.
+    #[cfg(any(windows, target_os = "linux"))]
     {
-        match tts::Tts::default() {
-            Ok(_probe_connection_dropped_here) => {
-                tracing::info!("[tts] speech engine available, registering tts plugin");
-                builder = builder.plugin(tauri_plugin_tts::init());
+        match tts_registration(HostPlatform::current()) {
+            TtsRegistration::ProbeRequired => match tts::Tts::default() {
+                Ok(_probe_connection_dropped_here) => {
+                    tracing::info!("[tts] speech engine available, registering tts plugin");
+                    builder = builder.plugin(tauri_plugin_tts::init());
+                },
+                Err(e) => {
+                    tracing::warn!(
+                        "[tts] speech engine unavailable ({e}); TTS disabled, continuing without it"
+                    );
+                },
             },
-            Err(e) => {
-                tracing::warn!(
-                    "[tts] speech engine unavailable ({e}); TTS disabled, continuing without it"
-                );
-            },
+            TtsRegistration::Always => builder = builder.plugin(tauri_plugin_tts::init()),
         }
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(windows, target_os = "linux")))]
     {
         builder = builder.plugin(tauri_plugin_tts::init());
     }
