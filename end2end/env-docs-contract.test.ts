@@ -17,14 +17,40 @@ import { test } from "node:test";
  * purpose.
  */
 const deadEnvLines =
-  /^(TRAILBASE_URL|ORIGA_CDN_BASE_URL|TEST_USER_EMAIL|TEST_USER_PASSWORD)=/m;
+  /^\s*(TRAILBASE_URL|ORIGA_CDN_BASE_URL|TEST_USER_EMAIL|TEST_USER_PASSWORD)=/m;
 
-const fencedBlocks = (markdown: string, lang: string): string[] =>
-  [
-    ...markdown.matchAll(
-      new RegExp(`^\`\`\`${lang}\\n([\\s\\S]*?)^\`\`\`$`, "gm"),
-    ),
-  ].map((m) => m[1]);
+/**
+ * The content of every fenced block whose opening fence carries `lang`.
+ *
+ * A state machine, not a regex pair: `^```\n([\s\S]*?)^```$` mis-pairs
+ * the closing fence of a preceding tagged block as the opening fence of
+ * an untagged one (and vice versa), so the real `.env` block of README.md
+ * never landed in a capture and its pin could not fail. Openings switch
+ * the machine on (```` ``` ```` optionally with an info string), bare
+ * fences switch it off.
+ */
+const fencedBlocks = (markdown: string, lang: string): string[] => {
+  const blocks: string[] = [];
+  let inBlock = false;
+  let openLang = "";
+  let current: string[] = [];
+  for (const line of markdown.split("\n")) {
+    const fence = line.match(/^```(\w*)\s*$/);
+    if (!fence) {
+      if (inBlock) current.push(line);
+      continue;
+    }
+    if (inBlock) {
+      if (openLang === lang) blocks.push(current.join("\n"));
+      inBlock = false;
+    } else {
+      inBlock = true;
+      openLang = fence[1];
+      current = [];
+    }
+  }
+  return blocks;
+};
 
 test(".env.example documents only admin credentials", () => {
   const example = readFileSync(
