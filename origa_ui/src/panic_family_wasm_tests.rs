@@ -182,6 +182,10 @@ async fn refresh_update_survives_card_unmount_wave() {
 
         view! { <div data-testid="panic-family-list" /> }.into_any()
     });
+    // Deliberate leak: dropping the handle would dispose the owner — the
+    // signals would go disposed, the notify waves would land silently and
+    // the `reload_runs.get_untracked()` read below would trap on the very
+    // disposal this experiment studies. This mount must stay alive.
     std::mem::forget(handle);
 
     let trigger = trigger_rx.get().expect("trigger captured");
