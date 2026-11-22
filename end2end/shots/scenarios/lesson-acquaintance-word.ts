@@ -116,7 +116,10 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
       } else if (
         !textFrontShot &&
         (await front.isVisible().catch(() => false)) &&
-        !(await audioFrontPlay.isVisible().catch(() => false))
+        !(await audioFrontPlay.isVisible().catch(() => false)) &&
+        // Only a VOICED front carries the corner button: kanji/counter
+        // fronts are silent (no button) — skip them, keep cycling.
+        (await cornerButton.isVisible().catch(() => false))
       ) {
         // The text front (word or grammar — both seeded words are long
         // and voiced now). A raw selector inside the marked front: the
@@ -124,10 +127,6 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
         await expect(
           front.locator("p.font-serif").first(),
           "the text front shows a serif word",
-        ).toBeVisible();
-        await expect(
-          cornerButton,
-          "the corner button sits in the card on the text front",
         ).toBeVisible();
         await page.waitForTimeout(500);
         await sink.shot("word-training-front");
