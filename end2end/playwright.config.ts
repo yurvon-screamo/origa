@@ -82,12 +82,14 @@ export default defineConfig({
     },
   ],
   webServer: [
-    // The corpus server only exists when there IS a local corpus: a
-    // fresh worktree has no `cdn/` (gitignored), the app then reads
-    // the content from the production CDN instead of dying on a
-    // server started against a missing relative path. Same recipe as
-    // the screenshots config; the served directory is the resolved
-    // one (`ORIGA_CDN_CACHE_DIR` overrides the repo-local default).
+    // The corpus server only exists when there IS a local corpus:
+    // without one the app reads the content from the production CDN
+    // instead of dying on a server started against a missing relative
+    // path. Same recipe as the screenshots config; the served
+    // directory is the serve-only chain (`ORIGA_CDN_CACHE_DIR` →
+    // `ORIGA_CDN_DIR` → `~/origa-cdn`, shots/config.ts) — the build
+    // and the preflight follow the corpus canon only (`cdn_dir()`,
+    // ADR-083).
     ...(cdnCacheDir !== null
       ? [
           {

@@ -1,7 +1,13 @@
 import { type Page } from "@playwright/test";
 import { test as base, createBdd } from "playwright-bdd";
 import { getAppBaseUrl } from "../config";
-import { setupTestUser, uiLogin, type TestUserContext } from "../helpers/auth";
+import {
+  apiLogin,
+  setupTestUser,
+  uiLogin,
+  waitForLoginComplete,
+  type TestUserContext,
+} from "../helpers/auth";
 
 /**
  * BDD test base with an authenticated page fixture + the matching test account.
@@ -12,15 +18,13 @@ import { setupTestUser, uiLogin, type TestUserContext } from "../helpers/auth";
  * - `testUser` — creates a fresh test account once per test (setupTestUser)
  *   and exposes its email/password so steps can re-login into the SAME
  *   identity after a logout. Cleanup runs on teardown.
- * - `page` — opens a browser context and logs into `testUser`. Equivalent to
- *   the old `withAuthenticatedPage` behaviour, but reuses the shared account
- *   so a "logout → login again" roundtrip targets the same user.
+ * - `page` — opens a browser context seeded with the account's session via
+ *   `apiLogin` (localStorage seed, no UI form — #1449) and hands over the
+ *   page after the authenticated boot settles on the terminal route. The
+ *   login FORM stays under test in auth.feature, whose scenarios log in
+ *   through `uiLogin` after a logout wipe.
  *
  * Most steps destructure only `{ page }`; re-login flows add `testUser`.
- *
- * uiLogin can retry up to 3 times, each with a 60s waitForURL timeout, plus
- * WASM cold load. The default fixture timeout (60s) is too tight, so the page
- * fixture overrides it.
  *
  * Step definitions import { Given, When, Then } from this file.
  */
@@ -63,12 +67,16 @@ export const test = base.extend<
           window.localStorage.setItem("__origa_e2e_seam", "1");
         }
       }, getAppBaseUrl());
+      // Authenticated boot without the UI form (#1449): the session is
+      // seeded via the API before the first page exists, so the app
+      // rehydrates it on boot. The boot's settle wait keeps the same
+      // content marker the UI-login path used (waitForLoginComplete).
+      await apiLogin(context, testUser.email, testUser.password);
       const page = await context.newPage();
       await page.setViewportSize({ width: 1280, height: 720 });
       try {
-        await uiLogin(page, testUser.email, testUser.password, {
-          baseURL: getAppBaseUrl(),
-        });
+        await page.goto(getAppBaseUrl(), { waitUntil: "domcontentloaded" });
+        await waitForLoginComplete(page);
         await use(page);
       } finally {
         await context.close();

@@ -77,13 +77,14 @@ export default defineConfig({
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   webServer: [
-    // The local corpus server only exists when there IS a local corpus.
-    // In a fresh worktree `cdn/` is missing (gitignored), and the app
-    // then reads the content from the production CDN instead. The
-    // served directory is the resolved one (`ORIGA_CDN_CACHE_DIR`
-    // overrides the repo-local `cdn/` default) — a worktree without
-    // the repo-local copy points the server at the real corpus
-    // elsewhere instead of failing on the hardcoded relative path.
+    // The local corpus server only exists when there IS a local
+    // corpus; without one the app reads the content from the
+    // production CDN instead. The served directory is the serve-only
+    // chain (`ORIGA_CDN_CACHE_DIR` → `ORIGA_CDN_DIR` → `~/origa-cdn`,
+    // shots/config.ts) — the server points at the real corpus outside
+    // the repo instead of failing on the hardcoded relative path.
+    // The build and the preflight follow the corpus canon only
+    // (`cdn_dir()`, ADR-083).
     ...(serveLocally && cdnCacheDir !== null
       ? [
           {
