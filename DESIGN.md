@@ -85,7 +85,7 @@ border:
   width-thick: 2px
   color-default: "{colors.border-dark}"
   color-light: "{colors.border-light}"
-shadow:
+shadow: # offset-shadow — продуктовый UI (origa_ui); лендинг — плоские карточки (см. Elevation & Depth)
   offset-x: 6px
   offset-y: 6px
   color: "{colors.border-dark}"
@@ -125,7 +125,7 @@ components:
     fontFamily: "{typography.body-md.fontFamily}"
     fontSize: "14px"
     focusShadow: "4px 4px 0 {colors.border-dark}"
-  card:
+  card: # shadow*-поля — продуктовый UI (origa_ui); лендинг — плоские карточки (см. Elevation & Depth)
     backgroundColor: "{colors.bg-paper}"
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
@@ -435,7 +435,8 @@ Hover-эффект: псевдо-элемент `::before` с
 }
 ```
 
-- `.card-shadow` — добавляет offset shadow через `::after`.
+- `.card-shadow` — добавляет offset shadow через `::after`
+  (продуктовый UI; лендинг — плоские карточки, см. Elevation & Depth).
 - `.card-selectable` — hover меняет фон на `bg-aged`.
 - `.selected` — граница `accent-olive`, фон `bg-warm`.
 
