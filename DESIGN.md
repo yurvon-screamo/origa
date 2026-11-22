@@ -85,7 +85,7 @@ border:
   width-thick: 2px
   color-default: "{colors.border-dark}"
   color-light: "{colors.border-light}"
-shadow:
+shadow: # offset-shadow — продуктовый UI (origa_ui); лендинг — плоские карточки (см. Elevation & Depth)
   offset-x: 6px
   offset-y: 6px
   color: "{colors.border-dark}"
@@ -125,7 +125,7 @@ components:
     fontFamily: "{typography.body-md.fontFamily}"
     fontSize: "14px"
     focusShadow: "4px 4px 0 {colors.border-dark}"
-  card:
+  card: # shadow*-поля — продуктовый UI (origa_ui); лендинг — плоские карточки (см. Elevation & Depth)
     backgroundColor: "{colors.bg-paper}"
     borderWidth: "1px"
     borderColor: "{colors.border-dark}"
@@ -185,9 +185,10 @@ Origa — минималистичный интерфейс для прилож�
 
 **Концепция**: "Типографика печатного станка на японской бумаге".
 Все интерактивные элементы используют 1px чёрные границы без
-скруглений. Тени реализованы через псевдо-элементы `::after`
-со смещением и линией границы — эффект "сдвига" вместо
-размытия. Типографика — это контраст между элегантным serif
+скруглений. В продуктовом UI (origa_ui) тени реализованы через
+псевдо-элементы `::after` со смещением и линией границы —
+эффект "сдвига" вместо размытия (лендинг — исключение, см.
+Elevation & Depth). Типографика — это контраст между элегантным serif
 (Cormorant Garamond) для заголовков/японского текста и
 утилитарным monospace (IBM Plex Mono) для всего интерфейса.
 
@@ -319,8 +320,10 @@ scripts/subset_fonts.py` (подробности в `cdn/README.md`).
 ### Принципы компоновки
 
 - **No border-radius**: Все контейнеры — строго прямоугольные.
-- **Hard shadows**: Карточки и модальные окна имеют "тень"
-  как отдельный offset-слой с границей, а не CSS box-shadow.
+- **Hard shadows**: В продуктовом UI (origa_ui) карточки и
+  модальные окна имеют "тень" как отдельный offset-слой с
+  границей, а не CSS box-shadow (лендинг — исключение, см.
+  Elevation & Depth).
 - **Отступы**: Используется 8px сетка (4, 8, 16, 24, 32, 48, 64, 96px).
 - **Контейнеры**:
   - `card-layout-small`: max-width 480px
@@ -344,6 +347,13 @@ scripts/subset_fonts.py` (подробности в `cdn/README.md`).
 
 Все эффекты глубины достигаются через
 **псевдо-элементы** с чёткими границами, а не blur-модели.
+Правила этого раздела описывают продуктовый UI (origa_ui).
+Лендинг (origa_landing) карточки рендерит плоскими: одна рамка
+`1px solid var(--border-dark)`, офсет-подложки не используются;
+его скриншоты оформляет hard-shadow (`.shot` — 10px offset,
+тень без собственной тёмной рамки). Канон семьи "279": один
+уровень рамки на карточку, внутренние разделители без рамок
+(персона владельца 10.11.2026; origa#404, санкция 21.11.2026).
 
 ```text
 Card Shadow:
@@ -425,7 +435,8 @@ Hover-эффект: псевдо-элемент `::before` с
 }
 ```
 
-- `.card-shadow` — добавляет offset shadow через `::after`.
+- `.card-shadow` — добавляет offset shadow через `::after`
+  (продуктовый UI; лендинг — плоские карточки, см. Elevation & Depth).
 - `.card-selectable` — hover меняет фон на `bg-aged`.
 - `.selected` — граница `accent-olive`, фон `bg-warm`.
 
@@ -688,7 +699,8 @@ Badge — это "штамп на полях". Без рамки, приглуш
 - Применяйте `text-transform: uppercase` + `letter-spacing`
   к всему интерфейсному тексту (кнопки, теги, навигация).
 - Используйте `Cormorant Garamond` только для заголовков и японского текста.
-- Добавляйте offset shadow через `::after` для карточек и модальных окон.
+- Добавляйте offset shadow через `::after` для карточек и модальных окон
+  продуктового UI (карточки лендинга — плоские, см. Elevation & Depth).
 - Используйте `bg-paper` для контента поверх `bg-cream`.
 - Применяйте `anima-focus-ring` для доступной навигации с клавиатуры.
 
