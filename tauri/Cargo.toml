@@ -56,6 +56,10 @@ uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
 tempfile.workspace = true
+# Mock-runtime harness for the TTS probe-guard crash pins
+# (tests/tts_probe_guard.rs): the mock app builder runs real plugin setup,
+# so the PluginInitialization crash class is reproducible headless.
+tauri = { workspace = true, features = ["test"] }
 # Host-side per-platform routing tables (updater policy, store review,
 # share-intent mirror) — task 20261104060604, GH #854.
 rstest.workspace = true
