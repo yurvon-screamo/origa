@@ -41,9 +41,54 @@ impl HostPlatform {
     }
 }
 
+/// Whether the `tauri-plugin-tts` registration on a platform requires a
+/// successful speech-engine probe ([`TtsRegistration::ProbeRequired`]) or
+/// registers the plugin unconditionally ([`TtsRegistration::Always`]).
+///
+/// The plugin eagerly connects to the speech engine inside its setup: a
+/// failed engine init kills the whole `Builder::run` with
+/// `PluginInitialization` before any window appears (Linux: missing
+/// speech-dispatcher daemon, ee1f4838; Windows: WinRT error — Sentry
+/// RUST-S, Win10 0.7.37). Probe-gated platforms run `tts::Tts::default()`
+/// first — the exact engine init the plugin performs — and keep the app
+/// alive without TTS when it fails (the frontend already degrades
+/// gracefully: `plugin:tts|speak` invoke rejects into a `tracing::warn`).
+/// Compiled only where the table is consulted (Windows/Linux): Apple and
+/// mobile targets register the plugin unconditionally, and a dead enum on
+/// those targets would trip the clippy `-D warnings` gate (the table is
+/// host-pinned by the rstest matrix below, which compiles on the Linux CI
+/// runner).
+#[cfg(any(windows, target_os = "linux"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TtsRegistration {
+    /// Probe the engine first; register the plugin only when it initializes.
+    ProbeRequired,
+    /// Register the plugin unconditionally.
+    Always,
+}
+
+/// The TTS registration decision table (ADR-086 layer 1: a pure table over
+/// [`HostPlatform`], pinned by the host rstest matrix in this file).
+/// Desktop platforms with a known engine-init failure mode are probe-gated
+/// (Linux: speech-dispatcher may be absent; Windows: WinRT speech init can
+/// fail on the user's machine); macOS and the mobile native bridges have
+/// no observed failures and register unconditionally. A new
+/// `HostPlatform` variant fails to compile here until it picks a cell.
+#[cfg(any(windows, target_os = "linux"))]
+pub fn tts_registration(platform: HostPlatform) -> TtsRegistration {
+    match platform {
+        HostPlatform::Linux | HostPlatform::Windows => TtsRegistration::ProbeRequired,
+        HostPlatform::MacOS | HostPlatform::Android | HostPlatform::Ios => TtsRegistration::Always,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    // The TTS matrix below exists only where the table itself compiles
+    // (its items are cfg-gated to their consumers in this file).
+    #[cfg(any(windows, target_os = "linux"))]
+    use rstest::rstest;
 
     /// `current()` must map every host compilation to the platform actually
     /// compiling the crate (Linux CI asserts the Linux arm; each release
@@ -62,5 +107,28 @@ mod tests {
             HostPlatform::Linux
         };
         assert_eq!(HostPlatform::current(), expected);
+    }
+
+    /// The whole TTS registration table is pinned on the host (ADR-086
+    /// layer 1). Windows must be probe-gated: an unconditional
+    /// `tauri-plugin-tts` registration dies with `PluginInitialization`
+    /// when the WinRT speech engine fails to init (Sentry RUST-S — the app
+    /// never shows a window). Five cells cover every `HostPlatform`
+    /// variant; a sixth variant breaks the exhaustive match in
+    /// `tts_registration` instead of silently registering unconditionally.
+    /// Gated with the table itself: on targets that never consult it the
+    /// items do not compile, so the matrix must not reference them.
+    #[cfg(any(windows, target_os = "linux"))]
+    #[rstest]
+    #[case(HostPlatform::Windows, TtsRegistration::ProbeRequired)]
+    #[case(HostPlatform::Linux, TtsRegistration::ProbeRequired)]
+    #[case(HostPlatform::MacOS, TtsRegistration::Always)]
+    #[case(HostPlatform::Android, TtsRegistration::Always)]
+    #[case(HostPlatform::Ios, TtsRegistration::Always)]
+    fn tts_registration_table_is_pinned(
+        #[case] platform: HostPlatform,
+        #[case] expected: TtsRegistration,
+    ) {
+        assert_eq!(tts_registration(platform), expected);
     }
 }
