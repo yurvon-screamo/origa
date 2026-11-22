@@ -351,6 +351,80 @@ pub async fn purge_stale_blob_entry(path: &str) {
 #[cfg(not(target_arch = "wasm32"))]
 pub async fn purge_stale_blob_entry(_path: &str) {}
 
+/// Why a deflated-rkyv blob could not serve the fast path (uwuwu #1484).
+#[derive(Debug)]
+pub enum BlobLoadRejection {
+    /// The cached blob belongs to an older format generation, or its bytes
+    /// do not inflate at all (the pre-#1484 wire format was raw; poisoned
+    /// bodies are indistinguishable from it) — the entry heals by purge +
+    /// refetch.
+    StaleGeneration,
+    /// Guard mismatch or payload failure — the JSON fallback serves the
+    /// load instead; a purge would not change what the CDN serves.
+    Rejected(String),
+}
+
+/// Deflated-rkyv blob read path with the stale-generation heal (uwuwu
+/// #1484), shared by the vocabulary and pitch loaders: fetch, validate
+/// through `view_of` (inflate → per-family schema → guard → zero-copy
+/// access); a stale generation purges the cache entry and refetches once —
+/// cache-first would serve it forever, online the refetch is an honest
+/// cache miss, offline it fails and the caller falls back to its JSON
+/// source. `Ok(None)` means "no usable blob — use the fallback chain".
+pub async fn load_deflated_rkyv_blob<P, T: 'static>(
+    provider: &P,
+    path: &str,
+    resource: &str,
+    view_of: impl Fn(&[u8]) -> Result<&'static T, BlobLoadRejection>,
+) -> Result<Option<&'static T>, OrigaError>
+where
+    P: origa::traits::CdnProvider,
+{
+    let blob = match provider.fetch_bytes(path).await {
+        Ok(blob) => blob,
+        Err(e) => {
+            tracing::warn!("📖 {resource} blob unavailable ({e:?}), using fallback chain");
+            return Ok(None);
+        },
+    };
+
+    let view = match view_of(&blob) {
+        Ok(view) => Some(view),
+        Err(BlobLoadRejection::StaleGeneration) => {
+            tracing::warn!(
+                "📖 {resource} blob of a stale generation, purging cache entry and refetching"
+            );
+            purge_stale_blob_entry(path).await;
+            match provider.fetch_bytes(path).await {
+                Ok(refetched) => match view_of(&refetched) {
+                    Ok(view) => Some(view),
+                    Err(rejection) => {
+                        tracing::warn!(
+                            "📖 {resource} blob rejected after refetch ({rejection:?}), using fallback chain"
+                        );
+                        None
+                    },
+                },
+                Err(e) => {
+                    tracing::warn!(
+                        "📖 {resource} blob refetch unavailable ({e:?}), using fallback chain"
+                    );
+                    None
+                },
+            }
+        },
+        Err(rejection) => {
+            tracing::warn!("📖 {resource} blob rejected ({rejection:?}), using fallback chain");
+            None
+        },
+    };
+
+    if view.is_some() {
+        tracing::debug!("📖 {resource} blob consumed, zero-copy");
+    }
+    Ok(view)
+}
+
 /// Network-only text fetch that overwrites the cache entry with the
 /// fresh body — the refetch half of the self-heal pair above. The
 /// unreachable guard mirrors `FetchDecision::FailOffline`: a CDN proven

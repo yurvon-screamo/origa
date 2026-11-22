@@ -9,21 +9,11 @@ use origa::traits::CdnProvider;
 
 use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
+use crate::repository::cdn_provider::BlobLoadRejection;
 use crate::utils::{now_ms, yield_to_browser};
 
 const PITCH_INDEX_PATH: &str = "pitch/index.json";
 const PITCH_INDEX_BLOB_PATH: &str = "pitch/index.rkyv";
-
-/// Why the pitch index blob bytes could not serve the fast path.
-#[derive(Debug)]
-enum PitchBlobError {
-    /// The blob belongs to an older format generation — the cache entry is
-    /// stale and heals by purge + refetch (self-heal, uwuwu #1484).
-    StaleGeneration,
-    /// Corruption, guard mismatch or payload failure — the JSON fallback
-    /// serves the load instead.
-    Rejected(String),
-}
 
 /// Result of the provider-parameterized load: the zero-copy archived view
 /// of the pre-parsed CDN blob (fast path) or the raw JSON text (fallback).
@@ -73,65 +63,20 @@ pub async fn load_pitch_audio() -> Result<(), OrigaError> {
 /// Provider-parameterized core: try the CDN rkyv blob first (zero-copy
 /// access — no JSON scan), fall back to the original JSON on any
 /// validation or fetch failure. The blob is verified against the remote
-/// manifest guard when one was fetched.
-///
-/// A stale-generation blob heals in place: cache-first would serve it
-/// forever, so the loader purges the entry and refetches once — online the
-/// refetch is an honest cache miss, offline it fails and the JSON fallback
-/// serves the load until the next online start.
+/// manifest guard when one was fetched; a stale-generation cached blob
+/// heals through the shared purge + refetch path.
 pub async fn load_pitch_audio_via<P: CdnProvider>(
     provider: &P,
 ) -> Result<LoadedPitchIndex, OrigaError> {
-    let fetch_start = now_ms();
-    let blob_result = provider.fetch_bytes(PITCH_INDEX_BLOB_PATH).await;
-    let fetch_ms = now_ms() - fetch_start;
-
-    let access_start = now_ms();
-    let view = match blob_result {
-        Ok(blob) => match pitch_view_from_blob(&blob) {
-            Ok(view) => Some(view),
-            Err(PitchBlobError::StaleGeneration) => {
-                tracing::warn!(
-                    "📖 Pitch index blob of a stale generation, purging cache entry and refetching"
-                );
-                cdn_provider::purge_stale_blob_entry(PITCH_INDEX_BLOB_PATH).await;
-                match provider.fetch_bytes(PITCH_INDEX_BLOB_PATH).await {
-                    Ok(refetched) => match pitch_view_from_blob(&refetched) {
-                        Ok(view) => Some(view),
-                        Err(rejection) => {
-                            tracing::warn!(
-                                "📖 Pitch index blob rejected after refetch ({rejection:?}), falling back to JSON"
-                            );
-                            None
-                        },
-                    },
-                    Err(e) => {
-                        tracing::warn!(
-                            "📖 Pitch index blob refetch unavailable ({e:?}), falling back to JSON"
-                        );
-                        None
-                    },
-                }
-            },
-            Err(rejection) => {
-                tracing::warn!(
-                    "📖 Pitch index rkyv blob rejected ({rejection:?}), falling back to JSON"
-                );
-                None
-            },
-        },
-        Err(e) => {
-            tracing::warn!("📖 Pitch index rkyv blob unavailable ({e:?}), falling back to JSON");
-            None
-        },
-    };
+    let view = cdn_provider::load_deflated_rkyv_blob(
+        provider,
+        PITCH_INDEX_BLOB_PATH,
+        "Pitch index",
+        pitch_view_from_blob,
+    )
+    .await?;
 
     if let Some(view) = view {
-        tracing::debug!(
-            "📖 Pitch index blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
-            fetch_ms / 1000.0,
-            (now_ms() - access_start) / 1000.0
-        );
         return Ok(LoadedPitchIndex::CdnBlob(view));
     }
 
@@ -141,32 +86,29 @@ pub async fn load_pitch_audio_via<P: CdnProvider>(
 
 /// Format + guard + payload validation of one pitch index blob: inflate
 /// the deflated-rkyv generation, verify the manifest guard, access the
-/// payload zero-copy.
+/// payload zero-copy. Stale generations — and bytes that do not inflate
+/// at all, which is what the pre-#1484 raw wire format looks like to a
+/// deflated reader — surface as `StaleGeneration` so the shared read path
+/// heals them by purge + refetch.
 fn pitch_view_from_blob(
     blob: &[u8],
-) -> Result<&'static ArchivedPitchAudioIndexBlob, PitchBlobError> {
+) -> Result<&'static ArchivedPitchAudioIndexBlob, BlobLoadRejection> {
     let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
         Ok(split) => split,
         Err(BlobFormatError::UnsupportedSchema { .. }) | Err(BlobFormatError::Inflation { .. }) => {
-            // Both stale shapes heal the same way: a cached blob of an
-            // older generation does not inflate (the pre-#1484 wire format
-            // was raw), and a foreign-generation deflated blob fails the
-            // schema check. A blob that fails to inflate at all is also
-            // indistinguishable from a poisoned cache body — purging is
-            // the established remedy (kanji-art healer).
-            return Err(PitchBlobError::StaleGeneration);
+            return Err(BlobLoadRejection::StaleGeneration);
         },
-        Err(e) => return Err(PitchBlobError::Rejected(e.to_string())),
+        Err(e) => return Err(BlobLoadRejection::Rejected(e.to_string())),
     };
 
     let expectation = guard_expectation_for(&[PITCH_INDEX_PATH]);
     if !guard_matches(&header, &expectation) {
-        return Err(PitchBlobError::Rejected(
+        return Err(BlobLoadRejection::Rejected(
             "stale relative to manifest".to_string(),
         ));
     }
 
-    access_pitch_index_blob(&payload).map_err(|e| PitchBlobError::Rejected(e.to_string()))
+    access_pitch_index_blob(&payload).map_err(|e| BlobLoadRejection::Rejected(e.to_string()))
 }
 
 #[cfg(test)]

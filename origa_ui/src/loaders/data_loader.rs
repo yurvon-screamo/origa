@@ -15,6 +15,7 @@ use origa::traits::CdnProvider;
 
 use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
+use crate::repository::cdn_provider::BlobLoadRejection;
 use crate::repository::{get_cached_vocabulary_rkyv, save_vocabulary_to_cache_rkyv};
 use crate::utils::{now_ms, yield_to_browser};
 
@@ -163,43 +164,29 @@ pub async fn load_vocabulary() -> Result<(), OrigaError> {
     Ok(())
 }
 
-/// Why the vocabulary blob bytes could not serve the fast path.
-#[derive(Debug)]
-enum VocabularyBlobError {
-    /// The blob belongs to an older format generation — the cache entry is
-    /// stale and heals by purge + refetch (self-heal, uwuwu #1484).
-    StaleGeneration,
-    /// Corruption, guard mismatch or payload failure — the fallback chain
-    /// (local rkyv cache, JSON chunks) serves the load instead.
-    Rejected(String),
-}
-
 /// Format + guard + payload validation of one vocabulary blob: inflate the
 /// deflated-rkyv generation, verify the manifest guard over the chunk
-/// hashes, access the payload zero-copy.
+/// hashes, access the payload zero-copy. Stale generations — and bytes
+/// that do not inflate at all, which is what the pre-#1484 raw wire
+/// format looks like to a deflated reader — surface as `StaleGeneration`
+/// so the shared read path heals them by purge + refetch.
 fn vocabulary_view_from_blob(
     blob: &[u8],
-) -> Result<&'static ArchivedVocabularyBlob, VocabularyBlobError> {
+) -> Result<&'static ArchivedVocabularyBlob, BlobLoadRejection> {
     let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
         Ok(split) => split,
         Err(BlobFormatError::UnsupportedSchema { .. }) | Err(BlobFormatError::Inflation { .. }) => {
-            // Both stale shapes heal the same way: a cached blob of an
-            // older generation does not inflate (the pre-#1484 wire format
-            // was raw), and a foreign-generation deflated blob fails the
-            // schema check. A blob that fails to inflate at all is also
-            // indistinguishable from a poisoned cache body — purging is
-            // the established remedy (kanji-art healer).
-            return Err(VocabularyBlobError::StaleGeneration);
+            return Err(BlobLoadRejection::StaleGeneration);
         },
-        Err(e) => return Err(VocabularyBlobError::Rejected(e.to_string())),
+        Err(e) => return Err(BlobLoadRejection::Rejected(e.to_string())),
     };
     let expectation = guard_expectation_for(&VOCABULARY_CHUNK_PATHS);
     if !guard_matches(&header, &expectation) {
-        return Err(VocabularyBlobError::Rejected(
+        return Err(BlobLoadRejection::Rejected(
             "stale relative to manifest".to_string(),
         ));
     }
-    access_vocabulary_blob(&payload).map_err(|e| VocabularyBlobError::Rejected(e.to_string()))
+    access_vocabulary_blob(&payload).map_err(|e| BlobLoadRejection::Rejected(e.to_string()))
 }
 
 /// CDN-rkyv fast path core. `Ok(None)` means "no usable blob — use the
@@ -207,65 +194,16 @@ fn vocabulary_view_from_blob(
 /// failure are all non-fatal: the original sources remain loadable). The
 /// returned archived view is installed by the caller — tests exercise this
 /// core without touching the one-shot global slot.
-///
-/// A stale-generation blob heals in place: cache-first would serve it
-/// forever, so the loader purges the entry and refetches once — online the
-/// refetch is an honest cache miss, offline it fails and the fallback chain
-/// serves the load until the next online start.
 async fn load_vocabulary_from_cdn_blob<P: CdnProvider>(
     provider: &P,
 ) -> Result<Option<&'static ArchivedVocabularyBlob>, OrigaError> {
-    let fetch_start = now_ms();
-    let blob = match provider.fetch_bytes(VOCABULARY_BLOB_PATH).await {
-        Ok(blob) => blob,
-        Err(e) => {
-            tracing::warn!("📖 Vocabulary rkyv blob unavailable ({e:?}), using fallback chain");
-            return Ok(None);
-        },
-    };
-    let fetch_ms = now_ms() - fetch_start;
-
-    let access_start = now_ms();
-    let view = match vocabulary_view_from_blob(&blob) {
-        Ok(view) => Some(view),
-        Err(VocabularyBlobError::StaleGeneration) => {
-            tracing::warn!(
-                "📖 Vocabulary blob of a stale generation, purging cache entry and refetching"
-            );
-            cdn_provider::purge_stale_blob_entry(VOCABULARY_BLOB_PATH).await;
-            match provider.fetch_bytes(VOCABULARY_BLOB_PATH).await {
-                Ok(refetched) => match vocabulary_view_from_blob(&refetched) {
-                    Ok(view) => Some(view),
-                    Err(rejection) => {
-                        tracing::warn!(
-                            "📖 Vocabulary blob rejected after refetch ({rejection:?}), using fallback chain"
-                        );
-                        None
-                    },
-                },
-                Err(e) => {
-                    tracing::warn!(
-                        "📖 Vocabulary blob refetch unavailable ({e:?}), using fallback chain"
-                    );
-                    None
-                },
-            }
-        },
-        Err(rejection) => {
-            tracing::warn!("📖 Vocabulary blob rejected ({rejection:?}), using fallback chain");
-            None
-        },
-    };
-
-    let Some(view) = view else {
-        return Ok(None);
-    };
-    tracing::debug!(
-        "📖 Vocabulary blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
-        fetch_ms / 1000.0,
-        (now_ms() - access_start) / 1000.0
-    );
-    Ok(Some(view))
+    cdn_provider::load_deflated_rkyv_blob(
+        provider,
+        VOCABULARY_BLOB_PATH,
+        "Vocabulary",
+        vocabulary_view_from_blob,
+    )
+    .await
 }
 
 /// Deflated-JSON blob fast path shared by grammar/kanji/radicals (uwuwu
