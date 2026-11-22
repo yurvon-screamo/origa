@@ -9,6 +9,15 @@
 //! on the missing marker, which is the end-to-end coverage this one-line
 //! transit needs.
 //!
+//! Probe ride-along (the input side of this bridge): the smoke script fires
+//! `origa://selftest-ocr` and the frontend listener picks it off the plugin
+//! channel `deep-link://new-url`. That channel's wire contract belongs to
+//! tauri-plugin-deep-link — the payload is a JSON string array, the URL is
+//! `payload[0]` — and is pinned by the wasm contract test in
+//! `origa_ui/src/core/tauri.rs` (bug #408 shipped as `event.url` readers
+//! that never matched, silently killing the warm deep-link paths on
+//! Android).
+//!
 //! Registered unconditionally like `request_app_review`; non-Android builds
 //! just log (the command never receives probes there — the selftest
 //! listener mounts on Android only).

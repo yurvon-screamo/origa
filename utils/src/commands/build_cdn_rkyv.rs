@@ -274,6 +274,77 @@ fn build_phrase_index_v3_blob(cdn_dir: &Path) -> Result<bool, String> {
     Ok(true)
 }
 
+/// Number of phrase data bundles on the CDN — keep in sync with
+/// scripts/bundle_phrases_data.py (CHUNKS_PER_BUNDLE = 34, 198 chunks).
+const PHRASE_BUNDLE_COUNT: usize = 6;
+
+fn phrase_bundle_source_path(index: usize) -> String {
+    format!("phrases/data_bundle_{index}.json")
+}
+
+fn phrase_bundle_blob_path(index: usize) -> String {
+    format!("phrases/data_bundle_{index}.v3.rkyv")
+}
+
+/// Deflated bundle blobs (uwuwu #1451): precache downloads these instead of
+/// raw JSON bundles (~5x smaller on the wire). The payload is the
+/// deterministic bundle JSON itself — client extraction parses generic JSON
+/// and splits it into per-chunk cache entries. The manifest guard binds the
+/// blob to phrases/data_bundle_N.json — the JSON source the bundle was
+/// built from, a VERSIONED_FILES path that always ships in the client
+/// manifest (the per-chunk files do NOT: phrases/data is a SYNC_DIR, so
+/// chunk-based guards would be a guaranteed Mismatch on every client).
+fn build_phrase_bundle_blobs(cdn_dir: &Path) -> Result<bool, String> {
+    let mut rebuilt = false;
+    for index in 0..PHRASE_BUNDLE_COUNT {
+        rebuilt |= build_phrase_bundle_blob(cdn_dir, index)?;
+    }
+    Ok(rebuilt)
+}
+
+fn build_phrase_bundle_blob(cdn_dir: &Path, index: usize) -> Result<bool, String> {
+    let source_path = phrase_bundle_source_path(index);
+    let blob_path = phrase_bundle_blob_path(index);
+
+    let source = read(cdn_dir, &source_path)?;
+    let source_hex = sha256_hex(&source);
+    let source_hash = sha256_raw(&source);
+    let expected_guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
+
+    // Freshness check BEFORE the write: schema, source hash AND the guard
+    // scheme itself — a blob built by an older guard derivation (e.g. the
+    // chunk-based one before review round 2) must regenerate, not skip.
+    let existing = read(cdn_dir, &blob_path)
+        .ok()
+        .and_then(|deflated| inflate_blob(&deflated).ok());
+    let is_fresh = matches!(
+        existing.as_deref().map(split_blob),
+        Some(Ok((header, _))) if header.schema_version == SCHEMA_VERSION
+            && header.source_sha256 == source_hash
+            && header.manifest_guard == expected_guard
+    );
+    if is_fresh {
+        tracing::info!("{blob_path} is fresh, skipping regeneration");
+        return Ok(false);
+    }
+
+    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&source_hex]);
+    let header = BlobHeader {
+        schema_version: SCHEMA_VERSION,
+        source_sha256: source_hash,
+        manifest_guard: guard,
+    };
+    let built = build_blob(&header, &source);
+    let deflated = deflate_blob(&built);
+    let deflated_len = deflated.len();
+    write(cdn_dir, &blob_path, &deflated)?;
+    tracing::info!(
+        "rebuilt {blob_path}: {:.1} MB deflated",
+        deflated_len as f64 / 1024.0 / 1024.0
+    );
+    Ok(true)
+}
+
 fn build_pitch_index_blob(cdn_dir: &Path) -> Result<bool, String> {
     build_single_source_index(cdn_dir, PITCH_INDEX_SOURCE, PITCH_INDEX_BLOB, |text| {
         let index = origa::dictionary::pitch_audio::PitchAudioIndex::from_json(text)
@@ -298,6 +369,8 @@ pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
     let phrase_v3_rebuilt = build_phrase_index_v3_blob(&cdn_dir)
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
+    let bundle_blobs_rebuilt = build_phrase_bundle_blobs(&cdn_dir)
+        .map_err(|reason| OrigaError::RepositoryError { reason })?;
     let pitch_rebuilt = build_pitch_index_blob(&cdn_dir)
         .map_err(|reason| OrigaError::RepositoryError { reason })?;
 
@@ -305,6 +378,7 @@ pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {
         && !vocabulary_rebuilt
         && !phrase_rebuilt
         && !phrase_v3_rebuilt
+        && !bundle_blobs_rebuilt
         && !pitch_rebuilt
     {
         println!("All CDN rkyv blobs are fresh, nothing to do");
@@ -321,6 +395,7 @@ mod tests {
         fs::create_dir_all(dir.join("dictionaries")).unwrap();
         fs::create_dir_all(dir.join("dictionary")).unwrap();
         fs::create_dir_all(dir.join("phrases")).unwrap();
+        fs::create_dir_all(dir.join("phrases/data")).unwrap();
         fs::create_dir_all(dir.join("pitch")).unwrap();
         for (path, bytes) in contents {
             fs::write(dir.join(path), bytes).unwrap();
@@ -352,7 +427,25 @@ mod tests {
         for index in 1..=CHUNK_COUNT {
             files.push((chunk_path(index), chunk_source()));
         }
+        files.extend(bundle_sources());
         files
+    }
+
+    fn bundle_sources() -> Vec<(String, Vec<u8>)> {
+        let chunk_a = br#"{"i":"01A","t":["hello"],"c":0}"#.to_vec();
+        let chunk_b = br#"{"i":"01B","t":["world"],"c":0}"#.to_vec();
+        let mut bundle = String::from("{");
+        bundle.push_str(r#""p0000":"#);
+        bundle.push_str(std::str::from_utf8(&chunk_a).unwrap());
+        bundle.push_str(r#","p0001":"#);
+        bundle.push_str(std::str::from_utf8(&chunk_b).unwrap());
+        bundle.push('}');
+
+        vec![
+            ("phrases/data/p0000.json".to_string(), chunk_a),
+            ("phrases/data/p0001.json".to_string(), chunk_b),
+            (phrase_bundle_source_path(0), bundle.into_bytes()),
+        ]
     }
 
     #[test]
@@ -419,6 +512,65 @@ mod tests {
 
         // Assert
         assert!(rebuilt, "stale blob is regenerated");
+
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn phrase_bundle_blob_builds_and_second_run_skips() {
+        // Arrange
+        let dir = temp_cdn(&all_sources());
+
+        // Act
+        let first = build_phrase_bundle_blob(&dir, 0).unwrap();
+        let second = build_phrase_bundle_blob(&dir, 0).unwrap();
+
+        // Assert
+        assert!(first, "first run rebuilds");
+        assert!(!second, "fresh bundle blob is skipped");
+
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn changed_phrase_bundle_source_invalidates_freshness() {
+        // Arrange
+        let dir = temp_cdn(&all_sources());
+        build_phrase_bundle_blob(&dir, 0).unwrap();
+
+        // Act: edit the bundle source
+        let path = dir.join(phrase_bundle_source_path(0));
+        let mut json = String::from_utf8(fs::read(&path).unwrap()).unwrap();
+        json.pop();
+        json.push_str(r#","p0002":[]}"#);
+        fs::write(&path, json).unwrap();
+        let rebuilt = build_phrase_bundle_blob(&dir, 0).unwrap();
+
+        // Assert
+        assert!(rebuilt, "stale bundle blob is regenerated");
+
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn phrase_bundle_guard_binds_to_the_source_json_hash() {
+        // Arrange: the guard must bind to phrases/data_bundle_N.json — the
+        // VERSIONED_FILES source whose hash ships in the client manifest
+        // (chunk paths are SYNC_DIR content and never reach the manifest).
+        let dir = temp_cdn(&all_sources());
+        build_phrase_bundle_blob(&dir, 0).unwrap();
+
+        // Act: inflate and read the guard back
+        let deflated = fs::read(dir.join(phrase_bundle_blob_path(0))).unwrap();
+        let inflated = inflate_blob(&deflated).unwrap();
+        let (header, payload) = split_blob(&inflated).unwrap();
+        let source = fs::read(dir.join(phrase_bundle_source_path(0))).unwrap();
+
+        // Assert
+        let expected = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&source)]);
+        assert_eq!(header.manifest_guard, expected);
+        assert_eq!(header.source_sha256, sha256_raw(&source));
+        assert_eq!(payload, &source);
 
         fs::remove_dir_all(&dir).ok();
     }

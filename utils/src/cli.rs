@@ -369,3 +369,32 @@ pub enum Commands {
         cdn_dir: Option<PathBuf>,
     },
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Cli;
+    use clap::CommandFactory;
+
+    /// The README catalog must know the live command set: every CLI
+    /// subcommand is mentioned in `utils/README.md`. The only intentional
+    /// omission is `generate-grammar-prompt` (the README says so — a
+    /// removal candidate alongside `generate-grammar`).
+    #[test]
+    fn readme_catalog_lists_all_cli_subcommands() {
+        let readme = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))
+            .expect("utils/README.md must be readable from the crate root");
+
+        let intentional = ["help", "generate-grammar-prompt"];
+        let missing: Vec<String> = Cli::command()
+            .get_subcommands()
+            .map(|sub| sub.get_name().to_string())
+            .filter(|name| !intentional.contains(&name.as_str()))
+            .filter(|name| !readme.contains(&format!("`{name}`")))
+            .collect();
+
+        assert!(
+            missing.is_empty(),
+            "utils/README.md misses CLI commands: {missing:?}"
+        );
+    }
+}

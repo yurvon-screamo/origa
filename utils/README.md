@@ -19,7 +19,7 @@ The CLI provides the following commands, grouped by purpose:
 - **Vocabulary QA**: `find-missing`, `validate-dictionary`, `regenerate-invalid`
 - **Grammar**: `generate-grammar`
 - **Phrases**: `build-phrase-dataset`, `retokenize-phrases`, `enrich-phrases-with-grammar`
-- **Kanji dictionary**: `dedup-kanji-readings`, `patch-kanji-readings`
+- **Kanji dictionary**: `collapse-kanji-readings`, `dedup-kanji-readings`, `patch-kanji-readings`
 - **CDN precompute**: `build-cdn-rkyv`, `build-grammar-precompute`, `build-phrase-precompute`
 
 `generate-grammar-prompt` exists in `--help` but is intentionally
@@ -307,9 +307,54 @@ utils enrich-phrases-with-grammar \
 - `--dictionary-dir <DIR>` - Dictionary directory for the tokenizer
   (optional, uses default path)
 
+### `collapse-kanji-readings` - Collapse Kanji Reading Variants
+
+Collapses kanji readings that are variants of one reading, using the
+JmdictFurigana corpus as the authority:
+
+- same-body kun readings (みる/みえる/みせる share the body み) keep one
+  representative: the reading matching a popular word of the kanji,
+  else the shortest form; kun readings with an ambiguous or
+  corpus-absent body stay untouched;
+- prefix (セ/セイ) and gemination (じゅう/じゅっ) variants of one on
+  reading keep the most corpus-frequent surface (shortest on ties).
+
+Readings unrelated by these rules stay untouched: go-on/kan-on
+doublets differing in the first mora (カン/ケン), rendaku kun pairs
+(ひ/び). Removed readings are also dropped from
+`reading_frequencies`.
+
+Report-only by default; `--apply` writes the changes back.
+
+```bash
+utils collapse-kanji-readings                  # report what would change
+utils collapse-kanji-readings --apply          # write + .bak backup
+```
+
+**Options:**
+
+- `-i, --input <INPUT>` - Path to `kanji.json`
+  (default: `cdn/dictionary/kanji.json`)
+- `--furigana <FURIGANA>` - Path to the JmdictFurigana corpus
+  (default: `cdn/dictionaries/JmdictFurigana.txt`)
+- `--apply` - Write changes back (with a `.bak` backup); without the
+  flag the run only reports what would change
+
+**Notes:**
+
+- Idempotent: on an already-collapsed dictionary the report shows
+  0 affected entries.
+- The `.bak` backup is overwritten on every `--apply`: a repeated
+  apply replaces the previous backup with the current state, so the
+  rollback point of the first apply lives only until the second one.
+
 ### `dedup-kanji-readings` - Remove Duplicate Kanji Readings
 
 Removes duplicate readings from the kanji dictionary.
+
+`collapse-kanji-readings` covers variant-readings cleanup (same-body
+kun forms, on prefix/gemination variants); this command only removes
+exact string duplicates and is kept for one-off cleanup.
 
 ```bash
 utils dedup-kanji-readings                    # default path

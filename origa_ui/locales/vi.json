@@ -726,7 +726,7 @@
     "loading_finalizing_progress": "Đang chuẩn bị tài liệu học • {} trên {}",
     "resource_download": {
       "title": "Tải tài liệu học",
-      "body": "Origa sẽ tải từ điển tiếng Nhật và tài liệu học (~230 MB) xuống thiết bị của bạn. Việc này chỉ xảy ra một lần; dữ liệu được lưu cục bộ để dùng ngoại tuyến.",
+      "body": "Origa sẽ tải từ điển tiếng Nhật và tài liệu học (~145 MB) xuống thiết bị của bạn. Việc này chỉ xảy ra một lần; dữ liệu được lưu cục bộ để dùng ngoại tuyến.",
       "start": "Tải xuống"
     },
     "load_error": {

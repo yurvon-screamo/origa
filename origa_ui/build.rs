@@ -329,8 +329,94 @@ fn generate_well_known_meta() {
     }
 
     let mut meta_list: Vec<WellKnownMeta> = Vec::new();
+    collect_jlpt_metas(&base_dir, &mut meta_list);
+    collect_migii_metas(&base_dir, &mut meta_list);
+    for kind in &DIR_KINDS {
+        collect_dir_metas(&base_dir, kind, &mut meta_list);
+    }
+    collect_duolingo_metas(&base_dir, &mut meta_list);
 
-    // JLPT files
+    // Sort by ID
+    meta_list.sort_by(|a, b| a.id.cmp(&b.id));
+
+    // Write output
+    let output = serde_json::to_string_pretty(&meta_list).expect("Failed to serialize meta list");
+    fs::write(&output_file, output).expect("Failed to write output file");
+
+    println!(
+        "cargo:warning=Generated {} meta entries to {}",
+        meta_list.len(),
+        output_file.display()
+    );
+}
+
+/// One declarative directory child of `well_known_set/`: a directory scanned
+/// for `.json` set files, optionally filtered by a filename prefix. The table
+/// is the generation-side twin of the watch list in
+/// `generate_well_known_meta`: a newly introduced child kind lands in both
+/// lists together.
+struct DirKind {
+    dir: &'static str,
+    /// Filename prefix filter; `None` = every `.json` in the dir (spy_family).
+    prefix: Option<&'static str>,
+    set_type: &'static str,
+    level: &'static str,
+}
+
+const DIR_KINDS: [DirKind; 8] = [
+    DirKind {
+        dir: "minna_n5",
+        prefix: Some("minna_n5_"),
+        set_type: "MinnaNoNihongo",
+        level: "N5",
+    },
+    DirKind {
+        dir: "minna_n4",
+        prefix: Some("minna_n4_"),
+        set_type: "MinnaNoNihongo",
+        level: "N4",
+    },
+    DirKind {
+        dir: "minna_n3",
+        prefix: Some("minna_n3_"),
+        set_type: "MinnaNoNihongo",
+        level: "N3",
+    },
+    DirKind {
+        dir: "minna_n2",
+        prefix: Some("minna_n2_"),
+        set_type: "MinnaNoNihongo",
+        level: "N2",
+    },
+    DirKind {
+        dir: "irodori_nyuumon",
+        prefix: Some("irodori_nyuumon_"),
+        set_type: "Irodori",
+        level: "N5",
+    },
+    DirKind {
+        dir: "irodori_shokyuu1",
+        prefix: Some("irodori_shokyuu1_"),
+        set_type: "Irodori",
+        level: "N4",
+    },
+    DirKind {
+        dir: "irodori_shokyuu2",
+        prefix: Some("irodori_shokyuu2_"),
+        set_type: "Irodori",
+        level: "N4",
+    },
+    DirKind {
+        dir: "spy_family",
+        prefix: None,
+        set_type: "SpyFamily",
+        level: "N3",
+    },
+];
+
+/// Collect meta for the flat per-level files: `jlpt_nN.json` next to the
+/// output file.
+fn collect_jlpt_metas(base_dir: &Path, meta_list: &mut Vec<WellKnownMeta>) {
     let jlpt_files = [
         ("jlpt_n5.json", "jlpt_n5", "N5"),
         ("jlpt_n4.json", "jlpt_n4", "N4"),
@@ -346,8 +432,11 @@ fn generate_well_known_meta() {
             meta_list.push(extract_meta(&mut data, set_id, "Jlpt", level));
         }
     }
+}
 
-    // Migii files
+/// Collect meta for the migii sets: `migii/{level}/migii_{level}_{i}.json`
+/// numbered `1..=count` per level.
+fn collect_migii_metas(base_dir: &Path, meta_list: &mut Vec<WellKnownMeta>) {
     let migii_configs = [
         ("n5", 20, "N5"),
         ("n4", 11, "N4"),
@@ -367,309 +456,112 @@ fn generate_well_known_meta() {
             }
         }
     }
+}
 
-    // Minna N5 files
-    let minna_n5_dir = base_dir.join("minna_n5");
-    if minna_n5_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&minna_n5_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("minna_n5_"))
+/// Collect meta for one dir-kind child: the sorted `.json` set files of
+/// `{base_dir}/{kind.dir}`, filtered by the filename prefix when one is set.
+/// Set id is the file stem.
+fn collect_dir_metas(base_dir: &Path, kind: &DirKind, meta_list: &mut Vec<WellKnownMeta>) {
+    let dir = base_dir.join(kind.dir);
+    if !dir.exists() {
+        return;
+    }
+    let mut entries: Vec<_> = fs::read_dir(&dir)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .filter(|e| {
+            e.path()
+                .extension()
+                .map(|ext| ext == "json")
                 .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N5"));
+        })
+        .collect();
+    entries.sort_by_key(|e| e.file_name());
+
+    for entry in entries {
+        let path = entry.path();
+        if let Some(prefix) = kind.prefix {
+            let name_matches = path
+                .file_name()
+                .map(|n| n.to_string_lossy().starts_with(prefix))
+                .unwrap_or(false);
+            if !name_matches {
+                continue;
             }
         }
+        let mut data = load_json(&path);
+        let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
+        meta_list.push(extract_meta(&mut data, &set_id, kind.set_type, kind.level));
     }
+}
 
-    // Minna N4 files
-    let minna_n4_dir = base_dir.join("minna_n4");
-    if minna_n4_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&minna_n4_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("minna_n4_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N4"));
-            }
-        }
-    }
-
-    // Minna N3 files
-    let minna_n3_dir = base_dir.join("minna_n3");
-    if minna_n3_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&minna_n3_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("minna_n3_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N3"));
-            }
-        }
-    }
-
-    // Minna N2 files
-    let minna_n2_dir = base_dir.join("minna_n2");
-    if minna_n2_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&minna_n2_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("minna_n2_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "MinnaNoNihongo", "N2"));
-            }
-        }
-    }
-
-    // Irodori Nyuumon files
-    let irodori_nyuumon_dir = base_dir.join("irodori_nyuumon");
-    if irodori_nyuumon_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&irodori_nyuumon_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("irodori_nyuumon_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N5"));
-            }
-        }
-    }
-
-    // Irodori Shokyuu1 files
-    let irodori_shokyuu1_dir = base_dir.join("irodori_shokyuu1");
-    if irodori_shokyuu1_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&irodori_shokyuu1_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("irodori_shokyuu1_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N4"));
-            }
-        }
-    }
-
-    // Irodori Shokyuu2 files
-    let irodori_shokyuu2_dir = base_dir.join("irodori_shokyuu2");
-    if irodori_shokyuu2_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&irodori_shokyuu2_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            if path
-                .file_name()
-                .map(|n| n.to_string_lossy().starts_with("irodori_shokyuu2_"))
-                .unwrap_or(false)
-            {
-                let mut data = load_json(&path);
-                let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-                meta_list.push(extract_meta(&mut data, &set_id, "Irodori", "N4"));
-            }
-        }
-    }
-
-    // Spy Family files
-    let spy_family_dir = base_dir.join("spy_family");
-    if spy_family_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&spy_family_dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "json")
-                    .unwrap_or(false)
-            })
-            .collect();
-        entries.sort_by_key(|e| e.file_name());
-
-        for entry in entries {
-            let path = entry.path();
-            let mut data = load_json(&path);
-            let set_id = path.file_stem().unwrap().to_string_lossy().to_string();
-            meta_list.push(extract_meta(&mut data, &set_id, "SpyFamily", "N3"));
-        }
-    }
-
-    // Duolingo files
+/// Collect meta for the duolingo sets: `{duolingo}/{parent}/{stem}.json` two
+/// levels deep; the level comes from the content file itself and an invalid
+/// value is warned about and skipped.
+fn collect_duolingo_metas(base_dir: &Path, meta_list: &mut Vec<WellKnownMeta>) {
     let duolingo_dir = base_dir.join("duolingo");
-    if duolingo_dir.exists() {
-        let mut entries: Vec<_> = fs::read_dir(&duolingo_dir)
+    if !duolingo_dir.exists() {
+        return;
+    }
+    let mut entries: Vec<_> = fs::read_dir(&duolingo_dir)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false))
+        .collect();
+    entries.sort_by_key(|e| e.file_name());
+
+    for subdir_entry in entries {
+        let subdir = subdir_entry.path();
+        let mut json_entries: Vec<_> = fs::read_dir(&subdir)
             .unwrap()
             .filter_map(|e| e.ok())
-            .filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false))
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "json")
+                    .unwrap_or(false)
+            })
             .collect();
-        entries.sort_by_key(|e| e.file_name());
+        json_entries.sort_by_key(|e| e.file_name());
 
-        for subdir_entry in entries {
-            let subdir = subdir_entry.path();
-            let mut json_entries: Vec<_> = fs::read_dir(&subdir)
+        for json_entry in json_entries {
+            let path = json_entry.path();
+            let stem = path.file_stem().unwrap().to_string_lossy();
+            let parent_name = path
+                .parent()
                 .unwrap()
-                .filter_map(|e| e.ok())
-                .filter(|e| {
-                    e.path()
-                        .extension()
-                        .map(|ext| ext == "json")
-                        .unwrap_or(false)
-                })
-                .collect();
-            json_entries.sort_by_key(|e| e.file_name());
+                .file_name()
+                .unwrap()
+                .to_string_lossy();
 
-            for json_entry in json_entries {
-                let path = json_entry.path();
-                let stem = path.file_stem().unwrap().to_string_lossy();
-                let parent_name = path
-                    .parent()
-                    .unwrap()
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy();
+            let mut data = load_json(&path);
 
-                let mut data = load_json(&path);
-
-                // Level comes from the content file's own `level` field
-                // (corpus ground truth: Section/Модуль 1-3 → N5, 4 → N4,
-                // 5-6 → N3). Title parsing was removed: RU-series English
-                // titles carry both tokens ("Module 5 Section 16"), so the
-                // heuristic read the sub-unit number — 55 sets were dropped
-                // and 66 tagged with their unit's level instead of their
-                // module's.
-                let level = data.level.trim().to_string();
-                if !matches!(level.as_str(), "N5" | "N4" | "N3") {
-                    eprintln!(
-                        "cargo:warning=Skipping duolingo set: invalid level {:?} for duolingo/{parent_name}/{stem}",
-                        level
-                    );
-                    continue;
-                }
-
-                let set_id = format!("duolingo_{}_{}", parent_name, stem);
-                let set_type = if stem.contains("_en_") {
-                    "DuolingoEn"
-                } else {
-                    "DuolingoRu"
-                };
-
-                meta_list.push(extract_meta(&mut data, &set_id, set_type, &level));
+            // Level comes from the content file's own `level` field
+            // (corpus ground truth: Section/Модуль 1-3 → N5, 4 → N4,
+            // 5-6 → N3). Title parsing was removed: RU-series English
+            // titles carry both tokens ("Module 5 Section 16"), so the
+            // heuristic read the sub-unit number — 55 sets were dropped
+            // and 66 tagged with their unit's level instead of their
+            // module's.
+            let level = data.level.trim().to_string();
+            if !matches!(level.as_str(), "N5" | "N4" | "N3") {
+                eprintln!(
+                    "cargo:warning=Skipping duolingo set: invalid level {:?} for duolingo/{parent_name}/{stem}",
+                    level
+                );
+                continue;
             }
+
+            let set_id = format!("duolingo_{}_{}", parent_name, stem);
+            let set_type = if stem.contains("_en_") {
+                "DuolingoEn"
+            } else {
+                "DuolingoRu"
+            };
+
+            meta_list.push(extract_meta(&mut data, &set_id, set_type, &level));
         }
     }
-
-    // Sort by ID
-    meta_list.sort_by(|a, b| a.id.cmp(&b.id));
-
-    // Write output
-    let output = serde_json::to_string_pretty(&meta_list).expect("Failed to serialize meta list");
-    fs::write(&output_file, output).expect("Failed to write output file");
-
-    println!(
-        "cargo:warning=Generated {} meta entries to {}",
-        meta_list.len(),
-        output_file.display()
-    );
 }
 
 /// Emit `OUT_DIR/fonts.rs` enumerating the subset woff2 files in `cdn/fonts/`.

@@ -3,7 +3,7 @@
 //! App Review Guideline 4.2.3(ii): when the app must download additional
 //! resources to be usable, the download size must be disclosed and the user
 //! must be prompted before it starts. This screen gates the dictionary /
-//! study-material fetch (~230 MB) behind an explicit "Download" click; the
+//! study-material fetch (~145 MB) behind an explicit "Download" click; the
 //! choice is persisted so subsequent launches load without prompting.
 
 use crate::i18n::{t, use_i18n};

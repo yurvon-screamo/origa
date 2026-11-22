@@ -106,6 +106,13 @@ redirects and personal services.
 
 ## Change procedure
 
+**Deploys come from `origin/master` only.** A pre-stage deploy from an
+unmerged task branch is allowed only with a flag block in the task body: the
+owner request quote, the `ReleaseId` it overwrites, and the restore plan
+(re-deploy master after merge). One script — one slot: the latest deploy
+silently overwrites whatever a parallel session shipped (the 2026-11-08
+incident).
+
 ```bash
 # edit handleQuery.js, then:
 node infra/bunny-dns/smoke.test.mjs                 # branch matrix must stay green
@@ -113,9 +120,25 @@ node --check infra/bunny-dns/handleQuery.js         # syntax gate
 bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629   # upload + publish
 ```
 
-Deploy is a production change: record the live dig matrix
-(RU `@77.88.8.8` / world `@1.1.1.1` × `s3`/`content`) before and after — it
-must be identical while the VM is alive.
+Deploy is a production change, and Bunny never returns the deployed code —
+the verifiable contract is the metadata pair. Canonical probe (single path;
+these raw fields are exactly what the poller's drift check compares):
+
+```bash
+curl -fsS -H "AccessKey: $BUNNY_API_KEY" https://api.bunny.net/compute/script \
+  | jq -r '.Items[] | select(.Id == 91629) | "\(.CurrentReleaseId):\(.LastModified)"'
+```
+
+- **Right after a deploy:** run the probe and record `CurrentReleaseId` +
+  `LastModified` (+ the source commit SHA/branch) in the task body — the
+  deploy record. Once the uptime poller is live (runbook
+  `docs/runbooks/uptime-monitoring.md`, uwuwu #421), every deploy also
+  produces exactly one CHANGED Telegram alert: your own CHANGED is the
+  post-deploy confirmation, an unexplained one means someone overwrote you.
+- **Before closing the task:** re-run the probe — the pair must be unchanged
+  since the record (nobody overwrote the deploy in between) — and record the
+  live dig matrix (RU `@77.88.8.8` / world `@1.1.1.1` × `s3`/`content`): it
+  must be identical while the VM is alive.
 
 Rollback: `git revert` the change commit, redeploy. Convergence depends on
 what clients currently hold: a stale RF A record expires within TTL 60, but

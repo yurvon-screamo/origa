@@ -129,6 +129,11 @@ pub fn create_search_backfill_effect<T>(
         done,
         loading,
     } = state;
+    // Page-scoped sentinel: the backfill task may outlive the page (the
+    // full-set load is the slowest fetch on card pages), so every
+    // post-await step is fenced — matching the visible-slice loader's
+    // disposed guard (see `create_visible_slice_loader`).
+    let disposed = StoredValue::new(());
     Effect::new(move |_| {
         let query = search.get();
         if query.trim().is_empty() || done.get_untracked() || loading.get_untracked() {
@@ -148,6 +153,13 @@ pub fn create_search_backfill_effect<T>(
                 "Backfilling card details for search"
             );
             (load_batch)(missing).await;
+            // The page went away while the batch was in flight: the flags
+            // belong to that mount only — leave them untouched (writes to
+            // disposed signals are silent no-ops, but the task has no
+            // business continuing).
+            if disposed.is_disposed() {
+                return;
+            }
             loading.set(false);
             done.set(true);
         });

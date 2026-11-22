@@ -20,9 +20,12 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
     let is_changing = RwSignal::new(false);
     let error_message = RwSignal::<Option<String>>::new(None);
     let success_message = RwSignal::<Option<String>>::new(None);
+    // Page-scoped disposal sentinel for the overdue-closure fence below.
+    let disposed = StoredValue::new(());
 
     let on_submit = Callback::new(move |_| {
         let client = auth_store.client().clone();
+        let disposed = disposed;
         let old = current_password.get();
         let new_pwd = new_password.get();
         let confirm = confirm_password.get();
@@ -49,6 +52,12 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
         spawn_local(async move {
             match client.change_password(&old, &new_pwd, &confirm).await {
                 Ok(()) => {
+                    // Overdue-closure fence (#1443): the IPC round-trip may
+                    // outlive the page (user navigates away mid-change) —
+                    // everything below is UI of this mount only.
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     success_message.set(Some(
                         td_string!(i18n.get_locale(), profile.password_changed).to_string(),
                     ));
@@ -58,12 +67,18 @@ pub fn PasswordCard(#[prop(optional, into)] test_id: Signal<String>) -> impl Int
                 },
                 Err(e) => {
                     error!(error = %e, "Password change failed");
+                    if disposed.is_disposed() {
+                        return;
+                    }
                     error_message.set(Some(format!(
                         "{}: {}",
                         td_string!(i18n.get_locale(), profile.password_change_error),
                         e
                     )));
                 },
+            }
+            if disposed.is_disposed() {
+                return;
             }
             is_changing.set(false);
         });
