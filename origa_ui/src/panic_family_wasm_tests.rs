@@ -140,10 +140,11 @@ async fn overdue_task_sees_disposal_via_try_probes_and_silent_writes() {
 // card list state — the Sentry breadcrumb pattern «каждый второй клик по
 // карточной кнопке паникует». Signal-level replica of the page wiring:
 // an Effect subscribed to the trigger spawns a reload task; a second
-// effect stands in for the card memos. NOTE: the replica models only the
-// SIGNAL graph — the real page's view layer (mounted card components and
-// their disposal during re-render) is intentionally not built here, so a
-// survival here does NOT close the production point (see the task body).
+// effect stands in for the card memos. Caveat: the replica models only
+// the SIGNAL graph — the real page's view layer (mounted card components
+// and their disposal during re-render) is intentionally not built here,
+// so a survival here does NOT close the production point (see the task
+// body).
 // ═══════════════════════════════════════════════════════════════════════
 
 #[wasm_bindgen_test]
