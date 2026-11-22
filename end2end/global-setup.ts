@@ -8,6 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { getTrailBaseUrl } from "./config";
 import { TRAILBASE_PORT } from "./shots/config.ts";
+import { winTrailKillCommand } from "./trail-kill.ts";
 
 // Add ~/.local/bin to PATH for trail CLI
 if (
@@ -21,14 +22,16 @@ if (
   }
 }
 
-// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override) —
-// imported after ./config so the dotenv bootstrap has already run.
-// The trail process spawns on 127.0.0.1:PORT and the healthcheck waits on
-// that exact address (waitForTrailBase uses trailbaseSpawnUrl below); the
-// TRAILBASE_URL env is left untouched — offline specs build request
-// intercepts from it and the bundle embeds it, so host spelling
-// (localhost vs 127.0.0.1) must stay whatever the caller provided
-// (ci.yml uses localhost; rewriting it here breaks the intercepts).
+// TRAILBASE_PORT comes from shots/config.ts (E2E_TRAILBASE_PORT override).
+// Module order does NOT make the .env visible here: shots/config.ts is a
+// dependency of ./config, so it is evaluated before config.ts's dotenv
+// bootstrap either way — the ports resolve from shell env only (the
+// contract documented in end2end/AGENTS.md). The trail process spawns on
+// 127.0.0.1:PORT and the healthcheck waits on that exact address
+// (waitForTrailBase uses trailbaseSpawnUrl below). This setup reads no
+// TRAILBASE_URL: the bundle gets its compile-time URL from the webServer
+// env, and the offline intercept steps derive both host forms from the
+// port (getTrailBaseUrl), so there is nothing shell-level to preserve.
 
 /** The address the trail process is spawned on (loopback, always reachable). */
 const trailbaseSpawnUrl = `http://127.0.0.1:${TRAILBASE_PORT}`;
@@ -111,13 +114,18 @@ function setAdminPassword(): void {
 function killExistingTrailBase(): void {
   try {
     if (process.platform === "win32") {
-      execSync("taskkill /f /im trail.exe", { stdio: "pipe" });
+      // Port-scoped via winTrailKillCommand() (trail-kill.ts): the
+      // command line carries the exact spawned address, so a parallel
+      // checkout's TrailBase on another E2E_TRAILBASE_PORT survives.
+      execSync(winTrailKillCommand(TRAILBASE_PORT), { stdio: "pipe" });
     } else {
-      // Port-scoped pattern: a parallel checkout on a shared machine runs
-      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a bare
-      // `pkill -f 'trail run'` would take that stranger down too.
+      // Port-scoped pattern, anchored at the end of the address argument
+      // (ERE, ( |$)): a bare substring would let a configured 4000 match
+      // a stranger's 40000. A parallel checkout on a shared machine runs
+      // its own TrailBase on a different port (E2E_TRAILBASE_PORT); a
+      // bare `pkill -f 'trail run'` would take that stranger down too.
       execSync(
-        `pkill -f 'trail run --dev --address 127.0.0.1:${TRAILBASE_PORT}'`,
+        `pkill -f 'trail run --dev --address 127\\.0\\.0\\.1:${TRAILBASE_PORT}( |$)'`,
         { stdio: "pipe" },
       );
     }

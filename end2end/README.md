@@ -22,11 +22,20 @@ npm run guard:matrix  # проверка CI-матрицы (см. ниже)
 
 Playwright сам поднимает всю инфраструктуру — вручную ничего не нужно:
 
-| Сервис        | Порт | Кто поднимает            | Конфиг                |
-|---------------|------|--------------------------|-----------------------|
-| TrailBase     | 4000 | `global-setup.ts`        | `trail run --dev`     |
-| CDN (статика) | 8080 | `playwright.config.ts`   | `npx serve <корпус>` ($ORIGA_CDN_DIR or ~/origa-cdn)  |
-| Приложение    | 1420 | `playwright.config.ts`   | `trunk serve` / dist  |
+| Сервис        | Порт по умолчанию           | Кто поднимает          | Конфиг                |
+|---------------|-----------------------------|------------------------|-----------------------|
+| TrailBase     | 4000 (`E2E_TRAILBASE_PORT`) | `global-setup.ts`      | `trail run --dev`     |
+| CDN (статика) | 8080 (`E2E_CDN_PORT`)       | `playwright.config.ts` | `npx serve <корпус>` ($ORIGA_CDN_DIR or ~/origa-cdn)  |
+| Приложение    | 1420 (`E2E_APP_PORT`)       | `playwright.config.ts` | `trunk serve` / dist  |
+
+Порты переопределяются переменными **оболочки** (не `.env` — порты
+резолвятся при загрузке конфига, до dotenv-бутстрапа; единственный
+источник — `shots/config.ts`): `E2E_TRAILBASE_PORT` (4000),
+`E2E_CDN_PORT` (8080), `E2E_APP_PORT` (1420), бюджет старта app-сервера —
+`E2E_APP_SERVER_TIMEOUT` (мс). Параллельные чекауты на одной машине
+разводятся своим трио портов; kill отставшего TrailBase перед прогоном
+скоупится по настроенному порту (posix и Windows) — чужой инстанс на
+другом порту не страдает.
 
 Каталог корпуса для **раздачи контента** резолвится в `shots/config.ts`
 (зеркало `origa/src/corpus.rs`): `ORIGA_CDN_CACHE_DIR` → `ORIGA_CDN_DIR`
@@ -41,14 +50,19 @@ wasm-билд (дефолт час, `E2E_APP_SERVER_TIMEOUT` переопред�
 проверяет ровно этот резолв (`shots/probe.ts`) — зелёный preflight при
 расхождении двух переменных невозможен; отдельный симлинк не нужен.
 
-`.env` (обязателен):
+`.env` (обязателен; шаблон — `.env.example`):
 
 ```
 ORIGA_ADMIN_EMAIL=admin@localhost
 ORIGA_ADMIN_PASSWORD=secret
-TRAILBASE_URL=http://127.0.0.1:4000
-ORIGA_CDN_BASE_URL=http://localhost:8080
 ```
+
+Это весь `.env`-контракт: адреса сервисов харнес строит сам из портов,
+а compile-time `TRAILBASE_URL` / `ORIGA_CDN_BASE_URL` бандлу подставляет
+webServer — строка `TRAILBASE_URL` в `.env` ничего не читает. Ручные
+seed/patch-скрипты (`scripts/*.mjs`) — исключение: они берут
+`TRAILBASE_URL` (сначала оболочка, фоллбэк — собственный парсинг
+`../.env`), чтобы говорить с запущенным инстансом.
 
 Локально прогон идёт против dev-сборки (`trunk serve`). Сценарий
 `failure_paths` («Недоступный CDN…») осмыслен только против release-сборки
