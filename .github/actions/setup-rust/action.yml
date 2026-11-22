@@ -27,10 +27,36 @@ outputs:
 runs:
     using: "composite"
     steps:
+        # The toolchain version lives in rust-toolchain.toml (repo root) —
+        # the same carrier rustup and both Dockerfiles read. Install exactly
+        # the pinned channel instead of a floating @stable ref: the lint set
+        # of the gate must not drift until a deliberate bump PR (task
+        # origa#1056).
+        - name: Resolve pinned toolchain channel
+          id: toolchain
+          run: |
+              channel="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
+              echo "channel=${channel:-stable}" >> "$GITHUB_OUTPUT"
+          shell: bash
+
         - name: Setup Rust toolchain
-          uses: dtolnay/rust-toolchain@stable
+          uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
           with:
+              toolchain: ${{ steps.toolchain.outputs.channel }}
               targets: ${{ inputs.targets }}
+
+        # Fail loud if the pin did not take (a silent fallback to whatever
+        # stable the runner preinstalls would reopen the drift class this
+        # wiring exists to close).
+        - name: Assert active toolchain matches the pin
+          run: |
+              channel="${{ steps.toolchain.outputs.channel }}"
+              active="$(rustup show active-toolchain)"
+              case "$active" in
+                  "$channel"-* | "$channel") echo "active toolchain: $active" ;;
+                  *) echo "::error::active toolchain '$active' does not match the pinned channel '$channel' from rust-toolchain.toml"; exit 1 ;;
+              esac
+          shell: bash
 
         - name: Setup cargo cache
           uses: Swatinem/rust-cache@v2

@@ -1,0 +1,22 @@
+# Pinned Rust toolchain — single source of truth for CI, local dev and Docker.
+#
+# rustup applies this file automatically to every cargo/rustup invocation in
+# the working tree; .github/actions/setup-rust parses the channel from here
+# for the runner install, and both Dockerfiles derive --default-toolchain
+# from it (the RUST_VERSION ARG is gone — one carrier, not two).
+#
+# Bump protocol (the class this file closes — task origa#1056):
+# a toolchain bump = a dedicated PR that changes ONLY this line (plus
+# whatever the new lints demand). The path filters of ci.yml include this
+# file in the `ci` component, which forces a full matrix run — so the
+# bump PR's CI is the independent proof that master content passes the new
+# lint set (target-specific lints included: macOS/iOS checks, wasm clippy,
+# android smoke). Findings are fixed inside the bump PR — never as
+# ride-along commits in unrelated tasks. Between bumps the lint set is
+# frozen: rebases see exactly the gate previous PRs saw.
+#
+# Minor-level pin: "1.100" resolves to 1.100.0; patch releases of the same
+# minor do not change the lint set.
+
+[toolchain]
+channel = "1.100"

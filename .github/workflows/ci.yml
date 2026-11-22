@@ -220,6 +220,12 @@ jobs:
                           - translator/**
                       ci:
                           - .github/**
+                          # The toolchain pin: a bump-PR touching only this
+                          # file must force the full matrix (Lint, clippy,
+                          # macOS/iOS checks, android smoke, e2e) on the new
+                          # toolchain — that run is the bump protocol's
+                          # independent proof (see rust-toolchain.toml).
+                          - rust-toolchain.toml
                           # Factory TS sources are qlty formatter targets
                           # (prettier) and match no other component; they
                           # ride the ci component (full run, rare changes).
