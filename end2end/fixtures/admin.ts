@@ -43,6 +43,8 @@ export interface AdminTokens {
 export interface LoginResponse {
   token: string;
   csrfToken?: string;
+  /** TrailBase refresh token — the seeded session stores it verbatim. */
+  refreshToken?: string;
 }
 
 export async function getAdminToken(): Promise<AdminTokens> {
@@ -259,5 +261,6 @@ export async function loginTestUser(
   return {
     token: data.auth_token,
     csrfToken: data.csrf_token,
+    refreshToken: data.refresh_token,
   };
 }

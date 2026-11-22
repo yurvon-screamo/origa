@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
-import { uiLogin } from "../../helpers/auth";
+import { apiLogin } from "../../helpers/auth";
+import { getAppBaseUrl } from "../../config";
 import { Given, Then } from "../fixtures";
 
 /**
@@ -25,14 +26,17 @@ Given(
         cdnRequestLog.push(request.url());
       });
 
-      await uiLogin(page, testUser.email, testUser.password);
+      // The rkyv fast-path is the test target here, not the login form:
+      // seed the session via the API seam (the same mechanism the page
+      // fixture uses), so the scenario measures exactly one authenticated
+      // boot. The listener above is attached before the first navigation,
+      // so the log still covers the whole startup.
+      await apiLogin(context, testUser.email, testUser.password);
 
-      // uiLogin's race may return as soon as the login form unmounts —
-      // the login flow (and thus the dictionary bootstrap behind
-      // ProtectedRoute) can still be in flight. Wait for the terminal
-      // navigation first (fresh user → /onboarding, restored → /home),
-      // then for the loading overlay to run its full course: this is
-      // what actually issues the rkyv requests this scenario asserts on.
+      // Fresh user → /onboarding, restored → /home; the loading overlay
+      // runs its full course during the boot below — this is what
+      // actually issues the rkyv requests this scenario asserts on.
+      await page.goto(getAppBaseUrl(), { waitUntil: "domcontentloaded" });
       await page
         .waitForURL(/\/(home|onboarding)/, { timeout: 90_000 })
         .catch(() => tracing_note_stuck_url(page));
