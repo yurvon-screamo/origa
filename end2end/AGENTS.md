@@ -107,7 +107,9 @@ repository fail the run before a pixel is written. Then the Playwright
 driver (`screenshots-spec/capture.spec.ts`) takes the screenshots, and the
 CLI writes the captures into the registry
 (`docs/ui-screenshots/shots/`) and prints the markdown block for a pull
-request body.
+request body. Capture does not touch the generated index
+(`docs/ui-screenshots/README.md`): the Shots Index workflow rebuilds it
+on master after merge — `npm run shots -- index` previews it locally.
 
 **Do not write a new capture script.** A new screen is a new entry in the
 catalog:

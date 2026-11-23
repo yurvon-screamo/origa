@@ -241,9 +241,8 @@ async function captureCommand(options: Options): Promise<number> {
     for (const entry of entries) {
       await mergeEntry(directory, entry, uploads.get(entry.file));
     }
-    await writeIndex(directory, await readRegistry(directory));
     console.log(
-      `\nРеестр обновлён: ${join(repoRoot, "docs", "ui-screenshots")}`,
+      `\nРеестр обновлён: ${join(repoRoot, "docs", "ui-screenshots", "shots")} (JSON-записи; индекс README.md после мержа пересобирает CI — локально посмотреть: npm run shots -- index)`,
     );
   }
 
