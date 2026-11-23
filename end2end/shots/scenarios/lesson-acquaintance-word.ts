@@ -119,13 +119,20 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
         !textFrontShot &&
         (await front.isVisible().catch(() => false)) &&
         !(await audioFrontPlay.isVisible().catch(() => false)) &&
-        // Only a VOICED front carries the corner button: kanji/counter
-        // fronts are silent (no button) — skip them, keep cycling.
-        (await cornerButton.isVisible().catch(() => false))
+        // Only a VOICED front carries the corner button — but a voiced
+        // front is not necessarily a WORD front: grammar fronts render
+        // span.font-serif (TranslatorText), the translation side is
+        // p.font-mono, a kanji draw has no button at all. Gate the shot
+        // on the serif WORD paragraph itself, or the assert below races
+        // the draw order and fails at random.
+        (await cornerButton.isVisible().catch(() => false)) &&
+        (await front
+          .locator("p.font-serif")
+          .first()
+          .isVisible()
+          .catch(() => false))
       ) {
-        // The text front (word or grammar — both seeded words are long
-        // and voiced now). A raw selector inside the marked front: the
-        // word text has no marker of its own (a bare serif paragraph).
+        // The word text front: the serif paragraph is the word.
         await expect(
           front.locator("p.font-serif").first(),
           "the text front shows a serif word",
@@ -136,20 +143,31 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
       }
 
       if (!answerShot) {
-        await reveal.click({ timeout: 2_000 }).catch(() => undefined);
-        const answerVisible = await page
-          .getByTestId("acquaintance-training-answer")
-          .waitFor({ state: "visible", timeout: 3_000 })
-          .then(() => true)
+        // Only a VOICED card owns the corner button on the answer side:
+        // a kanji card has no reading, its answer legitimately shows no
+        // button (the wasm contract
+        // audio_button_hidden_on_kanji_slide). Ask the front for the
+        // voice before revealing — otherwise the assert races the
+        // 1-in-5 kanji draw and fails at random.
+        const frontVoiced = await cornerButton
+          .isVisible({ timeout: 300 })
           .catch(() => false);
-        if (answerVisible) {
-          await expect(
-            cornerButton,
-            "the corner button returns on the answer side",
-          ).toBeVisible();
-          await page.waitForTimeout(500);
-          await sink.shot("word-training-answer");
-          answerShot = true;
+        if (frontVoiced) {
+          await reveal.click({ timeout: 2_000 }).catch(() => undefined);
+          const answerVisible = await page
+            .getByTestId("acquaintance-training-answer")
+            .waitFor({ state: "visible", timeout: 3_000 })
+            .then(() => true)
+            .catch(() => false);
+          if (answerVisible) {
+            await expect(
+              cornerButton,
+              "the corner button returns on the answer side",
+            ).toBeVisible();
+            await page.waitForTimeout(500);
+            await sink.shot("word-training-answer");
+            answerShot = true;
+          }
         }
       }
       // «Не помню» keeps every criterion open — the rotation continues
