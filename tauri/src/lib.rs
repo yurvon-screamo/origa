@@ -148,19 +148,13 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
-    // Cold-start delivery: file-association launches arrive before any
-    // window exists, so pending collection happens pre-run and the
-    // frontend picks it up via get_pending_share.
     deliver_cold_start_shares(&app);
 
-    // macOS file-association and reopened-file delivery (both cold and
-    // warm runs surface here as Opened events).
     app.run(on_run_event);
 }
 
 /// Registers every tauri plugin on the builder, with each block keeping its
-/// original platform cfg gating and policy comments. Extracted verbatim from
-/// `run()` — only the builder plumbing changed.
+/// original platform cfg gating and policy comments.
 fn register_plugins(mut builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> {
     // Single-instance focus-on-launch is Windows/Linux-only and STAYS in
     // app-store builds: under MSIX the OS delivers `origa://` protocol
@@ -263,8 +257,7 @@ fn register_plugins(mut builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<t
 }
 
 /// The `setup` closure body: release-health session, the `deep-link://new-url`
-/// listener, runtime scheme registration and the devtools notice. Extracted
-/// verbatim from `run()` — only the closure wrapper changed.
+/// listener, runtime scheme registration and the devtools notice.
 fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("[deep-link] setup started");
 
@@ -340,8 +333,7 @@ fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
 /// The `app.run` event closure: file-association and reopened-file delivery
 /// on mobile/Apple platforms (both cold and warm runs surface here as Opened
-/// events). Extracted verbatim from `run()` — only the closure wrapper
-/// changed; the underscore parameters keep the desktop builds warning-free
+/// events). The underscore parameters keep the desktop builds warning-free
 /// where the cfg-gated body compiles out.
 fn on_run_event(_app_handle: &tauri::AppHandle, _event: tauri::RunEvent) {
     #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
@@ -365,7 +357,7 @@ fn on_run_event(_app_handle: &tauri::AppHandle, _event: tauri::RunEvent) {
 
 /// Cold-start share delivery: file-association launches arrive before any
 /// window exists, so pending collection happens pre-run and the frontend
-/// picks it up via get_pending_share. Extracted verbatim from `run()`.
+/// picks it up via get_pending_share.
 fn deliver_cold_start_shares(app: &tauri::App) {
     let handle = app.handle();
     share_intake::cleanup_stale_share_files(handle);
