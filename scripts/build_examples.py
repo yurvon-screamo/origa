@@ -12,8 +12,14 @@ Outputs (all under cdn/examples/):
   data/sNNNN.json   [{"i","x","en","f"}] — deduped sentences, ~1000 per chunk,
                     translations ru/vi/ko merged later by merge_translations.py
 
-Deterministic: sorted iteration, stable ids (sid = 0-based insertion order after
-sorting sentences by id). Re-running with the same inputs yields identical bytes.
+Deterministic: sorted iteration. Sentence ids are STABLE across regenerations
+via carry-over: a sentence whose text already existed in the previous corpus
+keeps its previous id (so the immutable, id-addressed audio keys
+`examples/audio/{id}.opus` and the ru/vi/ko translations inside the chunks
+survive a regeneration); only genuinely new sentences get fresh ids above the
+old index's max sid. Requires the previous corpus (index.json + data/*.json)
+to be present in cdn/examples/; otherwise falls back to compact ids with a
+warning. Re-running with the same inputs yields identical bytes.
 
 The word→sentence matching result is cached to /tmp/opencode/examples_matches.json
 for the translation pipeline.
@@ -263,6 +269,108 @@ def select_for_words(
     return sel
 
 
+def read_old_corpus(
+    out_dir: Path,
+) -> tuple[dict[int, str], dict[str, int], dict[int, dict[str, str]], int]:
+    """Read the previous corpus for carry-over of stable sentence ids.
+
+    Returns (old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid).
+    Only INDEX-REFERENCED sentences are included: filler sentences
+    (generate_missing_examples.py) have no refs in index.json and are dead
+    weight, so they are deliberately dropped here. Collision policy for
+    duplicate x: smallest old_sid wins (handled while building old_x_to_sid).
+
+    Returns empty structures when no previous corpus is present (fresh
+    machine) so the caller falls back to compact ids.
+    """
+    old_sid_to_x: dict[int, str] = {}
+    old_x_to_sid: dict[str, int] = {}
+    old_sid_to_tr: dict[int, dict[str, str]] = {}
+    max_old_index_sid = 0
+
+    old_index_path = out_dir / "index.json"
+    old_chunks = sorted(out_dir.glob("data/s*.json"))
+    if not (old_index_path.exists() and old_chunks):
+        return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
+
+    try:
+        old_index = json.loads(old_index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
+
+    referenced_sids: set[int] = set()
+    for w, v in old_index.get("words", {}).items():
+        for r in v.get("refs", []):
+            if isinstance(r, list) and r:
+                try:
+                    sid = int(r[0])
+                except (TypeError, ValueError):
+                    continue
+                referenced_sids.add(sid)
+                max_old_index_sid = max(max_old_index_sid, sid)
+
+    for cf in old_chunks:
+        try:
+            rows = json.loads(cf.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for row in rows:
+            try:
+                sid = int(row["i"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if sid not in referenced_sids:
+                continue  # filler / unreferenced: drop
+            x = row.get("x", "")
+            if not isinstance(x, str) or not x:
+                continue
+            old_sid_to_x[sid] = x
+            if x not in old_x_to_sid or sid < old_x_to_sid[x]:
+                old_x_to_sid[x] = sid
+            tr = {}
+            for L in ("ru", "vi", "ko"):
+                v = row.get(L)
+                if isinstance(v, str) and v.strip():
+                    tr[L] = v
+            if tr:
+                old_sid_to_tr[sid] = tr
+    return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
+
+
+def build_sid_map(
+    sentences: list[dict],
+    used_sids: list[int],
+    old_x_to_sid: dict[str, int],
+    max_old_index_sid: int,
+) -> tuple[dict[int, int], dict[str, int]]:
+    """Map each newly-parsed sid to a carried (old) or fresh id.
+
+    Returns (sid_map, stats) where stats = {"carried", "new"}.
+    """
+    sid_map: dict[int, int] = {}
+    stats = {"carried": 0, "new": 0}
+    next_new_id = max_old_index_sid + 1 if max_old_index_sid > 0 else 1
+    # if no old corpus, start compact ids at 0 to mirror legacy behaviour
+    if max_old_index_sid == 0 and not old_x_to_sid:
+        next_new_id = 0
+    used_old_sids: set[int] = set()
+    for sid in used_sids:
+        x = sentences[sid]["x"]
+        old_sid = old_x_to_sid.get(x)
+        # an old sid can be claimed by only one new sentence (1:1 carry);
+        # a duplicate x on the new side (or an already-claimed old sid)
+        # falls through to a fresh id.
+        if old_sid is not None and old_sid not in used_old_sids:
+            sid_map[sid] = old_sid
+            used_old_sids.add(old_sid)
+            stats["carried"] += 1
+        else:
+            sid_map[sid] = next_new_id
+            next_new_id += 1
+            stats["new"] += 1
+    return sid_map, stats
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -283,7 +391,7 @@ def main() -> int:
     examples_path = args.examples or (WORK / "examples.utf")
 
     WORK.mkdir(parents=True, exist_ok=True)
-    ensure_examples_file(args.examples)
+    ensure_examples_file(examples_path)
 
     words = load_popular_words()
     print(f"popular words: {len(words)}", flush=True)
@@ -298,36 +406,71 @@ def main() -> int:
     full = sum(1 for v in sel.values() if len(v) >= 3)
     print(f"coverage: >=1: {covered}/{len(words)} | >=3: {full}", flush=True)
 
+    # --- Carry-over of stable sentence ids (post-#929 regeneration) -------
+    # See read_old_corpus / build_sid_map helpers above.
+    out_dir = CDN / "examples"
+    (out_dir / "data").mkdir(parents=True, exist_ok=True)
+
+    old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid = read_old_corpus(
+        out_dir
+    )
+    if old_x_to_sid:
+        print(
+            f"carry-over: old index max sid {max_old_index_sid}, "
+            f"referenced rows {len(old_sid_to_x)}, "
+            f"unique x {len(old_x_to_sid)}",
+            flush=True,
+        )
+    else:
+        print("carry-over: no previous corpus found; using compact ids", flush=True)
+
     used_sids = sorted({ref["sid"] for v in sel.values() for ref in v})
-    sid_to_new = {sid: i for i, sid in enumerate(used_sids)}
+
+    sid_map, carry_stats = build_sid_map(
+        sentences, used_sids, old_x_to_sid, max_old_index_sid
+    )
+    print(
+        f"carry-over: carried {carry_stats['carried']}, "
+        f"new {carry_stats['new']}, "
+        f"max id now {max(sid_map.values()) if sid_map else 0}",
+        flush=True,
+    )
+
     out_sentences = []
     for sid in used_sids:
         s = sentences[sid]
-        out_sentences.append(
-            {"i": sid_to_new[sid], "x": s["x"], "en": s["en"], "f": s["f"]}
-        )
+        carried_sid = sid_map[sid]
+        row = {"i": carried_sid, "x": s["x"], "en": s["en"], "f": s["f"]}
+        old_sid = old_x_to_sid.get(s["x"])
+        if old_sid is not None and old_sid in old_sid_to_tr:
+            for L in ("ru", "vi", "ko"):
+                v = old_sid_to_tr[old_sid].get(L)
+                if v is not None:
+                    row[L] = v
+        out_sentences.append(row)
 
     out_words = {
         w: {
-            "refs": [[sid_to_new[r["sid"]], r["start"], r["end"]] for r in sel[w]],
+            "refs": [[sid_map[r["sid"]], r["start"], r["end"]] for r in sel[w]],
         }
         for w in sorted(sel)
     }
 
-    out_dir = CDN / "examples"
-    (out_dir / "data").mkdir(parents=True, exist_ok=True)
+    # wipe old chunks AFTER reading them for carry-over
     for old in out_dir.glob("data/s*.json"):
         old.unlink()
 
-    chunks = 0
-    for start in range(0, len(out_sentences), CHUNK_SIZE):
-        part = out_sentences[start : start + CHUNK_SIZE]
-        p = out_dir / "data" / f"s{chunks:04d}.json"
+    # write chunks by id RANGE so gaps do not eat files
+    chunks_map: dict[int, list[dict]] = {}
+    for row in out_sentences:
+        chunks_map.setdefault(row["i"] // CHUNK_SIZE, []).append(row)
+    for cn in sorted(chunks_map):
+        chunks_map[cn].sort(key=lambda r: r["i"])
+        p = out_dir / "data" / f"s{cn:04d}.json"
         p.write_text(
-            json.dumps(part, ensure_ascii=False, separators=(",", ":")),
+            json.dumps(chunks_map[cn], ensure_ascii=False, separators=(",", ":")),
             encoding="utf-8",
         )
-        chunks += 1
 
     body = json.dumps(
         {"v": 1, "h": "", "words": out_words, "s": len(out_sentences)},
@@ -343,13 +486,19 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # cache matches for the translation pipeline
+    # cache matches for the translation pipeline (ids aligned with chunks)
+    cache_sel = {}
+    for w in sorted(sel):
+        cache_sel[w] = [
+            {"sid": sid_map[r["sid"]], "start": r["start"], "end": r["end"]}
+            for r in sel[w]
+        ]
     (WORK / "examples_matches.json").write_text(
-        json.dumps({w: sel[w] for w in sorted(sel)}, ensure_ascii=False),
+        json.dumps(cache_sel, ensure_ascii=False),
         encoding="utf-8",
     )
 
-    n_chunks = chunks
+    n_chunks = len(chunks_map)
     size_kb = sum(p.stat().st_size for p in (out_dir / "data").glob("*.json")) // 1024
     print(
         f"written: index.json + {n_chunks} chunks ({size_kb} KB), "
