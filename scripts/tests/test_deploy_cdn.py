@@ -14,19 +14,27 @@ from __future__ import annotations
 
 import hashlib
 import json
+import zlib
 from pathlib import Path
 
 import pytest
 
 from deploy_cdn import (
+    DEFLATED_JSON_BLOB_SOURCES,
+    DEFLATED_RKYV_BLOB_SOURCES,
+    PHRASE_BUNDLE_COUNT,
     RKYV_BLOB_SOURCES,
+    RKYV_DEFLATED_SCHEMA_VERSION,
     RKYV_SCHEMA_VERSION,
     VERSIONED_FILES,
     collect_versioned_files,
     compare_manifests,
     compute_files_to_upload,
+    deflated_json_blob_freshness_problems,
+    deflated_rkyv_blob_freshness_problems,
     generate_manifest,
     parse_rkyv_header,
+    phrase_bundle_blob_freshness_problems,
     rkyv_blob_freshness_problems,
     sha256_hex,
 )
@@ -175,13 +183,6 @@ def _sources_with_content(tmp_path: Path, furigana: bytes, chunk: bytes) -> None
     (tmp_path / "pitch/index.json").write_bytes(PITCH_INDEX_CONTENT)
 
 
-def _concatenated_source_digest(furigana: bytes, chunk: bytes) -> bytes:
-    del furigana  # vocabulary blob sources are the 11 chunks only
-    hasher = hashlib.sha256()
-    hasher.update(chunk * 11)
-    return hasher.digest()
-
-
 FURIGANA_CONTENT = b"\xe6\x8c\x87|yubi|0:yubi\n"
 CHUNK_CONTENT = b'{"word": {}}'
 PHRASE_INDEX_CONTENT = b'{"phrases": []}'
@@ -196,19 +197,9 @@ def test_fresh_blobs_produce_no_problems(tmp_path: Path):
         tmp_path / "dictionaries/JmdictFurigana.rkyv", RKYV_SCHEMA_VERSION, furigana_sha
     )
     _write_blob(
-        tmp_path / "dictionary/vocabulary.rkyv",
-        RKYV_SCHEMA_VERSION,
-        _concatenated_source_digest(FURIGANA_CONTENT, CHUNK_CONTENT),
-    )
-    _write_blob(
         tmp_path / "phrases/phrase_index.rkyv",
         RKYV_SCHEMA_VERSION,
         hashlib.sha256(PHRASE_INDEX_CONTENT).digest(),
-    )
-    _write_blob(
-        tmp_path / "pitch/index.rkyv",
-        RKYV_SCHEMA_VERSION,
-        hashlib.sha256(PITCH_INDEX_CONTENT).digest(),
     )
 
     # Act
@@ -231,27 +222,33 @@ def test_missing_blob_is_reported(tmp_path: Path):
 
 
 def _write_fresh_blobs(tmp_path: Path) -> None:
-    """Write every rkyv blob with headers matching the on-disk sources."""
+    """Write every raw rkyv blob with headers matching the on-disk sources,
+    then the deflated-rkyv generation blobs (#1484) — vocabulary/pitch now
+    ship deflate-wrapped and their freshness runs through the inflate-aware
+    check."""
     _write_blob(
         tmp_path / "dictionaries/JmdictFurigana.rkyv",
         RKYV_SCHEMA_VERSION,
         hashlib.sha256(FURIGANA_CONTENT).digest(),
     )
     _write_blob(
-        tmp_path / "dictionary/vocabulary.rkyv",
-        RKYV_SCHEMA_VERSION,
-        _concatenated_source_digest(FURIGANA_CONTENT, CHUNK_CONTENT),
-    )
-    _write_blob(
         tmp_path / "phrases/phrase_index.rkyv",
         RKYV_SCHEMA_VERSION,
         hashlib.sha256(PHRASE_INDEX_CONTENT).digest(),
     )
-    _write_blob(
-        tmp_path / "pitch/index.rkyv",
-        RKYV_SCHEMA_VERSION,
-        hashlib.sha256(PITCH_INDEX_CONTENT).digest(),
-    )
+    sources: dict[str, list[bytes]] = {
+        "dictionary/vocabulary.rkyv": [CHUNK_CONTENT] * 11,
+        "pitch/index.rkyv": [PITCH_INDEX_CONTENT],
+    }
+    for blob_rel, source_parts in sources.items():
+        concatenated = b"".join(source_parts)
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            concatenated,
+            schema_version=RKYV_DEFLATED_SCHEMA_VERSION,
+            guard_from_sources=source_parts,
+        )
 
 
 def test_stale_blob_hash_is_reported(tmp_path: Path):
@@ -329,10 +326,297 @@ def test_missing_source_file_is_reported(tmp_path: Path):
     # Act
     problems = rkyv_blob_freshness_problems(tmp_path)
 
+    # Assert: the raw-blob map (furigana, phrase v2) is clean — the
+    # vocabulary sources moved to the deflated-rkyv generation checks
+    # (uwuwu #1484), where the missing chunk fails loud.
+    assert problems == []
+    assert (
+        "dictionary/vocabulary.rkyv: source dictionary/chunk_05.json not found"
+        in deflated_rkyv_blob_freshness_problems(tmp_path)
+    )
+
+
+# phrase data bundle blobs (uwuwu #1451, deflated, chunk-guarded)
+# ---------------------------------------------------------------------------
+
+BUNDLE_CHUNKS: dict[str, bytes] = {
+    "p0000": b'{"a": 1}',
+    "p0001": b'{"b": 2}',
+}
+BUNDLE_JSON = json.dumps(
+    {key: json.loads(value) for key, value in sorted(BUNDLE_CHUNKS.items())},
+    separators=(",", ":"),
+).encode()
+
+
+def _bundle_problems(message: str) -> list[str]:
+    """The freshness check walks every bundle — a per-bundle defect repeats
+    per index (the fixture corpus deploys all PHRASE_BUNDLE_COUNT bundles)."""
+    return [message.format(index=index) for index in range(PHRASE_BUNDLE_COUNT)]
+
+
+def _write_bundle_corpus(tmp_path: Path) -> None:
+    (tmp_path / "phrases/data").mkdir(parents=True, exist_ok=True)
+    for key, content in BUNDLE_CHUNKS.items():
+        (tmp_path / f"phrases/data/{key}.json").write_bytes(content)
+    for index in range(PHRASE_BUNDLE_COUNT):
+        (tmp_path / f"phrases/data_bundle_{index}.json").write_bytes(BUNDLE_JSON)
+
+
+def _write_bundle_blob(
+    tmp_path: Path,
+    *,
+    schema_version: int = RKYV_SCHEMA_VERSION,
+    source_sha: bytes | None = None,
+    guard: bytes | None = None,
+    payload: bytes = BUNDLE_JSON,
+    deflate: bool = True,
+) -> None:
+    source_sha = source_sha or hashlib.sha256(BUNDLE_JSON).digest()
+    # Production wiring (review round 2): the guard binds to the source JSON
+    # hex — the VERSIONED_FILES manifest path. `guard` overrides it to
+    # simulate a foreign-generation blob.
+    guard = (
+        guard
+        or hashlib.sha256(hashlib.sha256(BUNDLE_JSON).hexdigest().encode()).digest()
+    )
+    header = b"ORFG" + schema_version.to_bytes(4, "little") + source_sha + guard
+    body = header + payload
+    for index in range(PHRASE_BUNDLE_COUNT):
+        blob_path = tmp_path / f"phrases/data_bundle_{index}.v3.rkyv"
+        blob_path.parent.mkdir(parents=True, exist_ok=True)
+        blob_path.write_bytes(zlib.compress(body, wbits=-15) if deflate else body)
+
+
+def test_fresh_bundle_blob_produces_no_problems(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == []
+
+
+def test_missing_bundle_blob_is_reported(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == _bundle_problems(
+        "phrases/data_bundle_{index}.v3.rkyv: missing (run utils build-cdn-rkyv)"
+    )
+
+
+def test_stale_bundle_blob_hash_is_reported(tmp_path: Path):
+    # Arrange: bundle 0's source changed after the blob was built
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path)
+    (tmp_path / "phrases/data_bundle_0.json").write_bytes(BUNDLE_JSON + b" ")
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
     # Assert
     assert problems == [
-        "dictionary/vocabulary.rkyv: source dictionary/chunk_05.json not found"
+        "phrases/data_bundle_0.v3.rkyv: stale relative to "
+        "['phrases/data_bundle_0.json']"
     ]
+
+
+def test_bundle_blob_guard_mismatch_is_reported(tmp_path: Path):
+    # Arrange: a blob whose guard binds to a foreign generation (deploy
+    # window / stale build) — the source hash moved on.
+    _write_bundle_corpus(tmp_path)
+    foreign_guard = hashlib.sha256(b"older generation").digest()
+    _write_bundle_blob(tmp_path, guard=foreign_guard)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == _bundle_problems(
+        "phrases/data_bundle_{index}.v3.rkyv: manifest_guard mismatch against the source hashes"
+    )
+
+
+def test_bundle_blob_not_deflated_is_reported(tmp_path: Path):
+    # Arrange
+    _write_bundle_corpus(tmp_path)
+    _write_bundle_blob(tmp_path, deflate=False)
+
+    # Act
+    problems = phrase_bundle_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems, "raw header bytes must fail the inflate check"
+
+
+def test_bundle_blobs_are_registered_as_versioned_files():
+    for index in range(PHRASE_BUNDLE_COUNT):
+        assert f"phrases/data_bundle_{index}.v3.rkyv" in VERSIONED_FILES
+
+
+# deflated blobs for the #1484 families: vocabulary/pitch (deflated-rkyv
+# generation) and grammar/kanji/radicals (deflated-JSON)
+# ---------------------------------------------------------------------------
+
+
+def _write_deflated_blob(
+    tmp_path: Path,
+    blob_rel: str,
+    source_bytes: bytes,
+    *,
+    schema_version: int,
+    source_sha: bytes | None = None,
+    guard: bytes | None = None,
+    guard_from_sources: list[bytes] | None = None,
+    payload: bytes | None = None,
+    deflate: bool = True,
+) -> None:
+    """Write one deflated blob in the builder's wire format. The guard
+    binds to the source hex hashes: single source → sha256(hex(source)),
+    multi-source → sha256(concat of per-file hexes, path order) — the same
+    derivation as the builder and cdn_blob::manifest_guard_from_hex_hashes.
+    `guard` overrides it to simulate a foreign-generation blob."""
+    source_sha = source_sha or hashlib.sha256(source_bytes).digest()
+    if guard is None:
+        if guard_from_sources is not None:
+            hexes = [hashlib.sha256(part).hexdigest() for part in guard_from_sources]
+            guard = hashlib.sha256("".join(hexes).encode()).digest()
+        else:
+            guard = hashlib.sha256(
+                hashlib.sha256(source_bytes).hexdigest().encode()
+            ).digest()
+    header = b"ORFG" + schema_version.to_bytes(4, "little") + source_sha + guard
+    body = header + (payload if payload is not None else source_bytes)
+    blob_path = tmp_path / blob_rel
+    blob_path.parent.mkdir(parents=True, exist_ok=True)
+    blob_path.write_bytes(zlib.compress(body, wbits=-15) if deflate else body)
+
+
+def test_deflated_rkyv_generation_fresh_blob_produces_no_problems(tmp_path: Path):
+    # Arrange: sources on disk + a schema-3 deflated blob per
+    # DEFLATED_RKYV_BLOB_SOURCES (vocabulary: 11 chunks concatenated, the
+    # guard over the per-file hex hashes; pitch: single JSON source).
+    for blob_rel, source_paths in DEFLATED_RKYV_BLOB_SOURCES.items():
+        sources = []
+        for source_rel in source_paths:
+            (tmp_path / source_rel).parent.mkdir(parents=True, exist_ok=True)
+            content = f'{{"src": "{source_rel}"}}'.encode()
+            (tmp_path / source_rel).write_bytes(content)
+            sources.append(content)
+        concatenated = b"".join(sources)
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            concatenated,
+            schema_version=RKYV_DEFLATED_SCHEMA_VERSION,
+            guard_from_sources=sources,
+        )
+
+    # Act
+    problems = deflated_rkyv_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == []
+
+
+def test_vocabulary_blob_of_the_global_schema_is_reported_stale(tmp_path: Path):
+    # Arrange: a raw schema-2 vocabulary blob — the pre-#1484 wire format a
+    # fresh deploy must never ship next to the deflated-rkyv builder.
+    for blob_rel, source_paths in DEFLATED_RKYV_BLOB_SOURCES.items():
+        sources = []
+        for source_rel in source_paths:
+            (tmp_path / source_rel).parent.mkdir(parents=True, exist_ok=True)
+            content = f'{{"src": "{source_rel}"}}'.encode()
+            (tmp_path / source_rel).write_bytes(content)
+            sources.append(content)
+        concatenated = b"".join(sources)
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            concatenated,
+            schema_version=RKYV_SCHEMA_VERSION,
+        )
+
+    # Act
+    problems = deflated_rkyv_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert len(problems) == len(DEFLATED_RKYV_BLOB_SOURCES)
+    assert all("schema" in problem for problem in problems)
+
+
+def test_deflated_json_blobs_fresh_corpus_produces_no_problems(tmp_path: Path):
+    # Arrange
+    for blob_rel, source_rel in DEFLATED_JSON_BLOB_SOURCES.items():
+        (tmp_path / source_rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / source_rel).write_bytes(b'{"k": "v"}')
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            b'{"k": "v"}',
+            schema_version=RKYV_SCHEMA_VERSION,
+        )
+
+    # Act
+    problems = deflated_json_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert problems == []
+
+
+def test_deflated_json_blob_guard_mismatch_is_reported(tmp_path: Path):
+    # Arrange
+    for blob_rel, source_rel in DEFLATED_JSON_BLOB_SOURCES.items():
+        (tmp_path / source_rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / source_rel).write_bytes(b'{"k": "v"}')
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            b'{"k": "v"}',
+            schema_version=RKYV_SCHEMA_VERSION,
+            guard=hashlib.sha256(b"foreign generation").digest(),
+        )
+
+    # Act
+    problems = deflated_json_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert len(problems) == len(DEFLATED_JSON_BLOB_SOURCES)
+    assert all("manifest_guard mismatch" in problem for problem in problems)
+
+
+def test_deflated_json_blob_missing_source_is_reported(tmp_path: Path):
+    # Arrange: blob present, source missing — the derivation cannot be
+    # verified, the deploy must fail loud.
+    for blob_rel, source_rel in DEFLATED_JSON_BLOB_SOURCES.items():
+        _write_deflated_blob(
+            tmp_path,
+            blob_rel,
+            b'{"k": "v"}',
+            schema_version=RKYV_SCHEMA_VERSION,
+        )
+
+    # Act
+    problems = deflated_json_blob_freshness_problems(tmp_path)
+
+    # Assert
+    assert len(problems) == len(DEFLATED_JSON_BLOB_SOURCES)
+    assert all("source" in problem and "not found" in problem for problem in problems)
+
+
+def test_deflated_json_blobs_are_registered_as_versioned_files():
+    for blob_rel in DEFLATED_JSON_BLOB_SOURCES:
+        assert blob_rel in VERSIONED_FILES
+    for blob_rel in DEFLATED_RKYV_BLOB_SOURCES:
+        assert blob_rel in VERSIONED_FILES
 
 
 class TestGenerateKanjiArtManifest:

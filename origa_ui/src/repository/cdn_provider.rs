@@ -337,6 +337,98 @@ pub async fn purge_entry(path: &str) -> Result<(), OrigaError> {
     Ok(())
 }
 
+/// Purge half of the stale-blob heal (uwuwu #1484): vocabulary/pitch
+/// loaders purge a stale-generation entry before the refetch. The Cache
+/// API exists only under wasm; native builds (cargo test) get a no-op so
+/// the heal exercises its refetch half against injected providers.
+#[cfg(target_arch = "wasm32")]
+pub async fn purge_stale_blob_entry(path: &str) {
+    if let Err(e) = purge_entry(path).await {
+        tracing::warn!(path = %path, error = ?e, "Stale blob cache purge failed (best-effort)");
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn purge_stale_blob_entry(_path: &str) {}
+
+/// Why a deflated-rkyv blob could not serve the fast path (uwuwu #1484).
+#[derive(Debug)]
+pub enum BlobLoadRejection {
+    /// The cached blob belongs to an older format generation, or its bytes
+    /// do not inflate at all (the pre-#1484 wire format was raw; poisoned
+    /// bodies are indistinguishable from it) — the entry heals by purge +
+    /// refetch.
+    StaleGeneration,
+    /// Guard mismatch or payload failure — the JSON fallback serves the
+    /// load instead; a purge would not change what the CDN serves.
+    Rejected(String),
+}
+
+/// Deflated-rkyv blob read path with the stale-generation heal (uwuwu
+/// #1484), shared by the vocabulary and pitch loaders: fetch, validate
+/// through `view_of` (inflate → per-family schema → guard → zero-copy
+/// access); a stale generation purges the cache entry and refetches once —
+/// cache-first would serve it forever, online the refetch is an honest
+/// cache miss, offline it fails and the caller falls back to its JSON
+/// source. `Ok(None)` means "no usable blob — use the fallback chain".
+pub async fn load_deflated_rkyv_blob<P, T: 'static>(
+    provider: &P,
+    path: &str,
+    resource: &str,
+    view_of: impl Fn(&[u8]) -> Result<&'static T, BlobLoadRejection>,
+) -> Result<Option<&'static T>, OrigaError>
+where
+    P: origa::traits::CdnProvider,
+{
+    let blob = match provider.fetch_bytes(path).await {
+        Ok(blob) => blob,
+        Err(e) => {
+            tracing::warn!("📖 {resource} blob unavailable ({e:?}), using fallback chain");
+            return Ok(None);
+        },
+    };
+
+    let view = match view_of(&blob) {
+        Ok(view) => Some(view),
+        Err(BlobLoadRejection::StaleGeneration) => {
+            tracing::warn!(
+                "📖 {resource} blob of a stale generation, purging cache entry and refetching"
+            );
+            purge_stale_blob_entry(path).await;
+            match provider.fetch_bytes(path).await {
+                Ok(refetched) => match view_of(&refetched) {
+                    Ok(view) => Some(view),
+                    Err(rejection) => {
+                        tracing::warn!(
+                            "📖 {resource} blob rejected after refetch ({rejection:?}), using fallback chain"
+                        );
+                        None
+                    },
+                },
+                Err(e) => {
+                    tracing::warn!(
+                        "📖 {resource} blob refetch unavailable ({e:?}), using fallback chain"
+                    );
+                    None
+                },
+            }
+        },
+        Err(rejection) => {
+            let reason = match rejection {
+                BlobLoadRejection::Rejected(reason) => reason,
+                BlobLoadRejection::StaleGeneration => "stale generation".to_string(),
+            };
+            tracing::warn!("📖 {resource} blob rejected ({reason}), using fallback chain");
+            None
+        },
+    };
+
+    if view.is_some() {
+        tracing::debug!("📖 {resource} blob consumed, zero-copy");
+    }
+    Ok(view)
+}
+
 /// Network-only text fetch that overwrites the cache entry with the
 /// fresh body — the refetch half of the self-heal pair above. The
 /// unreachable guard mirrors `FetchDecision::FailOffline`: a CDN proven
@@ -605,6 +697,28 @@ pub async fn is_cached(path: &str) -> bool {
         return false;
     };
     !result.is_null() && !result.is_undefined()
+}
+
+/// Delete a single entry from the CDN Cache API (uwuwu #1451): precache
+/// cleanup removes legacy phrase JSON keys after their blob replacements
+/// are cached, so the double-stored bundle copies stop occupying the
+/// storage budget. Best-effort by contract — callers log failures.
+pub async fn delete_from_cache(path: &str) -> Result<(), OrigaError> {
+    let cache = open_cache().await?;
+    let url = cdn_cache_url(&ensure_leading_slash(path));
+    let request =
+        web_sys::Request::new_with_str(&url).map_err(|e| OrigaError::RepositoryError {
+            reason: format!(
+                "Failed to create cache delete request for {path:?}: {:?}",
+                e
+            ),
+        })?;
+    JsFuture::from(cache.delete_with_request(&request))
+        .await
+        .map_err(|e| OrigaError::RepositoryError {
+            reason: format!("Failed to delete {path:?} from cache: {:?}", e),
+        })?;
+    Ok(())
 }
 
 /// Store arbitrary text in the CDN Cache API under the given path.

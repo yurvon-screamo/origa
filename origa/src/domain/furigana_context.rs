@@ -127,46 +127,14 @@ fn gap_segments(chars: &[char], known_kanji: &HashSet<char>) -> Vec<FuriganaSegm
 mod tests {
     use super::*;
 
-    // Dictionary setup mirrors furigana.rs tests: the furigana store is a
-    // process-global, and the Coverage CI run orders tests differently from
-    // a local run — a gap-fallback here once raced another test's half-
-    // initialized state. Every test ensures BOTH dictionaries itself.
-    fn ensure_lindera_dictionary() {
-        use flate2::read::DeflateDecoder;
-        use std::io::Read;
-
-        if crate::domain::is_dictionary_loaded() {
-            return;
-        }
-        let dict_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
-            .parent()
-            .unwrap()
-            .join("cdn")
-            .join("dictionaries")
-            .join(crate::domain::SUDACHIDICT_DIR);
-
-        let decompress = |data: Vec<u8>| -> Vec<u8> {
-            let mut decoder = DeflateDecoder::new(&data[..]);
-            let mut decompressed = Vec::new();
-            decoder.read_to_end(&mut decompressed).unwrap();
-            decompressed
-        };
-        let read_file = |name: &str| std::fs::read(dict_dir.join(name)).expect("dictionary file");
-
-        let data = crate::domain::DictionaryData {
-            char_def: decompress(read_file("char_def.bin")),
-            matrix: decompress(read_file("matrix.mtx")),
-            dict_trie: decompress(read_file("dict.trie")),
-            dict_vals_idx: decompress(read_file("dict.valsidx")),
-            dict_vals: decompress(read_file("dict.vals")),
-            unk: decompress(read_file("unk.bin")),
-            words_idx: decompress(read_file("dict.wordsidx")),
-            words: decompress(read_file("dict.words")),
-            metadata: read_file("metadata.json"),
-        };
-        crate::domain::init_dictionary(data).unwrap();
-    }
-
+    // The furigana store is a process-global, and the Coverage CI run orders
+    // tests differently from a local run — a gap-fallback here once raced
+    // another test's half-initialized state. Every test ensures it itself.
+    // The lindera dictionary is NOT loaded here: it is machine corpus state
+    // (ADR-083) — tests take `real_dictionaries_or_skip!` instead, which
+    // probes the canonical corpus and skips the test when unseeded. The old
+    // repo-root `cdn/` reader only ever passed because the CI artifact
+    // unpacks the corpus to the repo root.
     fn ensure_furigana_dictionary() {
         if crate::dictionary::furigana_dict::is_furigana_dict_loaded() {
             return;
@@ -182,12 +150,11 @@ mod tests {
             "指|ゆび|0:ゆび\n",
             "頭|とう|0:とう\n",
         );
-        crate::dictionary::furigana_dict::init_furigana_dict(content).unwrap();
-    }
-
-    fn ensure_dictionaries() {
-        ensure_lindera_dictionary();
-        ensure_furigana_dictionary();
+        // `let _ =` mirrors furigana.rs's setup_furigana_dict: parallel tests
+        // race the process-global init — the loser gets "already loaded" and
+        // both contents leave this module's assertions green (the あたま
+        // context pair wins over とう, and over a missing とう alike).
+        let _ = crate::dictionary::furigana_dict::init_furigana_dict(content);
     }
 
     fn pair(surface: &str, reading: &str) -> RubyPair {
@@ -199,7 +166,8 @@ mod tests {
 
     #[test]
     fn context_pair_overrides_dictionary_reading_for_the_word() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         // The screenshot case: 頭 must render あたま (context), not とう
         // (dictionary first entry) — the gap を。 is kana-only, no
         // dictionary needed for it.
@@ -216,7 +184,8 @@ mod tests {
 
     #[test]
     fn pairs_match_in_sentence_order_for_repeated_surfaces() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         let ruby = vec![pair("今日", "きょう"), pair("今日", "こんにち")];
         let known = HashSet::new();
         let segments = furiganize_segments_with_ruby("今日は今日の運命。", &ruby, &known);
@@ -236,7 +205,8 @@ mod tests {
 
     #[test]
     fn absent_surface_pair_is_skipped_and_gaps_render_via_dictionary() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         // 下った is a conjugated surface; a lemma-recorded pair (下る) does
         // not match the text and the gap falls back to the dictionary.
         let ruby = vec![pair("下る", "くだる")];
@@ -251,7 +221,8 @@ mod tests {
 
     #[test]
     fn empty_ruby_degrades_to_plain_dictionary_path() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         let known = HashSet::new();
         let segments = furiganize_segments_with_ruby("頭を冷やせ。", &[], &known);
         assert!(!segments.is_empty());
@@ -259,7 +230,8 @@ mod tests {
 
     #[test]
     fn kana_gaps_render_without_reading() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         let ruby = vec![pair("冷やせ", "ひやせ")];
         let known = HashSet::new();
         let segments = furiganize_segments_with_ruby("頭を冷やせ。", &ruby, &known);
@@ -273,7 +245,8 @@ mod tests {
 
     #[test]
     fn empty_surface_pair_is_skipped_without_panicking() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         // Corrupt pair (empty surface from a dirty chunk source): skipped,
         // no empty segment, render continues with the dictionary path.
         let ruby = vec![pair("", "あたま")];
@@ -288,7 +261,8 @@ mod tests {
 
     #[test]
     fn context_segments_track_known_kanji() {
-        ensure_dictionaries();
+        crate::corpus::real_dictionaries_or_skip!();
+        ensure_furigana_dictionary();
         let ruby = vec![pair("頭", "あたま")];
         let mut known = HashSet::new();
         known.insert('頭');

@@ -1,13 +1,15 @@
-use origa::dictionary::cdn_blob::{guard_matches, split_blob};
+use origa::dictionary::cdn_blob::{BlobFormatError, DEFLATED_RKYV_SCHEMA_VERSION, guard_matches};
 use origa::dictionary::pitch_audio::{
     ArchivedPitchAudioIndexBlob, access_pitch_index_blob, install_archived_pitch_index,
     is_pitch_audio_loaded,
 };
+use origa::dictionary::precompute_blob::inflate_and_split;
 use origa::domain::OrigaError;
 use origa::traits::CdnProvider;
 
 use crate::repository::cache_manager::guard_expectation_for;
 use crate::repository::cdn_provider;
+use crate::repository::cdn_provider::BlobLoadRejection;
 use crate::utils::{now_ms, yield_to_browser};
 
 const PITCH_INDEX_PATH: &str = "pitch/index.json";
@@ -61,56 +63,52 @@ pub async fn load_pitch_audio() -> Result<(), OrigaError> {
 /// Provider-parameterized core: try the CDN rkyv blob first (zero-copy
 /// access — no JSON scan), fall back to the original JSON on any
 /// validation or fetch failure. The blob is verified against the remote
-/// manifest guard when one was fetched.
+/// manifest guard when one was fetched; a stale-generation cached blob
+/// heals through the shared purge + refetch path.
 pub async fn load_pitch_audio_via<P: CdnProvider>(
     provider: &P,
 ) -> Result<LoadedPitchIndex, OrigaError> {
-    let fetch_start = now_ms();
-    match provider.fetch_bytes(PITCH_INDEX_BLOB_PATH).await {
-        Ok(blob) => {
-            let fetch_ms = now_ms() - fetch_start;
-            let access_start = now_ms();
-            match pitch_view_from_blob(&blob) {
-                Ok(view) => {
-                    tracing::debug!(
-                        "📖 Pitch index blob consumed (fetch {:.2}s, access {:.2}s, zero-copy)",
-                        fetch_ms / 1000.0,
-                        (now_ms() - access_start) / 1000.0
-                    );
-                    return Ok(LoadedPitchIndex::CdnBlob(view));
-                },
-                Err(e) => {
-                    tracing::warn!(
-                        "📖 Pitch index rkyv blob rejected ({e:?}), falling back to JSON"
-                    );
-                },
-            }
-        },
-        Err(e) => {
-            tracing::warn!("📖 Pitch index rkyv blob unavailable ({e:?}), falling back to JSON");
-        },
+    let view = cdn_provider::load_deflated_rkyv_blob(
+        provider,
+        PITCH_INDEX_BLOB_PATH,
+        "Pitch index",
+        pitch_view_from_blob,
+    )
+    .await?;
+
+    if let Some(view) = view {
+        return Ok(LoadedPitchIndex::CdnBlob(view));
     }
 
     let json = provider.fetch_text(PITCH_INDEX_PATH).await?;
     Ok(LoadedPitchIndex::SourceJson(json))
 }
 
-/// Validate the blob header, verify the manifest guard and access the
-/// payload as a zero-copy view. Any failure yields `Err` (caller falls
-/// back to the JSON path).
-fn pitch_view_from_blob(blob: &[u8]) -> Result<&'static ArchivedPitchAudioIndexBlob, OrigaError> {
-    let (header, payload) = split_blob(blob).map_err(|e| OrigaError::PitchAudioParseError {
-        reason: format!("pitch index blob header invalid: {e}"),
-    })?;
+/// Format + guard + payload validation of one pitch index blob: inflate
+/// the deflated-rkyv generation, verify the manifest guard, access the
+/// payload zero-copy. Stale generations — and bytes that do not inflate
+/// at all, which is what the pre-#1484 raw wire format looks like to a
+/// deflated reader — surface as `StaleGeneration` so the shared read path
+/// heals them by purge + refetch.
+fn pitch_view_from_blob(
+    blob: &[u8],
+) -> Result<&'static ArchivedPitchAudioIndexBlob, BlobLoadRejection> {
+    let (header, payload) = match inflate_and_split(blob, DEFLATED_RKYV_SCHEMA_VERSION) {
+        Ok(split) => split,
+        Err(BlobFormatError::UnsupportedSchema { .. }) | Err(BlobFormatError::Inflation { .. }) => {
+            return Err(BlobLoadRejection::StaleGeneration);
+        },
+        Err(e) => return Err(BlobLoadRejection::Rejected(e.to_string())),
+    };
 
     let expectation = guard_expectation_for(&[PITCH_INDEX_PATH]);
     if !guard_matches(&header, &expectation) {
-        return Err(OrigaError::PitchAudioParseError {
-            reason: "pitch index blob stale relative to manifest".to_string(),
-        });
+        return Err(BlobLoadRejection::Rejected(
+            "stale relative to manifest".to_string(),
+        ));
     }
 
-    access_pitch_index_blob(payload)
+    access_pitch_index_blob(&payload).map_err(|e| BlobLoadRejection::Rejected(e.to_string()))
 }
 
 #[cfg(test)]
@@ -120,10 +118,12 @@ mod tests {
     use std::future::Future;
 
     use origa::dictionary::cdn_blob::{
-        BlobHeader, SCHEMA_VERSION, build_blob, manifest_guard_from_hex_hashes, sha256_bytes,
+        BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob,
+        manifest_guard_from_hex_hashes, sha256_bytes,
     };
     use origa::dictionary::pitch_audio::PitchAudioIndex;
     use origa::dictionary::pitch_audio::serialize_pitch_index_blob_to_rkyv;
+    use origa::dictionary::precompute_blob::deflate_blob;
 
     /// Parse helper for the fallback assertions (the owned index is not
     /// installed by the core).
@@ -133,59 +133,44 @@ mod tests {
 
     const SAMPLE_JSON: &str = r#"{"v":2,"total":1,"entries":{"猫":{"f":"a1b2c3d4.opus","p":1}}}"#;
 
-    /// Recording mock: serves canned bytes/text per path and tracks which
-    /// paths were requested (external CDN boundary — a mock is appropriate).
+    /// Recording mock: serves canned bytes per path in request order — an
+    /// exhausted queue is the offline-refetch branch of the stale-generation
+    /// heal (external CDN boundary — a mock is appropriate).
     struct MockCdn {
-        responses: RefCell<Vec<(String, MockResponse)>>,
+        responses: RefCell<Vec<(String, Vec<u8>)>>,
         requested: RefCell<Vec<String>>,
     }
 
-    enum MockResponse {
-        Bytes(Vec<u8>),
-        Text(String),
-    }
-
     impl MockCdn {
-        fn with_blob_and_json(blob: Option<Vec<u8>>, json: &str) -> Self {
-            let mut responses = Vec::new();
-            if let Some(bytes) = blob {
-                responses.push((
-                    PITCH_INDEX_BLOB_PATH.to_string(),
-                    MockResponse::Bytes(bytes),
-                ));
-            }
-            responses.push((
-                PITCH_INDEX_PATH.to_string(),
-                MockResponse::Text(json.to_string()),
-            ));
+        fn with_blob_responses(responses: Vec<(String, Vec<u8>)>) -> Self {
             Self {
                 responses: RefCell::new(responses),
                 requested: RefCell::new(Vec::new()),
             }
         }
 
-        fn requested_paths(&self) -> Vec<String> {
-            self.requested.borrow().clone()
+        fn serving_blob(path: &str, bytes: Vec<u8>) -> Self {
+            Self::with_blob_responses(vec![(path.to_string(), bytes)])
         }
 
-        fn find(&self, path: &str) -> Option<MockResponse> {
-            self.responses
-                .borrow()
-                .iter()
-                .find(|(candidate, _)| candidate == path)
-                .map(|(_, response)| match response {
-                    MockResponse::Bytes(bytes) => MockResponse::Bytes(bytes.clone()),
-                    MockResponse::Text(text) => MockResponse::Text(text.clone()),
-                })
+        fn requested_paths(&self) -> Vec<String> {
+            self.requested.borrow().clone()
         }
     }
 
     impl CdnProvider for MockCdn {
         fn fetch_text(&self, path: &str) -> impl Future<Output = Result<String, OrigaError>> {
             self.requested.borrow_mut().push(path.to_string());
-            let result = match self.find(path) {
-                Some(MockResponse::Text(text)) => Ok(text),
-                _ => Err(OrigaError::NetworkError {
+            let result = match self
+                .responses
+                .borrow()
+                .iter()
+                .find(|(candidate, _)| candidate == path)
+            {
+                Some((_, bytes)) => {
+                    Ok(String::from_utf8(bytes.clone()).expect("canned text must be UTF-8"))
+                },
+                None => Err(OrigaError::NetworkError {
                     url: path.to_string(),
                     reason: "not stubbed".to_string(),
                 }),
@@ -195,18 +180,25 @@ mod tests {
 
         fn fetch_bytes(&self, path: &str) -> impl Future<Output = Result<Vec<u8>, OrigaError>> {
             self.requested.borrow_mut().push(path.to_string());
-            let result = match self.find(path) {
-                Some(MockResponse::Bytes(bytes)) => Ok(bytes),
-                _ => Err(OrigaError::NetworkError {
-                    url: path.to_string(),
-                    reason: "not stubbed".to_string(),
-                }),
-            };
+            let mut responses = self.responses.borrow_mut();
+            let position = responses
+                .iter()
+                .position(|(candidate, _)| candidate == path);
+            let result =
+                position
+                    .map(|index| responses.remove(index).1)
+                    .ok_or(OrigaError::NetworkError {
+                        url: path.to_string(),
+                        reason: "not stubbed".to_string(),
+                    });
             std::future::ready(result)
         }
     }
 
-    fn valid_blob(json: &str) -> Vec<u8> {
+    /// A deflated-rkyv generation blob (pitch wire format, #1484). The
+    /// native tests run without a fetched manifest, so the guard is
+    /// `Unavailable` — trusted like every other cache entry offline.
+    fn deflated_index_blob(schema: u32, json: &str) -> Vec<u8> {
         let index = build_pitch_index_from_json(json).unwrap();
         let payload = serialize_pitch_index_blob_to_rkyv(&index.to_blob()).unwrap();
         let source_hex = sha256_bytes(json.as_bytes())
@@ -214,17 +206,36 @@ mod tests {
             .map(|b| format!("{b:02x}"))
             .collect::<String>();
         let header = BlobHeader {
-            schema_version: SCHEMA_VERSION,
+            schema_version: schema,
             source_sha256: sha256_bytes(json.as_bytes()),
             manifest_guard: manifest_guard_from_hex_hashes(&[&source_hex]),
         };
-        build_blob(&header, &payload)
+        deflate_blob(&build_blob(&header, &payload))
+    }
+
+    fn valid_blob() -> Vec<u8> {
+        deflated_index_blob(DEFLATED_RKYV_SCHEMA_VERSION, SAMPLE_JSON)
+    }
+
+    /// Raw-schema-2 blob bytes: what a released client cached before the
+    /// deflated generation shipped (the stale-generation heal input).
+    fn legacy_raw_blob() -> Vec<u8> {
+        let index = build_pitch_index_from_json(SAMPLE_JSON).unwrap();
+        let payload = serialize_pitch_index_blob_to_rkyv(&index.to_blob()).unwrap();
+        build_blob(
+            &BlobHeader {
+                schema_version: SCHEMA_VERSION,
+                source_sha256: sha256_bytes(SAMPLE_JSON.as_bytes()),
+                manifest_guard: manifest_guard_from_hex_hashes(&[]),
+            },
+            &payload,
+        )
     }
 
     #[tokio::test]
     async fn valid_blob_loads_without_touching_the_json_source() {
         // Arrange
-        let provider = MockCdn::with_blob_and_json(Some(valid_blob(SAMPLE_JSON)), SAMPLE_JSON);
+        let provider = MockCdn::serving_blob(PITCH_INDEX_BLOB_PATH, valid_blob());
 
         // Act
         let loaded = load_pitch_audio_via(&provider).await.unwrap();
@@ -248,9 +259,15 @@ mod tests {
     #[tokio::test]
     async fn corrupted_header_falls_back_to_the_json_source() {
         // Arrange: valid payload, destroyed magic
-        let mut blob = valid_blob(SAMPLE_JSON);
+        let mut blob = valid_blob();
         blob[0] = b'X';
-        let provider = MockCdn::with_blob_and_json(Some(blob), SAMPLE_JSON);
+        let provider = MockCdn::with_blob_responses(vec![
+            (PITCH_INDEX_BLOB_PATH.to_string(), blob),
+            (
+                PITCH_INDEX_PATH.to_string(),
+                SAMPLE_JSON.as_bytes().to_vec(),
+            ),
+        ]);
 
         // Act
         let loaded = load_pitch_audio_via(&provider).await.unwrap();
@@ -265,8 +282,11 @@ mod tests {
 
     #[tokio::test]
     async fn missing_blob_falls_back_to_the_json_source() {
-        // Arrange
-        let provider = MockCdn::with_blob_and_json(None, SAMPLE_JSON);
+        // Arrange: no blob canned — the JSON source serves the load.
+        let provider = MockCdn::with_blob_responses(vec![(
+            PITCH_INDEX_PATH.to_string(),
+            SAMPLE_JSON.as_bytes().to_vec(),
+        )]);
 
         // Act
         let loaded = load_pitch_audio_via(&provider).await.unwrap();
@@ -281,17 +301,50 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn future_schema_version_falls_back_to_the_json_source() {
-        // Arrange
-        let mut blob = valid_blob(SAMPLE_JSON);
-        let version = SCHEMA_VERSION + 1;
-        blob[4..8].copy_from_slice(&version.to_le_bytes());
-        let provider = MockCdn::with_blob_and_json(Some(blob), SAMPLE_JSON);
+    async fn stale_generation_blob_purges_and_heals_from_the_refetch() {
+        // Arrange: a released client cached the pre-#1484 raw blob; the
+        // refetch (post-purge cache miss) serves the new generation. The
+        // cache purge itself is a wasm Cache-API primitive — best-effort,
+        // exercised by the wasm suite.
+        let provider = MockCdn::with_blob_responses(vec![
+            (PITCH_INDEX_BLOB_PATH.to_string(), legacy_raw_blob()),
+            (PITCH_INDEX_BLOB_PATH.to_string(), valid_blob()),
+        ]);
+
+        // Act
+        let loaded = load_pitch_audio_via(&provider).await.unwrap();
+
+        // Assert: the heal consumed both canned responses and the fresh
+        // generation served the load.
+        assert!(
+            matches!(loaded, LoadedPitchIndex::CdnBlob(_)),
+            "refetch after purge must heal the load"
+        );
+        assert_eq!(provider.requested_paths().len(), 2);
+        assert!(
+            !provider
+                .requested_paths()
+                .contains(&PITCH_INDEX_PATH.to_string())
+        );
+    }
+
+    #[tokio::test]
+    async fn stale_generation_blob_falls_back_to_json_when_the_refetch_fails() {
+        // Arrange: the stale blob is the only canned response — the refetch
+        // fails (offline) and the JSON source serves the load.
+        let provider = MockCdn::with_blob_responses(vec![
+            (PITCH_INDEX_BLOB_PATH.to_string(), legacy_raw_blob()),
+            (
+                PITCH_INDEX_PATH.to_string(),
+                SAMPLE_JSON.as_bytes().to_vec(),
+            ),
+        ]);
 
         // Act
         let loaded = load_pitch_audio_via(&provider).await.unwrap();
 
         // Assert
         assert!(matches!(loaded, LoadedPitchIndex::SourceJson(_)));
+        assert_eq!(provider.requested_paths().len(), 3, "blob, refetch, json");
     }
 }

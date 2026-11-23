@@ -198,6 +198,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "acquaintance-hand",
   },
+  "phrase-dash-run": {
+    id: "phrase-dash-run",
+    title: "Карточка фразы с прод-тире (#914)",
+    route: "/phrases",
+    locale: "ru-RU",
+    preset: "phrase-dash-run",
+  },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {

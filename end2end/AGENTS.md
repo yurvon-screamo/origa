@@ -21,7 +21,7 @@ npm run typecheck            # TypeScript type check (tsc --noEmit)
 
 ```text
 end2end/
-├── .env                                    # TrailBase URL, admin creds
+├── .env                                    # admin creds (gitignored; template: .env.example)
 ├── config.ts                              # Reads .env, exports getTrailBaseUrl()
 ├── global-setup.ts                        # Starts TrailBase, sets admin password
 ├── global-teardown.ts                     # Kills TrailBase process
@@ -41,30 +41,52 @@ end2end/
 
 Playwright auto-manages all infrastructure — no manual setup needed.
 
-| Service | Port | Managed by | Config |
-|---------|------|-----------|--------|
+| Service | Default port | Managed by | Config |
+|---------|--------------|-----------|--------|
 | TrailBase | 4000 | `global-setup.ts` | Spawns `trail run --dev` |
 | CDN (static files) | 8080 | `playwright.config.ts` webServer | `npx serve <resolved corpus dir>` ($ORIGA_CDN_DIR or ~/origa-cdn) |
 | App (trunk/wasm) | 1420 | `playwright.config.ts` webServer | `trunk serve` or `npx serve` |
+
+**Port overrides** — shell env, not `.env` (the ports resolve at config
+load, before the dotenv bootstrap runs); single source `shots/config.ts`:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `E2E_TRAILBASE_PORT` | 4000 | TrailBase fixture: spawn, healthcheck, port-scoped stale-instance kill |
+| `E2E_CDN_PORT` | 8080 | local corpus server (started only when a corpus exists) |
+| `E2E_APP_PORT` | 1420 | app under test (trunk serve / dist) |
+| `E2E_APP_SERVER_TIMEOUT` | 3600000 | app webServer startup budget, ms (cold wasm build) |
+
+Parallel checkouts on one machine each pick their own trio; the
+stale-instance kill before a run is scoped to the configured TrailBase
+port on both posix and Windows, so a stranger's TrailBase on another
+port survives.
 
 **Just run:** `npx playwright test` — everything starts automatically.
 
 **Faster local boots:** start the app server yourself and the suite reuses it (`reuseExistingServer`):
 `TRAILBASE_URL=http://localhost:14000 ORIGA_CDN_BASE_URL=http://localhost:18080 trunk serve --cargo-profile wasm-dev --port 11420` (then, with the baked 14000/18080 ports, the full port trio `E2E_TRAILBASE_PORT=14000 E2E_CDN_PORT=18080 E2E_APP_PORT=11420 npx playwright test ...` — the harness defaults 4000/8080 would refuse connections against this build). The `wasm-dev` profile cuts the bundle ~410 MB → ~25 MB and boots shrink accordingly. **The env pair is mandatory**: without it the build bakes the production URLs (`app.origa.uwuwu.net`), and a local run silently talks to the production TrailBase — the config-level guard that keeps the harness off production does not cover a manually started `trunk serve`.
 
-**Required `.env`:**
+**Required `.env`** (gitignored; copy `.env.example`):
 
 ```ini
 ORIGA_ADMIN_EMAIL=admin@localhost
 ORIGA_ADMIN_PASSWORD=secret
-TRAILBASE_URL=http://127.0.0.1:4000
-ORIGA_CDN_BASE_URL=http://localhost:8080
 ```
+
+That is the whole `.env` contract. The service URLs are derived, not
+configured: the TrailBase/CDN/app addresses are built from the ports
+above, and the app build receives its compile-time `TRAILBASE_URL` /
+`ORIGA_CDN_BASE_URL` from the Playwright webServer — a `TRAILBASE_URL`
+line in `.env` is read by nothing. Manual seed/patch scripts
+(`scripts/*.mjs`) are the exception: they still take `TRAILBASE_URL`
+(shell first, their own `../.env` parse as the fallback) to talk to a
+running instance.
 
 **Flow:**
 
 1. `playwright.config.ts` webServer starts CDN (8080) and app (1420)
-2. `global-setup.ts` kills stale TrailBase, sets admin password, starts fresh TrailBase (4000)
+2. `global-setup.ts` kills the stale TrailBase on its port, sets admin password, starts fresh TrailBase (`E2E_TRAILBASE_PORT`, default 4000)
 3. Tests run against all three services
 4. `global-teardown.ts` kills TrailBase process
 
@@ -142,7 +164,7 @@ npm run exam:canary   # proves the examiner catches defects (needs live Ollama, 
 
 - `shots/examiner/model.json` — the test model (which screens get
   examined). Committed: the knowledge is versioned next to the code
-  (ADR-068). At runtime (`--examine`) a screen absent from the model
+  (ADR-088). At runtime (`--examine`) a screen absent from the model
   is skipped, not an error. The catalog-level invariant points the
   other way: every scenario of `shots/catalog.ts` must name at least
   one examined screen. `model.test.ts` fails the unit suite

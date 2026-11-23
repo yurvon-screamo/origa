@@ -96,7 +96,7 @@ export async function waitForLoginComplete(
 /**
  * Restore the one-time resource-download consent.
  *
- * The app shows the ~230 MB download overlay on authenticated routes
+ * The app shows the ~145 MB download overlay on authenticated routes
  * until the consent is given, and the overlay blocks every click. The
  * specs pre-approve it through an init script, but a `localStorage.clear()`
  * wipes the flag again — so it has to be restored after the clear.

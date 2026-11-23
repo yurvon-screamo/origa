@@ -119,10 +119,7 @@ pub fn start_shortcut_listener() {
         return;
     };
     let callback = wasm_bindgen::closure::Closure::wrap(Box::new(move |event: JsValue| {
-        let url = js_sys::Reflect::get(&event, &JsValue::from_str("url"))
-            .ok()
-            .and_then(|v| v.as_string());
-        if let Some(url) = url {
+        if let Some(url) = crate::core::tauri::deep_link_url_from_event(&event) {
             route_shortcut(&url);
         }
     }) as Box<dyn Fn(JsValue)>);

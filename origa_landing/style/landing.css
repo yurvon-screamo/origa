@@ -678,20 +678,6 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
-  overflow: hidden;
-}
-
-.home-feature-card::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  right: -6px;
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--border-dark);
-  background: var(--bg-aged);
-  z-index: -1;
 }
 
 .home-feature-card__title {
@@ -828,21 +814,8 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
   display: flex;
   flex-direction: column;
-}
-
-.download-secondary__card::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--border-dark);
-  background: var(--bg-aged);
-  z-index: -1;
 }
 
 .download-secondary__card-header {
@@ -1024,19 +997,6 @@
   background: var(--bg-cream);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
-}
-
-.feat-step::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--border-dark);
-  background: var(--bg-aged);
-  z-index: -1;
 }
 
 .feat-step__text {
@@ -1225,7 +1185,6 @@
 }
 
 .feat-listening__band {
-  border: 1px solid var(--border-dark);
   padding: var(--space-xl);
 }
 
@@ -1828,19 +1787,6 @@
   background: var(--bg-paper);
   border: 1px solid var(--border-dark);
   padding: var(--space-lg);
-  position: relative;
-}
-
-.intg-card::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  right: -6px;
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--border-dark);
-  background: var(--bg-aged);
-  z-index: -1;
 }
 
 .intg-card--featured {

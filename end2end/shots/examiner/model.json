@@ -274,6 +274,12 @@
     "onboarding-import-progress:scoring": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "phrase-dash-run:lesson-phrase-question-clean": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "phrase-dash-run:phrases-list-clean": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "token-popup:token-popup-report": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
