@@ -68,6 +68,14 @@ VERSIONED_FILES: list[str] = [
     # (its header is not readable from the raw deflated bytes).
     "phrases/phrase_index.v3.rkyv",
     "pitch/index.rkyv",
+    # Deflated blobs replacing their JSON precache sources (uwuwu #1484):
+    # grammar/kanji/radicals are deflated-JSON blobs (payload = the source
+    # JSON verbatim), vocabulary/pitch are the deflated-rkyv generation.
+    # Freshness runs through the inflate-aware checks below; the JSON
+    # sources stay (fallback + released clients + builder source of truth).
+    "grammar/grammar_v3.rkyv",
+    "dictionary/kanji.rkyv",
+    "dictionary/radicals.rkyv",
     # SudachiDict (lindera 5.x, current clients)
     "dictionaries/sudachidict-20260723/char_def.bin",
     "dictionaries/sudachidict-20260723/matrix.mtx",
@@ -428,18 +436,38 @@ def upload_manifest(cdn_dir: Path, dry_run: bool) -> None:
 # silently serving an outdated dictionary to every client.
 
 RKYV_MAGIC = b"ORFG"
-# Keep in sync with origa/src/dictionary/cdn_blob.rs SCHEMA_VERSION
-# (v2: VocabularyInfo gained vi/ko fields when the KO/VI chunks shipped).
+# Keep in sync with origa/src/dictionary/cdn_blob.rs — schema versions are
+# per-family now (uwuwu #1484): SCHEMA_VERSION=2 is the global generation
+# (v2: VocabularyInfo gained vi/ko fields when the KO/VI chunks shipped),
+# DEFLATED_RKYV_SCHEMA_VERSION=3 marks vocabulary/pitch blobs stored
+# deflate-wrapped whole (readers inflate before the header check).
 RKYV_SCHEMA_VERSION = 2
+RKYV_DEFLATED_SCHEMA_VERSION = 3
 RKYV_HEADER_LEN = 72
 
 RKYV_BLOB_SOURCES: dict[str, list[str]] = {
     "dictionaries/JmdictFurigana.rkyv": ["dictionaries/JmdictFurigana.txt"],
+    "phrases/phrase_index.rkyv": ["phrases/phrase_index.json"],
+}
+
+# Deflated-rkyv generation blobs (uwuwu #1484): stored as
+# deflate(build_blob(...)) — the freshness check inflates first. The
+# vocabulary guard binds to the concatenated chunk hashes in path order;
+# pitch binds to its single JSON source.
+DEFLATED_RKYV_BLOB_SOURCES: dict[str, list[str]] = {
     "dictionary/vocabulary.rkyv": [
         f"dictionary/chunk_{index:02d}.json" for index in range(1, 12)
     ],
-    "phrases/phrase_index.rkyv": ["phrases/phrase_index.json"],
     "pitch/index.rkyv": ["pitch/index.json"],
+}
+
+# Deflated-JSON blobs: payload = the source JSON verbatim, manifest guard
+# binds the blob to the source JSON — a VERSIONED_FILES path that ships in
+# the client manifest (uwuwu #1451 pattern, generalized in #1484).
+DEFLATED_JSON_BLOB_SOURCES: dict[str, str] = {
+    "grammar/grammar_v3.rkyv": "grammar/grammar_v3.json",
+    "dictionary/kanji.rkyv": "dictionary/kanji.json",
+    "dictionary/radicals.rkyv": "dictionary/radicals.json",
 }
 
 # Deflated precompute blobs (#521): stored deflate-compressed on the CDN
@@ -492,7 +520,7 @@ def parse_rkyv_header(blob_path: Path) -> tuple[int, bytes]:
 
 
 def rkyv_blob_freshness_problems(cdn_dir: Path) -> list[str]:
-    """Freshness check for every rkyv blob: existing file, current schema,
+    """Freshness check for every raw rkyv blob: existing file, current schema,
     header source hash == sha256 of the concatenated on-disk sources."""
     problems: list[str] = []
     for blob_path, source_paths in RKYV_BLOB_SOURCES.items():
@@ -521,6 +549,79 @@ def rkyv_blob_freshness_problems(cdn_dir: Path) -> list[str]:
         else:
             if hasher.digest() != header_source_sha:
                 problems.append(f"{blob_path}: stale relative to {source_paths}")
+    return problems
+
+
+def inflated_header(inflated: bytes) -> tuple[int, bytes]:
+    """(schema_version, source_sha256_raw) from inflated blob bytes."""
+    if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
+        raise ValueError("unreadable header")
+    return int.from_bytes(inflated[4:8], "little"), inflated[8:40]
+
+
+def deflated_blob_freshness_problems(
+    cdn_dir: Path,
+    blob_rel: str,
+    source_paths: list[str],
+    expected_schema: int,
+) -> list[str]:
+    """Shared inflate-aware freshness verdict for one deflated blob:
+    inflate the stored bytes, verify magic + schema + header source hash
+    over the concatenated on-disk sources, and the manifest guard over the
+    sources' hex hashes in path order — the same derivation the builder and
+    the client's `cdn_blob::manifest_guard_from_hex_hashes` use. Covers the
+    deflated-rkyv generation (vocabulary/pitch, uwuwu #1484), the
+    deflated-JSON blobs (grammar/kanji/radicals, #1484) and the phrase data
+    bundles (#1451)."""
+    blob = cdn_dir / blob_rel
+    if not blob.is_file():
+        return [f"{blob_rel}: missing (run utils build-cdn-rkyv)"]
+    try:
+        inflated = inflate_deflated(blob)
+    except zlib.error as e:
+        return [f"{blob_rel}: not deflated ({e})"]
+    try:
+        schema_version, header_source_sha = inflated_header(inflated)
+    except ValueError as e:
+        return [f"{blob_rel}: {e}"]
+    if schema_version != expected_schema:
+        return [f"{blob_rel}: schema {schema_version} != {expected_schema}"]
+
+    hasher = hashlib.sha256()
+    per_file_hex: list[str] = []
+    for source_path in source_paths:
+        source_file = cdn_dir / source_path
+        if not source_file.is_file():
+            return [f"{blob_rel}: source {source_path} not found"]
+        source_bytes = source_file.read_bytes()
+        hasher.update(source_bytes)
+        per_file_hex.append(hashlib.sha256(source_bytes).hexdigest())
+    if hasher.digest() != header_source_sha:
+        return [f"{blob_rel}: stale relative to {source_paths}"]
+
+    expected_guard = hashlib.sha256("".join(per_file_hex).encode()).digest()
+    if expected_guard != inflated[40:72]:
+        return [f"{blob_rel}: manifest_guard mismatch against the source hashes"]
+    return []
+
+
+def deflated_rkyv_blob_freshness_problems(cdn_dir: Path) -> list[str]:
+    """Freshness checks for the deflated-rkyv generation blobs (uwuwu #1484)."""
+    problems: list[str] = []
+    for blob_rel, source_paths in DEFLATED_RKYV_BLOB_SOURCES.items():
+        problems += deflated_blob_freshness_problems(
+            cdn_dir, blob_rel, source_paths, RKYV_DEFLATED_SCHEMA_VERSION
+        )
+    return problems
+
+
+def deflated_json_blob_freshness_problems(cdn_dir: Path) -> list[str]:
+    """Freshness checks for the deflated-JSON blobs (uwuwu #1484)."""
+    problems: list[str] = []
+    for blob_rel, source_rel in DEFLATED_JSON_BLOB_SOURCES.items():
+        problems += deflated_blob_freshness_problems(
+            cdn_dir, blob_rel, [source_rel], RKYV_SCHEMA_VERSION
+        )
     return problems
 
 
@@ -602,52 +703,19 @@ def phrase_index_v3_freshness_problems(cdn_dir: Path) -> list[str]:
 PHRASE_BUNDLE_COUNT = 6
 
 
-def _single_bundle_blob_problem(cdn_dir: Path, index: int) -> str | None:
-    """Freshness verdict for one phrase data bundle blob (uwuwu #1451).
-
-    Mirrors the builder: inflate the stored bytes, verify the header (schema
-    + sha256 of phrases/data_bundle_N.json) and the manifest_guard over the
-    source JSON hex — the VERSIONED_FILES path that ships in the client
-    manifest (review round 2: chunk files are SYNC_DIR content, their paths
-    never reach the manifest, so a chunk-based guard is a guaranteed client
-    Mismatch).
-    """
-    blob_rel = f"phrases/data_bundle_{index}.v3.rkyv"
-    blob = cdn_dir / blob_rel
-    if not blob.is_file():
-        return f"{blob_rel}: missing (run utils build-cdn-rkyv)"
-    try:
-        inflated = inflate_deflated(blob)
-    except zlib.error as e:
-        return f"{blob_rel}: not deflated ({e})"
-    if len(inflated) < RKYV_HEADER_LEN or inflated[:4] != RKYV_MAGIC:
-        return f"{blob_rel}: unreadable header"
-    schema_version = int.from_bytes(inflated[4:8], "little")
-    if schema_version != RKYV_SCHEMA_VERSION:
-        return f"{blob_rel}: schema {schema_version} != {RKYV_SCHEMA_VERSION}"
-
-    source = cdn_dir / f"phrases/data_bundle_{index}.json"
-    if not source.is_file():
-        return f"{blob_rel}: source data_bundle_{index}.json not found"
-    source_bytes = source.read_bytes()
-    if hashlib.sha256(source_bytes).digest() != inflated[8:40]:
-        return f"{blob_rel}: stale relative to data_bundle_{index}.json"
-
-    expected_guard = hashlib.sha256(
-        hashlib.sha256(source_bytes).hexdigest().encode()
-    ).digest()
-    if expected_guard != inflated[40:72]:
-        return f"{blob_rel}: manifest_guard mismatch against the source hash"
-    return None
-
-
 def phrase_bundle_blob_freshness_problems(cdn_dir: Path) -> list[str]:
-    """Freshness checks for the deflated phrase data bundle blobs (uwuwu #1451)."""
+    """Freshness checks for the deflated phrase data bundle blobs (uwuwu
+    #1451): the guard binds each blob to phrases/data_bundle_N.json — the
+    VERSIONED_FILES source whose hash ships in the client manifest
+    (chunk files are SYNC_DIR content and never reach the manifest)."""
     problems: list[str] = []
     for index in range(PHRASE_BUNDLE_COUNT):
-        problem = _single_bundle_blob_problem(cdn_dir, index)
-        if problem is not None:
-            problems.append(problem)
+        problems += deflated_blob_freshness_problems(
+            cdn_dir,
+            f"phrases/data_bundle_{index}.v3.rkyv",
+            [f"phrases/data_bundle_{index}.json"],
+            RKYV_SCHEMA_VERSION,
+        )
     return problems
 
 
@@ -656,6 +724,8 @@ def assert_rkyv_blobs_fresh(cdn_dir: Path) -> None:
     problems += grammar_precompute_freshness_problems(cdn_dir)
     problems += phrase_index_v3_freshness_problems(cdn_dir)
     problems += phrase_bundle_blob_freshness_problems(cdn_dir)
+    problems += deflated_rkyv_blob_freshness_problems(cdn_dir)
+    problems += deflated_json_blob_freshness_problems(cdn_dir)
     if problems:
         for problem in problems:
             print(f"ERROR: rkyv blob freshness: {problem}", file=sys.stderr)
