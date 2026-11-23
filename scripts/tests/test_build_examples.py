@@ -105,7 +105,7 @@ def _make_old_corpus(tmp_path, rows, refs):
 def test_read_old_corpus_empty_when_no_previous(tmp_path):
     out_dir = tmp_path / "examples"
     out_dir.mkdir()
-    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(out_dir)
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
     assert sid_to_x == {} and x_to_sid == {} and sid_to_tr == {} and max_sid == 0
 
 
@@ -127,7 +127,7 @@ def test_read_old_corpus_drops_filler_rows(tmp_path):
     ]
     # only sid 0 is referenced
     _make_old_corpus(out_dir, rows, {0: "w"})
-    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(out_dir)
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
     assert 0 in sid_to_x
     assert 23000 not in sid_to_x
     assert "filler text" not in x_to_sid
@@ -149,7 +149,7 @@ def test_read_old_corpus_carries_translations(tmp_path):
         },
     ]
     _make_old_corpus(out_dir, rows, {5: "w"})
-    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(out_dir)
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
     assert sid_to_x[5] == "hello"
     assert x_to_sid["hello"] == 5
     assert sid_to_tr[5] == {"ru": "привет", "vi": "xin", "ko": "안"}
@@ -164,7 +164,7 @@ def test_read_old_corpus_collision_min_sid_wins(tmp_path):
         {"i": 7, "x": "dup", "en": "", "f": [], "ru": "r7"},
     ]
     _make_old_corpus(out_dir, rows, {2: "w", 7: "w2"})
-    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(out_dir)
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
     assert x_to_sid["dup"] == 2  # min sid wins
     assert sid_to_x[2] == "dup" and sid_to_x[7] == "dup"
     assert max_sid == 7
@@ -210,7 +210,7 @@ def test_build_sid_map_no_old_corpus_uses_compact_ids():
 
 def test_read_old_corpus_empty_when_dir_absent(tmp_path):
     # fresh machine: no previous corpus at all -> legit compact fallback
-    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(tmp_path)
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(tmp_path)
     assert sid_to_x == {} and x_to_sid == {} and sid_to_tr == {} and max_sid == 0
 
 
@@ -288,3 +288,55 @@ def test_build_out_rows_new_row_ships_without_translations():
     sid_map = {0: 22413}
     rows = gen.build_out_rows(sentences, [0], sid_map, {}, {})
     assert rows == [{"i": 22413, "x": "brand new", "en": "e0", "f": []}]
+
+
+def test_read_old_corpus_raises_when_index_present_but_chunks_missing(tmp_path):
+    # half-corpus: index references sentences, no chunk files at all
+    out_dir = tmp_path / "examples"
+    out_dir.mkdir()
+    (out_dir / "index.json").write_text(
+        json.dumps({"v": 1, "h": "", "words": {"w": {"refs": [[5, 0, 1]]}}, "s": 1}),
+        encoding="utf-8",
+    )
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_raises_when_chunks_present_but_index_missing(tmp_path):
+    # half-corpus: chunk files exist, index.json gone
+    out_dir = tmp_path / "examples"
+    (out_dir / "data").mkdir(parents=True)
+    (out_dir / "data" / "s0000.json").write_text(
+        json.dumps([{"i": 5, "x": "hello", "en": "hi", "f": []}]),
+        encoding="utf-8",
+    )
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_raises_on_semantically_broken_index(tmp_path):
+    # words: null -> OldCorpusError with instructions, not a raw AttributeError
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    (out_dir / "index.json").write_text(
+        json.dumps({"v": 1, "h": "", "words": None, "s": 1}),
+        encoding="utf-8",
+    )
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_present_but_empty_corpus_is_quiet_degenerate(tmp_path):
+    # a present corpus with zero refs carries nothing: honest empty result
+    out_dir = tmp_path / "examples"
+    out_dir.mkdir()
+    (out_dir / "index.json").write_text(
+        json.dumps({"v": 1, "h": "", "words": {}, "s": 0}),
+        encoding="utf-8",
+    )
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
+    assert (sid_to_x, x_to_sid, sid_to_tr, max_sid) == ({}, {}, {}, 0)
+    assert present is True

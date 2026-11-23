@@ -287,7 +287,8 @@ class OldCorpusError(Exception):
 def read_old_corpus_index(out_dir: Path) -> tuple[set[int], int]:
     """Parse cdn/examples/index.json; return (referenced_sids, max_ref_sid).
 
-    Raises OldCorpusError when the file exists but does not parse.
+    Raises OldCorpusError when the file does not parse or is semantically
+    broken (words not an object, malformed word entries).
     """
     path = out_dir / "index.json"
     try:
@@ -297,10 +298,27 @@ def read_old_corpus_index(out_dir: Path) -> tuple[set[int], int]:
             f"{path} is present but unreadable ({e}); "
             "fix or remove the previous corpus before regenerating"
         ) from e
+    words = old_index.get("words")
+    if not isinstance(words, dict):
+        raise OldCorpusError(
+            f"{path}: 'words' is missing or not an object; "
+            "fix or remove the previous corpus before regenerating"
+        )
     referenced: set[int] = set()
     max_sid = 0
-    for v in old_index.get("words", {}).values():
-        for r in v.get("refs", []):
+    for v in words.values():
+        if not isinstance(v, dict):
+            raise OldCorpusError(
+                f"{path}: malformed word entry (not an object); "
+                "fix or remove the previous corpus before regenerating"
+            )
+        refs = v.get("refs", [])
+        if not isinstance(refs, list):
+            raise OldCorpusError(
+                f"{path}: malformed refs (not an array); "
+                "fix or remove the previous corpus before regenerating"
+            )
+        for r in refs:
             if isinstance(r, list) and r:
                 try:
                     sid = int(r[0])
@@ -375,37 +393,47 @@ def read_old_corpus_chunk_maps(
 
 def read_old_corpus(
     out_dir: Path,
-) -> tuple[dict[int, str], dict[str, int], dict[int, dict[str, str]], int]:
+) -> tuple[dict[int, str], dict[str, int], dict[int, dict[str, str]], int, bool]:
     """Read the previous corpus for carry-over of stable sentence ids.
 
-    Returns (old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid).
-    Only INDEX-REFERENCED sentences are included: filler sentences
-    (generate_missing_examples.py) have no refs in index.json and are dead
-    weight, so they are deliberately dropped here. Collision policy for
-    duplicate x: smallest old_sid wins.
+    Returns (old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid,
+    corpus_present). Only INDEX-REFERENCED sentences are included: filler
+    sentences (generate_missing_examples.py) have no refs in index.json and
+    are dead weight, so they are deliberately dropped here. Collision policy
+    for duplicate x: smallest old_sid wins.
 
-    Absent corpus (fresh machine) returns empty structures — the caller
-    falls back to compact ids. A PRESENT but unreadable or inconsistent
-    corpus raises OldCorpusError: regenerating over it would silently
-    shift every sentence id (breaking the immutable audio keys) and drop
-    the chunk-stored translations.
+    Fully absent corpus (fresh machine) returns empty structures with
+    corpus_present=False — the only legitimate compact-fallback path. ANY
+    present part (index.json or chunk files) means the corpus exists:
+    a missing counterpart, an unreadable file, or refs without matching
+    rows raises OldCorpusError — regenerating over a half-corpus would
+    silently shift every sentence id (breaking the immutable audio keys)
+    and drop the chunk-stored translations.
     """
     old_index_path = out_dir / "index.json"
     old_chunks = sorted(out_dir.glob("data/s*.json"))
-    if not (old_index_path.exists() and old_chunks):
-        return {}, {}, {}, 0
+    corpus_present = old_index_path.exists() or bool(old_chunks)
+    if not corpus_present:
+        return {}, {}, {}, 0, False
 
+    if not old_index_path.exists():
+        raise OldCorpusError(
+            f"{old_index_path} is missing while {len(old_chunks)} chunk "
+            "file(s) exist; the previous corpus is incomplete — "
+            "fix or re-materialize it from prod before regenerating"
+        )
     referenced, max_old_index_sid = read_old_corpus_index(out_dir)
     old_sid_to_x, old_x_to_sid, old_sid_to_tr = read_old_corpus_chunk_maps(
         out_dir, referenced
     )
     if referenced and not old_x_to_sid:
         raise OldCorpusError(
-            f"index.json references {len(referenced)} sentences but no "
+            f"index.json references {len(referenced)} sentence(s) but no "
             "matching chunk rows were read; the previous corpus is "
-            "incomplete — fix or remove it before regenerating"
+            "incomplete — fix or re-materialize it from prod before "
+            "regenerating"
         )
-    return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
+    return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid, True
 
 
 def build_sid_map(
@@ -509,23 +537,36 @@ def main() -> int:
     (out_dir / "data").mkdir(parents=True, exist_ok=True)
 
     try:
-        old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid = read_old_corpus(
-            out_dir
-        )
+        (
+            old_sid_to_x,
+            old_x_to_sid,
+            old_sid_to_tr,
+            max_old_index_sid,
+            corpus_present,
+        ) = read_old_corpus(out_dir)
     except OldCorpusError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
-    if old_x_to_sid:
+    if corpus_present and old_x_to_sid:
         print(
             f"carry-over: old index max sid {max_old_index_sid}, "
             f"referenced rows {len(old_sid_to_x)}, "
             f"unique x {len(old_x_to_sid)}",
             flush=True,
         )
+    elif corpus_present:
+        print(
+            "WARN: a previous corpus is present but carries nothing (no "
+            "index refs); using compact ids — audio keys and chunk "
+            "translations will NOT be carried",
+            file=sys.stderr,
+            flush=True,
+        )
     else:
         print(
-            "carry-over: no previous corpus present; using compact ids "
-            "(audio keys and chunk translations will NOT be carried)",
+            "WARN: no previous corpus present; using compact ids — audio "
+            "keys and chunk translations will NOT be carried",
+            file=sys.stderr,
             flush=True,
         )
 
