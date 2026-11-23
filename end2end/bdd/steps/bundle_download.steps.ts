@@ -17,8 +17,9 @@ import { LOCAL_CDN_PORT } from "../../shots/config";
 const CDN_CACHE_NAME = "origa-cdn-v1";
 
 /** Marker key written after a successful pass (precache_loader.rs,
- * BUNDLE_DOWNLOADED_KEY v3 — keep in sync). */
-const BUNDLE_DOWNLOADED_MARKER = "__origa_bundle_downloaded_v3__";
+ * BUNDLE_DOWNLOADED_KEY v4 — keep in sync; #1484 bumped v3→v4 with the
+ * deflated-blob precache composition). */
+const BUNDLE_DOWNLOADED_MARKER = "__origa_bundle_downloaded_v4__";
 
 /** CDN origin under test — same override chain as the CDN webServer. */
 const CDN_ORIGIN = `http://localhost:${LOCAL_CDN_PORT}`;
@@ -61,7 +62,7 @@ When(
 
     await page.getByTestId("download-bundle-btn").click();
 
-    // The full ~145 MB pass over localhost: bounded by the slow-startup
+    // The full ~85 MB pass over localhost: bounded by the slow-startup
     // budget rather than the default scenario timeout.
     await expect(page.getByText("Пакет скачан")).toBeVisible({
       timeout: 420_000,
@@ -99,6 +100,19 @@ Then(
       cdnRequests.some((url) => url.endsWith("phrases/phrase_index.rkyv")),
       "the legacy v2 phrase blob must not be fetched",
     ).toBe(false);
+
+    // #1484: the converted families ride their deflated blobs — no raw
+    // JSON of the dictionary/grammar/kanji/radicals/pitch precache may
+    // appear in the pass (detector-invisible wire format contract).
+    const convertedJson = cdnRequests.filter((url) =>
+      /(dictionary\/(chunk_\d+|kanji|radicals)\.json|grammar\/grammar_v3\.json|pitch\/index\.json)$/.test(
+        url,
+      ),
+    );
+    expect(
+      convertedJson,
+      `precache must not fetch converted-family JSON, got: ${convertedJson.join(", ")}`,
+    ).toHaveLength(0);
   },
 );
 
@@ -136,6 +150,22 @@ Then("бандл-копии не хранятся в кэше после рас�
     chunks.every((url) => url.includes("?v=")),
     `chunks must be keyed with their content hash (?v=), got: ${chunks[0] ?? "?"}`,
   ).toBe(true);
+
+  // #1484: the deflated blobs of the converted families are the offline
+  // sources — the precache pass must have put each of them in the Cache
+  // API (same presence-over-request-log reasoning as the v3 index above).
+  for (const blob of [
+    "dictionary/vocabulary.rkyv",
+    "dictionary/kanji.rkyv",
+    "dictionary/radicals.rkyv",
+    "grammar/grammar_v3.rkyv",
+    "pitch/index.rkyv",
+  ]) {
+    expect(
+      keys.some((url) => url.endsWith(blob)),
+      `the #1484 deflated blob must be in the cache as the offline source: ${blob}`,
+    ).toBe(true);
+  }
 });
 
 When(

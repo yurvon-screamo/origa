@@ -1,5 +1,6 @@
 use crate::dictionary::load_dictionary;
 use crate::utils::{collect_json_files, get_base_path};
+use origa::dictionary::phrase::sanitize_dash_runs;
 use origa::domain::{OrigaError, tokenize_text};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -308,7 +309,11 @@ pub fn run_build_phrase_dataset(
     let mut lost_by_missing: HashMap<String, usize> = HashMap::new();
 
     for (idx, tr) in transcriptions.iter().enumerate() {
-        let analysis = analyze_phrase(&tr.text, &vocabulary)?;
+        // Sanitize transcription artifacts before anything downstream:
+        // the vocabulary analysis, the stored tokens and the shipped text
+        // all build from the clean string (#914).
+        let text = sanitize_dash_runs(&tr.text);
+        let analysis = analyze_phrase(&text, &vocabulary)?;
 
         for base in &analysis.vocab_bases {
             all_unique_vocab.insert(base.clone());
@@ -333,7 +338,7 @@ pub fn run_build_phrase_dataset(
             skipped_no_coverage += 1;
             track_gaps(
                 &analysis,
-                &tr.text,
+                &text,
                 &mut word_block_count,
                 &mut word_unlock_count,
                 &mut word_example,
@@ -348,7 +353,7 @@ pub fn run_build_phrase_dataset(
             total_tokens_in_passed += analysis.vocab_bases.len();
             passed_phrases.push(PhraseEntry {
                 id: ulid_str.clone(),
-                text: tr.text.clone(),
+                text: text.clone(),
                 audio_file: format!("{}.mp3", ulid_str),
                 tokens: analysis.vocab_bases,
             });

@@ -9,6 +9,7 @@ import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { onboarded } from "./onboarded.ts";
 import { onboardedHistory } from "./onboarded-history.ts";
 import { onboardingSummary } from "./onboarding-summary.ts";
+import { phraseDashRun } from "./phrase-dash-run.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
 import { withWord } from "./with-word.ts";
@@ -40,5 +41,6 @@ export const presets: Record<PresetId, Preset> = {
   "onboarded-history": onboardedHistory,
   "irodori-nyuumon": irodoriNyuumon,
   "onboarding-summary": onboardingSummary,
+  "phrase-dash-run": phraseDashRun,
   "with-word": withWord,
 };

@@ -12,7 +12,7 @@ use ulid::Ulid;
 
 pub use detail::{
     PhraseDetail, cache_phrase_details, get_cached_phrase_detail, get_phrase_text,
-    get_phrase_translation, is_chunk_loaded, reset_phrase_data_for_test,
+    get_phrase_translation, is_chunk_loaded, reset_phrase_data_for_test, sanitize_dash_runs,
 };
 pub use index::{
     ArchivedPhraseIndexBlob, ArchivedPhraseIndexBlobV3, IndexEntry, PhraseIndex, PhraseIndexBlob,
