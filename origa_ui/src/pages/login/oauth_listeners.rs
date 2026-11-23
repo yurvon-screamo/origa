@@ -15,6 +15,16 @@ use wasm_bindgen_futures::JsFuture;
 
 const LOGIN_PATH: &str = "/login";
 
+/// The deep-link URL prefix this listener owns (the ownership contract is
+/// documented in `core/shortcut_links.rs`; shortcut `origa://add*` and
+/// selftest `origa://selftest-ocr` URLs are routed by their own listeners).
+/// Prefix match is intentional: URLs arrive from our own deep-link
+/// transport, and all three call sites (warm event, cold poll, resume poll)
+/// must share identical semantics.
+fn is_auth_callback_url(url: &str) -> bool {
+    url.starts_with("origa://auth/callback")
+}
+
 pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
     debug!("setup_oauth_listener() called");
 
@@ -31,16 +41,21 @@ pub fn setup_oauth_listener(auth_store: AuthStore, i18n: I18nContext<Locale>) {
             return;
         }
 
+        // Routing foreign URLs out here keeps them silent: no oauth_error,
+        // no is_oauth_loading flicker on /login, no Sentry noise.
+        if !is_auth_callback_url(&url) {
+            debug!(url = %url, "non-auth deep-link — skipping oauth processing");
+            return;
+        }
+
         let auth_store = auth_store_clone.clone();
         let i18n = i18n;
         auth_store.oauth_error.set(None);
         spawn_local(async move {
             debug!(url = %url, "processing oauth url");
-            if url.starts_with("origa://auth/callback") {
-                *last_processed_callback()
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
-            }
+            *last_processed_callback()
+                .lock()
+                .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
             auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "process_oauth_url result");
@@ -177,17 +192,19 @@ fn poll_current_deep_link(auth_store: AuthStore, i18n: I18nContext<Locale>) {
             debug!("no current deep-link");
             return;
         }
+        if !is_auth_callback_url(&url) {
+            debug!(url = %url, "current deep-link is not an auth callback — skipping");
+            return;
+        }
         debug!(url = %url, "processing current deep-link from app load");
 
         let auth_store = auth_store_clone.clone();
         let i18n = i18n_clone;
         auth_store.oauth_error.set(None);
         spawn_local(async move {
-            if url.starts_with("origa://auth/callback") {
-                *last_processed_callback()
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
-            }
+            *last_processed_callback()
+                .lock()
+                .unwrap_or_else(|e| e.into_inner()) = Some(url.clone());
             auth_store.is_oauth_loading.set(true);
             let result = process_oauth_url(&url, &auth_store, &i18n).await;
             debug!(result = ?result, "current deep-link process result");
@@ -248,7 +265,7 @@ pub fn start_resume_polling(auth_store: AuthStore, i18n: I18nContext<Locale>) {
             let Some(url) = fetch_current_deep_link_url().await else {
                 continue;
             };
-            if !url.starts_with("origa://auth/callback") {
+            if !is_auth_callback_url(&url) {
                 continue;
             }
 
@@ -358,5 +375,30 @@ async fn process_oauth_flow(
                 OAuthFailure::Message(message) => message,
             }));
         },
+    }
+}
+
+#[cfg(test)]
+mod auth_callback_routing_tests {
+    use super::is_auth_callback_url;
+
+    /// The oauth listener owns `origa://auth/callback*` (ownership contract
+    /// documented in `core/shortcut_links.rs`): every deep-link URL that
+    /// reaches `process_oauth_url` must be an auth-callback URL. Foreign
+    /// prefixes (shortcut `origa://add*`, selftest `origa://selftest-ocr`)
+    /// are skipped silently by the routing filter before any auth state is
+    /// touched — a foreign URL must not produce an `oauth_error` or flicker
+    /// `is_oauth_loading` on /login.
+    #[rstest::rstest]
+    #[case::code_param("origa://auth/callback?code=abc", true)]
+    #[case::fragment("origa://auth/callback#access_token=x", true)]
+    #[case::bare_callback("origa://auth/callback", true)]
+    #[case::selftest_probe("origa://selftest-ocr", false)]
+    #[case::shortcut("origa://add?source=camera", false)]
+    #[case::web_login_url("https://app.origa.uwuwu.net/login?code=x", false)]
+    #[case::empty("", false)]
+    #[case::case_sensitive("ORIGA://AUTH/CALLBACK?code=x", false)]
+    fn routes_auth_callback_urls(#[case] url: &str, #[case] expected: bool) {
+        assert_eq!(is_auth_callback_url(url), expected, "routing of {url}");
     }
 }

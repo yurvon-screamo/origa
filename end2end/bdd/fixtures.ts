@@ -1,4 +1,4 @@
-import { type Page } from "@playwright/test";
+import { type BrowserContext, type Page } from "@playwright/test";
 import { test as base, createBdd } from "playwright-bdd";
 import { getAppBaseUrl } from "../config";
 import {
@@ -39,6 +39,12 @@ export const test = base.extend<
     apiRequestLog: string[];
     offlineNetLog: { requests: string[]; okResponses: string[] };
     secondDevicePage: Page;
+    oauthTauriSession: {
+      page: Page | null;
+      context: BrowserContext | null;
+      tokenRequests: string[];
+    };
+    oauthConsoleLogs: string[];
   },
   object
 >({
@@ -145,6 +151,33 @@ export const test = base.extend<
   offlineNetLog: [
     async ({}, use) => {
       await use({ requests: [] as string[], okResponses: [] as string[] });
+    },
+    { scope: "test" },
+  ],
+  // Boot slot for the oauth deep-link routing scenarios (#1482): the Given
+  // steps fill it with a page booted inside the `__TAURI__` transport mock
+  // (helpers/tauri-mock.ts); the After hook in the steps file closes the
+  // context. tokenRequests accumulates every `/api/auth/v1/token` request
+  // so the positive-control step can observe the exchange at the network
+  // boundary (release builds hide debug logs, but not fetches).
+  oauthTauriSession: [
+    async ({}, use) => {
+      await use({
+        page: null as Page | null,
+        context: null as BrowserContext | null,
+        tokenRequests: [] as string[],
+      });
+    },
+    { scope: "test" },
+  ],
+  // Console output (ALL levels and types) captured by the oauth mock boot;
+  // the routing Then-step pins the error-branch messages by substring.
+  // Type-agnostic capture is the point: tracing-wasm emits every tracing
+  // level — error! included — through console.log (the crate has no
+  // console.error binding), so a type-filtered capture would never see it.
+  oauthConsoleLogs: [
+    async ({}, use) => {
+      await use([] as string[]);
     },
     { scope: "test" },
   ],
