@@ -98,7 +98,7 @@ the entry point:
 ```bash
 npm run shots -- list                                    # the catalog of screens
 npm run shots -- capture --scenario home --label issue-808 [--upload]
-npm run shots -- index                                   # rebuild the registry view
+npm run shots -- index                                   # rebuild the registry view locally — never commit it; the Shots Index workflow lands it after merge
 ```
 
 `capture` checks the environment first (`shots/preflight.ts`): a missing

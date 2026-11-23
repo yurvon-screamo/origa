@@ -180,8 +180,11 @@ into the production TrailBase.
 - The `end2end/screenshots/` directory is no longer tracked. The five
   PNGs that were in it (2.1 MB) are untracked with a backup, in line
   with issue #797.
-- The generated index is a shared file: on a merge conflict it is
-  regenerated (`npm run shots -- index`) instead of merged.
+- The generated index is the only shared file across parallel capture
+  PRs. It is no longer committed in PRs at all: the Shots Index
+  workflow regenerates it on master after every registry merge and
+  lands it through a bot PR with auto-merge, so hand-merged index
+  conflicts (and lost rows) cannot happen.
 
 ## Not Done Here
 

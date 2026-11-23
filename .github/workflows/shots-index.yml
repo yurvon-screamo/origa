@@ -1,0 +1,93 @@
+name: Shots Index
+
+# The registry index (docs/ui-screenshots/README.md) is a generated view
+# over docs/ui-screenshots/shots/*.json. Capture PRs commit the JSON
+# entries but NOT the view — after every registry merge this workflow
+# regenerates the view and lands it on master. Hand-merging the index in
+# parallel PRs was a conflict magnet and even lost registry rows, so the
+# view now has a single writer (task #409 of the origa board).
+#
+# Branch protection rejects direct pushes (required CI Gate check), so
+# the rebuild lands through a bot PR with auto-merge. The PR only ever
+# touches the generated file — no ci.yml path-filter component matches —
+# so its gate passes trivially and GitHub merges it as soon as green.
+on:
+    push:
+        branches: [master]
+        paths:
+            - "docs/ui-screenshots/shots/**"
+            # Code that shapes the view: a template or reader change must
+            # regenerate the index too, not wait for the next capture.
+            - "end2end/scripts/shots.ts"
+            - "end2end/shots/index.ts"
+            - "end2end/shots/registry.ts"
+    workflow_dispatch:
+
+concurrency:
+    group: shots-index
+    # Serialize rebuilds: a queued run re-cuts the bot branch from a
+    # fresh master, so the last run always converges to the truth.
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    rebuild:
+        name: Rebuild the registry index
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            - name: Checkout master
+              uses: actions/checkout@v7
+              with:
+                  # Fresh HEAD, not the event SHA: a serialized run must
+                  # see the previous run's landed rebuild, if any.
+                  ref: master
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  # Node 22: the shots tool runs on type stripping
+                  # (Node >= 22.18), same as the e2e jobs in ci.yml.
+                  node-version: "22"
+
+            - name: Install dependencies
+              working-directory: end2end
+              run: npm ci
+
+            - name: Regenerate the index
+              working-directory: end2end
+              run: node scripts/shots.ts index
+
+            - name: Land the rebuild through a bot PR
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: |
+                  if git diff --quiet docs/ui-screenshots/README.md; then
+                      echo "Index already matches the registry — nothing to land."
+                      exit 0
+                  fi
+
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add docs/ui-screenshots/README.md
+                  git commit -m "chore(shots): regenerate the registry index (post-merge rebuild)"
+
+                  git fetch origin "bot/shots-index:refs/remotes/origin/bot/shots-index" || true
+                  git switch -C bot/shots-index
+                  git push --force-with-lease origin bot/shots-index
+
+                  number="$(gh pr list --head bot/shots-index --state open --json number --jq '.[0].number // ""')"
+                  if [ -z "$number" ]; then
+                      gh pr create \
+                          --base master \
+                          --head bot/shots-index \
+                          --title "chore(shots): regenerate the registry index" \
+                          --body "Auto-landed by the Shots Index workflow (\`npm run shots -- index\`) after a registry merge. The index is a generated view — do not edit."
+                  else
+                      echo "Bot PR #$number is already open — branch updated, re-arming auto-merge."
+                  fi
+                  gh pr merge --merge --auto
