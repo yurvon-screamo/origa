@@ -128,6 +128,49 @@ fn normalize_translation(raw: &str) -> String {
     trimmed[inner_start..inner_end].to_string()
 }
 
+/// Dash-run artifacts: 2+ consecutive full-width horizontal dashes from
+/// subtitle-style transcriptions ("trailing speech" convention) render as
+/// a continuous line across the card (#914). Single dashes are legitimate
+/// punctuation (dialogue dashes in ja/ru/en) and survive, as do runs of
+/// the katakana prolonged-sound mark ー (U+30FC — a different codepoint).
+/// The whole string is trimmed unconditionally — including inputs without
+/// any dash runs; the caller contract is "clean display text".
+pub fn sanitize_dash_runs(text: &str) -> String {
+    fn is_dash_char(c: char) -> bool {
+        matches!(c, '\u{2500}' | '\u{2015}' | '\u{2014}')
+    }
+
+    let mut out = String::with_capacity(text.len());
+    let mut run = String::new();
+    let mut run_len = 0usize;
+    for c in text.chars() {
+        if is_dash_char(c) {
+            run.push(c);
+            run_len += 1;
+        } else {
+            if run_len < 2 {
+                out.push_str(&run);
+            }
+            run.clear();
+            run_len = 0;
+            out.push(c);
+        }
+    }
+    if run_len < 2 {
+        out.push_str(&run);
+    }
+    out.trim().to_string()
+}
+
+/// Translation load path: quote-wrapper normalization (#178 P-5) plus the
+/// dash-run strip (#914). A translation reduced to nothing by either step
+/// is not a translation — it becomes `None` (the example-side "empty =
+/// missing" convention).
+fn sanitized_translation(raw: Option<String>) -> Option<String> {
+    raw.map(|s| sanitize_dash_runs(&normalize_translation(&s)))
+        .filter(|s| !s.is_empty())
+}
+
 pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError> {
     let raw_list: Vec<DetailRaw> =
         serde_json::from_str(json).map_err(|e| OrigaError::PhraseParseError {
@@ -138,11 +181,11 @@ pub fn cache_phrase_details(chunk_id: u32, json: &str) -> Result<(), OrigaError>
         .into_iter()
         .map(|r| PhraseDetail {
             id: r.id,
-            text: r.text,
-            translation_ru: r.translation_ru.map(|s| normalize_translation(&s)),
-            translation_en: r.translation_en.map(|s| normalize_translation(&s)),
-            translation_ko: r.translation_ko.map(|s| normalize_translation(&s)),
-            translation_vi: r.translation_vi.map(|s| normalize_translation(&s)),
+            text: sanitize_dash_runs(&r.text),
+            translation_ru: sanitized_translation(r.translation_ru),
+            translation_en: sanitized_translation(r.translation_en),
+            translation_ko: sanitized_translation(r.translation_ko),
+            translation_vi: sanitized_translation(r.translation_vi),
         })
         .collect();
 
@@ -290,5 +333,95 @@ mod tests {
     #[case::unbalanced_right_alone("нечто\"", "нечто\"")]
     fn normalize_translation_variants(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(normalize_translation(input), expected);
+    }
+
+    #[rstest::rstest]
+    #[case::trailing_run("実は少し────", "実は少し")]
+    #[case::leading_run("────と詠ったのは", "と詠ったのは")]
+    #[case::mid_run("今──見ておきたい", "今見ておきたい")]
+    #[case::leading_run_with_space("── 実は少し", "実は少し")]
+    #[case::run_before_punctuation("話を────！", "話を！")]
+    #[case::single_dash_survives("見える―！", "見える―！")]
+    #[case::prolonged_mark_runs_survive("いってきまーーす", "いってきまーーす")]
+    #[case::single_russian_dash_survives("рота — в полк", "рота — в полк")]
+    #[case::em_dash_run_dropped("кровь——", "кровь")]
+    #[case::mixed_run_dropped("─―─混成", "混成")]
+    #[case::edge_whitespace_trimmed("  pads  ", "pads")]
+    fn sanitize_dash_runs_strips_runs_and_keeps_single_and_prolonged_dashes(
+        #[case] input: &str,
+        #[case] expected: &str,
+    ) {
+        assert_eq!(sanitize_dash_runs(input), expected);
+    }
+
+    /// The live prod instance behind #914 (card 53/65): phrase
+    /// 00000000003YTM62ZWSHWQPHH5, chunk p0024 / data_bundle_0, fetched from
+    /// s3.origa.uwuwu.net — the ──── run renders as a line across the screen.
+    const DASH_RUN_CHUNK_JSON: &str = r#"[{"i":"00000000003YTM62ZWSHWQPHH5","x":"実は少し────","ru":"На самом деле, есть кое-что...","en":"Actually, there's a little something...","ko":"사실은 조금 있어요────","vi":"Thực ra là có chút..."}]"#;
+
+    #[test]
+    fn dash_run_artifact_from_prod_phrase_is_stripped_at_parse_time() {
+        // Arrange
+        let id = Ulid::from_string("00000000003YTM62ZWSHWQPHH5").expect("prod ULID");
+
+        // Act
+        cache_phrase_details(9140, DASH_RUN_CHUNK_JSON).expect("install");
+        let detail = get_cached_phrase_detail(&id).expect("detail installed");
+
+        // Assert
+        assert_eq!(detail.text, "実は少し");
+        assert_eq!(
+            detail.translation_ko.as_deref(),
+            Some("사실은 조금 있어요"),
+            "ko translations carry the same artifact"
+        );
+        assert_eq!(
+            detail.translation_ru.as_deref(),
+            Some("На самом деле, есть кое-что...")
+        );
+    }
+
+    #[test]
+    fn translation_reduced_to_nothing_by_sanitization_becomes_missing() {
+        // Arrange
+        const JSON: &str = r#"[{"i":"00000000003YTM62ZWSHWQPHH6","x":"実は少し────","ru":"────","en":"Actually, there's a little something..."}]"#;
+        let id = Ulid::from_string("00000000003YTM62ZWSHWQPHH6").expect("ULID");
+
+        // Act
+        cache_phrase_details(9141, JSON).expect("install");
+        let detail = get_cached_phrase_detail(&id).expect("detail installed");
+
+        // Assert
+        assert_eq!(detail.text, "実は少し");
+        assert_eq!(
+            detail.translation_ru, None,
+            "a dash-run-only translation is not a translation"
+        );
+        assert_eq!(
+            detail.translation_en.as_deref(),
+            Some("Actually, there's a little something...")
+        );
+    }
+
+    #[test]
+    fn legit_single_and_prolonged_dashes_survive_the_chunk_load() {
+        // Arrange
+        const JSON: &str = r#"[{"i":"00000000003YTM62ZWSHWQPHH7","x":"まだだ！いつか必ず光明は見える―！いってきまーーす","ru":"Одна рота — в Запретный дворец","en":"— stay safe —"}]"#;
+        let id = Ulid::from_string("00000000003YTM62ZWSHWQPHH7").expect("ULID");
+
+        // Act
+        cache_phrase_details(9142, JSON).expect("install");
+        let detail = get_cached_phrase_detail(&id).expect("detail installed");
+
+        // Assert
+        assert_eq!(
+            detail.text, "まだだ！いつか必ず光明は見える―！いってきまーーす",
+            "single ― and prolonged ー runs are legitimate orthography"
+        );
+        assert_eq!(
+            detail.translation_ru.as_deref(),
+            Some("Одна рота — в Запретный дворец")
+        );
+        assert_eq!(detail.translation_en.as_deref(), Some("— stay safe —"));
     }
 }
