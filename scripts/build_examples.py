@@ -319,13 +319,17 @@ def read_old_corpus_index(out_dir: Path) -> tuple[set[int], int]:
                 "fix or remove the previous corpus before regenerating"
             )
         for r in refs:
-            if isinstance(r, list) and r:
-                try:
-                    sid = int(r[0])
-                except (TypeError, ValueError):
-                    continue
-                referenced.add(sid)
-                max_sid = max(max_sid, sid)
+            if not isinstance(r, list) or not r:
+                continue  # empty ref list = word without examples (legitimate)
+            try:
+                sid = int(r[0])
+            except (TypeError, ValueError) as e:
+                raise OldCorpusError(
+                    f"{path}: malformed ref element ({r!r}); "
+                    "fix or remove the previous corpus before regenerating"
+                ) from e
+            referenced.add(sid)
+            max_sid = max(max_sid, sid)
     return referenced, max_sid
 
 

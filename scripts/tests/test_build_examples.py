@@ -340,3 +340,32 @@ def test_read_old_corpus_present_but_empty_corpus_is_quiet_degenerate(tmp_path):
     sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
     assert (sid_to_x, x_to_sid, sid_to_tr, max_sid) == ({}, {}, {}, 0)
     assert present is True
+
+
+def test_read_old_corpus_raises_on_malformed_ref_element(tmp_path):
+    # a non-numeric sid inside an otherwise-valid index is corruption, not leniency
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    (out_dir / "index.json").write_text(
+        json.dumps({"v": 1, "h": "", "words": {"w": {"refs": [["x", 0, 1]]}}, "s": 1}),
+        encoding="utf-8",
+    )
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_tolerates_empty_ref_lists(tmp_path):
+    # an empty refs array = word without examples: legitimate, not corruption
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    index = json.loads((out_dir / "index.json").read_text(encoding="utf-8"))
+    index["words"]["no-examples-word"] = {"refs": []}
+    (out_dir / "index.json").write_text(json.dumps(index), encoding="utf-8")
+    sid_to_x, x_to_sid, sid_to_tr, max_sid, present = gen.read_old_corpus(out_dir)
+    assert present is True and x_to_sid == {"hello": 5} and max_sid == 5
