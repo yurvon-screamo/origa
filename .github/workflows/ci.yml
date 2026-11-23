@@ -630,6 +630,27 @@ jobs:
                   shared-key: origa-ci-v2
                   save-if: false
 
+            # Corpus-less half of the skip contract (ADR-083): this job's only
+            # corpus seeding is the artifact unpack below, so this step always
+            # runs the absent branch — fixtures probe, skip, early-return. A
+            # regression back to unwrap()/expect() on a corpus fixture turns
+            # it red. The empty override is the canonical unset (ADR-024,
+            # unit-pinned in corpus.rs), so resolution falls back to
+            # ~/origa-cdn, which never exists on a fresh runner —
+            # deterministic regardless of step order. Exit code is the whole
+            # assert: skip markers are deliberately not grepped (ADR-083:
+            # markers are visibility, not gates).
+            - name: Run tests (corpus-less)
+              env:
+                  ORIGA_CDN_DIR: ""
+              # --no-fail-fast per the #933 pin: uniform with both suites.
+              # With a single lib test binary it cannot hide a second suite —
+              # the flag is inert here, but the no-fail-fast meta-test pins
+              # every cargo test step to either the flag or the per-job
+              # allowlist (test must not be allowlisted: it also hosts the
+              # multi-binary workspace suite).
+              run: cargo test -p origa --lib --no-fail-fast
+
             - name: Download CDN artifact
               uses: actions/download-artifact@v8
               with:
