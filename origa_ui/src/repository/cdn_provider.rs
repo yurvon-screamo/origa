@@ -414,7 +414,11 @@ where
             }
         },
         Err(rejection) => {
-            tracing::warn!("📖 {resource} blob rejected ({rejection:?}), using fallback chain");
+            let reason = match rejection {
+                BlobLoadRejection::Rejected(reason) => reason,
+                BlobLoadRejection::StaleGeneration => "stale generation".to_string(),
+            };
+            tracing::warn!("📖 {resource} blob rejected ({reason}), using fallback chain");
             None
         },
     };

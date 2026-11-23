@@ -21,7 +21,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use origa::dictionary::cdn_blob::{
-    self, BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob, split_blob,
+    self, BlobHeader, DEFLATED_RKYV_SCHEMA_VERSION, SCHEMA_VERSION, build_blob,
     split_blob_with_schema,
 };
 use origa::dictionary::furigana_dict::{
@@ -531,6 +531,7 @@ pub fn run_build_cdn_rkyv(cdn_dir: Option<PathBuf>) -> Result<(), OrigaError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use origa::dictionary::cdn_blob::split_blob;
 
     fn temp_cdn(contents: &[(String, Vec<u8>)]) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("origa-rkyv-test-{}", ulid::Ulid::new()));
@@ -833,7 +834,8 @@ mod tests {
     #[test]
     fn deflated_json_blob_builds_skips_and_binds_guard_to_source() {
         // Arrange: one case per deflated-JSON family (uwuwu #1484).
-        let cases: [(&str, &str, fn(&Path) -> Result<bool, String>); 3] = [
+        type DeflatedJsonBuilder = fn(&Path) -> Result<bool, String>;
+        let cases: [(&str, &str, DeflatedJsonBuilder); 3] = [
             (GRAMMAR_V3_SOURCE, GRAMMAR_V3_BLOB, build_grammar_v3_blob),
             (KANJI_SOURCE, KANJI_BLOB, build_kanji_blob),
             (RADICALS_SOURCE, RADICALS_BLOB, build_radicals_blob),
@@ -866,7 +868,8 @@ mod tests {
     #[test]
     fn changed_deflated_json_source_invalidates_freshness() {
         // Arrange: one case per deflated-JSON family (uwuwu #1484).
-        let cases: [(&str, &str, fn(&Path) -> Result<bool, String>); 3] = [
+        type DeflatedJsonBuilder = fn(&Path) -> Result<bool, String>;
+        let cases: [(&str, &str, DeflatedJsonBuilder); 3] = [
             (GRAMMAR_V3_SOURCE, GRAMMAR_V3_BLOB, build_grammar_v3_blob),
             (KANJI_SOURCE, KANJI_BLOB, build_kanji_blob),
             (RADICALS_SOURCE, RADICALS_BLOB, build_radicals_blob),
