@@ -46,7 +46,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
     for (let index = 0; index < 12 && !presentationShot; index++) {
       const wordSlide = await page
         .getByTestId("acquaintance-word-slide")
-        .isVisible({ timeout: 1_000 })
+        // locator.isVisible() returns immediately (its timeout option is
+        // ignored in Playwright 1.60) — the walk loop below is the wait.
+        .isVisible()
         .catch(() => false);
       if (wordSlide) {
         await page.waitForTimeout(700);
@@ -66,7 +68,7 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
     for (let index = 0; index < 12; index++) {
       const training = await page
         .getByTestId("acquaintance-training")
-        .isVisible({ timeout: 1_000 })
+        .isVisible()
         .catch(() => false);
       if (training) break;
       await next.click({ timeout: 2_000 }).catch(() => undefined);
@@ -125,6 +127,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
         // p.font-mono, a kanji draw has no button at all. Gate the shot
         // on the serif WORD paragraph itself, or the assert below races
         // the draw order and fails at random.
+        // Raw selector by sanction: the word paragraph carries no
+        // data-testid of its own — p.font-serif is the only marker the
+        // markup offers (the same selector is asserted at the capture).
         (await cornerButton.isVisible().catch(() => false)) &&
         (await front
           .locator("p.font-serif")
@@ -149,9 +154,10 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
         // audio_button_hidden_on_kanji_slide). Ask the front for the
         // voice before revealing — otherwise the assert races the
         // 1-in-5 kanji draw and fails at random.
-        const frontVoiced = await cornerButton
-          .isVisible({ timeout: 300 })
-          .catch(() => false);
+        // locator.isVisible() returns immediately — this is a polling
+        // gate inside the bounded walk, not a wait (the walk loop
+        // retries and the real asserts below auto-retry).
+        const frontVoiced = await cornerButton.isVisible().catch(() => false);
         if (frontVoiced) {
           await reveal.click({ timeout: 2_000 }).catch(() => undefined);
           const answerVisible = await page
