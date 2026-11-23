@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 241129,
-  "sha256": "5e2afc497fdc6ab8b925311a64f12c3d1813661a3b0554a6708326618474c0db",
-  "capturedAt": "2026-10-30T18:22:30.214Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-example--acquaintance-example--desktop-5e2afc49.png",
-  "uploadedSha256": "5e2afc497fdc6ab8b925311a64f12c3d1813661a3b0554a6708326618474c0db",
-  "uploadedAt": "2026-10-30T19:44:12.915Z"
+  "bytes": 241744,
+  "sha256": "3d03f02614b64fd57cb0b16ec69431e876b9058409ce050f6fd491cd2b2e24e5",
+  "capturedAt": "2026-11-22T03:51:05.263Z",
+  "commit": "249770690f6957fe37c80bd586686775d71d3434",
+  "baseURL": "http://localhost:11421",
+  "cdnBaseUrl": "http://localhost:18181",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-example--acquaintance-example--desktop-3d03f026.png",
+  "uploadedSha256": "3d03f02614b64fd57cb0b16ec69431e876b9058409ce050f6fd491cd2b2e24e5",
+  "uploadedAt": "2026-11-22T04:44:44.739Z"
 }

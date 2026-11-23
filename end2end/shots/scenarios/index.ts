@@ -11,6 +11,7 @@ import { jftCardScenario } from "./jft-card.ts";
 import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
+import { lessonAcquaintanceWordScenario } from "./lesson-acquaintance-word.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
 import { lessonExampleRecallScenario } from "./lesson-example-recall.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
@@ -47,6 +48,7 @@ export const implementations: Record<string, ShotScenario> = {
   [jftCardScenario.id]: jftCardScenario,
   [lessonAcquaintanceGrammarScenario.id]: lessonAcquaintanceGrammarScenario,
   [lessonAcquaintanceKanjiScenario.id]: lessonAcquaintanceKanjiScenario,
+  [lessonAcquaintanceWordScenario.id]: lessonAcquaintanceWordScenario,
   [lessonUnificationScenario.id]: lessonUnificationScenario,
   [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
   [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,

@@ -161,10 +161,9 @@ pub fn AcquaintanceView() -> impl IntoView {
             }>
             <div class="flex items-center gap-2 flex-wrap min-w-0 mb-2">
                 // Один плоский flex-wrap контейнер (паттерн LessonCardTags):
-                // теги переносятся по одному, а кнопка озвучки (ml-auto)
-                // делит строку с последним рядом тегов — во вложенном
-                // контейнере она конкурировала со ВСЕМИ тегами как с одним
-                // атомарным элементом и уезжала на отдельную строку.
+                // теги переносятся по одному, а не как один атомарный блок.
+                // Кнопка озвучки живёт НЕ здесь — внутри карточки, правый
+                // верхний угол (перенос строки ей больше не грозит).
                 <Tag test_id=Signal::derive(|| "acquaintance-phase-tag".to_string())>
                     {move || phase_label.get()}
                 </Tag>
@@ -188,29 +187,6 @@ pub fn AcquaintanceView() -> impl IntoView {
                         {move || pos_tag_label.get().unwrap_or_default()}
                     </Tag>
                 </Show>
-
-                // Кнопка озвучки — правый край ряда тегов, как в обычном
-                // уроке (LessonCardTags: ml-auto). Замыкание по тексту
-                // карты: AudioButtons берёт текст при монтировании, смена
-                // карты пересоздаёт кнопку (паттерн lesson_card_header).
-                {move || {
-                    current_audio
-                        .get()
-                        .filter(|_| audio_visible.get())
-                        .map(|(_, text)| {
-                            view! {
-                                <div class="ml-auto shrink-0">
-                                    <AudioButtons
-                                        text=text
-                                        audio_path=None
-                                        test_id=Signal::derive(|| {
-                                            "acquaintance-audio-btn".to_string()
-                                        })
-                                    />
-                                </div>
-                            }
-                        })
-                }}
             </div>
             </Show>
 
@@ -255,6 +231,37 @@ pub fn AcquaintanceView() -> impl IntoView {
                     }>
                         <TrainingBody ctx=ctx_stored.get_value() />
                     </Show>
+
+                    // Кнопка озвучки — правый верхний угол КАРТОЧКИ
+                    // (владелец, 21.11: «внутрь карточки, правый верхний
+                    // угол»). Прежний дом — ряд чипов над карточкой: там
+                    // flex-wrap при нехватке ширины (мобайл) уносил кнопку
+                    // на собственную строку над карточкой — вне связки с
+                    // ней (баг-репорт 11.11). Видимость — тот же сигнал
+                    // audio_visible: на аудио-фронте тренировки угловой
+                    // кнопки нет (там своя центральная replay-кнопка), на
+                    // стороне ответа она возвращается. Замыкание по тексту
+                    // карты: AudioButtons берёт текст при монтировании,
+                    // смена карты пересоздаёт кнопку (паттерн
+                    // lesson_card_header).
+                    {move || {
+                        current_audio
+                            .get()
+                            .filter(|_| audio_visible.get())
+                            .map(|(_, text)| {
+                                view! {
+                                    <div class="absolute top-2 right-2">
+                                        <AudioButtons
+                                            text=text
+                                            audio_path=None
+                                            test_id=Signal::derive(|| {
+                                                "acquaintance-audio-btn".to_string()
+                                            })
+                                        />
+                                    </div>
+                                }
+                            })
+                    }}
                 </Card>
             </Show>
         </div>

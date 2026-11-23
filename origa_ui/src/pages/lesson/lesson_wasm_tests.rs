@@ -3736,8 +3736,8 @@ mod acquaintance_presentation {
 
     #[wasm_bindgen_test]
     async fn header_strip_has_no_audio_button_only_progress_strip() {
-        // Arrange: слайд слова — кнопка озвучки существует, но живёт в
-        // ряду тегов карточки, а не в стрипе хедера (баг-репорт: кнопка
+        // Arrange: слайд слова — кнопка озвучки существует, но живёт
+        // внутри карточки, а не в стрипе хедера (баг-репорт: кнопка
         // у полосы меняла её ширину — полоса прыгала между картами).
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
@@ -3788,12 +3788,12 @@ mod acquaintance_presentation {
                 .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
                 .unwrap()
                 .is_some(),
-            "кнопка озвучки в ряду тегов карточки"
+            "кнопка озвучки внутри карточки"
         );
     }
 
     #[wasm_bindgen_test]
-    async fn tags_row_shows_audio_button_and_pos_tag_for_word_slide() {
+    async fn word_slide_shows_pos_tag_and_audio_button() {
         // Arrange: слайд слова с частью речи
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
@@ -3816,13 +3816,13 @@ mod acquaintance_presentation {
         });
         tick().await;
 
-        // Assert: кнопка озвучки в ряду тегов карточки и POS-тег
+        // Assert: кнопка озвучки отрендерена, POS-тег на месте
         assert!(
             wrapper
                 .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
                 .unwrap()
                 .is_some(),
-            "кнопка озвучки слова в ряду тегов"
+            "кнопка озвучки слова отрендерена"
         );
         let pos_tag = wrapper
             .query_selector("[data-testid=\"acquaintance-pos-tag\"]")
@@ -3839,13 +3839,13 @@ mod acquaintance_presentation {
         );
     }
 
-    // Ряд тегов — ОДИН плоский flex-wrap контейнер (паттерн
-    // LessonCardTags): кнопка озвучки делит строку с тегами через
-    // ml-auto. Во вложенном контейнере кнопка конкурировала со всеми
-    // тегами как с одним атомарным блоком и переносилась на отдельную
-    // строку, хотя место справа было (юзер-репорт).
+    // Кнопка озвучки живёт ВНУТРИ карточки (правый верхний угол,
+    // absolute): владелец 21.11 — «внутрь карточки, правый верхний
+    // угол». Прежний дом — ряд чипов над карточкой: flex-wrap при
+    // нехватке ширины (мобайл) переносил кнопку на собственную строку,
+    // и она висела над карточкой вне связки с ней (баг-репорт 11.11).
     #[wasm_bindgen_test]
-    async fn tags_row_audio_button_shares_flat_container_with_tags() {
+    async fn audio_button_lives_inside_card_not_in_tags_row() {
         // Arrange: слайд слова с частью речи
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
@@ -3868,31 +3868,39 @@ mod acquaintance_presentation {
         });
         tick().await;
 
-        // Assert: тег и кнопка — прямые сиблинги одного контейнера ряда.
-        // AudioButtons рендерит собственный wrapper (.audio-buttons), поэтому
-        // ml-auto-контейнер кнопки — на два уровня выше самой кнопки.
+        // Assert: кнопка — потомок карточки (acquaintance-card-root),
+        // в ряду чипов её нет. AudioButtons рендерит собственный
+        // wrapper (.audio-buttons), поэтому абсолютная обёртка кнопки —
+        // на два уровня выше самой кнопки.
+        let card_root = wrapper
+            .query_selector("[data-testid=\"acquaintance-card-root\"]")
+            .unwrap()
+            .expect("карточка знакомства отрендерена");
+        assert!(
+            card_root
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_some(),
+            "кнопка озвучки внутри карточки (правый верхний угол)"
+        );
         let pos_tag = wrapper
             .query_selector("[data-testid=\"acquaintance-pos-tag\"]")
             .unwrap()
             .expect("POS-тег отрендерен");
-        let audio_btn = wrapper
-            .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
-            .unwrap()
-            .expect("кнопка озвучки отрендерена");
-        let ml_auto_wrapper = audio_btn
+        let tags_row = pos_tag
             .parent_element()
-            .and_then(|p| p.parent_element())
-            .expect("ml-auto-обёртка кнопки озвучки");
-        assert_eq!(
-            ml_auto_wrapper.parent_element(),
-            pos_tag.parent_element(),
-            "ml-auto-обёртка кнопки — прямой ребёнок ряда тегов (плоский \
-             контейнер), а не отдельная/вложенная строка"
+            .expect("ряд чипов — прямой родитель тега");
+        assert!(
+            tags_row
+                .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
+                .unwrap()
+                .is_none(),
+            "в ряду чипов кнопки озвучки больше нет"
         );
     }
 
     #[wasm_bindgen_test]
-    async fn tags_row_audio_button_hidden_on_kanji_slide() {
+    async fn audio_button_hidden_on_kanji_slide() {
         // Arrange
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
@@ -3928,9 +3936,9 @@ mod acquaintance_presentation {
 
     /// Озвучка грамматики в показе (юзер-репорт: карточка с примером
     /// без озвучки): паттерн — визуальный якорь слайда, доступен кнопкой
-    /// в ряду тегов так же, как слово у словарной карты.
+    /// в карточке так же, как слово у словарной карты.
     #[wasm_bindgen_test]
-    async fn tags_row_audio_button_visible_on_grammar_slide() {
+    async fn audio_button_visible_on_grammar_slide() {
         // Arrange
         let ctx = acq_context(AcquaintanceStage::Presentation);
         let card_id = Ulid::new();
@@ -3963,7 +3971,7 @@ mod acquaintance_presentation {
                 .query_selector("[data-testid=\"acquaintance-audio-btn\"]")
                 .unwrap()
                 .is_some(),
-            "кнопка озвучки паттерна в ряду тегов слайда грамматики"
+            "кнопка озвучки паттерна в карточке слайда грамматики"
         );
     }
 

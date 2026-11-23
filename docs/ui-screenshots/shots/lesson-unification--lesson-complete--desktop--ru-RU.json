@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 530838,
   "sha256": "0d67a625a8e2b05a0c5db938c4d95648218583176bc1392fd1f3e445fb04621f",
-  "capturedAt": "2026-10-30T18:35:00.234Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-unification--lesson-complete--desktop-0d67a625.png",
+  "capturedAt": "2026-11-22T12:04:56.485Z",
+  "commit": "ccb5c2537afd3b419e84e13b432507ad631b9c0d",
+  "baseURL": "http://localhost:11421",
+  "cdnBaseUrl": "http://localhost:18181",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-unification--lesson-complete--desktop-0d67a625.png",
   "uploadedSha256": "0d67a625a8e2b05a0c5db938c4d95648218583176bc1392fd1f3e445fb04621f",
-  "uploadedAt": "2026-10-30T19:44:40.801Z"
+  "uploadedAt": "2026-11-22T12:05:25.971Z"
 }
