@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1.4
 
-ARG RUST_VERSION=1.93
 ARG TRUNK_VERSION=0.21.14
 # Keep in sync with the trunk@ pin in .github/actions/setup-frontend
 # (CI installs this same release via cargo-binstall; that file carries
@@ -11,7 +10,6 @@ FROM ubuntu:26.04 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG RUST_VERSION
 ARG TRUNK_VERSION
 ARG TAILWINDCSS_VERSION=3.4.17
 
@@ -51,7 +49,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_DIR=/sccache
 
-RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
+# Toolchain version from rust-toolchain.toml — the same carrier rustup and
+# .github/actions/setup-rust read (the RUST_VERSION ARG was a second,
+# silently drifting source). COPY must precede the rustup install: the file
+# also governs every later cargo step in the image via rustup's lookup.
+COPY rust-toolchain.toml /rust-toolchain.toml
+RUN curl --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' /rust-toolchain.toml)"
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
