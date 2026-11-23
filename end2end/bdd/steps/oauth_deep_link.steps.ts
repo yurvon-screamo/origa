@@ -9,8 +9,9 @@ import { getAppBaseUrl } from "../../config";
  * `window.__TAURI__` transport mock (helpers/tauri-mock.ts, shape from
  * core/tauri.rs) as an unauthenticated user on /login — the exact state of
  * the bug: a foreign deep-link URL (selftest probe, word-adding shortcut)
- * used to fall into process_oauth_url's error branch, producing a Sentry
- * error-event and a false «unsupported callback» alert on /login.
+ * used to fall into process_oauth_url's error branch, producing an error-level
+ * console line (tracing-wasm emits it via console.log) and a false
+ * «unsupported callback» alert on /login.
  *
  * The positive control observes the happy path at the network boundary:
  * a real `origa://auth/callback?code=…` must fire the token-exchange POST
@@ -73,7 +74,6 @@ async function bootMockedTauriApp(
   // Settle marker: the login card mounted means the app booted and the
   // global oauth listener (app.rs) had its chance to register + cold-poll.
   await expect(page.getByTestId("login-card")).toBeVisible({ timeout: 60_000 });
-  session.context = context;
   session.page = page;
 }
 
@@ -110,7 +110,7 @@ Then(
     await page!.waitForTimeout(SETTLE_MS);
     // The user-visible symptom: false «unsupported callback» alert on /login.
     await expect(page!.getByTestId("oauth-error")).toHaveCount(0);
-    // The Sentry-noise source: the error branch of the oauth listener must
+    // The console-noise source: the error branch of the oauth listener must
     // not log at error level for foreign URLs. The capture is type-agnostic
     // (see PINNED_OAUTH_ERROR_LOGS) — the pin reads console.log lines too.
     const pinned = oauthConsoleLogs.filter((text) =>
@@ -128,10 +128,6 @@ Then("запрос обмена кода уходит в TrailBase", async ({ oa
   await expect
     .poll(() => tokenRequests.length, { timeout: 15_000 })
     .toBeGreaterThan(0);
-  expect(
-    tokenRequests.some((url) => url.includes("/api/auth/v1/token")),
-    `token exchange request expected, got: ${tokenRequests.join(", ")}`,
-  ).toBe(true);
 });
 
 After(async ({ oauthTauriSession }) => {

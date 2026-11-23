@@ -2,7 +2,8 @@
 Функция: Маршрутизация deep-link в oauth-листенере
   Баг #1482: oauth-листенер прогонял через process_oauth_url любой origa:// URL,
   и чужие deep-link (selftest-проба android-smoke, шорткат «добавить слово»)
-  ронялись в error-ветку → Sentry-событие + ложный алерт «unsupported callback»
+  ронялись в error-ветку → error-строка в консоли (tracing-wasm шлёт её через
+  console.log) + ложный алерт «unsupported callback»
   на /login. Фикс: предикат is_auth_callback_url в трёх путях входа — oauth
   слушает только auth-callback URL (origa://auth/callback*).
 

@@ -96,7 +96,16 @@ export async function installTauriMock(
   );
 }
 
-/** Dispatches a fake `deep-link-received` event to every registered handler. */
+/**
+ * Dispatches a fake `deep-link-received` event to every registered handler.
+ *
+ * The guard keeps «event dispatched into zero handlers» from looking
+ * identical to the silence the scenarios assert: if the oauth listener is
+ * not mounted (or the channel name changed), a warm-path scenario would
+ * pass with no alert and no pinned console lines. Not «exactly one» — the
+ * precise consumer count is a pin on production topology; every `listen`
+ * call adds a handler and the WASM side never removes one.
+ */
 export async function dispatchDeepLink(
   context: BrowserContext,
   url: string,
@@ -104,7 +113,18 @@ export async function dispatchDeepLink(
   const pages = context.pages();
   await pages[0].evaluate((u) => {
     const mock = (window as unknown as TauriMockWindow).__tauriMock;
-    for (const handler of mock.events.get("deep-link-received") ?? []) {
+    if (!mock) {
+      throw new Error(
+        "tauri-mock is not installed: run installTauriMock(context) before dispatchDeepLink",
+      );
+    }
+    const handlers = mock.events.get("deep-link-received");
+    if (!handlers || handlers.length === 0) {
+      throw new Error(
+        'no listeners registered on "deep-link-received": the oauth listener is not mounted (app.rs) or the channel name changed',
+      );
+    }
+    for (const handler of handlers) {
       handler({ payload: u });
     }
   }, url);
