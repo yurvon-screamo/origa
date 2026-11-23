@@ -1364,7 +1364,7 @@ jobs:
                       ;;
                     profile-sync)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(profile|sync|auth)\.feature\.spec\.js"
+                        --grep "features/(profile|sync|auth|oauth_deep_link_routing)\.feature\.spec\.js"
                       ;;
                     onboarding-lesson)
                       npx playwright test --project=bdd --retries=1 \
