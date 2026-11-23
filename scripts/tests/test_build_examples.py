@@ -9,6 +9,10 @@ of 仕舞う — does not demonstrate the card word).
 
 from __future__ import annotations
 
+import json
+
+import pytest
+
 import build_examples as gen
 
 
@@ -81,7 +85,7 @@ def _make_old_corpus(tmp_path, rows, refs):
     for cn, part in chunks.items():
         part.sort(key=lambda r: r["i"])
         (data_dir / f"s{cn:04d}.json").write_text(
-            __import__("json").dumps(part, ensure_ascii=False, separators=(",", ":")),
+            json.dumps(part, ensure_ascii=False, separators=(",", ":")),
             encoding="utf-8",
         )
     index = {"v": 1, "h": "h", "words": {}, "s": len(rows)}
@@ -92,7 +96,7 @@ def _make_old_corpus(tmp_path, rows, refs):
     for w, rs in words_map.items():
         index["words"][w] = {"refs": rs}
     (tmp_path / "index.json").write_text(
-        __import__("json").dumps(index, ensure_ascii=False, separators=(",", ":")),
+        json.dumps(index, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
     return tmp_path
@@ -202,3 +206,85 @@ def test_build_sid_map_no_old_corpus_uses_compact_ids():
     sid_map, stats = gen.build_sid_map(sentences, used_sids, {}, 0)
     assert sid_map == {0: 0, 1: 1}
     assert stats == {"carried": 0, "new": 2}
+
+
+def test_read_old_corpus_empty_when_dir_absent(tmp_path):
+    # fresh machine: no previous corpus at all -> legit compact fallback
+    sid_to_x, x_to_sid, sid_to_tr, max_sid = gen.read_old_corpus(tmp_path)
+    assert sid_to_x == {} and x_to_sid == {} and sid_to_tr == {} and max_sid == 0
+
+
+def test_read_old_corpus_raises_on_broken_index(tmp_path):
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    (out_dir / "index.json").write_text("{ not json", encoding="utf-8")
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_raises_on_broken_chunk(tmp_path):
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    (out_dir / "data" / "s0001.json").write_text("]{broken", encoding="utf-8")
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_read_old_corpus_raises_on_incomplete_corpus(tmp_path):
+    # index references sids that no chunk row provides: unusable for carry
+    out_dir = _make_old_corpus(
+        tmp_path / "examples",
+        [{"i": 5, "x": "hello", "en": "hi", "f": []}],
+        {5: "w"},
+    )
+    (out_dir / "index.json").write_text(
+        json.dumps({"v": 1, "h": "", "words": {"w": {"refs": [[77, 0, 1]]}}, "s": 1}),
+        encoding="utf-8",
+    )
+    with pytest.raises(gen.OldCorpusError):
+        gen.read_old_corpus(out_dir)
+
+
+def test_parse_old_chunk_row_drops_filler_and_malformed():
+    referenced = {5}
+    assert gen.parse_old_chunk_row({"i": 5, "x": "ok"}, referenced) == (5, "ok", {})
+    assert (
+        gen.parse_old_chunk_row({"i": 23000, "x": "filler", "w": "w"}, referenced)
+        is None
+    )
+    assert gen.parse_old_chunk_row({"i": "NaN", "x": "bad"}, referenced) is None
+    assert gen.parse_old_chunk_row({"x": "no id"}, referenced) is None
+    assert gen.parse_old_chunk_row("not a dict", referenced) is None
+    assert gen.parse_old_chunk_row({"i": 6, "x": ""}, referenced) is None
+
+
+def test_build_out_rows_carries_translations():
+    sentences = [{"id": 0, "x": "old text", "en": "e0", "f": [["旧", "きゅう"]]}]
+    sid_map = {0: 42}
+    old_x_to_sid = {"old text": 42}
+    old_sid_to_tr = {42: {"ru": "ра", "vi": "va", "ko": "ko"}}
+    rows = gen.build_out_rows(sentences, [0], sid_map, old_x_to_sid, old_sid_to_tr)
+    assert rows == [
+        {
+            "i": 42,
+            "x": "old text",
+            "en": "e0",
+            "f": [["旧", "きゅう"]],
+            "ru": "ра",
+            "vi": "va",
+            "ko": "ko",
+        }
+    ]
+
+
+def test_build_out_rows_new_row_ships_without_translations():
+    sentences = [{"id": 0, "x": "brand new", "en": "e0", "f": []}]
+    sid_map = {0: 22413}
+    rows = gen.build_out_rows(sentences, [0], sid_map, {}, {})
+    assert rows == [{"i": 22413, "x": "brand new", "en": "e0", "f": []}]

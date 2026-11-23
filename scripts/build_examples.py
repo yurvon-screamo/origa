@@ -10,7 +10,8 @@ Outputs (all under cdn/examples/):
   index.json        {"v","h","words": {word: {"refs": [[sid, start, end]..]}},
                      "s": sentence_count}
   data/sNNNN.json   [{"i","x","en","f"}] — deduped sentences, ~1000 per chunk,
-                    translations ru/vi/ko merged later by merge_translations.py
+                    translations ru/vi/ko are carried over from the previous
+                    corpus (or added later by translate_examples.py)
 
 Deterministic: sorted iteration. Sentence ids are STABLE across regenerations
 via carry-over: a sentence whose text already existed in the previous corpus
@@ -19,7 +20,9 @@ keeps its previous id (so the immutable, id-addressed audio keys
 survive a regeneration); only genuinely new sentences get fresh ids above the
 old index's max sid. Requires the previous corpus (index.json + data/*.json)
 to be present in cdn/examples/; otherwise falls back to compact ids with a
-warning. Re-running with the same inputs yields identical bytes.
+warning. A PRESENT but unreadable/inconsistent previous corpus fails loud
+(OldCorpusError): regenerating over it would shift every id and drop the
+translations. Re-running with the same inputs yields identical bytes.
 
 The word→sentence matching result is cached to /tmp/opencode/examples_matches.json
 for the translation pipeline.
@@ -269,6 +272,107 @@ def select_for_words(
     return sel
 
 
+class OldCorpusError(Exception):
+    """The previous corpus is present but unreadable/inconsistent.
+
+    A regeneration with carry-over needs a trustworthy previous corpus:
+    silently falling back to compact ids here would shift every sentence id
+    (breaking the immutable audio keys) and drop the chunk-stored ru/vi/ko
+    translations — the exact failure class this mechanism exists to prevent.
+    Fail loud instead; a genuinely absent corpus (fresh machine) is the only
+    legitimate compact-fallback path.
+    """
+
+
+def read_old_corpus_index(out_dir: Path) -> tuple[set[int], int]:
+    """Parse cdn/examples/index.json; return (referenced_sids, max_ref_sid).
+
+    Raises OldCorpusError when the file exists but does not parse.
+    """
+    path = out_dir / "index.json"
+    try:
+        old_index = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        raise OldCorpusError(
+            f"{path} is present but unreadable ({e}); "
+            "fix or remove the previous corpus before regenerating"
+        ) from e
+    referenced: set[int] = set()
+    max_sid = 0
+    for v in old_index.get("words", {}).values():
+        for r in v.get("refs", []):
+            if isinstance(r, list) and r:
+                try:
+                    sid = int(r[0])
+                except (TypeError, ValueError):
+                    continue
+                referenced.add(sid)
+                max_sid = max(max_sid, sid)
+    return referenced, max_sid
+
+
+def parse_old_chunk_row(
+    row: object, referenced: set[int]
+) -> tuple[int, str, dict[str, str]] | None:
+    """Extract (sid, x, translations) from one old chunk row.
+
+    Returns None for rows not worth carrying: malformed ids, filler
+    (unreferenced — generate_missing_examples.py rows that never got index
+    refs and are unreachable by clients), or rows without usable text.
+    """
+    if not isinstance(row, dict):
+        return None
+    try:
+        sid = int(row["i"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if sid not in referenced:
+        return None
+    x = row.get("x", "")
+    if not isinstance(x, str) or not x:
+        return None
+    tr: dict[str, str] = {}
+    for L in ("ru", "vi", "ko"):
+        v = row.get(L)
+        if isinstance(v, str) and v.strip():
+            tr[L] = v
+    return sid, x, tr
+
+
+def read_old_corpus_chunk_maps(
+    out_dir: Path, referenced: set[int]
+) -> tuple[dict[int, str], dict[str, int], dict[int, dict[str, str]]]:
+    """Scan data/s*.json for referenced rows; build the carry maps.
+
+    Raises OldCorpusError when a chunk file exists but does not parse.
+    Collision policy for duplicate x: smallest old_sid wins.
+    """
+    old_sid_to_x: dict[int, str] = {}
+    old_x_to_sid: dict[str, int] = {}
+    old_sid_to_tr: dict[int, dict[str, str]] = {}
+    for cf in sorted(out_dir.glob("data/s*.json")):
+        try:
+            rows = json.loads(cf.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            raise OldCorpusError(
+                f"{cf} is present but unreadable ({e}); "
+                "fix or remove the previous corpus before regenerating"
+            ) from e
+        if not isinstance(rows, list):
+            raise OldCorpusError(f"{cf}: expected a JSON array of rows")
+        for row in rows:
+            parsed = parse_old_chunk_row(row, referenced)
+            if parsed is None:
+                continue
+            sid, x, tr = parsed
+            old_sid_to_x[sid] = x
+            if x not in old_x_to_sid or sid < old_x_to_sid[x]:
+                old_x_to_sid[x] = sid
+            if tr:
+                old_sid_to_tr[sid] = tr
+    return old_sid_to_x, old_x_to_sid, old_sid_to_tr
+
+
 def read_old_corpus(
     out_dir: Path,
 ) -> tuple[dict[int, str], dict[str, int], dict[int, dict[str, str]], int]:
@@ -278,62 +382,29 @@ def read_old_corpus(
     Only INDEX-REFERENCED sentences are included: filler sentences
     (generate_missing_examples.py) have no refs in index.json and are dead
     weight, so they are deliberately dropped here. Collision policy for
-    duplicate x: smallest old_sid wins (handled while building old_x_to_sid).
+    duplicate x: smallest old_sid wins.
 
-    Returns empty structures when no previous corpus is present (fresh
-    machine) so the caller falls back to compact ids.
+    Absent corpus (fresh machine) returns empty structures — the caller
+    falls back to compact ids. A PRESENT but unreadable or inconsistent
+    corpus raises OldCorpusError: regenerating over it would silently
+    shift every sentence id (breaking the immutable audio keys) and drop
+    the chunk-stored translations.
     """
-    old_sid_to_x: dict[int, str] = {}
-    old_x_to_sid: dict[str, int] = {}
-    old_sid_to_tr: dict[int, dict[str, str]] = {}
-    max_old_index_sid = 0
-
     old_index_path = out_dir / "index.json"
     old_chunks = sorted(out_dir.glob("data/s*.json"))
     if not (old_index_path.exists() and old_chunks):
-        return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
+        return {}, {}, {}, 0
 
-    try:
-        old_index = json.loads(old_index_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
-
-    referenced_sids: set[int] = set()
-    for w, v in old_index.get("words", {}).items():
-        for r in v.get("refs", []):
-            if isinstance(r, list) and r:
-                try:
-                    sid = int(r[0])
-                except (TypeError, ValueError):
-                    continue
-                referenced_sids.add(sid)
-                max_old_index_sid = max(max_old_index_sid, sid)
-
-    for cf in old_chunks:
-        try:
-            rows = json.loads(cf.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        for row in rows:
-            try:
-                sid = int(row["i"])
-            except (KeyError, TypeError, ValueError):
-                continue
-            if sid not in referenced_sids:
-                continue  # filler / unreferenced: drop
-            x = row.get("x", "")
-            if not isinstance(x, str) or not x:
-                continue
-            old_sid_to_x[sid] = x
-            if x not in old_x_to_sid or sid < old_x_to_sid[x]:
-                old_x_to_sid[x] = sid
-            tr = {}
-            for L in ("ru", "vi", "ko"):
-                v = row.get(L)
-                if isinstance(v, str) and v.strip():
-                    tr[L] = v
-            if tr:
-                old_sid_to_tr[sid] = tr
+    referenced, max_old_index_sid = read_old_corpus_index(out_dir)
+    old_sid_to_x, old_x_to_sid, old_sid_to_tr = read_old_corpus_chunk_maps(
+        out_dir, referenced
+    )
+    if referenced and not old_x_to_sid:
+        raise OldCorpusError(
+            f"index.json references {len(referenced)} sentences but no "
+            "matching chunk rows were read; the previous corpus is "
+            "incomplete — fix or remove it before regenerating"
+        )
     return old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid
 
 
@@ -369,6 +440,32 @@ def build_sid_map(
             next_new_id += 1
             stats["new"] += 1
     return sid_map, stats
+
+
+def build_out_rows(
+    sentences: list[dict],
+    used_sids: list[int],
+    sid_map: dict[int, int],
+    old_x_to_sid: dict[str, int],
+    old_sid_to_tr: dict[int, dict[str, str]],
+) -> list[dict]:
+    """Build the output chunk rows, riding carried translations along.
+
+    A row carried from the previous corpus keeps its ru/vi/ko translations;
+    genuinely new rows ship without them (the client falls back to English).
+    """
+    rows = []
+    for sid in used_sids:
+        s = sentences[sid]
+        row = {"i": sid_map[sid], "x": s["x"], "en": s["en"], "f": s["f"]}
+        old_sid = old_x_to_sid.get(s["x"])
+        if old_sid is not None and old_sid in old_sid_to_tr:
+            for L in ("ru", "vi", "ko"):
+                v = old_sid_to_tr[old_sid].get(L)
+                if v is not None:
+                    row[L] = v
+        rows.append(row)
+    return rows
 
 
 def main() -> int:
@@ -407,13 +504,17 @@ def main() -> int:
     print(f"coverage: >=1: {covered}/{len(words)} | >=3: {full}", flush=True)
 
     # --- Carry-over of stable sentence ids (post-#929 regeneration) -------
-    # See read_old_corpus / build_sid_map helpers above.
+    # See read_old_corpus / build_sid_map / build_out_rows helpers above.
     out_dir = CDN / "examples"
     (out_dir / "data").mkdir(parents=True, exist_ok=True)
 
-    old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid = read_old_corpus(
-        out_dir
-    )
+    try:
+        old_sid_to_x, old_x_to_sid, old_sid_to_tr, max_old_index_sid = read_old_corpus(
+            out_dir
+        )
+    except OldCorpusError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
     if old_x_to_sid:
         print(
             f"carry-over: old index max sid {max_old_index_sid}, "
@@ -422,7 +523,11 @@ def main() -> int:
             flush=True,
         )
     else:
-        print("carry-over: no previous corpus found; using compact ids", flush=True)
+        print(
+            "carry-over: no previous corpus present; using compact ids "
+            "(audio keys and chunk translations will NOT be carried)",
+            flush=True,
+        )
 
     used_sids = sorted({ref["sid"] for v in sel.values() for ref in v})
 
@@ -436,18 +541,9 @@ def main() -> int:
         flush=True,
     )
 
-    out_sentences = []
-    for sid in used_sids:
-        s = sentences[sid]
-        carried_sid = sid_map[sid]
-        row = {"i": carried_sid, "x": s["x"], "en": s["en"], "f": s["f"]}
-        old_sid = old_x_to_sid.get(s["x"])
-        if old_sid is not None and old_sid in old_sid_to_tr:
-            for L in ("ru", "vi", "ko"):
-                v = old_sid_to_tr[old_sid].get(L)
-                if v is not None:
-                    row[L] = v
-        out_sentences.append(row)
+    out_sentences = build_out_rows(
+        sentences, used_sids, sid_map, old_x_to_sid, old_sid_to_tr
+    )
 
     out_words = {
         w: {
