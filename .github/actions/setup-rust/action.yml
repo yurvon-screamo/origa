@@ -44,6 +44,13 @@ runs:
           with:
               toolchain: ${{ steps.toolchain.outputs.channel }}
               targets: ${{ inputs.targets }}
+              # The action installs with --profile minimal; clippy and
+              # rustfmt must be requested explicitly. With the old floating
+              # @stable ref this was invisible: the runners' preinstalled
+              # stable already carried both components, so the install was
+              # a no-op. A pinned channel installs fresh — without this
+              # line cargo fmt/clippy fail with "not installed".
+              components: clippy, rustfmt
 
         # Fail loud if the pin did not take (a silent fallback to whatever
         # stable the runner preinstalls would reopen the drift class this
