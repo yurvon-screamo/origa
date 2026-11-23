@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import type { BrowserContext, Page } from "@playwright/test";
 import { After, Given, Then, When } from "../fixtures";
-import { installTauriMock } from "../../helpers/tauri-mock";
+import { dispatchDeepLink, installTauriMock } from "../../helpers/tauri-mock";
 import { getAppBaseUrl } from "../../config";
 
 /**
@@ -22,9 +22,12 @@ import { getAppBaseUrl } from "../../config";
 const SETTLE_MS = 1500;
 
 /**
- * Error-level log messages of the #1482 bug's error branch. Release builds
- * keep `error!` visible (tracing-wasm max level INFO), so a regression that
- * routes foreign URLs back into process_oauth_url trips here.
+ * Error-branch log messages of the #1482 bug. tracing-wasm emits EVERY
+ * tracing level through console.log (the crate ships no console.error
+ * binding), so the console capture is type-agnostic and pins by substring:
+ * `error!` stays visible in both build profiles (max level DEBUG in dev,
+ * INFO in release — origa_ui/src/lib.rs), so a regression that routes
+ * foreign URLs back into process_oauth_url trips here on console.log lines.
  */
 const PINNED_OAUTH_ERROR_LOGS = [
   "URL has no 'code' param and no fragment",
@@ -41,17 +44,24 @@ interface OAuthTauriSession {
 async function bootMockedTauriApp(
   browser: import("@playwright/test").Browser,
   session: OAuthTauriSession,
-  consoleErrors: string[],
+  consoleLogs: string[],
   opts: { currentDeepLink?: string } = {},
 ): Promise<void> {
   const context = await browser.newContext({ baseURL: getAppBaseUrl() });
+  // Register for teardown before anything can fail: if boot dies below
+  // (e.g. the settle marker times out), the After hook still closes the
+  // context instead of leaking it.
+  session.context = context;
   await installTauriMock(context, {
     currentDeepLink: opts.currentDeepLink ?? "",
     pkceVerifier: "e2e-pkce-verifier",
   });
   const page = await context.newPage();
+  // All console types: the pinned error-branch messages arrive as
+  // console.log (tracing-wasm), app panics as console.error — pinning is
+  // by substring, the type prefix keeps failure output diagnosable.
   page.on("console", (msg) => {
-    if (msg.type() === "error") consoleErrors.push(msg.text());
+    consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
   });
   page.on("request", (req) => {
     if (req.url().includes("/api/auth/v1/token"))
@@ -69,15 +79,15 @@ async function bootMockedTauriApp(
 
 Given(
   "приложение запущено в моке Tauri без сессии",
-  async ({ browser, oauthTauriSession, oauthConsoleErrors }) => {
-    await bootMockedTauriApp(browser, oauthTauriSession, oauthConsoleErrors);
+  async ({ browser, oauthTauriSession, oauthConsoleLogs }) => {
+    await bootMockedTauriApp(browser, oauthTauriSession, oauthConsoleLogs);
   },
 );
 
 Given(
   "приложение запущено в моке Tauri без сессии с текущим deep-link {string}",
-  async ({ browser, oauthTauriSession, oauthConsoleErrors }, url: string) => {
-    await bootMockedTauriApp(browser, oauthTauriSession, oauthConsoleErrors, {
+  async ({ browser, oauthTauriSession, oauthConsoleLogs }, url: string) => {
+    await bootMockedTauriApp(browser, oauthTauriSession, oauthConsoleLogs, {
       currentDeepLink: url,
     });
   },
@@ -88,39 +98,27 @@ When(
   async ({ oauthTauriSession }, url: string) => {
     const { context } = oauthTauriSession;
     expect(context, "boot step must have run").not.toBeNull();
-    const pages = context!.pages();
-    await pages[0].evaluate((u) => {
-      const mock = (
-        window as unknown as {
-          __tauriMock?: {
-            events: Map<string, Array<(event: { payload: unknown }) => void>>;
-          };
-        }
-      ).__tauriMock;
-      if (!mock) throw new Error("__TAURI__ transport mock is not installed");
-      for (const handler of mock.events.get("deep-link-received") ?? []) {
-        handler({ payload: u });
-      }
-    }, url);
+    await dispatchDeepLink(context!, url);
   },
 );
 
 Then(
   "ошибки oauth на странице входа нет",
-  async ({ oauthTauriSession, oauthConsoleErrors }) => {
+  async ({ oauthTauriSession, oauthConsoleLogs }) => {
     const { page } = oauthTauriSession;
     expect(page, "boot step must have run").not.toBeNull();
     await page!.waitForTimeout(SETTLE_MS);
     // The user-visible symptom: false «unsupported callback» alert on /login.
     await expect(page!.getByTestId("oauth-error")).toHaveCount(0);
     // The Sentry-noise source: the error branch of the oauth listener must
-    // not log at error level for foreign URLs.
-    const pinned = oauthConsoleErrors.filter((text) =>
+    // not log at error level for foreign URLs. The capture is type-agnostic
+    // (see PINNED_OAUTH_ERROR_LOGS) — the pin reads console.log lines too.
+    const pinned = oauthConsoleLogs.filter((text) =>
       PINNED_OAUTH_ERROR_LOGS.some((p) => text.includes(p)),
     );
     expect(
       pinned,
-      `oauth listener must stay silent for foreign deep-links, got console errors: ${pinned.join(" | ")}`,
+      `oauth listener must stay silent for foreign deep-links, got pinned console lines: ${pinned.join(" | ")}`,
     ).toEqual([]);
   },
 );

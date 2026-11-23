@@ -44,7 +44,7 @@ export const test = base.extend<
       context: BrowserContext | null;
       tokenRequests: string[];
     };
-    oauthConsoleErrors: string[];
+    oauthConsoleLogs: string[];
   },
   object
 >({
@@ -170,9 +170,12 @@ export const test = base.extend<
     },
     { scope: "test" },
   ],
-  // console.error texts captured by the oauth mock boot; the routing
-  // Then-step asserts the pinned error-branch messages stay silent.
-  oauthConsoleErrors: [
+  // Console output (ALL levels and types) captured by the oauth mock boot;
+  // the routing Then-step pins the error-branch messages by substring.
+  // Type-agnostic capture is the point: tracing-wasm emits every tracing
+  // level — error! included — through console.log (the crate has no
+  // console.error binding), so a type-filtered capture would never see it.
+  oauthConsoleLogs: [
     async ({}, use) => {
       await use([] as string[]);
     },
