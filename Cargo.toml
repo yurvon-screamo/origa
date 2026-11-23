@@ -285,6 +285,9 @@ debug = "line-tables-only"
 [profile.dev.package."*"]
 # Faster test/E2E runtime; one-time cost: full dep rebuild on profile change
 # (sccache/GH caches absorb it). Generic-heavy UI paths gain less (cargo book
-# "Overrides and generics") — opt-level=1 is a follow-up candidate if needed.
+# "Overrides and generics"). 23.11: 2 → 1 — O2-компиляция депов оказалась
+# слишком агрессивной по времени сборки (proc-macro цепочки холодного
+# ворктри компилируются однопоточно, 2-3× дороже на LLVM-пассах; O1
+# сохраняет большую часть runtime-прироста — инцидент-чат 23.11).
 debug = false
-opt-level = 2
+opt-level = 1
