@@ -1,10 +1,12 @@
-//! Build-profile pin: dev dependencies must compile with `opt-level = 2`.
+//! Build-profile pin: dev dependencies must compile with `opt-level = 1`.
 //!
 //! The `[profile.dev.package."*"]` section of the root `Cargo.toml` is the
 //! single carrier of the dev-runtime speed contract (task #1467, owner
 //! mandate 21.11.2026): non-workspace dependencies are optimized, while
 //! workspace members stay unoptimized (`"*"` never matches members) so the
 //! incremental edit-rebuild loop of our own crates is unaffected.
+//! 23.11: 2 → 1 — O2-компиляция депов слишком агрессивна по времени сборки
+//! (инцидент-чат владельца; O1 сохраняет большую часть runtime-прироста).
 //!
 //! Profile lines are a classic silent merge-conflict casualty: dropping the
 //! key does not break a single test — every run just gets slower again. This
@@ -121,10 +123,11 @@ fn dev_deps_are_optimized() {
 
     let opt_level = setting(&section, "opt-level");
     assert!(
-        opt_level == Some("2"),
-        "dev dependencies lost their optimization: `opt-level = 2` must be set \
+        opt_level == Some("1"),
+        "dev dependencies lost their optimization: `opt-level = 1` must be set \
          verbatim in [profile.dev.package.\"*\"] (found {opt_level:?}) — dev \
-         test/E2E runs regress to opt-level 0 runtime (task #1467)"
+         test/E2E runs regress to opt-level 0 runtime (task #1467; 23.11: \
+         2 → 1, сборка дороже runtime-дельты — инцидент-чат)"
     );
     let debug_info = setting(&section, "debug");
     assert!(
