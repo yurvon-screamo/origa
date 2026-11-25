@@ -146,21 +146,16 @@ async fn cached_or_query() -> Result<Capabilities, String> {
             Ok(caps)
         },
         Err(e) => {
-            // A capabilities failure on a platform that expects the native
-            // path is a degradation, not routine fallback routing: escalate
-            // to an error so it surfaces as a Sentry event (warn only lands
-            // as a breadcrumb, which is invisible without a later capture).
-            // Windows/Linux/web have no plugin by design — keep those as
-            // breadcrumbs to avoid event noise from normal fallbacks.
-            if crate::core::capabilities::expects_native_ai(&crate::core::platform::platform_name())
-            {
-                tracing::error!(
-                    "device-ai: capabilities query failed ({e}) — native path degraded on a \
-                     platform that expects it"
-                );
-            } else {
-                tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
-            }
+            // Unreachable for plugin-less platforms (skipped above), so every
+            // Err here is a capabilities failure on a platform that expects
+            // the native path — a degradation, not routine fallback routing:
+            // escalate to an error so it surfaces as a Sentry event (warn
+            // only lands as a breadcrumb, which is invisible without a later
+            // capture).
+            tracing::error!(
+                "device-ai: capabilities query failed ({e}) — native path degraded on a \
+                 platform that expects it"
+            );
             Ok(Capabilities::all_unavailable())
         },
     }
