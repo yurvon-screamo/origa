@@ -85,7 +85,10 @@ fn linux_scheme_default_forwards_the_url() {
     let mut sources = Vec::new();
     for dir in ["tauri", "packaging", ".github", "scripts"] {
         collect_text_files(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(dir),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .expect("repo root exists above the tauri manifest dir")
+                .join(dir),
             &mut sources,
         );
     }
@@ -100,6 +103,46 @@ fn linux_scheme_default_forwards_the_url() {
          with `%u` in Exec. Plain `Exec=origa-app` drops the OAuth callback \
          URL in GIO (reproduced with `gio open` — the app gets no argv) and \
          leaves the user on the login page (uwuwu#1098)."
+    );
+}
+
+/// The packaged `Origa.desktop` must be generated from the repo-owned template
+/// that forwards the URL: both Linux bundle channels (deb, rpm) have to point
+/// `desktopTemplate` at the template, and the template itself has to carry
+/// `%u` in Exec plus the `origa://` scheme declaration. A dead reference (a
+/// template nobody renders) would regress the tester's live finding silently.
+#[test]
+fn packaged_desktop_entry_is_generated_from_the_url_forwarding_template() {
+    let conf: serde_json::Value = serde_json::from_str(include_str!("../tauri.conf.json"))
+        .expect("tauri.conf.json is valid JSON");
+    let channel_template = |channel: &str| {
+        conf.pointer(&format!("/bundle/linux/{channel}/desktopTemplate"))
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+    };
+
+    assert_eq!(
+        channel_template("deb"),
+        "./desktop-entry.desktop.tpl",
+        "the deb bundle must render the repo-owned desktop template — the \
+         generated default (Exec without %u) drops the OAuth callback URL"
+    );
+    assert_eq!(
+        channel_template("rpm"),
+        "./desktop-entry.desktop.tpl",
+        "the rpm bundle must render the repo-owned desktop template — the \
+         generated default (Exec without %u) drops the OAuth callback URL"
+    );
+
+    let template = include_str!("../desktop-entry.desktop.tpl");
+    assert!(
+        template.contains("Exec={{exec}} %u"),
+        "the desktop template must forward the URL (%u) — plain Exec makes \
+         GIO silently drop the deep-link URI"
+    );
+    assert!(
+        template.contains("x-scheme-handler/origa"),
+        "the desktop template must declare the origa:// scheme"
     );
 }
 

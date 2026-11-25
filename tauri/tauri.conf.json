@@ -40,6 +40,14 @@
     "resources": {
       "gen/apple/PrivacyInfo.xcprivacy": "PrivacyInfo.xcprivacy"
     },
+    "linux": {
+      "deb": {
+        "desktopTemplate": "./desktop-entry.desktop.tpl"
+      },
+      "rpm": {
+        "desktopTemplate": "./desktop-entry.desktop.tpl"
+      }
+    },
     "android": {},
     "iOS": {
       "minimumSystemVersion": "26.0"
