@@ -4,8 +4,9 @@
 //! Routing contract:
 //! - Web (no Tauri) → the plugin is unreachable; [`available`] returns `false`
 //!   for every feature and callers use the WASM fallback.
-//! - Tauri on Windows/Linux → the plugin is not compiled in; invoking it
-//!   fails, capabilities stay unavailable, fallback is used.
+//! - Tauri on Windows/Linux → the plugin is not compiled in; the capabilities
+//!   query is skipped entirely (uwuwu#1098) — no invoke, no ACL rejection,
+//!   capabilities collapse to unavailable, fallback is used.
 //! - Tauri on macOS/iOS/Android → capabilities are queried once, cached, and
 //!   each feature routes to device-ai when reported available, otherwise to
 //!   the fallback stack.
@@ -71,8 +72,10 @@ pub fn plugin_compiled_in() -> bool {
 
 /// Reports whether `feature` is available via device-ai on this platform.
 ///
-/// Triggers a one-shot capabilities query on first use, then reads the cache.
-/// Any failure (plugin absent, invoke error, timeout) collapses to
+/// On plugin-less platforms (web, Windows/Linux) no query happens at all
+/// (uwuwu#1098): the call collapses to `false` before any invoke. On
+/// plugin platforms a one-shot capabilities query runs on first use, then
+/// reads the cache; any failure (invoke error, timeout) collapses to
 /// "unavailable" so callers transparently use the fallback stack.
 pub async fn available(feature: Feature) -> bool {
     if !plugin_compiled_in() {

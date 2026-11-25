@@ -90,11 +90,12 @@ async fn web_platform_skips_the_query_without_a_round_trip() {
     // events from the invoke suite landed here and broke the == 1 count).
     gloo_timers::future::TimeoutFuture::new(50).await;
     log_capture::take_events();
-    // No UA override: the runner's browser UA is a desktop one and without
-    // a Tauri shell platform_name() resolves to "web" — the plugin-less
-    // platform. Since uwuwu#1098 the query is skipped before any invoke:
-    // there is no caps failure to grade anymore, the contract is "no plugin
-    // round-trip at all, fallback routing without an event".
+    // No UA override: under TauriMock the shell exists, and the runner's
+    // desktop UA (Linux CI) resolves `platform_name()` to a plugin-less
+    // platform — any non-plugin platform exercises the same contract. Since
+    // uwuwu#1098 the query is skipped before any invoke: there is no caps
+    // failure to grade anymore, the contract is "no plugin round-trip at
+    // all, fallback routing without an event".
     let _mock = TauriMock::install(|command, _args| {
         let command = command.as_string().unwrap_or_default();
         rejected_with("[UNEXPECTED]", &command)

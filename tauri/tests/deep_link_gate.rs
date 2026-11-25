@@ -140,10 +140,36 @@ fn packaged_desktop_entry_is_generated_from_the_url_forwarding_template() {
         "the desktop template must forward the URL (%u) — plain Exec makes \
          GIO silently drop the deep-link URI"
     );
+
+    // Scheme sync guard: the bundler passes no mime-type variable into a
+    // custom template, so schemes declared in `plugins.deep-link.desktop`
+    // reach the packaged file only through this template. A newly added
+    // scheme would otherwise be silently missing from Linux packages (no
+    // runtime registration exists on Linux anymore to pick it up).
+    let schemes: Vec<String> = conf
+        .pointer("/plugins/deep-link/desktop/schemes")
+        .and_then(|v| v.as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default();
     assert!(
-        template.contains("x-scheme-handler/origa"),
-        "the desktop template must declare the origa:// scheme"
+        !schemes.is_empty(),
+        "plugins.deep-link.desktop.schemes is empty — the deep-link setup \
+         has moved?"
     );
+    for scheme in &schemes {
+        let mime = format!("x-scheme-handler/{scheme}");
+        assert!(
+            template.contains(&mime),
+            "the desktop template must declare `{mime}` — a custom template \
+             receives no mime-type variable from the bundler, so every \
+             scheme from plugins.deep-link.desktop.schemes has to be listed \
+             in the template explicitly or Linux packages lose it silently"
+        );
+    }
 }
 
 fn collect_text_files(dir: std::path::PathBuf, out: &mut Vec<String>) {
