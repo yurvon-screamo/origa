@@ -23,6 +23,11 @@ env:
     # consumed by the apt cache step (PR/branch runs) and by the plain
     # install step (tag runs) — one place to bump, no list drift.
     GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
+    # sccache S3 backend credentials, consumed by .github/actions/setup-rust.
+    # Dependabot PRs cannot read repo secrets: both resolve empty and the
+    # composite falls back to uncached compilation.
+    SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+    SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
 permissions:
     contents: read
@@ -289,8 +294,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: aarch64-apple-darwin
-                  shared-key: origa-macos-check-v1
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Check tauri app + aswebauth plugin
               run: |
@@ -339,8 +342,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: aarch64-apple-ios
-                  shared-key: origa-ios-check-v1
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Check tauri app + aswebauth plugin (iOS)
               run: |
@@ -405,8 +406,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown
-                  shared-key: origa-ci-v2
-                  save-if: false
 
             - name: Setup Node.js for landing CSS
               uses: actions/setup-node@v7
@@ -627,8 +626,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown
-                  shared-key: origa-ci-v2
-                  save-if: false
 
             - name: Download CDN artifact
               uses: actions/download-artifact@v8
@@ -651,6 +648,12 @@ jobs:
               # the rest of the workspace stays unexamined behind it.
               # Compile errors still abort everything regardless.
               run: cargo test --workspace --exclude origa_landing --no-fail-fast
+
+            - name: sccache stats
+              # Pilot diagnostics (#1495): hit rate and traffic of the shared
+              # S3 compile cache for this job. Informational only.
+              if: always()
+              run: sccache --show-stats || true
 
     # Landing SSR tests (#800). The 300+ integration tests of
     # origa_landing were green but invisible to CI: the Test job excludes
@@ -694,9 +697,6 @@ jobs:
 
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
-              with:
-                  shared-key: origa-ci-v2
-                  save-if: false
 
             # Issue #832: a fresh clone without landing node deps must build.
             # Runs before setup-node/npm ci, so node_modules cannot exist.
@@ -800,8 +800,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown
-                  shared-key: origa-ci-v2
-                  save-if: false
 
             - name: Download CDN artifact
               uses: actions/download-artifact@v8
@@ -922,8 +920,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown
-                  shared-key: origa-ci-v2
-                  save-if: false
 
             - name: Setup Frontend
               uses: ./.github/actions/setup-frontend
@@ -1003,8 +999,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown,x86_64-linux-android
-                  shared-key: origa-android-smoke-v1
-                  save-if: false
 
             - name: Setup Java
               uses: actions/setup-java@v6
