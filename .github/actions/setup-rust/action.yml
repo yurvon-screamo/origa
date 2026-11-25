@@ -1,28 +1,11 @@
 name: "Setup Rust"
-description: "Setup Rust toolchain with cargo caching"
+description: "Setup Rust toolchain with sccache (S3-compatible compile cache)"
 
 inputs:
     targets:
         description: 'Comma-separated list of targets (e.g. "x86_64-unknown-linux-gnu,wasm32-unknown-unknown")'
         required: false
         default: ""
-    shared-key:
-        description: "Shared key for cache sharing between jobs"
-        required: false
-        default: ""
-    cache-targets:
-        description: "Whether to cache compilation artifacts"
-        required: false
-        default: "true"
-    save-if:
-        description: "Condition for saving cache (e.g. github.ref == 'refs/heads/master')"
-        required: false
-        default: "true"
-
-outputs:
-    cache-hit:
-        description: "Whether cache was hit"
-        value: ${{ steps.rust-cache.outputs.cache-hit }}
 
 runs:
     using: "composite"
@@ -32,11 +15,29 @@ runs:
           with:
               targets: ${{ inputs.targets }}
 
-        - name: Setup cargo cache
-          uses: Swatinem/rust-cache@v2
-          id: rust-cache
-          with:
-              cache-all-crates: false
-              cache-targets: ${{ inputs.cache-targets }}
-              shared-key: ${{ inputs.shared-key }}
-              save-if: ${{ inputs.save-if }}
+        - name: Install sccache
+          uses: mozilla-actions/sccache-action@v0.0.11
+
+        # SCCACHE_S3_* arrive as job env from the caller workflow (composite
+        # actions cannot read the secrets context). Dependabot PRs cannot
+        # access repo secrets — the vars resolve empty and compilation
+        # proceeds uncached, exactly as before the sccache pilot (#1495).
+        - name: Enable sccache (S3 backend)
+          shell: bash
+          run: |
+              if [ -z "$SCCACHE_S3_ACCESS_KEY_ID" ] || [ -z "$SCCACHE_S3_SECRET_KEY" ]; then
+                  echo "sccache S3 credentials unavailable — compiling uncached"
+                  exit 0
+              fi
+              # CARGO_INCREMENTAL=0 unconditionally: incremental compilation
+              # units are not cacheable, and one mixed-cached run would poison
+              # hits for everyone else sharing the bucket.
+              {
+                  echo "CARGO_INCREMENTAL=0"
+                  echo "RUSTC_WRAPPER=sccache"
+                  echo "SCCACHE_BUCKET=origa-sccache"
+                  echo "SCCACHE_ENDPOINT=https://yurvon-screamo.s3.hf.co"
+                  echo "SCCACHE_REGION=us-east-1"
+                  echo "AWS_ACCESS_KEY_ID=$SCCACHE_S3_ACCESS_KEY_ID"
+                  echo "AWS_SECRET_ACCESS_KEY=$SCCACHE_S3_SECRET_KEY"
+              } >> "$GITHUB_ENV"
