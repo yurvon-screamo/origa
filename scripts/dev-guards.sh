@@ -13,8 +13,8 @@
 #
 # Sourced by the root Makefile recipes and by scripts/dev-guards.test.sh.
 # POSIX sh on purpose (make recipes run /bin/sh). The pure verdict functions
-# (trailbase_is_local, landing_base_present, listener_verdict,
-# landing_base_present) are the decision table covered by the test script —
+# (trailbase_is_local, landing_base_present, listener_verdict, corpus_dir)
+# are the decision table covered by the test script —
 # keep them probe-free so the table stays mechanically testable; all probes
 # live in the lower section.
 #
@@ -36,17 +36,14 @@
 trailbase_is_local() {
 	_tb_val=$1
 	[ -n "$_tb_val" ] || return 1
-	case $_tb_val in
-	*\[*\]*)
-		# bracketed IPv6 literal: the host is the text between brackets
-		_tb_host=$(printf '%s\n' "$_tb_val" | sed -e 's/^.*\[//' -e 's/\].*$//')
-		;;
-	*)
-		_tb_host=$(printf '%s\n' "$_tb_val" | sed -e 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' -e 's#[/:?#].*$##')
-		;;
-	esac
-	case $_tb_host in
-	localhost | 127.0.0.1 | ::1 | "[::1]") return 0 ;;
+	# The decision is made on the URL AUTHORITY only (after the scheme, up
+	# to the first /?#): anything after the authority is data, not the host
+	# — a query/fragment containing "[::1]" or "localhost" must not flip
+	# the verdict.
+	_tb_auth=$(printf '%s\n' "$_tb_val" | sed -e 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' -e 's#[/?#].*$##')
+	# exact authority forms only: loopback host, optionally :port
+	case $_tb_auth in
+	localhost | localhost:* | 127.0.0.1 | 127.0.0.1:* | ::1 | "[::1]" | "[::1]":*) return 0 ;;
 	*) return 1 ;;
 	esac
 }
@@ -108,6 +105,10 @@ listener_verdict() {
 
 GUARD_REPO_ROOT=${GUARD_REPO_ROOT:-$(pwd -P)}
 
+# The port trunk serve binds (origa_ui/Trunk.toml [serve]); trunk does not
+# read the harness's E2E_APP_PORT override — keep in sync with Trunk.toml.
+SERVE_UI_PORT=1420
+
 guard_fail() {
 	printf 'GUARD FAIL: %s\n' "$1" >&2
 	exit 1
@@ -161,8 +162,9 @@ proc_trailbase_verdict() {
 # ORIGA_CDN_CACHE_DIR ?? ORIGA_CDN_DIR ?? ~/origa-cdn — the `??` semantics
 # are set-or-unset (an explicitly SET-EMPTY var does NOT fall through, it
 # just fails the existence check), then existence decides. Prints the dir
-# when a live corpus exists, nothing otherwise (content comes from the
-# production CDN — documented, read-only).
+# and exits 0 when a live corpus exists; exits 1 otherwise (content comes
+# from the production CDN — documented, read-only). The exit code IS the
+# predicate for the callers (warn_corpus, guard_e2e, env_check).
 corpus_dir() {
 	_cd_dir=""
 	if [ "${ORIGA_CDN_CACHE_DIR+set}" = "set" ]; then
@@ -174,8 +176,9 @@ corpus_dir() {
 	fi
 	if [ -n "$_cd_dir" ] && [ -d "$_cd_dir" ]; then
 		printf '%s\n' "$_cd_dir"
+		return 0
 	fi
-	return 0
+	return 1
 }
 
 # Check every listener of one port against the table; on the first refusal
@@ -275,13 +278,12 @@ guard_npm() {
 }
 
 guard_e2e_env() {
-	_ge_dir=${E2E_DIR:-end2end}
-	if ! creds_resolve "$_ge_dir"; then
-		guard_fail "креды фикстуры TrailBase не резолвятся: нет ORIGA_ADMIN_PASSWORD в shell и в $_ge_dir/.env.
-  Remedy: cp $_ge_dir/.env.example $_ge_dir/.env  (и задай пароль) — контракт .env см. end2end/AGENTS.md."
+	if ! creds_resolve end2end; then
+		guard_fail "креды фикстуры TrailBase не резолвятся: нет ORIGA_ADMIN_PASSWORD в shell и в end2end/.env.
+  Remedy: cp end2end/.env.example end2end/.env  (и задай пароль) — контракт .env см. end2end/AGENTS.md."
 	fi
-	[ -d "$_ge_dir/node_modules" ] || guard_fail "$_ge_dir/node_modules отсутствует.
-  Remedy: cd $_ge_dir && npm ci  (или симлинк из основного чекаута — ранбук \"Tests in a Fresh Worktree\")."
+	[ -d end2end/node_modules ] || guard_fail 'end2end/node_modules отсутствует.
+  Remedy: cd end2end && npm ci  (симлинк из основного чекаута ненадёжен — ранбук "Tests in a Fresh Worktree", правка 26.11).'
 }
 
 # Corpus presence: skipping corpus tests by design is fine (root AGENTS.md
@@ -299,8 +301,10 @@ guard_serve_ui() {
 	guard_trailbase
 	guard_cdn_env
 	guard_trunk
-	# sync point: origa_ui/Trunk.toml [serve] port
-	check_listeners serve-ui app "${E2E_APP_PORT:-1420}" "порт приложения 1420" || return 1
+	# trunk serve binds the port pinned in origa_ui/Trunk.toml [serve]; it
+	# does NOT read the harness's E2E_APP_PORT override — keep in sync with
+	# Trunk.toml.
+	check_listeners serve-ui app "$SERVE_UI_PORT" "порт serve-ui $SERVE_UI_PORT" || return 1
 }
 
 # e2e: fixture creds + artifacts + tooling + harness ports.
@@ -317,6 +321,11 @@ guard_e2e() {
 		_ep_cdn=${E2E_CDN_PORT:-8080}
 		check_listeners e2e cdn "$_ep_cdn" "порт CDN $_ep_cdn" || return 1
 	fi
+}
+
+guard_just() {
+	command -v just >/dev/null 2>&1 || guard_fail "just не найден в PATH.
+  Remedy: pacman -S just  (или cargo install just --locked)"
 }
 
 # env-check: the full report for a fresh worktree (UC-2). Blocker holes exit
@@ -363,18 +372,18 @@ env_check() {
 		printf "HOLE npm не найден — export PATH=\"\$HOME/.local/share/pnpm/bin:\$PATH\" (ранбук 22.11)\n"
 	fi
 
-	if creds_resolve "${E2E_DIR:-end2end}"; then
+	if creds_resolve end2end; then
 		printf 'OK   креды фикстуры резолвятся (shell или end2end/.env)\n'
 	else
 		_ec_holes=$((_ec_holes + 1))
 		printf 'HOLE креды фикстуры не резолвятся — cp end2end/.env.example end2end/.env (контракт end2end/AGENTS.md)\n'
 	fi
 
-	if [ -d "${E2E_DIR:-end2end}/node_modules" ]; then
+	if [ -d end2end/node_modules ]; then
 		printf 'OK   end2end/node_modules на месте\n'
 	else
 		_ec_holes=$((_ec_holes + 1))
-		printf 'HOLE end2end/node_modules отсутствует — cd end2end && npm ci (или симлинк из основного чекаута)\n'
+		printf 'HOLE end2end/node_modules отсутствует — cd end2end && npm ci (симлинк из основного чекаута ненадёжен: ранбук, правка 26.11)\n'
 	fi
 
 	_ec_corpus=$(corpus_dir)
@@ -384,13 +393,24 @@ env_check() {
 		guard_warn "корпус не найден ($ORIGA_CDN_DIR / ~/origa-cdn) — corpus-тесты скипнутся, e2e возьмёт контент с прод-CDN; сид: aws s3 sync s3://<bucket> ~/origa-cdn --profile origa"
 	fi
 
-	# ports: serve-ui semantics on the app port (any listener is a hole),
-	# e2e semantics on trailbase/cdn (stranger is a hole)
-	if [ -n "$(list_listeners "${E2E_APP_PORT:-1420}")" ]; then
+	# ports: serve-ui binds its own pinned port (any listener is a hole),
+	# the e2e harness ports follow the stranger/own-env verdicts
+	if [ -n "$(list_listeners "$SERVE_UI_PORT")" ]; then
 		_ec_holes=$((_ec_holes + 1))
-		check_listeners serve-ui app "${E2E_APP_PORT:-1420}" "порт приложения ${E2E_APP_PORT:-1420}" || true
+		check_listeners serve-ui app "$SERVE_UI_PORT" "порт serve-ui $SERVE_UI_PORT" || true
 	else
-		printf 'OK   порт приложения %s свободен\n' "${E2E_APP_PORT:-1420}"
+		printf 'OK   порт serve-ui %s свободен\n' "$SERVE_UI_PORT"
+	fi
+	if [ "${E2E_APP_PORT:-1420}" != "$SERVE_UI_PORT" ]; then
+		if [ -n "$(list_listeners "${E2E_APP_PORT:-1420}")" ]; then
+			if check_listeners e2e app "${E2E_APP_PORT:-1420}" "порт e2e-приложения ${E2E_APP_PORT:-1420}"; then
+				printf 'OK   порт e2e-приложения %s: свой сервер с loopback-TrailBase (легитимный reuse)\n' "${E2E_APP_PORT:-1420}"
+			else
+				_ec_holes=$((_ec_holes + 1))
+			fi
+		else
+			printf 'OK   порт e2e-приложения %s свободен\n' "${E2E_APP_PORT:-1420}"
+		fi
 	fi
 	if [ -n "$(list_listeners "${E2E_TRAILBASE_PORT:-4000}")" ]; then
 		if check_listeners e2e trailbase "${E2E_TRAILBASE_PORT:-4000}" "порт TrailBase ${E2E_TRAILBASE_PORT:-4000}"; then

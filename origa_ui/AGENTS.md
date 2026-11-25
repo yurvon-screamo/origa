@@ -141,8 +141,9 @@ ADR-029 and PR #441 for concrete cases.
 
 ```powershell
 $env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"  # REQUIRED
+$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # REQUIRED for serve — loopback only; a bare serve bakes the production TrailBase (ADR-020, incident uwuwu#1449)
 cd tauri && cargo tauri dev          # full app (recommended)
-cd origa_ui && trunk serve           # frontend only
+cd origa_ui && trunk serve           # frontend only — prefer `make serve-ui` from the repo root (env guards, fail-closed)
 ```
 
 ### `trunk serve` mutates `dist/` — rebuild before serving it statically

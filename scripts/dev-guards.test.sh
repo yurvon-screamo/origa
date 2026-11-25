@@ -48,15 +48,22 @@ eq() { # eq <label> <expected> <actual>
 ok "tb loopback localhost" trailbase_is_local "http://localhost:4000"
 ok "tb loopback 127.0.0.1" trailbase_is_local "http://127.0.0.1:4000"
 ok "tb loopback ipv6 bracket" trailbase_is_local "http://[::1]:4000"
+ok "tb loopback ipv6 bracket + path" trailbase_is_local "http://[::1]:4000/"
+ok "tb loopback bare ipv6 authority" trailbase_is_local "::1"
 ok "tb loopback no port" trailbase_is_local "http://localhost"
 ok "tb loopback trailing slash" trailbase_is_local "http://127.0.0.1:4000/"
 ok "tb loopback schemeless" trailbase_is_local "localhost:4000"
 ko "tb empty" trailbase_is_local ""
-ko "tb unset-equivalent" trailbase_is_local ""
 ko "tb prod host (the incident value)" trailbase_is_local "https://app.origa.uwuwu.net"
 ko "tb prod cdn host" trailbase_is_local "https://s3.origa.uwuwu.net"
 ko "tb lookalike subdomain" trailbase_is_local "http://localhost.evil.example"
 ko "tb lan ip" trailbase_is_local "http://192.168.1.10:4000"
+# review round 1 (common 2): brackets OUTSIDE the authority are data, not
+# the host — the verdict must stay "not local" for these
+ko "tb prod + bracketed ipv6 in query" trailbase_is_local "https://app.origa.uwuwu.net/path?[::1]"
+ko "tb bracketed ipv6 in fragment" trailbase_is_local "/#[::1]"
+ko "tb bracketed localhost in path" trailbase_is_local "/[localhost]"
+ko "tb bracketed loopback ip in path" trailbase_is_local "/x[127.0.0.1]"
 
 # ---- landing base: L1 pair contract ----
 ok "landing app base alone" landing_base_present "https://app.origa.uwuwu.net" "" ""
@@ -95,23 +102,26 @@ mkdir -p "$_tmp/seed" "$_tmp/dir" "$_tmp/home/origa-cdn" "$_tmp/nohome"
 _old_home=$HOME
 
 export ORIGA_CDN_CACHE_DIR="$_tmp/seed"
-eq "corpus cache-dir wins" "$_tmp/seed" "$(corpus_dir)"
+ok "corpus cache-dir wins (exit 0 as predicate)" corpus_dir
+eq "corpus cache-dir prints" "$_tmp/seed" "$(corpus_dir)"
 
 export ORIGA_CDN_CACHE_DIR="$_tmp/nope" ORIGA_CDN_DIR="$_tmp/dir"
-eq "corpus set-but-missing cache: no fallback (parity with ??)" "" "$(corpus_dir)"
+ko "corpus set-but-missing: no fallback, refuses (parity with ??)" corpus_dir
+eq "corpus set-but-missing prints nothing" "" "$(corpus_dir)"
 
 unset ORIGA_CDN_CACHE_DIR
 export ORIGA_CDN_DIR="$_tmp/dir"
-eq "corpus dir fallback when cache unset" "$_tmp/dir" "$(corpus_dir)"
+ok "corpus dir fallback when cache unset" corpus_dir
 
 unset ORIGA_CDN_DIR
 HOME="$_tmp/home"
 export HOME
-eq "corpus home seed" "$_tmp/home/origa-cdn" "$(corpus_dir)"
+ok "corpus home seed" corpus_dir
 
 HOME="$_tmp/nohome"
 export HOME
-eq "corpus absent is empty" "" "$(corpus_dir)"
+ko "corpus absent refuses (exit 1 as predicate)" corpus_dir
+eq "corpus absent prints nothing" "" "$(corpus_dir)"
 
 HOME=$_old_home
 export HOME

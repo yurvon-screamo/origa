@@ -32,7 +32,7 @@ endif
 GUARDS := scripts/dev-guards.sh
 
 .PHONY: env-check check test serve-ui serve-landing e2e shots css-landing
-.PHONY: guard-build-env guard-serve-ui guard-e2e
+.PHONY: guard-build-env guard-serve-ui guard-e2e guard-shots guard-css
 
 # --- environment report (fresh-worktree doctor; UC-2) ---
 env-check:
@@ -42,7 +42,11 @@ env-check:
 guard-build-env:
 	@. $(GUARDS) && guard_cdn_env && guard_landing_base
 
+# `check` also runs the guards decision table (scripts/dev-guards.test.sh):
+# the same regression CI enforces via the pytest job
+# (scripts/tests/test_dev_guards.py) — cheap locally, seconds.
 check: guard-build-env
+	@sh scripts/dev-guards.test.sh
 	cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings
 
 test: guard-build-env
@@ -60,14 +64,22 @@ serve-landing: guard-build-env
 	cargo run --bin origa_landing
 
 # --- e2e / shots / landing css (delegates; no guard duplication) ---
+# ARGS passes through word-split to the delegate shell — multi-word values
+# need inner quotes: make e2e ARGS="--project=bdd -g 'страницы входа'"
 guard-e2e:
 	@. $(GUARDS) && guard_e2e
 
 e2e: guard-e2e
 	cd end2end && npm test -- $(ARGS)
 
-shots:
+guard-shots:
+	@. $(GUARDS) && guard_npm
+
+shots: guard-shots
 	cd end2end && npm run shots -- $(ARGS)
 
-css-landing:
+guard-css:
+	@. $(GUARDS) && guard_just
+
+css-landing: guard-css
 	just --directory origa_landing css
