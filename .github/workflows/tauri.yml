@@ -24,6 +24,10 @@ env:
     # Mirrors ci.yml: the apt cache step (skipped on tags, issue #803)
     # also INSTALLS the packages, so tag runs install them directly.
     GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
+    # sccache S3 backend credentials for .github/actions/setup-rust (empty on
+    # dependabot PRs → the composite compiles uncached).
+    SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+    SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
 permissions:
     contents: read
@@ -99,11 +103,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown
-                  shared-key: origa-ci-v2
-                  # tauri.yml only triggers on tags and manual dispatch; a
-                  # default save-if would store a fresh cache on the tag ref
-                  # where it is unreachable from any other run (issue #803).
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
