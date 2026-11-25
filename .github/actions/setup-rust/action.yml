@@ -38,6 +38,10 @@ runs:
                   echo "SCCACHE_BUCKET=origa-sccache"
                   echo "SCCACHE_ENDPOINT=https://yurvon-screamo.s3.hf.co"
                   echo "SCCACHE_REGION=us-east-1"
+                  # HF S3 gateway does not parse trailing checksums of recent
+                  # AWS SDKs — checksums only where operations require them.
+                  echo "AWS_REQUEST_CHECKSUM_CALCULATION=when_required"
+                  echo "AWS_RESPONSE_CHECKSUM_CALCULATION=when_required"
                   echo "AWS_ACCESS_KEY_ID=$SCCACHE_S3_ACCESS_KEY_ID"
                   echo "AWS_SECRET_ACCESS_KEY=$SCCACHE_S3_SECRET_KEY"
               } >> "$GITHUB_ENV"
