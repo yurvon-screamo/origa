@@ -112,6 +112,8 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --check && cargo fmt
 ```
 
+Канонические make-цели dev-контура (Linux; `make env-check` / `check` / `test` / `serve-ui` / `serve-landing` / `e2e` / `shots` / `css-landing`) — те же команды под fail-closed env-гардами (`scripts/dev-guards.sh`): локальный serve/e2e не смотрит в прод-TrailBase, чужие слушатели портов и несобранное окружение свежего ворктри ловятся до старта серверов (`make env-check` — отчёт по окружению с remedy). Windows/PowerShell-рецепты выше остаются каноном desktop-контура.
+
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
 ### Сборка лендинга (`origa_landing`)
