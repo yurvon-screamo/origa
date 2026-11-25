@@ -224,6 +224,12 @@ jobs:
                           # (prettier) and match no other component; they
                           # ride the ci component (full run, rare changes).
                           - .opencode/**
+                          # Root dev-contour task runner with the env
+                          # guards (incident uwuwu#1449): guard edits must
+                          # get a full run, never a legal skip (#791
+                          # class); same treatment as rust-toolchain.toml
+                          # (#969).
+                          - Makefile
 
     version:
         name: Version
