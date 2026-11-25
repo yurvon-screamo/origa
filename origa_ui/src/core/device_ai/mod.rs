@@ -93,6 +93,17 @@ pub async fn available(feature: Feature) -> bool {
     status
 }
 
+/// Pure routing predicate: does this platform have a device-ai plugin backend
+/// that a capabilities query could reach at all? Windows/Linux/web have no
+/// plugin by design (`expects_native_ai` is the canonical platform matrix) —
+/// a query there is doomed and only produces ACL-reject noise (uwuwu#1098),
+/// so [`cached_or_query`] collapses to all-unavailable without the
+/// round-trip. Kept as a named function (not an inline call) so the routing
+/// contract stays unit-testable without a webview.
+fn capabilities_query_expected(platform: &str) -> bool {
+    crate::core::capabilities::expects_native_ai(platform)
+}
+
 /// Resolves capabilities from the cache, querying the plugin on first access.
 ///
 /// Concurrent first callers share one in-flight query (single-flight lives in
@@ -109,6 +120,19 @@ pub async fn available(feature: Feature) -> bool {
 async fn cached_or_query() -> Result<Capabilities, String> {
     if let Some(caps) = CACHED_CAPABILITIES.with(|c| c.borrow().clone()) {
         return Ok(caps);
+    }
+
+    // Platforms without the compiled-in plugin (Windows/Linux — uwuwu#1098)
+    // never pass the ACL: querying them only produces the "Command … not
+    // allowed by ACL" warn on every boot. Collapse to all-unavailable
+    // without the doomed round-trip; the fallback routing below is their
+    // normal path, not a degradation.
+    let platform = crate::core::platform::platform_name();
+    if !capabilities_query_expected(&platform) {
+        tracing::debug!(
+            "device-ai: no plugin backend on {platform} — capabilities unavailable, fallbacks only"
+        );
+        return Ok(Capabilities::all_unavailable());
     }
 
     match invoke::get_capabilities().await {
@@ -173,5 +197,28 @@ mod tests {
 
         assert!(!Feature::SpeechRecognition.status(&caps));
         assert!(!Feature::TextRecognition.status(&caps));
+    }
+
+    /// uwuwu#1098: the capabilities query is expected only on platforms with
+    /// a plugin backend; on Windows/Linux the query is skipped entirely (no
+    /// doomed ACL round-trip), on web there is no Tauri shell.
+    #[test]
+    fn capabilities_query_expected_only_on_plugin_platforms() {
+        for platform in ["macos", "ios", "android"] {
+            assert!(
+                capabilities_query_expected(platform),
+                "{platform} hosts the plugin backend — query expected"
+            );
+        }
+        for platform in ["linux", "windows"] {
+            assert!(
+                !capabilities_query_expected(platform),
+                "{platform} has no plugin backend — the query must be skipped"
+            );
+        }
+        assert!(
+            !capabilities_query_expected("webview-unknown"),
+            "non-plugin platforms must skip the query"
+        );
     }
 }
