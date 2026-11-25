@@ -13,6 +13,11 @@
 //!   "unavailable", and one-shot callers (live-recorder mount effect) never
 //!   re-checked, permanently hiding the macOS record button.
 //!
+//! The single-flight/cache suite pins the platform to a plugin backend
+//! (Android UA override) before driving `available()`: since uwuwu#1098
+//! plugin-less platforms (web/Windows/Linux) skip the query before any
+//! invoke, so the mechanics under test exist only on plugin platforms.
+//!
 //! Every test is order-independent: module state (capabilities cache,
 //! in-flight query slot) and the fake `window.__TAURI__` bridge are reset at
 //! the start and the end of each test, with a per-test invoke counter.
@@ -78,6 +83,12 @@ fn recognize_text_payload_keeps_vision_fields_for_apple_platforms() {
 // =============================================================================
 
 use crate::core::device_ai::{self, Feature};
+use crate::core::tauri_mock::UserAgentOverride;
+
+/// Android WebView user agent — pins `platform_name()` to a plugin backend
+/// (see the module docs on the uwuwu#1098 skip).
+const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/537.36 \
+     (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 
 /// How long a test waits for spawned tasks, in 10 ms ticks.
 const COMPLETION_TICKS: u32 = 300;
@@ -239,6 +250,9 @@ async fn wait_for_tasks(remaining: &Rc<Cell<u32>>) {
 #[wasm_bindgen_test]
 async fn concurrent_first_callers_share_one_query_and_all_get_the_real_result() {
     reset_module_state();
+    // Single-flight/cache mechanics exist only on plugin platforms: since
+    // uwuwu#1098 plugin-less platforms skip the query before any invoke.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(true));
 
     let remaining = Rc::new(Cell::new(2_u32));
@@ -276,6 +290,9 @@ async fn concurrent_first_callers_share_one_query_and_all_get_the_real_result() 
 #[wasm_bindgen_test]
 async fn repeated_call_hits_the_cache_without_a_second_invoke() {
     reset_module_state();
+    // Single-flight/cache mechanics exist only on plugin platforms: since
+    // uwuwu#1098 plugin-less platforms skip the query before any invoke.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(true));
 
     assert!(
@@ -298,6 +315,9 @@ async fn repeated_call_hits_the_cache_without_a_second_invoke() {
 #[wasm_bindgen_test]
 async fn an_unavailable_payload_is_cached_like_any_successful_query() {
     reset_module_state();
+    // Single-flight/cache mechanics exist only on plugin platforms: since
+    // uwuwu#1098 plugin-less platforms skip the query before any invoke.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(false));
 
     assert!(
@@ -320,6 +340,8 @@ async fn an_unavailable_payload_is_cached_like_any_successful_query() {
 #[wasm_bindgen_test]
 async fn a_failed_query_is_not_cached_so_the_next_call_retries() {
     reset_module_state();
+    // uwuwu#1098: pin a plugin platform — see the module docs.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_failing_tauri();
 
     assert!(
@@ -342,6 +364,8 @@ async fn a_failed_query_is_not_cached_so_the_next_call_retries() {
 #[wasm_bindgen_test]
 async fn a_synchronously_throwing_invoke_is_not_cached_so_the_next_call_retries() {
     reset_module_state();
+    // uwuwu#1098: pin a plugin platform — see the module docs.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_throwing_tauri();
 
     assert!(
@@ -364,6 +388,9 @@ async fn a_synchronously_throwing_invoke_is_not_cached_so_the_next_call_retries(
 #[wasm_bindgen_test]
 async fn three_concurrent_first_callers_share_one_query_and_all_get_the_real_result() {
     reset_module_state();
+    // Single-flight/cache mechanics exist only on plugin platforms: since
+    // uwuwu#1098 plugin-less platforms skip the query before any invoke.
+    let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(true));
 
     let remaining = Rc::new(Cell::new(3_u32));
