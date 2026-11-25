@@ -117,9 +117,6 @@ jobs:
           # older family members are unreachable and exist only as dead
           # weight (issue #803).
           def family_of(key):
-              if key.startswith("v0-rust-"):
-                  # Swatinem/rust-cache: ...-<shared-key>-<platform>-<hash>-<hash>
-                  return key.rsplit("-", 2)[0]
               if key.startswith("codeql-overlay-base-database-"):
                   # CodeQL default setup: ...-<dbhash>-<lang>-<version>-<commit>-<runid>-1
                   return key.rsplit("-", 3)[0]
