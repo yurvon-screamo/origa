@@ -135,13 +135,16 @@ async fn polled_foreign_deep_link_is_never_routed_to_the_selftest_probe() {
 
     start_selftest_listener();
     // Two tick windows: a foreign URL must not trigger OCR on any tick, and
-    // the OAuth contour that shares this channel must stay untouched.
-    gloo_timers::future::TimeoutFuture::new(3500).await;
-
+    // the OAuth contour that shares this channel must stay untouched. Wait
+    // for the second tick instead of sleeping a fixed ~2 tick windows — a
+    // loaded CI browser can stretch the 1.5 s timer into a false red.
+    let two_ticks = crate::test_support::wait_until(|| bridge.pulls.get() >= 2, 70, 100).await;
     assert!(
-        bridge.pulls.get() >= 2,
+        two_ticks,
         "the poll must keep ticking across the warm-delivery window"
     );
+    // A wrongly routed URL would finish OCR and report within this settle.
+    gloo_timers::future::TimeoutFuture::new(500).await;
     assert!(
         bridge.markers.borrow().is_empty(),
         "only selftest URLs may be routed; got {:?}",
