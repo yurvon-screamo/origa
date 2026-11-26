@@ -39,6 +39,10 @@ runs:
               {
                   echo "CARGO_INCREMENTAL=0"
                   echo "RUSTC_WRAPPER=sccache"
+                  # Release the sccache server before long browser-test phases
+                  # (wasm-bindgen tests run Chrome in the same job): the old
+                  # 10-minute idle window keeps the server resident there.
+                  echo "SCCACHE_IDLE_TIMEOUT=60"
                   # Bound the local disk L1: with a remote backend it is only
                   # a per-job cache, and GH runners are disk-tight.
                   echo "SCCACHE_CACHE_SIZE=2G"
