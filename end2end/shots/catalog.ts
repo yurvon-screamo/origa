@@ -20,6 +20,10 @@ export interface ScenarioDescriptor {
   baseURL?: string;
   /** Data state the screen is shown in. */
   preset: PresetId;
+  /** "none" captures the public login screen without a session. */
+  auth?: "session" | "none";
+  /** "required" leaves the first-run download consent visible. */
+  consent?: "preapproved" | "required";
 }
 
 export const descriptors: Record<string, ScenarioDescriptor> = {
@@ -204,6 +208,127 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     route: "/phrases",
     locale: "ru-RU",
     preset: "phrase-dash-run",
+  },
+  profile: {
+    id: "profile",
+    title: "Экран профиля",
+    route: "/profile",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "grammar-detail": {
+    id: "grammar-detail",
+    title: "Деталь грамматики: вкладки, практика, удаление",
+    route: "/grammar/:id",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  "words-add": {
+    id: "words-add",
+    title: "Мастер добавления слов: ввод и превью",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "with-word",
+  },
+  login: {
+    id: "login",
+    title: "Публичный экран входа",
+    route: "/login",
+    locale: "ru-RU",
+    preset: "fresh",
+    auth: "none",
+  },
+  consent: {
+    id: "consent",
+    title: "Согласие на загрузку ресурсов",
+    route: "/",
+    locale: "ru-RU",
+    preset: "fresh",
+    consent: "required",
+  },
+  examples: {
+    id: "examples",
+    title: "Экран примеров",
+    route: "/examples",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  counters: {
+    id: "counters",
+    title: "Список счётных суффиксов и дровер добавления",
+    route: "/counters",
+    locale: "ru-RU",
+    preset: "counter-due",
+  },
+  kanji: {
+    id: "kanji",
+    title: "Список кандзи и дровер добавления",
+    route: "/kanji",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  sets: {
+    id: "sets",
+    title: "Сеты: фильтры и предпросмотр импорта",
+    route: "/sets",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "lesson-empty": {
+    id: "lesson-empty",
+    title: "Пустое состояние урока",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "fresh",
+  },
+  "lists-empty": {
+    id: "lists-empty",
+    title: "Пустое состояние списка слов",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "fresh",
+  },
+  "onboarding-steps": {
+    id: "onboarding-steps",
+    title: "Шаги онбординга: intro → load → JLPT → apps → summary",
+    route: "/onboarding",
+    locale: "ru-RU",
+    preset: "onboarding-start",
+  },
+  "acquaintance-counter-slide": {
+    id: "acquaintance-counter-slide",
+    title: "Рука знакомства: слайд счётного суффикса и ответ",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  "lesson-example-audio": {
+    id: "lesson-example-audio",
+    title: "Урок: пример с кнопкой озвучки",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-examples",
+  },
+  "lesson-phrase-listen": {
+    id: "lesson-phrase-listen",
+    title: "Урок: фраза на слух",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "lesson-audio-recall": {
+    id: "lesson-audio-recall",
+    title: "Урок: аудио-вспоминание",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
+  },
+  "lesson-quiz-multi": {
+    id: "lesson-quiz-multi",
+    title: "Урок: квиз с несколькими ответами",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
   },
 };
 

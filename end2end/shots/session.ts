@@ -20,6 +20,8 @@ export interface ShotSessionOptions {
   locale: string;
   viewport: ViewportTag;
   preset: PresetId;
+  auth?: "session" | "none";
+  consent?: "preapproved" | "required";
 }
 
 export interface ShotSession {
@@ -32,10 +34,10 @@ export interface ShotSession {
 /**
  * Opens a logged-in session for a capture.
  *
- * Every screen of every scenario starts from here: a fresh test account,
- * the download consent pre-approved, the login done and the data state of
- * the preset applied. The account is deleted afterwards — a capture must
- * not leave accounts behind.
+ * Default: a fresh test account, consent pre-approved, login done and the
+ * preset applied. Scenarios with `auth: "none"` get an anonymous session;
+ * `consent: "required"` keeps the logged-in session but withholds consent.
+ * The account is deleted afterwards — a capture must not leave accounts.
  */
 export async function openShotSession(
   options: ShotSessionOptions,
@@ -47,6 +49,20 @@ export async function openShotSession(
     viewport: { width: viewport.width, height: viewport.height },
   });
   const page = await context.newPage();
+
+  if (options.auth === "none") {
+    try {
+      await page.goto(options.baseURL, { waitUntil: "domcontentloaded" });
+    } catch (error) {
+      await context.close();
+      throw error;
+    }
+    return {
+      context,
+      page,
+      close: async () => await context.close(),
+    };
+  }
 
   const { token, csrfToken } = await getAdminToken();
   const email = generateUniqueEmail();
@@ -60,8 +76,11 @@ export async function openShotSession(
   try {
     await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
       baseURL: options.baseURL,
+      consent: options.consent !== "required",
     });
-    await presets[options.preset]({ page, baseURL: options.baseURL });
+    if (options.consent !== "required") {
+      await presets[options.preset]({ page, baseURL: options.baseURL });
+    }
   } catch (error) {
     await context.close();
     await deleteTestUserWithRetry(token, csrfToken, userId, email).catch(

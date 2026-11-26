@@ -100,6 +100,9 @@ the entry point:
 npm run shots -- list                                    # the catalog of screens
 npm run shots -- capture --scenario home --label issue-808 [--upload]
 npm run shots -- index                                   # rebuild the registry view
+npm run shots -- coverage                                # inventory rows: covered / gap / excluded
+npm run shots -- coverage --run /tmp/opencode/shots/<label>  # compare frames with the manifest
+npm run shots -- store --out /tmp/opencode/shots/<label>  # keep baseline PNGs for review diffs
 ```
 
 `capture` checks the environment first (`shots/preflight.ts`): a missing
@@ -122,6 +125,7 @@ catalog:
   fresh profile, an imported corpus, a seeded ledger). The set is open by
   design.
 - `shots/scenarios/index.ts` — the map of the implementations.
+- `shots/coverage-inventory.ts` — one row per page, variation and surface; a new screen needs a row before CI is green. The gate reads routes from `origa_ui/src/routes.rs`.
 - `shots/examiner/model.json` — at least one examined screen per
   scenario (the Screen examiner below). Add the entry in the same
   commit: `npm run test:unit` (seconds, no browser) fails on a
@@ -140,7 +144,9 @@ TrailBase in `end2end/trailbase-fixture` and sets the admin password, the
 CDN is served on 8080 (or the production CDN when there is no local
 corpus), the app on 1420 (`trunk serve` locally, the built
 `origa_ui/dist` when `CI=true`). The files land in
-`/tmp/opencode/shots/<label>/` — never in the repository (issue #797).
+`/tmp/opencode/shots/<label>/`; `shots -- store` copies the baseline PNGs
+into `docs/ui-screenshots/images/` for PR diffs (owner's word 26.11,
+uwuwu#1671 — supersedes issue #797 for those baselines).
 
 The suite is run by hand for now: its infrastructure no longer depends
 on the developer's machine, but the onboarding flow of a fresh profile is

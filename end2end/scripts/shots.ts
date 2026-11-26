@@ -21,6 +21,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
+import { assertCaptureFlags } from "./shots-flags.ts";
+import { runCoverage, runStore } from "./shots-commands.ts";
 import { listDescriptors } from "../shots/catalog.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
@@ -75,10 +77,13 @@ interface Options {
   examModel: string;
   /** File a GitHub issue per finding (requires --upload for evidence links). */
   fileIssues: boolean;
+  /** Capture directory whose manifests are compared with the inventory. */
+  run?: string;
 }
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
 function parseOptions(argv: string[]): Options {
+  assertCaptureFlags(argv, process.argv[2]);
   // A flag may be repeated: `--scenario a --scenario b` means both.
   const values = new Map<string, string[]>();
   const flags = new Set<string>();
@@ -135,6 +140,7 @@ function parseOptions(argv: string[]): Options {
     examine: flags.has("examine"),
     examModel: last("exam-model") ?? process.env.OLLAMA_MODEL ?? "d3:2b",
     fileIssues: flags.has("file-issues"),
+    run: last("run"),
   };
 }
 
@@ -159,6 +165,14 @@ function listCommand(): number {
     );
   }
   return 0;
+}
+
+async function coverageCommand(options: Options): Promise<number> {
+  return await runCoverage(options, readManifestEntries);
+}
+
+async function storeCommand(options: Options): Promise<number> {
+  return await runStore(options, readManifestEntries);
 }
 
 async function captureCommand(options: Options): Promise<number> {
@@ -546,8 +560,13 @@ function usage(): number {
   console.log(`Инструмент UI-скриншотов.
 
   npm run shots -- list
+  npm run shots -- coverage [--run <outDir>]
   npm run shots -- capture --scenario <id>[,<id>] [options]
+  npm run shots -- store --out <dir> [--run <dir>]
   npm run shots -- index
+
+Опция coverage --run сверяет инвентарь с манифестами прогона (вьюпорты и один commit).
+Команда store копирует PNG прогона в docs/ui-screenshots/images под стабильными именами — кадрам нужен диф в PR.
 
 Опции capture:
   --scenario <id>      сценарий из каталога (обязательно)
@@ -579,6 +598,10 @@ async function main(): Promise<number> {
     switch (command) {
       case "list":
         return listCommand();
+      case "coverage":
+        return await coverageCommand(parseOptions(rest));
+      case "store":
+        return await storeCommand(parseOptions(rest));
       case "capture":
         return await captureCommand(parseOptions(rest));
       case "index":

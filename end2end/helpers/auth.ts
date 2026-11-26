@@ -289,14 +289,16 @@ export async function uiLogin(
   page: Page,
   email: string,
   password: string,
-  options: { baseURL?: string } = {},
+  options: { baseURL?: string; consent?: boolean } = {},
 ): Promise<void> {
   const maxRetries = 3;
   const baseURL = options.baseURL ?? getAppBaseUrl();
 
   // The consent seed is shared with apiLogin (the App Review 4.2.3(ii)
   // rationale and the origin guard live on the helper).
-  addDownloadConsentInitScript(page.context(), new URL(baseURL).origin);
+  if (options.consent !== false) {
+    addDownloadConsentInitScript(page.context(), new URL(baseURL).origin);
+  }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     // The whole login flow is retried, not just waitForURL: the password

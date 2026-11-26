@@ -19,6 +19,7 @@ export function renderIndex(entries: RegistryShot[]): string {
     "",
     "Реестр захватов интерфейса: что снято, когда, из какого коммита и по какой ссылке.",
     "Источник данных — `docs/ui-screenshots/shots/*.json`.",
+    "Базовые PNG для diffs в PR: `docs/ui-screenshots/images/` (команда `shots -- store`).",
     "",
     "| Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |",
     "| --- | --- | --- | --- | --- | --- | --- | --- |",

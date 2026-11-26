@@ -1,5 +1,6 @@
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /**
  * The home screen with an empty corpus.
@@ -14,6 +15,7 @@ export const homeScenario: ShotScenario = {
     await page
       .getByTestId("home-page")
       .waitFor({ state: "visible", timeout: 60_000 });
+    await waitForAppReady(page);
     await sink.shot("home");
   },
 };
