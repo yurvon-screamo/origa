@@ -16,7 +16,13 @@
  */
 import { execFile, execFileSync, spawn } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readdir,
+  readFile,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
@@ -38,7 +44,11 @@ import {
   renderReport,
 } from "../shots/examiner/report.ts";
 import { renderIndex } from "../shots/index.ts";
-import type { ShotEntry, ShotManifest } from "../shots/manifest.ts";
+import {
+  repoImageName,
+  type ShotEntry,
+  type ShotManifest,
+} from "../shots/manifest.ts";
 import { runPreflight } from "../shots/preflight.ts";
 import {
   mergeEntry,
@@ -199,6 +209,19 @@ async function coverageCommand(options: Options): Promise<number> {
   }
   console.log(formatCoverageReport(inventory, issues));
   return issues.length > 0 ? 1 : 0;
+}
+
+async function storeCommand(options: Options): Promise<number> {
+  const from = options.run ?? join("/tmp/opencode/shots", options.label);
+  const entries = await readManifestEntries(from);
+  const target = join(repoRoot, "docs/ui-screenshots/images");
+  await mkdir(target, { recursive: true });
+  for (const entry of entries) {
+    await copyFile(entry.file, join(target, repoImageName(entry)));
+  }
+  console.log(`В репозиторий скопировано кадров: ${entries.length}`);
+  console.log(`Каталог: ${target}`);
+  return 0;
 }
 
 async function captureCommand(options: Options): Promise<number> {
@@ -588,9 +611,11 @@ function usage(): number {
   npm run shots -- list
   npm run shots -- coverage [--run <outDir>]
   npm run shots -- capture --scenario <id>[,<id>] [options]
+  npm run shots -- store --label <label> [--run <outDir>]
   npm run shots -- index
 
 Опция coverage --run сверяет инвентарь с манифестами прогона (вьюпорты и один commit).
+Команда store копирует PNG прогона в docs/ui-screenshots/images под стабильными именами — кадрам нужен диф в PR.
 
 Опции capture:
   --scenario <id>      сценарий из каталога (обязательно)
@@ -624,6 +649,8 @@ async function main(): Promise<number> {
         return listCommand();
       case "coverage":
         return await coverageCommand(parseOptions(rest));
+      case "store":
+        return await storeCommand(parseOptions(rest));
       case "capture":
         return await captureCommand(parseOptions(rest));
       case "index":

@@ -66,6 +66,16 @@ export function shotFileName(
   return `${scenario}--${screen}--${viewport}--${locale}.png`;
 }
 
+/** Stable file name of a capture kept in the repository for PR review. */
+export function repoImageName(entry: {
+  scenario: string;
+  screen: string;
+  viewport: string;
+  locale: string;
+}): string {
+  return `${entry.scenario}--${entry.screen}--${entry.viewport}--${entry.locale}.png`;
+}
+
 /** Key of a capture inside the registry. */
 export function shotKey(entry: {
   scenario: string;

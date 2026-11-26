@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { readPngSize, sha256Hex, shotFileName, shotKey } from "./manifest.ts";
+import {
+  readPngSize,
+  repoImageName,
+  sha256Hex,
+  shotFileName,
+  shotKey,
+} from "./manifest.ts";
 
 /** Minimal PNG header: signature + IHDR with the given dimensions. */
 function pngHeader(width: number, height: number): Buffer {
@@ -37,6 +43,18 @@ test("capture file name carries the scenario, the screen, the viewport and the l
   assert.equal(
     shotFileName("home", "home", "desktop", "ru-RU"),
     "home--home--desktop--ru-RU.png",
+  );
+});
+
+test("the repository image name is stable across captures", () => {
+  assert.equal(
+    repoImageName({
+      scenario: "home",
+      screen: "home",
+      viewport: "mobile",
+      locale: "ru-RU",
+    }),
+    "home--home--mobile--ru-RU.png",
   );
 });
 
