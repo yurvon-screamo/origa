@@ -35,6 +35,9 @@ runs:
               {
                   echo "CARGO_INCREMENTAL=0"
                   echo "RUSTC_WRAPPER=sccache"
+                  # Bound the local disk L1: with a remote backend it is only
+                  # a per-job cache, and GH runners are disk-tight.
+                  echo "SCCACHE_CACHE_SIZE=2G"
                   echo "SCCACHE_BUCKET=origa-sccache"
                   echo "SCCACHE_ENDPOINT=https://t3.storage.dev"
                   echo "SCCACHE_REGION=auto"
