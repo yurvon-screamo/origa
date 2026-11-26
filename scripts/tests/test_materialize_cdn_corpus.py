@@ -485,3 +485,27 @@ def test_batch_reports_progress_every_interval(
     assert "downloaded 100/101" in report
     assert "downloaded 101/101" in report
     assert report.index("downloaded 100/101") < report.index("downloaded 101/101")
+
+
+def test_main_reports_failure_and_returns_error_code(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A failed materialization must tell the agent/CI via stderr and exit code."""
+    corpus = make_corpus(tmp_path, {})
+
+    class BrokenStore(FakeStore):
+        def manifest(self) -> dict[str, object]:
+            raise ConnectionError("production unavailable")
+
+    monkeypatch.setattr(
+        materialize_cdn_corpus._cdn_corpus, "corpus_dir", lambda: corpus
+    )
+    monkeypatch.setattr(
+        materialize_cdn_corpus, "S3ProductionStore", lambda: BrokenStore({})
+    )
+
+    assert materialize_cdn_corpus.main([]) == 1
+    captured = capsys.readouterr()
+    assert "ERROR: production unavailable" in captured.err
+    assert "Done." not in captured.out
+    assert not (corpus / "manifest.json").exists()
