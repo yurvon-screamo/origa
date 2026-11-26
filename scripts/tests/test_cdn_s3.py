@@ -14,6 +14,7 @@ exercised black-box against a fake remote object map.
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -636,3 +637,35 @@ def test_stat_object_returns_none_with_warning_on_error(monkeypatch, capsys):
 
     assert _cdn_s3.stat_object("releases/9.9.9/missing.exe") is None
     assert "WARNING" in capsys.readouterr().err
+
+
+def test_download_object_streams_body_and_returns_sha256(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    payload = b"prod-" + b"x" * 100
+
+    class Body:
+        def __init__(self) -> None:
+            self.chunks = iter((payload[:10], payload[10:]))
+
+        def read(self, _size: int) -> bytes:
+            return next(self.chunks, b"")
+
+        def __enter__(self) -> Body:
+            return self
+
+        def __exit__(self, *_args: object) -> bool:
+            return False
+
+    class FakeDownloadClient:
+        def get_object(self, **kwargs: object) -> dict[str, object]:
+            assert kwargs == {"Bucket": "origa", "Key": "dictionary/kanji.json"}
+            return {"Body": Body()}
+
+    monkeypatch.setattr(_cdn_s3, "_s3_upload_client", lambda: FakeDownloadClient())
+    target = tmp_path / "kanji.json"
+
+    digest = _cdn_s3.download_object("dictionary/kanji.json", target)
+
+    assert target.read_bytes() == payload
+    assert digest == hashlib.sha256(payload).hexdigest()

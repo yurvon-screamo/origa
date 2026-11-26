@@ -18,6 +18,7 @@ orchestrators rather than a transport layer.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import mimetypes
 import os
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
 S3_BUCKET = "origa"
 S3_PROFILE = "origa-t3"
 S3_ENDPOINT = "https://t3.storage.dev"
+DOWNLOAD_CHUNK_SIZE = 64 * 1024
 
 # copy-object caps at 5 GiB; surfaced so callers can skip oversize objects with
 # a clear message instead of an opaque T3 error mid-walk.
@@ -275,6 +277,23 @@ def stat_object(key: str, *, with_checksum: bool = False) -> ObjectMetadata | No
         content_length=int(length) if isinstance(length, int) else None,
         checksum_sha256=data.get("ChecksumSHA256"),
     )
+
+
+def download_object(key: str, target: Path) -> str:
+    """Stream one S3 object to ``target`` and return its SHA256 hex digest.
+
+    ``target`` must be a fresh temporary path: the caller compares the digest
+    and decides whether to replace a local file, so a partial download can
+    never overwrite a good copy. Uses the same credential contract as the
+    upload path (env keys over the ``[origa-t3]`` profile).
+    """
+    response = _s3_upload_client().get_object(Bucket=S3_BUCKET, Key=key)
+    hasher = hashlib.sha256()
+    with target.open("wb") as output, response["Body"] as body:
+        while chunk := body.read(DOWNLOAD_CHUNK_SIZE):
+            hasher.update(chunk)
+            output.write(chunk)
+    return hasher.hexdigest()
 
 
 def copy_object_cache_control(key: str, target_cc: str, dry_run: bool) -> bool:
