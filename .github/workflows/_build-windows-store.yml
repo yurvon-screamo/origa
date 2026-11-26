@@ -27,6 +27,13 @@ on:
             wasm_artifact_name:
                 type: string
                 required: true
+        secrets:
+            # Compile-cache credentials for .github/actions/setup-rust; empty
+            # on dependabot PRs — the composite compiles uncached (#1495).
+            SCCACHE_S3_ACCESS_KEY_ID:
+                required: false
+            SCCACHE_S3_SECRET_KEY:
+                required: false
 
 permissions:
     contents: read

@@ -47,6 +47,10 @@ on:
                 required: false
             android-key-alias:
                 required: false
+            SCCACHE_S3_ACCESS_KEY_ID:
+                required: false
+            SCCACHE_S3_SECRET_KEY:
+                required: false
         outputs:
             windows-signature:
                 value: ${{ jobs.build-windows.outputs.signature }}

@@ -68,6 +68,10 @@ on:
                 required: false
             apple-mac-cert-password:
                 required: false
+            SCCACHE_S3_ACCESS_KEY_ID:
+                required: false
+            SCCACHE_S3_SECRET_KEY:
+                required: false
         outputs:
             ios-upload-status:
                 description: "iOS App Store Connect upload result: success|failure|skipped"

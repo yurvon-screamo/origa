@@ -147,6 +147,8 @@ jobs:
             android-keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
             android-key-password: ${{ secrets.ANDROID_KEY_PASSWORD }}
             android-key-alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
     build-windows-store:
         name: Build Windows Store MSIX
@@ -173,6 +175,9 @@ jobs:
             commit_sha: ${{ needs.version.outputs.commit_sha }}
             build_date: ${{ needs.version.outputs.build_date }}
             wasm_artifact_name: frontend-dist
+        secrets:
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
     build-apple:
         name: Build Apple (iOS + macOS)
@@ -209,6 +214,8 @@ jobs:
             apple-mac-app-cert-p12: ${{ secrets.APPLE_MAC_APP_CERT_P12 }}
             apple-mac-installer-cert-p12: ${{ secrets.APPLE_MAC_INSTALLER_CERT_P12 }}
             apple-mac-cert-password: ${{ secrets.APPLE_MAC_CERT_PASSWORD }}
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
     generate-latest-json:
         name: Generate latest.json

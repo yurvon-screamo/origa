@@ -1470,6 +1470,8 @@ jobs:
             android-keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
             android-key-password: ${{ secrets.ANDROID_KEY_PASSWORD }}
             android-key-alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
     build-macos:
         name: Build Tauri (macOS)
@@ -1506,6 +1508,8 @@ jobs:
             apple-mac-app-cert-p12: ${{ secrets.APPLE_MAC_APP_CERT_P12 }}
             apple-mac-installer-cert-p12: ${{ secrets.APPLE_MAC_INSTALLER_CERT_P12 }}
             apple-mac-cert-password: ${{ secrets.APPLE_MAC_CERT_PASSWORD }}
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
     docker-build-landing:
         name: Docker Build (landing)
