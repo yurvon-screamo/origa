@@ -406,8 +406,7 @@ cargo run -p utils -- build-cdn-rkyv
 
 Builds the grammar tokenization precompute (#521): one deflated rkyv
 blob with furigana spans for every grammar markdown text node and whole
-string. Freshness binds to both grammar sources plus the tokenizer
-inputs.
+string. Freshness binds to the grammar source plus the tokenizer inputs.
 
 ```bash
 cargo run -p utils -- build-grammar-precompute
@@ -424,8 +423,10 @@ regenerated; a fresh blob exits with a skip log without it.
 
 **Freshness boundary:** the header binds to `grammar_v3.json`, the
 SudachiDict directory name and the sha256 of `JmdictFurigana.txt` — not to
-the builder or annotator code. After a code change that alters derived
-readings, remove or rename the blob before rebuilding: otherwise the old
+the builder/annotator code, the derived tokens, the markdown→text-node
+pipeline or library versions (lindera, pulldown-cmark, ammonia). After a
+change that alters entry contents (readings or tokens) or those pipeline
+libraries, remove or rename the blob before rebuilding: otherwise the old
 bytes still look fresh and the builder logs `is fresh, skipping
 regeneration`.
 
@@ -450,8 +451,9 @@ dictionary (lindera) is loaded only when at least one chunk blob is
 stale; when every chunk is fresh the command exits with a skip log.
 
 The same freshness boundary applies: chunk bytes and dictionary inputs,
-not the builder code. A code change that alters derived readings needs
-the affected chunk blobs removed or renamed before rebuilding.
+not the builder code, tokenization output or library versions. A change to
+annotation/tokenization or those libraries needs the affected chunk blobs
+removed or renamed before rebuilding.
 
 ## Getting Help
 
