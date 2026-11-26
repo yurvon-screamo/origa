@@ -6,9 +6,11 @@
 # the mechanism prettier itself honors).
 .github/**
 
-# tauri/gen/** is owned by the tauri CLI: `cargo tauri ios ...` rewrites
-# the Xcode/Android project files in generator style. If prettier is the
-# last writer, the next regeneration dirties the tree and puts format-only
-# churn into the delta of the first PR that touches iOS configuration.
-# The committed bytes match generator output — exclude the whole tree.
+# project.yml here is a hand-maintained XcodeGen spec, not CLI output:
+# ADR-033 §5 names its info.properties the canonical iOS Info.plist overlay,
+# and _build-tauri-apple.yml calls it the source of truth for regenerating
+# project.pbxproj. tauri-cli only creates the scaffold when the file is
+# absent; bundle.iOS.template is not set in tauri.conf.json. Prettier must
+# not be the last writer of this hand-edited tree — format-only diffs here
+# are noise on iOS-config PRs. Exclude the whole Xcode scaffold.
 tauri/gen/**
