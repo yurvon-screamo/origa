@@ -402,6 +402,30 @@
     },
     "onboarding-steps:step-summary": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "acquaintance-counter-slide:counter-presentation": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "acquaintance-counter-slide:counter-training-answer": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-example-audio:example-audio-question": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-phrase-listen:phrase-listen-question": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-audio-recall:audio-recall-question": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-audio-recall:audio-recall-answer": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-quiz-multi:multi-quiz-question": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-quiz-multi:multi-quiz-result": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }

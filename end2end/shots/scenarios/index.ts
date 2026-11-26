@@ -1,4 +1,5 @@
 import type { ShotScenario } from "../scenario.ts";
+import { acquaintanceCounterSlideScenario } from "./acquaintance-counter-slide.ts";
 import { consentScenario } from "./consent.ts";
 import { counterScoringScenario } from "./counter-scoring.ts";
 import { countersDetailScenario } from "./counters-detail.ts";
@@ -18,6 +19,10 @@ import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar
 import { lessonEmptyScenario } from "./lesson-empty.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
 import { lessonAcquaintanceWordScenario } from "./lesson-acquaintance-word.ts";
+import { lessonAudioRecallScenario } from "./lesson-audio-recall.ts";
+import { lessonExampleAudioScenario } from "./lesson-example-audio.ts";
+import { lessonPhraseListenScenario } from "./lesson-phrase-listen.ts";
+import { lessonQuizMultiScenario } from "./lesson-quiz-multi.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
 import { lessonExampleRecallScenario } from "./lesson-example-recall.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
@@ -83,6 +88,11 @@ export const implementations: Record<string, ShotScenario> = {
   [lessonEmptyScenario.id]: lessonEmptyScenario,
   [listsEmptyScenario.id]: listsEmptyScenario,
   [onboardingStepsScenario.id]: onboardingStepsScenario,
+  [acquaintanceCounterSlideScenario.id]: acquaintanceCounterSlideScenario,
+  [lessonExampleAudioScenario.id]: lessonExampleAudioScenario,
+  [lessonPhraseListenScenario.id]: lessonPhraseListenScenario,
+  [lessonAudioRecallScenario.id]: lessonAudioRecallScenario,
+  [lessonQuizMultiScenario.id]: lessonQuizMultiScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

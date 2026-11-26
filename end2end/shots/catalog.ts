@@ -295,6 +295,41 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "onboarding-start",
   },
+  "acquaintance-counter-slide": {
+    id: "acquaintance-counter-slide",
+    title: "Рука знакомства: слайд счётного суффикса и ответ",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  "lesson-example-audio": {
+    id: "lesson-example-audio",
+    title: "Урок: пример с кнопкой озвучки",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-examples",
+  },
+  "lesson-phrase-listen": {
+    id: "lesson-phrase-listen",
+    title: "Урок: фраза на слух",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "lesson-audio-recall": {
+    id: "lesson-audio-recall",
+    title: "Урок: аудио-вспоминание",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
+  },
+  "lesson-quiz-multi": {
+    id: "lesson-quiz-multi",
+    title: "Урок: квиз с несколькими ответами",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "due-corpus",
+  },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {
