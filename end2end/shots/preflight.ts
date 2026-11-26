@@ -182,11 +182,16 @@ function checkCorpus(facts: PreflightFacts): string[] {
  */
 function checkPorts(facts: PreflightFacts): string[] {
   const errors: string[] = [];
+  const reportedPids = new Set<number>();
   for (const listener of facts.listeners) {
     if (listener.pid === null || listener.cwd === null) continue;
     if (isInside(listener.cwd, facts.repoRoot)) continue;
     if (listener.port === LOCAL_CDN_PORT && facts.cdnCacheDir === null)
       continue;
+    // A dual-stack process holds two sockets of one port, and the probe
+    // reports both: the verdict belongs to the process, not the socket.
+    if (reportedPids.has(listener.pid)) continue;
+    reportedPids.add(listener.pid);
 
     let reason: string;
     if (listener.port === LOCAL_CDN_PORT) {
