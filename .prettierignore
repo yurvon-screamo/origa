@@ -5,3 +5,10 @@
 # (qlty triage does not apply to formatter runs, so the ignore file is
 # the mechanism prettier itself honors).
 .github/**
+
+# tauri/gen/** is owned by the tauri CLI: `cargo tauri ios ...` rewrites
+# the Xcode/Android project files in generator style. If prettier is the
+# last writer, the next regeneration dirties the tree and puts format-only
+# churn into the delta of the first PR that touches iOS configuration.
+# The committed bytes match generator output — exclude the whole tree.
+tauri/gen/**
