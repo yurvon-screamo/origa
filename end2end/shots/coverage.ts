@@ -48,7 +48,7 @@ export interface StaticCheckInput {
   readonly examKeys: readonly string[];
 }
 
-export const ROUTE_PATTERN = /path!\(\s*"([^"]+)"\s*\)/g;
+const ROUTE_PATTERN = /path!\(\s*"([^"]+)"\s*\)/g;
 
 /** Reads the only router table of the web app from its Leptos source. */
 export function parseRoutePatterns(source: string): string[] {
