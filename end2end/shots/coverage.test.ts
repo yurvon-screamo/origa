@@ -94,6 +94,16 @@ test("a frame in the other viewport does not satisfy the row", () => {
   assert.match(issues[0].problem, /desktop/);
 });
 
+test("a complete two-viewport proof has no issues and proves the row", () => {
+  const rows = [row()];
+  const issues = compareManifest(rows, [
+    frame("home", "home", "desktop"),
+    frame("home", "home", "mobile"),
+  ]);
+  assert.deepEqual(issues, []);
+  assert.deepEqual(provedRows(rows, issues), ["test:row"]);
+});
+
 test("dynamic screen names match a wildcard with a prefix", () => {
   assert.ok(matchesScreen("review-body-quiz-*", "review-body-quiz-3"));
   assert.ok(!matchesScreen("review-body-*", "writing-card"));

@@ -6,15 +6,18 @@ import { join } from "node:path";
 import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { inventory } from "./coverage-inventory.ts";
+import type { CoverageRow } from "./coverage-types.ts";
 import type { ShotEntry, ShotManifest } from "./manifest.ts";
 import type { ViewportTag } from "./viewports.ts";
 
-// Acceptance layer: drive the real CLI the way a tester does, against
-// manifest fixtures. No browser, CDN or TrailBase is needed to prove the
-// command's wiring: the static input and the inventory are the committed
-// ones, only the proof directory is a fixture.
+// Acceptance layer: drive the real CLI the way a tester does. The static
+// input and the inventory are the committed ones; only the proof directory
+// is a fixture. Frames are generated FROM the covered rows, so the suite
+// keeps working when #1691 turns more rows covered.
 const end2endRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = join(end2endRoot, "scripts/shots.ts");
+const commit = "fixture-commit";
 const fixtures: string[] = [];
 
 after(async () => {
@@ -23,18 +26,41 @@ after(async () => {
   }
 });
 
-function entry(
+function coveredRows(): readonly CoverageRow[] {
+  return inventory.filter((row) => row.status === "covered");
+}
+
+/** A row whose frames are not shared by another covered row. */
+function isolatedRow(): CoverageRow {
+  const rows = coveredRows();
+  const isolated = rows.find(
+    (row) =>
+      rows.filter(
+        (other) =>
+          other !== row &&
+          other.scenario === row.scenario &&
+          other.screens.some((screen) => row.screens.includes(screen)),
+      ).length === 0,
+  );
+  return isolated ?? rows[0];
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function frame(
+  row: CoverageRow,
+  screen: string,
   viewport: ViewportTag,
-  commit: string,
   dir: string,
-  scenario = "login",
-  screen = "login",
+  frameCommit = commit,
 ): ShotEntry {
   return {
-    scenario,
-    title: "Публичный экран входа",
+    scenario: row.scenario as string,
+    title: row.source,
     screen,
-    route: "/login",
+    route: row.route ?? "/",
     viewport,
     locale: "ru-RU",
     width: viewport === "desktop" ? 1280 : 390,
@@ -42,39 +68,74 @@ function entry(
     fullPage: false,
     bytes: 100,
     sha256: "fixture-hash",
-    file: join(dir, `${scenario}--${screen}--${viewport}--ru-RU.png`),
+    file: join(dir, `${row.scenario}--${screen}--${viewport}--ru-RU.png`),
     capturedAt: "2026-11-27T00:00:00Z",
-    commit,
+    commit: frameCommit,
     baseURL: "http://localhost:1420",
     cdnBaseUrl: "http://localhost:8080",
   };
 }
 
-async function proofDir(
-  makeEntries: (dir: string) => ShotEntry[],
-): Promise<string> {
+interface ProofOptions {
+  readonly skip?: (row: CoverageRow, viewport: ViewportTag) => boolean;
+  readonly frameCommit?: (row: CoverageRow, viewport: ViewportTag) => string;
+}
+
+/** Writes the shape `capture` leaves behind: one manifest per scenario. */
+async function proofDir(options: ProofOptions = {}): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), "shots-coverage-cli-"));
   fixtures.push(dir);
-  const manifest: ShotManifest = {
-    version: 1,
-    label: "cli-proof",
-    entries: makeEntries(dir),
-  };
-  await writeFile(
-    join(dir, "manifest.cli-proof.json"),
-    JSON.stringify(manifest),
-  );
+  const byScenario = new Map<string, ShotEntry[]>();
+  for (const row of coveredRows()) {
+    assert.ok(row.scenario, `covered row ${row.id} has no scenario`);
+    for (const screen of row.screens) {
+      // A wildcard row is satisfied by one concrete frame with its prefix.
+      const concrete = screen.replace(/\*$/, "sample");
+      for (const viewport of row.viewports) {
+        if (options.skip?.(row, viewport)) continue;
+        const entry = frame(
+          row,
+          concrete,
+          viewport,
+          dir,
+          options.frameCommit?.(row, viewport) ?? commit,
+        );
+        byScenario.set(row.scenario, [
+          ...(byScenario.get(row.scenario) ?? []),
+          entry,
+        ]);
+      }
+    }
+  }
+  for (const [scenario, entries] of byScenario) {
+    const manifest: ShotManifest = {
+      version: 1,
+      label: "cli-proof",
+      entries,
+    };
+    await writeFile(
+      join(dir, `manifest.${scenario}.json`),
+      JSON.stringify(manifest),
+    );
+  }
   return dir;
 }
 
-function coverage(args: string[] = []): { code: number; output: string } {
+interface CommandResult {
+  readonly code: number;
+  readonly stdout: string;
+  readonly stderr: string;
+}
+
+function runCli(args: string[]): CommandResult {
   try {
-    const output = execFileSync(process.execPath, [cli, "coverage", ...args], {
+    const stdout = execFileSync(process.execPath, [cli, ...args], {
       cwd: end2endRoot,
       encoding: "utf-8",
+      timeout: 30_000,
       stdio: ["ignore", "pipe", "pipe"],
     });
-    return { code: 0, output };
+    return { code: 0, stdout, stderr: "" };
   } catch (error) {
     const failure = error as {
       status?: number | null;
@@ -88,53 +149,116 @@ function coverage(args: string[] = []): { code: number; output: string } {
     );
     return {
       code: failure.status as number,
-      output: `${failure.stdout ?? ""}${failure.stderr ?? ""}`,
+      stdout: failure.stdout ?? "",
+      stderr: failure.stderr ?? "",
     };
   }
 }
 
-test("CLI proves the login row from a real two-viewport manifest", async () => {
-  const dir = await proofDir((dir) => [
-    entry("desktop", "commit-a", dir),
-    entry("mobile", "commit-a", dir),
-  ]);
+function coverage(args: string[] = []): CommandResult {
+  return runCli(["coverage", ...args]);
+}
+
+test("CLI exits green when every covered row has frames in both viewports", async () => {
+  const rows = coveredRows();
+  assert.ok(rows.length > 0, "the committed inventory has no covered rows");
+  const dir = await proofDir();
   const result = coverage(["--run", dir]);
-  // The command stays red while the two other declared-covered rows
-  // (root/home) have no frames — exactly what the live single-scenario
-  // run showed. Only the login row is promoted to a proof.
-  assert.equal(result.code, 1);
-  assert.match(result.output, /доказано манифестом 1/);
-  assert.match(result.output, /covered\s+page:login.*кадры есть/);
-  const unproved = [
-    ...result.output.matchAll(/^\s{2}(.+?): no (?:desktop|mobile) frame/gm),
-  ].map((match) => match[1]);
-  assert.ok(unproved.includes("page:root"));
-  assert.ok(unproved.includes("page:home"));
-  assert.ok(!unproved.includes("page:login"));
+  assert.equal(result.code, 0, `${result.stdout}${result.stderr}`);
+  assert.match(result.stdout, new RegExp(`доказано манифестом ${rows.length}`));
+  for (const row of rows) {
+    assert.match(
+      result.stdout,
+      new RegExp(`covered\\s+${escapeRegExp(row.id)}[^\\n]*кадры есть`),
+    );
+  }
+  assert.match(result.stdout, /Структурных проблем нет/);
+  assert.doesNotMatch(result.stdout, /Проблемы \(\d+\)/);
 });
 
-test("CLI red-proofs a row whose mobile frame is missing", async () => {
-  const dir = await proofDir((dir) => [entry("desktop", "commit-a", dir)]);
+test("CLI red-proofs the row whose mandatory viewport frame is missing", async () => {
+  const rows = coveredRows();
+  const target = isolatedRow();
+  const missing = target.viewports[0];
+  const dir = await proofDir({
+    skip: (row, viewport) => row.id === target.id && viewport === missing,
+  });
   const result = coverage(["--run", dir]);
-  assert.equal(result.code, 1);
-  assert.match(result.output, /page:login: no mobile frame for screen "login"/);
-  assert.match(result.output, /доказано манифестом 0/);
+  assert.equal(result.code, 1, result.stdout);
+  assert.match(
+    result.stdout,
+    new RegExp(`${escapeRegExp(target.id)}: no ${missing} frame`),
+  );
+  assert.match(
+    result.stdout,
+    new RegExp(`доказано манифестом ${rows.length - 1}`),
+  );
 });
 
-test("CLI rejects a proof with mixed commits", async () => {
-  const dir = await proofDir((dir) => [
-    entry("desktop", "commit-a", dir),
-    entry("mobile", "commit-b", dir),
-  ]);
+test("CLI rejects a proof whose manifests carry different commits", async () => {
+  const target = isolatedRow();
+  const dir = await proofDir({
+    frameCommit: (row, viewport) =>
+      row.id === target.id && viewport === target.viewports[0]
+        ? "other-commit"
+        : commit,
+  });
   const result = coverage(["--run", dir]);
-  assert.equal(result.code, 1);
-  assert.match(result.output, /mixed commits in one proof/);
-  assert.match(result.output, /доказано манифестом 0/);
+  assert.equal(result.code, 1, result.stdout);
+  assert.match(result.stdout, /mixed commits in one proof/);
+  assert.match(result.stdout, /доказано манифестом 0/);
 });
 
-test("CLI structural report does not claim a proof without --run", () => {
+test("CLI structural report claims no proof without --run", () => {
   const result = coverage();
-  assert.equal(result.code, 0, result.output);
-  assert.match(result.output, /доказательство не проверено/);
-  assert.doesNotMatch(result.output, /Проблемы \(\d+\)/);
+  assert.equal(result.code, 0, `${result.stdout}${result.stderr}`);
+  assert.match(result.stdout, /доказано манифестом 0/);
+  assert.match(result.stdout, /доказательство не проверено/);
+  assert.doesNotMatch(result.stdout, /Проблемы \(\d+\)/);
+});
+
+test("CLI rejects invalid arguments before a browser starts", async () => {
+  const missingDir = join(await proofDir(), "absent");
+  const cases: readonly [string[], RegExp][] = [
+    [
+      [
+        "capture",
+        "--scenario",
+        "unknown-screen",
+        "--label",
+        "t-neg",
+        "--no-registry",
+      ],
+      /Неизвестные сценарии/,
+    ],
+    [
+      [
+        "capture",
+        "--scenario",
+        "login",
+        "--label",
+        "bad/label",
+        "--no-registry",
+      ],
+      /Invalid label/,
+    ],
+    [
+      [
+        "capture",
+        "--scenario",
+        "login",
+        "--viewports",
+        "tablet",
+        "--label",
+        "t-neg",
+      ],
+      /Unknown viewport/,
+    ],
+    [["coverage", "--run", missingDir], /ENOENT/],
+  ];
+  for (const [args, expected] of cases) {
+    const result = runCli(args);
+    assert.equal(result.code, 1, `${args.join(" ")}: ${result.stderr}`);
+    assert.match(`${result.stdout}${result.stderr}`, expected);
+  }
 });
