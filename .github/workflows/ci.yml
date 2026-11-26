@@ -224,11 +224,15 @@ jobs:
                           # (prettier) and match no other component; they
                           # ride the ci component (full run, rare changes).
                           - .opencode/**
-                          # Root dev-contour task runner with the env
-                          # guards (incident uwuwu#1449): guard edits must
-                          # get a full run, never a legal skip (#791
-                          # class); same treatment as rust-toolchain.toml
-                          # (#969).
+                          # Root dev-contour task runner (incident
+                          # uwuwu#1449): Makefile edits must get a full
+                          # run, never a legal skip (#791 class); same
+                          # treatment as rust-toolchain.toml (#969). The
+                          # guard library itself (scripts/dev-guards.sh)
+                          # rides the python component below: Python
+                          # tests execute its decision-table regression
+                          # (scripts/tests/test_dev_guards.py), Lint runs
+                          # shellcheck/shfmt over it.
                           - Makefile
 
     version:

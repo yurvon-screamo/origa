@@ -36,15 +36,40 @@
 trailbase_is_local() {
 	_tb_val=$1
 	[ -n "$_tb_val" ] || return 1
+	# Absolute http(s) URL only: the client concatenates the base with API
+	# paths (trailbase_client.rs), so a schemeless value ("localhost:4000")
+	# parses as scheme "localhost:" and every fetch fails — a plausible
+	# typo must not pass a strict guard silently. Bare IPv6 authorities are
+	# malformed the same way (URL spec requires brackets).
+	case $_tb_val in
+	https://* | http://*) ;;
+	*) return 1 ;;
+	esac
 	# The decision is made on the URL AUTHORITY only (after the scheme, up
 	# to the first /?#): anything after the authority is data, not the host
 	# — a query/fragment containing "[::1]" or "localhost" must not flip
 	# the verdict.
-	_tb_auth=$(printf '%s\n' "$_tb_val" | sed -e 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' -e 's#[/?#].*$##')
-	# exact authority forms only: loopback host, optionally :port
+	_tb_auth=${_tb_val#*://}
+	_tb_auth=${_tb_auth%%[/?#]*}
 	case $_tb_auth in
-	localhost | localhost:* | 127.0.0.1 | 127.0.0.1:* | ::1 | "[::1]" | "[::1]":*) return 0 ;;
+	*@*) return 1 ;; # userinfo: credentials are not a host
+	esac
+	# exact authority forms only: loopback host, optionally a numeric port
+	case $_tb_auth in
+	localhost | 127.0.0.1 | "[::1]") return 0 ;;
+	localhost:* | 127.0.0.1:*)
+		_tb_port=${_tb_auth#*:}
+		;;
+	"[::1]":*)
+		# strip through the closing bracket + port colon — the IPv6 colons
+		# inside the brackets are part of the host
+		_tb_port=${_tb_auth#*]:}
+		;;
 	*) return 1 ;;
+	esac
+	case $_tb_port in
+	'' | *[!0-9]*) return 1 ;; # empty or non-numeric tail is not a port
+	*) return 0 ;;
 	esac
 }
 
@@ -105,9 +130,22 @@ listener_verdict() {
 
 GUARD_REPO_ROOT=${GUARD_REPO_ROOT:-$(pwd -P)}
 
-# The port trunk serve binds (origa_ui/Trunk.toml [serve]); trunk does not
-# read the harness's E2E_APP_PORT override — keep in sync with Trunk.toml.
-SERVE_UI_PORT=1420
+# The port trunk serve binds — parsed from origa_ui/Trunk.toml [serve] (the
+# single source; trunk does not read the harness's E2E_APP_PORT override).
+# Falls back to the known default when the file is unreadable or moved.
+serve_ui_port_from() {
+	_spf_val=$(sed -n '/^\[serve\]/,/^\[/p' "$1" 2>/dev/null | grep -o 'port[[:space:]]*=[[:space:]]*[0-9][0-9]*' | grep -o '[0-9][0-9]*' | head -n 1)
+	if [ -n "$_spf_val" ]; then
+		printf '%s\n' "$_spf_val"
+	else
+		printf '1420\n'
+	fi
+	return 0
+}
+
+serve_ui_port() {
+	serve_ui_port_from "$GUARD_REPO_ROOT/origa_ui/Trunk.toml"
+}
 
 guard_fail() {
 	printf 'GUARD FAIL: %s\n' "$1" >&2
@@ -137,6 +175,24 @@ is_inside_repo() {
 	"$GUARD_REPO_ROOT" | "$GUARD_REPO_ROOT"/*) return 0 ;;
 	*) return 1 ;;
 	esac
+}
+
+# Why the port pass is OK — attributed facts only (env-check OK lines must
+# not claim more than the guard knows; an unattributable listener is the
+# documented silence case, reported as such).
+listener_ok_note() { # $1 port, $2 role
+	_ln_first=$(list_listeners "$1" | head -n 1)
+	_ln_pid=${_ln_first%%|*}
+	_ln_cwd=${_ln_first#*|}
+	if [ -n "$_ln_cwd" ] && is_inside_repo "$_ln_cwd"; then
+		case $2 in
+		app) printf 'свой сервер (pid=%s), TrailBase верифицирован loopback — легитимный reuse\n' "$_ln_pid" ;;
+		trailbase) printf 'свой fixture (pid=%s) — харнес сам убирает stale-инстанс\n' "$_ln_pid" ;;
+		cdn) printf 'свой слушатель (pid=%s) — раздача корпуса\n' "$_ln_pid" ;;
+		esac
+	else
+		printf 'слушатель не атрибутируем — гард молчит (паритет с префлайтом)\n'
+	fi
 }
 
 # The TRAILBASE_URL env verdict of a running process (its bundle is what a
@@ -205,11 +261,14 @@ check_listeners() {
 		if ! listener_verdict "$_cl_scope" "$_cl_role" "$_cl_own" "$_cl_env"; then
 			printf 'GUARD FAIL: %s занят (pid=%s, cwd=%s) — %s\n' \
 				"$_cl_label" "$_cl_pid" "${_cl_cwd:-?}" "$GUARD_WHY" >&2
-			printf '  Remedy: остановите процесс (kill %s)' "$_cl_pid" >&2
 			if [ "$_cl_scope" = "e2e" ]; then
-				printf ' или уведите цели: E2E_APP_PORT/E2E_TRAILBASE_PORT/E2E_CDN_PORT=<свободный>' >&2
+				# the port override first — killing a stranger's process (e.g.
+				# the machine's llama-server) is the last resort, shots-preflight
+				# precedent (end2end/shots/preflight.ts)
+				printf '  Remedy: уведите цели — E2E_APP_PORT/E2E_TRAILBASE_PORT/E2E_CDN_PORT=<свободный> — или остановите процесс (kill %s)\n' "$_cl_pid" >&2
+			else
+				printf '  Remedy: остановите процесс (kill %s)\n' "$_cl_pid" >&2
 			fi
-			printf '\n' >&2
 			return 1
 		fi
 	done <<_GUARD_LISTENERS
@@ -290,7 +349,7 @@ guard_e2e_env() {
 # "Пропуск вместо паники"), the run just deserves a loud notice.
 warn_corpus() {
 	if ! corpus_dir >/dev/null; then
-		guard_warn "локальный корпус не найден ($ORIGA_CDN_DIR / ~/origa-cdn) — corpus-тесты скипнутся ([skip] маркеры), контент пойдёт с прод-CDN.
+		guard_warn "локальный корпус не найден (${ORIGA_CDN_DIR:-не задана} / ~/origa-cdn) — corpus-тесты скипнутся ([skip] маркеры), контент пойдёт с прод-CDN.
   Remedy (сид один раз на машину): aws s3 sync s3://<bucket> ~/origa-cdn --profile origa  (ранбук \"Tests in a Fresh Worktree\")."
 	fi
 }
@@ -301,10 +360,10 @@ guard_serve_ui() {
 	guard_trailbase
 	guard_cdn_env
 	guard_trunk
-	# trunk serve binds the port pinned in origa_ui/Trunk.toml [serve]; it
-	# does NOT read the harness's E2E_APP_PORT override — keep in sync with
-	# Trunk.toml.
-	check_listeners serve-ui app "$SERVE_UI_PORT" "порт serve-ui $SERVE_UI_PORT" || return 1
+	# trunk serve binds the port parsed from origa_ui/Trunk.toml [serve]; it
+	# does NOT read the harness's E2E_APP_PORT override
+	_sp_port=$(serve_ui_port)
+	check_listeners serve-ui app "$_sp_port" "порт serve-ui $_sp_port" || return 1
 }
 
 # e2e: fixture creds + artifacts + tooling + harness ports.
@@ -390,21 +449,22 @@ env_check() {
 	if [ -n "$_ec_corpus" ]; then
 		printf 'OK   корпус: %s\n' "$_ec_corpus"
 	else
-		guard_warn "корпус не найден ($ORIGA_CDN_DIR / ~/origa-cdn) — corpus-тесты скипнутся, e2e возьмёт контент с прод-CDN; сид: aws s3 sync s3://<bucket> ~/origa-cdn --profile origa"
+		guard_warn "корпус не найден (${ORIGA_CDN_DIR:-не задана} / ~/origa-cdn) — corpus-тесты скипнутся, e2e возьмёт контент с прод-CDN; сид: aws s3 sync s3://<bucket> ~/origa-cdn --profile origa"
 	fi
 
 	# ports: serve-ui binds its own pinned port (any listener is a hole),
 	# the e2e harness ports follow the stranger/own-env verdicts
-	if [ -n "$(list_listeners "$SERVE_UI_PORT")" ]; then
+	_sp_port=$(serve_ui_port)
+	if [ -n "$(list_listeners "$_sp_port")" ]; then
 		_ec_holes=$((_ec_holes + 1))
-		check_listeners serve-ui app "$SERVE_UI_PORT" "порт serve-ui $SERVE_UI_PORT" || true
+		check_listeners serve-ui app "$_sp_port" "порт serve-ui $_sp_port" || true
 	else
-		printf 'OK   порт serve-ui %s свободен\n' "$SERVE_UI_PORT"
+		printf 'OK   порт serve-ui %s свободен\n' "$_sp_port"
 	fi
-	if [ "${E2E_APP_PORT:-1420}" != "$SERVE_UI_PORT" ]; then
+	if [ "${E2E_APP_PORT:-1420}" != "$_sp_port" ]; then
 		if [ -n "$(list_listeners "${E2E_APP_PORT:-1420}")" ]; then
 			if check_listeners e2e app "${E2E_APP_PORT:-1420}" "порт e2e-приложения ${E2E_APP_PORT:-1420}"; then
-				printf 'OK   порт e2e-приложения %s: свой сервер с loopback-TrailBase (легитимный reuse)\n' "${E2E_APP_PORT:-1420}"
+				printf 'OK   порт e2e-приложения %s: %s\n' "${E2E_APP_PORT:-1420}" "$(listener_ok_note "${E2E_APP_PORT:-1420}" app)"
 			else
 				_ec_holes=$((_ec_holes + 1))
 			fi
@@ -414,7 +474,7 @@ env_check() {
 	fi
 	if [ -n "$(list_listeners "${E2E_TRAILBASE_PORT:-4000}")" ]; then
 		if check_listeners e2e trailbase "${E2E_TRAILBASE_PORT:-4000}" "порт TrailBase ${E2E_TRAILBASE_PORT:-4000}"; then
-			printf 'OK   порт TrailBase %s: свой слушатель (харнес переиспользует/киллит stale fixture)\n' "${E2E_TRAILBASE_PORT:-4000}"
+			printf 'OK   порт TrailBase %s: %s\n' "${E2E_TRAILBASE_PORT:-4000}" "$(listener_ok_note "${E2E_TRAILBASE_PORT:-4000}" trailbase)"
 		else
 			_ec_holes=$((_ec_holes + 1))
 		fi
@@ -426,7 +486,7 @@ env_check() {
 	elif [ -z "$(list_listeners "${E2E_CDN_PORT:-8080}")" ]; then
 		printf 'OK   порт CDN %s свободен\n' "${E2E_CDN_PORT:-8080}"
 	elif check_listeners e2e cdn "${E2E_CDN_PORT:-8080}" "порт CDN ${E2E_CDN_PORT:-8080}"; then
-		printf 'OK   порт CDN %s: свой слушатель (раздача корпуса)\n' "${E2E_CDN_PORT:-8080}"
+		printf 'OK   порт CDN %s: %s\n' "${E2E_CDN_PORT:-8080}" "$(listener_ok_note "${E2E_CDN_PORT:-8080}" cdn)"
 	else
 		_ec_holes=$((_ec_holes + 1))
 	fi

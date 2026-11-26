@@ -49,10 +49,10 @@ ok "tb loopback localhost" trailbase_is_local "http://localhost:4000"
 ok "tb loopback 127.0.0.1" trailbase_is_local "http://127.0.0.1:4000"
 ok "tb loopback ipv6 bracket" trailbase_is_local "http://[::1]:4000"
 ok "tb loopback ipv6 bracket + path" trailbase_is_local "http://[::1]:4000/"
-ok "tb loopback bare ipv6 authority" trailbase_is_local "::1"
 ok "tb loopback no port" trailbase_is_local "http://localhost"
+ok "tb loopback 127.0.0.1 no port" trailbase_is_local "http://127.0.0.1"
 ok "tb loopback trailing slash" trailbase_is_local "http://127.0.0.1:4000/"
-ok "tb loopback schemeless" trailbase_is_local "localhost:4000"
+ok "tb loopback https scheme" trailbase_is_local "https://localhost:4000"
 ko "tb empty" trailbase_is_local ""
 ko "tb prod host (the incident value)" trailbase_is_local "https://app.origa.uwuwu.net"
 ko "tb prod cdn host" trailbase_is_local "https://s3.origa.uwuwu.net"
@@ -64,6 +64,18 @@ ko "tb prod + bracketed ipv6 in query" trailbase_is_local "https://app.origa.uwu
 ko "tb bracketed ipv6 in fragment" trailbase_is_local "/#[::1]"
 ko "tb bracketed localhost in path" trailbase_is_local "/[localhost]"
 ko "tb bracketed loopback ip in path" trailbase_is_local "/x[127.0.0.1]"
+# review round 2: userinfo — the host is what follows the @, a loopback
+# userinfo must not flip the verdict
+ko "tb userinfo on prod (loopback creds)" trailbase_is_local "https://127.0.0.1:1@app.origa.uwuwu.net"
+ko "tb userinfo loopback@loopback" trailbase_is_local "http://localhost@localhost:4000"
+# review round 2 (low 1): absolute URL required — the client concatenates
+# the base with API paths, so a schemeless value yields broken fetches
+ko "tb schemeless (localhost:4000)" trailbase_is_local "localhost:4000"
+ko "tb bare ipv6 authority" trailbase_is_local "::1"
+ko "tb unbracketed ipv6 with port" trailbase_is_local "http://::1:4000"
+ko "tb empty port" trailbase_is_local "http://localhost:"
+ko "tb non-numeric port" trailbase_is_local "http://localhost:abc"
+ko "tb port with garbage tail" trailbase_is_local "http://localhost:1:2"
 
 # ---- landing base: L1 pair contract ----
 ok "landing app base alone" landing_base_present "https://app.origa.uwuwu.net" "" ""
@@ -146,6 +158,17 @@ eq "creds from .env" "0" "$(
 printf 'ORIGA_ADMIN_PASSWORD=\n' >"$_tmp2/.env"
 ko "creds empty value refuses" creds_resolve "$_tmp2"
 rm -rf "$_tmp2"
+
+# ---- serve-ui port: parsed from origa_ui/Trunk.toml [serve] (L2: no hand-copied sync point) ----
+_tmp3=$(mktemp -d)
+printf '[build]\ntarget = "x"\nport = 99\n\n[serve]\nport = 8081\nopen = false\n' >"$_tmp3/Trunk.toml"
+eq "serve port from [serve], [build] port ignored" "8081" "$(serve_ui_port_from "$_tmp3/Trunk.toml")"
+printf '[serve]\nport = 1420\n' >"$_tmp3/Trunk.toml"
+eq "serve port plain" "1420" "$(serve_ui_port_from "$_tmp3/Trunk.toml")"
+eq "serve port missing file falls back" "1420" "$(serve_ui_port_from "$_tmp3/nope.toml")"
+printf 'garbage content\n' >"$_tmp3/Trunk.toml"
+eq "serve port garbage falls back" "1420" "$(serve_ui_port_from "$_tmp3/Trunk.toml")"
+rm -rf "$_tmp3"
 
 printf '\n%d passed, %d failed\n' "$_pass" "$_fail"
 [ "$_fail" -eq 0 ]
