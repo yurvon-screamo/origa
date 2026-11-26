@@ -142,7 +142,7 @@ tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-tts = "0.1"
 # Version MUST track the `tts` dep of tauri-plugin-tts (currently 0.26.x):
-# the Linux availability probe must exercise the exact same engine init the
+# the availability probe must exercise the exact same engine init the
 # plugin performs. Bump together with tauri-plugin-tts.
 tts = "0.26"
 tauri-plugin-deep-link = "2"
@@ -283,4 +283,11 @@ codegen-units = 16
 debug = "line-tables-only"
 
 [profile.dev.package."*"]
+# Faster test/E2E runtime; one-time cost: full dep rebuild on profile change
+# (sccache/GH caches absorb it). Generic-heavy UI paths gain less (cargo book
+# "Overrides and generics"). 23.11: 2 → 1 — O2-компиляция депов оказалась
+# слишком агрессивной по времени сборки (proc-macro цепочки холодного
+# ворктри компилируются однопоточно, 2-3× дороже на LLVM-пассах; O1
+# сохраняет большую часть runtime-прироста — инцидент-чат 23.11).
 debug = false
+opt-level = 1

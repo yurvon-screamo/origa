@@ -545,7 +545,7 @@ fn collect_duolingo_metas(base_dir: &Path, meta_list: &mut Vec<WellKnownMeta>) {
             // module's.
             let level = data.level.trim().to_string();
             if !matches!(level.as_str(), "N5" | "N4" | "N3") {
-                eprintln!(
+                println!(
                     "cargo:warning=Skipping duolingo set: invalid level {:?} for duolingo/{parent_name}/{stem}",
                     level
                 );

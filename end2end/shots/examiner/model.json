@@ -67,6 +67,12 @@
     "lesson-acquaintance-kanji:kanji-presentation": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
+    "lesson-acquaintance-word:word-presentation": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "lesson-acquaintance-word:word-training-audio-front": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
     "lesson-counter-pack:pack-answer": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
@@ -266,6 +272,12 @@
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "onboarding-import-progress:scoring": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "phrase-dash-run:lesson-phrase-question-clean": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "phrase-dash-run:phrases-list-clean": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "token-popup:token-popup-report": {

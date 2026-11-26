@@ -11,6 +11,7 @@ import { jftCardScenario } from "./jft-card.ts";
 import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
+import { lessonAcquaintanceWordScenario } from "./lesson-acquaintance-word.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
 import { lessonExampleRecallScenario } from "./lesson-example-recall.ts";
 import { lessonExampleScenario } from "./lesson-example.ts";
@@ -19,6 +20,7 @@ import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { onboardingImportProgressScenario } from "./onboarding-import-progress.ts";
+import { phraseDashRunScenario } from "./phrase-dash-run.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 import { wordsGridScenario } from "./words-grid.ts";
@@ -46,6 +48,7 @@ export const implementations: Record<string, ShotScenario> = {
   [jftCardScenario.id]: jftCardScenario,
   [lessonAcquaintanceGrammarScenario.id]: lessonAcquaintanceGrammarScenario,
   [lessonAcquaintanceKanjiScenario.id]: lessonAcquaintanceKanjiScenario,
+  [lessonAcquaintanceWordScenario.id]: lessonAcquaintanceWordScenario,
   [lessonUnificationScenario.id]: lessonUnificationScenario,
   [lessonReviewBodyScenario.id]: lessonReviewBodyScenario,
   [lessonReadingQuizScenario.id]: lessonReadingQuizScenario,
@@ -55,6 +58,7 @@ export const implementations: Record<string, ShotScenario> = {
   [countersDetailScenario.id]: countersDetailScenario,
   [wordsGridScenario.id]: wordsGridScenario,
   [onboardingImportProgressScenario.id]: onboardingImportProgressScenario,
+  [phraseDashRunScenario.id]: phraseDashRunScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

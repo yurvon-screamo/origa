@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories={{categories}}
+Exec={{exec}} %u
+StartupWMClass={{exec}}
+Icon={{icon}}
+Name={{name}}
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/origa

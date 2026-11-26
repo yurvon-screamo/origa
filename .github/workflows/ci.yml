@@ -220,10 +220,26 @@ jobs:
                           - translator/**
                       ci:
                           - .github/**
+                          # The toolchain pin: a bump-PR touching only this
+                          # file must force the full matrix (Lint, clippy,
+                          # macOS/iOS checks, android smoke, e2e) on the new
+                          # toolchain — that run is the bump protocol's
+                          # independent proof (see rust-toolchain.toml).
+                          - rust-toolchain.toml
                           # Factory TS sources are qlty formatter targets
                           # (prettier) and match no other component; they
                           # ride the ci component (full run, rare changes).
                           - .opencode/**
+                          # Root dev-contour task runner (incident
+                          # uwuwu#1449): Makefile edits must get a full
+                          # run, never a legal skip (#791 class); same
+                          # treatment as rust-toolchain.toml (#969). The
+                          # guard library itself (scripts/dev-guards.sh)
+                          # rides the python component below: Python
+                          # tests execute its decision-table regression
+                          # (scripts/tests/test_dev_guards.py), Lint runs
+                          # shellcheck/shfmt over it.
+                          - Makefile
 
     version:
         name: Version
@@ -629,6 +645,27 @@ jobs:
                   targets: wasm32-unknown-unknown
                   shared-key: origa-ci-v2
                   save-if: false
+
+            # Corpus-less half of the skip contract (ADR-083): this job's only
+            # corpus seeding is the artifact unpack below, so this step always
+            # runs the absent branch — fixtures probe, skip, early-return. A
+            # regression back to unwrap()/expect() on a corpus fixture turns
+            # it red. The empty override is the canonical unset (ADR-024,
+            # unit-pinned in corpus.rs), so resolution falls back to
+            # ~/origa-cdn, which never exists on a fresh runner —
+            # deterministic regardless of step order. Exit code is the whole
+            # assert: skip markers are deliberately not grepped (ADR-083:
+            # markers are visibility, not gates).
+            - name: Run tests (corpus-less)
+              env:
+                  ORIGA_CDN_DIR: ""
+              # --no-fail-fast per the #933 pin: uniform with both suites.
+              # With a single lib test binary it cannot hide a second suite —
+              # the flag is inert here, but the no-fail-fast meta-test pins
+              # every cargo test step to either the flag or the per-job
+              # allowlist (test must not be allowlisted: it also hosts the
+              # multi-binary workspace suite).
+              run: cargo test -p origa --lib --no-fail-fast
 
             - name: Download CDN artifact
               uses: actions/download-artifact@v8
@@ -1364,7 +1401,7 @@ jobs:
                       ;;
                     profile-sync)
                       npx playwright test --project=bdd --retries=1 \
-                        --grep "features/(profile|sync|auth)\.feature\.spec\.js"
+                        --grep "features/(profile|sync|auth|oauth_deep_link_routing)\.feature\.spec\.js"
                       ;;
                     onboarding-lesson)
                       npx playwright test --project=bdd --retries=1 \

@@ -47,8 +47,7 @@ Playwright auto-manages all infrastructure — no manual setup needed.
 | CDN (static files) | 8080 | `playwright.config.ts` webServer | `npx serve <resolved corpus dir>` ($ORIGA_CDN_DIR or ~/origa-cdn) |
 | App (trunk/wasm) | 1420 | `playwright.config.ts` webServer | `trunk serve` or `npx serve` |
 
-**Port overrides** — shell env, not `.env` (the ports resolve at config
-load, before the dotenv bootstrap runs); single source `shots/config.ts`:
+**Port overrides** — shell env, not `.env` (the ports resolve at config load, before the dotenv bootstrap runs); single source `shots/config.ts`:
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -61,6 +60,8 @@ Parallel checkouts on one machine each pick their own trio; the
 stale-instance kill before a run is scoped to the configured TrailBase
 port on both posix and Windows, so a stranger's TrailBase on another
 port survives.
+
+**Production boundary (web contour):** local web development and e2e never talk to the production TrailBase (`app.origa.uwuwu.net`) — `trunk serve`, e2e and shots are in scope. The production CDN (`s3.origa.uwuwu.net`) is read-only and remains the documented local content source. `make serve-ui` / `make e2e` (root `Makefile`, `scripts/dev-guards.sh`) enforce this mechanically before servers start; the harness itself keeps the stack off production by construction (derived URLs, webServer env injection), and the § Faster local boots warning below is the same rule scoped to that recipe. Incident uwuwu#1449: a manually started `trunk serve` without the env silently baked the production TrailBase into the bundle.
 
 **Just run:** `npx playwright test` — everything starts automatically.
 

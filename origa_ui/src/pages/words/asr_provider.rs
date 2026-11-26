@@ -126,8 +126,17 @@ mod wasm_tests {
 
     use super::*;
     use crate::core::log_capture;
-    use crate::core::tauri_mock::{TauriMock, all_available_caps, rejected_with};
+    use crate::core::tauri_mock::{
+        TauriMock, UserAgentOverride, all_available_caps, rejected_with,
+    };
     use tracing::Level;
+
+    // Android WebView user agent — pins platform_name() to a plugin backend:
+    // since uwuwu#1098 plugin-less platforms skip the capabilities query
+    // entirely, so the native-failure escalations under test are only
+    // reachable there.
+    const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/537.36 \
+         (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 
     /// Caps resolve available; every downstream command rejects with the
     /// given code/message (the exact rejection per test).
@@ -148,6 +157,8 @@ mod wasm_tests {
     async fn file_asr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
         device_ai::reset_cached_capabilities();
+        // uwuwu#1098: pin a plugin platform — see the module docs above.
+        let _ua = UserAgentOverride::install(ANDROID_UA);
         let _mock = plugin_mock("SPEECH_RECOGNITION_FAILED", "file path broken");
 
         let result = recognize_file_via_device_ai("YXVkaW8=").await;
@@ -173,6 +184,8 @@ mod wasm_tests {
     async fn live_asr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
         device_ai::reset_cached_capabilities();
+        // uwuwu#1098: pin a plugin platform — see the module docs above.
+        let _ua = UserAgentOverride::install(ANDROID_UA);
         let _mock = plugin_mock("SPEECH_RECOGNITION_FAILED", "live path broken");
 
         let result = recognize_live_via_device_ai().await;
@@ -198,6 +211,8 @@ mod wasm_tests {
     async fn live_asr_no_speech_stays_info_and_routes_to_empty_string() {
         log_capture::install();
         device_ai::reset_cached_capabilities();
+        // uwuwu#1098: pin a plugin platform — see the module docs above.
+        let _ua = UserAgentOverride::install(ANDROID_UA);
         let _mock = plugin_mock("NO_SPEECH_DETECTED", "No speech detected");
 
         let result = recognize_live_via_device_ai().await;

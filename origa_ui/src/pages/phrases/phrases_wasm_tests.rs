@@ -85,6 +85,123 @@ async fn phrase_card_item_without_store_renders_skeleton_and_status() {
     );
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// #914: dash-run artifacts must not reach the rendered card
+// ═══════════════════════════════════════════════════════════════════════
+
+/// The live prod instance behind #914 (card 53/65, chunk p0024): the
+/// ──── run of U+2500 renders as a continuous line across the screen
+/// when it leaks through the load boundary into the UI.
+const DASH_RUN_CHUNK_JSON: &str = r#"[{"i":"00000000003YTM62ZWSHWQPHH5","x":"実は少し────","ru":"На самом деле, есть кое-что...","en":"Actually, there's a little something...","ko":"사실은 조금 있어요────","vi":"Thực ra là có chút..."}]"#;
+
+/// Offline tokenizer entry for one exact string — the same hygiene trick
+/// the lesson wasm tests use: TranslatorText settles through its
+/// precompute branch, no CDN dictionary fetch in a bare test env.
+fn install_phrase_precompute(text: &str) {
+    use origa::domain::{
+        PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+    };
+    install_precomputed_entry(
+        text,
+        PrecomputedEntry {
+            furigana_spans: vec![],
+            tokens: vec![PrecomputedToken {
+                surface: text.to_string(),
+                base: text.to_string(),
+                reading: text.to_string(),
+                pos: PartOfSpeech::Noun,
+            }],
+        },
+    );
+}
+
+/// Polls until the translator stops showing the dictionary loader and
+/// returns the card item's text content.
+async fn settled_item_text(wrapper: &web_sys::Element) -> String {
+    let item = wrapper
+        .query_selector("[data-testid=\"phrases-card-item\"]")
+        .unwrap()
+        .expect("phrase card item renders");
+    for _ in 0..10 {
+        crate::utils::yield_to_browser().await;
+        tick().await;
+        let loader = item.query_selector("[data-testid=\"translator-dict-loading\"]");
+        if loader.is_ok_and(|l| l.is_none()) {
+            return item.text_content().unwrap_or_default();
+        }
+    }
+    item.text_content().unwrap_or_default()
+}
+
+#[wasm_bindgen_test]
+async fn phrase_card_renders_prod_dash_run_artifact_clean() {
+    use origa::dictionary::phrase::{
+        cache_phrase_details, get_phrase_text, reset_phrase_data_for_test,
+    };
+    use origa::domain::{Card, PhraseCard, StudyCard};
+
+    // The dirty prod chunk installs through the real parse boundary —
+    // the sanitizer runs there, before any view can read the store.
+    reset_phrase_data_for_test();
+    cache_phrase_details(9140, DASH_RUN_CHUNK_JSON).expect("prod chunk installs");
+
+    let prod_phrase = ulid::Ulid::from_string("00000000003YTM62ZWSHWQPHH5").expect("prod ULID");
+    let question = get_phrase_text(&prod_phrase).expect("phrase detail in the store");
+    assert_eq!(
+        question, "実は少し",
+        "the dash run must be stripped at the load boundary, before any view"
+    );
+    install_phrase_precompute(&question);
+
+    let study_card = StudyCard::new(Card::Phrase(PhraseCard::new(prod_phrase)));
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, move || {
+        let trigger = RwSignal::new(0u32);
+        view! {
+            <PhraseCardItem
+                study_card=study_card.clone()
+                native_language=Signal::from(origa::domain::NativeLanguage::Russian)
+                known_kanji=HashSet::new()
+                on_toggle_favorite=Callback::new(|_| ())
+                on_mark_as_known=Callback::new(|_| ())
+                on_delete=Callback::new(|_| ())
+                is_deleting=Signal::from(false)
+                phrase_data_trigger=trigger
+            />
+        }
+        .into_any()
+    });
+
+    let text = settled_item_text(&wrapper).await;
+    assert!(
+        text.contains("実は少し"),
+        "the clean phrase text must render, got: {text:?}"
+    );
+    for dash in ['\u{2500}', '\u{2015}', '\u{2014}'] {
+        assert!(
+            !text.contains(dash),
+            "dash-run artifact leaked into the rendered card: {text:?}"
+        );
+    }
+
+    // The translation side carries the same artifact class in prod (ko
+    // runs are the most frequent) — the rendered meaning must be clean.
+    let meaning = wrapper
+        .query_selector("[data-testid=\"phrases-card-meaning\"]")
+        .unwrap()
+        .expect("meaning renders")
+        .text_content()
+        .unwrap_or_default();
+    assert!(
+        meaning.contains("На самом деле"),
+        "the ru translation must render, got: {meaning:?}"
+    );
+    assert!(
+        !meaning.contains(['\u{2500}', '\u{2015}', '\u{2014}']),
+        "dash-run artifact leaked into the rendered meaning: {meaning:?}"
+    );
+}
+
 #[wasm_bindgen_test]
 async fn phrase_card_item_delete_opens_confirm_modal() {
     let wrapper = create_wrapper();

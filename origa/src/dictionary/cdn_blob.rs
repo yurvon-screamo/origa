@@ -1,9 +1,11 @@
 //! Header contract for pre-parsed rkyv blobs deployed on the CDN.
 //!
 //! Layout: `MAGIC (4B) | schema_version (u32 LE) | source_sha256 (32B) |
-//! manifest_guard (32B)` followed by the raw rkyv payload. The same module is
-//! used by the offline builder (`utils build-cdn-rkyv`) and by the client
-//! loaders, so the wire format cannot drift between producer and consumer.
+//! manifest_guard (32B)` followed by the raw rkyv payload (optionally
+//! deflate-wrapped whole — see `DEFLATED_RKYV_SCHEMA_VERSION`). The same
+//! module is used by the offline builder (`utils build-cdn-rkyv`) and by
+//! the client loaders, so the wire format cannot drift between producer
+//! and consumer.
 //!
 //! `manifest_guard` binds a blob to the manifest hashes of its source files:
 //! `sha256(concat(hex_hash_1 .. hex_hash_N))` where the hashes are the ASCII
@@ -11,6 +13,12 @@
 //! fixed path order with no separators. A client that has fetched the remote
 //! manifest can recompute the guard from manifest entries alone (no source
 //! download) and detect a blob that is stale relative to its sources.
+//!
+//! Schema versions are per-family: a bump marks a payload-type change for
+//! ONE blob family, and only that family's blobs and readers move to the
+//! new value (uwuwu #1484). Unrelated families keep the global
+//! `SCHEMA_VERSION` — their blobs are not regenerated, so released clients
+//! keep reading them.
 //!
 //! Design decision: validation errors use a local `BlobFormatError` enum
 //! instead of joining the crate-wide `OrigaError`. A rejected blob is never
@@ -22,12 +30,23 @@ use sha2::{Digest, Sha256};
 /// Format magic. Blobs are validated against it before any parsing.
 pub const MAGIC: &[u8; 4] = b"ORFG";
 
-/// Version of the header/payload schema. Bump when the payload type changes
-/// in a way old clients cannot deserialize; they will fall back to the
-/// original text/JSON sources.
+/// Version of the header/payload schema for blobs that did not move to a
+/// per-family generation. Bump when a payload type changes in a way old
+/// clients cannot deserialize; they will fall back to the original
+/// text/JSON sources. A family that outgrows the global value gets its own
+/// constant instead of bumping this one — a global bump would force the
+/// builder to regenerate every blob and release clients to reject all of
+/// them at once.
 ///
 /// v2: `VocabularyInfo` gained `vi_*`/`ko_*` fields (KO/VI chunks shipped).
 pub const SCHEMA_VERSION: u32 = 2;
+
+/// Format generation for deflate-wrapped rkyv blobs (uwuwu #1484): the
+/// stored bytes are `deflate(build_blob(...))` of the whole blob — header
+/// included — so readers must inflate before `split_blob`. vocabulary and
+/// pitch index carry this schema; released clients reject the new blobs and
+/// fall back to their JSON sources until they update.
+pub const DEFLATED_RKYV_SCHEMA_VERSION: u32 = 3;
 
 pub const HEADER_LEN: usize = MAGIC.len() + 4 + 32 + 32;
 
@@ -39,6 +58,8 @@ pub enum BlobFormatError {
     BadMagic { expected: [u8; 4], actual: [u8; 4] },
     #[error("blob schema version {blob} != supported {supported}")]
     UnsupportedSchema { blob: u32, supported: u32 },
+    #[error("deflate stream unreadable: {reason}")]
+    Inflation { reason: String },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -80,7 +101,25 @@ pub fn build_blob(header: &BlobHeader, payload: &[u8]) -> Vec<u8> {
 }
 
 /// Validate the header and split the blob into `(header, payload)`.
+///
+/// Validates against the global `SCHEMA_VERSION` — the contract for every
+/// family that has not moved to its own generation. See
+/// [`split_blob_with_schema`] for per-family readers.
 pub fn split_blob(blob: &[u8]) -> Result<(BlobHeader, &[u8]), BlobFormatError> {
+    split_blob_with_schema(blob, SCHEMA_VERSION)
+}
+
+/// Validate the header against an explicit schema expectation and split the
+/// blob into `(header, payload)`.
+///
+/// Per-family readers (vocabulary, pitch) pass their generation constant so
+/// a blob of a foreign generation is rejected as `UnsupportedSchema` — the
+/// loader then purges the stale cache entry and refetches once instead of
+/// silently serving a format it cannot read.
+pub fn split_blob_with_schema(
+    blob: &[u8],
+    expected_schema: u32,
+) -> Result<(BlobHeader, &[u8]), BlobFormatError> {
     if blob.len() < HEADER_LEN {
         return Err(BlobFormatError::TooShort { len: blob.len() });
     }
@@ -93,10 +132,10 @@ pub fn split_blob(blob: &[u8]) -> Result<(BlobHeader, &[u8]), BlobFormatError> {
         });
     }
     let schema_version = u32::from_le_bytes([blob[4], blob[5], blob[6], blob[7]]);
-    if schema_version != SCHEMA_VERSION {
+    if schema_version != expected_schema {
         return Err(BlobFormatError::UnsupportedSchema {
             blob: schema_version,
-            supported: SCHEMA_VERSION,
+            supported: expected_schema,
         });
     }
     let mut source_sha256 = [0u8; 32];
@@ -225,6 +264,22 @@ mod tests {
         let error = split_blob(&blob).expect_err("future schema");
 
         assert!(matches!(error, BlobFormatError::UnsupportedSchema { .. }));
+    }
+
+    #[test]
+    fn split_blob_with_schema_accepts_per_family_generation() {
+        // Arrange: a blob of the deflated-rkyv family generation — the
+        // global-schema reader must reject it, the family reader accept it.
+        let mut header = sample_header();
+        header.schema_version = DEFLATED_RKYV_SCHEMA_VERSION;
+        let blob = build_blob(&header, b"payload");
+
+        // Act + Assert
+        assert!(split_blob(&blob).is_err());
+        let (parsed, payload) = split_blob_with_schema(&blob, DEFLATED_RKYV_SCHEMA_VERSION)
+            .expect("family reader accepts its generation");
+        assert_eq!(parsed, header);
+        assert_eq!(payload, b"payload");
     }
 
     #[test]

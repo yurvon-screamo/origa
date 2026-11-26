@@ -1,7 +1,7 @@
 # AGENTS.md — `origa_ui` crate
 
 Leptos 0.8 / WASM frontend for Origa (Japanese learning app). CSR mode only. Rust edition 2024.
-For full-app dev: `cd tauri && cargo tauri dev`. Frontend-only: `cd origa_ui && trunk serve`.
+For full-app dev: `cd tauri && cargo tauri dev`. Frontend-only: `cd origa_ui && trunk serve` — requires BOTH `ORIGA_CDN_BASE_URL` and a loopback `TRAILBASE_URL` (e.g. `http://127.0.0.1:4000`): without them build.rs silently bakes the production endpoints (ADR-020/023; incident uwuwu#1449 — a bare `trunk serve` hit prod TrailBase with writes). Prefer `make serve-ui` from the repo root — it checks the environment fail-closed (guards: `scripts/dev-guards.sh`) before starting trunk.
 
 ## Source Structure
 
@@ -141,8 +141,9 @@ ADR-029 and PR #441 for concrete cases.
 
 ```powershell
 $env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"  # REQUIRED
+$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # REQUIRED for serve — loopback only; a bare serve bakes the production TrailBase (ADR-020, incident uwuwu#1449)
 cd tauri && cargo tauri dev          # full app (recommended)
-cd origa_ui && trunk serve           # frontend only
+cd origa_ui && trunk serve           # frontend only — prefer `make serve-ui` from the repo root (env guards, fail-closed)
 ```
 
 ### `trunk serve` mutates `dist/` — rebuild before serving it statically

@@ -112,6 +112,8 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --check && cargo fmt
 ```
 
+Канонические make-цели dev-контура (Linux; `make env-check` / `check` / `test` / `serve-ui` / `serve-landing` / `e2e` / `shots` / `css-landing`) — те же команды под fail-closed env-гардами (`scripts/dev-guards.sh`): локальный serve/e2e не смотрит в прод-TrailBase, чужие слушатели портов и несобранное окружение свежего ворктри ловятся до старта серверов (`make env-check` — отчёт по окружению с remedy). Windows/PowerShell-рецепты выше остаются каноном desktop-контура.
+
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
 ### Сборка лендинга (`origa_landing`)
@@ -235,7 +237,7 @@ CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.
 Linux-каналы: `.deb` (Debian/Ubuntu) + `.rpm` (RHEL/Fedora) — оба с ин-апп self-updater (pkexec); Arch — AUR `origa-bin` (обновление через AUR helper, in-app check пропускается без dpkg/rpm). Flatpak убран (ADR-065, supersedes ADR-064), AppImage убран (ADR-064).
 
-**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `python` (scripts/**, translator/**), `ci` (.github, .opencode → полный прогон). `run_lint` покрывает все qlty-цели (доктрина ci.yml, инвариант #5): Lint = cargo fmt/clippy + qlty check (дельта, кросс-языковой линтер+форматтер гейт). Релизные теги и workflow_dispatch форсируют полный прогон. Docs-only PR скипает весь CI.
+**Path-based job filtering** (`ci.yml`, PR-only): джоба `changes` (dorny/paths-filter, SHA-pinned) превращает изменённые компоненты в per-job флаги `run_*`; джобы скипаются через `if: needs.changes.outputs.run_<job> == 'true'`. Компоненты: `core` (origa/**, Cargo.*, build_defaults.rs, .cargo/**, .dockerignore, .taurignore, lint-конфиги), `wasm` (origa_ui), `landing`, `tauri` (+tauri-plugin-aswebauth), `e2e` (end2end), `utils`, `tts` (tts/** → Lint), `python` (scripts/**, translator/**), `ci` (.github, .opencode, Makefile → полный прогон). `run_lint` покрывает все qlty-цели (доктрина ci.yml, инвариант #5): Lint = cargo fmt/clippy + qlty check (дельта, кросс-языковой линтер+форматтер гейт). Релизные теги и workflow_dispatch форсируют полный прогон. Docs-only PR скипает весь CI.
 
 Инварианты (нарушение = silent skip / дырявый gate; канон — доктрина в шапке ci.yml, номера совпадают):
 

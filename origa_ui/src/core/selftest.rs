@@ -12,6 +12,7 @@
 //! Mounted on Android only: other platforms never see the deep link, so the
 //! listener simply does not exist there (zero overhead, nothing to ignore).
 
+use gloo_timers::future::TimeoutFuture;
 use tracing::debug;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -35,6 +36,24 @@ const PROBE_IMAGE_B64: &str = "iVBORw0KGgoAAAANSUhEUgAAAUAAAAB4CAAAAACmpXQCAAAAI
 /// differently (`日本語` may come back as `日本 語` or with extras), but a
 /// result without any expected glyph is a failed probe, not a pass.
 const PROBE_EXPECTED_CHARS: &[char] = &['日', '本', '語'];
+
+/// Pull-recovery cadence. The pushed `deep-link://new-url` event can stall
+/// in the WebView delivery pipeline on warm (update-restarted) processes:
+/// the plugin's Kotlin channel reaches the host listener instantly (the
+/// `host received plugin channel event` JNI marker, task #1486) while the
+/// pushed event reaches JS minutes late or never, and the smoke budget
+/// expires red. `get_current_deep_link` commands are unaffected — the URL
+/// is available to pull the moment the intent lands (the getCurrent bisect
+/// in #1486), so a bounded poll turns the probe deterministic. The ticks
+/// are ordinary JS timers and every tick also exercises the WebView IPC
+/// the stalled push sits on. Same pull-over-push recovery the OAuth
+/// contour ships as `start_resume_polling` (ADR-010), scoped to selftest
+/// URLs.
+const PULL_TICK_MS: u32 = 1500;
+/// Bounded lifetime: covers the smoke script's selftest budget (120 s,
+/// `SELFTEST_TIMEOUT_S` in android_smoke.sh) with margin, then gives up —
+/// a probe-less user session stops ticking after two minutes.
+const PULL_TICKS: usize = 80;
 
 // One probe at a time — a repeated deep link must not stack concurrent
 // recognitions (the smoke script fires the link once, but a stray second
@@ -69,17 +88,25 @@ pub fn start_selftest_listener() {
         return;
     }
 
-    // Cold start: the deep-link plugin may hold the URL before this
-    // listener mounts (the smoke script fires the link right after the
-    // liveness checks, which can precede the WebView finishing setup).
+    // Pull-recovery poll (see PULL_TICK_MS): replaces the old one-shot
+    // cold-start poll — the URL can land (and the push can stall) at any
+    // point of the smoke budget, not only before the listener mounts.
+    // Stops on the first routed selftest URL; the pushed-event listener
+    // below keeps its own path.
     leptos::task::spawn_local(async move {
-        match invoke_with_args("get_current_deep_link", &JsValue::UNDEFINED).await {
-            Ok(url) => {
-                if let Some(url) = url.as_string() {
-                    route_selftest(&url);
-                }
-            },
-            Err(e) => debug!("selftest: cold-poll failed: {e}"),
+        for _ in 0..PULL_TICKS {
+            TimeoutFuture::new(PULL_TICK_MS).await;
+            match invoke_with_args("get_current_deep_link", &JsValue::UNDEFINED).await {
+                Ok(url) => {
+                    if let Some(url) = url.as_string()
+                        && parse_selftest_url(&url).is_some()
+                    {
+                        route_selftest(&url);
+                        return;
+                    }
+                },
+                Err(e) => debug!("selftest: pull-poll failed: {e}"),
+            }
         }
     });
 
@@ -173,6 +200,18 @@ fn report(marker: &str) {
 mod tests {
     use super::*;
     use rstest::rstest;
+
+    /// The pull-recovery poll must outlive the smoke script's selftest
+    /// budget: if the poll gives up before the script does, a stalled
+    /// push delivery (#1486) turns back into a red timeout.
+    #[test]
+    fn pull_poll_covers_the_smoke_budget() {
+        assert!(
+            PULL_TICKS as u32 * PULL_TICK_MS >= 120_000,
+            "poll lifetime {} ms is shorter than the smoke budget 120 s",
+            PULL_TICKS as u32 * PULL_TICK_MS
+        );
+    }
 
     /// The probe asset is embedded in the source file, and a silently
     /// truncated base64 decodes into a PNG whose data chunk fails the CRC —
