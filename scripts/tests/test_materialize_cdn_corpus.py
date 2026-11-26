@@ -16,16 +16,22 @@ from pathlib import Path
 
 import pytest
 
-from materialize_cdn_corpus import (
+from _cdn_materialize_io import (
     MaterializationError,
+    clean_staging,
     local_path,
-    materialize_sync_dir,
-    materialize_versioned_files,
+    staging_dir,
 )
+from materialize_cdn_corpus import materialize_sync_dir, materialize_versioned_files
 
 
 def digest(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def temp_files(corpus: Path) -> list[Path]:
+    """Temp files may live in any subdirectory, not just the corpus root."""
+    return [path for path in corpus.rglob(".materialize-*") if path.is_file()]
 
 
 class FakeStore:
@@ -79,7 +85,6 @@ def test_versioned_files_fetches_only_mismatches(tmp_path: Path) -> None:
         {"dictionary/kanji.json": b"prod-kanji", "grammar/grammar_v3.json": b"stale"},
     )
     kept_path = corpus / "dictionary/kanji.json"
-    before = kept_path.stat().st_mtime_ns
     os.utime(kept_path, ns=(1_000_000_000, 1_000_000_000))
     store = FakeStore(production)
 
@@ -92,7 +97,7 @@ def test_versioned_files_fetches_only_mismatches(tmp_path: Path) -> None:
     assert json.loads((corpus / "manifest.json").read_text(encoding="utf-8"))[
         "files"
     ] == {key: digest(value) for key, value in production.items()}
-    assert before > 0
+    assert (corpus / "grammar/grammar_v3.json").stat().st_mode & 0o777 == 0o644
 
 
 def test_sha_mismatch_keeps_good_copy_and_leaves_no_temp(tmp_path: Path) -> None:
@@ -106,8 +111,38 @@ def test_sha_mismatch_keeps_good_copy_and_leaves_no_temp(tmp_path: Path) -> None
         materialize_versioned_files(store, corpus, False)
 
     assert (corpus / "dictionary/kanji.json").read_bytes() == b"good"
-    assert list(corpus.glob(".materialize-*")) == []
+    assert temp_files(corpus) == []
     assert not (corpus / "manifest.json").exists()
+
+
+def test_interrupt_leaves_no_temp_outside_staging(tmp_path: Path) -> None:
+    corpus = make_corpus(tmp_path, {"dictionary/kanji.json": b"good"})
+
+    class InterruptStore(FakeStore):
+        def download(self, key: str, target: Path) -> str:
+            raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        materialize_versioned_files(
+            InterruptStore({"dictionary/kanji.json": b"new"}), corpus, False
+        )
+
+    assert temp_files(corpus) == []
+    staged_list = list(staging_dir(corpus).iterdir())
+    assert staged_list == []
+    assert (corpus / "dictionary/kanji.json").read_bytes() == b"good"
+
+
+def test_stale_staging_leftover_is_removed(tmp_path: Path) -> None:
+    corpus = make_corpus(tmp_path, {"dictionary/kanji.json": b"good"})
+    directory = staging_dir(corpus)
+    directory.mkdir()
+    leftover = directory / ".materialize-old"
+    leftover.write_bytes(b"partial")
+
+    clean_staging(corpus)
+
+    assert not leftover.exists()
 
 
 def test_dry_run_writes_nothing(tmp_path: Path) -> None:
@@ -125,13 +160,14 @@ def test_dry_run_writes_nothing(tmp_path: Path) -> None:
     assert not (corpus / "manifest.json").exists()
 
 
+@pytest.mark.parametrize("prefix", ["phrases/data", "phrases/data/"])
 def test_exact_sync_dir_compares_bytes_and_replaces_same_size_stale(
-    tmp_path: Path,
+    tmp_path: Path, prefix: str
 ) -> None:
     corpus = make_corpus(tmp_path, {"phrases/data/一.json": b"OLD11"})
     store = FakeStore({"phrases/data/一.json": b"NEW22"})
 
-    kept, fetched, stale = materialize_sync_dir(store, corpus, "phrases/data", False)
+    kept, fetched, stale = materialize_sync_dir(store, corpus, prefix, False)
 
     assert (kept, fetched, stale) == (0, 1, [])
     assert (corpus / "phrases/data/一.json").read_bytes() == b"NEW22"
@@ -197,10 +233,13 @@ def test_second_write_run_is_idempotent(tmp_path: Path) -> None:
 
     assert (kept, fetched, dir_kept, dir_fetched, stale) == (1, 0, 1, 0, [])
     assert store.calls == []
-    assert list(corpus.glob(".materialize-*")) == []
+    assert temp_files(corpus) == []
 
 
-@pytest.mark.parametrize("key", ["../outside", "/absolute", "dir\\file", "a/../b"])
+@pytest.mark.parametrize(
+    "key",
+    ["../outside", "/absolute", "dir\\file", "a/../b", "phrases/data/", "C:/evil.json"],
+)
 def test_unsafe_remote_key_is_rejected(key: str) -> None:
     with pytest.raises(MaterializationError, match="unsafe CDN key"):
         local_path(Path("/tmp/corpus"), key)

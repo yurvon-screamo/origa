@@ -285,7 +285,7 @@ def download_object(key: str, target: Path) -> str:
     ``target`` must be a fresh temporary path: the caller compares the digest
     and decides whether to replace a local file, so a partial download can
     never overwrite a good copy. Uses the same credential contract as the
-    upload path (env keys over the ``[origa]`` profile).
+    upload path (env keys over the ``[origa-t3]`` profile).
     """
     response = _s3_upload_client().get_object(Bucket=S3_BUCKET, Key=key)
     hasher = hashlib.sha256()
