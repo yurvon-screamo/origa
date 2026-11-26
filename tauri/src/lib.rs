@@ -267,6 +267,16 @@ fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     app.listen("deep-link://new-url", move |event: tauri::Event| {
         let payload = event.payload();
+        // Native-side receipt marker (ADR-063 bridge): tracing has no
+        // logcat backend, and the smoke contour needs a logcat-visible
+        // proof that the plugin's Kotlin channel event reached this
+        // listener — it bisects a stalled warm deep link between the
+        // Kotlin->Rust channel and the emit->WebView delivery (task
+        // #1486).
+        #[cfg(target_os = "android")]
+        crate::android_context::logcat_info(&format!(
+            "[deep-link] host received plugin channel event: {payload}"
+        ));
         tracing::info!(
             "[deep-link] received 'deep-link://new-url' event, payload: {}",
             payload

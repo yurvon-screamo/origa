@@ -61,6 +61,23 @@ until [ "$($ADB shell getprop sys.boot_completed 2>/dev/null | tr -d '[:space:]\
 	sleep 2
 done
 
+# Android 12+ freezes idle processes, including the WebView renderer
+# (com.google.android.webview:sandboxed_process0), after ~1 min without JS
+# work — even while the app's activity is on top. A deep link fired during
+# the frozen window is delivered by the OS onNewIntent path (the app
+# process is alive) but its emit into the page queues in the binder and
+# reaches JS only when something unfreezes the renderer — minutes later,
+# past the selftest budget (task #1486: live repro, 180s+ silence on AVD
+# origa_api35; the red run's event actually arrived ~3 min late). Fresh
+# installs stay green only because the fire lands inside the renderer's
+# busy init window. Disabling process caching for this emulator session
+# keeps the renderer unfrozen; warm deep links then arrive in seconds
+# (verified live: 100s idle -> delivery ~5s). The knob is idempotent and
+# persists until the emulator reboots; CI re-applies it every run.
+$ADB shell device_config put activity_manager max_cached_processes 0 >/dev/null 2>&1 || true
+[ "$($ADB shell device_config get activity_manager max_cached_processes 2>/dev/null | tr -d '[:space:]\r')" = "0" ] ||
+	fail "max_cached_processes knob did not apply - the cached-apps freezer will re-introduce warm deep-link stalls"
+
 echo "android-smoke: installing $APK"
 $ADB install -r "$APK" >/dev/null 2>&1 || fail "adb install failed for $APK"
 $ADB logcat -c
