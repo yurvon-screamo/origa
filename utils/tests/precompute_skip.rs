@@ -15,12 +15,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use origa::dictionary::cdn_blob::{BlobHeader, SCHEMA_VERSION, build_blob, sha256_bytes};
 use origa::dictionary::precompute_blob::{
-    PrecomputeBlob, deflate_blob, serialize_precompute_blob_to_rkyv,
+    PrecomputeBlob, access_precompute_deflated, deflate_blob, serialize_precompute_blob_to_rkyv,
 };
 use origa::domain::SUDACHIDICT_DIR;
 
 const FURIGANA_SOURCE: &str = "学生 がくせい\n";
-const GRAMMAR_SOURCE: &[u8] = br#"{"rules": []}"#;
+// A kanji-bearing rule: the builder must derive a real entry, not an empty map.
+const GRAMMAR_SOURCE: &[u8] = b"{\"rules\":[{\"title\":\"\xE5\xAD\xA6\xE7\x94\x9F\"}]}";
 const PHRASE_CHUNK_SOURCE: &str = r#"[{"x":"私は学生です。"}]"#;
 const SECOND_CHUNK_SOURCE: &str = r#"[{"x":"猫が好きです。"}]"#;
 const GRAMMAR_BLOB: &str = "grammar/grammar_precompute_v3.rkyv";
@@ -195,6 +196,32 @@ fn output_text(output: &Output) -> String {
     )
 }
 
+/// Decode the rebuilt CDN blob and check that the known key carries real
+/// tokenizer output. The exact reading is not pinned (the builder returns
+/// katakana for a hiragana fixture) — only non-empty tokens and furigana
+/// spans, so a builder that writes an empty map cannot pass.
+fn assert_rebuilt_entry(blob: &Path, key: &str) {
+    let deflated = fs::read(blob).unwrap_or_else(|e| panic!("reading {}: {e}", blob.display()));
+    let (view, _) = access_precompute_deflated(&deflated)
+        .unwrap_or_else(|e| panic!("decoding {}: {e:?}", blob.display()));
+    let entry = view
+        .entries
+        .get(key)
+        .unwrap_or_else(|| panic!("{key} missing in {}", blob.display()));
+    assert!(!entry.tokens.is_empty(), "{key}: no tokens in rebuilt blob");
+    assert!(
+        entry
+            .tokens
+            .iter()
+            .any(|token| !token.surface.as_str().is_empty() && !token.reading.as_str().is_empty()),
+        "{key}: tokens carry no surface/reading"
+    );
+    assert!(
+        !entry.furigana_spans.is_empty(),
+        "{key}: no furigana spans in rebuilt blob"
+    );
+}
+
 #[test]
 fn fresh_grammar_blob_skips_before_loading_the_tokenizer() {
     let corpus = Corpus::staged(BlobState::Fresh);
@@ -317,7 +344,7 @@ fn real_deploy_loop_skips_both_builders_without_a_dictionary() {
 }
 
 /// Acceptance criterion 2: a stale grammar blob is rebuilt by the real
-/// tokenizer, and the rebuilt blob is then recognised as fresh.
+/// tokenizer into a non-empty entry, and then recognised as fresh.
 #[test]
 fn stale_grammar_blob_is_regenerated_then_skipped() {
     let corpus = Corpus::staged(BlobState::Stale);
@@ -331,11 +358,12 @@ fn stale_grammar_blob_is_regenerated_then_skipped() {
     let rebuilt_text = output_text(&rebuilt);
     assert!(rebuilt.status.success(), "{rebuilt_text}");
     assert!(
-        rebuilt_text.contains("grammar precompute:") && rebuilt_text.contains("entries derived"),
-        "expected a real regeneration, got: {rebuilt_text}"
+        rebuilt_text.contains("1 entries derived"),
+        "expected a real entry to be derived, got: {rebuilt_text}"
     );
     let regenerated = fs::read(&blob).expect("regenerated blob");
     assert_ne!(staged, regenerated, "regeneration must overwrite the blob");
+    assert_rebuilt_entry(&blob, "学生");
 
     let again = corpus.build("build-grammar-precompute");
     let again_text = output_text(&again);
@@ -371,6 +399,7 @@ fn only_stale_phrase_chunks_are_rebuilt_then_skipped() {
     );
     let stale_after = fs::read(&stale).expect("rebuilt blob");
     assert_ne!(stale_before, stale_after, "stale blob must be overwritten");
+    assert_rebuilt_entry(&stale, "私は学生です。");
     assert_eq!(
         fresh_before,
         fs::read(&fresh).expect("fresh blob"),
@@ -410,6 +439,7 @@ fn missing_phrase_blob_is_built_then_skipped() {
         "expected a primary build, got: {built_text}"
     );
     let created = fs::read(&blob).expect("primary build must create the blob");
+    assert_rebuilt_entry(&blob, "私は学生です。");
 
     let again = corpus.build("build-phrase-precompute");
     let again_text = output_text(&again);
