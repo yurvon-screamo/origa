@@ -68,6 +68,10 @@ on:
                 required: false
             apple-mac-cert-password:
                 required: false
+            SCCACHE_S3_ACCESS_KEY_ID:
+                required: false
+            SCCACHE_S3_SECRET_KEY:
+                required: false
         outputs:
             ios-upload-status:
                 description: "iOS App Store Connect upload result: success|failure|skipped"
@@ -78,6 +82,10 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
+    # sccache S3 backend credentials for .github/actions/setup-rust (empty on
+    # dependabot PRs → the composite compiles uncached).
+    SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+    SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 
 # Apple builds are gated on:
 #   - Not Dependabot (no access to repo secrets)
@@ -179,8 +187,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: aarch64-apple-ios
-                  shared-key: origa-ios-v1
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
@@ -649,8 +655,6 @@ jobs:
               uses: ./.github/actions/setup-rust
               with:
                   targets: aarch64-apple-darwin,x86_64-apple-darwin
-                  shared-key: origa-macos-v1
-                  save-if: ${{ github.ref == 'refs/heads/master' }}
 
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend

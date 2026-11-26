@@ -182,7 +182,6 @@ def test_ttl_never_touches_master():
         # Legacy families must keep working.
         ("Linux-gradle-abc123", "Linux-gradle"),
         ("cdn-data-v15-abc123", "cdn-data-v15"),
-        ("v0-rust-a-b-c", "v0-rust-a"),
         # Live codeql key shape (…-<dbhash>-<lang>-<version>): rsplit("-", 3).
         (
             "codeql-overlay-base-database-1-d953d79b74456ce0-python-2.27.4",
