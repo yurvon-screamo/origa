@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from contextlib import closing
 from pathlib import Path
 from typing import Final
 
@@ -39,7 +40,7 @@ from _cdn_materialize_io import (
     S3ProductionStore,
     clean_staging,
     commit_batch,
-    fetch_batch,
+    iter_batch,
     local_path,
     sha256_file,
     write_manifest,
@@ -82,8 +83,8 @@ def materialize_versioned_files(
     fetched = len(pending) if dry_run else 0
     if not dry_run and pending:
         print(f"  downloading {len(pending)} versioned file(s)", flush=True)
-        results = fetch_batch(store, corpus, pending)
-        _, fetched = commit_batch(results, expected=files, exact=False)
+        with closing(iter_batch(store, corpus, pending)) as results:
+            _, fetched = commit_batch(results, expected=files, exact=False)
 
     if not dry_run:
         write_manifest(corpus, manifest)
@@ -116,8 +117,8 @@ def materialize_sync_dir(
     fetched = len(pending) if dry_run else 0
     if not dry_run and pending:
         print(f"  downloading {len(pending)} object(s) in {prefix}/", flush=True)
-        results = fetch_batch(store, corpus, pending)
-        batch_kept, fetched = commit_batch(results, expected=None, exact=exact)
+        with closing(iter_batch(store, corpus, pending)) as results:
+            batch_kept, fetched = commit_batch(results, expected=None, exact=exact)
         kept += batch_kept
 
     local_dir = corpus / prefix

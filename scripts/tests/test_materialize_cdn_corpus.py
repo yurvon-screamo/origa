@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pytest
 
+import _cdn_materialize_io
+import materialize_cdn_corpus
 from _cdn_materialize_io import (
     MaterializationError,
     clean_staging,
@@ -207,6 +209,7 @@ def test_sync_dir_fetches_missing_object_and_reports_local_only(tmp_path: Path) 
 
     assert (kept, fetched) == (1, 1)
     assert (corpus / "phrases/precomputed/一.bin").read_bytes() == b"5678"
+    assert (corpus / "phrases/precomputed/一.bin").stat().st_mode & 0o777 == 0o644
     data_kept, data_fetched, data_stale = materialize_sync_dir(
         store, corpus, "phrases/data", False
     )
@@ -243,3 +246,70 @@ def test_second_write_run_is_idempotent(tmp_path: Path) -> None:
 def test_unsafe_remote_key_is_rejected(key: str) -> None:
     with pytest.raises(MaterializationError, match="unsafe CDN key"):
         local_path(Path("/tmp/corpus"), key)
+
+
+def test_temp_files_helper_sees_nested_leftovers(tmp_path: Path) -> None:
+    corpus = make_corpus(tmp_path, {"dictionary/kanji.json": b"prod"})
+    nested = corpus / "dictionary" / ".materialize-nested"
+    nested.write_bytes(b"partial")
+
+    assert temp_files(corpus) == [nested]
+
+
+def test_write_on_verified_corpus_without_staging_dir(tmp_path: Path) -> None:
+    corpus = make_corpus(tmp_path, {"dictionary/kanji.json": b"prod"})
+    assert not staging_dir(corpus).exists()
+
+    kept, fetched = materialize_versioned_files(
+        FakeStore({"dictionary/kanji.json": b"prod"}), corpus, False
+    )
+
+    assert (kept, fetched) == (1, 0)
+    assert staging_dir(corpus).is_dir()
+    assert list(staging_dir(corpus).iterdir()) == []
+    assert (corpus / "manifest.json").is_file()
+
+
+def test_main_cleans_staging_leftovers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    corpus = make_corpus(tmp_path, {"dictionary/kanji.json": b"prod"})
+    store = FakeStore({"dictionary/kanji.json": b"prod"})
+    monkeypatch.setattr(
+        materialize_cdn_corpus._cdn_corpus, "corpus_dir", lambda: corpus
+    )
+    monkeypatch.setattr(materialize_cdn_corpus, "S3ProductionStore", lambda: store)
+    directory = staging_dir(corpus)
+    directory.mkdir()
+    leftover = directory / ".materialize-old"
+    leftover.write_bytes(b"partial")
+
+    assert materialize_cdn_corpus.main([]) == 0
+
+    assert not leftover.exists()
+    assert store.calls == []
+
+
+def test_failed_batch_keeps_earlier_commits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_cdn_materialize_io, "DOWNLOAD_WORKERS", 1)
+    production = {f"dictionary/{name}.json": name.encode() for name in "abcd"}
+    corpus = make_corpus(tmp_path, {})
+
+    class FailingStore(FakeStore):
+        def download(self, key: str, target: Path) -> str:
+            if key.endswith("c.json"):
+                raise ConnectionError("object failed")
+            return super().download(key, target)
+
+    with pytest.raises(ConnectionError):
+        materialize_versioned_files(FailingStore(production), corpus, False)
+
+    assert (corpus / "dictionary/a.json").is_file()
+    assert (corpus / "dictionary/b.json").is_file()
+    assert not (corpus / "dictionary/c.json").exists()
+    assert not (corpus / "dictionary/d.json").exists()
+    assert all(path.parent == staging_dir(corpus) for path in temp_files(corpus))
+    clean_staging(corpus)
+    assert temp_files(corpus) == []

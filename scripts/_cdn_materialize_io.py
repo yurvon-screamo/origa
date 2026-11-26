@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import tempfile
+from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Final, Protocol
@@ -20,6 +21,7 @@ import _cdn_s3
 
 CHUNK_SIZE: Final = 64 * 1024
 DOWNLOAD_WORKERS: Final = 8
+PROGRESS_INTERVAL: Final = 100
 STAGING_DIR_NAME: Final = ".materialize-tmp"
 
 
@@ -117,33 +119,56 @@ def commit_download(temp_path: Path, target: Path) -> None:
     os.replace(temp_path, target)
 
 
-def fetch_batch(
+def iter_batch(
     store: ProductionStore, corpus: Path, entries: list[tuple[str, Path]]
-) -> list[tuple[str, Path, Path, str]]:
-    """Download entries in a bounded pool; return (key, target, temp, digest)."""
+) -> Iterator[tuple[str, Path, Path, str]]:
+    """Yield (key, target, temp, digest) as downloads finish.
+
+    Closing the iterator early cancels queued downloads without waiting for
+    in-flight ones — Ctrl+C or a failed object stops the batch immediately.
+    Temp files from in-flight workers stay in staging until the next write
+    run; they are outside every sync dir, so no deploy can upload them.
+    """
     targets = dict(entries)
-    results: list[tuple[str, Path, Path, str]] = []
-    with ThreadPoolExecutor(max_workers=DOWNLOAD_WORKERS) as pool:
+    pool = ThreadPoolExecutor(max_workers=DOWNLOAD_WORKERS)
+    futures: dict[object, str] = {}
+    try:
         futures = {
             pool.submit(download_to_temp, store, corpus, key): key for key in targets
         }
-        for future in as_completed(futures):
-            key = futures[future]
-            temp_path, digest = future.result()
-            results.append((key, targets[key], temp_path, digest))
-    return results
+        done = 0
+        try:
+            for future in as_completed(futures):
+                key = futures[future]
+                temp_path, digest = future.result()
+                done += 1
+                if done % PROGRESS_INTERVAL == 0 or done == len(targets):
+                    print(f"    downloaded {done}/{len(targets)}", flush=True)
+                yield key, targets[key], temp_path, digest
+        except BaseException:
+            pool.shutdown(wait=False, cancel_futures=True)
+            raise
+        else:
+            pool.shutdown(wait=True)
+    finally:
+        for future in futures:
+            future.cancel()
 
 
 def commit_batch(
-    results: list[tuple[str, Path, Path, str]],
+    results: Iterable[tuple[str, Path, Path, str]],
     expected: dict[str, str] | None,
     exact: bool,
 ) -> tuple[int, int]:
-    """Verify digests, then commit; returns (kept, fetched)."""
+    """Verify and commit each download; returns (kept, fetched).
+
+    A failure keeps earlier commits and stops the rest of the batch — the
+    same fail-loud partial-progress contract as the sequential version.
+    """
     kept = 0
     fetched = 0
-    try:
-        for key, target, temp_path, digest in results:
+    for key, target, temp_path, digest in results:
+        try:
             if expected is not None and digest != expected[key]:
                 raise MaterializationError(
                     f"{key}: production sha256 {expected[key]}, downloaded {digest}"
@@ -153,8 +178,7 @@ def commit_batch(
                 continue
             commit_download(temp_path, target)
             fetched += 1
-    finally:
-        for _, _, temp_path, _ in results:
+        finally:
             temp_path.unlink(missing_ok=True)
     return kept, fetched
 
@@ -162,6 +186,7 @@ def commit_batch(
 def write_manifest(corpus: Path, manifest: dict[str, object]) -> None:
     """Keep the local manifest in step with the production target list."""
     payload = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    staging_dir(corpus).mkdir(parents=True, exist_ok=True)
     descriptor, name = tempfile.mkstemp(prefix=".materialize-", dir=staging_dir(corpus))
     os.close(descriptor)
     temp_path = Path(name)
