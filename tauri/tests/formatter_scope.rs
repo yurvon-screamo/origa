@@ -6,16 +6,35 @@
 //! future formatter run would add it again. CI enforces the scope through the
 //! prettier plugin's own `.prettierignore` (qlty triage does not apply to
 //! formatter runs), so the contract is pinned here with `include_str!` /
-//! `include_bytes!`: removing the ignore entry or reformatting the file makes
-//! these tests fail even when the file is absent from a PR's changed-file delta.
+//! `include_bytes!`: removing or neutralizing the ignore entry makes these
+//! tests fail even when the file is absent from a PR's changed-file delta.
 
 /// Active (non-blank, non-comment) lines of the repository-root
 /// `.prettierignore` — the file prettier itself honours in the CI gate.
+///
+/// The matcher below models only the syntax used here: a plain path prefix or
+/// one trailing `/**`. Trailing spaces and `\r` are trimmed; any other syntax
+/// fails loudly instead of silently disagreeing with prettier.
 fn active_patterns() -> Vec<&'static str> {
     include_str!("../../.prettierignore")
         .lines()
-        .map(str::trim)
+        .map(str::trim_end)
         .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .inspect(|&line| {
+            assert!(
+                !line.starts_with('!') && line == line.trim_start(),
+                "is_ignored does not model negation or leading whitespace in {line:?}; \
+                 extend the matcher or keep the entry in this form"
+            );
+            let stem = line.strip_suffix("/**").unwrap_or(line);
+            assert!(
+                !stem
+                    .chars()
+                    .any(|c| matches!(c, '*' | '?' | '[' | ']' | '{' | '}' | '!' | '\\')),
+                "is_ignored does not model {line:?}; \
+                 extend the matcher or keep the entry in this form"
+            );
+        })
         .collect()
 }
 
@@ -32,7 +51,7 @@ fn is_ignored(path: &str, patterns: &[&str]) -> bool {
 /// Representative files of the hand-edited tree: the XcodeGen spec and the two
 /// JSON resources that prettier can parse. All three must stay out of its scope.
 #[test]
-fn prettier_ignores_the_hand_maintained_tauri_gen_tree() {
+fn prettierignore_covers_the_hand_maintained_tauri_gen_tree() {
     let patterns = active_patterns();
 
     for path in [
@@ -42,19 +61,21 @@ fn prettier_ignores_the_hand_maintained_tauri_gen_tree() {
     ] {
         assert!(
             is_ignored(path, &patterns),
-            "{path} must be out of prettier scope (`.prettierignore` active patterns: {patterns:?})"
+            "{path} must be covered by `.prettierignore` (active patterns: {patterns:?})"
         );
     }
 }
 
-/// The exclude is for the scaffold directory only. A future blanket `tauri/**`
-/// would silently drop the formatter gate from the app config and capabilities,
-/// which are actively maintained and must stay checked.
+/// The exclude must stay scoped to the scaffold directory. `tauri.conf.json`
+/// and `tauri/package.json` are real targets of the formatter gate; a blanket
+/// `tauri/**` would silently drop them. `tauri/capabilities/**` is deliberately
+/// NOT a formatter target — `.qlty/qlty.toml` excludes it from all scans, and
+/// its generator-owned tabs are pinned by `tauri/tests/build_config.rs`.
 #[test]
 fn prettier_scope_does_not_swallow_other_tauri_configs() {
     let patterns = active_patterns();
 
-    for path in ["tauri/tauri.conf.json", "tauri/capabilities/default.json"] {
+    for path in ["tauri/tauri.conf.json", "tauri/package.json"] {
         assert!(
             !is_ignored(path, &patterns),
             "{path} must stay in prettier scope (`.prettierignore` active patterns: {patterns:?})"
@@ -63,19 +84,21 @@ fn prettier_scope_does_not_swallow_other_tauri_configs() {
 }
 
 /// Byte pin: `project.yml` is a hand-maintained XcodeGen spec whose last manual
-/// state ends without a newline. The baseline reformat of PR #904 added one;
-/// that format-only tail must not come back through a formatter run.
+/// state ends without a newline. The PR #904 baseline reformat added one; a
+/// format-only tail must not come back. The content may change by hand, so only
+/// non-emptiness and the absence of a trailing newline are pinned.
 #[test]
 fn project_yml_keeps_the_hand_maintained_no_trailing_newline() {
     let bytes = include_bytes!("../gen/apple/project.yml");
 
     assert!(
-        !bytes.ends_with(b"\n"),
-        "tauri/gen/apple/project.yml must end without a trailing newline \
-         (uwuwu#966 returned it to the last manual state; prettier added one in PR #904)"
+        !bytes.is_empty(),
+        "tauri/gen/apple/project.yml must not be empty"
     );
     assert!(
-        bytes.ends_with(b"libapp.a"),
-        "the pinned tail is the arm64 libapp.a outputFiles entry"
+        !bytes.ends_with(b"\n"),
+        "tauri/gen/apple/project.yml must not end with a newline \
+         (uwuwu#966 returned it to the last manual state; a format-only tail \
+         must not be added by a formatter or an editor)"
     );
 }
