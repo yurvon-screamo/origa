@@ -132,3 +132,20 @@ CI гоняет BDD пятью группами (`ci.yml`, job `e2e`), кажд�
 | E2E | `e2e-<ts>-<rand>@origa.local` | `e2e-test-password-123` | создаётся/удаётся на каждый тест |
 
 См. `end2end/AGENTS.md` (конвенции) и корневой `AGENTS.md` (общие правила).
+
+## Скриншот-тесты и инвентарь
+
+Инструмент — `end2end/shots/` (ADR-067), один каталог сценариев. Каждый
+сценарий снимает пару desktop 1280×800 + mobile 390×844 (ADR-073).
+
+```bash
+npm run shots -- list                                        # каталог экранов
+npm run shots -- coverage                                    # инвентарь: covered / gap / excluded
+npm run shots -- coverage --run <outDir>                     # сверка кадров с манифестом прогона
+npm run shots -- capture --scenario home --label issue-808  # живой прогон
+npm run shots -- store --out /tmp/opencode/shots/issue-808   # базовые PNG в docs/ui-screenshots/images/
+```
+
+Новый экран = строка в `shots/coverage-inventory.ts` + сценарий + запись в
+`shots/examiner/model.json` в одном коммите. Гейт `coverage.test.ts` работает
+в `e2e-matrix-guard`; кадры без доказывающего манифеста остаются `gap`.
