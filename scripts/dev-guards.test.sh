@@ -77,6 +77,13 @@ ko "tb empty port" trailbase_is_local "http://localhost:"
 ko "tb non-numeric port" trailbase_is_local "http://localhost:abc"
 ko "tb port with garbage tail" trailbase_is_local "http://localhost:1:2"
 
+# ---- desktop dev value (uwuwu#1663): unset/empty -> local backend ----
+eq "td unset injects loopback" "http://127.0.0.1:4000" "$(tauri_trailbase_value)"
+eq "td empty injects loopback (ADR-024)" "http://127.0.0.1:4000" "$(tauri_trailbase_value "")"
+eq "td explicit loopback passes" "http://localhost:4000" "$(tauri_trailbase_value "http://localhost:4000")"
+ko "td explicit prod refuses" tauri_trailbase_value "https://app.origa.uwuwu.net"
+ko "td empty-scheme value refuses" tauri_trailbase_value "localhost:4000"
+
 # ---- landing base: L1 pair contract ----
 ok "landing app base alone" landing_base_present "https://app.origa.uwuwu.net" "" ""
 ok "landing pair uri+prefix" landing_base_present "" "origa.uwuwu.net" "app"
