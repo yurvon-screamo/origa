@@ -22,6 +22,13 @@ import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
 import { listDescriptors } from "../shots/catalog.ts";
+import { inventory } from "../shots/coverage-inventory.ts";
+import {
+  checkStatic,
+  compareManifest,
+  formatCoverageReport,
+  parseRoutePatterns,
+} from "../shots/coverage.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
 import {
@@ -75,6 +82,8 @@ interface Options {
   examModel: string;
   /** File a GitHub issue per finding (requires --upload for evidence links). */
   fileIssues: boolean;
+  /** Capture directory whose manifests are compared with the inventory. */
+  run?: string;
 }
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
@@ -135,6 +144,7 @@ function parseOptions(argv: string[]): Options {
     examine: flags.has("examine"),
     examModel: last("exam-model") ?? process.env.OLLAMA_MODEL ?? "d3:2b",
     fileIssues: flags.has("file-issues"),
+    run: last("run"),
   };
 }
 
@@ -159,6 +169,36 @@ function listCommand(): number {
     );
   }
   return 0;
+}
+
+async function coverageCommand(options: Options): Promise<number> {
+  const routes = await readFile(
+    join(repoRoot, "origa_ui/src/routes.rs"),
+    "utf-8",
+  );
+  const model = JSON.parse(
+    await readFile(
+      join(repoRoot, "end2end/shots/examiner/model.json"),
+      "utf-8",
+    ),
+  ) as { screens: Record<string, unknown> };
+  const scenarioFiles = (
+    await readdir(join(repoRoot, "end2end/shots/scenarios"))
+  ).filter((name) => name.endsWith(".ts") && name !== "index.ts");
+  const issues = checkStatic({
+    rows: inventory,
+    routePatterns: parseRoutePatterns(routes),
+    scenarioIds: listDescriptors().map((descriptor) => descriptor.id),
+    scenarioFiles,
+    examKeys: Object.keys(model.screens),
+  });
+  if (options.run) {
+    issues.push(
+      ...compareManifest(inventory, await readManifestEntries(options.run)),
+    );
+  }
+  console.log(formatCoverageReport(inventory, issues));
+  return issues.length > 0 ? 1 : 0;
 }
 
 async function captureCommand(options: Options): Promise<number> {
@@ -546,8 +586,11 @@ function usage(): number {
   console.log(`Инструмент UI-скриншотов.
 
   npm run shots -- list
+  npm run shots -- coverage [--run <outDir>]
   npm run shots -- capture --scenario <id>[,<id>] [options]
   npm run shots -- index
+
+Опция coverage --run сверяет инвентарь с манифестами прогона (вьюпорты и один commit).
 
 Опции capture:
   --scenario <id>      сценарий из каталога (обязательно)
@@ -579,6 +622,8 @@ async function main(): Promise<number> {
     switch (command) {
       case "list":
         return listCommand();
+      case "coverage":
+        return await coverageCommand(parseOptions(rest));
       case "capture":
         return await captureCommand(parseOptions(rest));
       case "index":
