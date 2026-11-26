@@ -17,6 +17,7 @@ imported or edited — these tests only invoke the shipped files.
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -122,6 +123,30 @@ def _fixture_repo(tmp_path: Path, serve_port: int) -> Path:
     return fixture
 
 
+def test_serve_ui_starts_delegate_with_valid_env(tmp_path: Path) -> None:
+    """Positive acceptance path: valid env -> guards pass -> trunk launches.
+
+    The port is pinned through the fixture's Trunk.toml and found free by
+    binding port 0; the delegate is a marker stub, so CI never starts a real
+    server. Without this case all refusal tests stay green even if the recipe
+    loses its delegate command (test-review round, common finding).
+    """
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+
+    fixture = _fixture_repo(tmp_path, port)
+    env, marker = _clean_env(
+        tmp_path,
+        TRAILBASE_URL="http://127.0.0.1:4000",
+        ORIGA_CDN_BASE_URL="https://s3.origa.uwuwu.net",
+    )
+    result = _make("serve-ui", env, fixture)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists(), "guards passed but the delegate did not start"
+
+
 def test_serve_ui_refuses_any_listener_with_attribution(tmp_path: Path) -> None:
     """serve-ui's port is pinned by Trunk.toml; ANY listener must be refused.
 
@@ -142,7 +167,11 @@ def test_serve_ui_refuses_any_listener_with_attribution(tmp_path: Path) -> None:
         result = _make("serve-ui", env, fixture)
         assert result.returncode != 0
         assert f"порт serve-ui {port} занят" in result.stderr
-        assert "pid=" in result.stderr and "cwd=" in result.stderr
+        # The listener is this very process. A failed readlink prints
+        # "cwd=?" — a bare "cwd=" substring would accept broken attribution.
+        match = re.search(r"pid=(\d+), cwd=([^)]+)\)", result.stderr)
+        assert match, result.stderr
+        assert match.group(2) == str(Path.cwd()), result.stderr
         assert not marker.exists()
     finally:
         sock.close()
