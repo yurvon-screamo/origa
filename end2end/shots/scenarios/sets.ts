@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /** Sets: level filter and the import preview drawer. */
 export const setsScenario: ShotScenario = {
@@ -11,6 +12,7 @@ export const setsScenario: ShotScenario = {
     await expect(page.getByTestId("sets-page")).toBeVisible({
       timeout: 60_000,
     });
+    await waitForAppReady(page);
     await sink.shot("sets-list");
     await page.getByTestId("sets-level-n5").click();
     await sink.shot("sets-filters");

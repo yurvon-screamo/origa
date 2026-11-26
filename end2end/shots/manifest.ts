@@ -70,13 +70,13 @@ export function shotFileName(
 export function repoImageName(entry: {
   scenario: string;
   screen: string;
-  viewport: string;
+  viewport: ViewportTag;
   locale: string;
 }): string {
   return shotFileName(
     entry.scenario,
     entry.screen,
-    entry.viewport as ViewportTag,
+    entry.viewport,
     entry.locale,
   );
 }

@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /** The kanji list and its add drawer. */
 export const kanjiScenario: ShotScenario = {
@@ -11,6 +12,7 @@ export const kanjiScenario: ShotScenario = {
     await expect(page.getByTestId("kanji-page")).toBeVisible({
       timeout: 60_000,
     });
+    await waitForAppReady(page);
     await sink.shot("kanji-list");
     await page.getByTestId("kanji-add-btn").click();
     await expect(page.getByTestId("kanji-add-drawer")).toBeVisible({

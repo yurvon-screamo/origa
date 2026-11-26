@@ -1,4 +1,4 @@
-import type { CoverageRow } from "./coverage.ts";
+import type { CoverageRow } from "./coverage-types.ts";
 
 const BOTH = ["desktop", "mobile"] as const;
 
@@ -567,7 +567,7 @@ export const inventory: readonly CoverageRow[] = [
   ...(
     [
       ["quiz", "quiz-option"],
-      ["yesno", "yesno-result"],
+      ["yesno", "yesno-yes-btn"],
       ["audio-recall", "audio-recall-card-root"],
       ["counter-bindings", "counter-binding-front"],
       ["normal", "lesson-show-answer-btn"],
@@ -590,7 +590,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/lesson",
     source: "LessonCardView::Reversed",
-    scenario: "lesson-card-reversed",
+    scenario: null,
     screens: ["card-reversed-front", "card-reversed-answer"],
     viewports: BOTH,
     status: "gap",
@@ -600,7 +600,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/lesson",
     source: "LessonCardView::GrammarMutated",
-    scenario: "lesson-card-grammar-mutated",
+    scenario: null,
     screens: ["grammar-mutated-front", "grammar-mutated-answer"],
     viewports: BOTH,
     status: "gap",
@@ -610,7 +610,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/lesson",
     source: "QuizVariant::Grammar",
-    scenario: "lesson-grammar-quiz",
+    scenario: null,
     screens: ["grammar-quiz-question", "grammar-quiz-answer"],
     viewports: BOTH,
     status: "gap",
@@ -620,7 +620,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/words",
     source: "card_list_page",
-    scenario: "words-filters",
+    scenario: null,
     screens: ["words-filters", "words-inbox"],
     viewports: BOTH,
     status: "gap",
@@ -630,7 +630,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/sets",
     source: "sets-import-drawer",
-    scenario: "sets",
+    scenario: null,
     screens: ["sets-import-empty"],
     viewports: BOTH,
     status: "gap",
@@ -640,7 +640,7 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/grammar/:id",
     source: "grammar-practice-complete",
-    scenario: "grammar-detail",
+    scenario: null,
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
     status: "gap",

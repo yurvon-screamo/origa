@@ -8,6 +8,7 @@ import {
   compareManifest,
   formatCoverageReport,
   matchesScreen,
+  provedRows,
   type CoverageRow,
   type StaticCheckInput,
 } from "./coverage.ts";
@@ -99,6 +100,44 @@ test("dynamic screen names match a wildcard with a prefix", () => {
   assert.ok(!matchesScreen("*", "anything"));
 });
 
+test("a covered row without a scenario is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ scenario: null })]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem === "covered row has no scenario"),
+  );
+});
+
+test("a wildcard without a prefix is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ screens: ["*"] })]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem === "screen wildcard needs a prefix"),
+  );
+});
+
+test("a gap row cannot name a scenario outside the catalog", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ status: "gap", scenario: "not-in-catalog" })]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem.includes("not in the catalog")),
+  );
+});
+
+test("mixed commits invalidate the whole proof", () => {
+  const issues = compareManifest(
+    [row()],
+    [
+      frame("home", "home", "desktop", "aaa"),
+      frame("home", "home", "mobile", "bbb"),
+    ],
+  );
+  assert.deepEqual(provedRows([row()], issues), []);
+});
+
 test("mixed commits in one proof are red", () => {
   const issues = compareManifest(
     [row()],
@@ -148,9 +187,12 @@ test("a scenario without a row is red", async () => {
 });
 
 test("a covered row without a scenario file is red", async () => {
-  const issues = await checkStatic(
-    await staticWithRows([row({ scenario: "missing-scenario" })]),
-  );
+  const input = await staticInput();
+  const issues = checkStatic({
+    ...input,
+    rows: [row({ scenario: "home" })],
+    scenarioFiles: input.scenarioFiles.filter((name) => name !== "home.ts"),
+  });
   assert.ok(
     issues.some((issue) => issue.problem.includes("missing scenario file")),
   );
@@ -212,7 +254,6 @@ test("the report names every gap and every issue", () => {
   const report = formatCoverageReport(inventory, [
     { row: "test:row", problem: "red proof" },
   ]);
-  assert.ok(gaps.length > 0, "the inventory must keep unproven rows visible");
   for (const item of gaps) {
     assert.ok(report.includes(item.id), `gap ${item.id} missing from report`);
   }

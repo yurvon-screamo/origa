@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /** The profile page — personal data and the settings card. */
 export const profileScenario: ShotScenario = {
@@ -14,6 +15,7 @@ export const profileScenario: ShotScenario = {
     await expect(page.getByTestId("profile-personal-data")).toBeVisible({
       timeout: 15_000,
     });
+    await waitForAppReady(page);
     await sink.shot("profile-form");
     await expect(page.getByTestId("profile-settings")).toBeVisible();
     await sink.shot("profile-settings");

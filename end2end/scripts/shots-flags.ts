@@ -1,7 +1,10 @@
 /** Flags that belong to other commands must not be silently ignored. */
-export function assertCaptureFlags(argv: readonly string[]): void {
+export function assertCaptureFlags(
+  argv: readonly string[],
+  command: string | undefined,
+): void {
   if (
-    process.argv[2] !== "capture" ||
+    command !== "capture" ||
     !argv.some(
       (argument) => argument === "--run" || argument.startsWith("--run="),
     )

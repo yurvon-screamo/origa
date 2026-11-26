@@ -83,7 +83,7 @@ interface Options {
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
 function parseOptions(argv: string[]): Options {
-  assertCaptureFlags(argv);
+  assertCaptureFlags(argv, process.argv[2]);
   // A flag may be repeated: `--scenario a --scenario b` means both.
   const values = new Map<string, string[]>();
   const flags = new Set<string>();
@@ -562,7 +562,7 @@ function usage(): number {
   npm run shots -- list
   npm run shots -- coverage [--run <outDir>]
   npm run shots -- capture --scenario <id>[,<id>] [options]
-  npm run shots -- store --label <label> [--run <outDir>]
+  npm run shots -- store --out <dir> [--run <dir>]
   npm run shots -- index
 
 Опция coverage --run сверяет инвентарь с манифестами прогона (вьюпорты и один commit).

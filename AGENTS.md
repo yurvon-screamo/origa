@@ -221,10 +221,13 @@ npm run shots -- list                                          # каталог 
 npm run shots -- capture --scenario home --label issue-808      # снимок (desktop 1280×800 + mobile 390×844)
 npm run shots -- capture --scenario home --label issue-808 --upload   # + заливка в CDN и ссылки
 npm run shots -- index                                         # пересобрать индекс реестра
+npm run shots -- coverage                                      # построчный инвентарь: покрыто/дыра/исключено
+npm run shots -- coverage --run /tmp/opencode/shots/<label>     # сверка кадров и вьюпортов с манифестом
+npm run shots -- store --out /tmp/opencode/shots/<label>        # скопировать PNG в docs/ui-screenshots/images/
 ```
 
 - **Проверка окружения до съёмки** (`shots/preflight.ts`): без шрифтов локального корпуса бандл соберётся без `@font-face` (скрины уйдут в sans-serif); чужой слушатель на портах харнеса (1420 / 4000 / 8080 — CDN-порт только при локальном корпусе, corpus-less прогон его не биндит) — это ошибки, прогон не стартует; отставший локальный корпус и отсутствие словаря токенизатора — предупреждения.
-- **Куда падают файлы**: `/tmp/opencode/shots/<label>/` — вне репозитория (PNG в git не коммитим, #797).
+- **Куда падают файлы**: съёмка пишет в `/tmp/opencode/shots/<label>/`; базовые кадры для диф-ревью копируются командой `store` в `docs/ui-screenshots/images/`. Старое правило «PNG в git не коммитим (#797)» отменено словом владельца 26.11 (у#1671): «делаем скрины и храним их в репе». Индекс реестра — по-прежнему `docs/ui-screenshots/shots/*.json`, а не PNG.
 - **Реестр**: `docs/ui-screenshots/shots/*.json` (по файлу на снимок) + генерируемый индекс `docs/ui-screenshots/README.md`. В записи — размеры, sha256, время, коммит, адрес сборки и ссылка на CDN.
 - **Заливка**: ключ content-addressed — `pr-screenshots/{label}/{scenario}--{screen}--{viewport}-{sha8}.png`, `immutable` допустим именно потому, что ключ содержит хеш (доктрина `scripts/_cdn_cache.py`, прецедент #182). Профиль AWS — `[origa-t3]`.
 - **Пайп фабрики** требует скрины в отчёте и в теле PR — бери их отсюда, а не пиши свой сценарий.

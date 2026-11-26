@@ -110,6 +110,14 @@ function checkRow(row: CoverageRow, input: StaticCheckInput): CoverageIssue[] {
       ? [{ row: row.id, problem: "covered row has no scenario" }]
       : [];
   }
+  if (!input.scenarioIds.includes(row.scenario)) {
+    return [
+      {
+        row: row.id,
+        problem: `scenario ${row.scenario} is not in the catalog`,
+      },
+    ];
+  }
   if (row.status === "gap") return [];
   const issues: CoverageIssue[] = [];
   if (row.screens.some((screen) => screen === "*")) {

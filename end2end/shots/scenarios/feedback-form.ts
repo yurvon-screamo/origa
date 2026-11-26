@@ -1,6 +1,7 @@
 import { LessonPage } from "../../pages/lesson.page.ts";
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /**
  * The feedback channel of the lesson: the report button in the lesson
@@ -19,6 +20,7 @@ export const feedbackFormScenario: ShotScenario = {
       .waitFor({ state: "visible", timeout: 60_000 });
     const lesson = new LessonPage(page);
     await lesson.expectLessonVisible();
+    await waitForAppReady(page);
 
     // 1) Lesson header with the report button (question phase: disabled).
     await page

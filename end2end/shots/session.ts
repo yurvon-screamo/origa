@@ -50,6 +50,20 @@ export async function openShotSession(
   });
   const page = await context.newPage();
 
+  if (options.auth === "none") {
+    try {
+      await page.goto(options.baseURL, { waitUntil: "domcontentloaded" });
+    } catch (error) {
+      await context.close();
+      throw error;
+    }
+    return {
+      context,
+      page,
+      close: async () => await context.close(),
+    };
+  }
+
   const { token, csrfToken } = await getAdminToken();
   const email = generateUniqueEmail();
   const userId = await createTestUser(
@@ -60,16 +74,12 @@ export async function openShotSession(
   );
 
   try {
-    if (options.auth === "none") {
-      await page.goto(options.baseURL, { waitUntil: "domcontentloaded" });
-    } else {
-      await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
-        baseURL: options.baseURL,
-        consent: options.consent !== "required",
-      });
-      if (options.consent !== "required") {
-        await presets[options.preset]({ page, baseURL: options.baseURL });
-      }
+    await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
+      baseURL: options.baseURL,
+      consent: options.consent !== "required",
+    });
+    if (options.consent !== "required") {
+      await presets[options.preset]({ page, baseURL: options.baseURL });
     }
   } catch (error) {
     await context.close();

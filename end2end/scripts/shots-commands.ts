@@ -8,13 +8,13 @@ import {
   checkStatic,
   compareManifest,
   formatCoverageReport,
+  provedRows,
 } from "../shots/coverage.ts";
 import { repoImageName, type ShotEntry } from "../shots/manifest.ts";
 
 export interface CommandOptions {
   readonly run?: string;
   readonly out?: string;
-  readonly label: string;
 }
 
 export type ManifestReader = (dir: string) => Promise<ShotEntry[]>;
@@ -31,10 +31,7 @@ export async function runCoverage(
       await readManifest(options.run),
     );
     issues.push(...manifestIssues);
-    const failing = new Set(manifestIssues.map((issue) => issue.row));
-    proved = inventory
-      .filter((row) => row.status === "covered" && !failing.has(row.id))
-      .map((row) => row.id);
+    proved = provedRows(inventory, manifestIssues);
   }
   console.log(formatCoverageReport(inventory, issues, proved));
   return issues.length > 0 ? 1 : 0;
@@ -44,8 +41,8 @@ export async function runStore(
   options: CommandOptions,
   readManifest: ManifestReader,
 ): Promise<number> {
-  const from =
-    options.run ?? options.out ?? join("/tmp/opencode/shots", options.label);
+  const from = options.run ?? options.out;
+  if (!from) throw new Error("store needs --out or --run");
   const entries = await readManifest(from);
   const target = join(repoRoot, "docs/ui-screenshots/images");
   await mkdir(target, { recursive: true });

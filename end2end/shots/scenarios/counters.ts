@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /** The counters list and its add drawer. */
 export const countersScenario: ShotScenario = {
@@ -11,6 +12,7 @@ export const countersScenario: ShotScenario = {
     await expect(page.getByTestId("counters-page")).toBeVisible({
       timeout: 60_000,
     });
+    await waitForAppReady(page);
     await sink.shot("counters-list");
     await page.getByTestId("counters-add-btn").click();
     await expect(page.getByTestId("counters-add-drawer")).toBeVisible({

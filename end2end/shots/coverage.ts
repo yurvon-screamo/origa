@@ -11,4 +11,8 @@ export {
   matchesScreen,
   parseRoutePatterns,
 } from "./coverage-checks.ts";
-export { compareManifest, formatCoverageReport } from "./coverage-report.ts";
+export {
+  compareManifest,
+  formatCoverageReport,
+  provedRows,
+} from "./coverage-report.ts";

@@ -45,6 +45,18 @@ function hasFrame(
   );
 }
 
+/** A proof with mixed commits is invalid as a whole, not per row. */
+export function provedRows(
+  rows: readonly CoverageRow[],
+  issues: readonly CoverageIssue[],
+): string[] {
+  if (issues.some((issue) => issue.row === "manifest")) return [];
+  const failing = new Set(issues.map((issue) => issue.row));
+  return rows
+    .filter((row) => row.status === "covered" && !failing.has(row.id))
+    .map((row) => row.id);
+}
+
 export function formatCoverageReport(
   rows: readonly CoverageRow[],
   issues: readonly CoverageIssue[],
@@ -60,7 +72,7 @@ export function formatCoverageReport(
   ];
   for (const row of covered) {
     lines.push(
-      `  covered  ${row.id} — ${row.source} [${row.viewports.join(",")}]${proved.includes(row.id) ? " · кадры есть" : " · кадров нет"}`,
+      `  covered  ${row.id} — ${row.source} [${row.viewports.join(",")}]${proved.length > 0 || issues.length > 0 ? (proved.includes(row.id) ? " · кадры есть" : " · кадров нет") : " · доказательство не проверено"}`,
     );
   }
   for (const row of gaps) {

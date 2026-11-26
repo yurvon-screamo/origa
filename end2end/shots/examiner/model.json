@@ -155,22 +155,59 @@
         "lesson-stage": ["quiz-question"]
       }
     },
-    "lesson-review-body:review-body-*": {
+    "lesson-review-body:review-body-quiz-*": {
       "questions": [
         "text-overlap",
         "tofu-glyphs",
         "broken-state",
-        "lesson-stage",
-        "card-has-japanese"
+        "lesson-stage"
       ],
-      "expect": {
-        "lesson-stage": [
-          "quiz-answer",
-          "training-revealed",
-          "quiz-question",
-          "training-question"
-        ]
-      }
+      "expect": { "lesson-stage": ["quiz-answer", "quiz-question"] }
+    },
+    "lesson-review-body:review-body-yesno-*": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage"
+      ],
+      "expect": { "lesson-stage": ["training-revealed"] }
+    },
+    "lesson-review-body:review-body-audio-recall-*": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage"
+      ],
+      "expect": { "lesson-stage": ["training-question", "training-revealed"] }
+    },
+    "lesson-review-body:review-body-counter-bindings-*": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage"
+      ],
+      "expect": { "lesson-stage": ["training-question", "training-revealed"] }
+    },
+    "lesson-review-body:review-body-normal-*": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage"
+      ],
+      "expect": { "lesson-stage": ["training-question", "training-revealed"] }
+    },
+    "lesson-review-body:review-body-writing-*": {
+      "questions": [
+        "text-overlap",
+        "tofu-glyphs",
+        "broken-state",
+        "lesson-stage"
+      ],
+      "expect": { "lesson-stage": ["training-question", "training-revealed"] }
     },
     "lesson-unification:acquaintance-presentation": {
       "questions": [
