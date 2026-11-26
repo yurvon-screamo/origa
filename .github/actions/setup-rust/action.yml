@@ -36,10 +36,11 @@ runs:
                   echo "CARGO_INCREMENTAL=0"
                   echo "RUSTC_WRAPPER=sccache"
                   echo "SCCACHE_BUCKET=origa-sccache"
-                  echo "SCCACHE_ENDPOINT=https://yurvon-screamo.s3.hf.co"
-                  echo "SCCACHE_REGION=us-east-1"
-                  # HF S3 gateway does not parse trailing checksums of recent
-                  # AWS SDKs — checksums only where operations require them.
+                  echo "SCCACHE_ENDPOINT=https://t3.storage.dev"
+                  echo "SCCACHE_REGION=auto"
+                  # S3-compatible backends: checksums only where operations
+                  # require them — recent AWS SDKs default to trailing
+                  # CRC32 that not every backend parses.
                   echo "AWS_REQUEST_CHECKSUM_CALCULATION=when_required"
                   echo "AWS_RESPONSE_CHECKSUM_CALCULATION=when_required"
                   echo "AWS_ACCESS_KEY_ID=$SCCACHE_S3_ACCESS_KEY_ID"
