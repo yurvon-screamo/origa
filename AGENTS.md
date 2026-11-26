@@ -218,18 +218,18 @@ cd end2end
 npm run shots -- list                                          # каталог экранов
 npm run shots -- capture --scenario home --label issue-808      # снимок (desktop 1280×800 + mobile 390×844)
 npm run shots -- capture --scenario home --label issue-808 --upload   # + заливка в CDN и ссылки
-npm run shots -- index                                         # пересобрать индекс реестра
+npm run shots -- index                                         # пересобрать индекс локально (в PR не коммитится — см. ниже)
 ```
 
 - **Проверка окружения до съёмки** (`shots/preflight.ts`): без шрифтов локального корпуса бандл соберётся без `@font-face` (скрины уйдут в sans-serif); чужой слушатель на портах харнеса (1420 / 4000 / 8080 — CDN-порт только при локальном корпусе, corpus-less прогон его не биндит) — это ошибки, прогон не стартует; отставший локальный корпус и отсутствие словаря токенизатора — предупреждения.
 - **Куда падают файлы**: `/tmp/opencode/shots/<label>/` — вне репозитория (PNG в git не коммитим, #797).
-- **Реестр**: `docs/ui-screenshots/shots/*.json` (по файлу на снимок) + генерируемый индекс `docs/ui-screenshots/README.md`. В записи — размеры, sha256, время, коммит, адрес сборки и ссылка на CDN.
+- **Реестр**: `docs/ui-screenshots/shots/*.json` (по файлу на снимок) + генерируемый индекс `docs/ui-screenshots/README.md`. В записи — размеры, sha256, время, коммит, адрес сборки и ссылка на CDN. Индекс — генерируемое представление: в PR его не коммитят (конфликт-магнит параллельных PR) — после мержа его пересобирает workflow `shots-index.yml` и кладёт бот-PR с auto-merge; форс-пересборка — `gh workflow run "Shots Index"`.
 - **Заливка**: ключ content-addressed — `pr-screenshots/{label}/{scenario}--{screen}--{viewport}-{sha8}.png`, `immutable` допустим именно потому, что ключ содержит хеш (доктрина `scripts/_cdn_cache.py`, прецедент #182). Профиль AWS — `[origa-t3]`.
 - **Пайп фабрики** требует скрины в отчёте и в теле PR — бери их отсюда, а не пиши свой сценарий.
 
 ## CI/CD
 
-Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`.
+Workflows: `ci.yml`, `docker.yml`, `tauri.yml`, `cleanup-cache.yml`, `shots-index.yml`.
 CI: lint + test + e2e + docker build (2 images: landing + ui).
 CD: 2 Docker images (GHCR) + Railway deploy (2 services).
 Targets: Windows x86_64, Linux x86_64, macOS aarch64. Релиз при push `master` + tag `v*.*.*`.

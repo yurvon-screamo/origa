@@ -158,7 +158,8 @@ into the production TrailBase.
 - **One `registry.json` instead of a directory.** Rejected: two pull
   requests with different screens would conflict on every merge. The
   generated index is the only shared file, and its conflict is resolved
-  by regenerating it.
+  by regenerating it. (Historical: since 2026-11-24 the index is not
+  committed in PRs at all — see Consequences.)
 
 ## Consequences and Known Trade-offs
 
@@ -180,8 +181,13 @@ into the production TrailBase.
 - The `end2end/screenshots/` directory is no longer tracked. The five
   PNGs that were in it (2.1 MB) are untracked with a backup, in line
   with issue #797.
-- The generated index is a shared file: on a merge conflict it is
-  regenerated (`npm run shots -- index`) instead of merged.
+- Revised 2026-11-24 (the shots-registry index task, PR #971): the
+  generated index is no longer committed in PRs at all. The Shots Index
+  workflow regenerates it on master after every registry merge and
+  lands it through a bot PR created with a personal access token
+  (CI on PRs created with the GITHUB_TOKEN needs a manual approval
+  click), so hand-merged index conflicts — and the lost rows they
+  caused — cannot happen.
 
 ## Not Done Here
 
