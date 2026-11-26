@@ -49,6 +49,11 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** The marker on one report line; the id is delimited by the em dash. */
+function rowMark(id: string, marker: string): RegExp {
+  return new RegExp(`covered\\s+${escapeRegExp(id)}\\s+—[^\\n]*${marker}`);
+}
+
 function frame(
   row: CoverageRow,
   screen: string,
@@ -167,32 +172,40 @@ test("CLI exits green when every covered row has frames in both viewports", asyn
   assert.equal(result.code, 0, `${result.stdout}${result.stderr}`);
   assert.match(result.stdout, new RegExp(`доказано манифестом ${rows.length}`));
   for (const row of rows) {
-    assert.match(
-      result.stdout,
-      new RegExp(`covered\\s+${escapeRegExp(row.id)}[^\\n]*кадры есть`),
-    );
+    assert.match(result.stdout, rowMark(row.id, "кадры есть"));
   }
   assert.match(result.stdout, /Структурных проблем нет/);
   assert.doesNotMatch(result.stdout, /Проблемы \(\d+\)/);
+
+  const inline = coverage([`--run=${dir}`]);
+  assert.equal(inline.code, 0, `${inline.stdout}${inline.stderr}`);
+  assert.equal(inline.stdout, result.stdout);
 });
 
-test("CLI red-proofs the row whose mandatory viewport frame is missing", async () => {
+test("CLI marks the unproved row as having no frames in each viewport", async () => {
   const rows = coveredRows();
   const target = isolatedRow();
-  const missing = target.viewports[0];
-  const dir = await proofDir({
-    skip: (row, viewport) => row.id === target.id && viewport === missing,
-  });
-  const result = coverage(["--run", dir]);
-  assert.equal(result.code, 1, result.stdout);
-  assert.match(
-    result.stdout,
-    new RegExp(`${escapeRegExp(target.id)}: no ${missing} frame`),
-  );
-  assert.match(
-    result.stdout,
-    new RegExp(`доказано манифестом ${rows.length - 1}`),
-  );
+  for (const missing of target.viewports) {
+    const dir = await proofDir({
+      skip: (row, viewport) => row.id === target.id && viewport === missing,
+    });
+    const result = coverage(["--run", dir]);
+    assert.equal(result.code, 1, result.stdout);
+    assert.match(
+      result.stdout,
+      new RegExp(`${escapeRegExp(target.id)}: no ${missing} frame`),
+    );
+    assert.match(
+      result.stdout,
+      new RegExp(`доказано манифестом ${rows.length - 1}`),
+    );
+    assert.match(result.stdout, rowMark(target.id, "кадров нет"));
+    for (const other of rows) {
+      if (other.id !== target.id) {
+        assert.match(result.stdout, rowMark(other.id, "кадры есть"));
+      }
+    }
+  }
 });
 
 test("CLI rejects a proof whose manifests carry different commits", async () => {
