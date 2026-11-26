@@ -1,7 +1,7 @@
 # AGENTS.md — `origa_ui` crate
 
 Leptos 0.8 / WASM frontend for Origa (Japanese learning app). CSR mode only. Rust edition 2024.
-For full-app dev: `cd tauri && cargo tauri dev`. Frontend-only: `cd origa_ui && trunk serve` — requires BOTH `ORIGA_CDN_BASE_URL` and a loopback `TRAILBASE_URL` (e.g. `http://127.0.0.1:4000`): without them build.rs silently bakes the production endpoints (ADR-020/023; incident uwuwu#1449 — a bare `trunk serve` hit prod TrailBase with writes). Prefer `make serve-ui` from the repo root — it checks the environment fail-closed (guards: `scripts/dev-guards.sh`) before starting trunk.
+For full-app dev: `make tauri-dev` from the repo root (Linux; supplies a loopback `TRAILBASE_URL`). On Windows/macOS, set `TRAILBASE_URL` explicitly before `cd tauri && cargo tauri dev`. Frontend-only: `cd origa_ui && trunk serve` — requires BOTH `ORIGA_CDN_BASE_URL` and a loopback `TRAILBASE_URL` (e.g. `http://127.0.0.1:4000`): without them build.rs silently bakes the production endpoints (ADR-020/023; incident uwuwu#1449 — a bare `trunk serve` hit prod TrailBase with writes). Prefer `make serve-ui` from the repo root — it checks the environment fail-closed (guards: `scripts/dev-guards.sh`) before starting trunk. The e2e dist build uses `make dist`.
 
 ## Source Structure
 
@@ -111,8 +111,7 @@ Routes defined in `routes.rs`: `/` (home), `/login`, `/onboarding`, `/profile`,
 ## Build System
 
 `build.rs` handles at compile time: i18n compilation, well-known set
-metadata, and env vars (`ORIGA_CDN_BASE_URL` required, plus optional
-`ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`).
+metadata, and env vars (`ORIGA_CDN_BASE_URL` required; `TRAILBASE_URL` required for local builds — use `make serve-ui` / `make dist` / `make tauri-dev`, which check or inject a loopback value; otherwise build.rs silently bakes the production default, ADR-020. Optional: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_PUBLIC_BASE_URL`).
 The tokenizer dictionary is not built here — `build.rs` only verifies the
 pre-built SudachiDict files exist in the local corpus `$ORIGA_CDN_DIR` /
 `~/origa-cdn` (fail fast with a warning; the corpus is machine-local state
@@ -141,8 +140,8 @@ ADR-029 and PR #441 for concrete cases.
 
 ```powershell
 $env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"  # REQUIRED
-$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # REQUIRED for serve — loopback only; a bare serve bakes the production TrailBase (ADR-020, incident uwuwu#1449)
-cd tauri && cargo tauri dev          # full app (recommended)
+$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # REQUIRED — loopback only; without it the build bakes the production TrailBase (ADR-020, incident uwuwu#1449)
+cd tauri && cargo tauri dev          # full app on Windows/macOS; Linux: `make tauri-dev` from the repo root
 cd origa_ui && trunk serve           # frontend only — prefer `make serve-ui` from the repo root (env guards, fail-closed)
 ```
 
@@ -158,8 +157,9 @@ bridge (a WS script to `.well-known/trunk/ws` whose reconnect handler calls
   gotos and restarting long restores mid-flight. This exact noise masked
   itself as an app bug during the N1-stress investigation (#492).
 - Before any static serving of `dist/` (local e2e against a release build,
-  artifact inspection), run a fresh `trunk build --release` — the rebuild
-  overwrites the poisoned `index.html`.
+  artifact inspection), run `make dist` from the repo root — the guarded
+  `trunk build --release` overwrites the poisoned `index.html` and refuses to
+  bake the production TrailBase (uwuwu#1663).
 
 ### Browserslist warning (`caniuse-lite is outdated`)
 
