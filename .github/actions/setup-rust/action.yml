@@ -25,6 +25,14 @@ runs:
         - name: Enable sccache (S3 backend)
           shell: bash
           run: |
+              # Some jobs must stay hermetic: sccache hashes rustc inputs, but
+              # not env read by build.rs (e.g. ORIGA_CDN_BASE_URL baked into
+              # the wasm test binary). Mixing objects from jobs with different
+              # build-script env breaks those jobs — they opt out here.
+              if [ "$SCCACHE_DISABLE" = "true" ]; then
+                  echo "sccache disabled for this job (job-level opt-out)"
+                  exit 0
+              fi
               if [ -z "$SCCACHE_S3_ACCESS_KEY_ID" ] || [ -z "$SCCACHE_S3_SECRET_KEY" ]; then
                   echo "sccache S3 credentials unavailable — compiling uncached"
                   exit 0
