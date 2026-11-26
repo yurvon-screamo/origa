@@ -20,6 +20,8 @@ export interface ShotSessionOptions {
   locale: string;
   viewport: ViewportTag;
   preset: PresetId;
+  auth?: "session" | "none";
+  consent?: "preapproved" | "required";
 }
 
 export interface ShotSession {
@@ -58,10 +60,17 @@ export async function openShotSession(
   );
 
   try {
-    await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
-      baseURL: options.baseURL,
-    });
-    await presets[options.preset]({ page, baseURL: options.baseURL });
+    if (options.auth === "none") {
+      await page.goto(options.baseURL, { waitUntil: "domcontentloaded" });
+    } else {
+      await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
+        baseURL: options.baseURL,
+        consent: options.consent !== "required",
+      });
+      if (options.consent !== "required") {
+        await presets[options.preset]({ page, baseURL: options.baseURL });
+      }
+    }
   } catch (error) {
     await context.close();
     await deleteTestUserWithRetry(token, csrfToken, userId, email).catch(

@@ -26,7 +26,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "login",
     screens: ["login"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:onboarding",
@@ -116,7 +116,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "examples",
     screens: ["examples-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:counters-detail",
@@ -136,7 +136,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:kanji-detail",
@@ -156,7 +156,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "kanji",
     screens: ["kanji-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:lesson",
@@ -176,7 +176,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "sets",
     screens: ["sets-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:home-due-counter",
@@ -262,7 +262,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:kanji-add-modal",
@@ -272,7 +272,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "kanji",
     screens: ["kanji-add-modal"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:kanji-detail-tabs",
@@ -304,9 +304,9 @@ export const inventory: readonly CoverageRow[] = [
     route: "/sets",
     source: "ImportSetPreviewModal",
     scenario: "sets",
-    screens: ["sets-filters", "sets-import-found", "sets-import-empty"],
+    screens: ["sets-filters", "sets-import-found"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:onboarding-counter-scoring",
@@ -406,7 +406,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-acquaintance-word",
     screens: ["word-training-front", "word-training-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:acquaintance-kanji-presentation",
@@ -436,7 +436,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-acquaintance-grammar",
     screens: ["grammar-presentation", "grammar-details"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:acquaintance-counter-slide",
@@ -526,7 +526,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-reading-quiz",
     screens: ["writing-card"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-yesno-result",
@@ -581,7 +581,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "surface:lesson-empty",
@@ -591,7 +591,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-empty",
     screens: ["lesson-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "surface:lists-empty",
@@ -601,7 +601,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lists-empty",
     screens: ["words-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "excluded:kanji-animation",

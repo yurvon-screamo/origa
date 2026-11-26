@@ -20,6 +20,10 @@ export interface ScenarioDescriptor {
   baseURL?: string;
   /** Data state the screen is shown in. */
   preset: PresetId;
+  /** "none" captures the public login screen without a session. */
+  auth?: "session" | "none";
+  /** "required" leaves the first-run download consent visible. */
+  consent?: "preapproved" | "required";
 }
 
 export const descriptors: Record<string, ScenarioDescriptor> = {
@@ -225,6 +229,64 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     route: "/words",
     locale: "ru-RU",
     preset: "with-word",
+  },
+  login: {
+    id: "login",
+    title: "Публичный экран входа",
+    route: "/login",
+    locale: "ru-RU",
+    preset: "fresh",
+    auth: "none",
+  },
+  consent: {
+    id: "consent",
+    title: "Согласие на загрузку ресурсов",
+    route: "/",
+    locale: "ru-RU",
+    preset: "fresh",
+    consent: "required",
+  },
+  examples: {
+    id: "examples",
+    title: "Экран примеров",
+    route: "/examples",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  counters: {
+    id: "counters",
+    title: "Список счётных суффиксов и дровер добавления",
+    route: "/counters",
+    locale: "ru-RU",
+    preset: "counter-due",
+  },
+  kanji: {
+    id: "kanji",
+    title: "Список кандзи и дровер добавления",
+    route: "/kanji",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  sets: {
+    id: "sets",
+    title: "Сеты: фильтры и предпросмотр импорта",
+    route: "/sets",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "lesson-empty": {
+    id: "lesson-empty",
+    title: "Пустое состояние урока",
+    route: "/lesson",
+    locale: "ru-RU",
+    preset: "fresh",
+  },
+  "lists-empty": {
+    id: "lists-empty",
+    title: "Пустое состояние списка слов",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "fresh",
   },
 };
 

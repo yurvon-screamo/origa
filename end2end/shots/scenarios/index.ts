@@ -1,6 +1,9 @@
 import type { ShotScenario } from "../scenario.ts";
+import { consentScenario } from "./consent.ts";
 import { counterScoringScenario } from "./counter-scoring.ts";
 import { countersDetailScenario } from "./counters-detail.ts";
+import { countersScenario } from "./counters.ts";
+import { examplesScenario } from "./examples.ts";
 import { feedbackFormScenario } from "./feedback-form.ts";
 import { grammarDetailScenario } from "./grammar-detail.ts";
 import { grammarPageScenario } from "./grammar-page.ts";
@@ -9,8 +12,10 @@ import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
 import { homeJlptDetailsScenario } from "./home-jlpt-details.ts";
 import { homeScenario } from "./home.ts";
 import { jftCardScenario } from "./jft-card.ts";
+import { kanjiScenario } from "./kanji.ts";
 import { kanjiWritingPracticeScenario } from "./kanji-writing-practice.ts";
 import { lessonAcquaintanceGrammarScenario } from "./lesson-acquaintance-grammar.ts";
+import { lessonEmptyScenario } from "./lesson-empty.ts";
 import { lessonAcquaintanceKanjiScenario } from "./lesson-acquaintance-kanji.ts";
 import { lessonAcquaintanceWordScenario } from "./lesson-acquaintance-word.ts";
 import { lessonCounterPackScenario } from "./lesson-counter-pack.ts";
@@ -20,9 +25,12 @@ import { lessonReadingQuizScenario } from "./lesson-reading-quiz.ts";
 import { lessonReviewBodyScenario } from "./lesson-review-body.ts";
 import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
+import { listsEmptyScenario } from "./lists-empty.ts";
+import { loginScenario } from "./login.ts";
 import { onboardingImportProgressScenario } from "./onboarding-import-progress.ts";
 import { phraseDashRunScenario } from "./phrase-dash-run.ts";
 import { profileScenario } from "./profile.ts";
+import { setsScenario } from "./sets.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
 import { wordsAddScenario } from "./words-add.ts";
@@ -65,6 +73,14 @@ export const implementations: Record<string, ShotScenario> = {
   [profileScenario.id]: profileScenario,
   [grammarDetailScenario.id]: grammarDetailScenario,
   [wordsAddScenario.id]: wordsAddScenario,
+  [loginScenario.id]: loginScenario,
+  [consentScenario.id]: consentScenario,
+  [examplesScenario.id]: examplesScenario,
+  [countersScenario.id]: countersScenario,
+  [kanjiScenario.id]: kanjiScenario,
+  [setsScenario.id]: setsScenario,
+  [lessonEmptyScenario.id]: lessonEmptyScenario,
+  [listsEmptyScenario.id]: listsEmptyScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

@@ -55,6 +55,8 @@ export async function runScenario(
       locale,
       viewport,
       preset: scenario.preset,
+      auth: scenario.auth,
+      consent: scenario.consent,
     });
     try {
       const sink = createSink(session.page, {
