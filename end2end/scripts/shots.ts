@@ -21,6 +21,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
+import { assertCaptureFlags } from "./shots-flags.ts";
 import { runCoverage, runStore } from "./shots-commands.ts";
 import { listDescriptors } from "../shots/catalog.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
@@ -82,6 +83,7 @@ interface Options {
 
 /** Parses `--key value`, `--key=value` and boolean flags. */
 function parseOptions(argv: string[]): Options {
+  assertCaptureFlags(argv);
   // A flag may be repeated: `--scenario a --scenario b` means both.
   const values = new Map<string, string[]>();
   const flags = new Set<string>();
@@ -174,12 +176,6 @@ async function storeCommand(options: Options): Promise<number> {
 }
 
 async function captureCommand(options: Options): Promise<number> {
-  if (options.run) {
-    console.error(
-      "--run applies only to coverage and store; capture writes to --out",
-    );
-    return 1;
-  }
   const known = new Set(listDescriptors().map((descriptor) => descriptor.id));
   const unknown = options.scenario.filter((id) => !known.has(id));
   if (options.scenario.length === 0) {
