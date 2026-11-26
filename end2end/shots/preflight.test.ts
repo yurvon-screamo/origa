@@ -102,7 +102,7 @@ test("a listener from another checkout fails the capture", () => {
   assert.match(report.errors[0], /не из того бандла/);
 });
 
-test("a dual-stack listener produces one verdict for its process", () => {
+test("a dual-stack listener produces one verdict for its port", () => {
   const report = evaluatePreflight(
     facts({
       listeners: [
@@ -129,6 +129,38 @@ test("two processes on the same port still produce two verdicts", () => {
   assert.equal(report.errors.length, 2);
   assert.match(report.errors[0], /worktree/);
   assert.match(report.errors[1], /tool/);
+});
+
+test("a stranger on the app and TrailBase ports keeps both verdicts", () => {
+  const report = evaluatePreflight(
+    facts({
+      listeners: [
+        { port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" },
+        { port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" },
+        { port: TRAILBASE_PORT, pid: 4242, cwd: "/home/other/worktree" },
+      ],
+    }),
+  );
+
+  assert.equal(report.errors.length, 2);
+  assert.match(report.errors[0], /не из того бандла/);
+  assert.match(report.errors[1], /TrailBase не сможет/);
+});
+
+test("a stranger on the app and CDN ports keeps both advises", () => {
+  const report = evaluatePreflight(
+    facts({
+      listeners: [
+        { port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" },
+        { port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" },
+        { port: LOCAL_CDN_PORT, pid: 4242, cwd: "/home/other/worktree" },
+      ],
+    }),
+  );
+
+  assert.equal(report.errors.length, 2);
+  assert.match(report.errors[0], /не из того бандла/);
+  assert.match(report.errors[1], /E2E_CDN_PORT/);
 });
 
 test("a stranger on the TrailBase port fails the capture", () => {
