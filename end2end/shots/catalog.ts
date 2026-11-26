@@ -205,6 +205,27 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "phrase-dash-run",
   },
+  profile: {
+    id: "profile",
+    title: "Экран профиля",
+    route: "/profile",
+    locale: "ru-RU",
+    preset: "onboarded",
+  },
+  "grammar-detail": {
+    id: "grammar-detail",
+    title: "Деталь грамматики: вкладки, практика, удаление",
+    route: "/grammar/:id",
+    locale: "ru-RU",
+    preset: "acquaintance-hand",
+  },
+  "words-add": {
+    id: "words-add",
+    title: "Мастер добавления слов: ввод и превью",
+    route: "/words",
+    locale: "ru-RU",
+    preset: "with-word",
+  },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {

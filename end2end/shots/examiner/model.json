@@ -300,6 +300,36 @@
     },
     "words:words-full": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "profile:profile-form": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "profile:profile-settings": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "grammar-detail:grammar-detail-overview": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "grammar-detail:grammar-practice-question": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "grammar-detail:grammar-delete-modal": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-add:words-add-input": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-add:words-add-preview": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-add:words-add-anki": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-add:words-add-image": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "words-add:words-add-audio": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }

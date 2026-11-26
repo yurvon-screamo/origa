@@ -2,6 +2,7 @@ import type { ShotScenario } from "../scenario.ts";
 import { counterScoringScenario } from "./counter-scoring.ts";
 import { countersDetailScenario } from "./counters-detail.ts";
 import { feedbackFormScenario } from "./feedback-form.ts";
+import { grammarDetailScenario } from "./grammar-detail.ts";
 import { grammarPageScenario } from "./grammar-page.ts";
 import { homeDueCounterScenario } from "./home-due-counter.ts";
 import { homeAccuracyChartScenario } from "./home-accuracy-chart.ts";
@@ -21,8 +22,10 @@ import { lessonUnificationScenario } from "./lesson-unification.ts";
 import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { onboardingImportProgressScenario } from "./onboarding-import-progress.ts";
 import { phraseDashRunScenario } from "./phrase-dash-run.ts";
+import { profileScenario } from "./profile.ts";
 import { tokenPopupScenario } from "./token-popup.ts";
 import { wordExamplesScenario } from "./word-examples.ts";
+import { wordsAddScenario } from "./words-add.ts";
 import { wordsGridScenario } from "./words-grid.ts";
 import { wordsScenario } from "./words.ts";
 
@@ -59,6 +62,9 @@ export const implementations: Record<string, ShotScenario> = {
   [wordsGridScenario.id]: wordsGridScenario,
   [onboardingImportProgressScenario.id]: onboardingImportProgressScenario,
   [phraseDashRunScenario.id]: phraseDashRunScenario,
+  [profileScenario.id]: profileScenario,
+  [grammarDetailScenario.id]: grammarDetailScenario,
+  [wordsAddScenario.id]: wordsAddScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

@@ -54,9 +54,9 @@ export const inventory: readonly CoverageRow[] = [
     route: "/profile",
     source: "Profile",
     scenario: "profile",
-    screens: ["profile-form", "profile-sets"],
+    screens: ["profile-form", "profile-settings"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:words",
@@ -86,7 +86,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "grammar-detail",
     screens: ["grammar-detail-overview"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:grammar",
@@ -246,14 +246,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "words-add",
     screens: [
       "words-add-input",
-      "words-add-analyzing",
       "words-add-preview",
       "words-add-anki",
       "words-add-image",
       "words-add-audio",
     ],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:counters-add-drawer",
@@ -292,13 +291,12 @@ export const inventory: readonly CoverageRow[] = [
     source: "GrammarPracticeSession",
     scenario: "grammar-detail",
     screens: [
-      "grammar-detail-tabs",
+      "grammar-detail-overview",
       "grammar-practice-question",
-      "grammar-practice-answer",
       "grammar-delete-modal",
     ],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:sets-import",
