@@ -130,6 +130,7 @@ test("an unreadable first record does not suppress the pair's verdict", () => {
 
   assert.equal(report.errors.length, 1);
   assert.match(report.errors[0], /не из того бандла/);
+  assert.match(report.errors[0], /worktree/);
 });
 
 test("two processes on the same port still produce two verdicts", () => {
@@ -163,7 +164,7 @@ test("a stranger on the app and TrailBase ports keeps both verdicts", () => {
   assert.match(report.errors[1], /TrailBase не сможет/);
 });
 
-test("a stranger on the app and CDN ports keeps both advises", () => {
+test("a stranger on the app and CDN ports keeps both verdicts", () => {
   const report = evaluatePreflight(
     facts({
       listeners: [
