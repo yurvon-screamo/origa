@@ -12,18 +12,28 @@
 /// Active (non-blank, non-comment) lines of the repository-root
 /// `.prettierignore` — the file prettier itself honours in the CI gate.
 ///
-/// The matcher below models only the syntax used here: a plain path prefix or
-/// one trailing `/**`. Trailing spaces and `\r` are trimmed; any other syntax
-/// fails loudly instead of silently disagreeing with prettier.
+/// The matcher below models only the syntax used here: a root-anchored path
+/// prefix, optionally with one trailing `/**`. Gitignore forms with a leading
+/// or trailing `/`, no `/` at all, or a glob elsewhere behave differently in
+/// prettier; every such entry fails loudly instead of silently changing scope.
+/// Trailing spaces and `\r` are trimmed; indented comments stay comments.
 fn active_patterns() -> Vec<&'static str> {
     include_str!("../../.prettierignore")
         .lines()
         .map(str::trim_end)
-        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .filter(|line| {
+            let content = line.trim_start();
+            !content.is_empty() && !content.starts_with('#')
+        })
         .inspect(|&line| {
             assert!(
                 !line.starts_with('!') && line == line.trim_start(),
                 "is_ignored does not model negation or leading whitespace in {line:?}; \
+                 extend the matcher or keep the entry in this form"
+            );
+            assert!(
+                line.contains('/') && !line.starts_with('/') && !line.ends_with('/'),
+                "is_ignored does not model gitignore path form in {line:?}; \
                  extend the matcher or keep the entry in this form"
             );
             let stem = line.strip_suffix("/**").unwrap_or(line);
