@@ -182,11 +182,18 @@ function checkCorpus(facts: PreflightFacts): string[] {
  */
 function checkPorts(facts: PreflightFacts): string[] {
   const errors: string[] = [];
+  const reportedPorts = new Set<string>();
   for (const listener of facts.listeners) {
     if (listener.pid === null || listener.cwd === null) continue;
     if (isInside(listener.cwd, facts.repoRoot)) continue;
     if (listener.port === LOCAL_CDN_PORT && facts.cdnCacheDir === null)
       continue;
+    // A dual-stack process holds two sockets of one port, and the probe
+    // reports both. Collapse that duplicate, but keep the verdicts for
+    // different ports of the same process: each has its own consequence.
+    const portKey = `${listener.port}:${listener.pid}`;
+    if (reportedPorts.has(portKey)) continue;
+    reportedPorts.add(portKey);
 
     let reason: string;
     if (listener.port === LOCAL_CDN_PORT) {
