@@ -16,25 +16,13 @@
  */
 import { execFile, execFileSync, spawn } from "node:child_process";
 import { promisify } from "node:util";
-import {
-  copyFile,
-  mkdir,
-  readdir,
-  readFile,
-  writeFile,
-} from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
+import { runCoverage, runStore } from "./shots-commands.ts";
 import { listDescriptors } from "../shots/catalog.ts";
-import { inventory } from "../shots/coverage-inventory.ts";
-import {
-  checkStatic,
-  compareManifest,
-  formatCoverageReport,
-  parseRoutePatterns,
-} from "../shots/coverage.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
 import {
@@ -44,11 +32,7 @@ import {
   renderReport,
 } from "../shots/examiner/report.ts";
 import { renderIndex } from "../shots/index.ts";
-import {
-  repoImageName,
-  type ShotEntry,
-  type ShotManifest,
-} from "../shots/manifest.ts";
+import type { ShotEntry, ShotManifest } from "../shots/manifest.ts";
 import { runPreflight } from "../shots/preflight.ts";
 import {
   mergeEntry,
@@ -182,46 +166,11 @@ function listCommand(): number {
 }
 
 async function coverageCommand(options: Options): Promise<number> {
-  const routes = await readFile(
-    join(repoRoot, "origa_ui/src/routes.rs"),
-    "utf-8",
-  );
-  const model = JSON.parse(
-    await readFile(
-      join(repoRoot, "end2end/shots/examiner/model.json"),
-      "utf-8",
-    ),
-  ) as { screens: Record<string, unknown> };
-  const scenarioFiles = (
-    await readdir(join(repoRoot, "end2end/shots/scenarios"))
-  ).filter((name) => name.endsWith(".ts") && name !== "index.ts");
-  const issues = checkStatic({
-    rows: inventory,
-    routePatterns: parseRoutePatterns(routes),
-    scenarioIds: listDescriptors().map((descriptor) => descriptor.id),
-    scenarioFiles,
-    examKeys: Object.keys(model.screens),
-  });
-  if (options.run) {
-    issues.push(
-      ...compareManifest(inventory, await readManifestEntries(options.run)),
-    );
-  }
-  console.log(formatCoverageReport(inventory, issues));
-  return issues.length > 0 ? 1 : 0;
+  return await runCoverage(options, readManifestEntries);
 }
 
 async function storeCommand(options: Options): Promise<number> {
-  const from = options.run ?? join("/tmp/opencode/shots", options.label);
-  const entries = await readManifestEntries(from);
-  const target = join(repoRoot, "docs/ui-screenshots/images");
-  await mkdir(target, { recursive: true });
-  for (const entry of entries) {
-    await copyFile(entry.file, join(target, repoImageName(entry)));
-  }
-  console.log(`В репозиторий скопировано кадров: ${entries.length}`);
-  console.log(`Каталог: ${target}`);
-  return 0;
+  return await runStore(options, readManifestEntries);
 }
 
 async function captureCommand(options: Options): Promise<number> {
