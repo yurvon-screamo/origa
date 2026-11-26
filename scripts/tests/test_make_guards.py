@@ -290,13 +290,13 @@ def test_tauri_dev_injects_loopback_into_delegate(tmp_path: Path) -> None:
 def test_tauri_dev_with_empty_trailbase_injects_loopback(tmp_path: Path) -> None:
     """Gherkin: SET-EMPTY is unset at the make boundary too (ADR-024)."""
     fixture = _fixture_repo(tmp_path, _free_port())
-    env, marker = _clean_env(
-        tmp_path, GUARD_REPO_ROOT=str(fixture), TRAILBASE_URL=""
-    )
+    env, marker = _clean_env(tmp_path, GUARD_REPO_ROOT=str(fixture), TRAILBASE_URL="")
     result = _make("tauri-dev", env, fixture)
     assert result.returncode == 0, result.stderr
     assert marker.exists()
-    assert (tmp_path / "delegate-trailbase").read_text().strip() == "http://127.0.0.1:4000"
+    assert (
+        tmp_path / "delegate-trailbase"
+    ).read_text().strip() == "http://127.0.0.1:4000"
 
 
 def test_tauri_dev_preserves_explicit_loopback(tmp_path: Path) -> None:
@@ -308,7 +308,9 @@ def test_tauri_dev_preserves_explicit_loopback(tmp_path: Path) -> None:
     result = _make("tauri-dev", env, fixture)
     assert result.returncode == 0, result.stderr
     assert marker.exists()
-    assert (tmp_path / "delegate-trailbase").read_text().strip() == "http://localhost:4001"
+    assert (
+        tmp_path / "delegate-trailbase"
+    ).read_text().strip() == "http://localhost:4001"
 
 
 def test_tauri_dev_refuses_explicit_prod_before_delegate(tmp_path: Path) -> None:
