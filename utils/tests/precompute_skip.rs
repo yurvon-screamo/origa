@@ -190,3 +190,47 @@ fn deploy_loop_skips_both_builders_without_a_dictionary() {
     assert!(grammar.status.success(), "{}", output_text(&grammar));
     assert!(phrase.status.success(), "{}", output_text(&phrase));
 }
+
+/// Acceptance level: drive the real production caller, not a hand-rolled
+/// copy of its loop. `deploy_cdn.py::regenerate_precompute_blobs` runs both
+/// builders via `cargo run` and exits on the first non-zero code — the exact
+/// Step 0.5 flow that motivated #926. The corpus has no SudachiDict, so a
+/// regression that loads the tokenizer before the freshness check turns
+/// this red.
+#[test]
+fn real_deploy_loop_skips_both_builders_without_a_dictionary() {
+    let corpus = Corpus::staged(BlobState::Fresh);
+    let project_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("utils crate lives in the workspace root");
+    let script = concat!(
+        "from pathlib import Path;",
+        "import deploy_cdn;",
+        "deploy_cdn.regenerate_precompute_blobs(Path.cwd());",
+        "print('DEPLOY LOOP OK')"
+    );
+
+    let output = Command::new("python3")
+        .current_dir(project_root)
+        .env("PYTHONPATH", project_root.join("scripts"))
+        .env("ORIGA_CDN_DIR", &corpus.root)
+        .env("RUST_LOG", "info")
+        .args(["-c", script])
+        .output()
+        .unwrap_or_else(|e| panic!("spawning python3 deploy loop: {e}"));
+
+    let text = output_text(&output);
+    assert!(output.status.success(), "{text}");
+    assert!(
+        text.contains("grammar/grammar_precompute_v3.rkyv is fresh, skipping regeneration"),
+        "expected grammar skip log, got: {text}"
+    );
+    assert!(
+        text.contains("all phrase precompute chunks are fresh, skipping regeneration"),
+        "expected phrase skip log, got: {text}"
+    );
+    assert!(
+        text.contains("DEPLOY LOOP OK"),
+        "expected loop completion, got: {text}"
+    );
+}
