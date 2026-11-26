@@ -30,21 +30,39 @@ MAKEFILE = REPO_ROOT / "Makefile"
 GUARDS = REPO_ROOT / "scripts" / "dev-guards.sh"
 
 
-def _clean_env(tmp_path: Path, **overrides: str) -> tuple[dict[str, str], Path]:
+def _clean_env(
+    tmp_path: Path,
+    *,
+    minimal_path: bool = False,
+    stubs: tuple[str, ...] = ("trunk", "npm", "just", "cargo", "cargo-tauri"),
+    **overrides: str,
+) -> tuple[dict[str, str], Path]:
     """Minimal env (no inherited ORIGA_*/TRAILBASE_URL) + stubbed delegates.
 
     Returns (env, marker_path). If a guard wrongly lets a target through, the
     stub touches marker_path — the test fails even though no real server runs.
+    Each stub records the delegated compile-time env for injected-value
+    assertions. ``minimal_path`` hides the real cargo-tauri/trunk installs so
+    "tool missing" cases are reproducible in CI.
     """
     stub_bin = tmp_path / "stub-bin"
     stub_bin.mkdir(exist_ok=True)
     marker = tmp_path / "delegate-started"
-    for name in ("trunk", "npm", "just"):
+    for name in stubs:
         stub = stub_bin / name
-        stub.write_text(f"#!/bin/sh\ntouch {marker}\nexit 0\n")
+        stub.write_text(
+            "#!/bin/sh\n"
+            f"touch {marker}\n"
+            f"printf '%s' \"${{TRAILBASE_URL-}}\" > {tmp_path / 'delegate-trailbase'}\n"
+            f"printf '%s' \"${{ORIGA_CDN_BASE_URL-}}\" > {tmp_path / 'delegate-cdn'}\n"
+            "exit 0\n"
+        )
         stub.chmod(0o755)
+    base_path = (
+        "/usr/bin:/bin" if minimal_path else os.environ.get("PATH", "/usr/bin:/bin")
+    )
     env = {
-        "PATH": f"{stub_bin}{os.pathsep}{os.environ.get('PATH', '/usr/bin:/bin')}",
+        "PATH": f"{stub_bin}{os.pathsep}{base_path}",
         "HOME": str(tmp_path),
     }
     env.update(overrides)
@@ -61,6 +79,22 @@ def _make(
         capture_output=True,
         text=True,
         timeout=30,
+    )
+
+
+def _free_port() -> int:
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+    return port
+
+
+def _delegated(tmp_path: Path) -> tuple[str, str]:
+    """Compile-time env the stubbed delegate actually received."""
+    return (
+        (tmp_path / "delegate-trailbase").read_text().strip(),
+        (tmp_path / "delegate-cdn").read_text().strip(),
     )
 
 
@@ -118,6 +152,7 @@ def _fixture_repo(tmp_path: Path, serve_port: int) -> Path:
     (fixture / "scripts").mkdir(parents=True)
     (fixture / "origa_ui").mkdir()
     (fixture / "end2end").mkdir()
+    (fixture / "tauri").mkdir()
     shutil.copy(GUARDS, fixture / "scripts" / "dev-guards.sh")
     (fixture / "origa_ui" / "Trunk.toml").write_text(f"[serve]\nport = {serve_port}\n")
     return fixture
@@ -131,12 +166,7 @@ def test_serve_ui_starts_delegate_with_valid_env(tmp_path: Path) -> None:
     server. Without this case all refusal tests stay green even if the recipe
     loses its delegate command (test-review round, common finding).
     """
-    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    probe.bind(("127.0.0.1", 0))
-    port = probe.getsockname()[1]
-    probe.close()
-
-    fixture = _fixture_repo(tmp_path, port)
+    fixture = _fixture_repo(tmp_path, _free_port())
     env, marker = _clean_env(
         tmp_path,
         TRAILBASE_URL="http://127.0.0.1:4000",
@@ -194,4 +224,174 @@ def test_e2e_refuses_missing_creds_and_missing_node_modules(tmp_path: Path) -> N
     assert no_modules.returncode != 0
     assert "node_modules отсутствует" in no_modules.stderr
     assert "cd end2end && npm ci" in no_modules.stderr
+    assert not marker.exists()
+
+
+# --- uwuwu#1663: dist and desktop recipes ---
+
+
+def test_dist_without_env_refuses_before_trunk(tmp_path: Path) -> None:
+    env, marker = _clean_env(tmp_path)
+    result = _make("dist", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: TRAILBASE_URL" in result.stderr
+    # Gherkin pins the whole runbook canon, not just the target name: a
+    # truncated hint would leave the developer without the complete pair.
+    assert (
+        "ORIGA_CDN_BASE_URL=http://localhost:8080 "
+        "TRAILBASE_URL=http://127.0.0.1:4000 make dist" in result.stderr
+    )
+    assert not marker.exists()
+
+
+def test_dist_with_empty_trailbase_refuses_before_trunk(tmp_path: Path) -> None:
+    """ADR-024 at the make boundary: SET-EMPTY is the same refusal as unset."""
+    env, marker = _clean_env(
+        tmp_path,
+        ORIGA_CDN_BASE_URL="http://localhost:8080",
+        TRAILBASE_URL="",
+    )
+    result = _make("dist", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: TRAILBASE_URL" in result.stderr
+    assert not marker.exists()
+
+
+def test_dist_with_explicit_prod_refuses_before_trunk(tmp_path: Path) -> None:
+    env, marker = _clean_env(
+        tmp_path,
+        TRAILBASE_URL="https://app.origa.uwuwu.net",
+        ORIGA_CDN_BASE_URL="http://localhost:8080",
+    )
+    result = _make("dist", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: TRAILBASE_URL" in result.stderr
+    assert not marker.exists()
+
+
+def test_dist_without_cdn_refuses_before_trunk(tmp_path: Path) -> None:
+    """guard_dist is a composition: CDN is required even with loopback TB."""
+    env, marker = _clean_env(tmp_path, TRAILBASE_URL="http://127.0.0.1:4000")
+    result = _make("dist", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: ORIGA_CDN_BASE_URL не задана" in result.stderr
+    assert not marker.exists()
+
+
+@pytest.mark.parametrize("target", ["dist", "tauri-dev"])
+def test_recipes_refuse_missing_trunk_with_controlled_path(
+    tmp_path: Path, target: str
+) -> None:
+    """Both recipes keep guard_trunk; PATH is controlled, not inherited."""
+    env, marker = _clean_env(
+        tmp_path,
+        minimal_path=True,
+        stubs=("npm", "just", "cargo", "cargo-tauri"),
+        TRAILBASE_URL="http://127.0.0.1:4000",
+        ORIGA_CDN_BASE_URL="http://localhost:8080",
+    )
+    result = _make(target, env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: trunk не найден в PATH" in result.stderr
+    assert not marker.exists()
+
+
+def test_dist_starts_delegate_with_local_pair(tmp_path: Path) -> None:
+    env, marker = _clean_env(
+        tmp_path,
+        TRAILBASE_URL="http://127.0.0.1:4000",
+        ORIGA_CDN_BASE_URL="http://localhost:8080",
+    )
+    result = _make("dist", env, REPO_ROOT)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists(), "guards passed but trunk build did not start"
+    # The guard checks the shell env; the delegate must get the same pair —
+    # an empty value here would silently bake the ADR-020 production default.
+    trailbase, cdn = _delegated(tmp_path)
+    assert trailbase == "http://127.0.0.1:4000"
+    assert cdn == "http://localhost:8080"
+
+
+def test_tauri_dev_injects_loopback_into_delegate(tmp_path: Path) -> None:
+    fixture = _fixture_repo(tmp_path, _free_port())
+    env, marker = _clean_env(tmp_path, GUARD_REPO_ROOT=str(fixture))
+    result = _make("tauri-dev", env, fixture)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists()
+    trailbase, _ = _delegated(tmp_path)
+    assert trailbase == "http://127.0.0.1:4000"
+
+
+def test_tauri_dev_with_empty_trailbase_injects_loopback(tmp_path: Path) -> None:
+    """Gherkin: SET-EMPTY is unset at the make boundary too (ADR-024)."""
+    fixture = _fixture_repo(tmp_path, _free_port())
+    env, marker = _clean_env(tmp_path, GUARD_REPO_ROOT=str(fixture), TRAILBASE_URL="")
+    result = _make("tauri-dev", env, fixture)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists()
+    trailbase, _ = _delegated(tmp_path)
+    assert trailbase == "http://127.0.0.1:4000"
+
+
+def test_tauri_dev_preserves_explicit_loopback(tmp_path: Path) -> None:
+    """An explicit loopback backend must survive the recipe unchanged."""
+    fixture = _fixture_repo(tmp_path, _free_port())
+    env, marker = _clean_env(
+        tmp_path, GUARD_REPO_ROOT=str(fixture), TRAILBASE_URL="http://localhost:4001"
+    )
+    result = _make("tauri-dev", env, fixture)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists()
+    trailbase, _ = _delegated(tmp_path)
+    assert trailbase == "http://localhost:4001"
+
+
+def test_tauri_dev_refuses_explicit_prod_before_delegate(tmp_path: Path) -> None:
+    env, marker = _clean_env(tmp_path, TRAILBASE_URL="https://app.origa.uwuwu.net")
+    result = _make("tauri-dev", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "GUARD FAIL: TRAILBASE_URL" in result.stderr
+    # Gherkin: the refusal carries the norm and the ready-to-copy loopback fix.
+    assert "не должен уходить в прод" in result.stderr
+    assert "export TRAILBASE_URL=http://127.0.0.1:4000" in result.stderr
+    assert not marker.exists()
+
+
+def test_tauri_dev_refuses_occupied_port_with_attribution(tmp_path: Path) -> None:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("127.0.0.1", 0))
+    sock.listen(1)
+    port = sock.getsockname()[1]
+    try:
+        fixture = _fixture_repo(tmp_path, port)
+        env, marker = _clean_env(tmp_path, GUARD_REPO_ROOT=str(fixture))
+        result = _make("tauri-dev", env, fixture)
+        assert result.returncode != 0
+        # The label carries the recipe's parenthetical; the port and the
+        # refusal verb are the load-bearing parts.
+        assert f"порт serve-ui {port}" in result.stderr
+        assert "занят (pid=" in result.stderr
+        # serve-ui scope: any listener refuses. The e2e scope would accept a
+        # local one — that mutation must not survive behind the kill remedy.
+        assert "порт занят, trunk serve не переиспользует слушатель" in result.stderr
+        # Gherkin: pid+cwd attribution and a ready remedy, same as serve-ui.
+        match = re.search(r"pid=(\d+), cwd=([^)]+)\)", result.stderr)
+        assert match, result.stderr
+        assert match.group(1) == str(os.getpid()), result.stderr
+        assert match.group(2) == str(Path.cwd()), result.stderr
+        assert f"остановите процесс (kill {os.getpid()})" in result.stderr
+        assert not marker.exists()
+    finally:
+        sock.close()
+
+
+def test_tauri_dev_refuses_missing_cli_with_controlled_path(tmp_path: Path) -> None:
+    env, marker = _clean_env(
+        tmp_path,
+        minimal_path=True,
+        stubs=("trunk", "npm", "just", "cargo"),
+    )
+    result = _make("tauri-dev", env, REPO_ROOT)
+    assert result.returncode != 0
+    assert "cargo-tauri не найден" in result.stderr
     assert not marker.exists()

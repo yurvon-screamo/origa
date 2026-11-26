@@ -5,11 +5,12 @@
 # (https://app.origa.uwuwu.net) into the bundle via the ADR-020 fallback and
 # wrote records against it; prod answered 403 fail-closed.
 #
-# The rule behind the guards: local WEB development/e2e never talks to the
-# production TrailBase (contour: trunk serve, e2e, shots). The production CDN
-# is read-only and is the documented local content source (root AGENTS.md
-# "Local dev"). The `cargo tauri dev` desktop contour is out of scope — the
-# class remainder is tracked in uwuwu#1663.
+# The rule behind the guards: the local contour never talks to the production
+# TrailBase. The make contour covers web serve, e2e, the e2e dist build and
+# `make tauri-dev` (uwuwu#1663). The production CDN is read-only and is the
+# documented local content source (root AGENTS.md "Local dev"). Direct
+# commands still bake the ADR-020/023 defaults silently — the documented
+# remainder of the chosen option A.
 #
 # Sourced by the root Makefile recipes and by scripts/dev-guards.test.sh.
 # POSIX sh on purpose (make recipes run /bin/sh). The pure verdict functions
@@ -31,7 +32,7 @@
 # TRAILBASE_URL verdict: exit 0 = loopback-host URL (local backend);
 # exit 1 = empty, non-loopback or malformed. The production default is the
 # exact value this guard refuses — an explicit prod host is refused too
-# (the norm forbids local web dev talking to prod, not only silent
+# (the norm forbids the local contour talking to prod, not only silent
 # fallbacks), mirroring the e2e config which has no prod option at all.
 trailbase_is_local() {
 	_tb_val=$1
@@ -71,6 +72,21 @@ trailbase_is_local() {
 	'' | *[!0-9]*) return 1 ;; # empty or non-numeric tail is not a port
 	*) return 0 ;;
 	esac
+}
+
+# Desktop dev value for TRAILBASE_URL (uwuwu#1663). Unset or empty means the
+# developer did not choose a backend: the canonical recipe supplies a local
+# one instead of letting build.rs bake the ADR-020 production default. An
+# explicit loopback value passes through. An explicit non-loopback value
+# refuses — the recipe must not silently talk to production.
+# Pure: prints the resolved value, exits 1 on a refused value.
+tauri_trailbase_value() {
+	if [ -z "${1:-}" ]; then
+		printf 'http://127.0.0.1:4000\n'
+		return 0
+	fi
+	trailbase_is_local "$1" || return 1
+	printf '%s\n' "$1"
 }
 
 # Landing build base (root AGENTS.md; origa_landing/build.rs panics without
@@ -298,7 +314,7 @@ guard_trailbase() {
 		return 0
 	fi
 	if [ -n "${TRAILBASE_URL:-}" ]; then
-		_gt_why="указывает не на loopback-хост (прод-TrailBase запрещён для локальной web-разработки)"
+		_gt_why="указывает не на loopback-хост (прод-TrailBase запрещён в локальном контуре)"
 	else
 		_gt_why="не задана — build.rs молча запечёт прод (ADR-020 fallback, инцидент uwuwu#1449)"
 	fi
@@ -306,7 +322,7 @@ guard_trailbase() {
   Remedy:
     export TRAILBASE_URL=http://127.0.0.1:4000
     cd end2end && npm run trailbase:start   # поднять локальный TrailBase
-  Норма: локальная web-разработка/e2e не смотрит в прод (root AGENTS.md)."
+  Норма: локальный контур не смотрит в прод-TrailBase (root AGENTS.md)."
 }
 
 guard_cdn_env() {
@@ -352,6 +368,43 @@ warn_corpus() {
 		guard_warn "локальный корпус не найден (${ORIGA_CDN_DIR:-не задана} / ~/origa-cdn) — corpus-тесты скипнутся ([skip] маркеры), контент пойдёт с прод-CDN.
   Remedy (сид один раз на машину): aws s3 sync s3://<bucket> ~/origa-cdn --profile origa  (ранбук \"Tests in a Fresh Worktree\")."
 	fi
+}
+
+# e2e dist build (uwuwu#1663): strict loopback TrailBase, non-empty CDN and
+# trunk. The landing base is not needed by origa_ui/build.rs, so guard_dist
+# deliberately does not call guard_landing_base.
+guard_dist() {
+	printf 'Канон: ORIGA_CDN_BASE_URL=http://localhost:8080 TRAILBASE_URL=http://127.0.0.1:4000 make dist\n' >&2
+	guard_trailbase
+	guard_cdn_env
+	guard_trunk
+}
+
+# Desktop contour (uwuwu#1663). cargo-tauri is a cargo subcommand binary;
+# probing with `cargo` would touch the acceptance delegate marker. The CDN
+# guard is absent on purpose: ADR-020/023 allow the desktop fallback to the
+# read-only production CDN without env.
+guard_tauri_cli() {
+	command -v cargo-tauri >/dev/null 2>&1 || guard_fail "cargo-tauri не найден в PATH (cargo tauri dev не запустится).
+  Remedy: cargo install tauri-cli --version '^2' --locked"
+}
+
+guard_tauri_trailbase() {
+	tauri_trailbase_value "${TRAILBASE_URL:-}" >/dev/null || guard_fail "TRAILBASE_URL указывает не на loopback-хост: десктопный рецепт не должен уходить в прод.
+  Remedy:
+    export TRAILBASE_URL=http://127.0.0.1:4000
+    cd end2end && npm run trailbase:start   # поднять локальный TrailBase
+  Если переменная не задана, make tauri-dev подставит loopback сам."
+}
+
+guard_tauri_dev() {
+	guard_tauri_trailbase
+	guard_tauri_cli
+	guard_trunk
+	# beforeDevCommand runs `trunk serve` (tauri.conf.json), which binds the
+	# port from Trunk.toml and cannot reuse a listener — same incident class.
+	_td_port=$(serve_ui_port)
+	check_listeners serve-ui app "$_td_port" "порт serve-ui $_td_port (cargo tauri dev поднимает trunk serve)" || return 1
 }
 
 # serve-ui: the incident command. TrailBase strict + CDN non-empty + trunk +
@@ -411,10 +464,10 @@ env_check() {
 		printf 'OK   TRAILBASE_URL=%s (loopback)\n' "$TRAILBASE_URL"
 	elif [ -n "${TRAILBASE_URL:-}" ]; then
 		_ec_holes=$((_ec_holes + 1))
-		printf 'HOLE TRAILBASE_URL=%s — не loopback (прод-TrailBase запрещён для локальной web-разработки); export TRAILBASE_URL=http://127.0.0.1:4000\n' "$TRAILBASE_URL"
+		printf 'HOLE TRAILBASE_URL=%s — не loopback (прод-TrailBase запрещён в локальном контуре); export TRAILBASE_URL=http://127.0.0.1:4000\n' "$TRAILBASE_URL"
 	else
 		_ec_holes=$((_ec_holes + 1))
-		printf 'HOLE TRAILBASE_URL не задана (нужна для make serve-ui; без неё бандл печёт прод — ADR-020); export TRAILBASE_URL=http://127.0.0.1:4000\n'
+		printf 'HOLE TRAILBASE_URL не задана (нужна локальному контуру: serve-ui/dist/tauri-dev; без неё бандл печёт прод — ADR-020); export TRAILBASE_URL=http://127.0.0.1:4000\n'
 	fi
 
 	if command -v trunk >/dev/null 2>&1; then

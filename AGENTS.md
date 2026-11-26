@@ -42,8 +42,13 @@ CDN-контент (dictionaries, grammar, kanji_animations, ndlocr, phrases, pi
 
 ## Среда разработки
 
+Linux: `make tauri-dev` — подставляет loopback `TRAILBASE_URL` и проверяет порт 1420.
+Windows — PowerShell-форма ниже. macOS (zsh): `export TRAILBASE_URL=http://127.0.0.1:4000` перед той же командой.
+Без `TRAILBASE_URL` сборка печёт прод-бэкенд (ADR-020).
+
 ```powershell
 $env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"  # ОБЯЗАТЕЛЬНО
+$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # ОБЯЗАТЕЛЬНО: иначе прод (ADR-020)
 cd tauri && cargo tauri dev
 ```
 
@@ -61,6 +66,8 @@ $env:TRUNK_BUILD_CARGO_PROFILE = "wasm-dev"
 cd tauri && cargo tauri android dev
 ```
 
+Без `TRAILBASE_URL` debug-APK печёт прод-бэкенд (ADR-020). Подстановка loopback из `make tauri-dev` для эмулятора не подходит: хост `10.0.2.2` не проходит гард. Остаток — отдельное решение владельца (uwuwu#1663).
+
 **JNI-контекст (ADR-063):** с Tauri 2.11 (tao 0.35) никто не публикует
 JavaVM/Application в `ndk-context` — инвариант принадлежит
 `tauri/src/android_context.rs` (публикация в `JNI_OnLoad`, Application через
@@ -72,7 +79,8 @@ JavaVM/Application в `ndk-context` — инвариант принадлежи�
 ### Переменные окружения (compile-time, `build.rs`)
 
 Обязательные: `ORIGA_CDN_BASE_URL`; для сборки `origa_landing` (clippy/test) — также `ORIGA_APP_BASE_URL` (или пара `ORIGA_BASE_URI` + `ORIGA_APP_URI_PREFIX`), без неё `origa_landing/build.rs` паникует.
-Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `TRAILBASE_URL`, `ORIGA_LANDING_BASE_URL` (дефолт `https://origa.uwuwu.net`), `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `UMAMI_WEBSITE_ID` / `UMAMI_DISABLED` (только `origa_ui` build.rs: analytics override и CI-мьют `UMAMI_DISABLED=1`; пустое значение = трекер скомпилирован out — ADR-054).
+`TRAILBASE_URL`: обязательна для локальной web-сборки и Windows/macOS desktop-рецепта. В make-контуре (`serve-ui` / `dist` / `tauri-dev`) гард проверяет значение или подставляет loopback. В прямых сборках unset = прод-дефолт (ADR-020).
+Опциональные: `ORIGA_CDN_REGION`, `ORIGA_VERSION`, `ORIGA_COMMIT`, `ORIGA_BUILD_DATE`, `ORIGA_LANDING_BASE_URL` (дефолт `https://origa.uwuwu.net`), `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `UMAMI_WEBSITE_ID` / `UMAMI_DISABLED` (только `origa_ui` build.rs: analytics override и CI-мьют `UMAMI_DISABLED=1`; пустое значение = трекер скомпилирован out — ADR-054).
 
 **Sentry** (ADR-036): единый `SENTRY_DSN` пробрасывается во все build-скрипты; пустой/не задан = Sentry отключен. `SENTRY_ENVIRONMENT` маппится в CI из `version_type` (`stable`→`production`, `prerelease`→`staging`, иначе `development`). `SENTRY_RELEASE` выводится из `ORIGA_VERSION` (отдельная CI-переменная не нужна). Локально для теста Sentry:
 
@@ -80,6 +88,7 @@ JavaVM/Application в `ndk-context` — инвариант принадлежи�
 $env:SENTRY_DSN = "https://<public_key>@o<orgid>.ingest.sentry.io/<projectid>"
 $env:SENTRY_ENVIRONMENT = "development"
 $env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"
+$env:TRAILBASE_URL = "http://127.0.0.1:4000"            # иначе прод (ADR-020)
 cd tauri && cargo tauri dev
 ```
 
@@ -99,7 +108,7 @@ Aeza Frankfurt `85.192.63.249` залочен РКН из РФ целиком (�
 Cloudflare для этой зоны запрещён: ТСПУ из РФ не достаёт до CF NS (инцидент 08–09.2026) —
 не делегировать зону на CF без отдельного ADR.
 
-**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; cache policy is tiered, see CDN / S3 below)
+**Local dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"` (production CDN endpoint — read-only, safe to use directly; cache policy is tiered, see CDN / S3 below). Прямые `trunk serve`, `trunk build --release` и `cargo tauri dev` без env молча печут прод-TrailBase (ADR-020/023) — известный остаток; используйте make-цели.
 **Browserslist warning:** local trunk builds of `origa_ui` print `caniuse-lite is outdated` — harmless, the data is frozen inside trunk's standalone tailwindcss binary; `npx update-browserslist-db` is a no-op here. Fix and details: `origa_ui/AGENTS.md` → Development.
 **Landing dev:** `$env:ORIGA_CDN_BASE_URL = "https://s3.origa.uwuwu.net"; $env:ORIGA_APP_BASE_URL = "https://app.origa.uwuwu.net"` (`ORIGA_LANDING_BASE_URL` необязателен — дефолт `https://origa.uwuwu.net`)
 
@@ -112,7 +121,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --check && cargo fmt
 ```
 
-Канонические make-цели dev-контура (Linux; `make env-check` / `check` / `test` / `serve-ui` / `serve-landing` / `e2e` / `shots` / `css-landing`) — те же команды под fail-closed env-гардами (`scripts/dev-guards.sh`): локальный serve/e2e не смотрит в прод-TrailBase, чужие слушатели портов и несобранное окружение свежего ворктри ловятся до старта серверов (`make env-check` — отчёт по окружению с remedy). Windows/PowerShell-рецепты выше остаются каноном desktop-контура.
+Канонические make-цели dev-контура (Linux; `make env-check` / `check` / `test` / `serve-ui` / `serve-landing` / `dist` / `tauri-dev` / `e2e` / `shots` / `css-landing`) — те же команды под fail-closed env-гардами (`scripts/dev-guards.sh`): локальный контур не смотрит в прод-TrailBase, чужие слушатели портов и несобранное окружение свежего ворктри ловятся до старта серверов (`make env-check` — отчёт по окружению с remedy). Linux desktop — `make tauri-dev`; Windows/macOS — явный `TRAILBASE_URL` перед командой, без него сборка печёт прод.
 
 Тесты: `rstest` (параметризованные). Конфиги: `.rustfmt.toml` (max_width=100), `clippy.toml` (complexity=25).
 
