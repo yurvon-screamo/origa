@@ -116,6 +116,22 @@ test("a dual-stack listener produces one verdict for its port", () => {
   assert.match(report.errors[0], /не из того бандла/);
 });
 
+test("an unreadable first record does not suppress the pair's verdict", () => {
+  // The dedup key is claimed only after the ownership filters: a record
+  // with an unreadable cwd must not eat the verdict of a readable twin.
+  const report = evaluatePreflight(
+    facts({
+      listeners: [
+        { port: APP_PORT, pid: 4242, cwd: null },
+        { port: APP_PORT, pid: 4242, cwd: "/home/other/worktree" },
+      ],
+    }),
+  );
+
+  assert.equal(report.errors.length, 1);
+  assert.match(report.errors[0], /не из того бандла/);
+});
+
 test("two processes on the same port still produce two verdicts", () => {
   const report = evaluatePreflight(
     facts({
