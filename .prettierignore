@@ -5,3 +5,12 @@
 # (qlty triage does not apply to formatter runs, so the ignore file is
 # the mechanism prettier itself honors).
 .github/**
+
+# project.yml here is a hand-maintained XcodeGen spec, not CLI output:
+# ADR-033 §5 names its info.properties the canonical iOS Info.plist overlay,
+# and _build-tauri-apple.yml calls it the source of truth for regenerating
+# project.pbxproj. tauri-cli only creates the scaffold when the file is
+# absent; bundle.iOS.template is not set in tauri.conf.json. Prettier must
+# not be the last writer of this hand-edited tree — format-only diffs here
+# are noise on iOS-config PRs. Exclude the whole Xcode scaffold.
+tauri/gen/**
