@@ -81,7 +81,7 @@ async fn caps_failure_on_android_escalates_to_error_event() {
 }
 
 #[wasm_bindgen_test]
-async fn caps_failure_on_web_stays_warn_without_error_event() {
+async fn web_platform_skips_the_query_without_a_round_trip() {
     log_capture::install();
     reset_cached_capabilities();
     // Same settle+drain as the android test above: this test's window must
@@ -90,41 +90,35 @@ async fn caps_failure_on_web_stays_warn_without_error_event() {
     // events from the invoke suite landed here and broke the == 1 count).
     gloo_timers::future::TimeoutFuture::new(50).await;
     log_capture::take_events();
-    // No UA override: the runner's browser UA is a desktop one and without
-    // a Tauri shell platform_name() resolves to "web" — the plugin-less
-    // platform where fallback routing is normal, not a degradation.
+    // No UA override: under TauriMock the shell exists, and the runner's
+    // desktop UA (Linux CI) resolves `platform_name()` to a plugin-less
+    // platform — any non-plugin platform exercises the same contract. Since
+    // uwuwu#1098 the query is skipped before any invoke: there is no caps
+    // failure to grade anymore, the contract is "no plugin round-trip at
+    // all, fallback routing without an event".
     let _mock = TauriMock::install(|command, _args| {
         let command = command.as_string().unwrap_or_default();
-        if command.ends_with("get_capabilities") {
-            rejected_with("[PLUGIN_FAILURE]", "caps query failed")
-        } else {
-            rejected_with("[UNEXPECTED]", &command)
-        }
+        rejected_with("[UNEXPECTED]", &command)
     });
 
     let routed = available(Feature::TextRecognition).await;
-    assert!(!routed, "failed caps query must route to fallback");
+    assert!(!routed, "plugin-less platforms route to the fallback");
 
-    // Count by THIS test's rejection marker, not by the generic phrase:
-    // the shared log buffer accumulates caps-failure events from the other
-    // device_ai tests (availability checks, real-invoke probes) that do not
-    // drain it, so the generic phrase under-counts by pollution.
     let all = log_capture::take_events();
-    let caps_events: Vec<_> = all
-        .iter()
-        .filter(|(_, message)| message.contains("[PLUGIN_FAILURE]"))
-        .cloned()
-        .collect();
-    assert_eq!(
-        caps_events.len(),
-        1,
-        "exactly one caps-failure event expected, all events: {all:?}"
+    assert!(
+        all.iter()
+            .all(|(_, message)| !message.contains("[UNEXPECTED]")),
+        "the plugin must not be invoked on web at all — no round-trip, \
+         got events: {all:?}"
     );
-    assert_eq!(
-        caps_events[0].0,
-        Level::WARN,
-        "on web a caps failure must stay a warn (breadcrumb), got: {:?}",
-        caps_events[0]
+    assert!(
+        all.iter()
+            .any(|(_, message)| message.contains("no plugin backend")),
+        "the skip must leave a debug breadcrumb, got events: {all:?}"
+    );
+    assert!(
+        all.iter().all(|(level, _)| *level != Level::ERROR),
+        "a plugin-less skip must never escalate to error (Sentry), got: {all:?}"
     );
 }
 

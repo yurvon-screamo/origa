@@ -4,8 +4,9 @@
 //! Routing contract:
 //! - Web (no Tauri) → the plugin is unreachable; [`available`] returns `false`
 //!   for every feature and callers use the WASM fallback.
-//! - Tauri on Windows/Linux → the plugin is not compiled in; invoking it
-//!   fails, capabilities stay unavailable, fallback is used.
+//! - Tauri on Windows/Linux → the plugin is not compiled in; the capabilities
+//!   query is skipped entirely (uwuwu#1098) — no invoke, no ACL rejection,
+//!   capabilities collapse to unavailable, fallback is used.
 //! - Tauri on macOS/iOS/Android → capabilities are queried once, cached, and
 //!   each feature routes to device-ai when reported available, otherwise to
 //!   the fallback stack.
@@ -71,8 +72,10 @@ pub fn plugin_compiled_in() -> bool {
 
 /// Reports whether `feature` is available via device-ai on this platform.
 ///
-/// Triggers a one-shot capabilities query on first use, then reads the cache.
-/// Any failure (plugin absent, invoke error, timeout) collapses to
+/// On plugin-less platforms (web, Windows/Linux) no query happens at all
+/// (uwuwu#1098): the call collapses to `false` before any invoke. On
+/// plugin platforms a one-shot capabilities query runs on first use, then
+/// reads the cache; any failure (invoke error, timeout) collapses to
 /// "unavailable" so callers transparently use the fallback stack.
 pub async fn available(feature: Feature) -> bool {
     if !plugin_compiled_in() {
@@ -93,6 +96,17 @@ pub async fn available(feature: Feature) -> bool {
     status
 }
 
+/// Pure routing predicate: does this platform have a device-ai plugin backend
+/// that a capabilities query could reach at all? Windows/Linux/web have no
+/// plugin by design (`expects_native_ai` is the canonical platform matrix) —
+/// a query there is doomed and only produces ACL-reject noise (uwuwu#1098),
+/// so [`cached_or_query`] collapses to all-unavailable without the
+/// round-trip. Kept as a named function (not an inline call) so the routing
+/// contract stays unit-testable without a webview.
+fn capabilities_query_expected(platform: &str) -> bool {
+    crate::core::capabilities::expects_native_ai(platform)
+}
+
 /// Resolves capabilities from the cache, querying the plugin on first access.
 ///
 /// Concurrent first callers share one in-flight query (single-flight lives in
@@ -111,6 +125,19 @@ async fn cached_or_query() -> Result<Capabilities, String> {
         return Ok(caps);
     }
 
+    // Platforms without the compiled-in plugin (Windows/Linux — uwuwu#1098)
+    // never pass the ACL: querying them only produces the "Command … not
+    // allowed by ACL" warn on every boot. Collapse to all-unavailable
+    // without the doomed round-trip; the fallback routing below is their
+    // normal path, not a degradation.
+    let platform = crate::core::platform::platform_name();
+    if !capabilities_query_expected(&platform) {
+        tracing::debug!(
+            "device-ai: no plugin backend on {platform} — capabilities unavailable, fallbacks only"
+        );
+        return Ok(Capabilities::all_unavailable());
+    }
+
     match invoke::get_capabilities().await {
         Ok(caps) => {
             CACHED_CAPABILITIES.with(|c| *c.borrow_mut() = Some(caps.clone()));
@@ -122,21 +149,16 @@ async fn cached_or_query() -> Result<Capabilities, String> {
             Ok(caps)
         },
         Err(e) => {
-            // A capabilities failure on a platform that expects the native
-            // path is a degradation, not routine fallback routing: escalate
-            // to an error so it surfaces as a Sentry event (warn only lands
-            // as a breadcrumb, which is invisible without a later capture).
-            // Windows/Linux/web have no plugin by design — keep those as
-            // breadcrumbs to avoid event noise from normal fallbacks.
-            if crate::core::capabilities::expects_native_ai(&crate::core::platform::platform_name())
-            {
-                tracing::error!(
-                    "device-ai: capabilities query failed ({e}) — native path degraded on a \
-                     platform that expects it"
-                );
-            } else {
-                tracing::warn!("device-ai: capabilities query failed ({e}), routing to fallbacks");
-            }
+            // Unreachable for plugin-less platforms (skipped above), so every
+            // Err here is a capabilities failure on a platform that expects
+            // the native path — a degradation, not routine fallback routing:
+            // escalate to an error so it surfaces as a Sentry event (warn
+            // only lands as a breadcrumb, which is invisible without a later
+            // capture).
+            tracing::error!(
+                "device-ai: capabilities query failed ({e}) — native path degraded on a \
+                 platform that expects it"
+            );
             Ok(Capabilities::all_unavailable())
         },
     }
@@ -173,5 +195,28 @@ mod tests {
 
         assert!(!Feature::SpeechRecognition.status(&caps));
         assert!(!Feature::TextRecognition.status(&caps));
+    }
+
+    /// uwuwu#1098: the capabilities query is expected only on platforms with
+    /// a plugin backend; on Windows/Linux the query is skipped entirely (no
+    /// doomed ACL round-trip), on web there is no Tauri shell.
+    #[test]
+    fn capabilities_query_expected_only_on_plugin_platforms() {
+        for platform in ["macos", "ios", "android"] {
+            assert!(
+                capabilities_query_expected(platform),
+                "{platform} hosts the plugin backend — query expected"
+            );
+        }
+        for platform in ["linux", "windows"] {
+            assert!(
+                !capabilities_query_expected(platform),
+                "{platform} has no plugin backend — the query must be skipped"
+            );
+        }
+        assert!(
+            !capabilities_query_expected("webview-unknown"),
+            "non-plugin platforms must skip the query"
+        );
     }
 }

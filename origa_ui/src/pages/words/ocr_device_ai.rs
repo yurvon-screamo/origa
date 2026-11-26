@@ -51,8 +51,17 @@ mod wasm_tests {
 
     use super::*;
     use crate::core::log_capture;
-    use crate::core::tauri_mock::{TauriMock, all_available_caps, rejected_with};
+    use crate::core::tauri_mock::{
+        TauriMock, UserAgentOverride, all_available_caps, rejected_with,
+    };
     use tracing::Level;
+
+    /// Android WebView user agent — pins `platform_name()` to a plugin
+    /// backend: since uwuwu#1098 plugin-less platforms skip the capabilities
+    /// query entirely, so the native-failure escalation under test is only
+    /// reachable there.
+    const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/537.36 \
+         (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 
     fn plugin_mock_with_failing_vision() -> TauriMock {
         TauriMock::install(|command, _args| {
@@ -71,6 +80,9 @@ mod wasm_tests {
     async fn ocr_invoke_failure_emits_error_event_and_falls_back() {
         log_capture::install();
         device_ai::reset_cached_capabilities();
+        // uwuwu#1098: pin a plugin platform — the query-skip on plugin-less
+        // platforms would return None before the invoke under test.
+        let _ua = UserAgentOverride::install(ANDROID_UA);
         let _mock = plugin_mock_with_failing_vision();
 
         let loading = OcrLoadingState::new();

@@ -304,14 +304,23 @@ fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("[deep-link] listener for 'deep-link://new-url' registered");
 
-    // Runtime scheme registration is a Windows/Linux mechanism (for
-    // installs where the static desktop-file registration does not
-    // cover them, e.g. a raw binary). On macOS the scheme is
-    // registered statically by the bundle (MacOS-Info.plist
-    // CFBundleURLTypes) and register_all() always
+    // Runtime scheme registration: Windows-only since uwuwu#1098 (owner
+    // decision, variant В, sanctioned 24.11.2026). The plugin's register()
+    // rewrites the system scheme default to the *running* binary's absolute
+    // path on every launch — "last run wins" destabilized the origa://
+    // handler on dev-active machines (debug builds from task worktrees
+    // overwrote it; worktree removal left a dead handler → the OAuth browser
+    // callback died outside the webview → login-page strand) and produced
+    // the update-desktop-database-not-found error noise on machines without
+    // desktop-file-utils (Sentry RUST-Z/RUST-F, uwuwu#1511). Linux relies on
+    // the static registration of the bundled desktop entry
+    // (MimeType=x-scheme-handler/origa in Origa.desktop); a raw dev build
+    // registers a dev handler manually (see the Linux deep-link runbook).
+    // On macOS the scheme is registered statically by the bundle
+    // (MacOS-Info.plist CFBundleURLTypes) and register_all() always
     // returns Err(UnsupportedPlatform) — calling it there only
     // produced a false error on every launch.
-    #[cfg(any(windows, target_os = "linux"))]
+    #[cfg(windows)]
     {
         match app.deep_link().register_all() {
             Ok(()) => {
