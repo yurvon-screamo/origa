@@ -148,6 +148,13 @@ threshold = 6
 [smells.duplication]
 nodes_threshold = 60
 
+# 2026-11-26 (uwuwu#418): Leptos components carry props as function parameters
+# (counts 6-33); per-path triage/exclude does not affect the smells engine and
+# no threshold separates components from real Rust offenders (ranges overlap).
+# Disable the rule per-language for Rust; TS/Python contours untouched.
+[language.rust.smells.function_parameters]
+enabled = false
+
 # =============================================================================
 # COVERAGE CONFIGURATION
 # =============================================================================
