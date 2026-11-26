@@ -422,6 +422,13 @@ cargo run -p utils -- build-grammar-precompute
 dictionary (lindera) is needed only when the blob is stale and actually
 regenerated; a fresh blob exits with a skip log without it.
 
+**Freshness boundary:** the header binds to `grammar_v3.json`, the
+SudachiDict directory name and the sha256 of `JmdictFurigana.txt` — not to
+the builder or annotator code. After a code change that alters derived
+readings, remove or rename the blob before rebuilding: otherwise the old
+bytes still look fresh and the builder logs `is fresh, skipping
+regeneration`.
+
 ### `build-phrase-precompute` - Build Phrase Tokenization Precompute
 
 Builds the phrase tokenization precompute (#521): per-chunk deflated
@@ -441,6 +448,10 @@ cargo run -p utils -- build-phrase-precompute
 **Requires:** JmdictFurigana in the CDN checkout. The tokenizer
 dictionary (lindera) is loaded only when at least one chunk blob is
 stale; when every chunk is fresh the command exits with a skip log.
+
+The same freshness boundary applies: chunk bytes and dictionary inputs,
+not the builder code. A code change that alters derived readings needs
+the affected chunk blobs removed or renamed before rebuilding.
 
 ## Getting Help
 
