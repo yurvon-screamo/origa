@@ -1,38 +1,33 @@
 import assert from "node:assert/strict";
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { test } from "node:test";
 
+import { buildStaticInput } from "./coverage-input.ts";
 import { inventory } from "./coverage-inventory.ts";
 import {
   checkStatic,
   compareManifest,
   formatCoverageReport,
   matchesScreen,
-  parseRoutePatterns,
   type CoverageRow,
+  type StaticCheckInput,
 } from "./coverage.ts";
-import { listDescriptors } from "./catalog.ts";
-import { repoRoot } from "./config.ts";
-import type { ShotEntry, ShotManifest } from "./manifest.ts";
+import type { ShotEntry } from "./manifest.ts";
 
-async function staticInput() {
-  const routes = await readFile(
-    join(repoRoot, "origa_ui/src/routes.rs"),
-    "utf-8",
-  );
-  const model = JSON.parse(
-    await readFile(join(import.meta.dirname, "examiner/model.json"), "utf-8"),
-  ) as { screens: Record<string, unknown> };
-  const files = (await readdir(join(import.meta.dirname, "scenarios"))).filter(
-    (name) => name.endsWith(".ts") && name !== "index.ts",
-  );
+async function staticInput(): Promise<StaticCheckInput> {
+  return await buildStaticInput();
+}
+
+function row(overrides: Partial<CoverageRow> = {}): CoverageRow {
   return {
-    rows: inventory,
-    routePatterns: parseRoutePatterns(routes),
-    scenarioIds: listDescriptors().map((descriptor) => descriptor.id),
-    scenarioFiles: files,
-    examKeys: Object.keys(model.screens),
+    id: "test:row",
+    kind: "variation",
+    route: "/home",
+    source: "test-marker",
+    scenario: "home",
+    screens: ["home"],
+    viewports: ["desktop", "mobile"],
+    status: "covered",
+    ...overrides,
   };
 }
 
@@ -70,62 +65,43 @@ test("the router table has every application route", async () => {
 });
 
 test("the committed inventory satisfies the structural invariants", async () => {
-  const issues = checkStatic(await staticInput());
-  assert.deepEqual(issues, []);
+  assert.deepEqual(checkStatic(await staticInput()), []);
 });
 
 test("every catalog scenario is named by an inventory row", async () => {
-  const input = await staticInput();
   const referenced = new Set(
-    inventory.map((row) => row.scenario).filter((id): id is string => !!id),
+    inventory.map((item) => item.scenario).filter((id): id is string => !!id),
   );
-  for (const id of input.scenarioIds) {
+  for (const id of (await staticInput()).scenarioIds) {
     assert.ok(referenced.has(id), `scenario ${id} has no inventory row`);
   }
 });
 
 test("a covered row without a mobile frame is red", () => {
-  const row = inventory.find((entry) => entry.id === "page:home");
-  assert.ok(row);
-  const issues = compareManifest([row], [frame("home", "home", "desktop")]);
+  const issues = compareManifest([row()], [frame("home", "home", "desktop")]);
   assert.deepEqual(issues, [
-    { row: "page:home", problem: 'no mobile frame for screen "home"' },
+    { row: "test:row", problem: 'no mobile frame for screen "home"' },
   ]);
 });
 
 test("a frame in the other viewport does not satisfy the row", () => {
-  const row = inventory.find((entry) => entry.id === "page:home");
-  assert.ok(row);
   const issues = compareManifest(
-    [row],
+    [row()],
     [frame("home", "home", "mobile"), frame("home", "home", "mobile")],
   );
   assert.equal(issues.length, 1);
   assert.match(issues[0].problem, /desktop/);
 });
 
-test("dynamic screen names match a wildcard row", () => {
-  assert.ok(matchesScreen("review-body-*", "review-body-quiz-3"));
+test("dynamic screen names match a wildcard with a prefix", () => {
+  assert.ok(matchesScreen("review-body-quiz-*", "review-body-quiz-3"));
   assert.ok(!matchesScreen("review-body-*", "writing-card"));
-});
-
-test("a weak comparator would pass a one-viewport proof — the real one does not", async () => {
-  const input = await staticInput();
-  const row = input.rows.find((entry) => entry.id === "page:home");
-  assert.ok(row);
-  const manifest: ShotManifest = {
-    version: 1,
-    label: "one-viewport",
-    entries: [frame("home", "home", "desktop")],
-  };
-  assert.equal(compareManifest([row], manifest.entries).length, 1);
+  assert.ok(!matchesScreen("*", "anything"));
 });
 
 test("mixed commits in one proof are red", () => {
-  const row = inventory.find((entry) => entry.id === "page:home");
-  assert.ok(row);
   const issues = compareManifest(
-    [row],
+    [row()],
     [
       frame("home", "home", "desktop", "aaa"),
       frame("home", "home", "mobile", "bbb"),
@@ -134,26 +110,123 @@ test("mixed commits in one proof are red", () => {
   assert.ok(issues.some((issue) => issue.problem.includes("mixed commits")));
 });
 
-test("a single viewport without a reason is red", async () => {
+async function staticWithRows(rows: CoverageRow[]): Promise<StaticCheckInput> {
+  return { ...(await staticInput()), rows };
+}
+
+test("a duplicate inventory id is red", async () => {
+  const issues = await checkStatic(await staticWithRows([row(), row()]));
+  assert.ok(issues.some((issue) => issue.problem.includes("duplicate")));
+});
+
+test("a route without a row is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ route: "/home" })]),
+  );
+  assert.ok(issues.some((issue) => issue.row === "/login"));
+  assert.ok(
+    issues.some((issue) => issue.problem === "route has no inventory row"),
+  );
+});
+
+test("an alias target without a row is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ route: "/home", aliasOf: "/missing" })]),
+  );
+  assert.ok(issues.some((issue) => issue.problem.includes("alias target")));
+});
+
+test("a scenario without a row is red", async () => {
   const input = await staticInput();
-  const narrow: CoverageRow = {
-    id: "test:narrow",
-    kind: "variation",
-    route: "/home",
-    source: "test",
-    scenario: "home",
-    screens: ["home"],
-    viewports: ["mobile"],
-    status: "covered",
-  };
-  const issues = checkStatic({ ...input, rows: [narrow] });
+  const rows = input.rows.filter((item) => item.scenario !== "home");
+  const issues = checkStatic({ ...input, rows });
+  assert.ok(
+    issues.some(
+      (issue) => issue.problem === "catalog scenario has no inventory row",
+    ),
+  );
+});
+
+test("a covered row without a scenario file is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ scenario: "missing-scenario" })]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem.includes("missing scenario file")),
+  );
+});
+
+test("a covered row without its own examined screen is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([
+      row({ scenario: "home", screens: ["not-examined"] }),
+    ]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem.includes("no examined screen")),
+  );
+});
+
+test("an exclusion without a reason is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ status: "excluded" })]),
+  );
+  assert.ok(issues.some((issue) => issue.problem.includes("exclusion needs")));
+});
+
+test("tauri-only and feature-off exclusions need a source", async () => {
+  for (const code of ["tauri-only", "feature-off"] as const) {
+    const issues = await checkStatic(
+      await staticWithRows([
+        row({
+          status: "excluded",
+          exclusion: { code, reason: "test" },
+        }),
+      ]),
+    );
+    assert.ok(
+      issues.some((issue) => issue.problem.includes("needs a flag or file")),
+      `${code} without source passed`,
+    );
+  }
+});
+
+test("a row with zero viewports is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ viewports: [] })]),
+  );
+  assert.ok(
+    issues.some((issue) => issue.problem === "row requires no viewport"),
+  );
+});
+
+test("a single viewport without a reason is red", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([row({ viewports: ["mobile"] })]),
+  );
   assert.ok(issues.some((issue) => issue.problem.includes("viewportsReason")));
 });
 
-test("the report names every gap instead of hiding it", () => {
-  const report = formatCoverageReport(inventory, []);
-  const gaps = inventory.filter((row) => row.status === "gap");
-  for (const row of gaps) {
-    assert.ok(report.includes(row.id), `gap ${row.id} missing from report`);
+test("the report names every gap and every issue", () => {
+  const gaps = inventory.filter((item) => item.status === "gap");
+  const report = formatCoverageReport(inventory, [
+    { row: "test:row", problem: "red proof" },
+  ]);
+  assert.ok(gaps.length > 0, "the inventory must keep unproven rows visible");
+  for (const item of gaps) {
+    assert.ok(report.includes(item.id), `gap ${item.id} missing from report`);
   }
+  assert.match(report, /Проблемы \(1\)/);
+  assert.match(report, /red proof/);
+});
+
+test("owner-question exclusions get their own report block", () => {
+  const item = row({
+    id: "test:owner",
+    status: "excluded",
+    exclusion: { code: "owner-question", reason: "нужен дискриминатор" },
+  });
+  const report = formatCoverageReport([item], []);
+  assert.match(report, /Вопросы владельцу:/);
+  assert.match(report, /нужен дискриминатор/);
 });

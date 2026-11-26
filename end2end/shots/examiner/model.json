@@ -349,7 +349,7 @@
     "kanji:kanji-list": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
-    "kanji:kanji-add-modal": {
+    "kanji:kanji-add-drawer": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     },
     "sets:sets-list": {

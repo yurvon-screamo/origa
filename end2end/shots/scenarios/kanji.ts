@@ -16,7 +16,7 @@ export const kanjiScenario: ShotScenario = {
     await expect(page.getByTestId("kanji-add-drawer")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("kanji-add-modal");
+    await sink.shot("kanji-add-drawer");
 
     await page.keyboard.press("Escape");
     await page.getByTestId("kanji-card-item").first().click();

@@ -34,10 +34,10 @@ export interface ShotSession {
 /**
  * Opens a logged-in session for a capture.
  *
- * Every screen of every scenario starts from here: a fresh test account,
- * the download consent pre-approved, the login done and the data state of
- * the preset applied. The account is deleted afterwards — a capture must
- * not leave accounts behind.
+ * Default: a fresh test account, consent pre-approved, login done and the
+ * preset applied. Scenarios with `auth: "none"` get an anonymous session;
+ * `consent: "required"` keeps the logged-in session but withholds consent.
+ * The account is deleted afterwards — a capture must not leave accounts.
  */
 export async function openShotSession(
   options: ShotSessionOptions,

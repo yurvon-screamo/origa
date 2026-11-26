@@ -12,13 +12,13 @@ import type { ShotScenario } from "../scenario.ts";
 export const lessonQuizMultiScenario: ShotScenario = {
   ...descriptors["lesson-quiz-multi"],
   async run({ page }, sink) {
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       await page.goto("/lesson");
       const first = page.getByTestId("quiz-option-0");
       const second = page.getByTestId("quiz-option-1");
       if (
         !(await first
-          .waitFor({ state: "visible", timeout: 90_000 })
+          .waitFor({ state: "visible", timeout: 30_000 })
           .then(() => true)
           .catch(() => false))
       ) {

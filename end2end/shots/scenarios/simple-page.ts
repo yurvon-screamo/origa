@@ -12,5 +12,11 @@ export async function captureSimplePage(
 ): Promise<void> {
   await page.goto(route);
   await expect(page.getByTestId(marker)).toBeVisible({ timeout: 60_000 });
+  // The static splash fades for 360 ms after WASM mounts; it has an id,
+  // not a test id, so this is the one sanctioned CSS selector here.
+  await page
+    .locator("#origa-boot-splash")
+    .waitFor({ state: "detached", timeout: 10_000 })
+    .catch(() => undefined);
   await sink.shot(screen);
 }

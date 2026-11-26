@@ -73,7 +73,12 @@ export function repoImageName(entry: {
   viewport: string;
   locale: string;
 }): string {
-  return `${entry.scenario}--${entry.screen}--${entry.viewport}--${entry.locale}.png`;
+  return shotFileName(
+    entry.scenario,
+    entry.screen,
+    entry.viewport as ViewportTag,
+    entry.locale,
+  );
 }
 
 /** Key of a capture inside the registry. */

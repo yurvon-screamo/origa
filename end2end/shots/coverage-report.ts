@@ -48,19 +48,45 @@ function hasFrame(
 export function formatCoverageReport(
   rows: readonly CoverageRow[],
   issues: readonly CoverageIssue[],
+  proved: readonly string[] = [],
 ): string {
+  const covered = rows.filter((row) => row.status === "covered");
   const gaps = rows.filter((row) => row.status === "gap");
   const excluded = rows.filter((row) => row.status === "excluded");
   const lines = [
-    `Инвентарь: ${rows.length} строк; покрыто ${rows.length - gaps.length - excluded.length}, дыр ${gaps.length}, исключений ${excluded.length}.`,
+    `Инвентарь: ${rows.length} строк; декларировано покрыто ${covered.length}, дыр ${gaps.length}, исключений ${excluded.length}; доказано манифестом ${proved.length}.`,
+    "",
+    "Строки:",
   ];
-  if (gaps.length > 0) {
-    lines.push("", "Дыры:");
-    for (const row of gaps) lines.push(`  ${row.id} — ${row.source}`);
+  for (const row of covered) {
+    lines.push(
+      `  covered  ${row.id} — ${row.source} [${row.viewports.join(",")}]${proved.includes(row.id) ? " · кадры есть" : " · кадров нет"}`,
+    );
+  }
+  for (const row of gaps) {
+    lines.push(
+      `  gap      ${row.id} — ${row.source} [${row.viewports.join(",")}]`,
+    );
+  }
+  for (const row of excluded) {
+    lines.push(
+      `  excluded ${row.id} — ${row.exclusion?.code}: ${row.exclusion?.reason}`,
+    );
+  }
+  const questions = rows.filter(
+    (row) => row.exclusion?.code === "owner-question",
+  );
+  if (questions.length > 0) {
+    lines.push("", "Вопросы владельцу:");
+    for (const row of questions) {
+      lines.push(`  ${row.id}: ${row.exclusion?.reason}`);
+    }
   }
   if (issues.length > 0) {
-    lines.push("", "Проблемы:");
-    for (const issue of issues) lines.push(`  ${issue.row}: ${issue.problem}`);
+    lines.push("", `Проблемы (${issues.length}):`);
+    for (const issue of issues) {
+      lines.push(`  ${issue.row}: ${issue.problem}`);
+    }
   } else {
     lines.push("", "Структурных проблем нет.");
   }

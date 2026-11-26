@@ -31,6 +31,17 @@ export const grammarDetailScenario: ShotScenario = {
         .or(page.getByTestId("grammar-practice-complete"))
         .or(page.getByTestId("grammar-practice-no-words")),
     ).toBeVisible({ timeout: 15_000 });
+    if (
+      await page
+        .getByTestId("grammar-practice-complete")
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await page.getByTestId("grammar-practice-again-btn").click();
+    }
+    await expect(page.getByTestId("grammar-practice-progress")).toBeVisible({
+      timeout: 15_000,
+    });
     await sink.shot("grammar-practice-question");
 
     const deleteButton = page

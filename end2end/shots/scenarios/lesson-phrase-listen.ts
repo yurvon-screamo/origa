@@ -5,12 +5,12 @@ import type { ShotScenario } from "../scenario.ts";
 export const lessonPhraseListenScenario: ShotScenario = {
   ...descriptors["lesson-phrase-listen"],
   async run({ page }, sink) {
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       await page.goto("/lesson");
       const player = page.getByTestId("phrase-audio-player");
       if (
         await player
-          .waitFor({ state: "visible", timeout: 90_000 })
+          .waitFor({ state: "visible", timeout: 30_000 })
           .then(() => true)
           .catch(() => false)
       ) {

@@ -174,6 +174,12 @@ async function storeCommand(options: Options): Promise<number> {
 }
 
 async function captureCommand(options: Options): Promise<number> {
+  if (options.run) {
+    console.error(
+      "--run applies only to coverage and store; capture writes to --out",
+    );
+    return 1;
+  }
   const known = new Set(listDescriptors().map((descriptor) => descriptor.id));
   const unknown = options.scenario.filter((id) => !known.has(id));
   if (options.scenario.length === 0) {

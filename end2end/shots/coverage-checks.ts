@@ -17,6 +17,7 @@ export function parseRoutePatterns(source: string): string[] {
 }
 
 export function matchesScreen(pattern: string, screen: string): boolean {
+  if (pattern === "*") return false;
   if (pattern.endsWith("*")) return screen.startsWith(pattern.slice(0, -1));
   return pattern === screen;
 }
@@ -80,9 +81,24 @@ function hasOwnExam(
 
 function checkRow(row: CoverageRow, input: StaticCheckInput): CoverageIssue[] {
   if (row.status === "excluded") {
-    return row.exclusion?.code && row.exclusion.reason
-      ? []
-      : [{ row: row.id, problem: "exclusion needs code and reason" }];
+    const issues: CoverageIssue[] = [];
+    if (!row.exclusion?.code || !row.exclusion.reason) {
+      issues.push({ row: row.id, problem: "exclusion needs code and reason" });
+    }
+    if (
+      (row.exclusion?.code === "feature-off" ||
+        row.exclusion?.code === "tauri-only") &&
+      !row.exclusion.source
+    ) {
+      issues.push({
+        row: row.id,
+        problem: `${row.exclusion.code} needs a flag or file in source`,
+      });
+    }
+    return issues;
+  }
+  if (row.viewports.length === 0) {
+    return [{ row: row.id, problem: "row requires no viewport" }];
   }
   const narrow =
     row.viewports.includes("mobile") !== row.viewports.includes("desktop");
@@ -96,6 +112,9 @@ function checkRow(row: CoverageRow, input: StaticCheckInput): CoverageIssue[] {
   }
   if (row.status === "gap") return [];
   const issues: CoverageIssue[] = [];
+  if (row.screens.some((screen) => screen === "*")) {
+    issues.push({ row: row.id, problem: "screen wildcard needs a prefix" });
+  }
   if (!input.scenarioFiles.includes(`${row.scenario}.ts`)) {
     issues.push({
       row: row.id,

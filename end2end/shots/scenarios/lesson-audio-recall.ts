@@ -7,12 +7,12 @@ import type { ShotScenario } from "../scenario.ts";
 export const lessonAudioRecallScenario: ShotScenario = {
   ...descriptors["lesson-audio-recall"],
   async run({ page }, sink) {
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       await page.goto("/lesson");
       const card = page.getByTestId("audio-recall-card-root");
       if (
         await card
-          .waitFor({ state: "visible", timeout: 90_000 })
+          .waitFor({ state: "visible", timeout: 30_000 })
           .then(() => true)
           .catch(() => false)
       ) {
