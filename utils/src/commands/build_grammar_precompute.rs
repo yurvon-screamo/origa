@@ -133,10 +133,6 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
     let cdn_dir = cdn_dir
         .map(PathBuf::from)
         .unwrap_or_else(crate::utils::cdn_dir);
-    load_dictionary().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
-    })?;
-
     let dictionary_ingredients =
         init_furigana_and_dictionary_ingredients(&cdn_dir.join(FURIGANA_SOURCE))?;
 
@@ -162,6 +158,12 @@ pub fn run_build_grammar_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaE
         tracing::info!("{GRAMMAR_PRECOMPUTE_BLOB} is fresh, skipping regeneration");
         return Ok(());
     }
+
+    // deploy_cdn.py runs this command on machines without a local
+    // SudachiDict: only regeneration needs the tokenizer.
+    load_dictionary().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
+    })?;
 
     let mut keys = BTreeMap::new();
     let grammar: serde_json::Value =

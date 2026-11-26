@@ -63,11 +63,17 @@ fn chunk_entry_keys(text: &str) -> Vec<String> {
     keys
 }
 
-fn build_chunk(
+struct StaleChunk {
+    id: u32,
+    source: Vec<u8>,
+}
+
+/// Returns a chunk's source bytes only when its blob is missing or stale.
+fn stale_chunk(
     cdn_dir: &Path,
     chunk_id: u32,
     dictionary_ingredients: &[u8],
-) -> Result<bool, String> {
+) -> Result<Option<StaleChunk>, String> {
     let chunk_path = format!("{PHRASE_DATA_DIR}/p{chunk_id:04}.json");
     let source = fs::read(cdn_dir.join(&chunk_path))
         .map_err(|e| format!("failed to read {chunk_path}: {e}"))?;
@@ -81,11 +87,23 @@ fn build_chunk(
     let blob_is_fresh = matches!(existing.as_deref().map(split_blob), Some(Ok((header, _))) if
         header.schema_version == SCHEMA_VERSION
             && header.source_sha256 == sha256_raw(&source_with_ingredients));
-    if blob_is_fresh {
-        return Ok(false);
-    }
+    Ok((!blob_is_fresh).then_some(StaleChunk {
+        id: chunk_id,
+        source,
+    }))
+}
 
-    let phrases: Vec<serde_json::Value> = serde_json::from_slice(&source)
+fn write_chunk(
+    cdn_dir: &Path,
+    chunk: &StaleChunk,
+    dictionary_ingredients: &[u8],
+) -> Result<(), String> {
+    let chunk_path = format!("{PHRASE_DATA_DIR}/p{:04}.json", chunk.id);
+    let blob_path = format!("{PRECOMPUTE_DIR}/p{:04}.rkyv", chunk.id);
+    let mut source_with_ingredients = chunk.source.clone();
+    source_with_ingredients.extend_from_slice(dictionary_ingredients);
+
+    let phrases: Vec<serde_json::Value> = serde_json::from_slice(&chunk.source)
         .map_err(|e| format!("failed to parse {chunk_path}: {e}"))?;
 
     let mut entries: BTreeMap<String, PrecomputedEntry> = BTreeMap::new();
@@ -106,7 +124,7 @@ fn build_chunk(
     // Guard is derived from the manifest hash of the chunk JSON alone (the
     // only manifest-visible source); the dictionary ingredients only feed
     // the freshness hash above.
-    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&source)]);
+    let guard = cdn_blob::manifest_guard_from_hex_hashes(&[&sha256_hex(&chunk.source)]);
     let header = BlobHeader {
         schema_version: SCHEMA_VERSION,
         source_sha256: sha256_raw(&source_with_ingredients),
@@ -117,7 +135,7 @@ fn build_chunk(
     let built = build_blob(&header, &payload);
     fs::write(cdn_dir.join(&blob_path), deflate_blob(&built))
         .map_err(|e| format!("failed to write {blob_path}: {e}"))?;
-    Ok(true)
+    Ok(())
 }
 
 pub fn run_build_phrase_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaError> {
@@ -125,24 +143,38 @@ pub fn run_build_phrase_precompute(cdn_dir: Option<&Path>) -> Result<(), OrigaEr
         .map(PathBuf::from)
         .unwrap_or_else(crate::utils::cdn_dir);
     let cdn_dir = cdn_dir_buf.as_path();
-    load_dictionary().map_err(|e| OrigaError::RepositoryError {
-        reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
-    })?;
-
     let dictionary_ingredients =
         init_furigana_and_dictionary_ingredients(&cdn_dir.join(FURIGANA_SOURCE))?;
 
     let ids = chunk_ids(cdn_dir).map_err(|reason| OrigaError::RepositoryError { reason })?;
-    tracing::info!("precomputing {} phrase chunks", ids.len());
-    let started = std::time::Instant::now();
-    let mut rebuilt = 0usize;
+    let mut stale = Vec::new();
     for chunk_id in ids {
-        let did_rebuild = build_chunk(cdn_dir, chunk_id, &dictionary_ingredients)
+        if let Some(chunk) = stale_chunk(cdn_dir, chunk_id, &dictionary_ingredients)
+            .map_err(|reason| OrigaError::RepositoryError { reason })?
+        {
+            stale.push(chunk);
+        }
+    }
+    if stale.is_empty() {
+        tracing::info!("all phrase precompute chunks are fresh, skipping regeneration");
+        return Ok(());
+    }
+
+    // deploy_cdn.py runs this command on machines without a local
+    // SudachiDict: only regeneration needs the tokenizer.
+    load_dictionary().map_err(|e| OrigaError::RepositoryError {
+        reason: format!("tokenizer dictionary unavailable for precompute: {e:?}"),
+    })?;
+
+    tracing::info!("precomputing {} stale phrase chunks", stale.len());
+    let started = std::time::Instant::now();
+    for chunk in &stale {
+        write_chunk(cdn_dir, chunk, &dictionary_ingredients)
             .map_err(|reason| OrigaError::RepositoryError { reason })?;
-        rebuilt += usize::from(did_rebuild);
     }
     tracing::info!(
-        "phrase precompute done: {rebuilt} chunks rebuilt in {:.1}s",
+        "phrase precompute done: {} chunks rebuilt in {:.1}s",
+        stale.len(),
         started.elapsed().as_secs_f32()
     );
     Ok(())
