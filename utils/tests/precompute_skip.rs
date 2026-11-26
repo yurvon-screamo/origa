@@ -1,5 +1,11 @@
 //! Both precompute builders run on CDN deploy machines that have no local
 //! SudachiDict. Fresh blobs must short-circuit before tokenizer init.
+//!
+//! Prerequisites for this suite: `cargo` and `python3` in PATH. The positive
+//! path needs a seeded SudachiDict — in CI the `cdn-data` artifact is
+//! unpacked to `<workspace>/cdn`, locally it is `$ORIGA_CDN_DIR` or
+//! `~/origa-cdn`; without one those tests exit early with the repo's
+//! `[skip]` corpus marker.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -16,8 +22,10 @@ use origa::domain::SUDACHIDICT_DIR;
 const FURIGANA_SOURCE: &str = "学生 がくせい\n";
 const GRAMMAR_SOURCE: &[u8] = br#"{"rules": []}"#;
 const PHRASE_CHUNK_SOURCE: &str = r#"[{"x":"私は学生です。"}]"#;
+const SECOND_CHUNK_SOURCE: &str = r#"[{"x":"猫が好きです。"}]"#;
 const GRAMMAR_BLOB: &str = "grammar/grammar_precompute_v3.rkyv";
 const PHRASE_BLOB: &str = "phrases/precomputed/p0000.rkyv";
+const SECOND_PHRASE_BLOB: &str = "phrases/precomputed/p0001.rkyv";
 
 #[derive(Clone, Copy)]
 enum BlobState {
@@ -69,6 +77,41 @@ impl Corpus {
         Self { root }
     }
 
+    /// Symlinks the seeded SudachiDict into the corpus so the regeneration
+    /// path can run. False means no seed exists — the repo's skip marker is
+    /// emitted and the caller returns early (CI unpacks the dict into cdn/).
+    fn link_dictionary(&self) -> bool {
+        let Some(dict) = seeded_dictionary_dir() else {
+            let probe = origa::corpus::cdn_dir()
+                .join("dictionaries")
+                .join(SUDACHIDICT_DIR);
+            origa::corpus::print_corpus_skip_marker(
+                "SudachiDict for precompute regeneration",
+                &probe,
+            );
+            return false;
+        };
+        link_seed_dir(&dict, &self.root.join("dictionaries").join(SUDACHIDICT_DIR));
+        true
+    }
+
+    /// Adds a second chunk with a genuinely fresh blob, to prove that only
+    /// stale chunks are selected for regeneration.
+    fn add_fresh_phrase_chunk(&self, id: u32, source: &[u8]) {
+        fs::write(
+            self.root.join(format!("phrases/data/p{id:04}.json")),
+            source,
+        )
+        .expect("staging second phrase chunk");
+        stage_blob(
+            &self.root,
+            &format!("phrases/precomputed/p{id:04}.rkyv"),
+            source,
+            &dictionary_ingredients(),
+            BlobState::Fresh,
+        );
+    }
+
     fn build(&self, command: &str) -> Output {
         Command::new(env!("CARGO_BIN_EXE_utils"))
             .current_dir(&self.root)
@@ -78,6 +121,35 @@ impl Corpus {
             .output()
             .unwrap_or_else(|e| panic!("spawning utils {command}: {e}"))
     }
+}
+
+#[cfg(unix)]
+fn link_seed_dir(target: &Path, link: &Path) {
+    std::os::unix::fs::symlink(target, link).expect("linking seeded SudachiDict into corpus");
+}
+
+#[cfg(windows)]
+fn link_seed_dir(target: &Path, link: &Path) {
+    std::os::windows::fs::symlink_dir(target, link)
+        .expect("linking seeded SudachiDict into corpus");
+}
+
+/// The CI Test job unpacks the `cdn-data` artifact into `<workspace>/cdn`;
+/// developer machines keep one seed at `$ORIGA_CDN_DIR` / `~/origa-cdn`.
+fn seeded_dictionary_dir() -> Option<PathBuf> {
+    let project_root = Path::new(env!("CARGO_MANIFEST_DIR")).parent()?;
+    let candidates = [
+        project_root
+            .join("cdn")
+            .join("dictionaries")
+            .join(SUDACHIDICT_DIR),
+        origa::corpus::cdn_dir()
+            .join("dictionaries")
+            .join(SUDACHIDICT_DIR),
+    ];
+    candidates
+        .into_iter()
+        .find(|dir| dir.join("metadata.json").is_file())
 }
 
 impl Drop for Corpus {
@@ -180,8 +252,11 @@ fn stale_phrase_chunk_still_attempts_regeneration() {
     );
 }
 
+/// Cheap CLI-level check that the two commands can run back to back with no
+/// dictionary. The real production caller is driven by the sibling
+/// `real_deploy_loop_…` test below.
 #[test]
-fn deploy_loop_skips_both_builders_without_a_dictionary() {
+fn both_builders_skip_when_run_sequentially_without_a_dictionary() {
     let corpus = Corpus::staged(BlobState::Fresh);
 
     let grammar = corpus.build("build-grammar-precompute");
@@ -233,4 +308,115 @@ fn real_deploy_loop_skips_both_builders_without_a_dictionary() {
         text.contains("DEPLOY LOOP OK"),
         "expected loop completion, got: {text}"
     );
+    // The corpus must be dictionary-free: cwd is the checkout, where a
+    // stale `target/cdn-cache` would silently mask the skip path.
+    assert!(
+        !text.contains("using cached CDN dictionary"),
+        "the loop must not fall back to target/cdn-cache, got: {text}"
+    );
+}
+
+/// Acceptance criterion 2: a stale grammar blob is rebuilt by the real
+/// tokenizer, and the rebuilt blob is then recognised as fresh.
+#[test]
+fn stale_grammar_blob_is_regenerated_then_skipped() {
+    let corpus = Corpus::staged(BlobState::Stale);
+    if !corpus.link_dictionary() {
+        return;
+    }
+    let blob = corpus.root.join(GRAMMAR_BLOB);
+    let staged = fs::read(&blob).expect("staged stale blob");
+
+    let rebuilt = corpus.build("build-grammar-precompute");
+    let rebuilt_text = output_text(&rebuilt);
+    assert!(rebuilt.status.success(), "{rebuilt_text}");
+    assert!(
+        rebuilt_text.contains("grammar precompute:") && rebuilt_text.contains("entries derived"),
+        "expected a real regeneration, got: {rebuilt_text}"
+    );
+    let regenerated = fs::read(&blob).expect("regenerated blob");
+    assert_ne!(staged, regenerated, "regeneration must overwrite the blob");
+
+    let again = corpus.build("build-grammar-precompute");
+    let again_text = output_text(&again);
+    assert!(again.status.success(), "{again_text}");
+    assert!(
+        again_text.contains("grammar/grammar_precompute_v3.rkyv is fresh, skipping regeneration"),
+        "expected the fresh skip on repeat, got: {again_text}"
+    );
+    assert_eq!(regenerated, fs::read(&blob).expect("blob after repeat"));
+}
+
+/// The phrase builder must select only stale chunks: a fresh sibling blob
+/// survives byte-for-byte, and the next run skips both.
+#[test]
+fn only_stale_phrase_chunks_are_rebuilt_then_skipped() {
+    let corpus = Corpus::staged(BlobState::Stale);
+    corpus.add_fresh_phrase_chunk(1, SECOND_CHUNK_SOURCE.as_bytes());
+    if !corpus.link_dictionary() {
+        return;
+    }
+    let stale = corpus.root.join(PHRASE_BLOB);
+    let fresh = corpus.root.join(SECOND_PHRASE_BLOB);
+    let stale_before = fs::read(&stale).expect("staged stale blob");
+    let fresh_before = fs::read(&fresh).expect("staged fresh blob");
+
+    let rebuilt = corpus.build("build-phrase-precompute");
+    let rebuilt_text = output_text(&rebuilt);
+    assert!(rebuilt.status.success(), "{rebuilt_text}");
+    assert!(
+        rebuilt_text.contains("precomputing 1 stale phrase chunks")
+            && rebuilt_text.contains("1 chunks rebuilt"),
+        "expected exactly one chunk to be rebuilt, got: {rebuilt_text}"
+    );
+    let stale_after = fs::read(&stale).expect("rebuilt blob");
+    assert_ne!(stale_before, stale_after, "stale blob must be overwritten");
+    assert_eq!(
+        fresh_before,
+        fs::read(&fresh).expect("fresh blob"),
+        "fresh chunk must not be rewritten"
+    );
+
+    let again = corpus.build("build-phrase-precompute");
+    let again_text = output_text(&again);
+    assert!(again.status.success(), "{again_text}");
+    assert!(
+        again_text.contains("all phrase precompute chunks are fresh, skipping regeneration"),
+        "expected the fresh skip on repeat, got: {again_text}"
+    );
+    assert_eq!(stale_after, fs::read(&stale).expect("blob after repeat"));
+    assert_eq!(
+        fresh_before,
+        fs::read(&fresh).expect("fresh blob after repeat")
+    );
+}
+
+/// Primary build: a missing blob is stale too, and the created blob is
+/// recognised as fresh on the next run.
+#[test]
+fn missing_phrase_blob_is_built_then_skipped() {
+    let corpus = Corpus::staged(BlobState::Fresh);
+    if !corpus.link_dictionary() {
+        return;
+    }
+    let blob = corpus.root.join(PHRASE_BLOB);
+    fs::remove_file(&blob).expect("removing the blob to force a primary build");
+
+    let built = corpus.build("build-phrase-precompute");
+    let built_text = output_text(&built);
+    assert!(built.status.success(), "{built_text}");
+    assert!(
+        built_text.contains("1 chunks rebuilt"),
+        "expected a primary build, got: {built_text}"
+    );
+    let created = fs::read(&blob).expect("primary build must create the blob");
+
+    let again = corpus.build("build-phrase-precompute");
+    let again_text = output_text(&again);
+    assert!(again.status.success(), "{again_text}");
+    assert!(
+        again_text.contains("all phrase precompute chunks are fresh, skipping regeneration"),
+        "expected the fresh skip on repeat, got: {again_text}"
+    );
+    assert_eq!(created, fs::read(&blob).expect("blob after repeat"));
 }
