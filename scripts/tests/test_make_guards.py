@@ -59,9 +59,7 @@ def _clean_env(
         )
         stub.chmod(0o755)
     base_path = (
-        "/usr/bin:/bin"
-        if minimal_path
-        else os.environ.get("PATH", "/usr/bin:/bin")
+        "/usr/bin:/bin" if minimal_path else os.environ.get("PATH", "/usr/bin:/bin")
     )
     env = {
         "PATH": f"{stub_bin}{os.pathsep}{base_path}",

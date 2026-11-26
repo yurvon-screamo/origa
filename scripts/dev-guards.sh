@@ -322,7 +322,7 @@ guard_trailbase() {
   Remedy:
     export TRAILBASE_URL=http://127.0.0.1:4000
     cd end2end && npm run trailbase:start   # поднять локальный TrailBase
-  Норма: локальная web-разработка/e2e не смотрит в прод (root AGENTS.md)."
+  Норма: локальный контур не смотрит в прод-TrailBase (root AGENTS.md)."
 }
 
 guard_cdn_env() {
