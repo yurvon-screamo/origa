@@ -415,11 +415,12 @@ cargo run -p utils -- build-grammar-precompute
 
 **Options:**
 
-- `--cdn-dir <DIR>` - CDN root directory (defaults to `<repo>/cdn`
-  next to the crate)
+- `--cdn-dir <DIR>` - CDN root directory (defaults to `$ORIGA_CDN_DIR`,
+  otherwise `~/origa-cdn`)
 
-**Requires:** the tokenizer dictionary (lindera) and JmdictFurigana in
-the CDN checkout.
+**Requires:** JmdictFurigana in the CDN checkout. The tokenizer
+dictionary (lindera) is needed only when the blob is stale and actually
+regenerated; a fresh blob exits with a skip log without it.
 
 ### `build-phrase-precompute` - Build Phrase Tokenization Precompute
 
@@ -434,11 +435,12 @@ cargo run -p utils -- build-phrase-precompute
 
 **Options:**
 
-- `--cdn-dir <DIR>` - CDN root directory (defaults to `<repo>/cdn`
-  next to the crate)
+- `--cdn-dir <DIR>` - CDN root directory (defaults to `$ORIGA_CDN_DIR`,
+  otherwise `~/origa-cdn`)
 
-**Requires:** the tokenizer dictionary (lindera) and JmdictFurigana in
-the CDN checkout.
+**Requires:** JmdictFurigana in the CDN checkout. The tokenizer
+dictionary (lindera) is loaded only when at least one chunk blob is
+stale; when every chunk is fresh the command exits with a skip log.
 
 ## Getting Help
 
