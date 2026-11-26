@@ -58,8 +58,22 @@ def _load(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
+# The files this PR owns. Scoping explicitly (instead of globbing all of
+# .github/workflows) keeps unrelated workflows merged into master in the
+# meantime — e.g. seed-cache.yml from #922 — out of a contract owned here.
+PR_WORKFLOWS = (
+    "ci.yml",
+    "tauri.yml",
+    "weekly-quality.yml",
+    "cleanup-cache.yml",
+    "_build-tauri.yml",
+    "_build-tauri-apple.yml",
+    "_build-windows-store.yml",
+)
+
+
 def _yaml_files() -> list[Path]:
-    return [ACTION, *sorted((_GH / "workflows").glob("*.yml"))]
+    return [ACTION, *(_GH / "workflows" / name for name in PR_WORKFLOWS)]
 
 
 def _iter_steps(doc: dict):
@@ -151,7 +165,9 @@ def test_enable_step_is_fail_soft_on_missing_credentials(tmp_path: Path, secrets
 
 
 def test_sccache_action_pinned_by_sha_and_compiler_version():
-    steps = [s for s in _load(ACTION)["runs"]["steps"] if s.get("name") == "Install sccache"]
+    steps = [
+        s for s in _load(ACTION)["runs"]["steps"] if s.get("name") == "Install sccache"
+    ]
     assert len(steps) == 1
     step = steps[0]
     assert re.fullmatch(
@@ -171,6 +187,13 @@ def test_no_direct_rust_cache_use_in_github():
             assert "Swatinem/rust-cache" not in str(step.get("uses", "")), (
                 f"{path.name} still calls rust-cache directly"
             )
+
+
+def test_composite_declares_only_targets():
+    declared = set(_load(ACTION).get("inputs", {}))
+    assert declared == {"targets"}, (
+        "a rust-cache-era input is back in the composite — two mechanisms again"
+    )
 
 
 def test_setup_rust_callsites_pass_no_removed_inputs():
@@ -209,7 +232,9 @@ def test_reusable_builders_declare_and_map_sccache_secrets(name: str):
     doc = _load(_GH / "workflows" / name)
     declared = _on(doc).get("workflow_call", {}).get("secrets", {})
     for key in SECRET_KEYS:
-        assert key in declared, f"{name} does not declare {key} in workflow_call.secrets"
+        assert key in declared, (
+            f"{name} does not declare {key} in workflow_call.secrets"
+        )
         assert declared[key].get("required") is False, f"{name} made {key} mandatory"
     env = _workflow_env(doc)
     for key in SECRET_KEYS:
