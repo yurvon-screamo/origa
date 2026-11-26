@@ -12,6 +12,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -313,3 +315,173 @@ def test_failed_batch_keeps_earlier_commits(
     assert all(path.parent == staging_dir(corpus) for path in temp_files(corpus))
     clean_staging(corpus)
     assert temp_files(corpus) == []
+
+
+def test_main_dry_run_then_write_materializes_partial_corpus(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The user's whole path through the CLI: preview, write, run again."""
+    production = {
+        "counters/counters.json": b"counter-v2",
+        "dictionary/kanji.json": b"kanji-v1",
+        "phrases/data/p0000.json": b"exact-NEW",
+        "phrases/data/p0001.json": b"good-data",
+        "phrases/precomputed/x.bin": b"AAAA",
+        "kanji_animations/\u4e00.svg": b"anim",
+        "kanji_frames/\u4e00.svg": b"frame",
+    }
+    corpus = make_corpus(
+        tmp_path,
+        {
+            "counters/counters.json": b"counter-v1",
+            "dictionary/kanji.json": b"kanji-v1",
+            "phrases/data/p0000.json": b"exact-OLD",
+            "phrases/data/p0001.json": b"good-data",
+            "phrases/precomputed/x.bin": b"BBBB",
+            "kanji_frames/\u4e00.svg": b"frame",
+            "phrases/data/legacy.json": b"legacy",
+        },
+    )
+    store = FakeStore(
+        production,
+        manifest_keys=("counters/counters.json", "dictionary/kanji.json"),
+    )
+    monkeypatch.setattr(
+        materialize_cdn_corpus._cdn_corpus, "corpus_dir", lambda: corpus
+    )
+    monkeypatch.setattr(materialize_cdn_corpus, "S3ProductionStore", lambda: store)
+
+    assert materialize_cdn_corpus.main(["--dry-run"]) == 0
+    preview = capsys.readouterr().out
+    assert "Versioned files: 1 verified, 1 fetched/needed" in preview
+    assert "phrases/data: 0 kept, 2 to verify" in preview
+    assert "phrases/precomputed: 1 kept, 0 to fetch" in preview
+    assert "local-only phrases/data/legacy.json" in preview
+    assert store.calls == []
+    assert not (corpus / "manifest.json").exists()
+    assert (corpus / "counters/counters.json").read_bytes() == b"counter-v1"
+
+    assert materialize_cdn_corpus.main([]) == 0
+    capsys.readouterr()
+    for key, payload in production.items():
+        if key.startswith("phrases/precomputed/"):
+            continue  # size-only policy keeps the same-size local bytes
+        assert (corpus / key).read_bytes() == payload, key
+    assert (corpus / "phrases/precomputed/x.bin").read_bytes() == b"BBBB"
+    assert json.loads((corpus / "manifest.json").read_text(encoding="utf-8")) == (
+        store.manifest()
+    )
+    assert set(store.calls) == {
+        "counters/counters.json",
+        "phrases/data/p0000.json",
+        "phrases/data/p0001.json",
+        "kanji_animations/\u4e00.svg",
+    }
+    assert temp_files(corpus) == []
+    assert (corpus / "phrases/data/legacy.json").read_bytes() == b"legacy"
+
+    snapshot = {
+        path.relative_to(corpus): (path.stat().st_ino, path.stat().st_mtime_ns)
+        for path in corpus.rglob("*")
+        if path.is_file() and ".materialize-tmp" not in path.parts
+    }
+    store.calls.clear()
+
+    assert materialize_cdn_corpus.main([]) == 0
+    report = capsys.readouterr().out
+    assert "Versioned files: 2 verified, 0 fetched/needed" in report
+    assert "phrases/data: 2 kept, 0 to fetch" in report
+    assert set(store.calls) == {
+        "phrases/data/p0000.json",
+        "phrases/data/p0001.json",
+    }
+    after = {
+        path.relative_to(corpus): (path.stat().st_ino, path.stat().st_mtime_ns)
+        for path in corpus.rglob("*")
+        if path.is_file() and ".materialize-tmp" not in path.parts
+    }
+    assert {
+        key: value for key, value in after.items() if key != Path("manifest.json")
+    } == {key: value for key, value in snapshot.items() if key != Path("manifest.json")}
+
+
+def test_early_exit_cancels_queued_downloads(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Ctrl+C on one object must not start the rest of the queued batch."""
+    monkeypatch.setattr(_cdn_materialize_io, "DOWNLOAD_WORKERS", 3)
+    production = {f"dictionary/{name}.json": name.encode() for name in "abcdefghijkl"}
+    corpus = make_corpus(tmp_path, {})
+    a_started, b_started, c_started = (threading.Event() for _ in "abc")
+    release_a, release_b, release_c, release_queued = (
+        threading.Event() for _ in "abcd"
+    )
+    a_finished, c_finished = threading.Event(), threading.Event()
+    queued_calls: list[str] = []
+
+    class BlockingStore(FakeStore):
+        def download(self, key: str, target: Path) -> str:
+            if key.endswith("a.json"):
+                a_started.set()
+                assert release_a.wait(10)
+                a_finished.set()
+            elif key.endswith("b.json"):
+                b_started.set()
+                assert release_b.wait(10)
+                raise KeyboardInterrupt
+            elif key.endswith("c.json"):
+                c_started.set()
+                assert release_c.wait(10)
+                c_finished.set()
+            else:
+                # A queued task that does start stays busy, so one worker
+                # cannot start the whole remaining queue before cancellation.
+                queued_calls.append(key)
+                assert release_queued.wait(10)
+            return self.files[key]
+
+    failure: list[BaseException] = []
+
+    def run() -> None:
+        try:
+            materialize_versioned_files(BlockingStore(production), corpus, False)
+        except BaseException as exc:
+            failure.append(exc)
+
+    worker = threading.Thread(target=run, daemon=True)
+    worker.start()
+    assert all(event.wait(5) for event in (a_started, b_started, c_started))
+    release_b.set()
+    worker.join(5)
+    assert not worker.is_alive()
+    assert failure and isinstance(failure[0], KeyboardInterrupt)
+    assert len(queued_calls) <= 1
+
+    # a and c were still busy when cancellation fired; once they finish,
+    # the rest of the queue must stay cancelled.
+    release_a.set()
+    release_c.set()
+    release_queued.set()
+    assert a_finished.wait(5) and c_finished.wait(5)
+    # A worker that had already dequeued one task may finish it, but the
+    # rest of the queue must stay cancelled (without cancellation all nine
+    # tasks would start here).
+    deadline = time.monotonic() + 1
+    while len(queued_calls) <= 2 and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert len(queued_calls) <= 2
+    assert all(path.parent == staging_dir(corpus) for path in temp_files(corpus))
+
+
+def test_batch_reports_progress_every_interval(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    production = {f"dictionary/{index:03}.json": b"x" for index in range(101)}
+    corpus = make_corpus(tmp_path, {})
+
+    materialize_versioned_files(FakeStore(production), corpus, False)
+
+    report = capsys.readouterr().out
+    assert "downloaded 100/101" in report
+    assert "downloaded 101/101" in report
+    assert report.index("downloaded 100/101") < report.index("downloaded 101/101")
