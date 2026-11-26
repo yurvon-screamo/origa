@@ -649,12 +649,6 @@ jobs:
               # Compile errors still abort everything regardless.
               run: cargo test --workspace --exclude origa_landing --no-fail-fast
 
-            - name: sccache stats
-              # Pilot diagnostics (#1495): hit rate and traffic of the shared
-              # S3 compile cache for this job. Informational only.
-              if: always()
-              run: sccache --show-stats || true
-
     # Landing SSR tests (#800). The 300+ integration tests of
     # origa_landing were green but invisible to CI: the Test job excludes
     # the package (`cargo test --workspace --exclude origa_landing`) and
@@ -773,10 +767,6 @@ jobs:
             # whose fetch+inflate spikes periodically SIGKILL the browser
             # page (rc27/rc31/rc33, PR #876 x4 flakes).
             ORIGA_CDN_BASE_URL: http://localhost:8080
-            # Hermetic job: build.rs bakes this URL into the wasm test binary,
-            # but sccache keys do not cover build-script env — opt out of the
-            # shared compile cache so no prod-URL object leaks into the suite.
-            SCCACHE_DISABLE: "true"
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
