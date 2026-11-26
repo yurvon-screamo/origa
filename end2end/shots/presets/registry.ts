@@ -16,6 +16,7 @@ export const PRESET_IDS = [
   "onboarded-history",
   "irodori-nyuumon",
   "onboarding-summary",
+  "onboarding-start",
   "phrase-dash-run",
   "with-word",
 ] as const;

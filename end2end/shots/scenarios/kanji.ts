@@ -17,5 +17,12 @@ export const kanjiScenario: ShotScenario = {
       timeout: 15_000,
     });
     await sink.shot("kanji-add-modal");
+
+    await page.keyboard.press("Escape");
+    await page.getByTestId("kanji-card-item").first().click();
+    await expect(page.getByTestId("kanji-detail-tabs")).toBeVisible({
+      timeout: 30_000,
+    });
+    await sink.shot("kanji-detail-tabs");
   },
 };

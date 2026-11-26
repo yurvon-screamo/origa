@@ -288,6 +288,13 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     locale: "ru-RU",
     preset: "fresh",
   },
+  "onboarding-steps": {
+    id: "onboarding-steps",
+    title: "Шаги онбординга: intro → load → JLPT → apps → summary",
+    route: "/onboarding",
+    locale: "ru-RU",
+    preset: "onboarding-start",
+  },
 };
 
 export function listDescriptors(): ScenarioDescriptor[] {

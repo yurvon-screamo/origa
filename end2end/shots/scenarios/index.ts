@@ -28,6 +28,7 @@ import { lessonYesnoResultScenario } from "./lesson-yesno-result.ts";
 import { listsEmptyScenario } from "./lists-empty.ts";
 import { loginScenario } from "./login.ts";
 import { onboardingImportProgressScenario } from "./onboarding-import-progress.ts";
+import { onboardingStepsScenario } from "./onboarding-steps.ts";
 import { phraseDashRunScenario } from "./phrase-dash-run.ts";
 import { profileScenario } from "./profile.ts";
 import { setsScenario } from "./sets.ts";
@@ -81,6 +82,7 @@ export const implementations: Record<string, ShotScenario> = {
   [setsScenario.id]: setsScenario,
   [lessonEmptyScenario.id]: lessonEmptyScenario,
   [listsEmptyScenario.id]: listsEmptyScenario,
+  [onboardingStepsScenario.id]: onboardingStepsScenario,
 };
 
 export function getImplementation(id: string): ShotScenario {

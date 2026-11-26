@@ -381,6 +381,27 @@
     },
     "lesson-reading-quiz:writing-card": {
       "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "kanji:kanji-detail-tabs": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-intro": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-load": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-jlpt": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-apps": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-progress": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
+    },
+    "onboarding-steps:step-summary": {
+      "questions": ["text-overlap", "tofu-glyphs", "broken-state"]
     }
   }
 }
