@@ -1,7 +1,10 @@
 use std::collections::HashSet;
 
 use leptos::prelude::*;
-use origa::domain::{FuriganaSegment, NativeLanguage, furiganize_segments};
+use origa::domain::{
+    FuriganaSegment, NativeLanguage, furiganize_segments,
+    furiganize_segments_from_precomputed_tokens,
+};
 
 use crate::ui_components::furigana_hover::{render_plain_segment, render_segment_with_hover};
 
@@ -13,6 +16,10 @@ pub fn FuriganaText(
     #[prop(optional, into)] test_id: Signal<String>,
     #[prop(optional, into)] native_language: Option<NativeLanguage>,
     #[prop(optional, default = false)] with_kanji_tooltip: bool,
+    /// Opt-in for surfaces whose counterpart renders precomputed token
+    /// readings (the phrase question). Default keeps the spans-first path.
+    #[prop(optional, default = false)]
+    prefer_precomputed_tokens: bool,
 ) -> impl IntoView {
     // Miss paths (no precompute, no furigana-dictionary entry) depend on
     // the tokenizer, which left the startup overlay (#521). Tracking its
@@ -23,6 +30,11 @@ pub fn FuriganaText(
     let segments = move || {
         if let Some(ready) = tokenizer_ready {
             ready.get();
+        }
+        if prefer_precomputed_tokens
+            && let Some(segments) = furiganize_segments_from_precomputed_tokens(&text, &known_kanji)
+        {
+            return segments;
         }
         furiganize_segments(&text, &known_kanji)
             .unwrap_or_else(|_| vec![FuriganaSegment::new(text.clone(), None, false)])
