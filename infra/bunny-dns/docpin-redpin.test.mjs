@@ -123,6 +123,18 @@ describe("doc-contract pins stay effective (red-pin gate)", () => {
     assertRed();
   });
 
+  it("a third attached section in README fails the exactly-two pin", () => {
+    // Insert after content.origa, not before it: the target pin destructures
+    // [s3, content] from the documented order and would otherwise fail here
+    // too, masking a silent loss of the exactly-two assertion.
+    mutate(
+      "README.md",
+      "\nEverything else in the zone",
+      "\n- `new.origa`     → CNAME drifted.example for everyone\n\nEverything else in the zone",
+    );
+    assertRed();
+  });
+
   it("a script guard narrowed past content.origa fails the attached-names pin", () => {
     mutate(
       "handleQuery.js",
