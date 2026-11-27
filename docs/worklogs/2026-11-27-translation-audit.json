@@ -1,11 +1,28 @@
 {
   "title": "Translation audit fixes — examples and dictionary glosses (uwuwu#1737, #935)",
-  "date": "2026-11-28",
+  "date": "2026-11-27",
   "source_task": "uwuwu#1737",
   "corpus_snapshot": {
     "generated_at": "2026-11-26T15:40:29Z",
     "files": 832,
-    "prod_match_before_fixes": true
+    "prod_match_before_fixes": true,
+    "prod_after": {
+      "generated_at": "2026-11-27T16:34:47Z",
+      "files": 832,
+      "hash_diffs_vs_local": 0,
+      "deploy_rounds": [
+        {
+          "at": "2026-11-27T15:33:38Z",
+          "objects": 26,
+          "purpose": "initial 58 field fixes"
+        },
+        {
+          "at": "2026-11-27T16:34:47Z",
+          "objects": 14,
+          "purpose": "review fixes: layout, 2 fields, key order, rkyv"
+        }
+      ]
+    }
   },
   "audit": {
     "population": 9468,
@@ -20,6 +37,11 @@
       "другой дефект": 5,
       "A + B + не подтвердилось": 1,
       "A + другой дефект": 1
+    },
+    "locale_divergence": {
+      "words_with_ru_shorter_than_other_locales": 4694,
+      "of_which_unverified": 4664,
+      "class": "C (признак слова, отдельной правкой не оформлялся)"
     }
   },
   "change_count": 58,
@@ -41,9 +63,10 @@
         "отваливаться (о части предмета)",
         "получаться (о результате, удаче)",
         "брать (рыбу, урожай — в контексте ловли/сбора)",
-        "ответственный, берущий на себя инициативу (о человеке)"
+        "способный взять на себя ответственность (о человеке)"
       ],
-      "reason": "смысл take-charge есть в EN/VI/KO, в RU отсутствует (sid 945)"
+      "reason": "смысл «взять на себя ответственность» в SID 945; формулировка уточнена по замечанию ревью: инициатива — не значение 取れる",
+      "round": 2
     },
     {
       "path": "dictionary/chunk_01.json",
@@ -207,8 +230,9 @@
       "field": "ru",
       "class": "B",
       "before": "Несколько вещей меня беспокоят... Если учитывать все аспекты, то более 70% людей обращают внимание на поры и текстуру кожи.",
-      "after": "Если включить и такие ответы, доля людей, обеспокоенных порами и текстурой кожи, превысит 70%.",
-      "reason": "«учитывать» против глосса «включать» (含める)"
+      "after": "Если включить и ответы «немного беспокоит…», доля людей, обеспокоенных порами и текстурой кожи, превысит 70%.",
+      "reason": "«учитывать» против «включать»; сохранена реплика «немного беспокоит…» из JA/EN/VI/KO",
+      "round": 2
     },
     {
       "path": "examples/data/s0018.json",
@@ -660,5 +684,21 @@
       "after": "Chim hót.",
       "reason": "пропущенное поле"
     }
-  ]
+  ],
+  "finalized_at": "2026-11-27T16:34:47Z",
+  "round2_adjustments": {
+    "dictionary_chunk_09_layout": {
+      "before_bytes": 5154015,
+      "intermediate_bytes": 6500364,
+      "final_bytes": 5154138,
+      "result": "компактная раскладка восстановлена; структурно меняется только 部.ru.t (+2 глоссы)"
+    },
+    "canonical_example_key_order": {
+      "rows": 27,
+      "order": ["i", "x", "en", "f", "ru", "vi", "ko"],
+      "result": "новые ключи переставлены в канонический порядок; значения не менялись"
+    },
+    "vocabulary_rkyv": "перегенерирован после обоих раундов, source_sha256 и manifest-guard проверены по 11 чанкам",
+    "verification": "GET https://s3.origa.uwuwu.net/manifest.json: 832 файла, 0 расхождений хешей с локальным корпусом; прод-объекты 14/14 сверены по sha256 после выдержки 310 с"
+  }
 }
