@@ -281,7 +281,9 @@ export const inventory: readonly CoverageRow[] = [
     source: "KanjiDetail",
     scenario: "kanji",
     screens: ["kanji-detail-tabs"],
-    viewports: BOTH,
+    viewports: ["mobile"],
+    viewportsReason:
+      "табы кандзи — мобильная навигация; на desktop блок скрыт CSS",
     status: "gap",
   },
   {
