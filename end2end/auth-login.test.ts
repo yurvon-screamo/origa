@@ -42,6 +42,8 @@ class FakePage {
   };
   gotoCalls = 0;
   formWaits = 0;
+  urlWaits = 0;
+  waits: string[] = [];
 
   asPage(): Page {
     return this as unknown as Page;
@@ -56,6 +58,7 @@ class FakePage {
   }
 
   async waitForURL(): Promise<void> {
+    this.urlWaits += 1;
     throw new Error("URL stayed on root");
   }
 
@@ -106,6 +109,7 @@ class FakeLocator {
   }
 
   async waitFor(options: WaitOptions): Promise<void> {
+    this.page.waits.push(`${options.state}:${this.testIds.join("/")}`);
     const visible = this.testIds.some((id) => this.isVisible(id));
     if (options.state === "hidden") {
       if (visible) throw new Error(`${this.testIds.join("/")} still visible`);
@@ -202,4 +206,63 @@ test("the consent screen is terminal for the consent scenario", async () => {
 
   assert.equal(result.elapsedMs >= 0, true);
   assert.equal(page.formWaits, 0);
+});
+
+test("the argument-free BDD contract still falls back from URL to the root marker", async () => {
+  const { waitForLoginComplete } = await import("./helpers/auth.ts");
+  const page = new FakePage();
+  page.state.session = true;
+  page.state.settled = true;
+
+  const result = await waitForLoginComplete(page.asPage());
+
+  assert.equal(page.urlWaits, 1);
+  assert.deepEqual(page.waits, [
+    "hidden:login-password-toggle",
+    "visible:home-page/onboarding-stepper",
+  ]);
+  assert.equal(result.elapsedMs >= 0, true);
+});
+
+test("a clean start submits the form once and settles on the app marker", async () => {
+  const { uiLogin } = await import("./helpers/auth.ts");
+  const page = new FakePage();
+
+  const result = await uiLogin(page.asPage(), "fresh@origa.local", "secret", {
+    baseURL: "http://localhost:1421",
+    expected: "app",
+  });
+
+  assert.equal(page.gotoCalls, 1);
+  assert.equal(page.formWaits, 1);
+  assert.equal(result.elapsedMs >= 0, true);
+});
+
+test("a stored session that never settles fails after one wait, not three retries", async () => {
+  const { uiLogin } = await import("./helpers/auth.ts");
+  const page = new FakePage();
+  page.state.session = true;
+  page.state.settled = false;
+
+  await assert.rejects(
+    uiLogin(page.asPage(), "fresh@origa.local", "secret", {
+      baseURL: "http://localhost:1421",
+      expected: "app",
+      settleTimeout: 5,
+    }),
+    (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      assert.match(message, /Login did not reach app terminal/);
+      assert.match(message, /session=true/);
+      return true;
+    },
+  );
+
+  assert.equal(page.gotoCalls, 2);
+  assert.equal(page.formWaits, 0);
+  assert.equal(
+    page.waits.filter((entry) => entry.startsWith("visible:home-content"))
+      .length,
+    1,
+  );
 });
