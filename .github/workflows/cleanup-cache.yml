@@ -138,8 +138,11 @@ jobs:
                   # different keys, and sharing one family made
                   # family-dedupe delete them alternately (26.11 the GTK
                   # master copy, 27.11 the protobuf one) — master missed
-                  # one of the two half the time. A content change orphans
-                  # the old key (14-day grace below).
+                  # one of the two half the time. Note: a per-key family is
+                  # always newest-in-family, so Rule 3 never reaps a stale
+                  # apt key — it expires via GitHub's own 7-day
+                  # unused-eviction instead. Weight is small (~137 MB max);
+                  # accepted over another ping-pong.
                   return key
               return None
 

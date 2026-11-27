@@ -1,26 +1,21 @@
 # Seed common caches on master
 # =============================
 #
-# The CI workflow runs on PR merge-refs only (no push->master trigger), so
-# every PR saves its own copy of every content-hash cache onto an isolated
-# ref: GitHub's branch hierarchy makes copies invisible to other PRs, and
-# duplicates used to pile up at ~10.2 GB/day across 8 active refs (budget
-# 10 GB) — observed 10-11 Nov 2026, task 20261111072128. This workflow
-# (dispatch + schedule) runs on the DEFAULT branch, so its saves land on
-# refs/heads/master; PR runs then exact-hit the master copies and skip
-# their own saves (actions/cache post-save runs only on a primary-key
-# miss). Tag runs exact-hit the un-gated seeds too.
+# PR runs execute on isolated merge-refs (no push->master trigger), so every
+# PR saves its own copy of every content-hash cache — ~10.2 GB/day of
+# duplicates across active refs against a 10 GB budget (row-id 922). This
+# workflow (dispatch + schedule) runs on the DEFAULT branch, so its saves
+# land on refs/heads/master; PR runs then exact-hit the master copies and
+# skip their own saves. Tag runs exact-hit the un-gated seeds too.
 #
-# STRUCTURE: one job per family (seed-qlty, seed-playwright, ...). A single
-# job was tried first (PR #934) and failed structurally: actions/cache
-# post-saves do not run for a failed job, so one family's failure (xwin,
-# 26-27.11 — two red ticks in a row) cancelled the saves of all the others
-# and no master copy was seeded for a whole day. Jobs are independent —
-# one red family no longer cancels the rest.
+# STRUCTURE: one job per family. Post-saves do not run for a failed job,
+# so one red family must not cancel the rest.
 #
-# CONTRACT (the invariant that keeps this working): every key/path/params
-# here MUST mirror the consumer step exactly — seed key == consumer key is
-# what turns a PR miss into an exact hit. Consumers:
+# CONTRACT: every key/path/params here MUST mirror the consumer step exactly
+# (seed key == consumer key). Consumers — see the table below; the xwin job
+# additionally mirrors the consumer's CONTAINER (cache entries are versioned
+# by path string and compression method, so a bare-runner seed is
+# unrestorable inside the build image).
 #
 #   job                   seed family            key pattern                          consumer
 #   seed-frontend-tools   frontend-tools         frontend-tools-Linux-X64-*-v1        setup-frontend (composite)
@@ -31,42 +26,35 @@
 #   seed-uv               uv                     setup-uv-owned key                    ci.yml python-tests
 #   seed-wasm-pack        wasm-pack              wasm-pack-Linux-X64-v0.15.0           ci.yml wasm-test
 #   seed-trailbase        trailbase              trailbase-<semver from Dockerfile>    ci.yml e2e
-#   seed-xwin             xwin                   xwin-Linux-x86_64-pc-windows-msvc-v17 _build-tauri.yml windows
+#   seed-xwin             xwin                   xwin-Linux-x86_64-pc-windows-msvc-v17 _build-tauri.yml windows (same container)
 #   seed-cdn              cdn-data               cdn-data-v15-<hash manifest>          download-cdn (composite)
 #   seed-android-gradle   gradle                 Linux-gradle-<hash gradle files>      ci.yml android-smoke
 #
-# When you change a consumer key/path/pin in ci.yml / _build-tauri.yml /
-# setup-frontend / setup-rust, change the mirroring seed step here in the
-# same PR, otherwise the seed silently orphans (symptom: PR duplicates
-# return — they resurface in the cache-budget report of cleanup-cache.yml,
-# which stays as the safety net).
+# When you change a consumer key/path/pin/container in ci.yml /
+# _build-tauri.yml / setup-frontend / setup-rust, change the mirroring seed
+# step here in the same PR, otherwise the seed silently orphans (symptom: PR
+# duplicates return — they resurface in the cache-budget report of
+# cleanup-cache.yml, which stays as the safety net).
 #
-# Interaction with cleanup-cache.yml: every seed key matches an existing
-# family prefix (qlty-plugins-, playwright-, setup-uv-, cdn-data-v15-) or
-# the MASTER_SEEDS regex (constant keys), all except apt. apt has TWO
-# content-hash keys (GTK set, protobuf only) that shared one cleanup family
-# ("cache-apt-pkgs") — family-dedupe then deleted them alternately
-# (26.11 GTK master copy, 27.11 protobuf one), a ping-pong where master was
-# missing one of the two half the time. cleanup now treats each apt key as
-# its own family, so both survive; a content change orphans the old key
-# (14-day grace). Idempotency: with unchanged content every seed step
-# exact-hits its own master copy and skips the save — a tick costs
-# minutes, not builds.
-#
-# Known transition: the FIRST seed run adds master entries while
-# non-master duplicates are still within their 1-day TTL, so the first
-# post-seed budget report reads deeper over budget than usual and
-# converges within a day. A rewritten seed (e.g. the protobuf one fixed
-# 28.11 — the old entry held 653 B of nothing) needs its old entry
-# deleted first: a seed exact-hits instead of overwriting, so the empty
-# entry would pin itself forever.
+# Interaction with cleanup-cache.yml: seed keys match family prefixes
+# (qlty-plugins-, playwright-, setup-uv-, cdn-data-v15-) or MASTER_SEEDS
+# (constant keys); each apt key is its own family (shared family deleted
+# GTK/protobuf alternately — see the cleanup comment). A stale apt key is
+# NOT reaped by cleanup (always newest-in-family) — it expires via GitHub's
+# own 7-day unused-eviction; weight is small, accepted. Idempotency: with
+# unchanged content every seed step exact-hits and skips the save.
 #
 # Out of scope on purpose: macOS/Windows-keyed caches (no cheap seeding
 # runner; the 1-day TTL caps their window), CodeQL (GitHub-managed),
 # Swatinem/rust-cache entries (no consumer currently saves them).
 #
-# OPERATIONS (runbook abstract — the full procedure with live outputs lives
-# in task 20261111072128, not here):
+# OPERATIONS (row-id 922 holds the full procedure with live outputs):
+#
+#   Verify on a branch (saves land on the BRANCH ref, never on master):
+#     gh workflow run seed-cache.yml --ref <branch>
+#   Check what got seeded:
+#     gh api "repos/{owner}/{repo}/actions/caches?per_page=100" \
+#       --jq '[.actions_caches[] | {key, ref, size: .size_in_bytes}]'
 #
 #   Verify on a branch (saves land on the BRANCH ref, never on master):
 #     gh workflow run seed-cache.yml --ref <branch>
@@ -222,12 +210,12 @@ jobs:
             - name: Refresh APT indexes
               run: sudo apt-get update
             # --- apt protobuf-compiler (consumer: ci.yml android-smoke)
-            # The runner image ships protobuf-compiler preinstalled — with
-            # nothing to download the action saves an EMPTY entry (653 B,
-            # 26-27.11), an "otravlenny seed" under the consumer key that
-            # exact-hits forever. Remove first so there is something to
-            # download, then assert the install (cache size itself is
-            # checked via the cache listing in the operations note above).
+            # The 653 B entry of 26-27.11 was saved when the action had
+            # nothing to download: in the old single job the GTK step had
+            # already installed protobuf-compiler from GTK_SYSTEM_PACKAGES.
+            # Jobs are split now, so this step owns the package — remove
+            # first so there is always something to cache, even if a
+            # future image ships it preinstalled.
             - name: Remove preinstalled protobuf-compiler
               run: sudo apt-get remove -y protobuf-compiler || true
             - name: Cache APT packages (protobuf-compiler)
@@ -236,11 +224,16 @@ jobs:
                   packages: protobuf-compiler
                   version: 1.1  # same bump rationale as ci.yml (stale .pc files)
             - name: Assert protobuf-compiler installed
+              # awalsh restores from cache by untarring into / WITHOUT dpkg
+              # registration, so `dpkg -l` is empty on the (normal) hit path
+              # and a dpkg assert would fail every scheduled tick. Binary
+              # presence proves the action installed or restored the package.
               run: |
-                  if ! dpkg -l protobuf-compiler 2>/dev/null | grep -q '^ii'; then
-                      echo "::error::protobuf-compiler is not installed after the cache step — the seed downloaded nothing"
+                  if ! command -v protoc > /dev/null 2>&1; then
+                      echo "::error::protoc is not on PATH after the cache step — the seed downloaded nothing"
                       exit 1
                   fi
+                  protoc --version
 
     seed-uv:
         name: Seed uv cache
@@ -344,7 +337,15 @@ jobs:
 
     seed-xwin:
         name: Seed xwin MSVC CRT/SDK
-        runs-on: ubuntu-24.04
+        # SAME container as the consumer (_build-tauri.yml build-windows):
+        # actions/cache versions an entry by path string AND compression
+        # method, and both differ between a bare runner (/home/runner/...,
+        # zstd) and this image (/__w/..., gzip fallback) — a bare-runner
+        # seed is never restorable by the consumer. runs-on mirrors the
+        # consumer too; what matters is image + checkout path + cache lib.
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
         timeout-minutes: 20
         env:
             XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
