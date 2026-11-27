@@ -7,12 +7,15 @@
 //! `~/origa-cdn`; without one those tests exit early with the repo's
 //! `[skip]` corpus marker.
 
+mod common;
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use common::precompute_support::{output_text, seeded_dictionary_dir, symlink};
 use origa::dictionary::cdn_blob::{BlobHeader, SCHEMA_VERSION, build_blob, sha256_bytes};
 use origa::dictionary::precompute_blob::{
     PrecomputeBlob, access_precompute_deflated, deflate_blob, serialize_precompute_blob_to_rkyv,
@@ -92,7 +95,7 @@ impl Corpus {
             );
             return false;
         };
-        link_seed_dir(&dict, &self.root.join("dictionaries").join(SUDACHIDICT_DIR));
+        symlink(&dict, &self.root.join("dictionaries").join(SUDACHIDICT_DIR));
         true
     }
 
@@ -122,35 +125,6 @@ impl Corpus {
             .output()
             .unwrap_or_else(|e| panic!("spawning utils {command}: {e}"))
     }
-}
-
-#[cfg(unix)]
-fn link_seed_dir(target: &Path, link: &Path) {
-    std::os::unix::fs::symlink(target, link).expect("linking seeded SudachiDict into corpus");
-}
-
-#[cfg(windows)]
-fn link_seed_dir(target: &Path, link: &Path) {
-    std::os::windows::fs::symlink_dir(target, link)
-        .expect("linking seeded SudachiDict into corpus");
-}
-
-/// The CI Test job unpacks the `cdn-data` artifact into `<workspace>/cdn`;
-/// developer machines keep one seed at `$ORIGA_CDN_DIR` / `~/origa-cdn`.
-fn seeded_dictionary_dir() -> Option<PathBuf> {
-    let project_root = Path::new(env!("CARGO_MANIFEST_DIR")).parent()?;
-    let candidates = [
-        project_root
-            .join("cdn")
-            .join("dictionaries")
-            .join(SUDACHIDICT_DIR),
-        origa::corpus::cdn_dir()
-            .join("dictionaries")
-            .join(SUDACHIDICT_DIR),
-    ];
-    candidates
-        .into_iter()
-        .find(|dir| dir.join("metadata.json").is_file())
 }
 
 impl Drop for Corpus {
@@ -186,14 +160,6 @@ fn stage_blob(root: &Path, blob_path: &str, source: &[u8], ingredients: &[u8], s
     let path = root.join(blob_path);
     fs::create_dir_all(path.parent().expect("blob path has a parent")).expect("staging blob dir");
     fs::write(path, deflate_blob(&build_blob(&header, &payload))).expect("staging precompute blob");
-}
-
-fn output_text(output: &Output) -> String {
-    format!(
-        "{}{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    )
 }
 
 /// Decode the rebuilt CDN blob and check that the known key carries real
