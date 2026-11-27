@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/login--login--mobile-01cad5d3.png",
+  "uploadedSha256": "01cad5d344e0ac57596a96bbbe980f2f1c653c57f938b55b84153f0f5b4666a2",
+  "uploadedAt": "2026-11-27T16:23:30.928Z"
 }

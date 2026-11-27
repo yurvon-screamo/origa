@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-import-progress--progress--mobile-e8a5ee6b.png",
+  "uploadedSha256": "e8a5ee6b31e7f97e83097e483150d9f76c7c3d394078c3d7e3154f0ddb4f6662",
+  "uploadedAt": "2026-11-27T16:23:34.370Z"
 }

@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 146956,
-  "sha256": "84913c33cdddd65e7797bd5ca06243e6ada00d015b04c6b51e026e2e71cdb041",
-  "capturedAt": "2026-11-27T10:43:13.378Z",
+  "bytes": 146630,
+  "sha256": "f593d6d494232393ee2f20df5e2a27d84d371217956458cc39e0e029fccd84ac",
+  "capturedAt": "2026-11-27T16:13:08.961Z",
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-due-counter--due-counter--mobile-f593d6d4.png",
+  "uploadedSha256": "f593d6d494232393ee2f20df5e2a27d84d371217956458cc39e0e029fccd84ac",
+  "uploadedAt": "2026-11-27T16:22:30.456Z"
 }

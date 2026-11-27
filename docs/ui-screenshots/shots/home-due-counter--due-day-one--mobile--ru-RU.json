@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 114464,
-  "sha256": "a996e692920a63b0de59ae7fc12ba0e0192e6b9775fbdb9c0b3960b7e1353cbf",
-  "capturedAt": "2026-11-27T10:42:45.635Z",
+  "bytes": 114025,
+  "sha256": "c20a186870b05d6c0bd1f340c302d723fecd7d360d077182c005dd2cdf81e393",
+  "capturedAt": "2026-11-27T16:13:05.698Z",
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-due-counter--due-day-one--mobile-c20a1868.png",
+  "uploadedSha256": "c20a186870b05d6c0bd1f340c302d723fecd7d360d077182c005dd2cdf81e393",
+  "uploadedAt": "2026-11-27T16:22:29.695Z"
 }

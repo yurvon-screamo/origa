@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 261583,
-  "sha256": "53a2af4bdec853db8a8d6c10ff6352120b71fc1ebf8691be2299a9dfce7dc6bb",
-  "capturedAt": "2026-11-27T10:40:46.258Z",
+  "bytes": 261664,
+  "sha256": "358be8c475cc02e8755265c767f047ce54a44d475ccd463048ce08721dfc1e32",
+  "capturedAt": "2026-11-27T16:11:13.359Z",
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-due-counter--due-counter--desktop-358be8c4.png",
+  "uploadedSha256": "358be8c475cc02e8755265c767f047ce54a44d475ccd463048ce08721dfc1e32",
+  "uploadedAt": "2026-11-27T16:22:29.098Z"
 }

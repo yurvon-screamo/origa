@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/token-popup--token-popup-report--desktop-6e428ff0.png",
+  "uploadedSha256": "6e428ff03458fc272ae6a2f93dd00a40216f28eb518ac5e94628b1cba3fc7c1b",
+  "uploadedAt": "2026-11-27T16:23:59.097Z"
 }

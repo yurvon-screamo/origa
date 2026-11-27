@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-review-body--review-body-quiz-6--mobile-04a4720e.png",
+  "uploadedSha256": "04a4720e7ecf2efa435095b5940280193d73759890ad6c9e2b31f7ab7a2c8ed7",
+  "uploadedAt": "2026-11-27T16:23:03.846Z"
 }

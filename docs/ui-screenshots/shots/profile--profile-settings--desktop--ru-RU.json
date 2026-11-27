@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/profile--profile-settings--desktop-39207d87.png",
+  "uploadedSha256": "39207d87d3b7b59694b66780916c267e6f4b280c2563808e14b5364f51112069",
+  "uploadedAt": "2026-11-27T16:23:54.598Z"
 }

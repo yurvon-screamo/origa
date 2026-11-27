@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-import-progress--scoring--desktop-c935199c.png",
+  "uploadedSha256": "c935199cc5a5d14918a99e3af1d8b2cfb3208d6d09f3db2659ee707e66090258",
+  "uploadedAt": "2026-11-27T16:23:33.458Z"
 }

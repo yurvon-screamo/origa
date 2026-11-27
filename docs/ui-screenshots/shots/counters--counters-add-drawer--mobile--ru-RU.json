@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counters--counters-add-drawer--mobile-3a8e252e.png",
+  "uploadedSha256": "3a8e252e65a5f05f12aa3c9413b90ebdcb17592dacfb5c0fd36d1e92e136ae22",
+  "uploadedAt": "2026-11-27T16:22:12.184Z"
 }

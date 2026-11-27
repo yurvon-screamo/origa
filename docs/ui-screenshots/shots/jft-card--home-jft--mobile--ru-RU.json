@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 126709,
-  "sha256": "26237d06e0490b2952adea5c0eed330122604f4b62bb1a63ed6716db5e491f78",
-  "capturedAt": "2026-11-27T10:50:46.181Z",
+  "bytes": 121986,
+  "sha256": "3e88c4305f7c241b2d11f295d6195d9f02ca47c485d109c754b0b8311cc98d09",
+  "capturedAt": "2026-11-27T16:21:07.613Z",
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--home-jft--mobile-3e88c430.png",
+  "uploadedSha256": "3e88c4305f7c241b2d11f295d6195d9f02ca47c485d109c754b0b8311cc98d09",
+  "uploadedAt": "2026-11-27T16:22:34.245Z"
 }

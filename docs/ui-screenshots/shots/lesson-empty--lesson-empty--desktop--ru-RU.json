@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-empty--lesson-empty--desktop-60a5bc51.png",
+  "uploadedSha256": "60a5bc51e213ef3b70f81c34c59941f719909b6097a85cba9695ef7c3f5f91fd",
+  "uploadedAt": "2026-11-27T16:22:49.213Z"
 }

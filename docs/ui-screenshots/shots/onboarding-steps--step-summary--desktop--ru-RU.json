@@ -14,7 +14,7 @@
   "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": null,
-  "uploadedSha256": null,
-  "uploadedAt": null
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-summary--desktop-e103f8b1.png",
+  "uploadedSha256": "e103f8b118ce30fd466398aa078302a7b4bbfd8378fda2546a6a9a2fa7b10589",
+  "uploadedAt": "2026-11-27T16:23:45.778Z"
 }
