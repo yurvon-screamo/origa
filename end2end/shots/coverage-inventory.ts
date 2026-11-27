@@ -593,7 +593,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["card-reversed-front", "card-reversed-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — владелец санкционировал исключение 27.11",
+      source: "LessonCardView::Reversed",
+    },
   },
   {
     id: "variation:lesson-card-grammar-mutated",
@@ -603,7 +609,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-mutated-front", "grammar-mutated-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — владелец санкционировал исключение 27.11",
+      source: "LessonCardView::GrammarMutated",
+    },
   },
   {
     id: "variation:lesson-grammar-quiz",
@@ -613,7 +625,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-quiz-question", "grammar-quiz-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — владелец санкционировал исключение 27.11",
+      source: "QuizVariant::Grammar",
+    },
   },
   {
     id: "variation:words-filters-inbox",
@@ -623,7 +641,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["words-filters", "words-inbox"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — владелец санкционировал исключение 27.11",
+      source: "card_list_page",
+    },
   },
   {
     id: "variation:sets-import-empty",
@@ -633,7 +657,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["sets-import-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — владелец санкционировал исключение 27.11",
+      source: "sets-import-drawer",
+    },
   },
   {
     id: "variation:grammar-practice-answer-complete",
@@ -643,7 +673,12 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "feature-off",
+      reason: "режим grammar practice под выключенным флагом; обязателен при включении",
+      source: "grammar_practice_lesson_mode",
+    },
   },
   {
     id: "surface:download-consent",
