@@ -9,6 +9,8 @@ import {
   DEFAULT_TEST_PASSWORD,
   generateUniqueEmail,
   uiLogin,
+  type LoginCompletionResult,
+  type LoginTerminal,
 } from "../helpers/auth.ts";
 import { presets } from "./presets/index.ts";
 import type { PresetId } from "./presets/registry.ts";
@@ -27,6 +29,8 @@ export interface ShotSessionOptions {
 export interface ShotSession {
   context: BrowserContext;
   page: Page;
+  /** Terminal state reached by the login that opened this session. */
+  login: LoginCompletionResult;
   /** Removes the test account and closes the browser context. */
   close(): Promise<void>;
 }
@@ -60,6 +64,7 @@ export async function openShotSession(
     return {
       context,
       page,
+      login: { restarted: false, elapsedMs: 0 },
       close: async () => await context.close(),
     };
   }
@@ -73,12 +78,17 @@ export async function openShotSession(
     DEFAULT_TEST_PASSWORD,
   );
 
+  let login: LoginCompletionResult;
   try {
-    await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
+    const expected: LoginTerminal =
+      options.consent === "required" ? "consent" : "app";
+    login = await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
       baseURL: options.baseURL,
       consent: options.consent !== "required",
+      expected,
+      settleTimeout: 90_000,
     });
-    if (options.consent !== "required") {
+    if (expected === "app") {
       await presets[options.preset]({ page, baseURL: options.baseURL });
     }
   } catch (error) {
@@ -92,6 +102,7 @@ export async function openShotSession(
   return {
     context,
     page,
+    login,
     close: async () => {
       await context.close();
       await deleteTestUserWithRetry(token, csrfToken, userId, email).catch(

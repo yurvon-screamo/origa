@@ -25,51 +25,60 @@ import { DEFAULT_VIEWPORTS } from "./viewports.ts";
 const walkedViewports: ViewportTag[] = [];
 
 mock.module("./session.ts", {
-    namedExports: {
-        openShotSession: async (): Promise<{
-            context: BrowserContext;
-            page: Page;
-            close(): Promise<void>;
-        }> => ({ context: {} as BrowserContext, page: {} as Page, close: async () => {} }),
-    },
+  namedExports: {
+    openShotSession: async (): Promise<{
+      context: BrowserContext;
+      page: Page;
+      login: { restarted: boolean; elapsedMs: number };
+      close(): Promise<void>;
+    }> => ({
+      context: {} as BrowserContext,
+      page: {} as Page,
+      login: { restarted: false, elapsedMs: 0 },
+      close: async () => {},
+    }),
+  },
 });
 
 mock.module("./capture.ts", {
-    namedExports: {
-        createSink: (_page: Page, options: { viewport: ViewportTag }): ShotSink => {
-            const entries: ShotEntry[] = [];
-            return {
-                entries,
-                shot: async (name: string) => {
-                    walkedViewports.push(options.viewport);
-                    const entry = { screen: name, viewport: options.viewport } as ShotEntry;
-                    entries.push(entry);
-                    return entry;
-                },
-            };
+  namedExports: {
+    createSink: (_page: Page, options: { viewport: ViewportTag }): ShotSink => {
+      const entries: ShotEntry[] = [];
+      return {
+        entries,
+        shot: async (name: string) => {
+          walkedViewports.push(options.viewport);
+          const entry = {
+            screen: name,
+            viewport: options.viewport,
+          } as ShotEntry;
+          entries.push(entry);
+          return entry;
         },
+      };
     },
+  },
 });
 
 mock.module("./bundle.ts", {
-    namedExports: {
-        detectCdnBaseUrl: async () => "http://cdn.test:8080",
-    },
+  namedExports: {
+    detectCdnBaseUrl: async () => "http://cdn.test:8080",
+  },
 });
 
 mock.module("./scenarios/index.ts", {
-    namedExports: {
-        getImplementation: () => ({
-            id: "runner-mock",
-            title: "Runner mock",
-            route: "/home",
-            locale: "ru-RU" as const,
-            preset: "fresh" as const,
-            run: async (_context: ShotContext, sink: ShotSink) => {
-                await sink.shot("screen");
-            },
-        }),
-    },
+  namedExports: {
+    getImplementation: () => ({
+      id: "runner-mock",
+      title: "Runner mock",
+      route: "/home",
+      locale: "ru-RU" as const,
+      preset: "fresh" as const,
+      run: async (_context: ShotContext, sink: ShotSink) => {
+        await sink.shot("screen");
+      },
+    }),
+  },
 });
 
 const { runScenario } = await import("./runner.ts");
@@ -77,36 +86,40 @@ const { runScenario } = await import("./runner.ts");
 const browser = {} as Browser;
 
 function runOptions(overrides: Partial<RunOptions> = {}): RunOptions {
-    return {
-        outDir: "/tmp/opencode/shots-runner-test",
-        cdnBaseUrl: "http://cdn.test:8080",
-        commit: "test",
-        ...overrides,
-    };
+  return {
+    outDir: "/tmp/opencode/shots-runner-test",
+    cdnBaseUrl: "http://cdn.test:8080",
+    commit: "test",
+    ...overrides,
+  };
 }
 
 test("a scenario walks the desktop+mobile pair by default", async () => {
-    walkedViewports.length = 0;
-    const entries = await runScenario(browser, "runner-mock", runOptions());
+  walkedViewports.length = 0;
+  const entries = await runScenario(browser, "runner-mock", runOptions());
 
-    assert.deepEqual(walkedViewports, ["desktop", "mobile"]);
-    assert.deepEqual(
-        entries.map((entry: ShotEntry) => entry.viewport),
-        ["desktop", "mobile"],
-    );
+  assert.deepEqual(walkedViewports, ["desktop", "mobile"]);
+  assert.deepEqual(
+    entries.map((entry: ShotEntry) => entry.viewport),
+    ["desktop", "mobile"],
+  );
 });
 
 test("an explicit viewports override narrows the walk", async () => {
-    walkedViewports.length = 0;
-    const entries = await runScenario(browser, "runner-mock", runOptions({ viewports: ["mobile"] }));
+  walkedViewports.length = 0;
+  const entries = await runScenario(
+    browser,
+    "runner-mock",
+    runOptions({ viewports: ["mobile"] }),
+  );
 
-    assert.deepEqual(walkedViewports, ["mobile"]);
-    assert.deepEqual(
-        entries.map((entry: ShotEntry) => entry.viewport),
-        ["mobile"],
-    );
+  assert.deepEqual(walkedViewports, ["mobile"]);
+  assert.deepEqual(
+    entries.map((entry: ShotEntry) => entry.viewport),
+    ["mobile"],
+  );
 });
 
 test("the default pair is exactly desktop and mobile", () => {
-    assert.deepEqual(DEFAULT_VIEWPORTS, ["desktop", "mobile"]);
+  assert.deepEqual(DEFAULT_VIEWPORTS, ["desktop", "mobile"]);
 });
