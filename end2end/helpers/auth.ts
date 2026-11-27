@@ -284,8 +284,6 @@ export async function uiLogin(
   const completion: LoginCompletionOptions = {
     expected: options.expected,
     settleTimeout: options.settleTimeout,
-    stallTimeout: options.stallTimeout,
-    recoverOnStall: options.recoverOnStall,
   };
 
   // The consent seed is shared with apiLogin (the App Review 4.2.3(ii)
@@ -298,6 +296,7 @@ export async function uiLogin(
     // The whole login flow is retried, not just waitForURL: the password
     // toggle and the inputs race the WASM cold load too, and a toggle
     // miss used to escape the retry loop as an immediate failure.
+    let sessionRetry = false;
     try {
       await page.goto(baseURL, {
         waitUntil: "domcontentloaded",
@@ -306,8 +305,12 @@ export async function uiLogin(
       // A retried goto boots the app with the session already stored.
       // The login form never mounts there — wait for the terminal state
       // instead of burning another 60 s on the password toggle.
-      if (attempt > 1 && (await hasStoredSession(page))) {
-        return await waitForLoginComplete(page, completion);
+      sessionRetry = attempt > 1 && (await hasStoredSession(page));
+      if (sessionRetry) {
+        return await waitForLoginComplete(page, {
+          ...completion,
+          navigations: attempt,
+        });
       }
 
       // The email/password form is collapsed behind a "Sign in with
@@ -351,6 +354,11 @@ export async function uiLogin(
       // home/wizard mounted).
       return await waitForLoginComplete(page, completion);
     } catch (e) {
+      // An authenticated page has one terminal wait, not three. Surface
+      // its diagnostics at once instead of retrying the same dead path.
+      if (sessionRetry) {
+        throw e;
+      }
       if (attempt === maxRetries) {
         throw new Error(
           `Login failed after ${maxRetries} attempts for user ${email}: ${e}`,

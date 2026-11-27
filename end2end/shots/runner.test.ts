@@ -29,12 +29,10 @@ mock.module("./session.ts", {
     openShotSession: async (): Promise<{
       context: BrowserContext;
       page: Page;
-      login: { restarted: boolean; elapsedMs: number };
       close(): Promise<void>;
     }> => ({
       context: {} as BrowserContext,
       page: {} as Page,
-      login: { restarted: false, elapsedMs: 0 },
       close: async () => {},
     }),
   },

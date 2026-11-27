@@ -7,19 +7,15 @@ export interface LoginCompletionOptions {
   expected?: LoginTerminal;
   /** Budget for the terminal state after a submit. */
   settleTimeout?: number;
-  /** First window before a reload is considered in shots. */
-  stallTimeout?: number;
-  /** Allow one reload with the stored session when the first window stalls. */
-  recoverOnStall?: boolean;
+  /** Number of page loads already made in this login attempt. */
+  navigations?: number;
 }
 
 export interface LoginCompletionResult {
-  restarted: boolean;
   elapsedMs: number;
 }
 
 const DEFAULT_SETTLE_TIMEOUT = 90_000;
-const DEFAULT_STALL_TIMEOUT = 30_000;
 const DEFAULT_URL_TIMEOUT = 90_000;
 
 function terminalLocator(page: Page, expected: LoginTerminal) {
@@ -43,11 +39,7 @@ async function snapshot(page: Page, expected: LoginTerminal): Promise<string> {
   const state = await page.evaluate(() => ({
     url: location.pathname,
     session: Boolean(localStorage.getItem("trailbase_session")),
-    consent: Boolean(
-      document.querySelector(
-        '[data-testid="resource-consent-download-button"]',
-      ),
-    ),
+    consent: Boolean(document.querySelector(".resource-download-consent")),
     wizard: Boolean(
       document.querySelector('[data-testid="onboarding-stepper"]'),
     ),
@@ -55,8 +47,24 @@ async function snapshot(page: Page, expected: LoginTerminal): Promise<string> {
     toggle: Boolean(
       document.querySelector('[data-testid="login-password-toggle"]'),
     ),
+    loading: Boolean(
+      document.querySelector('[data-testid="app-loading-overlay"]'),
+    ),
+    loadError: Boolean(
+      document.querySelector('[data-testid="app-load-error"]'),
+    ),
   }));
-  return `terminal=${expected} url=${state.url} session=${state.session} consent=${state.consent} wizard=${state.wizard} content=${state.content} toggle=${state.toggle}`;
+  return [
+    `terminal=${expected}`,
+    `url=${state.url}`,
+    `session=${state.session}`,
+    `consent=${state.consent}`,
+    `wizard=${state.wizard}`,
+    `content=${state.content}`,
+    `toggle=${state.toggle}`,
+    `loading=${state.loading}`,
+    `loadError=${state.loadError}`,
+  ].join(" ");
 }
 
 /**
@@ -88,32 +96,22 @@ export async function waitForLoginComplete(
         .or(page.getByTestId("onboarding-stepper"))
         .waitFor({ state: "visible", timeout: 60_000 });
     }
-    return { restarted: false, elapsedMs: Date.now() - startedAt };
+    return { elapsedMs: Date.now() - startedAt };
   }
 
   const expected = options.expected;
   const settleTimeout = options.settleTimeout ?? DEFAULT_SETTLE_TIMEOUT;
 
   try {
-    if (options.recoverOnStall && expected === "app") {
-      const stallTimeout = options.stallTimeout ?? DEFAULT_STALL_TIMEOUT;
-      try {
-        await waitTerminal(page, expected, stallTimeout);
-      } catch {
-        await page.reload();
-        await waitTerminal(page, expected, settleTimeout);
-        return { restarted: true, elapsedMs: Date.now() - startedAt };
-      }
-    }
     await waitTerminal(page, expected, settleTimeout);
   } catch (error) {
     throw new Error(
-      `Login did not reach ${expected} terminal: ${await snapshot(page, expected)}`,
+      `Login did not reach ${expected} terminal in ${Date.now() - startedAt} ms after ${options.navigations ?? 1} page load(s): ${await snapshot(page, expected)}`,
       { cause: error },
     );
   }
 
-  return { restarted: false, elapsedMs: Date.now() - startedAt };
+  return { elapsedMs: Date.now() - startedAt };
 }
 
 /** True when a previous submit already left a session in localStorage. */

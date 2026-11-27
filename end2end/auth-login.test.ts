@@ -26,7 +26,7 @@ registerHooks({
 interface FakeState {
   session: boolean;
   consent: boolean;
-  reloaded: boolean;
+  settled: boolean;
 }
 
 interface WaitOptions {
@@ -38,9 +38,9 @@ class FakePage {
   readonly state: FakeState = {
     session: false,
     consent: false,
-    reloaded: false,
+    settled: false,
   };
-  reloadCalls = 0;
+  gotoCalls = 0;
   formWaits = 0;
 
   asPage(): Page {
@@ -52,12 +52,7 @@ class FakePage {
   }
 
   async goto(): Promise<void> {
-    // A retry reloads the app but keeps the session in localStorage.
-  }
-
-  async reload(): Promise<void> {
-    this.reloadCalls += 1;
-    this.state.reloaded = true;
+    this.gotoCalls += 1;
   }
 
   async waitForURL(): Promise<void> {
@@ -66,8 +61,17 @@ class FakePage {
 
   async waitForTimeout(): Promise<void> {}
 
-  async evaluate(): Promise<{ session: boolean }> {
-    return { session: this.state.session };
+  async evaluate(): Promise<Record<string, boolean | string>> {
+    return {
+      url: "/",
+      session: this.state.session,
+      consent: this.state.consent,
+      wizard: this.state.settled,
+      content: this.state.settled,
+      toggle: !this.state.session,
+      loading: false,
+      loadError: false,
+    };
   }
 
   getByTestId(testId: string): FakeLocator {
@@ -83,6 +87,7 @@ class FakePage {
   async click(selector?: string): Promise<void> {
     if (selector?.includes("submit")) {
       this.state.session = true;
+      this.state.settled = true;
     }
   }
 }
@@ -101,7 +106,7 @@ class FakeLocator {
   }
 
   async waitFor(options: WaitOptions): Promise<void> {
-    const visible = this.testIds.some((id) => this.isVisible(id, options));
+    const visible = this.testIds.some((id) => this.isVisible(id));
     if (options.state === "hidden") {
       if (visible) throw new Error(`${this.testIds.join("/")} still visible`);
       return;
@@ -112,22 +117,18 @@ class FakeLocator {
   }
 
   async click(): Promise<void> {
-    if (this.testIds.includes("login-password-toggle")) {
-      this.page.formWaits += 1;
-    }
+    this.page.formWaits += 1;
   }
 
-  private isVisible(testId: string, options: WaitOptions): boolean {
-    const timeout = options.timeout ?? 0;
+  private isVisible(testId: string): boolean {
     switch (testId) {
       case "login-password-toggle":
         return !this.page.state.session;
       case "home-page":
         return false;
       case "home-content":
-        return this.page.state.reloaded || timeout >= 300_000;
       case "onboarding-stepper":
-        return this.page.state.reloaded;
+        return this.page.state.settled;
       case "resource-consent-download-button":
         return this.page.state.consent;
       default:
@@ -140,29 +141,52 @@ test("shots accepts a settled home marker on root with an explicit budget", asyn
   const { waitForLoginComplete } = await import("./helpers/auth.ts");
   const page = new FakePage();
   page.state.session = true;
+  page.state.settled = true;
 
-  await waitForLoginComplete(page.asPage(), {
+  const result = await waitForLoginComplete(page.asPage(), {
     expected: "app",
     settleTimeout: 300_000,
-  } as never);
+  });
 
-  assert.equal(page.reloadCalls, 0);
+  assert.equal(result.elapsedMs >= 0, true);
+  assert.equal(page.formWaits, 0);
 });
 
-test("shots restores an authenticated session with one reload, not a form retry", async () => {
+test("uiLogin waits once for a stored session instead of retrying the form", async () => {
   const { uiLogin } = await import("./helpers/auth.ts");
   const page = new FakePage();
+  page.state.session = true;
+  page.state.settled = true;
 
   const result = await uiLogin(page.asPage(), "fresh@origa.local", "secret", {
     baseURL: "http://localhost:1421",
     expected: "app",
-    settleTimeout: 90_000,
-    recoverOnStall: true,
-  } as never);
+  });
 
-  assert.equal(page.reloadCalls, 1);
-  assert.equal(page.formWaits, 1);
-  assert.equal(result.restarted, true);
+  assert.equal(page.gotoCalls, 2);
+  assert.equal(page.formWaits, 0);
+  assert.equal(result.elapsedMs >= 0, true);
+});
+
+test("a stalled login reports elapsed time, page loads and overlay state", async () => {
+  const { waitForLoginComplete } = await import("./helpers/auth.ts");
+  const page = new FakePage();
+  page.state.session = true;
+
+  await assert.rejects(
+    waitForLoginComplete(page.asPage(), {
+      expected: "app",
+      settleTimeout: 5,
+      navigations: 2,
+    }),
+    (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      assert.match(message, /in \d+ ms after 2 page load\(s\)/);
+      assert.match(message, /session=true/);
+      assert.match(message, /loading=false loadError=false/);
+      return true;
+    },
+  );
 });
 
 test("the consent screen is terminal for the consent scenario", async () => {
@@ -171,10 +195,11 @@ test("the consent screen is terminal for the consent scenario", async () => {
   page.state.session = true;
   page.state.consent = true;
 
-  await waitForLoginComplete(page.asPage(), {
+  const result = await waitForLoginComplete(page.asPage(), {
     expected: "consent",
     settleTimeout: 90_000,
-  } as never);
+  });
 
-  assert.equal(page.reloadCalls, 0);
+  assert.equal(result.elapsedMs >= 0, true);
+  assert.equal(page.formWaits, 0);
 });

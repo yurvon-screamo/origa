@@ -59,11 +59,6 @@ export async function runScenario(
       consent: scenario.consent,
     });
     try {
-      if (session.login.restarted) {
-        console.log(
-          `[shots] ${id} ${viewport}: вход восстановлен перезапуском после ${session.login.elapsedMs} мс`,
-        );
-      }
       const sink = createSink(session.page, {
         outDir: options.outDir,
         scenario: scenario.id,
