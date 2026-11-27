@@ -10,8 +10,91 @@ use std::collections::HashMap;
 use ulid::Ulid;
 
 use crate::domain::knowledge::ExampleCard;
+use crate::domain::knowledge::card::ImportDedupKey;
 use crate::domain::tokenizer::tokenize_text;
-use crate::domain::{Card, NativeLanguage, StudyCard, VocabularyCard};
+use crate::domain::{Card, NativeLanguage, OrigaError, StudyCard, VocabularyCard};
+
+use super::KnowledgeSet;
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct WordIdentityCleanupReport {
+    pub groups_scanned: usize,
+    pub cards_rebased: usize,
+    pub cards_removed: usize,
+    pub kept: Vec<(String, Ulid)>,
+    pub removed: Vec<(Ulid, String)>,
+}
+
+pub(super) fn cleanup(
+    set: &mut KnowledgeSet,
+    lang: &NativeLanguage,
+) -> Result<WordIdentityCleanupReport, OrigaError> {
+    let mut report = WordIdentityCleanupReport::default();
+    let ids: Vec<Ulid> = set.study_cards().keys().copied().collect();
+
+    for id in ids {
+        let Some(study) = set.study_cards().get(&id).cloned() else {
+            continue;
+        };
+        let canonical = canonicalize_card(study.card(), lang);
+        if &canonical != study.card() {
+            report.cards_rebased += 1;
+            if let Some(card) = set.study_cards_mut().get_mut(&id) {
+                card.replace_card(canonical);
+            }
+        }
+    }
+
+    let mut groups: HashMap<ImportDedupKey, Vec<Ulid>> = HashMap::new();
+    for (id, study) in set.study_cards() {
+        groups
+            .entry(ImportDedupKey::new(study.card()))
+            .or_default()
+            .push(*id);
+    }
+
+    for (_key, mut ids) in groups {
+        if ids.len() < 2 {
+            continue;
+        }
+        report.groups_scanned += 1;
+        ids.sort_by_key(|id| {
+            set.study_cards()
+                .get(id)
+                .map(|card| {
+                    let word = match card.card() {
+                        Card::Example(example) => example.word().to_string(),
+                        _ => card.card().content_key(),
+                    };
+                    priority(card, set.example_count(&word))
+                })
+                .unwrap_or_default()
+        });
+        ids.reverse();
+        let winner_id = ids[0];
+        let mut winner = set
+            .study_cards()
+            .get(&winner_id)
+            .cloned()
+            .ok_or(OrigaError::CardNotFound { card_id: winner_id })?;
+        let content_key = winner.card().content_key();
+        report.kept.push((content_key.clone(), winner_id));
+        for loser_id in &ids[1..] {
+            let loser = set
+                .study_cards()
+                .get(loser_id)
+                .cloned()
+                .ok_or(OrigaError::CardNotFound { card_id: *loser_id })?;
+            winner.merge(&loser);
+            set.delete_card(*loser_id)?;
+            report.cards_removed += 1;
+            report.removed.push((*loser_id, content_key.clone()));
+        }
+        set.study_cards_mut().insert(winner_id, winner);
+    }
+
+    Ok(report)
+}
 
 pub(super) fn lemma_of(word: &str) -> String {
     tokenize_text(word)

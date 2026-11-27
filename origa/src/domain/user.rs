@@ -28,6 +28,8 @@ pub const ONBOARDING_SKIPPED_KEY: &str = "__onboarding_skipped__";
 /// на существующие колоды — событие одного запуска; новые счётчики после
 /// накатки заводит кандидат анализа текста, повторных сканов нет.
 pub const COUNTERS_MIGRATED_V1_KEY: &str = "__counters_migrated_v1__";
+/// Разовый прогон приведения слов колоды к словарной лемме (uwuwu#1463).
+pub const WORD_IDENTITY_MIGRATED_V1_KEY: &str = "__word_identity_migrated_v1__";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -199,8 +201,7 @@ impl User {
         self.knowledge_set.apply_example_premiere(card_id, rating)
     }
 
-    #[cfg(test)]
-    pub fn knowledge_set_mut(&mut self) -> &mut KnowledgeSet {
+    pub(crate) fn knowledge_set_mut(&mut self) -> &mut KnowledgeSet {
         &mut self.knowledge_set
     }
 
@@ -278,6 +279,14 @@ impl User {
     /// Отметить разовую миграцию счётчиков выполненной.
     pub fn mark_counters_migrated_v1(&mut self) {
         self.mark_set_as_imported(COUNTERS_MIGRATED_V1_KEY.to_string());
+    }
+
+    pub fn is_word_identity_migrated_v1(&self) -> bool {
+        self.imported_sets.contains(WORD_IDENTITY_MIGRATED_V1_KEY)
+    }
+
+    pub fn mark_word_identity_migrated_v1(&mut self) {
+        self.mark_set_as_imported(WORD_IDENTITY_MIGRATED_V1_KEY.to_string());
     }
 
     pub fn is_onboarding_completed(&self) -> bool {

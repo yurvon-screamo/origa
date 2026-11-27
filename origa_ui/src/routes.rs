@@ -369,6 +369,32 @@ pub fn start_dictionary_loading(
             }
         });
 
+        // One-time cleanup of historical decks (uwuwu#1463): waits for the
+        // tokenizer so surface-form words resolve to their dictionary lemma.
+        spawn_local({
+            let repository = repository.clone();
+            async move {
+                if let Err(e) = crate::loaders::dictionary::ensure_tokenizer_loaded().await {
+                    tracing::warn!("Word identity migration skipped: tokenizer unavailable: {e}");
+                    return;
+                }
+                match origa::use_cases::MigrateWordIdentityForExistingUsersUseCase::new(&repository)
+                    .execute()
+                    .await
+                {
+                    Ok(report) if report.cards_rebased > 0 || report.cards_removed > 0 => {
+                        tracing::info!(
+                            rebased = report.cards_rebased,
+                            removed = report.cards_removed,
+                            "Historical word cards migrated to dictionary lemmas"
+                        );
+                    },
+                    Ok(_) => {},
+                    Err(e) => tracing::warn!("Word identity migration failed: {e}"),
+                }
+            }
+        });
+
         // Phase C: jlpt_content (depends on kanji + grammar)
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
             tracing::error!("Failed to load jlpt_content: {e}");

@@ -16,6 +16,7 @@ mod import_onboarding_steps;
 mod mark_card_as_known;
 mod migrate_counters;
 mod migrate_grammar_cards;
+mod migrate_word_identity;
 mod rate_card;
 mod rate_card_with_side_effects;
 mod rate_counter_binding;
@@ -55,6 +56,7 @@ pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUse
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use migrate_counters::MigrateCountersForExistingUsersUseCase;
 pub use migrate_grammar_cards::{MigrateGrammarCardsUseCase, MigrationReport, migrate_user_cards};
+pub use migrate_word_identity::MigrateWordIdentityForExistingUsersUseCase;
 pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use rate_counter_binding::RateCounterBindingUseCase;

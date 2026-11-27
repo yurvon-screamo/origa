@@ -38,6 +38,7 @@ pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
 pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
+pub use word_identity::WordIdentityCleanupReport;
 use word_identity::{canonical_snapshot, priority};
 
 use serde::{Deserialize, Serialize};
@@ -270,6 +271,19 @@ impl KnowledgeSet {
 
     pub fn study_cards(&self) -> &HashMap<Ulid, StudyCard> {
         &self.study_cards
+    }
+
+    pub(crate) fn study_cards_mut(&mut self) -> &mut HashMap<Ulid, StudyCard> {
+        &mut self.study_cards
+    }
+
+    /// Rebases historical surface-form cards to their dictionary lemma and
+    /// removes true duplicates by the same priority used at the sync boundary.
+    pub fn cleanup_word_identity(
+        &mut self,
+        lang: &NativeLanguage,
+    ) -> Result<WordIdentityCleanupReport, OrigaError> {
+        word_identity::cleanup(self, lang)
     }
 
     pub fn lesson_history(&self) -> &[DailyHistoryItem] {
