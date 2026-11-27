@@ -109,6 +109,39 @@ Then(
   },
 );
 
+/**
+ * Desktop boundary: with no device inset reported (env() = 0 in a headless
+ * browser) the wide-viewport branch must stay pixel-identical to the old
+ * `padding-bottom: 0` — the fix must not move content up on a plain monitor.
+ * Also used after the injected step to pin its `finally` cleanup.
+ */
+async function expectNoWideReserve(page: Page, reason: string): Promise<void> {
+  const main = page.getByTestId("app-main");
+  await expect(main).toBeVisible({ timeout: 15_000 });
+  const injected = await page.evaluate(() =>
+    document.documentElement.style.getPropertyValue("--safe-bottom"),
+  );
+  expect(injected, `${reason}: the inset override must be absent`).toBe("");
+  const paddingBottom = await main.evaluate((el) =>
+    parseFloat(getComputedStyle(el).paddingBottom),
+  );
+  expect(
+    paddingBottom,
+    `${reason}: no device inset means no reserve at >=1024px`,
+  ).toBe(0);
+}
+
+Then("на широком экране нет резерва без системного inset", async ({ page }) => {
+  await expectNoWideReserve(page, "desktop baseline");
+});
+
+Then(
+  "симуляция inset снята, резерв широкого экрана снова нулевой",
+  async ({ page }) => {
+    await expectNoWideReserve(page, "after simulation cleanup");
+  },
+);
+
 /** Collects the cssText of rules whose selector matches `prefix`. */
 async function cssRules(page: Page, prefix: string): Promise<string[]> {
   return await page.evaluate((prefix) => {
