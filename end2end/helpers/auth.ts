@@ -1,6 +1,12 @@
 import { type BrowserContext, type Page } from "@playwright/test";
 import { getAppBaseUrl } from "../config";
 import {
+  hasStoredSession,
+  waitForLoginComplete,
+  type LoginCompletionOptions,
+  type LoginCompletionResult,
+} from "./login-completion.ts";
+import {
   getAdminToken,
   createTestUser,
   deleteTestUserWithRetry,
@@ -64,34 +70,13 @@ export async function wipeClientAuthState(page: Page): Promise<void> {
   await page.reload();
 }
 
-/**
- * Wait until the app finished the login round-trip.
- *
- * A URL match alone is not a reliable "logged in" signal: the app settles
- * on the ROOT route ("/" renders Home) and never moves to /home, so the
- * terminal-URL wait has to fall back to the content markers — the same
- * fallback the BDD suite uses (see uiLogin below).
- *
- * `timeout` is the budget for the terminal-URL wait. The fallback keeps
- * its own (short) budget: it only runs when the URL did not settle.
- * Callers that boot a cold WASM bundle (local `trunk serve`) need a
- * larger budget than the CI-tuned default.
- */
-export async function waitForLoginComplete(
-  page: Page,
-  timeout = 90_000,
-): Promise<void> {
-  try {
-    await page.waitForURL(/\/(home|onboarding)$/, { timeout });
-  } catch {
-    const toggle = page.getByTestId("login-password-toggle");
-    await toggle.waitFor({ state: "hidden", timeout: 15_000 });
-    await page
-      .getByTestId("home-page")
-      .or(page.getByTestId("onboarding-stepper"))
-      .waitFor({ state: "visible", timeout: 60_000 });
-  }
-}
+export {
+  hasStoredSession,
+  waitForLoginComplete,
+  type LoginCompletionOptions,
+  type LoginCompletionResult,
+  type LoginTerminal,
+} from "./login-completion.ts";
 
 /**
  * Restore the one-time resource-download consent.
@@ -289,10 +274,19 @@ export async function uiLogin(
   page: Page,
   email: string,
   password: string,
-  options: { baseURL?: string; consent?: boolean } = {},
-): Promise<void> {
+  options: {
+    baseURL?: string;
+    consent?: boolean;
+  } & LoginCompletionOptions = {},
+): Promise<LoginCompletionResult> {
   const maxRetries = 3;
   const baseURL = options.baseURL ?? getAppBaseUrl();
+  const completion: LoginCompletionOptions = {
+    expected: options.expected,
+    settleTimeout: options.settleTimeout,
+    stallTimeout: options.stallTimeout,
+    recoverOnStall: options.recoverOnStall,
+  };
 
   // The consent seed is shared with apiLogin (the App Review 4.2.3(ii)
   // rationale and the origin guard live on the helper).
@@ -308,6 +302,13 @@ export async function uiLogin(
       await page.goto(baseURL, {
         waitUntil: "domcontentloaded",
       });
+
+      // A retried goto boots the app with the session already stored.
+      // The login form never mounts there — wait for the terminal state
+      // instead of burning another 60 s on the password toggle.
+      if (attempt > 1 && (await hasStoredSession(page))) {
+        return await waitForLoginComplete(page, completion);
+      }
 
       // The email/password form is collapsed behind a "Sign in with
       // password" toggle by default (mobile viewport fit). Wait for the
@@ -348,8 +349,7 @@ export async function uiLogin(
       // without ever matching the terminal URL — for that case accept
       // the root only with explicit CONTENT markers (no login form +
       // home/wizard mounted).
-      await waitForLoginComplete(page);
-      return;
+      return await waitForLoginComplete(page, completion);
     } catch (e) {
       if (attempt === maxRetries) {
         throw new Error(
@@ -361,4 +361,6 @@ export async function uiLogin(
       await page.waitForTimeout(3_000);
     }
   }
+
+  throw new Error("uiLogin: retry loop finished without a login result");
 }
