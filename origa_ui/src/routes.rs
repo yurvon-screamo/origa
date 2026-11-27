@@ -57,6 +57,11 @@ fn should_retry_after_error(error: &OrigaError) -> bool {
 /// inset is reserved directly (`pb-safe-b` = env(safe-area-inset-bottom));
 /// on desktop the inset is 0, so the reserve is a no-op there.
 ///
+/// The predicate is path/auth-based; CSS owns one width branch: at ≥1024px
+/// the bar is `lg:hidden`, so `.app-main-with-nav` substitutes the device
+/// inset for the bar clearance (see `input.css`). The wide layout therefore
+/// reserves the system zone even while the predicate reports the bar visible.
+///
 /// Return contract: a class-list **suffix** with a LEADING SPACE (`" …"`),
 /// meant to be concatenated into `main_class`'s format string right after
 /// the base classes — never a standalone value (the leading space would

@@ -1,17 +1,20 @@
+import { join } from "path";
 import { expect, type Page } from "@playwright/test";
 import { When, Then } from "../fixtures";
 
 /**
- * Steps for the edge-to-edge insets feature (task 20261109231215-gf1g0c1).
+ * Steps for the edge-to-edge insets feature (task 20261109231215-gf1g0c1,
+ * tablet branch: uwuwu#406).
  *
  * The device inset itself is 0 in a headless desktop browser, so the runtime
- * behaviour is pinned through the two facts that a real device combines:
- * the shell class chosen per route (`pb-safe-b` vs `app-main-with-nav`) and
+ * behaviour is pinned through the facts that a real device combines:
+ * the shell class chosen per route (`pb-safe-b` vs `app-main-with-nav`),
  * the CSS rules actually present in the served stylesheet (the tailwind
  * utility declaring `env(safe-area-inset-bottom)` and the banner's
- * `env(safe-area-inset-top)` padding). If the utility is ever dropped from
- * the generated CSS, the rule assertion fails even though the class still
- * renders "nothing" on desktop.
+ * `env(safe-area-inset-top)` padding), and the computed reserve at >=1024px
+ * where the bar is `lg:hidden` (driven by overriding `--safe-bottom`).
+ * If a utility or the width branch is ever dropped from the generated CSS,
+ * an assertion fails even though the class still renders "nothing" on desktop.
  */
 
 async function shellInfo(page: Page): Promise<{
@@ -58,6 +61,86 @@ Then("оболочка не резервирует нижний inset устро
     "the direct inset reserve must NOT be applied where the bar carries it",
   ).toBe(false);
 });
+
+When("пользователь устанавливает размер экрана 1024×768", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+});
+
+Then("нижняя панель приложения скрыта на широком экране", async ({ page }) => {
+  // The nav is rendered by the route predicate but hidden by Tailwind's
+  // `lg:hidden`: this is the precondition of the tablet reserve gap.
+  await expect(page.locator(".bottom-tab-bar")).toBeHidden();
+});
+
+Then(
+  "оболочка резервирует нижний inset на широком экране",
+  async ({ page }) => {
+    const main = page.getByTestId("app-main");
+    await expect(main).toBeVisible({ timeout: 15_000 });
+    // env() is 0 in a desktop browser: drive the shell through the same
+    // :root variable the stylesheet uses, so the reserve is observable.
+    await page.evaluate(() =>
+      document.documentElement.style.setProperty("--safe-bottom", "48px"),
+    );
+    try {
+      const shotDir = process.env.ORIGA_INSET_SHOT_DIR;
+      if (shotDir) {
+        // The reserve is felt at the end of a scrollable page: capture that
+        // edge, where the system bar would otherwise cover the last content.
+        await page.evaluate(() =>
+          window.scrollTo(0, document.documentElement.scrollHeight),
+        );
+        await page.screenshot({
+          path: join(shotDir, "tablet-home-bottom.png"),
+        });
+      }
+      const paddingBottom = await main.evaluate((el) =>
+        parseFloat(getComputedStyle(el).paddingBottom),
+      );
+      expect(
+        paddingBottom,
+        "with the bar hidden at >=1024px the shell must still reserve the device inset",
+      ).toBe(48);
+    } finally {
+      await page.evaluate(() =>
+        document.documentElement.style.removeProperty("--safe-bottom"),
+      );
+    }
+  },
+);
+
+/**
+ * Desktop boundary: with no device inset reported (env() = 0 in a headless
+ * browser) the wide-viewport branch must stay pixel-identical to the old
+ * `padding-bottom: 0` — the fix must not move content up on a plain monitor.
+ * Also used after the injected step to pin its `finally` cleanup.
+ */
+async function expectNoWideReserve(page: Page, reason: string): Promise<void> {
+  const main = page.getByTestId("app-main");
+  await expect(main).toBeVisible({ timeout: 15_000 });
+  const injected = await page.evaluate(() =>
+    document.documentElement.style.getPropertyValue("--safe-bottom"),
+  );
+  expect(injected, `${reason}: the inset override must be absent`).toBe("");
+  const paddingBottom = await main.evaluate((el) =>
+    parseFloat(getComputedStyle(el).paddingBottom),
+  );
+  expect(
+    paddingBottom,
+    `${reason}: no device inset means no reserve at >=1024px`,
+  ).toBe(0);
+}
+
+Then("на широком экране нет резерва без системного inset", async ({ page }) => {
+  await expectNoWideReserve(page, "desktop baseline");
+});
+
+Then(
+  "симуляция inset снята, резерв широкого экрана снова нулевой",
+  async ({ page }) => {
+    await expectNoWideReserve(page, "after simulation cleanup");
+  },
+);
 
 /** Collects the cssText of rules whose selector matches `prefix`. */
 async function cssRules(page: Page, prefix: string): Promise<string[]> {
