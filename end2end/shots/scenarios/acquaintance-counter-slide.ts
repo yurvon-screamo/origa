@@ -1,12 +1,45 @@
 import { expect, type Page } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
+import { readStoredUser, writeStoredUser } from "../seed.ts";
 import type { ShotScenario } from "../scenario.ts";
+
+/** A new counter card: the acquaintance hand only takes new cards. */
+const COUNTER_CARD_ID = "01JCBZ8QK0AX4W7YH2Z5P9T3GE";
+
+/** The acquaintance-hand preset seeds words, kanji and grammar, but no
+ * counter card. Inject one into the same local record before the lesson
+ * builds its hand — a counter slide is otherwise unreachable. */
+async function seedNewCounterCard(page: Page): Promise<void> {
+  const stored = await readStoredUser(page);
+  const user = JSON.parse(stored.value) as {
+    knowledge_set?: {
+      study_cards?: Record<string, unknown>;
+    };
+  };
+  user.knowledge_set ??= {};
+  user.knowledge_set.study_cards ??= {};
+  user.knowledge_set.study_cards[COUNTER_CARD_ID] = {
+    card_id: COUNTER_CARD_ID,
+    card: {
+      Counter: {
+        suffix: "本",
+        bindings: [1, 2, 3, 0].map((number) => ({ number, memory: {} })),
+      },
+    },
+    memory_history: {},
+    is_favorite: false,
+    perfect_streak_since_known: 0,
+    favorite_changed_at: null,
+  };
+  await writeStoredUser(page, stored.key, JSON.stringify(user));
+}
 
 /** The counter slide of the acquaintance hand: presentation and answer. */
 export const acquaintanceCounterSlideScenario: ShotScenario = {
   ...descriptors["acquaintance-counter-slide"],
   async run({ page }, sink) {
+    await seedNewCounterCard(page);
     await page.goto("/lesson");
     await page
       .getByTestId("acquaintance-view")
@@ -31,8 +64,46 @@ export const acquaintanceCounterSlideScenario: ShotScenario = {
     }
     expect(presentation, "the hand must show the counter slide").toBe(true);
 
+    // The counter slide is not necessarily the last presentation slide:
+    // walking to it leaves the hand in presentation, so the training
+    // loop below would wait on markers that do not exist yet.
+    for (let index = 0; index < 20; index++) {
+      if (
+        await page
+          .getByTestId("acquaintance-training")
+          .isVisible()
+          .catch(() => false)
+      ) {
+        break;
+      }
+      await next.click({ timeout: 2_000 }).catch(() => undefined);
+      await page.waitForTimeout(300);
+    }
+    await expect(page.getByTestId("acquaintance-training")).toBeVisible({
+      timeout: 30_000,
+    });
+
     let answer = false;
     for (let index = 0; index < 60 && !answer; index++) {
+      if (index % 10 === 0) {
+        const seen = await Promise.all(
+          [
+            "acquaintance-training",
+            "acquaintance-reveal-btn",
+            "acquaintance-counter-answer",
+            "acquaintance-rating-dont-know",
+            "acquaintance-completed",
+            "lesson-complete-screen",
+          ].map(
+            async (id) =>
+              `${id}=${await page
+                .getByTestId(id)
+                .isVisible()
+                .catch(() => false)}`,
+          ),
+        );
+        console.log(`[shots] counter answer walk ${index}: ${seen.join(" ")}`);
+      }
       if (await finished(page)) break;
       if (
         !(await page
@@ -59,8 +130,11 @@ export const acquaintanceCounterSlideScenario: ShotScenario = {
           break;
         }
       }
+      // «Не помню» keeps the criterion open so the rotation reaches
+      // the counter card. «Помню» closes the hand after three successes
+      // and the counter answer is never shown.
       await page
-        .getByTestId("acquaintance-rating-remember")
+        .getByTestId("acquaintance-rating-dont-know")
         .click({ timeout: 2_000 })
         .catch(() => undefined);
       await page.waitForTimeout(500);
