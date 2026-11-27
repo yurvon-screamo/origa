@@ -19,6 +19,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 QLTY_TOML = REPO_ROOT / ".qlty" / "qlty.toml"
 QLTY = shutil.which("qlty")
@@ -172,7 +174,7 @@ def test_qlty_red_green_on_a_self_contained_contour(tmp_path: Path) -> None:
     if QLTY is None:
         # The pytest CI job does not install qlty; the config-contract guards
         # above run there. Run this test locally/on a qlty-equipped runner.
-        return
+        pytest.skip("qlty binary is not installed in this runner")
     config = QLTY_TOML.read_text(encoding="utf-8")
     assert NESTED_RULE in config, "test fixture: nested rule missing from the config"
 
