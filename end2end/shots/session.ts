@@ -9,6 +9,7 @@ import {
   DEFAULT_TEST_PASSWORD,
   generateUniqueEmail,
   uiLogin,
+  type LoginTerminal,
 } from "../helpers/auth.ts";
 import { presets } from "./presets/index.ts";
 import type { PresetId } from "./presets/registry.ts";
@@ -74,11 +75,14 @@ export async function openShotSession(
   );
 
   try {
+    const expected: LoginTerminal =
+      options.consent === "required" ? "consent" : "app";
     await uiLogin(page, email, DEFAULT_TEST_PASSWORD, {
       baseURL: options.baseURL,
       consent: options.consent !== "required",
+      expected,
     });
-    if (options.consent !== "required") {
+    if (expected === "app") {
       await presets[options.preset]({ page, baseURL: options.baseURL });
     }
   } catch (error) {
