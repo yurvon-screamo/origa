@@ -38,9 +38,7 @@ pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
 pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
-pub use word_identity::{
-    WordIdentityCleanupReport, cleanup as cleanup_word_identity, merge_canonicalized,
-};
+pub use word_identity::{WordIdentityScanReport, scan_duplicate_cards};
 
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -190,7 +188,15 @@ impl KnowledgeSet {
             .extend(new_values.deleted_companion_words.iter().cloned());
 
         for (id, study_card) in &new_values.study_cards {
-            word_identity::merge_incoming(self, *id, study_card);
+            if self.deleted_cards.contains(id) {
+                continue;
+            }
+
+            if let Some(existing_card) = self.study_cards.get_mut(id) {
+                existing_card.merge(study_card);
+            } else if self.validate_unique_card(study_card.card()).is_ok() {
+                self.study_cards.insert(*id, study_card.clone());
+            }
         }
 
         self.stats.merge(&new_values.stats);
@@ -597,8 +603,7 @@ impl KnowledgeSet {
                 );
                 continue;
             }
-            let lemma = word_identity::lemma_of(word);
-            match VocabularyCard::from_known_word(&lemma, native_language) {
+            match VocabularyCard::from_known_word(word, native_language) {
                 Ok(vocab_card) => match self.create_card(Card::Vocabulary(vocab_card)) {
                     Ok(study_card) => {
                         tracing::debug!(kanji = %kanji_char, word = %word, "Companion vocab card created");

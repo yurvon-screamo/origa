@@ -56,7 +56,7 @@ pub use import_onboarding_sets::{ImportOnboardingResult, ImportOnboardingSetsUse
 pub use mark_card_as_known::MarkCardAsKnownUseCase;
 pub use migrate_counters::MigrateCountersForExistingUsersUseCase;
 pub use migrate_grammar_cards::{MigrateGrammarCardsUseCase, MigrationReport, migrate_user_cards};
-pub use migrate_word_identity::MigrateWordIdentityForExistingUsersUseCase;
+pub use migrate_word_identity::ScanWordIdentityUseCase;
 pub use rate_card::RateCardUseCase;
 pub use rate_card_with_side_effects::RateCardWithSideEffectsUseCase;
 pub use rate_counter_binding::RateCounterBindingUseCase;

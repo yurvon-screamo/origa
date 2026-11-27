@@ -1,57 +1,37 @@
-//! One-time cleanup of historical decks: surface-form cards and duplicates
-//! are brought to the same SudachiDict lemma used at every word-creation
-//! path. Called from the UI startup, next to the counters migration.
+//! Read-only duplicate scan for existing decks (uwuwu#1463).
+//!
+//! Word creation already collapses script and inflection variants through
+//! `from_text`. Re-tokenizing a stored word is not equivalent and was shown to
+//! rename independent dictionary articles, so this use case never mutates or
+//! saves the user record — it reports exact-key duplicates for inspection.
 
 use tracing::info;
 
-use crate::domain::tokenizer::is_dictionary_loaded;
-use crate::domain::{OrigaError, WordIdentityCleanupReport};
+use crate::domain::{OrigaError, WordIdentityScanReport};
 use crate::traits::UserRepository;
 
 #[derive(Clone)]
-pub struct MigrateWordIdentityForExistingUsersUseCase<'a, R: UserRepository> {
+pub struct ScanWordIdentityUseCase<'a, R: UserRepository> {
     repository: &'a R,
 }
 
-impl<'a, R: UserRepository> MigrateWordIdentityForExistingUsersUseCase<'a, R> {
+impl<'a, R: UserRepository> ScanWordIdentityUseCase<'a, R> {
     pub fn new(repository: &'a R) -> Self {
         Self { repository }
     }
 
-    pub async fn execute(&self) -> Result<WordIdentityCleanupReport, OrigaError> {
-        if !is_dictionary_loaded() {
-            return Ok(WordIdentityCleanupReport::default());
-        }
-
+    pub async fn execute(&self) -> Result<WordIdentityScanReport, OrigaError> {
         let Some(user) = self.repository.get_current_user().await? else {
-            return Err(OrigaError::CurrentUserNotExist);
+            return Ok(WordIdentityScanReport::default());
         };
-        if user.is_word_identity_migrated_v1() || !user.is_onboarding_completed() {
-            return Ok(WordIdentityCleanupReport::default());
+        let report = crate::domain::scan_duplicate_cards(user.knowledge_set());
+        if report.duplicate_cards > 0 {
+            info!(
+                groups = report.groups_scanned,
+                duplicates = report.duplicate_cards,
+                "Duplicate cards found in deck"
+            );
         }
-
-        // Re-read before mutation: onboarding may have finished between the
-        // first read and the save. A skip here leaves the sentinel unset, so
-        // the next start retries.
-        let mut fresh = match self.repository.get_current_user().await? {
-            Some(candidate)
-                if candidate.is_onboarding_completed()
-                    && !candidate.is_word_identity_migrated_v1() =>
-            {
-                candidate
-            },
-            _ => return Ok(WordIdentityCleanupReport::default()),
-        };
-        let language = *fresh.native_language();
-        let report = crate::domain::cleanup_word_identity(fresh.knowledge_set_mut(), &language)?;
-        fresh.mark_word_identity_migrated_v1();
-        self.repository.save(&fresh).await?;
-        info!(
-            user_id = %fresh.id(),
-            rebased = report.cards_rebased,
-            removed = report.cards_removed,
-            "Word identity migrated for existing user"
-        );
         Ok(report)
     }
 }
@@ -61,12 +41,11 @@ mod tests {
     use super::*;
     use crate::domain::value_objects::Question;
     use crate::domain::{Card, NativeLanguage, User, VocabularyCard};
-    use crate::use_cases::tests::fixtures::{InMemoryUserRepository, real_dictionaries_or_skip};
+    use crate::use_cases::tests::fixtures::InMemoryUserRepository;
 
-    fn user_with_surface_cards() -> User {
+    fn user_with_cards() -> User {
         let mut user = User::new("m@e.st".to_string(), NativeLanguage::Russian, None);
-        user.mark_set_as_imported(crate::domain::ONBOARDING_COMPLETED_KEY.to_string());
-        for word in ["たべる", "食べる"] {
+        for word in ["食べる", "見える"] {
             user.create_card(Card::Vocabulary(VocabularyCard::new(
                 Question::new(word.to_string()).unwrap(),
             )))
@@ -76,52 +55,35 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn migration_rebases_surface_cards_and_drops_true_duplicates() {
-        real_dictionaries_or_skip!();
+    async fn scan_reports_duplicates_without_changing_the_deck() {
         // Arrange
-        let repository = InMemoryUserRepository::with_user(user_with_surface_cards());
+        let repository = InMemoryUserRepository::with_user(user_with_cards());
+        let before = repository
+            .get_current_user()
+            .await
+            .unwrap()
+            .unwrap()
+            .knowledge_set()
+            .study_cards()
+            .len();
 
         // Act
-        let report = MigrateWordIdentityForExistingUsersUseCase::new(&repository)
+        let report = ScanWordIdentityUseCase::new(&repository)
             .execute()
             .await
             .unwrap();
 
         // Assert
-        assert_eq!(report.cards_removed, 1);
-        let user = repository.get_current_user().await.unwrap().unwrap();
-        assert_eq!(user.knowledge_set().study_cards().len(), 1);
-        assert!(user.is_word_identity_migrated_v1());
-        assert_eq!(
-            user.knowledge_set()
-                .study_cards()
-                .values()
-                .next()
-                .unwrap()
-                .card()
-                .content_key(),
-            "食べる"
-        );
-    }
-
-    #[tokio::test]
-    async fn migration_is_noop_after_sentinel_is_set() {
-        real_dictionaries_or_skip!();
-        // Arrange
-        let repository = InMemoryUserRepository::with_user(user_with_surface_cards());
-        MigrateWordIdentityForExistingUsersUseCase::new(&repository)
-            .execute()
+        assert_eq!(report.groups_scanned, 0);
+        assert_eq!(report.duplicate_cards, 0);
+        let after = repository
+            .get_current_user()
             .await
-            .unwrap();
-
-        // Act
-        let report = MigrateWordIdentityForExistingUsersUseCase::new(&repository)
-            .execute()
-            .await
-            .unwrap();
-
-        // Assert
-        assert_eq!(report.cards_rebased, 0);
-        assert_eq!(report.cards_removed, 0);
+            .unwrap()
+            .unwrap()
+            .knowledge_set()
+            .study_cards()
+            .len();
+        assert_eq!(after, before);
     }
 }
