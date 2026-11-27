@@ -38,8 +38,10 @@ pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
 pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
-pub use word_identity::WordIdentityCleanupReport;
-use word_identity::{canonical_snapshot, priority};
+use word_identity::canonical_snapshot;
+pub use word_identity::{
+    WordIdentityCleanupReport, cleanup as cleanup_word_identity, merge_canonicalized,
+};
 
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -170,17 +172,6 @@ impl KnowledgeSet {
         }
     }
 
-    /// Sync entry point: canonicalize incoming content before merging so a
-    /// device with historical surface-form cards converges with one that
-    /// already stores lemmas.
-    pub fn merge_canonicalized(&mut self, new_values: &KnowledgeSet, lang: &NativeLanguage) {
-        let canonical = canonical_snapshot(&new_values.study_cards, lang);
-        self.merge(&KnowledgeSet {
-            study_cards: canonical,
-            ..new_values.clone()
-        });
-    }
-
     pub fn merge(&mut self, new_values: &KnowledgeSet) {
         // Merge is a sync path, never a bulk import: drop any active dedup
         // index so `create_card` falls back to the linear uniqueness scan
@@ -200,69 +191,12 @@ impl KnowledgeSet {
             .extend(new_values.deleted_companion_words.iter().cloned());
 
         for (id, study_card) in &new_values.study_cards {
-            if self.deleted_cards.contains(id) {
-                continue;
-            }
-
-            if let Some(existing_card) = self.study_cards.get_mut(id) {
-                existing_card.merge(study_card);
-                if word_identity::canonical_replaces(existing_card.card(), study_card.card()) {
-                    existing_card.replace_card(study_card.card().clone());
-                }
-                continue;
-            }
-
-            if let Some(collision) = self.collision_id(study_card.card()) {
-                self.resolve_sync_collision(collision, study_card);
-                continue;
-            }
-
-            self.study_cards.insert(*id, study_card.clone());
+            word_identity::merge_incoming(self, *id, study_card);
         }
 
         self.stats.merge(&new_values.stats);
         self.insights.merge(&new_values.insights);
         self.recalculate_daily_stats();
-    }
-
-    fn collision_id(&self, card: &Card) -> Option<Ulid> {
-        let key = ImportDedupKey::new(card);
-        self.study_cards
-            .iter()
-            .find_map(|(id, existing)| (ImportDedupKey::new(existing.card()) == key).then_some(*id))
-    }
-
-    fn example_count(&self, word: &str) -> usize {
-        self.study_cards
-            .values()
-            .filter(|sc| matches!(sc.card(), Card::Example(example) if example.word() == word))
-            .count()
-    }
-
-    fn resolve_sync_collision(&mut self, local_id: Ulid, incoming: &StudyCard) {
-        let key_word = match incoming.card() {
-            Card::Example(example) => example.word().to_string(),
-            _ => incoming.card().content_key(),
-        };
-        let examples = self.example_count(&key_word);
-        let local_wins = self
-            .study_cards
-            .get(&local_id)
-            .is_some_and(|local| priority(local, examples) >= priority(incoming, examples));
-        if local_wins {
-            if let Some(local) = self.study_cards.get_mut(&local_id) {
-                local.merge(incoming);
-            }
-            return;
-        }
-
-        let Some(local) = self.study_cards.remove(&local_id) else {
-            return;
-        };
-        let mut winner = incoming.clone();
-        winner.merge(&local);
-        self.deleted_cards.insert(local_id);
-        self.study_cards.insert(*incoming.card_id(), winner);
     }
 
     pub fn get_card(&self, card_id: Ulid) -> Option<&StudyCard> {
@@ -271,19 +205,6 @@ impl KnowledgeSet {
 
     pub fn study_cards(&self) -> &HashMap<Ulid, StudyCard> {
         &self.study_cards
-    }
-
-    pub(crate) fn study_cards_mut(&mut self) -> &mut HashMap<Ulid, StudyCard> {
-        &mut self.study_cards
-    }
-
-    /// Rebases historical surface-form cards to their dictionary lemma and
-    /// removes true duplicates by the same priority used at the sync boundary.
-    pub fn cleanup_word_identity(
-        &mut self,
-        lang: &NativeLanguage,
-    ) -> Result<WordIdentityCleanupReport, OrigaError> {
-        word_identity::cleanup(self, lang)
     }
 
     pub fn lesson_history(&self) -> &[DailyHistoryItem] {

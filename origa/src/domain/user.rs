@@ -140,8 +140,11 @@ impl User {
         self.telegram_user_id = another_user.telegram_user_id;
         self.daily_load = another_user.daily_load;
 
-        self.knowledge_set
-            .merge_canonicalized(&another_user.knowledge_set, &self.native_language);
+        crate::domain::merge_canonicalized(
+            &mut self.knowledge_set,
+            &another_user.knowledge_set,
+            &self.native_language,
+        );
 
         for set_id in &another_user.imported_sets {
             self.imported_sets.insert(set_id.clone());

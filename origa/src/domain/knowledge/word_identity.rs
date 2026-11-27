@@ -25,7 +25,84 @@ pub struct WordIdentityCleanupReport {
     pub removed: Vec<(Ulid, String)>,
 }
 
-pub(super) fn cleanup(
+pub(super) fn merge_incoming(set: &mut KnowledgeSet, id: Ulid, incoming: &StudyCard) {
+    if set.deleted_cards.contains(&id) {
+        return;
+    }
+    if merge_same_id(set, id, incoming) {
+        return;
+    }
+    if let Some(collision) = collision_id(set, incoming.card()) {
+        resolve_sync_collision(set, collision, incoming);
+        return;
+    }
+    set.study_cards.insert(id, incoming.clone());
+}
+
+fn merge_same_id(set: &mut KnowledgeSet, id: Ulid, incoming: &StudyCard) -> bool {
+    let Some(existing) = set.study_cards.get_mut(&id) else {
+        return false;
+    };
+    existing.merge(incoming);
+    if canonical_replaces(existing.card(), incoming.card()) {
+        existing.replace_card(incoming.card().clone());
+    }
+    true
+}
+
+pub(super) fn collision_id(set: &KnowledgeSet, card: &Card) -> Option<Ulid> {
+    let key = ImportDedupKey::new(card);
+    set.study_cards()
+        .iter()
+        .find_map(|(id, existing)| (ImportDedupKey::new(existing.card()) == key).then_some(*id))
+}
+
+pub(super) fn example_count(set: &KnowledgeSet, word: &str) -> usize {
+    set.study_cards()
+        .values()
+        .filter(|study| matches!(study.card(), Card::Example(example) if example.word() == word))
+        .count()
+}
+
+pub(super) fn resolve_sync_collision(set: &mut KnowledgeSet, local_id: Ulid, incoming: &StudyCard) {
+    let key_word = match incoming.card() {
+        Card::Example(example) => example.word().to_string(),
+        _ => incoming.card().content_key(),
+    };
+    let examples = example_count(set, &key_word);
+    let local_wins = set
+        .study_cards()
+        .get(&local_id)
+        .is_some_and(|local| priority(local, examples) >= priority(incoming, examples));
+    if local_wins {
+        if let Some(local) = set.study_cards.get_mut(&local_id) {
+            local.merge(incoming);
+        }
+        return;
+    }
+
+    let Some(local) = set.study_cards.remove(&local_id) else {
+        return;
+    };
+    let mut winner = incoming.clone();
+    winner.merge(&local);
+    set.deleted_cards.insert(local_id);
+    set.study_cards.insert(*incoming.card_id(), winner);
+}
+
+pub fn merge_canonicalized(
+    set: &mut KnowledgeSet,
+    new_values: &KnowledgeSet,
+    lang: &NativeLanguage,
+) {
+    let canonical = canonical_snapshot(&new_values.study_cards, lang);
+    set.merge(&KnowledgeSet {
+        study_cards: canonical,
+        ..new_values.clone()
+    });
+}
+
+pub fn cleanup(
     set: &mut KnowledgeSet,
     lang: &NativeLanguage,
 ) -> Result<WordIdentityCleanupReport, OrigaError> {
@@ -39,7 +116,7 @@ pub(super) fn cleanup(
         let canonical = canonicalize_card(study.card(), lang);
         if &canonical != study.card() {
             report.cards_rebased += 1;
-            if let Some(card) = set.study_cards_mut().get_mut(&id) {
+            if let Some(card) = set.study_cards.get_mut(&id) {
                 card.replace_card(canonical);
             }
         }
@@ -66,7 +143,7 @@ pub(super) fn cleanup(
                         Card::Example(example) => example.word().to_string(),
                         _ => card.card().content_key(),
                     };
-                    priority(card, set.example_count(&word))
+                    priority(card, example_count(set, &word))
                 })
                 .unwrap_or_default()
         });
@@ -90,7 +167,7 @@ pub(super) fn cleanup(
             report.cards_removed += 1;
             report.removed.push((*loser_id, content_key.clone()));
         }
-        set.study_cards_mut().insert(winner_id, winner);
+        set.study_cards.insert(winner_id, winner);
     }
 
     Ok(report)

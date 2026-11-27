@@ -43,7 +43,7 @@ impl<'a, R: UserRepository> MigrateWordIdentityForExistingUsersUseCase<'a, R> {
             _ => return Ok(WordIdentityCleanupReport::default()),
         };
         let language = *fresh.native_language();
-        let report = fresh.knowledge_set_mut().cleanup_word_identity(&language)?;
+        let report = crate::domain::cleanup_word_identity(fresh.knowledge_set_mut(), &language)?;
         fresh.mark_word_identity_migrated_v1();
         self.repository.save(&fresh).await?;
         info!(
