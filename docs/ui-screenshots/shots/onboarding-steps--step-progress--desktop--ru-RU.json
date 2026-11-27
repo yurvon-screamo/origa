@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "onboarding-steps",
+  "screen": "step-progress",
+  "route": "/onboarding",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 481093,
+  "sha256": "d9563acc35a2ae42ab6cc0a69d0510779739335c7da5645ce501bcfd8c7e92c1",
+  "capturedAt": "2026-11-27T12:38:36.290Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-progress--desktop-d9563acc.png",
+  "uploadedSha256": "d9563acc35a2ae42ab6cc0a69d0510779739335c7da5645ce501bcfd8c7e92c1",
+  "uploadedAt": "2026-11-27T16:23:44.813Z"
+}

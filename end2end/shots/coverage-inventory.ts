@@ -36,7 +36,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "onboarding-import-progress",
     screens: ["progress", "scoring"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:home",
@@ -56,7 +56,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "profile",
     screens: ["profile-form", "profile-settings"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:words",
@@ -66,7 +66,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "words",
     screens: ["words", "words-full"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:word-detail",
@@ -76,7 +76,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "word-examples",
     screens: ["detail-full", "detail-viewport"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:grammar-detail",
@@ -96,7 +96,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "grammar-page",
     screens: ["grid-full", "grid-viewport"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:phrases",
@@ -106,7 +106,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "token-popup",
     screens: ["token-popup-report"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:examples",
@@ -116,7 +116,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "examples",
     screens: ["examples-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:counters-detail",
@@ -126,7 +126,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters-detail",
     screens: ["detail-full", "detail-viewport"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:counters",
@@ -136,7 +136,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-list"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:kanji-detail",
@@ -146,7 +146,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "kanji-writing-practice",
     screens: ["kanji-writing-practice"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:kanji",
@@ -166,7 +166,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["acquaintance-presentation", "lesson-complete"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "page:sets",
@@ -186,7 +186,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-due-counter",
     screens: ["due-counter", "due-day-one"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:home-accuracy",
@@ -196,6 +196,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-accuracy-chart",
     screens: ["accuracy-chart"],
     viewports: BOTH,
+    // Review #1691: the desktop frame cuts the chart below the fold.
     status: "gap",
   },
   {
@@ -206,7 +207,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-jlpt-details",
     screens: ["home-jlpt-details"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:home-jft",
@@ -216,7 +217,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "jft-card",
     screens: ["home-jft"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:sets-jft-badge",
@@ -226,7 +227,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "jft-card",
     screens: ["sets-jft-badge"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:words-grid",
@@ -262,6 +263,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
+    // Review #1691: the frame shows the list, not the drawer (captured
+    // before the animation settles). Revert to gap until it is recaptured.
     status: "gap",
   },
   {
@@ -318,7 +321,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counter-scoring",
     screens: ["card-*"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:onboarding-import-progress",
@@ -328,7 +331,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "onboarding-import-progress",
     screens: ["progress"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:onboarding-steps",
@@ -345,7 +348,7 @@ export const inventory: readonly CoverageRow[] = [
       "step-summary",
     ],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:feedback-form",
@@ -369,7 +372,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "token-popup",
     screens: ["token-popup-report"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:phrase-dash",
@@ -425,7 +428,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-acquaintance-kanji",
     screens: ["kanji-presentation"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:acquaintance-grammar-answer",
@@ -435,7 +438,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-acquaintance-grammar",
     screens: ["grammar-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:acquaintance-grammar-presentation",
@@ -445,7 +448,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-acquaintance-grammar",
     screens: ["grammar-presentation", "grammar-details"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:acquaintance-counter-slide",
@@ -475,7 +478,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-example-recall",
     screens: ["example-question", "example-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-example-audio",
@@ -533,7 +536,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-reading-quiz",
     screens: ["quiz-question", "quiz-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-quiz-multi",
@@ -568,7 +571,7 @@ export const inventory: readonly CoverageRow[] = [
       "quiz-result-expanded",
     ],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-counter-pack",
@@ -578,7 +581,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-counter-pack",
     screens: ["pack-front", "pack-answer", "pack-answer-table"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-complete",
@@ -588,19 +591,19 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["lesson-complete"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   ...(
     [
-      ["quiz", "quiz-option"],
-      ["yesno", "yesno-yes-btn"],
-      ["audio-recall", "audio-recall-card-root"],
-      ["counter-bindings", "counter-binding-front"],
-      ["normal", "lesson-show-answer-btn"],
-      ["writing", "kanji-drawing-canvas"],
+      ["quiz", "quiz-option", "covered"],
+      ["yesno", "yesno-yes-btn", "gap"],
+      ["audio-recall", "audio-recall-card-root", "gap"],
+      ["counter-bindings", "counter-binding-front", "gap"],
+      ["normal", "lesson-show-answer-btn", "gap"],
+      ["writing", "kanji-drawing-canvas", "gap"],
     ] as const
   ).map(
-    ([kind, source]): CoverageRow => ({
+    ([kind, source, status]): CoverageRow => ({
       id: `variation:lesson-review-body-${kind}`,
       kind: "variation",
       route: "/lesson",
@@ -608,7 +611,7 @@ export const inventory: readonly CoverageRow[] = [
       scenario: "lesson-review-body",
       screens: [`review-body-${kind}-*`],
       viewports: BOTH,
-      status: "gap",
+      status,
     }),
   ),
   {
@@ -619,7 +622,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["card-reversed-front", "card-reversed-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
+      source: "LessonCardView::Reversed",
+    },
   },
   {
     id: "variation:lesson-card-grammar-mutated",
@@ -629,7 +638,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-mutated-front", "grammar-mutated-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
+      source: "LessonCardView::GrammarMutated",
+    },
   },
   {
     id: "variation:lesson-grammar-quiz",
@@ -639,7 +654,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-quiz-question", "grammar-quiz-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — исключено до появления сценария (uwuwu#1691)",
+      source: "QuizVariant::Grammar",
+    },
   },
   {
     id: "variation:words-filters-inbox",
@@ -649,7 +670,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["words-filters", "words-inbox"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — исключено до появления сценария (uwuwu#1691)",
+      source: "card_list_page",
+    },
   },
   {
     id: "variation:sets-import-empty",
@@ -659,7 +686,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["sets-import-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — исключено до появления сценария (uwuwu#1691)",
+      source: "sets-import-drawer",
+    },
   },
   {
     id: "variation:grammar-practice-answer-complete",
@@ -669,6 +702,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
+    // Review #1691: reachable in the default build — the flag gates the
+    // lesson-mode button, not this component. The exclusion was false.
     status: "gap",
   },
   {
@@ -679,6 +714,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
+    // Review #1691: the frames were shot under the fading boot-splash.
     status: "gap",
   },
   {
@@ -689,7 +725,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-empty",
     screens: ["lesson-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "surface:lists-empty",
@@ -699,7 +735,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lists-empty",
     screens: ["words-empty"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "excluded:kanji-animation",

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "counter-scoring",
+  "screen": "card-after",
+  "route": "/onboarding",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 193990,
+  "sha256": "9bc299204c46ae4e329634d0e55e0493a43d270581699b03f9059f71d798d4bc",
+  "capturedAt": "2026-11-27T10:14:28.027Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counter-scoring--card-after--mobile-9bc29920.png",
+  "uploadedSha256": "9bc299204c46ae4e329634d0e55e0493a43d270581699b03f9059f71d798d4bc",
+  "uploadedAt": "2026-11-27T16:22:01.720Z"
+}

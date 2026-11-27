@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "counters",
+  "screen": "counters-add-drawer",
+  "route": "/counters",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 506127,
+  "sha256": "cc77eac1d96457bfc2153c67f329da12b76cbf69f0fa91dc092a45c850e0b051",
+  "capturedAt": "2026-11-27T10:16:05.345Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counters--counters-add-drawer--desktop-cc77eac1.png",
+  "uploadedSha256": "cc77eac1d96457bfc2153c67f329da12b76cbf69f0fa91dc092a45c850e0b051",
+  "uploadedAt": "2026-11-27T16:22:07.474Z"
+}
