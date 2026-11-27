@@ -73,6 +73,16 @@ exclude_patterns = [
     "docs/marketing/research/**",
     "docs/marketing/strategies/**",
 
+    # The top-level marketing/ tree is a separate nested git repository with
+    # its own workflows and generated artifacts (deck skeletons, research
+    # dumps). A full qlty scan of a local master checkout walks into it and
+    # prettier cannot parse generator-owned bytes: an HTML skeleton with
+    # <TOTAL> placeholders and a JSON dump with a captured stderr line made
+    # `qlty check --all` exit 3 (uwuwu#412). Exclude the whole nested tree —
+    # not only today's two files — so future generated artifacts cannot turn
+    # the parent repo's gate red either.
+    "marketing/**",
+
     # ----- Prose & generated artifacts (formatter scope) -----
     # Markdown is prose everywhere in this repo (docs, ADRs, READMEs, LLM
     # prompts, translator/HF copy): reformatting it risks render degradation
