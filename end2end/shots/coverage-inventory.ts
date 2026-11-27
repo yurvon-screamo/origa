@@ -676,7 +676,8 @@ export const inventory: readonly CoverageRow[] = [
     status: "excluded",
     exclusion: {
       code: "feature-off",
-      reason: "режим grammar practice под выключенным флагом; обязателен при включении",
+      reason:
+        "режим grammar practice под выключенным флагом; обязателен при включении",
       source: "grammar_practice_lesson_mode",
     },
   },
