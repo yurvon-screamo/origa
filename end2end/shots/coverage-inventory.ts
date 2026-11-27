@@ -196,7 +196,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-accuracy-chart",
     screens: ["accuracy-chart"],
     viewports: BOTH,
-    status: "covered",
+    // Review #1691: the desktop frame cuts the chart below the fold.
+    status: "gap",
   },
   {
     id: "variation:home-jlpt",
@@ -262,7 +263,9 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
-    status: "covered",
+    // Review #1691: the frame shows the list, not the drawer (captured
+    // before the animation settles). Revert to gap until it is recaptured.
+    status: "gap",
   },
   {
     id: "variation:kanji-add-modal",
@@ -673,13 +676,9 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "feature-off",
-      reason:
-        "режим grammar practice под выключенным флагом; обязателен при включении",
-      source: "grammar_practice_lesson_mode",
-    },
+    // Review #1691: reachable in the default build — the flag gates the
+    // lesson-mode button, not this component. The exclusion was false.
+    status: "gap",
   },
   {
     id: "surface:download-consent",
@@ -689,7 +688,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
-    status: "covered",
+    // Review #1691: the frames were shot under the fading boot-splash.
+    status: "gap",
   },
   {
     id: "surface:lesson-empty",

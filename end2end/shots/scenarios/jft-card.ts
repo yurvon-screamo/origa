@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
 
@@ -20,6 +22,10 @@ export const jftCardScenario: ShotScenario = {
     await page
       .getByTestId("home-jft-readiness-stamp")
       .waitFor({ state: "visible", timeout: 10_000 });
+    // The mount sync toast fades over the readiness card.
+    await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
+      timeout: 15_000,
+    });
     await sink.shot("home-jft");
 
     // Sets page: filter to Irodori so the badge cards fill the viewport.

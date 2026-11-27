@@ -32,6 +32,10 @@ export const homeDueCounterScenario: ShotScenario = {
       timeout: 120_000,
     });
     await page.waitForTimeout(1_500);
+    // Mount sync toast must be gone before the baseline frame.
+    await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
+      timeout: 15_000,
+    });
     await sink.shot("due-day-one");
 
     const seeded = seedDueCards(stored.value, new Date(), DUE_TARGET);

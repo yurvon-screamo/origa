@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
 
@@ -22,6 +24,10 @@ export const homeJlptDetailsScenario: ShotScenario = {
     await page
       .getByTestId("home-jlpt-progress-expanded-kanji")
       .waitFor({ state: "visible", timeout: 10_000 });
+    // The mount sync toast covers the expanded card on mobile.
+    await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
+      timeout: 15_000,
+    });
     await sink.shot("home-jlpt-details");
   },
 };
