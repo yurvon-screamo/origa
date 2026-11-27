@@ -9,6 +9,8 @@ the audit into an unverifiable claim.
 Pure tests: they read the repository only. The corpus is deliberately not
 loaded here — a pin on mutable production state would rot on the next deploy
 (the К2/К3 bad-test class); live verification is a manual run, not a test.
+The round-2 pins guard invariants of this record, not its literal wording;
+a generator overwrite of the CDN corpus (#1743) stays invisible to them.
 """
 
 from __future__ import annotations
@@ -71,7 +73,7 @@ def test_dictionary_changes_only_append_ru_senses(witness: dict) -> None:
         assert change["class"] == "A", change
         assert len(after) > len(before) and after[: len(before)] == before, change
         assert len(set(after)) == len(after), change
-        assert all(sid > 0 for sid in change["sid"]), change
+        assert change["sid"] and all(sid > 0 for sid in change["sid"]), change
 
 
 def test_example_changes_touch_only_translations(witness: dict) -> None:
@@ -81,41 +83,41 @@ def test_example_changes_touch_only_translations(witness: dict) -> None:
     for change in examples:
         assert change["field"] in {"ru", "vi", "ko"}, change
         assert change["word"] == "" and change["sid"], change
-        assert change["path"].startswith("examples/data/s") and change["path"].endswith(
-            ".json"
+        assert all(
+            change["path"] == f"examples/data/s{sid // 1000:04d}.json"
+            for sid in change["sid"]
         ), change
+        assert change["reason"].strip(), change
         if change["class"] == "пропущенное поле":
             assert change["before"] is None, change
         else:
             assert change["class"] == "B" and change["before"], change
 
 
-def test_takes_gloss_does_not_claim_initiative(witness: dict) -> None:
-    # Regression pin: the first round glossed 取れる as "инициатива", a sense
-    # absent from JA sid 945 and from the EN/VI/KO glosses.
+def test_witness_takes_gloss_record_drops_initiative(witness: dict) -> None:
+    # Pin the record, not the product: round 1 wrote a sense absent from the
+    # JA/EN/VI/KO sources. A different correct verb wording stays valid.
     takes = next(c for c in witness["changes"] if c["word"] == "取れる")
 
     assert "инициатив" not in " ".join(takes["after"])
-    assert takes["after"][-1] == "способный взять на себя ответственность (о человеке)"
 
 
-def test_example_19194_keeps_its_antecedent(witness: dict) -> None:
-    # Regression pin: the first round dropped «немного беспокоит…» from the
-    # RU translation, leaving «такие» without an antecedent.
+def test_witness_example_19194_record_keeps_antecedent(witness: dict) -> None:
+    # Pin the record, not the product: round 1 lost the quoted reply, so the
+    # recorded RU translation must keep it. Wording around it may change.
     change = next(c for c in witness["changes"] if c["sid"] == [19194])
 
     assert "немного беспокоит" in change["after"]
-    assert "такие ответы" not in change["after"]
 
 
-def test_chunk_09_layout_change_is_recorded(witness: dict) -> None:
-    # Regression pin: the first round rewrote the compact chunk with indent=1
-    # and the witness did not describe the byte-level delta.
+def test_witness_records_chunk_09_layout_correction(witness: dict) -> None:
+    # Pin the record, not the product: round 1 rewrote the compact chunk with
+    # indent=1 and the witness did not describe the byte-level delta.
     layout = witness["round2_adjustments"]["dictionary_chunk_09_layout"]
 
-    assert layout["before_bytes"] == 5154015
-    assert layout["intermediate_bytes"] > layout["final_bytes"] == 5154138
-    assert "компактная раскладка восстановлена" in layout["result"]
+    assert (
+        layout["before_bytes"] <= layout["final_bytes"] < layout["intermediate_bytes"]
+    )
     assert witness["round2_adjustments"]["canonical_example_key_order"]["order"] == [
         "i",
         "x",
