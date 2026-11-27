@@ -398,8 +398,14 @@ jobs:
               run: cargo xwin cache xwin
 
             - name: Assert xwin cache populated
+              # In-container `run:` steps see the workspace at $GITHUB_WORKSPACE
+              # (/__w/...), while the ${{ github.workspace }} expression
+              # evaluates on the HOST (/home/runner/...) — same directory via
+              # the container mount, but only the runtime var resolves inside.
+              # (The Cache step above intentionally keeps the expression: JS
+              # actions run on the host, like the consumer's.)
               run: |
-                  if [ ! -d "${{ github.workspace }}/.xwin-cache" ] || [ -z "$(find "${{ github.workspace }}/.xwin-cache" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                  if [ ! -d "$GITHUB_WORKSPACE/.xwin-cache" ] || [ -z "$(find "$GITHUB_WORKSPACE/.xwin-cache" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
                       echo "::error::xwin cache is empty — CRT/SDK did not download"
                       exit 1
                   fi
