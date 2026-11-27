@@ -3,6 +3,7 @@ mod error;
 mod furigana;
 mod furigana_annotator;
 pub mod furigana_context;
+mod furigana_tokens;
 pub(crate) mod grammar;
 mod import_preview;
 pub mod insights;
@@ -32,6 +33,7 @@ pub use furigana::{
     furiganize_text_precomputed,
 };
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
+pub use furigana_tokens::furiganize_segments_from_precomputed_tokens;
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
     GrammarPracticeQuestion, find_known_vocab_words_for_pos, generate_grammar_distractors,
