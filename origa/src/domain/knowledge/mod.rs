@@ -38,7 +38,6 @@ pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
 pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
-use word_identity::canonical_snapshot;
 pub use word_identity::{
     WordIdentityCleanupReport, cleanup as cleanup_word_identity, merge_canonicalized,
 };
