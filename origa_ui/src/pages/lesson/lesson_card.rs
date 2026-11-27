@@ -248,6 +248,7 @@ pub fn LessonCard(
                 kanji=kanji_stored.get_value()
                 is_reversed=is_reversed
                 is_counter=matches!(card, origa::domain::Card::Counter(_))
+                is_phrase
                 on_show_answer=on_show_answer
                 known_kanji=known_kanji
                 native_language=native_language

@@ -354,6 +354,151 @@ async fn lesson_card_question_show_answer_click_dispatches() {
     assert!(shown.get(), "show-answer click must invoke the callback");
 }
 
+/// uwuwu#1705: the phrase question and its answer must render one reading.
+/// The precomputed entry deliberately carries conflicting sources — the
+/// JmdictFurigana lemma reading (むご) in spans and the contextual token
+/// reading (ヒドク) the answer side uses.
+#[wasm_bindgen_test]
+async fn phrase_question_and_answer_render_the_same_reading() {
+    use origa::domain::{
+        PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+        reset_precomputed_store,
+    };
+
+    const TEXT: &str = "酷くない！";
+    install_precomputed_entry(
+        TEXT,
+        PrecomputedEntry {
+            furigana_spans: vec![origa::domain::AnnotatedSpan {
+                text: "酷く".to_string(),
+                reading: Some("むごい".to_string()),
+                reading_spans: vec![origa::dictionary::furigana_dict::ReadingSpan {
+                    start_index: 0,
+                    end_index: 0,
+                    text: "むご".to_string(),
+                }],
+            }],
+            tokens: vec![
+                PrecomputedToken {
+                    surface: "酷く".to_string(),
+                    base: "酷い".to_string(),
+                    reading: "ヒドク".to_string(),
+                    pos: PartOfSpeech::PreNounAdjectival,
+                },
+                PrecomputedToken {
+                    surface: "ない".to_string(),
+                    base: "無い".to_string(),
+                    reading: "ナイ".to_string(),
+                    pos: PartOfSpeech::IAdjective,
+                },
+                PrecomputedToken {
+                    surface: "！".to_string(),
+                    base: "！".to_string(),
+                    reading: "！".to_string(),
+                    pos: PartOfSpeech::Symbol,
+                },
+            ],
+        },
+    );
+
+    let question = create_wrapper();
+    mount_with_i18n(&question, || {
+        view! {
+            <LessonCardQuestion
+                question_text=TEXT.to_string()
+                kanji=None
+                is_reversed=false
+                is_phrase=true
+                on_show_answer=Callback::new(|()| {})
+                known_kanji=Signal::derive(HashSet::new)
+                native_language=origa::domain::NativeLanguage::Russian
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+    let question_reading = question
+        .query_selector("rt")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+
+    let answer = create_wrapper();
+    mount_with_i18n(&answer, || {
+        // TranslatorText reads the target language from LessonContext when
+        // no explicit prop is passed — the real lesson shell provides it.
+        provide_context(lesson_context());
+        view! {
+            <LessonCardAnswer
+                question_text=TEXT.to_string()
+                answer_text="Это несправедливо!".to_string()
+                answer_translations=None
+                answer_description=None
+                is_expanded=RwSignal::new(true)
+                needs_collapse=RwSignal::new(false)
+                content_ref=NodeRef::new()
+                on_toggle=Callback::new(|_: ()| {})
+                is_kanji=false
+                is_phrase=true
+                is_reversed=false
+                is_counter=false
+                on_readings=None
+                kun_readings=None
+                radicals=None
+                example_words=None
+                grammar_info=None
+                known_kanji=Signal::from(HashSet::new())
+                native_language=origa::domain::NativeLanguage::Russian
+            />
+        }
+        .into_any()
+    });
+    let settled = wait_until(
+        || answer.query_selector("rt").ok().flatten().is_some(),
+        40,
+        25,
+    )
+    .await;
+    assert!(settled, "answer translator must settle");
+    let answer_reading = answer
+        .query_selector("rt")
+        .unwrap()
+        .unwrap()
+        .text_content()
+        .unwrap();
+
+    assert_eq!(question_reading, "ひどく");
+    assert_eq!(answer_reading, "ひどく");
+
+    // Control: without the opt-in prop the spans-first path is unchanged.
+    let plain = create_wrapper();
+    mount_with_i18n(&plain, || {
+        view! {
+            <LessonCardQuestion
+                question_text=TEXT.to_string()
+                kanji=None
+                is_reversed=false
+                on_show_answer=Callback::new(|()| {})
+                known_kanji=Signal::derive(HashSet::new)
+                native_language=origa::domain::NativeLanguage::Russian
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+    assert_eq!(
+        plain
+            .query_selector("rt")
+            .unwrap()
+            .unwrap()
+            .text_content()
+            .unwrap(),
+        "むご"
+    );
+    reset_precomputed_store();
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // LessonProgress
 // ═══════════════════════════════════════════════════════════════════════

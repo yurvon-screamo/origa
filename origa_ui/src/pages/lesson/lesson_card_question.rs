@@ -18,6 +18,10 @@ pub fn LessonCardQuestion(
     /// без фуриганы, чтения живут в таблице на ответе.
     #[prop(optional, default = false)]
     is_counter: bool,
+    /// Phrase cards render the answer from precomputed token readings; the
+    /// question must use the same source so one phrase has one reading.
+    #[prop(optional, default = false)]
+    is_phrase: bool,
     on_show_answer: Callback<()>,
     #[prop(into)] known_kanji: Signal<HashSet<char>>,
     native_language: NativeLanguage,
@@ -53,6 +57,7 @@ pub fn LessonCardQuestion(
                                                     known_kanji=known_kanji.get()
                                                     native_language=native_language
                                                     with_kanji_tooltip=true
+                                                    prefer_precomputed_tokens=is_phrase
                                                 />
                                             }
                                         }
