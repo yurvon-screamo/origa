@@ -11,6 +11,7 @@ export const PRESET_IDS = [
   "due-corpus",
   "due-examples",
   "fresh",
+  "grammar-practice",
   "onboarded",
   "scoring-n5",
   "onboarded-history",
@@ -18,6 +19,7 @@ export const PRESET_IDS = [
   "onboarding-summary",
   "onboarding-start",
   "phrase-dash-run",
+  "phrase-listen",
   "with-word",
 ] as const;
 

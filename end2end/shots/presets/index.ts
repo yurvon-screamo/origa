@@ -5,12 +5,14 @@ import { counterDue } from "./counter-due.ts";
 import { dueCorpus } from "./due-corpus.ts";
 import { dueExamples } from "./due-examples.ts";
 import { fresh } from "./fresh.ts";
+import { grammarPractice } from "./grammar-practice.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { onboarded } from "./onboarded.ts";
 import { onboardedHistory } from "./onboarded-history.ts";
 import { onboardingStart } from "./onboarding-start.ts";
 import { onboardingSummary } from "./onboarding-summary.ts";
 import { phraseDashRun } from "./phrase-dash-run.ts";
+import { phraseListen } from "./phrase-listen.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
 import { withWord } from "./with-word.ts";
@@ -33,6 +35,7 @@ export type Preset = (context: PresetContext) => Promise<void>;
 
 export const presets: Record<PresetId, Preset> = {
   fresh,
+  "grammar-practice": grammarPractice,
   "acquaintance-hand": acquaintanceHand,
   "counter-due": counterDue,
   "due-corpus": dueCorpus,
@@ -44,5 +47,6 @@ export const presets: Record<PresetId, Preset> = {
   "onboarding-summary": onboardingSummary,
   "onboarding-start": onboardingStart,
   "phrase-dash-run": phraseDashRun,
+  "phrase-listen": phraseListen,
   "with-word": withWord,
 };

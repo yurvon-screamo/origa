@@ -17,8 +17,15 @@ export async function clickFirstVisible(
       .then(() => true)
       .catch(() => false);
     if (visible) {
-      await locator.click({ timeout: 3_000 });
-      return id;
+      // WASM can re-render the card between the visibility probe and
+      // the click. A lost click is a miss, not a failed capture — the
+      // caller advances to the next control or rerolls the lesson.
+      try {
+        await locator.click({ timeout: 3_000 });
+        return id;
+      } catch {
+        continue;
+      }
     }
   }
   return null;
@@ -41,7 +48,7 @@ export const QUESTION_MARKERS: Array<[string, string]> = [
   ["writing", "canvas.kanji-drawing-canvas"],
 ];
 
-const REVEALS = [
+export const REVEALS = [
   "lesson-show-answer-btn",
   "quiz-option-0",
   "yesno-no-btn",
@@ -50,7 +57,7 @@ const REVEALS = [
   "counter-binding-show-answer-btn",
 ];
 
-const ADVANCES = [
+export const ADVANCES = [
   "lesson-card-next-btn",
   "quiz-submit-btn",
   "lesson-rating-btn-again",
