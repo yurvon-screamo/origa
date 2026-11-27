@@ -314,7 +314,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Урок: фраза на слух",
     route: "/lesson",
     locale: "ru-RU",
-    preset: "phrase-listen",
+    preset: "onboarded",
   },
   "lesson-audio-recall": {
     id: "lesson-audio-recall",

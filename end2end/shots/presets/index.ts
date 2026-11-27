@@ -12,7 +12,6 @@ import { onboardedHistory } from "./onboarded-history.ts";
 import { onboardingStart } from "./onboarding-start.ts";
 import { onboardingSummary } from "./onboarding-summary.ts";
 import { phraseDashRun } from "./phrase-dash-run.ts";
-import { phraseListen } from "./phrase-listen.ts";
 import type { PresetId } from "./registry.ts";
 import { scoringN5 } from "./scoring-n5.ts";
 import { withWord } from "./with-word.ts";
@@ -47,6 +46,5 @@ export const presets: Record<PresetId, Preset> = {
   "onboarding-summary": onboardingSummary,
   "onboarding-start": onboardingStart,
   "phrase-dash-run": phraseDashRun,
-  "phrase-listen": phraseListen,
   "with-word": withWord,
 };
