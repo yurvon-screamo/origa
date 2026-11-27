@@ -88,3 +88,40 @@ def test_example_changes_touch_only_translations(witness: dict) -> None:
             assert change["before"] is None, change
         else:
             assert change["class"] == "B" and change["before"], change
+
+
+def test_takes_gloss_does_not_claim_initiative(witness: dict) -> None:
+    # Regression pin: the first round glossed 取れる as "инициатива", a sense
+    # absent from JA sid 945 and from the EN/VI/KO glosses.
+    takes = next(c for c in witness["changes"] if c["word"] == "取れる")
+
+    assert "инициатив" not in " ".join(takes["after"])
+    assert takes["after"][-1] == "способный взять на себя ответственность (о человеке)"
+
+
+def test_example_19194_keeps_its_antecedent(witness: dict) -> None:
+    # Regression pin: the first round dropped «немного беспокоит…» from the
+    # RU translation, leaving «такие» without an antecedent.
+    change = next(c for c in witness["changes"] if c["sid"] == [19194])
+
+    assert "немного беспокоит" in change["after"]
+    assert "такие ответы" not in change["after"]
+
+
+def test_chunk_09_layout_change_is_recorded(witness: dict) -> None:
+    # Regression pin: the first round rewrote the compact chunk with indent=1
+    # and the witness did not describe the byte-level delta.
+    layout = witness["round2_adjustments"]["dictionary_chunk_09_layout"]
+
+    assert layout["before_bytes"] == 5154015
+    assert layout["intermediate_bytes"] > layout["final_bytes"] == 5154138
+    assert "компактная раскладка восстановлена" in layout["result"]
+    assert witness["round2_adjustments"]["canonical_example_key_order"]["order"] == [
+        "i",
+        "x",
+        "en",
+        "f",
+        "ru",
+        "vi",
+        "ko",
+    ]
