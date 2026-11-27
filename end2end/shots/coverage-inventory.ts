@@ -600,7 +600,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — владелец санкционировал исключение 27.11",
+        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
       source: "LessonCardView::Reversed",
     },
   },
@@ -616,7 +616,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — владелец санкционировал исключение 27.11",
+        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
       source: "LessonCardView::GrammarMutated",
     },
   },
@@ -632,7 +632,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — владелец санкционировал исключение 27.11",
+        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — исключено до появления сценария (uwuwu#1691)",
       source: "QuizVariant::Grammar",
     },
   },
@@ -648,7 +648,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — владелец санкционировал исключение 27.11",
+        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — исключено до появления сценария (uwuwu#1691)",
       source: "card_list_page",
     },
   },
@@ -664,7 +664,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — владелец санкционировал исключение 27.11",
+        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — исключено до появления сценария (uwuwu#1691)",
       source: "sets-import-drawer",
     },
   },
