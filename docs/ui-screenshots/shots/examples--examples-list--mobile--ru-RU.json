@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "examples",
+  "screen": "examples-list",
+  "route": "/examples",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 291981,
+  "sha256": "a23d0fa3406e7ce2bdf202273faa07443c27e196e7d35b51b5bd0b3a3633d4b3",
+  "capturedAt": "2026-11-27T10:24:30.741Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

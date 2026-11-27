@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "counters",
+  "screen": "counters-add-drawer",
+  "route": "/counters",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 183972,
+  "sha256": "3a8e252e65a5f05f12aa3c9413b90ebdcb17592dacfb5c0fd36d1e92e136ae22",
+  "capturedAt": "2026-11-27T10:17:42.661Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

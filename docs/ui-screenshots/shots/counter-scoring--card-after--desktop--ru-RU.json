@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "counter-scoring",
+  "screen": "card-after",
+  "route": "/onboarding",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 336940,
+  "sha256": "3c220db20226616a1ec319831efa8eedfa7dd2295bc6ce4decae8fdbefd404cf",
+  "capturedAt": "2026-11-27T10:08:36.449Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

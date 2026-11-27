@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "profile",
+  "screen": "profile-form",
+  "route": "/profile",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 304600,
+  "sha256": "9d1f3add6f3363186748daaf637099b804d2101a7747cfb165dc1107a202f305",
+  "capturedAt": "2026-11-27T12:44:37.317Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

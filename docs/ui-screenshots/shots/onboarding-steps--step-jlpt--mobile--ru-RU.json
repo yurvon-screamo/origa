@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "onboarding-steps",
+  "screen": "step-jlpt",
+  "route": "/onboarding",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 368288,
+  "sha256": "86924983a4d4ecd558224a9e80590a57e6ef8370c3a2ee20fa06adbd8e9fd380",
+  "capturedAt": "2026-11-27T12:40:13.563Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

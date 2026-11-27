@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "home-due-counter",
+  "screen": "due-day-one",
+  "route": "/home",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 114464,
+  "sha256": "a996e692920a63b0de59ae7fc12ba0e0192e6b9775fbdb9c0b3960b7e1353cbf",
+  "capturedAt": "2026-11-27T10:42:45.635Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}
