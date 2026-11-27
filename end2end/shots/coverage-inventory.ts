@@ -379,7 +379,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "phrase-dash-run",
     screens: ["phrases-list-clean", "lesson-phrase-question-clean"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сид phrase-карты оставляет приложение на boot splash; список фраз не монтируется — слово владельца 28.11, отдельная задача #1753",
+      source: "phrase_card_item",
+    },
   },
   {
     id: "variation:acquaintance-word-presentation",
@@ -479,7 +485,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-example-audio",
     screens: ["example-audio-question"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "кнопка example-audio не появляется при дошедшей карточке примера; отдельная задача #1753 по слову владельца 28.11",
+      source: "lesson-example-audio",
+    },
   },
   {
     id: "variation:lesson-phrase-listen",
@@ -489,7 +501,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-phrase-listen",
     screens: ["phrase-listen-question"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "PhraseListen не порождается при due-фразах за 6 проходов по 6 карточек; отдельная задача #1753 по слову владельца 28.11",
+      source: "phrase-audio-player",
+    },
   },
   {
     id: "variation:lesson-audio-recall",
@@ -499,7 +517,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-audio-recall",
     screens: ["audio-recall-question", "audio-recall-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "вид AudioRecall порождается только для слов, а в due-corpus слова не due; отдельная задача #1753 по слову владельца 28.11",
+      source: "audio-recall-card-root",
+    },
   },
   {
     id: "variation:lesson-quiz-single",
