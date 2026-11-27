@@ -123,17 +123,20 @@ pub fn OAuthButtons(
 
     view! {
         <div class="space-y-3" data-testid=test_id_val>
+            // Plain (unprefixed) data-umami-event on raw buttons: the `attr:`
+            // prefix renders verbatim under leptos_macro 0.8.18 and the
+            // tracker's `[data-umami-event]` selector never matches it.
             <button
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--fg-black)] hover:opacity-80 transition-opacity"
                 data-testid=apple_test_id
-                attr:data-umami-event="login_apple"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_apple.clone();
                     spawn_local(async move {
                         open_oauth_url(OAuthProvider::Apple, debug_sink, auth_store, i18n).await;
                     });
                 }
+                data-umami-event="login_apple"
             >
                 <AppleIcon />
                 <span class="text-[var(--bg-paper)]">{t!(i18n, login.apple_login)}</span>
@@ -143,13 +146,13 @@ pub fn OAuthButtons(
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=google_test_id
-                attr:data-umami-event="login_google"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_google.clone();
                     spawn_local(async move {
                         open_oauth_url(OAuthProvider::Google, debug_sink, auth_store, i18n).await;
                     });
                 }
+                data-umami-event="login_google"
             >
                 <GoogleIcon />
                 <span class="text-[var(--fg-black)]">{t!(i18n, login.google_login)}</span>
@@ -159,13 +162,13 @@ pub fn OAuthButtons(
                 type="button"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-dark)] bg-[var(--bg-cream)] hover:bg-[var(--bg-aged)] transition-colors"
                 data-testid=yandex_test_id
-                attr:data-umami-event="login_yandex"
                 on:click=move |_: leptos::ev::MouseEvent| {
                     let auth_store = auth_store_yandex.clone();
                     spawn_local(async move {
                         open_oauth_url(OAuthProvider::Yandex, debug_sink, auth_store, i18n).await;
                     });
                 }
+                data-umami-event="login_yandex"
             >
                 <YandexIcon />
                 <span class="text-[var(--fg-black)]">{t!(i18n, login.yandex_login)}</span>

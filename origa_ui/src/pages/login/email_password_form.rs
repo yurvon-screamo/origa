@@ -105,17 +105,21 @@ pub fn EmailPasswordForm(
                 test_id=Signal::derive(|| "password-input".to_string())
             />
 
+            // Umami event attribute on a wrapper span (`block w-full` keeps the
+            // button's full-width geometry): `attr:` on a component renders
+            // verbatim under leptos_macro 0.8.18, so the tracker never matched.
+            <span data-umami-event="login_submit" class="block w-full">
             <Button
                 variant=Signal::derive(|| ButtonVariant::Olive)
                 loading=loading
                 disabled=loading
                 button_type=Signal::derive(|| "submit".to_string())
-                attr:data-umami-event="login_submit"
                 class=Signal::derive(|| "w-full".to_string())
                 test_id=Signal::derive(|| "login-submit".to_string())
             >
                 {t!(i18n, login.login_button)}
             </Button>
+            </span>
         </form>
     }
 }
