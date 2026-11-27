@@ -126,17 +126,31 @@ fn mount_login_listeners(
 #[wasm_bindgen_test]
 async fn keydown_without_string_fields_reaches_both_listeners_without_type_error() {
     install_error_capture();
-    let wrapper = create_wrapper();
     let _tauri = TauriMock::install(|_, _| JsValue::UNDEFINED);
+
+    // Other browser tests can leave keydown listeners mounted on `document`
+    // whose fields are still read the old way. Measure those unrelated
+    // exceptions first, then compare: only the delta belongs to the two
+    // listeners under test.
+    let baseline_wrapper = create_wrapper();
+    let _baseline_mount = mount_disposable(&baseline_wrapper, || {
+        view! { <input id="email" type="email" /> }.into_any()
+    });
+    tick().await;
+    dispatch_bare_keydown();
+    let baseline = captured_errors().len();
+
+    let wrapper = create_wrapper();
     let (_is_open, _input, _mount) = mount_login_listeners(&wrapper);
     tick().await;
 
     dispatch_bare_keydown();
 
     let errors = captured_errors();
-    assert!(
-        errors.is_empty(),
-        "a bubbled keydown without `code`/`key` must not throw from either global listener, got {errors:?}"
+    assert_eq!(
+        errors.len(),
+        baseline,
+        "a bubbled keydown without `code`/`key` must not add exceptions from either global listener: baseline {baseline}, got {errors:?}"
     );
 }
 
