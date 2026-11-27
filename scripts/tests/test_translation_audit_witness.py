@@ -63,6 +63,13 @@ def test_change_keys_are_unique(witness: dict) -> None:
     assert len(keys) == len(set(keys))
 
 
+def test_every_change_has_a_reason(witness: dict) -> None:
+    # The record is read and rolled back by path and reason; glosses need the
+    # justification as much as examples do.
+    for change in witness["changes"]:
+        assert change["reason"].strip(), change
+
+
 def test_dictionary_changes_only_append_ru_senses(witness: dict) -> None:
     glosses = [c for c in witness["changes"] if c["path"].startswith("dictionary/")]
 
@@ -87,7 +94,6 @@ def test_example_changes_touch_only_translations(witness: dict) -> None:
             change["path"] == f"examples/data/s{sid // 1000:04d}.json"
             for sid in change["sid"]
         ), change
-        assert change["reason"].strip(), change
         if change["class"] == "пропущенное поле":
             assert change["before"] is None, change
         else:
@@ -118,6 +124,7 @@ def test_witness_records_chunk_09_layout_correction(witness: dict) -> None:
     assert (
         layout["before_bytes"] <= layout["final_bytes"] < layout["intermediate_bytes"]
     )
+    assert layout["result"].strip()
     assert witness["round2_adjustments"]["canonical_example_key_order"]["order"] == [
         "i",
         "x",
