@@ -64,7 +64,7 @@ pub fn Modal(
         document(),
         leptos::ev::keydown,
         move |ev: leptos::ev::KeyboardEvent| {
-            if ev.key() == "Escape" {
+            if crate::utils::event_string_field(ev.as_ref(), "key") == "Escape" {
                 if block_close.get() {
                     return;
                 }

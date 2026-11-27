@@ -39,7 +39,11 @@ pub(crate) fn install_reload_guard() {
     // current reactive owner, so the return value can be discarded. App() owns
     // the guard for the whole app lifetime.
     let _ = use_event_listener(window(), leptos::ev::keydown, move |ev| {
-        if !is_reload_accelerator(&ev.code(), ev.ctrl_key(), ev.meta_key()) {
+        if !is_reload_accelerator(
+            &crate::utils::event_string_field(ev.as_ref(), "code"),
+            crate::utils::event_bool_field(ev.as_ref(), "ctrlKey"),
+            crate::utils::event_bool_field(ev.as_ref(), "metaKey"),
+        ) {
             return;
         }
 
