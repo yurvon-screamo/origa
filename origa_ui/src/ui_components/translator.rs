@@ -534,7 +534,7 @@ fn TokenPopup(
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
-    use super::{add_word_target, token_has_popup};
+    use super::{VERIFIED_PARTICLE_SURFACES, add_word_target, token_has_popup};
     use origa::domain::{PartOfSpeech, TokenTranslation};
 
     fn token(pos: PartOfSpeech, surface: &str, base: &str, translation: &str) -> TokenTranslation {
@@ -622,10 +622,11 @@ mod tests {
         assert!(token_has_popup(&token));
     }
 
-    /// Contract pin for uwuwu#938: the surfaces declared as verified in the
-    /// task must keep their popup, and the named homonyms must never become
-    /// clickable. A later edit to the curated whitelist has to update this
-    /// list explicitly — that is the point of a verified-only gate.
+    /// Contract pin for uwuwu#938: the verified whitelist must be exactly the
+    /// surfaces declared in the task — every one opens its popup, a declared
+    /// surface without an article stays plain, and the named homonyms never
+    /// become clickable. Both adding and removing a surface needs an explicit
+    /// update here — that is the point of a verified-only gate.
     #[test]
     fn declared_particle_surface_contract() {
         const DECLARED: &[&str] = &[
@@ -649,6 +650,10 @@ mod tests {
             "ので",
             "のに",
         ];
+        assert_eq!(
+            DECLARED, VERIFIED_PARTICLE_SURFACES,
+            "verified whitelist drifted from the declared uwuwu#938 contract"
+        );
         for surface in DECLARED {
             let token = token(PartOfSpeech::Particle, surface, surface, "статья");
             assert!(
@@ -656,6 +661,13 @@ mod tests {
                 "declared particle {surface} lost its popup"
             );
         }
+        // The article conjunct of the gate: even a verified surface stays
+        // plain when the dictionary has no entry for it.
+        let no_article = token(PartOfSpeech::Particle, "は", "は", "");
+        assert!(
+            !token_has_popup(&no_article),
+            "verified particle without an article must stay plain"
+        );
         for surface in ["な", "さ", "い", "ぜ", "もの"] {
             let token = token(PartOfSpeech::Particle, surface, surface, "статья");
             assert!(
