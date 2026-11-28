@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 106189,
-  "sha256": "06acb7f20cc8a45ea5bfbd4375c9e9b6791c0ddad2f3fe08e27a1f4805b7b12f",
-  "capturedAt": "2026-11-27T11:00:05.805Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-acquaintance-grammar--grammar-answer--mobile-06acb7f2.png",
-  "uploadedSha256": "06acb7f20cc8a45ea5bfbd4375c9e9b6791c0ddad2f3fe08e27a1f4805b7b12f",
-  "uploadedAt": "2026-11-27T16:22:41.635Z"
+  "bytes": 106199,
+  "sha256": "e152aab58978bcaf94ddbfe124bb613a49d3998b30df40916726ff0074b4b743",
+  "capturedAt": "2026-11-28T12:15:02.220Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

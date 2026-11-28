@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "feedback-form",
+  "screen": "feedback-modal-filled",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 345457,
+  "sha256": "30832efbd7ef3c766beac98d43e9a9922a66aa3257ef81550eb552d1a29e81bc",
+  "capturedAt": "2026-11-28T11:21:16.995Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

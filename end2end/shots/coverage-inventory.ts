@@ -243,7 +243,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "words-grid",
     screens: ["grid-full", "grid-viewport"],
     viewports: BOTH,
-    status: "covered",
+    status: "excluded",
+    exclusion: {
+      code: "no-scenario",
+      reason:
+        "пресет with-word не гарантирует карточку в сетке; сценарий уходит в таймаут — отдельная задача #1768",
+      source: "Words",
+    },
   },
   {
     id: "variation:words-add-wizard",

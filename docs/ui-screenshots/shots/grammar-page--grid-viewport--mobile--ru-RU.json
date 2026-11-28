@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 146912,
   "sha256": "60b59cce823537b3aade5afce15101ffb77d87564a1bc90d0dea346ff2a01d3b",
-  "capturedAt": "2026-11-27T10:31:53.077Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/grammar-page--grid-viewport--mobile-60b59cce.png",
-  "uploadedSha256": "60b59cce823537b3aade5afce15101ffb77d87564a1bc90d0dea346ff2a01d3b",
-  "uploadedAt": "2026-11-27T16:22:23.425Z"
+  "capturedAt": "2026-11-28T11:46:21.488Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 249879,
-  "sha256": "7c78ce63177d59853ab1e4aefbc22e5d8906dbfe0845e26b773136ecbce717d0",
-  "capturedAt": "2026-11-27T16:15:00.846Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-jlpt-details--home-jlpt-details--desktop-7c78ce63.png",
-  "uploadedSha256": "7c78ce63177d59853ab1e4aefbc22e5d8906dbfe0845e26b773136ecbce717d0",
-  "uploadedAt": "2026-11-27T16:22:31.287Z"
+  "bytes": 250279,
+  "sha256": "ca089b22a1391710c5d0f8dccca4e03ea458a2ffb64eabcea713086bec99c9bd",
+  "capturedAt": "2026-11-28T11:59:05.626Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 169973,
-  "sha256": "f53d1d1ad84b018c99023aaffcddca722d7009a4d51e1240403035c4bf32f22e",
-  "capturedAt": "2026-11-27T11:29:21.125Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-counter-pack--pack-front--mobile-f53d1d1a.png",
-  "uploadedSha256": "f53d1d1ad84b018c99023aaffcddca722d7009a4d51e1240403035c4bf32f22e",
-  "uploadedAt": "2026-11-27T16:22:46.700Z"
+  "bytes": 169663,
+  "sha256": "6d6167ec85851a0ac0b83bd2aa0bdf8c3d4e0ae81b79314aae76fed88e64562c",
+  "capturedAt": "2026-11-28T12:25:36.463Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 168240,
-  "sha256": "db0842dd27ca4c77d76a207d43cf76b20ddf88f406bf9e99e231017b7a3f615c",
-  "capturedAt": "2026-10-30T19:43:17.181Z",
-  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--mobile-db0842dd.png",
-  "uploadedSha256": "db0842dd27ca4c77d76a207d43cf76b20ddf88f406bf9e99e231017b7a3f615c",
-  "uploadedAt": "2026-10-30T19:44:21.959Z"
+  "bytes": 167382,
+  "sha256": "5751194e2e1362540d20b2a504335b5a896c402f38617b4c138bb5b87e600c6d",
+  "capturedAt": "2026-11-28T14:20:35.282Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

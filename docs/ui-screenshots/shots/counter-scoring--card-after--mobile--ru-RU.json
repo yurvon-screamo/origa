@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 193990,
   "sha256": "9bc299204c46ae4e329634d0e55e0493a43d270581699b03f9059f71d798d4bc",
-  "capturedAt": "2026-11-27T10:14:28.027Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counter-scoring--card-after--mobile-9bc29920.png",
-  "uploadedSha256": "9bc299204c46ae4e329634d0e55e0493a43d270581699b03f9059f71d798d4bc",
-  "uploadedAt": "2026-11-27T16:22:01.720Z"
+  "capturedAt": "2026-11-28T11:09:21.954Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

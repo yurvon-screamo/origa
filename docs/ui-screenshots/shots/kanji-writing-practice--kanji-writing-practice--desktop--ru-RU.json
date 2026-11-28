@@ -10,11 +10,11 @@
   "fullPage": true,
   "bytes": 194636,
   "sha256": "48dc7ce04396de258fc8eca30d8e22b3ff045b1b94d62ae25dcbb469cfe03b3f",
-  "capturedAt": "2026-11-27T10:54:55.589Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/kanji-writing-practice--kanji-writing-practice--desktop-48dc7ce0.png",
-  "uploadedSha256": "48dc7ce04396de258fc8eca30d8e22b3ff045b1b94d62ae25dcbb469cfe03b3f",
-  "uploadedAt": "2026-11-27T16:22:36.789Z"
+  "capturedAt": "2026-11-28T12:10:00.662Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

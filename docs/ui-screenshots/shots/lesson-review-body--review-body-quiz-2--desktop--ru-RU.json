@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 358981,
-  "sha256": "9162abb4e8044602daf0c68789fa33955903f43a1c75d089736e6f1cdda59cd5",
-  "capturedAt": "2026-10-30T18:18:18.516Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-quiz-2--desktop-9162abb4.png",
-  "uploadedSha256": "9162abb4e8044602daf0c68789fa33955903f43a1c75d089736e6f1cdda59cd5",
-  "uploadedAt": "2026-10-30T18:56:35.916Z"
+  "bytes": 403888,
+  "sha256": "a16e13a90d72084a410f750314853bff7b774201b0dc43442b0a5c013c1d982c",
+  "capturedAt": "2026-11-28T12:46:57.818Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

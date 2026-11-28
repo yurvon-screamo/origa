@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 342012,
-  "sha256": "c0461bda3f45c1e00aa357b8b1a91300f50026733cdb8d8999b66af1ff658a17",
-  "capturedAt": "2026-11-27T12:38:36.012Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-apps--desktop-c0461bda.png",
-  "uploadedSha256": "c0461bda3f45c1e00aa357b8b1a91300f50026733cdb8d8999b66af1ff658a17",
-  "uploadedAt": "2026-11-27T16:23:42.577Z"
+  "bytes": 342123,
+  "sha256": "d9422e7d266a6b30a82b849c59236c9ab99910b9efe6ca3714502bce13494d83",
+  "capturedAt": "2026-11-28T13:07:53.006Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }
