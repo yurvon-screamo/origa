@@ -407,8 +407,34 @@ error! point — produced **zero** Sentry events since this ADR shipped:
   earlier "Performance tracing / Session Replay — follow-up (payload
   overhead, opt-in)" NOTICED line is superseded by this record; whether to
   keep, tune, or disable them is an owner call on the recorded facts.
-- Symbolication (native debug files, WASM debug info) remains a follow-up,
-  tracked separately.
+- Symbolication, final state (implementation round, review round 2 of
+  uwuwu#1454):
+  - **Android (.so) and Linux (ELF) — implemented, release-only.** The
+    tauri.yml tag workflow is the sole forwarder of `SENTRY_AUTH_TOKEN`
+    (ci.yml PR/master builds do not receive it, so alpha builds create no
+    Sentry releases). Command form per sentry-cli 3.7.0:
+    `debug-files upload -t elf <path>...` — 3.x removed `--no-progress`
+    and `--include`, and the first wiring died on exactly that.
+  - **Known cost, owner fork open (Linux):** the job builds with
+    `STRIP=none` + line-tables, and tauri fuses compile with bundling —
+    deb/rpm carry the unstripped binary: measured 8.31 → 14.76 MiB per
+    package (+78%; CI runs 46090840297 vs 46094186486). Accept vs revert
+    is an owner decision recorded in the task report.
+  - **WASM — infeasible on this pipeline, measured by 5 build spikes**
+    (baseline shipped artifact 10,127,088 bytes; the task's size gate =
+    stop above +25%):
+    | Path | Result | Verdict |
+    | --- | --- | --- |
+    | full DWARF (wasm-opt keep-debug, no optimization) | 259 MB (+2457%) | fails the gate outright |
+    | stripped-after-objcopy (no wasm-opt) | 54.5 MB (+438%) | fails the gate outright |
+    | name section (wasm-opt `-g`, strip=none) | 50.5 MB (+399%) | fails the gate — ~40 MB of mangled Rust names |
+    | sidecar symbols build (strip=none, no `-g`) | shipped 10.1 MB, CODE section differs (7.84 vs 8.62 MB) | dead — binaryen's transforms consume the extra sections it receives, so the symbols build is not address-identical to the shipped one; a sidecar cannot symbolicate an artifact it does not match |
+    Every path to symbolication dies at the size gate or the address
+    identity; the wiring was reverted (commit history keeps the probes).
+    Browsers still show `wasm-function[N]` stacks for WASM events.
+  - **Windows/Apple native symbols — NOT TOUCHING** (spike territory,
+    same class as the probes above; their artifacts are unaffected by the
+    Linux/Android job-scoped env overrides).
 
 ## References
 
