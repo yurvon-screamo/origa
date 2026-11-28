@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 292804,
   "sha256": "3212082dc53ea3a0a788dfd2a925a0f3d21200347679b500043bbc26704a7459",
-  "capturedAt": "2026-11-22T12:03:05.300Z",
-  "commit": "ccb5c2537afd3b419e84e13b432507ad631b9c0d",
-  "baseURL": "http://localhost:11421",
-  "cdnBaseUrl": "http://localhost:18181",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-unification--lesson-complete--mobile-3212082d.png",
+  "capturedAt": "2026-11-27T12:25:36.081Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-unification--lesson-complete--mobile-3212082d.png",
   "uploadedSha256": "3212082dc53ea3a0a788dfd2a925a0f3d21200347679b500043bbc26704a7459",
-  "uploadedAt": "2026-11-22T12:05:25.971Z"
+  "uploadedAt": "2026-11-27T16:23:10.833Z"
 }

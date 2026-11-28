@@ -5,6 +5,7 @@ import { counterDue } from "./counter-due.ts";
 import { dueCorpus } from "./due-corpus.ts";
 import { dueExamples } from "./due-examples.ts";
 import { fresh } from "./fresh.ts";
+import { grammarPractice } from "./grammar-practice.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { onboarded } from "./onboarded.ts";
 import { onboardedHistory } from "./onboarded-history.ts";
@@ -33,6 +34,7 @@ export type Preset = (context: PresetContext) => Promise<void>;
 
 export const presets: Record<PresetId, Preset> = {
   fresh,
+  "grammar-practice": grammarPractice,
   "acquaintance-hand": acquaintanceHand,
   "counter-due": counterDue,
   "due-corpus": dueCorpus,

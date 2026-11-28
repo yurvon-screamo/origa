@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "token-popup",
+  "screen": "token-popup-report",
+  "route": "/phrases",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 159452,
+  "sha256": "f41350ffed67b4f4e85fa5e8dd10ec9cbc779da653e3a197bc5de2ffcf2fc236",
+  "capturedAt": "2026-11-27T14:32:39.248Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/token-popup--token-popup-report--mobile-f41350ff.png",
+  "uploadedSha256": "f41350ffed67b4f4e85fa5e8dd10ec9cbc779da653e3a197bc5de2ffcf2fc236",
+  "uploadedAt": "2026-11-27T16:23:59.677Z"
+}

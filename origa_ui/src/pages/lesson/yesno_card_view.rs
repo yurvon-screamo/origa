@@ -204,7 +204,7 @@ pub fn YesNoCardView(
     let footer_row: ChildrenFn = std::sync::Arc::new(move || {
         view! {
             <Show when=move || !show_result.get()>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 mt-4">
                     <Button
                         test_id=Signal::derive(|| "yesno-no-btn".to_string())
                         variant=Signal::derive(|| ButtonVariant::Default)

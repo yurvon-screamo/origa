@@ -5,8 +5,9 @@ import type { ShotScenario } from "../scenario.ts";
 
 /**
  * A grammar rule detail: overview, the practice session and the delete
- * confirmation. The practice session renders inline on desktop and behind
- * the "practice" tab on mobile (the BDD steps use the same discriminator).
+ * confirmation. The practice preset seeds a quiz-capable rule plus one
+ * known verb — the same pair the BDD grammar steps use, without the
+ * minutes of UI seeding on every viewport.
  */
 export const grammarDetailScenario: ShotScenario = {
   ...descriptors["grammar-detail"],
