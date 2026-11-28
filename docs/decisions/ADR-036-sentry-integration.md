@@ -409,18 +409,25 @@ error! point — produced **zero** Sentry events since this ADR shipped:
   keep, tune, or disable them is an owner call on the recorded facts.
 - Symbolication, final state (implementation round, review round 2 of
   uwuwu#1454):
-  - **Android (.so) and Linux (ELF) — implemented, release-only.** The
-    tauri.yml tag workflow is the sole forwarder of `SENTRY_AUTH_TOKEN`
-    (ci.yml PR/master builds do not receive it, so alpha builds create no
-    Sentry releases). Command form per sentry-cli 3.7.0:
+  - **Android (.so, all four built ABIs) and Linux (ELF) — implemented,
+    release-only, non-blocking.** The tauri.yml tag workflow is the sole
+    forwarder of `SENTRY_AUTH_TOKEN` (tag `push` events only — manual
+    dispatch and ci.yml PR/master builds get an empty token, so alpha
+    builds create no Sentry releases). Command form per sentry-cli 3.7.0:
     `debug-files upload -t elf <path>...` — 3.x removed `--no-progress`
-    and `--include`, and the first wiring died on exactly that.
+    and `--include`, and the first wiring died on exactly that; DIFs bind
+    by build-id, so there is no release flag to pass. **Release-train
+    policy (explicit, review round 2): the upload step is
+    `continue-on-error` — missing debug files degrade crash symbolication
+    but must not fail the tag build** (a rotated token with wrong scopes
+    would otherwise red-light the whole release); the failing step stays
+    visible in the run UI.
   - **Known cost, owner fork open (Linux):** the job builds with
     `STRIP=none` + line-tables, and tauri fuses compile with bundling —
     deb/rpm carry the unstripped binary: measured 8.31 → 14.76 MiB per
     package (+78%; CI runs 46090840297 vs 46094186486). Accept vs revert
     is an owner decision recorded in the task report.
-  - **WASM — infeasible on this pipeline, measured by 5 build spikes**
+  - **WASM — infeasible on this pipeline, measured by build spikes**
     (baseline shipped artifact 10,127,088 bytes; the task's size gate =
     stop above +25%):
     | Path | Result | Verdict |

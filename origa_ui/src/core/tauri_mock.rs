@@ -165,3 +165,71 @@ impl Drop for UserAgentOverride {
         }
     }
 }
+
+/// Overrides `navigator.onLine` for the duration of the guard's lifetime
+/// (RAII restore on drop). The network invariant tests (uwuwu#1454) drive
+/// `report_network_failure` through both branches; headless Chrome cannot
+/// flip `onLine` any other way.
+pub struct OnlineOverride {
+    original: Option<JsValue>,
+}
+
+impl OnlineOverride {
+    pub fn install(online: bool) -> Self {
+        let window = window().expect("test browser window");
+        let navigator = window.navigator();
+        let prototype = js_sys::Object::get_prototype_of(&navigator);
+        let key = JsValue::from_str("onLine");
+
+        let original = js_sys::Object::get_own_property_descriptor(&prototype, &key);
+        let had_own = !original.is_undefined() && !original.is_null();
+
+        let descriptor = js_sys::Object::new();
+        js_sys::Reflect::set(
+            &descriptor,
+            &JsValue::from_str("value"),
+            &JsValue::from_bool(online),
+        )
+        .expect("set value");
+        js_sys::Reflect::set(&descriptor, &JsValue::from_str("writable"), &JsValue::TRUE)
+            .expect("set writable");
+        js_sys::Reflect::set(
+            &descriptor,
+            &JsValue::from_str("enumerable"),
+            &JsValue::TRUE,
+        )
+        .expect("set enumerable");
+        js_sys::Reflect::set(
+            &descriptor,
+            &JsValue::from_str("configurable"),
+            &JsValue::TRUE,
+        )
+        .expect("set configurable");
+
+        js_sys::Object::define_property(&prototype, &key, &descriptor);
+
+        Self {
+            original: had_own.then_some(original),
+        }
+    }
+}
+
+impl Drop for OnlineOverride {
+    fn drop(&mut self) {
+        let window = window().expect("test browser window");
+        let navigator = window.navigator();
+        let prototype = js_sys::Object::get_prototype_of(&navigator);
+        let key = JsValue::from_str("onLine");
+        match self.original.take() {
+            Some(descriptor) => {
+                let descriptor = descriptor
+                    .dyn_into::<js_sys::Object>()
+                    .expect("onLine descriptor is an object");
+                js_sys::Object::define_property(&prototype, &key, &descriptor);
+            },
+            None => {
+                let _ = js_sys::Reflect::delete_property(&prototype, &key);
+            },
+        }
+    }
+}

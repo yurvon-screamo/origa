@@ -108,18 +108,6 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
     );
 }
 
-/// Build the `sentryOnLoad` bootstrap JS executed before the loader script
-/// is injected (ADR-036 §4: installed BEFORE the script tag so a
-/// cache-served synchronous load cannot miss the callback).
-///
-/// Error delivery does NOT go through a console capture integration —
-/// the full story lives in the ADR-036 addendum.
-///
-/// `beforeSend` fingerprints the stack-less `RuntimeError: unreachable`
-/// family (RUST-4/R in the audit) into a single group: the raw frames are
-/// `wasm-function[N]` addresses without symbols, so Sentry's stack
-/// grouping split one failure class into sibling issues. Page-level signal
-/// stays available through the event's `transaction`/`url` tags.
 /// The `beforeSend` predicate of the bootstrap init: stack-less WASM traps
 /// group poorly — every "RuntimeError: unreachable" lands in one card so
 /// one failure class is one issue (page context stays on the event's tags).
@@ -140,6 +128,14 @@ pub(crate) const BEFORE_SEND_FN: &str = r#"function(event) {
     return event;
 }"#;
 
+/// Build the `sentryOnLoad` bootstrap JS executed before the loader script
+/// is injected (ADR-036 §4: installed BEFORE the script tag so a
+/// cache-served synchronous load cannot miss the callback). Error delivery
+/// does NOT go through a console capture integration — the full story
+/// lives in the ADR-036 addendum. The `beforeSend` fingerprints the
+/// stack-less `RuntimeError: unreachable` family (RUST-4/R) into a single
+/// group: raw frames are `wasm-function[N]` addresses without symbols, and
+/// page-level signal stays on the event's `transaction`/`url` tags.
 pub(crate) fn build_init_js(dsn: &str, release: &str, environment: &str) -> String {
     format!(
         r#"(function() {{
@@ -344,10 +340,9 @@ mod tests {
     /// The dead console-capture path must be GONE from the bootstrap: SDK
     /// v10 lazy-loads `captureConsoleIntegration`, so the `typeof` guard
     /// silently produced an empty integrations list for months (uwuwu#1454,
-    /// delta-round 2). Error delivery now goes through the direct
+    /// delta-round 2). Error delivery goes through the direct
     /// `captureException` bridge in the tracing layer — the bootstrap must
-    /// not reference the integration at all, and its comment must name the
-    /// real delivery path.
+    /// not reference the integration at all.
     #[test]
     fn init_js_has_no_console_capture_path() {
         let js = build_init_js(

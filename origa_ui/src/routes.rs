@@ -139,7 +139,7 @@ where
 /// phrases, kanji, …) fail loudly; furigana and pitch are best-effort —
 /// the app keeps working without them.
 #[derive(Clone, Copy)]
-enum FailureSeverity {
+pub(crate) enum FailureSeverity {
     Error,
     Warn,
 }
@@ -150,7 +150,7 @@ enum FailureSeverity {
 /// progress. The stage barriers themselves are preserved by the callers:
 /// the loaders still run within their stage's `join!`, keeping the staged
 /// memory plan (iOS jetsam) unchanged.
-async fn tracked<F, Fut>(
+pub(crate) async fn tracked<F, Fut>(
     resource: &'static str,
     flag: RwSignal<bool>,
     severity: FailureSeverity,
@@ -170,16 +170,9 @@ where
         // (uwuwu#1454 network invariant; ADR-053 cache-first offline path
         // means cached starts never reach this branch at all).
         (Err(e), FailureSeverity::Error) => {
-            match crate::tracing_console::network_failure_severity(
-                crate::tracing_console::is_browser_online(),
-            ) {
-                crate::tracing_console::NetworkSeverity::Error => {
-                    tracing::error!("Failed to load {resource}: {e}");
-                },
-                crate::tracing_console::NetworkSeverity::Warn => {
-                    tracing::warn!("Failed to load {resource} (offline): {e}");
-                },
-            }
+            crate::tracing_console::report_network_failure(&format!(
+                "Failed to load {resource}: {e}"
+            ));
         },
     }
     flag.set(true);
@@ -319,20 +312,9 @@ pub fn start_dictionary_loading(
                 // Offline start with nothing cached lands here too — the
                 // screen is correct UX, the Sentry event is not an incident
                 // (uwuwu#1454 network invariant).
-                match crate::tracing_console::network_failure_severity(
-                    crate::tracing_console::is_browser_online(),
-                ) {
-                    crate::tracing_console::NetworkSeverity::Error => {
-                        tracing::error!(
-                            "All critical resources failed — rendering the load error screen"
-                        );
-                    },
-                    crate::tracing_console::NetworkSeverity::Warn => {
-                        tracing::warn!(
-                            "All critical resources failed (offline) — rendering the load error screen"
-                        );
-                    },
-                }
+                crate::tracing_console::report_network_failure(
+                    "All critical resources failed — rendering the load error screen",
+                );
                 auth_store.load_failure.set(true);
                 return;
             }
@@ -1021,5 +1003,115 @@ mod tests {
         let domain_loaded = [true, true, true, true, true];
         let readiness = [true, true, true, true, true];
         assert!(retry_plan(&domain_loaded, &readiness).is_empty());
+    }
+}
+
+/// The tracked-load severity gate pinned live (uwuwu#1454 review round 2):
+/// an online failure of a critical resource is an incident (`error!`), the
+/// same failure offline is expected degradation (`warn!` — an offline
+/// start with nothing cached fails all five loads and must not flood
+/// Sentry). Host builds cannot see wasm-only modules, so this lives here.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn failing_loader() -> impl Fn() -> std::future::Ready<Result<(), OrigaError>> + Clone + 'static
+    {
+        || {
+            std::future::ready(Err(OrigaError::RepositoryError {
+                reason: "test: cdn dead".to_owned(),
+            }))
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_critical_failure_online_is_error() {
+        let _online = OnlineOverride::install(true);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-critical-res",
+            flag,
+            FailureSeverity::Error,
+            failing_loader(),
+        )
+        .await;
+
+        assert!(
+            flag.get_untracked(),
+            "the readiness flag flips on failure too"
+        );
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::ERROR
+                    && m.contains("Failed to load test-critical-res")),
+            "online critical failure = incident, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_critical_failure_offline_is_warn() {
+        let _offline = OnlineOverride::install(false);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-critical-res",
+            flag,
+            FailureSeverity::Error,
+            failing_loader(),
+        )
+        .await;
+
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::WARN
+                    && m.contains("Failed to load test-critical-res")
+                    && m.contains("(offline)")),
+            "offline critical failure = degradation, got {events:?}"
+        );
+        assert!(
+            events
+                .iter()
+                .all(|(level, _)| *level != tracing::Level::ERROR),
+            "an offline start must not emit critical incidents: {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_warn_severity_stays_warn_while_online() {
+        let _online = OnlineOverride::install(true);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-minor-res",
+            flag,
+            FailureSeverity::Warn,
+            failing_loader(),
+        )
+        .await;
+
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::WARN
+                    && m.contains("Failed to load test-minor-res")),
+            "warn-severity resources stay breadcrumbs online: {events:?}"
+        );
     }
 }

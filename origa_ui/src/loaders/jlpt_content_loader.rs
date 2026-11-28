@@ -168,6 +168,10 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
     );
 
     let process_start = now_ms();
+    // Fetch failures aggregate into ONE severity-routed report: five level
+    // files fetch in parallel, a dead CDN would otherwise emit five events
+    // for one root cause (uwuwu#1454 review).
+    let mut fetch_failures: Vec<String> = Vec::new();
     for (idx, (level, filename)) in levels.iter().enumerate() {
         match &results[idx] {
             Ok(json) => match serde_json::from_str::<JlptWordsFile>(json) {
@@ -190,33 +194,22 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
                 },
             },
             Err(e) => {
-                // Network invariant (uwuwu#1454): an offline start with
-                // uncached JLPT content fails the fetch without being an
-                // incident; parse failures above stay `error!` — a fetched
+                // Collected for the single aggregated report below; parse
+                // failures above stay per-level `error!` — a fetched
                 // payload that does not parse is a content bug regardless
                 // of connectivity.
-                match crate::tracing_console::network_failure_severity(
-                    crate::tracing_console::is_browser_online(),
-                ) {
-                    crate::tracing_console::NetworkSeverity::Error => {
-                        tracing::error!(
-                            "JLPT {:?} words fetch failed for {}: {:?}",
-                            level,
-                            filename,
-                            e
-                        );
-                    },
-                    crate::tracing_console::NetworkSeverity::Warn => {
-                        tracing::warn!(
-                            "JLPT {:?} words fetch failed (offline) for {}: {:?}",
-                            level,
-                            filename,
-                            e
-                        );
-                    },
-                }
+                fetch_failures.push(format!("{level:?} {}: {e:?}", filename));
             },
         }
+    }
+    if !fetch_failures.is_empty() {
+        let total = levels.len();
+        crate::tracing_console::report_network_failure(&format!(
+            "JLPT words fetches failed ({}/{}): {}",
+            fetch_failures.len(),
+            total,
+            fetch_failures.join("; ")
+        ));
     }
     tracing::info!(
         "JLPT words processed ({} total, {:.2}s)",

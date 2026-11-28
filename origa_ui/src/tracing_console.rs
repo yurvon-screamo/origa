@@ -63,25 +63,17 @@ pub(crate) fn is_browser_online() -> bool {
     }
 }
 
-/// Severity verdict for a failed load-bearing network operation
-/// (ADR-079-style invariant for the network path): a failure while online
-/// is an incident (Sentry event); an offline failure is expected
-/// degradation (breadcrumbs only). Best-effort steps stay `warn!` by their
-/// call sites, without this table.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub(crate) enum NetworkSeverity {
-    /// Online failure — `error!`.
-    Error,
-    /// Offline — `warn!`.
-    Warn,
-}
-
-/// Pure severity table for load-bearing network failures.
-pub(crate) fn network_failure_severity(browser_online: bool) -> NetworkSeverity {
-    if browser_online {
-        NetworkSeverity::Error
+/// Single severity gate for the network invariant (uwuwu#1454, ADR-079
+/// style): a failed load-bearing fetch while online is an incident
+/// (`error!` — a Sentry event via the capture bridge), the same failure
+/// offline is expected degradation (`warn!` — breadcrumbs). One helper for
+/// every call site so the message shape and the level logic cannot drift
+/// apart.
+pub(crate) fn report_network_failure(message: &str) {
+    if is_browser_online() {
+        tracing::error!("{message}");
     } else {
-        NetworkSeverity::Warn
+        tracing::warn!("{message} (offline)");
     }
 }
 
@@ -185,14 +177,6 @@ mod tests {
         assert_eq!(route_level(Level::TRACE), ConsoleRoute::Debug);
     }
 
-    /// Severity table pinned (ADR-079-style invariant, network path):
-    /// online = error; offline = warn (best-effort stays warn at call sites).
-    #[test]
-    fn network_severity_table_is_pinned() {
-        assert_eq!(network_failure_severity(true), NetworkSeverity::Error);
-        assert_eq!(network_failure_severity(false), NetworkSeverity::Warn);
-    }
-
     /// Field rendering: message first, structured fields appended.
     #[test]
     fn visitor_renders_message_and_fields() {
@@ -208,5 +192,59 @@ mod tests {
     fn visitor_without_message_renders_placeholder() {
         let v = FieldVisitor::default();
         assert_eq!(v.render(), "(no message)");
+    }
+}
+
+/// The network-invariant gate pinned live (uwuwu#1454 review round 2: the
+/// table above is pure — these tests drive the actual gate through both
+/// navigator states). Run on the wasm target only: `OnlineOverride` needs
+/// a real `navigator`.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    #[wasm_bindgen_test]
+    fn report_network_failure_online_is_error() {
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        report_network_failure("X fetch failed: chunk 7, boom");
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "exactly one event online, got {events:?}");
+        assert_eq!(
+            events[0].0,
+            tracing::Level::ERROR,
+            "online failure = incident"
+        );
+        assert!(events[0].1.contains("X fetch failed"), "message preserved");
+        assert!(
+            !events[0].1.contains("(offline)"),
+            "online message must not carry the offline marker"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    fn report_network_failure_offline_is_warn_with_marker() {
+        let _offline = OnlineOverride::install(false);
+        log_capture::install();
+        log_capture::take_events();
+        report_network_failure("X fetch failed: chunk 7, boom");
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "exactly one event offline, got {events:?}");
+        assert_eq!(
+            events[0].0,
+            tracing::Level::WARN,
+            "offline failure = expected degradation"
+        );
+        assert!(
+            events[0].1.contains("(offline)"),
+            "offline message carries the marker: {}",
+            events[0].1
+        );
     }
 }

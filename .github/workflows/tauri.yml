@@ -147,9 +147,11 @@ jobs:
             android-keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
             android-key-password: ${{ secrets.ANDROID_KEY_PASSWORD }}
             android-key-alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-            # Release runs only (this is the tag workflow) — the sole caller
-            # that forwards the Sentry token (uwuwu#1454).
-            sentry_auth_token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+            # Release runs only — the sole caller that forwards the Sentry
+            # token (uwuwu#1454). Manual workflow_dispatch runs get an empty
+            # token (the upload steps soft-skip): DIF upload is a tag-train
+            # concern, not a manual-build one.
+            sentry_auth_token: ${{ github.event_name == 'push' && secrets.SENTRY_AUTH_TOKEN || '' }}
             SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
             SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
 

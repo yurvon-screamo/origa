@@ -261,3 +261,110 @@ fn example_audio_path_matches_batch_pipeline_format() {
     assert_eq!(example_audio_path(12345), "examples/audio/012345.opus");
     assert_eq!(example_audio_path(22412), "examples/audio/022412.opus");
 }
+
+/// Severity routing of chunk fetch failures pinned live (uwuwu#1454
+/// review round 2, High-2 fix): online = `error!` (a Sentry event via the
+/// capture bridge — the consumers swallow the `Err`, so without the log
+/// the failure is fully silent), offline = `warn!`; a payload that
+/// arrived but does not parse is `error!` regardless of connectivity.
+/// Wasm-only: the offline branch and the capture buffer need a real
+/// `navigator` and the crate's log capture.
+#[cfg(all(target_arch = "wasm32", test))]
+mod severity_routing_wasm {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use tracing::Level;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    /// Index installed from the shared fixture, then every further fetch
+    /// (the chunk paths) fails with a network error.
+    fn index_then_dead_cdn() -> MockCdn {
+        MockCdn::new(vec![(
+            "examples/index.json".to_string(),
+            INDEX_JSON.to_string(),
+        )])
+    }
+
+    fn reset_stores() {
+        reset_example_index_for_test();
+        reset_example_data_for_test();
+    }
+
+    #[wasm_bindgen_test]
+    async fn chunk_fetch_failure_online_is_error() {
+        let _online = OnlineOverride::install(true);
+        reset_stores();
+        let install = index_then_dead_cdn();
+        load_examples_via(&install).await.expect("index fixture");
+        install.fail_once("examples/data/");
+        log_capture::install();
+        log_capture::take_events();
+
+        let result = load_example_detail_via(&install, 0).await;
+
+        assert!(result.is_err(), "the chunk fetch must fail");
+        let events = log_capture::take_events();
+        assert!(
+            events.iter().any(
+                |(level, m)| *level == Level::ERROR && m.contains("Example chunk fetch failed")
+            ),
+            "online chunk failure = incident, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn chunk_fetch_failure_offline_is_warn() {
+        let _offline = OnlineOverride::install(false);
+        reset_stores();
+        let install = index_then_dead_cdn();
+        load_examples_via(&install).await.expect("index fixture");
+        install.fail_once("examples/data/");
+        log_capture::install();
+        log_capture::take_events();
+
+        let result = load_example_detail_via(&install, 0).await;
+
+        assert!(result.is_err(), "the chunk fetch must fail");
+        let events = log_capture::take_events();
+        assert!(
+            events.iter().any(|(level, m)| *level == Level::WARN
+                && m.contains("Example chunk fetch failed")
+                && m.contains("(offline)")),
+            "offline chunk failure = degradation, got {events:?}"
+        );
+        assert!(
+            events.iter().all(|(level, _)| *level != Level::ERROR),
+            "an offline failure must not emit incidents: {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn unparsable_payload_is_error_while_online() {
+        let _online = OnlineOverride::install(true);
+        reset_stores();
+        let cdn = MockCdn::new(vec![
+            ("examples/index.json".to_string(), INDEX_JSON.to_string()),
+            (
+                "examples/data/s0000".to_string(),
+                String::from("not json at all"),
+            ),
+        ]);
+        load_examples_via(&cdn).await.expect("index fixture");
+        log_capture::install();
+        log_capture::take_events();
+
+        let result = load_example_detail_via(&cdn, 0).await;
+
+        assert!(result.is_err(), "garbage payload must fail the lookup");
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == Level::ERROR && m.contains("failed to parse/cache")),
+            "an arrived-but-broken payload is a content bug: {events:?}"
+        );
+    }
+}

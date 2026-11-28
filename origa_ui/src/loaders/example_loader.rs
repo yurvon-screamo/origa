@@ -66,8 +66,15 @@ pub async fn load_examples_via<P: CdnProvider>(provider: &P) -> Result<(), Origa
     if is_examples_loaded() {
         return Ok(());
     }
+    // The index FETCH failure is reported by the startup caller (routes
+    // Phase D-2 warn — the index is best-effort non-critical, #528). A
+    // payload that arrived but does not parse is a content bug and reports
+    // as `error!` here.
     let json = provider.fetch_text(EXAMPLES_INDEX_PATH).await?;
-    init_example_index(&json)?;
+    if let Err(e) = init_example_index(&json) {
+        tracing::error!(error = ?e, "Examples index payload failed to parse");
+        return Err(e);
+    }
     tracing::info!(
         "Examples index loaded: {} words / {} sentences",
         origa::dictionary::example::example_word_count(),
@@ -89,11 +96,29 @@ pub async fn load_example_detail_via<P: CdnProvider>(
         match provider.fetch_text(&path).await {
             Ok(json) => {
                 if let Err(e) = cache_example_details(&json) {
+                    // The fetch succeeded, the payload did not parse/cache
+                    // — a content bug regardless of connectivity (the same
+                    // rule the JLPT loader pins), bounded by user
+                    // navigation.
+                    tracing::error!(
+                        chunk_id = chunk_id,
+                        error = ?e,
+                        "Example chunk payload failed to parse/cache"
+                    );
                     unmark_chunk_inflight(chunk_id);
                     return Err(e);
                 }
             },
             Err(e) => {
+                // Bounded by user navigation (one detail view at a time),
+                // so per-failure severity routing is flood-safe
+                // (uwuwu#1454): online failure of a load-bearing fetch is
+                // an incident, offline is expected degradation. Callers
+                // drop the `Err`, so without this the failure is fully
+                // silent.
+                crate::tracing_console::report_network_failure(&format!(
+                    "Example chunk fetch failed: chunk {chunk_id}, {e:?}"
+                ));
                 unmark_chunk_inflight(chunk_id);
                 return Err(e);
             },
