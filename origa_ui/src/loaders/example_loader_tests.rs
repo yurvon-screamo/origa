@@ -342,6 +342,51 @@ mod severity_routing_wasm {
     }
 
     #[wasm_bindgen_test]
+    async fn index_fetch_failure_online_is_error() {
+        // The index gates the whole examples family: an online failure (a
+        // 404 / broken deploy) kills examples for the session — it must
+        // report, not vanish into the caller's warn (uwuwu#1454 round 4).
+        let _online = OnlineOverride::install(true);
+        reset_stores();
+        // No index stub: every fetch fails.
+        let cdn = MockCdn::new(vec![]);
+        log_capture::install();
+        log_capture::take_events();
+
+        let result = load_examples_via(&cdn).await;
+
+        assert!(result.is_err(), "the index fetch must fail");
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == Level::ERROR
+                    && m.contains("Examples index fetch failed")),
+            "online index failure = incident, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn index_fetch_failure_offline_is_warn() {
+        let _offline = OnlineOverride::install(false);
+        reset_stores();
+        let cdn = MockCdn::new(vec![]);
+        log_capture::install();
+        log_capture::take_events();
+
+        let result = load_examples_via(&cdn).await;
+
+        assert!(result.is_err(), "the index fetch must fail");
+        let events = log_capture::take_events();
+        assert!(
+            events.iter().any(|(level, m)| *level == Level::WARN
+                && m.contains("Examples index fetch failed")
+                && m.contains("(offline)")),
+            "offline index failure = degradation, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
     async fn unparsable_payload_is_error_while_online() {
         let _online = OnlineOverride::install(true);
         reset_stores();

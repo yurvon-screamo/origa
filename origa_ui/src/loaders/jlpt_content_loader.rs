@@ -20,6 +20,21 @@ struct JlptWordsFile {
     words: Vec<String>,
 }
 
+/// One aggregated severity-routed report for the level files
+/// (uwuwu#1454): five files fetch in parallel, a dead CDN must not emit
+/// five events for one root cause. Testable seam for the wasm suite.
+fn report_jlpt_fetch_failures(failures: &[String], total: usize) {
+    if failures.is_empty() {
+        return;
+    }
+    crate::tracing_console::report_network_failure(&format!(
+        "JLPT words fetches failed ({}/{}): {}",
+        failures.len(),
+        total,
+        failures.join("; ")
+    ));
+}
+
 pub async fn load_jlpt_content() -> Result<(), OrigaError> {
     if JLPT_CONTENT.get().is_some() {
         tracing::debug!("JLPT content already loaded");
@@ -202,15 +217,7 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
             },
         }
     }
-    if !fetch_failures.is_empty() {
-        let total = levels.len();
-        crate::tracing_console::report_network_failure(&format!(
-            "JLPT words fetches failed ({}/{}): {}",
-            fetch_failures.len(),
-            total,
-            fetch_failures.join("; ")
-        ));
-    }
+    report_jlpt_fetch_failures(&fetch_failures, levels.len());
     tracing::info!(
         "JLPT words processed ({} total, {:.2}s)",
         content
@@ -257,4 +264,57 @@ pub fn get_jlpt_content() -> &'static JlptContent {
     JLPT_CONTENT
         .get()
         .unwrap_or_else(|| DEFAULT_JLPT_CONTENT.get_or_init(JlptContent::new))
+}
+
+/// The aggregated report pinned live (uwuwu#1454 round 4): five level
+/// files, one dead CDN — one severity-routed event, not five.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn failures(n: usize) -> Vec<String> {
+        (0..n)
+            .map(|i| format!("N{}/jlpt_n{}.json: dead", 5 - i, 5 - i))
+            .collect()
+    }
+
+    #[wasm_bindgen_test]
+    fn fetch_failures_online_are_one_error_event() {
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        report_jlpt_fetch_failures(&failures(5), 5);
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "one aggregated event, got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::ERROR);
+        let m = &events[0].1;
+        assert!(m.contains("JLPT words fetches failed (5/5)"), "{m}");
+        assert!(m.contains("jlpt_n5.json"), "carries the file names: {m}");
+    }
+
+    #[wasm_bindgen_test]
+    fn fetch_failures_offline_are_one_warn_event() {
+        let _offline = OnlineOverride::install(false);
+        log_capture::install();
+        log_capture::take_events();
+        report_jlpt_fetch_failures(&failures(3), 5);
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::WARN);
+        assert!(events[0].1.contains("(offline)"), "{}", events[0].1);
+    }
+
+    #[wasm_bindgen_test]
+    fn no_failures_emit_nothing() {
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        report_jlpt_fetch_failures(&[], 5);
+        assert!(log_capture::take_events().is_empty());
+    }
 }

@@ -66,11 +66,21 @@ pub async fn load_examples_via<P: CdnProvider>(provider: &P) -> Result<(), Origa
     if is_examples_loaded() {
         return Ok(());
     }
-    // The index FETCH failure is reported by the startup caller (routes
-    // Phase D-2 warn — the index is best-effort non-critical, #528). A
-    // payload that arrived but does not parse is a content bug and reports
-    // as `error!` here.
-    let json = provider.fetch_text(EXAMPLES_INDEX_PATH).await?;
+    // The index gates the whole examples family: its online failure (a
+    // 404 / broken deploy) kills examples for the session, so it follows
+    // the same severity gate as the chunks — and it is the most
+    // flood-safe point of the family (one fetch per startup). A payload
+    // that arrived but does not parse is a content bug and reports as
+    // `error!` regardless of connectivity.
+    let json = match provider.fetch_text(EXAMPLES_INDEX_PATH).await {
+        Ok(json) => json,
+        Err(e) => {
+            crate::tracing_console::report_network_failure(&format!(
+                "Examples index fetch failed: {e:?}"
+            ));
+            return Err(e);
+        },
+    };
     if let Err(e) = init_example_index(&json) {
         tracing::error!(error = ?e, "Examples index payload failed to parse");
         return Err(e);
@@ -110,12 +120,14 @@ pub async fn load_example_detail_via<P: CdnProvider>(
                 }
             },
             Err(e) => {
-                // Bounded by user navigation (one detail view at a time),
-                // so per-failure severity routing is flood-safe
-                // (uwuwu#1454): online failure of a load-bearing fetch is
-                // an incident, offline is expected degradation. Callers
-                // drop the `Err`, so without this the failure is fully
-                // silent.
+                // Bounded per word view: `load_word_examples_via` may
+                // fetch up to three distinct chunks for one word, so a
+                // dead CDN costs up to three events per view (uwuwu#1454
+                // round 4 — the honest bound; single-flight dedups
+                // concurrent callers of the same chunk). Online failure
+                // of a load-bearing fetch is an incident, offline is
+                // expected degradation. Callers drop the `Err`, so
+                // without this the failure is fully silent.
                 crate::tracing_console::report_network_failure(&format!(
                     "Example chunk fetch failed: chunk {chunk_id}, {e:?}"
                 ));

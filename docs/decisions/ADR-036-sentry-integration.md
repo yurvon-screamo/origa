@@ -396,7 +396,14 @@ error! point — produced **zero** Sentry events since this ADR shipped:
 - Background network failures follow an ADR-079-style severity invariant:
   online failure of a load-bearing fetch = `error!` (event); offline or
   best-effort step = `warn!` (breadcrumbs) — an offline start must not flood
-  Sentry with error events.
+  Sentry with error events. **The offline verdict never rests on
+  `navigator.onLine` alone** (ADR-053 §2: WKWebView lies in both
+  directions): the shared gate reports an incident only while the browser
+  claims online AND the startup probe has not proven the CDN unreachable
+  (`CdnUnreachable`, ADR-053). Known residual: a spurious `onLine=false`
+  while the CDN is actually reachable under-reports to breadcrumbs —
+  disproving the browser's offline claim would need a probe per failure;
+  accepted (uwuwu#1454 round 4).
 
 ### Actual state recorded (was "NOT TOUCHED" before)
 

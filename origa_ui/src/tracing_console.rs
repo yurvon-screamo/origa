@@ -48,8 +48,8 @@ pub(crate) fn route_level(level: Level) -> ConsoleRoute {
 /// signatures.
 ///
 /// Host builds (unit tests) answer deterministically "online": `window()`
-/// panics off-wasm, and the severity table itself is exercised by the
-/// unit tests below, not by the environment.
+/// panics off-wasm, and the gate itself is exercised by the wasm tests
+/// (`wasm_tests` below), not by the environment.
 pub(crate) fn is_browser_online() -> bool {
     #[cfg(target_arch = "wasm32")]
     {
@@ -70,10 +70,28 @@ pub(crate) fn is_browser_online() -> bool {
 /// every call site so the message shape and the level logic cannot drift
 /// apart.
 pub(crate) fn report_network_failure(message: &str) {
-    if is_browser_online() {
-        tracing::error!("{message}");
-    } else {
+    // The offline verdict never rests on `navigator.onLine` alone —
+    // ADR-053 §2: WKWebView (tauri://localhost prod builds) lies in both
+    // directions, onLine only decides whether to probe. The verdict
+    // combines the browser signal with the startup probe's verified
+    // verdict (`CdnUnreachable`: set by the manifest probe / a stalled
+    // manifest fetch, cleared by Retry and the browser `online` event —
+    // never set from `onLine` alone). An incident is reported only while
+    // the browser claims online AND the CDN has not been proven
+    // unreachable; everything else degrades to breadcrumbs. Known
+    // residual (documented, accepted): a spurious `onLine=false` while
+    // the CDN is actually reachable under-reports to breadcrumbs —
+    // disproving the browser's offline claim would need a probe per
+    // failure, which the loaders cannot afford.
+    let offline = !is_browser_online() || crate::repository::cdn_provider::is_cdn_unreachable();
+    if offline {
         tracing::warn!("{message} (offline)");
+    } else {
+        // The source is identified by the message text: call sites pass
+        // distinctive contexts (resource name, chunk ids). The event's
+        // `[file:line]` locator necessarily points at this helper — that
+        // is the price of one shared gate instead of five copied matches.
+        tracing::error!("{message}");
     }
 }
 
@@ -195,10 +213,10 @@ mod tests {
     }
 }
 
-/// The network-invariant gate pinned live (uwuwu#1454 review round 2: the
-/// table above is pure — these tests drive the actual gate through both
-/// navigator states). Run on the wasm target only: `OnlineOverride` needs
-/// a real `navigator`.
+/// The network-invariant gate pinned live (uwuwu#1454 review rounds 2–4:
+/// these tests drive the actual gate through both navigator states and
+/// the probe verdict). Run on the wasm target only: `OnlineOverride` and
+/// `CdnUnreachable` need a real `navigator` and the repository state.
 #[cfg(all(target_arch = "wasm32", test))]
 mod wasm_tests {
     use super::*;
@@ -226,6 +244,43 @@ mod wasm_tests {
             !events[0].1.contains("(offline)"),
             "online message must not carry the offline marker"
         );
+    }
+
+    #[wasm_bindgen_test]
+    fn report_network_failure_probe_unreachable_beats_online_claim() {
+        // ADR-053 §2 direction: the browser claims online, but the startup
+        // probe already proved the CDN unreachable (WKWebView lying
+        // `onLine=true`) — the honest offline start must degrade to
+        // breadcrumbs, not flood Sentry (uwuwu#1454 round 4).
+        let _online = OnlineOverride::install(true);
+        crate::repository::cdn_provider::mark_cdn_unreachable();
+        log_capture::install();
+        log_capture::take_events();
+        report_network_failure("Failed to load probe-direction-res: dead");
+        let events = log_capture::take_events();
+        crate::repository::cdn_provider::clear_cdn_unreachable();
+        assert_eq!(events.len(), 1, "got {events:?}");
+        assert_eq!(
+            events[0].0,
+            tracing::Level::WARN,
+            "probe-unreachable verdict wins over the online claim"
+        );
+        assert!(events[0].1.contains("(offline)"), "{}", events[0].1);
+    }
+
+    #[wasm_bindgen_test]
+    fn report_network_failure_probe_reachable_online_is_error() {
+        // The probe has NOT proven the CDN unreachable (flag cleared, the
+        // state after a normal online start): an online failure stays an
+        // incident.
+        let _online = OnlineOverride::install(true);
+        crate::repository::cdn_provider::clear_cdn_unreachable();
+        log_capture::install();
+        log_capture::take_events();
+        report_network_failure("Failed to load probe-direction-res: dead");
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::ERROR);
     }
 
     #[wasm_bindgen_test]

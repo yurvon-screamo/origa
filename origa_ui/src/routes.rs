@@ -139,7 +139,7 @@ where
 /// phrases, kanji, …) fail loudly; furigana and pitch are best-effort —
 /// the app keeps working without them.
 #[derive(Clone, Copy)]
-pub(crate) enum FailureSeverity {
+enum FailureSeverity {
     Error,
     Warn,
 }
@@ -147,10 +147,14 @@ pub(crate) enum FailureSeverity {
 /// Runs one resource loader and flips its readiness flag the moment that
 /// loader finishes — success or failure — instead of after the stage-wide
 /// `join!` barrier, so the loading overlay reflects real per-resource
-/// progress. The stage barriers themselves are preserved by the callers:
+/// progress. Known limitation (uwuwu#1454 round 4): the severity gate
+/// cannot classify the error kind, so a non-network failure (a corrupted
+/// payload surfacing as `Err`) while offline degrades to `warn!` —
+/// loaders that can distinguish content bugs report them themselves
+/// (phrase batch, JLPT parse, example cache). The stage barriers themselves are preserved by the callers:
 /// the loaders still run within their stage's `join!`, keeping the staged
 /// memory plan (iOS jetsam) unchanged.
-pub(crate) async fn tracked<F, Fut>(
+async fn tracked<F, Fut>(
     resource: &'static str,
     flag: RwSignal<bool>,
     severity: FailureSeverity,
@@ -391,9 +395,12 @@ pub fn start_dictionary_loading(
         // Read-only duplicate scan: reports exact-key duplicates; never saves.
         crate::loaders::word_identity_scan::spawn(repository.clone());
 
-        // Phase C: jlpt_content (depends on kanji + grammar)
+        // Phase C: jlpt_content (depends on kanji + grammar). The loader
+        // already reported its failures with the network invariant
+        // (one aggregated severity-routed event per attempt) — this line
+        // stays a debug breadcrumb, not a second event on the same root.
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
-            tracing::error!("Failed to load jlpt_content: {e}");
+            tracing::debug!("Failed to load jlpt_content: {e}");
         }
 
         // Phase D: post-load data seeding (BEFORE signaling completion).
@@ -406,10 +413,14 @@ pub fn start_dictionary_loading(
             tracing::warn!("Failed to seed ready phrases: {e}");
         }
 
-        // Phase D-2: examples index (#528, non-critical — the word page
-        // degrades to an empty state when it is missing).
+        // Phase D-2: examples index (the word page degrades to an empty
+        // state when it is missing). The loader severity-routes the fetch
+        // failure itself (uwuwu#1454: the index gates the whole examples
+        // family — an online 404/broken deploy would otherwise kill
+        // examples for the session with no event); this line stays a
+        // debug breadcrumb, not a second report on the same root.
         if let Err(e) = load_examples().await {
-            tracing::warn!("Failed to load examples index: {e}");
+            tracing::debug!("Failed to load examples index: {e}");
         }
 
         // Phase E: auto per-card pre-cache (background, only when online)
