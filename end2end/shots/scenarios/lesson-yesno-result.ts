@@ -35,6 +35,39 @@ export const lessonYesnoResultScenario: ShotScenario = {
         // then the expanded full kanji card.
         const yesno = page.getByTestId("yesno-no-btn");
         if ((await yesno.isVisible().catch(() => false)) && !yesnoShot) {
+          // uwuwu#937: the НЕТ/ДА row must clear the card by the same 16px as
+          // «Не знаю» in the SHIPPED bundle. The wasm pin injects input.css
+          // directly; this one catches a broken tailwind build/content glob.
+          const actionGap = await page.evaluate(() => {
+            const noRow =
+              document
+                .querySelector('[data-testid="yesno-no-btn"]')
+                ?.parentElement ?? null;
+            const dontKnow = document.querySelector(
+              '[data-testid="yesno-dont-know-btn"]',
+            );
+            const card = document.querySelector(
+              '[data-testid="lesson-card-root"]',
+            );
+            const marginTop = (el: Element | null) =>
+              el ? getComputedStyle(el).marginTop : null;
+            const rowTop = noRow?.getBoundingClientRect().top ?? NaN;
+            const cardBottom = card?.getBoundingClientRect().bottom ?? NaN;
+            return {
+              noRow: marginTop(noRow),
+              dontKnow: marginTop(dontKnow),
+              gap: rowTop - cardBottom,
+            };
+          });
+          expect(actionGap.noRow, "ряд НЕТ/ДА: margin-top").toBe("16px");
+          expect(
+            actionGap.dontKnow,
+            "кнопка «Не знаю»: margin-top",
+          ).toBe(actionGap.noRow);
+          expect(
+            actionGap.gap,
+            "зазор между рамкой карточки и рядом НЕТ/ДА",
+          ).toBeGreaterThanOrEqual(12);
           await yesno.click({ timeout: 4_000 }).catch(() => undefined);
           await page.waitForTimeout(600);
           await sink.shot("yesno-result");
