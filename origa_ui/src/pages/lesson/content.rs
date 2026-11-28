@@ -379,7 +379,6 @@ pub fn LessonContent() -> impl IntoView {
                     // Lesson views were chosen before the phrase detail
                     // cache was filled; re-select review phrase views now,
                     // before the cards are published to lesson state.
-                    let refresh_started = std::time::Instant::now();
                     let refreshed = if let Ok(Some(user)) = repo.get_current_user().await {
                         refresh_phrase_views(
                             &mut lesson_data,
@@ -391,11 +390,7 @@ pub fn LessonContent() -> impl IntoView {
                         tracing::debug!("phrase view refresh skipped: user unavailable");
                         0
                     };
-                    tracing::debug!(
-                        views = refreshed,
-                        elapsed_ms = refresh_started.elapsed().as_millis(),
-                        "phrase views refreshed"
-                    );
+                    tracing::debug!(views = refreshed, "phrase views refreshed");
 
                     if is_disposed.is_disposed() {
                         return;
