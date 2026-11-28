@@ -37,6 +37,7 @@ fn events_about(marker: &str) -> Vec<(Level, String)> {
 
 #[wasm_bindgen_test]
 async fn caps_failure_on_android_escalates_to_error_event() {
+    let _serial = super::test_serial_lock().lock().await;
     log_capture::install();
     reset_cached_capabilities();
     // In-flight caps queries from earlier suites (device_ai invoke tests)
@@ -87,6 +88,7 @@ async fn caps_failure_on_android_escalates_to_error_event() {
 
 #[wasm_bindgen_test]
 async fn web_platform_skips_the_query_without_a_round_trip() {
+    let _serial = super::test_serial_lock().lock().await;
     log_capture::install();
     reset_cached_capabilities();
     // Same settle+drain as the android test above: this test's window must
@@ -128,6 +130,7 @@ async fn web_platform_skips_the_query_without_a_round_trip() {
 
 #[wasm_bindgen_test]
 async fn cached_caps_skip_the_query_and_its_event() {
+    let _serial = super::test_serial_lock().lock().await;
     log_capture::install();
     reset_cached_capabilities();
     let _ua = UserAgentOverride::install(ANDROID_UA);
