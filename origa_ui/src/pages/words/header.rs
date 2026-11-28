@@ -33,12 +33,6 @@ pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             // their own full-width row as a tab strip (deliberate grid);
             // above 768px the header stays one line. Pages with fewer
             // actions keep the natural wrap of #823.
-            //
-            // EN/VI tab labels are wider than RU/KO. On a 390px viewport
-            // the strip's min-content width exceeded the 342px card
-            // content and the add button crossed the card edge (uwuwu#413).
-            // Only those locales compact the strip; RU/KO keep the
-            // canonical button density.
             actions_class=Signal::derive(move || words_actions_class(i18n.get_locale()))
         >
             <Button

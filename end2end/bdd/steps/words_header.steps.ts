@@ -39,17 +39,46 @@ When(
     }
     const profilePage = new ProfilePage(page);
     await profilePage.goto();
-    await profilePage.expectProfileVisible();
     await profilePage.selectLanguage(language);
-    await profilePage.waitForAutoSave();
   },
 );
+
+Then("язык {string} применён", async ({ page }, language: string) => {
+  const profilePage = new ProfilePage(page);
+  const slug = language === "english" ? "en" : "vi";
+  const toggle = page.getByTestId("profile-lang-toggle");
+  await expect(toggle.getByTestId(`lang-toggle-${slug}`)).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+  // Wait for SAVED, not the transient SAVING state: the words route reads
+  // the profile back, so a half-finished save reverts the UI to RU.
+  await expect
+    .poll(async () => (await profilePage.autosaveStatus.textContent()) ?? "", {
+      timeout: 15_000,
+      intervals: [50, 100, 250],
+    })
+    .toMatch(/saved|сохранено|đã lưu/i);
+});
 
 Then("лейбл {string} виден в шапке слов", async ({ page }, label: string) => {
   const wordsPage = new WordsPage(page);
   await expect(wordsPage.wordsActions).toContainText(label, {
     timeout: 10_000,
   });
+  // textContent survives ellipsis clipping, so check the rendered width too.
+  const labels = await wordsPage.wordsActions
+    .locator(".btn-text")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        text: node.textContent?.trim() ?? "",
+        clipped: node.scrollWidth > node.clientWidth + 1,
+      })),
+    );
+  expect(
+    labels.filter((item) => item.clipped),
+    `лейбл "${label}" не должен обрезаться: ${JSON.stringify(labels)}`,
+  ).toEqual([]);
 });
 
 Then("полоса действий шапки слов помещается в карточку", async ({ page }) => {
@@ -58,6 +87,9 @@ Then("полоса действий шапки слов помещается в 
   const actionsBox = await wordsPage.wordsActions.boundingBox();
   expect(cardBox, "words-card должен быть отрендерен").not.toBeNull();
   expect(actionsBox, "words-actions должен быть отрендерен").not.toBeNull();
+  // Lock the cascade: `gap-2` from PageHeader has equal specificity and is
+  // declared later in input.css, so a moved rule would silently die.
+  await expect(wordsPage.wordsActions).toHaveCSS("gap", "4px");
 
   // The diagnostic attachment keeps the measured cause in the test run:
   // a bare "overflow 21px" does not say whether the wrapper or the last

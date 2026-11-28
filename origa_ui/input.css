@@ -320,21 +320,6 @@ input[type="submit"],
   }
 }
 
-/* Wide EN/VI tab labels made the words action strip wider than the 342px
-   card content at 390px, pushing "+" past the card edge (uwuwu#413).
-   Compact only that strip in the mobile band, reusing the small-button
-   horizontal padding and the 4px spacing step; RU/KO keep the canon. */
-@media (max-width: 639px) {
-  .words-actions-compact {
-    gap: 4px;
-  }
-
-  .words-actions-compact .btn {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-}
-
 .btn-lg {
   padding: 20px 40px;
   font-size: var(--text-label);
@@ -4281,6 +4266,23 @@ rt {
 
 .gap-4 {
   gap: 16px;
+}
+
+/* Wide EN/VI tab labels made the words action strip wider than the 342px
+   card content at 390px, pushing "+" past the card edge (uwuwu#413).
+   Keep this below the gap utilities: PageHeader adds `gap-2` to the same
+   element, so an earlier rule of equal specificity would lose the cascade.
+   Reuse the small-button horizontal padding and the 4px spacing step;
+   RU/KO keep the canon. */
+@media (max-width: 639px) {
+  .words-actions-compact {
+    gap: 4px;
+  }
+
+  .words-actions-compact .btn {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
 }
 
 .gap-6 {
