@@ -4,3 +4,11 @@ rustflags = [
   '--cfg=getrandom_backend="wasm_js"',
   '-C', 'target-feature=+simd128'
 ]
+
+# wasm-bindgen-test-runner waits this many seconds for the page's
+# `test result:` line. The 20 s toolchain default cuts a full suite
+# short on a slower runner. Cargo spawns the runner through
+# CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER, so it inherits [env].
+# force stops a stray shell value from restoring the 20 s default.
+[env]
+WASM_BINDGEN_TEST_TIMEOUT = { value = "180", force = true }
