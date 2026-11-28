@@ -179,7 +179,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Единый урок: знакомство, тренировка, тело",
     route: "/lesson",
     locale: "ru-RU",
-    preset: "with-word",
+    preset: "acquaintance-hand",
   },
   "kanji-writing-practice": {
     id: "kanji-writing-practice",
