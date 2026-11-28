@@ -10,11 +10,11 @@
   "fullPage": true,
   "bytes": 615145,
   "sha256": "a5656b696319aacc9c910b8b9fe656763eaa638fed679b2374853521f8da702d",
-  "capturedAt": "2026-11-27T14:38:03.395Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/words--words-full--desktop-a5656b69.png",
-  "uploadedSha256": "a5656b696319aacc9c910b8b9fe656763eaa638fed679b2374853521f8da702d",
-  "uploadedAt": "2026-11-27T16:24:05.023Z"
+  "capturedAt": "2026-11-28T13:25:49.972Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

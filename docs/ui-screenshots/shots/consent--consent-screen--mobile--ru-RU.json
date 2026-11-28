@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 300860,
-  "sha256": "54ae0075b9337823945a9b6eabac88fc007fd7e1ef3dc58fdd48653ee5af4001",
-  "capturedAt": "2026-11-27T10:02:54.401Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/consent--consent-screen--mobile-54ae0075.png",
-  "uploadedSha256": "54ae0075b9337823945a9b6eabac88fc007fd7e1ef3dc58fdd48653ee5af4001",
-  "uploadedAt": "2026-11-27T16:21:58.210Z"
+  "bytes": 158572,
+  "sha256": "505e91c7272b4590b7f9d8515211f15121587d30789b810eb85418497f7ddc0a",
+  "capturedAt": "2026-11-28T10:58:03.304Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

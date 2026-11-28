@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-quiz-multi",
+  "screen": "multi-quiz-question",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 360151,
+  "sha256": "d0cb4ebcde1968d5cddea58f229648aaf3cbd4c8e24fd4fb29f65ded6f2e7e5b",
+  "capturedAt": "2026-11-28T12:37:26.146Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

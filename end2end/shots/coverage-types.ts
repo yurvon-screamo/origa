@@ -8,7 +8,9 @@ export type ExclusionCode =
   | "error"
   | "tauri-only"
   | "feature-off"
-  | "owner-question";
+  | "owner-question"
+  /** The screen exists, but no catalog scenario emits it yet. */
+  | "no-scenario";
 
 /** One obligation: this screen must be captured for this scenario. */
 export interface CoverageRow {

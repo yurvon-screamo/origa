@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 415580,
-  "sha256": "76b4c9c87340630f205a6770b2083a08bc162261b6a2193b53033b5e6aa0d8b8",
-  "capturedAt": "2026-10-30T18:58:22.962Z",
-  "commit": "d727af7bcdc24779f9be05244d1482ad115a1cdc",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-review-body--review-body-yesno-1--desktop-76b4c9c8.png",
-  "uploadedSha256": "76b4c9c87340630f205a6770b2083a08bc162261b6a2193b53033b5e6aa0d8b8",
-  "uploadedAt": "2026-10-30T19:44:27.270Z"
+  "bytes": 396882,
+  "sha256": "c6902470c38dc07c8e15e5b3a7fbd9da38ddea8891c31a6729b853adb133c42e",
+  "capturedAt": "2026-11-28T12:46:54.126Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 241744,
-  "sha256": "3d03f02614b64fd57cb0b16ec69431e876b9058409ce050f6fd491cd2b2e24e5",
-  "capturedAt": "2026-11-27T12:23:27.546Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-unification--acquaintance-presentation--desktop-3d03f026.png",
-  "uploadedSha256": "3d03f02614b64fd57cb0b16ec69431e876b9058409ce050f6fd491cd2b2e24e5",
-  "uploadedAt": "2026-11-27T16:23:04.576Z"
+  "bytes": 235633,
+  "sha256": "e903fa7e840a398ee44d1e548f0450ebd0a16f61ec2ed3ea7b79747bb58e9cb9",
+  "capturedAt": "2026-11-28T12:52:39.023Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

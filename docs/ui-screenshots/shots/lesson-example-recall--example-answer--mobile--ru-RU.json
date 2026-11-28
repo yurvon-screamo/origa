@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 170138,
   "sha256": "2026b8abd0f3a483ceeaf0ce206f74906a9b3f8abbd793d2f7bdfecb973de9d7",
-  "capturedAt": "2026-11-27T11:47:09.636Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-example-recall--example-answer--mobile-2026b8ab.png",
-  "uploadedSha256": "2026b8abd0f3a483ceeaf0ce206f74906a9b3f8abbd793d2f7bdfecb973de9d7",
-  "uploadedAt": "2026-11-27T16:22:54.084Z"
+  "capturedAt": "2026-11-28T12:35:31.791Z",
+  "commit": "33ad91cc948f740b6c38d6a6313a7140f353d391",
+  "baseURL": "http://localhost:1441",
+  "cdnBaseUrl": "http://localhost:8091",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
 }

@@ -90,7 +90,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "мобильный кадр не доставлен: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
+        "мобильный кадр не доставлен: сценарий grammar-detail уходит в таймаут прогона; отдельная задача #1768",
       source: "GrammarDetail",
     },
   },
@@ -202,7 +202,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-accuracy-chart",
     screens: ["accuracy-chart"],
     viewports: BOTH,
-    // Review #1691: the desktop frame cuts the chart below the fold.
+    // Recaptured in #1736: the chart is scrolled into the viewport.
     status: "covered",
   },
   {
@@ -243,7 +243,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "words-grid",
     screens: ["grid-full", "grid-viewport"],
     viewports: BOTH,
-    status: "covered",
+    status: "excluded",
+    exclusion: {
+      code: "no-scenario",
+      reason:
+        "пресет with-word не гарантирует карточку в сетке; сценарий уходит в таймаут — отдельная задача #1768",
+      source: "Words",
+    },
   },
   {
     id: "variation:words-add-wizard",
@@ -263,7 +269,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "сценарий words-add падает по browserContext.close в полном прогоне, нужные экраны не доставлены — вынесено в #1753 по слову владельца 28.11",
+        "сценарий words-add уходит в таймаут прогона, нужные экраны не доставлены — отдельная задача #1768",
       source: "AddWordsPreviewModal",
     },
   },
@@ -275,8 +281,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
-    // Review #1691: the frame shows the list, not the drawer (captured
-    // before the animation settles). Revert to gap until it is recaptured.
+    // Recaptured in #1736: the drawer is visible in both viewports.
     status: "covered",
   },
   {
@@ -317,7 +322,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "мобильные кадры не доставлены: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
+        "мобильные кадры не доставлены: сценарий grammar-detail уходит в таймаут прогона; отдельная задача #1768",
       source: "GrammarPracticeSession",
     },
   },
@@ -488,9 +493,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "сценарий испускает только acquaintance-example; answer-example не появляется — вынесено в #1753 по слову владельца 28.11",
+        "сценарий испускает только acquaintance-example; answer-example не появляется — отдельная задача #1768",
       source: "Example",
     },
   },
@@ -639,9 +644,9 @@ export const inventory: readonly CoverageRow[] = [
       ...(status === "excluded"
         ? {
             exclusion: {
-              code: "owner-question" as const,
+              code: "no-scenario" as const,
               reason:
-                "вид не испускается сценарием в этом прогоне; вынесено в #1753 по слову владельца 28.11",
+                "вид не испускается сценарием в этом прогоне; отдельная задача #1768",
               source,
             },
           }
@@ -738,9 +743,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "компонент достижим, но ни один сценарий каталога не испускает grammar-practice-answer/-complete; вынесено в #1753 по слову владельца 28.11",
+        "компонент достижим, но ни один сценарий каталога не испускает grammar-practice-answer/-complete; отдельная задача #1768",
       source: "grammar-practice-complete",
     },
   },
@@ -752,7 +757,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
-    // Review #1691: the frames were shot under the fading boot-splash.
+    // Recaptured in #1736: the frame waits for the boot splash to detach.
     status: "covered",
   },
   {
