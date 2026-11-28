@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "grammar-detail",
+  "screen": "grammar-practice-question",
+  "route": "/grammar/:id",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 239119,
+  "sha256": "4bf11304e0ae4182dfe03b917e6ed48105d976fdfcb2cd2e02e1c2ba7fbbc3a8",
+  "capturedAt": "2026-11-28T12:37:10.427Z",
+  "commit": "98ba82c6d80fe1a93e4c65c649ce64d0de9870ae",
+  "baseURL": "http://localhost:1452",
+  "cdnBaseUrl": "http://localhost:8087",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}
