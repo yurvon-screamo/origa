@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "grammar-detail",
+  "screen": "grammar-delete-modal",
+  "route": "/grammar/:id",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 163383,
+  "sha256": "06d7769c4ee7ba5e1ceea9a0593cb7d0770a15f0ee1424569a5a2c671a7b2dda",
+  "capturedAt": "2026-11-28T17:43:52.189Z",
+  "commit": "1ed8fe7bb881bd8669e1c99ebeef95f1b7005687",
+  "baseURL": "http://localhost:1452",
+  "cdnBaseUrl": "http://localhost:8087",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

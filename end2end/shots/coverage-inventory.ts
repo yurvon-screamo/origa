@@ -86,13 +86,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "grammar-detail",
     screens: ["grammar-detail-overview"],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "owner-question",
-      reason:
-        "мобильный кадр не доставлен: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
-      source: "GrammarDetail",
-    },
+    status: "covered",
   },
   {
     id: "page:grammar",
@@ -313,13 +307,7 @@ export const inventory: readonly CoverageRow[] = [
       "grammar-delete-modal",
     ],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "owner-question",
-      reason:
-        "мобильные кадры не доставлены: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
-      source: "GrammarPracticeSession",
-    },
+    status: "covered",
   },
   {
     id: "variation:sets-import",
@@ -733,16 +721,10 @@ export const inventory: readonly CoverageRow[] = [
     kind: "variation",
     route: "/grammar/:id",
     source: "grammar-practice-complete",
-    scenario: null,
+    scenario: "grammar-detail",
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "owner-question",
-      reason:
-        "компонент достижим, но ни один сценарий каталога не испускает grammar-practice-answer/-complete; вынесено в #1753 по слову владельца 28.11",
-      source: "grammar-practice-complete",
-    },
+    status: "covered",
   },
   {
     id: "surface:download-consent",

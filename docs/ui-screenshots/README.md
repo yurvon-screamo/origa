@@ -8,6 +8,16 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| grammar-delete-modal | grammar-detail | mobile | ru-RU | 390×844 | 2026-11-28T17:43:52.189Z | 1ed8fe7b | не загружен |
+| grammar-practice-complete | grammar-detail | mobile | ru-RU | 390×844 | 2026-11-28T17:43:50.082Z | 1ed8fe7b | не загружен |
+| grammar-practice-answer | grammar-detail | mobile | ru-RU | 390×844 | 2026-11-28T17:43:49.608Z | 1ed8fe7b | не загружен |
+| grammar-practice-question | grammar-detail | mobile | ru-RU | 390×844 | 2026-11-28T17:43:49.067Z | 1ed8fe7b | не загружен |
+| grammar-detail-overview | grammar-detail | mobile | ru-RU | 390×844 | 2026-11-28T17:43:48.334Z | 1ed8fe7b | не загружен |
+| grammar-delete-modal | grammar-detail | desktop | ru-RU | 1280×800 | 2026-11-28T17:42:07.785Z | 1ed8fe7b | не загружен |
+| grammar-practice-complete | grammar-detail | desktop | ru-RU | 1280×800 | 2026-11-28T17:42:07.282Z | 1ed8fe7b | не загружен |
+| grammar-practice-answer | grammar-detail | desktop | ru-RU | 1280×800 | 2026-11-28T17:42:06.996Z | 1ed8fe7b | не загружен |
+| grammar-practice-question | grammar-detail | desktop | ru-RU | 1280×800 | 2026-11-28T17:42:06.480Z | 1ed8fe7b | не загружен |
+| grammar-detail-overview | grammar-detail | desktop | ru-RU | 1280×800 | 2026-11-28T17:42:06.285Z | 1ed8fe7b | не загружен |
 | sets-jft-badge | jft-card | mobile | ru-RU | 390×844 | 2026-11-27T16:21:09.171Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--sets-jft-badge--mobile-408766e2.png) |
 | home-jft | jft-card | mobile | ru-RU | 390×844 | 2026-11-27T16:21:07.613Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--home-jft--mobile-3e88c430.png) |
 | sets-jft-badge | jft-card | desktop | ru-RU | 1280×800 | 2026-11-27T16:19:03.167Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--sets-jft-badge--desktop-7d816765.png) |
