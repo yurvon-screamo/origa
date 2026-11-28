@@ -43,6 +43,9 @@ export const grammarDetailScenario: ShotScenario = {
     await expect(page.getByTestId("grammar-detail-container")).toBeVisible({
       timeout: 30_000,
     });
+    await expect(page.getByTestId("grammar-detail-breadcrumbs")).toBeVisible({
+      timeout: 30_000,
+    });
     await sink.shot("grammar-detail-overview");
 
     const practiceTab = page.getByTestId("grammar-detail-tabs-practice");
