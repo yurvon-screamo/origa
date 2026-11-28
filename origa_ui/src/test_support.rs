@@ -71,12 +71,59 @@ pub(crate) fn provide_i18n() {
 
 /// Mount a view closure into `wrapper`'s reactive scope. The `UnmountHandle`
 /// is leaked to keep the component alive for the test (48dd9dc pattern).
+///
+/// "Leaked" no longer means "forever": the handle goes into a bounded
+/// reaper ([`reap_stale_mounts`]) that disposes old mounts as new tests
+/// start, so the page's memory tracks the working set instead of growing
+/// with the suite size (uwuwu#1454 round 5, review option C — the suite
+/// outgrew the runner's per-page memory ceiling and Chrome was SIGKILLed
+/// near the end of the run).
 pub(crate) fn mount_to_wrapper<F>(wrapper: &web_sys::Element, f: F)
 where
     F: FnOnce() -> AnyView + 'static,
 {
     let dispose = leptos::mount::mount_to(wrapper.clone().unchecked_into(), f);
-    std::mem::forget(dispose);
+    let disposer: Box<dyn FnOnce()> = Box::new(move || drop(dispose));
+    reap_stale_mounts(wrapper.clone(), disposer);
+}
+
+/// How many recent leak mounts survive a reap pass. Tests run sequentially
+/// in one page, so when a mount is created every older mount belongs to a
+/// test that has already finished — except the mounts of the *current*
+/// test, which are by definition the newest ones. Keeping the newest 40
+/// makes reaping a live test's mount impossible; the grace window also
+/// gives cross-`.await`-point task continuations (they resume off the JS
+/// event loop, possibly after the test function returned) time to drain
+/// before their owner is disposed.
+const MOUNT_REAP_KEEP: usize = 40;
+
+/// Reaping starts once this many mounts have piled up; amortizes the
+/// disposal cost to roughly one mount per mount.
+const MOUNT_REAP_THRESHOLD: usize = 80;
+
+/// Disposes stale leak mounts and drops their wrapper divs, then registers
+/// the new mount as the youngest entry.
+type LeakedMount = (web_sys::Element, Box<dyn FnOnce()>);
+
+fn reap_stale_mounts(wrapper: web_sys::Element, disposer: Box<dyn FnOnce()>) {
+    thread_local! {
+        static MOUNTS: std::cell::RefCell<Vec<LeakedMount>> =
+            const { std::cell::RefCell::new(Vec::new()) };
+    }
+    MOUNTS.with(|mounts| {
+        let mut mounts = mounts.borrow_mut();
+        if mounts.len() >= MOUNT_REAP_THRESHOLD {
+            let cut = mounts.len() - MOUNT_REAP_KEEP;
+            for (stale_wrapper, dispose) in mounts.drain(..cut) {
+                // UnmountHandle::drop unmounts the view and disposes the
+                // reactive owner, which runs every on_cleanup registered
+                // inside the mount (global listeners included).
+                dispose();
+                stale_wrapper.remove();
+            }
+        }
+        mounts.push((wrapper, disposer));
+    });
 }
 
 /// Mount whose view unmounts automatically when the returned handle drops at
