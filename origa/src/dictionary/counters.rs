@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 
 use serde::Deserialize as _;
+use sha2::{Digest as _, Sha256};
+use ulid::Ulid;
 
 use crate::domain::{JapaneseLevel, NativeLanguage};
 
@@ -183,6 +185,22 @@ pub fn init_counters(json: &str) -> Result<usize, String> {
 
 pub fn is_counters_loaded() -> bool {
     COUNTERS.get().is_some_and(|c| !c.is_empty())
+}
+
+/// CDN-путь неизменяемого TTS-клипа чтения связки.
+///
+/// Ключ — 26 Crockford-символов: нулевая timestamp-часть, 13 символов
+/// SHA-256 от «suffix|number|reading» и маркер `TTS` в конце (прецедент
+/// `phrases/audio/…TTS….opus`). Генератор `tts/gen_counter_audio.py`
+/// выводит тот же ключ; контракт скреплён тест-векторами ниже. Число и
+/// чтение входят в хеш: правка чтения рождает новый ключ, а не перезапись
+/// неизменяемого CDN-объекта.
+pub fn counter_audio_path(suffix: &str, number: u8, reading: &str) -> String {
+    let digest = Sha256::digest(format!("{suffix}|{number}|{reading}"));
+    let mut random = [0u8; 16];
+    random[6..].copy_from_slice(&digest[..10]);
+    let encoded = Ulid::from_parts(0, u128::from_be_bytes(random)).to_string();
+    format!("counters/audio/{}TTS.opus", &encoded[..23])
 }
 
 /// Резолв записи реестра по суффиксу.
@@ -504,5 +522,31 @@ pub mod tests {
         assert!(!counter_label(NativeLanguage::English).is_empty());
         assert!(!counter_label(NativeLanguage::Korean).is_empty());
         assert!(!counter_label(NativeLanguage::Vietnamese).is_empty());
+    }
+
+    // Векторы сгенерированы tts/gen_counter_audio.py — контракт имени
+    // между генератором и рантаймом, а не просто формат строки.
+    #[rstest::rstest]
+    #[case::ichi("つ", 1, "ひとつ", "0000000000989EWKQEH7BYBTTS")]
+    #[case::ni("つ", 2, "ふたつ", "00000000004PWZTACYD5TWYTTS")]
+    #[case::san("つ", 3, "みっつ", "00000000008G5KW6KQ8BPHNTTS")]
+    fn counter_audio_path_matches_the_generator_contract(
+        #[case] suffix: &str,
+        #[case] number: u8,
+        #[case] reading: &str,
+        #[case] expected: &str,
+    ) {
+        assert_eq!(
+            counter_audio_path(suffix, number, reading),
+            format!("counters/audio/{expected}.opus")
+        );
+    }
+
+    #[test]
+    fn counter_audio_path_changes_when_reading_changes() {
+        assert_ne!(
+            counter_audio_path("本", 1, "いっぽん"),
+            counter_audio_path("本", 1, "いちほん")
+        );
     }
 }

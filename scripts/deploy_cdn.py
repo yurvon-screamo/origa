@@ -139,6 +139,10 @@ SYNC_DIRS = [
     # parent examples/ walk excludes this subtree via the child-SYNC_DIR
     # rule in sync_directories so its header can never leak onto audio.
     "examples/audio",
+    # Counter-suffix TTS audio (uwuwu#1038): immutable, content-addressed
+    # keys under counters/audio/ — same tier and change-detection as the
+    # other generated audio prefixes.
+    "counters/audio",
     "kanji_animations",
     "kanji_frames",
     "ndlocr",
@@ -177,6 +181,7 @@ SYNC_DIRS = [
 SIZE_ONLY_SYNC_DIRS: Final[frozenset[str]] = frozenset(
     {
         "examples/audio",
+        "counters/audio",
         "fonts",
         "kanji_animations",
         "kanji_frames",
