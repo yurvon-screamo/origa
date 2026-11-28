@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "kanji",
+  "screen": "kanji-detail-tabs",
+  "route": "/kanji",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 250156,
+  "sha256": "fb98bf59158f5d485bd4c6611bb01f0906f0a1c335daa4a8934723e6411b9ac0",
+  "capturedAt": "2026-11-28T12:38:27.133Z",
+  "commit": "a76a16c19afe4947dbcafe20cca2bf97bfcc2e3a",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

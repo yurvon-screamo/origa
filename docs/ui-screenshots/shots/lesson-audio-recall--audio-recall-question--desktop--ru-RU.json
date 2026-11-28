@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-audio-recall",
+  "screen": "audio-recall-question",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 286677,
+  "sha256": "943200f9c386d8f7a764661b539251e54abec89cb750e041fb55323dcca3f826",
+  "capturedAt": "2026-11-28T13:10:43.008Z",
+  "commit": "a76a16c19afe4947dbcafe20cca2bf97bfcc2e3a",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

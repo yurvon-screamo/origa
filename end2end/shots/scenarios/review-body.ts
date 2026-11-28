@@ -61,6 +61,12 @@ export const ADVANCES = [
   "lesson-card-next-btn",
   "quiz-submit-btn",
   "lesson-rating-btn-again",
+  // Phrase and binary-answer cards rate with their own controls; without
+  // these ids a card walk stops on the first such card.
+  "lesson-phrase-rating-understood",
+  "lesson-phrase-rating-did-not-understand",
+  "yesno-yes-btn",
+  "yesno-no-btn",
   "audio-recall-know-btn",
   "lesson-example-understood",
   "lesson-example-next",

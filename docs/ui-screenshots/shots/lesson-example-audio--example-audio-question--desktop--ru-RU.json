@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-example-audio",
+  "screen": "example-audio-question",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 285311,
+  "sha256": "1f58c338d19e020a1897ffbbee391281fe2214bbb521923411d2acc88ac82dc1",
+  "capturedAt": "2026-11-28T13:21:43.054Z",
+  "commit": "a76a16c19afe4947dbcafe20cca2bf97bfcc2e3a",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

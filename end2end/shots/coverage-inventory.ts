@@ -90,7 +90,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "мобильный кадр не доставлен: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
+        "мобильный кадр не доставлен: сценарий grammar-detail падает по browserContext.close; отдельная задача uwuwu#1764",
       source: "GrammarDetail",
     },
   },
@@ -317,7 +317,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "мобильные кадры не доставлены: сценарий grammar-detail падает по browserContext.close; вынесено в #1753 по слову владельца 28.11",
+        "мобильные кадры не доставлены: сценарий grammar-detail падает по browserContext.close; отдельная задача uwuwu#1764",
       source: "GrammarPracticeSession",
     },
   },
@@ -404,7 +404,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "сид phrase-карты оставляет приложение на boot splash; список фраз не монтируется — слово владельца 28.11, отдельная задача #1753",
+        "сид phrase-карты оставляет приложение на boot splash; поверхность урока недостижима — отдельная задача uwuwu#1761",
       source: "phrase_card_item",
     },
   },
@@ -512,13 +512,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-example-audio",
     screens: ["example-audio-question"],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "owner-question",
-      reason:
-        "кнопка example-audio не появляется при дошедшей карточке примера; отдельная задача #1753 по слову владельца 28.11",
-      source: "lesson-example-audio",
-    },
+    status: "covered",
   },
   {
     id: "variation:lesson-phrase-listen",
@@ -532,7 +526,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "PhraseListen не порождается при due-фразах за 6 проходов по 6 карточек; отдельная задача #1753 по слову владельца 28.11",
+        "PhraseListen не порождается при due-фразах; отдельная задача на приложенческий стоп, uwuwu#1760",
       source: "phrase-audio-player",
     },
   },
@@ -544,13 +538,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-audio-recall",
     screens: ["audio-recall-question", "audio-recall-answer"],
     viewports: BOTH,
-    status: "excluded",
-    exclusion: {
-      code: "owner-question",
-      reason:
-        "вид AudioRecall порождается только для слов, а в due-corpus слова не due; отдельная задача #1753 по слову владельца 28.11",
-      source: "audio-recall-card-root",
-    },
+    status: "covered",
   },
   {
     id: "variation:lesson-quiz-single",
@@ -641,7 +629,7 @@ export const inventory: readonly CoverageRow[] = [
             exclusion: {
               code: "owner-question" as const,
               reason:
-                "вид не испускается сценарием в этом прогоне; вынесено в #1753 по слову владельца 28.11",
+                "вид не испускается сценарием в этом прогоне; отдельная задача uwuwu#1763",
               source,
             },
           }
@@ -740,7 +728,7 @@ export const inventory: readonly CoverageRow[] = [
     exclusion: {
       code: "owner-question",
       reason:
-        "компонент достижим, но ни один сценарий каталога не испускает grammar-practice-answer/-complete; вынесено в #1753 по слову владельца 28.11",
+        "компонент достижим, но ни один сценарий каталога не испускает grammar-practice-answer/-complete; отдельная задача uwuwu#1766",
       source: "grammar-practice-complete",
     },
   },

@@ -321,7 +321,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Урок: аудио-вспоминание",
     route: "/lesson",
     locale: "ru-RU",
-    preset: "due-corpus",
+    preset: "due-words",
   },
   "lesson-quiz-multi": {
     id: "lesson-quiz-multi",

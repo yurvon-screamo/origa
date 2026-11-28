@@ -18,6 +18,7 @@ export async function walkLessonCards(
   page: Page,
   visit: (page: Page) => Promise<boolean>,
   maxCards = 8,
+  controlTimeout = 1_500,
 ): Promise<boolean> {
   // The corpus boot can outlast the ten-second helper on a busy
   // machine; a walk that starts on the splash sees no cards at all.
@@ -33,13 +34,17 @@ export async function walkLessonCards(
       .then(() => true)
       .catch(() => false);
     if (complete) return false;
-    const revealed = await clickFirstVisible(page, REVEALS, 1_500).catch(
-      () => null,
-    );
+    const revealed = await clickFirstVisible(
+      page,
+      REVEALS,
+      controlTimeout,
+    ).catch(() => null);
     if (!revealed) return false;
-    const advanced = await clickFirstVisible(page, ADVANCES, 1_500).catch(
-      () => null,
-    );
+    const advanced = await clickFirstVisible(
+      page,
+      ADVANCES,
+      controlTimeout,
+    ).catch(() => null);
     if (!advanced) return false;
   }
   return false;

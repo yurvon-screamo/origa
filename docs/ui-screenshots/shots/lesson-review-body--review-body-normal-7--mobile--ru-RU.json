@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-review-body",
+  "screen": "review-body-normal-7",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 160592,
+  "sha256": "b8941216c943633d40675f7eb02593ced07b57ae3fef90f32de099bcb8c52569",
+  "capturedAt": "2026-11-28T11:21:19.438Z",
+  "commit": "3996c67ea7b30a3aa9571782e8e5c88995e50cf6",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}
