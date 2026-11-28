@@ -1,5 +1,9 @@
 use crate::{
-    domain::{OrigaError, PartOfSpeech, User, tokenize_text},
+    domain::tokenizer::TokenInfo,
+    domain::{
+        JapaneseChar, JapaneseText, OrigaError, PartOfSpeech, User, katakana_to_hiragana,
+        tokenize_text,
+    },
     traits::UserRepository,
 };
 use serde::{Deserialize, Serialize};
@@ -81,6 +85,65 @@ fn user_knows_counter(user: &User, suffix: &str) -> bool {
         .any(|sc| matches!(sc.card(), crate::domain::Card::Counter(c) if c.suffix() == suffix))
 }
 
+/// A kanji writing the user typed explicitly in the analysed text. When the
+/// same word also arrives in hiragana or an inflected form, this is the
+/// intended dictionary article (uwuwu#1463 US-1). The articles themselves are
+/// left intact — only the candidates produced by THIS input are filtered.
+struct WritingAnchor {
+    lemma: String,
+    reading: String,
+}
+
+fn hiragana_reading(token: &TokenInfo) -> String {
+    katakana_to_hiragana(token.phonological_base_form())
+}
+
+/// Does this hiragana surface (or a prefix of it) spell the anchor's reading?
+/// `っ` stands for the consonant of the following character, so `まっ` (from
+/// まった) matches `まつ` (待つ) without a conjugation table.
+fn spelling_matches(surface: &str, reading: &str) -> bool {
+    let mut chars = surface.chars();
+    for expected in reading.chars() {
+        match chars.next() {
+            Some(actual) if actual == expected || actual == 'っ' => {},
+            _ => return false,
+        }
+    }
+    true
+}
+
+/// Sudachi sometimes splits one hiragana word into several tokens
+/// (`おもう` → `お` + `もう`). Consecutive surfaces that spell the anchor's
+/// reading belong to that word, not to independent articles.
+fn is_part_of_split_writing(tokens: &[TokenInfo], index: usize, anchors: &[WritingAnchor]) -> bool {
+    for anchor in anchors {
+        for start in 0..=index {
+            let mut spelled = String::new();
+            let mut covers = false;
+            for (offset, token) in tokens.iter().enumerate().skip(start) {
+                let surface = token.orthographic_surface_form();
+                if !surface.chars().all(|c| c.is_hiragana()) {
+                    break;
+                }
+                spelled.push_str(surface);
+                if offset == index {
+                    covers = true;
+                }
+                if spelled == anchor.reading {
+                    if covers {
+                        return true;
+                    }
+                    break;
+                }
+                if !anchor.reading.starts_with(&spelled) {
+                    break;
+                }
+            }
+        }
+    }
+    false
+}
+
 impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
     pub fn new(repository: &'a R) -> Self {
         Self { repository }
@@ -99,15 +162,47 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
 
         debug!(token_count = tokens.len(), "Tokenized text");
 
+        // A kanji writing typed explicitly in the text is the intended
+        // article. Hiragana forms and homophone articles reached through a
+        // hiragana surface are variants of it in THIS input; the dictionary
+        // articles themselves stay untouched (uwuwu#1463 US-1, NFT-3).
+        let anchors: Vec<WritingAnchor> = tokens
+            .iter()
+            .filter(|token| token.part_of_speech().is_vocabulary_word())
+            .filter_map(|token| {
+                let lemma = token.orthographic_base_form();
+                if lemma.contains_kanji() && text.contains(lemma) {
+                    Some(WritingAnchor {
+                        lemma: lemma.to_string(),
+                        reading: hiragana_reading(token),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         let mut words: Vec<AnalyzedWord> = Vec::new();
         let mut seen_words = std::collections::HashSet::new();
 
-        for token in &tokens {
+        for (index, token) in tokens.iter().enumerate() {
             if !token.part_of_speech().is_vocabulary_word() {
                 continue;
             }
 
-            let word_text = token.orthographic_base_form().to_string();
+            let base = token.orthographic_base_form();
+            let is_anchor = anchors.iter().any(|anchor| anchor.lemma == base);
+            if !is_anchor
+                && anchors.iter().any(|anchor| {
+                    spelling_matches(token.orthographic_surface_form(), &anchor.reading)
+                        || (base.chars().all(|c| c.is_hiragana()) && anchor.reading == base)
+                        || is_part_of_split_writing(&tokens, index, &anchors)
+                })
+            {
+                continue;
+            }
+
+            let word_text = base.to_string();
             if seen_words.contains(&word_text) {
                 continue;
             }
