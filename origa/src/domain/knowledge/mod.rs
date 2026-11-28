@@ -32,6 +32,7 @@ pub use kanji::{ExampleKanjiWord, KanjiCard};
 pub use lesson::{
     CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
     LessonViewGenerator, MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
+    refresh_phrase_views,
 };
 pub use lesson_builder::{MAX_LESSON_SIZE, NewCardPolicy};
 pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};

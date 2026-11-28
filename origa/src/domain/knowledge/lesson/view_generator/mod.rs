@@ -9,9 +9,12 @@ use rand::Rng;
 use super::types::LessonCardView;
 
 mod generation;
+mod refresh;
 #[cfg(test)]
 mod tests;
 mod transforms;
+
+pub use refresh::refresh_phrase_views;
 
 const QUIZ_OPTIONS_COUNT: usize = 4;
 
