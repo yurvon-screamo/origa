@@ -77,7 +77,10 @@ fn inject_umami_sets_domain_allowlist_and_do_not_track() {
         Some((host, _)) => host,
         None => without_scheme,
     };
-    assert!(domains.contains(app_host), "got: {domains}");
+    // The first entry is the build-time app host; the other two are
+    // Tauri aliases. A plain contains() would pass for a localhost host
+    // through the alias tail even when the first entry is wrong.
+    assert_eq!(domains.split(',').next(), Some(app_host), "got: {domains}");
     assert!(domains.contains("tauri.localhost"), "got: {domains}");
     assert!(domains.contains("localhost"), "got: {domains}");
     assert_eq!(

@@ -228,3 +228,5 @@ TRAILBASE_URL=http://127.0.0.1:4000 ORIGA_CDN_BASE_URL=http://localhost:8080 \
 ```
 
 Both env values are required. Without them the build bakes production defaults (ADR-020/023) and the run stops being hermetic.
+
+Expected local result on a corpus without example clips: `test result: FAILED. 444 passed; 2 failed`. The failures are `example_recall_autoplay_announces_with_generated_clip` (no `examples/audio/000000.opus` in the local corpus) and the panic-hook cascade after it (fix in open PR origa#999). This is not a regression of the 180 s budget; without the budget the same run stops at 20 s.
