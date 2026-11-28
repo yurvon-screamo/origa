@@ -161,6 +161,12 @@ pub async fn load_phrase_details_batch_via<P: CdnProvider>(
 
 /// One chunk's data fetch + cache (+ best-effort precompute). The
 /// in-flight claim is always released, success or failure.
+///
+/// Failure severity follows the network invariant (uwuwu#1454, ADR-079
+/// style): online failure of a load-bearing chunk fetch is an incident
+/// (`error!` → Sentry event via the tracing_console capture bridge);
+/// offline failures are expected degradation (`warn!`). The precompute
+/// step stays best-effort (`warn!`) in both cases.
 async fn fetch_and_cache_chunk<P: CdnProvider>(provider: &P, chunk_id: u32, hash: &str) {
     let path = format!("phrases/data/p{:04}.json?v={}", chunk_id, hash);
     match provider.fetch_text(&path).await {
@@ -171,7 +177,21 @@ async fn fetch_and_cache_chunk<P: CdnProvider>(provider: &P, chunk_id: u32, hash
                 load_phrase_precompute_chunk_via(provider, chunk_id).await;
             }
         },
-        Err(e) => tracing::warn!("Failed to load chunk {}: {e}", chunk_id),
+        Err(e) => match crate::tracing_console::network_failure_severity(
+            false,
+            crate::tracing_console::is_browser_online(),
+        ) {
+            crate::tracing_console::NetworkSeverity::Error => {
+                tracing::error!(
+                    chunk_id = chunk_id,
+                    error = ?e,
+                    "Phrase data chunk fetch failed while online"
+                );
+            },
+            crate::tracing_console::NetworkSeverity::Warn => {
+                tracing::warn!(chunk_id = chunk_id, error = ?e, "Failed to load chunk {} (offline)", chunk_id);
+            },
+        },
     }
     unmark_data_chunk_inflight(chunk_id);
 }

@@ -140,7 +140,21 @@ pub fn start_card_precache(
                 }
             },
             Err(e) => {
-                tracing::warn!(error = %e, "Card pre-cache failed, returning to Idle");
+                // Manual consent-gated download failed outright: for an
+                // online user this is an incident (the requested content is
+                // not there), offline it is expected (uwuwu#1454 network
+                // invariant).
+                match crate::tracing_console::network_failure_severity(
+                    false,
+                    crate::tracing_console::is_browser_online(),
+                ) {
+                    crate::tracing_console::NetworkSeverity::Error => {
+                        tracing::error!(error = %e, "Card pre-cache failed while online, returning to Idle");
+                    },
+                    crate::tracing_console::NetworkSeverity::Warn => {
+                        tracing::warn!(error = %e, "Card pre-cache failed (offline), returning to Idle");
+                    },
+                }
                 store_clone.set_card_cache_state(CardCacheState::Idle);
             },
         }
