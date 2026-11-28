@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForSyncToast } from "./simple-page.ts";
 import {
   countDue,
   readStoredUser,
@@ -32,6 +33,7 @@ export const homeDueCounterScenario: ShotScenario = {
       timeout: 120_000,
     });
     await page.waitForTimeout(1_500);
+    await waitForSyncToast(page);
     await sink.shot("due-day-one");
 
     const seeded = seedDueCards(stored.value, new Date(), DUE_TARGET);

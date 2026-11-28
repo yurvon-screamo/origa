@@ -17,7 +17,19 @@ export const setsScenario: ShotScenario = {
     await page.getByTestId("sets-level-n5").click();
     await sink.shot("sets-filters");
     await page.getByTestId("sets-import-new").click();
-    await page.getByTestId("sets-card-item").first().click();
+    // Selection lives on the card checkbox, not on the card root. A
+    // root click leaves `selected_sets` empty, so the import button
+    // never mounts and the unbounded click hangs the whole scenario.
+    // The real input is visually hidden; the label around it is the
+    // clickable surface. Clicking the card root does not select either.
+    await page
+      .getByTestId("sets-card-item")
+      .first()
+      .locator("label.checkbox-container")
+      .click({ timeout: 15_000 });
+    await expect(page.getByTestId("sets-import-selected-btn")).toBeVisible({
+      timeout: 15_000,
+    });
     await page.getByTestId("sets-import-selected-btn").click();
     await expect(page.getByTestId("sets-import-drawer")).toBeVisible({
       timeout: 15_000,

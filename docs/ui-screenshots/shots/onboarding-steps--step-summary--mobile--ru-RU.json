@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "onboarding-steps",
+  "screen": "step-summary",
+  "route": "/onboarding",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 258342,
+  "sha256": "ce4224288779c01589ed1ec5172f750300705fe6d30a446eb6aba8b9c6e64ff1",
+  "capturedAt": "2026-11-27T12:40:14.233Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-summary--mobile-ce422428.png",
+  "uploadedSha256": "ce4224288779c01589ed1ec5172f750300705fe6d30a446eb6aba8b9c6e64ff1",
+  "uploadedAt": "2026-11-27T16:23:53.278Z"
+}

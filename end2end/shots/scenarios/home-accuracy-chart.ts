@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { waitForSyncToast } from "./simple-page.ts";
 
 /**
  * The home accuracy chart (fl2O037UR7) with live data.
@@ -34,13 +35,7 @@ export const homeAccuracyChartScenario: ShotScenario = {
       window.scrollTo({ top });
     });
 
-    // The home mount fires a sync toast that parks over the chart on
-    // a narrow viewport — let it dismiss itself (5 s lifetime) before
-    // framing the shot.
-    await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
-      timeout: 15_000,
-    });
-    await page.waitForTimeout(500);
+    await waitForSyncToast(page);
 
     const viewport = page.viewportSize();
     if (viewport && viewport.width < 500) {

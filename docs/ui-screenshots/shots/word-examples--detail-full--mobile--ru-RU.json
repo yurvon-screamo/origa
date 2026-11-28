@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": true,
-  "bytes": 326750,
-  "sha256": "642d31ecfbcdc22236e7261584b9925cf97ef836c89dcabd8595d20348175a39",
-  "capturedAt": "2026-11-12T05:30:26.958Z",
-  "commit": "509f23bb77c5503176e48f327b87083c1fe70d31",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8093",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-sate-nov12/word-examples--detail-full--mobile-642d31ec.png",
-  "uploadedSha256": "642d31ecfbcdc22236e7261584b9925cf97ef836c89dcabd8595d20348175a39",
-  "uploadedAt": "2026-11-12T05:30:33.115Z"
+  "bytes": 323184,
+  "sha256": "e8c3de10eb9865b1f1bb0bd89ba4a706f7fb60419f8b103dd647c1f212720789",
+  "capturedAt": "2026-11-27T14:36:19.996Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/word-examples--detail-full--mobile-e8c3de10.png",
+  "uploadedSha256": "e8c3de10eb9865b1f1bb0bd89ba4a706f7fb60419f8b103dd647c1f212720789",
+  "uploadedAt": "2026-11-27T16:24:02.402Z"
 }

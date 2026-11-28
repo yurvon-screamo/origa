@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "onboarding-steps",
+  "screen": "step-apps",
+  "route": "/onboarding",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 200958,
+  "sha256": "242b7e33bda974533d4ed281eaf0d2c358883e442d9504a8fad41fa5ad4f960c",
+  "capturedAt": "2026-11-27T12:40:13.842Z",
+  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-apps--mobile-242b7e33.png",
+  "uploadedSha256": "242b7e33bda974533d4ed281eaf0d2c358883e442d9504a8fad41fa5ad4f960c",
+  "uploadedAt": "2026-11-27T16:23:51.888Z"
+}

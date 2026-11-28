@@ -44,7 +44,7 @@ export const lessonReviewBodyScenario: ShotScenario = {
         })
         .catch(() => undefined);
 
-      const captured = await captureReviewBody(page, sink, 6);
+      const captured = await captureReviewBody(page, sink, 10);
       if (captured > 0) return;
       console.log(
         `[shots] attempt ${attempt}: no review-body frames captured, rerolling`,
