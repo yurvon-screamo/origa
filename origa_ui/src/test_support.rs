@@ -101,6 +101,13 @@ const MOUNT_REAP_KEEP: usize = 40;
 /// disposal cost to roughly one mount per mount.
 const MOUNT_REAP_THRESHOLD: usize = 80;
 
+/// How many stale mounts a single new mount may dispose. Reaping 40 owners
+/// in one go is one long synchronous stall on the JS event loop, and the
+/// suite has timing-sensitive tests whose windows (fake-invoke overlap,
+/// animation budgets) a stall can break; amortizing keeps each mount's
+/// cleanup slice tiny while the registry still stays bounded.
+const MOUNT_REAP_SLICE: usize = 4;
+
 /// Disposes stale leak mounts and drops their wrapper divs, then registers
 /// the new mount as the youngest entry.
 type LeakedMount = (web_sys::Element, Box<dyn FnOnce()>);
@@ -113,7 +120,7 @@ fn reap_stale_mounts(wrapper: web_sys::Element, disposer: Box<dyn FnOnce()>) {
     MOUNTS.with(|mounts| {
         let mut mounts = mounts.borrow_mut();
         if mounts.len() >= MOUNT_REAP_THRESHOLD {
-            let cut = mounts.len() - MOUNT_REAP_KEEP;
+            let cut = (mounts.len() - MOUNT_REAP_KEEP).min(MOUNT_REAP_SLICE);
             for (stale_wrapper, dispose) in mounts.drain(..cut) {
                 // UnmountHandle::drop unmounts the view and disposes the
                 // reactive owner, which runs every on_cleanup registered
