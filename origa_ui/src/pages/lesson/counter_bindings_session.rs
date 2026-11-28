@@ -27,18 +27,32 @@ use super::counter_readings_table::{CounterReadingsTable, number_label, rows_for
 use super::lesson_card_header::LessonTagsRow;
 use super::reveal_answer_button::RevealAnswerButton;
 use crate::i18n::*;
-use crate::ui_components::{AudioButtons, Button, ButtonVariant, Card, Tag, speak_word};
+use crate::ui_components::{AudioButtons, Button, ButtonVariant, Card, Tag};
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_use::use_event_listener;
+use origa::dictionary::counters::counter_audio_path;
 use origa::domain::{Card, CounterBindingItem, Rating};
 
-/// Гейт озвучки чтения связки при раскрытии (#808): мьют урока главнее,
-/// пустое чтение (число вне реестра — защитный случай) молчит. Гейта
-/// TTS-доступности нет сознательно: `speak_word` деградирует безопасно
-/// (pitch-индекс → TTS-каны → подавленный `Err`), pitch-only среды
-/// сохраняют CDN-звук.
+/// Гейт озвучки чтения связки при раскрытии (#808, uwuwu#1038): мьют
+/// урока главнее, пустое чтение (число вне реестра — защитный случай)
+/// молчит. Гейта TTS-доступности нет сознательно: записанный CDN-клип
+/// звучит и в pitch-only средах, а его деградация — платформенный TTS —
+/// безопасна (подавленный `Err`).
 fn should_speak_binding_reading(is_muted: bool, reading: &str) -> bool {
     !is_muted && !reading.is_empty()
+}
+
+/// Один канал звука связки: записанный клип и TTS-деградация (общая
+/// механика урока `lesson_card`). Вынесено из компонента, чтобы reveal и
+/// view не дублировали prefetch-контракт.
+fn play_binding_audio(suffix: &str, number: u8, reading: &str) {
+    let path = counter_audio_path(suffix, number, reading);
+    let reading = reading.to_string();
+    crate::ui_components::stop_current_audio();
+    spawn_local(async move {
+        super::lesson_card::play_cdn_audio_with_tts_fallback(&path, &reading).await;
+    });
 }
 
 #[component]
@@ -130,10 +144,13 @@ pub fn CounterBindingsSession(
     // Единственный резолв «текущая связка → чтение реестра»: ответ,
     // кнопка озвучки в строке тегов и озвучка reveal читают один сигнал
     // (рассинхрон трёх копий озвучил бы не то чтение, что на экране).
-    let current_reading = Signal::derive(move || {
-        let number = items
+    let current_number = Signal::derive(move || {
+        items
             .with_value(|i| i.get(current.get()).map(|it| it.number()))
-            .unwrap_or(u8::MAX);
+            .unwrap_or(u8::MAX)
+    });
+    let current_reading = Signal::derive(move || {
+        let number = current_number.get();
         readings
             .with_value(|rs| {
                 rs.iter()
@@ -178,19 +195,17 @@ pub fn CounterBindingsSession(
         if revealed.get_untracked() || finished.get_untracked() {
             return;
         }
-        let number = items
-            .with_value(|i| i.get(current.get_untracked()).map(|item| item.number()))
-            .unwrap_or(u8::MAX);
+        let number = current_number.get_untracked();
         revealed.set(true);
         highlighted_number.set(number);
-        // Озвучка канонического чтения связки (#808): чтение из реестра —
-        // чистая кана, поэтому speak_word резолвит его корректно (pitch-
-        // индекс по возможности, иначе TTS читает кану как есть). Кнопка и
-        // Space/Enter ведут в этот же reveal — один канал звука. Фронт
-        // связки НЕ озвучивается: звучащее чтение выдало бы ответ.
+        // Озвучка канонического чтения связки (#808, uwuwu#1038): основой
+        // стал записанный TTS-клип из counters/audio/ (immutable opus),
+        // платформенный TTS — только деградация при отсутствии сети/ключа.
+        // Кнопка и Space/Enter ведут в этот же reveal — один канал звука.
+        // Фронт связки НЕ озвучивается: звучащее чтение выдало бы ответ.
         let reading = current_reading.get_untracked();
         if should_speak_binding_reading(is_muted.get_untracked(), &reading) {
-            speak_word(&reading, 1.0);
+            play_binding_audio(&suffix.get_value(), number, &reading);
         }
     };
 
@@ -235,11 +250,16 @@ pub fn CounterBindingsSession(
                     // AudioButtons не берёт реактивный text — компонент
                     // пересоздаётся замыканием на каждой смене связки.
                     let reading = current_reading.get();
+                    let path = counter_audio_path(
+                        &suffix.get_value(),
+                        current_number.get(),
+                        &reading,
+                    );
                     view! {
                         <div class="ml-auto">
                             <AudioButtons
                                 text=reading
-                                audio_path=None
+                                audio_path=Some(path)
                                 test_id=Signal::derive(|| "counter-binding-audio-btn".to_string())
                             />
                         </div>
