@@ -4,6 +4,7 @@ import { acquaintanceHand } from "./acquaintance-hand.ts";
 import { counterDue } from "./counter-due.ts";
 import { dueCorpus } from "./due-corpus.ts";
 import { dueExamples } from "./due-examples.ts";
+import { dueWords } from "./due-words.ts";
 import { fresh } from "./fresh.ts";
 import { irodoriNyuumon } from "./irodori-nyuumon.ts";
 import { onboarded } from "./onboarded.ts";
@@ -37,6 +38,7 @@ export const presets: Record<PresetId, Preset> = {
   "counter-due": counterDue,
   "due-corpus": dueCorpus,
   "due-examples": dueExamples,
+  "due-words": dueWords,
   onboarded,
   "scoring-n5": scoringN5,
   "onboarded-history": onboardedHistory,

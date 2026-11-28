@@ -10,6 +10,7 @@ export const PRESET_IDS = [
   "counter-due",
   "due-corpus",
   "due-examples",
+  "due-words",
   "fresh",
   "onboarded",
   "scoring-n5",
