@@ -190,12 +190,31 @@ async fn load_words(content: &mut JlptContent) -> Result<(), OrigaError> {
                 },
             },
             Err(e) => {
-                tracing::error!(
-                    "JLPT {:?} words fetch failed for {}: {:?}",
-                    level,
-                    filename,
-                    e
-                );
+                // Network invariant (uwuwu#1454): an offline start with
+                // uncached JLPT content fails the fetch without being an
+                // incident; parse failures above stay `error!` — a fetched
+                // payload that does not parse is a content bug regardless
+                // of connectivity.
+                match crate::tracing_console::network_failure_severity(
+                    crate::tracing_console::is_browser_online(),
+                ) {
+                    crate::tracing_console::NetworkSeverity::Error => {
+                        tracing::error!(
+                            "JLPT {:?} words fetch failed for {}: {:?}",
+                            level,
+                            filename,
+                            e
+                        );
+                    },
+                    crate::tracing_console::NetworkSeverity::Warn => {
+                        tracing::warn!(
+                            "JLPT {:?} words fetch failed (offline) for {}: {:?}",
+                            level,
+                            filename,
+                            e
+                        );
+                    },
+                }
             },
         }
     }

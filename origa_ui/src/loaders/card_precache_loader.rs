@@ -1,5 +1,5 @@
 use origa::dictionary::pitch_audio::get_audio_for_reading;
-use origa::domain::{Card, JapaneseChar, OrigaError, StudyCard};
+use origa::domain::{Card, JapaneseChar, StudyCard};
 
 use leptos::prelude::{GetUntracked, Set};
 
@@ -120,43 +120,53 @@ pub fn start_card_precache(
     let store_clone = offline_store.clone();
 
     leptos::task::spawn_local(async move {
-        match precache_all_cards(&cards, move |p| store_clone.card_cache_progress.set(p)).await {
-            Ok(result) => {
-                tracing::info!(
-                    succeeded = result.succeeded,
-                    total = result.total,
-                    "Card pre-cache complete"
-                );
-                store_clone.set_card_cache_state(CardCacheState::Complete);
+        // `batch_download` never fails — it tallies. Outright failure is
+        // `succeeded == 0`: for an online user an incident (the requested
+        // content is not there), offline it is expected degradation
+        // (uwuwu#1454 network invariant). The session state returns to Idle
+        // so the run can be retried; marking Complete with zero files would
+        // poison the cache for the whole session. Partial runs keep the
+        // per-file `warn!`s from `batch_download` (best-effort; on-demand
+        // fetch covers the gaps) and settle as Complete.
+        let result =
+            precache_all_cards(&cards, move |p| store_clone.card_cache_progress.set(p)).await;
+        let failed = result.total.saturating_sub(result.succeeded);
+        if result.total > 0 && result.succeeded == 0 {
+            match crate::tracing_console::network_failure_severity(
+                crate::tracing_console::is_browser_online(),
+            ) {
+                crate::tracing_console::NetworkSeverity::Error => {
+                    tracing::error!(
+                        total = result.total,
+                        "Card pre-cache failed outright while online, returning to Idle"
+                    );
+                },
+                crate::tracing_console::NetworkSeverity::Warn => {
+                    tracing::warn!(
+                        total = result.total,
+                        "Card pre-cache failed outright (offline), returning to Idle"
+                    );
+                },
+            }
+            store_clone.set_card_cache_state(CardCacheState::Idle);
+            return;
+        }
+        tracing::info!(
+            succeeded = result.succeeded,
+            failed,
+            total = result.total,
+            "Card pre-cache complete"
+        );
+        store_clone.set_card_cache_state(CardCacheState::Complete);
 
-                // Store marker to enable cache validation on next startup
-                if let Err(e) = crate::repository::cdn_provider::store_cache_marker(
-                    "/__origa_card_cache_complete__",
-                    "ok",
-                )
-                .await
-                {
-                    tracing::warn!(error = ?e, "Failed to store card cache marker");
-                }
-            },
-            Err(e) => {
-                // Manual consent-gated download failed outright: for an
-                // online user this is an incident (the requested content is
-                // not there), offline it is expected (uwuwu#1454 network
-                // invariant).
-                match crate::tracing_console::network_failure_severity(
-                    false,
-                    crate::tracing_console::is_browser_online(),
-                ) {
-                    crate::tracing_console::NetworkSeverity::Error => {
-                        tracing::error!(error = %e, "Card pre-cache failed while online, returning to Idle");
-                    },
-                    crate::tracing_console::NetworkSeverity::Warn => {
-                        tracing::warn!(error = %e, "Card pre-cache failed (offline), returning to Idle");
-                    },
-                }
-                store_clone.set_card_cache_state(CardCacheState::Idle);
-            },
+        // Store marker to enable cache validation on next startup
+        if let Err(e) = crate::repository::cdn_provider::store_cache_marker(
+            "/__origa_card_cache_complete__",
+            "ok",
+        )
+        .await
+        {
+            tracing::warn!(error = ?e, "Failed to store card cache marker");
         }
     });
 }
@@ -173,7 +183,7 @@ fn should_skip_precache(state: crate::store::offline_bundle_store::CardCacheStat
 pub async fn precache_all_cards(
     cards: &[StudyCard],
     on_progress: impl Fn(PreCacheProgress) + Clone + 'static,
-) -> Result<DownloadResult, OrigaError> {
+) -> DownloadResult {
     // The art manifest gates every kanji SVG path below (#540): await it
     // BEFORE building the resource lists, so kanji without CDN art
     // produce no doomed 404 requests. A failed fetch only disables the

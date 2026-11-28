@@ -41,11 +41,10 @@ pub fn init_tracing() {
 
     sentry::init();
 
-    // Level-aware console routing (task uwuwu#1454): the previous layer
-    // (`tracing-wasm`) sent every level through `console.log`, so native
-    // `error!` events never reached Sentry. The replacement routes ERROR →
-    // console.error + direct Sentry capture. Max level is pinned per build
-    // profile exactly as before: dev = DEBUG, release = INFO.
+    // Level-aware console routing (uwuwu#1454; story in the ADR-036
+    // addendum): ERROR → console.error + direct Sentry capture. Max level
+    // is pinned per build profile exactly as before: dev = DEBUG,
+    // release = INFO.
     let max_level = if cfg!(debug_assertions) {
         Level::DEBUG
     } else {

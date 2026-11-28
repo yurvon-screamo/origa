@@ -90,10 +90,14 @@ pub fn get_base_bundle_resources() -> Vec<String> {
     resources
 }
 
+/// Per-file failures are logged (`warn!`) and counted, never fatal: the
+/// result carries the tally, so callers route severity themselves
+/// (uwuwu#1454 network invariant). Never returns an error — a dead CDN is
+/// `succeeded == 0`, not `Err`.
 pub async fn batch_download(
     paths: Vec<String>,
     on_progress: impl Fn(PreCacheProgress) + Clone + 'static,
-) -> Result<DownloadResult, OrigaError> {
+) -> DownloadResult {
     let total = paths.len();
     let completed = Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let succeeded = Arc::new(std::sync::atomic::AtomicUsize::new(0));
@@ -124,10 +128,10 @@ pub async fn batch_download(
         .collect::<Vec<()>>()
         .await;
 
-    Ok(DownloadResult {
+    DownloadResult {
         total,
         succeeded: succeeded.load(std::sync::atomic::Ordering::Relaxed),
-    })
+    }
 }
 
 async fn mark_bundle_downloaded() -> Result<(), OrigaError> {
@@ -143,7 +147,7 @@ pub async fn precache_base_bundle(
 ) -> Result<DownloadResult, OrigaError> {
     let resources = get_base_bundle_resources();
     tracing::info!("Starting base bundle download: {} files", resources.len());
-    let result = batch_download(resources, on_progress).await?;
+    let result = batch_download(resources, on_progress).await;
 
     let success_rate = if result.total > 0 {
         result.succeeded as f64 / result.total as f64

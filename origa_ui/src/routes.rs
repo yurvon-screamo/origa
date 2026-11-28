@@ -164,7 +164,23 @@ where
     match (&result, severity) {
         (Ok(()), _) => {},
         (Err(e), FailureSeverity::Warn) => tracing::warn!("Failed to load {resource}: {e}"),
-        (Err(e), FailureSeverity::Error) => tracing::error!("Failed to load {resource}: {e}"),
+        // Critical resources keep their severity gate: an offline start with
+        // nothing cached fails all five tracked loads — expected
+        // degradation (warn), while an online failure is an incident
+        // (uwuwu#1454 network invariant; ADR-053 cache-first offline path
+        // means cached starts never reach this branch at all).
+        (Err(e), FailureSeverity::Error) => {
+            match crate::tracing_console::network_failure_severity(
+                crate::tracing_console::is_browser_online(),
+            ) {
+                crate::tracing_console::NetworkSeverity::Error => {
+                    tracing::error!("Failed to load {resource}: {e}");
+                },
+                crate::tracing_console::NetworkSeverity::Warn => {
+                    tracing::warn!("Failed to load {resource} (offline): {e}");
+                },
+            }
+        },
     }
     flag.set(true);
     result
@@ -300,7 +316,23 @@ pub fn start_dictionary_loading(
         let critical_results = [vocab_r, phrases_r, kanji_r, grammar_r, radicals_r];
         if load_failure_verdict(&critical_results) {
             if auth_store.load_generation.get_untracked() == generation {
-                tracing::error!("All critical resources failed — rendering the load error screen");
+                // Offline start with nothing cached lands here too — the
+                // screen is correct UX, the Sentry event is not an incident
+                // (uwuwu#1454 network invariant).
+                match crate::tracing_console::network_failure_severity(
+                    crate::tracing_console::is_browser_online(),
+                ) {
+                    crate::tracing_console::NetworkSeverity::Error => {
+                        tracing::error!(
+                            "All critical resources failed — rendering the load error screen"
+                        );
+                    },
+                    crate::tracing_console::NetworkSeverity::Warn => {
+                        tracing::warn!(
+                            "All critical resources failed (offline) — rendering the load error screen"
+                        );
+                    },
+                }
                 auth_store.load_failure.set(true);
                 return;
             }
