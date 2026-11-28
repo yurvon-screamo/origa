@@ -22,6 +22,11 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// the UA before the Tauri check.
 const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/537.36 \
      (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
+/// Desktop browser UA: with the Tauri mock installed the platform resolves to
+/// `linux`, a plugin-less platform. Pinning it removes the runner-UA and
+/// cross-test UA-override assumptions from the web-skip contract.
+const DESKTOP_LINUX_UA: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+     (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 
 fn events_about(marker: &str) -> Vec<(Level, String)> {
     log_capture::take_events()
@@ -90,12 +95,11 @@ async fn web_platform_skips_the_query_without_a_round_trip() {
     // events from the invoke suite landed here and broke the == 1 count).
     gloo_timers::future::TimeoutFuture::new(50).await;
     log_capture::take_events();
-    // No UA override: under TauriMock the shell exists, and the runner's
-    // desktop UA (Linux CI) resolves `platform_name()` to a plugin-less
-    // platform — any non-plugin platform exercises the same contract. Since
-    // uwuwu#1098 the query is skipped before any invoke: there is no caps
-    // failure to grade anymore, the contract is "no plugin round-trip at
-    // all, fallback routing without an event".
+    // Desktop UA is pinned explicitly: relying on the runner's UA made this
+    // test depend on the CI browser and on other suites' UA overrides. Since
+    // uwuwu#1098 plugin-less platforms skip the query before any invoke: no
+    // caps failure to grade, only "no plugin round-trip, no error event".
+    let _ua = UserAgentOverride::install(DESKTOP_LINUX_UA);
     let _mock = TauriMock::install(|command, _args| {
         let command = command.as_string().unwrap_or_default();
         rejected_with("[UNEXPECTED]", &command)

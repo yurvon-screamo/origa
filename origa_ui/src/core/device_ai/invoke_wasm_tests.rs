@@ -92,9 +92,10 @@ const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/5
 
 /// How long a test waits for spawned tasks, in 10 ms ticks.
 const COMPLETION_TICKS: u32 = 300;
-/// Fake invoke resolution delay — long enough that concurrently spawned
-/// callers are guaranteed to race for the same in-flight query.
-const FAKE_INVOKE_DELAY_MS: i32 = 25;
+/// Fake invoke resolution delay. Spawned callers are scheduled by the browser,
+/// so the shared-query window must outlast a slow CI scheduler; the 25 ms
+/// value let the third caller arrive after the first query had settled.
+const FAKE_INVOKE_DELAY_MS: i32 = 150;
 
 /// Resets every piece of module state a capabilities test can observe:
 /// the cache, the in-flight query slot and any fake bridge from a previous
