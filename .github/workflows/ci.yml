@@ -1546,7 +1546,9 @@ jobs:
         secrets:
             tauri-signing-private-key: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || vars.TAURI_CI_DUMMY_PRIVATE_KEY }}
             tauri-signing-private-key-password: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-            sentry_auth_token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+            # sentry_auth_token intentionally NOT forwarded: debug-file upload
+            # is release-only (uwuwu#1454 review) — alpha builds must not
+            # create Sentry releases/upload DIFs.
             android-keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
             android-keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
             android-key-password: ${{ secrets.ANDROID_KEY_PASSWORD }}

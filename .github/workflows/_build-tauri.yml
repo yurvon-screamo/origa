@@ -51,9 +51,12 @@ on:
                 required: false
             SCCACHE_S3_SECRET_KEY:
                 required: false
-            # uwuwu#1454 (5b/5c): debug-files upload to Sentry. Optional — the
-            # upload steps soft-skip when empty (secret set in this task; the
-            # Deployment wiki documents the key name).
+            # uwuwu#1454 (5b/5c): debug-files upload to Sentry. Optional and
+            # RELEASE-ONLY: only the tauri.yml tag workflow forwards it —
+            # ci.yml PR/master builds leave it empty (soft-skip, no Sentry
+            # releases for alpha builds). Token least-privilege rotation is
+            # an owner fork (see task report); Deployment wiki documents the
+            # key name.
             sentry_auth_token:
                 required: false
         outputs:
@@ -227,7 +230,13 @@ jobs:
             # uwuwu#1454 (5c): keep function names + line tables in the shipped
             # ELF so Sentry can symbolicate native Linux stacks. Env-override
             # scoped to this job (Android pattern below) — [profile.release]
-            # stays untouched, Windows/Apple artifacts unaffected.
+            # stays untouched, Windows/Apple artifacts unaffected. KNOWN COST
+            # (uwuwu#1454 review round): the unstripped binary rides into
+            # deb/rpm — measured 8.31 -> 14.76 MiB per package (+78%,
+            # CI runs 46090840297 vs 46094186486). Tauri fuses compile and
+            # bundling, so the binary cannot be stripped in between without
+            # a rebuild dance; whether the size is accepted (or Linux upload
+            # reverts) is an owner fork — tracked in the task report.
             CARGO_PROFILE_RELEASE_STRIP: 'none'
             CARGO_PROFILE_RELEASE_DEBUG: 'line-tables-only'
             # Skip updater signing for Dependabot PRs — see build-windows for
@@ -315,9 +324,12 @@ jobs:
             - name: Upload Sentry native debug files (Linux)
               # uwuwu#1454 (5c): the job env keeps function names + line tables
               # in the ELF; this ships them to Sentry so native crash stacks
-              # symbolicate. Soft-skip without the token (drop-in: one
-              # `gh secret set SENTRY_AUTH_TOKEN`, value held by the owner —
-              # Deployment wiki documents the key name).
+              # symbolicate. RELEASE-ONLY: the token is passed by the tauri.yml
+              # tag workflow; PR/master builds in ci.yml do not receive it, so
+              # alpha builds create no Sentry releases. Soft-skip without the
+              # token. Command form per sentry-cli 3.7.0 (`debug-files upload
+              # [OPTIONS] [PATH]...` — --no-progress/--include were removed in
+              # 3.x and rejected the run in review round 1).
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                   SENTRY_ORG: uwuwu
@@ -329,11 +341,11 @@ jobs:
                       echo "SENTRY_AUTH_TOKEN not configured — skipping debug-file upload"
                       exit 0
                   fi
-                  curl -sSL --fail -o /tmp/sentry-cli \
+                  curl -sSL --fail --proto '=https' --tlsv1.2 -o /tmp/sentry-cli \
                       "https://github.com/getsentry/sentry-cli/releases/download/3.7.0/sentry-cli-Linux-x86_64"
                   chmod +x /tmp/sentry-cli
-                  /tmp/sentry-cli debug-files upload --no-progress \
-                      --include target/x86_64-unknown-linux-gnu/release/
+                  /tmp/sentry-cli debug-files upload -t elf \
+                      target/x86_64-unknown-linux-gnu/release/
 
             - name: Create fixed-name aliases
               working-directory: target/x86_64-unknown-linux-gnu/release/bundle
@@ -580,14 +592,22 @@ jobs:
                       echo "SENTRY_AUTH_TOKEN not configured — skipping debug-file upload"
                       exit 0
                   fi
-                  curl -sSL --fail -o /tmp/sentry-cli \
+                  curl -sSL --fail --proto '=https' --tlsv1.2 -o /tmp/sentry-cli \
                       "https://github.com/getsentry/sentry-cli/releases/download/3.7.0/sentry-cli-Linux-x86_64"
                   chmod +x /tmp/sentry-cli
-                  /tmp/sentry-cli debug-files upload --no-progress \
-                      --include target/aarch64-linux-android/release/ \
-                      --include target/armv7-linux-androideabi/release/ \
-                      --include target/x86_64-linux-android/release/ || \
-                      echo "some triple dirs absent — uploaded what exists"
+                  # Skipped triples legitimately leave no target dir — pass
+                  # only existing ones, but a run that finds NOTHING is a
+                  # broken build, not a soft skip (uwuwu#1454 review: the
+                  # old `|| echo` silenced any upload failure).
+                  ARGS=()
+                  for triple in aarch64-linux-android armv7-linux-androideabi x86_64-linux-android; do
+                      [ -d "target/${triple}/release" ] && ARGS+=("target/${triple}/release/")
+                  done
+                  if [ ${#ARGS[@]} -eq 0 ]; then
+                      echo "no android target release dirs found — build layout changed?" >&2
+                      exit 1
+                  fi
+                  /tmp/sentry-cli debug-files upload -t elf "${ARGS[@]}"
 
             - name: Rename APK to fixed-name output
               working-directory: tauri/gen/android/app/build/outputs/apk
