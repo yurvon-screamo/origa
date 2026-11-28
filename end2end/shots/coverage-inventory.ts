@@ -166,7 +166,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["acquaintance-presentation", "lesson-complete"],
     viewports: BOTH,
-    // The final capture could not reproduce the acquaintance hand here.
+    // No current scenario reliably produces the acquaintance hand.
     status: "gap",
   },
   {
@@ -197,7 +197,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-accuracy-chart",
     screens: ["accuracy-chart"],
     viewports: BOTH,
-    // Review #1691: the desktop frame cuts the chart below the fold.
+    // The desktop frame cuts the chart below the fold.
     status: "gap",
   },
   {
@@ -264,8 +264,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
-    // Review #1691: the frame shows the list, not the drawer (captured
-    // before the animation settles). Revert to gap until it is recaptured.
+    // Captured frame shows the list before the drawer animation settles.
     status: "gap",
   },
   {
@@ -566,12 +565,12 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["lesson-complete"],
     viewports: BOTH,
-    // The final capture could not reproduce the acquaintance hand here.
+    // No current scenario reliably produces the acquaintance hand.
     status: "gap",
   },
   ...(
     [
-      ["quiz", "quiz-option", "covered"],
+      ["quiz", "quiz-option", "gap"],
       ["yesno", "yesno-yes-btn", "gap"],
       ["audio-recall", "audio-recall-card-root", "gap"],
       ["counter-bindings", "counter-binding-front", "gap"],
@@ -600,9 +599,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
+        "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — сценарий не испускает экран",
       source: "LessonCardView::Reversed",
     },
   },
@@ -616,9 +615,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
+        "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — сценарий не испускает экран",
       source: "LessonCardView::GrammarMutated",
     },
   },
@@ -632,9 +631,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — исключено до появления сценария (uwuwu#1691)",
+        "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — сценарий не испускает экран",
       source: "QuizVariant::Grammar",
     },
   },
@@ -648,9 +647,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — исключено до появления сценария (uwuwu#1691)",
+        "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — сценарий не испускает экран",
       source: "card_list_page",
     },
   },
@@ -664,9 +663,9 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
-        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — исключено до появления сценария (uwuwu#1691)",
+        "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — сценарий не испускает экран",
       source: "sets-import-drawer",
     },
   },
@@ -678,8 +677,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: null,
     screens: ["grammar-practice-answer", "grammar-practice-complete"],
     viewports: BOTH,
-    // Review #1691: reachable in the default build — the flag gates the
-    // lesson-mode button, not this component. The exclusion was false.
+    // Reachable without a feature flag; no scenario emits this screen.
     status: "gap",
   },
   {
@@ -690,7 +688,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
-    // Review #1691: the frames were shot under the fading boot-splash.
+    // Captured under the fading boot splash — consent text unreadable.
     status: "gap",
   },
   {

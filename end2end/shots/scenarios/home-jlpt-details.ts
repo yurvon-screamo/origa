@@ -1,6 +1,6 @@
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
-import { waitForSyncToast } from "./simple-page.ts";
+import { waitForSyncToastToDisappear } from "./simple-page.ts";
 
 /**
  * The JLPT progress card with the category matrix expanded.
@@ -23,7 +23,7 @@ export const homeJlptDetailsScenario: ShotScenario = {
     await page
       .getByTestId("home-jlpt-progress-expanded-kanji")
       .waitFor({ state: "visible", timeout: 10_000 });
-    await waitForSyncToast(page);
+    await waitForSyncToastToDisappear(page);
     await sink.shot("home-jlpt-details");
   },
 };
