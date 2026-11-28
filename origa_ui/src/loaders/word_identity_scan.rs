@@ -10,10 +10,10 @@ pub fn spawn(repository: HybridUserRepository) {
             .execute()
             .await
         {
-            Ok(report) if report.duplicate_cards > 0 => tracing::info!(
-                groups = report.groups_scanned,
-                duplicates = report.duplicate_cards,
-                "Duplicate card groups in deck"
+            Ok(report) if report.duplicate_cards() > 0 => tracing::info!(
+                groups = report.group_count(),
+                duplicates = report.duplicate_cards(),
+                "Duplicate vocabulary groups in deck"
             ),
             Ok(_) => {},
             Err(e) => tracing::warn!("Duplicate card scan failed: {e}"),

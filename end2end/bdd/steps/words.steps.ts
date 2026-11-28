@@ -80,6 +80,12 @@ Then("слово отображается в сетке слов", async ({ page
   await expect(wordsPage.emptyState).not.toBeVisible();
 });
 
+Then("в сетке слов одна карточка", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+  expect(await wordsPage.getCardCount()).toBe(1);
+});
+
 Then("карточка слова — без второй рамки", async ({ page }) => {
   const wordBox = page.getByTestId("words-card-word-link").first();
   await expect(wordBox).toBeVisible();
