@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "grammar-detail",
+  "screen": "grammar-practice-question",
+  "route": "/grammar/:id",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 303719,
+  "sha256": "9a15e211fa1ab1438d9e1dd4edec94f202213229c155e0303fdca6a95a63af8a",
+  "capturedAt": "2026-11-27T15:49:03.300Z",
+  "commit": "2267641b0ead0cfc5dc269f65b8253f7f5006504",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/2267641b/grammar-detail--grammar-practice-question--desktop-9a15e211.png",
+  "uploadedSha256": "9a15e211fa1ab1438d9e1dd4edec94f202213229c155e0303fdca6a95a63af8a",
+  "uploadedAt": "2026-11-28T13:46:41.646Z"
+}
