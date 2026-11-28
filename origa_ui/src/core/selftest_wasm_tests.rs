@@ -112,6 +112,7 @@ impl ScriptedBridge {
 
 #[wasm_bindgen_test]
 async fn selftest_link_arriving_after_mount_is_recovered_by_the_pull_poll() {
+    let _serial = crate::core::device_ai::test_serial_lock().lock().await;
     init_leptos_executor();
     let bridge = ScriptedBridge::install(&["", SELFTEST_URL]);
 
@@ -130,6 +131,7 @@ async fn selftest_link_arriving_after_mount_is_recovered_by_the_pull_poll() {
 
 #[wasm_bindgen_test]
 async fn polled_foreign_deep_link_is_never_routed_to_the_selftest_probe() {
+    let _serial = crate::core::device_ai::test_serial_lock().lock().await;
     init_leptos_executor();
     let bridge = ScriptedBridge::install(&["origa://auth/callback?code=x"]);
 

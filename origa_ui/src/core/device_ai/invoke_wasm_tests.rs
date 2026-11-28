@@ -92,42 +92,15 @@ const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/5
 
 /// How long a test waits for spawned tasks, in 10 ms ticks.
 const COMPLETION_TICKS: u32 = 300;
-/// Fake invoke resolution delay — long enough that concurrently spawned
-/// callers are guaranteed to race for the same in-flight query.
-const FAKE_INVOKE_DELAY_MS: i32 = 25;
+/// Fake invoke resolution delay. Spawned callers are scheduled by the browser,
+/// so the shared-query window must outlast a slow CI scheduler; the 25 ms
+/// value let the third caller arrive after the first query had settled.
+const FAKE_INVOKE_DELAY_MS: i32 = 150;
 
 /// Resets every piece of module state a capabilities test can observe:
 /// the cache, the in-flight query slot and any fake bridge from a previous
 /// test. Called at the start and the end of each test so execution order
 /// cannot couple them.
-/// JS stacks of every invocation the current fake served — the diagnostic
-/// that names a stray caller when the suite order (a codegen-unit artifact
-/// reshuffled by any source change, uwuwu#1454 fix round) parks a leaked
-/// predecessor task inside this suite's window.
-fn fake_invoke_stacks() -> Vec<String> {
-    let window = web_sys::window().expect("test browser window");
-    let value = js_sys::Reflect::get(&window.into(), &JsValue::from_str("__fakeInvokeStacks"))
-        .expect("read stacks");
-    if value.is_undefined() {
-        return Vec::new();
-    }
-    js_sys::Array::from(&value)
-        .iter()
-        .map(|v| v.as_string().unwrap_or_default())
-        .collect()
-}
-
-/// Drains foreign in-flight timers before the counter baseline: leaked
-/// predecessor tasks invoke the CURRENT fake (they read `window.__TAURI__`
-/// live), and two 25ms-class strays were observed landing inside this
-/// suite's window in CI. A quiesce window longer than the fake's invoke
-/// delay absorbs them; the re-install after it resets the counter.
-async fn quiesce_foreign_invokes() {
-    for _ in 0..3 {
-        gloo_timers::future::TimeoutFuture::new((FAKE_INVOKE_DELAY_MS + 10) as u32).await;
-    }
-}
-
 fn reset_module_state() {
     remove_fake_tauri();
     super::invoke::reset_in_flight_query();
@@ -139,7 +112,7 @@ fn reset_module_state() {
 fn install_fake_tauri(payload: &JsValue) {
     let window = web_sys::window().expect("test browser window");
     let invoke_body = format!(
-        "window.__fakeInvokeStacks = window.__fakeInvokeStacks || []; \n         window.__fakeInvokeStacks.push(String(new Error().stack || '')); \n         window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
+        "window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
          return new Promise(function (resolve) {{ \
              setTimeout(function () {{ resolve(window.__fakeDeviceAiCaps); }}, \
                  {FAKE_INVOKE_DELAY_MS}); \
@@ -172,7 +145,7 @@ fn install_failing_tauri() {
     let window = web_sys::window().expect("test browser window");
     let invoke_fn = js_sys::Function::new_with_args(
         "command, args",
-        "window.__fakeInvokeStacks = window.__fakeInvokeStacks || []; \n         window.__fakeInvokeStacks.push(String(new Error().stack || '')); \n         window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
+        "window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
          return Promise.reject(new Error('fake bridge down'));",
     );
 
@@ -200,7 +173,7 @@ fn install_throwing_tauri() {
     let window = web_sys::window().expect("test browser window");
     let invoke_fn = js_sys::Function::new_with_args(
         "command, args",
-        "window.__fakeInvokeStacks = window.__fakeInvokeStacks || []; \n         window.__fakeInvokeStacks.push(String(new Error().stack || '')); \n         window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
+        "window.__fakeInvokeCount = (window.__fakeInvokeCount || 0) + 1; \
          throw new Error('sync bridge failure');",
     );
 
@@ -277,18 +250,12 @@ async fn wait_for_tasks(remaining: &Rc<Cell<u32>>) {
 
 #[wasm_bindgen_test]
 async fn concurrent_first_callers_share_one_query_and_all_get_the_real_result() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // Single-flight/cache mechanics exist only on plugin platforms: since
     // uwuwu#1098 plugin-less platforms skip the query before any invoke.
     let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(true));
-    // Drain predecessor strays, then re-install for a clean counter
-    // baseline (see quiesce_foreign_invokes).
-    quiesce_foreign_invokes().await;
-    reset_module_state();
-    let _ua = UserAgentOverride::install(ANDROID_UA);
-    install_fake_tauri(&capabilities_payload(true));
-    let invoke_baseline = invoke_count();
 
     let remaining = Rc::new(Cell::new(2_u32));
     let results: Rc<std::cell::RefCell<Vec<bool>>> = Rc::new(std::cell::RefCell::new(Vec::new()));
@@ -314,10 +281,9 @@ async fn concurrent_first_callers_share_one_query_and_all_get_the_real_result() 
         "no caller may receive the synthetic unavailable: {results:?}"
     );
     assert_eq!(
-        invoke_count() - invoke_baseline,
+        invoke_count(),
         1.0,
-        "concurrent first callers share one plugin query (stray invokes: {:?})",
-        fake_invoke_stacks()
+        "concurrent first callers share one plugin query"
     );
 
     reset_module_state();
@@ -325,6 +291,7 @@ async fn concurrent_first_callers_share_one_query_and_all_get_the_real_result() 
 
 #[wasm_bindgen_test]
 async fn repeated_call_hits_the_cache_without_a_second_invoke() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // Single-flight/cache mechanics exist only on plugin platforms: since
     // uwuwu#1098 plugin-less platforms skip the query before any invoke.
@@ -350,6 +317,7 @@ async fn repeated_call_hits_the_cache_without_a_second_invoke() {
 
 #[wasm_bindgen_test]
 async fn an_unavailable_payload_is_cached_like_any_successful_query() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // Single-flight/cache mechanics exist only on plugin platforms: since
     // uwuwu#1098 plugin-less platforms skip the query before any invoke.
@@ -375,6 +343,7 @@ async fn an_unavailable_payload_is_cached_like_any_successful_query() {
 
 #[wasm_bindgen_test]
 async fn a_failed_query_is_not_cached_so_the_next_call_retries() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // uwuwu#1098: pin a plugin platform — see the module docs.
     let _ua = UserAgentOverride::install(ANDROID_UA);
@@ -399,6 +368,7 @@ async fn a_failed_query_is_not_cached_so_the_next_call_retries() {
 
 #[wasm_bindgen_test]
 async fn a_synchronously_throwing_invoke_is_not_cached_so_the_next_call_retries() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // uwuwu#1098: pin a plugin platform — see the module docs.
     let _ua = UserAgentOverride::install(ANDROID_UA);
@@ -423,19 +393,12 @@ async fn a_synchronously_throwing_invoke_is_not_cached_so_the_next_call_retries(
 
 #[wasm_bindgen_test]
 async fn three_concurrent_first_callers_share_one_query_and_all_get_the_real_result() {
+    let _serial = super::test_serial_lock().lock().await;
     reset_module_state();
     // Single-flight/cache mechanics exist only on plugin platforms: since
     // uwuwu#1098 plugin-less platforms skip the query before any invoke.
     let _ua = UserAgentOverride::install(ANDROID_UA);
     install_fake_tauri(&capabilities_payload(true));
-    // Drain predecessor strays, then re-install for a clean counter
-    // baseline — only this test's three callers may count (see
-    // quiesce_foreign_invokes).
-    quiesce_foreign_invokes().await;
-    reset_module_state();
-    let _ua = UserAgentOverride::install(ANDROID_UA);
-    install_fake_tauri(&capabilities_payload(true));
-    let invoke_baseline = invoke_count();
 
     let remaining = Rc::new(Cell::new(3_u32));
     let results: Rc<std::cell::RefCell<Vec<bool>>> = Rc::new(std::cell::RefCell::new(Vec::new()));
@@ -461,10 +424,9 @@ async fn three_concurrent_first_callers_share_one_query_and_all_get_the_real_res
         "no caller may receive the synthetic unavailable: {results:?}"
     );
     assert_eq!(
-        invoke_count() - invoke_baseline,
+        invoke_count(),
         1.0,
-        "the shared query slot must survive until the query settles (stray invokes: {:?})",
-        fake_invoke_stacks()
+        "the shared query slot must survive until the query settles"
     );
 
     reset_module_state();
