@@ -92,8 +92,12 @@ def test_every_change_carries_structured_evidence(witness: dict) -> None:
         assert evidence["quote"].strip(), change
 
 
-def test_patch_set_is_held_outside_the_corpus_until_authorized(witness: dict) -> None:
-    assert "deploy requires owner command" in witness["deploy_status"]
-    assert witness["corpus_snapshot"]["file_count"] == len(
-        witness["corpus_snapshot"]["files"]
-    )
+def test_deploy_record_carries_authorization_and_edge_verification(
+    witness: dict,
+) -> None:
+    deploy = witness["deploy"]
+    assert "Да, делай сам все что требуется" in deploy["authorized_by"]
+    assert deploy["objects_uploaded"] == deploy["edge_verified"] == 35
+    assert deploy["ttl_hold_seconds"] >= 300
+    assert deploy["final_files"] == witness["corpus_snapshot"]["file_count"]
+    assert deploy["local_hash_mismatches"] == 0

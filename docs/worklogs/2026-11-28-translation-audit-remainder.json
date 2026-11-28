@@ -11277,5 +11277,16 @@
     }
   ],
   "finalized_at": "2026-11-28T14:13:20Z",
-  "deploy_status": "patch-set held outside the canonical corpus; prod deploy requires owner command (NFT-2, #1463)"
+  "deploy_status": "deployed 2026-11-28T15:15:35Z by owner authorization (uwuwu#1742)",
+  "deploy": {
+    "authorized_by": "владелец 29.11, дословно: «Да, делай сам все что требуется»",
+    "manifest_before": "2026-11-27T16:34:47Z",
+    "manifest_after": "2026-11-28T15:15:35Z",
+    "objects_uploaded": 35,
+    "ttl_hold_seconds": 310,
+    "edge_verified": 35,
+    "final_files": 832,
+    "local_hash_mismatches": 0,
+    "app_deploy_required": false
+  }
 }
