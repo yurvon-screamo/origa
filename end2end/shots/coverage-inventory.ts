@@ -166,7 +166,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["acquaintance-presentation", "lesson-complete"],
     viewports: BOTH,
-    status: "covered",
+    // The final capture could not reproduce the acquaintance hand here.
+    status: "gap",
   },
   {
     id: "page:sets",
@@ -565,7 +566,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-unification",
     screens: ["lesson-complete"],
     viewports: BOTH,
-    status: "covered",
+    // The final capture could not reproduce the acquaintance hand here.
+    status: "gap",
   },
   ...(
     [
