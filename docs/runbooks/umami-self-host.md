@@ -240,6 +240,45 @@ payload (без `title`/`referrer`/браузерного UA) принимает
 полей трекера. Синтетика попадает в данные — имя-маркер с датой делает её
 заметной, не путать с реальным трафиком.
 
+### Проверка доезда: прод-HTML и share-API (2026-11-28, аудит #1453)
+
+Два шага проверки, что события доезжают до самохоста. Тот же контур — шаг
+«Umami: доезд веб-аналитики» ночного крона (wiki, мастер
+`cron/Sentry-ночной-просмотр…`).
+
+1. **Прод-HTML ↔ мастер-тег** (лендинг):
+
+   ```bash
+   curl -s https://origa.uwuwu.net/ | grep -c 'umami.origa.uwuwu.net'
+   ```
+
+   Ожидается `> 0`. Мастер-тег — `origa_landing/src/app.rs` (website id —
+   `src/website-id.rs`). Ноль = прод стоит на образе без тега: сверить пин
+   (Деплоймент origa, секция «landing») и пересобрать.
+
+2. **Органика через share-API** (записи по hostname за окно):
+
+   ```bash
+   JWT=$(curl -s https://umami.origa.uwuwu.net/api/share/3bwB3yHvcKMGMET5EMgGSgU64tbC6max \
+     | python3 -c 'import json,sys;print(json.load(sys.stdin)["token"])')
+   START=$(python3 -c "import time;print(int((time.time()-7*86400)*1000))")
+   END=$(python3 -c "import time;print(int(time.time()*1000))")
+   curl -s "https://umami.origa.uwuwu.net/api/websites/57c7d57f-3bd9-48cf-b9ee-ea02c95d967a/events?startAt=$START&endAt=$END" \
+     -H "x-umami-share-token: $JWT" -H 'x-umami-share-context: 1' \
+     | python3 -c 'import json,sys; d=json.load(sys.stdin)["data"]; \
+print(len([e for e in d if e.get("hostname")=="origa.uwuwu.net" and not e.get("urlPath","").startswith("/__")]))'
+   ```
+
+   Без заголовков `x-umami-share-token` + `x-umami-share-context: 1` — 401.
+   Синтетические маркерные URL (`/__*`) из подсчёта исключены (иначе
+   синтетика маскирует ноль органики). Desktop-записи приходят с hostname
+   `tauri.localhost` — вне проверки (граница аудита #1453).
+
+   Граница: web-app до релиза 0.8.0 шлёт в Umami Cloud — beacon-check и
+   эта проверка против самохоста для web-app неприменимы до релиза
+   (см. Деплоймент origa, «Поверхности и пины»); на релизе 0.8.0 шаг
+   расширяется на `app.origa.uwuwu.net` (Release Runbook, чеклист 0.8.0).
+
 ## 6. Доступы (состояние 2026-11-09)
 
 - **admin** — единственная учётка. Креды: `marketing/.env`
