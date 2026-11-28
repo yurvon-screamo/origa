@@ -132,8 +132,18 @@ jobs:
                   if key.startswith(prefix):
                       return key.rsplit("-", 1)[0]
               if key.startswith("cache-apt-pkgs_"):
-                  # awalsh128/cache-apt-pkgs-action: cache-apt-pkgs_<hash>
-                  return key.rsplit("_", 1)[0]
+                  # awalsh128/cache-apt-pkgs-action: cache-apt-pkgs_<hash>.
+                  # Each key is its OWN family on purpose: the GTK set and
+                  # the protobuf-only entry are different content under
+                  # different keys, and sharing one family made
+                  # family-dedupe delete them alternately (26.11 the GTK
+                  # master copy, 27.11 the protobuf one) — master missed
+                  # one of the two half the time. Note: a per-key family is
+                  # always newest-in-family, so Rule 3 never reaps a stale
+                  # apt key — it expires via GitHub's own 7-day
+                  # unused-eviction instead. Weight is small (~137 MB max);
+                  # accepted over another ping-pong.
+                  return key
               return None
 
           # Constant-key seeds (no content hash): tag and PR runs exact-hit

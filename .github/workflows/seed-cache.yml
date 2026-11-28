@@ -1,56 +1,73 @@
 # Seed common caches on master
 # =============================
 #
-# The CI workflow runs on PR merge-refs only (no push->master trigger), so
-# every PR saves its own copy of every content-hash cache onto an isolated
-# ref: GitHub's branch hierarchy makes copies invisible to other PRs, and
-# duplicates used to pile up at ~10.2 GB/day across 8 active refs (budget
-# 10 GB) — observed 10-11 Nov 2026, task 20261111072128. This workflow
-# (dispatch + schedule) runs on the DEFAULT branch, so its saves land on
-# refs/heads/master; PR runs then exact-hit the master copies and skip
-# their own saves (actions/cache post-save runs only on a primary-key
-# miss). Tag runs exact-hit the un-gated seeds too.
+# PR runs execute on isolated merge-refs (no push->master trigger), so every
+# PR saves its own copy of every content-hash cache — ~10.2 GB/day of
+# duplicates across active refs against a 10 GB budget (row-id 922). This
+# workflow (dispatch + schedule) runs on the DEFAULT branch, so its saves
+# land on refs/heads/master; PR runs then exact-hit the master copies and
+# skip their own saves. Tag runs exact-hit the un-gated seeds too.
 #
-# CONTRACT (the invariant that keeps this working): every key/path/params
-# here MUST mirror the consumer step exactly — seed key == consumer key is
-# what turns a PR miss into an exact hit. Consumers:
+# STRUCTURE: one job per family. Post-saves do not run for a failed job,
+# so one red family must not cancel the rest.
 #
-#   seed family            key pattern                          consumer
-#   qlty-plugins           qlty-plugins-Linux-v1-<hash>          ci.yml lint
-#   playwright             playwright-chromium-v1-<hash>         ci.yml e2e
-#   apt GTK                cache-apt-pkgs_<hash>                 ci.yml GTK jobs
-#   apt protobuf           cache-apt-pkgs_<hash>                 ci.yml android-smoke
-#   uv                     setup-uv-2-...                        ci.yml python-tests
-#   frontend-tools         frontend-tools-Linux-X64-*-v1         setup-frontend (composite)
-#   wasm-pack              wasm-pack-Linux-X64-v0.15.0           ci.yml wasm-test
-#   trailbase              trailbase-<semver from Dockerfile>    ci.yml e2e
-#   xwin                   xwin-Linux-x86_64-pc-windows-msvc-v17 _build-tauri.yml windows
-#   cdn-data               cdn-data-v15-<hash manifest>          download-cdn (composite)
-#   gradle                 Linux-gradle-<hash gradle files>      ci.yml android-smoke
+# CONTRACT: every key/path/params here MUST mirror the consumer step exactly
+# (seed key == consumer key). Consumers — see the table below; the xwin job
+# additionally mirrors the consumer's CONTAINER (cache entries are versioned
+# by path string and compression method, so a bare-runner seed is
+# unrestorable inside the build image).
 #
-# When you change a consumer key/path/pin in ci.yml / _build-tauri.yml /
-# setup-frontend, change the mirroring seed step here in the same PR,
-# otherwise the seed silently orphans (symptom: PR duplicates return —
-# they resurface in the cache-budget report of cleanup-cache.yml, which
-# stays as the safety net).
+#   job                   seed family            key pattern                          consumer
+#   seed-frontend-tools   frontend-tools         frontend-tools-Linux-X64-*-v1        setup-frontend (composite)
+#   seed-qlty             qlty-plugins           qlty-plugins-Linux-v1-<hash>          ci.yml lint
+#   seed-playwright       playwright             playwright-chromium-v1-<hash>         ci.yml e2e
+#   seed-apt-gtk          apt GTK                cache-apt-pkgs_<hash full list>       ci.yml lint/test/landing-test/wasm-test
+#   seed-apt-protobuf     apt protobuf           cache-apt-pkgs_<hash protobuf only>   ci.yml android-smoke
+#   seed-uv               uv                     setup-uv-owned key                    ci.yml python-tests
+#   seed-wasm-pack        wasm-pack              wasm-pack-Linux-X64-v0.15.0           ci.yml wasm-test
+#   seed-trailbase        trailbase              trailbase-<semver from Dockerfile>    ci.yml e2e
+#   seed-xwin             xwin                   xwin-Linux-x86_64-pc-windows-msvc-v17 _build-tauri.yml windows (same container)
+#   seed-cdn              cdn-data               cdn-data-v15-<hash manifest>          download-cdn (composite)
+#   seed-android-gradle   gradle                 Linux-gradle-<hash gradle files>      ci.yml android-smoke
 #
-# Interaction with cleanup-cache.yml: every seed key matches an existing
-# family prefix (qlty-plugins-, Linux-gradle-, playwright-, setup-uv-,
-# cache-apt-pkgs_, cdn-data-v15-) or the MASTER_SEEDS regex (constant
-# keys), so cleanup never ages seeds out, and its family-dedupe replaces
-# a superseded master copy when content hashes change. Master itself is
-# never budget-evicted. Idempotency: with unchanged content every seed
-# step exact-hits its own master copy and skips the save — a tick costs
-# minutes, not builds.
+# When you change a consumer key/path/pin/container in ci.yml /
+# _build-tauri.yml / setup-frontend / setup-rust, change the mirroring seed
+# step here in the same PR, otherwise the seed silently orphans (symptom: PR
+# duplicates return — they resurface in the cache-budget report of
+# cleanup-cache.yml, which stays as the safety net).
 #
-# Known transition: the FIRST seed run adds master entries while
-# non-master duplicates are still within their 1-day TTL, so the first
-# post-seed budget report reads deeper over budget than usual and
-# converges within a day.
+# Interaction with cleanup-cache.yml: seed keys match family prefixes
+# (qlty-plugins-, playwright-, setup-uv-, cdn-data-v15-) or MASTER_SEEDS
+# (constant keys); each apt key is its own family (shared family deleted
+# GTK/protobuf alternately — see the cleanup comment). A stale apt key is
+# NOT reaped by cleanup (always newest-in-family) — it expires via GitHub's
+# own 7-day unused-eviction; weight is small, accepted. Idempotency: with
+# unchanged content every seed step exact-hits and skips the save.
 #
 # Out of scope on purpose: macOS/Windows-keyed caches (no cheap seeding
 # runner; the 1-day TTL caps their window), CodeQL (GitHub-managed),
 # Swatinem/rust-cache entries (no consumer currently saves them).
+#
+# OPERATIONS (row-id 922 holds the full procedure with live outputs):
+#
+#   Verify on a branch (saves land on the BRANCH ref, never on master):
+#     gh workflow run seed-cache.yml --ref <branch>
+#   Check what got seeded:
+#     gh api "repos/{owner}/{repo}/actions/caches?per_page=100" \
+#       --jq '[.actions_caches[] | {key, ref, size: .size_in_bytes}]'
+#
+#   Verify on a branch (saves land on the BRANCH ref, never on master):
+#     gh workflow run seed-cache.yml --ref <branch>
+#   Check what got seeded:
+#     gh api "repos/{owner}/{repo}/actions/caches?per_page=100" \
+#       --jq '[.actions_caches[] | {key, ref, size: .size_in_bytes}]'
+#   A healthy tick = every job green (gradle only builds on a cache miss).
+#   A red schedule tick = the seed is not working — look at it the same
+#   day: while master copies are missing, PRs keep saving their own copies.
+#   Empty-seed smell: an entry of a few hundred bytes under a consumer key
+#   (protobuf 653 B, 26-27.11) — delete it
+#   (gh api -X DELETE .../actions/caches --field key=... -f ref=refs/heads/master)
+#   so the next tick can write real content; exact-hit never overwrites.
 
 name: Seed Caches
 
@@ -75,23 +92,26 @@ env:
     GTK_SYSTEM_PACKAGES: "libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf protobuf-compiler libspeechd-dev"
 
 jobs:
-    seed-linux:
-        name: Seed Linux caches
+    seed-frontend-tools:
+        name: Seed frontend tools (binstall/trunk/tauri-cli)
         runs-on: ubuntu-24.04
-        # Sized for the cold first tick when every family misses: qlty --all
-        # (full-scope) + playwright install + two apt cycles + xwin download
-        # + cdn download (~10 min alone) + uv/frontend-tools installs sum to
-        # 25-45 min on observed PR-run durations; too tight a limit would
-        # cancel the tick (post-save does not write on cancel) and the
-        # seed-forming run would never complete.
-        timeout-minutes: 60
+        timeout-minutes: 10
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
 
-            # --- frontend-tools: binstall + trunk + tauri-cli (composite owns the keys)
+            # The composite owns the keys (per-tool entries, os/arch
+            # qualified) — the seed just runs it.
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
+
+    seed-qlty:
+        name: Seed qlty plugins
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
             # --- qlty-plugins (consumer: ci.yml lint)
             - name: Cache qlty plugins
@@ -133,6 +153,14 @@ jobs:
                   fi
                   echo "qlty plugins seeded: $(find "$tools_dir" -mindepth 1 -maxdepth 1 | wc -l) tool dirs"
 
+    seed-playwright:
+        name: Seed Playwright browsers
+        runs-on: ubuntu-24.04
+        timeout-minutes: 20
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
             # --- playwright chromium (consumer: ci.yml e2e)
             - name: Install Node.js dependencies
               working-directory: end2end
@@ -157,21 +185,63 @@ jobs:
                       exit 1
                   fi
 
-            # --- apt GTK stack (consumer: ci.yml lint/test/landing-test/wasm-test)
+    seed-apt-gtk:
+        name: Seed APT packages (GTK stack)
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            # No checkout: nothing here reads the repo (package list comes
+            # from the workflow env above, mirroring ci.yml).
             - name: Refresh APT indexes
               run: sudo apt-get update
+            # --- apt GTK stack (consumer: ci.yml lint/test/landing-test/wasm-test)
             - name: Cache APT packages (GTK stack)
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages: ${{ env.GTK_SYSTEM_PACKAGES }}
                   version: 1.1  # same bump rationale as ci.yml (stale .pc files)
 
+    seed-apt-protobuf:
+        name: Seed APT packages (protobuf-compiler)
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            # No checkout: nothing here reads the repo.
+            - name: Refresh APT indexes
+              run: sudo apt-get update
             # --- apt protobuf-compiler (consumer: ci.yml android-smoke)
+            # The 653 B entry of 26-27.11 was saved when the action had
+            # nothing to download: in the old single job the GTK step had
+            # already installed protobuf-compiler from GTK_SYSTEM_PACKAGES.
+            # Jobs are split now, so this step owns the package — remove
+            # first so there is always something to cache, even if a
+            # future image ships it preinstalled.
+            - name: Remove preinstalled protobuf-compiler
+              run: sudo apt-get remove -y protobuf-compiler || true
             - name: Cache APT packages (protobuf-compiler)
               uses: awalsh128/cache-apt-pkgs-action@v1.6.3
               with:
                   packages: protobuf-compiler
-                  version: 1.1
+                  version: 1.1  # same bump rationale as ci.yml (stale .pc files)
+            - name: Assert protobuf-compiler installed
+              # awalsh restores from cache by untarring into / WITHOUT dpkg
+              # registration, so `dpkg -l` is empty on the (normal) hit path
+              # and a dpkg assert would fail every scheduled tick. Binary
+              # presence proves the action installed or restored the package.
+              run: |
+                  if ! command -v protoc > /dev/null 2>&1; then
+                      echo "::error::protoc is not on PATH after the cache step — the seed downloaded nothing"
+                      exit 1
+                  fi
+                  protoc --version
+
+    seed-uv:
+        name: Seed uv cache
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
             # --- uv (consumer: ci.yml python-tests; the action owns the key)
             - name: Setup uv
@@ -183,6 +253,12 @@ jobs:
             - name: Install uv dependencies
               run: uv sync --frozen --project scripts
 
+    seed-wasm-pack:
+        name: Seed wasm-pack
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        steps:
+            # No checkout: constant key + versioned URL, nothing reads the repo.
             # --- wasm-pack (consumer: ci.yml wasm-test)
             - name: Restore wasm-pack
               id: wasm-pack-cache
@@ -194,6 +270,7 @@ jobs:
             - name: Install wasm-pack
               if: steps.wasm-pack-cache.outputs.cache-hit != 'true'
               run: |
+                  mkdir -p "$HOME/.cargo/bin"
                   curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors \
                       https://github.com/rustwasm/wasm-pack/releases/download/v0.15.0/wasm-pack-v0.15.0-x86_64-unknown-linux-musl.tar.gz \
                       | tar -xz -C "$HOME/.cargo/bin" --strip-components=1 \
@@ -204,6 +281,14 @@ jobs:
               run: |
                   echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
                   wasm-pack --version
+
+    seed-trailbase:
+        name: Seed TrailBase CLI
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
             # --- trailbase (consumer: ci.yml e2e)
             - name: Read TrailBase version from origa_ui/Dockerfile
@@ -250,15 +335,46 @@ jobs:
                   chmod +x "$HOME/.local/bin/trail"
                   "$HOME/.local/bin/trail" --version
 
-            # --- xwin MSVC CRT/SDK (consumer: _build-tauri.yml windows cross-build)
-            - name: Setup Rust target for xwin
-              run: rustup target add x86_64-pc-windows-msvc
+    seed-xwin:
+        name: Seed xwin MSVC CRT/SDK
+        # SAME container as the consumer (_build-tauri.yml build-windows):
+        # actions/cache versions an entry by path string AND compression
+        # method, and both differ between a bare runner (/home/runner/...,
+        # zstd) and this image (/__w/..., gzip fallback) — a bare-runner
+        # seed is never restorable by the consumer. runs-on mirrors the
+        # consumer too; what matters is image + checkout path + cache lib.
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/rust-cross/cargo-zigbuild
+        timeout-minutes: 20
+        env:
+            XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
+            # --- xwin MSVC CRT/SDK (consumer: _build-tauri.yml windows cross-build)
+            # Rust setup mirrors the consumer (setup-rust composite with the
+            # target) — a bare `rustup target add` is not used: rustup
+            # auto-installs the toolchain from rust-toolchain.toml and that
+            # path is deprecated for most rustup commands.
+            - name: Setup Rust
+              uses: ./.github/actions/setup-rust
+              with:
+                  targets: x86_64-pc-windows-msvc
+
+            # cargo-binstall install mirrors the setup-frontend composite:
+            # presence check first (the composite may already have put it
+            # there), same --retry flags on the installer fetch.
             - name: Install cargo-binstall + cargo-xwin
               run: |
-                  tmp=$(mktemp)
-                  curl -L --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh
-                  bash "$tmp"
+                  if command -v cargo-binstall > /dev/null 2>&1; then
+                      echo "cargo-binstall already present — skipping installer download"
+                  else
+                      tmp=$(mktemp)
+                      curl -L --retry 5 --retry-delay 2 --retry-all-errors --proto '=https' --tlsv1.2 -sSf -o "$tmp" https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh
+                      bash "$tmp"
+                  fi
                   echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
                   cargo binstall cargo-xwin --no-confirm --force
 
@@ -271,18 +387,37 @@ jobs:
                   restore-keys: |
                       xwin-${{ runner.os }}-
 
+            # `cargo xwin cache xwin` is the documented pre-download for
+            # offline/CI use (cargo-xwin README, "Pre-caching for offline
+            # builds"). The previous `cargo xwin download` never existed
+            # (exit 2 in both ticks 26-27.11) and the consumer has no
+            # separate download step — it warms the cache through the
+            # `cargo tauri build --runner cargo-xwin` build itself.
             - name: Download MSVC CRT/SDK (xwin)
               if: steps.xwin-cache.outputs.cache-hit != 'true'
-              run: cargo xwin download --target x86_64-pc-windows-msvc
-              env:
-                  XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
+              run: cargo xwin cache xwin
 
             - name: Assert xwin cache populated
+              # In-container `run:` steps see the workspace at $GITHUB_WORKSPACE
+              # (/__w/...), while the ${{ github.workspace }} expression
+              # evaluates on the HOST (/home/runner/...) — same directory via
+              # the container mount, but only the runtime var resolves inside.
+              # (The Cache step above intentionally keeps the expression: JS
+              # actions run on the host, like the consumer's.)
               run: |
-                  if [ ! -d "${{ github.workspace }}/.xwin-cache" ] || [ -z "$(find "${{ github.workspace }}/.xwin-cache" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+                  if [ ! -d "$GITHUB_WORKSPACE/.xwin-cache" ] || [ -z "$(find "$GITHUB_WORKSPACE/.xwin-cache" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
                       echo "::error::xwin cache is empty — CRT/SDK did not download"
                       exit 1
                   fi
+
+    seed-cdn:
+        name: Seed CDN data
+        runs-on: ubuntu-24.04
+        # cdn download alone (~0.56 GB) is the long pole here.
+        timeout-minutes: 30
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
 
             # --- cdn-data (consumer: download-cdn composite / ci.yml cdn-download)
             - name: Download CDN data
@@ -294,15 +429,20 @@ jobs:
     seed-android-gradle:
         name: Seed Gradle cache (Android build)
         runs-on: ubuntu-24.04
-        # Cold tick = toolchain setup (NDK download, rust targets, npm,
-        # trunk release build) ~10-15 min ON TOP of the ~40 min APK build;
-        # 60 would sit flush against the estimate and clip the seed-forming
-        # run.
+        # Cold tick fills the Gradle cache with a real debug APK build
+        # (observed 16.5 min on 27.11, toolchain included); 90 is the safe
+        # ceiling — a clipped tick cancels the job and post-save would not
+        # write, so the seed-forming run would never complete.
         timeout-minutes: 90
         env:
             ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
             # Mirror of ci.yml android-smoke NDK_VERSION — keep in sync.
             NDK_VERSION: "26.1.10909125"
+            # sccache S3 backend, same as ci.yml top-level env: the
+            # setup-rust composite reads these (empty on Dependabot —
+            # then compilation proceeds uncached, as before the pilot).
+            SCCACHE_S3_ACCESS_KEY_ID: ${{ secrets.SCCACHE_S3_ACCESS_KEY_ID }}
+            SCCACHE_S3_SECRET_KEY: ${{ secrets.SCCACHE_S3_SECRET_KEY }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -311,15 +451,16 @@ jobs:
               run: sudo apt-get update
             - name: Install protobuf-compiler
               # Plain install: the cacheable apt entry is seeded by
-              # seed-linux (same key); no second master copy here.
+              # seed-apt-protobuf (same key); no second master copy here.
               run: sudo apt-get install -y --no-install-recommends protobuf-compiler
 
+            # Mirrors the ci.yml android-smoke setup-rust call (targets
+            # only) — no shared-key/save-if: those inputs no longer exist
+            # after #976 (actionlint warned on them).
             - name: Setup Rust
               uses: ./.github/actions/setup-rust
               with:
                   targets: wasm32-unknown-unknown,x86_64-linux-android
-                  shared-key: origa-android-smoke-v1
-                  save-if: false
 
             - name: Setup Java
               uses: actions/setup-java@v6
@@ -359,16 +500,16 @@ jobs:
                       ${{ runner.os }}-gradle-
 
             # Frontend tooling mirrors android-smoke: tauri-cli comes from
-            # setup-frontend (cargo subcommand), @tauri-apps/cli from npm.
+            # setup-frontend (cargo subcommand, @tauri-apps/cli from npm).
             - name: Setup frontend tools
               uses: ./.github/actions/setup-frontend
 
             - name: Add cargo bin to PATH
               run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
-            # Heavy (~40 min); unconditional ticks would waste it on every
-            # re-run: build only on a gradle cache miss, mirroring the
-            # consumer's miss-gated install steps.
+            # Heavy; unconditional ticks would waste it on every re-run:
+            # build only on a gradle cache miss, mirroring the consumer's
+            # miss-gated install steps.
             - name: Install Tauri CLI (npm)
               if: steps.gradle-cache.outputs.cache-hit != 'true'
               working-directory: tauri

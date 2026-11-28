@@ -178,7 +178,7 @@ def test_ttl_never_touches_master():
         ("playwright-chromium-v1-abc123", "playwright-chromium-v1"),
         ("setup-uv-2-x86_64-ubuntu-24.04-3.12.3", "setup-uv-2-x86_64-ubuntu-24.04"),
         ("Windows-gradle-abc123", "Windows-gradle"),
-        ("cache-apt-pkgs_abc123", "cache-apt-pkgs"),  # underscore separator
+        ("cache-apt-pkgs_abc123", "cache-apt-pkgs_abc123"),  # own family per key
         # Legacy families must keep working.
         ("Linux-gradle-abc123", "Linux-gradle"),
         ("cdn-data-v15-abc123", "cdn-data-v15"),
@@ -194,6 +194,23 @@ def test_ttl_never_touches_master():
 def test_family_of(key, family):
     ns = _namespace()
     assert ns["family_of"](key) == family, f"family_of({key!r}) drifted"
+
+
+def test_master_apt_keys_are_not_deduped_against_each_other():
+    # Ping-pong 26-27.11: the GTK set and the protobuf-only entry shared
+    # one family and Rule 3 deleted them alternately. Each apt key is its
+    # own family now, so both master copies survive; a same-family pair
+    # still dedupes to the newest.
+    ns = _namespace()
+    caches = [
+        _cache(1, "cache-apt-pkgs_gtkhash", MASTER, 1 * GB, hours_old=50),
+        _cache(2, "cache-apt-pkgs_protobufhash", MASTER, 1 * GB, hours_old=49),
+        _cache(3, "qlty-plugins-Linux-v1-old", MASTER, 1 * GB, hours_old=50),
+        _cache(4, "qlty-plugins-Linux-v1-new", MASTER, 1 * GB, hours_old=2),
+    ]
+    deletions = ns["plan_rule_deletions"](caches, NOW)
+    assert set(deletions) == {3}, f"apt ping-pong regressed: planned {set(deletions)}"
+    assert "superseded" in deletions[3][1]
 
 
 # --- Contract 4: seed regex protects the un-suffixed trailbase keys -----------
