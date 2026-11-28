@@ -68,7 +68,16 @@ fn inject_umami_sets_domain_allowlist_and_do_not_track() {
     let domains = script
         .get_attribute("data-domains")
         .expect("data-domains attribute present");
-    assert!(domains.contains("app.origa.uwuwu.net"), "got: {domains}");
+    // The allow-list host is baked from TRAILBASE_URL. Derive the
+    // expectation from that value so both build contexts pass.
+    let without_scheme = env!("TRAILBASE_URL")
+        .trim_start_matches("https://")
+        .trim_start_matches("http://");
+    let app_host = match without_scheme.split_once(':') {
+        Some((host, _)) => host,
+        None => without_scheme,
+    };
+    assert!(domains.contains(app_host), "got: {domains}");
     assert!(domains.contains("tauri.localhost"), "got: {domains}");
     assert!(domains.contains("localhost"), "got: {domains}");
     assert_eq!(

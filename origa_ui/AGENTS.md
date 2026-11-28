@@ -213,3 +213,18 @@ cargo test -p origa_ui -- --nocapture  # with output
 ```
 
 Uses `rstest` for parameterized tests.
+
+### WASM component tests (full suite)
+
+The runner budget is pinned in the root `.cargo/config.toml`: `WASM_BINDGEN_TEST_TIMEOUT = 180 s`. The toolchain default of 20 s cuts a full suite short on a slow runner. Cargo passes `[env]` to the runner it spawns through `CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER`; no manual export is needed.
+
+Start the hermetic CDN mirror first. Use the canonical corpus path (`$ORIGA_CDN_DIR`, otherwise `~/origa-cdn`). The script takes two arguments: root directory and port.
+
+```bash
+nohup python3 .github/scripts/serve-cdn-cors.py ~/origa-cdn 8080 > /tmp/cdn-mirror-access.log 2>&1 &
+curl -fsS -o /dev/null http://127.0.0.1:8080/manifest.json   # mirror ready
+TRAILBASE_URL=http://127.0.0.1:4000 ORIGA_CDN_BASE_URL=http://localhost:8080 \
+  wasm-pack test --headless --chrome origa_ui --features csr
+```
+
+Both env values are required. Without them the build bakes production defaults (ADR-020/023) and the run stops being hermetic.
