@@ -94,8 +94,10 @@ const ANDROID_UA: &str = "Mozilla/5.0 (Linux; Android 15; Pixel 6) AppleWebKit/5
 const COMPLETION_TICKS: u32 = 300;
 /// Fake invoke resolution delay. Spawned callers are scheduled by the browser,
 /// so the shared-query window must outlast a slow CI scheduler; the 25 ms
-/// value let the third caller arrive after the first query had settled.
-const FAKE_INVOKE_DELAY_MS: i32 = 150;
+/// value let the third caller arrive after the first query had settled, and
+/// on a loaded page (GC sweeps over the mount-reaper's freed heaps, uwuwu#1454
+/// round 5) even 150 ms was exceeded — 400 ms covers a full GC pause.
+const FAKE_INVOKE_DELAY_MS: i32 = 400;
 
 /// Resets every piece of module state a capabilities test can observe:
 /// the cache, the in-flight query slot and any fake bridge from a previous

@@ -99,69 +99,99 @@ pub fn all_available_caps() -> JsValue {
 /// `platform_name()` reads the UA before the Tauri check, so an Android UA
 /// alone pins the platform to "android" even in a plain browser page — the
 /// same precedence the device gate relies on.
+/// Installs a data descriptor for `navigator.<key>` and returns the
+/// original own-property descriptor (absent when the property only lived
+/// on a grand prototype). Shared by the navigator overrides below — the
+/// UA and onLine gates differ only in key and value, and the restore
+/// mechanics must not drift between them.
+fn install_navigator_override(key: &str, value: JsValue) -> Option<JsValue> {
+    let window = window().expect("test browser window");
+    let navigator = window.navigator();
+    let prototype = js_sys::Object::get_prototype_of(&navigator);
+    let key = JsValue::from_str(key);
+
+    let original = js_sys::Object::get_own_property_descriptor(&prototype, &key);
+    let had_own = !original.is_undefined() && !original.is_null();
+
+    let descriptor = js_sys::Object::new();
+    js_sys::Reflect::set(&descriptor, &JsValue::from_str("value"), &value).expect("set value");
+    js_sys::Reflect::set(&descriptor, &JsValue::from_str("writable"), &JsValue::TRUE)
+        .expect("set writable");
+    js_sys::Reflect::set(
+        &descriptor,
+        &JsValue::from_str("enumerable"),
+        &JsValue::TRUE,
+    )
+    .expect("set enumerable");
+    js_sys::Reflect::set(
+        &descriptor,
+        &JsValue::from_str("configurable"),
+        &JsValue::TRUE,
+    )
+    .expect("set configurable");
+
+    js_sys::Object::define_property(&prototype, &key, &descriptor);
+
+    had_own.then_some(original)
+}
+
+/// Restores what [`install_navigator_override`] replaced. A failure here
+/// would surface as a following-test leak, so it panics loudly instead of
+/// swallowing.
+fn restore_navigator_override(key: &str, original: Option<JsValue>) {
+    let window = window().expect("test browser window");
+    let navigator = window.navigator();
+    let prototype = js_sys::Object::get_prototype_of(&navigator);
+    let key = JsValue::from_str(key);
+    match original {
+        Some(descriptor) => {
+            let descriptor = descriptor
+                .dyn_into::<js_sys::Object>()
+                .expect("navigator descriptor is an object");
+            js_sys::Object::define_property(&prototype, &key, &descriptor);
+        },
+        None => {
+            let _ = js_sys::Reflect::delete_property(&prototype, &key);
+        },
+    }
+}
+
 pub struct UserAgentOverride {
     original: Option<JsValue>,
 }
 
 impl UserAgentOverride {
     pub fn install(ua: &str) -> Self {
-        let window = window().expect("test browser window");
-        let navigator = window.navigator();
-        let prototype = js_sys::Object::get_prototype_of(&navigator);
-        let key = JsValue::from_str("userAgent");
-
-        let original = js_sys::Object::get_own_property_descriptor(&prototype, &key);
-        let had_own = !original.is_undefined() && !original.is_null();
-
-        let descriptor = js_sys::Object::new();
-        js_sys::Reflect::set(
-            &descriptor,
-            &JsValue::from_str("value"),
-            &JsValue::from_str(ua),
-        )
-        .expect("set value");
-        js_sys::Reflect::set(&descriptor, &JsValue::from_str("writable"), &JsValue::TRUE)
-            .expect("set writable");
-        js_sys::Reflect::set(
-            &descriptor,
-            &JsValue::from_str("enumerable"),
-            &JsValue::TRUE,
-        )
-        .expect("set enumerable");
-        js_sys::Reflect::set(
-            &descriptor,
-            &JsValue::from_str("configurable"),
-            &JsValue::TRUE,
-        )
-        .expect("set configurable");
-
-        js_sys::Object::define_property(&prototype, &key, &descriptor);
-
         Self {
-            original: had_own.then_some(original),
+            original: install_navigator_override("userAgent", JsValue::from_str(ua)),
         }
     }
 }
 
 impl Drop for UserAgentOverride {
     fn drop(&mut self) {
-        let window = window().expect("test browser window");
-        let navigator = window.navigator();
-        let prototype = js_sys::Object::get_prototype_of(&navigator);
-        let key = JsValue::from_str("userAgent");
-        match self.original.take() {
-            // A restored descriptor is a data descriptor (a plain object);
-            // a failure here would surface as a following-test UA leak, so
-            // it panics loudly instead of swallowing.
-            Some(descriptor) => {
-                let descriptor = descriptor
-                    .dyn_into::<js_sys::Object>()
-                    .expect("userAgent descriptor is an object");
-                js_sys::Object::define_property(&prototype, &key, &descriptor);
-            },
-            None => {
-                let _ = js_sys::Reflect::delete_property(&prototype, &key);
-            },
+        restore_navigator_override("userAgent", self.original.take());
+    }
+}
+
+/// Overrides `navigator.onLine` for the duration of the guard's lifetime
+/// (RAII restore on drop). The network invariant tests (uwuwu#1454) drive
+/// `report_network_failure` through both branches; headless Chrome cannot
+/// flip `onLine` any other way.
+pub struct OnlineOverride {
+    original: Option<JsValue>,
+}
+
+impl OnlineOverride {
+    pub fn install(online: bool) -> Self {
+        Self {
+            original: install_navigator_override("onLine", JsValue::from_bool(online)),
         }
+    }
+}
+
+impl Drop for OnlineOverride {
+    fn drop(&mut self) {
+        restore_navigator_override("onLine", self.original.take());
     }
 }

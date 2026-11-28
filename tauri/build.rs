@@ -76,7 +76,13 @@ fn main() {
 /// invalidated by `rerun-if-env-changed` — see ADR-024 for the pattern).
 fn emit_sentry_env() {
     let dsn = env::var("SENTRY_DSN").unwrap_or_default();
-    let environment = env::var("SENTRY_ENVIRONMENT").unwrap_or_else(|_| "development".into());
+    // Empty string ≡ unset (ADR-024): a set-but-empty SENTRY_ENVIRONMENT
+    // would bake an empty environment into the binary and strip the
+    // environment dimension from every tauri-layer event.
+    let environment = build_config::resolve_env(
+        env::var("SENTRY_ENVIRONMENT").ok().as_deref(),
+        "development",
+    );
     let release = env::var("ORIGA_VERSION").unwrap_or_else(|_| "dev".into());
 
     println!("cargo:rustc-env=SENTRY_DSN_TAURI={dsn}");

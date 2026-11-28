@@ -45,10 +45,10 @@ impl CaptureCapabilities {
     /// Emits a Sentry event per unavailable feature — one event each, no
     /// noise. This turns silent degradation observable for all users (the
     /// #570 "Observatory" recommendation). `tracing::error!` rides the
-    /// sentry-tracing bridge (console.error → captureConsoleIntegration) as
-    /// an actual event; breadcrumbs alone never surface without a later
-    /// capture, which is exactly how the Android native-OCR degradation
-    /// stayed invisible (task 20261104051142-inn7qka).
+    /// `tracing_console` layer (console.error + direct captureException,
+    /// ADR-036) as an actual event; breadcrumbs alone never surface without
+    /// a later capture, which is exactly how the Android native-OCR
+    /// degradation stayed invisible (task 20261104051142-inn7qka).
     fn report_degradations(&self) {
         let unavailable = |name: &str, expected_on: &[&str]| {
             if expected_on.contains(&self.platform.as_str()) {

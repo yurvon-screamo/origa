@@ -122,3 +122,32 @@ pub(crate) fn resolve_umami(
 fn is_truthy(value: Option<&str>) -> bool {
     matches!(value, Some(v) if v.eq_ignore_ascii_case("1") || v.eq_ignore_ascii_case("true"))
 }
+
+/// Sentry environment for the UI layer (uwuwu#1454 slice 3): empty string ≡
+/// unset (ADR-024) — a set-but-empty variable would bake an empty
+/// environment and strip the environment dimension from every ui-layer
+/// event. Dev/e2e/local builds (unset) run `development`.
+pub(crate) fn resolve_sentry_environment(env_value: Option<&str>) -> String {
+    match env_value {
+        Some(v) if !v.is_empty() => v.to_string(),
+        _ => "development".to_owned(),
+    }
+}
+
+#[cfg(test)]
+mod sentry_env_tests {
+    use super::resolve_sentry_environment;
+
+    #[test]
+    fn set_value_passes_through() {
+        assert_eq!(resolve_sentry_environment(Some("production")), "production");
+        assert_eq!(resolve_sentry_environment(Some("staging")), "staging");
+    }
+
+    /// ADR-024: empty string ≡ unset — bakes the default, never "".
+    #[test]
+    fn empty_string_bakes_default() {
+        assert_eq!(resolve_sentry_environment(Some("")), "development");
+        assert_eq!(resolve_sentry_environment(None), "development");
+    }
+}

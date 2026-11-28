@@ -145,7 +145,10 @@ pub async fn load_phrase_details_batch_via<P: CdnProvider>(
         for chunk_id in &chunks_to_load {
             fetches.push(fetch_and_cache_chunk(provider, *chunk_id, &hash));
         }
-        join_all(fetches).await;
+        let results = join_all(fetches).await;
+        // One severity-routed report per batch instead of one event per
+        // chunk: a dead CDN drops all ~198 corpus chunks in parallel.
+        report_batch_outcomes(&results, chunks_to_load.len());
     }
 
     // Chunks another concurrent batch is fetching are skipped, and their
@@ -159,19 +162,191 @@ pub async fn load_phrase_details_batch_via<P: CdnProvider>(
         .collect()
 }
 
+/// How one chunk's fetch+cache round ended. The split matters for the
+/// batch report: a fetch failure follows the network invariant
+/// (online = incident, offline = degradation), a payload that arrived but
+/// failed to parse/cache is a content bug and reports as `error!`
+/// regardless of connectivity — the same rule the JLPT loader pins.
+#[derive(Debug)]
+enum ChunkOutcome {
+    Loaded,
+    FetchFailed(String),
+    ParseFailed(String),
+}
+
 /// One chunk's data fetch + cache (+ best-effort precompute). The
-/// in-flight claim is always released, success or failure.
-async fn fetch_and_cache_chunk<P: CdnProvider>(provider: &P, chunk_id: u32, hash: &str) {
+/// in-flight claim is always released, success or failure. Returns the
+/// outcome; per-chunk failures are logged at debug level and aggregated
+/// by the caller (`load_phrase_details_batch_via`) via
+/// [`report_batch_outcomes`] — one dead CDN must not produce one event
+/// per chunk (uwuwu#1454 review).
+async fn fetch_and_cache_chunk<P: CdnProvider>(
+    provider: &P,
+    chunk_id: u32,
+    hash: &str,
+) -> ChunkOutcome {
     let path = format!("phrases/data/p{:04}.json?v={}", chunk_id, hash);
-    match provider.fetch_text(&path).await {
+    let outcome = match provider.fetch_text(&path).await {
         Ok(json) => {
             if let Err(e) = cache_phrase_details(chunk_id, &json) {
-                tracing::warn!("Failed to cache chunk {}: {e}", chunk_id);
+                tracing::debug!("Failed to cache chunk {}: {e}", chunk_id);
+                ChunkOutcome::ParseFailed(format!("chunk {chunk_id}: {e}"))
             } else {
                 load_phrase_precompute_chunk_via(provider, chunk_id).await;
+                ChunkOutcome::Loaded
             }
         },
-        Err(e) => tracing::warn!("Failed to load chunk {}: {e}", chunk_id),
-    }
+        Err(e) => {
+            // Per-chunk logging stays at debug level: a dead CDN drops the
+            // whole corpus in parallel (all ~198 chunks of a batch would pass
+            // this branch), which would flood Sentry with near-identical
+            // events. The batch aggregates one severity-routed report below.
+            tracing::debug!(chunk_id = chunk_id, error = ?e, "Failed to load chunk {}", chunk_id);
+            ChunkOutcome::FetchFailed(format!("chunk {chunk_id}: {e:?}"))
+        },
+    };
     unmark_data_chunk_inflight(chunk_id);
+    outcome
+}
+
+/// The batch-level report for [`fetch_and_cache_chunk`] outcomes. Fetch
+/// failures get one severity-routed event (the network invariant); parse
+/// failures get one `error!` event regardless of connectivity (content
+/// bug). Both carry the failing chunk ids and first error texts — a bare
+/// count would make a 404 on specific chunks indistinguishable from a
+/// network refusal (uwuwu#1454 review round 2).
+fn report_batch_outcomes(outcomes: &[ChunkOutcome], total: usize) {
+    let fetch_failed: Vec<&String> = outcomes
+        .iter()
+        .filter_map(|o| match o {
+            ChunkOutcome::FetchFailed(detail) => Some(detail),
+            _ => None,
+        })
+        .collect();
+    let parse_failed: Vec<&String> = outcomes
+        .iter()
+        .filter_map(|o| match o {
+            ChunkOutcome::ParseFailed(detail) => Some(detail),
+            _ => None,
+        })
+        .collect();
+    if !fetch_failed.is_empty() {
+        crate::tracing_console::report_network_failure(&format!(
+            "Phrase data chunk fetches failed ({}/{}): {}",
+            fetch_failed.len(),
+            total,
+            summarize_first(&fetch_failed)
+        ));
+    }
+    if !parse_failed.is_empty() {
+        tracing::error!(
+            "Phrase data chunk payloads failed to parse/cache ({}/{}): {}",
+            parse_failed.len(),
+            total,
+            summarize_first(&parse_failed)
+        );
+    }
+}
+
+/// First few failure texts for a batch report — the ids and the leading
+/// cause without flooding the event payload.
+fn summarize_first(details: &[&String]) -> String {
+    let mut parts: Vec<String> = details.iter().take(3).map(|s| (*s).clone()).collect();
+    if details.len() > parts.len() {
+        parts.push(format!("… and {} more", details.len() - parts.len()));
+    }
+    parts.join("; ")
+}
+
+/// The batch-report contract pinned live (uwuwu#1454 review round 2):
+/// fetch failures follow the network invariant, parse failures are
+/// `error!` regardless of connectivity, a clean batch emits nothing.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn fetch_failed(n: u32) -> Vec<ChunkOutcome> {
+        (0..n)
+            .map(|i| ChunkOutcome::FetchFailed(format!("chunk {}: net down", i)))
+            .collect()
+    }
+
+    #[wasm_bindgen_test]
+    fn fetch_failures_online_are_one_error_event_with_details() {
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        let mut outcomes = fetch_failed(2);
+        outcomes.push(ChunkOutcome::Loaded);
+        report_batch_outcomes(&outcomes, 3);
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "one aggregated event, got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::ERROR);
+        let m = &events[0].1;
+        assert!(m.contains("Phrase data chunk fetches failed (2/3)"), "{m}");
+        assert!(m.contains("chunk 0"), "carries the failing chunk id: {m}");
+        assert!(m.contains("net down"), "carries the error text: {m}");
+    }
+
+    #[wasm_bindgen_test]
+    fn fetch_failures_offline_are_one_warn_event() {
+        let _offline = OnlineOverride::install(false);
+        log_capture::install();
+        log_capture::take_events();
+        report_batch_outcomes(&fetch_failed(1), 1);
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "one aggregated event, got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::WARN);
+        assert!(events[0].1.contains("(offline)"), "{}", events[0].1);
+    }
+
+    #[wasm_bindgen_test]
+    fn parse_failures_are_error_regardless_of_connectivity() {
+        // Online: a payload that arrived but does not parse is a content
+        // bug — error even though the network is fine.
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        report_batch_outcomes(
+            &[
+                ChunkOutcome::Loaded,
+                ChunkOutcome::ParseFailed("chunk 4: bad json".into()),
+            ],
+            2,
+        );
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::ERROR);
+        assert!(
+            events[0].1.contains("failed to parse/cache"),
+            "{}",
+            events[0].1
+        );
+        assert!(events[0].1.contains("chunk 4: bad json"), "{}", events[0].1);
+
+        // Offline: still an error — connectivity never excuses a content bug.
+        let _offline = OnlineOverride::install(false);
+        log_capture::take_events();
+        report_batch_outcomes(&[ChunkOutcome::ParseFailed("chunk 9: bad json".into())], 1);
+        let events = log_capture::take_events();
+        assert_eq!(events.len(), 1, "got {events:?}");
+        assert_eq!(events[0].0, tracing::Level::ERROR);
+    }
+
+    #[wasm_bindgen_test]
+    fn clean_batch_emits_no_events() {
+        let _online = OnlineOverride::install(true);
+        log_capture::install();
+        log_capture::take_events();
+        report_batch_outcomes(&[ChunkOutcome::Loaded, ChunkOutcome::Loaded], 2);
+        assert!(
+            log_capture::take_events().is_empty(),
+            "a fully loaded batch must stay silent"
+        );
+    }
 }

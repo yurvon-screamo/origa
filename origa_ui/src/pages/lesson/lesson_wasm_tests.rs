@@ -5395,18 +5395,38 @@ mod know_confirm_dispose {
         /// spawned task even when the test runner itself does not fail
         /// the test on it (dev profile uses unwinding).
         static TASK_PANIC_SEEN: Cell<bool> = const { Cell::new(false) };
+        static HOOK_ARMED: Cell<bool> = const { Cell::new(false) };
     }
 
-    fn arm_task_panic_detector() {
+    /// Arming tolerates a foreign panic unwinding on the single wasm
+    /// thread: std refuses `set_hook` while any panic is in flight, and
+    /// the suite order is a codegen-unit artifact that reshuffles on any
+    /// source change (uwuwu#1454 fix round) — a predecessor test's late
+    /// disposal panic can be mid-unwind exactly when this test arms.
+    /// Retry across ticks instead of failing on foreign noise.
+    async fn arm_task_panic_detector() {
         TASK_PANIC_SEEN.with(|flag| flag.set(false));
-        static INSTALL: std::sync::Once = std::sync::Once::new();
-        INSTALL.call_once(|| {
+        if HOOK_ARMED.with(Cell::get) {
+            return;
+        }
+        let install = || {
             let previous = std::panic::take_hook();
             std::panic::set_hook(Box::new(move |info| {
                 TASK_PANIC_SEEN.with(|flag| flag.set(true));
                 previous(info);
             }));
-        });
+        };
+        for _ in 0..50 {
+            let attempt = std::panic::catch_unwind(std::panic::AssertUnwindSafe(install));
+            if attempt.is_ok() {
+                HOOK_ARMED.set(true);
+                return;
+            }
+            // A foreign panic is mid-unwind; let it drain, then retry.
+            gloo_timers::future::TimeoutFuture::new(10).await;
+        }
+        // Last resort unguarded: if the thread never quiets, surface loud.
+        install();
     }
 
     fn assert_no_task_panic(context: &str) {
@@ -5490,7 +5510,7 @@ mod know_confirm_dispose {
     /// into a spawned task — that fail-loud behavior is intentional.
     #[wasm_bindgen_test]
     async fn know_confirm_survives_page_disposal_without_panic() {
-        arm_task_panic_detector();
+        arm_task_panic_detector().await;
         let card_id = Ulid::new();
         let wrapper = create_wrapper();
         let handle = mount_disposable(&wrapper, move || {

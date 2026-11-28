@@ -1,5 +1,5 @@
 use origa::dictionary::pitch_audio::get_audio_for_reading;
-use origa::domain::{Card, JapaneseChar, OrigaError, StudyCard};
+use origa::domain::{Card, JapaneseChar, StudyCard};
 
 use leptos::prelude::{GetUntracked, Set};
 
@@ -120,31 +120,49 @@ pub fn start_card_precache(
     let store_clone = offline_store.clone();
 
     leptos::task::spawn_local(async move {
-        match precache_all_cards(&cards, move |p| store_clone.card_cache_progress.set(p)).await {
-            Ok(result) => {
-                tracing::info!(
-                    succeeded = result.succeeded,
-                    total = result.total,
-                    "Card pre-cache complete"
-                );
-                store_clone.set_card_cache_state(CardCacheState::Complete);
-
-                // Store marker to enable cache validation on next startup
-                if let Err(e) = crate::repository::cdn_provider::store_cache_marker(
-                    "/__origa_card_cache_complete__",
-                    "ok",
-                )
-                .await
-                {
-                    tracing::warn!(error = ?e, "Failed to store card cache marker");
-                }
-            },
-            Err(e) => {
-                tracing::warn!(error = %e, "Card pre-cache failed, returning to Idle");
-                store_clone.set_card_cache_state(CardCacheState::Idle);
-            },
-        }
+        let result =
+            precache_all_cards(&cards, move |p| store_clone.card_cache_progress.set(p)).await;
+        settle_precache_outcome(result, &store_clone).await;
     });
+}
+
+/// Settles a finished pre-cache run: the cache-state transition plus the
+/// severity-routed report. `batch_download` never fails — it tallies, so
+/// outright failure is `succeeded == 0`: for an online user an incident
+/// (the requested content is not there), offline it is expected
+/// degradation (uwuwu#1454 network invariant). The session state returns
+/// to Idle so the run can be retried; marking Complete with zero files
+/// would poison the cache for the whole session. Partial runs keep the
+/// per-file `warn!`s from `batch_download` (best-effort; on-demand fetch
+/// covers the gaps) and settle as Complete.
+async fn settle_precache_outcome(
+    result: DownloadResult,
+    store: &crate::store::offline_bundle_store::OfflineBundleStore,
+) {
+    let failed = result.total.saturating_sub(result.succeeded);
+    if result.total > 0 && result.succeeded == 0 {
+        crate::tracing_console::report_network_failure(&format!(
+            "Card pre-cache failed outright ({}/{} files), returning to Idle",
+            result.succeeded, result.total
+        ));
+        store.set_card_cache_state(crate::store::offline_bundle_store::CardCacheState::Idle);
+        return;
+    }
+    tracing::info!(
+        succeeded = result.succeeded,
+        failed,
+        total = result.total,
+        "Card pre-cache complete"
+    );
+    store.set_card_cache_state(crate::store::offline_bundle_store::CardCacheState::Complete);
+
+    // Store marker to enable cache validation on next startup
+    if let Err(e) =
+        crate::repository::cdn_provider::store_cache_marker("/__origa_card_cache_complete__", "ok")
+            .await
+    {
+        tracing::warn!(error = ?e, "Failed to store card cache marker");
+    }
 }
 
 /// A pre-cache run is only valid from `Idle`. `Running` means another run is
@@ -159,7 +177,7 @@ fn should_skip_precache(state: crate::store::offline_bundle_store::CardCacheStat
 pub async fn precache_all_cards(
     cards: &[StudyCard],
     on_progress: impl Fn(PreCacheProgress) + Clone + 'static,
-) -> Result<DownloadResult, OrigaError> {
+) -> DownloadResult {
     // The art manifest gates every kanji SVG path below (#540): await it
     // BEFORE building the resource lists, so kanji without CDN art
     // produce no doomed 404 requests. A failed fetch only disables the
@@ -337,4 +355,125 @@ fn example_card_precaches_its_tts_clip() {
         get_card_cdn_resources(&card),
         vec![example_audio_path(12345)]
     );
+}
+
+/// The cache-state transitions pinned live (uwuwu#1454 review round 2):
+/// an outright failure returns to Idle (a retry is possible, the session
+/// cache is not poisoned as Complete), a partial run settles Complete.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use crate::store::offline_bundle_store::{CardCacheState, OfflineBundleStore};
+    use leptos::prelude::*;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn store_in_idle() -> OfflineBundleStore {
+        let store = OfflineBundleStore::new();
+        store.set_card_cache_state(CardCacheState::Idle);
+        store
+    }
+
+    #[wasm_bindgen_test]
+    async fn outright_failure_online_returns_to_idle_with_error() {
+        init_leptos_executor();
+        let _online = OnlineOverride::install(true);
+        let store = store_in_idle();
+        log_capture::install();
+        log_capture::take_events();
+
+        settle_precache_outcome(
+            DownloadResult {
+                total: 6,
+                succeeded: 0,
+            },
+            &store,
+        )
+        .await;
+
+        assert_eq!(
+            store.card_cache_state.get_untracked(),
+            CardCacheState::Idle,
+            "a zero-success run must not settle as Complete"
+        );
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::ERROR
+                    && m.contains("Card pre-cache failed outright")),
+            "online outright failure = incident, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn outright_failure_offline_returns_to_idle_with_warn() {
+        init_leptos_executor();
+        let _offline = OnlineOverride::install(false);
+        let store = store_in_idle();
+        log_capture::install();
+        log_capture::take_events();
+
+        settle_precache_outcome(
+            DownloadResult {
+                total: 6,
+                succeeded: 0,
+            },
+            &store,
+        )
+        .await;
+
+        assert_eq!(store.card_cache_state.get_untracked(), CardCacheState::Idle);
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::WARN && m.contains("(offline)")),
+            "offline outright failure = degradation, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn partial_run_settles_complete() {
+        init_leptos_executor();
+        let _online = OnlineOverride::install(true);
+        let store = store_in_idle();
+        log_capture::install();
+        log_capture::take_events();
+
+        settle_precache_outcome(
+            DownloadResult {
+                total: 6,
+                succeeded: 3,
+            },
+            &store,
+        )
+        .await;
+
+        assert_eq!(
+            store.card_cache_state.get_untracked(),
+            CardCacheState::Complete,
+            "a partial run keeps the useful cache and settles Complete"
+        );
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .all(|(level, _)| *level != tracing::Level::ERROR),
+            "partial failure is best-effort: {events:?}"
+        );
+    }
+
+    /// `settle_precache_outcome` creates signals through the store and the
+    /// Complete branch awaits CDN storage — both need the executor a mount
+    /// initializes (see review_request_wasm_tests for the same dependency).
+    fn init_leptos_executor() {
+        let wrapper = crate::test_support::create_wrapper();
+        crate::test_support::mount_to_wrapper(&wrapper, move || {
+            view! { <div data-testid="card-precache-test-mount"></div> }.into_any()
+        });
+    }
 }

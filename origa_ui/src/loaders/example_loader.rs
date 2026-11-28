@@ -66,8 +66,25 @@ pub async fn load_examples_via<P: CdnProvider>(provider: &P) -> Result<(), Origa
     if is_examples_loaded() {
         return Ok(());
     }
-    let json = provider.fetch_text(EXAMPLES_INDEX_PATH).await?;
-    init_example_index(&json)?;
+    // The index gates the whole examples family: its online failure (a
+    // 404 / broken deploy) kills examples for the session, so it follows
+    // the same severity gate as the chunks — and it is the most
+    // flood-safe point of the family (one fetch per startup). A payload
+    // that arrived but does not parse is a content bug and reports as
+    // `error!` regardless of connectivity.
+    let json = match provider.fetch_text(EXAMPLES_INDEX_PATH).await {
+        Ok(json) => json,
+        Err(e) => {
+            crate::tracing_console::report_network_failure(&format!(
+                "Examples index fetch failed: {e:?}"
+            ));
+            return Err(e);
+        },
+    };
+    if let Err(e) = init_example_index(&json) {
+        tracing::error!(error = ?e, "Examples index payload failed to parse");
+        return Err(e);
+    }
     tracing::info!(
         "Examples index loaded: {} words / {} sentences",
         origa::dictionary::example::example_word_count(),
@@ -89,11 +106,31 @@ pub async fn load_example_detail_via<P: CdnProvider>(
         match provider.fetch_text(&path).await {
             Ok(json) => {
                 if let Err(e) = cache_example_details(&json) {
+                    // The fetch succeeded, the payload did not parse/cache
+                    // — a content bug regardless of connectivity (the same
+                    // rule the JLPT loader pins), bounded by user
+                    // navigation.
+                    tracing::error!(
+                        chunk_id = chunk_id,
+                        error = ?e,
+                        "Example chunk payload failed to parse/cache"
+                    );
                     unmark_chunk_inflight(chunk_id);
                     return Err(e);
                 }
             },
             Err(e) => {
+                // Bounded per word view: `load_word_examples_via` may
+                // fetch up to three distinct chunks for one word, so a
+                // dead CDN costs up to three events per view (uwuwu#1454
+                // round 4 — the honest bound; single-flight dedups
+                // concurrent callers of the same chunk). Online failure
+                // of a load-bearing fetch is an incident, offline is
+                // expected degradation. Callers drop the `Err`, so
+                // without this the failure is fully silent.
+                crate::tracing_console::report_network_failure(&format!(
+                    "Example chunk fetch failed: chunk {chunk_id}, {e:?}"
+                ));
                 unmark_chunk_inflight(chunk_id);
                 return Err(e);
             },

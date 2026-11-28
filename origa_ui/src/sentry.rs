@@ -78,14 +78,6 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
     // 1. Install `window.sentryOnLoad` BEFORE injecting the script so the
     //    loader invokes it even when it loads synchronously from cache.
     //
-    //    Sentry v8 removed the `Integrations.XXX` class hash — integrations
-    //    are now functions (e.g. `Sentry.captureConsoleIntegration()`).
-    //    Accessing `Sentry.Integrations.CaptureConsole` throws
-    //    `TypeError: Cannot read properties of undefined (reading
-    //    'CaptureConsole')`, which prevents `Sentry.init` from running at
-    //    all. The loader script serves the latest SDK, so we must use the
-    //    v8 functional API. See Sentry v7-to-v8 migration guide.
-    //
     //    Background flush: iOS/Android suspend the WebView on
     //    backgrounding, freezing the SDK's async transport — queued
     //    events die unflushed (the exact blind spot that hid the
@@ -94,7 +86,58 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
     //    loader finishes, `window.Sentry` is undefined and the flush is a
     //    no-op; once loaded, `visibilitychange → hidden` and `pagehide`
     //    both push the queue out while the page is still alive.
-    let init_js = format!(
+    let init_js = build_init_js(dsn, release, environment);
+    if let Err(e) = js_sys::eval(&init_js) {
+        tracing::warn!("[sentry] failed to install sentryOnLoad: {:?}", e);
+        return;
+    }
+
+    // 2. Inject the loader script. `defer` is intentionally NOT set: it is a
+    //    no-op on dynamically-inserted <script> elements per HTML spec, and
+    //    `sentryOnLoad` above already gates the actual init.
+    let loader_url = format!("https://js.sentry-cdn.com/{public_key}.min.js");
+    if let Err(e) = inject_script(&document, &head, &loader_url) {
+        tracing::warn!("[sentry] failed to inject loader script: {:?}", e);
+        return;
+    }
+
+    tracing::info!(
+        "[sentry] enabled (release={}, environment={})",
+        release,
+        environment
+    );
+}
+
+/// The `beforeSend` predicate of the bootstrap init: stack-less WASM traps
+/// group poorly — every "RuntimeError: unreachable" lands in one card so
+/// one failure class is one issue (page context stays on the event's tags).
+/// SDK event shape: the error class is in `type`, the message in `value`
+/// (verified against live RUST-4/R events). A standalone const so the wasm
+/// test suite evaluates the actual function object against SDK-shaped mock
+/// events — a substring match on the generated JS proves nothing about
+/// behavior.
+pub(crate) const BEFORE_SEND_FN: &str = r#"function(event) {
+    try {
+        var v = event && event.exception
+            && event.exception.values
+            && event.exception.values[0] || null;
+        if (v && v.type === 'RuntimeError' && v.value === 'unreachable') {
+            event.fingerprint = ['wasm-unreachable'];
+        }
+    } catch (e) { /* never drop an event over grouping */ }
+    return event;
+}"#;
+
+/// Build the `sentryOnLoad` bootstrap JS executed before the loader script
+/// is injected (ADR-036 §4: installed BEFORE the script tag so a
+/// cache-served synchronous load cannot miss the callback). Error delivery
+/// does NOT go through a console capture integration — the full story
+/// lives in the ADR-036 addendum. The `beforeSend` fingerprints the
+/// stack-less `RuntimeError: unreachable` family (RUST-4/R) into a single
+/// group: raw frames are `wasm-function[N]` addresses without symbols, and
+/// page-level signal stays on the event's `transaction`/`url` tags.
+pub(crate) fn build_init_js(dsn: &str, release: &str, environment: &str) -> String {
+    format!(
         r#"(function() {{
             if (window.__sentryFlushInstalled) {{
                 return;
@@ -118,14 +161,8 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
             }});
             window.addEventListener('pagehide', flushPending);
             window.sentryOnLoad = function() {{
-                // captureConsoleIntegration routes tracing-wasm's console.error
-                // output (which is where all WASM tracing::error! calls land via
-                // the WASMLayer) into Sentry as error events. console.warn/info
-                // become breadcrumbs via the default Breadcrumbs integration.
-                var integrations = [];
-                if (typeof Sentry.captureConsoleIntegration === 'function') {{
-                    integrations.push(Sentry.captureConsoleIntegration({{ levels: ['error'] }}));
-                }}
+                // Delivery story (direct captureException from the tracing
+                // layer, no console capture) — ADR-036 addendum.
                 Sentry.init({{
                     dsn: "{dsn}",
                     release: "{release}",
@@ -133,34 +170,19 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
                     sendDefaultPii: false,
                     tracesSampleRate: 1.0,
                     enableLogs: true,
-                    integrations: integrations
+                    beforeSend: {before_send}
                 }});
                 Sentry.setTag("layer", "ui");
             }};
-        }})();"#
-    );
-    if let Err(e) = js_sys::eval(&init_js) {
-        tracing::warn!("[sentry] failed to install sentryOnLoad: {:?}", e);
-        return;
-    }
-
-    // 2. Inject the loader script. `defer` is intentionally NOT set: it is a
-    //    no-op on dynamically-inserted <script> elements per HTML spec, and
-    //    `sentryOnLoad` above already gates the actual init.
-    let loader_url = format!("https://js.sentry-cdn.com/{public_key}.min.js");
-    if let Err(e) = inject_script(&document, &head, &loader_url) {
-        tracing::warn!("[sentry] failed to inject loader script: {:?}", e);
-        return;
-    }
-
-    tracing::info!(
-        "[sentry] enabled (release={}, environment={})",
-        release,
-        environment
-    );
+        }})();"#,
+        before_send = BEFORE_SEND_FN
+    )
 }
 
-/// Forward a panic message to Sentry as a captured exception.
+/// Forward a message to Sentry as a captured exception.
+///
+/// Two callers: the panic hook (every WASM panic) and the
+/// `tracing_console` layer (every routed `error!` event).
 ///
 /// **Must never panic itself**: this is called from the panic hook on every
 /// WASM panic, including the path where Sentry is disabled (no loader
@@ -289,6 +311,59 @@ mod tests {
     fn extract_public_key_rejects_empty_dsn() {
         assert_eq!(extract_public_key(""), None);
     }
+
+    /// The bootstrap JS carries the `beforeSend` fingerprint for the
+    /// stack-less `RuntimeError: unreachable` family (uwuwu#1454): without
+    /// it Sentry splits one failure class across sibling issues (RUST-4/R
+    /// in the 30-day audit window).
+    #[test]
+    fn init_js_contains_unreachable_fingerprint() {
+        let js = build_init_js(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        assert!(
+            js.contains("beforeSend: function(event)"),
+            "beforeSend must be wired into init"
+        );
+        assert!(
+            js.contains("v.type === 'RuntimeError' && v.value === 'unreachable'"),
+            "fingerprint trigger must match the SDK event shape (type/value)"
+        );
+        assert!(
+            js.contains("['wasm-unreachable']"),
+            "fingerprint family must be pinned"
+        );
+    }
+
+    /// The dead console-capture path must be GONE from the bootstrap: SDK
+    /// v10 lazy-loads `captureConsoleIntegration`, so the `typeof` guard
+    /// silently produced an empty integrations list for months (uwuwu#1454,
+    /// delta-round 2). Error delivery goes through the direct
+    /// `captureException` bridge in the tracing layer — the bootstrap must
+    /// not reference the integration at all.
+    #[test]
+    fn init_js_has_no_console_capture_path() {
+        let js = build_init_js(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        assert!(
+            !js.contains("captureConsoleIntegration"),
+            "captureConsoleIntegration must not be configured (dead in SDK v10)"
+        );
+    }
+
+    /// DSN/release/environment interpolate into the bootstrap config.
+    #[test]
+    fn init_js_interpolates_config() {
+        let js = build_init_js("https://key@host/42", "9.9.9", "staging");
+        assert!(js.contains("dsn: \"https://key@host/42\""));
+        assert!(js.contains("release: \"9.9.9\""));
+        assert!(js.contains("environment: \"staging\""));
+    }
 }
 
 /// WASM-only tests for `init_with`'s DOM-injection logic. Run via
@@ -316,6 +391,53 @@ mod wasm_tests {
             before, after,
             "no <script> should be injected for empty DSN"
         );
+    }
+
+    /// Behavior test for the `beforeSend` predicate (uwuwu#1454 review): the
+    /// actual function object runs against SDK-shaped mock events. The live
+    /// RUST-4/R events carry `type='RuntimeError'`, `value='unreachable'` —
+    /// exactly the shape fingerprinted here; everything else must pass
+    /// through untouched.
+    #[wasm_bindgen_test]
+    fn before_send_fingerprints_real_unreachable_shape() {
+        let f = js_sys::eval(&format!("({})", BEFORE_SEND_FN))
+            .expect("beforeSend evaluates")
+            .dyn_into::<js_sys::Function>()
+            .expect("beforeSend is a function");
+
+        let fingerprint_of = |json: &str| -> Option<String> {
+            let ev = js_sys::JSON::parse(json).expect("mock event parses");
+            let out = f.call1(&JsValue::UNDEFINED, &ev).expect("beforeSend runs");
+            let fp = js_sys::Reflect::get(&out, &"fingerprint".into()).ok()?;
+            let arr = fp.dyn_into::<js_sys::Array>().ok()?;
+            arr.get(0).as_string()
+        };
+
+        // Live RUST-4/R shape → fingerprinted.
+        assert_eq!(
+            fingerprint_of(
+                r#"{"exception":{"values":[{"type":"RuntimeError","value":"unreachable"}]}}"#
+            )
+            .as_deref(),
+            Some("wasm-unreachable"),
+            "the real unreachable shape must be fingerprinted"
+        );
+        // Same class, different message → untouched.
+        assert_eq!(
+            fingerprint_of(
+                r#"{"exception":{"values":[{"type":"RuntimeError","value":"out of memory"}]}}"#
+            ),
+            None
+        );
+        // Same message, different class → untouched.
+        assert_eq!(
+            fingerprint_of(
+                r#"{"exception":{"values":[{"type":"TypeError","value":"unreachable"}]}}"#
+            ),
+            None
+        );
+        // No exception block → untouched.
+        assert_eq!(fingerprint_of(r#"{"message":"plain"}"#), None);
     }
 
     /// A valid DSN must inject exactly one `<script>` with the expected
@@ -456,5 +578,77 @@ mod wasm_tests {
             before,
             "visibilitychange while visible must not flush"
         );
+    }
+
+    /// Poll `window.Sentry` until the loader-served SDK is up.
+    async fn wait_sentry(timeout_polls: u32) -> bool {
+        for _ in 0..timeout_polls {
+            if let Ok(g) = sentry_global() {
+                if !g.is_undefined() && !g.is_null() {
+                    return true;
+                }
+            }
+            sleep_ms(500).await;
+        }
+        false
+    }
+
+    async fn sleep_ms(ms: i32) {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            if let Some(w) = web_sys::window() {
+                let _ = w.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms);
+            }
+        });
+        let _ = wasm_bindgen_futures::JsFuture::from(promise).await;
+    }
+
+    /// LIVE PROBE A — receiver pipe (uwuwu#1454 verification): `captureException`
+    /// against the real SDK the production loader URL serves. Compiled with
+    /// SENTRY_DSN/SENTRY_ENVIRONMENT baked in. `#[ignore]`-gated: an
+    /// early-returning test would be permanently green without asserting
+    /// anything (uwuwu#1454 review) — run explicitly, in a probe build only,
+    /// via `wasm-bindgen-test-runner <wasm> -- --ignored` with
+    /// SENTRY_ENVIRONMENT=probe (delivery is then verified by the event
+    /// landing in the probe environment, not by the exit code).
+    #[wasm_bindgen_test]
+    #[ignore = "live delivery probe — probe build only, run with --ignored"]
+    async fn live_probe_receiver_pipe() {
+        if ENVIRONMENT != "probe" || DSN.is_empty() {
+            return;
+        }
+        init_with(DSN, RELEASE, ENVIRONMENT);
+        assert!(wait_sentry(40).await, "SDK did not load within 20s");
+
+        // Direct receiver call — the exact surface the tracing layer uses.
+        let g = sentry_global().expect("window.Sentry");
+        let err = js_sys::Error::new("probe-a uwuwu1454 receiver pipe");
+        let cap = Reflect::get(&g, &"captureException".into()).expect("captureException export");
+        let cap_fn = cap
+            .dyn_ref::<js_sys::Function>()
+            .expect("captureException is a function");
+        let _ = cap_fn.call1(&g, &err);
+
+        // The layer fires flush(2000) internally; give the HTTP round-trip
+        // its bounded window before the test page dies.
+        sleep_ms(3000).await;
+    }
+
+    /// LIVE PROBE C — the revived error! channel end-to-end
+    /// (uwuwu#1454 verification): a real `tracing::error!` goes through the
+    /// `tracing_console` layer → console.error + captureException → Sentry.
+    /// `#[ignore]`-gated (see probe A).
+    #[wasm_bindgen_test]
+    #[ignore = "live delivery probe — probe build only, run with --ignored"]
+    async fn live_probe_error_channel() {
+        if ENVIRONMENT != "probe" || DSN.is_empty() {
+            return;
+        }
+        crate::init_tracing();
+        assert!(wait_sentry(40).await, "SDK did not load within 20s");
+
+        // The layer routes this to console.error + captureException.
+        tracing::error!("probe-c uwuwu1454 error channel end-to-end");
+
+        sleep_ms(3000).await;
     }
 }

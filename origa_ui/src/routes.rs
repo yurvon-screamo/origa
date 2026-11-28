@@ -147,7 +147,11 @@ enum FailureSeverity {
 /// Runs one resource loader and flips its readiness flag the moment that
 /// loader finishes — success or failure — instead of after the stage-wide
 /// `join!` barrier, so the loading overlay reflects real per-resource
-/// progress. The stage barriers themselves are preserved by the callers:
+/// progress. Known limitation (uwuwu#1454 round 4): the severity gate
+/// cannot classify the error kind, so a non-network failure (a corrupted
+/// payload surfacing as `Err`) while offline degrades to `warn!` —
+/// loaders that can distinguish content bugs report them themselves
+/// (phrase batch, JLPT parse, example cache). The stage barriers themselves are preserved by the callers:
 /// the loaders still run within their stage's `join!`, keeping the staged
 /// memory plan (iOS jetsam) unchanged.
 async fn tracked<F, Fut>(
@@ -164,7 +168,16 @@ where
     match (&result, severity) {
         (Ok(()), _) => {},
         (Err(e), FailureSeverity::Warn) => tracing::warn!("Failed to load {resource}: {e}"),
-        (Err(e), FailureSeverity::Error) => tracing::error!("Failed to load {resource}: {e}"),
+        // Critical resources keep their severity gate: an offline start with
+        // nothing cached fails all five tracked loads — expected
+        // degradation (warn), while an online failure is an incident
+        // (uwuwu#1454 network invariant; ADR-053 cache-first offline path
+        // means cached starts never reach this branch at all).
+        (Err(e), FailureSeverity::Error) => {
+            crate::tracing_console::report_network_failure(&format!(
+                "Failed to load {resource}: {e}"
+            ));
+        },
     }
     flag.set(true);
     result
@@ -300,7 +313,12 @@ pub fn start_dictionary_loading(
         let critical_results = [vocab_r, phrases_r, kanji_r, grammar_r, radicals_r];
         if load_failure_verdict(&critical_results) {
             if auth_store.load_generation.get_untracked() == generation {
-                tracing::error!("All critical resources failed — rendering the load error screen");
+                // Offline start with nothing cached lands here too — the
+                // screen is correct UX, the Sentry event is not an incident
+                // (uwuwu#1454 network invariant).
+                crate::tracing_console::report_network_failure(
+                    "All critical resources failed — rendering the load error screen",
+                );
                 auth_store.load_failure.set(true);
                 return;
             }
@@ -377,9 +395,12 @@ pub fn start_dictionary_loading(
         // Read-only duplicate scan: reports exact-key duplicates; never saves.
         crate::loaders::word_identity_scan::spawn(repository.clone());
 
-        // Phase C: jlpt_content (depends on kanji + grammar)
+        // Phase C: jlpt_content (depends on kanji + grammar). The loader
+        // already reported its failures with the network invariant
+        // (one aggregated severity-routed event per attempt) — this line
+        // stays a debug breadcrumb, not a second event on the same root.
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
-            tracing::error!("Failed to load jlpt_content: {e}");
+            tracing::debug!("Failed to load jlpt_content: {e}");
         }
 
         // Phase D: post-load data seeding (BEFORE signaling completion).
@@ -392,10 +413,14 @@ pub fn start_dictionary_loading(
             tracing::warn!("Failed to seed ready phrases: {e}");
         }
 
-        // Phase D-2: examples index (#528, non-critical — the word page
-        // degrades to an empty state when it is missing).
+        // Phase D-2: examples index (the word page degrades to an empty
+        // state when it is missing). The loader severity-routes the fetch
+        // failure itself (uwuwu#1454: the index gates the whole examples
+        // family — an online 404/broken deploy would otherwise kill
+        // examples for the session with no event); this line stays a
+        // debug breadcrumb, not a second report on the same root.
         if let Err(e) = load_examples().await {
-            tracing::warn!("Failed to load examples index: {e}");
+            tracing::debug!("Failed to load examples index: {e}");
         }
 
         // Phase E: auto per-card pre-cache (background, only when online)
@@ -989,5 +1014,115 @@ mod tests {
         let domain_loaded = [true, true, true, true, true];
         let readiness = [true, true, true, true, true];
         assert!(retry_plan(&domain_loaded, &readiness).is_empty());
+    }
+}
+
+/// The tracked-load severity gate pinned live (uwuwu#1454 review round 2):
+/// an online failure of a critical resource is an incident (`error!`), the
+/// same failure offline is expected degradation (`warn!` — an offline
+/// start with nothing cached fails all five loads and must not flood
+/// Sentry). Host builds cannot see wasm-only modules, so this lives here.
+#[cfg(all(target_arch = "wasm32", test))]
+mod wasm_tests {
+    use super::*;
+    use crate::core::log_capture;
+    use crate::core::tauri_mock::OnlineOverride;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn failing_loader() -> impl Fn() -> std::future::Ready<Result<(), OrigaError>> + Clone + 'static
+    {
+        || {
+            std::future::ready(Err(OrigaError::RepositoryError {
+                reason: "test: cdn dead".to_owned(),
+            }))
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_critical_failure_online_is_error() {
+        let _online = OnlineOverride::install(true);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-critical-res",
+            flag,
+            FailureSeverity::Error,
+            failing_loader(),
+        )
+        .await;
+
+        assert!(
+            flag.get_untracked(),
+            "the readiness flag flips on failure too"
+        );
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::ERROR
+                    && m.contains("Failed to load test-critical-res")),
+            "online critical failure = incident, got {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_critical_failure_offline_is_warn() {
+        let _offline = OnlineOverride::install(false);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-critical-res",
+            flag,
+            FailureSeverity::Error,
+            failing_loader(),
+        )
+        .await;
+
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::WARN
+                    && m.contains("Failed to load test-critical-res")
+                    && m.contains("(offline)")),
+            "offline critical failure = degradation, got {events:?}"
+        );
+        assert!(
+            events
+                .iter()
+                .all(|(level, _)| *level != tracing::Level::ERROR),
+            "an offline start must not emit critical incidents: {events:?}"
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn tracked_warn_severity_stays_warn_while_online() {
+        let _online = OnlineOverride::install(true);
+        let flag = RwSignal::new(false);
+        log_capture::install();
+        log_capture::take_events();
+
+        let _ = tracked(
+            "test-minor-res",
+            flag,
+            FailureSeverity::Warn,
+            failing_loader(),
+        )
+        .await;
+
+        let events = log_capture::take_events();
+        assert!(
+            events
+                .iter()
+                .any(|(level, m)| *level == tracing::Level::WARN
+                    && m.contains("Failed to load test-minor-res")),
+            "warn-severity resources stay breadcrumbs online: {events:?}"
+        );
     }
 }

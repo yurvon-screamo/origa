@@ -56,7 +56,7 @@ fn main() {
     // either way (verified on cargo 1.98, PR #909 probe).
     let sentry_dsn = env::var("SENTRY_DSN").unwrap_or_default();
     let sentry_environment =
-        env::var("SENTRY_ENVIRONMENT").unwrap_or_else(|_| "development".into());
+        build_config::resolve_sentry_environment(env::var("SENTRY_ENVIRONMENT").ok().as_deref());
     let sentry_release = env::var("ORIGA_VERSION").unwrap_or_else(|_| "dev".into());
 
     println!("cargo:rustc-env=SENTRY_DSN_UI={sentry_dsn}");

@@ -356,6 +356,100 @@ was updated to disclose session statistics and the identifier.
   the UUID in `app_data_dir/install.json`, and Users ≥ 1 (filtered by
   `layer=tauri`, environment `development`).
 
+## Addendum (2026-11-28): dead ui error!-channel, SDK-drift lesson, actual performance/replay state
+
+**Status:** Accepted (addendum; audit and fix — task uwuwu#1454, owner order 27.11.2026: «Все найденные дыры и прочие косяки надо закрыть. В рамках этой задачи», implementation sanction «Газ на реализацию»).
+
+### Found defect: the ui error! delivery channel was dead end-to-end
+
+Every WASM-layer `tracing::error!` escalation — the routes.rs `tracked()`
+core-content escalations, the ADR-079 device-ai degradations, any ad-hoc
+error! point — produced **zero** Sentry events since this ADR shipped:
+
+- **Source**: `tracing-wasm` 0.2.1 routes ALL levels through `console.log`
+  (its only console bindings are `log1/log2/log3`; the level is a CSS color).
+- **Receiver**: `captureConsoleIntegration` is NOT among the eager exports of
+  the loader-served SDK (v10.78.0 at audit time; the loader serves "latest").
+  It lives in a lazy chunk (`browser.sentry-cdn.com/<ver>/captureconsole.min.js`),
+  and the `typeof Sentry.captureConsoleIntegration === 'function'` guard in
+  `sentryOnLoad` silently yielded `integrations: []` — the exact failure class
+  the v7→v8 migration comment above documents, repeated quietly (a guard
+  instead of a throw).
+- **End-to-end proof from production data**: 30 days of events contain zero
+  console-captured errors, while 76 WASM panics called the honest
+  `console.error` via `console_error_panic_hook` in SDK-loaded sessions —
+  not one console capture; the panic bridge (`captureException`) delivered
+  them fine.
+
+### Fix (this addendum's decision)
+
+- Error delivery now goes **directly** through the eagerly exported
+  `Sentry.captureException` — a level-aware tracing layer
+  (`origa_ui/src/tracing_console.rs`) routes `error!` → `console.error` +
+  `captureException(new Error(msg)) + flush`, replicating the panic-bridge
+  pattern that has proven delivery across SDK majors. The dead
+  captureConsoleIntegration block and its typeof guard are removed.
+- **Lesson (binding for future integration work)**: the loader serves
+  "latest" — anything keyed on console-capture channels or lazy surfaces is
+  fragile by construction (broken twice: v7→v8, v8→v10). Key delivery on the
+  eager `captureException`/`captureMessage` surface.
+- Background network failures follow an ADR-079-style severity invariant:
+  online failure of a load-bearing fetch = `error!` (event); offline or
+  best-effort step = `warn!` (breadcrumbs) — an offline start must not flood
+  Sentry with error events. **The offline verdict never rests on
+  `navigator.onLine` alone** (ADR-053 §2: WKWebView lies in both
+  directions): the shared gate reports an incident only while the browser
+  claims online AND the startup probe has not proven the CDN unreachable
+  (`CdnUnreachable`, ADR-053). Known residual: a spurious `onLine=false`
+  while the CDN is actually reachable under-reports to breadcrumbs —
+  disproving the browser's offline claim would need a probe per failure;
+  accepted (uwuwu#1454 round 4).
+
+### Actual state recorded (was "NOT TOUCHED" before)
+
+- `traces_sample_rate(1.0)` / `tracesSampleRate: 1.0` and `enable_logs` are
+  **enabled in code in both layers** — Performance tracing and Sentry Logs
+  are ON, not follow-ups. Session Replay is active at project settings level
+  (replayId observed on 202/235 audited events; not wired in code). The
+  earlier "Performance tracing / Session Replay — follow-up (payload
+  overhead, opt-in)" NOTICED line is superseded by this record; whether to
+  keep, tune, or disable them is an owner call on the recorded facts.
+- Symbolication, final state (implementation round, review round 2 of
+  uwuwu#1454):
+  - **Android (.so, all four built ABIs) and Linux (ELF) — implemented,
+    release-only, non-blocking.** The tauri.yml tag workflow is the sole
+    forwarder of `SENTRY_AUTH_TOKEN` (tag `push` events only — manual
+    dispatch and ci.yml PR/master builds get an empty token, so alpha
+    builds create no Sentry releases). Command form per sentry-cli 3.7.0:
+    `debug-files upload -t elf <path>...` — 3.x removed `--no-progress`
+    and `--include`, and the first wiring died on exactly that; DIFs bind
+    by build-id, so there is no release flag to pass. **Release-train
+    policy (explicit, review round 2): the upload step is
+    `continue-on-error` — missing debug files degrade crash symbolication
+    but must not fail the tag build** (a rotated token with wrong scopes
+    would otherwise red-light the whole release); the failing step stays
+    visible in the run UI.
+  - **Known cost, owner fork open (Linux):** the job builds with
+    `STRIP=none` + line-tables, and tauri fuses compile with bundling —
+    deb/rpm carry the unstripped binary: measured 8.31 → 14.76 MiB per
+    package (+78%; CI runs 46090840297 vs 46094186486). Accept vs revert
+    is an owner decision recorded in the task report.
+  - **WASM — infeasible on this pipeline, measured by build spikes**
+    (baseline shipped artifact 10,127,088 bytes; the task's size gate =
+    stop above +25%):
+    | Path | Result | Verdict |
+    | --- | --- | --- |
+    | full DWARF (wasm-opt keep-debug, no optimization) | 259 MB (+2457%) | fails the gate outright |
+    | stripped-after-objcopy (no wasm-opt) | 54.5 MB (+438%) | fails the gate outright |
+    | name section (wasm-opt `-g`, strip=none) | 50.5 MB (+399%) | fails the gate — ~40 MB of mangled Rust names |
+    | sidecar symbols build (strip=none, no `-g`) | shipped 10.1 MB, CODE section differs (7.84 vs 8.62 MB) | dead — binaryen's transforms consume the extra sections it receives, so the symbols build is not address-identical to the shipped one; a sidecar cannot symbolicate an artifact it does not match |
+    Every path to symbolication dies at the size gate or the address
+    identity; the wiring was reverted (commit history keeps the probes).
+    Browsers still show `wasm-function[N]` stacks for WASM events.
+  - **Windows/Apple native symbols — NOT TOUCHING** (spike territory,
+    same class as the probes above; their artifacts are unaffected by the
+    Linux/Android job-scoped env overrides).
+
 ## References
 
 - Sentry Rust SDK: <https://docs.sentry.io/platforms/rust/>
