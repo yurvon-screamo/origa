@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "sets",
+  "screen": "sets-import-found",
+  "route": "/sets",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 114733,
+  "sha256": "24c1004007e7bbf0a09d700dc3c7b1c2f8f68d74feb510502a5a517e372e306e",
+  "capturedAt": "2026-11-28T10:49:08.691Z",
+  "commit": "3996c67ea7b30a3aa9571782e8e5c88995e50cf6",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

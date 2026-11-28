@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "acquaintance-counter-slide",
+  "screen": "counter-training-answer",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 236801,
+  "sha256": "fed98d99ec6c728a9064fc252b863b32064a6bddb92c50acbb367e0e0256d848",
+  "capturedAt": "2026-11-28T08:19:18.138Z",
+  "commit": "3996c67ea7b30a3aa9571782e8e5c88995e50cf6",
+  "baseURL": "http://localhost:1454",
+  "cdnBaseUrl": "http://localhost:8086",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

@@ -13,7 +13,11 @@ import type { ShotScenario } from "../scenario.ts";
 export const wordsGridScenario: ShotScenario = {
   ...descriptors["words-grid"],
   async run({ page }, sink) {
-    await page.goto("/words");
+    // The `with-word` preset leaves the page on /words after adding the
+    // card. A redundant navigation boots the app again and the local
+    // seed loses the LWW merge against the server snapshot, so keep the
+    // mounted page when the preset already put us here.
+    if (!/\/words$/.test(page.url())) await page.goto("/words");
     try {
       await expect(page.getByTestId("words-card-item").first()).toBeVisible({
         timeout: 60_000,
