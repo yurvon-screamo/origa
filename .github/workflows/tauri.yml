@@ -119,6 +119,34 @@ jobs:
                   TRAILBASE_URL: ${{ vars.TRAILBASE_URL }}
                   ORIGA_CDN_BASE_URL: ${{ vars.ORIGA_CDN_BASE_URL }}
                   ORIGA_CDN_REGION: ${{ vars.ORIGA_CDN_REGION }}
+                  # uwuwu#1454 (5a): shipped-WASM carries DWARF for Sentry
+                  # symbolication — profile [profile.wasm-release]
+                  # (strip="none" + line-tables) overrides [profile.release]
+                  # (strip=true). index.html disables wasm-opt (Binaryen drops
+                  # DWARF) and enables wasm-bindgen keep-debug. Tracked in the
+                  # ADR-036 addendum; size gate documented in the audit.
+                  TRUNK_BUILD_CARGO_PROFILE: wasm-release
+
+            - name: Upload Sentry WASM debug files
+              # uwuwu#1454 (5a): ship the DWARF-bearing .wasm so Sentry
+              # symbolicates wasm-function[N] frames (the dominant event stack
+              # in the audit). Soft-skip without the token.
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: uwuwu
+                  SENTRY_PROJECT: rust
+                  SENTRY_RELEASE: ${{ needs.version.outputs.version }}
+              run: |
+                  set -euo pipefail
+                  if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+                      echo "SENTRY_AUTH_TOKEN not configured — skipping debug-file upload"
+                      exit 0
+                  fi
+                  curl -sSL --fail -o /tmp/sentry-cli \
+                      "https://github.com/getsentry/sentry-cli/releases/download/3.7.0/sentry-cli-Linux-x86_64"
+                  chmod +x /tmp/sentry-cli
+                  /tmp/sentry-cli debug-files upload --no-progress \
+                      --include origa_ui/dist/ --extensions wasm
 
             - name: Upload frontend artifact
               uses: actions/upload-artifact@v7

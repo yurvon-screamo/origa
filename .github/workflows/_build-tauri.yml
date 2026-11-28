@@ -219,6 +219,12 @@ jobs:
             # Sentry (ADR-036): see build-windows for rationale.
             SENTRY_DSN: ${{ vars.SENTRY_DSN }}
             SENTRY_ENVIRONMENT: ${{ inputs.version_type == 'stable' && 'production' || inputs.version_type == 'prerelease' && 'staging' || 'development' }}
+            # uwuwu#1454 (5c): keep function names + line tables in the shipped
+            # ELF so Sentry can symbolicate native Linux stacks. Env-override
+            # scoped to this job (Android pattern below) — [profile.release]
+            # stays untouched, Windows/Apple artifacts unaffected.
+            CARGO_PROFILE_RELEASE_STRIP: 'none'
+            CARGO_PROFILE_RELEASE_DEBUG: 'line-tables-only'
             # Skip updater signing for Dependabot PRs — see build-windows for
             # the full rationale.
             TAURI_SIGNING_PRIVATE_KEY: ${{ github.actor != 'dependabot[bot]' && secrets.tauri-signing-private-key || '' }}
@@ -300,6 +306,29 @@ jobs:
                   # manifest keys. Both bundles get minisign .sig files
                   # (tauri-cli sign_updaters covers Deb and Rpm).
                   cargo tauri build --target x86_64-unknown-linux-gnu --config '{"bundle":{"targets":["deb","rpm"]}}' $EXTRA_FLAGS
+
+            - name: Upload Sentry native debug files (Linux)
+              # uwuwu#1454 (5c): the job env keeps function names + line tables
+              # in the ELF; this ships them to Sentry so native crash stacks
+              # symbolicate. Soft-skip without the token (drop-in: one
+              # `gh secret set SENTRY_AUTH_TOKEN`, value held by the owner —
+              # Deployment wiki documents the key name).
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: uwuwu
+                  SENTRY_PROJECT: rust
+                  SENTRY_RELEASE: ${{ inputs.version }}
+              run: |
+                  set -euo pipefail
+                  if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+                      echo "SENTRY_AUTH_TOKEN not configured — skipping debug-file upload"
+                      exit 0
+                  fi
+                  curl -sSL --fail -o /tmp/sentry-cli \
+                      "https://github.com/getsentry/sentry-cli/releases/download/3.7.0/sentry-cli-Linux-x86_64"
+                  chmod +x /tmp/sentry-cli
+                  /tmp/sentry-cli debug-files upload --no-progress \
+                      --include target/x86_64-unknown-linux-gnu/release/
 
             - name: Create fixed-name aliases
               working-directory: target/x86_64-unknown-linux-gnu/release/bundle
@@ -389,6 +418,9 @@ jobs:
             # un-strips only Android CI builds. NDK still strips the final .so inside
             # the APK/AAB, keeping user-facing binary size unchanged.
             CARGO_PROFILE_RELEASE_STRIP: 'false'
+            # uwuwu#1454 (5b): line tables so Sentry symbolicates Android native
+            # stacks from the uploaded .so debug files (upload step below).
+            CARGO_PROFILE_RELEASE_DEBUG: 'line-tables-only'
 
         steps:
             - name: Checkout repository
@@ -526,6 +558,31 @@ jobs:
                   fi
                   echo "=== Start build ==="
                   cargo tauri android build "${CONFIG_ARGS[@]}" 2>&1 || (echo "Build failed with exit code $?"; exit 1)
+
+            - name: Upload Sentry native debug files (Android)
+              # uwuwu#1454 (5b): the job env keeps line tables in the .so files;
+              # ship them to Sentry so Android native crash stacks symbolicate
+              # (Android = the dominant event platform in the audit). Soft-skip
+              # without the token.
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: uwuwu
+                  SENTRY_PROJECT: rust
+                  SENTRY_RELEASE: ${{ inputs.version }}
+              run: |
+                  set -euo pipefail
+                  if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+                      echo "SENTRY_AUTH_TOKEN not configured — skipping debug-file upload"
+                      exit 0
+                  fi
+                  curl -sSL --fail -o /tmp/sentry-cli \
+                      "https://github.com/getsentry/sentry-cli/releases/download/3.7.0/sentry-cli-Linux-x86_64"
+                  chmod +x /tmp/sentry-cli
+                  /tmp/sentry-cli debug-files upload --no-progress \
+                      --include target/aarch64-linux-android/release/ \
+                      --include target/armv7-linux-androideabi/release/ \
+                      --include target/x86_64-linux-android/release/ || \
+                      echo "some triple dirs absent — uploaded what exists"
 
             - name: Rename APK to fixed-name output
               working-directory: tauri/gen/android/app/build/outputs/apk
