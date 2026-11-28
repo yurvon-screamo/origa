@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "sets",
+  "screen": "sets-import-found",
+  "route": "/sets",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 191686,
+  "sha256": "3c033620508dcc2c8c6d201d74ffa4d5937d87b811912a4c916cc416e9732448",
+  "capturedAt": "2026-11-28T02:39:15.011Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/sets--sets-import-found--mobile-3c033620.png",
+  "uploadedSha256": "3c033620508dcc2c8c6d201d74ffa4d5937d87b811912a4c916cc416e9732448",
+  "uploadedAt": "2026-11-28T12:36:32.760Z"
+}

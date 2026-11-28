@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 161417,
-  "sha256": "1f217ba1bc89d81fbf6529f13fe141c0440294236134391c2de325dd50ae8ab0",
-  "capturedAt": "2026-11-27T10:37:01.952Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 161438,
+  "sha256": "b3d5830dc9f6198ba0bfd6d307154fd4eba8a5dd3922da4d0252c093404fc30e",
+  "capturedAt": "2026-11-28T00:21:36.827Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-accuracy-chart--accuracy-chart--desktop-1f217ba1.png",
-  "uploadedSha256": "1f217ba1bc89d81fbf6529f13fe141c0440294236134391c2de325dd50ae8ab0",
-  "uploadedAt": "2026-11-27T16:22:26.804Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/home-accuracy-chart--accuracy-chart--desktop-b3d5830d.png",
+  "uploadedSha256": "b3d5830dc9f6198ba0bfd6d307154fd4eba8a5dd3922da4d0252c093404fc30e",
+  "uploadedAt": "2026-11-28T02:28:22.553Z"
 }

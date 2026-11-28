@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 359683,
-  "sha256": "0b4e2caa61e153d71d1d59de08299e7469d08e6bb6aeb677f12ae28916c1c53b",
-  "capturedAt": "2026-11-27T12:12:44.587Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-reading-quiz--quiz-question--desktop-0b4e2caa.png",
-  "uploadedSha256": "0b4e2caa61e153d71d1d59de08299e7469d08e6bb6aeb677f12ae28916c1c53b",
-  "uploadedAt": "2026-11-27T16:22:55.265Z"
+  "bytes": 359714,
+  "sha256": "98287638920022ab607ec2d365c90c41a41d0b906098990b9ddf55bd87e31420",
+  "capturedAt": "2026-11-28T02:02:42.217Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-reading-quiz--quiz-question--desktop-98287638.png",
+  "uploadedSha256": "98287638920022ab607ec2d365c90c41a41d0b906098990b9ddf55bd87e31420",
+  "uploadedAt": "2026-11-28T12:37:43.920Z"
 }

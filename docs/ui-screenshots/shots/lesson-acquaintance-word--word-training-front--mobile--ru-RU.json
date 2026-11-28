@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 118810,
-  "sha256": "e077fbdae5d95aa87bcc67caaa10bfbd792e8a959692ad53eb4e417c539360e9",
-  "capturedAt": "2026-11-22T03:29:57.615Z",
-  "commit": "249770690f6957fe37c80bd586686775d71d3434",
-  "baseURL": "http://localhost:11421",
-  "cdnBaseUrl": "http://localhost:18181",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-acquaintance-word--word-training-front--mobile-e077fbda.png",
-  "uploadedSha256": "e077fbdae5d95aa87bcc67caaa10bfbd792e8a959692ad53eb4e417c539360e9",
-  "uploadedAt": "2026-11-22T04:44:32.917Z"
+  "bytes": 111533,
+  "sha256": "5709435c688f8e3fad5cc27f04d358e7c60fea1593cb754a52e2f1c74218e5f8",
+  "capturedAt": "2026-11-28T01:36:58.835Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-acquaintance-word--word-training-front--mobile-5709435c.png",
+  "uploadedSha256": "5709435c688f8e3fad5cc27f04d358e7c60fea1593cb754a52e2f1c74218e5f8",
+  "uploadedAt": "2026-11-28T12:37:34.689Z"
 }

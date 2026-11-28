@@ -8,13 +8,13 @@
   "width": 390,
   "height": 894,
   "fullPage": true,
-  "bytes": 138126,
-  "sha256": "8808e9d475e114dee0a1a2e6a71ce80c05802b7843b5371533f784e50f97b766",
-  "capturedAt": "2026-11-12T05:22:09.082Z",
-  "commit": "331f832f38c3a1ec44fd02d3424fa22987589f9a",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:18081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--mobile-8808e9d4.png",
-  "uploadedSha256": "8808e9d475e114dee0a1a2e6a71ce80c05802b7843b5371533f784e50f97b766",
-  "uploadedAt": "2026-11-12T05:22:14.688Z"
+  "bytes": 138150,
+  "sha256": "f1dacaa42f729748e1a64f68eac6bb0fbcb13829f16c64ed28bb3a56e533c1b0",
+  "capturedAt": "2026-11-28T04:26:16.864Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/words-grid--grid-full--mobile-f1dacaa4.png",
+  "uploadedSha256": "f1dacaa42f729748e1a64f68eac6bb0fbcb13829f16c64ed28bb3a56e533c1b0",
+  "uploadedAt": "2026-11-28T12:38:43.341Z"
 }

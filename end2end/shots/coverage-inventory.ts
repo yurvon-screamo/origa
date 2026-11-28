@@ -202,8 +202,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "home-accuracy-chart",
     screens: ["accuracy-chart"],
     viewports: BOTH,
-    // Review #1691: the desktop frame cuts the chart below the fold.
-    status: "covered",
+    // The desktop frame cuts the chart below the fold.
+    status: "gap",
   },
   {
     id: "variation:home-jlpt",
@@ -275,8 +275,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "counters",
     screens: ["counters-add-drawer"],
     viewports: BOTH,
-    // Review #1691: the frame shows the list, not the drawer (captured
-    // before the animation settles). Revert to gap until it is recaptured.
+    // Recaptured by #1736 with the drawer visible in both viewports.
     status: "covered",
   },
   {
@@ -329,7 +328,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "sets",
     screens: ["sets-filters", "sets-import-found"],
     viewports: BOTH,
-    status: "covered",
+    // The captured drawer shows a loading spinner; mobile shows no drawer.
+    status: "gap",
   },
   {
     id: "variation:onboarding-counter-scoring",
@@ -380,7 +380,8 @@ export const inventory: readonly CoverageRow[] = [
       "feedback-modal-filled",
     ],
     viewports: BOTH,
-    status: "covered",
+    // Modal caught mid-animation; the report button hides behind a spinner.
+    status: "gap",
   },
   {
     id: "variation:token-popup",
@@ -658,7 +659,7 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
         "вид Reversed не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
       source: "LessonCardView::Reversed",
@@ -674,7 +675,7 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
         "вид GrammarMutated не различается детектором (detectKind -> normal); DOM-маркера нет, кадр не доказал бы вид — исключено до появления сценария (uwuwu#1691)",
       source: "LessonCardView::GrammarMutated",
@@ -690,7 +691,7 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
         "ни один сценарий каталога не испускает grammar-quiz-*; в lesson-reading-quiz снимается только reading-квиз — исключено до появления сценария (uwuwu#1691)",
       source: "QuizVariant::Grammar",
@@ -706,7 +707,7 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
         "сценарий words снимает только words/words-full, сценарий sets — sets-filters; экраны words-filters/words-inbox нигде не испускаются — исключено до появления сценария (uwuwu#1691)",
       source: "card_list_page",
@@ -722,7 +723,7 @@ export const inventory: readonly CoverageRow[] = [
     viewports: BOTH,
     status: "excluded",
     exclusion: {
-      code: "owner-question",
+      code: "no-scenario",
       reason:
         "сценарий sets снимает sets-import-found, но не пустое состояние импорта; экрана sets-import-empty нет ни в одном сценарии — исключено до появления сценария (uwuwu#1691)",
       source: "sets-import-drawer",
@@ -752,8 +753,8 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "consent",
     screens: ["consent-screen"],
     viewports: BOTH,
-    // Review #1691: the frames were shot under the fading boot-splash.
-    status: "covered",
+    // Captured under the fading boot splash, or over the home screen.
+    status: "gap",
   },
   {
     id: "surface:lesson-empty",

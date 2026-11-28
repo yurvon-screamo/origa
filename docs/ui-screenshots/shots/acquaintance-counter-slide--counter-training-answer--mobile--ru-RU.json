@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "acquaintance-counter-slide",
+  "screen": "counter-training-answer",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 105994,
+  "sha256": "2d1f07c67139046630220d532d1792847f3b49b6f44192d9e0aa7ccfa83f378e",
+  "capturedAt": "2026-11-28T00:07:47.160Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/acquaintance-counter-slide--counter-training-answer--mobile-2d1f07c6.png",
+  "uploadedSha256": "2d1f07c67139046630220d532d1792847f3b49b6f44192d9e0aa7ccfa83f378e",
+  "uploadedAt": "2026-11-28T12:36:42.941Z"
+}

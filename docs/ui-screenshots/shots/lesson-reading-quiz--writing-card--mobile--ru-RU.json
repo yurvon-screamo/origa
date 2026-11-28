@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 168240,
-  "sha256": "db0842dd27ca4c77d76a207d43cf76b20ddf88f406bf9e99e231017b7a3f615c",
-  "capturedAt": "2026-10-30T19:43:17.181Z",
-  "commit": "d6f2df454898fa106364064a1824bbe23f8906e4",
-  "baseURL": "http://localhost:1420",
-  "cdnBaseUrl": "http://localhost:8081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/lesson-card-polish/lesson-reading-quiz--writing-card--mobile-db0842dd.png",
-  "uploadedSha256": "db0842dd27ca4c77d76a207d43cf76b20ddf88f406bf9e99e231017b7a3f615c",
-  "uploadedAt": "2026-10-30T19:44:21.959Z"
+  "bytes": 169021,
+  "sha256": "b86a91028cbdbbc16bad52a2be5ee89018703f49354bf5a28856b7621a316c6b",
+  "capturedAt": "2026-11-28T02:04:36.803Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-reading-quiz--writing-card--mobile-b86a9102.png",
+  "uploadedSha256": "b86a91028cbdbbc16bad52a2be5ee89018703f49354bf5a28856b7621a316c6b",
+  "uploadedAt": "2026-11-28T12:37:45.756Z"
 }

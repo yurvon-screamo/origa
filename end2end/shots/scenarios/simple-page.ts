@@ -11,12 +11,15 @@ export async function waitForAppReady(page: Page): Promise<void> {
 }
 
 /**
- * The home mount sync is asynchronous: give the toast a short window to
- * appear before asserting it has gone. One wait for every home screenshot —
- * a toast caught mid-fade is a false diff on the next PR.
+ * The home mount sync is asynchronous: first give the toast a window to
+ * mount, then wait until it is gone. A toast caught mid-fade is a false
+ * diff on the next PR. One wait for every home screenshot.
  */
-export async function waitForSyncToast(page: Page): Promise<void> {
-  await page.waitForTimeout(300);
+export async function waitForSyncToastToDisappear(page: Page): Promise<void> {
+  const toast = page.locator('[data-testid^="toast-"]').first();
+  await toast
+    .waitFor({ state: "visible", timeout: 2_000 })
+    .catch(() => undefined);
   await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
     timeout: 15_000,
   });

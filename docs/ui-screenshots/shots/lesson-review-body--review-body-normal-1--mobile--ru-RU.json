@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 161112,
-  "sha256": "2d5fbe01738fbeb6de97c8caca6e9525e815e8938abe248924562c52ee1b8c45",
-  "capturedAt": "2026-11-27T12:20:28.303Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-review-body--review-body-normal-1--mobile-2d5fbe01.png",
-  "uploadedSha256": "2d5fbe01738fbeb6de97c8caca6e9525e815e8938abe248924562c52ee1b8c45",
-  "uploadedAt": "2026-11-27T16:22:59.031Z"
+  "bytes": 166990,
+  "sha256": "670f072c6910d52e06e1b97d4adbf8476e220acde4a1c5c69cee88e29ca5881b",
+  "capturedAt": "2026-11-28T02:10:40.766Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-review-body--review-body-normal-1--mobile-670f072c.png",
+  "uploadedSha256": "670f072c6910d52e06e1b97d4adbf8476e220acde4a1c5c69cee88e29ca5881b",
+  "uploadedAt": "2026-11-28T12:37:46.943Z"
 }

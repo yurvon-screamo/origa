@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
-import { waitForSyncToast } from "./simple-page.ts";
+import { waitForSyncToastToDisappear } from "./simple-page.ts";
 
 /**
  * The home accuracy chart (fl2O037UR7) with live data.
@@ -35,7 +35,7 @@ export const homeAccuracyChartScenario: ShotScenario = {
       window.scrollTo({ top });
     });
 
-    await waitForSyncToast(page);
+    await waitForSyncToastToDisappear(page);
 
     const viewport = page.viewportSize();
     if (viewport && viewport.width < 500) {

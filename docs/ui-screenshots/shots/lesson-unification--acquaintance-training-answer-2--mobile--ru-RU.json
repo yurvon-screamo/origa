@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 127532,
-  "sha256": "79c72bec52bb015cf5e0ed0a16fd13ab0c8cbac735aa05d41dca8e9bd49f58d6",
-  "capturedAt": "2026-11-27T12:25:26.294Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
-  "baseURL": "http://localhost:1421",
-  "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-unification--acquaintance-training-answer-2--mobile-79c72bec.png",
-  "uploadedSha256": "79c72bec52bb015cf5e0ed0a16fd13ab0c8cbac735aa05d41dca8e9bd49f58d6",
-  "uploadedAt": "2026-11-27T16:23:09.925Z"
+  "bytes": 126310,
+  "sha256": "15cbd68ab14a9103842e97cea321ebee782cdb996883ae93f764eba040375329",
+  "capturedAt": "2026-11-28T04:34:22.816Z",
+  "commit": "7f6660c0f0de79aa3849884d8e9a9587bdfa5134",
+  "baseURL": "http://localhost:1431",
+  "cdnBaseUrl": "http://localhost:8083",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-unification--acquaintance-training-answer-2--mobile-15cbd68a.png",
+  "uploadedSha256": "15cbd68ab14a9103842e97cea321ebee782cdb996883ae93f764eba040375329",
+  "uploadedAt": "2026-11-28T12:38:30.993Z"
 }
