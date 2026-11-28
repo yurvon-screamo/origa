@@ -144,6 +144,32 @@ async fn analyze_text_deduplicates_words() {
 }
 
 #[tokio::test]
+async fn analyze_text_collapses_script_and_inflection_variants_into_one_word() {
+    real_dictionaries_or_skip!();
+
+    // Arrange
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = AnalyzeTextForCardsUseCase::new(&repo);
+
+    // Act — three writings of the same word: hiragana, kanji, inflected form.
+    let analysis = use_case
+        .execute("たべる 食べる たべました".to_string())
+        .await
+        .unwrap();
+
+    // Assert — the analysis path must agree with the manual entry path:
+    // one card candidate, keyed by the SudachiDict lemma (uwuwu#1463 US-1).
+    assert_eq!(analysis.words.len(), 1);
+    assert_eq!(analysis.total_found, 1);
+    assert_eq!(analysis.words[0].base_form, "食べる");
+}
+
+#[tokio::test]
 async fn analyze_text_without_user_returns_error() {
     real_dictionaries_or_skip!();
 
