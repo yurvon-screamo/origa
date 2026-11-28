@@ -46,6 +46,11 @@ Then(
   },
 );
 
+Then("результатов анализа одна строка", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await wordsPage.expectSingleAnalyzedWord();
+});
+
 When("выбирает первое слово из результатов", async ({ page }) => {
   const wordsPage = new WordsPage(page);
   await wordsPage.selectFirstWord();
