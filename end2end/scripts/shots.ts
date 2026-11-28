@@ -578,7 +578,7 @@ function usage(): number {
   npm run shots -- store --out <dir> [--run <dir>]
   npm run shots -- index
 
-Опция coverage --run сверяет инвентарь с манифестами прогона: печать(harness) в байтах PNG против HEAD и между кадрами, sha256 файла, маркеры. Поле commit в манифесте информационное.
+Опция coverage --run сверяет инвентарь с манифестами прогона: печать harness в байтах PNG против HEAD по родству и между кадрами, sha256 файла, отрицательные записи. Поле commit в манифесте информационное.
 Команда store копирует PNG прогона в docs/ui-screenshots/images под стабильными именами — кадрам нужен диф в PR.
 
 Опции capture:

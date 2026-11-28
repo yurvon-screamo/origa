@@ -103,9 +103,10 @@ npm run shots -- index                                   # rebuild the registry 
 npm run shots -- coverage                                # inventory rows: covered / gap / excluded
 npm run shots -- coverage --run /tmp/opencode/shots/<label>  # compare frames with the manifest
 
-`--run` читает печать `origa-proof` (commit/screen) из байтов PNG и сверяет её с HEAD чекаута и между кадрами; поле `commit` манифеста информационное. Кадр без печати, с расходящимся sha256 или отрицательная запись (пустой `file`, маркер не установился) красный. Каждый `sink.shot(name, { marker })` обязан назвать test-id (или `css=`-селектор): синк ждёт сплеш detached и маркер видимым с порогом 0.8×min(бокс, вьюпорт), снимает с `animations: "disabled"`.`
 npm run shots -- store --out /tmp/opencode/shots/<label>  # keep baseline PNGs for review diffs
 ```
+
+`--run` читает печать `origa-proof` (commit/screen) из байтов PNG и сверяет её с HEAD чекаута по родству и между кадрами; поле `commit` манифеста информационное. Кадр без печати, с расходящимся sha256 или отрицательная запись (пустой `file`, маркер не установился) красный. Каждый `sink.shot(name, { marker })` обязан назвать test-id (или `css=`-селектор): синк ждёт сплеш detached и маркер видимым с порогом 0.8×min(бокс, вьюпорт), снимает с `animations: "disabled"`. Гейт не читает маркер напрямую — только отрицательную запись. Печать не защищает от перепечатки PNG; `--base-url`/dist печатают HEAD чекаута, а не снятый бандл.
 
 `capture` checks the environment first (`shots/preflight.ts`): a missing
 `cdn/fonts/`, a poisoned `dist/` or an output directory inside the

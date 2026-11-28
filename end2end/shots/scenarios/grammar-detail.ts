@@ -46,7 +46,7 @@ export const grammarDetailScenario: ShotScenario = {
       timeout: 15_000,
     });
     await sink.shot("grammar-practice-question", {
-      marker: "grammar-practice-progress",
+      marker: "grammar-detail-container",
     });
 
     const deleteButton = page

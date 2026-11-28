@@ -80,7 +80,7 @@ export const kanjiWritingPracticeScenario: ShotScenario = {
     await page.waitForTimeout(700);
     await sink.shot("kanji-writing-practice", {
       fullPage: true,
-      marker: "kanji-page",
+      marker: `css=${canvasSelector}`,
     });
   },
 };

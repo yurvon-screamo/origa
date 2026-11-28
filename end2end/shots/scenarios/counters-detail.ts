@@ -43,7 +43,7 @@ export const countersDetailScenario: ShotScenario = {
       marker: "counters-detail-examples",
     });
     await sink.shot("detail-viewport", {
-      marker: "counters-detail-examples",
+      marker: "counters-detail-hero",
     });
   },
 };

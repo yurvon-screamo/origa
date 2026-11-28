@@ -18,6 +18,6 @@ export const profileScenario: ShotScenario = {
     await waitForAppReady(page);
     await sink.shot("profile-form", { marker: "profile-personal-data" });
     await expect(page.getByTestId("profile-settings")).toBeVisible();
-    await sink.shot("profile-settings", { marker: "profile-settings" });
+    await sink.shot("profile-settings", { marker: "profile-page" });
   },
 };
