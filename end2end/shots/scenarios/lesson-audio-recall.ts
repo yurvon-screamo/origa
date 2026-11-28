@@ -30,7 +30,9 @@ export const lessonAudioRecallScenario: ShotScenario = {
         await page.waitForTimeout(700);
         await sink.shot("audio-recall-question");
         await page.getByTestId("audio-recall-reveal-btn").click();
-        if (!(await visible(page.getByTestId("audio-recall-know-btn"), 10_000))) {
+        if (
+          !(await visible(page.getByTestId("audio-recall-know-btn"), 10_000))
+        ) {
           throw new Error("audio-recall answer side never appeared");
         }
         await sink.shot("audio-recall-answer");
