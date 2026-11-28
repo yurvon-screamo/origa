@@ -85,68 +85,65 @@ fn user_knows_counter(user: &User, suffix: &str) -> bool {
         .any(|sc| matches!(sc.card(), crate::domain::Card::Counter(c) if c.suffix() == suffix))
 }
 
-/// A kanji writing the user typed explicitly in the analysed text. When the
-/// same word also arrives in hiragana or an inflected form, this is the
-/// intended dictionary article (uwuwu#1463 US-1). The articles themselves are
-/// left intact — only the candidates produced by THIS input are filtered.
+/// Канони́ческое написание, которое пользователь явно напечатал во вводе.
+/// Только для списка написаний одного слова; статьи словаря не меняются.
 struct WritingAnchor {
     lemma: String,
-    reading: String,
+    /// Точные написания, которые считаются вариантами этой леммы.
+    forms: Vec<String>,
 }
 
 fn hiragana_reading(token: &TokenInfo) -> String {
     katakana_to_hiragana(token.phonological_base_form())
 }
 
-/// Does this hiragana surface (or a prefix of it) spell the anchor's reading?
-/// `っ` stands for the consonant of the following character, so `まっ` (from
-/// まった) matches `まつ` (待つ) without a conjugation table.
-fn spelling_matches(surface: &str, reading: &str) -> bool {
-    let mut chars = surface.chars();
-    for expected in reading.chars() {
-        match chars.next() {
-            Some(actual) if actual == expected || actual == 'っ' => {},
-            _ => return false,
-        }
-    }
-    true
+/// Список написаний (たべる 食べる たべました), а не предложение. Только в
+/// этом режиме можно схлопывать написания: в предложении каждое самостоятельное
+/// слово обязано остаться в выдаче (NFT-3).
+fn is_writing_list(text: &str) -> bool {
+    let parts: Vec<&str> = text.split_whitespace().collect();
+    parts.len() >= 2
+        && parts
+            .iter()
+            .all(|p| p.chars().count() <= 12 && p.chars().all(|c| c.is_japanese()))
 }
 
-/// Last token index of a run of hiragana surfaces starting at `start` that
-/// spells `reading` exactly (`お` + `もう` → `おもう`).
-fn split_written_end(tokens: &[TokenInfo], start: usize, reading: &str) -> Option<usize> {
-    let mut spelled = String::new();
-    for (offset, token) in tokens.iter().enumerate().skip(start) {
-        let surface = token.orthographic_surface_form();
-        if !surface.chars().all(|c| c.is_hiragana()) {
-            return None;
-        }
-        spelled.push_str(surface);
-        if spelled == reading {
-            return Some(offset);
-        }
-        if !reading.starts_with(&spelled) {
-            return None;
-        }
+/// Точные формы глагола с заданной словарной основой: прошедшее, отрицание,
+/// вежливое настоящее и прошедшее. Нет совпадения — нет схлопывания.
+fn verb_forms(reading: &str) -> Vec<String> {
+    if reading.is_empty() {
+        return Vec::new();
     }
-    None
-}
-
-/// Indices of all consecutive-surface runs that spell an anchor's reading —
-/// variants of that word, not independent articles.
-fn split_writing_indices(
-    tokens: &[TokenInfo],
-    anchors: &[WritingAnchor],
-) -> std::collections::HashSet<usize> {
-    let mut covered = std::collections::HashSet::new();
-    for anchor in anchors {
-        for start in 0..tokens.len() {
-            if let Some(end) = split_written_end(tokens, start, &anchor.reading) {
-                covered.extend(start..=end);
-            }
-        }
+    let mut forms = vec![reading.to_string()];
+    let mut chars = reading.chars();
+    let Some(last) = chars.next_back() else {
+        return forms;
+    };
+    let stem: String = chars.collect();
+    let (past, negative, masu) = match last {
+        'く' => ("いた", "かない", "き"),
+        'ぐ' => ("いだ", "がない", "ぎ"),
+        'む' => ("んだ", "まない", "み"),
+        'ぶ' => ("んだ", "ばない", "び"),
+        'ぬ' => ("んだ", "なない", "に"),
+        'つ' => ("った", "たない", "ち"),
+        'う' => ("った", "わない", "い"),
+        'す' => ("した", "さない", "し"),
+        'る' => ("た", "ない", ""),
+        _ => return forms,
+    };
+    forms.push(format!("{stem}{past}"));
+    forms.push(format!("{stem}{negative}"));
+    forms.push(format!("{stem}{masu}ます"));
+    forms.push(format!("{stem}{masu}ました"));
+    if last == 'る' {
+        // Пятирядный 帰る: 帰った / 帰らない / 帰ります.
+        forms.push(format!("{stem}った"));
+        forms.push(format!("{stem}らない"));
+        forms.push(format!("{stem}ります"));
+        forms.push(format!("{stem}りました"));
     }
-    covered
+    forms
 }
 
 fn writing_anchors(tokens: &[TokenInfo], text: &str) -> Vec<WritingAnchor> {
@@ -155,33 +152,67 @@ fn writing_anchors(tokens: &[TokenInfo], text: &str) -> Vec<WritingAnchor> {
         .filter(|token| token.part_of_speech().is_vocabulary_word())
         .filter_map(|token| {
             let lemma = token.orthographic_base_form();
-            if lemma.contains_kanji() && text.contains(lemma) {
-                Some(WritingAnchor {
-                    lemma: lemma.to_string(),
-                    reading: hiragana_reading(token),
-                })
-            } else {
-                None
+            if !lemma.contains_kanji() || !text.contains(lemma) {
+                return None;
             }
+            let reading = hiragana_reading(token);
+            let forms = if token.part_of_speech() == &PartOfSpeech::Verb {
+                verb_forms(&reading)
+            } else {
+                vec![reading]
+            };
+            Some(WritingAnchor {
+                lemma: lemma.to_string(),
+                forms,
+            })
         })
         .collect()
 }
 
-/// Is this candidate a hiragana/inflected/homophone variant of a kanji
-/// writing the user typed in the same input?
+/// Индексы токенов, чьи склейки хираганских поверхностей точно равны одной из
+/// форм опоры (お + もう → おもう, う + たった → うたった). Префиксы и сокуон
+/// совпадением не считаются — самостоятельные слова не пропадают.
+fn matched_run_end(tokens: &[TokenInfo], start: usize, forms: &[String]) -> Option<usize> {
+    let mut spelled = String::new();
+    for (offset, token) in tokens.iter().enumerate().skip(start) {
+        let surface = token.orthographic_surface_form();
+        if !surface.chars().all(|c| c.is_hiragana()) {
+            return None;
+        }
+        spelled.push_str(surface);
+        if forms.contains(&spelled) {
+            return Some(offset);
+        }
+        if !forms.iter().any(|form| form.starts_with(&spelled)) {
+            return None;
+        }
+    }
+    None
+}
+
+fn variant_indices(tokens: &[TokenInfo], anchors: &[WritingAnchor]) -> Vec<usize> {
+    let mut covered = std::collections::HashSet::new();
+    for anchor in anchors {
+        for start in 0..tokens.len() {
+            if let Some(end) = matched_run_end(tokens, start, &anchor.forms) {
+                covered.extend(start..=end);
+            }
+        }
+    }
+    let mut indices: Vec<usize> = covered.into_iter().collect();
+    indices.sort_unstable();
+    indices
+}
+
+/// Вариант ли это написания опоры — только точное совпадение склейки с одной
+/// из её форм. Части слова, совпадающие по префиксу, не отбрасываются.
 fn is_variant_of_anchor(
-    token: &TokenInfo,
-    index: usize,
     base: &str,
     anchors: &[WritingAnchor],
-    split_written: &std::collections::HashSet<usize>,
+    index: usize,
+    variants: &[usize],
 ) -> bool {
-    anchors.iter().any(|anchor| {
-        anchor.lemma != base
-            && (spelling_matches(token.orthographic_surface_form(), &anchor.reading)
-                || (base.chars().all(|c| c.is_hiragana()) && anchor.reading == base)
-                || split_written.contains(&index))
-    })
+    variants.binary_search(&index).is_ok() && anchors.iter().any(|anchor| anchor.lemma != base)
 }
 
 impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
@@ -202,12 +233,14 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
 
         debug!(token_count = tokens.len(), "Tokenized text");
 
-        // A kanji writing typed explicitly in the text is the intended
-        // article. Hiragana forms and homophone articles reached through a
-        // hiragana surface are variants of it in THIS input; the dictionary
-        // articles themselves stay untouched (uwuwu#1463 US-1, NFT-3).
-        let anchors = writing_anchors(&tokens, &text);
-        let split_written = split_writing_indices(&tokens, &anchors);
+        // Только список написаний одного слова схлопывается; в предложении
+        // каждое самостоятельное слово остаётся в выдаче (uwuwu#1463, NFT-3).
+        let anchors = if is_writing_list(&text) {
+            writing_anchors(&tokens, &text)
+        } else {
+            Vec::new()
+        };
+        let variants = variant_indices(&tokens, &anchors);
 
         let mut words: Vec<AnalyzedWord> = Vec::new();
         let mut seen_words = std::collections::HashSet::new();
@@ -219,7 +252,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
 
             let base = token.orthographic_base_form();
             let is_anchor = anchors.iter().any(|anchor| anchor.lemma == base);
-            if !is_anchor && is_variant_of_anchor(token, index, base, &anchors, &split_written) {
+            if !is_anchor && is_variant_of_anchor(base, &anchors, index, &variants) {
                 continue;
             }
 
@@ -361,6 +394,27 @@ mod tests {
             "Noun 一 + Suffix 本 is a pair; 月/人 is not"
         );
         assert_eq!(detected[0].0, "本");
+    }
+
+    #[test]
+    fn verb_forms_matches_exact_inflections_only() {
+        let forms = verb_forms("かく");
+        assert!(forms.contains(&"かく".to_string()));
+        assert!(forms.contains(&"かいた".to_string()));
+        assert!(forms.contains(&"かかない".to_string()));
+        assert!(forms.contains(&"かきます".to_string()));
+        assert!(forms.contains(&"かきました".to_string()));
+        // Neither a prefix nor a sokuon wildcard counts as a match (NFT-3).
+        assert!(!forms.iter().any(|form| form == "かい"));
+        assert!(!forms.iter().any(|form| form == "かっ"));
+        assert!(verb_forms("").is_empty());
+    }
+
+    #[test]
+    fn writing_list_mode_excludes_sentences() {
+        assert!(is_writing_list("たべる 食べる たべました"));
+        assert!(!is_writing_list("本を読むのはほんとうに楽しいです。"));
+        assert!(!is_writing_list("あの子はことがすきです。これをください。"));
     }
 
     #[test]
