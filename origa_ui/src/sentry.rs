@@ -546,4 +546,71 @@ mod wasm_tests {
             "visibilitychange while visible must not flush"
         );
     }
+
+    /// Poll `window.Sentry` until the loader-served SDK is up.
+    async fn wait_sentry(timeout_polls: u32) -> bool {
+        for _ in 0..timeout_polls {
+            if let Ok(g) = sentry_global() {
+                if !g.is_undefined() && !g.is_null() {
+                    return true;
+                }
+            }
+            sleep_ms(500).await;
+        }
+        false
+    }
+
+    fn sleep_ms(ms: i32) -> wasm_bindgen_futures::JsFuture {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            if let Some(w) = web_sys::window() {
+                let _ = w.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms);
+            }
+        });
+        wasm_bindgen_futures::JsFuture::from(promise)
+    }
+
+    /// LIVE PROBE A — receiver pipe (uwuwu#1454 verification): `captureException`
+    /// against the real SDK the production loader URL serves. Compiled with
+    /// SENTRY_DSN/SENTRY_ENVIRONMENT baked in; **runs only in a
+    /// SENTRY_ENVIRONMENT=probe build** (any other environment early-skips, so
+    /// ordinary test runs — including CI — never produce probe events).
+    #[wasm_bindgen_test]
+    async fn live_probe_receiver_pipe() {
+        if ENVIRONMENT != "probe" || DSN.is_empty() {
+            return;
+        }
+        init_with(DSN, RELEASE, ENVIRONMENT);
+        assert!(wait_sentry(40).await, "SDK did not load within 20s");
+
+        // Direct receiver call — the exact surface the tracing layer uses.
+        let g = sentry_global().expect("window.Sentry");
+        let err = js_sys::Error::new("probe-a uwuwu1454 receiver pipe");
+        let cap = Reflect::get(&g, &"captureException".into()).expect("captureException export");
+        let cap_fn = cap
+            .dyn_ref::<js_sys::Function>()
+            .expect("captureException is a function");
+        let _ = cap_fn.call1(&g, &err);
+
+        // The layer fires flush(2000) internally; give the HTTP round-trip
+        // its bounded window before the test page dies.
+        sleep_ms(3000).await;
+    }
+
+    /// LIVE PROBE C — the revived error! channel end-to-end
+    /// (uwuwu#1454 verification): a real `tracing::error!` goes through the
+    /// `tracing_console` layer → console.error + captureException → Sentry.
+    /// Runs only in a SENTRY_ENVIRONMENT=probe build (see probe A).
+    #[wasm_bindgen_test]
+    async fn live_probe_error_channel() {
+        if ENVIRONMENT != "probe" || DSN.is_empty() {
+            return;
+        }
+        crate::init_tracing();
+        assert!(wait_sentry(40).await, "SDK did not load within 20s");
+
+        // The layer routes this to console.error + captureException.
+        tracing::error!("probe-c uwuwu1454 error channel end-to-end");
+
+        sleep_ms(3000).await;
+    }
 }
