@@ -356,6 +356,60 @@ was updated to disclose session statistics and the identifier.
   the UUID in `app_data_dir/install.json`, and Users ≥ 1 (filtered by
   `layer=tauri`, environment `development`).
 
+## Addendum (2026-11-28): dead ui error!-channel, SDK-drift lesson, actual performance/replay state
+
+**Status:** Accepted (addendum; audit and fix — task uwuwu#1454, owner order 27.11.2026: «Все найденные дыры и прочие косяки надо закрыть. В рамках этой задачи», implementation sanction «Газ на реализацию»).
+
+### Found defect: the ui error! delivery channel was dead end-to-end
+
+Every WASM-layer `tracing::error!` escalation — the routes.rs `tracked()`
+core-content escalations, the ADR-079 device-ai degradations, any ad-hoc
+error! point — produced **zero** Sentry events since this ADR shipped:
+
+- **Source**: `tracing-wasm` 0.2.1 routes ALL levels through `console.log`
+  (its only console bindings are `log1/log2/log3`; the level is a CSS color).
+- **Receiver**: `captureConsoleIntegration` is NOT among the eager exports of
+  the loader-served SDK (v10.78.0 at audit time; the loader serves "latest").
+  It lives in a lazy chunk (`browser.sentry-cdn.com/<ver>/captureconsole.min.js`),
+  and the `typeof Sentry.captureConsoleIntegration === 'function'` guard in
+  `sentryOnLoad` silently yielded `integrations: []` — the exact failure class
+  the v7→v8 migration comment above documents, repeated quietly (a guard
+  instead of a throw).
+- **End-to-end proof from production data**: 30 days of events contain zero
+  console-captured errors, while 76 WASM panics called the honest
+  `console.error` via `console_error_panic_hook` in SDK-loaded sessions —
+  not one console capture; the panic bridge (`captureException`) delivered
+  them fine.
+
+### Fix (this addendum's decision)
+
+- Error delivery now goes **directly** through the eagerly exported
+  `Sentry.captureException` — a level-aware tracing layer
+  (`origa_ui/src/tracing_console.rs`) routes `error!` → `console.error` +
+  `captureException(new Error(msg)) + flush`, replicating the panic-bridge
+  pattern that has proven delivery across SDK majors. The dead
+  captureConsoleIntegration block and its typeof guard are removed.
+- **Lesson (binding for future integration work)**: the loader serves
+  "latest" — anything keyed on console-capture channels or lazy surfaces is
+  fragile by construction (broken twice: v7→v8, v8→v10). Key delivery on the
+  eager `captureException`/`captureMessage` surface.
+- Background network failures follow an ADR-079-style severity invariant:
+  online failure of a load-bearing fetch = `error!` (event); offline or
+  best-effort step = `warn!` (breadcrumbs) — an offline start must not flood
+  Sentry with error events.
+
+### Actual state recorded (was "NOT TOUCHED" before)
+
+- `traces_sample_rate(1.0)` / `tracesSampleRate: 1.0` and `enable_logs` are
+  **enabled in code in both layers** — Performance tracing and Sentry Logs
+  are ON, not follow-ups. Session Replay is active at project settings level
+  (replayId observed on 202/235 audited events; not wired in code). The
+  earlier "Performance tracing / Session Replay — follow-up (payload
+  overhead, opt-in)" NOTICED line is superseded by this record; whether to
+  keep, tune, or disable them is an owner call on the recorded facts.
+- Symbolication (native debug files, WASM debug info) remains a follow-up,
+  tracked separately.
+
 ## References
 
 - Sentry Rust SDK: <https://docs.sentry.io/platforms/rust/>
