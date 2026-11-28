@@ -38,16 +38,39 @@ fn has_kanji(text: &str) -> bool {
     })
 }
 
-/// Particles are excluded from `is_vocabulary_word()`, so their surface-keyed
-/// dictionary entries were unreachable. A surface equal to its lemma may use
-/// that entry; auxiliary suffixes keep their base-form lookup (ん -> ず),
-/// which resolves to the wrong sense, so they stay unparsed plain text.
+/// Particles are excluded from `is_vocabulary_word()`, so their dictionary
+/// entries were unreachable. Only surfaces whose article is verified to be
+/// the particle's own sense are listed here: a bare `Particle` POS also covers
+/// homonyms (な as the copula, さ as a syllable name, い as a pronoun). Other
+/// surfaces keep the honest plain render.
+const VERIFIED_PARTICLE_SURFACES: &[&str] = &[
+    "は",
+    "が",
+    "を",
+    "に",
+    "で",
+    "と",
+    "の",
+    "か",
+    "よ",
+    "ね",
+    "も",
+    "から",
+    "まで",
+    "へ",
+    "や",
+    "けど",
+    "けれど",
+    "ので",
+    "のに",
+];
+
 fn token_has_popup(token: &TokenTranslation) -> bool {
     if token.pos.is_vocabulary_word() || token.grammar_label.is_some() {
         return true;
     }
     token.pos == PartOfSpeech::Particle
-        && token.base_form == token.surface_form
+        && VERIFIED_PARTICLE_SURFACES.contains(&token.surface_form.as_str())
         && token.translation.is_some()
 }
 
@@ -404,6 +427,9 @@ fn TokenPopup(
     on_report: Option<Callback<()>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    // Kana particles have the same reading as their surface; printing both
+    // lines would duplicate them in the popup.
+    let reading = (reading != surface).then_some(reading);
     let popup_ref: NodeRef<leptos::html::Div> = NodeRef::new();
     let shift_x: RwSignal<f64> = RwSignal::new(0.0);
 
@@ -434,7 +460,11 @@ fn TokenPopup(
             on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()
         >
             <div class="token-popup-surface">{surface}</div>
-            <div class="token-popup-reading">{reading}</div>
+            {move || {
+                reading.clone().map(|value| view! {
+                    <div class="token-popup-reading">{value}</div>
+                }.into_any()).unwrap_or_else(|| ().into_any())
+            }}
             {move || {
                 base_form.get().map(|bf| view! {
                     <div class="token-popup-reading">{bf}</div>
@@ -535,13 +565,32 @@ mod tests {
     }
 
     #[test]
-    fn particle_with_surface_dictionary_entry_opens_popup() {
+    fn verified_particle_with_dictionary_entry_opens_popup() {
         let token = token(
             PartOfSpeech::Particle,
             "よ",
             "よ",
             "частица, обозначающая вопрос или подтверждение",
         );
+
+        assert!(token_has_popup(&token));
+    }
+
+    #[test]
+    fn unverified_particle_with_dictionary_entry_stays_plain() {
+        let token = token(
+            PartOfSpeech::Particle,
+            "な",
+            "な",
+            "являться / быть (связка)",
+        );
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn verified_particle_with_different_base_opens_popup() {
+        let token = token(PartOfSpeech::Particle, "けど", "けれど", "но");
 
         assert!(token_has_popup(&token));
     }
