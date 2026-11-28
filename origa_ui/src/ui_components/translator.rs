@@ -676,4 +676,32 @@ mod tests {
             );
         }
     }
+
+    /// The POS conjunct is not redundant: a verified surface reaches the
+    /// popup only as a Particle. With another POS the same surface and
+    /// article must stay plain — the whitelist alone is not a gate.
+    #[test]
+    fn verified_surface_with_non_particle_pos_stays_plain() {
+        for pos in [
+            PartOfSpeech::Suffix,
+            PartOfSpeech::AuxiliaryVerb,
+            PartOfSpeech::Other,
+            PartOfSpeech::Unspecified,
+        ] {
+            let token = token(pos.clone(), "から", "から", "статья");
+            assert!(
+                !token_has_popup(&token),
+                "verified surface with POS {pos:?} must stay plain"
+            );
+        }
+    }
+
+    /// The first conjunct: vocabulary POS keeps its popup regardless of the
+    /// particle whitelist.
+    #[test]
+    fn vocabulary_word_with_article_opens_popup() {
+        let token = token(PartOfSpeech::Noun, "魚", "魚", "рыба");
+
+        assert!(token_has_popup(&token));
+    }
 }
