@@ -17,12 +17,14 @@ export const lessonAudioRecallScenario: ShotScenario = {
           .catch(() => false)
       ) {
         await page.waitForTimeout(700);
-        await sink.shot("audio-recall-question");
+        await sink.shot("audio-recall-question", { marker: "lesson-page" });
         await page.getByTestId("audio-recall-reveal-btn").click();
         await expect(page.getByTestId("audio-recall-know-btn")).toBeVisible({
           timeout: 10_000,
         });
-        await sink.shot("audio-recall-answer");
+        await sink.shot("audio-recall-answer", {
+          marker: "audio-recall-know-btn",
+        });
         return;
       }
       await page.reload({ waitUntil: "domcontentloaded" });

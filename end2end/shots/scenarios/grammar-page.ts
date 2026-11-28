@@ -30,7 +30,7 @@ export const grammarPageScenario: ShotScenario = {
       });
     }
     await page.waitForTimeout(2_000); // fonts settle
-    await sink.shot("grid-full", { fullPage: true });
-    await sink.shot("grid-viewport");
+    await sink.shot("grid-full", { fullPage: true, marker: "grammar-page" });
+    await sink.shot("grid-viewport", { marker: "grammar-page" });
   },
 };

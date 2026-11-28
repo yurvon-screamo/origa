@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
 import { assertCaptureFlags } from "./shots-flags.ts";
-import { runCoverage, runStore } from "./shots-commands.ts";
+import { localProofContext, runCoverage, runStore } from "./shots-commands.ts";
 import { listDescriptors } from "../shots/catalog.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
@@ -168,7 +168,11 @@ function listCommand(): number {
 }
 
 async function coverageCommand(options: Options): Promise<number> {
-  return await runCoverage(options, readManifestEntries);
+  return await runCoverage(
+    options,
+    readManifestEntries,
+    options.run ? localProofContext(options.run) : undefined,
+  );
 }
 
 async function storeCommand(options: Options): Promise<number> {
@@ -239,6 +243,15 @@ async function captureCommand(options: Options): Promise<number> {
   const entries = await readManifestEntries(options.out);
   if (entries.length === 0) {
     console.error("Снимки не получены — манифест пуст");
+    return 1;
+  }
+  const failed = entries.filter((entry) => entry.file === "");
+  if (failed.length > 0) {
+    for (const entry of failed) {
+      console.error(
+        `  ✗ ${entry.scenario}/${entry.screen} [${entry.viewport}]: маркер не установился — кадр не доказан`,
+      );
+    }
     return 1;
   }
 
@@ -565,7 +578,7 @@ function usage(): number {
   npm run shots -- store --out <dir> [--run <dir>]
   npm run shots -- index
 
-Опция coverage --run сверяет инвентарь с манифестами прогона (вьюпорты и один commit).
+Опция coverage --run сверяет инвентарь с манифестами прогона: печать harness в байтах PNG против HEAD по родству и между кадрами, sha256 файла, отрицательные записи. Поле commit в манифесте информационное.
 Команда store копирует PNG прогона в docs/ui-screenshots/images под стабильными именами — кадрам нужен диф в PR.
 
 Опции capture:

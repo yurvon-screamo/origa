@@ -11,8 +11,10 @@ export {
   matchesScreen,
   parseRoutePatterns,
 } from "./coverage-checks.ts";
+export type { ProofContext } from "./coverage-report.ts";
 export {
   compareManifest,
   formatCoverageReport,
   provedRows,
+  resolveProofFile,
 } from "./coverage-report.ts";

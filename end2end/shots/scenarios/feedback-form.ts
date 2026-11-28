@@ -29,19 +29,23 @@ export const feedbackFormScenario: ShotScenario = {
     await page
       .getByTestId("lesson-report-btn")
       .waitFor({ state: "visible", timeout: 60_000 });
-    await sink.shot("lesson-header-report-disabled");
+    await sink.shot("lesson-header-report-disabled", {
+      marker: "lesson-report-btn",
+    });
 
     // 2) The modal opened from the lesson header.
     await page.getByTestId("lesson-report-btn").click();
     await expect(page.getByTestId("feedback-modal")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("feedback-modal-subject");
+    await sink.shot("feedback-modal-subject", { marker: "feedback-modal" });
 
     // 3) The same modal with a filled message.
     await page
       .getByTestId("feedback-message-input")
       .fill("Чтение не соответствует карточке");
-    await sink.shot("feedback-modal-filled");
+    await sink.shot("feedback-modal-filled", {
+      marker: "feedback-message-input",
+    });
   },
 };

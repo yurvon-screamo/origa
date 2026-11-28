@@ -1,25 +1,139 @@
-import type { ShotEntry } from "./manifest.ts";
-import { matchesScreen } from "./coverage-checks.ts";
-import type { CoverageIssue, CoverageRow } from "./coverage-types.ts";
+import { resolve, sep } from "node:path";
 
-/** Matches captured frames to rows; every required viewport must be present. */
-export function compareManifest(
+import type { CoverageIssue, CoverageRow } from "./coverage-types.ts";
+import { matchesScreen } from "./coverage-checks.ts";
+import {
+  readProof,
+  sha256Hex,
+  type ShotEntry,
+  type ShotProof,
+} from "./manifest.ts";
+
+/** Everything the gate needs from the outside — no git, no browser inside. */
+export interface ProofContext {
+  readonly expectedCommit: string;
+  readonly isAncestor: (commit: string, head: string) => boolean;
+  readonly readPng: (file: string) => Promise<Buffer>;
+  readonly proofRoot: string;
+}
+
+/** Resolves a manifest file inside the proof root, or rejects it. */
+export function resolveProofFile(root: string, file: string): string | null {
+  const absolute = resolve(file);
+  const base = resolve(root);
+  return absolute === base || absolute.startsWith(base + sep) ? absolute : null;
+}
+
+function frameMatches(
+  entry: ShotEntry,
+  row: CoverageRow,
+  screen: string,
+  viewport: string,
+): boolean {
+  return (
+    entry.scenario === row.scenario &&
+    entry.viewport === viewport &&
+    matchesScreen(screen, entry.screen)
+  );
+}
+
+/** Compares a real capture with the inventory; every external fact is injected. */
+export async function compareManifest(
   rows: readonly CoverageRow[],
   entries: readonly ShotEntry[],
-): CoverageIssue[] {
+  ctx: ProofContext,
+): Promise<CoverageIssue[]> {
   const issues: CoverageIssue[] = [];
-  const commits = new Set(entries.map((entry) => entry.commit));
+  const stamps = new Map<ShotEntry, ShotProof>();
+  for (const entry of entries) {
+    if (entry.file === "") continue;
+    const absolute = resolveProofFile(ctx.proofRoot, entry.file);
+    if (absolute === null) {
+      issues.push({
+        row: "manifest",
+        problem: `frame outside --run: ${entry.file}`,
+      });
+      continue;
+    }
+    let png: Buffer;
+    try {
+      png = await ctx.readPng(absolute);
+    } catch {
+      issues.push({ row: "manifest", problem: `missing frame: ${entry.file}` });
+      continue;
+    }
+    if (sha256Hex(png) !== entry.sha256) {
+      issues.push({
+        row: "manifest",
+        problem: `sha256 mismatch: ${entry.file}`,
+      });
+      continue;
+    }
+    let proof: ShotProof | null;
+    try {
+      proof = readProof(png);
+    } catch {
+      issues.push({
+        row: "manifest",
+        problem: `corrupt proof chunk: ${entry.file}`,
+      });
+      continue;
+    }
+    if (proof === null) {
+      issues.push({
+        row: "manifest",
+        problem: `frame without proof: ${entry.file}`,
+      });
+      continue;
+    }
+    if (proof.screen !== entry.screen) {
+      issues.push({
+        row: "manifest",
+        problem: `screen stamp mismatch: ${entry.screen} ≠ ${proof.screen}`,
+      });
+    }
+    if (!ctx.isAncestor(proof.commit, ctx.expectedCommit)) {
+      issues.push({
+        row: "manifest",
+        problem: `proof commit ${proof.commit} is not an ancestor of HEAD ${ctx.expectedCommit}`,
+      });
+    }
+    stamps.set(entry, proof);
+  }
+
+  const commits = new Set([...stamps.values()].map((proof) => proof.commit));
   if (commits.size > 1) {
     issues.push({
       row: "manifest",
       problem: `mixed commits in one proof: ${[...commits].sort().join(", ")}`,
     });
   }
+
+  const proved = entries.filter((entry) => stamps.has(entry));
+  const negatives = entries.filter((entry) => entry.file === "");
+  for (const entry of negatives) {
+    for (const row of rows) {
+      if (
+        row.status === "covered" &&
+        row.scenario === entry.scenario &&
+        row.screens.some((screen) => matchesScreen(screen, entry.screen))
+      ) {
+        issues.push({
+          row: row.id,
+          problem: `negative proof for screen "${entry.screen}": marker did not settle`,
+        });
+      }
+    }
+  }
+
   for (const row of rows) {
     if (row.status !== "covered" || !row.scenario) continue;
     for (const viewport of row.viewports) {
       for (const screen of row.screens) {
-        if (!hasFrame(entries, row, screen, viewport)) {
+        if (
+          !proved.some((entry) => frameMatches(entry, row, screen, viewport)) &&
+          !negatives.some((entry) => frameMatches(entry, row, screen, viewport))
+        ) {
           issues.push({
             row: row.id,
             problem: `no ${viewport} frame for screen "${screen}"`,
@@ -29,20 +143,6 @@ export function compareManifest(
     }
   }
   return issues;
-}
-
-function hasFrame(
-  entries: readonly ShotEntry[],
-  row: CoverageRow,
-  screen: string,
-  viewport: string,
-): boolean {
-  return entries.some(
-    (entry) =>
-      entry.scenario === row.scenario &&
-      entry.viewport === viewport &&
-      matchesScreen(screen, entry.screen),
-  );
 }
 
 /** A proof with mixed commits is invalid as a whole, not per row. */

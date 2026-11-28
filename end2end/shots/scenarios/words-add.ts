@@ -15,14 +15,14 @@ export const wordsAddScenario: ShotScenario = {
     await expect(page.getByTestId("words-add-drawer")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("words-add-input");
+    await sink.shot("words-add-input", { marker: "words-add-drawer" });
 
     await page.getByTestId("words-drawer-textarea").fill("本");
     await page.getByTestId("words-drawer-analyze-btn").click();
     await expect(page.getByTestId("words-drawer-item").first()).toBeVisible({
       timeout: 30_000,
     });
-    await sink.shot("words-add-preview");
+    await sink.shot("words-add-preview", { marker: "words-drawer-item" });
 
     for (const [tab, screen] of [
       ["anki", "words-add-anki"],
@@ -31,7 +31,7 @@ export const wordsAddScenario: ShotScenario = {
     ] as const) {
       await page.getByTestId(`words-add-tabs-${tab}`).click();
       await expect(page.getByTestId("words-add-drawer")).toBeVisible();
-      await sink.shot(screen);
+      await sink.shot(screen, { marker: "words-add-drawer" });
     }
   },
 };

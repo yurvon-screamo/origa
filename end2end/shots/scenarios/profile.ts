@@ -16,8 +16,8 @@ export const profileScenario: ShotScenario = {
       timeout: 15_000,
     });
     await waitForAppReady(page);
-    await sink.shot("profile-form");
+    await sink.shot("profile-form", { marker: "profile-personal-data" });
     await expect(page.getByTestId("profile-settings")).toBeVisible();
-    await sink.shot("profile-settings");
+    await sink.shot("profile-settings", { marker: "profile-page" });
   },
 };

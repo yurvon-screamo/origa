@@ -26,13 +26,11 @@ export const homeAccuracyChartScenario: ShotScenario = {
     const chart = page.getByTestId("home-accuracy-chart-chart");
     await expect(chart).toBeVisible({ timeout: 120_000 });
 
-    // Frame the whole accordion: its header at the top of the
-    // viewport, both charts below (the pair is ~2 viewport heights, so
-    // the shot shows the header + the activity chart and the top of
-    // the accuracy chart).
-    await page.getByTestId("home-stats").evaluate((el) => {
-      const top = el.getBoundingClientRect().top + window.scrollY - 24;
-      window.scrollTo({ top });
+    // Frame the accuracy chart itself: the marker requires at least
+    // 80% of the chart box inside the viewport, so the chart is
+    // scrolled to the centre of the frame.
+    await chart.evaluate((el) => {
+      el.scrollIntoView({ block: "center" });
     });
 
     await waitForSyncToast(page);
@@ -44,6 +42,6 @@ export const homeAccuracyChartScenario: ShotScenario = {
       });
       await page.waitForTimeout(300);
     }
-    await sink.shot("accuracy-chart");
+    await sink.shot("accuracy-chart", { marker: "home-accuracy-chart" });
   },
 };

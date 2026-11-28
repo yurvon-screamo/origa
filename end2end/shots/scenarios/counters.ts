@@ -13,11 +13,11 @@ export const countersScenario: ShotScenario = {
       timeout: 60_000,
     });
     await waitForAppReady(page);
-    await sink.shot("counters-list");
+    await sink.shot("counters-list", { marker: "counters-page" });
     await page.getByTestId("counters-add-btn").click();
     await expect(page.getByTestId("counters-add-drawer")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("counters-add-drawer");
+    await sink.shot("counters-add-drawer", { marker: "counters-add-drawer" });
   },
 };

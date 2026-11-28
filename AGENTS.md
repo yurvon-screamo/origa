@@ -231,9 +231,12 @@ npm run shots -- capture --scenario home --label issue-808      # снимок (
 npm run shots -- capture --scenario home --label issue-808 --upload   # + заливка в CDN и ссылки
 npm run shots -- index                                         # пересобрать индекс реестра
 npm run shots -- coverage                                      # построчный инвентарь: покрыто/дыра/исключено
-npm run shots -- coverage --run /tmp/opencode/shots/<label>     # сверка кадров и вьюпортов с манифестом
+npm run shots -- coverage --run /tmp/opencode/shots/<label>     # сверка кадров, печати proof и вьюпортов с манифестом
+
 npm run shots -- store --out /tmp/opencode/shots/<label>        # скопировать PNG в docs/ui-screenshots/images/
 ```
+
+Проверка доказательства читает печать `origa-proof` из байтов PNG (commit/screen) и сверяет commit с HEAD гейта по родству и между кадрами; поле `commit` манифеста/реестра информационное. Кадр снимается только после того, как маркер экрана установился; пересъёмка на новом коммите меняет sha256 и CDN-ключ даже при той же картинке. Печать не защищает от перепечатки PNG; `--base-url`/dist печатают HEAD чекаута, а не снятый бандл.
 
 - **Проверка окружения до съёмки** (`shots/preflight.ts`): без шрифтов локального корпуса бандл соберётся без `@font-face` (скрины уйдут в sans-serif); чужой слушатель на портах харнеса (1420 / 4000 / 8080 — CDN-порт только при локальном корпусе, corpus-less прогон его не биндит) — это ошибки, прогон не стартует; отставший локальный корпус и отсутствие словаря токенизатора — предупреждения.
 - **Куда падают файлы**: съёмка пишет в `/tmp/opencode/shots/<label>/`; базовые кадры для диф-ревью копируются командой `store` в `docs/ui-screenshots/images/`. Старое правило «PNG в git не коммитим (#797)» отменено словом владельца 26.11 (у#1671): «делаем скрины и храним их в репе». Индекс реестра — по-прежнему `docs/ui-screenshots/shots/*.json`, а не PNG.

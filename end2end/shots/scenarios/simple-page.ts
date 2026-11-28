@@ -6,8 +6,7 @@ import type { ShotSink } from "../types.ts";
 export async function waitForAppReady(page: Page): Promise<void> {
   await page
     .locator("#origa-boot-splash")
-    .waitFor({ state: "detached", timeout: 10_000 })
-    .catch(() => undefined);
+    .waitFor({ state: "detached", timeout: 15_000 });
 }
 
 /**
@@ -33,5 +32,5 @@ export async function captureSimplePage(
   await page.goto(route);
   await expect(page.getByTestId(marker)).toBeVisible({ timeout: 60_000 });
   await waitForAppReady(page);
-  await sink.shot(screen);
+  await sink.shot(screen, { marker });
 }

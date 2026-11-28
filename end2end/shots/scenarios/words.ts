@@ -15,7 +15,7 @@ export const wordsScenario: ShotScenario = {
   async run({ page }, sink) {
     await gotoWordsRoute(page, "/words");
     await page.waitForTimeout(3_000); // vocabulary chunk fetch
-    await sink.shot("words");
-    await sink.shot("words-full", { fullPage: true });
+    await sink.shot("words", { marker: "words-page" });
+    await sink.shot("words-full", { fullPage: true, marker: "words-page" });
   },
 };

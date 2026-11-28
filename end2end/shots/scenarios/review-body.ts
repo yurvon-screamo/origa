@@ -149,7 +149,7 @@ export async function captureReviewBody(
       break;
     }
     await page.waitForTimeout(700);
-    await sink.shot(`review-body-${kind}-${card}`);
+    await sink.shot(`review-body-${kind}-${card}`, { marker: "lesson-page" });
     captured += 1;
     const advanced = await clickFirstVisible(page, ADVANCES, 3_000).catch(
       () => null,

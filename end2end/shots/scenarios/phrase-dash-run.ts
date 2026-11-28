@@ -54,7 +54,7 @@ export const phraseDashRunScenario: ShotScenario = {
       .getByTestId("phrases-card-text");
     await cardText.waitFor({ state: "visible", timeout: 60_000 });
     await page.waitForTimeout(1_500);
-    await sink.shot("phrases-list-clean");
+    await sink.shot("phrases-list-clean", { marker: "phrases-card-text" });
 
     // ── Surface 2: the lesson question card (the bug's surface) ──
     const { completeAcquaintanceHandIfPresent } = await import(
@@ -68,7 +68,9 @@ export const phraseDashRunScenario: ShotScenario = {
       await completeAcquaintanceHandIfPresent(page);
       if (await phraseFrontSeen(page)) {
         await page.waitForTimeout(1_500);
-        await sink.shot("lesson-phrase-question-clean");
+        await sink.shot("lesson-phrase-question-clean", {
+          marker: "lesson-page",
+        });
         return;
       }
     }

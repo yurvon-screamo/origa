@@ -55,7 +55,9 @@ export const acquaintanceCounterSlideScenario: ShotScenario = {
           .catch(() => false)
       ) {
         await page.waitForTimeout(700);
-        await sink.shot("counter-presentation");
+        await sink.shot("counter-presentation", {
+          marker: "acquaintance-view",
+        });
         presentation = true;
         break;
       }
@@ -125,7 +127,9 @@ export const acquaintanceCounterSlideScenario: ShotScenario = {
             .catch(() => false)
         ) {
           await page.waitForTimeout(700);
-          await sink.shot("counter-training-answer");
+          await sink.shot("counter-training-answer", {
+            marker: "acquaintance-training",
+          });
           answer = true;
           break;
         }

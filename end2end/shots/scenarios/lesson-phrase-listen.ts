@@ -15,7 +15,7 @@ export const lessonPhraseListenScenario: ShotScenario = {
           .catch(() => false)
       ) {
         await page.waitForTimeout(700);
-        await sink.shot("phrase-listen-question");
+        await sink.shot("phrase-listen-question", { marker: "lesson-page" });
         return;
       }
       await page.reload({ waitUntil: "domcontentloaded" });

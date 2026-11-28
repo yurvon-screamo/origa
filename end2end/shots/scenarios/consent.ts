@@ -10,6 +10,8 @@ export const consentScenario: ShotScenario = {
     await expect(
       page.getByTestId("resource-consent-download-button"),
     ).toBeVisible({ timeout: 60_000 });
-    await sink.shot("consent-screen");
+    await sink.shot("consent-screen", {
+      marker: "resource-consent-download-button",
+    });
   },
 };

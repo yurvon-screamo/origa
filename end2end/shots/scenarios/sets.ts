@@ -13,9 +13,9 @@ export const setsScenario: ShotScenario = {
       timeout: 60_000,
     });
     await waitForAppReady(page);
-    await sink.shot("sets-list");
+    await sink.shot("sets-list", { marker: "sets-page" });
     await page.getByTestId("sets-level-n5").click();
-    await sink.shot("sets-filters");
+    await sink.shot("sets-filters", { marker: "sets-level-n5" });
     await page.getByTestId("sets-import-new").click();
     // Selection lives on the card checkbox, not on the card root. A
     // root click leaves `selected_sets` empty, so the import button
@@ -34,6 +34,6 @@ export const setsScenario: ShotScenario = {
     await expect(page.getByTestId("sets-import-drawer")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("sets-import-found");
+    await sink.shot("sets-import-found", { marker: "sets-import-drawer" });
   },
 };

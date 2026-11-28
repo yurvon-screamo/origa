@@ -78,6 +78,9 @@ export const kanjiWritingPracticeScenario: ShotScenario = {
 
     // Let the kanji art SVG and the corner label settle before the shot.
     await page.waitForTimeout(700);
-    await sink.shot("kanji-writing-practice", { fullPage: true });
+    await sink.shot("kanji-writing-practice", {
+      fullPage: true,
+      marker: `css=${canvasSelector}`,
+    });
   },
 };

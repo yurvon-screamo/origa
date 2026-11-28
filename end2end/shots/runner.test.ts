@@ -73,7 +73,7 @@ mock.module("./scenarios/index.ts", {
       locale: "ru-RU" as const,
       preset: "fresh" as const,
       run: async (_context: ShotContext, sink: ShotSink) => {
-        await sink.shot("screen");
+        await sink.shot("screen", { marker: "screen-root" });
       },
     }),
   },

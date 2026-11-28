@@ -34,7 +34,9 @@ export const homeDueCounterScenario: ShotScenario = {
     });
     await page.waitForTimeout(1_500);
     await waitForSyncToast(page);
-    await sink.shot("due-day-one");
+    await sink.shot("due-day-one", {
+      marker: "home-today-overview-due-count",
+    });
 
     const seeded = seedDueCards(stored.value, new Date(), DUE_TARGET);
     expect(
@@ -53,6 +55,8 @@ export const homeDueCounterScenario: ShotScenario = {
       timeout: 120_000,
     });
     await page.waitForTimeout(1_500);
-    await sink.shot("due-counter");
+    await sink.shot("due-counter", {
+      marker: "home-today-overview-due-count",
+    });
   },
 };

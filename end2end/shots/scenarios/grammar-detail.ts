@@ -20,7 +20,9 @@ export const grammarDetailScenario: ShotScenario = {
     await expect(page.getByTestId("grammar-detail-container")).toBeVisible({
       timeout: 30_000,
     });
-    await sink.shot("grammar-detail-overview");
+    await sink.shot("grammar-detail-overview", {
+      marker: "grammar-detail-container",
+    });
 
     const practiceTab = page.getByTestId("grammar-detail-tabs-practice");
     if (await practiceTab.isVisible().catch(() => false)) {
@@ -43,7 +45,9 @@ export const grammarDetailScenario: ShotScenario = {
     await expect(page.getByTestId("grammar-practice-progress")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("grammar-practice-question");
+    await sink.shot("grammar-practice-question", {
+      marker: "grammar-detail-container",
+    });
 
     const deleteButton = page
       .getByTestId("grammar-detail-actions-delete-btn")
@@ -52,6 +56,8 @@ export const grammarDetailScenario: ShotScenario = {
     await expect(page.getByTestId("grammar-detail-delete-modal")).toBeVisible({
       timeout: 10_000,
     });
-    await sink.shot("grammar-delete-modal");
+    await sink.shot("grammar-delete-modal", {
+      marker: "grammar-detail-delete-modal",
+    });
   },
 };
