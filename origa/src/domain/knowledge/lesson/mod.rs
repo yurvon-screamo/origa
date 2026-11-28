@@ -5,4 +5,4 @@ pub use types::{
     CounterBindingItem, GrammarInfo, GrammarQuizCard, LessonCard, LessonCardView, LessonData,
     MultiQuizResult, QuizCard, QuizMode, QuizOption, YesNoCard,
 };
-pub use view_generator::LessonViewGenerator;
+pub use view_generator::{LessonViewGenerator, refresh_phrase_views};

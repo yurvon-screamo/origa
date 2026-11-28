@@ -16,7 +16,7 @@ use crate::store::auth_store::AuthStore;
 use crate::ui_components::{Spinner, Text, TextSize, TypographyVariant};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use origa::domain::{Card, LessonEmptyDiagnosis, diagnose_empty_lesson};
+use origa::domain::{Card, LessonEmptyDiagnosis, diagnose_empty_lesson, refresh_phrase_views};
 use origa::traits::UserRepository;
 use origa::use_cases::SelectAcquaintanceHandUseCase;
 use origa::use_cases::SelectCardsToLessonUseCase;
@@ -372,6 +372,31 @@ pub fn LessonContent() -> impl IntoView {
 
                     // The phrase-cleanup awaits above precede the
                     // resolved_mode reads below — fence the window.
+                    if is_disposed.is_disposed() {
+                        return;
+                    }
+
+                    // Lesson views were chosen before the phrase detail
+                    // cache was filled; re-select review phrase views now,
+                    // before the cards are published to lesson state.
+                    let refresh_started = std::time::Instant::now();
+                    let refreshed = if let Ok(Some(user)) = repo.get_current_user().await {
+                        refresh_phrase_views(
+                            &mut lesson_data,
+                            user.knowledge_set(),
+                            native_language.get_untracked(),
+                            &mut rand::rng(),
+                        )
+                    } else {
+                        tracing::debug!("phrase view refresh skipped: user unavailable");
+                        0
+                    };
+                    tracing::debug!(
+                        views = refreshed,
+                        elapsed_ms = refresh_started.elapsed().as_millis(),
+                        "phrase views refreshed"
+                    );
+
                     if is_disposed.is_disposed() {
                         return;
                     }
