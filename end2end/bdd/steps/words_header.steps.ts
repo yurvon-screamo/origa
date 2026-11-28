@@ -35,13 +35,18 @@ When("пользователь расширяет окно до 640px", async ({
   await page.setViewportSize({ width: 640, height: 844 });
 });
 
-// The compact density is scoped to max-width:639px. At the very next pixel
-// the header's own `sm:gap-4` wins again: pin the upper bound so widening
-// the media query cannot silently leak compact density into the 640–767px
-// band that the task deliberately leaves untouched.
+// The compact density is scoped to max-width:639px. The wrapper's `gap`
+// alone cannot pin that bound: at 640px the header's later `sm:gap-4` wins
+// the equal-specificity cascade regardless of the media query, so 16px
+// stays green even if the media is widened to 767px. The observable leak
+// is the BUTTON padding — `.words-actions-compact .btn` (0,2,0) would
+// override `.btn` and shrink 32px to 12px in the 640–767px band that the
+// task deliberately leaves untouched. Pin the padding; keep gap as a
+// secondary check of the header's own desktop density.
 Then("компактная плотность шапки слов выключена", async ({ page }) => {
   const wordsPage = new WordsPage(page);
   await expect(wordsPage.wordsActions).toBeVisible();
+  await expect(wordsPage.addButton).toHaveCSS("padding-left", "32px");
   await expect(wordsPage.wordsActions).toHaveCSS("gap", "16px");
 });
 
