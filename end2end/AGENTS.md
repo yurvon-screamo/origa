@@ -102,6 +102,8 @@ npm run shots -- capture --scenario home --label issue-808 [--upload]
 npm run shots -- index                                   # rebuild the registry view
 npm run shots -- coverage                                # inventory rows: covered / gap / excluded
 npm run shots -- coverage --run /tmp/opencode/shots/<label>  # compare frames with the manifest
+
+`--run` читает печать `origa-proof` (commit/screen) из байтов PNG и сверяет её с HEAD чекаута и между кадрами; поле `commit` манифеста информационное. Кадр без печати, с расходящимся sha256 или отрицательная запись (пустой `file`, маркер не установился) красный. Каждый `sink.shot(name, { marker })` обязан назвать test-id (или `css=`-селектор): синк ждёт сплеш detached и маркер видимым с порогом 0.8×min(бокс, вьюпорт), снимает с `animations: "disabled"`.`
 npm run shots -- store --out /tmp/opencode/shots/<label>  # keep baseline PNGs for review diffs
 ```
 

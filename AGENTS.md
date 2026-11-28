@@ -231,7 +231,9 @@ npm run shots -- capture --scenario home --label issue-808      # снимок (
 npm run shots -- capture --scenario home --label issue-808 --upload   # + заливка в CDN и ссылки
 npm run shots -- index                                         # пересобрать индекс реестра
 npm run shots -- coverage                                      # построчный инвентарь: покрыто/дыра/исключено
-npm run shots -- coverage --run /tmp/opencode/shots/<label>     # сверка кадров и вьюпортов с манифестом
+npm run shots -- coverage --run /tmp/opencode/shots/<label>     # сверка кадров, печати proof и вьюпортов с манифестом
+
+Проверка доказательства читает печать `origa-proof` из байтов PNG (commit/screen) и сверяет commit с HEAD гейта и между кадрами; поле `commit` манифеста/реестра информационное. Кадр снимается только после того, как маркер экрана установился; пересъёмка на новом коммите меняет sha256 и CDN-ключ даже при той же картинке.`
 npm run shots -- store --out /tmp/opencode/shots/<label>        # скопировать PNG в docs/ui-screenshots/images/
 ```
 
